@@ -138,6 +138,13 @@ public class XQueryServlet extends HttpServlet {
 		} catch(Exception e) {
 			throw new ServletException("Failed to initialize database driver: " + e.getMessage(), e);
 		}
+		
+		// set exist.home property if not set
+		String homeDir = System.getProperty("exist.home");
+		if(homeDir == null) {
+			homeDir = config.getServletContext().getRealPath("/");
+			System.setProperty("exist.home", homeDir);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -209,7 +216,6 @@ public class XQueryServlet extends HttpServlet {
 		if(p > -1)
 			baseURI = baseURI.substring(0, p);
 		baseURI = getServletContext().getRealPath(baseURI.substring(request.getContextPath().length()));
-
 		String actualUser = null;
 		String actualPassword = null;
 		HttpSession session = request.getSession();
