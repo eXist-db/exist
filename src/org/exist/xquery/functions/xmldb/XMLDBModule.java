@@ -49,15 +49,15 @@ public class XMLDBModule extends AbstractInternalModule {
 		new FunctionDef(XMLDBRemove.signatures[0], XMLDBRemove.class),
 		new FunctionDef(XMLDBRemove.signatures[1], XMLDBRemove.class),
 		new FunctionDef(XMLDBHasLock.signature, XMLDBHasLock.class),
-		new FunctionDef(XMLDBCreated.signatures[0], XMLDBCreated.class),
-        new FunctionDef(XMLDBCreated.signatures[1], XMLDBCreated.class),
-		new FunctionDef(XMLDBLastModified.signature, XMLDBLastModified.class),
+		new FunctionDef(XMLDBCreated.lastModifiedSignature, XMLDBCreated.class),
+		new FunctionDef(XMLDBCreated.createdSignatures[0], XMLDBCreated.class),
+        new FunctionDef(XMLDBCreated.createdSignatures[1], XMLDBCreated.class),
 		new FunctionDef(XMLDBPermissions.signatures[0], XMLDBPermissions.class),
 		new FunctionDef(XMLDBPermissions.signatures[1], XMLDBPermissions.class),
-		new FunctionDef(XMLDBGroup.signatures[0], XMLDBGroup.class),
-		new FunctionDef(XMLDBGroup.signatures[1], XMLDBGroup.class),
-		new FunctionDef(XMLDBOwner.signatures[0], XMLDBOwner.class),
-		new FunctionDef(XMLDBOwner.signatures[1], XMLDBOwner.class),
+		new FunctionDef(XMLDBGetUserOrGroup.getGroupSignatures[0], XMLDBGetUserOrGroup.class),
+		new FunctionDef(XMLDBGetUserOrGroup.getGroupSignatures[1], XMLDBGetUserOrGroup.class),
+		new FunctionDef(XMLDBGetUserOrGroup.getOwnerSignatures[0], XMLDBGetUserOrGroup.class),
+		new FunctionDef(XMLDBGetUserOrGroup.getOwnerSignatures[1], XMLDBGetUserOrGroup.class),
 		new FunctionDef(XMLDBGetChildCollections.signature, XMLDBGetChildCollections.class),
 		new FunctionDef(XMLDBGetChildResources.signature, XMLDBGetChildResources.class),
 		new FunctionDef(XMLDBSetCollectionPermissions.signature, XMLDBSetCollectionPermissions.class),
@@ -75,6 +75,13 @@ public class XMLDBModule extends AbstractInternalModule {
 		super(functions);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.Module#getDescription()
+	 */
+	public String getDescription() {
+		return "Database manipulation functions";
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Module#getNamespaceURI()
 	 */

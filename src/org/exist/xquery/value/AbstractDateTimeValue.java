@@ -42,7 +42,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 	public final static int MINUTE = 4;
 	public final static int SECOND = 5;
 	public final static int MILLISECOND = 6;
-
+	
 	protected GregorianCalendar calendar;
 	protected int tzOffset = 0;
 	protected boolean explicitTimeZone = false;
@@ -67,7 +67,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 			case DAY :
 				return calendar.get(Calendar.DATE);
 			case HOUR :
-				return calendar.get(Calendar.HOUR);
+				return calendar.get(Calendar.HOUR_OF_DAY);
 			case MINUTE :
 				return calendar.get(Calendar.MINUTE);
 			case SECOND :
@@ -79,6 +79,10 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		}
 	}
 
+	public long getTimezoneOffset() {
+		return tzOffset * 60000;
+	}
+	
 	protected void formatString(StringBuffer buf, int value, int size) {
 		String s = "000" + value;
 		buf.append(s.substring(s.length() - size));

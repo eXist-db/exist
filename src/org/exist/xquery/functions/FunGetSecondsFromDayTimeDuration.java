@@ -43,7 +43,7 @@ public class FunGetSecondsFromDayTimeDuration extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("get-seconds-from-dayTimeDuration", Module.BUILTIN_FUNCTION_NS),
+			new QName("seconds-from-duration", Module.BUILTIN_FUNCTION_NS),
 			"Returns an xs:decimal representing the seconds component in the canonical lexical "
 				+ "representation of the value of $a. The result may be negative",
 			new SequenceType[] {

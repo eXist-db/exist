@@ -26,11 +26,10 @@ import java.text.Collator;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.Item;
@@ -43,7 +42,7 @@ import org.exist.xquery.value.Type;
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class FunMin extends Function {
+public class FunMin extends CollatingFunction {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
@@ -82,11 +81,7 @@ public class FunMin extends Function {
 		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
 		if (arg.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
-		Collator collator;
-		if(getSignature().getArgumentCount() == 2)
-			collator = context.getCollator(getArgument(1).eval(contextSequence, contextItem).getStringValue());
-		else
-			collator = context.getDefaultCollator();
+		Collator collator = getCollator(contextSequence, contextItem, 2);
 		SequenceIterator iter = arg.iterate();
 		AtomicValue min = (AtomicValue) iter.nextItem();
 		AtomicValue current;

@@ -80,7 +80,7 @@ public class FunctionFactory {
 				step = near;
 			}
 	
-			// ends-with(node-set, string)
+			// starts-with(node-set, string)
 			if (local.equals("starts-with")) {
 				if (params.size() < 2)
 					throw new XPathException(ast, "Function starts-with requires two arguments");
@@ -91,6 +91,8 @@ public class FunctionFactory {
 				GeneralComparison op = 
 					new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_RIGHT);
 				op.setASTNode(ast);
+				if (params.size() == 3)
+					op.setCollation((Expression)params.get(2));
 				step = op;
 			}
 	
@@ -105,6 +107,8 @@ public class FunctionFactory {
 				GeneralComparison op =
 					new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_LEFT);
 				op.setASTNode(ast);
+				if (params.size() == 3)
+					op.setCollation((Expression)params.get(2));
 				step = op;
 			}
 	
@@ -119,6 +123,8 @@ public class FunctionFactory {
 				GeneralComparison op =
 					new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_BOTH);
 				op.setASTNode(ast);
+				if (params.size() == 3)
+					op.setCollation((Expression)params.get(2));
 				step = op;
 			}
 		// Check if the namespace belongs to one of the schema namespaces.

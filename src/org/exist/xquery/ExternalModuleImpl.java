@@ -50,6 +50,13 @@ public class ExternalModuleImpl implements ExternalModule {
 		mPrefix = prefix;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.Module#getDescription()
+	 */
+	public String getDescription() {
+		return "User defined module";
+	}
+	
 	public UserDefinedFunction getFunction(QName qname) {
 		return (UserDefinedFunction) mFunctionMap.get(qname);
 	}

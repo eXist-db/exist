@@ -51,6 +51,13 @@ public class TextModule extends AbstractInternalModule {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.exist.xquery.Module#getDescription()
+	 */
+	public String getDescription() {
+		return "Extension functions for text searching";
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.exist.xquery.Module#getNamespaceURI()
 	 */
 	public String getNamespaceURI() {

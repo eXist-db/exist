@@ -6,6 +6,7 @@ public class XPathException extends Exception {
 
 	private int line = 0;
 	private int column = 0;
+	private String message = null;
 	
 	/**
 	 * 
@@ -18,16 +19,19 @@ public class XPathException extends Exception {
 	 * @param message
 	 */
 	public XPathException(String message) {
-		super(message);
+		super();
+		this.message = message;
 	}
 
 	public XPathException(XQueryAST ast, String message) {
-		super(message);
+		super();
+		this.message = message;
 		setASTNode(ast);
 	}
 	
 	public XPathException(String message, int line, int column) {
-		super(message);
+		super();
+		this.message = message;
 		this.line = line;
 		this.column = column;
 	}
@@ -44,11 +48,13 @@ public class XPathException extends Exception {
 	 * @param cause
 	 */
 	public XPathException(String message, Throwable cause) {
-		super(message, cause);
+		super(cause);
+		this.message = message;
 	}
 
 	public XPathException(XQueryAST ast, String message, Throwable cause) {
-		super(message, cause);
+		super(cause);
+		this.message = message;
 		setASTNode(ast);
 	}
 	
@@ -67,15 +73,21 @@ public class XPathException extends Exception {
 		}
 	}
 	
+	public void prependMessage(String msg) {
+		message = msg + message;
+	}
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Throwable#getMessage()
 	 */
 	public String getMessage() {
+		if(message == null)
+			message = "";
 		if(line == 0)
-			return super.getMessage();
+			return message;
 		else {
 			StringBuffer buf = new StringBuffer();
-			buf.append(super.getMessage());
+			buf.append(message);
 			buf.append(" [at line ");
 			buf.append(getLine());
 			buf.append(", column ");

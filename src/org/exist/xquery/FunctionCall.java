@@ -113,6 +113,7 @@ public class FunctionCall extends Function {
 		} catch(XPathException e) {
 			if(e.getLine() == 0)
 				e.setASTNode(getASTNode());
+			e.prependMessage("In call to function " + expression.pprint());
 			throw e;
 		} finally {
 //			context.popLocalContext();

@@ -29,44 +29,52 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.DateValue;
-import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class FunGetYearFromDate extends Function {
+public class FunUpperOrLowerCase extends Function {
 
-	public final static FunctionSignature signature =
-			new FunctionSignature(
-				new QName("get-year-from-date", Module.BUILTIN_FUNCTION_NS),
-				"Returns an xs:integer representing the year in the localized value of $a. The value may be negative.",
-				new SequenceType[] {
-					 new SequenceType(Type.DATE, Cardinality.ZERO_OR_ONE)
-				},
-				new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
-				
+	public final static FunctionSignature fnUpperCase =
+		new FunctionSignature(
+			new QName("upper-case", Module.BUILTIN_FUNCTION_NS),
+			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE) },
+			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+	
+	public final static FunctionSignature fnLowerCase =
+		new FunctionSignature(
+			new QName("lower-case", Module.BUILTIN_FUNCTION_NS),
+			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE) },
+			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+	
 	/**
 	 * @param context
 	 * @param signature
 	 */
-	public FunGetYearFromDate(XQueryContext context) {
+	public FunUpperOrLowerCase(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
-		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
-		if (arg.getLength() == 0)
+		if(contextItem != null)
+			contextSequence = contextItem.toSequence();
+		Sequence seq = getArgument(0).eval(contextSequence);
+		if(seq.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
-		DateValue date = (DateValue)arg.itemAt(0);
-		return new IntegerValue(date.getPart(DateValue.YEAR), Type.INTEGER);
+		String value = seq.getStringValue();
+		if(isCalledAs("upper-case"))
+			return new StringValue(value.toUpperCase());
+		else
+			return new StringValue(value.toLowerCase());
 	}
+
 }

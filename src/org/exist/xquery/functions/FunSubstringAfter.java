@@ -23,14 +23,16 @@
 
 package org.exist.xquery.functions;
 
+import java.text.Collator;
+
 import org.exist.dom.QName;
+import org.exist.util.Collations;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Expression;
-import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -41,18 +43,27 @@ import org.exist.xquery.value.Type;
  * Built-in function fn:substring-after($operand1 as xs:string?, $operand2 as xs:string?) as xs:string?
  *
  */
-public class FunSubstringAfter extends Function {
+public class FunSubstringAfter extends CollatingFunction {
 
-	public final static FunctionSignature signature =
-				new FunctionSignature(
-					new QName("substring-after", Module.BUILTIN_FUNCTION_NS),
-					new SequenceType[] {
-						 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-						 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
-					},
-					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+	public final static FunctionSignature signatures[] = {
+		new FunctionSignature(
+			new QName("substring-after", Module.BUILTIN_FUNCTION_NS),
+			new SequenceType[] {
+				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+			},
+			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)),
+		new FunctionSignature(
+				new QName("substring-after", Module.BUILTIN_FUNCTION_NS),
+				new SequenceType[] {
+					 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+					 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+					 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				},
+				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE))
+	};
 					
-	public FunSubstringAfter(XQueryContext context) {
+	public FunSubstringAfter(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -71,12 +82,14 @@ public class FunSubstringAfter extends Function {
 		
 		if(seq1.getLength() == 0 || seq2.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
-			
+		
 		String value = seq1.getStringValue();
 		String cmp = seq2.getStringValue();
 		if(cmp.length() == 0)
 			return StringValue.EMPTY_STRING;
-		int p = value.indexOf(cmp);
+		Collator collator = getCollator(contextSequence, contextItem, 3);
+		int p = Collations.indexOf(collator, value, cmp);
+		LOG.debug("p = " + p);
 		if (p > -1)
 			return new StringValue(
 				p + cmp.length() < value.length() ? 

@@ -23,10 +23,12 @@
 
 package org.exist.xquery.functions;
 
+import java.text.Collator;
+
 import org.exist.dom.QName;
+import org.exist.util.Collations;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Expression;
-import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
@@ -41,17 +43,26 @@ import org.exist.xquery.value.Type;
  * Built-in function fn:substring-before($operand1 as xs:string?, $operand2 as xs:string?) as xs:string?
  *
  */
-public class FunSubstringBefore extends Function {
+public class FunSubstringBefore extends CollatingFunction {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("substring-before", Module.BUILTIN_FUNCTION_NS),
 			new SequenceType[] {
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)),
+		new FunctionSignature(
+				new QName("substring-before", Module.BUILTIN_FUNCTION_NS),
+				new SequenceType[] {
+					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				},
+				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE))
+	};
 
-	public FunSubstringBefore(XQueryContext context) {
+	public FunSubstringBefore(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -75,7 +86,8 @@ public class FunSubstringBefore extends Function {
 		String cmp = seq2.getStringValue();
 		if (cmp.length() == 0)
 			return StringValue.EMPTY_STRING;
-		int p = value.indexOf(cmp);
+		Collator collator = getCollator(contextSequence, contextItem, 3);
+		int p = Collations.indexOf(collator, value, cmp);
 		if (p > -1)
 			return new StringValue(value.substring(0, p));
 		else

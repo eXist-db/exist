@@ -21,26 +21,32 @@
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
-import org.exist.xquery.Cardinality;
 import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-public class FunTrue extends BasicFunction {
+public class FunTrueOrFalse extends BasicFunction {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature fnTrue =
 			new FunctionSignature(
 				new QName("true", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
                 "Always returns the boolean value true",
 				null,
 				new SequenceType(Type.BOOLEAN, Cardinality.ONE));
+	
+	public final static FunctionSignature fnFalse =
+		new FunctionSignature(
+			new QName("false", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+            "Always returns the boolean value false",
+			null,
+			new SequenceType(Type.BOOLEAN, Cardinality.ONE));
 				
-	public FunTrue(XQueryContext context) {
+	public FunTrueOrFalse(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 	
@@ -49,10 +55,16 @@ public class FunTrue extends BasicFunction {
 	}
 	
 	public Sequence eval(Sequence args[], Sequence contextSequence) {
-		return BooleanValue.TRUE;
+		if(isCalledAs("true"))
+			return BooleanValue.TRUE;
+		else
+			return BooleanValue.FALSE;
 	}
 
 	public String pprint() {
-		return "true()";
+		if(isCalledAs("true"))
+			return "true()";
+		else
+			return "false()";
 	}
 }

@@ -61,7 +61,7 @@ public class FuzzyMatchAll extends AbstractMatchFunction {
 		super(context, type, signature);
 	}
 	
-	public Sequence evalQuery(XQueryContext context, NodeSet nodes,
+	public Sequence evalQuery(NodeSet nodes,
 								List terms) throws XPathException {
 		if (terms == null || terms.size() == 0)
 			return Sequence.EMPTY_SEQUENCE; // no search terms

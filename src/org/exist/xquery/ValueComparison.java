@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import java.text.Collator;
 import java.util.Iterator;
 
 import org.exist.dom.ContextItem;
@@ -68,11 +69,12 @@ public class ValueComparison extends GeneralComparison {
 		Sequence rs = getRight().eval(contextSequence, contextItem);
 		if(ls.getLength() == 0 || rs.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
+		Collator collator = getCollator(contextSequence);
 		AtomicValue lv, rv;
 		if (ls.getLength() == 1 && rs.getLength() == 1) {
 			lv = ls.itemAt(0).atomize();
 			rv = rs.itemAt(0).atomize();
-			return BooleanValue.valueOf(compareValues(lv, rv));
+			return BooleanValue.valueOf(compareValues(collator, lv, rv));
 		} else
 			throw new XPathException("Type error: sequence with less or more than one item is not allowed here");
 	}
@@ -81,12 +83,12 @@ public class ValueComparison extends GeneralComparison {
 		NodeSet nodes,
 		Sequence contextSequence)
 		throws XPathException {
-		System.out.println("node set compare");
 		NodeSet result = new ExtArrayNodeSet();
 		NodeProxy current;
 		ContextItem c;
 		Sequence rs;
 		AtomicValue lv, rv;
+		Collator collator = getCollator(contextSequence);
 		for (Iterator i = nodes.iterator(); i.hasNext();) {
 			current = (NodeProxy) i.next();
 			c = current.getContext();
@@ -95,7 +97,7 @@ public class ValueComparison extends GeneralComparison {
 				rs = getRight().eval(c.getNode().toSequence());
 				if(rs.getLength() != 1)
 					throw new XPathException("Type error: sequence with less or more than one item is not allowed here");
-				if(compareValues(lv, rs.itemAt(0).atomize()))
+				if(compareValues(collator, lv, rs.itemAt(0).atomize()))
 					result.add(current);
 			} while ((c = c.getNextItem()) != null);
 		}

@@ -21,6 +21,7 @@
  */
 package org.exist.xquery;
 
+import java.text.Collator;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -55,6 +56,8 @@ public class GeneralComparison extends BinaryOp {
 	protected int truncation = Constants.TRUNC_NONE;
 	
 	protected CachedResult cached = null;
+
+	protected Expression collationArg = null;
 	
 	public GeneralComparison(XQueryContext context, int relation) {
 		this(context, relation, Constants.TRUNC_NONE);
@@ -125,13 +128,6 @@ public class GeneralComparison extends BinaryOp {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#preselect(org.exist.dom.DocumentSet, org.exist.xquery.StaticContext)
-	 */
-	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
-		return in_docs;
-	}
-
-	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem)
@@ -141,11 +137,13 @@ public class GeneralComparison extends BinaryOp {
 		/* 
 		 * If we are inside a predicate and one of the arguments is a node set, 
 		 * we try to speed up the query by returning nodes from the context set.
-		 * This works only inside a predicate.
+		 * This works only inside a predicate. The node set will always be the left 
+		 * operand.
 		 */
 		if (inPredicate) {
 			if((getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
 				int rtype = getRight().returnsType();
+				// if the right operand is static, we can use the fulltext index
 				if ((getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0
 					&& (Type.subTypeOf(rtype, Type.STRING)
 						|| Type.subTypeOf(rtype, Type.NODE)
@@ -171,21 +169,22 @@ public class GeneralComparison extends BinaryOp {
 		throws XPathException {
 		Sequence ls = getLeft().eval(contextSequence, contextItem);
 		Sequence rs = getRight().eval(contextSequence, contextItem);
+		Collator collator = getCollator(contextSequence);
 		AtomicValue lv, rv;
 		if (ls.getLength() == 1 && rs.getLength() == 1) {
 			lv = ls.itemAt(0).atomize();
 			rv = rs.itemAt(0).atomize();
-			return BooleanValue.valueOf(compareValues(lv, rv));
+			return BooleanValue.valueOf(compareValues(collator, lv, rv));
 		} else {
 			for (SequenceIterator i1 = ls.iterate(); i1.hasNext();) {
 				lv = i1.nextItem().atomize();
 				if (rs.getLength() == 1
-					&& compareValues(lv, rs.itemAt(0).atomize()))
+					&& compareValues(collator, lv, rs.itemAt(0).atomize()))
 					return BooleanValue.TRUE;
 				else {
 					for (SequenceIterator i2 = rs.iterate(); i2.hasNext();) {
 						rv = i2.nextItem().atomize();
-						if (compareValues(lv, rv))
+						if (compareValues(collator, lv, rv))
 							return BooleanValue.TRUE;
 					}
 				}
@@ -215,6 +214,7 @@ public class GeneralComparison extends BinaryOp {
 		ContextItem c;
 		Sequence rs;
 		AtomicValue lv, rv;
+		Collator collator = getCollator(contextSequence);
 		for (Iterator i = nodes.iterator(); i.hasNext();) {
 			current = (NodeProxy) i.next();
 			c = current.getContext();
@@ -222,7 +222,7 @@ public class GeneralComparison extends BinaryOp {
 				lv = current.atomize();
 				rs = getRight().eval(c.getNode().toSequence());
 				for (SequenceIterator si = rs.iterate(); si.hasNext();) {
-					if (compareValues(lv, si.nextItem().atomize())) {
+					if (compareValues(collator, lv, si.nextItem().atomize())) {
 						result.add(current);
 					}
 				}
@@ -238,6 +238,7 @@ public class GeneralComparison extends BinaryOp {
 	 */
 	protected Sequence quickNodeSetCompare(Sequence contextSequence)
 		throws XPathException {
+		// if the context sequence hasn't changed we can return a cached result
 		if(cached != null && cached.isValid(contextSequence)) {
 //			LOG.debug("Returning cached result for " + pprint());
 			return cached.getResult();
@@ -299,8 +300,9 @@ public class GeneralComparison extends BinaryOp {
 			cmp = cmpCopy;
 		}
 		// now compare the input node set to the search expression
+		Collator collator = getCollator(contextSequence);
 		NodeSet result =
-			context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp, context.getDefaultCollator());
+			context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp, collator);
 		if(contextSequence instanceof NodeSet)
 			cached = new CachedResult((NodeSet)contextSequence, result);
 		return result;
@@ -311,6 +313,7 @@ public class GeneralComparison extends BinaryOp {
 	 * and compare them.
 	 */
 	protected boolean compareValues(
+		Collator collator,
 		AtomicValue lv,
 		AtomicValue rv)
 		throws XPathException {
@@ -347,13 +350,13 @@ public class GeneralComparison extends BinaryOp {
 //					lv.getStringValue() + Constants.OPS[relation] + rv.getStringValue());
 			switch(truncation) {
 				case Constants.TRUNC_RIGHT:
-					return lv.startsWith(context.getDefaultCollator(), rv);
+					return lv.startsWith(collator, rv);
 				case Constants.TRUNC_LEFT:
-					return lv.endsWith(context.getDefaultCollator(), rv);
+					return lv.endsWith(collator, rv);
 				case Constants.TRUNC_BOTH:
-					return lv.contains(context.getDefaultCollator(), rv);
+					return lv.contains(collator, rv);
 				default:
-					return lv.compareTo(context.getDefaultCollator(), relation, rv);
+					return lv.compareTo(collator, relation, rv);
 			}
 		} catch (XPathException e) {
 			e.setASTNode(getASTNode());
@@ -439,6 +442,17 @@ public class GeneralComparison extends BinaryOp {
 			(getLeft().getCardinality() & Cardinality.MANY) != 0
 				&& (getRight().getCardinality() & Cardinality.MANY) == 0)
 			switchOperands();
+	}
+	
+	protected Collator getCollator(Sequence contextSequence) throws XPathException {
+		if(collationArg == null)
+			return context.getDefaultCollator();
+		String collationURI = collationArg.eval(contextSequence).getStringValue();
+		return context.getCollator(collationURI);
+	}
+	
+	public void setCollation(Expression collationArg) {
+		this.collationArg = collationArg;
 	}
 	
 	/* (non-Javadoc)

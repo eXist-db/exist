@@ -29,6 +29,7 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.analysis.Tokenizer;
+import org.exist.xquery.CachedResult;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
@@ -58,6 +59,8 @@ public class ExtFulltext extends Function {
 	protected Expression searchTerm = null;
 	protected String terms[] = null;
 	protected int type = Constants.FULLTEXT_AND;
+	
+	protected CachedResult cached = null;
 
 	public ExtFulltext(XQueryContext context, int type) {
 		super(context, signature);
@@ -105,8 +108,15 @@ public class ExtFulltext extends Function {
 			contextSequence = contextItem.toSequence();
 //		long start = System.currentTimeMillis();
 		NodeSet result = null;
-		if ((getDependencies() & Dependency.CONTEXT_ITEM)
+		// if the expression does not depend on the current context item,
+		// we can evaluate it in one single step
+		if (path == null || (path.getDependencies() & Dependency.CONTEXT_ITEM)
 			== Dependency.NO_DEPENDENCY) {
+			boolean canCache = (searchTerm.getDependencies() & Dependency.CONTEXT_ITEM)
+				== Dependency.NO_DEPENDENCY;
+			if(	canCache && cached != null && cached.isValid(contextSequence)) {
+				return cached.getResult();
+			}
 			NodeSet nodes =
 				path == null
 					? contextSequence.toNodeSet()
@@ -115,22 +125,17 @@ public class ExtFulltext extends Function {
 				searchTerm
 					.eval(contextSequence)
 					.getStringValue();
-			result = evalQuery(context, arg, nodes).toNodeSet();
+			result = evalQuery(arg, nodes).toNodeSet();
+			if(canCache && contextSequence instanceof NodeSet)
+				cached = new CachedResult((NodeSet)contextSequence, result);
+			
+		// otherwise we have to walk through each item in the context
 		} else {
 			Item current;
 			String arg;
 			NodeSet nodes = null;
 			result = new ExtArrayNodeSet();
 			Sequence temp;
-			boolean haveNodes = false;
-			if ((path.getDependencies() & Dependency.CONTEXT_ITEM)
-				== Dependency.NO_DEPENDENCY) {
-				nodes =
-					path == null
-						? contextSequence.toNodeSet()
-						: path.eval(contextSequence).toNodeSet();
-				haveNodes = true;
-			}
 			for (SequenceIterator i = contextSequence.iterate();
 				i.hasNext();
 				) {
@@ -139,15 +144,13 @@ public class ExtFulltext extends Function {
 					searchTerm
 						.eval(current.toSequence())
 						.getStringValue();
-				if (!haveNodes) {
-					nodes =
-						path == null
-							? contextSequence.toNodeSet()
+				nodes =
+					path == null
+					? contextSequence.toNodeSet()
 							: path
-								.eval(current.toSequence())
-								.toNodeSet();
-				}
-				temp = evalQuery(context, arg, nodes);
+							.eval(current.toSequence())
+							.toNodeSet();
+				temp = evalQuery(arg, nodes);
 				result.addAll(temp);
 			}
 		}
@@ -160,7 +163,6 @@ public class ExtFulltext extends Function {
 	}
 
 	public Sequence evalQuery(
-		XQueryContext context,
 		String searchArg,
 		NodeSet nodes)
 		throws XPathException {
@@ -169,7 +171,7 @@ public class ExtFulltext extends Function {
 		} catch (EXistException e) {
 			throw new XPathException(e.getMessage(), e);
 		}
-		NodeSet hits = processQuery(context, nodes);
+		NodeSet hits = processQuery(nodes);
 
 		if (hits == null)
 			return NodeSet.EMPTY_SET;
@@ -189,10 +191,7 @@ public class ExtFulltext extends Function {
 	 * @see org.exist.xquery.functions.Function#getDependencies()
 	 */
 	public int getDependencies() {
-		int deps = Dependency.NO_DEPENDENCY;
-		for (int i = 0; i < getArgumentCount(); i++)
-			deps = deps | getArgument(i).getDependencies();
-		return deps;
+		return Dependency.CONTEXT_SET;
 	}
 
 	public DocumentSet preselect(DocumentSet in_docs) {
@@ -200,7 +199,6 @@ public class ExtFulltext extends Function {
 	}
 
 	protected NodeSet processQuery(
-		XQueryContext context,
 		NodeSet contextSet) throws XPathException {
 		if (terms == null)
 			throw new RuntimeException("no search terms");
@@ -250,5 +248,6 @@ public class ExtFulltext extends Function {
 	public void resetState() {
 		path.resetState();
 		searchTerm.resetState();
+		cached = null;
 	}
 }
