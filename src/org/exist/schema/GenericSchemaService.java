@@ -50,10 +50,6 @@ import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
-import org.apache.xmlbeans.SchemaTypeSystem;
-import org.apache.xmlbeans.XmlBeans;
-import org.apache.xmlbeans.XmlException;
-import org.apache.xmlbeans.XmlObject;
 import org.exolab.castor.xml.schema.AttributeDecl;
 import org.exolab.castor.xml.schema.ElementDecl;
 import org.exolab.castor.xml.schema.Schema;
@@ -634,7 +630,7 @@ public abstract class GenericSchemaService implements SchemaService {
       LOG.debug("Document id is " + documentId);
       XMLResource schemaResource = (XMLResource) getSchemasCollection().getResource(documentId);
       String schema = schemaResource.getContent().toString();
-      try {
+      /*try {
         SchemaTypeSystem sts = XmlBeans.compileXsd(new XmlObject[] { XmlObject.Factory.parse(new StringInputStream(
             schema)) }, XmlBeans.getBuiltinTypeSystem(), null);
         String s = sts.compileQuery(xpath, null);
@@ -643,7 +639,7 @@ public abstract class GenericSchemaService implements SchemaService {
         throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Cannot read schema. ", e);
       } catch (IOException e) {
         throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Cannot read schema. ", e);
-      }
+      }*/
     } else {
       throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Invalid number of results (" + results.getSize()
           + ") while querying for element, expecting exactly 1.", null);
