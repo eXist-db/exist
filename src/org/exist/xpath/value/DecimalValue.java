@@ -43,6 +43,13 @@ public class DecimalValue extends NumericValue {
 	}
 	
 	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.AtomicValue#getType()
+	 */
+	public int getType() {
+		return Type.DECIMAL;
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Sequence#getStringValue()
 	 */
 	public String getStringValue() throws XPathException {

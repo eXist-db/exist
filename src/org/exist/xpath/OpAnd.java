@@ -54,11 +54,11 @@ public class OpAnd extends LogicalOp {
 		if (Type.subTypeOf(left.returnsType(), Type.NODE)
 			&& Type.subTypeOf(right.returnsType(), Type.NODE)) {
 			NodeSet rl = left.eval(docs, contextSequence, null).toNodeSet();
-			rl = rl.getContextNodes((NodeSet) contextSequence, inPredicate);
+			rl = rl.getContextNodes(inPredicate);
 			NodeSet rr = right.eval(docs, contextSequence, null).toNodeSet();
+			rr = rr.getContextNodes(inPredicate);
 			rl =
-				rl.intersection(
-					rr.getContextNodes((NodeSet) contextSequence, inPredicate));
+				rl.intersection(rr);
 			return rl;
 		} else {
 			boolean ls =

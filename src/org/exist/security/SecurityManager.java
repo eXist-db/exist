@@ -69,6 +69,8 @@ public class SecurityManager {
 	private int nextUserId = 0;
 	private int nextGroupId = 0;
 
+	private BrokerPool brokerPool;
+
 	/**
 	 * Initialize the security manager.
 	 * 
@@ -338,4 +340,12 @@ public class SecurityManager {
 		home.getPermissions().setGroup(user.getPrimaryGroup());
 		broker.saveCollection(home);
 	}
+	public BrokerPool getBrokerPool() {
+		return brokerPool;
+	}
+
+	public void setBrokerPool(BrokerPool brokerPool) {
+		this.brokerPool = brokerPool;
+	}
+
 }

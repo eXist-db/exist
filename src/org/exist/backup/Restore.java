@@ -121,8 +121,12 @@ public class Restore extends DefaultHandler {
 		} else {
 			while(!stack.isEmpty()) {
 				contents = (File) stack.pop();
-				System.out.println("restoring " + contents.getAbsolutePath());
-				reader.parse(new InputSource(new FileInputStream(contents)));
+				String sysId = contents.toURL().toString();
+				InputSource is = new InputSource(new FileInputStream(contents));
+				is.setSystemId(sysId);
+				is.setEncoding("UTF-8");
+				System.out.println("restoring " + sysId);
+				reader.parse(is);
 			}
 		}
 	}

@@ -441,6 +441,7 @@ public interface NodeSet extends Sequence, NodeList {
 	 * @return
 	 */
 	public int getSizeHint(DocumentImpl doc);
+	
 	/**
 	 * Return a new node set, which represents the intersection of the current
 	 * node set with the given node set.
@@ -470,4 +471,6 @@ public interface NodeSet extends Sequence, NodeList {
 	public NodeSet getContextNodes(
 		NodeSet contextNodes,
 		boolean rememberContext);
+	
+	public NodeSet getContextNodes(boolean rememberContext);
 }

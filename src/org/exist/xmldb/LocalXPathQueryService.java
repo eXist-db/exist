@@ -148,6 +148,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 				throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR,
 					treeParser.getErrorMessage(), treeParser.getLastException());
 			}
+			LOG.debug("compiled: " + expr.pprint());
 			long start = System.currentTimeMillis();
 			//if (parser.foundErrors())
 			//	throw new XMLDBException(ErrorCodes.VENDOR_ERROR, parser.getErrorMsg());

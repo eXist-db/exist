@@ -35,19 +35,16 @@ import org.exist.xpath.value.Type;
 public class VariableReference extends AbstractExpression {
 
 	private String qname;
-	
+
 	public VariableReference(StaticContext context, String qname) {
 		super(context);
 		this.qname = qname;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
-	public Sequence eval(
-		DocumentSet docs,
-		Sequence contextSequence,
-		Item contextItem)
+	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem)
 		throws XPathException {
 		Variable var = context.resolveVariable(qname);
 		Sequence seq = var.getValue();
@@ -57,8 +54,7 @@ public class VariableReference extends AbstractExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#preselect(org.exist.dom.DocumentSet, org.exist.xpath.StaticContext)
 	 */
-	public DocumentSet preselect(DocumentSet in_docs)
-		throws XPathException {
+	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
 		return in_docs;
 	}
 
@@ -75,19 +71,40 @@ public class VariableReference extends AbstractExpression {
 	public int returnsType() {
 		try {
 			Variable var = context.resolveVariable(qname);
-			if(var != null && var.getValue() != null) {
+			if (var != null && var.getValue() != null) {
 				return var.getValue().getItemType();
 			}
 		} catch (XPathException e) {
 		}
 		return Type.ITEM;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.AbstractExpression#getDependencies()
 	 */
 	public int getDependencies() {
-		return Dependency.LOCAL_VARS;
+		try {
+			Variable var = context.resolveVariable(qname);
+			if (var != null && var.getValue() != null) {
+				return var.getDependencies(context);
+			}
+		} catch (XPathException e) {
+		}
+		return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#getCardinality()
+	 */
+	public int getCardinality() {
+		try {
+			Variable var = context.resolveVariable(qname);
+			if (var != null && var.getValue() != null) {
+				return var.getCardinality();
+			}
+		} catch (XPathException e) {
+		}
+		return Cardinality.ZERO_OR_MORE;		// unknown cardinality
 	}
 
 	/* (non-Javadoc)

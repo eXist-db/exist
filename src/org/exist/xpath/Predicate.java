@@ -36,6 +36,7 @@ import org.exist.xpath.value.NumericValue;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.Type;
+import org.exist.xpath.value.ValueSequence;
 
 /**
  *  Handles predicate expressions.
@@ -117,7 +118,7 @@ public class Predicate extends PathExpr {
 		// to the result if the predicate expression yields true.
 		} else if (
 			Type.subTypeOf(type, Type.BOOLEAN)) {
-			NodeSet result = new ExtArrayNodeSet();
+			Sequence result = new ValueSequence();
 			int p = 0;
 			context.setContextPosition(0);
 			for(SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
@@ -132,31 +133,44 @@ public class Predicate extends PathExpr {
 		// Case 3: predicate expression returns a number. Call the predicate
 		// expression once for each item in the context set.
 		} else if (Type.subTypeOf(type, Type.NUMBER)) {
-			Sequence result = new ArraySet(100);
-			long last = -1;
-			DocumentImpl lastDoc = null;
-			for(SequenceIterator i = contextSequence.iterate(); i.hasNext(); ) {
-				NodeProxy p = (NodeProxy) i.nextItem();
-				
-				Sequence innerSeq = inner.eval(docs, p);
-				int level = p.doc.getTreeLevel(p.gid);
-				long pid = XMLUtil.getParentId(p.doc, p.gid, level);
-				if(pid == last && lastDoc != null && lastDoc.getDocId() == p.doc.getDocId())
-					continue;
-				long firstChild = XMLUtil.getFirstChildId(p.doc, pid);
-				long lastChild = firstChild + p.doc.getTreeLevelOrder(level);
-				
-				Sequence sub = ((NodeSet)contextSequence).getRange(p.doc, firstChild, lastChild);
-				for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {
-					NumericValue v = (NumericValue)j.nextItem().convertTo(Type.NUMBER);
-					int pos = v.getInt() - 1;
-					if(pos < sub.getLength() && pos > -1)
-						result.add(sub.itemAt(pos));
+			if(Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {
+				Sequence result = new ArraySet(100);
+				long last = -1;
+				DocumentImpl lastDoc = null;
+				for(SequenceIterator i = contextSequence.iterate(); i.hasNext(); ) {
+					NodeProxy p = (NodeProxy) i.nextItem();
+					
+					Sequence innerSeq = inner.eval(docs, p);
+					int level = p.doc.getTreeLevel(p.gid);
+					long pid = XMLUtil.getParentId(p.doc, p.gid, level);
+					if(pid == last && lastDoc != null && lastDoc.getDocId() == p.doc.getDocId())
+						continue;
+					long firstChild = XMLUtil.getFirstChildId(p.doc, pid);
+					long lastChild = firstChild + p.doc.getTreeLevelOrder(level);
+					
+					Sequence sub = ((NodeSet)contextSequence).getRange(p.doc, firstChild, lastChild);
+					for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {
+						NumericValue v = (NumericValue)j.nextItem().convertTo(Type.NUMBER);
+						int pos = v.getInt() - 1;
+						if(pos < sub.getLength() && pos > -1)
+							result.add(sub.itemAt(pos));
+					}
+					last = pid;
+					lastDoc = p.doc;
 				}
-				last = pid;
-				lastDoc = p.doc;
+				return result;
+			} else {
+				LOG.debug("returning sequence item: " + contextSequence.getLength());
+				Sequence innerSeq = inner.eval(docs, contextSequence);
+				ValueSequence result = new ValueSequence();
+				for(SequenceIterator i = innerSeq.iterate(); i.hasNext(); ) {
+					NumericValue v = (NumericValue)i.nextItem().convertTo(Type.NUMBER);
+					int pos = v.getInt() - 1;
+					if(pos < contextSequence.getLength() && pos > -1)
+						result.add(contextSequence.itemAt(pos));
+				}
+				return result;
 			}
-			return result;
 		} else
 			LOG.debug("unable to determine return type of predicate expression");
 		return Sequence.EMPTY_SEQUENCE;

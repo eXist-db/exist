@@ -23,6 +23,7 @@
 package org.exist.xpath.value;
 
 import org.exist.xpath.Cardinality;
+import org.exist.xpath.XPathException;
 
 /**
  * @author wolf
@@ -31,34 +32,56 @@ public class SequenceType {
 
 	private int primaryType = Type.ITEM;
 	private int cardinality = Cardinality.EXACTLY_ONE;
-	
+
 	public SequenceType() {
 	}
-	
+
 	public SequenceType(int primaryType, int cardinality) {
 		this.primaryType = primaryType;
 		this.cardinality = cardinality;
 	}
-	
+
 	public int getPrimaryType() {
 		return primaryType;
 	}
-	
+
 	public void setPrimaryType(int type) {
 		this.primaryType = type;
 	}
-	
+
 	public int getCardinality() {
 		return cardinality;
 	}
-	
+
 	public void setCardinality(int cardinality) {
 		this.cardinality = cardinality;
 	}
-	
+
+	public void checkType(int type) throws XPathException {
+		if (type == Type.EMPTY)
+			return;
+		if (!Type.subTypeOf(type, primaryType))
+			throw new XPathException(
+				"Type error: expected type: "
+					+ Type.getTypeName(primaryType)
+					+ "; got: "
+					+ Type.getTypeName(type));
+	}
+
+	public void checkCardinality(Sequence seq) throws XPathException {
+		int items = seq.getLength();
+		if (items > 0 && cardinality == Cardinality.EMPTY)
+			throw new XPathException("Empty sequence expected; got " + items);
+		if (items == 0 && (cardinality & Cardinality.ZERO) == 0)
+			throw new XPathException("Empty sequence is not allowed here");
+		else if (items > 1 && (cardinality & Cardinality.MANY) == 0)
+			throw new XPathException("Sequence with more than one item is not allowed here");
+	}
+
 	public String toString() {
-		if(cardinality == Cardinality.EMPTY)
+		if (cardinality == Cardinality.EMPTY)
 			return "empty()";
 		return Type.getTypeName(primaryType) + Cardinality.display(cardinality);
 	}
+
 }

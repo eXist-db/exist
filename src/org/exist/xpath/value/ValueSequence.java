@@ -49,10 +49,12 @@ public class ValueSequence extends AbstractSequence {
 	
 	public void add(Item item) {
 		values.add(item);
-		if(itemType == Type.ANY_TYPE)
-			itemType = Type.getSuperType(item.getType());
-		else if(Type.getSuperType(item.getType()) != itemType)
-			itemType = Type.ITEM;
+		if(itemType == item.getType())
+			return;
+		else if(itemType == Type.ANY_TYPE)
+			itemType = item.getType();
+		else
+			itemType = Type.getCommonSuperType(item.getType(), itemType);
 	}
 	
 	public void addAll(Sequence otherSequence) {
@@ -119,7 +121,9 @@ public class ValueSequence extends AbstractSequence {
 		 * @see org.exist.xpath.value.SequenceIterator#nextItem()
 		 */
 		public Item nextItem() {
-			return (Item)iter.next();
+			if(iter.hasNext())
+				return (Item)iter.next();
+			return null;
 		}
 	}
 }

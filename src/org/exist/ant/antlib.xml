@@ -5,4 +5,5 @@
 	<typedef name="backup" classname="org.exist.ant.BackupTask"/>
 	<typedef name="restore" classname="org.exist.ant.RestoreTask"/>
 	<typedef name="remove" classname="org.exist.ant.XMLDBRemoveTask"/>
+	<typedef name="shutdown" classname="org.exist.ant.XMLDBShutdownTask"/>
 </antlib>

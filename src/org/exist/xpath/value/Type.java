@@ -26,6 +26,11 @@ import org.exist.util.hashtable.Object2IntHashMap;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 
+/**
+ * Defines all built-in types and their relations.
+ * 
+ * @author Wolfgang Meier (wolfgang@exist-db.org)
+ */
 public class Type {
 
 	public final static String[] NODETYPES =
@@ -85,6 +90,7 @@ public class Type {
 	static {
 		defineSubType(ITEM, NODE);
 		defineSubType(NODE, ELEMENT);
+		defineSubType(NODE, ATTRIBUTE);
 		defineSubType(NODE, TEXT);
 		defineSubType(NODE, PROCESSING_INSTRUCTION);
 		defineSubType(NODE, COMMENT);
@@ -173,10 +179,23 @@ public class Type {
 		typeCodes.put(name, type);
 	}
 
+	/**
+	 * Get the internal name for the built-in type.
+	 * 
+	 * @param type
+	 * @return
+	 */
 	public final static String getTypeName(int type) {
 		return (String) typeNames.get(type);
 	}
 
+	/**
+	 * Get the type code for a type identified by its internal name.
+	 * 
+	 * @param name
+	 * @return
+	 * @throws XPathException
+	 */
 	public final static int getType(String name) throws XPathException {
 		if (name.equals("node"))
 			return NODE;
@@ -186,6 +205,13 @@ public class Type {
 		return code;
 	}
 
+	/**
+	 * Get the type code for a type identified by its QName.
+	 * 
+	 * @param qname
+	 * @return
+	 * @throws XPathException
+	 */
 	public final static int getType(QName qname) throws XPathException {
 		String uri = qname.getNamespaceURI();
 		if (uri.equals(StaticContext.SCHEMA_NS))
@@ -196,10 +222,23 @@ public class Type {
 			return getType(qname.getLocalName());
 	}
 
+	/**
+	 * Define supertype/subtype relation.
+	 * 
+	 * @param supertype
+	 * @param subtype
+	 */
 	public final static void defineSubType(int supertype, int subtype) {
 		typeHierarchy.put(subtype, new Integer(supertype));
 	}
 
+	/**
+	 * Check if the given type code is a subtype of the specified supertype.
+	 * 
+	 * @param subtype
+	 * @param supertype
+	 * @return
+	 */
 	public final static boolean subTypeOf(int subtype, int supertype) {
 		if (subtype == supertype)
 			return true;
@@ -214,9 +253,40 @@ public class Type {
 		return subTypeOf(subtype, supertype);
 	}
 
+	/**
+	 * Get the type code of the supertype of the specified subtype.
+	 * 
+	 * @param subtype
+	 * @return
+	 */
 	public final static int getSuperType(int subtype) {
 		if (subtype == ITEM)
 			return ITEM;
-		return ((Integer)typeHierarchy.get(subtype)).intValue();
+		Integer i = (Integer)typeHierarchy.get(subtype);
+		if(i == null) {
+			System.err.println("no supertype for " + getTypeName(subtype));
+			return ITEM;
+		}
+		return i.intValue();
+	}
+
+	/**
+	 * Find a common supertype for two given type codes.
+	 * 
+	 * Type.ITEM is returned if no other common supertype
+	 * is found.
+	 *  
+	 * @param type1
+	 * @param type2
+	 * @return
+	 */
+	public static int getCommonSuperType(int type1, int type2) {
+		if(type1 == type2)
+			return type1;
+		type1 = getSuperType(type1);
+		if(type1 == type2)
+			return type1;
+		else
+			return getCommonSuperType(type1, getSuperType(type2));
 	}
 }

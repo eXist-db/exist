@@ -284,16 +284,6 @@ public abstract class DBBroker extends Observable {
 		throws PermissionDeniedException;
 
 	/**
-	 *  get all the documents in this database matching the given
-	 *  document-type's name.
-	 *
-	 *@param  doctypeName  Description of the Parameter
-	 *@param  user         Description of the Parameter
-	 *@return              The documentsByDoctype value
-	 */
-	public abstract DocumentSet getDocumentsByDoctype(String doctype, DocumentSet result);
-
-	/**
 	 *  get a common prefix for a namespace URI. It should be guaranteed that
 	 *  only one prefix is associated with one namespace URI throughout the
 	 *  database.
@@ -560,4 +550,11 @@ public abstract class DBBroker extends Observable {
 
 	public void readDocumentMetadata(final DocumentImpl doc) {
 	}
+	/**
+	 *  get all the documents in this database matching the given  document-type's name.@param  doctypeName  Description of the Parameter@param  user         Description of the Parameter@return              The documentsByDoctype value  
+	 */
+	public abstract DocumentSet getDocumentsByDoctype(
+		String doctype,
+		DocumentSet result);
+
 }

@@ -109,12 +109,14 @@ public class QueryDialog extends JFrame {
 		toolbar.add(button);
 		
 		JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        
+		split.setResizeWeight(0.5);
+		
 		JComponent qbox= createQueryBox();
-		split.add(qbox);
+		split.setTopComponent(qbox);
 
         JPanel vbox = new JPanel();
         vbox.setLayout(new BorderLayout());
+        
         JLabel label = new JLabel("Results:");
         vbox.add(label, BorderLayout.NORTH);
         
@@ -123,15 +125,16 @@ public class QueryDialog extends JFrame {
 		resultDisplay.setPreferredSize(new Dimension(400, 250));
         vbox.add(resultDisplay, BorderLayout.CENTER);
         
-		split.add(vbox);
-        
+		split.setBottomComponent(vbox);
+		split.setDividerLocation(0.4);
 		getContentPane().add(toolbar, BorderLayout.NORTH);
         getContentPane().add(split, BorderLayout.CENTER);
 	}
 
 	private JComponent createQueryBox() {
-		Box inputVBox= Box.createVerticalBox();
-
+		JPanel inputVBox = new JPanel();
+		inputVBox.setLayout(new BorderLayout());
+		
 		Box historyBox= Box.createHorizontalBox();
 		JLabel label= new JLabel("History: ");
 		historyBox.add(label);
@@ -149,7 +152,7 @@ public class QueryDialog extends JFrame {
 			}
 		});
 		historyBox.add(historyList);
-		inputVBox.add(historyBox);
+		inputVBox.add(historyBox, BorderLayout.NORTH);
         
         JPanel queryPanel = new JPanel();
         queryPanel.setLayout(new BorderLayout());
@@ -161,7 +164,7 @@ public class QueryDialog extends JFrame {
 		query.setEditable(true);
 		query.setPreferredSize(new Dimension(350, 200));
 		queryPanel.add(query, BorderLayout.CENTER);
-        inputVBox.add(queryPanel);
+        inputVBox.add(queryPanel, BorderLayout.CENTER);
         
 		Box optionsPanel = Box.createHorizontalBox();
         
@@ -207,7 +210,7 @@ public class QueryDialog extends JFrame {
 		});
         optionsPanel.add(button);
         
-		inputVBox.add(optionsPanel);
+		inputVBox.add(optionsPanel, BorderLayout.SOUTH);
 		return inputVBox;
 	}
 
@@ -311,9 +314,11 @@ public class QueryDialog extends JFrame {
 					"An exception occurred during query execution: "
 							+ e.getMessage()					, e);
 		}
-		client.addToHistory(xpath);
-		if(xpath.length() > 40)
-			xpath = xpath.substring(0, 40);
-		history.addElement(xpath);
+		if(!((String)client.queryHistory.getLast()).equals(xpath)) {
+			client.addToHistory(xpath);
+			if(xpath.length() > 40)
+				xpath = xpath.substring(0, 40);
+			history.addElement(xpath);
+		}
 	}
 }

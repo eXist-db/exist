@@ -34,6 +34,8 @@ public class Variable {
 
 	private QName qname;
 	private Sequence value = null;
+	private int positionInStack = 0;
+	private int cardinality = Cardinality.ZERO_OR_MORE;
 	
 	/**
 	 * 
@@ -56,5 +58,24 @@ public class Variable {
 	
 	public String toString() {
 		return "$" + qname.toString();
+	}
+	
+	public int getDependencies(StaticContext context) {
+		/*if(context.getCurrentStackSize() > positionInStack)
+			return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+		else*/
+		return Dependency.CONTEXT_SET;
+	}
+	
+	public int getCardinality() {
+		return cardinality;
+	}
+	
+	public void setCardinality(int card) {
+		this.cardinality = card;
+	}
+	
+	public void setStackPosition(int position) {
+		positionInStack = position;
 	}
 }

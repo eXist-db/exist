@@ -57,7 +57,11 @@ public class GeneralComparison extends BinaryOp {
 		this.relation = relation;
 	}
 
-	public GeneralComparison(StaticContext context, Expression left, Expression right, int relation) {
+	public GeneralComparison(
+		StaticContext context,
+		Expression left,
+		Expression right,
+		int relation) {
 		super(context);
 		this.relation = relation;
 		// simplify arguments
@@ -69,11 +73,6 @@ public class GeneralComparison extends BinaryOp {
 			add(((PathExpr) right).getExpression(0));
 		else
 			add(right);
-
-		// switch operands to simplify execution
-		if ((!Type.subTypeOf(getLeft().returnsType(), Type.NODE))
-			&& Type.subTypeOf(getRight().returnsType(), Type.NODE))
-			switchOperands();
 	}
 
 	/* (non-Javadoc)
@@ -86,7 +85,9 @@ public class GeneralComparison extends BinaryOp {
 			 * return the matching nodes from the context set. This works
 			 * only inside predicates.
 			 */
-			if (getLeft().returnsType() == Type.NODE) {
+			if (getLeft().returnsType() == Type.NODE
+				&& (getLeft().getDependencies() & Dependency.CONTEXT_ITEM) == 0
+				&& (getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
 				return Type.NODE;
 			}
 		}
@@ -99,23 +100,19 @@ public class GeneralComparison extends BinaryOp {
 	 */
 	public int getDependencies() {
 		return getLeft().getDependencies() | getRight().getDependencies();
-    }
-	
+	}
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#preselect(org.exist.dom.DocumentSet, org.exist.xpath.StaticContext)
 	 */
-	public DocumentSet preselect(DocumentSet in_docs)
-		throws XPathException {
+	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
 		return in_docs;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
-	public Sequence eval(
-		DocumentSet docs,
-		Sequence contextSequence,
-		Item contextItem)
+	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem)
 		throws XPathException {
 		/* 
 		 * If we are inside a predicate and one of the arguments is a node set, 
@@ -123,17 +120,24 @@ public class GeneralComparison extends BinaryOp {
 		 * This works only inside a predicate.
 		 */
 		if (inPredicate) {
+			int leftDeps = getLeft().getDependencies();
+			int rightDeps = getRight().getDependencies();
 			if (Type.subTypeOf(getLeft().returnsType(), Type.NODE)) {
-				if ((getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0 &&
-					(Type.subTypeOf(getRight().returnsType(), Type.STRING) ||
-					Type.subTypeOf(getRight().returnsType(), Type.NODE)))
+				if ((rightDeps & Dependency.CONTEXT_ITEM) == 0
+					&& (Type.subTypeOf(getRight().returnsType(), Type.STRING)
+						|| Type.subTypeOf(getRight().returnsType(), Type.NODE))
+					&& (getRight().getCardinality() & Cardinality.MANY) == 0) {
 					// lookup search terms in the fulltext index
+					System.out.println("quick node set comparison");
 					return quickNodeSetCompare(docs, contextSequence);
-				else
+				} else {
+					System.out.println("simple node set comparison");
 					return nodeSetCompare(docs, contextSequence);
+				}
 			}
 		}
 		// Fall back to the generic compare process
+		System.out.println("generic comparison");
 		return genericCompare(context, docs, contextSequence, contextItem);
 	}
 
@@ -143,10 +147,8 @@ public class GeneralComparison extends BinaryOp {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		Sequence ls =
-			getLeft().eval(docs, contextSequence, contextItem);
-		Sequence rs =
-			getRight().eval(docs, contextSequence, contextItem);
+		Sequence ls = getLeft().eval(docs, contextSequence, contextItem);
+		Sequence rs = getRight().eval(docs, contextSequence, contextItem);
 		AtomicValue lv, rv;
 		if (ls.getLength() == 1 && rs.getLength() == 1) {
 			lv = ls.itemAt(0).atomize();
@@ -175,14 +177,20 @@ public class GeneralComparison extends BinaryOp {
 	 * returns a node set. In this case, the left expression is executed first.
 	 * All matching context nodes are then passed to the right expression.
 	 */
+	protected Sequence nodeSetCompare(DocumentSet docs, Sequence contextSequence)
+		throws XPathException {
+		// evaluate left expression (returning node set)
+		NodeSet nodes = (NodeSet) getLeft().eval(docs, contextSequence);
+		return nodeSetCompare(nodes, docs, contextSequence);
+	}
+
 	protected Sequence nodeSetCompare(
+		NodeSet nodes,
 		DocumentSet docs,
 		Sequence contextSequence)
 		throws XPathException {
+		System.out.println("node set compare");
 		NodeSet result = new ExtArrayNodeSet();
-		// evaluate left expression (returning node set)
-		NodeSet nodes =
-			(NodeSet) getLeft().eval(docs, contextSequence);
 		NodeProxy current;
 		ContextItem c;
 		Sequence rs;
@@ -194,8 +202,9 @@ public class GeneralComparison extends BinaryOp {
 				lv = current.atomize();
 				rs = getRight().eval(docs, c.getNode().toSequence());
 				for (SequenceIterator si = rs.iterate(); si.hasNext();) {
-					if (compareValues(context, lv, si.nextItem().atomize()))
-						result.add(current);
+					if (compareValues(context, lv, si.nextItem().atomize())) {
+						result.add(c.getNode());
+					}
 				}
 			} while ((c = c.getNextItem()) != null);
 		}
@@ -207,15 +216,16 @@ public class GeneralComparison extends BinaryOp {
 	 * matching string sequences. Applies to comparisons where the left
 	 * operand returns a node set and the right operand is a string literal.
 	 */
-	protected Sequence quickNodeSetCompare(
-		DocumentSet docs,
-		Sequence contextSequence)
+	protected Sequence quickNodeSetCompare(DocumentSet docs, Sequence contextSequence)
 		throws XPathException {
 		//	evaluate left expression
-		NodeSet nodes =
-			(NodeSet) getLeft().eval(docs, contextSequence);
-		String cmp =
-			getRight().eval(docs, contextSequence).getStringValue();
+		NodeSet nodes = (NodeSet) getLeft().eval(docs, contextSequence);
+		Sequence rightSeq = getRight().eval(docs, contextSequence);
+		if (rightSeq.getLength() > 1)
+			// fall back to nodeSetCompare
+			return nodeSetCompare(nodes, docs, contextSequence);
+
+		String cmp = rightSeq.getStringValue();
 		if (getLeft().returnsType() == Type.NODE
 			&& relation == Constants.EQ
 			&& nodes.hasIndex()
@@ -232,8 +242,7 @@ public class GeneralComparison extends BinaryOp {
 			// setup up an &= expression using the fulltext index
 			ExtFulltext containsExpr = new ExtFulltext(context, Constants.FULLTEXT_AND);
 			int i = 0;
-			for ( ; i < 5 && (token = tokenizer.nextToken(true)) != null;
-				i++) {
+			for (; i < 5 && (token = tokenizer.nextToken(true)) != null; i++) {
 				// remember if we find an alphanumeric token
 				if (token.getType() == TextToken.ALPHANUM)
 					foundNumeric = true;
@@ -245,12 +254,14 @@ public class GeneralComparison extends BinaryOp {
 			if ((!foundNumeric) && i > 0) {
 				// all elements are indexed: use the fulltext index
 				containsExpr.addTerm(new LiteralValue(context, new StringValue(cmp)));
+				//LOG.debug("using shortcut: " + cmp);
 				nodes = (NodeSet) containsExpr.eval(docs, nodes, null);
 			}
 			cmp = cmpCopy;
 		}
 		// now compare the input node set to the search expression
-		return context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp);
+		NodeSet r = context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp);
+		return r;
 	}
 
 	/**
@@ -290,7 +301,8 @@ public class GeneralComparison extends BinaryOp {
 				rv = rv.convertTo(Type.DOUBLE);
 			}
 		}
-		//System.out.println(lv.getStringValue() + Constants.OPS[relation] + rv.getStringValue());
+//		System.out.println(
+//			lv.getStringValue() + Constants.OPS[relation] + rv.getStringValue());
 		return lv.compareTo(relation, rv);
 	}
 
@@ -329,6 +341,7 @@ public class GeneralComparison extends BinaryOp {
 		}
 		return buf.toString();
 	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#pprint()
 	 */
@@ -361,5 +374,15 @@ public class GeneralComparison extends BinaryOp {
 		Expression right = getRight();
 		setRight(getLeft());
 		setLeft(right);
+	}
+
+	protected void simplify() {
+		// switch operands to simplify execution
+		if ((!Type.subTypeOf(getLeft().returnsType(), Type.NODE))
+			&& Type.subTypeOf(getRight().returnsType(), Type.NODE))
+			switchOperands();
+		else if((getLeft().getCardinality() & Cardinality.MANY) != 0 &&
+			(getRight().getCardinality() & Cardinality.MANY) == 0)
+			switchOperands();
 	}
 }

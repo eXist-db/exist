@@ -46,11 +46,12 @@ public class OpOr extends LogicalOp {
 		Expression left = getLeft();
 		Expression right = getRight();
 		if(Type.subTypeOf(left.returnsType(), Type.NODE) &&
-			Type.subTypeOf(right.returnsType(), Type.NODE)) { 
+			Type.subTypeOf(right.returnsType(), Type.NODE)) {
 			NodeSet rl = left.eval(docs, contextSequence, null).toNodeSet();
-			rl = rl.getContextNodes((NodeSet)contextSequence, inPredicate);
+			rl = rl.getContextNodes(inPredicate);
 			NodeSet rr = right.eval(docs, contextSequence, null).toNodeSet();
-			rl = rl.union(rr.getContextNodes((NodeSet)contextSequence, inPredicate));
+			rr = rr.getContextNodes(inPredicate);
+			rl = rl.union(rr);
 			return rl;
 		} else {
 			boolean ls = left.eval(docs, contextSequence).effectiveBooleanValue();

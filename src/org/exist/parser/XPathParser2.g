@@ -161,8 +161,8 @@ defaultNamespaceDecl
 varDecl
 { String varName= null; }
 :
-	"declare" "variable" DOLLAR! varName=qName LCURLY ex:expr RCURLY
-	{ #varDecl= #(#[GLOBAL_VAR, varName], #ex); }
+	"declare"! "variable"! DOLLAR! varName=qName! ( typeDeclaration )? LCURLY! ex:expr RCURLY!
+	{ #varDecl= #(#[GLOBAL_VAR, varName], #varDecl); }
 	;
 
 functionDecl
@@ -249,7 +249,7 @@ letClause
 inVarBinding
 { String varName; }
 :
-	DOLLAR! varName=qName! ( positionalVar )? "in"! exprSingle
+	DOLLAR! varName=qName! ( typeDeclaration )? ( positionalVar )? "in"! exprSingle
 	{ #inVarBinding= #(#[VARIABLE_BINDING, varName], #inVarBinding); }
 	;
 
@@ -265,8 +265,8 @@ positionalVar
 letVarBinding
 { String varName; }
 :
-	DOLLAR! varName=qName COLON! EQ! expr:exprSingle
-	{ #letVarBinding= #(#[VARIABLE_BINDING, varName], expr); }
+	DOLLAR! varName=qName! ( typeDeclaration )? COLON! EQ! exprSingle
+	{ #letVarBinding= #(#[VARIABLE_BINDING, varName], #letVarBinding); }
 	;
 
 orderByClause
@@ -836,6 +836,7 @@ options {
 
 	private static class ForLetClause {
 		String varName;
+		SequenceType sequenceType = null;
 		String posVar = null;
 		Expression inputSequence;
 		Expression action;
@@ -922,10 +923,22 @@ throws PermissionDeniedException, EXistException, XPathException
 		)
 		|
 		#(
-			qname:GLOBAL_VAR { PathExpr enclosed= new PathExpr(context); }
+			qname:GLOBAL_VAR 
+			{ 
+				PathExpr enclosed= new PathExpr(context);
+				SequenceType type = null;
+			}
+			(
+				#(
+					"as"
+					{ type = new SequenceType(); }
+					sequenceType [type]
+				)
+			)?
 			expr [enclosed]
 			{
-				VariableDeclaration decl= new VariableDeclaration(context, qname.getText(), enclosed);
+				VariableDeclaration decl = new VariableDeclaration(context, qname.getText(), enclosed);
+				decl.setSequenceType(type);
 				path.add(decl);
 			}
 		)
@@ -1136,6 +1149,15 @@ throws PermissionDeniedException, EXistException, XPathException
 							PathExpr inputSequence= new PathExpr(context);
 						}
 						(
+							#(
+								"as"
+								{ 
+									clause.sequenceType = new SequenceType();
+								}
+								sequenceType [clause.sequenceType]
+							)
+						)?
+						(
 							posVar:POSITIONAL_VAR
 							{
 								clause.posVar = posVar.getText();
@@ -1161,6 +1183,15 @@ throws PermissionDeniedException, EXistException, XPathException
 							clause.isForClause= false;
 							PathExpr inputSequence= new PathExpr(context);
 						}
+						(
+							#(
+								"as"
+								{ 
+									clause.sequenceType = new SequenceType();
+								}
+								sequenceType [clause.sequenceType]
+							)
+						)?
 						expr [inputSequence]
 						{
 							clause.varName= letVarName.getText();
@@ -1223,6 +1254,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				else
 					expr= new LetExpr(context);
 				expr.setVariable(clause.varName);
+				expr.setSequenceType(clause.sequenceType);
 				expr.setInputSequence(clause.inputSequence);
 				expr.setReturnExpression(action);
 				if (clause.isForClause)
@@ -1282,10 +1314,11 @@ throws PermissionDeniedException, EXistException, XPathException
 		PARENTHESIZED
 		{
 			PathExpr pathExpr= new PathExpr(context);
-			path.addPath(pathExpr);
 		}
-		( expr [pathExpr] )?
+		( expr[pathExpr] )?
 	)
+	step=predicates[pathExpr]
+	{ path.add(step); }
 	|
 	#(
 		UNION
@@ -1357,7 +1390,11 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	step=numericExpr [path]
 	|
-	step=constructor [path]
+	step=constructor[path] step=predicates[step] 
+	{ 
+		path.add(step);
+		System.out.println("added: " + step.pprint());
+	}
 	;
 
 pathExpr [PathExpr path]
@@ -1369,34 +1406,16 @@ throws PermissionDeniedException, EXistException, XPathException
 	int axis= Constants.CHILD_AXIS;
 }
 :
-	c:STRING_LITERAL
-	{
-		step= new LiteralValue(context, new StringValue(c.getText()));
-		path.add(step);
-	}
-	|
-	i:INTEGER_LITERAL
-	{
-		step= new LiteralValue(context, new IntegerValue(Integer.parseInt(i.getText())));
-		path.add(step);
-	}
-	|
-	(
-		dec:DECIMAL_LITERAL
-		{ step= new LiteralValue(context, new DoubleValue(Double.parseDouble(dec.getText()))); }
-		|
-		dbl:DOUBLE_LITERAL
-		{ step= new LiteralValue(context, new DoubleValue(Double.parseDouble(dbl.getText()))); }
-	)
-	{ path.add(step); }
+	step=literalExpr[path] step=predicates[step] { path.add(step); }
 	|
 	v:VARIABLE_REF
 	{
 		step= new VariableReference(context, v.getText());
-		path.add(step);
 	}
+	step=predicates[step]
+	{ path.add(step); }
 	|
-	step=functionCall [path]
+	step=functionCall [path] step=predicates[step] { path.add(step); }
 	|
 	( axis=forwardAxis )?
 	{ NodeTest test; }
@@ -1436,10 +1455,12 @@ throws PermissionDeniedException, EXistException, XPathException
 	( predicate [(LocationStep) step] )*
 	|
 	AT
-	{ QName qname; }
+	{ QName qname = null; }
 	(
 		attr:QNAME
 		{ qname= QName.parseAttribute(context, attr.getText()); }
+		|
+		WILDCARD
 		|
 		#( PREFIX_WILDCARD nc2:NCNAME )
 		{ qname= new QName(nc2.getText(), null, null); }
@@ -1453,7 +1474,8 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
 	)
 	{
-		step= new LocationStep(context, Constants.ATTRIBUTE_AXIS, new NameTest(Type.ATTRIBUTE, qname));
+		NodeTest test = qname == null ? new TypeTest(Type.ATTRIBUTE) : new NameTest(Type.ATTRIBUTE, qname);
+		step= new LocationStep(context, Constants.ATTRIBUTE_AXIS, test);
 		path.add(step);
 	}
 	( predicate [(LocationStep) step] )*
@@ -1508,6 +1530,30 @@ throws PermissionDeniedException, EXistException, XPathException
 	}
 	;
 
+literalExpr [PathExpr path]
+returns [Expression step]
+{
+	step = null;
+}:
+	c:STRING_LITERAL
+	{
+		step= new LiteralValue(context, new StringValue(c.getText()));
+	}
+	|
+	i:INTEGER_LITERAL
+	{
+		step= new LiteralValue(context, new IntegerValue(Integer.parseInt(i.getText())));
+	}
+	|
+	(
+		dec:DECIMAL_LITERAL
+		{ step= new LiteralValue(context, new DecimalValue(dec.getText())); }
+		|
+		dbl:DOUBLE_LITERAL
+		{ step= new LiteralValue(context, new DoubleValue(Double.parseDouble(dbl.getText()))); }
+	)
+	;
+	
 numericExpr [PathExpr path]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
@@ -1574,6 +1620,31 @@ throws PermissionDeniedException, EXistException, XPathException
 		path.addPath(op);
 		step= op;
 	}
+	;
+
+predicates [Expression expression]
+returns [Expression step]
+throws PermissionDeniedException, EXistException, XPathException
+{
+	FilteredExpression filter = null;
+	step = expression;
+}:
+	(
+		#(
+			PREDICATE
+			{ 
+				if(filter == null) {
+					filter = new FilteredExpression(context, step);
+					step = filter;
+				}
+				Predicate predicateExpr= new Predicate(context); }
+			expr [predicateExpr]
+			{ 
+				filter.addPredicate(predicateExpr); 
+				System.out.println("added predicate: " + predicateExpr.pprint());
+			}
+		)
+	)*
 	;
 
 predicate [LocationStep step]
@@ -1728,13 +1799,13 @@ throws PermissionDeniedException, EXistException, XPathException
 {
 	step= null;
 	PathExpr elementContent= null;
+	Expression contentExpr = null;
 }
 :
 	#(
 		e:ELEMENT
 		{
 			ElementConstructor c= new ElementConstructor(context, e.getText());
-			path.add(c);
 			step= c;
 		}
 		(
@@ -1763,7 +1834,10 @@ throws PermissionDeniedException, EXistException, XPathException
 					c.setContent(elementContent);
 				}
 			}
-			step = constructor [elementContent]
+			contentExpr=constructor [elementContent]
+			{
+				elementContent.add(contentExpr);
+			}
 		)*
 	)
 	|
@@ -1771,7 +1845,6 @@ throws PermissionDeniedException, EXistException, XPathException
 		pcdata:TEXT
 		{
 			TextConstructor text= new TextConstructor(context, pcdata.getText());
-			path.add(text);
 			step= text;
 		}
 	)
@@ -1780,7 +1853,6 @@ throws PermissionDeniedException, EXistException, XPathException
 		cdata:XML_COMMENT
 		{
 			CommentConstructor comment= new CommentConstructor(context, cdata.getText());
-			path.add(comment);
 			step= comment;
 		}
 	)
@@ -1789,7 +1861,6 @@ throws PermissionDeniedException, EXistException, XPathException
 		p:XML_PI
 		{
 			PIConstructor pi= new PIConstructor(context, p.getText());
-			path.add(pi);
 			step= pi;
 		}
 	)
@@ -1798,7 +1869,6 @@ throws PermissionDeniedException, EXistException, XPathException
 		LCURLY { EnclosedExpr subexpr= new EnclosedExpr(context); }
 		expr [subexpr]
 		{
-			path.addPath(subexpr);
 			step= subexpr;
 		}
 	)

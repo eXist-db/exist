@@ -178,21 +178,6 @@ public class LocationStep extends Step {
 						contextSet,
 						NodeSet.DESCENDANT,
 						inPredicate);
-			//		} else {
-			//				Node n;
-			//				Node attr;
-			//				NamedNodeMap map;
-			//				result = new ArraySet(contextSet.getLength());
-			//				for (int i = 0; i < contextSet.getLength(); i++) {
-			//					n = contextSet.item(i);
-			//					if (n.getNodeType() == Node.ELEMENT_NODE) {
-			//						map = ((Element) n).getAttributes();
-			//						for (int j = 0; j < map.getLength(); j++) {
-			//							attr = map.item(j);
-			//							result.add(attr);
-			//						}
-			//					}
-			//				}
 		}
 		return result;
 	}

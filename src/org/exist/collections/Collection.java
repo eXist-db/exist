@@ -1214,7 +1214,8 @@ public class Collection
 	 * @see java.util.Observable#deleteObservers()
 	 */
 	public synchronized void deleteObservers() {
-		observers.clear();
+		if(observers != null)
+			observers.clear();
 	}
 	
 	/* (non-Javadoc)

@@ -137,10 +137,12 @@ public class PathExpr extends AbstractExpression {
     public String pprint() {
         StringBuffer buf = new StringBuffer();
         buf.append('(');
+        Expression next;
         for ( Iterator iter = steps.iterator(); iter.hasNext();  ) {
-            if ( buf.length() > 1 )
+        	next = (Expression) iter.next();
+            if ( buf.length() > 1 && next instanceof Step)
                 buf.append( '/' );
-            buf.append( ( (Expression) iter.next() ).pprint() );
+            buf.append( next.pprint() );
         }
         buf.append( ')' );
         return buf.toString();

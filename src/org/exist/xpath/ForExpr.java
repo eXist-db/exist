@@ -73,16 +73,16 @@ public class ForExpr extends BindingExpression {
 		
 		// evaluate the "in" expression
 		Sequence in = inputSequence.eval(docs, null, null);
+		setContext(in);
 		var.setValue(in);
 		if(whereExpr != null)
 			whereExpr.setInPredicate(true);
-		if(whereExpr != null && 
+		boolean fastExec = whereExpr != null &&
 			( whereExpr.getDependencies() & Dependency.CONTEXT_ITEM ) == 0 &&
-			at == null) {
-			LOG.debug("using single walk-through");
-			setContext(in);
+			at == null;
+		if(fastExec) {
+			LOG.debug("fast evaluation mode");
 			in = applyWhereExpression(context, docs, null);
-			whereExpr = null;
 		}
 		
 		if(orderSpecs != null)
@@ -105,10 +105,13 @@ public class ForExpr extends BindingExpression {
 			if(contextItem instanceof NodeProxy)
 				((NodeProxy)contextItem).addContextNode((NodeProxy)contextItem);
 			contextSequence = contextItem.toSequence();
+			if(sequenceType != null)
+				// check sequence type
+				sequenceType.checkType(contextItem.getType());
 			// set variable value to current item
 			var.setValue(contextSequence);
 			// check optional where clause
-			if (whereExpr != null) {
+			if (whereExpr != null && (!fastExec)) {
 				val = applyWhereExpression(context, docs, contextSequence);
 				if(!val.effectiveBooleanValue())
 					continue;
@@ -148,6 +151,10 @@ public class ForExpr extends BindingExpression {
 		StringBuffer buf = new StringBuffer();
 		buf.append("for ");
 		buf.append(varName);
+		if(sequenceType != null) {
+			buf.append(" as ");
+			buf.append(sequenceType.toString());
+		}
 		buf.append(" in ");
 		buf.append(inputSequence.pprint());
 		if (whereExpr != null)
