@@ -34,6 +34,7 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
@@ -86,10 +87,25 @@ public class XQueryUseCase {
 			System.err.println(query);
 			System.err.println("_________________________________________________________________________________");
 			XQueryService service = (XQueryService)root.getService("XQueryService", "1.0");
-			ResourceSet results = service.query(query);
-			for(int j = 0; j < results.getSize(); j++) {
-				String output = (String)results.getResource(j).getContent();
-				System.err.println(output);
+			ResourceSet results;
+			try {
+				results = service.query(query);
+				for(int j = 0; j < results.getSize(); j++) {
+					String output = (String)results.getResource(j).getContent();
+					System.err.println(output);
+				}
+			} catch (Exception e) {
+				Throwable cause = e.getCause();
+				if ( cause == null )
+					cause = e;
+				System.err.println( "Exception: " + e.getClass() + " - "+ cause );
+				for (int j = 0; j < 4; j++) {
+					StackTraceElement el = cause.getStackTrace()[j];
+					System.err.println( el );
+				}
+				e.getStackTrace();
+				// rethrow for JUnit reporting
+				throw e;
 			}
 			System.err.println("========================================================================");
 		}
