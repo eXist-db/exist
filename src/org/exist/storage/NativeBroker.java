@@ -87,6 +87,7 @@ import org.exist.util.Configuration;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
+import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.value.StringValue;
