@@ -47,9 +47,11 @@ public class RequestParameter extends BasicFunction {
 				"request-parameter",
 				RequestModule.NAMESPACE_URI,
 				RequestModule.PREFIX),
+			"Returns the HTTP request parameter identified by $a. If the parameter could not be found, " +
+			"the default value specified in $b is returned instead.",
 			new SequenceType[] {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)},
+				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)},
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
 
 	public RequestParameter(XQueryContext context) {
