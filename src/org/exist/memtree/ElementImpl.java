@@ -23,6 +23,7 @@
 package org.exist.memtree;
 
 import org.exist.dom.NamedNodeMapImpl;
+import org.exist.dom.NodeListImpl;
 import org.exist.dom.QName;
 import org.exist.dom.QNameable;
 import org.w3c.dom.Attr;
@@ -70,6 +71,22 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 			return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.w3c.dom.Node#getChildNodes()
+	 */
+	public NodeList getChildNodes() {
+		NodeListImpl nl = new NodeListImpl();
+		short level = (short)(document.treeLevel[nodeNumber] + 1);
+		int nextNode = nodeNumber;
+		while (++nextNode < document.size && document.next[nextNode] > nodeNumber) {
+			if(document.treeLevel[nextNode] == level) {
+				Node n = document.getNode(nextNode);
+				nl.add(n);
+			}
+		}
+		return nl;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getNamespaceURI()
 	 */
@@ -150,9 +167,12 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 			return map;
 		while (ns < document.nextNamespace
 				&& document.namespaceParent[ns] == nodeNumber) {
-			map.add(new NamespaceNode(document, ns));
+			NamespaceNode node = new NamespaceNode(document, ns);
+			System.out.println("Adding namespace: " + getNodeName() + ": " + node.getNodeName());
+			map.add(node);
 			++ns;
 		}
+		System.out.println(map.getLength());
 		return map;
 	}
 
@@ -192,9 +212,18 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Element#getElementsByTagName(java.lang.String)
 	 */
-	public NodeList getElementsByTagName(String arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public NodeList getElementsByTagName(String name) {
+		NodeListImpl nl = new NodeListImpl();
+		short level = (short)(document.treeLevel[nodeNumber] + 1);
+		int nextNode = nodeNumber;
+		while (++nextNode < document.size && document.next[nextNode] > nodeNumber) {
+			if (document.nodeKind[nextNode] == Node.ELEMENT_NODE) {
+    			QName qn = (QName) document.namePool.get(document.nodeName[nextNode]);
+    			if(qn.toString().equals(name))
+    				nl.add(document.getNode(nextNode));
+    		}
+		}
+		return nl;
 	}
 
 	/* (non-Javadoc)
@@ -264,9 +293,19 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Element#getElementsByTagNameNS(java.lang.String, java.lang.String)
 	 */
-	public NodeList getElementsByTagNameNS(String arg0, String arg1) {
-		// TODO Auto-generated method stub
-		return null;
+	public NodeList getElementsByTagNameNS(String namespaceURI, String name) {
+		QName qname = new QName(name, namespaceURI);
+		NodeListImpl nl = new NodeListImpl();
+		short level = (short)(document.treeLevel[nodeNumber] + 1);
+		int nextNode = nodeNumber;
+		while (++nextNode < document.size && document.next[nextNode] > nodeNumber) {
+			if (document.nodeKind[nextNode] == Node.ELEMENT_NODE) {
+    			QName qn = (QName) document.namePool.get(document.nodeName[nextNode]);
+    			if(qname.compareTo(qn) == 0)
+    				nl.add(document.getNode(nextNode));
+    		}
+		}
+		return nl;
 	}
 
 	/* (non-Javadoc)

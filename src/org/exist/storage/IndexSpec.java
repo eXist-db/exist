@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.QName;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
