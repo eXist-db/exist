@@ -63,7 +63,7 @@
                 null. This means that access to eXist is granted to everyone. To
                 enable access control you have to set a password for the
                 &quot;admin&quot; user. You may use the interactive client or
-                the <ulink href="xadmin.xsp">administrative web
+                the <ulink href="admin/admin.xql">administrative web
                 interface</ulink> to do so. The client's graphical user interface
                 has a dialog for user management. It is shown below:</para>
                 
