@@ -1413,6 +1413,18 @@ public class RpcServer implements RpcAPI {
         return true;
     }
 
+public boolean dataBackup(User user, String dest) {
+        RpcConnection con = null;
+        try {    
+        	con = pool.get();
+            con.dataBackup(user,dest);
+        } finally {
+        	pool.release(con);
+        }
+            return true;
+    }
+    
+
     class ConnectionPool {
 
         public final static int CHECK_INTERVAL = 5000;
