@@ -43,10 +43,10 @@
     </group>
     <group name="HowTo">
         <item>
-            <link href="performance.xml">Performance HowTo</link>
+            <link href="performance.xml">Performance Issues</link>
         </item>
         <item>
-            <link href="howtos.xml">Misc HowTos</link>
+            <link href="howtos.xml">Misc</link>
         </item>
 	</group>
     <group name="Examples">
