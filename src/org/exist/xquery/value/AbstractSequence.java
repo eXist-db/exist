@@ -20,6 +20,7 @@
  */
 package org.exist.xquery.value;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -128,7 +129,7 @@ public abstract class AbstractSequence implements Sequence {
 	public int conversionPreference(Class javaClass) {
 		if(javaClass.isAssignableFrom(Sequence.class))
 			return 0;
-		else if(javaClass.isAssignableFrom(List.class))
+		else if(javaClass.isAssignableFrom(List.class) || javaClass.isArray())
 			return 1;
 		else if(javaClass == Object.class)
 			return 20;
@@ -143,9 +144,38 @@ public abstract class AbstractSequence implements Sequence {
 	 * @see org.exist.xquery.value.Sequence#toJavaObject(java.lang.Class)
 	 */
 	public Object toJavaObject(Class target) throws XPathException {
-		if(target.isAssignableFrom(Sequence.class))
+		if(target.isAssignableFrom(Sequence.class)) {
 			return this;
-		else if(target.isAssignableFrom(List.class)) {
+		} else if(target.isArray()) {
+			Class componentType = target.getComponentType();
+			// assume single-dimensional, then double-check that instance really matches desired type
+			Object array = Array.newInstance(componentType, getLength());
+			if (!target.isInstance(array)) return null;
+			int index = 0;
+			for(SequenceIterator i = iterate(); i.hasNext(); index++) {
+				Item item = i.nextItem();
+				Object obj = item.toJavaObject(componentType);
+				if(target == double.class)
+					Array.setDouble(array, index, ((Double)obj).doubleValue());
+				else if(target == float.class)
+					Array.setFloat(array, index, ((Float)obj).intValue());
+				else if(target == long.class)
+					Array.setLong(array, index, ((Long)obj).intValue());
+				else if(target == int.class)
+					Array.setInt(array, index, ((Integer)obj).intValue());
+				else if(target == short.class)
+					Array.setShort(array, index, ((Short)obj).shortValue());
+				else if(target == byte.class)
+					Array.setByte(array, index, ((Byte)obj).byteValue());
+				else if(target == boolean.class)
+					Array.setBoolean(array, index, ((Boolean)obj).booleanValue());
+				else if(target == char.class)
+					Array.setChar(array, index, ((Character)obj).charValue());
+				else
+					Array.set(array, index, obj);
+			}
+			return array;
+		} else if(target.isAssignableFrom(List.class)) {
 			List l = new ArrayList(getLength());
 			for(SequenceIterator i = iterate(); i.hasNext(); ) {
 				l.add(i.nextItem());

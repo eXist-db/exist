@@ -204,25 +204,27 @@ public class ExtFulltext extends Function {
 		NodeSet contextSet) throws XPathException {
 		if (terms == null)
 			throw new RuntimeException("no search terms");
-			NodeSet hits[] = new NodeSet[terms.length];
-			for (int k = 0; k < terms.length; k++) {
-				hits[k] =
-					context.getBroker().getTextEngine().getNodesContaining(
-					    context,
+		if(terms.length == 0)
+			return NodeSet.EMPTY_SET;
+		NodeSet hits[] = new NodeSet[terms.length];
+		for (int k = 0; k < terms.length; k++) {
+			hits[k] =
+				context.getBroker().getTextEngine().getNodesContaining(
+						context,
 						contextSet.getDocumentSet(),
 						contextSet,
 						terms[k]);
+		}
+		NodeSet result = hits[0];
+		if(result != null) {
+			for(int k = 1; k < hits.length; k++) {
+				if(hits[k] != null)
+					result = (type == Constants.FULLTEXT_AND ? 
+							result.deepIntersection(hits[k]) : result.union(hits[k]));
 			}
-			NodeSet result = hits[0];
-			if(result != null) {
-				for(int k = 1; k < hits.length; k++) {
-					if(hits[k] != null)
-						result = (type == Constants.FULLTEXT_AND ? 
-								result.deepIntersection(hits[k]) : result.union(hits[k]));
-				}
-				return result;
-			} else
-				return NodeSet.EMPTY_SET;
+			return result;
+		} else
+			return NodeSet.EMPTY_SET;
 	}
 
 	public int returnsType() {
