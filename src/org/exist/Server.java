@@ -148,6 +148,16 @@ public class Server {
         System.err.println( "waiting for connections ..." );
     }
 
+    public static void shutdown() {
+    	System.err.println("Shutdown ...");
+    	webServer.shutdown();
+    	http.shutdown();
+    	try {
+			http.join();
+		} catch (InterruptedException e) {
+		}
+    }
+    
     private static void printHelp() {
 		System.out.println("Usage: java " + Server.class.getName() + " [options]");
 		System.out.println(CLUtil.describeOptions(OPTIONS).toString());
