@@ -103,6 +103,9 @@
      </table>
    </form>
 
+   <p><small>You may use wildcards *, ? and character ranges like [a-zA-Z] 
+		   for search terms</small></p>
+
    </section>
 
    </body>

@@ -88,7 +88,7 @@
         <mkdir dir="${build}"/>
         <echo message="Compiling with Java ${ant.java.version}, debug ${debug}, optimize ${optimize}, deprecation ${deprecation}"/>
         <javac debug="${debug}" deprecation="${deprecation}" destdir="${build.classes}"
-			optimize="${optimize}" srcdir="${src}" target="1.4">
+			optimize="${optimize}" srcdir="${src}" target="1.3">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
@@ -156,7 +156,7 @@
             <classpath>
 				<path refid="classpath.core"/>
             </classpath>
-            <!--<arg value="-traceParser"/>-->
+			<!--arg value="-traceParser"/-->
             <arg value="XPathParser.g"/>
         </java>
     </target>
@@ -166,7 +166,7 @@
     <!-- ================================================================== -->
     <target depends="prepare" name="samples">
         <mkdir dir="${build}/examples"/>
-        <javac debug="off" deprecation="on" destdir="${build}/examples" srcdir="${samples}">
+		<javac debug="on" deprecation="on" destdir="${build}/examples" srcdir="${samples}">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
@@ -314,7 +314,7 @@
 				<include name="jakarta-oro-2.0.6.jar"/>
 				<include name="resolver-20020130.jar"/>
                 <include name="log4j.jar"/>
-				<include name="fastUtil-2.50.jar"/>
+				<include name="fastutil-2.52.jar"/>
                 <include name="xalan-2.3.1.jar"/>
                 <include name="xercesImpl.jar"/>
                 <include name="xml-apis.jar"/>
@@ -483,7 +483,7 @@
     <!-- ================================================================== -->
     <!-- Create HTML files for docs                                         -->
     <!-- ================================================================== -->
-    <target depends="jar" name="prepare-docs">
+	<target depends="jar" name="prepare-docs">
         <delete dir="${build.docs}"/>
         <mkdir dir="${build.docs}"/>
         <echo message="Copying docs to temporary location ${build.docs}"/>
@@ -494,7 +494,8 @@
                 <exclude name="**.xsp"/>
                 <exclude name="adminLogin.xml"/>
                 <exclude name="biblio.xml"/>
-                <exclude name="login.xml"/>
+				<exclude name="login.xml"/>
+				<exclude name="xse/**"/>
             </fileset>
         </copy>
         <echo message="Make links to examples absolute"/>
@@ -502,23 +503,26 @@
 			token="index.xml#articles" summary="true"
 			value="index.html#articles"/>
         <replace dir="${build.docs}" includes="index.xml sidebar.xml"
-            token="xquery.xsp" summary="true"
-			value="http://130.83.38.151:8080/exist/xquery.xsp"/>
+			token="simple/xquery.xsp" summary="true"
+			value="http://130.83.186.203:8080/exist/simple/xquery.xsp"/>
         <replace dir="${build.docs}" includes="index.xml sidebar.xml"
-            token="biblio.xml" summary="true"
-			value="http://130.83.38.151:8080/exist/biblio.xml"/>
+			token="library/biblio.xml" summary="true"
+			value="http://130.83.186.203:8080/exist/library/biblio.xml"/>
         <replace dir="${build.docs}" includes="index.xml sidebar.xml"
             token="xadmin.xsp" summary="true"
-			value="http://130.83.38.151:8080/exist/xadmin.xsp"/>
+			value="http://130.83.186.203:8080/exist/xadmin.xsp"/>
         <replace dir="${build.docs}" includes="index.xml sidebar.xml"
             token="/exist/admin" summary="true"
-			value="http://130.83.38.151:8080/exist/admin"/>
+			value="http://130.83.186.203:8080/exist/admin"/>
         <replace dir="${build.docs}" includes="index.xml sidebar.xml"
             token="xmldb/db/" summary="true"
-			value="http://130.83.38.151:8080/exist/xmldb/db/"/>
+			value="http://130.83.186.203:8080/exist/xmldb/db/"/>
+		<replace dir="${build.docs}" includes="index.xml sidebar.xml"
+			token="xse/squery.xsp" summary="true"
+			value="http://130.83.186.203:8080/exist/xse/squery.xsp"/>
     </target>
     
-	<target name="docs" depends="javadocs,prepare-docs">
+	<target name="docs" depends="javadocs">
 	    <mkdir dir="${docs}"/>
 	    <delete dir="${build}/work"/>
 	    <echo message="Calling Cocoon ..."/>

@@ -188,7 +188,7 @@
                     </xmldb:error>
                 </xmldb:collection>
                 
-            } else if(action.equals("add user")) {
+            } else if(action.equals("add/update user")) {
                 String username = request.getParameter("username");
                 String groups = request.getParameter("groups");
                 String password = request.getParameter("password");
@@ -542,7 +542,7 @@ Cocoon are actually available (shakes.xsl may be missing in your collection).</s
                                 </tr>
                                 <tr>
                                     <td colspan="2">
-                                        <input type="submit" name="action" value="add user"/>
+                                        <input type="submit" name="action" value="add/update user"/>
                                     </td>
                                 </tr>
                             </xsp:logic>

@@ -151,4 +151,42 @@ public class CreateCollectionsTest extends TestCase {
 		testCollection.storeResource(res);
 		return res;
 	}
+
+	public void testMultipleCreates() {
+		try {
+        	Collection rootColl = DatabaseManager.getCollection("xmldb:exist:///db");
+        	CollectionManagementService cms = (CollectionManagementService)
+				rootColl.getService("CollectionManagementService", "1.0");
+			assertNotNull(cms);
+        	cms.createCollection("dummy1");
+        	printChildren(rootColl);
+        	Collection c1 = rootColl.getChildCollection("dummy1");
+			assertNotNull(c1);
+        	cms.setCollection(c1);
+        	cms.createCollection("dummy2");
+        	Collection c2 = c1.getChildCollection("dummy2");
+			assertNotNull(c2);
+        	cms.setCollection(c2);
+        	cms.createCollection("dummy3");
+        	Collection c3 = c2.getChildCollection("dummy3");
+			assertNotNull(c3);
+        	cms.setCollection(rootColl);
+        	cms.removeCollection("dummy1");
+        	printChildren(rootColl);
+			assertTrue("number of child collections should be 2", 
+				rootColl.getChildCollectionCount()==2);
+		} catch(Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}
+
+
+    private static void printChildren(Collection c) throws XMLDBException {
+        System.out.print("Children of " + c.getName() + ":");
+        String[] names = c.listChildCollections();
+        for (int i = 0; i < names.length; i++)
+            System.out.print(" " + names[i]);
+        System.out.println();
+    }
 }

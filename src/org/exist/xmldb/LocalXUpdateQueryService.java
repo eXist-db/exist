@@ -5,6 +5,7 @@ import java.io.StringReader;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -28,6 +29,9 @@ import org.xmldb.api.modules.XUpdateQueryService;
  */
 public class LocalXUpdateQueryService implements XUpdateQueryService {
 
+	private final static Logger LOG = 
+		Logger.getLogger(LocalXUpdateQueryService.class);
+
 	private BrokerPool pool;
 	private User user;
 	private LocalCollection parent;
@@ -49,28 +53,31 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 	 */
 	public long updateResource(String resource, String xupdate)
 		throws XMLDBException {
+		long start = System.currentTimeMillis();
 		DocumentSet docs = null;
 		DBBroker broker = null;
 		try {
 			broker = pool.get();
 			if (resource == null) {
 				docs = parent.collection.allDocs(user, true);
-				System.out.println("searching " + docs.getLength() + " docs.");
 			} else {
 				docs = new DocumentSet();
 				String id = parent.getName() + '/' + resource;
 				DocumentImpl doc = parent.collection.getDocument(id);
+				LOG.debug("updating resource " + doc.getFileName());
 				docs.add(doc);
 			}
-			XUpdateProcessor processor = new XUpdateProcessor(pool, user);
+			XUpdateProcessor processor = new XUpdateProcessor(pool, user, docs);
 			Modification modifications[] =
 				processor.parse(new InputSource(new StringReader(xupdate)));
 			long mods = 0;
 			for (int i = 0; i < modifications.length; i++) {
-				mods += modifications[i].process(docs);
+				mods += modifications[i].process();
+				broker.flush();
 			}
-			broker.flush();
-            broker.sync();
+            //broker.sync();
+            LOG.debug("xupdate took " + (System.currentTimeMillis() - start) +
+            	"ms.");
 			return mods;
 		} catch (ParserConfigurationException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);

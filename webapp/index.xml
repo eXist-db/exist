@@ -68,7 +68,7 @@
                 </tr>
                 <tr>
                     <td width="40%">
-                        <link href="xse/squery.xsp?cname=%2Fdb%2Fshakespeare%2Fplays">xse/squery.xsp</link>
+						<link href="xse/squery.xsp?cname=%2Fdb%2Fshakespeare%2Fplays">squery.xsp</link>
                     </td>
                     <td width="60%"> XML search engine, where you don't have to type XPath, with formatting adapted for each collection, highlight of terms of the query, history .</td>
                 </tr>

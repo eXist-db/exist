@@ -234,7 +234,7 @@ public class User {
         return MD5.md( passwd ).equals( password );
     }
     
-    protected void setUID(int uid) {
+    public void setUID(int uid) {
     	this.uid = uid;
     }
     

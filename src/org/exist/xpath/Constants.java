@@ -1,7 +1,6 @@
 
 package org.exist.xpath;
 
-import org.w3c.dom.Node;
 
 public interface Constants {
 

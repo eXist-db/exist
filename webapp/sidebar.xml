@@ -27,6 +27,9 @@
             <link href="devguide.xml">Developer's Guide</link>
         </item>
         <item>
+        	<link href="client.xml">Command-Line Client</link>
+        </item>
+        <item>
             <link href="index.xml#articles">Articles</link>
         </item>
         <item>
@@ -67,9 +70,6 @@
         </item>
         <item>
             <link href="/exist/admin">Server Status Servlet</link>
-        </item>
-        <item>
-        	<link href="/exist/status">Server Statistics</link>
         </item>
     </group>
     

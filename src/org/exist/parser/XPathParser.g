@@ -245,7 +245,6 @@ equality_expr[PathExpr exprIn]
 			  FunContains exprCont = new FunContains(pool, op);
 		   	  exprCont.setPath(left);
 		   	  DBBroker broker = null;
-		   	  System.out.println("&= " + l.getText());
 		   	  try {
 		   	  	  broker = pool.get();
 	              Tokenizer tokenizer = 
@@ -477,8 +476,7 @@ pathexpr [PathExpr expr]
 	throws PermissionDeniedException, EXistException
 { Expression result = null;
 }:
-
-	| ( result=regularexpr[expr] {
+	( result=regularexpr[expr] {
 		if(result instanceof Step && ((Step)result).getAxis() == -1)
 			((Step)result).setAxis(Constants.CHILD_AXIS);
 	  }
@@ -632,16 +630,19 @@ function_args [Function fun]
 regularexpr [PathExpr expr]
 returns [Expression result] 
 	throws PermissionDeniedException, EXistException
-{   result = null; Predicate pred = null;
+{   result = null; 
+	Predicate pred = null;
+	int axis = Constants.CHILD_AXIS;
 }:
-    SLASH result=regularexpr[expr] {
+	axis=axis_spec result=step[expr] {
 		if(result instanceof Step && ((Step)result).getAxis() == -1)
-			((Step)result).setAxis(Constants.CHILD_AXIS);
+            ((Step)result).setAxis(axis);
     }
-	| DSLASH result=regularexpr[expr] {
-		if(result instanceof Step)
-			((Step)result).setAxis(Constants.DESCENDANT_AXIS);
-    }
+    ( 
+	  	pred=predicate[expr] {
+		expr.addPredicate(pred);
+	}
+	)*
  	| result=step[expr] {
 		if(result instanceof Step && ((Step)result).getAxis() == -1)
             ((Step)result).setAxis(Constants.CHILD_AXIS);
@@ -651,12 +652,22 @@ returns [Expression result]
 		  expr.addPredicate(pred);
 	    }
 	  )*
+    | SLASH result=regularexpr[expr] {
+		if(result instanceof Step && ((Step)result).getAxis() == -1)
+			((Step)result).setAxis(Constants.CHILD_AXIS);
+    }
+	| DSLASH result=regularexpr[expr] {
+		if(result instanceof Step)
+			((Step)result).setAxis(Constants.DESCENDANT_AXIS);
+    }
 	;
 
 step [PathExpr expr]
 returns [Expression step] 
 	throws PermissionDeniedException, EXistException
-{ step = null; }:
+{ step = null; 
+  String qn;
+}:
 	attr:ATTRIB {
 			step = new LocationStep(pool,
 				Constants.ATTRIBUTE_AXIS,
@@ -689,14 +700,33 @@ returns [Expression step]
 				new TypeTest(Constants.NODE_TYPE));
 			expr.add(step);
 	}
-	| name:ID {
+	| qn=qname {
 			step = new LocationStep( pool, -1,
-				new NameTest(name.getText()));
+				new NameTest(qn));
 			expr.add(step);
 	}
 	| step=primary_expr[expr]
 	;
 
+qname
+returns [String name]
+{
+	name = null;
+}:
+	n1:NCNAME { name = n1.getText(); }
+	(COLON n2:NCNAME { name = name + ':' + n2.getText(); } )?
+	;
+
+axis_spec
+returns [int axis]
+{
+	axis = -1;
+}:
+	"ancestor" COLON COLON {
+		axis = Constants.ANCESTOR_AXIS;
+	}
+	;
+	
 predicate [PathExpr expr]
 returns [Predicate pred] 
 	throws PermissionDeniedException, EXistException
@@ -733,6 +763,9 @@ SLASH   :       '/'
 DSLASH  :       '/' '/'
         ;
 
+COLON   :   ':'
+		;
+		
 STAR	:	'*'
 		;
 
@@ -784,36 +817,25 @@ NMSTART :	(BASECHAR | '_')
 	;
 	
 protected
-NMCHAR	:	(BASECHAR | DIGIT | '.' | '-' | '_' | ':' )
+NMCHAR	:	(BASECHAR | DIGIT | '.' | '-' | '_' )
 	;
 
-protected
-NCNAME	:	NMSTART (NMCHAR)*
+NCNAME
+options { testLiterals=true; }
+		:	NMSTART (NMCHAR)*
 	;
 	
-protected
-ID
-options { testLiterals=true; }
-	:	NMSTART (NMCHAR)*
-	;
-
 protected
 FUNC:	NCNAME
 		;
 
-ID_OR_FUNC  
-options { testLiterals=true; }
-	:	( ID LPAREN ) => FUNC { $setType(FUNC); }
-	|	ID { $setType(ID); }
-	;
-
 INT	:	(DIGIT)+ ('.' (DIGIT)+)*
 	;
 
-VARIABLE:       '$'! ID
+VARIABLE:       '$'! NCNAME
         ;
 
-ATTRIB	:		'@'! ID
+ATTRIB	:		'@'! NCNAME
 		;
 
 ATTRIB_STAR:	'@'! STAR

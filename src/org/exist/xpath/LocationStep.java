@@ -68,6 +68,9 @@ public class LocationStep extends Step {
 			case Constants.CHILD_AXIS :
 				temp = getChildren(documents, context);
 				break;
+			case Constants.ANCESTOR_AXIS :
+				temp = getAncestors(documents, context);
+				break;
 			case Constants.SELF_AXIS :
 				temp = context;
 				break;
@@ -177,6 +180,26 @@ public class LocationStep extends Step {
 			}
 		} else
 			return new VirtualNodeSet(axis, (TypeTest) test, context);
+	}
+	
+	protected NodeSet getAncestors(DocumentSet documents, NodeSet context) {
+		if (test.getType() == NodeTest.NAME_TEST) {
+			DBBroker broker = null;
+			try {
+				broker = pool.get();
+				if (buf == null)
+					buf = (NodeSet) broker.findElementsByTagName(documents, test.getName());
+				NodeSet r = ((ArraySet)context).getDescendants((ArraySet)buf, ArraySet.ANCESTOR);
+				LOG.debug("getAncestors found " + r.getLength());
+				return r;
+			} catch(EXistException e) {
+				LOG.debug(e.getMessage(), e);
+				return null;
+			} finally {
+				pool.release(broker);
+			}
+		} else
+			return NodeSet.EMPTY_SET;
 	}
 
 	protected NodeSet getParents(DocumentSet documents, NodeSet context) {

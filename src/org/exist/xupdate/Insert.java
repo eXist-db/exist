@@ -13,7 +13,6 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
-import org.exist.util.XMLUtil;
 import org.w3c.dom.NodeList;
 
 /**
@@ -36,29 +35,30 @@ public class Insert extends Modification {
 	 * @param user
 	 * @param selectStmt
 	 */
-	public Insert(BrokerPool pool, User user, String selectStmt) {
-		super(pool, user, selectStmt);
+	public Insert(BrokerPool pool, User user, DocumentSet docs, String selectStmt) {
+		super(pool, user, docs, selectStmt);
 	}
 
-	public Insert(BrokerPool pool, User user, String selectStmt, int mode) {
-		this(pool, user, selectStmt);
+	public Insert(BrokerPool pool, User user, DocumentSet docs, 
+		String selectStmt, int mode) {
+		this(pool, user, docs, selectStmt);
 		this.mode = mode;
 	}
 
 	/**
 	 * @see org.exist.xupdate.Modification#process(org.exist.dom.DocumentSet)
 	 */
-	public long process(DocumentSet docs)
+	public long process()
 		throws PermissionDeniedException, EXistException {
-		System.out.println(XMLUtil.dump(content));
 		ArrayList qr = select(docs);
-		LOG.debug("select found " + qr.size() + " nodes for insert");
+		NodeList children = content.getChildNodes();
+		if(qr == null || children.getLength() == 0)
+			return 0;
 		IndexListener listener = new IndexListener(qr);
 		NodeImpl node;
 		NodeImpl parent;
 		DocumentImpl doc = null;
 		Collection collection = null;
-		NodeList children = content.getChildNodes();
 		int len = children.getLength();
 		LOG.debug("found " + len + " nodes to insert");
 		for (Iterator i = qr.iterator(); i.hasNext();) {
@@ -92,7 +92,7 @@ public class Insert extends Modification {
 	 * @see org.exist.xupdate.Modification#getName()
 	 */
 	public String getName() {
-		return null;
+		return (mode == INSERT_BEFORE ? "insert-before" : "insert-after");
 	}
 
 }

@@ -194,7 +194,8 @@ jar xfv ../exist.war]]></screen>
             <para>The command-line client may either be controlled by
                 parameters, or used interactively. If no action is specified on
                 the command-line, the client will enter interactive mode and
-                present a prompt.</para>
+                present a prompt. More information on the client is available
+                in the corresponding <ulink href="client.xml">document</ulink>.</para>
             <para>The shell scripts to start the client are called</para>
             <synopsis>bin\client.bat</synopsis>
             <para>on DOS/Windows or on Unix:</para>

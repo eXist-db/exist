@@ -57,6 +57,7 @@ public XPathLexer(LexerSharedInputState state) {
 	caseSensitiveLiterals = true;
 	setCaseSensitive(true);
 	literals = new Hashtable();
+	literals.put(new ANTLRHashString("ancestor", this), new Integer(45));
 	literals.put(new ANTLRHashString("node", this), new Integer(40));
 	literals.put(new ANTLRHashString("near", this), new Integer(36));
 	literals.put(new ANTLRHashString("text", this), new Integer(28));
@@ -92,6 +93,12 @@ tryAgain:
 				case '"':  case '\'':
 				{
 					mCONST(true);
+					theRetToken=_returnToken;
+					break;
+				}
+				case ':':
+				{
+					mCOLON(true);
 					theRetToken=_returnToken;
 					break;
 				}
@@ -167,7 +174,7 @@ tryAgain:
 				case '\u00f9':  case '\u00fa':  case '\u00fb':  case '\u00fc':
 				case '\u00fd':  case '\u00fe':  case '\u00ff':
 				{
-					mID_OR_FUNC(true);
+					mNCNAME(true);
 					theRetToken=_returnToken;
 					break;
 				}
@@ -310,9 +317,7 @@ tryAgain:
 		}
 		}
 		}
-		if ( inputState.guessing==0 ) {
-			_ttype = Token.SKIP;
-		}
+		_ttype = Token.SKIP;
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
 			_token = makeToken(_ttype);
 			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
@@ -332,7 +337,7 @@ tryAgain:
 			match('"');
 			text.setLength(_saveIndex);
 			{
-			_loop61:
+			_loop66:
 			do {
 				if ((_tokenSet_1.member(LA(1)))) {
 					{
@@ -340,7 +345,7 @@ tryAgain:
 					}
 				}
 				else {
-					break _loop61;
+					break _loop66;
 				}
 				
 			} while (true);
@@ -356,7 +361,7 @@ tryAgain:
 			match('\'');
 			text.setLength(_saveIndex);
 			{
-			_loop64:
+			_loop69:
 			do {
 				if ((_tokenSet_2.member(LA(1)))) {
 					{
@@ -364,7 +369,7 @@ tryAgain:
 					}
 				}
 				else {
-					break _loop64;
+					break _loop69;
 				}
 				
 			} while (true);
@@ -406,6 +411,19 @@ tryAgain:
 		
 		match('/');
 		match('/');
+		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
+			_token = makeToken(_ttype);
+			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
+		}
+		_returnToken = _token;
+	}
+	
+	public final void mCOLON(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+		int _ttype; Token _token=null; int _begin=text.length();
+		_ttype = COLON;
+		int _saveIndex;
+		
+		match(':');
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
 			_token = makeToken(_ttype);
 			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
@@ -784,11 +802,6 @@ tryAgain:
 			match('_');
 			break;
 		}
-		case ':':
-		{
-			match(':');
-			break;
-		}
 		default:
 		{
 			throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
@@ -802,50 +815,25 @@ tryAgain:
 		_returnToken = _token;
 	}
 	
-	protected final void mNCNAME(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+	public final void mNCNAME(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
 		int _ttype; Token _token=null; int _begin=text.length();
 		_ttype = NCNAME;
 		int _saveIndex;
 		
 		mNMSTART(false);
 		{
-		_loop89:
+		_loop95:
 		do {
 			if ((_tokenSet_3.member(LA(1)))) {
 				mNMCHAR(false);
 			}
 			else {
-				break _loop89;
+				break _loop95;
 			}
 			
 		} while (true);
 		}
-		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
-			_token = makeToken(_ttype);
-			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
-		}
-		_returnToken = _token;
-	}
-	
-	protected final void mID(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
-		int _ttype; Token _token=null; int _begin=text.length();
-		_ttype = ID;
-		int _saveIndex;
-		
-		mNMSTART(false);
-		{
-		_loop92:
-		do {
-			if ((_tokenSet_3.member(LA(1)))) {
-				mNMCHAR(false);
-			}
-			else {
-				break _loop92;
-			}
-			
-		} while (true);
-		}
-		_ttype = testLiteralsTable(new String(text.getBuffer(),_begin,text.length()-_begin),_ttype);
+		_ttype = testLiteralsTable(_ttype);
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
 			_token = makeToken(_ttype);
 			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
@@ -859,52 +847,6 @@ tryAgain:
 		int _saveIndex;
 		
 		mNCNAME(false);
-		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
-			_token = makeToken(_ttype);
-			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
-		}
-		_returnToken = _token;
-	}
-	
-	public final void mID_OR_FUNC(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
-		int _ttype; Token _token=null; int _begin=text.length();
-		_ttype = ID_OR_FUNC;
-		int _saveIndex;
-		
-		boolean synPredMatched96 = false;
-		if (((_tokenSet_0.member(LA(1))) && (true))) {
-			int _m96 = mark();
-			synPredMatched96 = true;
-			inputState.guessing++;
-			try {
-				{
-				mID(false);
-				mLPAREN(false);
-				}
-			}
-			catch (RecognitionException pe) {
-				synPredMatched96 = false;
-			}
-			rewind(_m96);
-			inputState.guessing--;
-		}
-		if ( synPredMatched96 ) {
-			mFUNC(false);
-			if ( inputState.guessing==0 ) {
-				_ttype = FUNC;
-			}
-		}
-		else if ((_tokenSet_0.member(LA(1))) && (true)) {
-			mID(false);
-			if ( inputState.guessing==0 ) {
-				_ttype = ID;
-			}
-		}
-		else {
-			throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
-		}
-		
-		_ttype = testLiteralsTable(_ttype);
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
 			_token = makeToken(_ttype);
 			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
@@ -972,7 +914,7 @@ tryAgain:
 		_saveIndex=text.length();
 		match('$');
 		text.setLength(_saveIndex);
-		mID(false);
+		mNCNAME(false);
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
 			_token = makeToken(_ttype);
 			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
@@ -988,7 +930,7 @@ tryAgain:
 		_saveIndex=text.length();
 		match('@');
 		text.setLength(_saveIndex);
-		mID(false);
+		mNCNAME(false);
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
 			_token = makeToken(_ttype);
 			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
@@ -1140,7 +1082,7 @@ tryAgain:
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
 	private static final long[] mk_tokenSet_3() {
 		long[] data = new long[1025];
-		data[0]=576284830442979328L;
+		data[0]=288054454291267584L;
 		data[1]=576460745995190270L;
 		data[3]=-36028797027352577L;
 		return data;

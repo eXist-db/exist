@@ -40,9 +40,9 @@ public class CollectionCache {
 			return;
 		}
 		collection.setRefCount(initialRefCount);
-		map.put(name, collection);
-		while (map.size() >= buffers)
+		while (map.size() == buffers)
 			removeOne(collection);
+		map.put(name, collection);
 	}
 
 	public Collection get(Collection collection) {
@@ -60,6 +60,10 @@ public class CollectionCache {
 		return collection;
 	}
 
+	public void remove(String name) {
+		map.remove(name);
+	}
+
 	public void remove(Collection collection) {
 		map.remove(collection.getName());
 	}
@@ -75,6 +79,8 @@ public class CollectionCache {
 		while (!removed) {
 			for (Iterator i = map.values().iterator(); i.hasNext();) {
 				old = (Collection) i.next();
+				if(old.getId() == collection.getId())
+					continue;
 				old.decRefCount();
 				// replace old page if it has reference count < 1,
 				if (old.getRefCount() < 1) {

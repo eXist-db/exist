@@ -248,7 +248,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public void calculateTreeLevelStartPoints() {
 		treeLevelStartPoints = new long[maxDepth + 1];
 		// we know the start point of the root element (which is always 1)
-		// and the start point of the first non-root node (2)
+		// and the start point of the first non-root node (children + 1)
 		treeLevelStartPoints[0] = 1;
 		treeLevelStartPoints[1] = children + 1;
 		for (int i = 1; i < maxDepth; i++) {
@@ -663,7 +663,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 *@return        The treeLevelOrder value
 	 */
 	public int getTreeLevelOrder(int level) {
-		if (level >maxDepth) {
+		if (level > maxDepth) {
 			LOG.fatal("tree level " + level + " does not exist");
 			return -1;
 		}
@@ -929,7 +929,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 	
 	public void setReindexRequired(int level) {
-		reindex = level;
+		this.reindex = level;
 	}
 	
 	public void setIndexListener(NodeIndexListener listener) {

@@ -46,7 +46,7 @@
     </group>
     <group name="Examples">
         <item>
-            <link href="../xquery.xsp">Query interface</link>
+			<link href="../simple/xquery.xsp">Query interface</link>
         </item>
         <item>
             <link href="biblio.xml">Library</link>

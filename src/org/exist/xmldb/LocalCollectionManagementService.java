@@ -132,7 +132,6 @@ public class LocalCollectionManagementService extends CollectionManager {
             broker = brokerPool.get();
             LOG.debug( "removing collection " + path );
             broker.removeCollection( user, path );
-            //parent.getCollection().removeCollection( collName );
         } catch ( EXistException e ) {
         	e.printStackTrace();
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,

@@ -191,21 +191,7 @@ public XPathParser(ParserSharedInputState state) {
 				break;
 			}
 			case LPAREN:
-			case RPAREN:
-			case ID:
-			case LITERAL_or:
-			case LITERAL_and:
 			case CONST:
-			case ANDEQ:
-			case OREQ:
-			case EQ:
-			case NEQ:
-			case UNION:
-			case LT:
-			case GT:
-			case LTEQ:
-			case GTEQ:
-			case PLUS:
 			case STAR:
 			case INT:
 			case LITERAL_text:
@@ -222,6 +208,8 @@ public XPathParser(ParserSharedInputState state) {
 			case LITERAL_node:
 			case PARENT:
 			case SELF:
+			case NCNAME:
+			case LITERAL_ancestor:
 			{
 				or_expr(expr);
 				if ( inputState.guessing==0 ) {
@@ -597,22 +585,8 @@ public XPathParser(ParserSharedInputState state) {
 				}
 				break;
 			}
-			case EOF:
 			case LPAREN:
-			case ID:
-			case LITERAL_or:
-			case LITERAL_and:
 			case CONST:
-			case ANDEQ:
-			case OREQ:
-			case EQ:
-			case NEQ:
-			case UNION:
-			case LT:
-			case GT:
-			case LTEQ:
-			case GTEQ:
-			case PLUS:
 			case STAR:
 			case INT:
 			case LITERAL_text:
@@ -629,6 +603,8 @@ public XPathParser(ParserSharedInputState state) {
 			case LITERAL_node:
 			case PARENT:
 			case SELF:
+			case NCNAME:
+			case LITERAL_ancestor:
 			{
 				or_expr(exprIn);
 				break;
@@ -746,7 +722,6 @@ public XPathParser(ParserSharedInputState state) {
 							  FunContains exprCont = new FunContains(pool, op);
 						   	  exprCont.setPath(left);
 						   	  DBBroker broker = null;
-						   	  System.out.println("&= " + l.getText());
 						   	  try {
 						   	  	  broker = pool.get();
 					              Tokenizer tokenizer = 
@@ -1056,34 +1031,73 @@ public XPathParser(ParserSharedInputState state) {
 		Expression result = null;
 		
 		
-		switch ( LA(1)) {
-		case EOF:
-		case RPAREN:
-		case LITERAL_or:
-		case LITERAL_and:
-		case ANDEQ:
-		case OREQ:
-		case EQ:
-		case NEQ:
-		case UNION:
-		case LT:
-		case GT:
-		case LTEQ:
-		case GTEQ:
-		case PLUS:
-		case COMMA:
-		case RPPAREN:
 		{
+		int _cnt36=0;
+		_loop36:
+		do {
+			if ((_tokenSet_0.member(LA(1)))) {
+				result=regularexpr(expr);
+				if ( inputState.guessing==0 ) {
+					
+							if(result instanceof Step && ((Step)result).getAxis() == -1)
+								((Step)result).setAxis(Constants.CHILD_AXIS);
+						
+				}
+			}
+			else {
+				if ( _cnt36>=1 ) { break _loop36; } else {throw new NoViableAltException(LT(1), getFilename());}
+			}
+			
+			_cnt36++;
+		} while (true);
+		}
+	}
+	
+	public final Expression  regularexpr(
+		PathExpr expr
+	) throws RecognitionException, TokenStreamException, PermissionDeniedException,EXistException {
+		Expression result;
+		
+		result = null; 
+			Predicate pred = null;
+			int axis = Constants.CHILD_AXIS;
+		
+		
+		switch ( LA(1)) {
+		case LITERAL_ancestor:
+		{
+			axis=axis_spec();
+			result=step(expr);
+			if ( inputState.guessing==0 ) {
+				
+						if(result instanceof Step && ((Step)result).getAxis() == -1)
+				((Step)result).setAxis(axis);
+				
+			}
+			{
+			_loop53:
+			do {
+				if ((LA(1)==LPPAREN)) {
+					pred=predicate(expr);
+					if ( inputState.guessing==0 ) {
+						
+								expr.addPredicate(pred);
+							
+					}
+				}
+				else {
+					break _loop53;
+				}
+				
+			} while (true);
+			}
 			break;
 		}
 		case LPAREN:
-		case ID:
 		case CONST:
 		case STAR:
 		case INT:
 		case LITERAL_text:
-		case SLASH:
-		case DSLASH:
 		case 32:
 		case 33:
 		case LITERAL_contains:
@@ -1095,45 +1109,34 @@ public XPathParser(ParserSharedInputState state) {
 		case LITERAL_node:
 		case PARENT:
 		case SELF:
+		case NCNAME:
 		{
+			result=step(expr);
+			if ( inputState.guessing==0 ) {
+				
+						if(result instanceof Step && ((Step)result).getAxis() == -1)
+				((Step)result).setAxis(Constants.CHILD_AXIS);
+				
+			}
 			{
-			int _cnt36=0;
-			_loop36:
+			_loop55:
 			do {
-				if ((_tokenSet_0.member(LA(1)))) {
-					result=regularexpr(expr);
+				if ((LA(1)==LPPAREN)) {
+					pred=predicate(expr);
 					if ( inputState.guessing==0 ) {
 						
-								if(result instanceof Step && ((Step)result).getAxis() == -1)
-									((Step)result).setAxis(Constants.CHILD_AXIS);
+								  expr.addPredicate(pred);
 							
 					}
 				}
 				else {
-					if ( _cnt36>=1 ) { break _loop36; } else {throw new NoViableAltException(LT(1), getFilename());}
+					break _loop55;
 				}
 				
-				_cnt36++;
 			} while (true);
 			}
 			break;
 		}
-		default:
-		{
-			throw new NoViableAltException(LT(1), getFilename());
-		}
-		}
-	}
-	
-	public final Expression  regularexpr(
-		PathExpr expr
-	) throws RecognitionException, TokenStreamException, PermissionDeniedException,EXistException {
-		Expression result;
-		
-		result = null; Predicate pred = null;
-		
-		
-		switch ( LA(1)) {
 		case SLASH:
 		{
 			match(SLASH);
@@ -1155,50 +1158,6 @@ public XPathParser(ParserSharedInputState state) {
 						if(result instanceof Step)
 							((Step)result).setAxis(Constants.DESCENDANT_AXIS);
 				
-			}
-			break;
-		}
-		case LPAREN:
-		case ID:
-		case CONST:
-		case STAR:
-		case INT:
-		case LITERAL_text:
-		case 32:
-		case 33:
-		case LITERAL_contains:
-		case LITERAL_match:
-		case LITERAL_near:
-		case FUNC:
-		case ATTRIB:
-		case ATTRIB_STAR:
-		case LITERAL_node:
-		case PARENT:
-		case SELF:
-		{
-			result=step(expr);
-			if ( inputState.guessing==0 ) {
-				
-						if(result instanceof Step && ((Step)result).getAxis() == -1)
-				((Step)result).setAxis(Constants.CHILD_AXIS);
-				
-			}
-			{
-			_loop53:
-			do {
-				if ((LA(1)==LPPAREN)) {
-					pred=predicate(expr);
-					if ( inputState.guessing==0 ) {
-						
-								  expr.addPredicate(pred);
-							
-					}
-				}
-				else {
-					break _loop53;
-				}
-				
-			} while (true);
 			}
 			break;
 		}
@@ -1684,6 +1643,24 @@ public XPathParser(ParserSharedInputState state) {
 		}
 	}
 	
+	public final int  axis_spec() throws RecognitionException, TokenStreamException {
+		int axis;
+		
+		
+			axis = -1;
+		
+		
+		match(LITERAL_ancestor);
+		match(COLON);
+		match(COLON);
+		if ( inputState.guessing==0 ) {
+			
+					axis = Constants.ANCESTOR_AXIS;
+				
+		}
+		return axis;
+	}
+	
 	public final Expression  step(
 		PathExpr expr
 	) throws RecognitionException, TokenStreamException, PermissionDeniedException,EXistException {
@@ -1692,8 +1669,9 @@ public XPathParser(ParserSharedInputState state) {
 		Token  attr = null;
 		Token  any = null;
 		Token  anyAttr = null;
-		Token  name = null;
-		step = null;
+		step = null; 
+		String qn;
+		
 		
 		switch ( LA(1)) {
 		case ATTRIB:
@@ -1775,14 +1753,13 @@ public XPathParser(ParserSharedInputState state) {
 			}
 			break;
 		}
-		case ID:
+		case NCNAME:
 		{
-			name = LT(1);
-			match(ID);
+			qn=qname();
 			if ( inputState.guessing==0 ) {
 				
 							step = new LocationStep( pool, -1,
-								new NameTest(name.getText()));
+								new NameTest(qn));
 							expr.add(step);
 					
 			}
@@ -1823,6 +1800,81 @@ public XPathParser(ParserSharedInputState state) {
 		or_expr(pred);
 		match(RPPAREN);
 		return pred;
+	}
+	
+	public final String  qname() throws RecognitionException, TokenStreamException {
+		String name;
+		
+		Token  n1 = null;
+		Token  n2 = null;
+		
+			name = null;
+		
+		
+		n1 = LT(1);
+		match(NCNAME);
+		if ( inputState.guessing==0 ) {
+			name = n1.getText();
+		}
+		{
+		switch ( LA(1)) {
+		case COLON:
+		{
+			match(COLON);
+			n2 = LT(1);
+			match(NCNAME);
+			if ( inputState.guessing==0 ) {
+				name = name + ':' + n2.getText();
+			}
+			break;
+		}
+		case EOF:
+		case LPAREN:
+		case RPAREN:
+		case LITERAL_or:
+		case LITERAL_and:
+		case CONST:
+		case ANDEQ:
+		case OREQ:
+		case EQ:
+		case NEQ:
+		case UNION:
+		case LT:
+		case GT:
+		case LTEQ:
+		case GTEQ:
+		case PLUS:
+		case STAR:
+		case COMMA:
+		case INT:
+		case LITERAL_text:
+		case SLASH:
+		case DSLASH:
+		case LPPAREN:
+		case 32:
+		case 33:
+		case LITERAL_contains:
+		case LITERAL_match:
+		case LITERAL_near:
+		case FUNC:
+		case ATTRIB:
+		case ATTRIB_STAR:
+		case LITERAL_node:
+		case PARENT:
+		case SELF:
+		case NCNAME:
+		case LITERAL_ancestor:
+		case RPPAREN:
+		{
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltException(LT(1), getFilename());
+		}
+		}
+		}
+		return name;
 	}
 	
 	
@@ -1870,6 +1922,9 @@ public XPathParser(ParserSharedInputState state) {
 		"\"node\"",
 		"PARENT",
 		"SELF",
+		"NCNAME",
+		"COLON",
+		"\"ancestor\"",
 		"RPPAREN",
 		"WS",
 		"BASECHAR",
@@ -1877,13 +1932,11 @@ public XPathParser(ParserSharedInputState state) {
 		"DIGIT",
 		"NMSTART",
 		"NMCHAR",
-		"NCNAME",
-		"ID_OR_FUNC",
 		"VARIABLE"
 	};
 	
 	private static final long[] mk_tokenSet_0() {
-		long[] data = { 8793819710624L, 0L};
+		long[] data = { 52774284821536L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());

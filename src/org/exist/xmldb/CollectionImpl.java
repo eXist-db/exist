@@ -193,16 +193,19 @@ public class CollectionImpl implements Collection {
 			return new DatabaseInstanceManagerImpl(rpcClient);
 		if (name.equals("IndexQueryService"))
 			return new RemoteIndexQueryService(rpcClient, this);
+		if (name.equals("XUpdateQueryService"))
+			return new RemoteXUpdateQueryService(this);
 		throw new XMLDBException(ErrorCodes.NO_SUCH_SERVICE);
 	}
 
 	public Service[] getServices() throws XMLDBException {
-		Service[] services = new Service[5];
+		Service[] services = new Service[6];
 		services[0] = new RemoteXPathQueryService(this);
 		services[1] = new CollectionManagementServiceImpl(this, rpcClient);
 		services[2] = new UserManagementServiceImpl(this);
 		services[3] = new DatabaseInstanceManagerImpl(rpcClient);
 		services[4] = new RemoteIndexQueryService(rpcClient, this);
+		services[5] = new RemoteXUpdateQueryService(this);
 		return services;
 	}
 
@@ -287,6 +290,8 @@ public class CollectionImpl implements Collection {
 	}
 
 	public void removeChildCollection(String name) throws XMLDBException {
+		if(childCollections == null)
+			readCollection();
 		childCollections.remove(getPath() + '/' + name);
 	}
 

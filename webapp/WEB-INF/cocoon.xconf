@@ -81,7 +81,7 @@
                     work directory.
   -->
   <cache-persistent class="org.apache.cocoon.components.store.FilesystemStore" logger="core.store.persistent">
-    <parameter name="use-cache-directory" value="true"/>
+	  <parameter name="use-cache-directory" value="true"/>
   </cache-persistent>
 
   <!-- Memory Storing: -->

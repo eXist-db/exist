@@ -68,9 +68,12 @@ public class ResourceSetImpl implements ResourceSet {
             Vector v = (Vector) resources.elementAt( (int) pos );
             String doc = (String) v.elementAt( 0 );
             String s_id = (String) v.elementAt( 1 );
-
+			String path = doc.substring(0, doc.lastIndexOf('/'));
+			CollectionImpl parent = path.equals(collection.getPath()) ?
+				collection : new CollectionImpl(rpcClient, null, path);
+			
             XMLResource res =
-                new XMLResourceImpl( collection, handle,
+                new XMLResourceImpl( parent, handle,
                 	(int)pos, doc, s_id, indentXML, encoding );
             return res;
         }

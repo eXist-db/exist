@@ -22,39 +22,43 @@
  */
 package org.exist;
 
+import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.PushbackInputStream;
 import java.io.StringReader;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Properties;
 import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import java.util.Observer;
-import java.util.Observable;
+
+import org.apache.avalon.excalibur.cli.CLArgsParser;
+import org.apache.avalon.excalibur.cli.CLOption;
+import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
+import org.apache.avalon.excalibur.cli.CLUtil;
 import org.apache.oro.io.GlobFilenameFilter;
-import org.apache.oro.text.perl.Perl5Util;
 import org.exist.security.Permission;
 import org.exist.security.User;
-import org.exist.util.Occurrences;
-import org.exist.util.XMLFilenameFilter;
-import org.exist.util.DirectoryScanner;
 import org.exist.util.CollectionScanner;
+import org.exist.util.DirectoryScanner;
+import org.exist.util.Occurrences;
 import org.exist.util.ProgressBar;
 import org.exist.util.ProgressIndicator;
+import org.exist.util.XMLFilenameFilter;
 import org.exist.util.XMLUtil;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
@@ -63,10 +67,16 @@ import org.exist.xmldb.XPathQueryServiceImpl;
 import org.gnu.readline.Readline;
 import org.gnu.readline.ReadlineCompleter;
 import org.gnu.readline.ReadlineLibrary;
-import org.xmldb.api.*;
-import org.xmldb.api.base.*;
-import org.xmldb.api.modules.*;
-import org.apache.avalon.excalibur.cli.*;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Database;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.modules.XMLResource;
+import org.xmldb.api.modules.XPathQueryService;
+import org.xmldb.api.modules.XUpdateQueryService;
 
 /**
  *  Command-line client based on the XML:DB API.
@@ -156,7 +166,7 @@ public class InteractiveClient {
                 CLOptionDescriptor.ARGUMENT_REQUIRED,
                 RESOURCE_OPT,
                 "specify a resource contained in the current collection. " +
-                "Use in conjunction with -u to specify the resource to " +
+                "Use in conjunction with -X to specify the resource to " +
                 "update."),
 			new CLOptionDescriptor(
 				"get",
@@ -897,13 +907,13 @@ public class InteractiveClient {
 			path = newPath;
 			return true;
 		} catch (XMLDBException xde) {
-			xde.printStackTrace();
-			System.err.println(
+			//xde.printStackTrace();
+			/*System.err.println(
 				"XMLDBException: "
 					+ xde.getMessage()
 					+ " ["
 					+ xde.errorCode
-					+ "]");
+					+ "]");*/
 			return true;
 		}
 	}
@@ -1046,7 +1056,7 @@ public class InteractiveClient {
         XUpdateQueryService service = (XUpdateQueryService)
             current.getService("XUpdateQueryService", "1.0");
         long modifications = 0;
-        if(resource != null)
+        if(resource == null)
             modifications = service.update(commands);
         else
             modifications = service.updateResource(resource, commands);

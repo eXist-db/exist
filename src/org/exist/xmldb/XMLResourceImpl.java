@@ -16,6 +16,7 @@ import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 import org.apache.xmlrpc.XmlRpcException;
 import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
@@ -239,7 +240,20 @@ public class XMLResourceImpl implements XMLResource {
 		OutputFormat format = new OutputFormat("xml", "UTF-8", false);
 		XMLSerializer xmlout = new XMLSerializer(sout, format);
 		try {
-			xmlout.serialize((Element) root);
+			switch(root.getNodeType()) {
+				case Node.ELEMENT_NODE:
+					xmlout.serialize((Element)root);
+					break;
+				case Node.DOCUMENT_FRAGMENT_NODE:
+					xmlout.serialize((DocumentFragment)root);
+					break;
+				case Node.DOCUMENT_NODE:
+					xmlout.serialize((Document)root);
+					break;
+				default:
+					throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
+						"invalid node type");
+			}
 			content = sout.toString();
 		} catch (IOException ioe) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(),ioe);

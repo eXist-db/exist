@@ -169,6 +169,12 @@ public class BFile extends BTree {
 			try {
 				// check if key exists already
 				long p = findValue(key);
+				if(p == KEY_NOT_FOUND) {
+					// key does not exist:
+					p = storeValue(value);
+					addValue(key, p);
+					return p;
+				}
 				// key exists: get old data
 				final long pnum = (long) pageFromPointer(p);
 				final short tid = (short) offsetFromPointer(p);
@@ -244,8 +250,7 @@ public class BFile extends BTree {
 	 */
 	public boolean containsKey(Value key) {
 		try {
-			findValue(key);
-			return true;
+			return findValue(key) != KEY_NOT_FOUND;
 		} catch (BTreeException bte) {
 		} catch (IOException ioe) {
 		}
@@ -432,11 +437,14 @@ public class BFile extends BTree {
 
 	public Value get(Value key) {
 		try {
-			long p = findValue(key);
-			long pnum = (long) pageFromPointer(p);
-			DataPage page = getDataPage(pnum);
+			final long p = findValue(key);
+			if(p == KEY_NOT_FOUND)
+				return null;
+			final long pnum = (long) pageFromPointer(p);
+			final DataPage page = getDataPage(pnum);
 			return get(page, p);
 		} catch (BTreeException b) {
+			LOG.debug("key " + key + " not found");
 		} catch (IOException e) {
 			LOG.debug(e);
 		}
@@ -492,13 +500,9 @@ public class BFile extends BTree {
 	 */
 	protected Value get(DataPage page, long p)
 		throws BTreeException, IOException {
-		short tid;
-		int offset;
-		byte[] data;
-		int l;
-		tid = (short) offsetFromPointer(p);
-		offset = findValuePosition(page, tid);
-		data = page.getData();
+		final short tid = (short) offsetFromPointer(p);
+		final int offset = findValuePosition(page, tid); 
+		final byte[] data = page.getData(); 
 		if (offset > data.length || offset < 0) {
 			LOG.error(
 				"wrong pointer (tid: "
@@ -510,7 +514,7 @@ public class BFile extends BTree {
 					+ offset);
 			return null;
 		}
-		l = ByteConversion.byteToInt(data, offset);
+		final int l = ByteConversion.byteToInt(data, offset);
 		if (l + 6 > data.length) {
 			LOG.error(
 				getFile().getName()
@@ -523,7 +527,9 @@ public class BFile extends BTree {
 			return null;
 		}
 		pages.add(page);
-		return new Value(data, offset + 4, l);
+		final Value v = new Value(data, offset + 4, l);
+		v.setAddress(p);
+		return v;
 	}
 
 	private DataPage getDataPage(long pos) {
@@ -632,6 +638,12 @@ public class BFile extends BTree {
 			try {
 				// check if key exists already
 				long p = findValue(key);
+				if(p == KEY_NOT_FOUND) {
+					// key does not exist:
+					p = storeValue(value);
+					addValue(key, p);
+					return p;
+				}
 				// if exists, update value
 				if (overwrite) {
 					return update(p, key, value);
@@ -665,6 +677,8 @@ public class BFile extends BTree {
 	public void remove(Value key) throws ReadOnlyException {
 		try {
 			long p = findValue(key);
+			if(p == KEY_NOT_FOUND)
+				return;
 			long pos = (long) pageFromPointer(p);
 			DataPage page = getDataPage(pos);
 			remove(page, p);
@@ -853,6 +867,8 @@ public class BFile extends BTree {
 	public long update(Value key, byte[] value) throws ReadOnlyException {
 		try {
 			long p = findValue(key);
+			if(p == KEY_NOT_FOUND)
+				return -1;
 			return update(p, key, value);
 		} catch (BTreeException bte) {
 			LOG.debug(bte);

@@ -116,7 +116,6 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 			docs = (docs == null ? expr.preselect() : expr.preselect(docs));
 			if (docs.getLength() == 0)
 				return null;
-
 			Value resultValue = expr.eval(docs, context, null);
 			LOG.info(
 				expr.pprint()

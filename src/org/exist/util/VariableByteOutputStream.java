@@ -6,12 +6,18 @@ import java.io.UnsupportedEncodingException;
 
 public class VariableByteOutputStream extends OutputStream {
 
-    private FastByteBuffer buf = new FastByteBuffer( 6, 10, 3 );
+    protected FastByteBuffer buf;
 
     public VariableByteOutputStream() {
         super();
+		buf = new FastByteBuffer( 6, 10, 3 );
     }
 
+	public VariableByteOutputStream(int size) {
+		super();
+		buf = new FastByteBuffer(size, 10, 3);
+	}
+	
     public void clear() {
         buf.setLength( 0 );
     }
@@ -77,13 +83,6 @@ public class VariableByteOutputStream extends OutputStream {
     }
     
     protected void finalize() {
-    }
-    
-    public static void main(String[] args) throws Exception {
-    	VariableByteOutputStream os = new VariableByteOutputStream();
-    	os.writeUTF("a_and_c.xml");
-    	byte[] data = os.toByteArray();
-    	System.out.println(StringUtil.hexDump(data));
     }
 }
 

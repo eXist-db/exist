@@ -1,8 +1,6 @@
-
 package org.exist.util;
 
 import java.io.ByteArrayInputStream;
-import java.nio.ByteBuffer;
 
 /**
  *  This class encodes integer values using variable-byte coding.
@@ -18,139 +16,134 @@ import java.nio.ByteBuffer;
  */
 public class VariableByteCoding {
 
-    /**
-     *  Decode a variable-byte encoded sequence
-     *
-     *@param  d       the variable-byte encoded sequence of bytes
-     *@param  offset  the offset at which decoding should start
-     *@return         the decoded value
-     */
-    public final static long decode( byte[] d, int offset ) {
-        long r = 0;
-        int shift = 0;
-        long more;
-        int i = 0;
-        do {
-            r |= ( ( more = d[offset + i++] ) & 0177 ) << shift;
-            more &= 0200;
-            shift += 7;
-        } while ( more > 0 );
-        return r;
-    }
+	/**
+	 *  Decode a variable-byte encoded sequence
+	 *
+	 *@param  d       the variable-byte encoded sequence of bytes
+	 *@param  offset  the offset at which decoding should start
+	 *@return         the decoded value
+	 */
+	public final static long decode(byte[] d, int offset) {
+		long r = 0;
+		int shift = 0;
+		long more;
+		int i = 0;
+		do {
+			r |= ((more = d[offset + i++]) & 0177) << shift;
+			more &= 0200;
+			shift += 7;
+		} while (more > 0);
+		return r;
+	}
 
+	/**
+	 *  Decode a variable-byte encoded sequence
+	 *
+	 *@param  is  ByteArrayInputStream to read the variable-byte
+	 *	encoded data from
+	 *@return     the decoded value
+	 */
+	public final static long decode(ByteArrayInputStream is) {
+		long r = 0;
+		int shift = 0;
+		long more;
+		do {
+			r |= ((more = is.read()) & 0177) << shift;
+			if(more < 0)
+				throw new ArrayIndexOutOfBoundsException();
+			shift += 7;
+			more &= 0200;
+		} while (more > 0);
+		return r;
+	}
 
-    /**
-     *  Decode a variable-byte encoded sequence
-     *
-     *@param  is  ByteArrayInputStream to read the variable-byte
-     *	encoded data from
-     *@return     the decoded value
-     */
-    public final static long decode( ByteArrayInputStream is ) {
-        long r = 0;
-        int shift = 0;
-        long more;
-        do {
-            r |= ( ( more = is.read() ) & 0177 ) << shift;
-            if( more < 0 )
-                throw new ArrayIndexOutOfBoundsException();
-            more &= 0200;
-            shift += 7;
-        } while ( more > 0 );
-        return r;
-    }
+	public final static void copyTo(ByteArrayInputStream in, FastByteBuffer out) {
+		long more;
+		do {
+			more = in.read();
+			out.append((byte) more);
+			more &= 0200;
+		} while (more > 0);
+	}
 
-
-    /**
-     *  Encode a long integer to a variable-byte encoded
-     * sequence of bytes.
-     *
-     *@param  l  The long integer value to encode
-     *@return    The coded byte sequence
-     */
-    public final static byte[] encode( long l ) {
-        byte[] buf = new byte[9];
-        int i = 0;
-        while ( l > 0177 ) {
-            buf[i++] = (byte) ( ( ( l & 0xff ) & 0177 ) | 0200 );
-            l >>= 7;
-        }
-        buf[i++] = (byte) ( ( l & 0xff ) & 0177 );
-        byte[] data = new byte[i];
-        System.arraycopy( buf, 0, data, 0, i );
-        return data;
-    }
-
-
-    /**
-     * Encode a long integer to a variable-byte encoded sequence of bytes.
-     * 
-     *@param  l       Description of the Parameter
-     *@param  data    Description of the Parameter
-     *@param  offset  Description of the Parameter
-     */
-    public final static void encode( long l, byte[] data, int offset ) {
-        int i = 0;
-        while ( l > 0177 ) {
-            data[offset + i++] = (byte) ( ( l & 0177 ) | 0200 );
-            l >>= 7;
-        }
-        data[offset + i++] = (byte) ( l & 0177 );
-    }
-
-
-    /**
-     *  Encode  a long integer to a variable-byte encoded sequence of bytes.
-     * Write output to a FastByteBuffer.
-     *
-     *@param  buf  Description of the Parameter
-     *@param  l    Description of the Parameter
-     */
-    public final static void encode( FastByteBuffer buf, long l ) {
-        while ( l > 0177 ) {
-            buf.append( (byte) ( ( l & 0177 ) | 0200 ) );
-            l >>= 7;
-        }
-        buf.append( (byte) ( l & 0177 ) );
-    }
-
-	public final static void encode( ByteBuffer buf, long l ) {
-		while ( l > 0177 ) {
-			buf.put( (byte) ( ( l & 0177 ) | 0200 ) );
+	/**
+	 *  Encode a long integer to a variable-byte encoded
+	 * sequence of bytes.
+	 *
+	 *@param  l  The long integer value to encode
+	 *@return    The coded byte sequence
+	 */
+	public final static byte[] encode(long l) {
+		byte[] buf = new byte[9];
+		int i = 0;
+		while (l > 0177) {
+			buf[i++] = (byte) (((l & 0xff) & 0177) | 0200);
 			l >>= 7;
 		}
-		buf.put( (byte) ( l & 0177 ) );
+		buf[i++] = (byte) ((l & 0xff) & 0177);
+		byte[] data = new byte[i];
+		System.arraycopy(buf, 0, data, 0, i);
+		return data;
 	}
-	
-    /**
-     *  Get the size of the variable-byte encoded sequence for a
-     * given long.
-     *
-     *@param  l  Description of the Parameter
-     *@return    The size value
-     */
-    public final static int getSize( long l ) {
-        int i = 0;
-        while ( l > 0177 ) {
-            i++;
-            l >>= 7;
-        }
-        return i + 1;
-    }
 
+	/**
+	 * Encode a long integer to a variable-byte encoded sequence of bytes.
+	 * 
+	 *@param  l       Description of the Parameter
+	 *@param  data    Description of the Parameter
+	 *@param  offset  Description of the Parameter
+	 */
+	public final static void encode(long l, byte[] data, int offset) {
+		int i = 0;
+		while (l > 0177) {
+			data[offset + i++] = (byte) ((l & 0177) | 0200);
+			l >>= 7;
+		}
+		data[offset + i++] = (byte) (l & 0177);
+	}
 
-    /**
-     *  Description of the Method
-     *
-     *@param  args  Description of the Parameter
-     */
-    public static void main( String args[] ) {
-        int t0 = 11;
-        int t1 = 12;
-        byte[] d0 = encode( t0 );
-        byte[] d1 = encode( t1 );
-        System.out.println(StringUtil.hexDump(d0));
+	/**
+	 *  Encode  a long integer to a variable-byte encoded sequence of bytes.
+	 * Write output to a FastByteBuffer.
+	 *
+	 *@param  buf  Description of the Parameter
+	 *@param  l    Description of the Parameter
+	 */
+	public final static void encode(FastByteBuffer buf, long l) {
+		while (l > 0177) {
+			buf.append((byte) ((l & 0177) | 0200));
+			l >>= 7;
+		}
+		buf.append((byte) (l & 0177));
+	}
+
+	/**
+	 *  Get the size of the variable-byte encoded sequence for a
+	 * given long.
+	 *
+	 *@param  l  Description of the Parameter
+	 *@return    The size value
+	 */
+	public final static int getSize(long l) {
+		int i = 0;
+		while (l > 0177) {
+			i++;
+			l >>= 7;
+		}
+		return i + 1;
+	}
+
+	/**
+	 *  Description of the Method
+	 *
+	 *@param  args  Description of the Parameter
+	 */
+	public static void main(String args[]) {
+		int t0 = 11;
+		int t1 = 12;
+		byte[] d0 = encode(t0);
+		byte[] d1 = encode(t1);
+		System.out.println(StringUtil.hexDump(d0));
 		System.out.println(StringUtil.hexDump(d1));
-    }
+	}
 }
-

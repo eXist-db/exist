@@ -253,7 +253,7 @@
     </appender>
     
     <root>
-		<appender-ref ref="console"/>
+		<appender-ref ref="exist.core"/>
 		<priority value="debug"/>
     </root>
 

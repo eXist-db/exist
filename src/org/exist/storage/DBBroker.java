@@ -20,7 +20,6 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.exist.storage;
-import java.io.DataInput;
 import java.util.Iterator;
 import java.util.Observable;
 
@@ -443,18 +442,6 @@ public abstract class DBBroker extends Observable {
 
 
     /**
-     *  Gets the stream attribute of the DBBroker object
-     *
-     *@param  doc  Description of the Parameter
-     *@param  gid  Description of the Parameter
-     *@return      The stream value
-     */
-    public DataInput getStream( Document doc, long gid ) {
-        throw new RuntimeException( "not implemented for this storage backend" );
-    }
-
-
-    /**
      *  get the TextSearchEngine associated with this broker. Every subclass of
      *  DBBroker will have it's own implementation of TextSearchEngine.
      *
@@ -666,7 +653,7 @@ public abstract class DBBroker extends Observable {
 		throw new RuntimeException( "not implemented" );
 	}
 	
-	public void reindex(DocumentImpl oldDoc, DocumentImpl doc) {
+	public void reindex(DocumentImpl oldDoc, DocumentImpl doc, NodeImpl node) {
 		throw new RuntimeException( "not implemented" );
 	}
     
@@ -674,8 +661,12 @@ public abstract class DBBroker extends Observable {
         throw new RuntimeException( "not implemented" );
     }
     
-    public void removeNode(final NodeImpl node) {
+    public void removeNode(final NodeImpl node, String currentPath) {
         throw new RuntimeException( "not implemented" );
+    }
+    
+    public void endRemove() {
+		throw new RuntimeException( "not implemented" );
     }
     
 	public Occurrences[] scanIndexedElements(User user, Collection collection, 
