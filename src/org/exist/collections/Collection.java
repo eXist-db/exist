@@ -40,7 +40,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
 import org.apache.xml.resolver.tools.CatalogResolver;
 import org.exist.EXistException;
 import org.exist.Indexer;
@@ -56,15 +56,15 @@ import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.storage.cache.Cacheable;
+import org.exist.storage.io.VariableByteInput;
+import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.store.CollectionStore;
 import org.exist.util.Configuration;
-import org.exist.util.DOMStreamer;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.SyntaxException;
-import org.exist.util.VariableByteInputStream;
-import org.exist.util.VariableByteOutputStream;
 import org.exist.util.hashtable.ObjectHashSet;
+import org.exist.util.serializer.DOMStreamer;
 import org.w3c.dom.Node;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -84,8 +84,7 @@ public final class Collection extends Observable
 
 implements Comparable, EntityResolver, Cacheable {
 
-	private final static Category LOG = Category.getInstance(Collection.class
-			.getName());
+	private final static Logger LOG = Logger.getLogger(Collection.class);
 
 	private final static String COLLECTION_CONFIG_FILE = "collection.xconf";
 
@@ -127,7 +126,7 @@ implements Comparable, EntityResolver, Cacheable {
 
 	// the collection store where this collections is stored.
 	private CollectionStore db;
-
+	
 	public Collection(CollectionStore db, String name) {
 		this.name = name;
 		this.db = db;
@@ -143,6 +142,10 @@ implements Comparable, EntityResolver, Cacheable {
 		final String childName = child.name.substring(p);
 		if (!subcollections.contains(childName))
 			subcollections.add(childName);
+		if(name.equals("/db/collection-31/collection-31-1")) {
+		    LOG.debug("adding collection " + childName + "; count = " + subcollections.size() +
+		            "; id = " + this);
+		}
 	}
 
 	/**
@@ -471,7 +474,7 @@ implements Comparable, EntityResolver, Cacheable {
 	 * @param istream
 	 * @throws IOException
 	 */
-	public void read(DBBroker broker, VariableByteInputStream istream)
+	public void read(DBBroker broker, VariableByteInput istream)
 			throws IOException {
 		collectionId = istream.readShort();
 		final int collLen = istream.readInt();
@@ -1070,7 +1073,7 @@ implements Comparable, EntityResolver, Cacheable {
 
 			// first pass: parse the document to determine tree structure
 			LOG.debug("validating document " + name);
-			streamer.stream(node);
+			streamer.serialize(node);
 			document.setMaxDepth(document.getMaxDepth() + 1);
 			document.calculateTreeLevelStartPoints();
 			// new document is valid: remove old document 
@@ -1094,7 +1097,7 @@ implements Comparable, EntityResolver, Cacheable {
 		try {
 			// second pass: store the document
 			LOG.debug("storing document ...");
-			streamer.stream(node);
+			streamer.serialize(node);
 	
 			try {
 				lock.acquire(Lock.WRITE_LOCK);

@@ -34,6 +34,7 @@ import org.exist.xquery.XPathException;
  */
 public class QName implements Comparable {
 
+    public final static QName DOCUMENT_QNAME = new QName("#document", "", null);
 	public final static QName TEXT_QNAME = new QName("#text", "", null);
 	public final static QName COMMENT_QNAME = new QName("#comment", "", null);
 	public final static QName DOCTYPE_QNAME = new QName("#doctype", "", null);

@@ -633,13 +633,9 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 	}
 
 	public void copyTo(DBBroker broker, Receiver receiver) throws SAXException {
-	    Serializer serializer = broker.getSerializer();
-	    serializer.toReceiver(this, receiver);
-//		if (nodeType == Node.ATTRIBUTE_NODE) {
-//			AttrImpl attr = (AttrImpl) getNode();
-//			receiver.attribute(attr.getQName(), attr.getValue());
-//		} else
-//			toSAX(broker, receiver);
+	    receiver.addReferenceNode(this);
+//	    Serializer serializer = broker.getSerializer();
+//	    serializer.toReceiver(this, receiver);
 	}
 
 	/* (non-Javadoc)

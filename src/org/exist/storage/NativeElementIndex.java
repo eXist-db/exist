@@ -22,7 +22,6 @@ package org.exist.storage;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -36,7 +35,11 @@ import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.XMLUtil;
-import org.exist.storage.store.*;
+import org.exist.storage.io.VariableByteArrayInput;
+import org.exist.storage.io.VariableByteInput;
+import org.exist.storage.io.VariableByteOutputStream;
+import org.exist.storage.store.BFile;
+import org.exist.storage.store.StorageAddress;
 import org.exist.util.Configuration;
 import org.exist.util.FastQSort;
 import org.exist.util.Lock;
@@ -44,8 +47,6 @@ import org.exist.util.LockException;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.ReadOnlyException;
 //import org.exist.util.StorageAddress;
-import org.exist.util.VariableByteInputStream;
-import org.exist.util.VariableByteOutputStream;
 
 public class NativeElementIndex extends ElementIndex {
 
@@ -82,8 +83,7 @@ public class NativeElementIndex extends ElementIndex {
 		QName qname;
 		List oldList = new ArrayList(), idList;
 		NodeProxy p;
-		VariableByteInputStream is = new VariableByteInputStream();
-		InputStream dis = null;
+		VariableByteInput is = null;
 		int len, docId;
 		byte[] data;
 		Value ref;
@@ -110,22 +110,21 @@ public class NativeElementIndex extends ElementIndex {
 				try {
 					lock.acquire(Lock.READ_LOCK);
 					//val = dbElement.get(ref);
-					dis = dbElement.getAsStream(ref);
+					is = dbElement.getAsStream(ref);
 				} catch (LockException e) {
 					LOG.error("could not acquire lock for index on " + qname);
 					return;
 				} catch (IOException e) {
 					LOG.error("io error while reindexing " + qname, e);
-					dis = null;
+					is = null;
 				} finally {
 					lock.release();
 				}
 				os.clear();
 				oldList.clear();
-				if (dis != null) {
+				if (is != null) {
 					// add old entries to the new list 
 					//data = val.getData();
-					is.setInputStream(dis);
 					try {
 						while (is.available() > 0) {
 							docId = is.readInt();
@@ -183,10 +182,10 @@ public class NativeElementIndex extends ElementIndex {
 				//data = os.toByteArray();
 				try {
 					lock.acquire(Lock.WRITE_LOCK);
-					if (dis == null)
+					if (is == null)
 						dbElement.put(ref, os.data());
 					else {
-						address = ((BFile.PageInputStream) dis).getAddress();
+						address = ((BFile.PageInputStream) is).getAddress();
 						dbElement.update(address, ref, os.data());
 						//dbElement.update(val.getAddress(), ref, data);
 					}
@@ -210,7 +209,7 @@ public class NativeElementIndex extends ElementIndex {
 		QName qname;
 		List newList = new ArrayList(), idList;
 		NodeProxy p;
-		VariableByteInputStream is;
+		VariableByteArrayInput is;
 		int len, docId;
 		byte[] data;
 		Value ref;
@@ -249,7 +248,7 @@ public class NativeElementIndex extends ElementIndex {
 				if (val != null) {
 					// add old entries to the new list 
 					data = val.getData();
-					is = new VariableByteInputStream(data);
+					is = new VariableByteArrayInput(data);
 					try {
 						while (is.available() > 0) {
 							docId = is.readInt();

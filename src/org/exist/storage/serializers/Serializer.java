@@ -541,7 +541,7 @@ public abstract class Serializer implements XMLReader {
 		
 		DOMStreamer streamer = null;
 		try {
-			streamer = DOMStreamerPool.getInstance().borrowDOMStreamer();
+			streamer = DOMStreamerPool.getInstance().borrowDOMStreamer(this);
 			streamer.setContentHandler(contentHandler);
 			streamer.setLexicalHandler(lexicalHandler);
 			streamer.serialize(n, generateDocEvents);
@@ -550,10 +550,7 @@ public abstract class Serializer implements XMLReader {
 			e.printStackTrace();
 			throw new SAXException(e.getMessage(), e);
 		} finally {
-			try {
-				DOMStreamerPool.getInstance().returnDOMStreamer(streamer);
-			} catch (Exception e1) {
-			}
+			DOMStreamerPool.getInstance().returnDOMStreamer(streamer);
 		}
 		
 		if (generateDocEvents)

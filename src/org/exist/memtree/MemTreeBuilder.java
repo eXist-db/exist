@@ -24,6 +24,7 @@ package org.exist.memtree;
 
 import java.util.Arrays;
 
+import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Document;
@@ -67,7 +68,7 @@ public class MemTreeBuilder {
 	 * Start building the document.
 	 */
 	public void startDocument() {
-		this.doc = new DocumentImpl(500, 50, 1000);
+		this.doc = new DocumentImpl(500, 50, 1000, 50);
 	}
 
 	/**
@@ -151,6 +152,17 @@ public class MemTreeBuilder {
 		--level;
 	}
 
+	public int addReferenceNode(NodeProxy proxy) {
+		int nodeNr = doc.addNode(NodeImpl.REFERENCE_NODE, level, null);
+		doc.addReferenceNode(nodeNr, proxy);
+		int prevNr = prevNodeInLevel[level];
+		if (prevNr > -1)
+			doc.next[prevNr] = nodeNr;
+		doc.next[nodeNr] = prevNodeInLevel[level - 1];
+		prevNodeInLevel[level] = nodeNr;
+		return nodeNr;
+	}
+	
 	public void addAttribute(QName qname, String value) {
 		int lastNode = doc.getLastNode();
 		if(doc.nodeKind[lastNode] != Node.ELEMENT_NODE) {
@@ -195,6 +207,17 @@ public class MemTreeBuilder {
 	public int comment(CharSequence data) {
 		int nodeNr = doc.addNode(Node.COMMENT_NODE, level, null);
 		doc.addChars(nodeNr, data);
+		int prevNr = prevNodeInLevel[level];
+		if (prevNr > -1)
+			doc.next[prevNr] = nodeNr;
+		doc.next[nodeNr] = prevNodeInLevel[level - 1];
+		prevNodeInLevel[level] = nodeNr;
+		return nodeNr;
+	}
+	
+	public int comment(char ch[], int start, int len) {
+	    int nodeNr = doc.addNode(Node.COMMENT_NODE, level, null);
+		doc.addChars(nodeNr, ch, start, len);
 		int prevNr = prevNodeInLevel[level];
 		if (prevNr > -1)
 			doc.next[prevNr] = nodeNr;

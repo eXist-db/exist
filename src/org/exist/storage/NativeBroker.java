@@ -25,7 +25,6 @@ package org.exist.storage;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -35,6 +34,7 @@ import java.util.Observer;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
+import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.PatternCompiler;
@@ -65,6 +65,9 @@ import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.storage.io.VariableByteArrayInput;
+import org.exist.storage.io.VariableByteInput;
+import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.serializers.NativeSerializer;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.store.BFile;
@@ -81,8 +84,6 @@ import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.Occurrences;
 import org.exist.util.ReadOnlyException;
-import org.exist.util.VariableByteInputStream;
-import org.exist.util.VariableByteOutputStream;
 import org.exist.xquery.Constants;
 import org.exist.xquery.NodeSelector;
 import org.exist.xquery.XQueryContext;
@@ -100,6 +101,10 @@ import org.w3c.dom.NodeList;
  *@author     Wolfgang Meier
  */
 public class NativeBroker extends DBBroker {
+    /**
+     * Log4J Logger for this class
+     */
+    private static final Logger LOG = Logger.getLogger(NativeBroker.class);
 
 	private static final String DATABASE_IS_READ_ONLY = "database is read-only";
 	private static final String ROOT_COLLECTION = "/db";
@@ -305,7 +310,7 @@ public class NativeBroker extends DBBroker {
 			inclusive ? collection.getDescendants(this, user) : new ArrayList();
 		collections.add(collection);
 		TreeMap map = new TreeMap();
-		VariableByteInputStream is;
+		VariableByteArrayInput is;
 		int docId;
 		int len;
 		// required for namespace lookups
@@ -336,7 +341,7 @@ public class NativeBroker extends DBBroker {
 					}
 
 					is =
-						new VariableByteInputStream(
+						new VariableByteArrayInput(
 							val[1].data(),
 							val[1].start(),
 							val[1].getLength());
@@ -384,9 +389,8 @@ public class NativeBroker extends DBBroker {
 		int len;
 		short collectionId;
 		long gid;
-		VariableByteInputStream is;
+		VariableByteInput is = null;
 		ElementValue ref;
-		InputStream dis = null;
 		short sym, nsSym;
 		Collection collection;
 		NodeProxy p;
@@ -406,13 +410,20 @@ public class NativeBroker extends DBBroker {
 			boolean exceptionOcurred = false;
 			try {
 				lock.acquire(Lock.READ_LOCK);
-				dis = elementsDb.getAsStream(ref);
+				is = elementsDb.getAsStream(ref);
 			} catch (LockException e) {
-				LOG.warn("failed to acquire lock", e);
+                LOG.warn(
+                    "findElementsByTagName(byte, DocumentSet, QName, NodeSelector) - "
+                        + "failed to acquire lock",
+                    e);
 				// jmv: dis = null;
 				exceptionOcurred = true;
 			} catch (IOException e) {
-				LOG.warn("io exception while reading elements for " + qname, e);
+                LOG.warn(
+                    "findElementsByTagName(byte, DocumentSet, QName, NodeSelector) - "
+                        + "io exception while reading elements for "
+                        + qname,
+                    e);
 				// jmv: dis = null;
 				exceptionOcurred = true;
 			} finally {
@@ -420,9 +431,8 @@ public class NativeBroker extends DBBroker {
 			}
 			// jmv: if (dis == null)
 			// wolf: dis == null if no matching element has been found in the index
-			if (dis == null || exceptionOcurred)
+			if (is == null || exceptionOcurred)
 				continue;
-			is = new VariableByteInputStream(dis);
 			try {
 				while (is.available() > 0) {
 					docId = is.readInt();
@@ -441,7 +451,10 @@ public class NativeBroker extends DBBroker {
 				}
 			} catch (EOFException e) {
 			} catch (IOException e) {
-				LOG.warn("unexpected io error", e);
+                LOG.warn(
+                    "findElementsByTagName(byte, DocumentSet, QName, NodeSelector) - "
+                        + "unexpected io error",
+                    e);
 			}
 		}
 //		result.sort();
@@ -484,14 +497,16 @@ public class NativeBroker extends DBBroker {
 		long start = System.currentTimeMillis();
 		Collection root = getCollection(ROOT_COLLECTION);
 		root.allDocs(this, docs, true);
-		LOG.debug(
-			"loading "
-				+ docs.getLength()
-				+ " documents from "
-				+ docs.getCollectionCount()
-				+ "collections took "
-				+ (System.currentTimeMillis() - start)
-				+ "ms.");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("getAllDocuments(DocumentSet) - end - "
+                + "loading "
+                + docs.getLength()
+                + " documents from "
+                + docs.getCollectionCount()
+                + "collections took "
+                + (System.currentTimeMillis() - start)
+                + "ms.");
+        }
 		return docs;
 	}
 
@@ -539,7 +554,7 @@ public class NativeBroker extends DBBroker {
 				key = new Value(name.getBytes());
 			}
 		Collection collection = null;
-		InputStream dis = null;
+		VariableByteInput is = null;
 		Lock lock = collectionsDb.getLock();
 		try {
 			lock.acquire(Lock.READ_LOCK);
@@ -547,21 +562,23 @@ public class NativeBroker extends DBBroker {
 			if (collection != null) {
 				return collection;
 			}
+			if(name.equals("/db/collection-31/collection-31-1"))
+			    LOG.debug("loading collection " + name);
 			collection = new Collection(collectionsDb, name);
 			try {
 				if (addr < 0) {
-					dis = collectionsDb.getAsStream(key);
+					is = collectionsDb.getAsStream(key);
 				} else {
-					dis = collectionsDb.getAsStream(addr);
+					is = collectionsDb.getAsStream(addr);
 				}
 			} catch (IOException ioe) {
 				LOG.warn(ioe.getMessage(), ioe);
 			}
-			if (dis == null)
+			if (is == null)
 				return null;
-			VariableByteInputStream istream = new VariableByteInputStream(dis);
+
 			try {
-				collection.read(this, istream);
+				collection.read(this, is);
 			} catch (IOException ioe) {
 				LOG.warn(ioe);
 				return null;
@@ -1433,16 +1450,17 @@ public class NativeBroker extends DBBroker {
 							domDb.removeOverflowValue(((BinaryDocument)doc).getPage());
 						} else {
 							NodeImpl node = (NodeImpl)doc.getFirstChild();
-							Iterator k =
-								getDOMIterator(
-									new NodeProxy(
-										doc,
-										node.getGID(),
-										node.getInternalAddress()));
-							while(k.hasNext()) {
-								k.next();
-								k.remove();
-							}
+							domDb.removeAll(node.getInternalAddress());
+//							Iterator k =
+//								getDOMIterator(
+//									new NodeProxy(
+//										doc,
+//										node.getGID(),
+//										node.getInternalAddress()));
+//							while(k.hasNext()) {
+//								k.next();
+//								k.remove();
+//							}
 						}
 						return null;
 					}
@@ -1488,10 +1506,20 @@ public class NativeBroker extends DBBroker {
 				docName = '/' + docName;
 			final DocumentImpl doc = (DocumentImpl) getDocument(docName);
 			if (doc == null) {
-				LOG.debug("document " + docName + " not found");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("removeDocument(String) - end - "
+                        + "document "
+                        + docName
+                        + " not found");
+                }
 				return;
 			}
-			LOG.info("removing document " + doc.getDocId() + " ...");
+            if (LOG.isInfoEnabled()) {
+                LOG.info("removeDocument() - "
+                    + "removing document "
+                    + doc.getDocId()
+                    + " ...");
+            }
 
 			// drop element-index
 			short collectionId = doc.getCollection().getId();
@@ -1501,13 +1529,18 @@ public class NativeBroker extends DBBroker {
 			try {
 				lock.acquire(Lock.WRITE_LOCK);
 				ArrayList elements = elementsDb.findKeys(query);
-				LOG.debug("found " + elements.size() + " elements.");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("removeDocument() - "
+                        + "found "
+                        + elements.size()
+                        + " elements.");
+                }
 
 				Value key;
 				Value value;
 				byte[] data;
 				// byte[] ndata;
-				VariableByteInputStream is;
+				VariableByteArrayInput is;
 				VariableByteOutputStream os;
 				int len;
 				int docId;
@@ -1518,7 +1551,7 @@ public class NativeBroker extends DBBroker {
 					key = (Value) elements.get(i);
 					value = elementsDb.get(key);
 					data = value.getData();
-					is = new VariableByteInputStream(data);
+					is = new VariableByteArrayInput(data);
 					os = new VariableByteOutputStream();
 					changed = false;
 					try {
@@ -1542,38 +1575,50 @@ public class NativeBroker extends DBBroker {
 							}
 						}
 					} catch (EOFException e) {
-						LOG.debug("eof: " + is.available());
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("removeDocument(String) - "
+                                + "eof: "
+                                + is.available(), e);
+                        }
 					}
 					if (changed) {
 						//ndata = os.toByteArray();
 						if (elementsDb.put(key, os.data()) < 0)
-							LOG.debug("could not save element");
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug("removeDocument() - "
+                                    + "could not save element");
+                            }
 					}
 				}
 			} catch (LockException e) {
-				LOG.warn("could not acquire lock on elements", e);
+                LOG.warn("removeDocument(String) - "
+                    + "could not acquire lock on elements", e);
 			} finally {
 				lock.release();
 			}
 			elementPool.clear();
 
 			((NativeTextEngine) textEngine).removeDocument(doc);
-			LOG.debug("removing dom");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("removeDocument() - " + "removing dom");
+            }
 			new DOMTransaction(this, domDb) {
 				public Object start() {
-					NodeList children = doc.getChildNodes();
-					NodeImpl node;
-					for (int i = 0; i < children.getLength(); i++) {
-						node = (NodeImpl) children.item(i);
-						Iterator j =
-							getDOMIterator(
-								new NodeProxy(
-									doc,
-									node.getGID(),
-									node.getInternalAddress()));
-						removeNodes(j);
-					}
-					domDb.remove(doc.getAddress());
+				    NodeImpl node = (NodeImpl)doc.getFirstChild();
+					domDb.removeAll(node.getInternalAddress());
+//					NodeList children = doc.getChildNodes();
+//					NodeImpl node;
+//					for (int i = 0; i < children.getLength(); i++) {
+//						node = (NodeImpl) children.item(i);
+//						Iterator j =
+//							getDOMIterator(
+//								new NodeProxy(
+//									doc,
+//									node.getGID(),
+//									node.getInternalAddress()));
+//						removeNodes(j);
+//					}
+//					domDb.remove(doc.getAddress());
 					return null;
 				}
 			}
@@ -1587,26 +1632,25 @@ public class NativeBroker extends DBBroker {
 						domDb.remove(idx, null);
 						domDb.flush();
 					} catch (BTreeException e) {
-						LOG.warn("error while removing doc", e);
+                        LOG.warn("start() - " + "error while removing doc", e);
 					} catch (DBException e) {
-						LOG.warn("error while removing doc", e);
+                        LOG.warn("start() - " + "error while removing doc", e);
 					} catch (IOException e) {
-						LOG.warn("error while removing doc", e);
+                        LOG.warn("start() - " + "error while removing doc", e);
 					}
 					return null;
 				}
 			}
 			.run();
 			freeDocument(doc.getDocId());
-			LOG.info("removed document.");
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
-			LOG.warn(ioe);
+            LOG.warn("removeDocument(String) - " + ioe);
 		} catch (BTreeException bte) {
 			bte.printStackTrace();
-			LOG.warn(bte);
+            LOG.warn("removeDocument(String) - " + bte);
 		} catch (ReadOnlyException e) {
-			LOG.warn(DATABASE_IS_READ_ONLY);
+            LOG.warn("removeDocument(String) - " + DATABASE_IS_READ_ONLY);
 		}
 	}
 
@@ -2138,6 +2182,10 @@ public class NativeBroker extends DBBroker {
 	}
 
 	public final static class NodeRef extends Value {
+        /**
+         * Log4J Logger for this class
+         */
+        private static final Logger LOG = Logger.getLogger(NodeRef.class);
 
 		public NodeRef() {
 			data = new byte[12];

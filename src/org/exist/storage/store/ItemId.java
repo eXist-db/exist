@@ -28,6 +28,7 @@ class ItemId {
 	public static final short RELOCATED_MASK = (short) 0x8000;
 	public static final short LINK_MASK = (short) 0x4000;
 	public static final short ID_MASK = (short) 0x3FFF;
+	public static final short LINK_OR_RELOCATED_MASK = (short) 0xC000;
 	
 	public final static short getId(short id) {
 		return (short) (id & ID_MASK);
@@ -38,7 +39,7 @@ class ItemId {
 	}
 	
 	public final static boolean isLink(short id) {
-		return (id & LINK_MASK) != 0;
+		return (id & LINK_MASK) == LINK_MASK;
 	}
 	
 	public final static short setIsLink(short id) {
@@ -46,6 +47,14 @@ class ItemId {
 	}
 	
 	public final static boolean isRelocated(short id) {
-		return (id & RELOCATED_MASK) != 0;
+		return (id & RELOCATED_MASK) == RELOCATED_MASK;
 	} 
+	
+	public final static boolean isLinkOrRelocated(short id) {
+	    return (id & LINK_OR_RELOCATED_MASK) != 0;
+	}
+	
+	public final static boolean isOrdinaryRecord(short id) {
+	    return (id & LINK_OR_RELOCATED_MASK) == 0;
+	}
 }

@@ -30,8 +30,8 @@ import org.exist.security.Group;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
-import org.exist.util.VariableByteInputStream;
-import org.exist.util.VariableByteOutputStream;
+import org.exist.storage.io.VariableByteArrayInput;
+import org.exist.storage.io.VariableByteOutputStream;
 
 /**
  * Represents a binary resource. Binary resources are just stored
@@ -95,7 +95,7 @@ public class BinaryDocument extends DocumentImpl {
 		ostream.writeByte((byte) permissions.getPermissions());
 	}
 
-	public void read(VariableByteInputStream istream)
+	public void read(VariableByteArrayInput istream)
 		throws IOException, EOFException {
 		docId = istream.readInt();
 		fileName = collection.getName() + '/' + istream.readUTF();
@@ -132,7 +132,7 @@ public class BinaryDocument extends DocumentImpl {
 	}
 	
 	public void deserialize(byte[] data) {
-		VariableByteInputStream istream = new VariableByteInputStream(data);
+		VariableByteArrayInput istream = new VariableByteArrayInput(data);
 		try {
 			created = istream.readLong();
 			lastModified = istream.readLong();

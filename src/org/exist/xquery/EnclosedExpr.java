@@ -52,9 +52,11 @@ public class EnclosedExpr extends PathExpr {
 	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
 		long start = System.currentTimeMillis();
+		// evaluate the expression
 		context.pushDocumentContext();
 		Sequence result = super.eval(null, null);
 		context.popDocumentContext();
+		// create the output
 		MemTreeBuilder builder = context.getDocumentBuilder();
 		Receiver receiver = new Receiver(builder);
 		start = System.currentTimeMillis();
@@ -73,6 +75,8 @@ public class EnclosedExpr extends PathExpr {
 						buf.append(' ');
 					buf.append(next.getStringValue());
 					next = i.nextItem();
+				// if item is a node, flush any collected character data and
+				//	copy the node to the target doc. 
 				} else if (Type.subTypeOf(next.getType(), Type.NODE)) {
 					if (buf != null && buf.length() > 0) {
 						receiver.characters(buf);
@@ -82,9 +86,11 @@ public class EnclosedExpr extends PathExpr {
 					next = i.nextItem();
 				}
 			}
+			// flush remaining character data
 			if (buf != null && buf.length() > 0)
 				receiver.characters(buf);
 		} catch (SAXException e) {
+		    LOG.warn("SAXException during serialization: " + e.getMessage(), e);
 			throw new XPathException(getASTNode(),
 				"Encountered SAX exception while serializing enclosed expression: "
 					+ pprint());

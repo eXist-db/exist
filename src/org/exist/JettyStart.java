@@ -26,8 +26,11 @@ import java.util.TimerTask;
 
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
+import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.ShutdownListener;
 import org.mortbay.jetty.Server;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Database;
 
 /**
  * This class provides a main method to start Jetty with eXist. It registers shutdown
@@ -51,6 +54,11 @@ public class JettyStart {
 		try {
 			Configuration config = new Configuration("conf.xml", home);
 			BrokerPool.configure(1, 5, config);
+			
+			// register the XMLDB driver
+			Database xmldb = new DatabaseImpl();
+			xmldb.setProperty("create-database", "false");
+			DatabaseManager.registerDatabase(xmldb);
 		} catch (Exception e) {
 			System.err.println("configuration error: " + e.getMessage());
 			e.printStackTrace();

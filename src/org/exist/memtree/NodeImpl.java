@@ -25,6 +25,7 @@ package org.exist.memtree;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
+import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.util.serializer.DOMStreamerPool;
 import org.exist.xquery.Cardinality;
@@ -46,6 +47,8 @@ import org.xml.sax.SAXException;
 
 public class NodeImpl implements Node, NodeValue {
 
+    public final static short REFERENCE_NODE = 100;
+    
 	protected int nodeNumber;
 	protected DocumentImpl document;
 
@@ -92,6 +95,25 @@ public class NodeImpl implements Node, NodeValue {
 		}
 	}
 
+	public QName getQName() {
+	    switch (getNodeType()) {
+			case Node.DOCUMENT_NODE :
+				return QName.DOCUMENT_QNAME;
+			case Node.ATTRIBUTE_NODE :
+			case Node.ELEMENT_NODE :
+			case Node.PROCESSING_INSTRUCTION_NODE :
+				QName qn = (QName)
+					document.namePool.get(document.nodeName[nodeNumber]);
+				return qn;
+			case Node.COMMENT_NODE:
+			    return QName.COMMENT_QNAME;
+			case Node.TEXT_NODE :
+				return QName.TEXT_QNAME;
+			default :
+				return null;
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getNodeValue()
 	 */
@@ -485,18 +507,25 @@ public class NodeImpl implements Node, NodeValue {
 	 * @see org.exist.xpath.value.Item#toSAX(org.exist.storage.DBBroker, org.xml.sax.ContentHandler)
 	 */
 	public void toSAX(DBBroker broker, ContentHandler handler) throws SAXException {
+	    DOMStreamer streamer = null;
 		try {
-			DOMStreamer streamer = DOMStreamerPool.getInstance().borrowDOMStreamer();
+		    Serializer serializer = broker.getSerializer();
+		    serializer.reset();
+			serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
+			serializer.setContentHandler(handler);
+			streamer = DOMStreamerPool.getInstance().borrowDOMStreamer(serializer);
 			streamer.setContentHandler(handler);
 			streamer.serialize(this, false);
-			DOMStreamerPool.getInstance().returnDOMStreamer(streamer);
 		} catch (Exception e) {
+		    DOMStreamerPool.getInstance().returnDOMStreamer(streamer);
+		    e.printStackTrace();
 			throw new SAXException(e);
 		}
 	}
 
 	public void copyTo(DBBroker broker, Receiver receiver) throws SAXException {
-		toSAX(broker, receiver);
+//		toSAX(broker, receiver);
+	    document.copyTo(this, receiver);
 	}
 
 	/* (non-Javadoc)

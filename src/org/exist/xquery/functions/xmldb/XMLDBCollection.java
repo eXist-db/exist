@@ -77,6 +77,7 @@ public class XMLDBCollection extends BasicFunction {
 		try {
 			collection = DatabaseManager.getCollection(collectionURI, user, passwd);
 		} catch (XMLDBException e) {
+		    LOG.debug(e.getMessage(), e);
 			throw new XPathException(getASTNode(), 
 				"exception while retrieving collection: " + e.getMessage(), e);
 		}

@@ -24,6 +24,7 @@ package org.exist.util.serializer;
 
 import org.apache.commons.pool.PoolableObjectFactory;
 import org.apache.commons.pool.impl.StackObjectPool;
+import org.exist.storage.serializers.Serializer;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -44,6 +45,16 @@ public class DOMStreamerPool extends StackObjectPool {
 	public DOMStreamer borrowDOMStreamer() {
 		try {
 			return (DOMStreamer)borrowObject();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public DOMStreamer borrowDOMStreamer(Serializer delegate) {
+	    try {
+			ExtendedDOMStreamer serializer = (ExtendedDOMStreamer)borrowObject();
+			serializer.setSerializer(delegate);
+			return serializer;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

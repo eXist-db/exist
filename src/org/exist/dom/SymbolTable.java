@@ -27,10 +27,9 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
-import org.exist.util.VariableByteInputStream;
-import org.exist.util.VariableByteOutputStream;
+import org.exist.storage.io.VariableByteInput;
+import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.util.hashtable.Int2ObjectHashMap;
-import org.exist.util.hashtable.NamePool;
 import org.exist.util.hashtable.Object2IntHashMap;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
@@ -197,7 +196,7 @@ public class SymbolTable {
 		changed = false;
 	}
 
-	public synchronized void read(VariableByteInputStream istream) throws IOException {
+	public synchronized void read(VariableByteInput istream) throws IOException {
 		max = istream.readShort();
 		nsMax = istream.readShort();
 		int count = istream.readInt();
