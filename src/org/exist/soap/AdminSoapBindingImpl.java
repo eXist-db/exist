@@ -16,6 +16,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.sync.Sync;
 import org.exist.util.LockException;
 import org.exist.xquery.XPathException;
 import org.exist.xupdate.Modification;
@@ -79,7 +80,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 			}
 			broker.saveCollection(coll);
 			broker.flush();
-			broker.sync();
+			broker.sync(Sync.MINOR_SYNC);
 			return true;
 		} catch (Exception e) {
 			LOG.debug(e.getMessage(), e);

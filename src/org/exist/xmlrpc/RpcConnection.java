@@ -71,6 +71,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
+import org.exist.storage.sync.Sync;
 import org.exist.util.Configuration;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
@@ -637,7 +638,7 @@ public class RpcConnection extends Thread {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get();
-			broker.sync();
+			broker.sync(Sync.MAJOR_SYNC);
 		} catch (EXistException e) {
 		} finally {
 			brokerPool.release(broker);

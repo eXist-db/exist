@@ -26,6 +26,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.sync.Sync;
 import org.exist.util.Occurrences;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -55,7 +56,7 @@ public class LocalIndexQueryService implements IndexQueryService {
         try {
             broker = pool.get(user);
             broker.reindex(parent.getCollection().getName());
-            broker.sync();
+            broker.sync(Sync.MAJOR_SYNC);
         } catch (PermissionDeniedException e) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
         } catch (EXistException e) {
@@ -76,7 +77,7 @@ public class LocalIndexQueryService implements IndexQueryService {
         try {
             broker = pool.get(user);
             broker.reindex(path);
-            broker.sync();
+            broker.sync(Sync.MAJOR_SYNC);
         } catch (PermissionDeniedException e) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
         } catch (EXistException e) {
