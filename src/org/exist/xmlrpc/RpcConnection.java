@@ -107,7 +107,7 @@ public class RpcConnection extends Thread {
 			LOG.debug("creating collection " + name);
 			broker.saveCollection(current);
 			broker.flush();
-			broker.sync();
+			//broker.sync();
 			LOG.debug("collection " + name + " has been created");
 		} catch (Exception e) {
 			LOG.debug(e);
@@ -584,6 +584,15 @@ public class RpcConnection extends Thread {
 			r.addElement(tab);
 		}
 		return r;
+	}
+	
+	public Vector getGroups(User user) throws EXistException, PermissionDeniedException {
+		String[] groups = brokerPool.getSecurityManager().getGroups();
+		Vector v = new Vector(groups.length);
+		for (int i = 0; i < groups.length; i++) {
+			v.addElement(groups[i]);
+		}
+		return v;
 	}
 
 	public boolean hasDocument(User user, String name) throws Exception {

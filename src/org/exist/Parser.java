@@ -91,11 +91,11 @@ public class Parser
 	private final static int VALIDATION_DISABLED = 2;
 
 	private int validation = VALIDATION_AUTO;
-
+	
 	public Collection collection = null;
 	protected DBBroker broker = null;
 	protected XMLString charBuf = new XMLString();
-	protected int currentLine = 0, maxLine;
+	protected int currentLine = 0;
 	protected StringBuffer currentPath = new StringBuffer();
 	protected DocumentImpl document = null;
 	protected String fileName;
@@ -658,7 +658,7 @@ public class Parser
 		 *@exception  SAXException               
 		 *@exception  IOException                
 		 *@exception  PermissionDeniedException  
-		 */
+	*/
 	public void scan(Node node, String xmlFileName)
 		throws SAXException, IOException, PermissionDeniedException {
 		if (node == null)
@@ -694,7 +694,7 @@ public class Parser
 			if (!oldDoc.getPermissions().validate(user, Permission.UPDATE))
 				throw new PermissionDeniedException(
 					"document exists and update " + "is not allowed");
-			// no: do we have write permissions?
+		// no: do we have write permissions?
 		} else if (!collection.getPermissions().validate(user, Permission.WRITE))
 			throw new PermissionDeniedException(
 				"not allowed to write to collection " + collection.getName());
@@ -732,7 +732,6 @@ public class Parser
 			broker.removeDocument(oldDoc.getFileName());
 			collection.renameDocument(document.getFileName(), oldDoc.getFileName());
 		}
-
 	}
 
 	public void setDocumentLocator(Locator locator) {

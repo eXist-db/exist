@@ -387,7 +387,8 @@ public class CollectionImpl implements Collection {
 		try {
 			rpcClient.execute("parse", params);
 		} catch (XmlRpcException xre) {
-			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
+			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, 
+				xre == null ? "unknown error" : xre.getMessage(), xre);
 		} catch (IOException ioe) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 		}

@@ -246,7 +246,7 @@ public class Main {
 		if (args.length > 0) {
 			if (args[0].equals("client")) {
 				//_classname = "org.exist.client.InteractiveClient";
-				_classname= "org.exist.InteractiveClient";
+				_classname= "org.exist.client.InteractiveClient";
 				_mode = "client";
 			} else if (args[0].equals("standalone")) {
 				_classname = "org.exist.Server";

@@ -22,38 +22,43 @@
  */
 package org.exist.client;
 
+import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.PushbackInputStream;
 import java.io.StringReader;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Properties;
 import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import java.util.Observer;
-import java.util.Observable;
+
+import org.apache.avalon.excalibur.cli.CLArgsParser;
+import org.apache.avalon.excalibur.cli.CLOption;
+import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
+import org.apache.avalon.excalibur.cli.CLUtil;
 import org.apache.oro.io.GlobFilenameFilter;
 import org.exist.security.Permission;
 import org.exist.security.User;
-import org.exist.util.Occurrences;
-import org.exist.util.XMLFilenameFilter;
-import org.exist.util.DirectoryScanner;
 import org.exist.util.CollectionScanner;
+import org.exist.util.DirectoryScanner;
+import org.exist.util.Occurrences;
 import org.exist.util.ProgressBar;
 import org.exist.util.ProgressIndicator;
+import org.exist.util.XMLFilenameFilter;
 import org.exist.util.XMLUtil;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
@@ -62,10 +67,16 @@ import org.exist.xmldb.XPathQueryServiceImpl;
 import org.gnu.readline.Readline;
 import org.gnu.readline.ReadlineCompleter;
 import org.gnu.readline.ReadlineLibrary;
-import org.xmldb.api.*;
-import org.xmldb.api.base.*;
-import org.xmldb.api.modules.*;
-import org.apache.avalon.excalibur.cli.*;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Database;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.modules.XMLResource;
+import org.xmldb.api.modules.XPathQueryService;
+import org.xmldb.api.modules.XUpdateQueryService;
 
 /**
  *  Command-line client based on the XML:DB API.
@@ -96,7 +107,7 @@ public class InteractiveClient {
 	private final static int XUPDATE_OPT = 'X';
 	private final static int THREADS_OPT = 't';
 	private final static int RECURSE_DIRS_OPT = 'd';
-	private final static int GUI_OPT = 'U';
+	private final static int NO_GUI_OPT = 's';
 
 	private final static CLOptionDescriptor OPTIONS[] =
 		new CLOptionDescriptor[] {
@@ -211,10 +222,10 @@ public class InteractiveClient {
 				"process xupdate commands. Commands are read from the "
 					+ "file specified in the argument."),
 			new CLOptionDescriptor(
-				"gui",
+				"no-gui",
 				CLOptionDescriptor.ARGUMENT_DISALLOWED,
-				GUI_OPT,
-				"start client in gui mode")};
+				NO_GUI_OPT,
+				"don't start client with GUI. Just use the shell.")};
 
 	// ANSI colors for ls display
 	private final static String ANSI_BLUE = "\033[0;34m";
@@ -241,6 +252,8 @@ public class InteractiveClient {
 		defaultProps.setProperty("expand-xincludes", "true");
 	}
 
+	protected static final int colSizes[] = new int[] { 10, 10, 10, -1 };
+
 	protected static String driver = "org.exist.xmldb.DatabaseImpl";
 	protected static String configuration = null;
 
@@ -256,7 +269,7 @@ public class InteractiveClient {
 	protected boolean quiet = false;
 	protected boolean verbose = false;
 	protected boolean recurseDirs = false;
-	protected boolean startGUI = false;
+	protected boolean startGUI = true;
 	protected ClientFrame frame;
 
 	public InteractiveClient() {
@@ -312,6 +325,8 @@ public class InteractiveClient {
 	 *@exception  Exception  Description of the Exception
 	 */
 	private void connect() throws Exception {
+		if (startGUI)
+			frame.setStatus("connecting to " + properties.getProperty("uri"));
 		Class cl = Class.forName(properties.getProperty("driver"));
 		Database database = (Database) cl.newInstance();
 		database.setProperty("create-database", "true");
@@ -323,6 +338,21 @@ public class InteractiveClient {
 				properties.getProperty("uri") + path,
 				properties.getProperty("user"),
 				properties.getProperty("password"));
+		if (startGUI)
+			frame.setStatus(
+				"connected to "
+					+ properties.getProperty("uri")
+					+ " as user "
+					+ properties.getProperty("user"));
+	}
+
+	/**
+	 * Returns the current collection.
+	 * 
+	 * @return the current collection
+	 */
+	protected Collection getCollection() {
+		return current;
 	}
 
 	/**
@@ -330,7 +360,7 @@ public class InteractiveClient {
 	 *
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-	private void getResources() throws XMLDBException {
+	protected void getResources() throws XMLDBException {
 		if (current == null)
 			return;
 		UserManagementService mgtService =
@@ -338,39 +368,58 @@ public class InteractiveClient {
 		String childCollections[] = current.listChildCollections();
 		String childResources[] = current.listResources();
 		Permission perms[] = null;
-		if (properties.getProperty("permissions").equals("true"))
+		if (startGUI || properties.getProperty("permissions").equals("true"))
 			perms = mgtService.listCollectionPermissions();
 		resources = new String[childCollections.length + childResources.length];
 		int i = 0;
 		Collection child;
+		Object tableData[][] = new Object[resources.length][4];
+		String cols[] = new String[4];
 		for (; i < childCollections.length; i++) {
 			child = current.getChildCollection(childCollections[i]);
 			if (properties.getProperty("permissions").equals("true")) {
-				if (properties.getProperty("colors").equals("true"))
-					resources[i] =
-						'd'
-							+ perms[i].toString()
-							+ '\t'
-							+ ANSI_BLUE
-							+ childCollections[i]
-							+ ANSI_WHITE;
-				else
-					resources[i] = 'd' + perms[i].toString() + '\t' + childCollections[i];
+				cols[0] = perms[i].toString();
+				cols[1] = perms[i].getOwner();
+				cols[2] = perms[i].getOwnerGroup();
+				cols[3] = childCollections[i];
+				resources[i] = 'd' + formatString(cols, colSizes);
 			} else
 				resources[i] = childCollections[i];
+			if (startGUI) {
+				tableData[i][0] = perms[i].toString();
+				tableData[i][1] = perms[i].getOwner();
+				tableData[i][2] = perms[i].getOwnerGroup();
+				tableData[i][3] = new CollectionName(childCollections[i]);
+			}
 			completitions.add(childCollections[i]);
 		}
-		if (properties.getProperty("permissions").equals("true"))
+		if (startGUI || properties.getProperty("permissions").equals("true"))
 			perms = mgtService.listResourcePermissions();
 		Resource res;
 		for (int j = 0; j < childResources.length; i++, j++) {
 			res = current.getResource(childResources[j]);
 			if (properties.getProperty("permissions").equals("true") && j < perms.length) {
-				resources[i] = '-' + perms[j].toString() + '\t' + childResources[j];
+				resources[i] =
+					'-'
+						+ perms[j].toString()
+						+ '\t'
+						+ perms[j].getOwner()
+						+ '\t'
+						+ perms[j].getOwnerGroup()
+						+ '\t'
+						+ childResources[j];
 			} else
 				resources[i] = childResources[j];
+			if (startGUI) {
+				tableData[i][0] = perms[j].toString();
+				tableData[i][1] = perms[j].getOwner();
+				tableData[i][2] = perms[j].getOwnerGroup();
+				tableData[i][3] = childResources[j];
+			}
 			completitions.add(childResources[j]);
 		}
+		if (startGUI)
+			frame.setResources(tableData);
 	}
 
 	/**
@@ -421,6 +470,8 @@ public class InteractiveClient {
 		} else {
 			StringTokenizer tok = new StringTokenizer(line, " ");
 			args = new String[tok.countTokens()];
+			if (args.length == 0)
+				return true;
 			int i = 0;
 			while (tok.hasMoreTokens())
 				args[i++] = tok.nextToken();
@@ -480,7 +531,7 @@ public class InteractiveClient {
 				if (temp != null) {
 					current = temp;
 					newPath = tempPath;
-					if(startGUI)
+					if (startGUI)
 						frame.setPath(newPath);
 				} else {
 					messageln("no such collection.");
@@ -493,14 +544,13 @@ public class InteractiveClient {
 				}
 				XMLResource res = retrieve(args[1]);
 				// display document
-				if(res != null) {
+				if (res != null) {
 					if (startGUI) {
 						frame.setEditable(false);
-						//res.getContentAsSAX(frame.getContentHandler());
-						frame.display((String)res.getContent());
+						frame.display((String) res.getContent());
 						frame.setEditable(true);
 					} else {
-						String content = (String)res.getContent();
+						String content = (String) res.getContent();
 						more(content);
 					}
 				}
@@ -656,7 +706,7 @@ public class InteractiveClient {
 					}
 					String home = Readline.readline("home collection [none]: ");
 					User user = new User(args[1], p1);
-					if (home.length() > 0)
+					if (home != null && home.length() > 0)
 						user.setHome(home);
 					String groups = Readline.readline("enter groups: ");
 					StringTokenizer tok = new StringTokenizer(groups, " ,");
@@ -828,6 +878,27 @@ public class InteractiveClient {
 							Integer.toString(terms[i].getOccurrences()),
 							50));
 				}
+			} else if (args[0].equalsIgnoreCase("xupdate")) {
+				String lastLine, command = "";
+				try {
+					while (true) {
+						lastLine = Readline.readline("| ");
+						if (lastLine == null || lastLine.length() == 0)
+							break;
+						command += lastLine;
+					}
+				} catch (EOFException e) {
+				} catch (IOException e) {
+				}
+				String xupdate =
+					"<xu:modifications version=\"1.0\" "
+						+ "xmlns:xu=\"http://www.xmldb.org/xupdate\">"
+						+ command
+						+ "</xu:modifications>";
+				XUpdateQueryService service =
+					(XUpdateQueryService) current.getService("XUpdateQueryService", "1.0");
+				long mods = service.update(xupdate);
+				System.out.println(mods + " modifications processed.");
 			} else if (args[0].equalsIgnoreCase("set")) {
 				if (args.length == 1)
 					properties.list(System.out);
@@ -952,8 +1023,12 @@ public class InteractiveClient {
 		}
 	}
 
-	private final XMLResource retrieve(String resource) throws XMLDBException {
-		current.setProperty("pretty", properties.getProperty("indent"));
+	protected final XMLResource retrieve(String resource) throws XMLDBException {
+		return retrieve(resource, properties.getProperty("indent"));
+	}
+
+	protected final XMLResource retrieve(String resource, String indent) throws XMLDBException {
+		current.setProperty("pretty", indent);
 		current.setProperty("encoding", properties.getProperty("encoding"));
 		current.setProperty("expand-xincludes", properties.getProperty("expand-xincludes"));
 		XMLResource res = (XMLResource) current.getResource(resource);
@@ -986,23 +1061,22 @@ public class InteractiveClient {
 			messageln("done.");
 		}
 	}
-
 	private final void xupdate(String resource, String filename)
 		throws XMLDBException, IOException {
 		File file = new File(filename);
 		if (!(file.exists() && file.canRead())) {
-			System.out.println("cannot read file " + filename);
+			messageln("cannot read file " + filename);
 			return;
 		}
 		String commands = XMLUtil.readFile(file, "UTF-8");
 		XUpdateQueryService service =
 			(XUpdateQueryService) current.getService("XUpdateQueryService", "1.0");
 		long modifications = 0;
-		if (resource != null)
+		if (resource == null)
 			modifications = service.update(commands);
 		else
 			modifications = service.updateResource(resource, commands);
-		System.out.println(modifications + " modifications processed " + "successfully.");
+		messageln(modifications + " modifications processed " + "successfully.");
 	}
 
 	private final void rmcol(String collection) throws XMLDBException {
@@ -1030,10 +1104,6 @@ public class InteractiveClient {
 
 	private final boolean findRecursive(Collection collection, File dir, String base) {
 		File temp[] = dir.listFiles();
-		if (collection instanceof Observable && verbose) {
-			ProgressObserver observer = new ProgressObserver();
-			((Observable) collection).addObserver(observer);
-		}
 		Collection c;
 		XMLResource document;
 		CollectionManagementService mgtService;
@@ -1050,7 +1120,10 @@ public class InteractiveClient {
 								"CollectionManagementService",
 								"1.0");
 						c = mgtService.createCollection(temp[i].getName());
-
+					}
+					if (c instanceof Observable && verbose) {
+						ProgressObserver observer = new ProgressObserver();
+						((Observable) c).addObserver(observer);
 					}
 					findRecursive(c, temp[i], next);
 				} else {
@@ -1084,12 +1157,16 @@ public class InteractiveClient {
 		return true;
 	}
 
-	private final boolean parse(String fileName) throws XMLDBException {
+	protected final boolean parse(String fileName) throws XMLDBException {
 		fileName = fileName.replace('/', File.separatorChar).replace('\\', File.separatorChar);
 		File file = new File(fileName);
 		XMLResource document;
 		String xml;
 		File files[];
+		if (current instanceof Observable && verbose) {
+			ProgressObserver observer = new ProgressObserver();
+			((Observable) current).addObserver(observer);
+		}
 		if (file.canRead()) {
 			if (file.isDirectory()) {
 				if (recurseDirs) {
@@ -1111,10 +1188,6 @@ public class InteractiveClient {
 			}
 		} else
 			files = DirectoryScanner.scanDir(fileName);
-		if (current instanceof Observable && verbose) {
-			ProgressObserver observer = new ProgressObserver();
-			((Observable) current).addObserver(observer);
-		}
 
 		long start;
 		long start0 = System.currentTimeMillis();
@@ -1142,6 +1215,82 @@ public class InteractiveClient {
 			bytes += files[i].length();
 		}
 		messageln("parsed " + bytes + " bytes in " + (System.currentTimeMillis() - start0) + "ms.");
+		return true;
+	}
+
+	protected final boolean parse(File[] files, UploadDialog upload) throws XMLDBException {
+		XMLResource document;
+		String xml;
+		if (!upload.isVisible())
+			upload.setVisible(true);
+		if (current instanceof Observable) {
+			((Observable) current).addObserver(upload.getObserver());
+		}
+		upload.setMaxFilesCount(files.length);
+		for (int i = 0; i < files.length; i++) {
+			if (files[i].canRead()) {
+				if (files[i].isDirectory()) {
+					return findRecursive(current, files[i], path, upload);
+				}
+				upload.reset();
+				upload.setCurrentDir(files[i].getParentFile().getAbsolutePath());
+				upload.setCurrent(files[i].getName());
+				upload.setCurrentSize(files[i].length());
+				document = (XMLResource) current.createResource(files[i].getName(), "XMLResource");
+				document.setContent(files[i]);
+				current.storeResource(document);
+				upload.setFilesCount(i + 1);
+			}
+		}
+		upload.setVisible(false);
+		return true;
+	}
+
+	private final boolean findRecursive(
+		Collection collection,
+		File dir,
+		String base,
+		UploadDialog upload) {
+		upload.setCurrentDir(dir.getAbsolutePath());
+		File temp[] = dir.listFiles();
+		upload.setMaxFilesCount(temp.length);
+		Collection c;
+		XMLResource document;
+		CollectionManagementService mgtService;
+		String next;
+		for (int i = 0; i < temp.length; i++) {
+			next = base + '/' + temp[i].getName();
+			try {
+				if (temp[i].isDirectory()) {
+					upload.setCurrentDir(temp[i].getAbsolutePath());
+					c = collection.getChildCollection(temp[i].getName());
+					if (c == null) {
+						mgtService =
+							(CollectionManagementService) collection.getService(
+								"CollectionManagementService",
+								"1.0");
+						c = mgtService.createCollection(temp[i].getName());
+
+					}
+					if (c instanceof Observable) {
+						((Observable) c).addObserver(upload.getObserver());
+					}
+					findRecursive(c, temp[i], next, upload);
+				} else {
+					upload.reset();
+					upload.setCurrent(temp[i].getName());
+					upload.setCurrentSize(temp[i].length());
+					document =
+						(XMLResource) collection.createResource(temp[i].getName(), "XMLResource");
+					document.setContent(temp[i]);
+					collection.storeResource(document);
+					++filesCount;
+					upload.setFilesCount(i + 1);
+				}
+			} catch (XMLDBException e) {
+				upload.showMessage("could not parse file " + temp[i].getAbsolutePath());
+			}
+		}
 		return true;
 	}
 
@@ -1262,6 +1411,7 @@ public class InteractiveClient {
 		int size = opt.size();
 		CLOption option;
 		boolean needPasswd = false;
+		boolean passwdSpecified = false;
 		boolean interactive = true;
 		boolean foundCollection = false;
 		boolean doParse = false;
@@ -1280,8 +1430,8 @@ public class InteractiveClient {
 				case HELP_OPT :
 					printUsage();
 					return;
-				case GUI_OPT :
-					startGUI = true;
+				case NO_GUI_OPT :
+					startGUI = false;
 					break;
 				case QUIET_OPT :
 					quiet = true;
@@ -1294,11 +1444,13 @@ public class InteractiveClient {
 					break;
 				case USER_OPT :
 					properties.setProperty("user", option.getArgument());
-					needPasswd = true;
+					if(!passwdSpecified)
+						needPasswd = true;
 					break;
 				case PASS_OPT :
 					properties.setProperty("password", option.getArgument());
 					needPasswd = false;
+					passwdSpecified = true;
 					break;
 				case CONFIG_OPT :
 					properties.setProperty("configuration", option.getArgument());
@@ -1364,13 +1516,28 @@ public class InteractiveClient {
 					break;
 			}
 		}
+		// prompt for password if needed
+		if (startGUI) {
+			String[] loginData = ClientFrame.getLoginData(properties.getProperty("user"));
+			if (loginData == null) {
+				System.exit(0);
+			}
+			properties.setProperty("user", loginData[0]);
+			properties.setProperty("password", loginData[1]);
+		} else if (needPasswd) {
+			try {
+				properties.setProperty("password", Readline.readline("password: "));
+			} catch (Exception e) {
+			}
+		}
+
 		String pathSep = System.getProperty("file.separator", "/");
 		String home = System.getProperty("exist.home");
 		if (home == null)
 			home = System.getProperty("user.dir");
 		File history = new File(home + File.separatorChar + ".exist_history");
 		if (startGUI) {
-			frame = new ClientFrame(this, path);
+			frame = new ClientFrame(this, path, properties);
 			frame.setLocation(100, 100);
 			frame.setSize(500, 450);
 			frame.show();
@@ -1386,37 +1553,39 @@ public class InteractiveClient {
 				}
 			}
 			Readline.initReadline("exist");
-			Readline.setCompleter(new CollectionCompleter()); 
+			Readline.setCompleter(new CollectionCompleter());
 			if (history.canRead())
 				try {
 					Readline.readHistoryFile(history.getAbsolutePath());
 				} catch (Exception e) {
 				}
 		}
-		
-		// prompt for password if needed
-		if (needPasswd)
-			try {
-				properties.setProperty("password", Readline.readline("password: "));
-			} catch (Exception e) {
-			}
 
 		if (!quiet)
 			printNotice();
-			
+
 		// connect to the db
 		try {
 			connect();
 		} catch (XMLDBException xde) {
-			System.err.println("XMLDBException: " + xde.getMessage());
+			if (startGUI)
+				frame.setStatus("Connection to database failed; message: " + xde.getMessage());
+			else
+				System.err.println("Connection to database failed; message: " + xde.getMessage());
 			xde.printStackTrace();
 			return;
 		} catch (Exception cnf) {
-			System.err.println("Cannot connect to database");
+			if (startGUI)
+				frame.setStatus("Connection to database failed; message: " + cnf.getMessage());
+			else
+				System.err.println("Connection to database failed; message: " + cnf.getMessage());
 			return;
 		}
 		if (current == null) {
-			System.err.println("Could not retrieve collection " + path);
+			if (startGUI)
+				frame.setStatus("Could not retrieve collection " + path);
+			else
+				System.err.println("Could not retrieve collection " + path);
 			return;
 		}
 
@@ -1518,7 +1687,7 @@ public class InteractiveClient {
 			e1.getCause().printStackTrace();
 		}
 		messageln("\ntype help or ? for help.");
-		if(!startGUI)
+		if (!startGUI)
 			readlineInputLoop(home, history);
 		else
 			frame.displayPrompt();
@@ -1546,7 +1715,24 @@ public class InteractiveClient {
 		} catch (Exception e) {
 		}
 		Readline.cleanup();
+		shutdown(false);
 		messageln("quit.");
+	}
+
+	private final void shutdown(boolean force) {
+		try {
+			DatabaseInstanceManager mgr =
+				(DatabaseInstanceManager) current.getService("DatabaseInstanceManager", "1.0");
+			if (mgr == null) {
+				System.err.println("service is not available");
+			} else if (mgr.isLocalInstance() || force) {
+				System.out.println("shutting down database...");
+				mgr.shutdown();
+			}
+		} catch (XMLDBException e) {
+			System.err.println("database shutdown failed: ");
+			e.printStackTrace();
+		}
 	}
 
 	private final void printUsage() {
@@ -1632,5 +1818,33 @@ public class InteractiveClient {
 			buf.append(' ');
 		buf.append(s2);
 		return buf.toString();
+	}
+
+	private static String formatString(String[] args, int[] sizes) {
+		StringBuffer buf = new StringBuffer();
+		for (int i = 0; i < args.length; i++) {
+			if (sizes[i] < 0) {
+				buf.append(args[i]);
+			} else {
+				for (int j = 0; j < sizes[i] && j < args[i].length(); j++)
+					buf.append(args[i].charAt(j));
+			}
+			for (int j = 0; j < sizes[i] - args[i].length(); j++)
+				buf.append(' ');
+		}
+		return buf.toString();
+	}
+
+	public static class CollectionName {
+
+		String name_;
+
+		public CollectionName(String name) {
+			name_ = name;
+		}
+
+		public String toString() {
+			return name_;
+		}
 	}
 }

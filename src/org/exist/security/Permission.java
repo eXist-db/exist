@@ -311,10 +311,6 @@ public class Permission {
         buf.append( ( permissions & READ ) == 0 ? '-' : 'r' );
         buf.append( ( permissions & WRITE ) == 0 ? '-' : 'w' );
         buf.append( ( permissions & UPDATE ) == 0 ? '-' : 'u' );
-        buf.append( '\t' );
-        buf.append( owner );
-        buf.append( '\t' );
-        buf.append( ownerGroup );
         return buf.toString();
     }
 

@@ -1,0 +1,196 @@
+package org.exist.client;
+
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.util.Observable;
+import java.util.Observer;
+
+import javax.swing.BorderFactory;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
+import org.exist.storage.ElementIndex;
+import org.exist.storage.TextSearchEngine;
+import org.exist.util.ProgressIndicator;
+
+class UploadDialog extends JFrame {
+
+	JTextField currentFile;
+	JTextField currentDir;
+	JLabel currentSize;
+	JTextArea messages;
+	JProgressBar progress;
+	JProgressBar byDirProgress;
+
+	public UploadDialog() {
+		super("Storing files ...");
+
+		GridBagLayout grid = new GridBagLayout();
+		getContentPane().setLayout(grid);
+		GridBagConstraints c = new GridBagConstraints();
+		c.insets = new Insets(5, 5, 5, 5);
+
+		JLabel label = new JLabel("Directory:");
+		c.gridx = 0;
+		c.gridy = 0;
+		c.anchor = GridBagConstraints.WEST;
+		c.fill = GridBagConstraints.NONE;
+		grid.setConstraints(label, c);
+		getContentPane().add(label);
+
+		currentDir = new JTextField(30);
+		currentDir.setEditable(false);
+		c.gridx = 1;
+		c.gridy = 0;
+		c.anchor = GridBagConstraints.EAST;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		grid.setConstraints(currentDir, c);
+		getContentPane().add(currentDir);
+
+		label = new JLabel("Stored:");
+		c.gridx = 0;
+		c.gridy = 1;
+		c.anchor = GridBagConstraints.WEST;
+		c.fill = GridBagConstraints.NONE;
+		grid.setConstraints(label, c);
+		getContentPane().add(label);
+
+		byDirProgress = new JProgressBar();
+		byDirProgress.setStringPainted(true);
+		c.gridx = 1;
+		c.gridy = 1;
+		c.anchor = GridBagConstraints.EAST;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		grid.setConstraints(byDirProgress, c);
+		getContentPane().add(byDirProgress);
+
+		label = new JLabel("Uploading file:");
+		c.gridx = 0;
+		c.gridy = 2;
+		c.anchor = GridBagConstraints.WEST;
+		c.fill = GridBagConstraints.NONE;
+		grid.setConstraints(label, c);
+		getContentPane().add(label);
+
+		currentFile = new JTextField(30);
+		currentFile.setEditable(false);
+		c.gridx = 1;
+		c.gridy = 2;
+		c.anchor = GridBagConstraints.EAST;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		grid.setConstraints(currentFile, c);
+		getContentPane().add(currentFile);
+
+		label = new JLabel("Size:");
+		c.gridx = 0;
+		c.gridy = 3;
+		c.anchor = GridBagConstraints.WEST;
+		c.fill = GridBagConstraints.NONE;
+		grid.setConstraints(label, c);
+		getContentPane().add(label);
+
+		currentSize = new JLabel("0K");
+		c.gridx = 1;
+		c.gridy = 3;
+		c.anchor = GridBagConstraints.EAST;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		grid.setConstraints(currentSize, c);
+		getContentPane().add(currentSize);
+
+		JLabel status = new JLabel("Progress:");
+		c.gridx = 0;
+		c.gridy = 4;
+		c.anchor = GridBagConstraints.WEST;
+		c.fill = GridBagConstraints.NONE;
+		grid.setConstraints(status, c);
+		getContentPane().add(status);
+
+		progress = new JProgressBar();
+		progress.setIndeterminate(true);
+		progress.setStringPainted(true);
+		c.gridx = 1;
+		c.gridy = 4;
+		c.anchor = GridBagConstraints.EAST;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		grid.setConstraints(progress, c);
+		getContentPane().add(progress);
+
+		messages = new JTextArea(5, 50);
+		messages.setEditable(false);
+		JScrollPane scroll =
+			new JScrollPane(
+				messages,
+				JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		scroll.setBorder(BorderFactory.createTitledBorder("Messages"));
+		c.gridx = 0;
+		c.gridy = 5;
+		c.gridwidth = 2;
+		c.anchor = GridBagConstraints.WEST;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		grid.setConstraints(scroll, c);
+		getContentPane().add(scroll);
+
+		pack();
+	}
+
+	public Observer getObserver() {
+		return new UploadProgressObserver();
+	}
+
+	public void setCurrent(String label) {
+		currentFile.setText(label);
+	}
+
+	public void setCurrentDir(String dir) {
+		currentDir.setText(dir);
+	}
+
+	public void setCurrentSize(long size) {
+		if(size >= 1024)
+			currentSize.setText(String.valueOf(size / 1024) + "K");
+		else
+			currentSize.setText(String.valueOf(size));
+	}
+
+	public void setMaxFilesCount(int count) {
+		byDirProgress.setMaximum(count);
+	}
+	
+	public void setFilesCount(int count) {
+		byDirProgress.setValue(count);
+	}
+	
+	public void showMessage(String msg) {
+		messages.append(msg + "\n");
+	}
+
+	public void reset() {
+		progress.setString("Storing ...");
+		progress.setIndeterminate(true);
+	}
+
+	class UploadProgressObserver implements Observer {
+
+		int mode = 0;
+
+		public void update(Observable o, Object arg) {
+			progress.setIndeterminate(false);
+			ProgressIndicator ind = (ProgressIndicator) arg;
+			progress.setValue(ind.getPercentage());
+			if (o instanceof TextSearchEngine)
+				progress.setString("Storing words");
+			else if (o instanceof ElementIndex)
+				progress.setString("Storing elements");
+			else
+				progress.setString("Storing nodes");
+		}
+
+	}
+}

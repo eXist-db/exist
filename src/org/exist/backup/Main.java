@@ -8,14 +8,19 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.plaf.FileChooserUI;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
 import org.apache.avalon.excalibur.cli.CLUtil;
+import org.exist.xmldb.DatabaseInstanceManager;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
 
@@ -31,8 +36,9 @@ public class Main {
 	private final static int PASS_OPT = 'p';
 	private final static int BACKUP_OPT = 'b';
 	private final static int BACKUP_DIR_OPT = 'd';
-    private final static int RESTORE_OPT = 'r';
+	private final static int RESTORE_OPT = 'r';
 	private final static int OPTION_OPT = 'o';
+	private final static int GUI_OPT = 'U';
 
 	private final static CLOptionDescriptor OPTIONS[] =
 		new CLOptionDescriptor[] {
@@ -41,6 +47,11 @@ public class Main {
 				CLOptionDescriptor.ARGUMENT_DISALLOWED,
 				HELP_OPT,
 				"print help on command line options and exit."),
+			new CLOptionDescriptor(
+				"gui",
+				CLOptionDescriptor.ARGUMENT_DISALLOWED,
+				GUI_OPT,
+				"start in GUI mode"),
 			new CLOptionDescriptor(
 				"user",
 				CLOptionDescriptor.ARGUMENT_REQUIRED,
@@ -53,7 +64,7 @@ public class Main {
 				"set password."),
 			new CLOptionDescriptor(
 				"backup",
-				CLOptionDescriptor.ARGUMENT_REQUIRED,
+				CLOptionDescriptor.ARGUMENT_OPTIONAL,
 				BACKUP_OPT,
 				"backup the specified collection."),
 			new CLOptionDescriptor(
@@ -61,16 +72,14 @@ public class Main {
 				CLOptionDescriptor.ARGUMENT_REQUIRED,
 				BACKUP_DIR_OPT,
 				"specify the directory to use for backups."),
-            new CLOptionDescriptor(
-                "restore",
-                CLOptionDescriptor.ARGUMENT_REQUIRED,
-                RESTORE_OPT,
-                "read the specified restore file and restore the " +
-                "resources described there."),
+			new CLOptionDescriptor(
+				"restore",
+				CLOptionDescriptor.ARGUMENT_OPTIONAL,
+				RESTORE_OPT,
+				"read the specified restore file and restore the " + "resources described there."),
 			new CLOptionDescriptor(
 				"option",
-				CLOptionDescriptor.ARGUMENTS_REQUIRED_2
-					| CLOptionDescriptor.DUPLICATES_ALLOWED,
+				CLOptionDescriptor.ARGUMENTS_REQUIRED_2 | CLOptionDescriptor.DUPLICATES_ALLOWED,
 				OPTION_OPT,
 				"specify extra options: property=value. For available properties see "
 					+ "client.properties.")};
@@ -89,9 +98,7 @@ public class Main {
 			else
 				propFile =
 					new File(
-						home
-							+ System.getProperty("file.separator", "/")
-							+ "backup.properties");
+						home + System.getProperty("file.separator", "/") + "backup.properties");
 
 			InputStream pin;
 			if (propFile.canRead())
@@ -105,7 +112,7 @@ public class Main {
 		} catch (IOException ioe) {
 		}
 
-		//      parse command-line options
+		// parse command-line options
 		final CLArgsParser optParser = new CLArgsParser(args, OPTIONS);
 
 		if (optParser.getErrorString() != null) {
@@ -116,18 +123,22 @@ public class Main {
 		final int size = opt.size();
 		CLOption option;
 		String optionBackup = null;
-        String optionRestore = null;
+		String optionRestore = null;
 		String optionPass = null;
+		boolean doBackup = false;
+		boolean doRestore = false;
+		boolean guiMode = false;
 		for (int i = 0; i < size; i++) {
 			option = (CLOption) opt.get(i);
 			switch (option.getId()) {
 				case HELP_OPT :
 					printUsage();
 					return;
+				case GUI_OPT :
+					guiMode = true;
+					break;
 				case OPTION_OPT :
-					properties.setProperty(
-						option.getArgument(0),
-						option.getArgument(1));
+					properties.setProperty(option.getArgument(0), option.getArgument(1));
 					break;
 				case USER_OPT :
 					properties.setProperty("user", option.getArgument());
@@ -139,11 +150,14 @@ public class Main {
 					if (option.getArgumentCount() == 1)
 						optionBackup = option.getArgument();
 					else
-						optionBackup = "/db";
+						optionBackup = null;
+					doBackup = true;
 					break;
-                case RESTORE_OPT :
-                    optionRestore = option.getArgument();
-                    break;
+				case RESTORE_OPT :
+					if(option.getArgumentCount() == 1)
+						optionRestore = option.getArgument();
+					doRestore = true;
+					break;
 				case BACKUP_DIR_OPT :
 					properties.setProperty("backup-dir", option.getArgument());
 					break;
@@ -151,18 +165,14 @@ public class Main {
 		}
 
 		// initialize driver
+		Database database;
 		try {
 			Class cl =
-				Class.forName(
-					properties.getProperty(
-						"driver",
-						"org.exist.xmldb.DatabaseImpl"));
-			Database database = (Database) cl.newInstance();
+				Class.forName(properties.getProperty("driver", "org.exist.xmldb.DatabaseImpl"));
+			database = (Database) cl.newInstance();
 			database.setProperty("create-database", "true");
 			if (properties.containsKey("configuration"))
-				database.setProperty(
-					"configuration",
-					properties.getProperty("configuration"));
+				database.setProperty("configuration", properties.getProperty("configuration"));
 			DatabaseManager.registerDatabase(database);
 		} catch (ClassNotFoundException e) {
 			reportError(e);
@@ -179,47 +189,96 @@ public class Main {
 		}
 
 		// process
-		if (optionBackup != null) {
-			Backup backup =
-				new Backup(
-					properties.getProperty("user", "admin"),
-					optionPass,
-					properties.getProperty("backup-dir", "backup"),
-					properties.getProperty("uri", "xmldb:exist://")
-						+ optionBackup);
-			try {
-				backup.backup();
-			} catch (XMLDBException e) {
-				reportError(e);
-			} catch (IOException e) {
-				reportError(e);
-			} catch (SAXException e) {
-				System.err.println("ERROR: " + e.getMessage());
-				System.err.println("caused by ");
-				e.getException().printStackTrace();
+		if (doBackup) {
+			if (optionBackup == null) {
+				if (guiMode) {
+					CreateBackupDialog dialog =
+						new CreateBackupDialog(
+							properties.getProperty("uri", "xmldb:exist://"),
+							properties.getProperty("user", "admin"),
+							optionPass,
+							properties.getProperty("backup-dir", "backup"));
+					if (JOptionPane
+						.showOptionDialog(
+							null,
+							dialog,
+							"Create Backup",
+							JOptionPane.OK_CANCEL_OPTION,
+							JOptionPane.QUESTION_MESSAGE,
+							null,
+							null,
+							null)
+						== JOptionPane.YES_OPTION) {
+						optionBackup = dialog.getCollection();
+						properties.setProperty("backup-dir", dialog.getBackupDir());
+					}
+				} else
+					optionBackup = "/db";
+			}
+			if (optionBackup != null) {
+				Backup backup =
+					new Backup(
+						properties.getProperty("user", "admin"),
+						optionPass,
+						properties.getProperty("backup-dir", "backup"),
+						properties.getProperty("uri", "xmldb:exist://") + optionBackup);
+				try {
+					backup.backup(guiMode, null);
+				} catch (XMLDBException e) {
+					reportError(e);
+				} catch (IOException e) {
+					reportError(e);
+				} catch (SAXException e) {
+					System.err.println("ERROR: " + e.getMessage());
+					System.err.println("caused by ");
+					e.getException().printStackTrace();
+				}
 			}
 		}
-        if (optionRestore != null) {
-            try {
-				Restore restore = new Restore(
-				    properties.getProperty("user", "admin"),
-				    optionPass,
-				    new File(optionRestore),
-                    properties.getProperty("uri", "xmldb:exist://")
-				);
-				restore.restore();
-			} catch (FileNotFoundException e) {
-                reportError(e);
-			} catch (ParserConfigurationException e) {
-                reportError(e);
-			} catch (SAXException e) {
-                reportError(e);
-			} catch (XMLDBException e) {
-                reportError(e);
-			} catch (IOException e) {
-                reportError(e);
+		if (doRestore) {
+			if (optionRestore == null && guiMode) {
+				JFileChooser chooser = new JFileChooser();
+				chooser.setMultiSelectionEnabled(false);
+				chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				if (chooser.showDialog(null, "Select backup file for restore")
+					== JFileChooser.APPROVE_OPTION) {
+					File f = chooser.getSelectedFile();
+					optionRestore = f.getAbsolutePath();
+				}
 			}
-        }
+			if (optionRestore != null) {
+				try {
+					Restore restore =
+						new Restore(
+							properties.getProperty("user", "admin"),
+							optionPass,
+							new File(optionRestore),
+							properties.getProperty("uri", "xmldb:exist://"));
+					restore.restore(guiMode, null);
+				} catch (FileNotFoundException e) {
+					reportError(e);
+				} catch (ParserConfigurationException e) {
+					reportError(e);
+				} catch (SAXException e) {
+					reportError(e);
+				} catch (XMLDBException e) {
+					reportError(e);
+				} catch (IOException e) {
+					reportError(e);
+				}
+			}
+		}
+		try {
+			Collection root =
+				DatabaseManager.getCollection(
+					properties.getProperty("uri", "xmldb:exist://") + "/db",
+					properties.getProperty("user", "admin"),
+					optionPass);
+			shutdown(root);
+		} catch (XMLDBException e1) {
+			e1.printStackTrace();
+		}
+		System.exit(0);
 	}
 
 	private final static void reportError(Throwable e) {
@@ -232,9 +291,24 @@ public class Main {
 	}
 
 	private final static void printUsage() {
-		System.out.println(
-			"Usage: java " + Main.class.getName() + " [options]");
+		System.out.println("Usage: java " + Main.class.getName() + " [options]");
 		System.out.println(CLUtil.describeOptions(OPTIONS).toString());
+	}
+
+	private final static void shutdown(Collection root) {
+		try {
+			DatabaseInstanceManager mgr =
+				(DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
+			if (mgr == null) {
+				System.err.println("service is not available");
+			} else if (mgr.isLocalInstance()) {
+				System.out.println("shutting down database...");
+				mgr.shutdown();
+			}
+		} catch (XMLDBException e) {
+			System.err.println("database shutdown failed: ");
+			e.printStackTrace();
+		}
 	}
 
 	public static void main(String[] args) {

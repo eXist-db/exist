@@ -1009,10 +1009,10 @@ public class NativeTextEngine extends TextSearchEngine {
 					notifyObservers(progress);
 				}
 			}
-			words.clear();
 			progress.finish();
 			setChanged();
 			notifyObservers(progress);
+			words.clear();
 		}
 
 		private void flushWord(short collectionId, String word, ByteArray data) {

@@ -728,20 +728,22 @@ public interface RpcAPI {
 
     boolean removeUser( User user, String name )
          throws EXistException, PermissionDeniedException;
+    
+    Vector getGroups(User user) throws EXistException, PermissionDeniedException;
          
-	public Vector getIndexedElements(User user, String collectionName, boolean inclusive)
+	Vector getIndexedElements(User user, String collectionName, boolean inclusive)
 		throws EXistException, PermissionDeniedException;
 		
-	public Vector scanIndexTerms(User user, String collectionName,
+	Vector scanIndexTerms(User user, String collectionName,
 		String start, String end, boolean inclusive)
 		throws PermissionDeniedException, EXistException;
 		
-	public void releaseQueryResult(int handle);
+	void releaseQueryResult(int handle);
 	
-	public int xupdate(User user, String collectionName, byte[] xupdate)
+	int xupdate(User user, String collectionName, byte[] xupdate)
 		throws PermissionDeniedException, EXistException, SAXException;
 		
-	public int xupdateResource(User user, String resource, byte[] xupdate)
+	int xupdateResource(User user, String resource, byte[] xupdate)
 		throws PermissionDeniedException, EXistException, SAXException;
 }
 

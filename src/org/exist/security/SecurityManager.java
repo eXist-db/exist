@@ -25,6 +25,7 @@ package org.exist.security;
 import it.unimi.dsi.fastutil.Int2ObjectRBTreeMap;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.log4j.Category;
@@ -148,10 +149,20 @@ public class SecurityManager {
 		}
 	}
 
-	public synchronized void deleteUser(String name) {
-		for (Iterator i = users.values().iterator(); i.hasNext();)
-			if (((User) i.next()).getName().equals(name))
-				i.remove();
+	public synchronized void deleteUser(String name) throws PermissionDeniedException {
+		deleteUser(getUser(name));
+	}
+	public synchronized void deleteUser(User user) throws PermissionDeniedException {
+		if(user == null)
+			return;
+		if(user.getName().equals("admin") || user.getName().equals("guest"))
+			throw new PermissionDeniedException("user " + user.getName() +
+				" is required by the system. It cannot be removed.");
+		user = (User)users.remove(user.getUID());
+		if(user != null)
+			LOG.debug("user " + user.getName() + " removed");
+		else
+			LOG.debug("user "+ user.getName() + " not found");
 		DBBroker broker = null;
 		try {
 			broker = pool.get();
@@ -218,6 +229,18 @@ public class SecurityManager {
 		return (Group)groups.get(gid);
 	}
 	
+	public synchronized String[] getGroups() {
+		ArrayList list = new ArrayList(groups.size());
+		Group group;
+		for(Iterator i = groups.values().iterator(); i.hasNext(); ) {
+			group = (Group) i.next();
+			list.add(group.getName());
+		}
+		String[] gl = new String[list.size()];
+		list.toArray(gl);
+		return gl;
+	}
+	
 	public synchronized boolean hasAdminPrivileges(User user) {
 		return user.hasGroup(DBA_GROUP);
 	}
@@ -251,7 +274,7 @@ public class SecurityManager {
 			buf.append(((User) i.next()).toString());
 		buf.append("</users>");
 		buf.append("</auth>");
-
+		System.out.println(buf.toString());
 		// store users.xml
 		broker.flush();
 		broker.sync();
