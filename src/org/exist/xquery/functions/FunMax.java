@@ -23,6 +23,7 @@
 package org.exist.xquery.functions;
 
 import java.text.Collator;
+import java.util.Iterator;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
@@ -86,7 +87,7 @@ public class FunMax extends CollatingFunction {
 		if(arg.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		Collator collator = getCollator(contextSequence, contextItem, 2);
-		SequenceIterator iter = arg.iterate();
+		SequenceIterator iter = arg.unorderedIterator();
 		AtomicValue max = (AtomicValue)iter.nextItem();
 		if(max.getType() == Type.ATOMIC)
 			max = max.convertTo(Type.DOUBLE);
