@@ -167,7 +167,6 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 			pUser = user;
 		if (pPassword == null)
 			pPassword = password;
-        System.out.println(pUser + "; " + pPassword);
 		try {
 			collection = DatabaseManager.getCollection(uri, pUser, pPassword);
 			if (collection == null) {
