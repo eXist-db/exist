@@ -301,6 +301,16 @@ public class IntegerValue extends NumericValue implements Indexable {
 	public NumericValue round() throws XPathException {
 		return this;
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.NumericValue#round(org.exist.xquery.IntegerValue)
+	 */
+	public NumericValue round(IntegerValue precision) throws XPathException {
+		if ( precision.getInt()<=0 )
+			return (IntegerValue) ((DecimalValue) convertTo(Type.DECIMAL)).round(precision).convertTo(Type.INTEGER);
+		else
+			return this;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.NumericValue#minus(org.exist.xquery.value.NumericValue)
@@ -485,4 +495,5 @@ public class IntegerValue extends NumericValue implements Indexable {
         else
             return getType() > other.getType() ? 1 : -1;
     }
+	
 }

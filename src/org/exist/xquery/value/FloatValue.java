@@ -149,7 +149,15 @@ public class FloatValue extends NumericValue implements Indexable {
 	public NumericValue round() throws XPathException {
 		return new FloatValue((float) Math.round(value));
 	}
-
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.NumericValue#round(org.exist.xquery.value.IntegerValue)
+	 */
+	public NumericValue round(IntegerValue precision) throws XPathException {
+		/* use the decimal rounding method */
+		return (FloatValue) ((DecimalValue) convertTo(Type.DECIMAL)).round(precision).convertTo(Type.FLOAT);
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.NumericValue#minus(org.exist.xquery.value.NumericValue)
 	 */
@@ -312,4 +320,5 @@ public class FloatValue extends NumericValue implements Indexable {
         else
             return getType() > other.getType() ? 1 : -1;
     }
+	
 }
