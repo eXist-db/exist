@@ -227,7 +227,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 			}
 
 			AST ast = parser.getAST();
-
+			//LOG.debug("AST: " + ast.toStringTree());
 			PathExpr expr = new PathExpr(context);
 			treeParser.xpath(ast, expr);
 			if (treeParser.foundErrors()) {
@@ -237,6 +237,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 					treeParser.getLastException());
 			}
 			LOG.debug("compilation took "  +  (System.currentTimeMillis() - start));
+			//LOG.debug("query:\n " + expr.pprint());
 			return expr;
 		} catch (EXistException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);

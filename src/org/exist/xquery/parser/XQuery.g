@@ -810,6 +810,8 @@ ncnameOrKeyword returns [String name]
 reservedKeywords returns [String name]
 { name= null; }
 :
+	"element" { name = "element"; }
+	|
     "to" { name = "to"; }
     |
 	"div" { name= "div"; }
@@ -1546,8 +1548,8 @@ throws PermissionDeniedException, EXistException, XPathException
 	)
 	{
 		OpOr or= new OpOr(context);
-		or.add(left);
-		or.add(right);
+		or.addPath(left);
+		or.addPath(right);
 		path.addPath(or);
 		step = or;
 	}
@@ -1563,8 +1565,8 @@ throws PermissionDeniedException, EXistException, XPathException
 	)
 	{
 		OpAnd and= new OpAnd(context);
-		and.add(left);
-		and.add(right);
+		and.addPath(left);
+		and.addPath(right);
 		path.addPath(and);
 		step = and;
 	}

@@ -54,10 +54,22 @@ public class PathExpr extends AbstractExpression implements CompiledExpression {
     	super(context);
     }
 
+    /**
+     * Add an arbitrary expression to this object's list of 
+     * child-expressions.
+     * 
+     * @param s
+     */
     public void add( Expression s ) {
         steps.add( s );
     }
 
+    /**
+     * Add all the child-expressions from another PathExpr 
+     * to this object's child-expressions.
+     *  
+     * @param path
+     */
     public void add( PathExpr path ) {
     	Expression expr;
         for ( Iterator i = path.steps.iterator(); i.hasNext();  ) {
@@ -70,10 +82,21 @@ public class PathExpr extends AbstractExpression implements CompiledExpression {
         inputDocumentSet.add( doc );
     }
 
+    /**
+     * Add another PathExpr to this object's expression list.
+     * @param path
+     */
     public void addPath( PathExpr path ) {
         steps.add( path );
     }
 
+    /**
+     * Add a predicate expression to the list of expressions.
+     * The predicate is added to the last expression in the
+     * list.
+     * 
+     * @param pred
+     */
     public void addPredicate( Predicate pred ) {
         Expression e = (Expression) steps.getLast();
         if ( e instanceof Step )
