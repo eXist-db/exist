@@ -941,10 +941,10 @@ public class DOMFile extends BTree implements Lockable {
 				address = findValue(this, proxy);
 			if(address == BTree.KEY_NOT_FOUND)
 				return null;
-			RecordPos rec = findValuePosition(address);
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
-			getNodeValue(os, rec);
-			byte[] data = os.toByteArray();
+			final RecordPos rec = findValuePosition(address);
+			final ByteArrayOutputStream os = new ByteArrayOutputStream();
+			getNodeValue(os, rec, true);
+			final byte[] data = os.toByteArray();
 			String value;
 			try {
 				value = new String(data, "UTF-8");
@@ -960,7 +960,7 @@ public class DOMFile extends BTree implements Lockable {
 		return null;
 	}
 	
-	private void getNodeValue(ByteArrayOutputStream os, RecordPos rec) {
+	private void getNodeValue(ByteArrayOutputStream os, RecordPos rec, boolean firstCall) {
 		if(rec.offset > rec.page.getPageHeader().getDataLength()) {
 			final long nextPage = rec.page.getPageHeader().getNextDataPage();
 			if(nextPage < 0) {
@@ -971,21 +971,30 @@ public class DOMFile extends BTree implements Lockable {
 			buffer.add(rec.page);
 			rec.offset = 2;
 		}
-		short len = ByteConversion.byteToShort(rec.page.data, rec.offset);
+		final short len = ByteConversion.byteToShort(rec.page.data, rec.offset);
 		rec.offset += 2;
-		short type = Signatures.getType(rec.page.data[rec.offset]);
+		final short type = Signatures.getType(rec.page.data[rec.offset]);
 		switch(type) {
 			case Node.ELEMENT_NODE:
-				int children = ByteConversion.byteToInt(rec.page.data, rec.offset + 1);
+				final int children = ByteConversion.byteToInt(rec.page.data, rec.offset + 1);
 				rec.offset += len + 2;
 				for(int i = 0;  i < children; i++)
-					getNodeValue(os, rec);
-				break;
+					getNodeValue(os, rec, false);
+				return;
 			case Node.TEXT_NODE:
 				os.write(rec.page.data, rec.offset + 1, len - 1);
-				rec.offset += len + 2;
+				break;
+			case Node.ATTRIBUTE_NODE:
+				// use attribute value if the context node is an attribute, i.e.
+				// if this is the first call to the method
+				if(firstCall) {
+					final byte idSizeType = (byte) (rec.page.data[rec.offset] & 0x3);
+					os.write(rec.page.data, rec.offset + 1 + Signatures.getLength(idSizeType),
+						len - 1 - Signatures.getLength(idSizeType));
+				}
 				break;
 		}
+		rec.offset += len + 2;
 	}
 	
 	protected final RecordPos findValuePosition(long p) {
@@ -1154,8 +1163,8 @@ public class DOMFile extends BTree implements Lockable {
 		 *@param  dis              Description of the Parameter
 		 *@exception  IOException  Description of the Exception
 		 */
-		public DOMFilePageHeader(DataInputStream is) throws IOException {
-			super(is);
+		public DOMFilePageHeader(byte[] data, int offset) throws IOException {
+			super(data, offset);
 		}
 
 		/**  Description of the Method */
@@ -1213,13 +1222,18 @@ public class DOMFile extends BTree implements Lockable {
 		 *@param  dis              Description of the Parameter
 		 *@exception  IOException  Description of the Exception
 		 */
-		public void read(DataInputStream dis) throws IOException {
-			super.read(dis);
-			records = dis.readShort();
-			dataLen = dis.readInt();
-			nextDataPage = dis.readLong();
-			prevDataPage = dis.readLong();
-			tid = dis.readShort();
+		public int read(byte[] data, int offset) throws IOException {
+			offset = super.read(data, offset);
+			records = ByteConversion.byteToShort(data, offset);
+			offset += 2;
+			dataLen = ByteConversion.byteToInt(data, offset);
+			offset += 4;
+			nextDataPage = ByteConversion.byteToLong(data, offset);
+			offset += 8;
+			prevDataPage = ByteConversion.byteToLong(data, offset);
+			offset += 8;
+			tid = ByteConversion.byteToShort(data, offset);
+			return offset + 2;
 		}
 
 		/**
@@ -1259,17 +1273,18 @@ public class DOMFile extends BTree implements Lockable {
 		 *@param  dos              Description of the Parameter
 		 *@exception  IOException  Description of the Exception
 		 */
-		public void write(DataOutputStream dos) throws IOException {
-			super.write(dos);
-			dos.writeShort(records);
-			dos.writeInt(dataLen);
-			dos.writeLong(nextDataPage);
-			dos.writeLong(prevDataPage);
-			dos.writeShort(tid);
-			//            if(dataLen == 0) {
-			//                LOG.debug("dataLen == 0");
-			//                Thread.dumpStack();
-			//            }
+		public int write(byte[] data, int offset) throws IOException {
+			offset = super.write(data, offset);
+			ByteConversion.shortToByte(records, data, offset);
+			offset += 2;
+			ByteConversion.intToByte(dataLen, data, offset);
+			offset += 4;
+			ByteConversion.longToByte(nextDataPage, data, offset);
+			offset += 8;
+			ByteConversion.longToByte(prevDataPage, data, offset);
+			offset += 8;
+			ByteConversion.shortToByte(tid, data, offset);
+			return offset + 2;
 		}
 	}
 
@@ -1538,6 +1553,10 @@ public class DOMFile extends BTree implements Lockable {
 		}
 	}
 
+	public final void addToBuffer(DOMPage page) {
+		buffer.add(page);
+	}
+	
 	/**
 	 *  Description of the Class
 	 *

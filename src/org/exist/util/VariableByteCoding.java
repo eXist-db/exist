@@ -1,6 +1,5 @@
 package org.exist.util;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -61,6 +60,11 @@ public class VariableByteCoding {
 		return r;
 	}
 
+	public final static void skipNext(InputStream is) throws IOException {
+		while ((is.read() & 0200) > 0) {
+		}
+	}
+	
 	public final static void copyTo(InputStream in, FastByteBuffer out) throws IOException {
 		long more;
 		do {

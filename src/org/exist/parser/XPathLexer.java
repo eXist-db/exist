@@ -1,4 +1,4 @@
-// $ANTLR : "XPathParser.g" -> "XPathLexer.java"$
+// $ANTLR 2.7.2rc2 (20030105): "XPathParser.g" -> "XPathLexer.java"$
 
 	package org.exist.parser;
 	
@@ -57,8 +57,8 @@ public XPathLexer(LexerSharedInputState state) {
 	caseSensitiveLiterals = true;
 	setCaseSensitive(true);
 	literals = new Hashtable();
-	literals.put(new ANTLRHashString("ancestor", this), new Integer(43));
-	literals.put(new ANTLRHashString("node", this), new Integer(39));
+	literals.put(new ANTLRHashString("ancestor", this), new Integer(42));
+	literals.put(new ANTLRHashString("node", this), new Integer(38));
 	literals.put(new ANTLRHashString("near", this), new Integer(33));
 	literals.put(new ANTLRHashString("text", this), new Integer(28));
 	literals.put(new ANTLRHashString("doctype", this), new Integer(21));
@@ -337,7 +337,7 @@ tryAgain:
 			match('"');
 			text.setLength(_saveIndex);
 			{
-			_loop975:
+			_loop65:
 			do {
 				if ((_tokenSet_0.member(LA(1)))) {
 					{
@@ -345,7 +345,7 @@ tryAgain:
 					}
 				}
 				else {
-					break _loop975;
+					break _loop65;
 				}
 				
 			} while (true);
@@ -361,7 +361,7 @@ tryAgain:
 			match('\'');
 			text.setLength(_saveIndex);
 			{
-			_loop978:
+			_loop68:
 			do {
 				if ((_tokenSet_1.member(LA(1)))) {
 					{
@@ -369,7 +369,7 @@ tryAgain:
 					}
 				}
 				else {
-					break _loop978;
+					break _loop68;
 				}
 				
 			} while (true);
@@ -835,13 +835,13 @@ tryAgain:
 		
 		mNMSTART(false);
 		{
-		_loop1005:
+		_loop95:
 		do {
 			if ((_tokenSet_2.member(LA(1)))) {
 				mNMCHAR(false);
 			}
 			else {
-				break _loop1005;
+				break _loop95;
 			}
 			
 		} while (true);
@@ -860,41 +860,41 @@ tryAgain:
 		int _saveIndex;
 		
 		{
-		int _cnt1008=0;
-		_loop1008:
+		int _cnt98=0;
+		_loop98:
 		do {
 			if (((LA(1) >= '0' && LA(1) <= '9'))) {
 				mDIGIT(false);
 			}
 			else {
-				if ( _cnt1008>=1 ) { break _loop1008; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt98>=1 ) { break _loop98; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			
-			_cnt1008++;
+			_cnt98++;
 		} while (true);
 		}
 		{
-		_loop1012:
+		_loop102:
 		do {
 			if ((LA(1)=='.')) {
 				match('.');
 				{
-				int _cnt1011=0;
-				_loop1011:
+				int _cnt101=0;
+				_loop101:
 				do {
 					if (((LA(1) >= '0' && LA(1) <= '9'))) {
 						mDIGIT(false);
 					}
 					else {
-						if ( _cnt1011>=1 ) { break _loop1011; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+						if ( _cnt101>=1 ) { break _loop101; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 					}
 					
-					_cnt1011++;
+					_cnt101++;
 				} while (true);
 				}
 			}
 			else {
-				break _loop1012;
+				break _loop102;
 			}
 			
 		} while (true);

@@ -124,6 +124,7 @@ public final class NodeIterator implements Iterator {
 					}
 					page = nextPage;
 					p = db.getCurrentPage(nextPage);
+					db.addToBuffer(p);
 					offset = 0;
 				}
 				// extract the value

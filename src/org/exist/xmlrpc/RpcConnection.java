@@ -1,5 +1,7 @@
 package org.exist.xmlrpc;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -7,6 +9,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.TreeMap;
 import java.util.Vector;
 import java.util.WeakHashMap;
 
@@ -67,6 +70,7 @@ public class RpcConnection extends Thread {
 	protected boolean terminate = false;
 	protected DocumentBuilder docBuilder = null;
 	protected RpcServer.ConnectionPool connectionPool;
+	protected TreeMap tempFiles = new TreeMap();
 
 	/**
 	 *  Constructor for the RpcConnection object
@@ -300,7 +304,7 @@ public class RpcConnection extends Thread {
 				mods += modifications[i].process();
 				broker.flush();
 			}
-			return (int)mods;
+			return (int) mods;
 		} catch (ParserConfigurationException e) {
 			throw new EXistException(e.getMessage());
 		} catch (IOException e) {
@@ -327,7 +331,7 @@ public class RpcConnection extends Thread {
 				mods += modifications[i].process();
 				broker.flush();
 			}
-			return (int)mods;
+			return (int) mods;
 		} catch (ParserConfigurationException e) {
 			throw new EXistException(e.getMessage());
 		} catch (IOException e) {
@@ -342,13 +346,13 @@ public class RpcConnection extends Thread {
 		try {
 			broker = brokerPool.get();
 			broker.sync();
-		} catch(EXistException e) {
+		} catch (EXistException e) {
 		} finally {
 			brokerPool.release(broker);
 		}
 		return true;
 	}
-	
+
 	/**
 	 *  Gets the documentListing attribute of the RpcConnection object
 	 *
@@ -615,6 +619,63 @@ public class RpcConnection extends Thread {
 		} finally {
 			brokerPool.release(broker);
 		}
+	}
+
+	/**
+	 * Parse a file previously uploaded with upload.
+	 * 
+	 * The temporary file will be removed.
+	 * 
+	 * @param user
+	 * @param localFile
+	 * @throws EXistException
+	 * @throws IOException
+	 */
+	public boolean parseLocal(User user, String localFile, String docName, boolean replace) 
+		throws EXistException, PermissionDeniedException, SAXException {
+		File file = new File(localFile);
+		if(!file.canRead())
+			throw new EXistException("unable to read file " + localFile);
+		DBBroker broker = null;
+		DocumentImpl doc = null;
+		try {
+			broker = brokerPool.get();
+			if (parser == null)
+				parser = new Parser(broker, user, replace);
+			else {
+				parser.setBroker(broker);
+				parser.setUser(user);
+				parser.setOverwrite(replace);
+			}
+			doc = parser.parse(file, docName);
+			broker.flush();
+		} catch (IOException e) {
+			throw new EXistException(e);
+		} finally {
+			brokerPool.release(broker);
+		}
+		file.delete();
+		return doc != null;
+	}
+
+	public String upload(User user, byte[] chunk, int length, String fileName)
+		throws EXistException, IOException {
+		File file;
+		if (fileName == null || fileName.length() == 0) {
+			// create temporary file
+			file = File.createTempFile("rpc", "xml");
+			fileName = file.getAbsolutePath();
+			LOG.debug("created temporary file " + file.getAbsolutePath());
+		} else {
+			LOG.debug("appending to file " + fileName);
+			file = new File(fileName);
+		}
+		if (!file.canWrite())
+			throw new EXistException("cannot write to file " + fileName);
+		FileOutputStream os = new FileOutputStream(file, true);
+		os.write(chunk, 0, length);
+		os.close();
+		return fileName;
 	}
 
 	protected String printAll(
