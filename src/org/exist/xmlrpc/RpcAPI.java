@@ -685,7 +685,7 @@ public interface RpcAPI {
     Hashtable getUser( User user, String name )
          throws EXistException, PermissionDeniedException;
          
-    public Vector getUsers(User user)
+    Vector getUsers(User user)
          throws EXistException, PermissionDeniedException;
 
 

@@ -53,6 +53,7 @@ import org.exist.util.DirectoryScanner;
 import org.exist.util.CollectionScanner;
 import org.exist.util.ProgressBar;
 import org.exist.util.ProgressIndicator;
+import org.exist.util.XMLUtil;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.UserManagementService;
 import org.gnu.readline.Readline;
@@ -79,6 +80,7 @@ public class InteractiveClient {
 	private final static int CONFIG_OPT = 'C';
 	private final static int PARSE_OPT = 'p';
 	private final static int COLLECTION_OPT = 'c';
+    private final static int RESOURCE_OPT = 'f';
 	private final static int REMOVE_OPT = 'r';
 	private final static int GET_OPT = 'g';
 	private final static int MKCOL_OPT = 'm';
@@ -87,7 +89,8 @@ public class InteractiveClient {
 	private final static int FIND_OPT = 'x';
 	private final static int RESULTS_OPT = 'n';
 	private final static int VERBOSE_OPT = 'v';
-	private final static int QUERY_FILE_OPT = 'f';
+	private final static int QUERY_FILE_OPT = 'F';
+    private final static int XUPDATE_OPT = 'X';
 	private final static int THREADS_OPT = 't';
 	private final static int RECURSE_DIRS_OPT = 'd';
 
@@ -144,6 +147,13 @@ public class InteractiveClient {
 				CLOptionDescriptor.ARGUMENT_REQUIRED,
 				COLLECTION_OPT,
 				"set target collection."),
+            new CLOptionDescriptor(
+                "resource",
+                CLOptionDescriptor.ARGUMENT_REQUIRED,
+                RESOURCE_OPT,
+                "specify a resource contained in the current collection. " +
+                "Use in conjunction with -u to specify the resource to " +
+                "update."),
 			new CLOptionDescriptor(
 				"get",
 				CLOptionDescriptor.ARGUMENT_REQUIRED,
@@ -190,7 +200,14 @@ public class InteractiveClient {
 				"recurse-dirs",
 				CLOptionDescriptor.ARGUMENT_DISALLOWED,
 				RECURSE_DIRS_OPT,
-				"recurse into subdirectories during index?")};
+				"recurse into subdirectories during index?"),
+            new CLOptionDescriptor(
+                "xupdate",
+                CLOptionDescriptor.ARGUMENT_REQUIRED,
+                XUPDATE_OPT,
+                "process xupdate commands. Commands are read from the " +
+                "file specified in the argument.")
+    };
 
 	// ANSI colors for ls display
 	private final static String ANSI_BLUE = "\033[0;34m";
@@ -962,6 +979,25 @@ public class InteractiveClient {
 		}
 	}
 
+    private final void xupdate(String resource, String filename)
+    throws XMLDBException, IOException {
+        File file = new File(filename);
+        if(!(file.exists() && file.canRead())) {
+            System.out.println("cannot read file " + filename);
+            return;
+        }   
+        String commands = XMLUtil.readFile(file, "UTF-8");
+        XUpdateQueryService service = (XUpdateQueryService)
+            current.getService("XUpdateQueryService", "1.0");
+        long modifications = 0;
+        if(resource != null)
+            modifications = service.update(commands);
+        else
+            modifications = service.updateResource(resource, commands);
+        System.out.println(modifications + " modifications processed " +
+            "successfully.");
+    }
+    
 	private final void rmcol(String collection) throws XMLDBException {
 		CollectionManagementService mgtService =
 			(CollectionManagementService) current.getService(
@@ -1252,6 +1288,8 @@ public class InteractiveClient {
 		String optionRmcol = null;
 		String optionXpath = null;
 		String optionQueryFile = null;
+        String optionXUpdate = null;
+        String optionResource = null;
 		List optionalArgs = new ArrayList();
 		for (int i = 0; i < size; i++) {
 			option = (CLOption) opt.get(i);
@@ -1285,6 +1323,9 @@ public class InteractiveClient {
 					path = option.getArgument();
 					foundCollection = true;
 					break;
+                case RESOURCE_OPT :
+                    optionResource = option.getArgument();
+                    break;
 				case PARSE_OPT :
 					doParse = true;
 					if (option.getArgumentCount() == 1)
@@ -1337,6 +1378,9 @@ public class InteractiveClient {
 						System.err.println("parameter -t needs a valid number");
 					}
 					break;
+                case XUPDATE_OPT :
+                    optionXUpdate = option.getArgument();
+                    break;
 				case CLOption.TEXT_ARGUMENT :
 					optionalArgs.add(option.getArgument());
 					break;
@@ -1490,9 +1534,19 @@ public class InteractiveClient {
 			return;
 		} else if (optionQueryFile != null) {
 			testQuery(optionQueryFile);
-		}
-		if (!interactive)
-			return;
+		} else if (optionXUpdate != null) {
+            try {
+				xupdate(optionResource, optionXUpdate);
+			} catch (XMLDBException e) {
+                System.err.println("XMLDBException during xupdate: " +
+                    e.getMessage());
+			} catch (IOException e) {
+                System.err.println("IOException during xupdate: " +
+                    e.getMessage());
+			}
+        }
+		//if (!interactive)
+		//	return;
 
 		// enter interactive mode
 		messageln("\ntype help or ? for help.");
