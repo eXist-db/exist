@@ -426,7 +426,9 @@ public class DOMFile extends BTree implements Lockable {
     private RecordPos splitDataPage(DocumentImpl doc, RecordPos rec) {
         if(currentDocument != null)
             currentDocument.incSplitCount();
-        // check if a split is really required
+        // check if a split is really required. A split is not required if all records
+        // following the split point are already links to other pages. In this case,
+        // the new record is just appended to a new page linked to the old one.
         boolean requireSplit = false;
         for (int pos = rec.offset; pos < rec.page.len;) {
             short currentId = ByteConversion.byteToShort(rec.page.data, pos);
@@ -437,27 +439,35 @@ public class DOMFile extends BTree implements Lockable {
             pos += 10;
         }
         if(!requireSplit) {
-//            LOG.debug("page " + rec.page.getPageNum() + ": no split required");
+            LOG.debug("page " + rec.page.getPageNum() + ": no split required");
             rec.offset = rec.page.len;
             return rec;
         }
         NodeIndexListener idx = doc.getIndexListener();
+        
+        // copy the old data up to the split point into a new array
         int oldDataLen = rec.page.getPageHeader().getDataLength();
         byte[] oldData = rec.page.data;
         long oldPageNum = rec.page.getPageNum();
         rec.page.data = new byte[fileHeader.getWorkSize()];
         System.arraycopy(oldData, 0, rec.page.data, 0, rec.offset);
+        
+        // the old rec.page now contains a copy of the data up to the split point
         rec.page.len = rec.offset;
         rec.page.setDirty(true);
+        
+        // create a first split page
         DOMPage firstSplitPage = new DOMPage();
         DOMPage nextSplitPage = firstSplitPage;
         nextSplitPage.getPageHeader().setNextTID((short)(rec.page.getPageHeader().getNextTID() - 1));
-        short tid, currentId, currentLen;
+        short tid, currentId, currentLen, realLen;
         long backLink;
         short splitRecordCount = 0;
-        LOG.debug("splitting " + rec.page.getPageNum() + ": new: "
+        LOG.debug("splitting " + rec.page.getPageNum() + " at " + rec.offset + ": new: "
                 + nextSplitPage.getPageNum() + "; next: " + 
                 rec.page.getPageHeader().getNextDataPage());
+        
+        // start copying records from rec.offset to the new split pages
         for (int pos = rec.offset; pos < oldDataLen; splitRecordCount++) {
             // read the current id
             currentId = ByteConversion.byteToShort(oldData, pos);
@@ -476,8 +486,12 @@ public class DOMFile extends BTree implements Lockable {
             // read data length
             currentLen = ByteConversion.byteToShort(oldData, pos);
             pos += 2;
+            // if this is an overflow page, the real data length is always 8 byte
+            // for the page number of the overflow page
+            realLen = (currentLen == OVERFLOW ? 8 : currentLen);
             
-            if(nextSplitPage.len + currentLen + 12 > fileHeader.getWorkSize()) {
+            // check if we have room in the current split page
+            if(nextSplitPage.len + realLen + 12 > fileHeader.getWorkSize()) {
                 // not enough room in the split page: append a new page
                 DOMPage newPage = new DOMPage();
                 newPage.getPageHeader().setNextTID((short)(rec.page.getPageHeader().getNextTID() - 1));
@@ -492,6 +506,7 @@ public class DOMFile extends BTree implements Lockable {
                 nextSplitPage = newPage;
                 splitRecordCount = 0;
             }
+            
             /* if the record has already been relocated, read the original storage
              * address and update the link there.
              */
@@ -507,6 +522,9 @@ public class DOMFile extends BTree implements Lockable {
             } else
                 backLink = StorageAddress.createPointer(
                         (int) rec.page.getPageNum(), tid);
+            
+            // save the record to the split page:
+            
             // set the relocated flag and save the item id
             ByteConversion.shortToByte(ItemId.setIsRelocated(currentId),
                     nextSplitPage.data, nextSplitPage.len);
@@ -519,24 +537,25 @@ public class DOMFile extends BTree implements Lockable {
             ByteConversion.longToByte(backLink, nextSplitPage.data,
                     nextSplitPage.len);
             nextSplitPage.len += 8;
-            // now save the data if this is not an overflow record
-            if (currentLen != OVERFLOW) {
-                try {
-                    System.arraycopy(oldData, pos, nextSplitPage.data,
-                            nextSplitPage.len, currentLen);
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    LOG.error("pos = " + pos + "; len = " + nextSplitPage.len + "; currentLen = " + currentLen +
-                            "; tid = " + currentId + "; page = " + rec.page.getPageNum());
-                    throw e;
-                }
-                nextSplitPage.len += currentLen;
-                pos += currentLen;
+            
+            // now save the data
+            try { 
+                System.arraycopy(oldData, pos, nextSplitPage.data,
+                        nextSplitPage.len, realLen);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                LOG.error("pos = " + pos + "; len = " + nextSplitPage.len + "; currentLen = " + realLen +
+                        "; tid = " + currentId + "; page = " + rec.page.getPageNum());
+                throw e;
             }
-            // report the split to the index listener
+            nextSplitPage.len += realLen;
+            pos += realLen;
+
+            // report the split to the index listener. Pass it the old and the new storage address.
             if(idx != null) {
 	            idx.nodeChanged(StorageAddress.createPointer((int) oldPageNum, tid), StorageAddress.createPointer(
 	                    (int) nextSplitPage.getPageNum(), tid));
             }
+            
             // save a link pointer in the original page if the record has not been
             // relocated before.
             if(!ItemId.isRelocated(currentId)) {
@@ -546,7 +565,7 @@ public class DOMFile extends BTree implements Lockable {
                     newPage.getPageHeader().setNextTID((short)(rec.page.getPageHeader().getNextTID() - 1));
                     newPage.getPageHeader().setPrevDataPage(rec.page.getPageNum());
                     newPage.getPageHeader().setNextDataPage(rec.page.getPageHeader().getNextDataPage());
-//                    LOG.debug("creating new page after split: " + newPage.getPageNum());
+                    LOG.debug("creating new page after split: " + newPage.getPageNum());
                     rec.page.getPageHeader().setNextDataPage(newPage.getPageNum());
                     rec.page.getPageHeader().setDataLength(rec.page.len);
                     rec.page.getPageHeader().setRecordCount(countRecordsInPage(rec.page));
@@ -564,7 +583,10 @@ public class DOMFile extends BTree implements Lockable {
                 ByteConversion.longToByte(forwardLink, rec.page.data, rec.page.len);
                 rec.page.len += 8;
             }
-        }
+        } // finished copying data
+        
+        // link the split pages to the original page
+        
         if(nextSplitPage.len == 0) {
             LOG.warn("page " + nextSplitPage.getPageNum() + " is empty. Remove it");
             // if nothing has been copied to the last split page,
@@ -1456,14 +1478,14 @@ public class DOMFile extends BTree implements Lockable {
                 		return rec;
                 	long forwardLink = ByteConversion.byteToLong(page.data,
                 			rec.offset);
+//                	LOG.debug("following link on " + pageNr +
+//                			" to page "
+//                			+ StorageAddress.pageFromPointer(forwardLink)
+//							+ "; tid="
+//							+ StorageAddress.tidFromPointer(forwardLink));
                 	// load the link page
                 	pageNr = StorageAddress.pageFromPointer(forwardLink);
                 	targetId = StorageAddress.tidFromPointer(forwardLink);
-                	LOG.debug("following link on " + StorageAddress.pageFromPointer(forwardLink) +
-                			" to page "
-                			+ pageNr
-							+ "; tid="
-							+ targetId);
                 } else {
                 	return rec;
                 }

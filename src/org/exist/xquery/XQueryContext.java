@@ -38,13 +38,18 @@ import java.util.Stack;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
+import org.exist.collections.Collection;
+import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.dom.SymbolTable;
 import org.exist.memtree.MemTreeBuilder;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.util.Collations;
+import org.exist.util.Lock;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
@@ -119,6 +124,7 @@ public class XQueryContext {
 	/** 
 	 * The set of statically known documents.
 	 */
+	private String[] staticDocumentPaths = null;
 	private DocumentSet staticDocuments = null;
 	
 	protected DBBroker broker;
@@ -386,22 +392,56 @@ public class XQueryContext {
 	 * 
 	 * @param docs
 	 */
-	public void setStaticallyKnownDocuments(DocumentSet docs) {
-		staticDocuments = docs;
+	public void setStaticallyKnownDocuments(String[] docs) {
+		staticDocumentPaths = docs;
 	}
-
+	
+	public void setStaticallyKnownDocuments(DocumentSet set) {
+		staticDocuments = set;
+	}
+	
 	/**
 	 * Get the set of statically known documents.
 	 * 
 	 * @return
 	 */
-	public DocumentSet getStaticallyKnownDocuments() {
+	public DocumentSet getStaticallyKnownDocuments() throws XPathException {
+		if(staticDocuments != null)
+			return staticDocuments;
+		staticDocuments = new DocumentSet();
+		if(staticDocumentPaths == null)
+			broker.getAllDocuments(staticDocuments);
+		else {
+			DocumentImpl doc;
+			Collection collection;
+			for(int i = 0; i < staticDocumentPaths.length; i++) {
+				try {
+					doc = broker.openDocument(staticDocumentPaths[i], Lock.READ_LOCK);
+					if(doc != null) {
+						if(doc.getPermissions().validate(broker.getUser(), Permission.READ)) {
+							staticDocuments.add(doc);
+						}
+						doc.getUpdateLock().release(Lock.READ_LOCK);
+						
+					} else {
+						collection = broker.openCollection(staticDocumentPaths[i], Lock.READ_LOCK);
+						if(collection != null) {
+							collection.allDocs(broker, staticDocuments, true, true);
+							collection.release();
+						}
+					}
+				} catch(PermissionDeniedException e) {
+					LOG.warn("Permission denied to read resource " + staticDocumentPaths[i] + ". Skipping it.");
+				}
+			}
+		}
 		return staticDocuments;
 	}
 	
 	public void reset() {
 		builder = new MemTreeBuilder(this);
 		builder.startDocument();
+		staticDocumentPaths = null;
 		staticDocuments = null;
 		lastVar = null;
 		fragmentStack = new Stack();

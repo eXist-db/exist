@@ -41,6 +41,7 @@ public interface RpcAPI {
 	public final static String NAMESPACES = "namespaces";
 	public final static String VARIABLES = "variables";
 	public final static String BASE_URI = "base-uri";
+	public final static String STATIC_DOCUMENTS = "static-documents";
 	
 	/**
 	 * Shut down the database.

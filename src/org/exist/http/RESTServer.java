@@ -446,19 +446,19 @@ public class RESTServer {
 	throws BadRequestException, PermissionDeniedException {
 		String result = null;
 		try {
-			DocumentSet docs = new DocumentSet();
-			Collection collection = broker.getCollection(path);
-			if (collection != null) {
-				collection.allDocs(broker, docs, true, true);
-			} else {
-				DocumentImpl doc = (DocumentImpl) broker.getDocument(path);
-				if (doc != null) {
-				    if(!doc.getPermissions().validate(broker.getUser(), Permission.READ))
-						throw new PermissionDeniedException("Not allowed to read collection");
-					docs.add(doc);
-				} else
-					broker.getAllDocuments(docs);
-			}
+//			DocumentSet docs = new DocumentSet();
+//			Collection collection = broker.getCollection(path);
+//			if (collection != null) {
+//				collection.allDocs(broker, docs, true, true);
+//			} else {
+//				DocumentImpl doc = (DocumentImpl) broker.getDocument(path);
+//				if (doc != null) {
+//				    if(!doc.getPermissions().validate(broker.getUser(), Permission.READ))
+//						throw new PermissionDeniedException("Not allowed to read collection");
+//					docs.add(doc);
+//				} else
+//					broker.getAllDocuments(docs);
+//			}
 			Source source = new StringSource(query);
 			XQuery xquery = broker.getXQueryService();
 			XQueryPool pool = xquery.getXQueryPool();
@@ -468,7 +468,7 @@ public class RESTServer {
 			    context = xquery.newContext();
 			else
 			    context = compiled.getContext();
-			context.setStaticallyKnownDocuments(docs);
+			context.setStaticallyKnownDocuments(new String[] { path });
 			
 			if(compiled == null)
 			    compiled = xquery.compile(context, source);

@@ -216,18 +216,9 @@ public class RpcConnection extends Thread {
 	}
 
 	protected QueryResult doQuery(User user, DBBroker broker, String xpath,
-			DocumentSet docs, NodeSet contextSet, Hashtable parameters)
+			NodeSet contextSet, Hashtable parameters)
 			throws Exception {
 		String baseURI = (String) parameters.get(RpcAPI.BASE_URI);
-		if(docs == null) {
-			if(baseURI == null)
-				docs = broker.getAllDocuments(new DocumentSet());
-			else {
-				docs = new DocumentSet();
-				Collection root = broker.getCollection(baseURI);
-				root.allDocs(broker, docs, true, true);
-			}
-		}
 		Source source = new StringSource(xpath);
 		XQuery xquery = broker.getXQueryService();
 		XQueryPool pool = xquery.getXQueryPool();
@@ -238,7 +229,6 @@ public class RpcConnection extends Thread {
 		else
 		    context = compiled.getContext();
 		context.setBaseURI(baseURI);
-		context.setStaticallyKnownDocuments(docs);
 		Hashtable namespaces = (Hashtable)parameters.get(RpcAPI.NAMESPACES);
 		if(namespaces != null && namespaces.size() > 0) {
 			context.declareNamespaces(namespaces);
@@ -251,6 +241,18 @@ public class RpcConnection extends Thread {
 				LOG.debug("declaring " + entry.getKey().toString() + " = " + entry.getValue());
 				context.declareVariable((String) entry.getKey(), entry.getValue());
 			}
+		}
+		Vector staticDocuments = (Vector)parameters.get(RpcAPI.STATIC_DOCUMENTS);
+		if(staticDocuments != null) {
+			String[] d = new String[staticDocuments.size()];
+			int j = 0;
+			for (Iterator i = staticDocuments.iterator(); i.hasNext(); j++) {
+				String next = (String)i.next();
+				d[j] = next;
+			}
+			context.setStaticallyKnownDocuments(d);
+		} else if(baseURI != null) {
+			context.setStaticallyKnownDocuments(new String[] { baseURI });
 		}
 		if(compiled == null)
 		    compiled = xquery.compile(context, source);
@@ -291,7 +293,7 @@ public class RpcConnection extends Thread {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			QueryResult result = doQuery(user, broker, xpath, null, null,
+			QueryResult result = doQuery(user, broker, xpath, null,
 					parameters);
 			result.queryTime = System.currentTimeMillis() - startTime;
 			connectionPool.resultSets.put(result.hashCode(), result);
@@ -1192,7 +1194,7 @@ public class RpcConnection extends Thread {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			QueryResult qr = doQuery(user, broker, xpath, null, null, parameters);
+			QueryResult qr = doQuery(user, broker, xpath, null, parameters);
 			if (qr == null)
 				return "<?xml version=\"1.0\"?>\n"
 						+ "<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" "
@@ -1214,27 +1216,30 @@ public class RpcConnection extends Thread {
 		Hashtable ret = new Hashtable();
 		Vector result = new Vector();
 		NodeSet nodes = null;
-		DocumentSet docs = null;
 		QueryResult queryResult;
 		Sequence resultSeq = null;
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
 			if (docName != null && s_id != null) {
-				long id = Long.parseLong(s_id);
 				DocumentImpl doc;
 				if (!documentCache.containsKey(docName)) {
 					doc = (DocumentImpl) broker.getDocument(docName);
 					documentCache.put(docName, doc);
 				} else
 					doc = (DocumentImpl) documentCache.get(docName);
-				NodeProxy node = new NodeProxy(doc, id);
-				nodes = new ArraySet(1);
-				nodes.add(node);
-				docs = new DocumentSet();
-				docs.add(node.getDocument());
+				Vector docs = new Vector(1);
+				docs.addElement(docName);
+				parameters.put(RpcAPI.STATIC_DOCUMENTS, docs);
+				
+				if(s_id.length() > 0) {
+					long id = Long.parseLong(s_id);
+					NodeProxy node = new NodeProxy(doc, id);
+					nodes = new ArraySet(1);
+					nodes.add(node);
+				}
 			}
-			queryResult = doQuery(user, broker, xpath, docs, nodes, parameters);
+			queryResult = doQuery(user, broker, xpath, nodes, parameters);
 			if (queryResult == null)
 				return ret;
 			resultSeq = queryResult.result;
@@ -1711,7 +1716,7 @@ public class RpcConnection extends Thread {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			QueryResult qr = doQuery(user, broker, xpath, null, null, null);
+			QueryResult qr = doQuery(user, broker, xpath, null, null);
 			if (qr == null)
 				return new Hashtable();
 			NodeList resultSet = (NodeList) qr.result;

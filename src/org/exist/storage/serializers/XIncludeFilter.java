@@ -28,7 +28,6 @@ import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
@@ -210,21 +209,11 @@ public class XIncludeFilter implements Receiver {
 			else {
 				// process the xpointer
 				try {
-					// build input document set
-					DocumentSet docs = new DocumentSet();
-					if (doc == null) {
-						// try to read documents from the collection
-						// specified by docName
-						docs = serializer.broker.getDocumentsByCollection(docName, docs);
-						// give up
-						if (docs == null)
-							throw new SAXException(
-								"no document or collection " + "called " + docName);
-					} else {
-						docs.add(doc);
-					}
 					XQueryContext context = new XQueryContext(serializer.broker);
-					context.setStaticallyKnownDocuments(docs);
+					if(doc != null)
+						context.setStaticallyKnownDocuments(new String[] { doc.getName() } );
+					else
+						context.setStaticallyKnownDocuments(new String[] { docName });
 					xpointer = checkNamespaces(context, xpointer);
 					context.declareNamespaces(namespaces);
 					
@@ -270,9 +259,6 @@ public class XIncludeFilter implements Receiver {
 					LOG.warn("xpointer error", e);
 					throw new SAXException(e);
 				} catch (TokenStreamException e) {
-					LOG.warn("xpointer error", e);
-					throw new SAXException(e);
-				} catch (PermissionDeniedException e) {
 					LOG.warn("xpointer error", e);
 					throw new SAXException(e);
 				} catch (XPathException e) {

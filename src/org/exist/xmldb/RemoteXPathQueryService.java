@@ -75,7 +75,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 		throws XMLDBException {
 			return query(res, query, null);
 	}
-		
+
     public ResourceSet query( XMLResource res, String query, String sortExpr )
         throws XMLDBException {
         RemoteXMLResource resource = (RemoteXMLResource)res;
@@ -91,7 +91,10 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
             Vector params = new Vector();
             params.addElement( query.getBytes("UTF-8") );
             params.addElement( resource.path );
-            params.addElement( resource.id );
+            if(resource.id == null)
+            	params.addElement("");
+            else
+            	params.addElement( resource.id );
             params.addElement( optParams );
 			Hashtable result = (Hashtable) collection.getClient().execute( "queryP", params );
 			Vector resources = (Vector)result.get("results");
@@ -173,6 +176,14 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 		return query(((RemoteCompiledExpression)expression).getQuery());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.XQueryService#execute(org.xmldb.api.modules.XMLResource, org.exist.xmldb.CompiledExpression)
+	 */
+	public ResourceSet execute(XMLResource res, CompiledExpression expression)
+			throws XMLDBException {
+		return query(res, ((RemoteCompiledExpression)expression).getQuery());
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.XQueryService#setXPathCompatibility(boolean)
 	 */

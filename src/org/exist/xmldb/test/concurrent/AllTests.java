@@ -30,6 +30,7 @@ public class AllTests {
 	public static Test suite() {
 		TestSuite suite = new TestSuite("Test suite for org.exist.xmldb.test.concurrent");
 		//$JUnit-BEGIN$
+		suite.addTest(new TestSuite(ConcurrentAttrUpdateTest.class));
 		suite.addTest(new TestSuite(ConcurrentResourceTest.class));
 		suite.addTest(new TestSuite(ConcurrentXUpdateTest.class));
 		suite.addTest(new TestSuite(ConcurrentQueryTest.class));

@@ -75,7 +75,6 @@ public class OrderedValueSequence extends AbstractSequence {
 	 * @see org.exist.xquery.value.Sequence#getLength()
 	 */
 	public int getLength() {
-		System.out.println("Length: " + count);
 		return (items == null) ? 0 : count;
 	}
 
@@ -108,7 +107,6 @@ public class OrderedValueSequence extends AbstractSequence {
 	
 	public void sort() {
 		FastQSort.sort(items, 0, count - 1);
-		System.out.println("order by took " + execTime);
 	}
 	
 	/* (non-Javadoc)

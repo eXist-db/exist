@@ -39,11 +39,11 @@ class RemoveAppendAction extends Action {
         + "</xu:remove>"
         + "</xu:modifications>";
 	
-	private XMLGenerator gen;
+	protected XMLGenerator xmlGenerator;
 	
 	public RemoveAppendAction(String collectionPath, String resourceName, String[] wordList) {
 		super(collectionPath, resourceName);
-		gen = new XMLGenerator(1, 5, 1, wordList);
+		xmlGenerator = new XMLGenerator(1, 5, 1, wordList);
 	}
 			
 	/* (non-Javadoc)
@@ -73,7 +73,7 @@ class RemoveAppendAction extends Action {
 			"</xu:modifications>";
 		System.out.println(Thread.currentThread().getName() + ": inserting elements ...");
 		for (int i = 0; i < 10; i++) {
-			String update = updateOpen + gen.generateElement() + updateClose;
+			String update = updateOpen + xmlGenerator.generateElement() + updateClose;
 			service.update(update);
 		}
 	}

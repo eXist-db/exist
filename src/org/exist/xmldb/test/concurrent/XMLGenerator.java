@@ -87,7 +87,7 @@ public class XMLGenerator {
 		writer.write(">\n");
 	}
 	
-	protected String generateText(int len) {
+	public String generateText(int len) {
 		StringBuffer buf = new StringBuffer();
 		for(int i = 0; i < len; i++) {
 			if(i > 0)

@@ -152,7 +152,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     public XQueryContext getContext() {
         return context;
     }
-
+    
     public DocumentSet getDocumentSet() {
         return null;
     }

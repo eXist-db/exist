@@ -84,6 +84,8 @@ public interface XQueryService extends Service {
 	 */
 	public ResourceSet execute(CompiledExpression expression) throws XMLDBException;
 	
+	public ResourceSet execute(XMLResource res, CompiledExpression expression) throws XMLDBException;
+	
 	/**
 	* Returns the URI string associated with <code>prefix</code> from
 	* the internal namespace map. If <code>prefix</code> is null or empty the

@@ -35,6 +35,7 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 	private BrokerPool pool;
 	private User user;
 	private LocalCollection parent;
+	private XUpdateProcessor processor = null;
 	
 	/**
 	 * Constructor for LocalXUpdateQueryService.
@@ -65,7 +66,12 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 				DocumentImpl doc = c.getDocument(broker, resource);
 				docs.add(doc);
 			}
-			XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
+			if(processor == null)
+				processor = new XUpdateProcessor(broker, docs);
+			else {
+				processor.setBroker(broker);
+				processor.setDocumentSet(docs);
+			}
 			Modification modifications[] =
 				processor.parse(new InputSource(new StringReader(xupdate)));
 			long mods = 0;
@@ -93,6 +99,7 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 			e.printStackTrace();
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} finally {
+			processor.reset();
 			pool.release(broker);
 		}
 	}
