@@ -97,6 +97,7 @@ public class EvalFunction extends Function {
         	if(collectionArgs.getLength() > 0)
             	context.setStaticallyKnownDocuments(getCollectionContext(collectionArgs));
         }
+        context.pushNamespaceContext();
 		LOG.debug("eval: " + expr);
 		XQueryLexer lexer = new XQueryLexer(context, new StringReader(expr));
 		XQueryParser parser = new XQueryParser(lexer);
@@ -132,6 +133,7 @@ public class EvalFunction extends Function {
 		} finally {
 			if(oldDocumentSet != null)
 				context.setStaticallyKnownDocuments(oldDocumentSet);
+			context.popNamespaceContext();
 		}
 	}
 
