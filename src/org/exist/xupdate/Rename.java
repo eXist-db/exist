@@ -62,7 +62,7 @@ public class Rename extends Modification {
      */
     public long process() throws PermissionDeniedException, LockException,
             EXistException, XPathException {
-        NodeList children = content.getChildNodes();
+        NodeList children = content;
         if (children.getLength() == 0) return 0;
         int modificationCount = 0;
         try {

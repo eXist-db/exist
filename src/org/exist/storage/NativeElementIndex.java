@@ -412,76 +412,65 @@ public class NativeElementIndex extends ElementIndex {
                             qname.getLocalName());
                 // try to retrieve old index entry for the element
                 try {
-                    lock.acquire(Lock.READ_LOCK);
+                    lock.acquire(Lock.WRITE_LOCK);
                     is = dbElement.getAsStream(ref);
-                } catch (LockException e) {
-                    LOG.error("could not acquire lock for index on " + qname);
-                    return;
-                } catch (IOException e) {
-                    LOG.error("io error while reindexing " + qname, e);
-                    is = null;
-                } finally {
-                    lock.release();
-                }
-                os.clear();
-                oldList.clear();
-                if (is != null) {
-                    // add old entries to the new list
-                    try {
-                        while (is.available() > 0) {
-                            docId = is.readInt();
-                            len = is.readInt();
-                            if (docId != oldDoc.getDocId()) {
-                                // section belongs to another document:
-                                // copy data to new buffer
-                                os.writeInt(docId);
-                                os.writeInt(len);
-                                is.copyTo(os, len * 4);
-                            } else {
-                                // copy nodes to new list
-                                last = 0;
-                                for (int j = 0; j < len; j++) {
-                                    delta = is.readLong();
-                                    gid = last + delta;
-                                    last = gid;
-                                    address = StorageAddress.read(is);
-                                    if (node == null
-                                            && oldDoc.getTreeLevel(gid) < oldDoc
-                                                    .reindexRequired()) {
-                                        idList.add(new NodeProxy(oldDoc, gid,
-                                                address));
-                                    } else if (node != null
-                                            && (!XMLUtil.isDescendant(oldDoc,
-                                                    node.getGID(), gid))) {
-                                        oldList.add(new NodeProxy(oldDoc, gid,
-                                                address));
+                    os.clear();
+                    oldList.clear();
+                    if (is != null) {
+                        // add old entries to the new list
+                        try {
+                            while (is.available() > 0) {
+                                docId = is.readInt();
+                                len = is.readInt();
+                                if (docId != oldDoc.getDocId()) {
+                                    // section belongs to another document:
+                                    // copy data to new buffer
+                                    os.writeInt(docId);
+                                    os.writeInt(len);
+                                    is.copyTo(os, len * 4);
+                                } else {
+                                    // copy nodes to new list
+                                    last = 0;
+                                    for (int j = 0; j < len; j++) {
+                                        delta = is.readLong();
+                                        gid = last + delta;
+                                        last = gid;
+                                        address = StorageAddress.read(is);
+                                        if (node == null
+                                                && oldDoc.getTreeLevel(gid) < oldDoc
+                                                .reindexRequired()) {
+                                            idList.add(new NodeProxy(oldDoc, gid,
+                                                    address));
+                                        } else if (node != null
+                                                && (!XMLUtil.isDescendant(oldDoc,
+                                                        node.getGID(), gid))) {
+                                            oldList.add(new NodeProxy(oldDoc, gid,
+                                                    address));
+                                        }
                                     }
                                 }
                             }
+                        } catch (EOFException e) {
+                        } catch (IOException e) {
+                            LOG.error("io-error while updating index for element "
+                                    + qname);
                         }
-                    } catch (EOFException e) {
-                    } catch (IOException e) {
-                        LOG.error("io-error while updating index for element "
-                                + qname);
                     }
-                }
-                if (node != null) idList.addAll(oldList);
-                // write out the updated list
-                FastQSort.sort(idList, 0, idList.size() - 1);
-                len = idList.size();
-                os.writeInt(doc.getDocId());
-                os.writeInt(len);
-                last = 0;
-                for (int j = 0; j < len; j++) {
-                    p = (NodeProxy) idList.get(j);
-                    delta = p.gid - last;
-                    last = p.gid;
-                    os.writeLong(delta);
-                    StorageAddress.write(p.getInternalAddress(), os);
-                }
-                //data = os.toByteArray();
-                try {
-                    lock.acquire(Lock.WRITE_LOCK);
+                    if (node != null) idList.addAll(oldList);
+                    // write out the updated list
+                    FastQSort.sort(idList, 0, idList.size() - 1);
+                    len = idList.size();
+                    os.writeInt(doc.getDocId());
+                    os.writeInt(len);
+                    last = 0;
+                    for (int j = 0; j < len; j++) {
+                        p = (NodeProxy) idList.get(j);
+                        delta = p.gid - last;
+                        last = p.gid;
+                        os.writeLong(delta);
+                        StorageAddress.write(p.getInternalAddress(), os);
+                    }
+                    //data = os.toByteArray();
                     if (is == null)
                         dbElement.put(ref, os.data());
                     else {
@@ -490,9 +479,13 @@ public class NativeElementIndex extends ElementIndex {
                         //dbElement.update(val.getAddress(), ref, data);
                     }
                 } catch (LockException e) {
-                    LOG.error("could not acquire lock on elements", e);
+                    LOG.error("could not acquire lock for index on " + qname);
+                    return;
+                } catch (IOException e) {
+                    LOG.error("io error while reindexing " + qname, e);
+                    is = null;
                 } finally {
-                    lock.release();
+                    lock.release(Lock.WRITE_LOCK);
                 }
             }
         } catch (ReadOnlyException e) {

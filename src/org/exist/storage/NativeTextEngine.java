@@ -585,7 +585,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		} catch (LockException e) {
 			LOG.warn("Failed to acquire lock on collections.dbx", e);
 		} finally {
-			lock.release();
+			lock.release(Lock.WRITE_LOCK);
 		}
 	}
 	
@@ -946,118 +946,111 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 
 		public void reindex(DocumentImpl oldDoc, NodeImpl node) {
-			final short collectionId = oldDoc.getCollection().getId();
-			int len, docId;
-			Map.Entry entry;
-			String word;
-			LongLinkedList idList;
-			long[] ids;
-			long last, gid;
-			long delta;
-			byte section;
-			NodeProxy p;
-			WordRef ref;
-			VariableByteInput is = null;
-			Lock lock = dbWords.getLock();
-			for (int k = 0; k < 2; k++) {
-				for (Iterator i = words[k].entrySet().iterator(); i.hasNext();) {
-					entry = (Map.Entry) i.next();
-					word = (String) entry.getKey();
-					idList = (LongLinkedList) entry.getValue();
-					ref = new WordRef(collectionId, word);
-					try {
-						lock.acquire(Lock.READ_LOCK);
-						is = dbWords.getAsStream(ref);
-					} catch (LockException e) {
-						LOG.error("could not acquire lock on index for '"
-								+ word + "'");
-						is = null;
-					} catch (IOException e) {
-						LOG.error("io error while reindexing word '" + word
-								+ "'");
-						is = null;
-					} finally {
-						lock.release();
-					}
-					os.clear();
-					if (is != null) {
-						// add old entries to the new list
-						try {
-							while (is.available() > 0) {
-								docId = is.readInt();
-								section = is.readByte();
-								len = is.readInt();
-								if (docId != oldDoc.getDocId() || section != k) {
-									// section belongs to another document:
-									// copy data to new buffer
-									os.writeInt(docId);
-									os.writeByte(section);
-									os.writeInt(len);
-									is.copyTo(os, len);
-								} else {
-									// copy nodes to new list
-									gid = 0;
-									for (int j = 0; j < len; j++) {
-										delta = is.readLong();
-										gid += delta;
-										if (node == null
-												&& oldDoc.getTreeLevel(gid) < oldDoc
-														.reindexRequired()) {
-											idList.add(gid);
-										} else if (node != null
-												&& (!XMLUtil
-														.isDescendantOrSelf(
-																oldDoc,
-																node.getGID(),
-																gid))) {
-											idList.add(gid);
-										}
-									}
-								}
-							}
-						} catch (EOFException e) {
-							//LOG.error("end-of-file while reading index entry
-							// for " + word, e);
-						} catch (IOException e) {
-							LOG.error("io-error while reading index entry for "
-									+ word, e);
-						}
-					}
-					ids = idList.getData();
-					Arrays.sort(ids);
-					len = ids.length;
-					os.writeInt(oldDoc.getDocId());
-					os.writeByte(k == 0 ? TEXT_SECTION : ATTRIBUTE_SECTION);
-					os.writeInt(len);
-					last = 0;
-					for (int j = 0; j < len; j++) {
-						delta = ids[j] - last;
-						if (delta < 0) {
-							LOG.debug("neg. delta: " + delta + " for " + word);
-							LOG.debug("id = " + ids[j] + "; prev = " + last);
-						}
-						os.writeLong(delta);
-						last = ids[j];
-					}
-					try {
-						lock.acquire(Lock.WRITE_LOCK);
-						try {
-							if (is == null)
-								dbWords.put(ref, os.data());
-							else {
-								dbWords.update(((BFile.PageInputStream) is)
-										.getAddress(), ref, os.data());
-							}
-						} catch (ReadOnlyException e) {
-						}
-					} catch (LockException e) {
-						LOG.warn("could not acquire lock", e);
-					} finally {
-						lock.release();
-					}
-				}
-				words[k].clear();
-			}
+		    final short collectionId = oldDoc.getCollection().getId();
+		    int len, docId;
+		    Map.Entry entry;
+		    String word;
+		    LongLinkedList idList;
+		    long[] ids;
+		    long last, gid;
+		    long delta;
+		    byte section;
+		    NodeProxy p;
+		    WordRef ref;
+		    VariableByteInput is = null;
+		    Lock lock = dbWords.getLock();
+		    for (int k = 0; k < 2; k++) {
+		        for (Iterator i = words[k].entrySet().iterator(); i.hasNext();) {
+		            entry = (Map.Entry) i.next();
+		            word = (String) entry.getKey();
+		            idList = (LongLinkedList) entry.getValue();
+		            ref = new WordRef(collectionId, word);
+		            try {
+		                lock.acquire(Lock.WRITE_LOCK);
+		                is = dbWords.getAsStream(ref);
+		                os.clear();
+		                if (is != null) {
+		                    // add old entries to the new list
+		                    try {
+		                        while (is.available() > 0) {
+		                            docId = is.readInt();
+		                            section = is.readByte();
+		                            len = is.readInt();
+		                            if (docId != oldDoc.getDocId() || section != k) {
+		                                // section belongs to another document:
+		                                // copy data to new buffer
+		                                os.writeInt(docId);
+		                                os.writeByte(section);
+		                                os.writeInt(len);
+		                                is.copyTo(os, len);
+		                            } else {
+		                                // copy nodes to new list
+		                                gid = 0;
+		                                for (int j = 0; j < len; j++) {
+		                                    delta = is.readLong();
+		                                    gid += delta;
+		                                    if (node == null
+		                                            && oldDoc.getTreeLevel(gid) < oldDoc
+		                                            .reindexRequired()) {
+		                                        idList.add(gid);
+		                                    } else if (node != null
+		                                            && (!XMLUtil
+		                                                    .isDescendantOrSelf(
+		                                                            oldDoc,
+		                                                            node.getGID(),
+		                                                            gid))) {
+		                                        idList.add(gid);
+		                                    }
+		                                }
+		                            }
+		                        }
+		                    } catch (EOFException e) {
+		                        //LOG.error("end-of-file while reading index entry
+		                        // for " + word, e);
+		                    } catch (IOException e) {
+		                        LOG.error("io-error while reading index entry for "
+		                                + word, e);
+		                    }
+		                }
+		                ids = idList.getData();
+		                Arrays.sort(ids);
+		                len = ids.length;
+		                os.writeInt(oldDoc.getDocId());
+		                os.writeByte(k == 0 ? TEXT_SECTION : ATTRIBUTE_SECTION);
+		                os.writeInt(len);
+		                last = 0;
+		                for (int j = 0; j < len; j++) {
+		                    delta = ids[j] - last;
+		                    if (delta < 0) {
+		                        LOG.debug("neg. delta: " + delta + " for " + word);
+		                        LOG.debug("id = " + ids[j] + "; prev = " + last);
+		                    }
+		                    os.writeLong(delta);
+		                    last = ids[j];
+		                }
+		                try {
+		                    if (is == null)
+		                        dbWords.put(ref, os.data());
+		                    else {
+		                        dbWords.update(((BFile.PageInputStream) is)
+		                                .getAddress(), ref, os.data());
+		                    }
+		                } catch (ReadOnlyException e) {
+		                }
+		            } catch (LockException e) {
+		                LOG.error("could not acquire lock on index for '"
+		                        + word + "'");
+		                is = null;
+		            } catch (IOException e) {
+		                LOG.error("io error while reindexing word '" + word
+		                        + "'");
+		                is = null;
+		            } finally {
+		                lock.release(Lock.WRITE_LOCK);
+		            }
+		        }
+		        words[k].clear();
+		    }
 		}
 
 		public void flush() {

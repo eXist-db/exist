@@ -66,7 +66,7 @@ public abstract class Modification {
 	protected final static Logger LOG = Logger.getLogger(Modification.class);
 
 	protected String selectStmt = null;
-	protected DocumentFragment content = null;
+	protected NodeList content = null;
 	protected DBBroker broker;
 	protected DocumentSet docs;
 	protected Map namespaces;
@@ -98,8 +98,8 @@ public abstract class Modification {
 
 	public abstract String getName();
 
-	public void setContent(DocumentFragment node) {
-		content = node;
+	public void setContent(NodeList nodes) {
+		content = nodes;
 	}
 
 	/**
@@ -208,7 +208,7 @@ public abstract class Modification {
 		buf.append(" select=\"");
 		buf.append(selectStmt);
 		buf.append("\">");
-		buf.append(XMLUtil.dump(content));
+//		buf.append(XMLUtil.dump(content));
 		buf.append("</xu:");
 		buf.append(getName());
 		buf.append(">");
