@@ -1596,14 +1596,14 @@ implements Comparable, EntityResolver, Cacheable {
 		if (configuration == null)
 			configuration = readCollectionConfiguration(broker);
 		
-		if (configuration == null)
-		{			
-			String recursiv = parentHasDoc(broker,getName(), COLLECTION_CONFIG_FILE );
-			if (!(recursiv == null)) {
-				LOG.debug (" -->Try to use conf from "+recursiv);
-				configuration = broker.getCollection( recursiv).readCollectionConfiguration(broker);
-			}		
-		}
+//		if (configuration == null)
+//		{			
+//			String recursiv = parentHasDoc(broker,getName(), COLLECTION_CONFIG_FILE );
+//			if (!(recursiv == null)) {
+//				LOG.debug (" -->Try to use conf from "+recursiv);
+//				configuration = broker.getCollection( recursiv).readCollectionConfiguration(broker);
+//			}		
+//		}
 		
 		return configuration;
 	}
@@ -1838,18 +1838,21 @@ implements Comparable, EntityResolver, Cacheable {
 		String col2 = "";
 		String result = null;
 		boolean test = true;
-		while (test) {
-			col = getParentPathGen(col);
-			if (col == null)
-				test = false;
-			else {
-				collection = broker.getCollection(col);
-//				collection = broker.openCollection(col, Lock.READ_LOCK);
-				if (collection.hasDocument(document)) {
-					result = col;
+		CollectionCache cache = broker.getBrokerPool().getCollectionsCache();
+		synchronized (cache) {
+			while (test) {
+				col = getParentPathGen(col);
+				if (col == null)
 					test = false;
+				else {
+					collection = broker.getCollection(col);
+	//				collection = broker.openCollection(col, Lock.READ_LOCK);
+					if (collection.hasDocument(document)) {
+						result = col;
+						test = false;
+					}
+	//				collection.release();
 				}
-//				collection.release();
 			}
 		}
 		return result;		
