@@ -26,6 +26,7 @@ import org.exist.dom.NodeSet;
 import org.exist.storage.DBBroker;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.util.serializer.DOMStreamerPool;
+import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
@@ -422,6 +423,14 @@ public class NodeImpl implements Node, NodeValue {
 		return 1;
 	}
 
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.Sequence#getCardinality()
+	 */
+	public int getCardinality() {
+		return Cardinality.EXACTLY_ONE;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Sequence#itemAt(int)
 	 */
