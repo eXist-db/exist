@@ -157,7 +157,7 @@ public class LocationStep extends Step {
 			((VirtualNodeSet) result).setInPredicate(inPredicate);
 		} else {
 			DocumentSet docs = contextSet.getDocumentSet();
-			if (currentSet == null || !(docs.equals(currentDocs))) {
+			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
 				currentDocs = docs;
 				currentSet =
 					(NodeSet) context.getBroker().getAttributesByName(
@@ -189,7 +189,7 @@ public class LocationStep extends Step {
 			return vset;
 		} else {
 			DocumentSet docs = contextSet.getDocumentSet();
-			if (currentDocs == null || !(docs.equals(currentDocs))) {
+			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
 				currentDocs = docs;
 				currentSet =
 					(NodeSet) context.getBroker().findElementsByTagName(
@@ -211,7 +211,7 @@ public class LocationStep extends Step {
 			return vset;
 		} else {
 			DocumentSet docs = contextSet.getDocumentSet();
-			if (currentDocs == null || !(docs.equals(currentDocs))) {
+			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
 				currentDocs = docs;
 				currentSet =
 					(NodeSet) context.getBroker().findElementsByTagName(
@@ -231,7 +231,7 @@ public class LocationStep extends Step {
 		NodeSet contextSet) {
 		if (!test.isWildcardTest()) {
 			DocumentSet docs = contextSet.getDocumentSet();
-			if (currentDocs == null || !(docs.equals(currentDocs))) {
+			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
 				currentDocs = docs;
 				currentSet =
 					(NodeSet) context.getBroker().findElementsByTagName(
@@ -277,7 +277,7 @@ public class LocationStep extends Step {
 		NodeSet contextSet) {
 		if (!test.isWildcardTest()) {
 			DocumentSet docs = contextSet.getDocumentSet();
-			if (currentDocs == null || !(docs.equals(currentDocs))) {
+			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
 				currentDocs = docs;
 				currentSet =
 					(NodeSet) context.getBroker().findElementsByTagName(

@@ -57,7 +57,7 @@ public class FunEmpty extends Function {
 	 * @see org.exist.xpath.Function#getDependencies()
 	 */
 	public int getDependencies() {
-		return Dependency.CONTEXT_SET;
+		return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
 	}
 	
 	/* (non-Javadoc)

@@ -83,7 +83,8 @@ public class ForExpr extends BindingExpression {
 			
 		if(fastExec) {
 			LOG.debug("fast evaluation mode");
-			in = applyWhereExpression(null);
+			in = applyWhereExpression(in);
+			LOG.debug("where found " + in.getLength());
 		}
 		
 		if(orderSpecs != null)
@@ -100,6 +101,7 @@ public class ForExpr extends BindingExpression {
 		// loop through each variable binding
 		for (SequenceIterator i = in.iterate(); i.hasNext(); p++) {
 			contextItem = i.nextItem();
+			System.out.println("context: " + Type.getTypeName(contextItem.getType()));
 			context.setContextPosition(p);
 			atVal.setValue(p);
 
@@ -109,12 +111,13 @@ public class ForExpr extends BindingExpression {
 				sequenceType.checkType(contextItem.getType());
 			// set variable value to current item
 			var.setValue(contextSequence);
+			val = contextSequence;
 			// check optional where clause
 			if (whereExpr != null && (!fastExec)) {
 				if(contextItem instanceof NodeProxy)
 					((NodeProxy)contextItem).addContextNode((NodeProxy)contextItem);
-				val = applyWhereExpression(contextSequence);
-				if(!val.effectiveBooleanValue())
+				Sequence bool = applyWhereExpression(contextSequence);
+				if(!bool.effectiveBooleanValue())
 					continue;
 			} else
 				val = contextItem.toSequence();
@@ -122,7 +125,7 @@ public class ForExpr extends BindingExpression {
 			// if there is no "order by" clause, immediately call
 			// the return clause
 			if(orderSpecs == null)
-				val = returnExpr.eval( val);
+				val = returnExpr.eval(val);
 			result.addAll(val);
 		}
 		if(orderSpecs != null) {

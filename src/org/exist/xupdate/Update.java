@@ -37,7 +37,7 @@ public class Update extends Modification {
 	public long process() throws PermissionDeniedException, EXistException, XPathException {
 		NodeImpl[] qr = select(docs);
 		NodeList children = content.getChildNodes();
-		if (qr == null || children.getLength() == 0)
+		if (qr == null)
 			return 0;
 		IndexListener listener = new IndexListener(qr);
 		NodeImpl node;
@@ -47,6 +47,7 @@ public class Update extends Modification {
 		ElementImpl parent;
 		DocumentImpl doc = null;
 		Collection collection = null, prevCollection = null;
+		int result = children.getLength();
 		for (int i = 0; i < qr.length; i++) {
 			node = qr[i];
 			doc = (DocumentImpl) node.getOwnerDocument();
@@ -58,21 +59,31 @@ public class Update extends Modification {
 				doc.getBroker().saveCollection(prevCollection);
 			switch (node.getNodeType()) {
 				case Node.ELEMENT_NODE :
+					if (result == 0) result = 1;
 					((ElementImpl) node).update(children);
 					break;
 				case Node.TEXT_NODE :
 					parent = (ElementImpl)node.getParentNode();
-					temp = children.item(0);
-					text = new TextImpl(temp.getNodeValue());
+					if (children.getLength() != 0) {
+						temp = children.item(0);
+						text = new TextImpl(temp.getNodeValue());
+					} else {
+						result = 1;
+						text = new TextImpl("");
+					}
 					text.setOwnerDocument(doc);
 					parent.updateChild(node, text);
 					break;
 				case Node.ATTRIBUTE_NODE :
 					parent = (ElementImpl)node.getParentNode();
-					temp = children.item(0);
 					AttrImpl attr = (AttrImpl)node;
-					attribute = 
-						new AttrImpl(attr.getQName(), temp.getNodeValue());
+					if (children.getLength() != 0) {
+						temp = children.item(0);
+						attribute = new AttrImpl(attr.getQName(), temp.getNodeValue());
+					} else {
+						result = 1;
+						attribute = new AttrImpl(attr.getQName(), "");
+					}
 					attribute.setOwnerDocument(doc);
 					parent.updateChild(node, attribute);
 					break;
@@ -84,7 +95,7 @@ public class Update extends Modification {
 		}
 		if(doc != null)
 			doc.getBroker().saveCollection(collection);
-		return children.getLength();
+		return result;
 	}
 
 	/* (non-Javadoc)
