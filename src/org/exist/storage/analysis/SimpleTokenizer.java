@@ -157,6 +157,7 @@ public class SimpleTokenizer implements Tokenizer {
 
 	public TextToken nextToken(boolean wildcards) {
 		try {
+		while (true) {
 			TextToken token = nextTerminalToken(wildcards);
 			TextToken next;
 			StringBuffer buf;
@@ -248,8 +249,9 @@ public class SimpleTokenizer implements Tokenizer {
 					}
 					return token;
 				default :
-					return nextToken(wildcards);
+					// fall through to start of while loop
 			}
+		}
 		} catch (Exception e) {
 			System.out.println("text: " + text);
 			e.printStackTrace();
