@@ -50,11 +50,7 @@ public class OpAnd extends LogicalOp {
 			contextSequence = contextItem.toSequence();
 		Expression left = getLeft();
 		Expression right = getRight();
-		if (!inWhereClause &&
-            Type.subTypeOf(left.returnsType(), Type.NODE)
-			&& Type.subTypeOf(right.returnsType(), Type.NODE)
-			&& (left.getDependencies() & Dependency.CONTEXT_ITEM) == 0
-			&& (right.getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
+		if(optimize) {
 			NodeSet rl = left.eval(contextSequence, null).toNodeSet();
 			rl = rl.getContextNodes(inPredicate);
 			NodeSet rr = right.eval(contextSequence, null).toNodeSet();

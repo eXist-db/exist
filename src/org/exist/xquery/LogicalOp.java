@@ -34,6 +34,15 @@ import org.exist.xquery.value.Type;
 public abstract class LogicalOp extends BinaryOp {
 
 	/**
+	 * If set to true, the boolean operation is processed as
+	 * a set operation on two node sets. This is only possible
+	 * within a predicate expression and if both operands return
+	 * nodes. The predicate class can then filter out the matching
+	 * nodes from the context set.
+	 */
+	protected boolean optimize = false;
+	
+	/**
 	 * @param context
 	 */
 	public LogicalOp(XQueryContext context) {
@@ -49,24 +58,29 @@ public abstract class LogicalOp extends BinaryOp {
 		throws XPathException;
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.BinaryOp#returnsType()
+	 * @see org.exist.xquery.BinaryOp#analyze(org.exist.xquery.Expression, int)
 	 */
-	public int returnsType() {
+	public void analyze(Expression parent, int flags) throws XPathException {
+		super.analyze(parent, flags);
 		if(!inWhereClause &&
-            Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
-			Type.subTypeOf(getRight().returnsType(), Type.NODE) &&
-			(getLeft().getDependencies() & Dependency.CONTEXT_ITEM) == 0 &&
-			(getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0)
-			return Type.NODE;
+	            Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
+				Type.subTypeOf(getRight().returnsType(), Type.NODE) &&
+				(getLeft().getDependencies() & Dependency.CONTEXT_ITEM) == 0 &&
+				(getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0)
+			optimize = true;
 		else
-			return Type.BOOLEAN;
+			optimize = false;
+	}
+	
+	public int returnsType() {
+		return optimize ? Type.NODE : Type.BOOLEAN;
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.PathExpr#getDependencies()
 	 */
 	public int getDependencies() {
-		if(returnsType() == Type.BOOLEAN)
+		if(!optimize)
 			return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
 		else
 			return Dependency.CONTEXT_SET;

@@ -45,8 +45,7 @@ public class OpOr extends LogicalOp {
 			contextSequence = contextItem.toSequence();
 		Expression left = getLeft();
 		Expression right = getRight();
-		if(Type.subTypeOf(left.returnsType(), Type.NODE) &&
-			Type.subTypeOf(right.returnsType(), Type.NODE)) {
+		if(optimize) {
 			NodeSet rl = left.eval(contextSequence, null).toNodeSet();
 			rl = rl.getContextNodes(inPredicate);
 			NodeSet rr = right.eval(contextSequence, null).toNodeSet();
