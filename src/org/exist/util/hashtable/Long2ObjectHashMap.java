@@ -166,8 +166,9 @@ public class Long2ObjectHashMap extends AbstractHashtable {
 		int rehashCnt = 1;
 		for (int i = 0; i < tabSize; i++) {
 			idx = (idx + rehashVal) % tabSize;
-            if(values[idx] == REMOVED && bucket == -1) {
-                bucket = idx;
+            if(values[idx] == REMOVED) {
+            	if(bucket == -1)
+            		bucket = idx;
 			} else if (values[idx] == null) {
                 if(bucket > -1) {
                     // store key into the empty bucket first found

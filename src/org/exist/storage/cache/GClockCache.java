@@ -45,6 +45,7 @@ public class GClockCache implements Cache {
 	protected int count = 0;
 	protected int size;
 	protected Long2ObjectHashMap map;
+	protected int used = 0;
 	protected int hits = 0 ;
 	protected int fails = 0 ;
 	
@@ -68,8 +69,10 @@ public class GClockCache implements Cache {
 		if (count < size) {
 			items[count++] = item;
 			map.put(item.getKey(), item);
-		} else
+			used++;
+		} else {
 			removeOne(item);
+		}
 	}
 
 	public Cacheable get(Cacheable item) {
@@ -93,6 +96,7 @@ public class GClockCache implements Cache {
 		for (int i = 0; i < count; i++) {
 			if (items[i] != null && items[i].getKey() == key) {
 				items[i] = null;
+				used--;
 				return;
 			}
 		}
@@ -138,6 +142,8 @@ public class GClockCache implements Cache {
 					//LOG.debug(fileName + " replacing " + old.getKey() + " for " + item.getKey());
 					map.remove(old.getKey());
 					old.sync();
+				} else {
+					used++;
 				}
 				items[bucket] = item;
 				map.put(item.getKey(), item);
@@ -152,7 +158,7 @@ public class GClockCache implements Cache {
 	}
 
 	public int getUsedBuffers() {
-		return count;
+		return used;
 	}
 
 	public int getHits() {

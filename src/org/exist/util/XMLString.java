@@ -197,7 +197,7 @@ public class XMLString implements CharSequence, Comparable {
 	 * @see java.lang.CharSequence#subSequence(int, int)
 	 */
 	public final CharSequence subSequence(int start, int end) {
-		return new String(value_, start_ + start, end - start);
+		return new XMLString(value_, start_ + start, end - start);
 	}
 
 	public final XMLString transformToLower() {

@@ -46,8 +46,6 @@ import org.exist.storage.NativeBroker;
 import org.exist.storage.Signatures;
 import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
-import org.exist.storage.cache.ClockCache;
-import org.exist.storage.cache.LRDCache;
 import org.exist.storage.cache.LRUCache;
 import org.exist.util.ByteConversion;
 import org.exist.util.Lock;
@@ -107,10 +105,10 @@ public class DOMFile extends BTree implements Lockable {
     public final static byte RECORD = 20;
     public final static short OVERFLOW = 0;
 
-    public final static long DATA_SYNC_PERIOD = 1000;
+    public final static long DATA_SYNC_PERIOD = 4200;
     
     private final Cache dataCache;
-
+    
     private DOMFileHeader fileHeader;
 
     private Object owner = null;
@@ -128,7 +126,7 @@ public class DOMFile extends BTree implements Lockable {
         fileHeader = (DOMFileHeader) getFileHeader();
         fileHeader.setPageCount(0);
         fileHeader.setTotalCount(0);
-        dataCache = new LRDCache(dataBuffers);
+        dataCache = new LRUCache(dataBuffers);
         dataCache.setFileName("dom.dbx");
         
         Runnable syncAction = new Runnable() {
@@ -849,18 +847,6 @@ public class DOMFile extends BTree implements Lockable {
             LOG.debug("sync failed", ioe);
         }
         return true;
-    }
-
-    public void sync() throws DBException {
-        super.flush();
-        dataCache.flush();
-//        pages.remove(owner);
-        closeDocument();
-        try {
-            if (fileHeader.isDirty()) fileHeader.write();
-        } catch (IOException ioe) {
-            LOG.warn("sync failed", ioe);
-        }
     }
 
     public void printStatistics() {
@@ -1690,25 +1676,29 @@ public class DOMFile extends BTree implements Lockable {
         	short currentId;
         	short vlen;
         	RecordPos rec = null;
+        	byte flags;
             for (int pos = 0; pos < dlen;) {
                 currentId = ByteConversion.byteToShort(data, pos);
-                if (ItemId.isLink(currentId)) {
-                    if (ItemId.matches(currentId, targetId)) {
+                flags = ItemId.getFlags(currentId);
+                if (ItemId.matches(currentId, targetId)) {
+                	if ((flags & ItemId.LINK_FLAG) != 0) {
                     	rec = new RecordPos(pos + 2, this, currentId);
                     	rec.isLink = true;
-                    	break;
                     } else {
-                        pos += 10;
+                    	rec = new RecordPos(pos + 2, this, currentId);
                     }
-                } else if (ItemId.matches(currentId, targetId)) {
-                    rec = new RecordPos(pos + 2, this, currentId);
-                    break;
+                	break;
+                } else if ((flags & ItemId.LINK_FLAG) != 0){
+                	pos += 10;
                 } else {
                     vlen = ByteConversion.byteToShort(data, pos + 2);
-                    if (ItemId.isRelocated(currentId)) {
-                        pos += vlen == OVERFLOW ? 20 : vlen + 12;
-                    } else
-                        pos += vlen == OVERFLOW ? 12 : vlen + 4;
+                    if ((flags & ItemId.RELOCATED_FLAG) != 0) {
+                    	pos += vlen + 12;
+                    } else {
+                    	pos += vlen + 4;
+                    }
+                    if(vlen == OVERFLOW)
+                    	pos += 8;
                 }
             }
             return rec;

@@ -119,7 +119,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		int indexBuffers, dataBuffers;
 		if ((indexBuffers = config.getInteger("db-connection.words.buffers")) < 0) {
 			indexBuffers = buffers * 14;
-			dataBuffers = buffers * 12;
+			dataBuffers = buffers * 16;
 		} else
 			dataBuffers = indexBuffers;
 		if ((temp = (String) config.getProperty("db-connection.compress")) != null)
@@ -732,7 +732,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		final DocumentImpl doc = (DocumentImpl) text.getOwnerDocument();
 		tokenizer.setText(text.getXMLString().transformToLower());
 		TextToken token;
-		String word;
+		CharSequence word;
 		final long gid = text.getGID();
 		if (onetoken == true) {
 			invIdx.setDocument(doc);
@@ -744,7 +744,8 @@ public class NativeTextEngine extends TextSearchEngine {
 					&& token.isAlpha() == false) {
 				continue;
 			}
-			word = token.getText();
+			word = token.getCharSequence();
+//			word = token.getText();
 			if (stoplist.contains(word) || word.length() > 1024) {
 				continue;
 			}
@@ -792,12 +793,12 @@ public class NativeTextEngine extends TextSearchEngine {
 			words[1] = new TreeMap();
 		}
 
-		public void addText(String word, long gid) {
+		public void addText(CharSequence word, long gid) {
 			TermFrequencyList buf = (TermFrequencyList) words[0].get(word);
 			if (buf == null) {
 				buf = new TermFrequencyList();
 				buf.add(gid);
-				words[0].put(word, buf);
+				words[0].put(word.toString(), buf);
 			} else if (buf.getLast() == gid) {
 				buf.incLastTerm();
 			} else {
