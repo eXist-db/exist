@@ -46,7 +46,7 @@ public class XMLDBStore extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("store", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+			new QName("store", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Store a node as a new document into the database. The first " +
 			"argument specifies the collection object as returned by the collection or " +
 			"create-collection functions. The second argument is the name of the new " +

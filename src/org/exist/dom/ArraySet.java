@@ -27,7 +27,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.Node;
 
-public class ArraySet extends AbstractNodeSet {
+public class ArraySet extends AbstractNodeSetBase {
 
 	protected int counter = 0;
 	protected int length;
@@ -120,14 +120,14 @@ public class ArraySet extends AbstractNodeSet {
 		int cmp;
 		while (low <= high) {
 			mid = (low + high) / 2;
-			if (items[mid].doc.docId == cmpDoc.docId) {
+			if (items[mid].getDocument().docId == cmpDoc.docId) {
 				if (items[mid].gid == gid)
 					return mid;
 				else if (items[mid].gid > gid)
 					high = mid - 1;
 				else
 					low = mid + 1;
-			} else if (items[mid].doc.docId > cmpDoc.docId)
+			} else if (items[mid].getDocument().docId > cmpDoc.docId)
 				high = mid - 1;
 			else
 				low = mid + 1;
@@ -613,10 +613,10 @@ public class ArraySet extends AbstractNodeSet {
         DocumentSet docs = new DocumentSet();
         DocumentImpl lastDoc = null;
         for (int i = 0; i < counter; i++) {
-            if(lastDoc == null || lastDoc.getDocId() != nodes[i].doc.getDocId()) {
-                docs.add(nodes[i].doc, false);
+            if(lastDoc == null || lastDoc.getDocId() != nodes[i].getDocument().getDocId()) {
+                docs.add(nodes[i].getDocument(), false);
             }
-            lastDoc = nodes[i].doc;
+            lastDoc = nodes[i].getDocument();
         }
         return docs;
     }
@@ -654,28 +654,28 @@ public class ArraySet extends AbstractNodeSet {
 
 	private final static NodeProxy[] copyNodeSet(ArraySet al, ArraySet dl) {
 		int ax = 0, dx = 0;
-		int ad = al.nodes[ax].doc.docId, dd = dl.nodes[dx].doc.docId;
+		int ad = al.nodes[ax].getDocument().docId, dd = dl.nodes[dx].getDocument().docId;
 		final int alen = al.counter - 1, dlen = dl.counter - 1;
 		final NodeProxy[] ol = new NodeProxy[dl.counter];
 		while (true) {
 			if (ad < dd) {
 				if (ax < alen) {
 					++ax;
-					ad = al.nodes[ax].doc.docId;
+					ad = al.nodes[ax].getDocument().docId;
 				} else
 					break;
 			} else if (ad > dd) {
 				if (dx < dlen) {
 					ol[dx] = null;
 					++dx;
-					dd = dl.nodes[dx].doc.docId;
+					dd = dl.nodes[dx].getDocument().docId;
 				} else
 					break;
 			} else {
 				ol[dx] = new NodeProxy(dl.nodes[dx]);
 				if (dx < dlen) {
 					++dx;
-					dd = dl.nodes[dx].doc.docId;
+					dd = dl.nodes[dx].getDocument().docId;
 				} else
 					break;
 			}
@@ -685,27 +685,27 @@ public class ArraySet extends AbstractNodeSet {
 
 	private final static void trimNodeSet(ArraySet al, ArraySet dl) {
 		int ax = 0, dx = 0;
-		int ad = al.nodes[ax].doc.docId, dd = dl.nodes[dx].doc.docId;
+		int ad = al.nodes[ax].getDocument().docId, dd = dl.nodes[dx].getDocument().docId;
 		int count = 0;
 		final int alen = al.counter - 1, dlen = dl.counter - 1;
 		while (true) {
 			if (ad < dd) {
 				if (ax < alen) {
 					++ax;
-					ad = al.nodes[ax].doc.docId;
+					ad = al.nodes[ax].getDocument().docId;
 				} else
 					break;
 			} else if (ad > dd) {
 				if (dx < dlen) {
 					++dx;
-					dd = dl.nodes[dx].doc.docId;
+					dd = dl.nodes[dx].getDocument().docId;
 				} else
 					break;
 			} else {
 				if (dx < dlen) {
 					++dx;
 					count++;
-					dd = dl.nodes[dx].doc.docId;
+					dd = dl.nodes[dx].getDocument().docId;
 				} else
 					break;
 			}
@@ -750,12 +750,12 @@ public class ArraySet extends AbstractNodeSet {
 	 */
 	public int compare(int a, int b) {
 		NodeProxy anode = nodes[a], bnode = nodes[b];
-		if (anode.doc.docId == bnode.doc.docId) {
+		if (anode.getDocument().docId == bnode.getDocument().docId) {
 			return anode.gid == bnode.gid
 				? 0
 				: (anode.gid < bnode.gid ? -1 : 1);
 		}
-		return anode.doc.docId < bnode.doc.docId ? -1 : 1;
+		return anode.getDocument().docId < bnode.getDocument().docId ? -1 : 1;
 	}
 
 	/* (non-Javadoc)

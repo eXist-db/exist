@@ -23,11 +23,11 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.Properties;
-import java.util.Stack;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 
+import org.exist.dom.QName;
 import org.exist.util.XMLString;
 import org.exist.util.serializer.encodings.CharacterSet;
 
@@ -46,7 +46,6 @@ public class XMLWriter {
 	
 	protected Writer writer = null;
 	protected CharacterSet charSet = null;
-	protected Stack elementStack = new Stack();
 	protected boolean tagIsOpen = false;
 	protected boolean tagIsEmpty = true;
 	protected boolean declarationWritten = false;
@@ -111,14 +110,12 @@ public class XMLWriter {
 		tagIsOpen = false;
 		tagIsEmpty = true;
 		declarationWritten = false;
-		elementStack.clear();
 	}
 	
 	public void startDocument() throws TransformerException {
 		tagIsOpen = false;
 		tagIsEmpty = true;
 		declarationWritten = false;
-		elementStack.clear();
 	}
 
 	public void endDocument() throws TransformerException {
@@ -133,15 +130,31 @@ public class XMLWriter {
 			writer.write('<');
 			writer.write(qname);
 			tagIsOpen = true;
-			elementStack.push(qname);
 		} catch (IOException e) {
 			throw new TransformerException(e.getMessage(), e);
 		}
 	}
 
-	public void endElement() throws TransformerException {
+	public void startElement(QName qname) throws TransformerException {
+		if (!declarationWritten)
+			writeDeclaration();
 		try {
-			String qname = (String) elementStack.pop();
+			if (tagIsOpen)
+				closeStartTag(false);
+			writer.write('<');
+			if(qname.getPrefix() != null && qname.getPrefix().length() > 0) {
+				writer.write(qname.getPrefix());
+				writer.write(':');
+			}
+			writer.write(qname.getLocalName());
+			tagIsOpen = true;
+		} catch (IOException e) {
+			throw new TransformerException(e.getMessage(), e);
+		}
+	}
+	
+	public void endElement(String qname) throws TransformerException {
+		try {
 			if (tagIsOpen)
 				closeStartTag(true);
 			else {
@@ -154,6 +167,24 @@ public class XMLWriter {
 		}
 	}
 
+	public void endElement(QName qname) throws TransformerException {
+		try {
+			if (tagIsOpen)
+				closeStartTag(true);
+			else {
+				writer.write("</");
+				if(qname.getPrefix() != null && qname.getPrefix().length() > 0) {
+					writer.write(qname.getPrefix());
+					writer.write(':');
+				}
+				writer.write(qname.getLocalName());
+				writer.write('>');
+			}
+		} catch (IOException e) {
+			throw new TransformerException(e.getMessage(), e);
+		}
+	}
+	
 	public void namespace(String prefix, String nsURI)
 		throws TransformerException {
 		if ((nsURI == null || nsURI.length() == 0)
@@ -179,8 +210,11 @@ public class XMLWriter {
 	public void attribute(String qname, String value)
 		throws TransformerException {
 		try {
-			if (!tagIsOpen)
-				throw new TransformerException("Found an attribute outside an element");
+			if (!tagIsOpen) {
+				characters(value);
+				return;
+//				throw new TransformerException("Found an attribute outside an element");
+			}
 			writer.write(' ');
 			writer.write(qname);
 			writer.write("=\"");
@@ -191,6 +225,27 @@ public class XMLWriter {
 		}
 	}
 
+	public void attribute(QName qname, String value) throws TransformerException {
+		try {
+			if (!tagIsOpen) {
+				characters(value);
+				return;
+//				throw new TransformerException("Found an attribute outside an element");
+			}	
+			writer.write(' ');
+			if(qname.getPrefix() != null && qname.getPrefix().length() > 0) {
+				writer.write(qname.getPrefix());
+				writer.write(':');
+			}
+			writer.write(qname.getLocalName());
+			writer.write("=\"");
+			writeChars(value, true);
+			writer.write('"');
+		} catch (IOException e) {
+			throw new TransformerException(e.getMessage(), e);
+		}
+	}
+	
 	public void characters(CharSequence chars) throws TransformerException {
 		if (!declarationWritten)
 			writeDeclaration();
@@ -310,7 +365,8 @@ public class XMLWriter {
 		        else
 		            i++;
 		    }
-		    writer.write(s.subSequence(pos, i).toString());
+		    writeCharSeq(s, pos, i);
+//	        writer.write(s.subSequence(pos, i).toString());
 		    if(i >= len)
 		        return;
 		    switch (ch) {
@@ -342,6 +398,12 @@ public class XMLWriter {
 		}
 	}
 
+	private void writeCharSeq(CharSequence ch, int start, int end) throws IOException {
+		for(int i = start; i < end; i++) {
+			writer.write(ch.charAt(i));
+		}
+	}
+	
 	protected void writeCharacterReference(char charval) throws IOException {
 		int o = 0;
 		charref[o++] = '&';

@@ -26,6 +26,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.IntegerValue;
@@ -42,7 +43,7 @@ public class FunStringPad extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("string-pad", BUILTIN_FUNCTION_NS),
+			new QName("string-pad", Module.BUILTIN_FUNCTION_NS),
 			"Returns an xs:string consisting of a number copies of the first argument " +
 			"concatenated together without any separators. The number of copies is specified " +
 			"by the second argument.",

@@ -25,7 +25,6 @@ package org.exist.xquery;
 import java.util.Iterator;
 
 import org.exist.dom.ContextItem;
-import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
@@ -71,7 +70,7 @@ public class ValueComparison extends GeneralComparison {
 		if (ls.getLength() == 1 && rs.getLength() == 1) {
 			lv = ls.itemAt(0).atomize();
 			rv = rs.itemAt(0).atomize();
-			return new BooleanValue(compareValues(lv, rv));
+			return BooleanValue.valueOf(compareValues(lv, rv));
 		} else
 			throw new XPathException("Type error: sequence with less or more than one item is not allowed here");
 	}

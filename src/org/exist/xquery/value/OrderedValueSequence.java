@@ -28,6 +28,13 @@ import org.exist.xquery.OrderSpec;
 import org.exist.xquery.XPathException;
 
 /**
+ * A sequence that sorts its entries in the order specified by the order specs of
+ * an "order by" clause. Used by {@link org.exist.xquery.ForExpr}.
+ * 
+ * Contrary to class {@link org.exist.xquery.value.PreorderedValueSequence},
+ * all order expressions are evaluated once for each item in the sequence 
+ * <b>while</b> items are added.
+ * 
  * @author wolf
  */
 public class OrderedValueSequence extends AbstractSequence {
@@ -35,6 +42,8 @@ public class OrderedValueSequence extends AbstractSequence {
 	private OrderSpec orderSpecs[];
 	private Entry[] items = null;
 	private int count = 0;
+	
+	private long execTime = 0;
 	
 	public OrderedValueSequence(OrderSpec orderSpecs[], int size) {
 		this.orderSpecs = orderSpecs;
@@ -98,6 +107,7 @@ public class OrderedValueSequence extends AbstractSequence {
 	
 	public void sort() {
 		FastQSort.sort(items, 0, count - 1);
+		System.out.println("order by took " + execTime);
 	}
 	
 	/* (non-Javadoc)
@@ -123,6 +133,7 @@ public class OrderedValueSequence extends AbstractSequence {
 		AtomicValue values[];
 		
 		public Entry(Item item) throws XPathException {
+			long start = System.currentTimeMillis();
 			this.item = item;
 			values = new AtomicValue[orderSpecs.length];
 			for(int i = 0; i < orderSpecs.length; i++) {
@@ -134,6 +145,7 @@ public class OrderedValueSequence extends AbstractSequence {
 					throw new XPathException("expected a single value for order expression " +
 						orderSpecs[i].getSortExpression().pprint() + " ; found: " + seq.getLength());
 			}
+			execTime = execTime + (System.currentTimeMillis() - start);
 		}
 
 		/* (non-Javadoc)

@@ -75,7 +75,7 @@ public class MatchCount extends BasicFunction {
 		        if(nv.getImplementationType() != NodeValue.PERSISTENT_NODE)
 		            throw new XPathException(getName() + " cannot be applied to XQuery-constructed nodes.");
 		        NodeProxy np = (NodeProxy)nv;
-		        for(Match nextMatch = np.match; nextMatch != null; ) {
+		        for(Match nextMatch = np.getMatches(); nextMatch != null; ) {
 		        	count += nextMatch.getFrequency();
 		            nextMatch = nextMatch.getNextMatch();
 		        }

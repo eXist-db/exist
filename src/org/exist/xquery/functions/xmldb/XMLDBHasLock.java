@@ -45,7 +45,7 @@ public class XMLDBHasLock extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("document-has-lock", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+			new QName("document-has-lock", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns the name of the user that holds a write lock on the document of the " +
 			"specified node. If no lock is in place, the empty sequence is returned.",
 			new SequenceType[] {
@@ -65,7 +65,7 @@ public class XMLDBHasLock extends BasicFunction {
 		NodeValue node = (NodeValue)args[0].itemAt(0);
 		if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			NodeProxy proxy = (NodeProxy)node;
-			User u = proxy.doc.getUserLock();
+			User u = proxy.getDocument().getUserLock();
 			if(u == null)
 				return Sequence.EMPTY_SEQUENCE;
 			else

@@ -242,7 +242,7 @@ public class XMLUtil {
 	}
 
 	public final static long getParentId( NodeProxy node ) {
-		return getParentId(node.doc, node.gid);
+		return getParentId(node.getDocument(), node.gid);
 	}
 
 	public final static long getParentId(
@@ -321,13 +321,13 @@ public class XMLUtil {
 			if(temp != null)
 				return temp;
 			if(level < 0)
-				level = child.doc.getTreeLevel(child.gid);
+				level = child.getDocument().getTreeLevel(child.gid);
 			while (child.gid > 0) {
 				// calculate parent's gid
-				child.gid = (child.gid - child.doc.getLevelStartPoint(level))
-					/ child.doc.getTreeLevelOrder(level)
-					+ child.doc.getLevelStartPoint(level - 1);
-				if ((temp = contextSet.get(child.doc, child.gid)) != null)
+				child.gid = (child.gid - child.getDocument().getLevelStartPoint(level))
+					/ child.getDocument().getTreeLevelOrder(level)
+					+ child.getDocument().getLevelStartPoint(level - 1);
+				if ((temp = contextSet.get(child.getDocument(), child.gid)) != null)
 					return temp;
 				else
 					--level;

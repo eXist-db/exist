@@ -26,6 +26,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
@@ -44,7 +45,7 @@ public class FunMax extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("max", BUILTIN_FUNCTION_NS),
+			new QName("max", Module.BUILTIN_FUNCTION_NS),
 			"Selects an item from the input sequence $a whose value " +
 			"is greater than or equal to the value of every other item in the " +
 			"input sequence.",

@@ -45,7 +45,7 @@ public class XMLDBLastModified extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("last-modified", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+			new QName("last-modified", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns the modified date",
 			new SequenceType[] {
 					new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
@@ -64,7 +64,7 @@ public class XMLDBLastModified extends BasicFunction {
 		NodeValue node = (NodeValue)args[0].itemAt(0);
 		if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			NodeProxy proxy = (NodeProxy)node;
-     		return new DateTimeValue(proxy.doc.getLastModified());
+     		return new DateTimeValue(proxy.getDocument().getLastModified());
 		}
 		return Sequence.EMPTY_SEQUENCE;
 	}

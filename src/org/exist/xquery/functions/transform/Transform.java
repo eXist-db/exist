@@ -50,7 +50,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.Receiver;
+import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.xquery.BasicFunction;
@@ -74,7 +74,7 @@ public class Transform extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("transform", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+			new QName("transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
 			"Applies an XSL stylesheet to the node tree passed as first argument. The stylesheet " +
 			"is specified in the second argument. This should either be an URI or a node. " +
 			"Stylesheet parameters " +
@@ -130,7 +130,7 @@ public class Transform extends BasicFunction {
 		
 		context.pushDocumentContext();
 		MemTreeBuilder builder = context.getDocumentBuilder();
-		Receiver receiver = new Receiver(builder);
+		DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
 		SAXResult result = new SAXResult(receiver);
 		handler.setResult(result);
 		
@@ -205,7 +205,7 @@ public class Transform extends BasicFunction {
 	private Templates getSource(SAXTransformerFactory factory, NodeValue stylesheetRoot)
 	throws XPathException, TransformerConfigurationException {
 		if(stylesheetRoot.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-			factory.setURIResolver(new DatabaseResolver(((NodeProxy)stylesheetRoot).doc));
+			factory.setURIResolver(new DatabaseResolver(((NodeProxy)stylesheetRoot).getDocument()));
 		}
 		TemplatesHandler handler = factory.newTemplatesHandler();
 		try {

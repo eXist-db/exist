@@ -30,7 +30,7 @@ public class DocumentId extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("document-id", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+			new QName("document-id", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns the internal id of the document to which the passed node belongs.",
 			new SequenceType[] {
 					new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
@@ -49,8 +49,8 @@ public class DocumentId extends BasicFunction {
 		NodeValue node = (NodeValue)args[0].itemAt(0);
 		if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			NodeProxy proxy = (NodeProxy)node;
-			String path = proxy.doc.getFileName();
-			return new IntegerValue(proxy.doc.getDocId(), Type.INT);
+			String path = proxy.getDocument().getFileName();
+			return new IntegerValue(proxy.getDocument().getDocId(), Type.INT);
 		}
 		return Sequence.EMPTY_SEQUENCE;
 	}

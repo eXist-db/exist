@@ -29,6 +29,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.OrderedValueSequence;
+import org.exist.xquery.value.PreorderedValueSequence;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
@@ -59,43 +60,70 @@ public class ForExpr extends BindingExpression {
 		Item contextItem,
 		Sequence resultSequence)
 		throws XPathException {
-		context.pushLocalContext(false);
-		// declare the variable
-		Variable var = new Variable(QName.parse(context, varName));
+		// Save the local variable stack
+		LocalVariable mark = context.markLocalVariables();
+		
+		// Declare the iteration variable
+		LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
 		context.declareVariable(var);
 		
-		// declare positional variable
-		Variable at = null;
+		// Declare positional variable
+		LocalVariable at = null;
 		if(positionalVariable != null) {
-			at = new Variable(QName.parse(context, positionalVariable));
+			at = new LocalVariable(QName.parse(context, positionalVariable, null));
 			context.declareVariable(at);
 		}
 		
-		// evaluate the "in" expression
+		// Evaluate the "in" expression
 		Sequence in = inputSequence.eval(null, null);
-		// assign to the bound variable
+		
+		// Assign the whole input sequence to the bound variable.
+		// This is required if we process the "where" or "order by" clause
+		// in one step.
 		var.setValue(in);
+		
+		// Save the current context document set to the variable as a hint
+		// for path expressions occurring in the "return" clause.
 		if(in instanceof NodeSet) {
 		    DocumentSet contextDocs = ((NodeSet)in).getDocumentSet();
 		    var.setContextDocs(contextDocs);
 		}
+
+		// Check if we can speed up the processing of the "order by" clause.
+		boolean fastOrderBy = false; // checkOrderSpecs(in);
+		
 		if(whereExpr != null) {
 			whereExpr.setInPredicate(true);
-			setContext(in);
+			if(!(in.isCached() || fastOrderBy))
+				setContext(in);
 		}
+		
+		// See if we can process the "where" clause in a single step (instead of
+		// calling the where expression for each item in the input sequence)
+		// This is possible if the input sequence is a node set and has no
+		// dependencies on the current context item.
 		boolean fastExec = whereExpr != null &&
 			( whereExpr.getDependencies() & Dependency.CONTEXT_ITEM ) == 0 &&
 			at == null &&
 			in.getItemType() == Type.NODE;
-			
+		
+		// If possible, apply the where expression ahead of the iteration
 		if(fastExec) {
-			LOG.debug("fast evaluation mode");
+//			LOG.debug("fast evaluation mode");
 			in = applyWhereExpression(in);
 		}
-		// if there's an order by clause, wrap the result into
-		// an OrderedValueSequence
+		
+		// PreorderedValueSequence applies the order specs to all items
+		// in one single processing step
+		if(fastOrderBy) {
+			in = new PreorderedValueSequence(orderSpecs, in);
+		}
+		
+		// Otherwise, if there's an order by clause, wrap the result into
+		// an OrderedValueSequence. OrderedValueSequence will compute
+		// order expressions for every item when it is added to the result sequence.
 		if(resultSequence == null) {
-			if(orderSpecs != null)
+			if(orderSpecs != null && !fastOrderBy)
 				resultSequence = 
 					new OrderedValueSequence(orderSpecs, in.getLength());
 			else
@@ -107,7 +135,8 @@ public class ForExpr extends BindingExpression {
 		IntegerValue atVal = new IntegerValue(1);
 		if(positionalVariable != null)
 			at.setValue(atVal);
-		// loop through each variable binding
+		
+		// Loop through each variable binding
 		for (SequenceIterator i = in.iterate(); i.hasNext(); p++) {
 		    context.proceed(this);
 			contextItem = i.nextItem();
@@ -121,9 +150,11 @@ public class ForExpr extends BindingExpression {
 			if(sequenceType != null)
 				// check sequence type
 				sequenceType.checkType(contextItem.getType());
+			
 			// set variable value to current item
 			var.setValue(contextSequence);
 			val = contextSequence;
+			
 			// check optional where clause
 			if (whereExpr != null && (!fastExec)) {
 				if(contextItem instanceof NodeProxy)
@@ -147,12 +178,14 @@ public class ForExpr extends BindingExpression {
 				resultSequence.addAll(val);
 			}
 		}
-		if(orderSpecs != null)
+		if(orderSpecs != null && !fastOrderBy)
 			((OrderedValueSequence)resultSequence).sort();
-		context.popLocalContext();
+		
+		// restore the local variable stack
+		context.popLocalVariables(mark);
 		return resultSequence;
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#pprint()
 	 */
@@ -185,5 +218,14 @@ public class ForExpr extends BindingExpression {
 	 */
 	public int returnsType() {
 		return Type.ITEM;
+	}
+	
+	public final static void setContext(Sequence seq) {
+		Item next;
+		for (SequenceIterator i = seq.unorderedIterator(); i.hasNext();) {
+			next = i.nextItem();
+			if (next instanceof NodeProxy)
+				 ((NodeProxy) next).addContextNode((NodeProxy) next);
+		}
 	}
 }

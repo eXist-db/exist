@@ -28,6 +28,7 @@ import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 
+import org.exist.dom.QName;
 import org.exist.util.XMLString;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -36,7 +37,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.NamespaceSupport;
 
-public class SAXSerializer implements ContentHandler, LexicalHandler {
+public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 
 	private final static Properties defaultProperties = new Properties();
 	
@@ -214,18 +215,130 @@ public class SAXSerializer implements ContentHandler, LexicalHandler {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.exist.util.serializer.Receiver#startElement(org.exist.dom.QName)
+	 */
+	public void startElement(QName qname, AttrList attribs) throws SAXException {
+		try {
+			namespaceDecls.clear();
+			nsSupport.pushContext();
+			receiver.startElement(qname);
+			String prefix = qname.getPrefix();
+			String namespaceURI = qname.getNamespaceURI();
+			if(prefix == null)
+				prefix = "";
+			if (namespaceURI == null)
+				namespaceURI = "";
+			if (nsSupport.getURI(prefix) == null) {
+				namespaceDecls.put(prefix, namespaceURI);
+				nsSupport.declarePrefix(prefix, namespaceURI);
+			}
+			// check attributes for required namespace declarations
+			QName attrQName;
+			String uri;
+			if(attribs != null) {
+				for (int i = 0; i < attribs.getLength(); i++) {
+					attrQName = attribs.getQName(i);
+					if (attrQName.getLocalName().equals("xmlns")) {
+						if (nsSupport.getURI("") == null) {
+							uri = attribs.getValue(i);
+							namespaceDecls.put("", uri);
+							nsSupport.declarePrefix("", uri);
+						}
+					} else if (attrQName.getPrefix() != null && attrQName.getPrefix().length() > 0) {
+						prefix = attrQName.getPrefix();
+						if(prefix.equals("xmlns:")) {
+							if (nsSupport.getURI(prefix) == null) {
+								uri = attribs.getValue(i);
+								prefix = attrQName.getLocalName();
+								namespaceDecls.put(prefix, uri);
+								nsSupport.declarePrefix(prefix, uri);
+							}
+						} else {
+							if (nsSupport.getURI(prefix) == null) {
+								uri = attrQName.getNamespaceURI();
+								namespaceDecls.put(prefix, uri);
+								nsSupport.declarePrefix(prefix, uri);
+							}
+						}
+					}
+				}
+			}
+			Map.Entry nsEntry;
+			for (Iterator i = optionalNamespaceDecls.entrySet().iterator();
+				i.hasNext();
+			) {
+				nsEntry = (Map.Entry) i.next();
+				prefix = (String) nsEntry.getKey();
+				uri = (String) nsEntry.getValue(); 
+				receiver.namespace(prefix, uri);
+				nsSupport.declarePrefix(prefix, uri);
+			}
+			// output all namespace declarations
+			for (Iterator i = namespaceDecls.entrySet().iterator();
+				i.hasNext();
+				) {
+				nsEntry = (Map.Entry) i.next();
+				prefix = (String) nsEntry.getKey();
+				uri = (String) nsEntry.getValue(); 
+				if(!optionalNamespaceDecls.containsKey(prefix)) {
+					receiver.namespace(prefix, uri);
+				}
+			}
+			optionalNamespaceDecls.clear();
+			if(attribs != null) {
+				// output attributes
+				for (int i = 0; i < attribs.getLength(); i++) {
+					if (!attribs.getQName(i).getLocalName().startsWith("xmlns"))
+						receiver.attribute(
+							attribs.getQName(i),
+							attribs.getValue(i));
+				}
+			}
+		} catch (TransformerException e) {
+			throw new SAXException(e.getMessage(), e);
+		}
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	public void endElement(String namespaceURI, String localName, String qname)
 		throws SAXException {
 		try {
 			nsSupport.popContext();
-			receiver.endElement();
+			receiver.endElement(qname);
 		} catch (TransformerException e) {
 			throw new SAXException(e.getMessage(), e);
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.util.serializer.Receiver#endElement(org.exist.dom.QName)
+	 */
+	public void endElement(QName qname) throws SAXException {
+		try {
+			nsSupport.popContext();
+			receiver.endElement(qname);
+		} catch (TransformerException e) {
+			throw new SAXException(e.getMessage(), e);
+		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.util.serializer.Receiver#attribute(org.exist.dom.QName, java.lang.String)
+	 */
+	public void attribute(QName qname, String value) throws SAXException {
+		// ignore namespace declaration attributes
+		if((qname.getPrefix() != null && qname.getPrefix().equals("xmlns")) ||
+				qname.getLocalName().equals("xmlns"))
+			return;
+		try {
+			receiver.attribute(qname, value);
+		} catch (TransformerException e) {
+			throw new SAXException(e.getMessage(), e);
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#characters(char[], int, int)
 	 */

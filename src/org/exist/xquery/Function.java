@@ -47,28 +47,10 @@ import org.exist.xquery.value.Type;
  * @author wolf
  */
 public abstract class Function extends PathExpr {
-
-	/** 
-	 * XQuery/XPath 2.0 function namespace.
-	 */
+	
 	public final static String BUILTIN_FUNCTION_NS =
 		"http://www.w3.org/2003/05/xpath-functions";
 	
-	/**
-	 * Namespace for the built-in xmldb functions.
-	 */
-	public final static String XMLDB_FUNCTION_NS =
-		"http://exist-db.org/xquery/xmldb";
-
-	/**
-	 * Namespace for the built-in utility functions.
-	 */
-	public final static String UTIL_FUNCTION_NS =
-		"http://exist-db.org/xquery/util";
-	
-	public final static String REQUEST_FUNCTION_NS =
-		"http://exist-db.org/xquery/request";
-		
 	// The signature of the function.	
 	protected FunctionSignature mySignature;
 	

@@ -22,10 +22,8 @@
  */
 package org.exist.xquery.value;
 
-import org.exist.storage.serializers.Serializer;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 
 /**
  * Represents a node value. May either be an in-memory node

@@ -43,7 +43,7 @@ public class XMLDBAuthenticate extends BasicFunction {
 
 	public final static FunctionSignature signature =
 			new FunctionSignature(
-				new QName("authenticate", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+				new QName("authenticate", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 				"Check if a user is registered as database user. The function simply tries to " +
 				"read the database collection specified in the first parameter $a, using the " +
 				"supplied username in $b and password in $c. " +

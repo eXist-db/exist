@@ -24,6 +24,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
@@ -39,7 +40,7 @@ public class FunSum extends Function {
 
 	public final static FunctionSignature signature =
 			new FunctionSignature(
-				new QName("sum", BUILTIN_FUNCTION_NS),
+				new QName("sum", Module.BUILTIN_FUNCTION_NS),
 				"Returns a value obtained by adding together the values in $a. If the " +
 				"single-argument form of the function is used, then the value returned for " +
 				"an empty sequence is the xs:double value 0.0e0. If the two-argument form " +

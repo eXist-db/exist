@@ -28,6 +28,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.DoubleValue;
@@ -46,7 +47,7 @@ public class FunSubSequence extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("subsequence", BUILTIN_FUNCTION_NS),
+			new QName("subsequence", Module.BUILTIN_FUNCTION_NS),
 			"Returns a subsequence of the values in the first argument sequence, " +
 			"starting at the position indicated by the value of the second argument and " +
 			"including the number of items indicated by the value of the optional third" +

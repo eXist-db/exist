@@ -33,11 +33,23 @@ import org.exist.xquery.value.Sequence;
  */
 public class Variable {
 
+	// the name of the variable
 	private QName qname;
+	
+	// the current value assigned to the variable
 	private Sequence value = null;
+	
+	// the context position of this variable in the local variable stack
+	// this can be used to determine if a variable has been declared
+	// before another
 	private int positionInStack = 0;
+	
+	// the cardinality of this variable
 	private int cardinality = Cardinality.ZERO_OR_MORE;
+	
+	// the context document set
 	private DocumentSet contextDocs = null;
+	
 	/**
 	 * 
 	 */

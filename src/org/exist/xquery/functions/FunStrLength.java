@@ -24,6 +24,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.IntegerValue;
@@ -40,7 +41,7 @@ public class FunStrLength extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("string-length", BUILTIN_FUNCTION_NS),
+			new QName("string-length", Module.BUILTIN_FUNCTION_NS),
 			new SequenceType[] {
 				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
 			new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE),

@@ -77,7 +77,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	static {
 		defaultProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
 		defaultProperties.setProperty(OutputKeys.INDENT, "yes");
-		defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
+		defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
 		defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
 	}
 

@@ -43,7 +43,7 @@ public class CatchFunction extends Function {
 
     public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("catch", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+			new QName("catch", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"This function corresponds to a try-catch statement in Java. The code block " +
 			"in $b will be put inside a try-catch statement. If an exception is thrown while executing " +
 			"$b, the function checks the name of the exception and calls $c if it matches one of " +
@@ -85,9 +85,9 @@ public class CatchFunction extends Function {
                     Class exClass = Class.forName(next.getStringValue());
                     if(exClass.getName().equals(e.getClass().getName()) || exClass.isInstance(e)) {
                         LOG.debug("Calling exception handler to process " + e.getClass().getName());
-                        ModuleImpl myModule =
-                			(ModuleImpl) context.getModule(ModuleImpl.NAMESPACE_URI);
-                        QName exQname = new QName("exception", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX);
+                        UtilModule myModule =
+                			(UtilModule) context.getModule(UtilModule.NAMESPACE_URI);
+                        QName exQname = new QName("exception", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
                         myModule.declareVariable(exQname, new StringValue(e.getClass().getName()));
                         return getArgument(2).eval(contextSequence, contextItem);
                     }

@@ -24,7 +24,7 @@ package org.exist.xquery;
 
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
-import org.exist.memtree.Receiver;
+import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -59,7 +59,7 @@ public class DocumentConstructor extends NodeConstructor {
         Sequence contentSeq = content.eval(contextSequence, contextItem);
         context.pushDocumentContext();
         MemTreeBuilder builder = context.getDocumentBuilder();
-        Receiver receiver = new Receiver(builder);
+        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
         
         if(contentSeq.getLength() == 0)
             return builder.getDocument();

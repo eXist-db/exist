@@ -52,7 +52,7 @@ public class UserDefinedFunction extends Function {
 	}
 	
 	public void addVariable(String varName) throws XPathException {
-		QName qname = QName.parse(context, varName);
+		QName qname = QName.parse(context, varName, null);
 		parameters.add(qname);
 	}
 	
@@ -71,12 +71,12 @@ public class UserDefinedFunction extends Function {
 		Item contextItem)
 		throws XPathException {
 		QName varName;
-		Variable var;
+		LocalVariable var;
 		Sequence argSeq;
 		int j = 0;
 		for(Iterator i = parameters.iterator(); i.hasNext(); j++) {
 			varName = (QName)i.next();
-			var = new Variable(varName);
+			var = new LocalVariable(varName);
 			var.setValue(currentArguments[j]);
 			context.declareVariable(var);
 		}

@@ -39,7 +39,7 @@ public class RangeExpression extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("to", BUILTIN_FUNCTION_NS),
+			new QName("to", Module.BUILTIN_FUNCTION_NS),
 			new SequenceType[] {
 				new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)

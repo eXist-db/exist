@@ -196,7 +196,7 @@ public class RpcConnection extends Thread {
 			}
 		}
 		LOG.debug("compiling " + xquery);
-		XQueryLexer lexer = new XQueryLexer(new StringReader(xquery));
+		XQueryLexer lexer = new XQueryLexer(context, new StringReader(xquery));
 		XQueryParser parser = new XQueryParser(lexer);
 		XQueryTreeParser treeParser = new XQueryTreeParser(context);
 
@@ -1219,7 +1219,7 @@ public class RpcConnection extends Thread {
 				nodes = new ArraySet(1);
 				nodes.add(node);
 				docs = new DocumentSet();
-				docs.add(node.doc);
+				docs.add(node.getDocument());
 			}
 			resultSeq = doQuery(user, broker, xpath, docs, nodes, parameters);
 			if (resultSeq == null)
@@ -1244,7 +1244,7 @@ public class RpcConnection extends Thread {
 							entry = new Vector();
 							if (((NodeValue) next).getImplementationType() == NodeValue.PERSISTENT_NODE) {
 								p = (NodeProxy) next;
-								entry.addElement(p.doc.getCollection().getName() + '/' + p.doc.getFileName());
+								entry.addElement(p.getDocument().getCollection().getName() + '/' + p.getDocument().getFileName());
 								entry.addElement(Long.toString(p.getGID()));
 							} else {
 								entry.addElement("temp_xquery/"
@@ -1709,13 +1709,13 @@ public class RpcConnection extends Thread {
 			DoctypeCount doctypeCounter;
 			for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext(); ) {
 				p = (NodeProxy) i.next();
-				docName = p.doc.getCollection().getName() + '/' + p.doc.getFileName();
-				doctype = p.doc.getDoctype();
+				docName = p.getDocument().getCollection().getName() + '/' + p.getDocument().getFileName();
+				doctype = p.getDocument().getDoctype();
 				if (map.containsKey(docName)) {
 					counter = (NodeCount) map.get(docName);
 					counter.inc();
 				} else {
-					counter = new NodeCount(p.doc);
+					counter = new NodeCount(p.getDocument());
 					map.put(docName, counter);
 				}
 				if (doctype == null)
@@ -1785,13 +1785,13 @@ public class RpcConnection extends Thread {
 			DoctypeCount doctypeCounter;
 			for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext(); ) {
 				p = (NodeProxy) i.next();
-				docName = p.doc.getCollection().getName() + '/' + p.doc.getFileName();
-				doctype = p.doc.getDoctype();
+				docName = p.getDocument().getCollection().getName() + '/' + p.getDocument().getFileName();
+				doctype = p.getDocument().getDoctype();
 				if (map.containsKey(docName)) {
 					counter = (NodeCount) map.get(docName);
 					counter.inc();
 				} else {
-					counter = new NodeCount(p.doc);
+					counter = new NodeCount(p.getDocument());
 					map.put(docName, counter);
 				}
 				if (doctype == null)

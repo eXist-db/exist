@@ -183,4 +183,19 @@ public abstract class AbstractSequence implements Sequence {
 			}
 		}
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.Sequence#isCached()
+	 */
+	public boolean isCached() {
+		// always return false by default
+		return false;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.Sequence#setIsCached(boolean)
+	 */
+	public void setIsCached(boolean cached) {
+		// ignore by default
+	}
 }

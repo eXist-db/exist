@@ -44,7 +44,7 @@ public class XMLDBRemove extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("remove-resource", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+			new QName("remove-resource", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 				"Remove a resource from the collection. The first " +
 				"argument specifies the collection object as returned by the collection or " +
 				"create-collection functions. The second argument is the name of the resource " +

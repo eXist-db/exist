@@ -65,7 +65,7 @@ public class VariableDeclaration extends AbstractExpression {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		QName qn = QName.parse(context, qname);
+		QName qn = QName.parse(context, qname, null);
 		Module myModule = context.getModule(qn.getNamespaceURI());
 		
 		// declare the variable

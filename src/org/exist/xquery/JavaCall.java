@@ -172,7 +172,7 @@ public class JavaCall extends Function {
 				}
 			}
 		}
-		LOG.debug("calling method " + bestMethod.toString());
+//		LOG.debug("calling method " + bestMethod.toString());
 		Class paramTypes[] = null;
 		boolean isStatic = true;
 		if (bestMethod instanceof Constructor)

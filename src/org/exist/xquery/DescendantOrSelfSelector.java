@@ -40,7 +40,7 @@ public class DescendantOrSelfSelector extends DescendantSelector {
 	 */
 	public boolean match(NodeProxy node) {
 		NodeProxy p;
-		if((p = context.parentWithChild(node.doc, node.gid, false, true, -1)) != null) {
+		if((p = context.parentWithChild(node.getDocument(), node.gid, false, true, -1)) != null) {
 			if (rememberContext)
 				node.addContextNode(p);
 			else

@@ -58,7 +58,6 @@ import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.TextImpl;
-import org.exist.dom.TextSearchResult;
 import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -426,11 +425,7 @@ public class NativeTextEngine extends TextSearchEngine {
 	public NodeSet getNodes(XQueryContext context, DocumentSet docs, NodeSet contextSet,
 							TermMatcher matcher, CharSequence startTerm) throws TerminatedException {
 //		long start = System.currentTimeMillis();
-		NodeSet result;
-		if (contextSet == null)
-			result = new TextSearchResult(trackMatches != Serializer.TAG_NONE);
-		else
-			result = new ExtArrayNodeSet();
+		NodeSet result = new ExtArrayNodeSet();
 		Value ref;
 		Collection collection;
 		short collectionId;
@@ -1223,12 +1218,12 @@ public class NativeTextEngine extends TextSearchEngine {
 							if(termFreq)
 								freq = is.readInt();
 							last = gid;
+							proxy = (section == TEXT_SECTION
+									? new NodeProxy(doc, gid,
+											Node.TEXT_NODE)
+									: new NodeProxy(doc, gid,
+											Node.ATTRIBUTE_NODE));
 							if (contextSet != null) {
-								proxy = (section == TEXT_SECTION
-										? new NodeProxy(doc, gid,
-												Node.TEXT_NODE)
-										: new NodeProxy(doc, gid,
-												Node.ATTRIBUTE_NODE));
 								parent = contextSet.parentWithChild(proxy, false,
 										true, -1);
 								if (parent != null) {
@@ -1239,7 +1234,7 @@ public class NativeTextEngine extends TextSearchEngine {
 										parent.addMatch(match);
 								}
 							} else
-								((TextSearchResult) result).add(doc, gid, word);
+								result.add(proxy, sizeHint);
 						}
 					}
 				} catch (EOFException e) {

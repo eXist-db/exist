@@ -2597,7 +2597,7 @@ throws PermissionDeniedException, EXistException, XPathException
 class XQueryLexer extends Lexer;
 
 options {
-	k = 3;
+	k = 4;
 	testLiterals = false;
 	charVocabulary = '\u0003'..'\uffff';
 	codeGenBitsetTestThreshold = 20;
@@ -2614,6 +2614,13 @@ tokens {
 	protected boolean inElementContent= false;
 	protected boolean inAttributeContent= false;
 	protected boolean inComment= false;
+	
+	protected XQueryContext context;
+	
+	public XQueryLexer(XQueryContext context, Reader in) {
+		this(in);
+		this.context = context;
+	}
 }
 
 protected SLASH : '/' ;
@@ -2708,6 +2715,34 @@ options {
 	"(:" ( CHAR | ( ':' ~( ')' ) ) => ':' )* ":)"
 	;
 
+protected PRAGMA
+options {
+	testLiterals=false;
+}
+{ String content = null; }:
+	"(::" "pragma"
+	WS qn:PRAGMA_QNAME WS 
+	( c:PRAGMA_CONTENT { content = c.getText(); } )? ':' ':' ')'
+	{
+		try {
+			context.addPragma(qn.getText(), content);
+		} catch(XPathException e) {
+			throw new RecognitionException(e.getMessage());
+		}
+	}
+	;
+
+protected PRAGMA_CONTENT
+:
+	( ~( ' ' | '\t' | '\n' | '\r' ) ) 
+	( CHAR | (':' ~( ':' )) => ':' | (':' ':' ~(')') ) => ':' ':' )+
+	;
+
+protected PRAGMA_QNAME
+:
+	NCNAME ( ':' NCNAME )?
+	;
+	
 protected INTEGER_LITERAL : 
 	{ !(inElementContent || inAttributeContent) }? DIGITS ;
 
@@ -2848,6 +2883,9 @@ options {
 		} else
 			$setType(Token.SKIP);
 	}
+	|
+	( "(::" ) => PRAGMA
+	{ $setType(Token.SKIP); }
 	|
 	EXPR_COMMENT
 	{ $setType(Token.SKIP); }

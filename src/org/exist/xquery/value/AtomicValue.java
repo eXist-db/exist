@@ -22,7 +22,7 @@ package org.exist.xquery.value;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
-import org.exist.memtree.Receiver;
+import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
@@ -126,7 +126,7 @@ public abstract class AtomicValue implements Item, Sequence {
 		}
 	}
 
-	public void copyTo(DBBroker broker, Receiver receiver) throws SAXException {
+	public void copyTo(DBBroker broker, DocumentBuilderReceiver receiver) throws SAXException {
 		try {
 			final String s = getStringValue();
 			receiver.characters(s);
@@ -208,6 +208,21 @@ public abstract class AtomicValue implements Item, Sequence {
 		} catch (XPathException e) {
 			return super.toString();
 		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.Sequence#isCached()
+	 */
+	public boolean isCached() {
+		// always returns false by default
+		return false;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.Sequence#setIsCached(boolean)
+	 */
+	public void setIsCached(boolean cached) {
+		// ignore
 	}
 	
 	/* (non-Javadoc)

@@ -71,7 +71,7 @@ public class XQuery {
     
     public CompiledXQuery compile(XQueryContext context, Reader reader) throws XPathException {
         long start = System.currentTimeMillis();
-        XQueryLexer lexer = new XQueryLexer(reader);
+        XQueryLexer lexer = new XQueryLexer(context, reader);
 		XQueryParser parser = new XQueryParser(lexer);
 		XQueryTreeParser treeParser = new XQueryTreeParser(context);
 		try {

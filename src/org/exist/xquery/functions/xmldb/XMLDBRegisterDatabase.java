@@ -43,8 +43,8 @@ import org.xmldb.api.base.Database;
 public class XMLDBRegisterDatabase extends BasicFunction {
 
 	public final static FunctionSignature signature = new FunctionSignature(
-			new QName("register-database", ModuleImpl.NAMESPACE_URI,
-					ModuleImpl.PREFIX),
+			new QName("register-database", XMLDBModule.NAMESPACE_URI,
+					XMLDBModule.PREFIX),
 			"Register an XMLDB driver class with the XMLDB Database Manager. "
 					+ "This is only required if you want to access a database instance different "
 					+ "from the one that executes the XQuery.",

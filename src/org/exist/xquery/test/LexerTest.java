@@ -94,7 +94,7 @@ public class LexerTest extends TestCase {
 
 			// parse the query into the internal syntax tree
 			XQueryContext context = new XQueryContext(broker);
-			XQueryLexer lexer = new XQueryLexer(new StringReader(query));
+			XQueryLexer lexer = new XQueryLexer(context, new StringReader(query));
 			XQueryParser xparser = new XQueryParser(lexer);
 			XQueryTreeParser treeParser = new XQueryTreeParser(context);
 			xparser.xpath();

@@ -20,7 +20,7 @@
  */
 package org.exist.xquery.value;
 
-import org.exist.memtree.Receiver;
+import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.XPathException;
 import org.xml.sax.ContentHandler;
@@ -73,7 +73,7 @@ public interface Item {
 	
 	public void toSAX(DBBroker broker, ContentHandler handler) throws SAXException;
 
-	public void copyTo(DBBroker broker, Receiver receiver) throws SAXException;
+	public void copyTo(DBBroker broker, DocumentBuilderReceiver receiver) throws SAXException;
 	
 	public int conversionPreference(Class javaClass);
 	

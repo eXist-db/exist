@@ -46,7 +46,7 @@ public class XMLDBGroup extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("get-resource-group", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+			new QName("get-resource-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns document group",
 			new SequenceType[] {
 					new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
@@ -66,7 +66,7 @@ public class XMLDBGroup extends BasicFunction {
 		NodeValue node = (NodeValue)args[0].itemAt(0);
 		if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			NodeProxy proxy = (NodeProxy)node;
-			perm = proxy.doc.getPermissions();
+			perm = proxy.getDocument().getPermissions();
 			if(perm == null)
 				return Sequence.EMPTY_SEQUENCE;
 			else

@@ -27,6 +27,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.BooleanValue;
@@ -42,7 +43,7 @@ public class FunEmpty extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("empty", BUILTIN_FUNCTION_NS),
+			new QName("empty", Module.BUILTIN_FUNCTION_NS),
 			"Returns true if the value of the argument is the empty sequence, false otherwise.",
 			new SequenceType[] {
 				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)

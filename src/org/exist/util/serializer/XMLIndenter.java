@@ -25,6 +25,7 @@ import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 
+import org.exist.dom.QName;
 import org.exist.storage.serializers.EXistOutputKeys;
 
 public class XMLIndenter extends XMLWriter {
@@ -70,12 +71,35 @@ public class XMLIndenter extends XMLWriter {
 	}
 	
 	/* (non-Javadoc)
+	 * @see org.exist.util.serializer.XMLWriter#startElement(org.exist.dom.QName)
+	 */
+	public void startElement(QName qname) throws TransformerException {
+		if(afterTag)
+			indent();
+		super.startElement(qname);
+		level++;
+		afterTag = true;
+		sameline = true;
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.exist.util.serializer.XMLWriter#endElement()
 	 */
-	public void endElement() throws TransformerException {
+	public void endElement(String qname) throws TransformerException {
 		level--;
 		if (afterTag && !sameline) indent();
-		super.endElement();
+		super.endElement(qname);
+		sameline = false;
+		afterTag = true;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.util.serializer.XMLWriter#endElement(org.exist.dom.QName)
+	 */
+	public void endElement(QName qname) throws TransformerException {
+		level--;
+		if (afterTag && !sameline) indent();
+		super.endElement(qname);
 		sameline = false;
 		afterTag = true;
 	}

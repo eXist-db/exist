@@ -51,8 +51,9 @@ public class QuantifiedExpression extends BindingExpression {
 	}
 
 	public Sequence eval(Sequence contextSequence, Item contextItem, Sequence resultSequence) throws XPathException {
-		context.pushLocalContext(false);
-		Variable var = new Variable(QName.parse(context, varName));
+//		context.pushLocalContext(false);
+		LocalVariable mark = context.markLocalVariables();
+		LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
 		context.declareVariable(var);
 		Sequence inSeq = inputSequence.eval(null);
 		Sequence satisfiesSeq;
@@ -71,7 +72,8 @@ public class QuantifiedExpression extends BindingExpression {
 			if((mode == SOME && found) || (mode == EVERY && !found))
 				break;
 		}
-		context.popLocalContext();
+//		context.popLocalContext();
+		context.popLocalVariables(mark);
 		return found ? BooleanValue.TRUE : BooleanValue.FALSE;
 	}
 	

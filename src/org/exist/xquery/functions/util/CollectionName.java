@@ -43,7 +43,7 @@ public class CollectionName extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("collection-name", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+			new QName("collection-name", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns the name of the collection to which the passed node belongs.",
 			new SequenceType[] {
 					new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
@@ -62,7 +62,7 @@ public class CollectionName extends BasicFunction {
 		NodeValue node = (NodeValue)args[0].itemAt(0);
 		if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			NodeProxy proxy = (NodeProxy)node;
-			return new StringValue(proxy.doc.getCollection().getName());
+			return new StringValue(proxy.getDocument().getCollection().getName());
 		}
 		return Sequence.EMPTY_SEQUENCE;
 	}

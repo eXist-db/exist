@@ -22,11 +22,9 @@
 package org.exist.xquery;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
 
 public abstract class AbstractExpression implements Expression {
 
@@ -79,15 +77,6 @@ public abstract class AbstractExpression implements Expression {
 	}
 
 	public void setPrimaryAxis(int axis) {
-	}
-	
-	public final static void setContext(Sequence seq) {
-		Item next;
-		for (SequenceIterator i = seq.unorderedIterator(); i.hasNext();) {
-			next = i.nextItem();
-			if (next instanceof NodeProxy)
-				 ((NodeProxy) next).addContextNode((NodeProxy) next);
-		}
 	}
 	
 	

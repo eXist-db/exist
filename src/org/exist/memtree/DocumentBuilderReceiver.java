@@ -24,6 +24,8 @@ package org.exist.memtree;
 
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.util.serializer.AttrList;
+import org.exist.util.serializer.Receiver;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
@@ -33,19 +35,20 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 
 /**
- * Builds an in-memory DOM tree from SAX events.
+ * Builds an in-memory DOM tree from SAX {@link org.exist.util.serializer.Receiver}
+ * events.
  * 
  * @author Wolfgang <wolfgang@exist-db.org>
  */
-public class Receiver implements ContentHandler, LexicalHandler {
+public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, Receiver {
 
 	private MemTreeBuilder builder = null;
 	
-	public Receiver() {
+	public DocumentBuilderReceiver() {
 		super();
 	}
 
-	public Receiver(MemTreeBuilder builder) {
+	public DocumentBuilderReceiver(MemTreeBuilder builder) {
 		super();
 		this.builder = builder;
 	}
@@ -106,8 +109,13 @@ public class Receiver implements ContentHandler, LexicalHandler {
 		builder.startElement(namespaceURI, localName, qName, attrs);
 	}
 
-	public void startElement(QName qname) {
+	public void startElement(QName qname, AttrList attribs) {
 		builder.startElement(qname, null);
+		if(attribs != null) {
+			for(int i = 0; i < attribs.getLength(); i++) {
+				builder.addAttribute(attribs.getQName(i), attribs.getValue(i));
+			}
+		}
 	}
 	
 	/* (non-Javadoc)

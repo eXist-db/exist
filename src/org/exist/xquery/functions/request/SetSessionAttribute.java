@@ -43,7 +43,7 @@ public class SetSessionAttribute extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("set-session-attribute", REQUEST_FUNCTION_NS, "request"),
+			new QName("set-session-attribute", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Stores a value in the current session using the supplied attribute name.",
 			new SequenceType[] {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),

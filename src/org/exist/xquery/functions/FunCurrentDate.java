@@ -26,6 +26,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.DateValue;
@@ -40,7 +41,7 @@ import org.exist.xquery.value.Type;
 public class FunCurrentDate extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("current-date", BUILTIN_FUNCTION_NS),
+			new QName("current-date", Module.BUILTIN_FUNCTION_NS),
 			"Returns the xs:date (with timezone) that is current at some "
 				+ "time during the evaluation of a query or transformation in which "
 				+ "fn:current-date() is executed.",

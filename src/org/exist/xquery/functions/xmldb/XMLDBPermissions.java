@@ -47,7 +47,7 @@ public class XMLDBPermissions extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("get-resource-permissions", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+			new QName("get-resource-permissions", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns document permissions",
 			new SequenceType[] {
 					new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
@@ -67,7 +67,7 @@ public class XMLDBPermissions extends BasicFunction {
 		NodeValue node = (NodeValue)args[0].itemAt(0);
 		if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			NodeProxy proxy = (NodeProxy)node;
-			perm = proxy.doc.getPermissions();
+			perm = proxy.getDocument().getPermissions();
 			if(perm == null)
 				return Sequence.EMPTY_SEQUENCE;
 			else

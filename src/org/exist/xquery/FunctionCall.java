@@ -105,7 +105,8 @@ public class FunctionCall extends Function {
 		}
 		functionDef.setArguments(seq);
 		
-		context.pushLocalContext(true);
+//		context.pushLocalContext(true);
+		LocalVariable mark = context.markLocalVariables();
 		try {
 			Sequence returnSeq = expression.eval(contextSequence, contextItem);
 			return returnSeq;
@@ -114,7 +115,8 @@ public class FunctionCall extends Function {
 				e.setASTNode(getASTNode());
 			throw e;
 		} finally {
-			context.popLocalContext();
+//			context.popLocalContext();
+			context.popLocalVariables(mark);
 		}
 	}
 

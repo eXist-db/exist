@@ -21,6 +21,7 @@
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
+import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
@@ -35,7 +36,7 @@ public class FunError extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("error", BUILTIN_FUNCTION_NS),
+			new QName("error", Module.BUILTIN_FUNCTION_NS),
 			"Indicates that an irrecoverable error has occurred. The "
 				+ "script will terminate immediately with an exception.",
 			new SequenceType[] { new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE)},

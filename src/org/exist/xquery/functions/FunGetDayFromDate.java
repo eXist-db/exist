@@ -26,6 +26,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.DateValue;
@@ -42,7 +43,7 @@ public class FunGetDayFromDate extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("get-day-from-date", BUILTIN_FUNCTION_NS),
+			new QName("get-day-from-date", Module.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer between 1 and 31, both inclusive, representing " +
 			"the day component in the localized value of $a.",
 			new SequenceType[] { new SequenceType(Type.DATE, Cardinality.ZERO_OR_ONE)},

@@ -58,7 +58,7 @@ public class EvalFunction extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("eval", UTIL_FUNCTION_NS, "util"),
+			new QName("eval", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Dynamically evaluates its string argument as an XPath/XQuery expression. " +
 			"The argument expression will inherit the current execution context, i.e. all " +
 			"namespace declarations and variable declarations are visible from within the " +
@@ -87,7 +87,7 @@ public class EvalFunction extends Function {
 		Item contextItem)
 		throws XPathException {
         // get the query expression
-		String expr = getArgument(0).eval(contextSequence, contextItem).getStringValue();
+		String expr = StringValue.expand(getArgument(0).eval(contextSequence, contextItem).getStringValue());
 		if ("".equals(expr.trim()))
 		  return new EmptySequence();
         // check optional collection argument
@@ -99,7 +99,7 @@ public class EvalFunction extends Function {
             	context.setStaticallyKnownDocuments(getCollectionContext(collectionArgs));
         }
 		LOG.debug("eval: " + expr);
-		XQueryLexer lexer = new XQueryLexer(new StringReader(expr));
+		XQueryLexer lexer = new XQueryLexer(context, new StringReader(expr));
 		XQueryParser parser = new XQueryParser(lexer);
 		// shares the context of the outer expression
 		XQueryTreeParser astParser = new XQueryTreeParser(context);

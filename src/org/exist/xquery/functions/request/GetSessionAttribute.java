@@ -47,7 +47,7 @@ public class GetSessionAttribute extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("get-session-attribute", REQUEST_FUNCTION_NS, "request"),
+			new QName("get-session-attribute", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns an attribute stored in the current session object or an empty sequence " +
 			"if the attribute cannot be found.",
 			new SequenceType[] {

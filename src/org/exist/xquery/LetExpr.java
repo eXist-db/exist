@@ -25,6 +25,7 @@ package org.exist.xquery;
 import org.exist.dom.QName;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.OrderedValueSequence;
+import org.exist.xquery.value.PreorderedValueSequence;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
@@ -45,16 +46,20 @@ public class LetExpr extends BindingExpression {
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem, Sequence resultSequence)
 		throws XPathException {
-		context.pushLocalContext(false);
-		Variable var = new Variable(QName.parse(context, varName));
+		// Save the local variable stack
+		LocalVariable mark = context.markLocalVariables();
+		
+		// Declare the iteration variable
+		LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
 		context.declareVariable(var);
-		Sequence val = inputSequence.eval(null, null);
+		
+		Sequence in = inputSequence.eval(null, null);
 		if (sequenceType != null) {
-			sequenceType.checkType(val.getItemType());
-			sequenceType.checkCardinality(val);
+			sequenceType.checkType(in.getItemType());
+			sequenceType.checkCardinality(in);
 		}
-		var.setValue(val);
-
+		var.setValue(in);
+		
 		Sequence filtered = null;
 		if (whereExpr != null) {
 			filtered = applyWhereExpression(null);
@@ -65,9 +70,22 @@ public class LetExpr extends BindingExpression {
 			} else if (filtered.getLength() == 0)
 				return Sequence.EMPTY_SEQUENCE;
 		}
+		
+		// Check if we can speed up the processing of the "order by" clause.
+		boolean fastOrderBy = checkOrderSpecs(in);
+		
+		//	PreorderedValueSequence applies the order specs to all items
+		// in one single processing step
+		if(fastOrderBy) {
+			in = new PreorderedValueSequence(orderSpecs, in.toNodeSet());
+		}
+		
+		// Otherwise, if there's an order by clause, wrap the result into
+		// an OrderedValueSequence. OrderedValueSequence will compute
+		// order expressions for every item when it is added to the result sequence.
 		if(resultSequence == null) {
-			if(orderSpecs != null)
-				resultSequence = new OrderedValueSequence(orderSpecs, val.getLength());
+			if(orderSpecs != null && !fastOrderBy)
+				resultSequence = new OrderedValueSequence(orderSpecs, in.getLength());
 			else
 				resultSequence = new ValueSequence();
 		}
@@ -75,12 +93,14 @@ public class LetExpr extends BindingExpression {
 		if(returnExpr instanceof BindingExpression) {
 			((BindingExpression)returnExpr).eval(null, null, resultSequence);
 		} else {
-			val = returnExpr.eval(null);
-			resultSequence.addAll(val);
+			in = returnExpr.eval(null);
+			resultSequence.addAll(in);
 		}
-		if(orderSpecs != null)
+		if(orderSpecs != null && !fastOrderBy)
 			((OrderedValueSequence)resultSequence).sort();
-		context.popLocalContext();
+		
+		// Restore the local variable stack
+		context.popLocalVariables(mark);
 		return resultSequence;
 	}
 

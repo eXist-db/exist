@@ -38,6 +38,7 @@ import org.exist.util.LockException;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
@@ -54,7 +55,7 @@ public class ExtCollection extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("collection", BUILTIN_FUNCTION_NS),
+			new QName("collection", Module.BUILTIN_FUNCTION_NS),
             "Includes the documents contained in the specified collection " +
             "into the input sequence. eXist interprets the arguments as absolute paths " +
             "pointing to database collections, as for example, '/db/test'. Documents " +

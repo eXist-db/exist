@@ -14,7 +14,7 @@ import javax.xml.parsers.SAXParserFactory;
 import junit.framework.TestCase;
 
 import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.Receiver;
+import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Document;
@@ -44,7 +44,7 @@ public class DOMTest extends TestCase {
 	}
 	
 	public void testDocumentBuilder() throws Exception {
-		Receiver receiver = new Receiver();
+		DocumentBuilderReceiver receiver = new DocumentBuilderReceiver();
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		factory.setNamespaceAware(true);
 		XMLReader reader = factory.newSAXParser().getXMLReader();

@@ -33,7 +33,7 @@ public class ExclusiveLockFunction extends LockFunction {
 
     public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("exclusive-lock", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+			new QName("exclusive-lock", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Puts an exclusive lock on the owner documents of all nodes in the first argument, $a. " +
 			"Then calls the expression in the second argument, $b and releases the acquired locks after" +
 			"its completition.",

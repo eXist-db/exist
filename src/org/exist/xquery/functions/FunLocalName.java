@@ -25,6 +25,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.EmptySequence;
@@ -43,7 +44,7 @@ public class FunLocalName extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("local-name", BUILTIN_FUNCTION_NS),
+			new QName("local-name", Module.BUILTIN_FUNCTION_NS),
 			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
 			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 			true);

@@ -22,7 +22,6 @@ package org.exist.dom;
 
 import java.util.Iterator;
 
-import org.apache.log4j.Logger;
 import org.exist.util.Range;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AbstractSequence;
@@ -41,8 +40,6 @@ import org.w3c.dom.Node;
  * (e.g. {@link org.exist.dom.ExtArrayNodeSet}) remove duplicates when sorting the set.
  */
 public abstract class AbstractNodeSet extends AbstractSequence implements NodeSet {
-
-	protected final static Logger LOG = Logger.getLogger(AbstractNodeSet.class);
 	
 	protected AbstractNodeSet() {
 	}
@@ -72,7 +69,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	public int getItemType() {
 		return Type.NODE;
 	}
-
+	
 	/**
 	 * Check if this node set contains a node matching the given
 	 * document and node-id.
@@ -202,7 +199,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		NodeProxy p;
 		for(Iterator i = iterator(); i.hasNext(); ) {
 			p = (NodeProxy)i.next();
-			ds.add(p.doc);
+			ds.add(p.getDocument());
 		}
 		return ds;
 	}
@@ -222,8 +219,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		NodeProxy parent,
 		int mode,
 		boolean rememberContext) {
-		Range range = XMLUtil.getChildRange(parent.doc, parent.gid);
-		return getRange(parent.doc, range.getStart(), range.getEnd());
+		Range range = XMLUtil.getChildRange(parent.getDocument(), parent.gid);
+		return getRange(parent.getDocument(), range.getStart(), range.getEnd());
 	}
 
 	/**
@@ -274,8 +271,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 			case NodeSet.DESCENDANT :
 				for (Iterator i = iterator(); i.hasNext();) {
 					n = (NodeProxy) i.next();
-					if (lastDoc == null || n.doc != lastDoc) {
-						lastDoc = n.doc;
+					if (lastDoc == null || n.getDocument() != lastDoc) {
+						lastDoc = n.getDocument();
 						sizeHint = getSizeHint(lastDoc);
 					}
 					if ((p = al.parentWithChild(n, true, false, -1))
@@ -291,8 +288,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 			case NodeSet.ANCESTOR :
 				for (Iterator i = iterator(); i.hasNext();) {
 					n = (NodeProxy) i.next();
-					if (lastDoc == null || n.doc != lastDoc) {
-						lastDoc = n.doc;
+					if (lastDoc == null || n.getDocument() != lastDoc) {
+						lastDoc = n.getDocument();
 						sizeHint = al.getSizeHint(lastDoc);
 					}
 					if ((p = al.parentWithChild(n, true, false, -1))
@@ -385,11 +382,11 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 				for (Iterator i = iterator(); i.hasNext();) {
 					n = (NodeProxy) i.next();
 					// get a size hint for every new document encountered
-					if (lastDoc == null || n.doc != lastDoc) {
-						lastDoc = n.doc;
+					if (lastDoc == null || n.getDocument() != lastDoc) {
+						lastDoc = n.getDocument();
 						sizeHint = getSizeHint(lastDoc);
 					}
-					if ((p = al.parentWithChild(n.doc, n.gid, false, includeSelf, -1))
+					if ((p = al.parentWithChild(n.getDocument(), n.gid, false, includeSelf, -1))
 						!= null) {
 						if (rememberContext)
 							n.addContextNode(p);
@@ -403,11 +400,11 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 				for (Iterator i = iterator(); i.hasNext();) {
 					n = (NodeProxy) i.next();
 					// get a size hint for every new document encountered
-					if (lastDoc == null || n.doc != lastDoc) {
-						lastDoc = n.doc;
+					if (lastDoc == null || n.getDocument() != lastDoc) {
+						lastDoc = n.getDocument();
 						sizeHint = al.getSizeHint(lastDoc);
 					}
-					p = al.parentWithChild(n.doc, n.gid, false, includeSelf, -1);
+					p = al.parentWithChild(n.getDocument(), n.gid, false, includeSelf, -1);
 					if (p != null) {
 						if (rememberContext)
 							p.addContextNode(n);
@@ -528,12 +525,12 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		long pa, pb;
 		while (true) {
 			// first, try to find nodes belonging to the same doc
-			if (na.doc.getDocId() < nb.doc.getDocId()) {
+			if (na.getDocument().getDocId() < nb.getDocument().getDocId()) {
 				if (ia.hasNext())
 					na = (NodeProxy) ia.next();
 				else
 					break;
-			} else if (na.doc.getDocId() > nb.doc.getDocId()) {
+			} else if (na.getDocument().getDocId() > nb.getDocument().getDocId()) {
 				if (ib.hasNext())
 					nb = (NodeProxy) ib.next();
 				else
@@ -543,7 +540,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 			    pa = na.gid;
 			    pb = nb.gid;
 //			    System.out.println(pa + " -> " + pb);
-				pb = XMLUtil.getParentId(nb.doc, pb, nb.doc.getTreeLevel(pb));
+				pb = XMLUtil.getParentId(nb.getDocument(), pb, nb.getDocument().getTreeLevel(pb));
 //				System.out.println("comparing " + pa + " -> " + pb);
 				if(pa == pb) {
 				    if(mode == NodeSet.DESCENDANT) {
@@ -600,7 +597,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		NodeSet ancestors;
 		for (Iterator i = dl.iterator(); i.hasNext();) {
 			n = (NodeProxy) i.next();
-			ancestors = ancestorsForChild(n.doc, n.gid, false, includeSelf, -1);
+			ancestors = ancestorsForChild(n.getDocument(), n.gid, false, includeSelf, -1);
 			for(Iterator j = ancestors.iterator(); j.hasNext(); ) {
 			    p = (NodeProxy) j.next();
 				if (p != null) {
@@ -626,12 +623,12 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		Iterator ib = following.iterator();
 		NodeProxy na = (NodeProxy) ia.next(), nb = (NodeProxy) ib.next();
 		while(true) {
-			if(na.doc.getDocId() < nb.doc.getDocId()) {
+			if(na.getDocument().getDocId() < nb.getDocument().getDocId()) {
 				if(ia.hasNext())
 					na = (NodeProxy) ia.next();
 				else
 					break;
-			} else if(na.doc.getDocId() > nb.doc.getDocId()) {
+			} else if(na.getDocument().getDocId() > nb.getDocument().getDocId()) {
 				if(ib.hasNext())
 					nb = (NodeProxy) ib.next();
 				else
@@ -672,20 +669,20 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		long pa, pb;
 		while (true) {
 			// first, try to find nodes belonging to the same doc
-			if (na.doc.getDocId() < nb.doc.getDocId()) {
+			if (na.getDocument().getDocId() < nb.getDocument().getDocId()) {
 				if (ia.hasNext())
 					na = (NodeProxy) ia.next();
 				else
 					break;
-			} else if (na.doc.getDocId() > nb.doc.getDocId()) {
+			} else if (na.getDocument().getDocId() > nb.getDocument().getDocId()) {
 				if (ib.hasNext())
 					nb = (NodeProxy) ib.next();
 				else
 					break;
 			} else {
 				// same document: check if the nodes have the same parent
-				pa = XMLUtil.getParentId(na.doc, na.gid);
-				pb = XMLUtil.getParentId(nb.doc, nb.gid);
+				pa = XMLUtil.getParentId(na.getDocument(), na.gid);
+				pb = XMLUtil.getParentId(nb.getDocument(), nb.gid);
 				if (pa < pb) {
 					// wrong parent: proceed
 					if (ia.hasNext())
@@ -839,7 +836,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		boolean directParent,
 		boolean includeSelf,
 		int level) {
-		return parentWithChild(proxy.doc, proxy.gid, directParent, includeSelf, level);
+		return parentWithChild(proxy.getDocument(), proxy.gid, directParent, includeSelf, level);
 	}
 
 	/**
@@ -881,25 +878,11 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		for (Iterator i = iterator(); i.hasNext();) {
 			p = (NodeProxy) i.next();
 			// calculate parent's gid
-			pid = XMLUtil.getParentId(p.doc, p.gid);
+			pid = XMLUtil.getParentId(p.getDocument(), p.gid);
 			if (pid > -1)
-				parents.add(new NodeProxy(p.doc, pid, Node.ELEMENT_NODE));
+				parents.add(new NodeProxy(p.getDocument(), pid, Node.ELEMENT_NODE));
 		}
 		return parents;
-	}
-
-	/**
-	 * Returns true if all nodes in this node set are included in
-	 * the fulltext index.
-	 * 
-	 * @return
-	 */
-	public boolean hasIndex() {
-		for (Iterator i = iterator(); i.hasNext();) {
-			if (!((NodeProxy) i.next()).hasIndex())
-				return false;
-		}
-		return true;
 	}
 
 	/**
@@ -1064,8 +1047,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 				if (!result.contains(context)) {
 					if (rememberContext)
 						context.addContextNode(context);
-					if(lastDoc != null && lastDoc.getDocId() != context.doc.getDocId()) {
-						lastDoc = context.doc;
+					if(lastDoc != null && lastDoc.getDocId() != context.getDocument().getDocId()) {
+						lastDoc = context.getDocument();
 						result.add(context, getSizeHint(lastDoc));
 					} else
 						result.add(context);
