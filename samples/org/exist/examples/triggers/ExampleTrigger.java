@@ -94,7 +94,8 @@ public class ExampleTrigger extends FilteringTrigger {
 			// doesn't exist yet: create it
 			try {
 				getLogger().debug("creating new file for collection contents");
-				this.doc = parent.addDocument(broker, contentsFile, "<?xml version=\"1.0\"?><contents></contents>");
+				this.doc = parent.addDocument(broker, contentsFile, "<?xml version=\"1.0\"?><contents></contents>",
+                        "text/xml");
 			} catch (Exception e) {
 				throw new CollectionConfigurationException(e.getMessage(), e);
 			} finally {
