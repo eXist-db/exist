@@ -32,6 +32,8 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.VirtualNodeSet;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.ElementValue;
+import org.exist.util.sanity.SanityCheck;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
@@ -122,8 +124,8 @@ public class LocationStep extends Step {
 		throws XPathException {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-		if(contextSequence == null)
-			return Sequence.EMPTY_SEQUENCE;
+		if(contextSequence == null || contextSequence.getLength() == 0)
+			return NodeSet.EMPTY_SET;
 		if(cached != null &&
 			cached.isValid(contextSequence)) {
 //			LOG.debug("returning cached result for " + pprint());
@@ -221,7 +223,6 @@ public class LocationStep extends Step {
 		    NodeSet result = context.getBroker().getElementIndex().findElementsByTagName(
 		    		ElementValue.ELEMENT, docs, test.getName(), selector
 		    );
-		    LOG.debug("Found " + result.getLength() + " for " + test.getName() + "; context: " + contextSet.getLength());
 			return result;
 		}
 	}
@@ -233,9 +234,23 @@ public class LocationStep extends Step {
 		if (test.isWildcardTest()) {
 			result = new VirtualNodeSet(axis, test, contextSet);
 			((VirtualNodeSet) result).setInPredicate(inPredicate);
+        } else if(preloadNodeSets()) {
+            DocumentSet docs = getDocumentSet(contextSet);
+            if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
+                currentDocs = docs;
+                currentSet =
+                    (NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
+                        ElementValue.ATTRIBUTE,
+                        currentDocs,
+                        test.getName(), null);
+            }
+            if (axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)
+                result = currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, false, inPredicate);
+            else
+                result = currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);
 		} else {
 			NodeSelector selector;
-			if(axis == Constants.DESCENDANT_ATTRIBUTE_AXIS) 
+			if(axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)
 				selector = new DescendantSelector(contextSet, inPredicate);
 			else
 				selector = new ChildSelector(contextSet, inPredicate);
@@ -427,7 +442,7 @@ public class LocationStep extends Step {
 	protected DocumentSet getDocumentSet(NodeSet contextSet) {
 	    DocumentSet ds = getContextDocSet();
 	    if(ds == null)
-	        ds = contextSet.getDocumentSet();
+            ds = contextSet.getDocumentSet();
 	    return ds;
 	}
 	
