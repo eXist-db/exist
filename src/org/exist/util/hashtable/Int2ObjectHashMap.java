@@ -243,7 +243,7 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 			retVal = 1;
 		return retVal;
 	}
-
+	
 	protected static int hash(int i) {
 		return i;
 	}

@@ -31,7 +31,7 @@ import java.util.Iterator;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class Long2ObjectHashMap extends AbstractHashtable {
-	
+	 
 	protected long[] keys;
 	protected Object[] values;
 
