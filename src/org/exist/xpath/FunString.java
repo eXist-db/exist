@@ -22,6 +22,7 @@ import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.SingleNodeSet;
 import org.exist.storage.BrokerPool;
 
 /**
@@ -40,10 +41,7 @@ public class FunString extends Function {
 	
 	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
 		if(node != null) {
-			context = new ArraySet(1);
-			context.add(node);
-			docs = new DocumentSet();
-			docs.add(node.doc);
+			context = new SingleNodeSet(node);
 		}
 		String result = getArgument(0).eval(docs, context, node).getStringValue();
 		return new ValueString(result);

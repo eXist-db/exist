@@ -53,7 +53,7 @@ public class VirtualNodeSet extends NodeSet {
 	protected NodeSet realSet = null;
 	protected boolean inPredicate = false;
 	protected boolean useSelfAsContext = false;
-	
+
 	public VirtualNodeSet(int axis, TypeTest test, NodeSet context) {
 		this.axis = axis;
 		this.test = test;
@@ -61,13 +61,11 @@ public class VirtualNodeSet extends NodeSet {
 	}
 
 	public boolean contains(DocumentImpl doc, long nodeId) {
-		NodeProxy first =
-			getFirstParent(new NodeProxy(doc, nodeId), null, false, 0);
+		NodeProxy first = getFirstParent(new NodeProxy(doc, nodeId), null, false, 0);
 		// Timo Boehme: getFirstParent returns now only real parents
 		//              therefore test if node is child of context
 		//return (first != null);
-		return ((first != null) ||
-                        (context.get(doc, XMLUtil.getParentId(doc, nodeId)) != null));
+		return ((first != null) || (context.get(doc, XMLUtil.getParentId(doc, nodeId)) != null));
 	}
 
 	public boolean contains(NodeProxy p) {
@@ -75,41 +73,43 @@ public class VirtualNodeSet extends NodeSet {
 		// Timo Boehme: getFirstParent returns now only real parents
 		//              therefore test if node is child of context
 		//return (first != null);
-		return ((first != null) ||
-                        (context.get(p.doc, XMLUtil.getParentId(p.doc, p.gid)) != null));
+		return ((first != null) || (context.get(p.doc, XMLUtil.getParentId(p.doc, p.gid)) != null));
 	}
 
 	public void setInPredicate(boolean predicate) {
 		inPredicate = predicate;
 	}
-	
-	protected NodeProxy getFirstParent(
-		NodeProxy node,
-		long gid,
-		boolean includeSelf) {
+
+	protected NodeProxy getFirstParent(NodeProxy node, long gid, boolean includeSelf) {
 		return getFirstParent(node, null, includeSelf, true, 0);
 	}
 
-	protected NodeProxy getFirstParent(NodeProxy node, NodeProxy first,
-		boolean includeSelf, int recursions) {
-	    return getFirstParent(node, first, includeSelf, true, recursions);
+	protected NodeProxy getFirstParent(
+		NodeProxy node,
+		NodeProxy first,
+		boolean includeSelf,
+		int recursions) {
+		return getFirstParent(node, first, includeSelf, true, recursions);
 	}
 
-	protected NodeProxy getFirstParent(NodeProxy node, NodeProxy first,
-		boolean includeSelf, boolean directParent, int recursions) {
+	protected NodeProxy getFirstParent(
+		NodeProxy node,
+		NodeProxy first,
+		boolean includeSelf,
+		boolean directParent,
+		int recursions) {
 		long pid = XMLUtil.getParentId(node.doc, node.gid);
 		NodeProxy parent;
 		// check if the start-node should be included, e.g. to process an
 		// expression like *[. = 'xxx'] 
-		if (recursions == 0 && includeSelf && 
-			test.isOfType(node, node.nodeType)) {
-			if(axis == Constants.CHILD_AXIS) {
+		if (recursions == 0 && includeSelf && test.isOfType(node, node.nodeType)) {
+			if (axis == Constants.CHILD_AXIS) {
 				// if we're on the child axis, test if
 				// the node is a direct child of the context node
-				if((parent = context.get(new NodeProxy(node.doc, pid))) != null) {
-					if(useSelfAsContext && inPredicate)
+				if ((parent = context.get(new NodeProxy(node.doc, pid))) != null) {
+					if (useSelfAsContext && inPredicate)
 						node.addContextNode(node);
-					else if(inPredicate)
+					else if (inPredicate)
 						node.addContextNode(parent);
 					else
 						node.copyContext(parent);
@@ -121,8 +121,8 @@ public class VirtualNodeSet extends NodeSet {
 		}
 		// if this is the first call to this method, remember the first parent node
 		// and re-evaluate the method
-		if(first == null) {
-			if(pid < 0)
+		if (first == null) {
+			if (pid < 0)
 				// given node was already document element -> no parent
 				return null;
 			first = new NodeProxy(node.doc, pid, Node.ELEMENT_NODE);
@@ -134,14 +134,14 @@ public class VirtualNodeSet extends NodeSet {
 		parent = context.get(node.doc, pid);
 
 		if (parent != null) {
-			if(useSelfAsContext && inPredicate)
+			if (useSelfAsContext && inPredicate)
 				node.addContextNode(node);
-			else if(inPredicate)
+			else if (inPredicate)
 				node.addContextNode(parent);
 			else {
 				node.copyContext(parent);
 			}
-		    // Timo Boehme: we return the ancestor which is child of context 
+			// Timo Boehme: we return the ancestor which is child of context 
 			return node;
 		} else if (pid < 0)
 			// no matching node has been found in the context
@@ -152,46 +152,40 @@ public class VirtualNodeSet extends NodeSet {
 		else {
 			// continue for expressions like //*/n or /*//n
 			parent = new NodeProxy(node.doc, pid, Node.ELEMENT_NODE);
-			return getFirstParent(
-				parent,
-				first,
-				false,
-				directParent,
-				recursions + 1);
+			return getFirstParent(parent, first, false, directParent, recursions + 1);
 		}
 	}
 
-	public NodeProxy nodeHasParent(DocumentImpl doc, long gid,
-		boolean directParent, boolean includeSelf) {
+	public NodeProxy nodeHasParent(
+		DocumentImpl doc,
+		long gid,
+		boolean directParent,
+		boolean includeSelf) {
 		final NodeProxy p =
 			getFirstParent(new NodeProxy(doc, gid), null, includeSelf, directParent, 0);
-		if(p != null)
+		if (p != null)
 			addInternal(p);
 		return p;
 	}
-	
-	public NodeProxy nodeHasParent(NodeProxy node, boolean directParent,
-		boolean includeSelf) {
+
+	public NodeProxy nodeHasParent(NodeProxy node, boolean directParent, boolean includeSelf) {
 		final NodeProxy p = getFirstParent(node, null, includeSelf, directParent, 0);
-		if(p != null)
+		if (p != null)
 			addInternal(p);
 		return p;
 	}
 
 	private void addInternal(NodeProxy p) {
-		if(realSet == null)
+		if (realSet == null)
 			realSet = new ArraySet(100);
 
-		if(!realSet.contains(p))
+		if (!realSet.contains(p))
 			realSet.add(p);
 	}
-	
-	public NodeProxy parentWithChild(
-		DocumentImpl doc,
-		long gid,
-		boolean directParent) {
+
+	public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent) {
 		NodeProxy p = parentWithChild(doc, gid, directParent, false);
-		if(p != null)
+		if (p != null)
 			addInternal(p);
 		return p;
 	}
@@ -203,23 +197,19 @@ public class VirtualNodeSet extends NodeSet {
 		boolean includeSelf) {
 		NodeProxy first =
 			getFirstParent(new NodeProxy(doc, gid), null, includeSelf, directParent, 0);
-		if(first != null)
+		if (first != null)
 			addInternal(first);
 		return first;
 	}
 
-	public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent,
-		boolean includeSelf) {
-		NodeProxy first =
-			getFirstParent(
-				proxy, null,
-				includeSelf, directParent, 0);
-		if(first != null) {
+	public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent, boolean includeSelf) {
+		NodeProxy first = getFirstParent(proxy, null, includeSelf, directParent, 0);
+		if (first != null) {
 			addInternal(first);
 		}
 		return first;
 	}
-	
+
 	private final NodeSet getNodes() {
 		ArraySet result = new ArraySet(100);
 		Node p, c;
@@ -229,37 +219,37 @@ public class VirtualNodeSet extends NodeSet {
 		for (Iterator i = context.iterator(); i.hasNext();) {
 			proxy = (NodeProxy) i.next();
 			if (proxy.gid < 0) {
-/* // commented out by Timo Boehme (document element is already part of virtual node set (not parent!))
-				proxy.gid = proxy.doc.getDocumentElementId();
-*/
+				/* // commented out by Timo Boehme (document element is already part of virtual node set (not parent!))
+								proxy.gid = proxy.doc.getDocumentElementId();
+				*/
 				// -- inserted by Timo Boehme --
 				NodeProxy docElemProxy = new NodeProxy(proxy.getDoc(), 1);
 				result.add(docElemProxy);
-				if (axis == Constants.DESCENDANT_AXIS || 
-					axis == Constants.DESCENDANT_SELF_AXIS) {
+				if (axis == Constants.DESCENDANT_AXIS || axis == Constants.DESCENDANT_SELF_AXIS) {
 					domIter = docElemProxy.doc.getBroker().getNodeIterator(docElemProxy);
-					NodeImpl node = (NodeImpl)domIter.next();
+					NodeImpl node = (NodeImpl) domIter.next();
 					node.setOwnerDocument(docElemProxy.doc);
 					node.setGID(docElemProxy.gid);
-					addChildren(result, node, proxy, domIter, 0);
+					docElemProxy.matches = proxy.matches;
+					addChildren(docElemProxy, result, node, domIter, 0);
 				}
 				continue;
 				// -- end of insertion --
 			} else if (proxy.getBrokerType() == DBBroker.NATIVE) {
 				domIter = proxy.doc.getBroker().getNodeIterator(proxy);
-				NodeImpl node = (NodeImpl)domIter.next();
+				NodeImpl node = (NodeImpl) domIter.next();
 				node.setOwnerDocument(proxy.doc);
 				node.setGID(proxy.gid);
-				addChildren(result, node, proxy, domIter, 0);
+				addChildren(proxy, result, node, domIter, 0);
 			}
 		}
 		return result;
 	}
 
 	private final void addChildren(
+		NodeProxy contextNode,
 		NodeSet result,
 		NodeImpl node,
-		NodeProxy proxy,
 		Iterator iter,
 		int recursions) {
 		if (node.hasChildNodes()) {
@@ -267,22 +257,39 @@ public class VirtualNodeSet extends NodeSet {
 			Value value;
 			NodeProxy p;
 			for (int i = 0; i < node.getChildCount(); i++) {
-				child = (NodeImpl)iter.next();
+				child = (NodeImpl) iter.next();
 				child.setOwnerDocument(node.getOwnerDocument());
 				child.setGID(node.firstChildID() + i);
-				p = new NodeProxy(child.ownerDocument, child.gid, 
-					child.getNodeType(), child.internalAddress);
-				p.matches = proxy.matches;
-				if (axis == Constants.CHILD_AXIS && recursions == 0 &&
-					test.isOfType(child.getNodeType())) {
+				p =
+					new NodeProxy(
+						child.ownerDocument,
+						child.gid,
+						child.getNodeType(),
+						child.internalAddress);
+				p.matches = contextNode.matches;
+				if (axis == Constants.CHILD_AXIS
+					&& recursions == 0
+					&& test.isOfType(child.getNodeType())) {
 					result.add(p);
-				} else if ((axis == Constants.DESCENDANT_AXIS ||
-					axis == Constants.DESCENDANT_SELF_AXIS) &&
-					test.isOfType(child.getNodeType())) {
+					if (useSelfAsContext && inPredicate)
+						p.addContextNode(p);
+					else if (inPredicate)
+						p.addContextNode(contextNode);
+					else
+						p.copyContext(contextNode);
+				} else if (
+					(axis == Constants.DESCENDANT_AXIS || axis == Constants.DESCENDANT_SELF_AXIS)
+						&& test.isOfType(child.getNodeType())) {
 					result.add(p);
+					if (useSelfAsContext && inPredicate)
+						p.addContextNode(p);
+					else if (inPredicate)
+						p.addContextNode(contextNode);
+					else
+						p.copyContext(contextNode);
 				} else if (axis == Constants.ATTRIBUTE_AXIS)
 					return;
-				addChildren(result, child, p, iter, recursions + 1);
+				addChildren(contextNode, result, child, iter, recursions + 1);
 			}
 		}
 	}
@@ -290,13 +297,15 @@ public class VirtualNodeSet extends NodeSet {
 	private final void realize() {
 		if (realSet != null)
 			return;
+		System.out.println("realizing");
 		realSet = getNodes();
+		System.out.println("realSet: " + realSet.getLength());
 	}
 
 	public void setSelfIsContext() {
 		useSelfAsContext = true;
 	}
-	
+
 	/* the following methods are normally never called in this context,
 	 * we just provide them because they are declared abstract
 	 * in the super class
@@ -342,7 +351,7 @@ public class VirtualNodeSet extends NodeSet {
 		realize();
 		return realSet.get(doc, gid);
 	}
-	
+
 	public NodeProxy get(NodeProxy proxy) {
 		realize();
 		return realSet.get(proxy);

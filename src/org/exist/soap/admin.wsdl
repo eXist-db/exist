@@ -1,31 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <wsdl:definitions targetNamespace="urn:exist" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="urn:exist" xmlns:intf="urn:exist" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 
-   <wsdl:message name="removeDocumentResponse">
+   <wsdl:message name="xupdateResourceResponse">
 
-      <wsdl:part name="removeDocumentReturn" type="xsd:boolean"/>
-
-   </wsdl:message>
-
-   <wsdl:message name="createCollectionRequest">
-
-      <wsdl:part name="in0" type="xsd:string"/>
-
-      <wsdl:part name="in1" type="xsd:string"/>
-
-   </wsdl:message>
-
-   <wsdl:message name="removeCollectionResponse">
-
-      <wsdl:part name="removeCollectionReturn" type="xsd:boolean"/>
-
-   </wsdl:message>
-
-   <wsdl:message name="connectRequest">
-
-      <wsdl:part name="in0" type="xsd:string"/>
-
-      <wsdl:part name="in1" type="xsd:string"/>
+      <wsdl:part name="xupdateResourceReturn" type="xsd:int"/>
 
    </wsdl:message>
 
@@ -43,9 +21,69 @@
 
    </wsdl:message>
 
-   <wsdl:message name="createCollectionResponse">
+   <wsdl:message name="connectRequest">
 
-      <wsdl:part name="createCollectionReturn" type="xsd:boolean"/>
+      <wsdl:part name="in0" type="xsd:string"/>
+
+      <wsdl:part name="in1" type="xsd:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="createCollectionRequest">
+
+      <wsdl:part name="in0" type="xsd:string"/>
+
+      <wsdl:part name="in1" type="xsd:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="xupdateResponse">
+
+      <wsdl:part name="xupdateReturn" type="xsd:int"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="disconnectRequest">
+
+      <wsdl:part name="in0" type="xsd:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="connectResponse">
+
+      <wsdl:part name="connectReturn" type="xsd:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="xupdateRequest">
+
+      <wsdl:part name="in0" type="xsd:string"/>
+
+      <wsdl:part name="in1" type="xsd:string"/>
+
+      <wsdl:part name="in2" type="xsd:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="removeDocumentResponse">
+
+      <wsdl:part name="removeDocumentReturn" type="xsd:boolean"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="xupdateResourceRequest">
+
+      <wsdl:part name="in0" type="xsd:string"/>
+
+      <wsdl:part name="in1" type="xsd:string"/>
+
+      <wsdl:part name="in2" type="xsd:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="removeCollectionResponse">
+
+      <wsdl:part name="removeCollectionReturn" type="xsd:boolean"/>
 
    </wsdl:message>
 
@@ -54,6 +92,12 @@
       <wsdl:part name="in0" type="xsd:string"/>
 
       <wsdl:part name="in1" type="xsd:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="createCollectionResponse">
+
+      <wsdl:part name="createCollectionReturn" type="xsd:boolean"/>
 
    </wsdl:message>
 
@@ -70,18 +114,6 @@
    </wsdl:message>
 
    <wsdl:message name="disconnectResponse">
-
-   </wsdl:message>
-
-   <wsdl:message name="disconnectRequest">
-
-      <wsdl:part name="in0" type="xsd:string"/>
-
-   </wsdl:message>
-
-   <wsdl:message name="connectResponse">
-
-      <wsdl:part name="connectReturn" type="xsd:string"/>
 
    </wsdl:message>
 
@@ -132,6 +164,22 @@
          <wsdl:input message="impl:createCollectionRequest" name="createCollectionRequest"/>
 
          <wsdl:output message="impl:createCollectionResponse" name="createCollectionResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="xupdate" parameterOrder="in0 in1 in2">
+
+         <wsdl:input message="impl:xupdateRequest" name="xupdateRequest"/>
+
+         <wsdl:output message="impl:xupdateResponse" name="xupdateResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="xupdateResource" parameterOrder="in0 in1 in2">
+
+         <wsdl:input message="impl:xupdateResourceRequest" name="xupdateResourceRequest"/>
+
+         <wsdl:output message="impl:xupdateResourceResponse" name="xupdateResourceResponse"/>
 
       </wsdl:operation>
 
@@ -242,6 +290,42 @@
          </wsdl:input>
 
          <wsdl:output name="createCollectionResponse">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="xupdate">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="xupdateRequest">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="xupdateResponse">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="xupdateResource">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="xupdateResourceRequest">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="xupdateResourceResponse">
 
             <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
 

@@ -29,6 +29,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.SingleNodeSet;
 import org.exist.storage.BrokerPool;
 import org.exist.util.LongLinkedList;
 
@@ -46,7 +47,7 @@ public class Predicate extends PathExpr {
 	}
 
 	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
-		long start = System.currentTimeMillis();
+		//long start = System.currentTimeMillis();
 		ArraySet result = new ArraySet(100);
 		Expression first = getExpression(0);
 		if (first == null)
@@ -115,8 +116,7 @@ public class Predicate extends PathExpr {
 					// evaluate predicate expression for each context node
 					for (Iterator i = context.iterator(); i.hasNext();) {
 						p = (NodeProxy) i.next();
-						set = new ArraySet(1);
-						set.add(p);
+						set = new SingleNodeSet(p);
 						pos = first.eval(docs, context, p).getNumericValue();
 						doc = (DocumentImpl) p.getDoc();
 						level = doc.getTreeLevel(p.getGID());
@@ -148,12 +148,12 @@ public class Predicate extends PathExpr {
 					}
 				}
 		}
-		LOG.debug(
-			"predicate expression found "
-				+ result.getLength()
-				+ " in "
-				+ (System.currentTimeMillis() - start)
-				+ "ms.");
+//		LOG.debug(
+//			"predicate expression found "
+//				+ result.getLength()
+//				+ " in "
+//				+ (System.currentTimeMillis() - start)
+//				+ "ms.");
 		return new ValueNodeSet(result);
 	}
 

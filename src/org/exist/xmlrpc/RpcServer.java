@@ -28,6 +28,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Stack;
@@ -416,6 +417,31 @@ public class RpcServer implements RpcAPI {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xmlrpc.RpcAPI#getCreationDate(org.exist.security.User, java.lang.String)
+	 */
+	public Date getCreationDate(User user, String collectionName)
+		throws PermissionDeniedException, EXistException {
+		RpcConnection con = pool.get();
+		try {
+			return con.getCreationDate(user, collectionName);
+		} catch(Exception e) {
+			handleException(e);
+			return null;
+		}
+	}
+	
+	public Vector getTimestamps(User user, String documentName)
+			throws PermissionDeniedException, EXistException {
+			RpcConnection con = pool.get();
+			try {
+				return con.getTimestamps(user, documentName);
+			} catch(Exception e) {
+				handleException(e);
+				return null;
+			}
+		}
+		
 	/**
 	 *  Gets the user attribute of the RpcServer object
 	 *

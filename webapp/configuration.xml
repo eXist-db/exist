@@ -16,7 +16,7 @@
       </affiliation>
     </author>
   </bookinfo>
-  <ci:include src="sidebar.xml"/>
+  <include ci:src="sidebar.xml"></include>
   <chapter>
     <title>Server Configuration</title>
     <section>
@@ -27,19 +27,25 @@
         <varlistentry>
           <term>&lt;db-connection&gt;</term>
           <listitem>
-            <para>configures the storage backend</para>
+            <para>Configures the storage backend.</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>&lt;serializer&gt;</term>
+          <listitem>
+            <para>Default settings for the serializer.</para>
           </listitem>
         </varlistentry>
         <varlistentry>
           <term>&lt;indexer&gt;</term>
           <listitem>
-            <para>controls the indexing process</para>
+            <para>Controls the indexing process</para>
           </listitem>
         </varlistentry>
         <varlistentry>
           <term>&lt;log4j:configuration&gt;</term>
           <listitem>
-            <para>controls logging output. eXist uses the log4j package to print log and debug messages. The log4j:configuration section is simply forwarded to the log4j initialization process. For a description of the available options read the <ulink url="http://www.log4j.org/">log4j documentation</ulink>.</para>
+            <para>Controls logging output. eXist uses the log4j package to print log and debug messages. The log4j:configuration section is simply forwarded to the log4j initialization process. For a description of the available options read the <ulink url="http://www.log4j.org/">log4j documentation</ulink>.</para>
           </listitem>
         </varlistentry>
       </variablelist>
@@ -96,13 +102,52 @@
       <section>
         <title>pool</title>
         <para>These settings control the internal database connection pool. Options <option>min</option> and <option>max</option> specify the minimum and maximum size of the connection pool. The connection pool restricts the number of parallel (basic) operations that can be executed by the database. Settings should be somewhere between 1 and 20.</para>
-        <para>Please note that this has nothing to do with the HTTP and  XMLRPC server settings. Those servers have their own connection pools.</para>
+        <para>Please note that this has nothing to do with the HTTP and XMLRPC server settings. Those servers have their own connection pools.</para>
         <para>Option <option>sync-period</option> defines how often the database will flush its internal buffers to disk. The sync thread will interrupt normal database operation after the specified number of milliseconds and write all dirty pages to disk.</para>
       </section>
     </section>
     <section>
       <title> serializer</title>
+      <para>The serializer is responsible for serializing documents or document fragments back into XML. The configuration file defines default settings for various parameters. Most parameters can also be specified programmatically.</para>
       <para></para>
+      <variablelist>
+        <varlistentry>
+          <term>enable-xinclude</term>
+          <listitem>
+            <para>Should xinclude tags be expanded during serialization? Setting this to false will leave xinclude tags untouched. Otherwise, the serializer tries to expand them.</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>enable-xsl</term>
+          <listitem>
+            <para>Should the serializer pass its output to an XSL stylesheet if it finds an XSL processing-instruction at the start of the document?</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>add-exist-id</term>
+          <listitem>
+            <para>The serializer will write some debug information to each node it writes. This includes the internal id of the node and the source document. Setting the configuration parameter to <option>"all"</option> adds debug information to every node in the output. Value <option>"element"</option> will only add this information to top-level elements. <option>"none"</option> disables this feature.</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>indent</term>
+          <listitem>
+            <para>The serializer may use the pretty-printing feature of Xerces to indent the resulting XML source code. Set this option to <option>"false"</option> to disable pretty-printing.</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>match-tagging-elements</term>
+          <listitem>
+            <para>The database can highlight matches in the text content of a node, by tagging the matching text string with <sgmltag>exist:match</sgmltag>. As is obvious, this only works for XPath expressions using the fulltext index.Set the parameter to <option>"false"</option> to disable this feature.</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>match-tagging-attributes</term>
+          <listitem>
+            <para>Matches in attribute values can also be tagged. However, the character sequence || is used to mark the matching text string. Since this changes the content of the attribute value, the feature is disabled by default.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
     </section>
     <section>
       <title> indexer</title>
@@ -161,7 +206,7 @@
           <varlistentry>
             <term>index-depth</term>
             <listitem>
-              <para>Defines the depth of the DOM index. The DOM index maps unique node identifers to the node's storage location in the DOM file. Generating this index is expensive. It is primarily needed to access nodes by their unique node identifier (for example, when serializing query results). Those operations are usually not very time-critical. Furthermore, most XPath expressions can do without this index - they use short-cuts to access the node directly.</para>
+              <para>Defines the depth of the DOM index. The DOM index maps unique node identifers to the node's storage location in the DOM file. Generating this index is expensive. It is primarily needed to access nodes by their unique node identifier (for example, when serializing query results or for XUpdate). Those operations are usually not very time-critical. Furthermore, most XPath expressions can do without this index - they use short-cuts to access the node directly.</para>
               <para>Thus, beginning with version 0.9, only top-level elements are added to the index, attributes and text nodes are always excluded. This results in much smaller index sizes and - consequently - in a smaller <filename moreinfo="none">dom.dbx</filename> file. The <option>index-depth</option> option specifies the tree level up to which elements will be added to the index. For example, a value of 2 means that the document root node and all its child elements will be indexed; a value of 1 only indexes the root node.</para>
               <para>Usually, <option>index-depth="2"</option> offers a good compromise between index size and performance. However, if your documents are deeply structured, you should consider increasing this setting to 3, 4 or 5. For example, if the longest path from the document root to an element node is greater than 10, a index-depth setting of 4 or 5 might help to increase overall query performance for some types of queries.</para>
             </listitem>
@@ -169,14 +214,14 @@
           <varlistentry>
             <term>validation</term>
             <listitem>
-              <para>Defines the default setting for the validation of documents by the XML parser: if set to "false", documents will never be validated against an existing DTD or schema. "auto" will leave it to the parser (Xerces only) if a document is validated.</para>
+              <para>Defines the default setting for the validation of documents by the XML parser: if set to "false", documents will never be validated against an existing DTD or schema. "auto" will leave it to the SAX parser (Xerces only) if a document is validated.</para>
             </listitem>
           </varlistentry>
         </variablelist>
       </section>
       <section>
         <title> <sgmltag>stopwords</sgmltag> </title>
-        <para>Attribute <option>file</option> points to a file containing a list of stopwords. Stopwords are  <emphasis>not</emphasis> added to the fullext index.</para>
+        <para>Attribute <option>file</option> points to a file containing a list of stopwords. Stopwords are <emphasis>not</emphasis> added to the fullext index.</para>
       </section>
       <section>
         <title> <sgmltag>index</sgmltag> </title>
@@ -259,107 +304,6 @@ in xmldb-collection /db/shakespeare/plays -->
 ]]></screen>
       </example>
       <para>The <ulink url="../sitemap.xmap">sitemap</ulink> delivered with eXist contains some more complex examples.</para>
-    </section>
-    <section id="relational">
-      <title>Running eXist with the Relational Storage Backends</title>
-      <para> <application moreinfo="none">eXist</application> should run with MySQL and PostgreSQL 7.1 or better. To use PostgreSQL you definitely need 7.1 or better. Previous PostgreSQL-versions will be very slow and instable. eXist 0.7 has been tested with PostgreSQL 7.1.2. This version seems to be quite stable, so if you experience problems with older version, please update to 7.1.2.</para>
-      <note>
-        <para>Oracle had been supported by previous versions of eXist. The files needed are still contained in the distribution, but I do no longer test eXist against Oracle. If you would like to do the job, you are welcome.</para>
-      </note>
-      <section>
-        <title>Using MySQL</title>
-        <para>In the sql-directory of the distribution you will find a file called <filename moreinfo="none">mysql.sql</filename> which contains all the sql commands necessary to create the tables needed by <application moreinfo="none">eXist</application>. On my linux box I issued the following command to setup the database (Note: maybe you should set up a new mysql user and password before):</para>
-        <synopsis format="linespecific"> mysql --user=exist --password=exist test &lt; tables.sql </synopsis>
-        <tip>
-          <para>There's another file, <filename moreinfo="none"> delete.sql</filename>, which may be used to delete all data from the database. This is useful to clean up your tables.</para>
-        </tip>
-      </section>
-      <section>
-        <title>Using PostgreSQL</title>
-        <para>As with MySQL you will find a file called <filename moreinfo="none">postgresql.sql</filename> in the sql-directory of the distribution, which contains all the sql commands to create the needed tables. To set up a database called 'exist', issue the following commands:</para>
-        <synopsis format="linespecific"> createdb exist</synopsis>
-        <synopsis format="linespecific">psql exist -f sql/postgres.sql</synopsis>
-        <para>When retrieving xml-content, PostgreSQL is quite slow on my machine. Since the document-content has to be reassembled from many tables, a lot of select-statements are generated.</para>
-        <para>To speed this up, some routines have been reimplemented as stored procedures (PostgreSQL offers great facilities for the easy creation of user defined functions). The stored procedures are defined in the file <filename moreinfo="none">pg_func.sql</filename>, which can be found in directory <filename moreinfo="none">./sql</filename>.</para>
-        <para>Before you can import those functions into the database, you have to activate the PL/pgSQL procedural language module for your db by running the createlang script:</para>
-        <synopsis format="linespecific"> createlang plpgsql DBNAME </synopsis>
-        <para>Next you may import the stored procedures:</para>
-        <synopsis format="linespecific"> psql exist -f sql/pg_func.sql </synopsis>
-        <para>As with any other database you should definitely think about tuning PostgreSQL by setting some configuration parameters. On my machine I got a considerable performance increase by setting:</para>
-        <screen format="linespecific"> shared_buffers = 512 fsync = false </screen>
-        <para>in my <filename moreinfo="none">postgresql.conf</filename>.</para>
-      </section>
-      <section>
-        <title>Configuration Options</title>
-        <para>The relational backend reads several options from the configuration file <filename moreinfo="none">conf.xml</filename>. Most of them are related to JDBC. The following code snipped shows an example entry for MySQL:</para>
-        <example>
-          <title>Specifying jdbc-options in conf.xml</title>
-          <programlisting format="linespecific"><![CDATA[
-<db-connection driver="org.gjt.mm.mysql.Driver"
-     url="jdbc:mysql://localhost/test?autoReconnect=true&amp;
-          useUnicode=true&amp;characterEncoding=iso-8859-1"
-     user="exist"
-     password="exist"
-     encoding="ISO-8859-1"
-     database="mysql"
-/>]]></programlisting>
-        </example>
-        <para>The following attributes apply to the relational backend:</para>
-        <variablelist>
-          <title>Attributes for the relational backend</title>
-          <varlistentry>
-            <term>driver</term>
-            <listitem>
-              <para>The JDBC driver-class to use</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>url</term>
-            <listitem>
-              <para>JDBC URL describing the database</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>user</term>
-            <listitem>
-              <para>Username</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>password</term>
-            <listitem>
-              <para>Password</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>serviceName</term>
-            <listitem>
-              <para>The <option>serviceName</option>-attribute denotes the global-service-name of your Oracle-database. Normally you could leave this out, but my local Oracle-installation on Linux needs it. The value is passed to sqlldr when loading temporary files.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>encoding</term>
-            <listitem>
-              <para>This options sets the encoding used for writing character data to the temporary files. It should be set to a character encoding name recognized by Java, e.g. UTF-8 or ISO-8859-1. Please note that you should choose the encoding your database expects to get as input. For example if you try to read UTF-8 with MySQL's LOAD DATA INFILE you may get wrong character translations, so you have to change to ISO-8859-1.</para>
-            </listitem>
-          </varlistentry>
-        </variablelist>
-        <para>Additionally, eXist recognizes the following options in the &lt;indexer&gt; section of the configuration file:</para>
-        <variablelist>
-          <varlistentry>
-            <term>tmpDir</term>
-            <listitem>
-              <para>temporary storage directory for files generated by the indexer.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>batchLoad</term>
-            <listitem>
-              <para>setting this to true will cause the relational backend to temporarily write most table-data to a file instead of directly storing it into the database. These files will be read in using the mysql LOAD DATA INFILE or the respective Oracle or PostgreSQL commands. This is about twice as fast as storing data directly. Default: true.</para>
-            </listitem>
-          </varlistentry>
-        </variablelist>
-      </section>
     </section>
   </chapter>
 </book>

@@ -18,10 +18,10 @@
  *
  *  $Id:
  */
-package org.exist.storage;
+package org.exist.xmldb;
 
 /**
- * Instances of this class can be registered with the BrokerPool to get informed if the
+ * Instances of this class can be registered with the BrokerPool to get informed when the
  * database shuts down. The shutdown method is called after the database instance has
  * been shut down.
  * 
@@ -29,5 +29,11 @@ package org.exist.storage;
  */
 public interface ShutdownListener {
 	
+	/**
+	 * The database instance identified by dbname has been shut down.
+	 * 
+	 * @param dbname The name of the database instance.
+	 * @param remainingInstances Number of remaining database instances.
+	 */
 	public void shutdown(String dbname, int remainingInstances);
 }

@@ -23,12 +23,15 @@
                 <title>Use a Local Connection to the Database for Large Files</title>
                 <para>The XML:DB driver uses XMLRPC calls to communicate with a
                     remote database server. When storing files, the file content
-                    is send over the network in one large chunk. The maximum size
-                    of a file to be stored is thus limited. Also, sending the content
-                    over XMLRPC can cost a lot of time.</para>
-                <para>It is usually better to use a client with direct connection to
+                    has first to be send over the network. The XMLRPC interface supports
+                    file uploads in chunks. This way, not the whole file has to fit into
+                    main memory. Instead, the file is first uploaded chunk by chunk and stored
+                    into a temporary file on the server, which is then stored into the database. 
+                    However, sending the content of larger files over XMLRPC can cost a lot 
+                    of time.</para>
+                <para>It is thus usually better to use a client with direct connection to
                     the database. The client will open the database in embedded mode,
-                    so no network connection is required. To launch the client in
+                    so no network connection is established. To launch the client in
                     local mode, enter:</para>
                 <synopsis>bin/client.sh -l</synopsis>
                 <para>Please note that you should stop any running server before starting
@@ -42,8 +45,33 @@
                     is directly forwarded to the indexer.</para>
             </section>
             <section>
+                <title>Split Large Collections</title>
+                <para> Indexing performance is affected by a number of factors:
+                    First of all, eXist manages its indexes internally by
+                    collection, not by document, i.e. it will store all index
+                    entries for a given element, attribute or word to the same
+                    entry in the B+-tree. This makes index lookups very fast
+                    though managing the index gets a bit more difficult. eXist
+                    uses several tricks to handle this, for example, it simply
+                    appends new entries to the B+-tree value without loading the
+                    entire value into memory.</para>
+                <para> However, there will always be some performance limit if
+                    collections grow large. It is thus recommended to split
+                    large collections into several sub-collections. Splitting
+                    collections has not much impact on query formulation: eXist
+                    is able to process an XPath query over multiple
+                    sub-collections (see <ulink href="xpath.xml">XPath
+                    HowTo</ulink>).</para>
+                <para>On the other hand, loading several hundred thousand documents
+                from thousand different collections is equally bad with respect to
+                query performance. You thus have to find a good compromise between
+                the collection size and the number of collections in the database.
+                The data should be organized in no more than a few dozen top-level
+                collections.</para> 
+            </section>
+            <section>
                 <title>Restrict Fulltext-Indexing</title>
-                <para>The better alternative is to exclude some parts of your
+                <para>Another alternative is to exclude some parts of your
                     documents from fulltext-indexing. Usually, fulltext-queries
                     make more sense for some parts of a document than for
                     others. For example, URLs, serial numbers and the like
@@ -58,31 +86,12 @@
                     just perform slower.</para>
             </section>
             <section>
-                <title>Split Large Collections</title>
-                <para> Indexing performance is affected by a number of factors:
-                    First of all, eXist manages its indexes internally by
-                    collection, not by document, i.e. it will store all index
-                    entries for a given element, attribute or word to the same
-                    entry in the B+-tree. This makes index lookups very fast
-                    though managing the index gets a bit more difficult. eXist
-                    uses several tricks to handle this, for example, it simply
-                    appends new entries to the B+-tree value without loading the
-                    entire value into memory. </para>
-                <para> However, there will always be some performance limit if
-                    collections grow large. It is thus recommended to split
-                    large collections into several sub-collections. Splitting
-                    collections has not much impact on query formulation: eXist
-                    is able to process an XPath query over multiple
-                    sub-collections (see <ulink href="xpath.xml">XPath
-                    HowTo</ulink>). </para>
-            </section>
-            <section>
                 <title>Page Buffer Sizes and Memory Usage</title>
                 <para> Native backend page buffer sizes may sometimes get too
                     small, which may cause a lot of page-in/page-out operations.</para>
                 <para>The database writes some information about page buffer usage
-                    to the log files whenever it is stopped. There should be several lines
-                    in the log looking like this:</para>
+                    to the log files whenever it is stopped or flushes pages to disk. 
+                    There should be several lines in the log looking like this:</para>
                 <synopsis>2003-01-13 21:22:38,096 [Thread-1] INFO  (BTree.java [printStatistics]:1188) - elements.dbx INDEX 1024 / 1 / 3/ 1</synopsis>
                 <synopsis>2003-01-13 21:22:38,097 [Thread-1] INFO  (BFile.java [printStatistics]:421) - elements.dbx DATA 256 / 256 / 984 / 2</synopsis>
                 <para>The log shows two entries for each index file: INDEX and DATA.
@@ -92,11 +101,15 @@
                     the maximum size of the buffer, the second shows the number of pages
                     currently buffered. The last two values are the most important:
                     They tell us the number of page hits and number of page misses. The number
-                    of page fails should always be rather low - much lower than the number of hits.
-                    Otherwise a lot of disk io is generated.</para>
+                    of page fails should always be rather low - much lower or equal to the 
+                    number of hits. Otherwise a lot of disk io is generated.</para>
                 <para>If you observe a large number of fails for one index file, you should increase the
                     buffer size for that index.</para>
-                <para>    
+                <para>If you use Cocoon, you can also get buffer usage information from eXist's
+                status generator. By default, you can find the status page at
+                <ulink url="http://localhost:8080/exist/status">http://localhost:8080/exist/status</ulink>.
+                Choose "buffers" from the drop down list at top left.</para>
+                <para>
                     Page buffer sizes are specified in the configuration file as
                     described in the <ulink
                         href="configuration.xml">configuration docs</ulink>. The
@@ -162,8 +175,9 @@
                     space and indexing time, so I decided to drop it. eXist already provides
                     a word-based fulltext-index, so the benefits of an additional value index 
                     are questionable.</para>
-                    
-                <para>In many cases, replacing exact match XPath functions with the
+                <para>There's one exception to this: equality comparisons may access the fulltext-
+                index in the background to restrict the number of candidate nodes.</para>
+                <para>However, in many cases, replacing exact match XPath functions with the
                     corresponding, index-based fulltext-search extensions will be easily
                     possible. For example, if we search for the author of an article, we could
                     do:</para>
@@ -198,8 +212,7 @@
                     configuration guide</ulink>.</para>
                 <para>By default, the parameter is set to 1. If your documents are highly
                     structured, setting this to 4 or 5 may yield result in better download times
-                    for query results.</para>
-                <para>Note that the setting will only apply to newly indexed files, not to your 
+                    for query results. Note that the setting will only apply to newly indexed files, not to your 
                     old ones.</para>
             </section>
         </section>

@@ -17,10 +17,10 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
 
     protected int indentXML = 0;
     protected String encoding = "UTF-8";
-    protected CollectionImpl collection;
+    protected RemoteCollection collection;
 
 
-    public RemoteXPathQueryService( CollectionImpl collection ) {
+    public RemoteXPathQueryService( RemoteCollection collection ) {
         this.collection = collection;
     }
 
@@ -61,7 +61,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
 		
     public ResourceSet query( XMLResource res, String query, String sortExpr )
         throws XMLDBException {
-        XMLResourceImpl resource = (XMLResourceImpl)res;
+        RemoteXMLResource resource = (RemoteXMLResource)res;
         if(resource.id == null) {
             // resource is a document
             if(!(query.startsWith( "document(" ) || query.startsWith("collection(") ||

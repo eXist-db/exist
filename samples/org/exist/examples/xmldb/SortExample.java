@@ -18,8 +18,8 @@ public class SortExample {
 
     protected static String driver = "org.exist.xmldb.DatabaseImpl";
 
-	protected static String query = "//SPEECH[LINE &= 'magic']";
-	protected static String sortBy = "/SPEAKER";
+	protected static String query = "//SPEECH[LINE &= 'marriage']";
+	protected static String sortBy = "/SPEAKER[1]";
 	
     public static void main( String args[] ) {
     	if(args.length == 2) {

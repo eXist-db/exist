@@ -24,6 +24,7 @@ import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.SingleNodeSet;
 import org.exist.storage.BrokerPool;
 
 /**
@@ -41,11 +42,9 @@ public class FunNumber extends Function {
 	}
 	
 	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
-		ArraySet set = new ArraySet(1);
-		set.add(node);
-		DocumentSet dset = new DocumentSet();
-		if(node != null) dset.add(node.doc);
-		double result = getArgument(0).eval(dset, set, node).getNumericValue();
+		if(node != null)
+			context = new SingleNodeSet(node);
+		double result = getArgument(0).eval(docs, context, node).getNumericValue();
 		return new ValueNumber(result);
 	}
 

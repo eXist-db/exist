@@ -24,6 +24,7 @@ import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.SingleNodeSet;
 import org.exist.storage.BrokerPool;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
@@ -46,12 +47,8 @@ public class FunName extends Function {
     public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
         Node n;
         if(getArgumentCount() > 0) {
-            System.out.println("check: " + node.gid);
-            ArraySet set = new ArraySet(1);
-            set.add(node);
-            DocumentSet dset = new DocumentSet();
-            dset.add(node.doc);
-            NodeSet result = (NodeSet)getArgument(0).eval(dset, set, null).getNodeList();
+            NodeSet set = new SingleNodeSet(node);
+            NodeSet result = (NodeSet)getArgument(0).eval(docs, set, null).getNodeList();
             n = result.item(0);
         } else
             n = node.getNode();

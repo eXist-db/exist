@@ -25,8 +25,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.exist.storage.BrokerPool;
-import org.exist.storage.ShutdownListener;
 import org.exist.util.Configuration;
+import org.exist.xmldb.ShutdownListener;
 import org.mortbay.jetty.Server;
 
 /**

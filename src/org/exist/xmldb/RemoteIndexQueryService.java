@@ -24,9 +24,9 @@ import org.xmldb.api.base.XMLDBException;
 public class RemoteIndexQueryService implements IndexQueryService {
 
 	protected XmlRpcClient rpcClient = null;
-	protected CollectionImpl parent;
+	protected RemoteCollection parent;
 
-	public RemoteIndexQueryService(XmlRpcClient client, CollectionImpl parent) {
+	public RemoteIndexQueryService(XmlRpcClient client, RemoteCollection parent) {
 		this.rpcClient = client;
 		this.parent = parent;
 	}
@@ -112,7 +112,7 @@ public class RemoteIndexQueryService implements IndexQueryService {
 	 * @see org.xmldb.api.base.Service#setCollection(org.xmldb.api.base.Collection)
 	 */
 	public void setCollection(Collection col) throws XMLDBException {
-		this.parent = (CollectionImpl) col;
+		this.parent = (RemoteCollection) col;
 	}
 
 	/* (non-Javadoc)

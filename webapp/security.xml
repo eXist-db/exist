@@ -97,7 +97,8 @@ exist:/db>quit
         </section>
         <section>
             <title>Creating Users</title>
-            <para>The <command>adduser</command> allows you to create additional
+			<para>The <command>adduser</command> shell-command allows you 
+				to create additional
                 users. The command asks for a password and a list of groups to
                 which the user should belong. An example is shown below:</para>
             <example>
@@ -154,8 +155,10 @@ exist:/db/shakespeare/plays>]]></screen>
                 <varlistentry>
                     <term>update</term>
                     <listitem>
-                        <para>permission to update an existing file. Removing
-                            the file is not allowed unless the write permission
+						<para>permission to update an existing file, either by
+							using XUpdate or by replacing the entire document. 
+							Removing the file is not allowed unless the write 
+							permission
                             is granted. Also, if a user has only update permissions
                             for a collection, he will not be allowed to create new
                             files in it.</para>
@@ -196,7 +199,7 @@ exist:/db/shakespeare/plays>]]></screen>
             <para>Please note that only the owner of a resource or members of dba are allowed to change
                 permissions. All other users will see an error message.</para>
                 
-            <para><command>chmod</command> expects two parameters: the first
+            <para>On the shell, the <command>chmod</command> command expects two parameters: the first
                 specifies the name of a resource or collection, the second defines the permissions 
                 to set or remove. Permissions are defined using a syntax
                 as shown below:</para>
@@ -215,7 +218,7 @@ exist:/db/shakespeare/plays>]]></screen>
         <section>
             <title>Changing Resource Ownership</title>
             <para>Only the owner has full control over a resource. It is thus sometimes
-                important to be able to change the ownership. The clients provides the
+				important to be able to change the ownership. The client provides the
                 <command>chown</command> command to do this. The command expects three
                 arguments:</para>
             <synopsis>chown user group [resource]</synopsis>

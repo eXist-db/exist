@@ -14,6 +14,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -35,29 +37,38 @@ public class ResourcePropertyDialog extends JDialog {
 
 	public final static int APPLY_OPTION = 0;
 	public final static int CANCEL_OPTION = 1;
-	
+
 	Permission permissions;
 	String resource;
 	UserManagementService service;
+	Date creationDate;
+	Date modificationDate;
 	JComboBox groups;
 	JComboBox owners;
 	JCheckBox[] worldPerms;
 	JCheckBox[] groupPerms;
 	JCheckBox[] userPerms;
 	int result = -1;
-	
+
 	/**
 	 * @param owner
 	 * @param title
 	 * @param modal
 	 * @throws java.awt.HeadlessException
 	 */
-	public ResourcePropertyDialog(Frame owner, UserManagementService mgt, String res, 
-		Permission perm)
+	public ResourcePropertyDialog(
+		Frame owner,
+		UserManagementService mgt,
+		String res,
+		Permission perm,
+		Date created,
+		Date modified)
 		throws HeadlessException, XMLDBException {
 		super(owner, "Edit Properties", true);
 		service = mgt;
 		permissions = perm;
+		creationDate = created;
+		modificationDate = modified;
 		resource = res;
 		setupComponents();
 		addWindowListener(new WindowAdapter() {
@@ -71,11 +82,11 @@ public class ResourcePropertyDialog extends JDialog {
 	public int getResult() {
 		return result;
 	}
-	
+
 	public Permission getPermissions() {
 		return permissions;
 	}
-	
+
 	private void setupComponents() throws XMLDBException {
 		GridBagLayout grid = new GridBagLayout();
 		getContentPane().setLayout(grid);
@@ -98,9 +109,44 @@ public class ResourcePropertyDialog extends JDialog {
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
-		label = new JLabel("Owner");
+		label = new JLabel("Created:");
 		c.gridx = 0;
 		c.gridy = 1;
+		c.anchor = GridBagConstraints.WEST;
+		c.fill = GridBagConstraints.NONE;
+		grid.setConstraints(label, c);
+		getContentPane().add(label);
+
+		String date = DateFormat.getDateTimeInstance().format(creationDate);
+		label = new JLabel(date);
+		c.gridx = 1;
+		c.gridy = 1;
+		c.anchor = GridBagConstraints.EAST;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		grid.setConstraints(label, c);
+		getContentPane().add(label);
+
+		label = new JLabel("Last modified:");
+		c.gridx = 0;
+		c.gridy = 2;
+		c.anchor = GridBagConstraints.WEST;
+		c.fill = GridBagConstraints.NONE;
+		grid.setConstraints(label, c);
+		getContentPane().add(label);
+
+		date = modificationDate != null ? DateFormat.getDateTimeInstance().format(modificationDate) :
+			"not available";
+		label = new JLabel(date);
+		c.gridx = 1;
+		c.gridy = 2;
+		c.anchor = GridBagConstraints.EAST;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		grid.setConstraints(label, c);
+		getContentPane().add(label);
+
+		label = new JLabel("Owner");
+		c.gridx = 0;
+		c.gridy = 3;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
 		grid.setConstraints(label, c);
@@ -108,13 +154,13 @@ public class ResourcePropertyDialog extends JDialog {
 
 		Vector ol = new Vector();
 		User users[] = service.getUsers();
-		for(int i = 0; i < users.length; i++) {
+		for (int i = 0; i < users.length; i++) {
 			ol.addElement(users[i].getName());
 		}
 		owners = new JComboBox(ol);
 		owners.setSelectedItem(permissions.getOwner());
 		c.gridx = 1;
-		c.gridy = 1;
+		c.gridy = 3;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.HORIZONTAL;
 		grid.setConstraints(owners, c);
@@ -122,7 +168,7 @@ public class ResourcePropertyDialog extends JDialog {
 
 		label = new JLabel("Group");
 		c.gridx = 0;
-		c.gridy = 2;
+		c.gridy = 4;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
 		grid.setConstraints(label, c);
@@ -130,12 +176,12 @@ public class ResourcePropertyDialog extends JDialog {
 
 		Vector gl = new Vector();
 		String allGroups[] = service.getGroups();
-		for(int i = 0; i < allGroups.length; i++)
+		for (int i = 0; i < allGroups.length; i++)
 			gl.addElement(allGroups[i]);
 		groups = new JComboBox(gl);
 		groups.setSelectedItem(permissions.getOwnerGroup());
 		c.gridx = 1;
-		c.gridy = 2;
+		c.gridy = 4;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.HORIZONTAL;
 		grid.setConstraints(groups, c);
@@ -143,15 +189,15 @@ public class ResourcePropertyDialog extends JDialog {
 
 		JComponent pc = setupPermissions();
 		c.gridx = 0;
-		c.gridy = 3;
+		c.gridy = 5;
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.HORIZONTAL;
 		grid.setConstraints(pc, c);
 		getContentPane().add(pc);
-		
+
 		Box buttonBox = Box.createHorizontalBox();
-		
+
 		JButton button = new JButton("Apply");
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -161,14 +207,14 @@ public class ResourcePropertyDialog extends JDialog {
 		buttonBox.add(button);
 		button = new JButton("Cancel");
 		button.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						cancelAction();
-					}
-				});
+			public void actionPerformed(ActionEvent e) {
+				cancelAction();
+			}
+		});
 		buttonBox.add(button);
-		
+
 		c.gridx = 1;
-		c.gridy = 4;
+		c.gridy = 6;
 		c.gridwidth = 1;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.NONE;
@@ -210,29 +256,30 @@ public class ResourcePropertyDialog extends JDialog {
 		vbox.add(perms[2]);
 		return vbox;
 	}
-	
+
 	private int checkPermissions(JCheckBox cb[]) {
 		int perm = 0;
-		if(cb[0].isSelected())
+		if (cb[0].isSelected())
 			perm |= 4;
-		if(cb[1].isSelected())
+		if (cb[1].isSelected())
 			perm |= 2;
-		if(cb[2].isSelected())
+		if (cb[2].isSelected())
 			perm |= 1;
 		return perm;
 	}
-	
+
 	private void cancelAction() {
 		this.setVisible(false);
 		result = CANCEL_OPTION;
 	}
-	
+
 	private void applyAction() {
-		permissions.setOwner((String)owners.getSelectedItem());
-		permissions.setGroup((String)groups.getSelectedItem());
-		int perms = (checkPermissions(userPerms) << 6) |
-			(checkPermissions(groupPerms) << 3) |
-			checkPermissions(worldPerms);
+		permissions.setOwner((String) owners.getSelectedItem());
+		permissions.setGroup((String) groups.getSelectedItem());
+		int perms =
+			(checkPermissions(userPerms) << 6)
+				| (checkPermissions(groupPerms) << 3)
+				| checkPermissions(worldPerms);
 		permissions.setPermissions(perms);
 		this.setVisible(false);
 		result = APPLY_OPTION;

@@ -1,154 +1,137 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "docbookx.dtd">-->
-<book xmlns:ci="http://apache.org/cocoon/include/1.0">
-    <bookinfo>
-        <graphic fileref="logo.jpg"/>
-        <title>Open Source Native XML Database</title>
-        <author>
-            <firstname>Wolfgang M.</firstname>
-            <surname>Meier</surname>
-            <affiliation>
-                <address format="linespecific">
-                    <email>meier@ifs.tu-darmstadt.de</email>
-                </address>
-            </affiliation>
-        </author>
-    </bookinfo>
-    <ci:include src="sidebar.xml"/>
-    <chapter id="ch01">
-        <title>Developer's Guide</title>
-        <section>
-            <title>Writing Java Applications with the XML:DB API</title>
-            <para>The preferred way to work with eXist from Java applications is
-                to use the XML:DB API. The XML:DB API provides a common
-                interface to native or XML-enabled databases and supports the
-                development of portable, reusable applications. eXist's
-                implementation of the XML:DB standard follows the implementation
-                found in Xindice and should be conformant with the latest
-                working drafts from the XML:DB website. The javadocs for the API
-                can be found <ulink href="api/index.html">here</ulink>.</para>
-            <para>The basic concepts employed by the XML:DB API are
-                <emphasis>drivers</emphasis>, <emphasis>collections</emphasis>,
-                <emphasis>resources</emphasis> and
-                <emphasis>services</emphasis>. <emphasis>Drivers</emphasis>
-                encapsulate the database access logic for a specific XML
-                database product. They are provided by the product vendor and
-                have to be registered with the database manager.</para>
-            <para>A <emphasis>collection</emphasis> is a hierarchical container,
-                containing resources or further sub-collections. Currently two
-                different Resources are defined by the API:
-                <classname>XMLResource</classname> and binary large objects. An
-                XMLResource represents an XML document or a document fragment,
-                selected by a previous XPath-query. eXist currently only
-                implements XMLResource.</para>
-            <para>Finally, services may be requested for special tasks like
-                querying a collection with XPath or manage a collection.</para>
-            <para>Programming with the XML:DB API is straightforward. You will
-                find some example code in the
-                <filename>samples/xmldb</filename>-directory (c.f. APIGet.java,
-                APISearch.java, APIParse.java). The command line client
-                (<classname>org.exist.InteractiveClient</classname> also uses
-                the XML:DB API for server communication and may serve as an
-                advanced example. Here's a simple example which retrieves a
-				document from the eXist server and prints it to standard output:</para>
-			<note>
-				<para>You will find several examples in directory
-					<filename>samples</filename>. To start an example, use
-					the <filename>start.jar</filename> jar and pass the
-					name of the example class as first parameter, e.g.:</para>
-				<synopsis>java -jar start.jar org.exist.examples.xmldb.Retrieve ...</synopsis>
-			</note>
-            <example>
-                <title>Retrieving a document</title>
-                <programlisting format="linespecific"><![CDATA[
+<?xml-stylesheet href="file://localhost/home/wolf/Java/Morphon_XML-Editor_3.1/Examples/docbook/docbook.css" type="text/css"?>
+<book
+  xmlns:ci="http://apache.org/cocoon/include/1.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation='file://localhost/home/wolf/Java/Morphon_XML-Editor_3.1/Examples/docbook/xsd/docbook.xsd'>
+  <bookinfo>
+    <graphic fileref="logo.jpg"/>
+
+    <title>Open Source Native XML Database</title>
+    <author>
+      <firstname>Wolfgang M.</firstname>
+      <surname>Meier</surname>
+      <affiliation>
+        <address format="linespecific"> <email>meier@ifs.tu-darmstadt.de</email> </address>
+      </affiliation>
+    </author>
+  </bookinfo>
+  <ci:include src="sidebar.xml"/>
+  <chapter id="ch01">
+    <title>Developer's Guide</title>
+    <section>
+      <title>Required Libraries</title>
+      <para>The <filename moreinfo="none">lib</filename> directory contains three subdirectories: <filename moreinfo="none">core</filename>, <filename moreinfo="none">optional</filename> and <filename moreinfo="none">endorsed</filename>. As the name says, the jar-files required by the database core reside in <filename moreinfo="none">lib/core</filename>. However, you don't need all of them if you intend to use eXist as an embedded database in your own application. As an absolute minimum, you should include the following jars:</para>
+      <variablelist>
+          <varlistentry>
+            <term>exist.jar</term>
+            <listitem>
+                <para>The core classes of eXist (from the root directory of the distribution).</para>
+            </listitem>
+        </varlistentry>
+          <varlistentry>
+            <term>xmldb.jar</term>
+            <listitem>
+              <para>Defines the common interfaces for the XML:DB API.</para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term>antlr.jar</term>
+            <listitem>
+              <para>The ANTLR parser generator used for the XPath query engine.</para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term>log4j.jar</term>
+            <listitem>
+              <para>Provides the logging facility.</para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term>fastutil-x.x.jar</term>
+            <listitem>
+              <para>Implements collections for native Java types (like int, long). eXist makes heavy use of these collections.</para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term>jakarta-oro-x.x.x.jar</term>
+            <listitem>
+              <para>Regular expression support.</para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term>resolver-xxx.jar</term>
+            <listitem>
+              <para>A library for resolving XML external entities from catalogue files.</para>
+            </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term>xmlrpc-x.x.jar</term>
+            <listitem>
+              <para>XMLRPC protocol support. You should include this library, even if you don't intend to connect to a remote database instance. The XML:DB driver references this library and most Java machines will show a runtime error if it is missing.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+        <para>The other jars in <filename moreinfo="none">lib/core</filename> are support libraries for compilation (<filename moreinfo="none">ant.jar</filename>), JUnit tests (<filename moreinfo="none">junit.jar</filename>), and the command-line client (<filename moreinfo="none">excalibur-cli-x.x.jar</filename>). You don't need them to run your own application.</para>
+      <para>The jars in lib/optional are only required for Cocoon and Axis-SOAP. Most of them are distributed with Cocoon.</para>
+      <para>The <filename moreinfo="none">lib/endorsed</filename> directory plays a special role: the 1.4.x Java releases come with their own XML support libraries, including Xalan for XSLT processing, an XML parser and the standard Java interfaces for SAX and DOM. Unfortunately, we found that some features of eXist in combination with Cocoon will not work properly with the wrong version of Xalan (in particular, XSP pages occasionally fail to compile). Also, eXist depends on some functions of Xerces for XML serialization. To ensure that the correct versions are available, we have included these versions of Xerces and Xalan, plus the standard interfaces used by both of them.</para>
+      <para>You can use Java's endorsed library loading mechanism to ensure that the correct XML support libraries are loaded. Specifying the <option>-Djava.endorsed.dirs=lib/endorsed</option> system property on the Java command line will force the JVM to prefer any library it finds in the endorsed directory over its own system libraries. Copying the jars into <filename moreinfo="none">$JAVA_HOME/jre/lib/endorsed</filename> will do the same thing.</para>
+      <para>The batch and shell scripts included with eXist all set the java.endorsed.dirs system property to point to <filename moreinfo="none">lib/endorsed</filename>.</para>
+    </section>
+    <section>
+      <title>Writing Java Applications with the XML:DB API</title>
+      <para>The preferred way to work with eXist from Java applications is to use the XML:DB API. The XML:DB API provides a common interface to native or XML-enabled databases and supports the development of portable, reusable applications. eXist's implementation of the XML:DB standard follows the implementation found in Xindice and should be conformant with the latest working drafts from the XML:DB website. The javadocs for the API can be found <ulink url="api/index.html">here</ulink>.</para>
+      <para>The basic concepts employed by the XML:DB API are <emphasis>drivers</emphasis>, <emphasis>collections</emphasis>, <emphasis>resources</emphasis> and <emphasis>services</emphasis>. <emphasis>Drivers</emphasis> encapsulate the database access logic for a specific XML database product. They are provided by the product vendor and have to be registered with the database manager.</para>
+      <para>A <emphasis>collection</emphasis> is a hierarchical container, containing resources or further sub-collections. Currently two different Resources are defined by the API: <classname>XMLResource</classname> and binary large objects. An XMLResource represents an XML document or a document fragment, selected by a previous XPath-query. eXist currently only implements XMLResource.</para>
+      <para>Finally, services may be requested for special tasks like querying a collection with XPath or manage a collection.</para>
+      <para>Programming with the XML:DB API is straightforward. You will find some example code in the <filename moreinfo="none">samples/org/exist/examples/xmldb</filename>-directory. The command line client (<classname>org.exist.client.InteractiveClient</classname> also uses the XML:DB API for server communication and may serve as an advanced example. Here's a simple example which retrieves a document from the eXist server and prints it to standard output:</para>
+      <note>
+        <para>You will find several examples in directory <filename moreinfo="none">samples</filename>. To start an example, use the <filename moreinfo="none">start.jar</filename> jar and pass the name of the example class as first parameter, e.g.:</para>
+        <synopsis format="linespecific">java -jar start.jar org.exist.examples.xmldb.Retrieve ...</synopsis>
+      </note>
+      <example>
+        <title>Retrieving a document</title>
+        <programlisting format="linespecific"><![CDATA[
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.*;
 import org.xmldb.api.*;
 
 public class RetrieveExample {
+    protected static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
+
     public static void main(String args[]) throws Exception {
         String driver = "org.exist.xmldb.DatabaseImpl";
-        Class cl = Class.forName(driver);			
-        Database database = (Database)cl.newInstance();
+        
+        // initialize database driver
+        Class cl = Class.forName(driver);
+        Database database = (Database) cl.newInstance();
         DatabaseManager.registerDatabase(database);
-        database.setProperty("create-database", "true");
-        
-        Collection col = 
-            DatabaseManager.getCollection("xmldb:exist:///db");
-        col.setProperty("pretty", "true");
-        col.setProperty("encoding", "ISO-8859-1");
-        XMLResource res = (XMLResource)col.getResource(args[0]);
-        
-        if(res == null) {
-            System.err.println("could not retrieve document " 
-                + args[0] + "!");
-            return;
-        }
-        System.out.println((String)res.getContent());
-    }
+
+        // get the collection
+        Collection col = DatabaseManager.getCollection(URI + args[0]);
+        col.setProperty("pretty", "false");
+        XMLResource res = (XMLResource)col.getResource(args[1]);
+        if(res == null)
+            System.out.println("document not found!");
+        else
+            System.out.println(res.getContent());   }
 }
         ]]></programlisting>
-			</example>
-            <para>First, the database driver class for eXist
-                (<classname>org.exist.xmldb.DatabaseImpl</classname>) is
-                registered with the <classname>DatabaseManager</classname>. Next
-                we have to obtain a <classname>Collection</classname> object
-                from the database manager. This is done by calling the static
-                method <methodname>DatabaseManger.getCollection()</methodname>.
-                The method expects a fully qualified URI as parameter, which
-                identifies the desired collection. The format of this URI always
-                looks like:</para>
-            <synopsis>xmldb:database-id://host-address-part/db/collection</synopsis>
-            <para>Because more than one database driver can be registered with
-                the database manager, the first part of the URI
-                <option>xmldb:exist</option> is required to determine which
-                driver class should be used. The database-id is used by the
-                database manager to select the correct database driver from it's
-                list of available drivers. To use eXist this should always be &quot;exist&quot;.</para>
-            <para>The final part of the URI identifies the collection to
-                retrieve and optionally the host address of the database server
-                on the network. Internally, eXist uses two different driver
-                implementations: The first talks to a remote database engine
-                using XML-RPC calls, the second has direct access to a local
-                instance of eXist. The root collection is always identified by
-                <option>/db</option>. For example, the URI</para>
-            <synopsis>xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays</synopsis>
-            <para>references the Shakespeare collection on a remote server
-                running the XML-RPC interface as a servlet at
-                <option>localhost:8080/exist/xmlrpc</option>. If we leave away
-                the host address part, the XML:DB driver will try to connect to
-                a locally attached database instance, e.g.:</para>
-            <synopsis>xmldb:exist:///db/shakespeare/plays</synopsis>
-            <para>In this case we have to tell the XML:DB driver that it should
-                create a new database instance if none has been started before.
-                This is done by setting the <option>create-database</option>
-                property of class <classname>Database</classname> to
-                &quot;true&quot; as shown above.</para>
-            <para>The <methodname>setProperty</methodname> calls are used to set
-                database-specific parameters. In this case, pretty-printing of
-                XML output is turned on for the collection and the default
-                character encoding is set to ISO-8859-1. These parameters are
-                specific to eXist and will not be understood by different databases.</para>
-            <para>Calling <methodname>col.getResource()</methodname> finally
-                retrieves the document. The document is returned as an
-                <classname>XMLResource</classname>. All resources have a method
-                <methodname>getContent()</methodname>, which returns the
-                resource's content, depending on it's type. In this case we
-                retrieve the content as <classname>String</classname>.</para>
-            <para>To query the repository, we have to use the
-                <classname>XPathQueryService</classname> class. The XML:DB API
-                defines different kinds of services, which may or may not be
-                provided by the database. The
-                <methodname>getService</methodname>-method of class
-                <classname>Collection</classname> returns a service if it is
-                available. The method expects the service name as first
-                parameter and an additional version string, which is used to
-                distinguish between different versions of the service defined by
-                the XML:DB API.</para>
-            <example>
-                <title>Querying the database</title>
-                <programlisting format="linespecific"><![CDATA[
-import org.xmldb.api.base.*;
+      </example>
+      <para>First, the database driver class for eXist (<classname>org.exist.xmldb.DatabaseImpl</classname>) is registered with the <classname>DatabaseManager</classname>. Next we have to obtain a <classname>Collection</classname> object from the database manager. This is done by calling the static method <methodname>DatabaseManger.getCollection()</methodname>. The method expects a fully qualified URI as parameter, which identifies the desired collection. The format of this URI always looks like:</para>
+      <synopsis format="linespecific">xmldb:database-id://host-address-part/db/collection</synopsis>
+      <para>Because more than one database driver can be registered with the database manager, the first part of the URI <option>xmldb:exist</option> is required to determine which driver class should be used. The database-id is used by the database manager to select the correct database driver from it's list of available drivers. To use eXist this should always be "exist" (unless you have set up multiple database instances; additional instances may have other names).</para>
+      <para>The final part of the URI identifies the collection to retrieve and optionally the host address of the database server on the network. Internally, eXist uses two different driver implementations: The first talks to a remote database engine using XML-RPC calls, the second has direct access to a local instance of eXist. The root collection is always identified by <option>/db</option>. For example, the URI</para>
+      <synopsis format="linespecific">xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays</synopsis>
+      <para>references the Shakespeare collection on a remote server running the XML-RPC interface as a servlet at <option>localhost:8080/exist/xmlrpc</option>. If we leave away the host address part, the XML:DB driver will try to connect to a locally attached database instance, e.g.:</para>
+      <synopsis format="linespecific">xmldb:exist:///db/shakespeare/plays</synopsis>
+      <para>In this case we have to tell the XML:DB driver that it should create a new database instance if none has been started before. This is done by setting the <option>create-database</option> property of class <classname>Database</classname> to "true" (more information on embedded use of eXist can be found in the <ulink url="deployment.xml">deployment guide</ulink>.</para>
+      <para>The <methodname>setProperty</methodname> calls are used to set database-specific parameters. In this case, pretty-printing of XML output is turned on for the collection and the default character encoding is set to UTF-8 (the default). These parameters are specific to eXist and will not be understood by different databases.</para>
+      <para>Calling <methodname>col.getResource()</methodname> finally retrieves the document. The document is returned as an <classname>XMLResource</classname>. All resources have a method <methodname>getContent()</methodname>, which returns the resource's content, depending on it's type. In this case we retrieve the content as <classname>String</classname>.</para>
+      <para>To query the repository, we have to use the <classname>XPathQueryService</classname> class. The XML:DB API defines different kinds of services, which may or may not be provided by the database. The <methodname>getService</methodname>-method of class <classname>Collection</classname> returns a service if it is available. The method expects the service name as first parameter and an additional version string, which is used to distinguish between different versions of the service defined by the XML:DB API.</para>
+      <example>
+        <title>Querying the database</title>
+        <programlisting format="linespecific"><![CDATA[import org.xmldb.api.base.*;
 import org.xmldb.api.modules.*;
 import org.xmldb.api.*;
 
@@ -157,15 +140,13 @@ public class QueryExample {
         String driver = "exist.xmldb.DatabaseImpl";
         Class cl = Class.forName(driver);			
         Database database = (Database)cl.newInstance();
-        database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
         
         Collection col = 
-            DatabaseManager.getCollection("xmldb:exist:///db");
+            DatabaseManager.getCollection("xmldb:exist://localhost:8080/exist/xmlrpc/db");
         XPathQueryService service =
             (XPathQueryService) col.getService("XPathQueryService", "1.0");
         service.setProperty("pretty", "true");
-        service.setProperty("encoding", "ISO-8859-1");
                 
         ResourceSet result = service.query(args[0]);
         ResourceIterator i = result.getIterator();
@@ -176,124 +157,70 @@ public class QueryExample {
     }
 }
         ]]></programlisting>
-            </example>
-            <para>To execute the query, method
-                <methodname>service.query(xpath)</methodname> is called. This
-                method returns a <classname>ResourceSet</classname>, containing
-                the Resources found by the query.
-                <methodname>ResourceSet.getIterator()</methodname> gives us an
-                iterator over these resources. Every Resource contains a single
-                document fragment or value selected by the XPath expression.</para>
-            <para>Next we would like to store a new document into the
-                repository. This is done by creating a new
-                <classname>XMLResource</classname>, assigning it the content of
-                the new document and calling
-                <methodname>storeResource</methodname> of class
-                <classname>Collection</classname>. A new Resource is created by
-                method <methodname>Collection.createResource()</methodname>. The
-                method expects two parameters: the id of the resource and
-                second, the type of this resource. If the id-parameter is null,
-                a unique resource-id will be generated automatically.</para>
-            <para>Since the collection may not yet exist, we have to create it
-                if necessary. To create a collection, another service,
-                <classname>CollectionManagementService</classname> is provided.
-                Calling <methodname>createCollection</methodname> of
-                <classname>CollectionManagementService</classname> will create a
-                new collection. In the example below, we simply start at the
-                root-collection object to get the
-                <classname>CollectionManagementService</classname>. </para>
-            <example>
-                <title>Adding a file</title>
-                <programlisting format="linespecific"><![CDATA[
-package samples;
-
-import org.xmldb.api.*;
-import org.xmldb.api.base.*;
-import org.xmldb.api.modules.*;
-
-import org.exist.util.XMLUtil;
-
-public class APIParse {
+      </example>
+      <para>To execute the query, method <methodname>service.query(xpath)</methodname> is called. This method returns a <classname>ResourceSet</classname>, containing the Resources found by the query. <methodname>ResourceSet.getIterator()</methodname> gives us an iterator over these resources. Every Resource contains a single document fragment or value selected by the XPath expression.</para>
+      <para>Next we would like to store a new document into the repository. This is done by creating a new <classname>XMLResource</classname>, assigning it the content of the new document and calling <methodname>storeResource</methodname> of class <classname>Collection</classname>. A new Resource is created by method <methodname>Collection.createResource()</methodname>. The method expects two parameters: the id of the resource and second, the type of this resource. If the id-parameter is null, a unique resource-id will be generated automatically.</para>
+      <para>Since the collection may not yet exist, we have to create it if necessary. To create a collection, another service, <classname>CollectionManagementService</classname> is provided. Calling <methodname>createCollection</methodname> of <classname>CollectionManagementService</classname> will create a new collection. In the example below, we simply start at the root-collection object to get the <classname>CollectionManagementService</classname>. </para>
+      <example>
+        <title>Adding a file</title>
+        <programlisting format="linespecific"><![CDATA[public class StoreExample {
+    public final static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
 
     public static void main(String args[]) throws Exception {
+        if(args.length < 2) {
+            System.out.println("usage: StoreExample collection-path document");
+            System.exit(1);
+        }
 
         String collection = args[0], file = args[1];
-        
-        if(collection.startsWith("/db"))
-            // remove /db if specified
-            collection = collection.substring(3);
-            
+
         // initialize driver
         String driver = "org.exist.xmldb.DatabaseImpl";
-        Class cl = Class.forName(driver);			
+        Class cl = Class.forName(driver);
         Database database = (Database)cl.newInstance();
-        database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
-        
+
         // try to get collection
-        Collection col = 
-            DatabaseManager.getCollection("xmldb:exist:///db" + collection);
+        Collection col =
+            DatabaseManager.getCollection(URI + collection);
         if(col == null) {
-            // collection does not exist: get root collection and create it
-            Collection root = DatabaseManager.getCollection("xmldb:exist:///db");
-            CollectionManagementService mgtService = 
-                (CollectionManagementService)
-                    root.getService("CollectionManagementService", "1.0");
-            col = mgtService.createCollection(collection);
+            // collection does not exist: get root collection and create
+            // for simplicity, we assume that the new collection is a
+            // direct child of the root collection, e.g. /db/test.
+            // the example will fail otherwise.
+            Collection root = DatabaseManager.getCollection(URI + "/db");
+            CollectionManagementService mgtService =
+                (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
+            col = mgtService.createCollection(collection.substring("/db".length()));
         }
         // create new XMLResource; an id will be assigned to the new resource
         XMLResource document = (XMLResource)col.createResource(null, "XMLResource");
-        
-        File f = new File(file);
-        if(!f.canRead())
-            System.err.println("can't read file " + file);
-        document.setContent(f);
+        String xml = readFile(file);
+        document.setContent(xml);
         System.out.print("storing document " + document.getId() + "...");
         col.storeResource(document);
         System.out.println("ok.");
     }
-}      
-        ]]></programlisting>
-            </example>
-            <para>Please note that
-                <classname>XMLResource.setContent()</classname> takes a Java
-                object as parameter. The eXist driver checks if the object is a
-                File. Otherwise, the object is transformed into a String by
-                calling the object's <methodname>toString()</methodname> method.
-                Passing a File has one big advantage: If the database is running
-                in embedded mode, the file will be directly passed to the
-                indexer. Thus, the file's content don't have to be loaded into
-                main memory. This is handy if your files are very large.</para>
-        </section>
-        <section>
-            <title>Extensions to the XML:DB</title>
-            <para>eXist provides two services in addition to those defined by
-                the specification: <ulink
-                href="api/org/exist/xmldb/UserManagementService.html">UserManagementService</ulink>
-                contains methods to manage users and to deal with permissions.
-                The methods resemble common Unix commands like
-                <methodname>chown</methodname> or <methodname>chmod</methodname>.</para>
-            <para>
-                <ulink
-                href="api/org/exist/xmldb/DatabaseInstanceManager.html">DatabaseInstanceManager</ulink>
-                provides a single method to shut down the database instance
-                accessed by the driver. You have to be a member of the
-                <option>dba</option> user group to use this method or an
-                exception will be thrown.</para>
-            <para>As explained above, passing a local XML:DB URI to the
-                <classname>DatabaseManager</classname> means that the driver
-                will try to start or access an embedded database instance. You
-                can configure more than one database instance by setting the
-                location of the central configuration file. The configuration
-                file is set through the property <option>configuration</option>
-                of the <classname>DatabaseImpl</classname> driver class. If you
-                would like to use different drivers for different database
-                instances, specify a name for the created instance through the
-                <option>database-id</option> property. You may later use this
-                name in the URI to refer to a database instance. The following
-                fragment sets up two instances:</para>
-            <example>
-                <programlisting><![CDATA[
+}]]></programlisting>
+      </example>
+      <para>Please note that <classname>XMLResource.setContent()</classname> takes a Java object as parameter. The eXist driver checks if the object is a File. Otherwise, the object is transformed into a String by calling the object's <methodname>toString()</methodname> method. Passing a File has one big advantage: If the database is running in embedded mode, the file will be directly passed to the indexer. Thus, the file's content don't have to be loaded into main memory. This is handy if your files are very large.</para>
+    </section>
+    <section>
+      <title>Extensions to the XML:DB</title>
+      <section>
+        <title>Additional Services</title>
+        <para>eXist provides several services in addition to those defined by the specification: <ulink url="api/org/exist/xmldb/UserManagementService.html">UserManagementService</ulink> contains methods to manage users and to deal with permissions. The methods resemble common Unix commands like <methodname>chown</methodname> or <methodname>chmod</methodname>. Like all services, <classname>UserManagementService</classname> can be retrieved from a collection object:</para>
+        <synopsis format="linespecific">UserManagementService service = (UserManagementService)collection.getService("UserManagementService", "1.0");</synopsis>
+        <para>Another service, <ulink url="api/org/exist/xmldb/DatabaseInstanceManager.html">DatabaseInstanceManager</ulink>, provides a single method to shut down the database instance accessed by the driver. You have to be a member of the <option>dba</option> user group to use this method or an exception will be thrown. See the <ulink url="deployment.xml#embedded">Deployment Guide</ulink> for an example.</para>
+        <para>Finally, interface <ulink url="">IndexQueryService</ulink> supports access to the terms and elements contained in eXist's internal index. Method getIndexedElements() returns a list of element occurrences for the current collection. For each occurring element, the element's name and a frequency count is returned.</para>
+        <para>Method scanIndexTerms() allows to retrieve a list of occuring words for the current collection. This might be useful, for example, to provide users a list of searchable terms together with their frequency.</para>
+      </section>
+      <section id="multidb">
+        <title>Multiple Database Instances</title>
+        <para>As explained above, passing a local XML:DB URI to the <classname>DatabaseManager</classname> means that the driver will try to start or access an embedded database instance. You can configure more than one database instance by setting the location of the central configuration file. The configuration file is set through the property <option>configuration</option> of the <classname>DatabaseImpl</classname> driver class. If you would like to use different drivers for different database instances, specify a name for the created instance through the <option>database-id</option> property. You may later use this name in the URI to refer to a database instance. The following fragment sets up two instances:</para>
+        <example>
+          <title>Multiple Database Instances</title>
+          <programlisting format="linespecific"><![CDATA[
 // initialize driver
 String driver = "org.exist.xmldb.DatabaseImpl";
 Class cl = Class.forName(driver);			
@@ -309,41 +236,77 @@ database2.setProperty("configuration", "/home/exist/production/conf.xml");
 database2.setProperty("database-id", "exist");
 DatabaseManager.registerDatabase(database1);
 ]]></programlisting>
-            </example>
-            <para>With the above example, the URI</para>
-            <synopsis>xmldb:test:///db</synopsis>
-            <para>selects the test database instance. Both instances should have
-                their own data and log directory as specified in the
-                configuration files.</para>
-            <para>Finally, the interface <ulink
-                    href="api/org/exist/xmldb/XPathQueryServiceImpl.html">
-                XPathQueryServiceImpl</ulink> defines an additional
-                <methodname>query</methodname> method which accepts to
-                parameters. The method can be used to process an XPath query
-                based on the results of a previous query. The file
-                <filename>samples/xmldb/NestedQuery.java</filename> provides an example.</para>
-        </section>
+        </example>
+        <para>With the above example, the URI</para>
+        <synopsis format="linespecific">xmldb:test:///db</synopsis>
+        <para>selects the test database instance. Both instances should have their own data and log directory as specified in the configuration files.</para>
+      </section>
+      <section>
+        <title>Nested Queries</title>
+        <para>eXist defines some extension methods to the XPathQueryService. To use these methods, you have to cast the retrieved service to the eXist interface <ulink url="api/org/exist/xmldb/XPathQueryServiceImpl.html">XPathQueryServiceImpl</ulink>. The interface defines three additional query methods. The first allows you to evaluate a query on an XMLResource retrieved from a previous query. It thus becomes possible to execute nested queries. Since XPath does only allow one result to be returned, nested queries are useful to get additional information on a query result. For example, we may want to find certain SPEECH sections from a Shakespeare play, but we would also like to know the title of the scene in which this section occurrs. Using the nested query facility, the corresponding code could look like this (the whole example can be found in <filename moreinfo="none">samples/org/exist/examples/xmldb/NestedQuery.java</filename>):</para>
+        <example>
+          <title>Nested Queries</title>
+          <programlisting format="linespecific">String query1 = "document(*)//SPEECH[LINE &amp;= 'corrupt*']";
+String query2 = "/ancestor::SCENE/TITLE";
+
+// get query-service
+XPathQueryService service =
+    (XPathQueryService) col.getService( "XPathQueryService", "1.0" );
+// set properties
+service.setProperty( "pretty", "true" );
+
+// execute first query
+ResourceSet result = service.query( query1 );
+System.out.println(query1 + " found: " + result.getSize());
+
+XMLResource resource;
+ResourceSet result2;
+String xml;
+
+// iterate through the results and execute the second query
+// using the current result node as context
+for ( int i = 0; i &lt; (int) result.getSize(); i++ ) {
+    resource = (XMLResource) result.getResource( (long) i );
+    result2 = ((org.exist.xmldb.XPathQueryServiceImpl)service)
+        .query( resource, query2 );
+
+    // print the results found by the second query
+    for( int j = 0; j &lt; (int)result2.getSize(); j++ ) {
+        xml = (String)result2.getResource( (long)j ).getContent();
+        System.out.println( "Scene: " + xml );
+    }
+    System.out.println((String)resource.getContent());
+}</programlisting>
+        </example>
         <section>
-        	<title>XMLDBTransformer for Cocoon</title>
-			<para>eXist offers several ways to access the database from Cocoon
-				based applications. This includes access via the XMLDB pseudo 
-				protocol, through XSP pages, and through the XMLDBTransformer.
-				The XMLDBTransformer provides a simple way to query the
-				database. It works like other transformers supplied with 
-				Cocoon. Basically, the transformer watches out for known tags,
-				takes some action, and replaces the tags found with the results
-				of this action. You should read the Cocoon documentation about
-				transformers to understand the basic concepts.</para>
-			<para>The XMLDBTransformer listens for a limited set of tags,
-				belonging to the namespace 
-				<filename>http://exist-db/transformer/1.0</filename>. The
-				tags are <sgmltag>collection</sgmltag>, 
-				<sgmltag>for-each</sgmltag>, <sgmltag>select-node</sgmltag>,
-				<sgmltag>current-node</sgmltag>. Their use is best understood
-				by looking at an example:</para>
-			<example>
-				<title>XMLDBTransformer Example</title>
-				<screen><![CDATA[
+          <title>Sorting Query-Results</title>
+          <para>It is also possible to sort query results by specifying a second XPath expression. The second expression will be applied to each result in the main result set. The returned result of the sort expression is then transformed into a string value. If more than one result is returned, the string values of all results are first sorted and then concatenated. Finally, the nodes in the main result set are sorted by the corresponding string values in ascending order. The following code snippet again searches for SPEECH sections, but this time we sort the result set by the first SPEAKER in the SPEECH:</para>
+          <example>
+            <title>Sorting Query-Results</title>
+            <programlisting format="linespecific">// get query-service
+XPathQueryServiceImpl service = (XPathQueryServiceImpl)
+    col.getService( "XPathQueryService", "1.0" );
+// set pretty-printing on
+service.setProperty( "pretty", "true" );
+// execute query and get results in ResourceSet
+ResourceSet result = service.query( "//SPEECH[LINE &amp;= 'magic'], "/SPEAKER[1]" );
+// create iterator
+for(ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
+    XMLResource resource = (XMLResource) i.nextResource();
+    String xml = resource.getContent().toString();
+    System.out.println( xml );
+}</programlisting>
+          </example>
+        </section>
+      </section>
+    </section>
+    <section>
+      <title>XMLDBTransformer for Cocoon</title>
+      <para>eXist offers several ways to access the database from Cocoon based applications. This includes access via the XMLDB pseudo protocol, through XSP pages, and through the XMLDBTransformer. The XMLDBTransformer provides a simple way to query the database. It works like other transformers supplied with Cocoon. Basically, the transformer watches out for known tags, takes some action, and replaces the tags found with the results of this action. You should read the Cocoon documentation about transformers to understand the basic concepts.</para>
+      <para>The XMLDBTransformer listens for a limited set of tags, belonging to the namespace <filename moreinfo="none">http://exist-db/transformer/1.0</filename>. The tags are <sgmltag>collection</sgmltag>, <sgmltag>for-each</sgmltag>, <sgmltag>select-node</sgmltag>, <sgmltag>current-node</sgmltag>. Their use is best understood by looking at an example:</para>
+      <example>
+        <title>XMLDBTransformer Example</title>
+        <screen format="linespecific"><![CDATA[
 <xmldb:collection xmlns:xmldb="http://exist-db/transformer/1.0"
 	uri="xmldb:exist:///db">
 	<!-- iterate through all rdf:Description elements containing the
@@ -364,50 +327,15 @@ DatabaseManager.registerDatabase(database1);
 	</xmldb:for-each>
 </xmldb:collection>
 ]]></screen>
-			</example>
-			<para>You will find the complete example in directory
-				<filename>webapp/examples/simple2.xml</filename>. Before
-				you can start to query the database, you have to select
-				a collection with the <sgmltag>collection</sgmltag> tag.
-				It accepts a standard XMLDB URI in its <option>uri</option>
-				attribute. To process a query, you may either use the
-				<sgmltag>for-each</sgmltag>, or the 
-				<sgmltag>select-node</sgmltag> tag. The difference should
-				be obvious: for-each iterates over all the results it finds
-				for the given query. The body of the statement will be 
-				evaluated for each query result. Contrary to that, the 
-				select-node tag simply selects the first result it finds.
-				If the result set contains more than one match, the remaining
-				matches will be ignored.</para>
-			<para>The current-node tag is used to actually insert the result 
-				currently processed by the for-each tag into the output
-				document. You may restrict the number of iterations for
-				a for-each tag by specifying the <option>from</option> and
-				<option>to</option> attributes. The <option>sort-by</option>
-				attribute is still experimental: the query results will be
-				sorted by the specified XPath expression. For each of the
-				results, the XPath expression is evaluated and the resulting
-				string value is used to sort the query results in ascending
-				order.</para>
-			<para>As shown above, it is possible to nest multiple for-each 
-				or select-node tags. The nested tag will be evaluated 
-				relative to the current result node. In the example above,
-				the main for-each statement selects all 
-				<sgmltag>rdf:Description</sgmltag> fragments whose title
-				contains the term "computer". During each iteration, we
-				further process the current result fragment by using nested
-				for-each and select-node tags to select the title and
-				creators.</para>
-			<para>The same result could be achieved by an XSLT stylesheet.
-				However, if the selected fragments are rather large, 
-				post-processing with XSLT can be quite slow, because
-				each fragment has to be serialized and then parsed by 
-				the XSLT processor.</para>
-			<para>Finally, the output of the XMLDBTransformer for the 
-				above fragment is shown below:</para>
-			<example>
-				<title>XMLDBTransformer Output</title>
-				<screen>
+      </example>
+      <para>You will find the complete example in directory <filename moreinfo="none">webapp/examples/simple2.xml</filename>. Before you can start to query the database, you have to select a collection with the <sgmltag>collection</sgmltag> tag. It accepts a standard XMLDB URI in its <option>uri</option> attribute. To process a query, you may either use the <sgmltag>for-each</sgmltag>, or the <sgmltag>select-node</sgmltag> tag. The difference should be obvious: for-each iterates over all the results it finds for the given query. The body of the statement will be evaluated for each query result. Contrary to that, the select-node tag simply selects the first result it finds. If the result set contains more than one match, the remaining matches will be ignored.</para>
+      <para>The current-node tag is used to actually insert the result currently processed by the for-each tag into the output document. You may restrict the number of iterations for a for-each tag by specifying the <option>from</option> and <option>to</option> attributes. The <option>sort-by</option> attribute is still experimental: the query results will be sorted by the specified XPath expression. For each of the results, the XPath expression is evaluated and the resulting string value is used to sort the query results in ascending order.</para>
+      <para>As shown above, it is possible to nest multiple for-each or select-node tags. The nested tag will be evaluated relative to the current result node. In the example above, the main for-each statement selects all <sgmltag>rdf:Description</sgmltag> fragments whose title contains the term "computer". During each iteration, we further process the current result fragment by using nested for-each and select-node tags to select the title and creators.</para>
+      <para>The same result could be achieved by an XSLT stylesheet. However, if the selected fragments are rather large, post-processing with XSLT can be quite slow, because each fragment has to be serialized and then parsed by the XSLT processor.</para>
+      <para>Finally, the output of the XMLDBTransformer for the above fragment is shown below:</para>
+      <example>
+        <title>XMLDBTransformer Output</title>
+        <screen format="linespecific">
 <![CDATA[
 <xmldb:result-set count="72" xpath="//rdf:Description[dc:title &= 'computer']"
 	query-time="370" from="0" to="9">
@@ -418,36 +346,17 @@ DatabaseManager.registerDatabase(database1);
 	<!-- more books here ... -->
 </xmldb:result-set>
 ]]></screen>
-			</example>
-			<para>The result-set element describes the number of hits for the
-				query, the XPath query processed, the query time, and the
-				start and end position of the retrieved records in the result
-				set.</para>
-		</section>
-        <section>
-            <title>XML:DB Logicsheet for Cocoon</title>
-            <para>Cocoon offers a powerfull mechanism called XSP to write
-                XML-based dynamic web pages. Similar to JSP, XSP embeds Java
-                code in XML pages. However, embedding large Java code sections
-                into an XML page is usually considered bad style. To support the
-                separation of content and programming logic, XSP allows us to
-                put reusable code into logic sheets, which correspond to the tag
-                libraries found in JSP. A logic sheet should help to limit the
-                amount of Java code used inside an XSP page to a minimum.</para>
-            <para>Version 0.8 of eXist includes a logic sheet based on the
-                XML:DB API, which defines tags for all important tasks. While it
-                would also be possible to write all the XML:DB related code by
-                hand, using the predefined tags makes the XML file usually more
-                readable and helps users without Java experience to understand
-                what's going on.</para>
-            <para>To get an overview over the available tags, you may have a
-                look at the <ulink href="xmldb.xsl.html">stylesheet
-                documentation</ulink> (generated with <ulink
-                href="www.xsldoc.org">xsldoc</ulink>). A simple example which
-                retrieves and displays a document is shown below:</para>
-            <example>
-                <title>example1.xsp: Simple XSP Page</title>
-                <programlisting><![CDATA[
+      </example>
+      <para>The result-set element describes the number of hits for the query, the XPath query processed, the query time, and the start and end position of the retrieved records in the result set.</para>
+    </section>
+    <section>
+      <title>XML:DB Logicsheet for Cocoon</title>
+      <para>Cocoon offers a powerfull mechanism called XSP to write XML-based dynamic web pages. Similar to JSP, XSP embeds Java code in XML pages. However, embedding large Java code sections into an XML page is usually considered bad style. To support the separation of content and programming logic, XSP allows us to put reusable code into logic sheets, which correspond to the tag libraries found in JSP. A logic sheet should help to limit the amount of Java code used inside an XSP page to a minimum.</para>
+      <para>Version 0.8 of eXist includes a logic sheet based on the XML:DB API, which defines tags for all important tasks. While it would also be possible to write all the XML:DB related code by hand, using the predefined tags makes the XML file usually more readable and helps users without Java experience to understand what's going on.</para>
+      <para>To get an overview over the available tags, you may have a look at the <ulink url="xmldb.xsl.html">stylesheet documentation</ulink> (generated with <ulink url="www.xsldoc.org">xsldoc</ulink>). A simple example which retrieves and displays a document is shown below:</para>
+      <example>
+        <title>example1.xsp: Simple XSP Page</title>
+        <programlisting format="linespecific"><![CDATA[
 <xsp:page xmlns:xsp="http://apache.org/xsp"
           xmlns:xmldb="http://exist-db.org/xmldb/1.0"
 >
@@ -469,44 +378,26 @@ DatabaseManager.registerDatabase(database1);
     </document>
 </xsp:page>
 ]]></programlisting>
-            </example>
-            <para>The Cocoon version included with eXist has already been
-                configured (see cocoon.xconf) to recognize the xmldb namespace
-                and associate it with the XML:DB logicsheet. The logicsheet is
-                defined in <filename>src/org/exist/xmldb.xsl</filename>. To use
-                the logicsheet from our page we just declare the xmldb-namespace (xmlns:xmldb=&quot;http://exist-db.org/xmldb/1.0&quot;).</para>
-            <para>The sample code retrieves a document from the collection
-                <filename>/db/shakespeare/plays</filename>. The name of the
-                document is passed in the HTTP request parameter &quot;doc&quot;.</para>
-            <para>To be able to post-process the retrieved XML data, we set the
-                attribute &quot;as&quot; to &quot;xml&quot;. This indicates that
-                the resource should be fed into the current Cocoon processing
-                stream. To include the data as a string value, you may specify
-                <parameter>as=&quot;string&quot;</parameter>. As a result, all
-                XML markup characters will be escaped.</para>
-            <para>Please note that parameters to the logicsheet tags may be
-                either specified as an attribute to the tag or as a child
-                element. If you specify a parameter as element, the element's
-                content will be interpreted as a Java expression. Literal values
-                should be set via an attribute. For example, the
-                <parameter>xpath</parameter> parameter is specified as a Java
-                expression, it is thus embedded into a &lt;xmldb:xpath> element.</para>
-            <para>Finally, to tell Cocoon how to process this page, we have to
-                add a new pattern into the sitemap, e.g.:</para>
-            <example>
-                <title>Cocoon Sitemap Snippet</title>
-                <programlisting><![CDATA[
+      </example>
+      <para>The Cocoon version included with eXist has already been configured (see cocoon.xconf) to recognize the xmldb namespace and associate it with the XML:DB logicsheet. The logicsheet is defined in <filename moreinfo="none">src/org/exist/xmldb.xsl</filename>. To use the logicsheet from our page we just declare the xmldb-namespace (xmlns:xmldb="http://exist-db.org/xmldb/1.0").</para>
+      <para>The sample code retrieves a document from the collection <filename moreinfo="none">/db/shakespeare/plays</filename>. The name of the document is passed in the HTTP request parameter "doc".</para>
+      <para>To be able to post-process the retrieved XML data, we set the attribute "as" to "xml". This indicates that the resource should be fed into the current Cocoon processing stream. To include the data as a string value, you may specify <parameter moreinfo="none">as="string"</parameter>. As a result, all XML markup characters will be escaped.</para>
+      <para>Please note that parameters to the logicsheet tags may be either specified as an attribute to the tag or as a child element. If you specify a parameter as element, the element's content will be interpreted as a Java expression. Literal values should be set via an attribute. For example, the <parameter moreinfo="none">xpath</parameter> parameter is specified as a Java expression, it is thus embedded into a &lt;xmldb:xpath&gt; element.</para>
+      <para>Finally, to tell Cocoon how to process this page, we have to add a new pattern into the sitemap, e.g.:</para>
+      <example>
+        <title>Cocoon Sitemap Snippet</title>
+        <programlisting format="linespecific"><![CDATA[
 <map:match pattern="test.xsp">
     <map:generate type="serverpages" src="test.xsp"/>
     <map:transform src="stylesheets/doc2html-2.xsl"/>
     <map:serialize type="xhtml"/>
 </map:match>
 ]]></programlisting>
-            </example>
-            <para>The next example shows how to query the database:</para>
-            <example>
-                <title>example2.xsp: Querying the Database</title>
-                <programlisting><![CDATA[
+      </example>
+      <para>The next example shows how to query the database:</para>
+      <example>
+        <title>example2.xsp: Querying the Database</title>
+        <programlisting format="linespecific"><![CDATA[
 <xsp:page xmlns:xsp="http://apache.org/xsp"
           xmlns:xmldb="http://exist-db.org/xmldb/1.0"
 >
@@ -532,562 +423,720 @@ DatabaseManager.registerDatabase(database1);
     </html>
 </xsp:page>
 ]]></programlisting>
-            </example>
-            <para>The example page takes the HTTP request parameter called
-                &quot;title&quot; as input and creates an XPath expression to
-                find all &lt;rdf:Description> elements having a &lt;dc:title>
-                containing the keywords entered by the user. As required by the
-                XML:DB API, any action has to be enclosed in an
-                &lt;xmldb:collection> element. The query is specified in the
-                &lt;xmldb:xpath> tag using a Java expression, which inserts the
-                value of the request parameter &quot;title&quot; into the XPath
-                query string.</para>
-            <para>The &lt;xmldb:results> element will iterate through the
-                generated result set, inserting each resource into the page by
-                calling &lt;xmldb:get-xml>. In this case, &lt;xmldb:get-xml>
-                inserts the resource contents as a string, which means that all
-                XML markup is escaped.</para>
-        </section>
-        <section>
-            <title>Using the XML-RPC API</title>
-            <para>XML-RPC provides a simple way to call remote procedures from a
-                wide variety of programming languages. eXist's XML-RPC API makes
-                it easy to access eXist from other applications, CGI scripts,
-                PHP, JSP and so on. For more information on XML-RPC see <ulink url="http://www.xmlrpc.org">www.xmlrpc.org</ulink>.</para>
-            <para>For the Java server side, I used the XML-RPC library created
-                by Hannes Wallnoefer which has moved to Apache recently (see
-                    <ulink url="http://xml.apache.org/xmlrpc">http://xml.apache.org/xmlrpc</ulink>).</para>
-            <para>There's also a little Perl example
-                <filename>xmlrpc.pl</filename> in the
-                <filename>bin</filename>directory. It provides a simple command
-                line client with command editing and history. It uses the
-                RPC::XML package, which should be available at every CPAN mirror
-                (see <ulink url="http://www.cpan.org">CPAN</ulink>). Please make
-                sure you have the latest version of this package installed.
-                Earlier versions have problems with strings containing XML
-                markup. Another Perl package providing XML-RPC communication is
-                SOAP::Lite, which has also been successfully tested with eXist.</para>
-            <para>Here's a small example, which shows how to talk to eXist from
-                Java using the Apache XML-RPC library. You'll find this example
-                in <filename>samples/Get.java</filename>.</para>
-            <example>
-                <title>Retrieving a document from eXist</title>
-                <programlisting format="linespecific"><![CDATA[
-import org.apache.xmlrpc.*;
-import java.util.Vector;
-import java.io.UnsupportedEncodingException;
+      </example>
+      <para>The example page takes the HTTP request parameter called "title" as input and creates an XPath expression to find all &lt;rdf:Description&gt; elements having a &lt;dc:title&gt; containing the keywords entered by the user. As required by the XML:DB API, any action has to be enclosed in an &lt;xmldb:collection&gt; element. The query is specified in the &lt;xmldb:xpath&gt; tag using a Java expression, which inserts the value of the request parameter "title" into the XPath query string.</para>
+      <para>The &lt;xmldb:results&gt; element will iterate through the generated result set, inserting each resource into the page by calling &lt;xmldb:get-xml&gt;. In this case, &lt;xmldb:get-xml&gt; inserts the resource contents as a string, which means that all XML markup is escaped.</para>
+    </section>
+    <section>
+      <title>Using the XML-RPC API</title>
+      <para>XML-RPC provides a simple way to call remote procedures from a wide variety of programming languages. eXist's XML-RPC API makes it easy to access eXist from other applications, CGI scripts, PHP, JSP and so on. For more information on XML-RPC see <ulink url="http://www.xmlrpc.org">www.xmlrpc.org</ulink>.</para>
+      <para>For the Java server side, I used the XML-RPC library created by Hannes Wallnoefer which has moved to Apache recently (see <ulink url="http://xml.apache.org/xmlrpc">http://xml.apache.org/xmlrpc</ulink>).</para>
+      <para>For Perl, I used the RPC::XML package, which should be available at every CPAN mirror (see <ulink url="http://www.cpan.org">CPAN</ulink>). Please make sure you have the latest version of this package installed. Earlier versions have problems with strings containing XML markup. Another Perl package providing XML-RPC communication is SOAP::Lite, which has also been successfully tested with eXist.</para>
+      <para>Here's a small example, which shows how to talk to eXist from Java using the Apache XML-RPC library. You'll find this example in <filename moreinfo="none">samples/org/exist/examples/xmldb/Retrieve.java</filename>.</para>
+      <example>
+        <title>Retrieving a document from eXist</title>
+        <programlisting format="linespecific"><![CDATA[public class Retrieve {
 
-public class XmlRpcTest {
+    protected final static String uri = "http://localhost:8080/exist/xmlrpc";
 
-    public static void main(String args[]) throws Exception {
-        String encoding = "ISO-8859-1";
-        XmlRpcClient xmlrpc = new XmlRpcClient("http://localhost:8080/exist/xmlrpc");
-        Vector params = new Vector();
-        params.addElement(args[0]);
-        params.addElement(encoding);
-        params.addElement(new Integer(1));
-        byte[] data = (byte[])xmlrpc.execute("getDocument", params);
-        String xml;
-        try {
-            xml = new String(data, encoding);
-        } catch(UnsupportedEncodingException uee) {
-            xml = new String(data);
-        }
-        System.out.println(xml);
+    protected static void usage() {
+        System.out.println( "usage: org.exist.examples.xmlrpc.Retrieve path-to-document" );
+        System.exit( 0 );
     }
-}]]></programlisting>
-            </example>
-            <para>The <methodname>execute</methodname>method of
-                <classname>XmlRpcClient</classname>expects the name of a method
-                to call on the server and a Vector of parameters to pass to this
-                method. Here, the method <methodname>getDocument</methodname>is
-                called with the document's name as first parameter. The second
-                argument selects the encoding of the result document. The third
-                says that pretty printing should be enabled. Since all
-                parameters are passed in a Vector, they have to be Java objects.</para>
-            <para>Please note that the API uses int to encode booleans. This is
-                because some clients do not correctly pass boolean parameters.</para>
-            <para>XMLRPC messages are themselves XML documents. They may use a
-                character encoding which is in conflict with the character
-                encoding of the document we would like to receive. To avoid such
-                conflicts, eXist's XMLRPC API expects most string parameters as
-                byte arrays. The XMLRPC library will send them as binary data
-                (using Base64 encoding for transport). This way, document
-                encodings are preserved although the XMLRPC transport layer may
-                use a completely different character encoding.</para>
-            <para>Doing a query is as easy:</para>
-            <example>
-                <title>Sending a query to eXist</title>
-                <programlisting format="linespecific"><![CDATA[
-package samples;
-
-import org.apache.xmlrpc.*;
-import java.util.Vector;
-
-public class Search {
-
-    private static String encoding = "ISO-8859-1";
 
     public static void main( String args[] ) throws Exception {
-        String query = "document(*)//SPEECH[SPEAKER='HAMLET']";
-        XmlRpcClient xmlrpc = new XmlRpcClient( "http://localhost:8080/exist/xmlrpc" );
-        
+        if ( args.length < 1 ) {
+            usage();
+        }
+        XmlRpc.setEncoding("UTF-8");
+        XmlRpc.setBasicAuthentication("guest", "guest");
+        XmlRpcClient xmlrpc = new XmlRpcClientLite( uri );
+        Vector params = new Vector();
+        params.addElement( args[0] );
+        params.addElement( new Integer( 1 ) );
+        String xml = (String) xmlrpc.execute( "getDocumentAsString", params );
+        System.out.println( xml );
+    }
+}]]></programlisting>
+      </example>
+      <para>The <methodname>execute</methodname>method of <classname>XmlRpcClient</classname> expects the name of a method to call on the server and a Vector of parameters to pass to this method. Here, the method <methodname>getDocumentAsString</methodname>is called with the document's name as first parameter. The second argument says that pretty printing should be enabled. Since all parameters are passed in a Vector, they have to be Java objects.</para>
+      <para>Please note that the API uses int to encode booleans. This is because some clients do not correctly pass boolean parameters.</para>
+      <para>XMLRPC messages are themselves XML documents. They may use a character encoding which is in conflict with the character encoding of the document we would like to receive. It is thus important to set the transport encoding to UTF-8 as shown above. However, there might still be conflicts, depending on the client library used. To avoid such conflicts, eXist provides some alternative declarations for selected methods, which expect string parameters as byte arrays. The XMLRPC library will send them as binary data (using Base64 encoding for transport). This way, document encodings are preserved although the XMLRPC transport layer may use a completely different character encoding.</para>
+      <para>Doing a query is as easy:</para>
+      <example>
+        <title>Sending a query to eXist</title>
+        <programlisting format="linespecific"><![CDATA[import org.apache.xmlrpc.*;
+import java.util.Vector;
+
+/**
+ * Execute a query using XMLRPC.
+ */
+public class Search {
+
+    public static void main(String args[]) throws Exception {
+        if(args.length > 0)
+            query = args[0];
+
+        XmlRpc.setEncoding("UTF8");
+        XmlRpcClient xmlrpc = new XmlRpcClient("http://localhost:8080/exist/xmlrpc");
+        xmlrpc.setBasicAuthentication( "guest", "guest" );
+
         // execute query and retrieve an id for the generated result set
         Vector params = new Vector();
-        params.addElement( query );
-        Integer resultId = (Integer) xmlrpc.execute( "executeQuery", params );
-
-        // get the number of hits
-        params.clear();
-        params.addElement( resultId );
-        Integer hits = (Integer) xmlrpc.execute( "getHits", params );
-        System.out.println( "found " + hits + " hits." );
-        System.out.println( "retrieving hits 1 to 5 ..." );
-
-        // retrieve some results
-        params.clear();
-        params.addElement( resultId );
-        params.addElement( null );
-        params.addElement( new Integer( 1 ) );
-        params.addElement( encoding );
-        for ( int i = 0; i < 5 && i < hits.intValue(); i++ ) {
-            params.setElementAt( new Integer( i ), 1 );
-            byte[] data = (byte[]) xmlrpc.execute( "retrieve", params );
-            System.out.println( new String( data, encoding ) );
-        }
+        params.addElement(query);
+        params.addElement(new Integer(10));
+        params.addElement(new Integer(1));
+        params.addElement(new Integer(1));
+        System.out.println("Executing query " + params.elementAt(0));
+        String result = (String) xmlrpc.execute("query", params);
+        System.out.println(result);
     }
 }
     ]]></programlisting>
-            </example>
-            <para>You'll find the source code of this example in
-                <filename>samples/Search.java</filename>. The example first
-                sends an XPath query to the server using
-                <methodname>executeQuery</methodname>. This method returns an
-                integer id to identify the generated result set in subsequent
-                calls. The received id is passed to method
-                <methodname>getHits</methodname> to retrieve the number of hits
-                in the result set. Finally, we use method
-                <methodname>retrieve</methodname> to display items 1 to 5 of the
-                result set.</para>
-            <para>Doing the same query in Perl using the RPC::XML module may
-                look like this:</para>
-            <example>
-                <title>Doing a query with Perl</title>
-                <screen format="linespecific"><![CDATA[
-use RPC::XML;
+      </example>
+      <para>You'll find the source code of this example in <filename moreinfo="none">samples/org/exist/examples/xmlrpc/Search.java</filename>. It uses the simple query method, which executes the query and returns a document containing the specified number of results.</para>
+      <para>Doing a query in Perl using the RPC::XML module may look like this:</para>
+      <example>
+        <title>Doing a query with Perl</title>
+        <screen format="linespecific"><![CDATA[use RPC::XML;
 use RPC::XML::Client;
-use MIME::Base64;
 
+$query = $ARGV[0];
 $client = new RPC::XML::Client "http://localhost:8080/exist/xmlrpc";
-$query = "document(*)//SPEECH[SPEAKER='HAMLET']";
-
-$req = RPC::XML::request->new('executeQuery', 
-RPC::XML::base64->new($query), 'ISO-8859-1');
+$req = RPC::XML::request->new("executeQuery", RPC::XML::base64->new($query),
+    "latin1");
 $resp = $client->send_request($req);
-if($resp->is_fault) {
-    die "ERROR: " . $resp->string . "\n";
-}
-$RESULT_ID = $resp->value;
-$req = RPC::XML::request->new('getHits', RPC::XML::int->new($RESULT_ID));
+$result_id = $resp->value;
+$req = RPC::XML::request->new("retrieve", $result_id, 1, 1, "UTF-8");
 $resp = $client->send_request($req);
-if($resp->is_fault) {
-    die "ERROR: " . $resp->string . "\n";
-}
-$HITS = $resp->value;
-print "Found $HITS hits.\n";
+print $resp->value . "\n";]]></screen>
+      </example>
+      <para>In this case we call the executeQuery method. This method does not return the actual search results, but a unique session id, which can be used to retrieve the result items.</para>
+    </section>
+    <section>
+      <title>XML-RPC: Available Methods</title>
+      <para>This section gives you an overview of the methods exposed by eXist XML-RPC server. Only the most common methods are presented here. For a complete list see the Java interface <filename moreinfo="none">src/org/exist/xmlrpc/RpcAPI.java</filename>. Method signatures are presented using Java data types.</para>
+      <section>
+        <title>Retrieving documents</title>
+        <itemizedlist>
+          <listitem>
+            <synopsis format="linespecific">byte[] getDocument(String name, String encoding, int prettyPrint)</synopsis>
+            <synopsis format="linespecific">byte[] getDocument(String name, String encoding, int prettyPrint, String xsl)</synopsis>
+            <synopsis>String getDocumentAsString(String name, String encoding, int prettyPrint)</synopsis>
+            <para>Retrieve a document from the database.</para>
+            <variablelist>
+              <title>Parameters:</title>
+              <varlistentry>
+                <term>name</term>
+                <listitem>
+                  <para>path of the document to retrieve, e.g. /db/shakespeare/plays/r_and_j.xml</para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>encoding</term>
+                <listitem>
+                  <para>determines the character encoding used for serialization</para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>prettyPrint</term>
+                <listitem>
+                  <para>set to &gt; 0 to enable pretty printing of XML</para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>xsl</term>
+                <listitem>
+                  <para>name of an XSL stylesheet to apply when serializing the document. The stylesheet is loaded from eXist unless it contains an URL. Relative paths are resolved relative to the current collection.</para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </listitem>
+        </itemizedlist>
+      </section>
+      <section>
+        <title>Storing Documents</title>
+        <itemizedlist>
+          <listitem>
+            <synopsis format="linespecific">boolean parse( byte[] xml, String docName, int overwrite )</synopsis>
+            <synopsis format="linespecific">boolean parse( byte[] xml, String docName )</synopsis>
+			<para>Insert a new document into the database or replace an existing one.</para>
+            <variablelist>
+              <title>Parameters:</title>
+              <varlistentry>
+                <term>xml</term>
+                <listitem>
+                  <para>XML content of this document as UTF-8 encoded byte array.</para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>docName</term>
+                <listitem>
+                  <para>path to the document, identifying the collection this document will be stored into and its name</para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>overwrite</term>
+                <listitem>
+                  <para>set to &gt; 0 to automatically replace existing documents with the same name</para>
+                </listitem>
+			  </varlistentry>
+            </variablelist>
+		</listitem>
+		<listitem>
+            <synopsis>String upload(byte[] chunk, int length)</synopsis>
+            <synopsis>String upload( String file, byte[] chunk, int length )</synopsis>
+            <synopsis>boolean parseLocal( String localFile, String docName, boolean replace )</synopsis>
+			<para>While the parse method receives the document as one, large chunk, the upload method 
+            allows to upload the whole document to the server before starting the parse. This way, out 
+            of memory exceptions can be avoided, since the document is not entirely kept in main memory. 
+            To identify the file on the server, upload returns an identification string. After uploading 
+            all chunks, call parseLocal and pass it this identification string as first argument.</para>
+            <variablelist>
+                <title>Parameters:</title>
+                <varlistentry>
+                    <term>file</term>
+                    <listitem>
+                        <para>The name of the file to which the uploaded chunk is appended. This is the
+                        name of a temporary file on the server. Use the two-argument version of upload
+                        for the first chunk. The method creates a temporary file and returns its name.
+                        On subsequent calls to chunk, pass this name.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>chunk</term>
+                    <listitem>
+                        <para>A byte array containing the data to be appended.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>length</term>
+                    <listitem>
+                        <para>Defines the number of bytes to be read from chunk.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>localFile</term>
+                    <listitem>
+                        <para>The name of the local file on the server, which should be
+                        stored into the database. This is equal to the name returned by upload.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>docName</term>
+                    <listitem>
+                        <para>The full path specifying the location where the document should
+                        be stored in the database.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>overwrite</term>
+                    <listitem>
+                        <para>Set this to true if an existing document with the same name should
+                        be automatically overwritten.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </listitem>
+        </itemizedlist>
+      </section>
+      <section>
+        <title>Creating a Collection</title>
+        <itemizedlist>
+          <listitem>
+            <synopsis format="linespecific">boolean createCollection( String name )</synopsis>
+            <para>Create a new collection</para>
+            <variablelist>
+              <title>Parameters:</title>
+              <varlistentry>
+                <term>name</term>
+                <listitem>
+                  <para>path to the new collection</para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </listitem>
+        </itemizedlist>
+      </section>
+      <section>
+        <title>Removing Documents or Collections</title>
+        <itemizedlist>
+          <listitem>
+            <synopsis format="linespecific">boolean remove( String docName )</synopsis>
+            <para>Remove a document from the database</para>
+            <variablelist>
+              <title>Parameters:</title>
+              <varlistentry>
+                <term>docName</term>
+                <listitem>
+                  <para>The full path to the document.</para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </listitem>
+          <listitem>
+            <synopsis format="linespecific">boolean removeCollection( String collection)</synopsis>
+            <para>Remove a collection (including all documents and sub-collections) from the database.</para>
+            <variablelist>
+              <title>Parameters:</title>
+              <varlistentry>
+                <term>collection</term>
+                <listitem>
+                  <para>The full path to the collection.</para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </listitem>
+        </itemizedlist>
+      </section>
+      <section>
+        <title>Querying</title>
+        <itemizedlist>
+          <listitem>
+            <synopsis format="linespecific">int executeQuery(String xpath)</synopsis>
+            <synopsis format="linespecific">int executeQuery(byte[] xpath)</synopsis>
+            <synopsis format="linespecific">int executeQuery(byte[] xpath, String encoding</synopsis>
+            <para>Execute an XPath query and return a reference to the generated result set. The reference 
+            can be used later to retrieve results or get a result-summary.</para>
+            <variablelist>
+              <title>Parameters:</title>
+              <varlistentry>
+                <term>xpath</term>
+                <listitem>
+                  <para>XPath query.</para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>encoding</term>
+                <listitem>
+                  <para>The character encoding used for the XPath query string.</para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </listitem>
+          <listitem>
+            <synopsis format="linespecific">Hashtable querySummary( int resultId )</synopsis>
+            <para>Get a summary of query results for the result-set referenced by 
+            <parameter moreinfo="none">resultId</parameter>. The result id has been returned by a
+            previous call to executeQuery. The method returns a struct with the following 
+            fields: "queryTime", "hits", "documents", "doctype".</para>
+            <para>"queryTime" and "hits" are integers, describing the time in milliseconds consumed 
+            by query execution and the number of hits in the result-set. Field "documents" is an 
+            array of array (Object[][3]), representing a table where every row identifies one 
+            document. The first field in each row contains the document-id as integer. The second has 
+            the document's name as string. The third contains the number of hits found in this document 
+            (integer).</para>
+            <para>The "doctype" field is an array of array (Object[][2]) in each row containing the 
+            doctype's public identifier and the number of hits found for this doctype.</para>
+            <variablelist>
+              <title>Parameters:</title>
+              <varlistentry>
+                <term>resultId</term>
+                <listitem>
+                  <para>Reference to a result-set as returned by a previous call to <methodname>executeQuery</methodname>.</para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </listitem>
+          <listitem>
+            <synopsis format="linespecific">byte[] retrieve(int resultId, int pos, int prettyPrint, String encoding)</synopsis>
+            <para>Retrieve a single result-fragment from the result-set referenced by <parameter moreinfo="none">resultId</parameter>. 
+            The result-fragment is identified by its position in the result-set, which is passed in parameter 
+            <parameter moreinfo="none">pos</parameter>.</para>
+            <variablelist>
+              <title>Parameters:</title>
+              <varlistentry>
+                <term>resultId</term>
+                <listitem>
+                  <para>Reference to a result-set as returned by a previous call to <methodname>executeQuery</methodname>.</para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>pos</term>
+                <listitem>
+                  <para>The position of the result-fragment in the result-set, starting at 1.</para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </listitem>
+          <listitem>
+            <synopsis format="linespecific">int getHits(int resultId)</synopsis>
+            <para>Get the number of hits in the result-set identified by <parameter>resultId</parameter>.</para>
+            <variablelist>
+              <title>Parameters:</title>
+              <varlistentry>
+                <term>resultId</term>
+                <listitem>
+                  <para>Reference to a result-set as returned by a previous call to 
+                  <methodname>executeQuery</methodname>.</para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </listitem>
+          <listitem>
+            <synopsis format="linespecific">String query( String xpath, int howmany, 
+            int start, int prettyPrint )</synopsis>
+            <synopsis format="linespecific">String query( String xpath, int howmany, 
+            int start, int prettyPrint, String sortExpr )</synopsis>
+            <para>Execute XPath query and return results. This method will directly return a part of 
+            the result-set, starting at <parameter moreinfo="none">start</parameter>, as a new XML 
+            document. The number of results returned is determined by parameter 
+            <parameter moreinfo="none">howmany</parameter>. The result-set will be deleted on the 
+            server, so later calls to this method will again execute the query.</para>
+            <variablelist>
+              <title>Parameters:</title>
+              <varlistentry>
+                <term>xpath</term>
+                <listitem>
+                  <para>The XPath query.</para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>start</term>
+                <listitem>
+                  <para>The position of the first result-fragment to be retrieved in the result-set.</para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>howmany</term>
+                <listitem>
+                  <para>The number of result-fragments to retrieve.</para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>prettyPrint</term>
+                <listitem>
+                  <para>Set to &gt; 0 to enable pretty-printing of results.</para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>sortExpr</term>
+                <listitem>
+                    <para>An additional XPath expression to be used for sorting the result set.
+                    The expression is executed for each item in the result set and should thus be relative
+                    to the item. For example, if the main query is</para>
+                    <synopsis>//SPEECH[SPEAKER='HAMLET']</synopsis>
+                    <para>we can use</para>
+                    <synopsis>/LINE[1]</synopsis>
+                    <para>as a sort expression to get all SPEECH sections ordered alphabetically 
+                    by the text value of their first LINE element. Ordering is ascending.</para>
+                </listitem>
+            </varlistentry>
+            </variablelist>
+          </listitem>
+          <listitem>
+            <synopsis>void releaseQueryResult(int resultId)</synopsis>
+            <para>Force the result set identified by its result id to be released on the server.</para>
+        </listitem>
+        </itemizedlist>
+      </section>
+      <section>
+        <title>Getting Information on Collections and Documents</title>
+        <itemizedlist>
+          <listitem>
+            <synopsis format="linespecific">Hashtable getCollectionDesc(String collection)</synopsis>
+            <para>Get a struct describing a collection. The returned struct has the following fields: 
+            "name", "owner", "group", "permissions", "collections", "documents". "name" is the 
+            collection's path, "owner" identifies the owner of the collection, "group" is the name of
+            the group owning this collection, "permissions" contains the active permissions set to this
+            collection as an integer value.</para>
+            
+            <para>"documents" contains an array listing information on all 
+            documents contained in this collection. For each document in the array, a struct is 
+            returned with the following fields: "name", "owner", "group", "permissions".</para>
+            
+            <para>"collections" is an array listing the names of available sub-collections in this 
+            collection.</para>
+            <variablelist>
+              <title>Parameters:</title>
+              <varlistentry>
+                <term>collection</term>
+                <listitem>
+                  <para>The full path to the collection.</para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </listitem>
+        </itemizedlist>
+      </section>
+      <section>
+        <title>XUpdate</title>
+        <itemizedlist>
+            <listitem>
+                <synopsis>int xupdate(String collectionName, byte[] xupdate)</synopsis>
+                <synopsis>int xupdateResource(String documentName, byte[] xupdate)</synopsis>
+                <para>Apply a set of XUpdate modifications to a collection or document.</para>
+                <variablelist>
+                    <varlistentry>
+                        <term>collectionName</term>
+                        <listitem>
+                            <para>The full path to the collection to which the XUpdate modifications
+                            should be applied.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>documentName</term>
+                        <listitem>
+                            <para>The full path to the document to which the XUpdate modifications 
+                            should be applied.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>xupdate</term>
+                        <listitem>
+                            <para>The XUpdate document containing the modifications. This should be
+                            send as an UTF-8 encoded binary array.</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </listitem>
+        </itemizedlist>
+    </section>
+      <section>
+        <title>Managing Users and Permissions</title>
+        <itemizedlist>
+            <listitem>
+                <synopsis>boolean setUser(String name, String passwd, Vector groups)</synopsis>
+                <synopsis>boolean setUser(String name, String passwd, Vector groups, 
+                String home)</synopsis>
+                <para>Modify or create a database user.</para>
+                <variablelist>
+                    <title>Parameters:</title>
+                    <varlistentry>
+                        <term>name</term>
+                        <listitem>
+                            <para>The user's name.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>passwd</term>
+                        <listitem>
+                            <para>The MD5 encoded password for the user. Sending a readable password
+                            through the network would pose a security problem. The password is thus only
+                            send and stored in MD5 encoding.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>groups</term>
+                        <listitem>
+                            <para>A vector of groups assigned to the user. The first group in the
+                            vector will become the user's primary group.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>home</term>
+                        <listitem>
+                            <para>An optional path to the user's home collection. The collection will
+                            be created if it does not exist and the user has full access to it.</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </listitem>
+            <listitem>
+                <synopsis>boolean setPermissions(String resource, String permissions)</synopsis>
+                <synopsis>boolean setPermissions(String resource, int permissions)</synopsis>
+                <synopsis>boolean setPermissions(String resource, String owner, String ownerGroup, 
+                String permissions)</synopsis>
+                <synopsis>boolean setPermissions(String resource, String owner, String ownerGroup, 
+                int permissions)</synopsis>
+                <para>Set the permissions assigned to a given collection or document.</para>
+                <variablelist>
+                    <varlistentry>
+                        <term>resource</term>
+                        <listitem>
+                            <para>The full path to the collection or document on which the specified
+                            permissions will be set. The method first checks if the passed resource is 
+                            a collection.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>owner</term>
+                        <listitem>
+                            <para>The name of the user owning this resource.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>ownerGroup</term>
+                        <listitem>
+                            <para>The name of the group owning this resource.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>permissions</term>
+                        <listitem>
+                            <para>The permissions to be assigned to the resource. Permissions can
+                            either be specified as an integer value, which can be constructed using
+                            the <ulink url="api/org/exist/security/Permission">Permission</ulink>
+                            class. The bit encoding of the int value corresponds to simple Unix
+                            conventions.</para>
+                            <para>As an alternative, permissions can be specified using a modification
+                            string. The syntax is shown below:</para>
+                            <synopsis>[user|group|other]=[+|-][read|write|update][, ...]</synopsis>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </listitem>
+            <listitem>
+                <synopsis>Hashtable getPermissions(String resource)</synopsis>
+                <para>Returns the active permissions for the specified document or collection.
+                The returned struct contains the following fields: "owner", "group", "permissions".
+                "permissions" defines access permissions as an integer value.</para>
+            </listitem>
+            <listitem>
+                <synopsis>boolean removeUser(String name)</synopsis>
+                <para>Remove the user identified by name.</para>
+            </listitem>
+            <listitem>
+                <synopsis>Hashtable getUser(String name)</synopsis>
+                <para>Returns a struct describing the user identified by its name. The struct has the
+                follwing fields: "name" contains the user's name, "home" defines the user's home
+                directory, "groups" is an array specifying all groups to which the user belongs.</para>
+            </listitem>
+            <listitem>
+                <synopsis>Vector getUsers()</synopsis>
+                <para>Returns a list of all users currently known to the system. Each user in the list
+                is described by a struct equal to the one returned by the getUser() method.</para>
+            </listitem>
+            <listitem>
+                <synopsis>Vector getGroups()</synopsis>
+                <para>Returns a list of all group names (as strings) currently defined.</para>
+            </listitem>
+        </itemizedlist>
+    </section>
+    <section>
+        <title>Access to Index Contents</title>
+        <para>The following methods provide access to eXist's internal index structure.</para>
+        <itemizedlist>
+            <listitem>
+                <synopsis>Vector getIndexedElements(String collectionName, boolean inclusive)</synopsis>
+                <para>Return a list (array[][2]) of all indexed element names for the specified collection. For each
+                element, an array with two items is returned: the first item contains the name of the
+                element, the second provides the number of occurrences of this element as an integer
+                value.</para>
+                <variablelist>
+                    <varlistentry>
+                        <term>collectionName</term>
+                        <listitem>
+                            <para>The full path to the collection.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>inclusive</term>
+                        <listitem>
+                            <para>If set to true, subcollections of the specified collection will be
+                            included into the result.</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </listitem>
+            <listitem>
+                <synopsis>Vector scanIndexTerms(String collectionName, String start, String end,
+                boolean inclusive)</synopsis>
+                <para>Return a list (array[][2]) of all index terms contained in the specified
+                collection. For each term, an array with two items is returned, containing the
+                term itself plus the number occurrences of the term in the specified collection.</para>
+                <variablelist>
+                    <varlistentry>
+                        <term>collectionName</term>
+                        <listitem>
+                            <para>The full path to the collection.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>start</term>
+                        <listitem>
+                            <para>A string defining the start position for the returned range.
+                            Returned index terms will be after the start string in ascending, 
+                            alphabetical order.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>end</term>
+                        <listitem>
+                            <para>A string defining the end position for the returned range.
+                            Returned index terms will be before the end string in ascending
+                            alphabetical order.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>inclusive</term>
+                        <listitem>
+                            <para>If set to true, subcollections of the specified collection will be
+                            included into the result.</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </listitem>
+        </itemizedlist>
+    </section>
+    <section>
+        <title>Other Methods</title>
+        <itemizedlist>
+            <listitem>
+                <synopsis>boolean shutdown()</synopsis>
+                <para>Shut down the database engine. All dirty pages are written to disk.</para>
+            </listitem>
+            <listitem>
+                <synopsis>boolean sync()</synopsis>
+                <para>Causes the database to write all dirty pages to disk.</para>
+            </listitem>
+        </itemizedlist>
+    </section>
+    </section>
+    <section>
+      <title>SOAP</title>
+      <para>Beginning with version 0.8, eXist provides a SOAP interface as an alternative to XML-RPC. Programming with SOAP is slightly more convenient than XML-RPC. While you have to write the XML-RPC method calls by hand, most SOAP tools will automatically create the low-level code from a given WSDL service description. Also less methods are needed to expose the same functionality. On the other hand, SOAP toolkits tend to be more complex in themselves.</para>
+      <para>eXist uses the Axis SOAP toolkit from Apache, which runs as a servlet. The Tomcat webserver shipped with eXist has been configured to start Axis automatically. The Axis servlet will listen on http://localhost:8080/exist/services. Please note that SOAP is not available in the stand-alone server.</para>
+      <para>The interface has been tested with various clients, including Perl (SOAP::Lite) and Microsoft's .NET framework. The client stubs needed to access the SOAP interface from Java have been automatically generated by Axis and are included in the distribution.</para>
+      <para>eXist provides two web services: one that contains methods to query the server and retrieve documents and a second one for storing and removing documents and collections. The first will by default listen at:</para>
+      <synopsis format="linespecific">http://localhost:8080/exist/services/Query</synopsis>
+      <para>while the second is available at</para>
+      <synopsis format="linespecific">http://localhost:8080/exist/services/Admin</synopsis>
+      <para>Both services are described in the Java docs for their interfaces. Please have a 
+      look at <ulink url="api/org/exist/soap/Query.html">org.exist.soap.Query</ulink> and 
+      <ulink url="api/org/exist/soap/Admin.html">org.exist.soap.Admin</ulink>. The example 
+      below shows how to retrieve a document from the database:</para>
+      <example>
+        <title>Retrieving a document</title>
+        <programlisting format="linespecific"><![CDATA[
+package org.exist.examples.soap;
 
-print "Retrieving hits 1 to 5 ...\n"; 
-
-for($i = 0; $i < 5; $i++) {
-    $req = RPC::XML::request->new('retrieve',
-      RPC::XML::int->new($RESULT_ID),
-      $i,
-      RPC::XML::int->new(1),
-      "ISO-8859-1");
-    $resp = $client->send_request($req);
-    if($resp->is_fault) {
-        die "ERROR: " . $resp->string . "\n";
-    }
-    print decode_base64($resp->value) . "\n";
-}     
-        ]]></screen>
-            </example>
-        </section>
-        <section>
-            <title>XML-RPC: Available Methods</title>
-            <para>This section gives you an overview of the methods exposed by
-                eXist XML-RPC server. Only the most common methods are presented
-                here. For a complete list see the Java interface
-                <filename>src/org/exist/xmlrpc/RpcAPI.java</filename>. Method
-                signatures are presented using Java data types.</para>
-            <section>
-                <title>Retrieving documents</title>
-                <itemizedlist>
-                    <listitem>
-                        <synopsis>byte[] getDocument(String name, String
-                            encoding, int prettyPrint)</synopsis>
-                        <synopsis>byte[] getDocument(String name, String
-                            encoding, int prettyPrint, String xsl)</synopsis>
-                        <para>Retrieve a document from the database.</para>
-                        <variablelist>
-                            <title>Parameters:</title>
-                            <varlistentry>
-                                <term>name</term>
-                                <listitem>
-                                    <para>path of the document to retrieve, e.g. /shakespeare/plays/r_and_j.xml</para>
-                                </listitem>
-                            </varlistentry>
-                            <varlistentry>
-                                <term>encoding</term>
-                                <listitem>
-                                    <para>determines the character encoding used
-                                        for serialization</para>
-                                </listitem>
-                            </varlistentry>
-                            <varlistentry>
-                                <term>prettyPrint</term>
-                                <listitem>
-                                    <para>set to > 0 to enable pretty printing
-                                        of XML</para>
-                                </listitem>
-                            </varlistentry>
-                            <varlistentry>
-                                <term>xsl</term>
-                                <listitem>
-                                    <para>name of an XSL stylesheet to apply
-                                        when serializing the document. The
-                                        stylesheet is loaded from eXist unless
-                                        it contains an URL. Relative paths are
-                                        resolved relative to the current collection.</para>
-                                </listitem>
-                            </varlistentry>
-                        </variablelist>
-                    </listitem>
-                </itemizedlist>
-            </section>
-            <section>
-                <title>Storing Documents</title>
-                <itemizedlist>
-                    <listitem>
-                        <synopsis>boolean parse( byte[] xml, String docName, int
-                            overwrite )</synopsis>
-                        <synopsis>boolean parse( byte[] xml, String docName )</synopsis>
-                        <para>Insert a new document into the database or replace
-                            an existing one</para>
-                        <variablelist>
-                            <title>Parameters:</title>
-                            <varlistentry>
-                                <term>xml</term>
-                                <listitem>
-                                    <para>XML content of this document as UTF-8
-                                        encoded byte array.</para>
-                                </listitem>
-                            </varlistentry>
-                            <varlistentry>
-                                <term>docName</term>
-                                <listitem>
-                                    <para>path to the document, identifying the
-                                        collection this document will be stored
-                                        into and its name</para>
-                                </listitem>
-                            </varlistentry>
-                            <varlistentry>
-                                <term>overwrite</term>
-                                <listitem>
-                                    <para>set to > 0 to automatically replace
-                                        existing documents with the same name</para>
-                                </listitem>
-                            </varlistentry>
-                        </variablelist>
-                    </listitem>
-                </itemizedlist>
-            </section>
-            <section>
-                <title>Creating a Collection</title>
-                <itemizedlist>
-                    <listitem>
-                        <synopsis>boolean createCollection( String name )</synopsis>
-                        <para>Create a new collection</para>
-                        <variablelist>
-                            <title>Parameters:</title>
-                            <varlistentry>
-                                <term>name</term>
-                                <listitem>path to the new collection</listitem>
-                            </varlistentry>
-                        </variablelist>
-                    </listitem>
-                </itemizedlist>
-            </section>
-            <section>
-                <title>Removing documents or collections</title>
-                <itemizedlist>
-                    <listitem>
-                        <synopsis>boolean remove( String docName )</synopsis>
-                        <para>Remove a document from the database</para>
-                        <variablelist>
-                            <title>Parameters:</title>
-                            <varlistentry>
-                                <term>docName</term>
-                                <listitem>
-                                    <para>path to the document</para>
-                                </listitem>
-                            </varlistentry>
-                        </variablelist>
-                    </listitem>
-                    <listitem>
-                        <synopsis>boolean removeCollection( String collection)</synopsis>
-                        <para>Remove a collection (including all documents and
-                            sub-collections) from the database</para>
-                        <variablelist>
-                            <title>Parameters:</title>
-                            <varlistentry>
-                                <term>collection</term>
-                                <listitem>
-                                    <para>path to the collection</para>
-                                </listitem>
-                            </varlistentry>
-                        </variablelist>
-                    </listitem>
-                </itemizedlist>
-            </section>
-            <section>
-                <title>Querying</title>
-                <itemizedlist>
-                    <listitem>
-                        <synopsis>int executeQuery(String xpath)</synopsis>
-                        <synopsis>int executeQuery(byte[] xpath)</synopsis>
-                        <synopsis>int executeQuery(byte[] xpath, String encoding</synopsis>
-                        <para>Execute the XPath query and return a reference to
-                            the generated result set. This method may later be
-                            used to retrieve results or get a result-summary.</para>
-                        <variablelist>
-                            <title>Parameters:</title>
-                            <varlistentry>
-                                <term>xpath</term>
-                                <listitem>
-                                    <para>XPath query</para>
-                                </listitem>
-                            </varlistentry>
-                            <varlistentry>
-                                <term>encoding</term>
-                                <listitem>
-                                    <para>The character encoding used for the
-                                        XPath query string</para>
-                                </listitem>
-                            </varlistentry>
-                        </variablelist>
-                    </listitem>
-                    <listitem>
-                        <synopsis>Hashtable querySummary( int resultId )</synopsis>
-                        <para>Get a summary of query results for the result-set
-                            referenced by <parameter>resultId</parameter>.
-                            Returns a struct with the following fields:
-                            &quot;queryTime&quot;, &quot;hits&quot;,
-                            &quot;documents&quot;, &quot;doctype&quot;.</para>
-                        <para>&quot;queryTime&quot; and &quot;hits&quot; are
-                            integers, describing the time in milliseconds
-                            consumed by query execution and the number of hits
-                            in the result-set. Field &quot;documents&quot; is an
-                            array of array (Object[][3]), representing a table
-                            where every row identifies one document. The first
-                            field in each row contains the document-id as
-                            integer. The second has the document's name as
-                            string. The third contains the number of hits found
-                            in this document (integer).</para>
-                        <para>The &quot;doctype&quot; field is an array of array
-                            (Object[][2]) in each row containing the doctype's
-                            public identifier and the number of hits found for
-                            this doctype.</para>
-                        <variablelist>
-                            <title>Parameters:</title>
-                            <varlistentry>
-                                <term>resultId</term>
-                                <listitem>
-                                    <para>Reference to a result-set as returned
-                                        by a previous call to <methodname>executeQuery</methodname>.</para>
-                                </listitem>
-                            </varlistentry>
-                        </variablelist>
-                    </listitem>
-                    <listitem>
-                        <synopsis>byte[] retrieve(int resultId, int pos, int
-                            prettyPrint, String encoding)</synopsis>
-                        <para>Retrieve a single result-fragment from the
-                            result-set referenced by
-                            <parameter>resultId</parameter>. The result-fragment
-                            is identified by its position in the result-set,
-                            which is passed in parameter <parameter>pos</parameter>.</para>
-                        <variablelist>
-                            <title>Parameters:</title>
-                            <varlistentry>
-                                <term>resultId</term>
-                                <listitem>
-                                    <para>Reference to a result-set as returned
-                                        by a previous call to <methodname>executeQuery</methodname>.</para>
-                                </listitem>
-                            </varlistentry>
-                            <varlistentry>
-                                <term>pos</term>
-                                <listitem>
-                                    <para>The position of the result-fragment in
-                                        the result-set, starting at 1</para>
-                                </listitem>
-                            </varlistentry>
-                        </variablelist>
-                    </listitem>
-                    <listitem>
-                        <synopsis>int getHits(int resultId)</synopsis>
-                        <para>Get the number of hits in the result-set</para>
-                        <variablelist>
-                            <title>Parameters:</title>
-                            <varlistentry>
-                                <term>resultId</term>
-                                <listitem>
-                                    <para>Reference to a result-set as returned
-                                        by a previous call to <methodname>executeQuery</methodname>.</para>
-                                </listitem>
-                            </varlistentry>
-                        </variablelist>
-                    </listitem>
-                    <listitem>
-                        <synopsis>byte[] query( String xpath, String encoding,
-                            int howmany, int start, int prettyPrint )</synopsis>
-                        <para>Execute XPath query and return results. This
-                            method will directly return a part of the
-                            result-set, starting at
-                            <parameter>start</parameter>, as a new XML document.
-                            The number of results returned is determined by
-                            parameter <parameter>howmany</parameter>. The
-                            result-set will be deleted on the server, so later
-                            calls to this method will again execute the query.</para>
-                        <variablelist>
-                            <title>Parameters:</title>
-                            <varlistentry>
-                                <term>xpath</term>
-                                <listitem>
-                                    <para>XPath query</para>
-                                </listitem>
-                            </varlistentry>
-                            <varlistentry>
-                                <term>encoding</term>
-                                <listitem>
-                                    <para>character encoding used for serializing</para>
-                                </listitem>
-                            </varlistentry>
-                            <varlistentry>
-                                <term>howmany</term>
-                                <listitem>
-                                    <para>number of result-fragments to retrieve</para>
-                                </listitem>
-                            </varlistentry>
-                            <varlistentry>
-                                <term>start</term>
-                                <listitem>
-                                    <para>position of the first result-fragment
-                                        to be retrieved in the result-set</para>
-                                </listitem>
-                            </varlistentry>
-                            <varlistentry>
-                                <term>prettyPrint</term>
-                                <listitem>
-                                    <para>set to > 0 to enable pretty-printing
-                                        of results</para>
-                                </listitem>
-                            </varlistentry>
-                        </variablelist>
-                    </listitem>
-                </itemizedlist>
-            </section>
-            <section>
-                <title>Information on collections</title>
-                <itemizedlist>
-                    <listitem>
-                        <synopsis>Hashtable getCollectionDesc(String collection)</synopsis>
-                        <para>Get a struct describing a collection. The returned
-                            struct has three fields: &quot;name&quot;,
-                            &quot;collections&quot;, &quot;documents&quot;.
-                            &quot;name&quot; is the collection's name,
-                            &quot;documents&quot; contains an array listing the
-                            names of all documents contained in this collection,
-                            &quot;collections&quot; is an array listing the
-                            names of available sub-collections in this collection.</para>
-                        <variablelist>
-                            <title>Parameters:</title>
-                            <varlistentry>
-                                <term>collection</term>
-                                <listitem>
-                                    <para>path to the collection</para>
-                                </listitem>
-                            </varlistentry>
-                        </variablelist>
-                    </listitem>
-                </itemizedlist>
-            </section>
-        </section>
-        <section>
-            <title>SOAP</title>
-            <para>Beginning with version 0.8, eXist provides a SOAP interface as
-                an alternative to XML-RPC. Programming with SOAP is slightly
-                more convenient than XML-RPC. While you have to write the
-                XML-RPC method calls by hand, most SOAP tools will automatically
-                create the low-level code from a given WSDL service description.
-                Also less methods are needed to expose the same functionality.
-                On the other hand, SOAP toolkits tend to be more complex in themselves.</para>
-            <para>eXist uses the Axis SOAP toolkit from Apache, which runs as a
-                servlet. The Tomcat webserver shipped with eXist has been
-                configured to start Axis automatically. The Axis servlet will
-                listen on http://localhost:8080/exist/services. Please note that
-                SOAP is not available in the stand-alone server.</para>
-            <para>The interface has been tested with various clients, including
-                Perl (SOAP::Lite) and Microsoft's .NET framework. The client
-                stubs needed to access the SOAP interface from Java have been
-                automatically generated by Axis and are included in the distribution.</para>
-            <para>eXist provides two web services: one that contains methods to
-                query the server and retrieve documents and a second one for
-                storing and removing documents and collections. The first will
-                by default listen at:</para>
-            <synopsis>http://localhost:8080/exist/services/Query</synopsis>
-            <para>while the second is available at</para>
-            <synopsis>http://localhost:8080/exist/services/Admin</synopsis>
-            <para>The example below shows how to retrieve a document from the database:</para>
-            <example>
-                <title>Retrieving a document</title>
-                <programlisting><![CDATA[
 import org.exist.soap.*;
 
-public class Retrieve {
+public class GetDocument {
 
     public static void main( String[] args ) throws Exception {
         QueryService service = new QueryServiceLocator();
         Query query = service.getQuery();
-
-        byte[] data = query.getResource( args[0] + '/' + args[1],
-                "ISO-8859-1", true );
-        System.out.println( new String( data, "ISO-8859-1" ) );
+		String session = query.connect("guest", "guest");
+		String data = query.getResource(session, 
+			"/db/shakespeare/plays/much_ado.xml",
+			true, false);
+		System.out.println(data);
+        query.disconnect(session);
     }
-}]]></programlisting>
-            </example>
-            <para>The <classname>Query</classname> client stub class has been
-                automatically generated from the WSDL service description. It
-                has methods for each of the operations defined in the WSDL. You
-                will find the web service description file
-                <filename>query.wsdl</filename> in directory
-                <filename>src/org/exist/soap</filename>. You may also get the
-                WSDL directly from the server by pointing your web browser to
-                    <ulink
-                    href="http://localhost:8080/exist/services/Query?WSDL"> http://localhost:8080/exist/services/Query?WSDL</ulink>.</para>
-            <para>To retrieve a resource we simply call
-                <methodname>Query.getResource()</methodname>. The document data
-                is returned as binary data to avoid possible conflicts between
-                the character encoding used for the document and that of the
-                SOAP message. Being able to retrieve a document in a specified
-                character encoding is sometimes convenient, for example, if the
-                programming language of your choice does not support Unicode.</para>
-            <para>The listing below presents a simple query example which has
-                been written in C# using .NET:</para>
-            <example>
-                <title>.NET Client in C#</title>
-                <programlisting><![CDATA[using System;
+}
+        ]]></programlisting>
+      </example>
+      <para>The <classname>Query</classname> client stub class has been automatically generated from the
+      WSDL service description. It has methods for each of the operations defined in the WSDL. You will 
+      find the web service description file <filename moreinfo="none">query.wsdl</filename> in 
+      directory <filename moreinfo="none">src/org/exist/soap</filename>. You may also get the WSDL 
+      directly from the server by pointing your web browser to 
+      <ulink url="http://localhost:8080/exist/services/Query?WSDL"> http://localhost:8080/exist/services/Query?WSDL</ulink>.
+      </para>
+      <para>To use the provided services, the client first has to establish a connection with the
+      database. This is done by calling connect() with a valid user id and password. connect() returns
+      a session id, which should then be passed to any subsequent method calls.</para>
+      
+      <para>To retrieve a resource we simply call <methodname>Query.getResource()</methodname>. Finally,
+      we call Query.disconnect() to release the current session. Otherwise the session will remain
+      valid for at least 60 minutes.</para>
+      <para>The listing below presents a simple query example which has been written in C# using .NET:</para>
+      <example>
+        <title>.NET Client in C#</title>
+        <programlisting format="linespecific"><![CDATA[using System;
 
 public class SoapQuery {
     
@@ -1123,35 +1172,13 @@ public class SoapQuery {
         }
     }
 }]]></programlisting>
-            </example>
-            <para>Similar to the Java example, the client simply instantiates an
-                object of class QueryService, which had been automatically
-                created from the WSDL description. The .NET framework contains a
-                WSDL compiler tool (called wsdl.exe) which will automatically
-                generate a client stub class if you run the WSDL file through
-                it. For example:</para>
-            <synopsis>wsdl.exe /out:QueryService.cs src\org\exist\soap\query.wsdl</synopsis>
-            <para>The tool produces a single file
-                (<filename>QueryService.cs</filename>) which has to be linked
-                with your own code. For example, to compile the above example:</para>
-            <synopsis>csc /out:query.exe QueryService.cs SoapQuery.cs</synopsis>
-            <para>Using the automatically generated classes, all the
-                SOAP-related code is hidden from the developer. You do not even
-                have to know that a remote web-service is being accessed.</para>
-            <para>In the listing above, the XPath query is passed to method
-                query, which returns an object of type QueryResponse.
-                QueryResponse contains some summary information about the
-                executed query. The most important field is the result-set id,
-                which is used by the server to identify the generated result-set
-                in subsequent calls. To actually get the query results, the
-                retrieve method is called with the result-set id. The XML is
-                returned as a byte-array to avoid possible character-encoding
-                conflicts with the SOAP transport layer.</para>
-            <para>The SOAP interface is still experimental. Please have a look
-                at the WSDL service descriptions
-                (<filename>query.wsdl</filename> and
-                <filename>admin.wsdl</filename>) to get an overview of all
-                available methods. The relevant sections are commented.</para>
-        </section>
-    </chapter>
+      </example>
+      <para>Similar to the Java example, the client simply instantiates an object of class QueryService, which had been automatically created from the WSDL description. The .NET framework contains a WSDL compiler tool (called wsdl.exe) which will automatically generate a client stub class if you run the WSDL file through it. For example:</para>
+      <synopsis format="linespecific">wsdl.exe /out:QueryService.cs src\org\exist\soap\query.wsdl</synopsis>
+      <para>The tool produces a single file (<filename moreinfo="none">QueryService.cs</filename>) which has to be linked with your own code. For example, to compile the above example:</para>
+      <synopsis format="linespecific">csc /out:query.exe QueryService.cs SoapQuery.cs</synopsis>
+      <para>Using the automatically generated classes, all the SOAP-related code is hidden from the developer. You do not even have to know that a remote web-service is being accessed.</para>
+      <para>In the listing above, the XPath query is passed to method query, which returns an object of type QueryResponse. QueryResponse contains some summary information about the executed query. The most important field is the result-set id, which is used by the server to identify the generated result-set in subsequent calls. To actually get the query results, the retrieve method is called with the result-set id. The XML is returned as a byte-array to avoid possible character-encoding conflicts with the SOAP transport layer.</para>
+    </section>
+  </chapter>
 </book>

@@ -20,12 +20,12 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
 
 	private final static Logger LOG = Logger.getLogger(RemoteXUpdateQueryService.class);
 
-	private CollectionImpl parent;
+	private RemoteCollection parent;
 
 	/**
 	 * 
 	 */
-	public RemoteXUpdateQueryService(CollectionImpl parent) {
+	public RemoteXUpdateQueryService(RemoteCollection parent) {
 		this.parent = parent;
 	}
 

@@ -1,4 +1,4 @@
-/* eXist xml document repository and xpath implementation
+/* eXist Native XML Database
  * Copyright (C) 2000-01,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
@@ -36,11 +36,8 @@ public class FunBoolean extends Function {
 	}
 	
 	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
-		ArraySet set = new ArraySet(1);
-		set.add(node);
-		DocumentSet dset = new DocumentSet();
-		dset.add(node.doc);
-		boolean result = getArgument(0).eval(dset, set, node).getBooleanValue();
+		NodeSet set = new SingleNodeSet(node);
+		boolean result = getArgument(0).eval(docs, set, node).getBooleanValue();
 		return new ValueBoolean(result);
 	}
 

@@ -276,8 +276,9 @@ public class ArraySet extends NodeSet {
 	}
 
 	public ArraySet getChildren(NodeSet ancestors, int mode, boolean rememberContext) {
-		if (!(ancestors instanceof ArraySet))
+		if (!(ancestors instanceof ArraySet)) {
 			return super.getChildren(ancestors, mode, rememberContext);
+		}
 		ArraySet al = (ArraySet) ancestors;
 		if (al.counter == 0)
 			return new ArraySet(1);

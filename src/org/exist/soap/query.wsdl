@@ -58,6 +58,60 @@
 
    </wsdl:message>
 
+   <wsdl:message name="listCollectionResponse">
+
+      <wsdl:part name="listCollectionReturn" type="impl:Collection"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="queryRequest">
+
+      <wsdl:part name="in0" type="xsd:string"/>
+
+      <wsdl:part name="in1" type="xsd:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="connectRequest">
+
+      <wsdl:part name="in0" type="xsd:string"/>
+
+      <wsdl:part name="in1" type="xsd:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getResourceResponse">
+
+      <wsdl:part name="getResourceReturn" type="xsd:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="listCollectionRequest">
+
+      <wsdl:part name="in0" type="xsd:string"/>
+
+      <wsdl:part name="in1" type="xsd:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="retrieveResponse">
+
+      <wsdl:part name="retrieveReturn" type="impl:ArrayOf_xsd_string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="disconnectRequest">
+
+      <wsdl:part name="in0" type="xsd:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="connectResponse">
+
+      <wsdl:part name="connectReturn" type="xsd:string"/>
+
+   </wsdl:message>
+
    <wsdl:message name="retrieveByDocumentRequest">
 
       <wsdl:part name="in0" type="xsd:string"/>
@@ -76,42 +130,6 @@
 
    </wsdl:message>
 
-   <wsdl:message name="listCollectionResponse">
-
-      <wsdl:part name="listCollectionReturn" type="impl:Collection"/>
-
-   </wsdl:message>
-
-   <wsdl:message name="connectRequest">
-
-      <wsdl:part name="in0" type="xsd:string"/>
-
-      <wsdl:part name="in1" type="xsd:string"/>
-
-   </wsdl:message>
-
-   <wsdl:message name="queryRequest">
-
-      <wsdl:part name="in0" type="xsd:string"/>
-
-      <wsdl:part name="in1" type="xsd:string"/>
-
-   </wsdl:message>
-
-   <wsdl:message name="listCollectionRequest">
-
-      <wsdl:part name="in0" type="xsd:string"/>
-
-      <wsdl:part name="in1" type="xsd:string"/>
-
-   </wsdl:message>
-
-   <wsdl:message name="getResourceResponse">
-
-      <wsdl:part name="getResourceReturn" type="xsd:string"/>
-
-   </wsdl:message>
-
    <wsdl:message name="getResourceRequest">
 
       <wsdl:part name="in0" type="xsd:string"/>
@@ -124,12 +142,6 @@
 
    </wsdl:message>
 
-   <wsdl:message name="retrieveResponse">
-
-      <wsdl:part name="retrieveReturn" type="impl:ArrayOf_xsd_string"/>
-
-   </wsdl:message>
-
    <wsdl:message name="queryResponse">
 
       <wsdl:part name="queryReturn" type="impl:QueryResponse"/>
@@ -137,12 +149,6 @@
    </wsdl:message>
 
    <wsdl:message name="disconnectResponse">
-
-   </wsdl:message>
-
-   <wsdl:message name="disconnectRequest">
-
-      <wsdl:part name="in0" type="xsd:string"/>
 
    </wsdl:message>
 
@@ -159,12 +165,6 @@
       <wsdl:part name="in4" type="xsd:boolean"/>
 
       <wsdl:part name="in5" type="xsd:string"/>
-
-   </wsdl:message>
-
-   <wsdl:message name="connectResponse">
-
-      <wsdl:part name="connectReturn" type="xsd:string"/>
 
    </wsdl:message>
 

@@ -20,6 +20,7 @@
  *  $Id$
  */
 package org.exist.xmlrpc;
+import java.util.Date;
 import java.util.Hashtable;
 
 import java.util.Vector;
@@ -715,4 +716,10 @@ public interface RpcAPI {
 
 	int xupdateResource(User user, String resource, byte[] xupdate)
 		throws PermissionDeniedException, EXistException, SAXException;
+		
+	Date getCreationDate(User user, String collectionName)
+		throws PermissionDeniedException, EXistException;
+	
+	Vector getTimestamps(User user, String documentName)
+		throws PermissionDeniedException, EXistException;
 }

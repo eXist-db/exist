@@ -313,7 +313,7 @@ public class Parser
 	}
 
 	public void endPrefixMapping(String prefix) {
-		if(ignorePrefix != null && prefix.equals(ignorePrefix)) {
+		if (ignorePrefix != null && prefix.equals(ignorePrefix)) {
 			ignorePrefix = null;
 		} else {
 			prefix = (String) prefixes.pop();
@@ -578,10 +578,14 @@ public class Parser
 				"not allowed to write to collection " + collection.getName());
 		// if an old document exists, save the new document with a temporary
 		// document name
-		if (oldDoc != null)
+		if (oldDoc != null) {
 			document = new DocumentImpl(broker, collName + "/__" + fileName, collection);
-		else
+			document.setCreated(oldDoc.getCreated());
+			document.setLastModified(System.currentTimeMillis());
+		} else {
 			document = new DocumentImpl(broker, collName + '/' + fileName, collection);
+			document.setCreated(System.currentTimeMillis());
+		}
 		//collection.addDocument(document);
 		document.setDocId(broker.getNextDocId(collection));
 		if (oldDoc == null) {
@@ -663,10 +667,9 @@ public class Parser
 		final String collName = (pos > 0) ? fileName.substring(0, pos) : "/db";
 		if (pos > 0)
 			fileName = fileName.substring(pos + 1);
-
 		if (collection == null || (!collection.getName().equals(collName))) {
 			collection = broker.getOrCreateCollection(user, collName);
-			//broker.saveCollection(collection);
+			broker.saveCollection(collection);
 		}
 		DocumentImpl oldDoc = null;
 		// does a document with the same name exist?
@@ -681,11 +684,15 @@ public class Parser
 				"not allowed to write to collection " + collection.getName());
 		// if an old document exists, save the new document with a temporary
 		// document name
-		if (oldDoc != null)
+		if (oldDoc != null) {
 			document = new DocumentImpl(broker, collName + "/__" + fileName, collection);
-		else
+			document.setCreated(oldDoc.getCreated());
+			document.setLastModified(System.currentTimeMillis());
+		} else {
 			document = new DocumentImpl(broker, collName + '/' + fileName, collection);
-		collection.addDocument(document);
+			document.setCreated(System.currentTimeMillis());
+		}
+		document.setDocId(broker.getNextDocId(collection));
 		if (oldDoc == null) {
 			document.getPermissions().setOwner(user);
 			document.getPermissions().setGroup(user.getPrimaryGroup());
@@ -708,11 +715,16 @@ public class Parser
 				collection.removeDocument(document.getFileName());
 			throw e;
 		}
-		// new document is valid: remove old document
+		// new document is valid: remove old document 
 		if (oldDoc != null) {
+			LOG.debug("removing old document " + oldDoc.getFileName());
 			broker.removeDocument(oldDoc.getFileName());
-			collection.renameDocument(document.getFileName(), oldDoc.getFileName());
+			document.setFileName(oldDoc.getFileName());
+			//collection.renameDocument(
+			//	document.getFileName(),
+			//	oldDoc.getFileName());
 		}
+		collection.addDocument(document);
 	}
 
 	public void setDocumentLocator(Locator locator) {
@@ -824,7 +836,8 @@ public class Parser
 			attrNS = attributes.getURI(i);
 			attrQName = attributes.getQName(i);
 			// skip xmlns-attributes and attributes in eXist's namespace
-			if (attrQName.startsWith("xmlns") || attrNS.equals("http://exist.sourceforge.net/NS/exist"))
+			if (attrQName.startsWith("xmlns")
+				|| attrNS.equals("http://exist.sourceforge.net/NS/exist"))
 				--attrLength;
 			else {
 				final AttrImpl attr = new AttrImpl(attrQName, attributes.getValue(i));
@@ -854,7 +867,7 @@ public class Parser
 
 	public void startPrefixMapping(String prefix, String uri) {
 		// skip the eXist namespace
-		if(uri.equals("http://exist.sourceforge.net/NS/exist")) {
+		if (uri.equals("http://exist.sourceforge.net/NS/exist")) {
 			ignorePrefix = prefix;
 			return;
 		}
@@ -964,6 +977,8 @@ public class Parser
 			progress.finish();
 			setChanged();
 			notifyObservers(progress);
+			broker.addDocument(collection, document);
+			broker.closeDocument();
 			broker.flush();
 			if (document.getFileName().equals("/db/system/users.xml") && privileged == false) {
 				// inform the security manager that system data has changed

@@ -259,6 +259,16 @@
         <li><xsl:apply-templates/></li>
     </xsl:template>
     
+    <xsl:template match="itemizedlist">
+        <ul>
+            <xsl:apply-templates/>
+        </ul>
+    </xsl:template>
+    
+    <xsl:template match="itemizedlist/listitem">
+        <li><xsl:apply-templates/></li>
+    </xsl:template>
+    
     <xsl:template match="unorderedlist">
         <ul>
             <xsl:apply-templates/>

@@ -39,41 +39,36 @@
     <title>How-Tos</title>
 
 	<section>
-		<title>Integrating eXist into an existing Cocoon 2.0.4 installation</title>
+		<title>Integrating eXist into an existing Cocoon installation</title>
 		
 		<para> eXist comes with its own pre-installed Cocoon. However, integrating eXist into an already
-		    running Cocoon is not very difficult. Follow the steps bellow to integrate eXist 0.9 into an existing
-		    Cocoon 2.0.4 web application.</para>
-		
-		<para>The following paragraphs assume that you have already set up a web application based on Cocoon.</para>
+		    running Cocoon is not very difficult. The following paragraphs assume that you have already set up a web application based on 
+            Cocoon.</para>
 		
 		<para>First create a directory named data in the WEB-INF folder of your Cocoon based web application.
 		    This is where the database files will be created by eXist.</para>
 		    
-		<para>Next, copy the <filename>conf.xml</filename> configuration file from eXist into the <filename>WEB-INF</filename> folder of your Cocoon application.
-		    Additionally, you have to copy a number of jar-files from eXist's <filename>WEB-INF/lib</filename> folder into the <filename>WEB-INF/lib</filename> folder
-		    of your Cocoon application:</para>
+		<para>Next, copy the <filename>conf.xml</filename> configuration file from eXist's 
+        <filename>webapp/WEB-INF/</filename> directory into the <filename>WEB-INF</filename> 
+        folder of your Cocoon application. Additionally, you have to copy a number of jar-files 
+        from the <filename>lib</filename> folder into the <filename>WEB-INF/lib</filename> directory
+		of your Cocoon application:</para>
 
 		<itemizedlist>
-			<listitem><para>exist.jar</para></listitem>
-			<listitem><para>antlr.jar</para></listitem>
-			<listitem><para>axis.jar</para></listitem>
-			<listitem><para>clutil.jar</para></listitem>
-                                 <listitem><para>commons-collections-2.1.jar</para></listitem>
-                                 <listitem><para>commons-discovery.jar</para></listitem>
-                                <listitem><para>commons-httpclient-20020423.jar</para></listitem>
-                                <listitem><para>commons-jxpath-1.0.jar</para></listitem>
-                                <listitem><para>commons-logging-1.0.jar</para></listitem>
-                                <listitem><para>jakarta-oro-2.0.6.jar</para></listitem>
-			<listitem><para>jaxrpc.jar</para></listitem>
-			<listitem><para>libreadline-java.jar</para></listitem>
-			<listitem><para>log4j.jar</para></listitem>
-			<listitem><para>saaj.jar</para></listitem>
-			<listitem><para>trove.jar</para></listitem>
-			<listitem><para>tt-bytecode.jar</para></listitem>
-			<listitem><para>wsdl4j.jar</para></listitem>
-			<listitem><para>xmldb.jar</para></listitem>
-			<listitem><para>xmlrpc-1.1.jar</para></listitem>
+			<listitem><para>exist.jar (from the root directory of eXist)</para></listitem>
+			<listitem><para>lib/core/antlr.jar</para></listitem>
+            <listitem><para>lib/core/jakarta-oro-x.x.x.jar</para></listitem>
+            <listitem><para>lib/core/log4j.jar</para></listitem>
+            <listitem><para>lib/core/xmldb.jar</para></listitem>
+            <listitem><para>lib/core/xmlrpc-x.x.jar</para></listitem>
+            <listitem><para>lib/core/fastutil-x.x.jar</para></listitem>
+			<listitem><para>lib/optional/axis.jar</para></listitem>
+			<listitem><para>lib/optional/clutil.jar</para></listitem>
+            <listitem><para>lib/optional/commons-logging-x.x.x.jar</para></listitem>
+			<listitem><para>lib/optional/jaxrpc.jar</para></listitem>
+			<listitem><para>lib/optional/saaj.jar</para></listitem>
+			<listitem><para>lib/optional/tt-bytecode.jar</para></listitem>
+			<listitem><para>lib/optional/wsdl4j.jar</para></listitem>
 		</itemizedlist>
 		
 		<para>If you want WebDAV access you'll also need:</para>
@@ -100,132 +95,277 @@
 			    <![CDATA[
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-<!--
-  This is the web-app configurations that allow Cocoon to work under
-  Apache Tomcat. Please, follow the installation section of the
-  documentation for more information about installing Cocoon on Tomcat
--->
-
+    <!--+
+    | Configuration file for the web application. 
+    |
+    | Provides XMLRPC + SOAP access to eXist and configures Cocoon2. If you don't need
+    | XMLRPC or SOAP or Cocoon, remove the corresponding servlets and servlet-mappings.
+    +-->
 <!DOCTYPE web-app
     PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN"
     "http://java.sun.com/j2ee/dtds/web-app_2_2.dtd">
-
 <web-app>
-  <display-name>eXist Server</display-name>
-  <description>eXist Server Setup</description>
-
-  <!-- Servlets required by eXist -->
+    <display-name>eXist Server</display-name>
+    <description>eXist Server Setup</description>
+	
+    <!-- RpcServlet provides XML-RPC access to eXist -->
+    <servlet>
+        <servlet-name>org.exist.xmlrpc.RpcServlet</servlet-name>
+        <servlet-class>org.exist.xmlrpc.RpcServlet</servlet-class>
+    </servlet>
   
-  <!-- RpcServlet provides XML-RPC access to eXist -->
-  <servlet>
-    <servlet-name>org.exist.xmlrpc.RpcServlet</servlet-name>
-    <servlet-class>org.exist.xmlrpc.RpcServlet</servlet-class>
-  </servlet>
-  
-  <!-- DatabaseAdminServlet: used to start/stop the database. -->
-  <servlet>
-    <servlet-name>org.exist.DatabaseAdminServlet</servlet-name>
-    <servlet-class>org.exist.DatabaseAdminServlet</servlet-class>
+    <!-- DatabaseAdminServlet: this servlet can be used to ensure that
+     eXist is running in the background. Just set the start-parameter to true and
+     load-on-startup to greater 0 -->
+    <servlet>
+        <servlet-name>org.exist.DatabaseAdminServlet</servlet-name>
+        <servlet-class>org.exist.DatabaseAdminServlet</servlet-class>
     
-    <!-- where to find eXist's configuration file
-         relative to basedir
-    -->
-    <init-param>
-        <param-name>configuration</param-name>
-        <param-value>conf.xml</param-value>
-    </init-param>
+        <!-- where to find eXist's configuration file
+             relative to the basedir of the web-application.
+        -->
+        <init-param>
+            <param-name>configuration</param-name>
+            <param-value>conf.xml</param-value>
+        </init-param>
 
-    <!-- eXist's home directory. All file names in 
-         the configuration file will be relative to this
-	 directory.
-    -->
-    <init-param>
-        <param-name>basedir</param-name>
-        <param-value>WEB-INF/</param-value>
-    </init-param>
+        <!-- eXist's home directory. All file names in 
+        the configuration file will be relative to this
+        directory.
+        -->
+        <init-param>
+            <param-name>basedir</param-name>
+            <param-value>WEB-INF/</param-value>
+        </init-param>
 
-    <init-param>
-        <param-name>start</param-name>
-        <param-value>true</param-value>
-    </init-param>
-    
-    <load-on-startup>2</load-on-startup>
+        <init-param>
+            <param-name>start</param-name>
+            <param-value>true</param-value>
+        </init-param>
 
-  </servlet>
+        <load-on-startup>2</load-on-startup>
+
+    </servlet>
   
   <!-- configure the Axis servlet. Axis provides eXist's
   web-services via SOAP -->
   <servlet>
-    <servlet-name>AxisServlet</servlet-name>
-    <display-name>Apache-Axis Servlet</display-name>
-    <servlet-class>
-        org.apache.axis.transport.http.AxisServlet
-    </servlet-class>
-  </servlet>
+        <servlet-name>AxisServlet</servlet-name>
+        <display-name>Apache-Axis Servlet</display-name>
+        <servlet-class>org.apache.axis.transport.http.AxisServlet</servlet-class>
+    </servlet>
 
-  <servlet>
-    <servlet-name>AdminServlet</servlet-name>
-    <display-name>Axis Admin Servlet</display-name>
-    <servlet-class>
+    <servlet>
+        <servlet-name>AdminServlet</servlet-name>
+        <display-name>Axis Admin Servlet</display-name>
+        <servlet-class>
         org.apache.axis.transport.http.AdminServlet
     </servlet-class>
-    <load-on-startup>100</load-on-startup>
-  </servlet>
+        <load-on-startup>100</load-on-startup>
+	</servlet>
   
   <!-- xincon: Provides Webdav for eXist -->
-	<servlet>
-		<servlet-name>xincon</servlet-name>
-		<servlet-class>xincon.WebdavServlet</servlet-class>
-		<init-param>
-			<param-name>dbroot</param-name>
-			<param-value>xmldb:exist:///db</param-value>
-		</init-param>
-		
-		<!-- log4j parameters -->
-		<init-param>
-			<param-name>log4j-priority</param-name>
-			<param-value>DEBUG</param-value>
-		</init-param>
-		<init-param>
-			<param-name>log4j-layout</param-name>
-			<param-value>%-5p [%M] %m%n</param-value>
-		</init-param>
-		<!-- end log4j parameters -->
-		
-        <!-- load this servlet first to avoid conflicts with
-             eXist's log-configuration -->
+    <servlet>
+        <servlet-name>xincon</servlet-name>
+        <servlet-class>xincon.WebdavServlet</servlet-class>
+        <init-param>
+            <param-name>dbroot</param-name>
+            <param-value>xmldb:exist:///db</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>log4j-priority</param-name>
+            <param-value>DEBUG</param-value>
+        </init-param>
+        <init-param>
+            <param-name>log4j-layout</param-name>
+            <param-value>%-5p [%M] %m%n</param-value>
+        </init-param>
+
         <load-on-startup>1</load-on-startup>
-	</servlet>
+    </servlet>
+	
+  <!-- Cocoon2 Configuration starts here ================================ -->
 
-  <!-- Configure Cocoon2 -->
-  
-  <servlet>
-    <servlet-name>Cocoon2</servlet-name>
-    <display-name>Cocoon2</display-name>
-    <description>The main Cocoon2 servlet</description>
+    <servlet>
+        <servlet-name>Cocoon</servlet-name>
+        <display-name>Cocoon</display-name>
+        <description>Cocoon</description>
 
-	<!-- I'm skipping Cocoon configuration here ... -->
-  </servlet>
+    <!--
+      The regular servlet class (trusts the servlet container classloader)
+      -->
+        <servlet-class>org.apache.cocoon.servlet.CocoonServlet</servlet-class>
+    
+    <!--
+      This parameter points to the main configuration file for Cocoon.
+      Note that the path is specified in absolute notation but it will be
+      resolved relative to the servlets webapp context path
+    -->
+        <init-param>
+            <param-name>configurations</param-name>
+            <param-value>/WEB-INF/cocoon.xconf</param-value>
+        </init-param>
 
+    <!--
+      This parameter indicates the configuration file of the LogKit management
+    -->
+        <init-param>
+            <param-name>logkit-config</param-name>
+            <param-value>/WEB-INF/logkit.xconf</param-value>
+        </init-param>
+
+    <!--
+      This parameter indicates the category id of the logger from the LogKit
+      configuration used by the CocoonServlet.
+    -->
+        <init-param>
+            <param-name>servlet-logger</param-name>
+            <param-value>access</param-value>
+        </init-param>
+
+    <!--
+      This parameter indicates the category id of the logger from the LogKit
+      management configuration for the Cocoon engine.
+      This logger is used for all components described in the cocoon.xconf
+      and sitemap.xmap file not having specified a logger with the
+      logger="..." attribute in the component configuration file.
+    -->
+        <init-param>
+            <param-name>cocoon-logger</param-name>
+            <param-value>core</param-value>
+        </init-param>
+
+    <!--
+      This parameter indicates the log level to use throughout startup of the system.
+      As soon as the logkit.xconf the setting of the logkit.xconf configuration is
+      used instead! Only for startup and if the logkit.xconf is not readable/available
+      this log level is of importance.
+
+      Available levels are:
+        DEBUG:        prints all level of log messages.
+        INFO:         prints all level of log messages except DEBUG ones.
+        WARN:         prints all level of log messages except DEBUG and INFO ones.
+        ERROR:        prints all level of log messages except DEBUG, INFO and WARN ones.
+        FATAL_ERROR: prints only log messages of this level
+    -->
+        <init-param>
+            <param-name>log-level</param-name>
+            <param-value>WARN</param-value>
+        </init-param>
+
+    <!--
+      Allow reinstantiating (reloading) of the cocoon instance. If this is
+      set to "yes" or "true", a new cocoon instance can be created using
+      the request parameter "cocoon-reload".
+    -->
+        <init-param>
+            <param-name>allow-reload</param-name>
+            <param-value>no</param-value>
+        </init-param>
+
+    <!--
+      Causes all files in multipart requests to be processed.
+      Default is false for security reasons.  
+      Unsupported values will be interpreted as false.
+    -->
+        <init-param>
+            <param-name>enable-uploads</param-name>
+			<param-value>true</param-value>
+        </init-param>
+    
+    <!--
+      This parameter allows to specify where Cocoon should put uploaded files.
+      The path specified can be either absolute or relative to the context 
+      path of the servlet. On windows platform, absolute directory must start
+      with volume: C:\Path\To\Upload\Directory
+
+      The default directory is "upload-dir" in the work-directory
+
+    <init-param>
+      <param-name>upload-directory</param-name>
+      <param-value>WEB-INF/work/upload-dir</param-value>
+    </init-param>
+    -->
+
+    <!--
+      Causes all files in multipart requests to be saved to upload-dir.
+      Default is true for security reasons.  
+      Unsupported values will be interpreted as false.
+    -->
+        <init-param>
+            <param-name>autosave-uploads</param-name>
+            <param-value>true</param-value>
+        </init-param>
+
+    <!--
+      Specify handling of name conflicts when saving uploaded files
+      to disk.  Acceptable values are deny, allow, rename (default).
+      Files are renamed x_filename where x is an integer value incremented
+      to make the new filename unique.
+    -->
+        <init-param>
+            <param-name>overwrite-uploads</param-name>
+			<param-value>allow</param-value>
+        </init-param>
+
+    <!--
+       If true or not set, this class will try to catch and handle all Cocoon exceptions.
+       If false, it will rethrow them to the servlet container.
+    -->
+        <init-param>
+            <param-name>manage-exceptions</param-name>
+            <param-value>true</param-value>
+        </init-param>
+
+    <!--
+      Set encoding used by the container. If not set the ISO-8859-1 encoding will be assumed.
+    -->
+	<init-param>
+      <param-name>container-encoding</param-name>
+	  <param-value>ISO-8859-1</param-value>
+    </init-param>
+
+    <!--
+      Set form encoding. This will be the character set used to decode request parameters.
+      If not set the ISO-8859-1 encoding will be assumed. 
+    -->
+    <init-param>
+      <param-name>form-encoding</param-name>
+      <param-value>UTF-8</param-value>
+    </init-param>
+
+    <!--
+      This parameter allows you to startup Cocoon2 immediately after startup
+      of your servlet engine.
+    -->
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+  <!-- URL space mappings ============================================= -->
+
+  <!-- Define where the XMLRPC servlet listens -->
   <servlet-mapping>
     <servlet-name>org.exist.xmlrpc.RpcServlet</servlet-name>
     <url-pattern>/xmlrpc</url-pattern>
   </servlet-mapping>
   
+  <!-- eXist's DatabaseAdminServlet -->
   <servlet-mapping>
     <servlet-name>org.exist.DatabaseAdminServlet</servlet-name>
     <url-pattern>/admin</url-pattern>
   </servlet-mapping>
   
-    <servlet-mapping>
+  <!-- Define where Xincon listens for WebDAV requests -->
+  <servlet-mapping>
 		<servlet-name>xincon</servlet-name>
 		<url-pattern>/webdav/*</url-pattern>
 	</servlet-mapping>
     
-  <!-- Axis servlets -->
+  <!-- The following servlet-mappings are for Axis (SOAP) -->
   <servlet-mapping>
     <servlet-name>AxisServlet</servlet-name>
-    <url-pattern>servlet/AxisServlet</url-pattern>
+	<url-pattern>/servlet/AxisServlet</url-pattern>
   </servlet-mapping>
 
   <servlet-mapping>
@@ -240,20 +380,77 @@
 
   <servlet-mapping>
     <servlet-name>AdminServlet</servlet-name>
-    <url-pattern>servlet/AdminServlet</url-pattern>
+	<url-pattern>/servlet/AdminServlet</url-pattern>
   </servlet-mapping>
-
+  
+  <!-- Finally, we establish the main mapping for Cocoon  -->
+  
   <!--
     Cocoon handles all the URL space assigned to the webapp using its sitemap.
     It is recommended to leave it unchanged. Under some circumstances though
     (like integration with proprietary webapps or servlets) you might have
     to change this parameter.
   -->
-  <servlet-mapping>
-    <servlet-name>Cocoon2</servlet-name>
-    <url-pattern>/</url-pattern>
-  </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Cocoon</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
   
+  <!--
+    Some servlet engines (Tomcat) have defaults which are not overriden
+    by '/' mapping, but must be overriden explicitly.
+  -->
+    <servlet-mapping>
+        <servlet-name>Cocoon</servlet-name>
+        <url-pattern>*.jsp</url-pattern>
+
+    </servlet-mapping>
+  <!--
+    Some servlet engines (WebLogic) have defaults which are not overriden
+    by '/' mapping, but must be overriden explicitly.
+  -->
+    <servlet-mapping>
+        <servlet-name>Cocoon</servlet-name>
+        <url-pattern>*.html</url-pattern>
+    </servlet-mapping>
+
+  <!-- various MIME type mappings ====================================== -->
+
+    <mime-mapping>
+        <extension>css</extension>
+        <mime-type>text/css</mime-type>
+    </mime-mapping>
+
+    <mime-mapping>
+        <extension>xml</extension>
+        <mime-type>text/xml</mime-type>
+    </mime-mapping>
+
+    <mime-mapping>
+        <extension>xsl</extension>
+        <mime-type>text/xml</mime-type>
+    </mime-mapping>
+
+    <mime-mapping>
+        <extension>xconf</extension>
+        <mime-type>text/xml</mime-type>
+    </mime-mapping>
+
+    <mime-mapping>
+        <extension>xmap</extension>
+        <mime-type>text/xml</mime-type>
+    </mime-mapping>
+
+    <mime-mapping>
+        <extension>ent</extension>
+        <mime-type>text/plain</mime-type>
+    </mime-mapping>
+
+    <mime-mapping>
+        <extension>grm</extension>
+        <mime-type>text/plain</mime-type>
+    </mime-mapping>
+
 </web-app>]]>
 			</screen>
 		</example>

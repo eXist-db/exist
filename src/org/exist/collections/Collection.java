@@ -71,6 +71,7 @@ public class Collection implements Comparable {
 	// the name of this collection
 	private String name;
 	
+	// the permissions assigned to this collection
 	private Permission permissions = new Permission(0755);
 	
 	// stores child-collections with their storage address
@@ -80,6 +81,9 @@ public class Collection implements Comparable {
 	// temporary field for the storage address
 	private long address = -1;
 
+	// creation time
+	private long created = 0;
+	
 	//private CollectionConfiguration configuration = null;
 	
 	public Collection(DBBroker broker) {
@@ -399,6 +403,7 @@ public class Collection implements Comparable {
 			permissions.setGroup(secman.getGroup(gid).getName());
 		}
 		permissions.setPermissions(perm);
+		created = istream.readLong();
 		DocumentImpl doc;
 		try {
 			while (istream.available() > 0) {
@@ -502,6 +507,7 @@ public class Collection implements Comparable {
 			ostream.writeInt(group.getId());
 		}
 		ostream.writeByte((byte) permissions.getPermissions());
+		ostream.writeLong(created);
 		DocumentImpl doc;
 		for (Iterator i = iterator(); i.hasNext();) {
 			doc = (DocumentImpl) i.next();
@@ -532,5 +538,13 @@ public class Collection implements Comparable {
 
 	public int getRefCount() {
 		return refCount;
+	}
+	
+	public void setCreationTime(long ms) {
+		created = ms;
+	}
+	
+	public long getCreationTime() {
+		return created;
 	}
 }

@@ -16,9 +16,9 @@ import org.xmldb.api.base.*;
  */
 public class UserManagementServiceImpl implements UserManagementService {
 
-	private CollectionImpl parent;
+	private RemoteCollection parent;
 
-	public UserManagementServiceImpl(CollectionImpl collection) {
+	public UserManagementServiceImpl(RemoteCollection collection) {
 		parent = collection;
 	}
 
@@ -51,7 +51,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 	 * Change permissions for a resource.
 	 */
 	public void setPermissions(Resource res, Permission perms) throws XMLDBException {
-		String path = ((CollectionImpl) res.getParentCollection()).getPath() + '/' + res.getId();
+		String path = ((RemoteCollection) res.getParentCollection()).getPath() + '/' + res.getId();
 		try {
 			Vector params = new Vector();
 			params.addElement(path);
@@ -70,7 +70,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 	 * Change permissions for a resource.
 	 */
 	public void setPermissions(Collection child, Permission perms) throws XMLDBException {
-		String path = ((CollectionImpl) child).getPath();
+		String path = ((RemoteCollection) child).getPath();
 		try {
 			Vector params = new Vector();
 			params.addElement(path);
@@ -93,7 +93,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 	 *@exception  XMLDBException  Description of the Exception
 	 */
 	public void chmod(Resource res, String mode) throws XMLDBException {
-		String path = ((CollectionImpl) res.getParentCollection()).getPath() + '/' + res.getId();
+		String path = ((RemoteCollection) res.getParentCollection()).getPath() + '/' + res.getId();
 		try {
 			Vector params = new Vector();
 			params.addElement(path);
@@ -110,7 +110,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 	 * @see org.exist.xmldb.UserManagementService#chmod(org.xmldb.api.base.Resource, int)
 	 */
 	public void chmod(Resource res, int mode) throws XMLDBException {
-		String path = ((CollectionImpl) res.getParentCollection()).getPath() + '/' + res.getId();
+		String path = ((RemoteCollection) res.getParentCollection()).getPath() + '/' + res.getId();
 		try {
 			Vector params = new Vector();
 			params.addElement(path);
@@ -189,7 +189,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 	 *@exception  XMLDBException  Description of the Exception
 	 */
 	public void chown(Resource res, User u, String group) throws XMLDBException {
-		String path = ((CollectionImpl) res.getParentCollection()).getPath() + '/' + res.getId();
+		String path = ((RemoteCollection) res.getParentCollection()).getPath() + '/' + res.getId();
 		try {
 			Vector params = new Vector();
 			params.addElement(path);
@@ -203,8 +203,6 @@ public class UserManagementServiceImpl implements UserManagementService {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
 	}
-
-	// -- Constructor
 
 	/**
 	 *  Gets the name attribute of the UserManagementServiceImpl object
@@ -225,11 +223,14 @@ public class UserManagementServiceImpl implements UserManagementService {
 	public Permission getPermissions(Collection coll) throws XMLDBException {
 		if (coll == null)
 			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "collection is null");
+		Permission perm = ((RemoteCollection)coll).getPermissions();
+		if(perm != null)
+			return perm;
 		try {
 			Vector params = new Vector();
-			params.addElement(((CollectionImpl) coll).getPath());
+			params.addElement(((RemoteCollection) coll).getPath());
 			Hashtable result = (Hashtable) parent.getClient().execute("getPermissions", params);
-			Permission perm =
+			perm =
 				new Permission((String) result.get("owner"), (String) result.get("group"));
 			perm.setPermissions(((Integer) result.get("permissions")).intValue());
 			return perm;
@@ -250,7 +251,9 @@ public class UserManagementServiceImpl implements UserManagementService {
 	public Permission getPermissions(Resource res) throws XMLDBException {
 		if (res == null)
 			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "resource is null");
-		String path = ((CollectionImpl) res.getParentCollection()).getPath() + '/' + res.getId();
+		if(((RemoteXMLResource)res).getPermissions() != null)
+			return ((RemoteXMLResource)res).getPermissions();
+		String path = ((RemoteCollection) res.getParentCollection()).getPath() + '/' + res.getId();
 		try {
 			Vector params = new Vector();
 			params.addElement(path);
@@ -411,7 +414,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 	 *@exception  XMLDBException  Description of the Exception
 	 */
 	public void setCollection(Collection collection) throws XMLDBException {
-		this.parent = (CollectionImpl) collection;
+		this.parent = (RemoteCollection) collection;
 	}
 
 	/**

@@ -412,7 +412,8 @@ public class Main {
 					cpcfg =
 						getClass().getClassLoader().getResourceAsStream(
 							"org/exist/start/start.config");
-				} else {
+				}
+				if (cpcfg == null) {
 					System.err.println("start.config not found. Bailing out.");
 					return;
 				}

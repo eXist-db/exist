@@ -13,9 +13,9 @@ import org.xmldb.api.modules.CollectionManagementService;
 public class CollectionManagementServiceImpl extends CollectionManager implements CollectionManagementService {
 
     protected XmlRpcClient client;
-    protected CollectionImpl parent = null;
+    protected RemoteCollection parent = null;
 
-    public CollectionManagementServiceImpl( CollectionImpl parent, XmlRpcClient client ) {
+    public CollectionManagementServiceImpl( RemoteCollection parent, XmlRpcClient client ) {
         this.client = client;
         this.parent = parent;
     }
@@ -38,8 +38,8 @@ public class CollectionManagementServiceImpl extends CollectionManager implement
                 ioe.getMessage(),
                 ioe );
         }
-        CollectionImpl collection =
-            new CollectionImpl( client, (CollectionImpl) parent, null, name );
+        RemoteCollection collection =
+            new RemoteCollection( client, (RemoteCollection) parent, null, name );
         parent.addChildCollection( collection );
         return collection;
     }
@@ -93,7 +93,7 @@ public class CollectionManagementServiceImpl extends CollectionManager implement
     }
 
     public void setCollection( Collection parent ) throws XMLDBException {
-        this.parent = (CollectionImpl) parent;
+        this.parent = (RemoteCollection) parent;
     }
 
     public void setProperty( String property,

@@ -75,6 +75,12 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	// the document's file name
 	private String fileName = null;
 
+	// the creation time of this document
+	private long created = 0;
+	
+	// time of the last modification
+	private long lastModified = 0;
+	
 	// number of levels in this DOM tree
 	protected int maxDepth = 0;
 
@@ -667,6 +673,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 				ostream.writeShort(StorageAddress.tidFromPointer(address));
 			}
 			((DocumentTypeImpl) docType).write(ostream);
+			ostream.writeLong(created);
+			ostream.writeLong(lastModified);
 			final byte[] data = ostream.toByteArray();
 			ostream.close();
 			return data;
@@ -686,6 +694,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			}
 			docType = new DocumentTypeImpl();
 			((DocumentTypeImpl) docType).read(istream);
+			created = istream.readLong();
+			lastModified = istream.readLong();
 		} catch (IOException e) {
 			LOG.warn("io error while writing document data", e);
 		}
@@ -840,4 +850,36 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			calculateTreeLevelStartPoints();
 		}
 	}
+	/**
+	 * @return
+	 */
+	public long getCreated() {
+		checkAvail();
+		return created;
+	}
+
+	/**
+	 * @return
+	 */
+	public long getLastModified() {
+		checkAvail();
+		return lastModified;
+	}
+
+	/**
+	 * @param l
+	 */
+	public void setCreated(long l) {
+		created = l;
+		if(lastModified == 0)
+			lastModified = l;
+	}
+
+	/**
+	 * @param l
+	 */
+	public void setLastModified(long l) {
+		lastModified = l;
+	}
+
 }

@@ -149,6 +149,23 @@
 						</td>
 					</tr>
 				</table>
+				<p></p>
+				<table border="0" width="650" cellpadding="0" cellspacing="0">
+					<tr bgcolor="6666AA">
+						<form action="shutdown" method="POST">
+						<td>
+							<span class="display">User (dba group): </span> 
+							<input type="text" name="user" size="15"/>
+							<span class="display"> Password: </span> 
+							<input type="password" name="password"
+								size="15"/>
+						</td>
+						<td>
+							<input type="submit" value="Shutdown"/>
+						</td>
+						</form>
+					</tr>
+				</table>
 			</body>
     	</html>
 	</xsl:template>
@@ -176,6 +193,14 @@
   			<td width="20%">Java Vendor</td>
   			<td><xsl:value-of select="status:vendor"/></td>
   		</tr>
+		<tr>
+			<td width="20%">Default Locale</td>
+			<td><xsl:value-of select="status:locale"/></td>
+		</tr>
+		<tr>
+			<td width="20%">Default Charset</td>
+			<td><xsl:value-of select="status:charset"/></td>
+		</tr>
   	</xsl:template>
   	
   	<xsl:template match="status:os">

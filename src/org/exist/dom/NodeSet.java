@@ -171,12 +171,6 @@ public abstract class NodeSet implements NodeList {
 				}
 				break;
 		}
-		System.out.println(
-			"getChildren found "
-				+ result.getLength()
-				+ " in "
-				+ (System.currentTimeMillis() - start)
-				+ "ms.");
 		return result;
 	}
 

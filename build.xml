@@ -411,6 +411,7 @@
         <mkdir dir="${dist.dir}/lib"/>
         <mkdir dir="${dist.dir}/lib/core"/>
         <mkdir dir="${dist.dir}/lib/optional"/>
+		<mkdir dir="${dist.dir}/lib/endorsed"/>
         <mkdir dir="${dist.dir}/${jetty.dir}"/>
         <mkdir dir="${dist.dir}/webapp"/>
         <mkdir dir="${dist.dir}/webapp/WEB-INF/logs"/>
@@ -464,6 +465,9 @@
         <copy todir="${dist.dir}/lib/optional">
             <fileset dir="${lib.optional}"/>
         </copy>
+		<copy todir="${dist.dir}/lib/endorsed">
+			<fileset dir="${lib.endorsed}"/>
+		</copy>
         <copy todir="${dist.dir}/${jetty.dir}">
             <fileset dir="./${jetty.dir}">
                 <exclude name="work/**/*"/>

@@ -16,7 +16,7 @@
       </affiliation>
     </author>
   </bookinfo>
-  <include ci:src="sidebar.xml"></include>
+  <ci:include src="sidebar.xml"/>
   <chapter>
     <title>Quick Start</title>
     <para>For a quick start, the following sections describe how to start the server and add some files to the database.</para>
@@ -77,7 +77,7 @@ jar xfv ../exist.war]]></screen>
     </section>
     <section id="sect3">
       <title>Check if the server is running</title>
-      <para>eXist's home page should now be available at <ulink url="http://localhost:8080/exist/index.xml"> http://localhost:8080/exist/index.xml</ulink>. To see if the database engine is running, you may click on the <command moreinfo="none">Server status</command> menu entry in the sidebar or browse directly to <ulink url="http://localhost:8080/exist/admin"> http://localhost:8080/exist/admin</ulink>. The server will present you some information on the configuration, the data directory used by the engine and available database instances.</para>
+	  <para>eXist's home page should now be available at <ulink url="http://localhost:8080/exist/index.xml"> http://localhost:8080/exist/index.xml</ulink>. To see if the database engine is running, you may click on the <command moreinfo="none">Server status</command> menu entry in the sidebar or browse directly to <ulink url="http://localhost:8080/exist/status"> http://localhost:8080/exist/status</ulink>. The server will present you some information on the configuration, the data directory used by the engine and available database instances.</para>
     </section>
     <section>
       <title>Index some XML files</title>

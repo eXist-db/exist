@@ -3,6 +3,7 @@ package org.exist.xmldb;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Date;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -26,12 +27,11 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.XMLResource;
 
 /**
  * Local implementation of XMLResource.
  */
-public class LocalXMLResource implements XMLResource {
+public class LocalXMLResource implements XMLResourceImpl {
 
 	private static Logger LOG = Logger.getLogger(LocalXMLResource.class);
 
@@ -167,7 +167,7 @@ public class LocalXMLResource implements XMLResource {
 					"permission denied to read resource");
 			if (id < 0)
 				return document.getDocumentElement();
-			else if(proxy != null)
+			else if (proxy != null)
 				return document.getNode(proxy);
 			else
 				return document.getNode(id);
@@ -188,7 +188,7 @@ public class LocalXMLResource implements XMLResource {
 				throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
 					"permission denied to read resource");
-			if(!properties.containsKey(Serializer.GENERATE_DOC_EVENTS))
+			if (!properties.containsKey(Serializer.GENERATE_DOC_EVENTS))
 				properties.put(Serializer.GENERATE_DOC_EVENTS, "true");
 			Serializer serializer = broker.getSerializer();
 			serializer.setContentHandler(handler);
@@ -257,6 +257,42 @@ public class LocalXMLResource implements XMLResource {
 
 	public String getResourceType() throws XMLDBException {
 		return "XMLResource";
+	}
+
+	public Date getCreationTime() throws XMLDBException {
+		DBBroker broker = null;
+		try {
+			broker = brokerPool.get();
+			if (document == null)
+				getDocument(broker);
+			if (!document.getPermissions().validate(user, Permission.READ))
+				throw new XMLDBException(
+					ErrorCodes.PERMISSION_DENIED,
+					"permission denied to read resource");
+			return new Date(document.getCreated());
+		} catch (EXistException e) {
+			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+		} finally {
+			brokerPool.release(broker);
+		}
+	}
+
+	public Date getLastModificationTime() throws XMLDBException {
+		DBBroker broker = null;
+		try {
+			broker = brokerPool.get();
+			if (document == null)
+				getDocument(broker);
+			if (!document.getPermissions().validate(user, Permission.READ))
+				throw new XMLDBException(
+					ErrorCodes.PERMISSION_DENIED,
+					"permission denied to read resource");
+			return new Date(document.getLastModified());
+		} catch (EXistException e) {
+			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+		} finally {
+			brokerPool.release(broker);
+		}
 	}
 
 	/**
