@@ -348,7 +348,7 @@ public class StaticContext {
 	 */
 	public MemTreeBuilder getDocumentBuilder() {
 		if (builder == null) {
-			builder = new MemTreeBuilder();
+			builder = new MemTreeBuilder(this);
 			builder.startDocument();
 		}
 		return builder;

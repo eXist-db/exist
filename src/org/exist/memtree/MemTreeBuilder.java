@@ -25,6 +25,7 @@ package org.exist.memtree;
 import java.util.Arrays;
 
 import org.exist.dom.QName;
+import org.exist.xpath.StaticContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
@@ -39,9 +40,15 @@ public class MemTreeBuilder {
 	protected DocumentImpl doc;
 	protected short level = 1;
 	protected int[] prevNodeInLevel;
-
+	protected StaticContext context = null;
+	
 	public MemTreeBuilder() {
+		this(null);
+	}
+	
+	public MemTreeBuilder(StaticContext context) {
 		super();
+		this.context = context;
 		prevNodeInLevel = new int[15];
 		Arrays.fill(prevNodeInLevel, -1);
 		prevNodeInLevel[0] = 0;
@@ -80,7 +87,13 @@ public class MemTreeBuilder {
 		String qname,
 		Attributes attributes) {
 		int p = qname.indexOf(':');
-		String prefix = p > -1 ? qname.substring(0, p) : "";
+		String prefix = null;
+		if(context != null) {
+			prefix = context.getPrefixForURI(namespaceURI);
+			System.out.println(prefix + " = " + namespaceURI);
+		}
+		if(prefix == null)
+			prefix = p > -1 ? qname.substring(0, p) : "";
 		QName qn = new QName(localName, namespaceURI, prefix);
 		return startElement(qn, attributes);
 	}

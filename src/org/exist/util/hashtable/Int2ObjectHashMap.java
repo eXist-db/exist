@@ -166,11 +166,11 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 	}
 
 	public Iterator iterator() {
-		return new Long2ObjectIterator(Long2ObjectIterator.KEYS);
+		return new Int2ObjectIterator(Int2ObjectIterator.KEYS);
 	}
 
 	public Iterator valueIterator() {
-		return new Long2ObjectIterator(Long2ObjectIterator.VALUES);
+		return new Int2ObjectIterator(Int2ObjectIterator.VALUES);
 	}
 
 	protected void insert(int key, Object value) throws HashtableOverflowException {
@@ -239,11 +239,11 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 		return i;
 	}
 
-	protected class Long2ObjectIterator extends HashtableIterator {
+	protected class Int2ObjectIterator extends HashtableIterator {
 
 		int idx = 0;
 
-		public Long2ObjectIterator(int type) {
+		public Int2ObjectIterator(int type) {
 			super(type);
 		}
 
@@ -282,7 +282,9 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 		 * @see org.exist.util.hashtable.AbstractHashtable.HashtableIterator#remove()
 		 */
 		public void remove() {
-			values[idx] = REMOVED;
+			if(idx == 0)
+				throw new IllegalStateException("remove called before next");
+			values[idx - 1] = REMOVED;
 			items--;
 		}
 	}

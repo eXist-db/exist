@@ -33,7 +33,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.log4j.Category;
 import org.apache.oro.text.GlobCompiler;
@@ -206,7 +208,7 @@ public class NativeTextEngine extends TextSearchEngine {
 	 *@param  words        Description of the Parameter
 	 *@param  domIterator  Description of the Parameter
 	 */
-	protected void collect(HashSet words, Iterator domIterator) {
+	protected void collect(Set words, Iterator domIterator) {
 		byte[] data = ((Value) domIterator.next()).getData();
 		short type = Signatures.getType(data[0]);
 		String word;
@@ -598,7 +600,7 @@ public class NativeTextEngine extends TextSearchEngine {
 	public void removeDocument(DocumentImpl doc) {
 		LOG.debug("removing text index ...");
 		try {
-			HashSet words = new HashSet();
+			TreeSet words = new TreeSet();
 			NodeList children = doc.getChildNodes();
 			NodeImpl node;
 			for (int i = 0; i < children.getLength(); i++) {
@@ -623,6 +625,7 @@ public class NativeTextEngine extends TextSearchEngine {
 			Lock lock = dbWords.getLock();
 			for (Iterator iter = words.iterator(); iter.hasNext();) {
 				word = (String) iter.next();
+				LOG.debug("removing " + word);
 				ref = new WordRef(collectionId, word);
 				try {
 					lock.acquire(Lock.READ_LOCK);
