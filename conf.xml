@@ -50,7 +50,7 @@
 			    defines how long the database instance will wait for running
 			    operations to complete before it forces a shutdown.
         -->
-		<pool min="1" max="20" sync-period="300000" wait-before-shutdown="60000"/>
+		<pool min="1" max="20" sync-period="30000" wait-before-shutdown="120000"/>
 
 		<watchdog query-timeout="-1" output-size-limit="10000"/>
     </db-connection>
@@ -98,6 +98,9 @@
 	document after every XUpdate request. It checks if the 
 	persistent DOM is complete and all pointers in the structural
 	index point to valid storage addresses containing valid nodes.
+    
+    "allowed-fragmentation" defines the maximum number of page splits allowed within a
+    document before a defragmentation run will be triggered.
 	-->
 
 	<xupdate growth-factor="20" allowed-fragmentation="20"
