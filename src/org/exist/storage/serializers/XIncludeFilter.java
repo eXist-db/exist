@@ -44,6 +44,7 @@ import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
 
@@ -238,24 +239,20 @@ public class XIncludeFilter implements Receiver {
 					expr.analyze(null, 0);
 					expr.reset();
 					Sequence seq = expr.eval(null, null);
-					switch (seq.getItemType()) {
-						case Type.NODE :
-							NodeSet set = (NodeSet) seq;
-							LOG.info("xpointer found: " + set.getLength());
-
-							NodeProxy proxy;
-							for (Iterator i = set.iterator(); i.hasNext();) {
-								proxy = (NodeProxy) i.next();
-								serializer.serializeToReceiver(proxy, false);
-							}
-							break;
-						default :
-							String val;
-							for (int i = 0; i < seq.getLength(); i++) {
-								val = seq.itemAt(i).getStringValue();
-								characters(val);
-							}
-							break;
+					if(Type.subTypeOf(seq.getItemType(), Type.NODE)) {
+						LOG.info("xpointer found: " + seq.getLength());
+						
+						NodeProxy proxy;
+						for (SequenceIterator i = seq.iterate(); i.hasNext();) {
+							proxy = (NodeProxy) i.nextItem();
+							serializer.serializeToReceiver(proxy, false);
+						}
+					} else {
+						String val;
+						for (int i = 0; i < seq.getLength(); i++) {
+							val = seq.itemAt(i).getStringValue();
+							characters(val);
+						}
 					}
 
 				} catch (RecognitionException e) {
