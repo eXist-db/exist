@@ -32,7 +32,7 @@ public final class DOMFileIterator implements Iterator {
 		
 		DOMFile db = null;
 		NodeProxy node = null;
-		int offset;
+		int offset, lastOffset = 0;
 		short lastTID = -1;
 		DOMPage p = null;
 		long page;
@@ -188,9 +188,17 @@ public final class DOMFileIterator implements Iterator {
 				}
 				// extract the value
 				lastTID = ByteConversion.byteToShort(p.data, offset);
-				final short l = ByteConversion.byteToShort(p.data, offset + 2);
-				final Value nextVal = new Value(p.data, offset + 4, l);
+				short l = ByteConversion.byteToShort(p.data, offset + 2);
+				Value nextVal;
+				if(l == DOMFile.OVERFLOW) {
+					final long op = ByteConversion.byteToLong(p.data, offset + 4);
+					final byte[] data = db.getOverflowValue(op);
+					nextVal = new Value(data);
+					l = 8;
+				} else
+					nextVal = new Value(p.data, offset + 4, l);
 				nextVal.setAddress(StorageAddress.createPointer((int) page, lastTID));
+				lastOffset = offset;
 				offset = offset + 4 + l;
 				lock.release();
 				return nextVal;
@@ -214,11 +222,19 @@ public final class DOMFileIterator implements Iterator {
 			Lock lock = db.getLock();
 			try {
 				lock.acquire(Lock.WRITE_LOCK);
-				DOMPage p = null;
-				p = db.getCurrentPage(page);
+				DOMPage p = db.getCurrentPage(page);
+				short l = ByteConversion.byteToShort(p.data, lastOffset + 2);
+				// if this is an overflow value, remove it 
+				if(l == DOMFile.OVERFLOW) {
+					final long op = ByteConversion.byteToLong(p.data, lastOffset + 4);
+					db.removeOverflowValue(op);
+				}
+				
+				// decrement record count
 				DOMFilePageHeader ph = p.getPageHeader();
 				ph.decRecordCount();
 				p.setDirty(true);
+				// if record count == 0, remove the page
 				if (ph.getRecordCount() == 0) {
 					long np = ph.getNextDataPage();
 					try {

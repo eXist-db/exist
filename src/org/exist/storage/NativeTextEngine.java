@@ -553,33 +553,12 @@ public class NativeTextEngine extends TextSearchEngine {
 			try {
 				lock.acquire(Lock.WRITE_LOCK);
 				dbWords.removeAll(query);
-				//entries = dbWords.findKeys(query);
 			} catch (LockException e) {
 				LOG.warn("could not acquire lock on words db", e);
 				entries = null;
 			} finally {
 				lock.release();
 			}
-//			if (entries == null) {
-//				LOG.error("could not remove collection");
-//				return;
-//			}
-//			LOG.debug("found " + entries.size() + " words.");
-//			Value val;
-//			for (Iterator i = entries.iterator(); i.hasNext();) {
-//				val = (Value) i.next();
-//				try {
-//					lock.acquire(this, Lock.WRITE_LOCK);
-//					lock.enter(this);
-//					//dbWords.remove(val);
-//					dbWords.remove(val.getAddress());
-//					dbWords.removeValue(val);
-//				} catch (LockException e) {
-//					LOG.warn("could not acquire lock on words db", e);
-//				} finally {
-//					lock.release(this);
-//				}
-//			}
 			LOG.debug("removed words index");
 		} catch (BTreeException bte) {
 			LOG.debug(bte);
@@ -902,11 +881,8 @@ public class NativeTextEngine extends TextSearchEngine {
 								// copy data to new buffer
 								os.writeInt(docId);
 								os.writeInt(len);
-								for (int j = 0; j < len; j++) {
-									//delta = is.readLong();
-									//os.writeLong(delta);
+								for (int j = 0; j < len; j++)
 									is.copyTo(os);
-								}
 							}
 						}
 					} catch (EOFException e) {
@@ -962,9 +938,9 @@ public class NativeTextEngine extends TextSearchEngine {
 			long delta;
 			NodeProxy p;
 			WordRef ref;
-			Value val = null;
-			VariableByteInputStream is;
+			VariableByteInputStream is = new VariableByteInputStream();
 			VariableByteOutputStream os = new VariableByteOutputStream();
+			InputStream dis = null;
 			Lock lock = dbWords.getLock();
 			for (Iterator i = words.entrySet().iterator(); i.hasNext();) {
 				entry = (Map.Entry) i.next();
@@ -973,19 +949,18 @@ public class NativeTextEngine extends TextSearchEngine {
 				ref = new WordRef(collectionId, word);
 				try {
 					lock.acquire(Lock.READ_LOCK);
-					val = dbWords.get(ref);
+					dis = dbWords.getAsStream(ref);
 				} catch (LockException e) {
 					LOG.error("could not acquire lock on index for '" + word + "'");
 				} finally {
 					lock.release();
 				}
 				os.clear();
-				if (val != null) {
+				if (dis != null) {
 					// add old entries to the new list 
-					data = val.getData();
-					is = new VariableByteInputStream(data);
+					is.setInputStream(dis);
 					try {
-						while (is.available() > 0) {
+						while (dis.available() > 0) {
 							docId = is.readInt();
 							len = is.readInt();
 							if (docId != oldDoc.getDocId()) {
@@ -993,18 +968,13 @@ public class NativeTextEngine extends TextSearchEngine {
 								// copy data to new buffer
 								os.writeInt(docId);
 								os.writeInt(len);
-								for (int j = 0; j < len; j++) {
-									//delta = is.readLong();
-									//os.writeLong(delta);
-									is.copyTo(os);
-								}
+								is.copyTo(os, len);
 							} else {
 								// copy nodes to new list
-								last = 0;
+								gid = 0;
 								for (int j = 0; j < len; j++) {
 									delta = is.readLong();
-									gid = last + delta;
-									last = gid;
+									gid += delta;
 									if (node == null
 										&& oldDoc.getTreeLevel(gid) < oldDoc.reindexRequired()) {
 										idList.add(gid);
@@ -1018,7 +988,7 @@ public class NativeTextEngine extends TextSearchEngine {
 							}
 						}
 					} catch (EOFException e) {
-						LOG.error("end-of-file while reading index entry for " + word, e);
+						//LOG.error("end-of-file while reading index entry for " + word, e);
 					} catch (IOException e) {
 						LOG.error("io-error while reading index entry for " + word, e);
 					}
@@ -1043,10 +1013,11 @@ public class NativeTextEngine extends TextSearchEngine {
 				try {
 					lock.acquire(Lock.WRITE_LOCK);
 					try {
-						if (val == null)
+						if (dis == null)
 							dbWords.put(ref, data);
-						else
-							dbWords.update(val.getAddress(), ref, data);
+						else {
+							dbWords.update(((BFile.PageInputStream)dis).getAddress(), ref, data);
+						}
 					} catch (ReadOnlyException e) {
 					}
 				} catch (LockException e) {
@@ -1055,7 +1026,6 @@ public class NativeTextEngine extends TextSearchEngine {
 					lock.release();
 				}
 			}
-			//words = new TreeMap();
 			words.clear();
 		}
 
@@ -1099,7 +1069,6 @@ public class NativeTextEngine extends TextSearchEngine {
 				notifyObservers(progress);
 			}
 			words.clear();
-			//words = new TreeMap();
 		}
 
 		private void flushWord(short collectionId, String word, byte[] data) {

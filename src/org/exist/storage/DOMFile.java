@@ -24,8 +24,6 @@ import it.unimi.dsi.fastutil.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.Object2LongOpenHashMap;
 
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -42,6 +40,7 @@ import org.dbxml.core.filer.BTreeException;
 import org.dbxml.core.indexer.IndexQuery;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeImpl;
+import org.exist.dom.NodeIndexListener;
 import org.exist.dom.NodeProxy;
 import org.exist.util.ByteConversion;
 import org.exist.util.Lock;
@@ -72,7 +71,7 @@ public class DOMFile extends BTree implements Lockable {
 	public final static byte LOB = 21;
 	public final static byte RECORD = 20;
 
-	protected static int GROW_BY = 8;
+	protected final static short OVERFLOW = 0;
 
 	private static Logger LOG = Logger.getLogger(DOMFile.class);
 
@@ -83,7 +82,7 @@ public class DOMFile extends BTree implements Lockable {
 	private Lock lock = null;
 
 	private final Object2LongOpenHashMap pages = new Object2LongOpenHashMap();
-		
+
 	/**
 	 *  Constructor for the DOMFile object
 	 *
@@ -149,7 +148,7 @@ public class DOMFile extends BTree implements Lockable {
 	protected final ClockPageBuffer getPageBuffer() {
 		return buffer;
 	}
-	
+
 	/**
 	 *  Append a value to the current page 
 	 *
@@ -159,6 +158,18 @@ public class DOMFile extends BTree implements Lockable {
 	public long add(byte[] value) throws ReadOnlyException {
 		if (value == null)
 			return -1;
+		// overflow value?
+		if (value.length > fileHeader.getWorkSize()) {
+			LOG.debug("creating overflow page");
+			OverflowDOMPage overflow = new OverflowDOMPage();
+			overflow.write(value);
+			byte[] pnum = ByteConversion.longToByte(overflow.getPageNum());
+			return add(pnum, true);
+		} else
+			return add(value, false);
+	}
+
+	private long add(byte[] value, boolean overflowPage) throws ReadOnlyException {
 		final int valueLen = value.length;
 		// always append data to the end of the file
 		DOMPage page = getCurrentPage();
@@ -181,7 +192,8 @@ public class DOMFile extends BTree implements Lockable {
 		ByteConversion.shortToByte(tid, page.data, page.len);
 		page.len += 2;
 		// save data length
-		ByteConversion.shortToByte((short) valueLen, page.data, page.len);
+		// overflow pages have length 0
+		ByteConversion.shortToByte(overflowPage ? OVERFLOW : (short) valueLen, page.data, page.len);
 		page.len += 2;
 		// save data
 		System.arraycopy(value, 0, page.data, page.len, valueLen);
@@ -195,12 +207,19 @@ public class DOMFile extends BTree implements Lockable {
 		return p;
 	}
 
-	public long insertAfter(Value key, byte[] value) {
+	/**
+	 * Insert a new node after the specified node.
+	 * 
+	 * @param key
+	 * @param value
+	 * @return
+	 */
+	public long insertAfter(DocumentImpl doc, Value key, byte[] value) {
 		try {
 			final long p = findValue(key);
-			if(p == KEY_NOT_FOUND)
+			if (p == KEY_NOT_FOUND)
 				return -1;
-			return insertAfter(p, value);
+			return insertAfter(doc, p, value);
 		} catch (BTreeException e) {
 			LOG.warn("key not found", e);
 		} catch (IOException e) {
@@ -209,7 +228,16 @@ public class DOMFile extends BTree implements Lockable {
 		return -1;
 	}
 
-	public long insertAfter(long address, byte[] value) {
+	/**
+	 * Insert a new node after the node located at the specified address.
+	 * 
+	 * @param doc the document to which the new node belongs.
+	 * @param address the storage address of the node after which the new value should
+	 * be inserted.
+	 * @param value the value of the new node.
+	 * @return
+	 */
+	public long insertAfter(DocumentImpl doc, long address, byte[] value) {
 		RecordPos rec = findValuePosition(address);
 		if (rec == null) {
 			LOG.warn("page not found");
@@ -221,6 +249,7 @@ public class DOMFile extends BTree implements Lockable {
 		// insert in the middle of the page?
 		if (rec.offset < dataLen) {
 			if (dataLen + value.length + 4 < fileHeader.getWorkSize()) {
+				// new value fits into the page
 				int end = rec.offset + value.length + 4;
 				System.arraycopy(
 					rec.page.data,
@@ -231,46 +260,34 @@ public class DOMFile extends BTree implements Lockable {
 				rec.page.len = dataLen + value.length + 4;
 				rec.page.getPageHeader().setDataLength(rec.page.len);
 			} else {
-				// split the page
+				// doesn't fit: split the page
 				DOMPage splitPage = new DOMPage();
 				splitPage.len = dataLen - rec.offset;
-				System.arraycopy(
-					rec.page.data,
-					rec.offset,
-					splitPage.data,
-					0,
-					splitPage.len);
+				System.arraycopy(rec.page.data, rec.offset, splitPage.data, 0, splitPage.len);
 				splitPage.getPageHeader().setDataLength(splitPage.len);
 				splitPage.getPageHeader().setNextDataPage(
 					rec.page.getPageHeader().getNextDataPage());
-				splitPage.getPageHeader().setPrevDataPage(
-					rec.page.getPageNum());
-				splitPage.getPageHeader().setNextTID(
-					rec.page.getPageHeader().getNextTID());
-				splitPage.getPageHeader().setRecordCount(
-					getRecordCount(splitPage));
+				splitPage.getPageHeader().setPrevDataPage(rec.page.getPageNum());
+				splitPage.getPageHeader().setNextTID(rec.page.getPageHeader().getNextTID());
+				splitPage.getPageHeader().setRecordCount(getRecordCount(splitPage));
 				splitPage.setDirty(true);
+				reportSplit(doc, rec.page, splitPage);
 				buffer.add(splitPage);
-				DOMPage nextPage =
-					getCurrentPage(splitPage.getPageHeader().getNextDataPage());
-				nextPage.getPageHeader().setPrevDataPage(
-					splitPage.getPageNum());
+				DOMPage nextPage = getCurrentPage(splitPage.getPageHeader().getNextDataPage());
+				nextPage.getPageHeader().setPrevDataPage(splitPage.getPageNum());
 				nextPage.setDirty(true);
 				buffer.add(nextPage);
-				rec.page.getPageHeader().setNextDataPage(
-					splitPage.getPageNum());
+				rec.page.getPageHeader().setNextDataPage(splitPage.getPageNum());
 				rec.page.len = rec.offset + value.length + 4;
 				rec.page.getPageHeader().setDataLength(rec.page.len);
-				rec.page.getPageHeader().setRecordCount(
-					getRecordCount(rec.page));
+				rec.page.getPageHeader().setRecordCount(getRecordCount(rec.page));
 				dataLen = rec.offset;
 			}
 		} else if (dataLen + value.length + 4 > fileHeader.getWorkSize()) {
 			// append at the end of the page
 			// does value fit into page?
 			DOMPage newPage = new DOMPage();
-			newPage.getPageHeader().setNextDataPage(
-				rec.page.getPageHeader().getNextDataPage());
+			newPage.getPageHeader().setNextDataPage(rec.page.getPageHeader().getNextDataPage());
 			rec.page.getPageHeader().setNextDataPage(newPage.getPageNum());
 			rec.page.setDirty(true);
 			buffer.add(rec.page);
@@ -287,10 +304,7 @@ public class DOMFile extends BTree implements Lockable {
 		short tid = rec.page.getPageHeader().getNextTID();
 		ByteConversion.shortToByte((short) tid, rec.page.data, rec.offset);
 		rec.offset += 2;
-		ByteConversion.shortToByte(
-			(short) value.length,
-			rec.page.data,
-			rec.offset);
+		ByteConversion.shortToByte((short) value.length, rec.page.data, rec.offset);
 		rec.offset += 2;
 		System.arraycopy(value, 0, rec.page.data, rec.offset, value.length);
 		rec.offset += value.length;
@@ -298,6 +312,31 @@ public class DOMFile extends BTree implements Lockable {
 		rec.page.setDirty(true);
 		buffer.add(rec.page);
 		return StorageAddress.createPointer((int) rec.page.getPageNum(), tid);
+	}
+
+	/**
+	 * Report the new position of nodes after a page has been split.
+	 * 
+	 * @param doc
+	 * @param oldPage
+	 * @param newPage
+	 */
+	protected final void reportSplit(DocumentImpl doc, DOMPage oldPage, DOMPage newPage) {
+		int pos = 0;
+		short vlen, current;
+		final int dlen = newPage.getPageHeader().getDataLength();
+		final NodeIndexListener idx = doc.getIndexListener();
+		while (pos < dlen) {
+			current = ByteConversion.byteToShort(newPage.data, pos);
+			vlen = ByteConversion.byteToShort(newPage.data, pos + 2);
+			if (vlen == OVERFLOW)
+				pos += 12;
+			else
+				pos = pos + vlen + 4;
+			idx.nodeChanged(
+				StorageAddress.createPointer((int) oldPage.getPageNum(), current),
+				StorageAddress.createPointer((int) newPage.getPageNum(), current));
+		}
 	}
 
 	/**
@@ -379,7 +418,7 @@ public class DOMFile extends BTree implements Lockable {
 			ph.setDirty(true);
 			ph.setNextDataPage(-1);
 			ph.setPrevDataPage(-1);
-			ph.setNextTID((short)-1);
+			ph.setNextTID((short) - 1);
 			ph.setDataLength(0);
 			ph.setRecordCount((short) 0);
 			//page.write();
@@ -410,8 +449,7 @@ public class DOMFile extends BTree implements Lockable {
 	 *@exception  IOException     Description of the Exception
 	 *@exception  BTreeException  Description of the Exception
 	 */
-	public ArrayList findKeys(IndexQuery query)
-		throws IOException, BTreeException {
+	public ArrayList findKeys(IndexQuery query) throws IOException, BTreeException {
 		final FindCallback cb = new FindCallback(FindCallback.KEYS);
 		query(query, cb);
 		return cb.getValues();
@@ -420,21 +458,21 @@ public class DOMFile extends BTree implements Lockable {
 	private long findNode(NodeImpl node, long target, Iterator iter) {
 		if (node.hasChildNodes()) {
 			final long firstChildId =
-				XMLUtil.getFirstChildId(
-					(DocumentImpl) node.getOwnerDocument(),
-					node.getGID());
-			if (firstChildId < 0)
+				XMLUtil.getFirstChildId((DocumentImpl) node.getOwnerDocument(), node.getGID());
+			if (firstChildId < 0) {
+				LOG.debug("first child not found: " + node.getGID());
 				return 0;
+			}
 			final long lastChildId = firstChildId + node.getChildCount();
-			//LOG.debug("scanning " + firstChildId + " to " + lastChildId);
+			//if(firstChildId > 1258600 && firstChildId < 1258700)
+			//System.out.print(firstChildId + "-" + lastChildId + " ");
 			long p;
 			for (long gid = firstChildId; gid < lastChildId; gid++) {
 				NodeImpl child = (NodeImpl) iter.next();
 				if (gid == target)
 					return ((NodeIterator) iter).currentAddress();
 				child.setGID(gid);
-				if (node.hasChildNodes()
-					&& (p = findNode(child, target, iter)) != 0)
+				if (node.hasChildNodes() && (p = findNode(child, target, iter)) != 0)
 					return p;
 			}
 		}
@@ -450,46 +488,55 @@ public class DOMFile extends BTree implements Lockable {
 	 *@exception  IOException     Description of the Exception
 	 *@exception  BTreeException  Description of the Exception
 	 */
-	public ArrayList findRange(Value first, Value last)
-		throws IOException, BTreeException {
-		final IndexQuery query =
-			new IndexQuery(null, IndexQuery.BW, first, last);
+	public ArrayList findRange(Value first, Value last) throws IOException, BTreeException {
+		final IndexQuery query = new IndexQuery(null, IndexQuery.BW, first, last);
 		final RangeCallback cb = new RangeCallback();
 		query(query, cb);
 		return cb.getValues();
 	}
 
-	protected long findValue(Object lock, NodeProxy node)
-		throws IOException, BTreeException {
+	/**
+	 * Find a node by searching for a known ancestor in the index. If an ancestor is
+	 * found, it is traversed to locate the specified descendant node.
+	 *  
+	 * @param lock
+	 * @param node
+	 * @return
+	 * @throws IOException
+	 * @throws BTreeException
+	 */
+	protected long findValue(Object lock, NodeProxy node) throws IOException, BTreeException {
 		final DocumentImpl doc = (DocumentImpl) node.getDoc();
 		final NativeBroker.NodeRef nodeRef =
 			new NativeBroker.NodeRef(doc.getDocId(), node.getGID());
 		// first try to find the node in the index
 		final long p = findValue(nodeRef);
-		if(p == KEY_NOT_FOUND) {
-			//LOG.debug("node " + node.gid + " not found, trying parent.");
+		if (p == KEY_NOT_FOUND) {
 			// node not found in index: try to find the nearest available
 			// ancestor and traverse it
 			long id = node.getGID();
 			long parentPointer = -1;
-			while (parentPointer < 0) {
-				if (id < 1)
-					throw new BTreeException(
-						"node " + node.gid + " not found.");
+			do {
 				id = XMLUtil.getParentId(doc, id);
-				NativeBroker.NodeRef parentRef =
-					new NativeBroker.NodeRef(doc.getDocId(), id);
+				if (id < 1) {
+					LOG.debug(node.gid + " not found.");
+					throw new BTreeException("node " + node.gid + " not found.");
+				}
+				NativeBroker.NodeRef parentRef = new NativeBroker.NodeRef(doc.getDocId(), id);
 				try {
 					parentPointer = findValue(parentRef);
 				} catch (BTreeException bte) {
 				}
-			}
+			} while (parentPointer == KEY_NOT_FOUND);
 			final long firstChildId = XMLUtil.getFirstChildId(doc, id);
-			final Iterator iter =
-				new NodeIterator(lock, this, node.doc, parentPointer);
+			final Iterator iter = new NodeIterator(lock, this, node.doc, parentPointer);
 			final NodeImpl n = (NodeImpl) iter.next();
 			n.setGID(id);
 			final long address = findNode(n, node.gid, iter);
+			if (address == 0) {
+				Thread.dumpStack();
+				LOG.debug("node " + node.gid + " not found");
+			}
 			return address == 0 ? -1 : address;
 		} else
 			return p;
@@ -503,8 +550,7 @@ public class DOMFile extends BTree implements Lockable {
 	 *@exception  IOException     Description of the Exception
 	 *@exception  BTreeException  Description of the Exception
 	 */
-	public ArrayList findValues(IndexQuery query)
-		throws IOException, BTreeException {
+	public ArrayList findValues(IndexQuery query) throws IOException, BTreeException {
 		FindCallback cb = new FindCallback(FindCallback.VALUES);
 		query(query, cb);
 		return cb.getValues();
@@ -545,10 +591,9 @@ public class DOMFile extends BTree implements Lockable {
 		super.printStatistics();
 		buffer.printStatistics();
 	}
-	
+
 	public BufferStats getDataBufferStats() {
-		return new BufferStats(buffer.blockBuffers,
-			buffer.map.size(), buffer.hits, buffer.misses);
+		return new BufferStats(buffer.blockBuffers, buffer.map.size(), buffer.hits, buffer.misses);
 	}
 
 	/**
@@ -601,9 +646,35 @@ public class DOMFile extends BTree implements Lockable {
 	public Value get(long p) {
 		RecordPos rec = findValuePosition(p);
 		short l = ByteConversion.byteToShort(rec.page.data, rec.offset);
-		Value v = new Value(rec.page.data, rec.offset + 2, l);
-		v.setAddress(p);
+		Value v = null;
+		if (l == OVERFLOW) {
+			long pnum = ByteConversion.byteToLong(rec.page.data, rec.offset + 2);
+			byte[] data = getOverflowValue(pnum);
+			v = new Value(data);
+		} else
+			v = new Value(rec.page.data, rec.offset + 2, l);
+		if (v != null)
+			v.setAddress(p);
 		return v;
+	}
+
+	protected byte[] getOverflowValue(long pnum) {
+		try {
+			OverflowDOMPage overflow = new OverflowDOMPage(pnum);
+			return overflow.read();
+		} catch (IOException e) {
+			LOG.error("io error while loading overflow value", e);
+			return null;
+		}
+	}
+
+	protected void removeOverflowValue(long pnum) {
+		try {
+			OverflowDOMPage overflow = new OverflowDOMPage(pnum);
+			overflow.delete();
+		} catch (IOException e) {
+			LOG.error("io error while removing overflow value", e);
+		}
 	}
 
 	protected final static class RecordPos {
@@ -615,7 +686,7 @@ public class DOMFile extends BTree implements Lockable {
 			this.page = page;
 		}
 	}
-	
+
 	private final short getRecordCount(DOMPage page) {
 		int pos = 0, len;
 		short count = 0;
@@ -702,7 +773,7 @@ public class DOMFile extends BTree implements Lockable {
 	public void remove(Value key) {
 		try {
 			long p = findValue(key);
-			if(p == KEY_NOT_FOUND)
+			if (p == KEY_NOT_FOUND)
 				return;
 			remove(key, p);
 		} catch (BTreeException bte) {
@@ -716,15 +787,21 @@ public class DOMFile extends BTree implements Lockable {
 		RecordPos rec = findValuePosition(p);
 		DOMFilePageHeader ph = rec.page.getPageHeader();
 		short l = ByteConversion.byteToShort(rec.page.data, rec.offset);
+		if (l == OVERFLOW) {
+			// remove overflow value
+			long pnum = ByteConversion.byteToLong(rec.page.data, rec.offset + 2);
+			try {
+				OverflowDOMPage overflow = new OverflowDOMPage(pnum);
+				overflow.delete();
+			} catch (IOException e) {
+				LOG.error("io error while removing overflow page", e);
+			}
+			l = 8;
+		}
 		int end = rec.offset + 2 + l;
 		int len = ph.getDataLength();
 		// remove old value
-		System.arraycopy(
-			rec.page.data,
-			end,
-			rec.page.data,
-			rec.offset - 2,
-			len - end);
+		System.arraycopy(rec.page.data, end, rec.page.data, rec.offset - 2, len - end);
 		ph.setDirty(true);
 		len = len - l - 4;
 		ph.setDataLength(len);
@@ -734,7 +811,7 @@ public class DOMFile extends BTree implements Lockable {
 		if (ph.getRecordCount() == 0) {
 			buffer.remove(rec.page);
 			long np = ph.getNextDataPage();
-			if(ph.getPrevDataPage() > -1) {
+			if (ph.getPrevDataPage() > -1) {
 				DOMPage prev = getCurrentPage(ph.getPrevDataPage());
 				prev.getPageHeader().setNextDataPage(np);
 				prev.setDirty(true);
@@ -862,43 +939,41 @@ public class DOMFile extends BTree implements Lockable {
 	 *@param  p      Description of the Parameter
 	 *@param  value  Description of the Parameter
 	 */
-	public void update(Value key, long p, byte[] value)
-		throws ReadOnlyException {
+	public void update(Value key, long p, byte[] value) throws ReadOnlyException {
 		RecordPos rec = findValuePosition(p);
 		short l = ByteConversion.byteToShort(rec.page.data, rec.offset);
 		if (value.length < l) {
 			// value is smaller than before
 			System.out.println(value.length + " < " + l);
-			System.out.println(rec.page.page.getPageInfo() + "; offset = " +
-				rec.offset + "; data-len = " + 
-				rec.page.getPageHeader().getDataLength() +
-				"; previous-page = " + rec.page.getPageHeader().getPrevDataPage());
+			System.out.println(
+				rec.page.page.getPageInfo()
+					+ "; offset = "
+					+ rec.offset
+					+ "; data-len = "
+					+ rec.page.getPageHeader().getDataLength()
+					+ "; previous-page = "
+					+ rec.page.getPageHeader().getPrevDataPage());
 			throw new RuntimeException("shrinked");
-//			int next = rec.offset + 2 + l;
-//			ByteConversion.shortToByte(
-//				(short) value.length,
-//				rec.page.data,
-//				rec.offset);
-//			rec.offset += 2;
-//			System.arraycopy(value, 0, rec.page.data, rec.offset, value.length);
-//			rec.offset += value.length;
-//			System.arraycopy(
-//				rec.page.data,
-//				next,
-//				rec.page.data,
-//				rec.offset,
-//				rec.page.getPageHeader().getDataLength() - next);
-//			rec.page.len = rec.page.len - (l - value.length);
+			//			int next = rec.offset + 2 + l;
+			//			ByteConversion.shortToByte(
+			//				(short) value.length,
+			//				rec.page.data,
+			//				rec.offset);
+			//			rec.offset += 2;
+			//			System.arraycopy(value, 0, rec.page.data, rec.offset, value.length);
+			//			rec.offset += value.length;
+			//			System.arraycopy(
+			//				rec.page.data,
+			//				next,
+			//				rec.page.data,
+			//				rec.offset,
+			//				rec.page.getPageHeader().getDataLength() - next);
+			//			rec.page.len = rec.page.len - (l - value.length);
 		} else if (value.length > l) {
 			throw new IllegalStateException("value too long");
 		} else {
 			// value length unchanged
-			System.arraycopy(
-				value,
-				0,
-				rec.page.data,
-				rec.offset + 2,
-				value.length);
+			System.arraycopy(value, 0, rec.page.data, rec.offset + 2, value.length);
 		}
 		rec.page.setDirty(true);
 	}
@@ -906,9 +981,9 @@ public class DOMFile extends BTree implements Lockable {
 	public String getNodeValue(NodeProxy proxy) {
 		try {
 			long address = proxy.getInternalAddress();
-			if(address < 0)
+			if (address < 0)
 				address = findValue(this, proxy);
-			if(address == BTree.KEY_NOT_FOUND)
+			if (address == BTree.KEY_NOT_FOUND)
 				return null;
 			final RecordPos rec = findValuePosition(address);
 			final ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -917,7 +992,7 @@ public class DOMFile extends BTree implements Lockable {
 			String value;
 			try {
 				value = new String(data, "UTF-8");
-			} catch(UnsupportedEncodingException e) {
+			} catch (UnsupportedEncodingException e) {
 				value = new String(data);
 			}
 			return value;
@@ -928,11 +1003,11 @@ public class DOMFile extends BTree implements Lockable {
 		}
 		return null;
 	}
-	
+
 	private void getNodeValue(ByteArrayOutputStream os, RecordPos rec, boolean firstCall) {
-		if(rec.offset > rec.page.getPageHeader().getDataLength()) {
+		if (rec.offset > rec.page.getPageHeader().getDataLength()) {
 			final long nextPage = rec.page.getPageHeader().getNextDataPage();
-			if(nextPage < 0) {
+			if (nextPage < 0) {
 				LOG.warn("bad link to next page");
 				return;
 			}
@@ -940,63 +1015,77 @@ public class DOMFile extends BTree implements Lockable {
 			buffer.add(rec.page);
 			rec.offset = 2;
 		}
-		final short len = ByteConversion.byteToShort(rec.page.data, rec.offset);
+		short len = ByteConversion.byteToShort(rec.page.data, rec.offset);
 		rec.offset += 2;
-		final short type = Signatures.getType(rec.page.data[rec.offset]);
-		switch(type) {
-			case Node.ELEMENT_NODE:
-				final int children = ByteConversion.byteToInt(rec.page.data, rec.offset + 1);
+		byte[] data = rec.page.data;
+		int offset = rec.offset;
+		if (len == OVERFLOW) {
+			final long op = ByteConversion.byteToLong(rec.page.data, rec.offset + 2);
+			data = getOverflowValue(op);
+			len = (short) data.length;
+			offset = 0;
+		}
+		final short type = Signatures.getType(data[offset]);
+		switch (type) {
+			case Node.ELEMENT_NODE :
+				final int children = ByteConversion.byteToInt(data, offset + 1);
 				rec.offset += len + 2;
-				for(int i = 0;  i < children; i++)
+				for (int i = 0; i < children; i++)
 					getNodeValue(os, rec, false);
 				return;
-			case Node.TEXT_NODE:
-				os.write(rec.page.data, rec.offset + 1, len - 1);
+			case Node.TEXT_NODE :
+				os.write(data, offset + 1, len - 1);
 				break;
-			case Node.ATTRIBUTE_NODE:
+			case Node.ATTRIBUTE_NODE :
 				// use attribute value if the context node is an attribute, i.e.
 				// if this is the first call to the method
-				if(firstCall) {
-					final byte idSizeType = (byte) (rec.page.data[rec.offset] & 0x3);
-					os.write(rec.page.data, rec.offset + 1 + Signatures.getLength(idSizeType),
+				if (firstCall) {
+					final byte idSizeType = (byte) (data[offset] & 0x3);
+					os.write(
+						rec.page.data,
+						rec.offset + 1 + Signatures.getLength(idSizeType),
 						len - 1 - Signatures.getLength(idSizeType));
 				}
 				break;
 		}
 		rec.offset += len + 2;
 	}
-	
+
 	protected final RecordPos findValuePosition(long p) {
-			long pageNr = (long) StorageAddress.pageFromPointer(p);
-			final short tid = (short) StorageAddress.tidFromPointer(p);
-			DOMPage page;
-			int pos;
-			while (pageNr > -1) {
-				page = getCurrentPage(pageNr);
-				buffer.add(page);
-				pos = 0;
-				final int dlen = page.getPageHeader().getDataLength();
-				//System.out.println(pos + " < " + dlen);
-				while (pos < dlen) {
-					final short current =
-						ByteConversion.byteToShort(page.data, pos);
-					//System.out.println(current + " = " + tid);
-					if (current == tid)
-						return new RecordPos(pos + 2, page);
-					pos = pos + ByteConversion.byteToShort(page.data, pos + 2) + 4;
-				}
-				pageNr = page.getPageHeader().getNextDataPage();
-//				LOG.debug(owner.toString() + 
-//					": tid "
-//						+ tid
-//						+ " not found on "
-//						+ page.page.getPageInfo()
-//						+ ". Loading "
-//						+ pageNr);
+		long pageNr = (long) StorageAddress.pageFromPointer(p);
+		final short tid = (short) StorageAddress.tidFromPointer(p);
+		DOMPage page;
+		int pos;
+		short vlen;
+		while (pageNr > -1) {
+			page = getCurrentPage(pageNr);
+			buffer.add(page);
+			pos = 0;
+			final int dlen = page.getPageHeader().getDataLength();
+			//System.out.println(pos + " < " + dlen);
+			while (pos < dlen) {
+				final short current = ByteConversion.byteToShort(page.data, pos);
+				//System.out.println(current + " = " + tid);
+				if (current == tid)
+					return new RecordPos(pos + 2, page);
+				vlen = ByteConversion.byteToShort(page.data, pos + 2);
+				if (vlen == OVERFLOW)
+					pos += 12;
+				else
+					pos = pos + vlen + 4;
 			}
-			LOG.debug("tid " + tid + " not found.");
-			return null;
+			pageNr = page.getPageHeader().getNextDataPage();
+			//				LOG.debug(owner.toString() + 
+			//					": tid "
+			//						+ tid
+			//						+ " not found on "
+			//						+ page.page.getPageInfo()
+			//						+ ". Loading "
+			//						+ pageNr);
 		}
+		LOG.debug("tid " + tid + " not found.");
+		return null;
+	}
 
 	/**
 	 *  Description of the Class
@@ -1360,8 +1449,7 @@ public class DOMFile extends BTree implements Lockable {
 				DOMFilePageHeader ph = (DOMFilePageHeader) page.getPageHeader();
 				len = ph.getDataLength();
 				if (data.length == 0) {
-					LOG.debug(
-						"page " + page.getPageNum() + " data length == 0");
+					LOG.debug("page " + page.getPageNum() + " data length == 0");
 					return;
 				}
 			} catch (IOException ioe) {
@@ -1387,6 +1475,84 @@ public class DOMFile extends BTree implements Lockable {
 			} catch (IOException ioe) {
 				LOG.error(ioe);
 			}
+		}
+	}
+
+	protected final class OverflowDOMPage {
+
+		Page firstPage = null;
+
+		public OverflowDOMPage() {
+			firstPage = createNewPage();
+		}
+
+		public OverflowDOMPage(long first) throws IOException {
+			firstPage = getPage(first);
+		}
+
+		public void write(byte[] data) {
+			LOG.debug("writing overflow page");
+			try {
+				int remaining = data.length;
+				int chunkSize = fileHeader.getWorkSize();
+				Page page = firstPage, next = null;
+				int chunk, pos = 0;
+				Value value;
+				while (remaining > 0) {
+					chunkSize =
+						remaining > fileHeader.getWorkSize() ? fileHeader.getWorkSize() : remaining;
+					value = new Value(data, pos, chunkSize);
+					remaining -= chunkSize;
+					if (remaining > 0) {
+						next = createNewPage();
+						page.getPageHeader().setNextPage(next.getPageNum());
+						LOG.debug("next: " + next.getPageNum());
+					} else
+						page.getPageHeader().setNextPage(-1);
+					writeValue(page, value);
+					pos += chunkSize;
+					page = next;
+					next = null;
+				}
+			} catch (IOException e) {
+				LOG.error("io error while writing overflow page", e);
+			}
+		}
+
+		public byte[] read() {
+			LOG.debug("reading overflow page");
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			try {
+				Page page = firstPage;
+				byte[] chunk;
+				long np;
+				while (page != null) {
+					chunk = page.read();
+					os.write(chunk);
+					np = page.getPageHeader().getNextPage();
+					page = np > -1 ? getPage(np) : null;
+				}
+			} catch (IOException e) {
+				LOG.error("io error while loading overflow page", e);
+			}
+			return os.toByteArray();
+		}
+
+		public void delete() throws IOException {
+			LOG.debug("deleting overflow page");
+			Page page = firstPage;
+			long np;
+			while (page != null) {
+				page.read();
+				LOG.debug("removing overflow page " + page.getPageNum());
+				np = page.getPageHeader().getNextPage();
+				unlinkPages(page);
+				page = np > -1 ? getPage(np) : null;
+			}
+		}
+
+		public long getPageNum() {
+			return firstPage.getPageNum();
 		}
 	}
 
@@ -1428,7 +1594,7 @@ public class DOMFile extends BTree implements Lockable {
 		public void add(DOMPage page) {
 			add(page, 1);
 		}
-		
+
 		/**
 		 *  Description of the Method
 		 *
@@ -1445,8 +1611,7 @@ public class DOMFile extends BTree implements Lockable {
 					for (Iterator i = map.values().iterator(); i.hasNext();) {
 						DOMPage old = (DOMPage) i.next();
 						old.decRefCount();
-						if (old.getRefCount() < 1
-							&& old.getPageNum() != page.getPageNum()) {
+						if (old.getRefCount() < 1 && old.getPageNum() != page.getPageNum()) {
 							//i.remove();
 							map.remove(old.page.getPageNum());
 							if (old.isDirty()) {
@@ -1525,7 +1690,7 @@ public class DOMFile extends BTree implements Lockable {
 	public final void addToBuffer(DOMPage page) {
 		buffer.add(page);
 	}
-	
+
 	/**
 	 *  Description of the Class
 	 *
@@ -1571,8 +1736,7 @@ public class DOMFile extends BTree implements Lockable {
 			switch (mode) {
 				case VALUES :
 					RecordPos rec = findValuePosition(pointer);
-					short l =
-						ByteConversion.byteToShort(rec.page.data, rec.offset);
+					short l = ByteConversion.byteToShort(rec.page.data, rec.offset);
 					int dataStart = rec.offset + 2;
 					//int l = (int) VariableByteCoding.decode( page.data, offset );
 					//int dataStart = VariableByteCoding.getSize( l );

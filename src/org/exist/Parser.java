@@ -83,7 +83,6 @@ public class Parser
 
 	private final static Category LOG = Category.getInstance(Parser.class.getName());
 
-	public final static int MAX_STR_LEN = 225;
 	public final static int SPARSE_IDENTIFIERS = 0;
 
 	private final static int VALIDATION_ENABLED = 0;
@@ -219,7 +218,7 @@ public class Parser
 	public void characters(char[] ch, int start, int length) {
 		if (length <= 0)
 			return;
-		if (charBuf != null && charBuf.length() + length < MAX_STR_LEN) {
+		if (charBuf != null) {
 			charBuf.append(ch, start, length);
 			return;
 		}
@@ -240,29 +239,9 @@ public class Parser
 					broker.store(text, currentPath.toString());
 			}
 		}
-		// if length > MAX_STR_LEN split the string into
-		// smaller parts:
-		if (length > MAX_STR_LEN) {
-			int len = MAX_STR_LEN;
-			//TextImpl text;
-			while (length > 0) {
-				//text = new TextImpl( ch, start, len );
-				text.setData(ch, start, len);
-				text.setOwnerDocument(document);
-				last.appendChildInternal(text);
-				if (!validate)
-					broker.store(text, currentPath.toString());
-				text.clear();
-				start = start + len;
-				length = length - len;
-				if (length < MAX_STR_LEN)
-					len = length;
-			}
-		} else {
-			charBuf.setLength(0);
-			//charBuf = new FastStringBuffer( 6, 6, 3 );
-			charBuf.append(ch, start, length);
-		}
+		charBuf.setLength(0);
+		//charBuf = new FastStringBuffer( 6, 6, 3 );
+		charBuf.append(ch, start, length);
 	}
 
 	public void comment(char[] ch, int start, int length) {
@@ -676,10 +655,10 @@ public class Parser
 		} catch (EXistException e1) {
 			throw new SAXException(
 				"the nesting-level of your document is too high. It "
-				+ "does not fit into the indexing-scheme. Please split the document into "
-				+ "several parts and try to reduce the nesting-level.");
+					+ "does not fit into the indexing-scheme. Please split the document into "
+					+ "several parts and try to reduce the nesting-level.");
 		}
-		
+
 		// new document is valid: remove old document 
 		if (oldDoc != null) {
 			LOG.debug("removing old document " + oldDoc.getFileName());
@@ -868,7 +847,7 @@ public class Parser
 		}
 
 		level++;
-		if (document.getMaxDepth() < level) 
+		if (document.getMaxDepth() < level)
 			document.setMaxDepth(level);
 		int attrLength = attributes.getLength();
 		String attrQName;

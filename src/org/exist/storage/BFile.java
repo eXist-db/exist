@@ -48,6 +48,7 @@ import org.exist.util.LockException;
 import org.exist.util.OrderedLinkedList;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.ReentrantReadWriteLock;
+import org.exist.util.StorageAddress;
 
 /**
  *  Data store for variable size values.
@@ -478,7 +479,7 @@ public class BFile extends BTree {
 			final DataPage page = getDataPage(pnum);
 			switch (page.getPageHeader().getStatus()) {
 				case MULTI_PAGE :
-					return ((OverflowPage) page).getDataStream();
+					return ((OverflowPage) page).getDataStream(p);
 				default :
 					return getAsStream(page, p);
 			}
@@ -494,7 +495,7 @@ public class BFile extends BTree {
 		final DataPage page = getDataPage((long) pageFromPointer(pointer));
 		switch (page.getPageHeader().getStatus()) {
 			case MULTI_PAGE :
-				return ((OverflowPage) page).getDataStream();
+				return ((OverflowPage) page).getDataStream(pointer);
 			default :
 				return getAsStream(page, pointer);
 		}
@@ -506,7 +507,7 @@ public class BFile extends BTree {
 		final int offset = findValuePosition(page, tid);
 		final byte[] data = page.getData();
 		final int l = ByteConversion.byteToInt(data, offset);
-		return new ByteArrayInputStream(data, offset + 4, l);
+		return new SimplePageInputStream(data, offset + 4, l, pointer);
 	}
 
 	public int getValueSize(Value key) {
@@ -1778,8 +1779,8 @@ public class BFile extends BTree {
 			} while (next > 0);
 		}
 
-		public InputStream getDataStream() {
-			return new MultiPageInputStream(firstPage);
+		public InputStream getDataStream(long pointer) {
+			return new MultiPageInputStream(firstPage, pointer);
 		}
 
 		/**
@@ -1942,83 +1943,117 @@ public class BFile extends BTree {
 		}
 	}
 
+	public interface PageInputStream {
+
+		public long getAddress();
+	}
+	
+	private final class SimplePageInputStream extends ByteArrayInputStream 
+	implements PageInputStream {
+		
+		private long address_ = 0L;
+		
+		public SimplePageInputStream(byte[] data, int start, int len, long address) {
+			super(data, start, len);
+			address_ = address;
+		}
+		
+		public long getAddress() {
+			return address_;
+		}
+	}
+	
 	/**
 	 * An input stream for overflow pages.
 	 * 
 	 * @author wolf
 	 */
-	private final class MultiPageInputStream extends InputStream {
+	private final class MultiPageInputStream extends InputStream implements PageInputStream {
 
-		private SinglePage nextPage;
-		private int len = -1;
-		private int pageLen;
-		private int offset = 0;
-
-		public MultiPageInputStream(SinglePage first) {
-			nextPage = first;
-			len = first.ph.getDataLength() - 6;
-			offset = 6;
-			pageLen = fileHeader.getWorkSize();
+		private SinglePage nextPage_;
+		private int len_ = -1;
+		private int pageLen_;
+		private int offset_ = 0;
+		private long address_ = 0L;
+		
+		public MultiPageInputStream(SinglePage first, long address) {
+			nextPage_ = first;
+			len_ = first.ph.getDataLength() - 6;
+			offset_ = 6;
+			pageLen_ = fileHeader.getWorkSize();
 			pages.add(first);
+			address_ = address;
 		}
 
+		public final long getAddress() {
+			return address_;
+		}
+		
 		/* (non-Javadoc)
 		 * @see java.io.InputStream#read()
 		 */
 		public final int read() throws IOException {
-			if (pageLen < 0)
+			if (pageLen_ < 0)
 				return -1;
-			if (offset == pageLen) {
-				final long next = nextPage.getPageHeader().getNextInChain();
+			if (offset_ == pageLen_) {
+				final long next = nextPage_.getPageHeader().getNextInChain();
 				if (next < 1) {
-					pageLen = -1;
-					offset = 0;
+					pageLen_ = -1;
+					offset_ = 0;
 					return -1;
 				}
 				try {
 					lock.acquire(Lock.READ_LOCK);
-					nextPage = (SinglePage) getDataPage(next);
-					pageLen = nextPage.ph.getDataLength();
-					offset = 0;
-					pages.add(nextPage);
+					nextPage_ = (SinglePage) getDataPage(next);
+					pageLen_ = nextPage_.ph.getDataLength();
+					offset_ = 0;
+					pages.add(nextPage_);
 				} catch (LockException e) {
 					throw new IOException("failed to acquire a read lock on " + getFile().getName());
 				} finally {
 					lock.release();
 				}
 			}
-			return (int) (nextPage.data[offset++] & 0xFF);
+			return (int) (nextPage_.data[offset_++] & 0xFF);
 		}
 
 		/* (non-Javadoc)
 		 * @see java.io.InputStream#available()
 		 */
 		public int available() throws IOException {
-			return pageLen < 0 ? 0 : pageLen;
+			return pageLen_ < 0 ? 0 : pageLen_;
 		}
 
 		/* (non-Javadoc)
 		 * @see java.io.InputStream#read(byte[], int, int)
 		 */
 		public int read(byte[] b, int off, int len) throws IOException {
-			if (pageLen < 0)
+			if (pageLen_ < 0)
 				return -1;
 			for(int i = 0; i < len; i++) {
-				if (offset == pageLen) {
-					final long next = nextPage.getPageHeader().getNextInChain();
+				if (offset_ == pageLen_) {
+					final long next = nextPage_.getPageHeader().getNextInChain();
 					if (next < 1) {
-						pageLen = -1;
-						offset = 0;
+						pageLen_ = -1;
+						offset_ = 0;
 						return i;
 					}
-					nextPage = (SinglePage) getDataPage(next);
-					pageLen = nextPage.ph.getDataLength();
-					offset = 0;
-					pages.add(nextPage);
+					nextPage_ = (SinglePage) getDataPage(next);
+					pageLen_ = nextPage_.ph.getDataLength();
+					offset_ = 0;
+					pages.add(nextPage_);
 				}
-				b[off + i] = nextPage.data[offset++]; 
+				b[off + i] = nextPage_.data[offset_++]; 
 			}
 			return len; 
+		}
+
+		/* (non-Javadoc)
+		 * @see java.io.InputStream#close()
+		 */
+		public void close() throws IOException {
+			nextPage_ = null;
+			len_ = -1;
 		}
 
 	}

@@ -9,7 +9,7 @@
         <xu:element name="address">
         
             <!-- attribute -->        
-            <!--<xu:attribute name="id">99</xu:attribute> -->
+            <xu:attribute name="rating">99</xu:attribute>
             
             <fname>Boris</fname>
             <lname>Becker</lname>

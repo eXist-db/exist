@@ -22,6 +22,7 @@ package org.exist.storage;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -86,8 +87,9 @@ public class NativeElementIndex extends ElementIndex {
 		String elementName;
 		List oldList = new ArrayList(), idList;
 		NodeProxy p;
-		VariableByteOutputStream os;
-		VariableByteInputStream is;
+		VariableByteOutputStream os = new VariableByteOutputStream();
+		VariableByteInputStream is = new VariableByteInputStream();
+		InputStream dis = null;
 		int len, docId;
 		byte[] data;
 		Value ref;
@@ -106,19 +108,20 @@ public class NativeElementIndex extends ElementIndex {
 				// try to retrieve old index entry for the element
 				try {
 					lock.acquire(Lock.READ_LOCK);
-					val = dbElement.get(ref);
+					//val = dbElement.get(ref);
+					dis = dbElement.getAsStream(ref);
 				} catch (LockException e) {
 					LOG.error("could not acquire lock for index on " + elementName);
 					return;
 				} finally {
 					lock.release();
 				}
-				os = new VariableByteOutputStream();
+				os.clear();
 				oldList.clear();
-				if (val != null) {
+				if (dis != null) {
 					// add old entries to the new list 
-					data = val.getData();
-					is = new VariableByteInputStream(data);
+					//data = val.getData();
+					is.setInputStream(dis);
 					try {
 						while (is.available() > 0) {
 							docId = is.readInt();
@@ -128,9 +131,7 @@ public class NativeElementIndex extends ElementIndex {
 								// copy data to new buffer
 								os.writeInt(docId);
 								os.writeInt(len);
-								for (int j = 0; j < len * 4; j++) {
-									is.copyTo(os);
-								}
+								is.copyTo(os, len * 4);
 							} else {
 								// copy nodes to new list
 								last = 0;
@@ -154,7 +155,6 @@ public class NativeElementIndex extends ElementIndex {
 							}
 						}
 					} catch (EOFException e) {
-						LOG.error("end-of-file while updating index for element " + elementName);
 					} catch (IOException e) {
 						LOG.error("io-error while updating index for element " + elementName);
 					}
@@ -177,10 +177,13 @@ public class NativeElementIndex extends ElementIndex {
 				data = os.toByteArray();
 				try {
 					lock.acquire(Lock.WRITE_LOCK);
-					if (val == null)
+					if (dis == null)
 						dbElement.put(ref, data);
-					else
-						dbElement.update(val.getAddress(), ref, data);
+					else {
+						address = ((BFile.PageInputStream)dis).getAddress();
+						dbElement.update(address, ref, data);
+						//dbElement.update(val.getAddress(), ref, data);
+					}
 				} catch (LockException e) {
 					LOG.error("could not acquire lock on elements", e);
 				} finally {

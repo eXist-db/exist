@@ -244,10 +244,12 @@
         	showoutput="${junit.output}">
             <formatter type="plain"/>
             <test fork="yes" name="org.exist.xmldb.test.AllTests" todir="${junit.reports}"/>
+			<test fork="yes" name="org.exist.xupdate.test.AllTests" todir="${junit.reports}"/>
             <batchtest fork="yes" todir="${junit.reports}">
                 <fileset dir="${src}">
                     <include name="**/test/*.java"/>
                     <exclude name="**/xmldb/test/*.java"/>
+					<exclude name="**/xupdate/test/*.java"/>
                 </fileset>
             </batchtest>
             <classpath refid="classpath.core"/>
@@ -295,7 +297,6 @@
     <!-- ================================================================== -->
     <target depends="jar" name="webapps">
         <delete dir="dist"/>
-        <mkdir dir="${webapp.dir}"/>
 		<mkdir dir="${webapp.dir}"/>
 		<mkdir dir="${webapp.dir}/samples"/>
         <copy todir="${webapp.dir}">
@@ -351,6 +352,8 @@
 				<exclude name="axis-ant.jar"/>
         	</fileset>
         </copy>
+        <mkdir dir="${webapp.dir}/WEB-INF/data"/>
+        <mkdir dir="${webapp.dir}/WEB-INF/logs"/>
     </target>
 
     <target name="dist-war" depends="webapps">

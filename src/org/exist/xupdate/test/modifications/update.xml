@@ -10,5 +10,5 @@
     <xu:update select="//address[lname |= 'jekyll']/email/@type">
         home
     </xu:update>
-    
+
 </xu:modifications>    

@@ -130,8 +130,16 @@ public final class NodeIterator implements Iterator {
 				}
 				// extract the value
 				lastTID = ByteConversion.byteToShort(p.data, offset);
-				final short l = ByteConversion.byteToShort(p.data, offset + 2);
-				nextNode = NodeImpl.deserialize(p.data, offset + 4, l, doc);
+				short l = ByteConversion.byteToShort(p.data, offset + 2);
+				if(l == DOMFile.OVERFLOW) {
+					// overflow page: load the overflow value
+					l = 8;
+					final long overflow = ByteConversion.byteToLong(p.data, offset + 4);
+					final byte[] odata = db.getOverflowValue(overflow);
+					nextNode = NodeImpl.deserialize(odata, 0, odata.length, doc);
+				} else {
+					nextNode = NodeImpl.deserialize(p.data, offset + 4, l, doc);
+				}
 				nextNode.setInternalAddress(StorageAddress.createPointer((int) page, lastTID));
 				nextNode.setOwnerDocument(doc);
 				offset = offset + 4 + l;

@@ -447,8 +447,7 @@ public class RpcServer implements RpcAPI {
 	}
 
 	private void handleException(Exception e) throws EXistException, PermissionDeniedException {
-		LOG.debug(e.getMessage());
-		LOG.error(e);
+		LOG.debug(e.getMessage(), e);
 		if (e instanceof EXistException)
 			throw (EXistException) e;
 		else if (e instanceof PermissionDeniedException)

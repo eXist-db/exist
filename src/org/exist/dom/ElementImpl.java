@@ -266,11 +266,6 @@ public class ElementImpl extends NodeImpl implements Element {
 		}
 		ownerDocument.broker.update(this);
 		ownerDocument.broker.reindex(prevDoc, ownerDocument, null);
-//		try {
-//			ownerDocument.broker.saveCollection(ownerDocument.getCollection());
-//		} catch (PermissionDeniedException e) {
-//			throw new DOMException(DOMException.INVALID_ACCESS_ERR, e.getMessage());
-//		}
 		return node;
 	}
 
@@ -1066,12 +1061,6 @@ public class ElementImpl extends NodeImpl implements Element {
 			ownerDocument.reindex = level + 1;
 			ownerDocument.broker.reindex(prevDoc, ownerDocument, this);
 		}
-//		try {
-//			ownerDocument.broker.saveCollection(ownerDocument.getCollection());
-//		} catch (PermissionDeniedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
 		return result;
 	}
 
