@@ -284,8 +284,6 @@ public class DecimalValue extends NumericValue {
 			return getStringValue();
 		else if (target == Boolean.class)
 			return Boolean.valueOf(effectiveBooleanValue());
-		else if (target == Object.class)
-			return value;
 
 		throw new XPathException(
 			"cannot convert value of type "
