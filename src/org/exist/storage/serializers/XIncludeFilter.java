@@ -22,7 +22,11 @@
 package org.exist.storage.serializers;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
@@ -187,6 +191,18 @@ public class XIncludeFilter implements Receiver {
 				xpointer = XMLUtil.decodeAttrMarkup(href.substring(p + 1));
 				LOG.debug("found xpointer: " + xpointer);
 			}
+            
+            // extract possible parameters in the URI
+            Map params = null;
+            int paramsStart = docName.indexOf('?');
+            if (paramsStart > -1) {
+                if (paramsStart < docName.length() - 1) {
+                    String paramStr = docName.substring(paramsStart + 1);
+                    params = processParameters(paramStr);
+                }
+                docName = docName.substring(0, paramsStart);
+            }
+            
 			// if docName has no collection specified, assume
 			// current collection 
 			p = docName.lastIndexOf('/');
@@ -247,7 +263,15 @@ public class XIncludeFilter implements Receiver {
     					else
     						context.setStaticallyKnownDocuments(new String[] { docName });
                     }
-					
+                    
+                    // pass parameters as variables
+					if (params != null) {
+                        for (Iterator i = params.entrySet().iterator(); i.hasNext(); ) {
+                            Map.Entry entry = (Map.Entry) i.next();
+                            context.declareVariable(entry.getKey().toString(), entry.getValue());
+                        }
+                    }
+                    
                     if(compiled == null) {
                         try {
                             compiled = xquery.compile(context, source, xpointer != null);
@@ -321,4 +345,37 @@ public class XIncludeFilter implements Receiver {
 		}
 		return xpointer;
 	}
+    
+    protected HashMap processParameters(String args) {
+        HashMap parameters = new HashMap();
+        String param;
+        String value; 
+        int start = 0;
+        int end = 0;
+        int l = args.length();
+        while ((start < l) && (end < l)) {
+            while ((end < l) && (args.charAt(end++) != '='))
+                ;
+            if (end == l)
+                break;
+            param = args.substring(start, end - 1);
+            start = end;
+            while ((end < l) && (args.charAt(end++) != '&'))
+                ;
+            if (end == l)
+                value = args.substring(start);
+            else
+                value = args.substring(start, end - 1);
+            start = end;
+            try {
+                param = URLDecoder.decode(param, "UTF-8");
+                value = URLDecoder.decode(value, "UTF-8");
+                LOG.debug("parameter: " + param + " = " + value);
+                parameters.put(param, value);
+            } catch (UnsupportedEncodingException e) {
+                LOG.warn(e.getMessage(), e);
+            }
+        }
+        return parameters;
+    }
 }
