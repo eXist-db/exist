@@ -1,0 +1,36 @@
+@import url(default-style.css);
+
+.module {
+	font-weight: bold;
+	color: white;
+	background-color: #0000FF;
+	padding: 10px;
+	margin-left: 15px;
+}
+
+.function {
+	margin-left: 15px;
+	margin-top: 10px;
+	margin-bottom: 15px;
+}
+
+.functionhead {
+	margin-bottom: 10px;
+	font-weight: bold;
+}
+
+.prototype {
+	padding: 5px;
+	border: 1px solid black;
+	margin-bottom: 10px;
+}
+
+.signature {
+	font-family: Courier, monospace;
+}
+
+.description {
+	padding-left: 15px;
+	padding-right: 15px;
+	text-align: justify;
+}

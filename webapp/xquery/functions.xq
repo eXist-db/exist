@@ -5,7 +5,13 @@ declare namespace util="http://exist-db.org/xquery/util";
 
 <document xmlns:xi="http://www.w3.org/2001/XInclude">
 	
-	<xi:include href="context://header.xml"/>
+	<header>
+    	<logo src="logo.jpg"/>
+    	<title>Open Source Native XML Database</title>
+		<author email="wolfgang@exist-db.org">Wolfgang M. Meier</author>
+		<style href="styles/functions.css"/>
+	</header>
+	
 	<xi:include href="sidebar.xml"/>
 
 	<body>

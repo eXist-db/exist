@@ -3,53 +3,47 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" version="1.0">
 
     <xsl:template match="builtin-functions">
-        <table border="0" cellpadding="5" cellspacing="5">
-            <tr bgcolor="#0000FF">
-                <th style="color: #FFFFFF" align="left" colspan="2">
-                    XPath/XQuery Core Library Functions (http://www.w3.org/2003/05/xpath-functions)
-                </th>
-            </tr>
-            <xsl:apply-templates select="function[@module='http://www.w3.org/2003/05/xpath-functions']"/>
+		<div class="module">
+            XPath/XQuery Core Library Functions (http://www.w3.org/2003/05/xpath-functions)
+		</div>
+        <xsl:apply-templates select="function[@module='http://www.w3.org/2003/05/xpath-functions']"/>
+		
+		<div class="module">
+			Utility Extension Functions (http://exist-db.org/xquery/util)
+		</div>
+        <xsl:apply-templates select="function[@module='http://exist-db.org/xquery/util']"/>
             
-            <tr bgcolor="#0000FF">
-                <th style="color: #FFFFFF" align="left" colspan="2">
-                    Utility Extension Functions (http://exist-db.org/xquery/util)
-                </th>
-            </tr>
-            <xsl:apply-templates select="function[@module='http://exist-db.org/xquery/util']"/>
+		<div class="module">
+			XMLDB Extension Functions (http://exist-db.org/xquery/xmldb)
+		</div>
+        <xsl:apply-templates select="function[@module='http://exist-db.org/xquery/xmldb']"/>
             
-            <tr bgcolor="#0000FF">
-                <th style="color: #FFFFFF" align="left" colspan="2">
-                    XMLDB Extension Functions (http://exist-db.org/xquery/xmldb)
-                </th>
-            </tr>
-            <xsl:apply-templates select="function[@module='http://exist-db.org/xquery/xmldb']"/>
-            
-            <tr bgcolor="#0000FF">
-                <th style="color: #FFFFFF" align="left" colspan="2">
-                    HTTP Request Extension Functions (http://exist-db.org/xquery/request)
-                </th>
-            </tr>
-            <xsl:apply-templates select="function[@module='http://exist-db.org/xquery/request']"/>
-        </table>
+		<div class="module">
+            HTTP Request Extension Functions (http://exist-db.org/xquery/request)
+		</div>
+        <xsl:apply-templates select="function[@module='http://exist-db.org/xquery/request']"/>
     </xsl:template>
     
     <xsl:template match="function">
-        <tr>
-            <td valign="top" colspan="2">
+		<div class="function">
+			<div class="functionhead">
                 <a name="{@name}">
-                    <b>
-                        <xsl:value-of select="signature"/>
-                    </b>
+                    <xsl:value-of select="@name"/>
                 </a>
-            </td>
-        </tr>
-        <xsl:if test="description">
-            <tr>
-                <td width="10%"></td>
-                <td width="90%"><xsl:value-of select="description"/></td>
-            </tr>
-        </xsl:if>
+			</div>
+			<xsl:apply-templates/>
+		</div>
+	</xsl:template>
+	
+	<xsl:template match="prototype">
+		<div class="prototype">
+			<div class="signature">
+				<xsl:value-of select="signature"/>
+			</div>
+			<div class="description">
+				<xsl:apply-templates select="description"/>
+			</div>
+		</div>
     </xsl:template>
     
     <xsl:template match="node()|@*" priority="-1">
