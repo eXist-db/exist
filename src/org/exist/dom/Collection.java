@@ -257,16 +257,15 @@ public class Collection implements Comparable {
     public void read(VariableByteInputStream istream) throws IOException {
         collectionId = istream.readShort();
         name = istream.readUTF();
-        int collLen = istream.readInt();
+        final int collLen = istream.readInt();
         for (int i = 0; i < collLen; i++) {
-            String sub = istream.readUTF();
+            final String sub = istream.readUTF();
             subcollections.add(sub);
         }
         permissions.read(istream);
-        DocumentImpl doc;
         try {
             while (true) {
-                doc = new DocumentImpl(broker, this);
+                final DocumentImpl doc = new DocumentImpl(broker, this);
                 doc.read(istream);
                 addDocument(doc);
             }
@@ -382,9 +381,8 @@ public class Collection implements Comparable {
         for (Iterator i = collectionIterator(); i.hasNext();)
             ostream.writeUTF((String) i.next());
         permissions.write(ostream);
-        DocumentImpl doc;
         for (Iterator i = iterator(); i.hasNext();) {
-            doc = (DocumentImpl) i.next();
+            final DocumentImpl doc = (DocumentImpl) i.next();
             doc.write(ostream);
         }
     }

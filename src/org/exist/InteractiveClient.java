@@ -1058,14 +1058,15 @@ public class InteractiveClient {
 			if (file.isDirectory()) {
 				if (recurseDirs) {
 					bytesCount = 0;
-					fileCount = 0;
+					filesCount = 0;
 					long start = System.currentTimeMillis();
 					boolean result = 
 						findRecursive(current, file, path);
-					System.out.println("storing " + fileCount + " files (" +
+					System.out.println("storing " + filesCount + " files (" +
 						(bytesCount / 1024) + "K) took " + 
 						(System.currentTimeMillis() - start) + "ms.");
-				else
+                    return result;
+                } else
 					files = file.listFiles(new XMLFilenameFilter());
 			} else {
 				files = new File[1];

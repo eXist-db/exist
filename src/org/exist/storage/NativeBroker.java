@@ -88,7 +88,8 @@ public class NativeBroker extends DBBroker {
 	protected final static int BUFFERS = 256;
 
 	protected static int FILE_BUFFER_SIZE = 131072;
-
+    protected static int MEM_LIMIT_CHECK = 10000; 
+     
 	private static Category LOG =
 		Category.getInstance(NativeBroker.class.getName());
 
@@ -110,6 +111,7 @@ public class NativeBroker extends DBBroker {
 	protected int defaultIndexDepth = 1;
 	protected boolean readOnly = false;
 	protected int memMinFree;
+    protected int nodesCount = 0;
 	private final Runtime run = Runtime.getRuntime();
     
 	/**
@@ -429,6 +431,7 @@ public class NativeBroker extends DBBroker {
 		elementIndex.flush();
 		if (symbols != null && symbols.hasChanged())
 			saveSymbols(namespacesDb);
+        nodesCount = 0;
 	}
 
 	/**
@@ -516,6 +519,7 @@ public class NativeBroker extends DBBroker {
 	 *@return       The collection value
 	 */
 	public Collection getCollection(String name) {
+//        final long start = System.currentTimeMillis();
 		name = normalizeCollectionName(name);
 		if (name.length() > 0 && name.charAt(0) != '/')
 			name = "/" + name;
@@ -532,14 +536,14 @@ public class NativeBroker extends DBBroker {
 		} catch (UnsupportedEncodingException uee) {
 			key = new Value(name.getBytes());
 		}
-		Collection collection = new Collection(this, name);
+		final Collection collection = new Collection(this, name);
 		Value val = null;
 		synchronized (collectionsDb) {
 			val = collectionsDb.get(key);
 		}
 		if (val == null)
 			return null;
-		byte[] data = val.getData();
+		final byte[] data = val.getData();
 		VariableByteInputStream istream = new VariableByteInputStream(data);
 		try {
 			collection.read(istream);
@@ -547,6 +551,8 @@ public class NativeBroker extends DBBroker {
 			LOG.warn(ioe);
 			return null;
 		}
+//        LOG.debug("loading collection " + name + " took " +
+//            (System.currentTimeMillis() - start) + "ms.");
 		return collection;
 	}
 
@@ -575,7 +581,7 @@ public class NativeBroker extends DBBroker {
 		try {
 			symbols.read(istream);
 		} catch (IOException ioe) {
-			LOG.warn(ioe);
+			LOG.warn("unexpected io error", ioe);
 		}
 		return symbols;
 	}
@@ -1993,6 +1999,7 @@ public class NativeBroker extends DBBroker {
 			}
 		}
 		.run();
+        ++nodesCount;
 		NodeProxy tempProxy =
 			new NodeProxy(doc, gid, node.getInternalAddress());
 		switch (nodeType) {
@@ -2026,8 +2033,9 @@ public class NativeBroker extends DBBroker {
 					textEngine.storeText(idx, (TextImpl) node);
 				break;
 		}
-		int percent = (int) (run.freeMemory() / (run.totalMemory() / 100));
-		if (percent < memMinFree) {
+		final int percent = (int) 
+            (run.freeMemory() / (run.totalMemory() / 100));
+		if (nodesCount > MEM_LIMIT_CHECK && percent < memMinFree) {
 			LOG.info(
 				"total memory: "
 					+ run.totalMemory()
