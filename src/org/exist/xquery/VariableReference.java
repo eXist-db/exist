@@ -56,7 +56,7 @@ public class VariableReference extends AbstractExpression {
 		throws XPathException {
 		Variable var = getVariable();
 		Sequence seq = var.getValue();
-		return seq;
+		return seq == null ? Sequence.EMPTY_SEQUENCE : seq;
 	}
 
 	protected Variable getVariable() throws XPathException {
