@@ -701,7 +701,7 @@
 
             <map:match pattern="**/">
                 <map:generate src="{1}" type="directory"/>
-                <map:transform src="stylesheets/system/directory2html.xsl"/>
+                <map:transform src="stylesheets/system/directory2html.xslt"/>
                 <map:serialize/>
             </map:match>
             
