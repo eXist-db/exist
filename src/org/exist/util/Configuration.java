@@ -118,7 +118,8 @@ public class Configuration implements ErrorHandler {
 				String caseSensitive = p.getAttribute("caseSensitive");
 				String tokenizer = p.getAttribute("tokenizer");
 				String validation = p.getAttribute("validation");
-
+				String suppressWSmixed = p.getAttribute("suppress-whitespace-mixed-content");
+				
 				if (parseNum != null)
 					config.put(
 						"indexer.indexNumbers",
@@ -150,6 +151,11 @@ public class Configuration implements ErrorHandler {
 					} catch (NumberFormatException e) {
 					}
 
+					if (suppressWSmixed != null)
+					config.put(
+						"indexer.suppress-whitespace-mixed-content",
+						Boolean.valueOf(suppressWSmixed.equals("yes")));
+				
 				// index settings
 				NodeList index = p.getElementsByTagName("index");
 
