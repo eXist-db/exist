@@ -37,6 +37,7 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Lock;
+import org.exist.collections.Collection;
 
 /**
  * @author wolf
@@ -53,14 +54,18 @@ public class Head extends AbstractWebDAVMethod {
 	public void process(User user, HttpServletRequest request,
 			HttpServletResponse response, String path) throws ServletException, IOException {
 		DBBroker broker = null;
-		byte[] contentData = null;
+		Collection collection = null;
 		DocumentImpl resource = null;
 		try {
 			broker = pool.get();
+			collection = broker.openCollection(path, Lock.READ_LOCK);
+			if(collection != null) {
+				response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "GET is not available on collections");
+				return;
+			}
 			resource = broker.openDocument(path, Lock.READ_LOCK);
 			if(resource == null) {
-				// GET is not available on collections
-				response.sendError(HttpServletResponse.SC_FORBIDDEN, "GET is not available on collections");
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Resource not found");
 				return;
 			}
 			if(!resource.getPermissions().validate(user, Permission.READ)) {
@@ -80,13 +85,11 @@ public class Head extends AbstractWebDAVMethod {
 		} catch (PermissionDeniedException e) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, READ_PERMISSION_DENIED);
 		} finally {
+			if(collection != null)
+				collection.release();
 			if(resource != null)
 				resource.getUpdateLock().release(Lock.READ_LOCK);
 			pool.release(broker);
-		}
-		if(contentData == null) {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND);
-			return;
 		}
 	}
 }
