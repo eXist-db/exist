@@ -2,7 +2,7 @@
  * QuerySoapBindingStub.java
  *
  * This file was auto-generated from WSDL
- * by the Apache Axis WSDL2Java emitter.
+ * by the Apache Axis 1.2RC2 Nov 16, 2004 (12:19:44 EST) WSDL2Java emitter.
  */
 
 package org.exist.soap;
@@ -17,6 +17,10 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
 
     static {
         _operations = new org.apache.axis.description.OperationDesc[10];
+        _initOperationDesc1();
+    }
+
+    private static void _initOperationDesc1(){
         org.apache.axis.description.OperationDesc oper;
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getResource");
@@ -27,8 +31,8 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
         oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         oper.setReturnClass(java.lang.String.class);
         oper.setReturnQName(new javax.xml.namespace.QName("", "getResourceReturn"));
-        oper.setStyle(org.apache.axis.enum.Style.RPC);
-        oper.setUse(org.apache.axis.enum.Use.ENCODED);
+        oper.setStyle(org.apache.axis.constants.Style.RPC);
+        oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[0] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
@@ -38,8 +42,8 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
         oper.setReturnType(new javax.xml.namespace.QName("urn:exist", "QueryResponse"));
         oper.setReturnClass(org.exist.soap.QueryResponse.class);
         oper.setReturnQName(new javax.xml.namespace.QName("", "queryReturn"));
-        oper.setStyle(org.apache.axis.enum.Style.RPC);
-        oper.setUse(org.apache.axis.enum.Use.ENCODED);
+        oper.setStyle(org.apache.axis.constants.Style.RPC);
+        oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[1] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
@@ -49,8 +53,8 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
         oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         oper.setReturnClass(java.lang.String.class);
         oper.setReturnQName(new javax.xml.namespace.QName("", "connectReturn"));
-        oper.setStyle(org.apache.axis.enum.Style.RPC);
-        oper.setUse(org.apache.axis.enum.Use.ENCODED);
+        oper.setStyle(org.apache.axis.constants.Style.RPC);
+        oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[2] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
@@ -64,16 +68,16 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
         oper.setReturnType(new javax.xml.namespace.QName("urn:exist", "ArrayOf_xsd_string"));
         oper.setReturnClass(java.lang.String[].class);
         oper.setReturnQName(new javax.xml.namespace.QName("", "retrieveReturn"));
-        oper.setStyle(org.apache.axis.enum.Style.RPC);
-        oper.setUse(org.apache.axis.enum.Use.ENCODED);
+        oper.setStyle(org.apache.axis.constants.Style.RPC);
+        oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[3] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("disconnect");
         oper.addParameter(new javax.xml.namespace.QName("", "in0"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
         oper.setReturnType(org.apache.axis.encoding.XMLType.AXIS_VOID);
-        oper.setStyle(org.apache.axis.enum.Style.RPC);
-        oper.setUse(org.apache.axis.enum.Use.ENCODED);
+        oper.setStyle(org.apache.axis.constants.Style.RPC);
+        oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[4] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
@@ -86,8 +90,8 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
         oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "base64Binary"));
         oper.setReturnClass(byte[].class);
         oper.setReturnQName(new javax.xml.namespace.QName("", "getResourceDataReturn"));
-        oper.setStyle(org.apache.axis.enum.Style.RPC);
-        oper.setUse(org.apache.axis.enum.Use.ENCODED);
+        oper.setStyle(org.apache.axis.constants.Style.RPC);
+        oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[5] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
@@ -97,8 +101,8 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
         oper.setReturnType(new javax.xml.namespace.QName("urn:exist", "QueryResponse"));
         oper.setReturnClass(org.exist.soap.QueryResponse.class);
         oper.setReturnQName(new javax.xml.namespace.QName("", "xqueryReturn"));
-        oper.setStyle(org.apache.axis.enum.Style.RPC);
-        oper.setUse(org.apache.axis.enum.Use.ENCODED);
+        oper.setStyle(org.apache.axis.constants.Style.RPC);
+        oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[6] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
@@ -112,8 +116,8 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
         oper.setReturnType(new javax.xml.namespace.QName("urn:exist", "ArrayOf_xsd_base64Binary"));
         oper.setReturnClass(byte[][].class);
         oper.setReturnQName(new javax.xml.namespace.QName("", "retrieveDataReturn"));
-        oper.setStyle(org.apache.axis.enum.Style.RPC);
-        oper.setUse(org.apache.axis.enum.Use.ENCODED);
+        oper.setStyle(org.apache.axis.constants.Style.RPC);
+        oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[7] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
@@ -128,8 +132,8 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
         oper.setReturnType(new javax.xml.namespace.QName("urn:exist", "ArrayOf_xsd_string"));
         oper.setReturnClass(java.lang.String[].class);
         oper.setReturnQName(new javax.xml.namespace.QName("", "retrieveByDocumentReturn"));
-        oper.setStyle(org.apache.axis.enum.Style.RPC);
-        oper.setUse(org.apache.axis.enum.Use.ENCODED);
+        oper.setStyle(org.apache.axis.constants.Style.RPC);
+        oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[8] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
@@ -139,8 +143,8 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
         oper.setReturnType(new javax.xml.namespace.QName("urn:exist", "Collection"));
         oper.setReturnClass(org.exist.soap.Collection.class);
         oper.setReturnQName(new javax.xml.namespace.QName("", "listCollectionReturn"));
-        oper.setStyle(org.apache.axis.enum.Style.RPC);
-        oper.setUse(org.apache.axis.enum.Use.ENCODED);
+        oper.setStyle(org.apache.axis.constants.Style.RPC);
+        oper.setUse(org.apache.axis.constants.Use.ENCODED);
         _operations[9] = oper;
 
     }
@@ -170,41 +174,8 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
             java.lang.Class arraydf = org.apache.axis.encoding.ser.ArrayDeserializerFactory.class;
             java.lang.Class simplesf = org.apache.axis.encoding.ser.SimpleSerializerFactory.class;
             java.lang.Class simpledf = org.apache.axis.encoding.ser.SimpleDeserializerFactory.class;
-            qName = new javax.xml.namespace.QName("urn:exist", "QueryResponseCollection");
-            cachedSerQNames.add(qName);
-            cls = org.exist.soap.QueryResponseCollection.class;
-            cachedSerClasses.add(cls);
-            cachedSerFactories.add(beansf);
-            cachedDeserFactories.add(beandf);
-
-            qName = new javax.xml.namespace.QName("urn:exist", "ArrayOfQueryResponseCollection");
-            cachedSerQNames.add(qName);
-            cls = org.exist.soap.QueryResponseCollection[].class;
-            cachedSerClasses.add(cls);
-            cachedSerFactories.add(arraysf);
-            cachedDeserFactories.add(arraydf);
-
-            qName = new javax.xml.namespace.QName("urn:exist", "Collection");
-            cachedSerQNames.add(qName);
-            cls = org.exist.soap.Collection.class;
-            cachedSerClasses.add(cls);
-            cachedSerFactories.add(beansf);
-            cachedDeserFactories.add(beandf);
-
-            qName = new javax.xml.namespace.QName("urn:exist", "QueryResponse");
-            cachedSerQNames.add(qName);
-            cls = org.exist.soap.QueryResponse.class;
-            cachedSerClasses.add(cls);
-            cachedSerFactories.add(beansf);
-            cachedDeserFactories.add(beandf);
-
-            qName = new javax.xml.namespace.QName("urn:exist", "ArrayOfQueryResponseDocument");
-            cachedSerQNames.add(qName);
-            cls = org.exist.soap.QueryResponseDocument[].class;
-            cachedSerClasses.add(cls);
-            cachedSerFactories.add(arraysf);
-            cachedDeserFactories.add(arraydf);
-
+            java.lang.Class simplelistsf = org.apache.axis.encoding.ser.SimpleListSerializerFactory.class;
+            java.lang.Class simplelistdf = org.apache.axis.encoding.ser.SimpleListDeserializerFactory.class;
             qName = new javax.xml.namespace.QName("urn:exist", "ArrayOf_xsd_string");
             cachedSerQNames.add(qName);
             cls = java.lang.String[].class;
@@ -219,6 +190,41 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
             cachedSerFactories.add(arraysf);
             cachedDeserFactories.add(arraydf);
 
+            qName = new javax.xml.namespace.QName("urn:exist", "QueryResponseCollection");
+            cachedSerQNames.add(qName);
+            cls = org.exist.soap.QueryResponseCollection.class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(beansf);
+            cachedDeserFactories.add(beandf);
+
+            qName = new javax.xml.namespace.QName("urn:exist", "Collection");
+            cachedSerQNames.add(qName);
+            cls = org.exist.soap.Collection.class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(beansf);
+            cachedDeserFactories.add(beandf);
+
+            qName = new javax.xml.namespace.QName("urn:exist", "ArrayOfQueryResponseDocument");
+            cachedSerQNames.add(qName);
+            cls = org.exist.soap.QueryResponseDocument[].class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(arraysf);
+            cachedDeserFactories.add(arraydf);
+
+            qName = new javax.xml.namespace.QName("urn:exist", "ArrayOfQueryResponseCollection");
+            cachedSerQNames.add(qName);
+            cls = org.exist.soap.QueryResponseCollection[].class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(arraysf);
+            cachedDeserFactories.add(arraydf);
+
+            qName = new javax.xml.namespace.QName("urn:exist", "QueryResponse");
+            cachedSerQNames.add(qName);
+            cls = org.exist.soap.QueryResponse.class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(beansf);
+            cachedDeserFactories.add(beandf);
+
             qName = new javax.xml.namespace.QName("urn:exist", "QueryResponseDocument");
             cachedSerQNames.add(qName);
             cls = org.exist.soap.QueryResponseDocument.class;
@@ -228,7 +234,7 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
 
     }
 
-    private org.apache.axis.client.Call createCall() throws java.rmi.RemoteException {
+    protected org.apache.axis.client.Call createCall() throws java.rmi.RemoteException {
         try {
             org.apache.axis.client.Call _call =
                     (org.apache.axis.client.Call) super.service.createCall();
@@ -279,8 +285,8 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
             }
             return _call;
         }
-        catch (java.lang.Throwable t) {
-            throw new org.apache.axis.AxisFault("Failure trying to get the Call object", t);
+        catch (java.lang.Throwable _t) {
+            throw new org.apache.axis.AxisFault("Failure trying to get the Call object", _t);
         }
     }
 

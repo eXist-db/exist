@@ -63,13 +63,6 @@
 		</fileset>
 	</path>
 
-	<path id="classpath.axis">
-		<fileset dir="${lib.optional}">
-			<include name="axis-ant.jar"/>
-            <include name="axis-1.1.jar"/>
-		</fileset>
-	</path>
-	
     <taskdef name="java2wsdl" classname="org.apache.axis.tools.ant.wsdl.Java2WsdlAntTask">
         <classpath refid="classpath.core"/>
     </taskdef>
