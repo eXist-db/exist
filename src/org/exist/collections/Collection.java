@@ -38,7 +38,6 @@ import java.util.Observer;
 import java.util.TreeMap;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
@@ -96,8 +95,6 @@ implements Comparable, EntityResolver, Cacheable {
 	private final static int VALIDATION_ENABLED = 0;
 	private final static int VALIDATION_AUTO = 1;
 	private final static int VALIDATION_DISABLED = 2;
-
-	private int validation = VALIDATION_AUTO;
 
 	// the unique internal id to identify this collection
 	private short collectionId = -1;
@@ -828,6 +825,7 @@ implements Comparable, EntityResolver, Cacheable {
 			}
 		} finally {
 			document.getUpdateLock().release(Lock.WRITE_LOCK);
+			releaseReader(broker, info.getReader());
 		}
 		broker.deleteObservers();
 		return;
@@ -888,6 +886,7 @@ implements Comparable, EntityResolver, Cacheable {
 			}
 		} finally {
 			document.getUpdateLock().release(Lock.WRITE_LOCK);
+			releaseReader(broker, info.getReader());
 		}
 		broker.deleteObservers();
 		return;
@@ -1004,6 +1003,7 @@ implements Comparable, EntityResolver, Cacheable {
 			}
 		} finally {
 			document.getUpdateLock().release(Lock.WRITE_LOCK);
+			releaseReader(broker, info.getReader());
 		}
 		broker.deleteObservers();
 		return;
@@ -1662,43 +1662,16 @@ implements Comparable, EntityResolver, Cacheable {
 			return userReader;
 		
 		Configuration config = broker.getConfiguration();
-		// get validation settings
-		String option = (String) config.getProperty("indexer.validation");
-		if (option != null) {
-			if (option.equals("true"))
-				validation = VALIDATION_ENABLED;
-			else if (option.equals("auto"))
-				validation = VALIDATION_AUTO;
-			else
-				validation = VALIDATION_DISABLED;
-		}
 		resolver = (CatalogResolver) config.getProperty("resolver");
-		// create a SAX parser
-		SAXParserFactory saxFactory = SAXParserFactory.newInstance();
-		if (validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED)
-			saxFactory.setValidating(true);
-		else
-			saxFactory.setValidating(false);
-		saxFactory.setNamespaceAware(true);
-		try {
-			setFeature(saxFactory,
-					"http://xml.org/sax/features/namespace-prefixes", true);
-			setFeature(saxFactory,
-					"http://apache.org/xml/features/validation/dynamic",
-					validation == VALIDATION_AUTO);
-			setFeature(saxFactory,
-					"http://apache.org/xml/features/validation/schema",
-					validation == VALIDATION_AUTO
-							|| validation == VALIDATION_ENABLED);
-			SAXParser sax = saxFactory.newSAXParser();
-			XMLReader parser = sax.getXMLReader();
-			return parser;
-		} catch (ParserConfigurationException e) {
-			LOG.warn(e);
-			throw new EXistException(e);
-		}
+		return broker.getBrokerPool().getParserPool().borrowXMLReader();
 	}
 
+	private void releaseReader(DBBroker broker, XMLReader reader) {
+		if (userReader != null )
+			return;
+		broker.getBrokerPool().getParserPool().returnXMLReader(reader);
+	}
+	
 	/**
 	 * Try to resolve external entities.
 	 * 

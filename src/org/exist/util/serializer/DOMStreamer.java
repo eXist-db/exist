@@ -155,7 +155,6 @@ public class DOMStreamer {
 				for (int i = 0; i < attrs.getLength(); i++) {
 					nextAttr = (Attr) attrs.item(i);
 					attrName = nextAttr.getName();
-					System.out.println("Attr = " + attrName);
 					if (attrName.equals("xmlns")) {
 						if (nsSupport.getURI("") == null) {
 							uri = nextAttr.getValue();
