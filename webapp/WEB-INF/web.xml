@@ -535,10 +535,10 @@
         <mime-type>text/plain</mime-type>
     </mime-mapping>
 
-    <taglib>
+    <!--taglib>
         <taglib-uri>http://exist-db.org/exist</taglib-uri>
         <taglib-location>/WEB-INF/exist.tld</taglib-location>
-    </taglib>
+    </taglib-->
 
     <!-- Add a security-constraint for the DatabaseAdminServlet: the servlet allows to
     shutdown the database. We don't want everybody to be able to access this. -->
