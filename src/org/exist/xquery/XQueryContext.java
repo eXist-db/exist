@@ -1083,7 +1083,7 @@ public class XQueryContext {
 			} else {
 				Source source;
                 try {
-                    source = SourceFactory.getSource(moduleLoadPath, location);
+                    source = SourceFactory.getSource(moduleLoadPath, location, true);
                 } catch (MalformedURLException e) {
                     throw new XPathException("source location for module " + namespaceURI + " should be a valid URL: " +
                             e.getMessage());

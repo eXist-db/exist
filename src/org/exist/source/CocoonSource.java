@@ -23,6 +23,7 @@
 package org.exist.source;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -31,29 +32,36 @@ import java.io.Reader;
 import org.apache.excalibur.source.Source;
 import org.apache.excalibur.source.SourceValidity;
 
-
 /**
  * @author wolf
  */
 public class CocoonSource extends AbstractSource {
-    
+
     private Source inputSource;
+
     private SourceValidity validity;
+
+    private boolean checkEncoding = false;
+    
+    private String encoding = "UTF-8";
     
     /**
      * 
      */
-    public CocoonSource(Source source) {
+    public CocoonSource(Source source, boolean checkXQEncoding) {
         inputSource = source;
         validity = source.getValidity();
+        checkEncoding = checkXQEncoding;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.exist.source.Source#isValid()
      */
     public int isValid() {
         int valid = validity.isValid();
-        switch(valid) {
+        switch (valid) {
             case SourceValidity.UNKNOWN:
                 return UNKNOWN;
             case SourceValidity.VALID:
@@ -63,13 +71,14 @@ public class CocoonSource extends AbstractSource {
         }
     }
 
-    
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.exist.source.Source#isValid(org.exist.source.Source)
      */
     public int isValid(org.exist.source.Source other) {
-        int valid = validity.isValid(((CocoonSource)other).validity);
-        switch(valid) {
+        int valid = validity.isValid(((CocoonSource) other).validity);
+        switch (valid) {
             case SourceValidity.UNKNOWN:
                 return UNKNOWN;
             case SourceValidity.VALID:
@@ -78,38 +87,52 @@ public class CocoonSource extends AbstractSource {
                 return INVALID;
         }
     }
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.exist.source.Source#getReader()
      */
     public Reader getReader() throws IOException {
+        checkEncoding();
         InputStream is = inputSource.getInputStream();
-        return new InputStreamReader(is, "UTF-8");
+        return new InputStreamReader(is, encoding);
     }
 
     public String getContent() throws IOException {
-	int len = (int) inputSource.getContentLength();
+        checkEncoding();
+        int len = (int) inputSource.getContentLength();
 
         ByteArrayOutputStream os;
-	if (len == -1)
-        	os = new ByteArrayOutputStream();
-	else 
-        	os = new ByteArrayOutputStream(len);
+        if (len == -1)
+            os = new ByteArrayOutputStream();
+        else
+            os = new ByteArrayOutputStream(len);
 
-	byte[] t = new byte[512];
-	InputStream is = inputSource.getInputStream();
-	int count = 0;
-	while ((count = is.read(t)) != -1) {
-		os.write(t, 0, count);
-	}
-	return os.toString("UTF-8");
+        byte[] t = new byte[512];
+        InputStream is = inputSource.getInputStream();
+        int count = 0;
+        while ((count = is.read(t)) != -1) {
+            os.write(t, 0, count);
+        }
+        return os.toString(encoding);
     }
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.exist.source.Source#getKey()
      */
     public Object getKey() {
         return inputSource.getURI();
     }
 
+    private void checkEncoding() throws IOException {
+        if (checkEncoding) {
+            String checkedEnc = guessXQueryEncoding(inputSource.getInputStream());
+            if (checkedEnc != null)
+                encoding = checkedEnc;
+            System.out.println("ENCODING = " + encoding);
+        }
+    }
 }

@@ -23,12 +23,9 @@
 package org.exist.http.servlets;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.Reader;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -40,13 +37,13 @@ import javax.servlet.http.HttpSession;
 
 import org.exist.source.FileSource;
 import org.exist.source.Source;
-import org.xmldb.api.base.CompiledExpression;
 import org.exist.xmldb.XQueryService;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.value.Item;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.CompiledExpression;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceIterator;
@@ -239,8 +236,8 @@ public class XQueryServlet extends HttpServlet {
 					new HttpRequestWrapper(request, formEncoding, containerEncoding));
 			service.declareVariable(prefix + ":response", new HttpResponseWrapper(response));
 			service.declareVariable(prefix + ":session", new HttpSessionWrapper(session));
-						
-			Source source = new FileSource(f, encoding);
+
+			Source source = new FileSource(f, encoding, true);
 			ResourceSet result = service.execute(source);
 			for(ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
 				Resource res = i.nextResource();
@@ -291,22 +288,7 @@ public class XQueryServlet extends HttpServlet {
 		out.print(description);
 		out.print("</div></body></html>");
 	}
-	
-	private String readQuery(File source) throws IOException {
-		FileInputStream is = new FileInputStream(source);
-		try {
-			Reader reader = new InputStreamReader(is, encoding);
-			char[] chars = new char[1024];
-			StringBuffer buf = new StringBuffer();
-			int read;
-			while((read = reader.read(chars)) > -1)
-				buf.append(chars, 0, read);
-			return buf.toString();
-		} finally {
-			is.close();
-		}
-	}
-	
+    
 	private static final class CachedQuery {
 		
 		long lastModified;

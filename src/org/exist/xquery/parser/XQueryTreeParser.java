@@ -355,7 +355,7 @@ public XQueryTreeParser() {
 					case LITERAL_node:
 					case LITERAL_attribute:
 					case LITERAL_comment:
-					case 138:
+					case 139:
 					case SELF:
 					case XML_COMMENT:
 					case XML_PI:
@@ -364,13 +364,13 @@ public XQueryTreeParser() {
 					case LITERAL_child:
 					case LITERAL_self:
 					case LITERAL_descendant:
-					case 150:
 					case 151:
+					case 152:
 					case LITERAL_following:
 					case LITERAL_parent:
 					case LITERAL_ancestor:
-					case 155:
 					case 156:
+					case 157:
 					case DOUBLE_LITERAL:
 					case DECIMAL_LITERAL:
 					case INTEGER_LITERAL:
@@ -527,7 +527,7 @@ public XQueryTreeParser() {
 					case LITERAL_node:
 					case LITERAL_attribute:
 					case LITERAL_comment:
-					case 138:
+					case 139:
 					case SELF:
 					case XML_COMMENT:
 					case XML_PI:
@@ -536,13 +536,13 @@ public XQueryTreeParser() {
 					case LITERAL_child:
 					case LITERAL_self:
 					case LITERAL_descendant:
-					case 150:
 					case 151:
+					case 152:
 					case LITERAL_following:
 					case LITERAL_parent:
 					case LITERAL_ancestor:
-					case 155:
 					case 156:
+					case 157:
 					case DOUBLE_LITERAL:
 					case DECIMAL_LITERAL:
 					case INTEGER_LITERAL:
@@ -718,7 +718,7 @@ public XQueryTreeParser() {
 							case LITERAL_node:
 							case LITERAL_attribute:
 							case LITERAL_comment:
-							case 138:
+							case 139:
 							case SELF:
 							case XML_COMMENT:
 							case XML_PI:
@@ -727,13 +727,13 @@ public XQueryTreeParser() {
 							case LITERAL_child:
 							case LITERAL_self:
 							case LITERAL_descendant:
-							case 150:
 							case 151:
+							case 152:
 							case LITERAL_following:
 							case LITERAL_parent:
 							case LITERAL_ancestor:
-							case 155:
 							case 156:
+							case 157:
 							case DOUBLE_LITERAL:
 							case DECIMAL_LITERAL:
 							case INTEGER_LITERAL:
@@ -826,7 +826,7 @@ public XQueryTreeParser() {
 							case LITERAL_node:
 							case LITERAL_attribute:
 							case LITERAL_comment:
-							case 138:
+							case 139:
 							case SELF:
 							case XML_COMMENT:
 							case XML_PI:
@@ -835,13 +835,13 @@ public XQueryTreeParser() {
 							case LITERAL_child:
 							case LITERAL_self:
 							case LITERAL_descendant:
-							case 150:
 							case 151:
+							case 152:
 							case LITERAL_following:
 							case LITERAL_parent:
 							case LITERAL_ancestor:
-							case 155:
 							case 156:
+							case 157:
 							case DOUBLE_LITERAL:
 							case DECIMAL_LITERAL:
 							case INTEGER_LITERAL:
@@ -982,7 +982,7 @@ public XQueryTreeParser() {
 							case LITERAL_node:
 							case LITERAL_attribute:
 							case LITERAL_comment:
-							case 138:
+							case 139:
 							case SELF:
 							case XML_COMMENT:
 							case XML_PI:
@@ -991,13 +991,13 @@ public XQueryTreeParser() {
 							case LITERAL_child:
 							case LITERAL_self:
 							case LITERAL_descendant:
-							case 150:
 							case 151:
+							case 152:
 							case LITERAL_following:
 							case LITERAL_parent:
 							case LITERAL_ancestor:
-							case 155:
 							case 156:
+							case 157:
 							case DOUBLE_LITERAL:
 							case DECIMAL_LITERAL:
 							case INTEGER_LITERAL:
@@ -1125,7 +1125,7 @@ public XQueryTreeParser() {
 			case LITERAL_node:
 			case LITERAL_attribute:
 			case LITERAL_comment:
-			case 138:
+			case 139:
 			case SELF:
 			case XML_COMMENT:
 			case XML_PI:
@@ -1134,13 +1134,13 @@ public XQueryTreeParser() {
 			case LITERAL_child:
 			case LITERAL_self:
 			case LITERAL_descendant:
-			case 150:
 			case 151:
+			case 152:
 			case LITERAL_following:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 155:
 			case 156:
+			case 157:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
 			case INTEGER_LITERAL:
@@ -1284,7 +1284,7 @@ public XQueryTreeParser() {
 						case LITERAL_node:
 						case LITERAL_attribute:
 						case LITERAL_comment:
-						case 138:
+						case 139:
 						case SELF:
 						case XML_COMMENT:
 						case XML_PI:
@@ -1293,13 +1293,13 @@ public XQueryTreeParser() {
 						case LITERAL_child:
 						case LITERAL_self:
 						case LITERAL_descendant:
-						case 150:
 						case 151:
+						case 152:
 						case LITERAL_following:
 						case LITERAL_parent:
 						case LITERAL_ancestor:
-						case 155:
 						case 156:
+						case 157:
 						case DOUBLE_LITERAL:
 						case DECIMAL_LITERAL:
 						case INTEGER_LITERAL:
@@ -1420,7 +1420,7 @@ public XQueryTreeParser() {
 						case LITERAL_node:
 						case LITERAL_attribute:
 						case LITERAL_comment:
-						case 138:
+						case 139:
 						case SELF:
 						case XML_COMMENT:
 						case XML_PI:
@@ -1429,13 +1429,13 @@ public XQueryTreeParser() {
 						case LITERAL_child:
 						case LITERAL_self:
 						case LITERAL_descendant:
-						case 150:
 						case 151:
+						case 152:
 						case LITERAL_following:
 						case LITERAL_parent:
 						case LITERAL_ancestor:
-						case 155:
 						case 156:
+						case 157:
 						case DOUBLE_LITERAL:
 						case DECIMAL_LITERAL:
 						case INTEGER_LITERAL:
@@ -1534,7 +1534,7 @@ public XQueryTreeParser() {
 						case LITERAL_node:
 						case LITERAL_attribute:
 						case LITERAL_comment:
-						case 138:
+						case 139:
 						case SELF:
 						case XML_COMMENT:
 						case XML_PI:
@@ -1543,13 +1543,13 @@ public XQueryTreeParser() {
 						case LITERAL_child:
 						case LITERAL_self:
 						case LITERAL_descendant:
-						case 150:
 						case 151:
+						case 152:
 						case LITERAL_following:
 						case LITERAL_parent:
 						case LITERAL_ancestor:
-						case 155:
 						case 156:
+						case 157:
 						case DOUBLE_LITERAL:
 						case DECIMAL_LITERAL:
 						case INTEGER_LITERAL:
@@ -1643,7 +1643,7 @@ public XQueryTreeParser() {
 			case LITERAL_node:
 			case LITERAL_attribute:
 			case LITERAL_comment:
-			case 138:
+			case 139:
 			case SELF:
 			case XML_COMMENT:
 			case XML_PI:
@@ -1652,13 +1652,13 @@ public XQueryTreeParser() {
 			case LITERAL_child:
 			case LITERAL_self:
 			case LITERAL_descendant:
-			case 150:
 			case 151:
+			case 152:
 			case LITERAL_following:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 155:
 			case 156:
+			case 157:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
 			case INTEGER_LITERAL:
@@ -1933,7 +1933,7 @@ public XQueryTreeParser() {
 			case LITERAL_node:
 			case LITERAL_attribute:
 			case LITERAL_comment:
-			case 138:
+			case 139:
 			case SELF:
 			case XML_COMMENT:
 			case XML_PI:
@@ -1942,13 +1942,13 @@ public XQueryTreeParser() {
 			case LITERAL_child:
 			case LITERAL_self:
 			case LITERAL_descendant:
-			case 150:
 			case 151:
+			case 152:
 			case LITERAL_following:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 155:
 			case 156:
+			case 157:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
 			case INTEGER_LITERAL:
@@ -2053,7 +2053,7 @@ public XQueryTreeParser() {
 			case LITERAL_node:
 			case LITERAL_attribute:
 			case LITERAL_comment:
-			case 138:
+			case 139:
 			case SELF:
 			case XML_COMMENT:
 			case XML_PI:
@@ -2062,13 +2062,13 @@ public XQueryTreeParser() {
 			case LITERAL_child:
 			case LITERAL_self:
 			case LITERAL_descendant:
-			case 150:
 			case 151:
+			case 152:
 			case LITERAL_following:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 155:
 			case 156:
+			case 157:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
 			case INTEGER_LITERAL:
@@ -2205,20 +2205,20 @@ public XQueryTreeParser() {
 		case LITERAL_node:
 		case LITERAL_attribute:
 		case LITERAL_comment:
-		case 138:
+		case 139:
 		case SELF:
 		case AT:
 		case PARENT:
 		case LITERAL_child:
 		case LITERAL_self:
 		case LITERAL_descendant:
-		case 150:
 		case 151:
+		case 152:
 		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 155:
 		case 156:
+		case 157:
 		case LITERAL_preceding:
 		{
 			step=pathExpr(_t,path);
@@ -2381,7 +2381,7 @@ public XQueryTreeParser() {
 		case LITERAL_node:
 		case LITERAL_attribute:
 		case LITERAL_comment:
-		case 138:
+		case 139:
 		case SELF:
 		case XML_COMMENT:
 		case XML_PI:
@@ -2390,13 +2390,13 @@ public XQueryTreeParser() {
 		case LITERAL_child:
 		case LITERAL_self:
 		case LITERAL_descendant:
-		case 150:
 		case 151:
+		case 152:
 		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 155:
 		case 156:
+		case 157:
 		case DOUBLE_LITERAL:
 		case DECIMAL_LITERAL:
 		case INTEGER_LITERAL:
@@ -2534,7 +2534,7 @@ public XQueryTreeParser() {
 		case LITERAL_node:
 		case LITERAL_attribute:
 		case LITERAL_comment:
-		case 138:
+		case 139:
 		case SELF:
 		case XML_COMMENT:
 		case XML_PI:
@@ -2543,13 +2543,13 @@ public XQueryTreeParser() {
 		case LITERAL_child:
 		case LITERAL_self:
 		case LITERAL_descendant:
-		case 150:
 		case 151:
+		case 152:
 		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 155:
 		case 156:
+		case 157:
 		case DOUBLE_LITERAL:
 		case DECIMAL_LITERAL:
 		case INTEGER_LITERAL:
@@ -2819,7 +2819,7 @@ public XQueryTreeParser() {
 				case LITERAL_node:
 				case LITERAL_attribute:
 				case LITERAL_comment:
-				case 138:
+				case 139:
 				case SELF:
 				case XML_COMMENT:
 				case XML_PI:
@@ -2828,13 +2828,13 @@ public XQueryTreeParser() {
 				case LITERAL_child:
 				case LITERAL_self:
 				case LITERAL_descendant:
-				case 150:
 				case 151:
+				case 152:
 				case LITERAL_following:
 				case LITERAL_parent:
 				case LITERAL_ancestor:
-				case 155:
 				case 156:
+				case 157:
 				case DOUBLE_LITERAL:
 				case DECIMAL_LITERAL:
 				case INTEGER_LITERAL:
@@ -3158,11 +3158,11 @@ public XQueryTreeParser() {
 			_t = _t.getNextSibling();
 			break;
 		}
-		case 137:
+		case 138:
 		{
 			AST __t54 = _t;
 			org.exist.xquery.parser.XQueryAST tmp48_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-			match(_t,137);
+			match(_t,138);
 			_t = _t.getFirstChild();
 			type.setPrimaryType(Type.PROCESSING_INSTRUCTION);
 			_t = __t54;
@@ -3180,11 +3180,11 @@ public XQueryTreeParser() {
 			_t = _t.getNextSibling();
 			break;
 		}
-		case 138:
+		case 139:
 		{
 			AST __t56 = _t;
 			org.exist.xquery.parser.XQueryAST tmp50_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-			match(_t,138);
+			match(_t,139);
 			_t = _t.getFirstChild();
 			type.setPrimaryType(Type.DOCUMENT);
 			_t = __t56;
@@ -4102,7 +4102,7 @@ public XQueryTreeParser() {
 			case LITERAL_node:
 			case LITERAL_attribute:
 			case LITERAL_comment:
-			case 138:
+			case 139:
 			case SELF:
 			case XML_COMMENT:
 			case XML_PI:
@@ -4111,13 +4111,13 @@ public XQueryTreeParser() {
 			case LITERAL_child:
 			case LITERAL_self:
 			case LITERAL_descendant:
-			case 150:
 			case 151:
+			case 152:
 			case LITERAL_following:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 155:
 			case 156:
+			case 157:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
 			case INTEGER_LITERAL:
@@ -4222,17 +4222,17 @@ public XQueryTreeParser() {
 		case LITERAL_node:
 		case LITERAL_attribute:
 		case LITERAL_comment:
-		case 138:
+		case 139:
 		case LITERAL_child:
 		case LITERAL_self:
 		case LITERAL_descendant:
-		case 150:
 		case 151:
+		case 152:
 		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 155:
 		case 156:
+		case 157:
 		case LITERAL_preceding:
 		{
 			{
@@ -4242,13 +4242,13 @@ public XQueryTreeParser() {
 			case LITERAL_child:
 			case LITERAL_self:
 			case LITERAL_descendant:
-			case 150:
 			case 151:
+			case 152:
 			case LITERAL_following:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 155:
 			case 156:
+			case 157:
 			case LITERAL_preceding:
 			{
 				axis=forwardAxis(_t);
@@ -4264,7 +4264,7 @@ public XQueryTreeParser() {
 			case LITERAL_text:
 			case LITERAL_node:
 			case LITERAL_comment:
-			case 138:
+			case 139:
 			{
 				break;
 			}
@@ -4469,10 +4469,10 @@ public XQueryTreeParser() {
 						
 				break;
 			}
-			case 138:
+			case 139:
 			{
 				org.exist.xquery.parser.XQueryAST tmp71_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-				match(_t,138);
+				match(_t,139);
 				_t = _t.getNextSibling();
 				test= new TypeTest(Type.DOCUMENT);
 				break;
@@ -4715,7 +4715,7 @@ public XQueryTreeParser() {
 			case LITERAL_node:
 			case LITERAL_attribute:
 			case LITERAL_comment:
-			case 138:
+			case 139:
 			case SELF:
 			case XML_COMMENT:
 			case XML_PI:
@@ -4724,13 +4724,13 @@ public XQueryTreeParser() {
 			case LITERAL_child:
 			case LITERAL_self:
 			case LITERAL_descendant:
-			case 150:
 			case 151:
+			case 152:
 			case LITERAL_following:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 155:
 			case 156:
+			case 157:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
 			case INTEGER_LITERAL:
@@ -4849,7 +4849,7 @@ public XQueryTreeParser() {
 			case LITERAL_node:
 			case LITERAL_attribute:
 			case LITERAL_comment:
-			case 138:
+			case 139:
 			case SELF:
 			case XML_COMMENT:
 			case XML_PI:
@@ -4858,13 +4858,13 @@ public XQueryTreeParser() {
 			case LITERAL_child:
 			case LITERAL_self:
 			case LITERAL_descendant:
-			case 150:
 			case 151:
+			case 152:
 			case LITERAL_following:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 155:
 			case 156:
+			case 157:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
 			case INTEGER_LITERAL:
@@ -5244,7 +5244,7 @@ public XQueryTreeParser() {
 				case LITERAL_node:
 				case LITERAL_attribute:
 				case LITERAL_comment:
-				case 138:
+				case 139:
 				case SELF:
 				case XML_COMMENT:
 				case XML_PI:
@@ -5253,13 +5253,13 @@ public XQueryTreeParser() {
 				case LITERAL_child:
 				case LITERAL_self:
 				case LITERAL_descendant:
-				case 150:
 				case 151:
+				case 152:
 				case LITERAL_following:
 				case LITERAL_parent:
 				case LITERAL_ancestor:
-				case 155:
 				case 156:
+				case 157:
 				case DOUBLE_LITERAL:
 				case DECIMAL_LITERAL:
 				case INTEGER_LITERAL:
@@ -5781,18 +5781,18 @@ public XQueryTreeParser() {
 			axis= Constants.DESCENDANT_AXIS;
 			break;
 		}
-		case 150:
+		case 151:
 		{
 			org.exist.xquery.parser.XQueryAST tmp87_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-			match(_t,150);
+			match(_t,151);
 			_t = _t.getNextSibling();
 			axis= Constants.DESCENDANT_SELF_AXIS;
 			break;
 		}
-		case 151:
+		case 152:
 		{
 			org.exist.xquery.parser.XQueryAST tmp88_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-			match(_t,151);
+			match(_t,152);
 			_t = _t.getNextSibling();
 			axis= Constants.FOLLOWING_SIBLING_AXIS;
 			break;
@@ -5805,10 +5805,10 @@ public XQueryTreeParser() {
 			axis= Constants.FOLLOWING_AXIS;
 			break;
 		}
-		case 156:
+		case 157:
 		{
 			org.exist.xquery.parser.XQueryAST tmp90_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-			match(_t,156);
+			match(_t,157);
 			_t = _t.getNextSibling();
 			axis= Constants.PRECEDING_SIBLING_AXIS;
 			break;
@@ -5829,10 +5829,10 @@ public XQueryTreeParser() {
 			axis= Constants.ANCESTOR_AXIS;
 			break;
 		}
-		case 155:
+		case 156:
 		{
 			org.exist.xquery.parser.XQueryAST tmp93_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-			match(_t,155);
+			match(_t,156);
 			_t = _t.getNextSibling();
 			axis= Constants.ANCESTOR_SELF_AXIS;
 			break;
@@ -5931,6 +5931,7 @@ public XQueryTreeParser() {
 		"\"construction\"",
 		"\"function\"",
 		"\"variable\"",
+		"\"encoding\"",
 		"\"collation\"",
 		"\"element\"",
 		"\"preserve\"",
@@ -6062,12 +6063,12 @@ public XQueryTreeParser() {
 	};
 	
 	private static final long[] mk_tokenSet_0() {
-		long[] data = { 54350972887662480L, 9223370799916304514L, 2753073935871L, 0L, 0L, 0L};
+		long[] data = { 54350972887662480L, -2473876942588L, 5506147871742L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
 	private static final long[] mk_tokenSet_1() {
-		long[] data = { 26113403781120L, 128L, 549755838464L, 0L, 0L, 0L};
+		long[] data = { 26113403781120L, 256L, 1099511676928L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
