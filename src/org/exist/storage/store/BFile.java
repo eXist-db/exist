@@ -1793,7 +1793,6 @@ public class BFile extends BTree {
             ph.setStatus(RECORD);
             ph.setDirty(true);
             ph.setDataLength(0);
-            ph.setTID((short) -1);
             //ph.setNextChunk( -1 );
             fileHeader.setLastDataPage(page.getPageNum());
             data = new byte[fileHeader.getWorkSize()];
@@ -1832,6 +1831,7 @@ public class BFile extends BTree {
         }
         
         private void readOffsets() throws IOException {
+        	Arrays.fill(offsets, (short)-1);
         	final int dlen = ph.getDataLength();
 		    for(short pos = 0; pos < dlen; ) {
 		    	short tid = ByteConversion.byteToShort(data, pos);
@@ -1842,16 +1842,29 @@ public class BFile extends BTree {
         
         public short getNextTID() {
         	for(short i = 0; i < offsets.length; i++) {
-        		if(offsets[i] == -1)
+        		if(offsets[i] == -1) {
         			return i;
+        		}
         	}
         	short tid = (short)offsets.length;
-        	ph.nextTID = (short)(ph.nextTID * 2);
-        	short[] t = new short[ph.nextTID];
+        	short next = (short)(ph.nextTID * 2);
+        	if(next < 0 || next < ph.nextTID) {
+        		return -1;
+        	}
+        	short[] t = new short[next];
         	Arrays.fill(t, (short)-1);
         	System.arraycopy(offsets, 0, t, 0, offsets.length);
         	offsets = t;
+        	ph.nextTID = next;
         	return tid;
+        }
+        
+        private String printContents() {
+        	StringBuffer buf = new StringBuffer();
+        	for(short i = 0; i < offsets.length; i++) {
+        		buf.append('[').append(i).append(", ").append(offsets[i]).append(']');
+        	}
+        	return buf.toString();
         }
         
         public void setOffset(short tid, int offset) {
