@@ -103,7 +103,8 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
 						collection = mkcol(root, baseURI, "/db" + path, relDir);
 						prevDir = relDir;
 					}
-				}
+				} else
+				    collection = root;
 				resourceType = type.equals("binary") ? "BinaryResource" : "XMLResource";
 				res = collection.createResource(file.getName(), resourceType);
 				res.setContent(file);
