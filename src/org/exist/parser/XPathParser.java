@@ -208,7 +208,14 @@ public XPathParser(ParserSharedInputState state) {
 			case LITERAL_node:
 			case PARENT:
 			case SELF:
+			case LITERAL_descendant:
+			case 43:
+			case LITERAL_child:
+			case LITERAL_parent:
+			case LITERAL_self:
+			case LITERAL_attribute:
 			case LITERAL_ancestor:
+			case 49:
 			{
 				or_expr(expr);
 				if ( inputState.guessing==0 ) {
@@ -602,7 +609,14 @@ public XPathParser(ParserSharedInputState state) {
 			case LITERAL_node:
 			case PARENT:
 			case SELF:
+			case LITERAL_descendant:
+			case 43:
+			case LITERAL_child:
+			case LITERAL_parent:
+			case LITERAL_self:
+			case LITERAL_attribute:
 			case LITERAL_ancestor:
+			case 49:
 			{
 				or_expr(exprIn);
 				break;
@@ -1049,7 +1063,14 @@ public XPathParser(ParserSharedInputState state) {
 		case LITERAL_node:
 		case PARENT:
 		case SELF:
+		case LITERAL_descendant:
+		case 43:
+		case LITERAL_child:
+		case LITERAL_parent:
+		case LITERAL_self:
+		case LITERAL_attribute:
 		case LITERAL_ancestor:
+		case 49:
 		{
 			{
 			int _cnt36=0;
@@ -1106,7 +1127,14 @@ public XPathParser(ParserSharedInputState state) {
 		
 		
 		switch ( LA(1)) {
+		case LITERAL_descendant:
+		case 43:
+		case LITERAL_child:
+		case LITERAL_parent:
+		case LITERAL_self:
+		case LITERAL_attribute:
 		case LITERAL_ancestor:
+		case 49:
 		{
 			axis=axis_spec();
 			result=step(expr);
@@ -1196,7 +1224,7 @@ public XPathParser(ParserSharedInputState state) {
 			if ( inputState.guessing==0 ) {
 				
 						if(result instanceof Step)
-							((Step)result).setAxis(Constants.DESCENDANT_AXIS);
+							((Step)result).setAxis(Constants.DESCENDANT_SELF_AXIS);
 				
 			}
 			break;
@@ -1571,13 +1599,107 @@ public XPathParser(ParserSharedInputState state) {
 			axis = -1;
 		
 		
-		match(LITERAL_ancestor);
-		match(COLON);
-		match(COLON);
-		if ( inputState.guessing==0 ) {
-			
-					axis = Constants.ANCESTOR_AXIS;
+		switch ( LA(1)) {
+		case LITERAL_descendant:
+		{
+			match(LITERAL_descendant);
+			match(COLON);
+			match(COLON);
+			if ( inputState.guessing==0 ) {
 				
+						axis = Constants.DESCENDANT_AXIS;
+					
+			}
+			break;
+		}
+		case 43:
+		{
+			match(43);
+			match(COLON);
+			match(COLON);
+			if ( inputState.guessing==0 ) {
+				
+						axis = Constants.DESCENDANT_SELF_AXIS;
+					
+			}
+			break;
+		}
+		case LITERAL_child:
+		{
+			match(LITERAL_child);
+			match(COLON);
+			match(COLON);
+			if ( inputState.guessing==0 ) {
+				
+						axis = Constants.CHILD_AXIS;
+					
+			}
+			break;
+		}
+		case LITERAL_parent:
+		{
+			match(LITERAL_parent);
+			match(COLON);
+			match(COLON);
+			if ( inputState.guessing==0 ) {
+				
+						axis = Constants.PARENT_AXIS;
+					
+			}
+			break;
+		}
+		case LITERAL_self:
+		{
+			match(LITERAL_self);
+			match(COLON);
+			match(COLON);
+			if ( inputState.guessing==0 ) {
+				
+						axis = Constants.SELF_AXIS;
+					
+			}
+			break;
+		}
+		case LITERAL_attribute:
+		{
+			match(LITERAL_attribute);
+			match(COLON);
+			match(COLON);
+			if ( inputState.guessing==0 ) {
+				
+						axis = Constants.ATTRIBUTE_AXIS;
+					
+			}
+			break;
+		}
+		case LITERAL_ancestor:
+		{
+			match(LITERAL_ancestor);
+			match(COLON);
+			match(COLON);
+			if ( inputState.guessing==0 ) {
+				
+						axis = Constants.ANCESTOR_AXIS;
+					
+			}
+			break;
+		}
+		case 49:
+		{
+			match(49);
+			match(COLON);
+			match(COLON);
+			if ( inputState.guessing==0 ) {
+				
+						axis = Constants.ANCESTOR_SELF_AXIS;
+					
+			}
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltException(LT(1), getFilename());
+		}
 		}
 		return axis;
 	}
@@ -1776,7 +1898,14 @@ public XPathParser(ParserSharedInputState state) {
 			case LITERAL_node:
 			case PARENT:
 			case SELF:
+			case LITERAL_descendant:
+			case 43:
+			case LITERAL_child:
+			case LITERAL_parent:
+			case LITERAL_self:
+			case LITERAL_attribute:
 			case LITERAL_ancestor:
+			case 49:
 			case LPPAREN:
 			case RPPAREN:
 			{
@@ -1882,7 +2011,14 @@ public XPathParser(ParserSharedInputState state) {
 		"PARENT",
 		"SELF",
 		"COLON",
+		"\"descendant\"",
+		"\"descendant-or-self\"",
+		"\"child\"",
+		"\"parent\"",
+		"\"self\"",
+		"\"attribute\"",
 		"\"ancestor\"",
+		"\"ancestor-or-self\"",
 		"LPPAREN",
 		"RPPAREN",
 		"WS",
@@ -1895,7 +2031,7 @@ public XPathParser(ParserSharedInputState state) {
 	};
 	
 	private static final long[] mk_tokenSet_0() {
-		long[] data = { 6596943938688L, 0L};
+		long[] data = { 1123700757759104L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
@@ -1910,7 +2046,7 @@ public XPathParser(ParserSharedInputState state) {
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
 	private static final long[] mk_tokenSet_3() {
-		long[] data = { 35184265134018L, 0L};
+		long[] data = { 4503599520415682L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_3 = new BitSet(mk_tokenSet_3());
