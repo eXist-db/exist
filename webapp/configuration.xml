@@ -16,7 +16,7 @@
       </affiliation>
     </author>
   </bookinfo>
-  <xi:include src="sidebar.xml"/>
+  <ci:include src="sidebar.xml"/>
   <chapter>
     <title>Server Configuration</title>
     <section>

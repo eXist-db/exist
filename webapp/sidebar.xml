@@ -21,9 +21,9 @@
         <item>
             <link href="security.xml">Security</link>
         </item>
-        <item>
+		<item>
             <link href="xinclude.xml">XInclude</link>
-        </item>
+		</item>
         <item>
             <link href="configuration.xml">Server Configuration</link>
         </item>

@@ -94,9 +94,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	protected long address = -1;
 
 	// arity of the tree at every level
-	protected int treeLevelOrder[] = new int[25];
+	protected int treeLevelOrder[] = new int[40];
 
-	protected long treeLevelStartPoints[] = new long[25];
+	protected long treeLevelStartPoints[] = new long[40];
 
 	// has document-metadata been loaded?
 	private boolean complete = true;
@@ -578,6 +578,12 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	public void setMaxDepth(int depth) {
 		maxDepth = depth;
+		if (treeLevelOrder.length <= maxDepth) {
+			int temp[] = new int[maxDepth + 1];
+			System.arraycopy(treeLevelOrder, 0, temp, 0, treeLevelOrder.length);
+			temp[maxDepth] = 0;
+			treeLevelOrder = temp;
+		}
 	}
 
 	public void incMaxDepth() {

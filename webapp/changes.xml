@@ -64,7 +64,11 @@
                 improved. The processing of predicate expressions has been modified
                 to support reverse axis specifiers inside the predicate.
             </action>
-        </topic>
+		</topic>
+		<topic category="Dropped Features">
+			<action name="Relational backend">
+				Support for relational storage backends has been dropped. The backend has not been maintained for a longer period of time and lacks a number of features compared to the native XML store. Since the native backend is approaching a stable state, keeping the relational support seems no longer necessary.</action>
+		</topic>
 	</release>
 	<release version="0.9.1">
 		<topic category="New Features">

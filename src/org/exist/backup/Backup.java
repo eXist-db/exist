@@ -119,7 +119,7 @@ public class Backup {
 				new OutputStreamWriter(
 					new FileOutputStream(path + '/' + "__contents__.xml"),
 					"UTF-8"));
-		OutputFormat format = new OutputFormat("xml", "UTF-8", true);
+		OutputFormat format = new OutputFormat("xml", "UTF-8", false);
 		// serializer writes to __contents__.xml
 		XMLSerializer serializer = new XMLSerializer(contents, format);
 		serializer.startDocument();

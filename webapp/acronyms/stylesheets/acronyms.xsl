@@ -43,10 +43,10 @@
   					</p>
   				</xsl:if>
   				
-  				<xsl:if test="xmlad:SpecLocs">
+  				<xsl:if test="xmlad:SpecLocs|xmlad:SpecLoc">
   					<b>Specifications:</b><br/>
   					<ul>
-  					<xsl:for-each select="xmlad:SpecLocs/xmlad:SpecLoc">
+  					<xsl:for-each select=".//xmlad:SpecLoc">
   						<li><a href="{text()}"><xsl:value-of select="."/></a></li>
   					</xsl:for-each>
   					</ul>

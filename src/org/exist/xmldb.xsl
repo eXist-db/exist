@@ -35,6 +35,7 @@
                 <xsp:include>org.exist.util.IncludeXMLFilter</xsp:include>
                 <xsp:include>org.exist.xmldb.UserManagementService</xsp:include>
                 <xsp:include>org.exist.security.User</xsp:include>
+                <xsp:include>org.exist.storage.serializers.Serializer</xsp:include>
             </xsp:structure>
             <xsp:logic>
                 private String _errmsg = null;
@@ -180,9 +181,8 @@
                 if((_result = (ResourceSet)session.getAttribute(_query)) == null) {
                     XPathQueryService _service =
                         ( XPathQueryService ) collection.getService( "XPathQueryService", "1.0" );
-                    _service.setProperty( "pretty", "false" );
-                    _service.setProperty( "encoding", <xsl:value-of select="$encoding"/> );
-                    _service.setProperty("sax-document-events", "false");
+                    _service.setProperty(Serializer.HIGHLIGHT_MATCHES, "elements");
+                    _service.setProperty(Serializer.PRETTY_PRINT, "false");
                     _result = _service.query(_query);
                     if(_result != null)
                         session.setAttribute(_query, _result);

@@ -405,7 +405,8 @@ public class RemoteCollection implements CollectionImpl {
 			} else {
 				uploadAndStore(res);
 			}
-		}
+		} else
+			store((RemoteXMLResource)res);
 		resources.add(new DocumentProxy(res.getId()));
 	}
 

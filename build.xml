@@ -575,6 +575,12 @@
 		<replace dir="${build.docs}" includes="index.xml sidebar.xml"
 			token="xse/squery.xsp" summary="true"
 			value="http://130.83.186.203/exist/xse/squery.xsp"/>
+		<replace dir="${build.docs}" includes="index.xml sidebar.xml"
+			token="acronyms/query.xsp" summary="true"
+			value="http://130.83.186.203/exist/acronyms/query.xsp"/>
+		<replace dir="${build.docs}" includes="sidebar.xml"
+			token="status" summary="true"
+			value="http://130.83.186.203/exist/status"/>
     </target>
     
 	<target name="docs" depends="javadocs">
