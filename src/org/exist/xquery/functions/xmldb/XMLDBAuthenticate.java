@@ -23,6 +23,8 @@
 package org.exist.xquery.functions.xmldb;
 
 import org.exist.dom.QName;
+import org.exist.security.User;
+import org.exist.xmldb.UserManagementService;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -41,7 +43,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class XMLDBAuthenticate extends BasicFunction {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature authenticateSignature =
 			new FunctionSignature(
 				new QName("authenticate", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 				"Check if a user is registered as database user. The function simply tries to " +
@@ -53,12 +55,27 @@ public class XMLDBAuthenticate extends BasicFunction {
 					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
 					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
 				new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
-				
+	
+    public final static FunctionSignature loginSignature =
+        new FunctionSignature(
+            new QName("login", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+            "Check if a user is registered as database user and change the user identity for the " +
+            "current XQuery script. The function simply tries to " +
+            "read the database collection specified in the first parameter $a, using the " +
+            "supplied username in $b and password in $c. Contrary to the authenticate function," +
+            "login will set the current user for the xquery script to the authenticated user. " +
+            "It returns true if the attempt succeeds, false otherwise.",
+            new SequenceType[] {
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+                new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
+            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
+    
 	/**
 	 * @param context
 	 * @param signature
 	 */
-	public XMLDBAuthenticate(XQueryContext context) {
+	public XMLDBAuthenticate(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -70,15 +87,20 @@ public class XMLDBAuthenticate extends BasicFunction {
 		if(args[1].getLength() == 0)
 			return BooleanValue.FALSE;
 		String uri = args[0].getStringValue();
-		String user = args[1].getStringValue();
+		String userName = args[1].getStringValue();
 		String password = args[2].getStringValue();
 		
 		try {
-			Collection root = DatabaseManager.getCollection(uri, user, password);
+			Collection root = DatabaseManager.getCollection(uri, userName, password);
+            if (isCalledAs("login")) {
+                UserManagementService ums = (UserManagementService) root.getService("UserManagementService", "1.0");
+                User user = ums.getUser(userName);
+                context.getBroker().setUser(user);
+            }
 			return BooleanValue.TRUE;
 		} catch (XMLDBException e) {
             if (LOG.isDebugEnabled())
-                LOG.debug("Failed to authenticate user '" + user + "' on " + uri, e);
+                LOG.debug("Failed to authenticate user '" + userName + "' on " + uri, e);
 			return BooleanValue.FALSE;
 		}
 	}
