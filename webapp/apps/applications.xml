@@ -6,7 +6,8 @@
 >
 
  <application>
-     <dc:creator><html:a href="http://jmvanel.free.fr/">J.M. Vanel</html:a></dc:creator>
+     <dc:creator>Jean-Marc Vanel</dc:creator>
+     <creator-site>http://jmvanel.free.fr/</creator-site>
      <dc:identifier>http://wwbota.free.fr/</dc:identifier>
      <dc:rights>GPL</dc:rights>
      <dc:title>Botanical Database</dc:title>
@@ -21,6 +22,7 @@
 
   <dev-site>http://wwbota.free.fr/</dev-site>
   <production-site>http://jmvanel.free.fr/protea.html</production-site>
+  <status>production</status>
   <feature-used>XQuery</feature-used>
   <feature-used>Cocoon</feature-used>
   <database size="30Mb" documents="1" updates="rare" security='read for all' />
@@ -29,9 +31,7 @@
  </application>
 
   <application>
-    <dc:creator>
-      <html:a href="http://www.divstrat.com.au/">Divstrat Pty Ltd</html:a>
-    </dc:creator>
+    <dc:creator> Divstrat Pty Ltd </dc:creator>
     <dc:identifier>http://www.divstrat.com.au/ds_webfiles_17/ds_Xunami.html</dc:identifier>
     <dc:rights>(c)2004 Divstrat</dc:rights>
     <dc:title>Xunami</dc:title>
@@ -59,9 +59,7 @@
 
 
  <application>
-   <dc:creator>
-     <html:a href="http://www.iua.upf.es/mtg/">Music Techonology Group (Barcelona, SPAIN)</html:a>
-   </dc:creator>
+   <dc:creator> Music Techonology Group (Barcelona, SPAIN) </dc:creator>
    <dc:identifier>http://www.iua.upf.es/mtg/opendrama</dc:identifier>
    <dc:title>MPEG-7 web browser</dc:title>
    <dc:subject>multimedia</dc:subject>
