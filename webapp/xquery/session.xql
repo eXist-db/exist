@@ -66,6 +66,6 @@ local:add-attribute(),
                 </tr>
                 <tr><td colspan="2"><input type="submit"/></td></tr>
             </table>
-        </form>     
+        </form>
     </body>
 </html>

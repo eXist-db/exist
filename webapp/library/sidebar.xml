@@ -58,7 +58,7 @@
     </group>
     <group name="Administration">
         <item>
-            <link href="../xadmin.xsp">Admin</link>
+            <link href="../admin/admin.xql">Admin</link>
         </item>
         <item>
 			<link href="../status">Server Status</link>

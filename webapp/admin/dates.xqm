@@ -1,3 +1,6 @@
+(:
+    Module: functions for formatting an xs:dateTime value.
+:)
 module namespace date="http://exist-db.org/xquery/admin-interface/date";
 
 declare variable $date:months {

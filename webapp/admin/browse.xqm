@@ -1,3 +1,6 @@
+(:
+    Module: display and browse collections.
+:)
 module namespace browse="http://exist-db.org/xquery/admin-interface/browse";
 
 declare namespace request="http://exist-db.org/xquery/request";
@@ -6,6 +9,9 @@ declare namespace util="http://exist-db.org/xquery/util";
 
 import module namespace date="http://exist-db.org/xquery/admin-interface/date" at "dates.xqm";
 
+(:
+    Main function: outputs the page.
+:)
 declare function browse:main($user as xs:string, $passwd as xs:string) as element() {
     let $colName := request:request-parameter("collection", "/db"),
         $collection := xdb:collection($colName, $user, $passwd)
@@ -50,6 +56,9 @@ declare function browse:main($user as xs:string, $passwd as xs:string) as elemen
         </div>
 };
 
+(:
+    Process an action.
+:)
 declare function browse:process-action($collection as object) as element()* {
     let $action := request:request-parameter("action", ())
     return
@@ -71,6 +80,9 @@ declare function browse:process-action($collection as object) as element()* {
         )
 };
 
+(:
+    Store uploaded content.
+:)
 declare function browse:upload($collection as object) as element() {
     let $name := request:request-parameter("name", ()),
         $docName := 
@@ -88,6 +100,13 @@ declare function browse:upload($collection as object) as element() {
         </div>
 };
 
+(:
+    Store files from an URI.
+    
+    Allowing this opens a security whole as a user can
+    upload arbitrary files on the server if the process is running
+    as root.
+:)
 declare function browse:store($collection as object) as element() {
     let $uri := request:request-parameter("uri", ()),
         $path := if(starts-with($uri, "file:")) then $uri 
@@ -104,6 +123,9 @@ declare function browse:store($collection as object) as element() {
         </div>
 };
 
+(:
+    Remove a set of resources.
+:)
 declare function browse:remove() as element() {
     let $resources := request:request-parameter("resource", ())
     return
@@ -118,6 +140,9 @@ declare function browse:remove() as element() {
         </div>
 };
 
+(:
+    Remove a resource.
+:)
 declare function browse:remove-resource($resource as xs:string) as element()* {
     let $doc := doc($resource)
     return
@@ -130,6 +155,9 @@ declare function browse:remove-resource($resource as xs:string) as element()* {
         )
 };
 
+(:
+    Create a collection.
+:)
 declare function browse:create-collection($parent as object) as element() {
     let $newcol := request:request-parameter("create", ())
     return
@@ -147,6 +175,9 @@ declare function browse:create-collection($parent as object) as element() {
         </div>
 };
 
+(:
+    Display the contents of a collection in a table view.
+:)
 declare function browse:display-collection($collection as object) 
 as element() {
     let $colName := util:collection-name($collection)
@@ -159,7 +190,7 @@ as element() {
                 <th>Owner</th>
                 <th>Group</th>
                 <th>Created</th>
-                <th>Locked by</th>
+                <th>Modified</th>
             </tr>
             <tr>
                 <td/>
@@ -204,15 +235,18 @@ as element()* {
     return
         <tr>
             <td><input type="checkbox" name="resource" value="{$parent}/{$child}"/></td>
-            <td><a target="_new" href="view-source.xql?source={$parent}/{$child}">{$child}</a></td>
+            <td><a target="_new" href="{request:encode-url('view-source.xql')}?source={$parent}/{$child}">{$child}</a></td>
             <td class="perm">{xdb:permissions-to-string(xdb:get-permissions($collection, $child))}</td>
             <td>{xdb:get-owner($collection, $child)}</td>
             <td>{xdb:get-group($collection, $child)}</td>
             <td>{date:format-dateTime(xdb:created($collection, $child))}</td>
-            <td>{xdb:document-has-lock($collection, $child)}</td>
+            <td>{date:format-dateTime(xdb:last-modified($collection, $child))}</td>
         </tr>
 };
 
+(:
+    Get the name of the parent collection from a specified collection path.
+:)
 declare function browse:get-parent-collection($path as xs:string) as xs:string {
     if($path eq "/db") then
         $path
