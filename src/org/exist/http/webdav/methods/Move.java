@@ -33,117 +33,145 @@ import javax.servlet.http.HttpServletResponse;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
-import org.exist.http.webdav.WebDAVMethod;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.util.Lock;
 import org.exist.util.LockException;
 
 /**
  * Implements the WebDAV move method.
  * @author wolf
  */
-public class Move implements WebDAVMethod {
+public class Move extends AbstractWebDAVMethod {
 
-    private BrokerPool pool;
     
     public Move(BrokerPool pool) {
-        this.pool = pool;
+        super(pool);
     }
     
     /* (non-Javadoc)
      * @see org.exist.http.webdav.WebDAVMethod#process(org.exist.security.User, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.exist.collections.Collection, org.exist.dom.DocumentImpl)
      */
     public void process(User user, HttpServletRequest request,
-            HttpServletResponse response, Collection collection,
-            DocumentImpl resource) throws ServletException, IOException {
-        if(collection == null) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Resource or collection not found");
-            return;
-        }
-        String destination = request.getHeader("Destination");
-        String path = null;
-        try {
-            URI uri = new URI(destination);
-            String host = uri.getHost();
-            int port = uri.getPort();
-            if(!(host.equals(request.getServerName()) && port == request.getServerPort())) {
-                response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED,
-                        "Moving to a different server is not yet implemented");
-                return;
-            }
-            path = uri.getPath();
-            if(path.startsWith(request.getContextPath()))
-                path = path.substring(request.getContextPath().length());
-            if(path.startsWith(request.getServletPath()))
-                path = path.substring(request.getServletPath().length());
-        } catch (URISyntaxException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Malformed URL in destination header");
-        }
-        if(resource != null)
-            moveResource(user, request, response, resource, path);
-        else
-            moveCollection(user, request, response, collection, path);
+            HttpServletResponse response, String path) throws ServletException, IOException {
+    	DBBroker broker = null;
+		Collection collection = null;
+		DocumentImpl resource = null;
+		try {
+			broker = pool.get(user);
+			collection = broker.openCollection(path, Lock.WRITE_LOCK);
+			if(collection == null) {
+				int pos = path.lastIndexOf('/');
+				String collName = path.substring(0, pos);
+				String docName = path.substring(pos + 1);
+				collection = broker.openCollection(collName, Lock.WRITE_LOCK);
+				if(collection == null) {
+					LOG.debug("No resource or collection found for path: " + path);
+					response.sendError(HttpServletResponse.SC_NOT_FOUND, NOT_FOUND_ERR);
+					return;
+				}
+				resource = collection.getDocumentWithLock(broker, docName, Lock.WRITE_LOCK);
+				if(resource == null) {
+					LOG.debug("No resource found for path: " + path);
+					response.sendError(HttpServletResponse.SC_NOT_FOUND, NOT_FOUND_ERR);
+					return;
+				}
+			}
+	        String destination = request.getHeader("Destination");
+	        String destPath = null;
+	        try {
+	            URI uri = new URI(destination);
+	            String host = uri.getHost();
+	            int port = uri.getPort();
+	            if(!(host.equals(request.getServerName()) && port == request.getServerPort())) {
+	                response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED,
+	                        "Copying to a different server is not yet implemented");
+	                return;
+	            }
+	            destPath = uri.getPath();
+	            if(destPath.startsWith(request.getContextPath()))
+	                destPath = destPath.substring(request.getContextPath().length());
+	            if(destPath.startsWith(request.getServletPath()))
+	                destPath = destPath.substring(request.getServletPath().length());
+	        } catch (URISyntaxException e) {
+	            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Malformed URL in destination header");
+	        }
+	        if(resource != null)
+	            moveResource(user, broker, request, response, resource, destPath);
+	        else
+	            moveCollection(user, broker, request, response, collection, destPath);
+		} catch (EXistException e) {
+			throw new ServletException("Failed to copy: " + e.getMessage(), e);
+		} catch (LockException e) {
+			throw new ServletException("Failed to copy: " + e.getMessage(), e);
+		} finally {
+			if(collection != null)
+				collection.release();
+			if(resource != null)
+				resource.getUpdateLock().release(Lock.WRITE_LOCK);
+			pool.release(broker);
+		}
     }
 
-    private void moveCollection(User user, HttpServletRequest request, HttpServletResponse response, 
+    private void moveCollection(User user, DBBroker broker, HttpServletRequest request, HttpServletResponse response, 
             Collection collection, String destination) throws ServletException, IOException {
         if(collection.getName().equals(destination)) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN,
                     "Source and destination are the same");
             return;
         }
-        DBBroker broker = null;
+        int p = destination.lastIndexOf('/');
+        if(p < 0) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                    "Bad destination: " + destination);
+            return;
+        }
+        Collection destCollection = null;
         try {
-            broker = pool.get(user);
             boolean replaced = false;
-            Collection destCollection = broker.getCollection(destination);
-            if(destCollection != null) {
-                boolean overwrite = overwrite(request);
-                if(!overwrite) {
-                    response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED,
-                        "Destination collection exists");
-                    return;
-                }
-                broker.removeCollection(destCollection);
-                replaced = true;
-            }
-            int p = destination.lastIndexOf('/');
-            if(p < 0) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                        "Bad destination: " + destination);
-                return;
-            }
+            destCollection = broker.openCollection(destination, Lock.WRITE_LOCK);
+    		if(destCollection != null) {
+    			boolean overwrite = overwrite(request);
+    			if(!overwrite) {
+    				response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED,
+    						"Destination collection exists and overwrite is not allowed");
+    				return;
+    			}
+    			broker.removeCollection(destCollection);
+    			replaced = true;
+    		}
+            
             String parentPath = destination.substring(0, p);
             String newCollectionName = destination.substring(p + 1);
             LOG.debug("parent = " + parentPath + "; new name = " + newCollectionName);
-            Collection parent = broker.getCollection(parentPath);
-            if(parent == null) {
+            destCollection = broker.openCollection(parentPath, Lock.WRITE_LOCK);
+            if(destCollection == null) {
                 response.sendError(HttpServletResponse.SC_CONFLICT,
                         "No parent collection: " + parentPath);
                 return;
             }
-            broker.moveCollection(collection, parent, newCollectionName);
+            broker.moveCollection(collection, destCollection, newCollectionName);
             if(replaced)
                 response.setStatus(HttpServletResponse.SC_NO_CONTENT);
             else
                 response.setStatus(HttpServletResponse.SC_CREATED);
-        } catch (EXistException e) {
-            throw new ServletException(e.getMessage(), e);
         } catch (PermissionDeniedException e) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
         } catch (LockException e) {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         } finally {
+        	if(destCollection != null)
+        		destCollection.release();
             pool.release(broker);
         }
     }
     
-    private void moveResource(User user, HttpServletRequest request, HttpServletResponse response, DocumentImpl resource, 
-            String destination)
+    private void moveResource(User user, DBBroker broker, HttpServletRequest request, HttpServletResponse response, 
+    		DocumentImpl resource, String destination)
     throws ServletException, IOException {
-        int p = destination.lastIndexOf('/');
+    	int p = destination.lastIndexOf('/');
         if(p < 0) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST,
                     "Bad destination: " + destination);
@@ -152,15 +180,15 @@ public class Move implements WebDAVMethod {
         String newResourceName = destination.substring(p + 1);
         destination = destination.substring(0, p);
         boolean replaced = false;
-        DBBroker broker = null;
+        Collection destCollection = null;
         try {
-            broker = pool.get(user);
-            Collection destCollection = broker.getCollection(destination);
+            destCollection = broker.openCollection(destination, Lock.WRITE_LOCK);
             if(destCollection == null) {
                 response.sendError(HttpServletResponse.SC_CONFLICT,
                         "Destination collection not found");
                 return;
             }
+    		
             DocumentImpl oldDoc = destCollection.getDocument(broker, newResourceName);
             if(oldDoc != null) {
                 boolean overwrite = overwrite(request);
@@ -176,14 +204,13 @@ public class Move implements WebDAVMethod {
                 response.setStatus(HttpServletResponse.SC_NO_CONTENT);
             else
                 response.setStatus(HttpServletResponse.SC_CREATED);
-        } catch (EXistException e) {
-            throw new ServletException(e.getMessage(), e);
         } catch (PermissionDeniedException e) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
         } catch (LockException e) {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         } finally {
-            pool.release(broker);
+        	if(destCollection != null)
+        		destCollection.release();
         }
     }
     

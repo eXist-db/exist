@@ -317,7 +317,7 @@ public abstract class DBBroker extends Observable {
 	public abstract Document getDocument(String path)
 		throws PermissionDeniedException;
 
-	public abstract Document openDocument(String docPath, int lockMode) 
+	public abstract DocumentImpl openDocument(String docPath, int lockMode) 
 		throws PermissionDeniedException;
 	
 	/**

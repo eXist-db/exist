@@ -60,7 +60,7 @@ public class WebDAVServlet extends HttpServlet {
 	 */
 	protected void service(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		dumpHeaders(request);
+//		dumpHeaders(request);
 		webdav.process(request, response);
 	}
 	

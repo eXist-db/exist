@@ -28,9 +28,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
-import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
 import org.exist.security.User;
 
 /**
@@ -39,8 +36,6 @@ import org.exist.security.User;
  * @author wolf
  */
 public interface WebDAVMethod {
-	
-	final static Logger LOG = Logger.getLogger(WebDAVMethod.class);
 	
 	/**
 	 * Process a WebDAV request. The collection and resource parameters
@@ -56,6 +51,6 @@ public interface WebDAVMethod {
 	 * @throws IOException
 	 */
 	void process(User user, HttpServletRequest request, HttpServletResponse response, 
-			Collection collection, DocumentImpl resource) 
+			String path) 
 	throws ServletException, IOException;
 }

@@ -28,8 +28,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
 import org.exist.http.webdav.WebDAVMethod;
 import org.exist.security.User;
 
@@ -38,12 +36,8 @@ import org.exist.security.User;
  */
 public class Options implements WebDAVMethod {
 	
-	/* (non-Javadoc)
-	 * @see org.exist.http.webdav.WebDAVMethod#process(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.exist.collections.Collection, org.exist.dom.DocumentImpl)
-	 */
 	public void process(User user, HttpServletRequest request,
-			HttpServletResponse response, Collection collection,
-			DocumentImpl resource) throws ServletException, IOException {
+			HttpServletResponse response, String path) throws ServletException, IOException {
 		response.addHeader("DAV", "1");
 		response.addHeader("Allow", "OPTIONS, GET, HEAD, PUT, PROPFIND,MKCOL");
 		

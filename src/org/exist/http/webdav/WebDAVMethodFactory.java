@@ -48,7 +48,7 @@ public class WebDAVMethodFactory {
         else if(method.equals("GET"))
             return new Get(pool);
         else if(method.equals("HEAD"))
-            return new Head();
+            return new Head(pool);
         else if(method.equals("PUT"))
             return new Put(pool);
         else if(method.equals("DELETE"))
