@@ -214,9 +214,9 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 			if (nodeNumber == n.nodeNumber)
 				return 0;
 			else if (nodeNumber < n.nodeNumber)
-				return 1;
-			else
 				return -1;
+			else
+				return 1;
 		} else
 			return -1;
 	}
