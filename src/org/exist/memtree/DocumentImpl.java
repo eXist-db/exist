@@ -20,7 +20,6 @@
  */
 package org.exist.memtree;
 
-import java.io.StringWriter;
 import java.util.Arrays;
 
 import org.exist.dom.NodeProxy;
@@ -30,8 +29,6 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.util.hashtable.NamePool;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
-import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SAXSerializerPool;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Attr;
@@ -633,8 +630,7 @@ public class DocumentImpl extends NodeImpl implements Document {
                 receiver.processingInstruction(qn.getLocalName(), data);
                 break;
             case NodeImpl.REFERENCE_NODE:
-                receiver
-                        .addReferenceNode(document.references[document.alpha[nr]]);
+                receiver.addReferenceNode(document.references[document.alpha[nr]]);
                 break;
         }
     }
@@ -751,15 +747,14 @@ public class DocumentImpl extends NodeImpl implements Document {
     }
     
     protected NodeSet toNodeSet(NodeImpl node) throws XPathException {
-    	StringWriter sw = new StringWriter();
-    	SAXSerializer out = SAXSerializerPool.getInstance().borrowSAXSerializer();
-    	out.setWriter(sw);
-    	try {
-			streamTo(context.getBroker().getSerializer(), node, out);
+    	Serializer serializer = context.getBroker().getSerializer();
+    	serializer.reset();
+    	String data;
+		try {
+			data = serializer.serialize(node);
 		} catch (SAXException e) {
-			throw new XPathException("An error occurred while serializing in-memory document fragment", e);
+			throw new XPathException("Error occurred while storing temporary fragment: " + e.getMessage(), e);
 		}
-    	String data = sw.toString();
-    	return context.storeTemporaryDoc(data);
+		return context.storeTemporaryDoc(data);
     }
 }

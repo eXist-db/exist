@@ -180,10 +180,8 @@ public class GeneralComparison extends BinaryOp {
 			rv = rs.itemAt(0).atomize();
 			return BooleanValue.valueOf(compareValues(collator, lv, rv));
 		} else {
-			LOG.debug("left: " + ls.getLength() + "; right: " + rs.getLength());
 			for (SequenceIterator i1 = ls.iterate(); i1.hasNext();) {
 				lv = i1.nextItem().atomize();
-				LOG.debug("left: " + lv.getStringValue());
 				if (rs.getLength() == 1
 					&& compareValues(collator, lv, rs.itemAt(0).atomize()))
 					return BooleanValue.TRUE;
@@ -224,6 +222,8 @@ public class GeneralComparison extends BinaryOp {
 		for (Iterator i = nodes.iterator(); i.hasNext();) {
 			current = (NodeProxy) i.next();
 			c = current.getContext();
+			if(c == null)
+				throw new XPathException(getASTNode(), "Internal error: context node missing");
 			do {
 				lv = current.atomize();
 				rs = getRight().eval(c.getNode().toSequence());

@@ -290,7 +290,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			collection.release();
 		}
 	}
-
+	
 	public org.xmldb.api.base.Collection getParentCollection() throws XMLDBException {
 		if (getName().equals("/db"))
 			return null;

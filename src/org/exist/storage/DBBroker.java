@@ -660,6 +660,12 @@ public abstract class DBBroker extends Observable {
 	 * Clean up any temporary resources.
 	 *
 	 */
+	public abstract void cleanUpAll();
+	
+	/**
+	 * Clean up temporary resources. Called by the sync daemon.
+	 *
+	 */
 	public abstract void cleanUp();
 	
 	/**
