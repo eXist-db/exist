@@ -288,7 +288,10 @@ public class RpcServer implements RpcAPI {
 			parametri.put(OutputKeys.INDENT, "no");
 		    }
 		    
+   		    if (stylesheet != null) {
 		    parametri.put(EXistOutputKeys.STYLESHEET, stylesheet);
+		    }
+
 		    
 		    parametri.put(OutputKeys.ENCODING, encoding);
 
@@ -334,7 +337,9 @@ public class RpcServer implements RpcAPI {
 			parametri.put(OutputKeys.INDENT, "no");
 		    }
 		    
+		    if (stylesheet != null) {
 		    parametri.put(EXistOutputKeys.STYLESHEET, stylesheet);
+		    }
 		    
 			String xml = con.getDocument(user, name, parametri);
 			
