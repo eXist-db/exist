@@ -694,7 +694,7 @@ public class XQueryContext {
 		}
 		XQueryContext context = new XQueryContext(broker);
 		context.setStaticallyKnownDocuments(getStaticallyKnownDocuments());
-		
+		context.setBaseURI(baseURI);
 		XQueryLexer lexer = new XQueryLexer(reader);
 		XQueryParser parser = new XQueryParser(lexer);
 		XQueryTreeParser astParser = new XQueryTreeParser(context);
