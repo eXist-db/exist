@@ -74,7 +74,8 @@ public class FileSource extends AbstractSource {
      * @see org.exist.source.Source#getReader()
      */
     public Reader getReader() throws IOException {
-        return new FileReader(new File(filePath));
+//        return new FileReader(new File(filePath));
+        return new InputStreamReader(new FileInputStream(filePath), encoding);
     }
 
     /* (non-Javadoc)
