@@ -10,13 +10,22 @@
 
             <section title="XQuery Examples">
             
+                <p>XQuery is probably the next big language for Web programming.
+                Contrary to JSP, PHP, ASP, XSP, it is not a mix of a "normal" programming language with HTML, it is a single language that is designed by the W3C from scratch to support the procedural aspect and the XML. XQuery is equally good for Web XHTML content creation as for querying XML. And with the eXist HTTP request extensions there are the necessary functions to access the HTTP request.</p>
                 <p>The examples here demonstrate eXist's new XQuery processing
                     features. eXist provides two alternatives to execute a single
-                    XQuery script in a web application: a generator for Cocoon,
-                    called <b>XQueryGenerator</b>, and a servlet, implemented in
-                    class <b>XQueryServlet</b>. The XQueryGenerator passes the
+                    XQuery script in a web application: 
+                    <ul>
+                    <li>
+						<para>a generator for Cocoon, called <b>XQueryGenerator</b>, and </para>
+                    </li>
+                    <li>
+                      a servlet, implemented in class <b>XQueryServlet</b>. 
+                    </li>
+                    </ul>
+                    The XQueryGenerator passes the
                     generated output of the XQuery script as a SAX stream into the
-                    Cocoon pipeline. The servlet is configured to respond to
+                    Cocoon pipeline. Use it if you need the full power of Cocoon. The servlet is configured to respond to
                     requests ending with the suffix <code>.xql</code>.</p>
                 
                 <p>Both alternatives, the XQueryGenerator as well as the servlet,
@@ -122,6 +131,24 @@
                         <td width="70%">
                             Presents a login page. Only valid database users can log in. User
                             and password are stored in the HTTP session.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/hello.xq">Basic form example</link>
+                        </td>
+                        <td width="70%">
+                            Presents a form page.
+                            The response echoes the name entered.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/hello-plural-db.xq">Form example with XUpdate</link>
+                        </td>
+                        <td width="70%">
+                            Presents a form page.
+                            The response echoes all the names entered since database creation.
                         </td>
                     </tr>
                 </table>
