@@ -1,5 +1,5 @@
-/* eXist xml document repository and xpath implementation
- * Copyright (C) 2000,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+/* eXist Native XML Database
+ * Copyright (C) 2000-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -18,7 +18,6 @@
 
 package org.exist.xpath;
 
-import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
@@ -38,13 +37,10 @@ public class FunEndsWith extends Function {
 		return Constants.TYPE_BOOL;
 	}
 	
-	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
-		ArraySet set = new ArraySet(1);
-		set.add(node);
-		DocumentSet dset = new DocumentSet();
-		dset.add(node.doc);
-		String s1 = arg1.eval(dset, set, node).getStringValue();
-		String s2 = arg2.eval(dset, set, node).getStringValue();
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
+		NodeProxy contextNode) {
+		String s1 = arg1.eval(context, docs, contextSet, contextNode).getStringValue();
+		String s2 = arg2.eval(context, docs, contextSet, contextNode).getStringValue();
 		if(s1.endsWith(s2))
 			return new ValueBoolean(true);
 		else

@@ -1,7 +1,7 @@
 
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ *  Copyright (C) 2001-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -46,17 +46,19 @@ public class Predicate extends PathExpr {
 		super(pool);
 	}
 
-	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy contextNode) {
 		//long start = System.currentTimeMillis();
 		ArraySet result = new ArraySet(100);
 		Expression first = getExpression(0);
 		if (first == null)
-			return new ValueNodeSet(context);
+			return new ValueNodeSet(contextSet);
+		if(contextNode != null) 
+			contextSet = new SingleNodeSet(contextNode);
 		switch (first.returnsType()) {
 			case Constants.TYPE_NODELIST :
 				{
 					setInPredicate(true);
-					NodeSet nodes = (NodeSet) super.eval(docs, context, null).getNodeList();
+					NodeSet nodes = (NodeSet) super.eval(context, docs, contextSet, null).getNodeList();
 					NodeProxy current, parent;
 					LongLinkedList contextNodes;
 					LongLinkedList.ListItem next;
@@ -69,7 +71,7 @@ public class Predicate extends PathExpr {
 						}
 						for(Iterator j = contextNodes.iterator(); j.hasNext(); ) {
 							next = (LongLinkedList.ListItem)j.next();
-							if((parent = context.get(current.doc, next.l)) != null) {
+							if((parent = contextSet.get(current.doc, next.l)) != null) {
 								parent.addMatches(current.matches);
 								if(!result.contains(parent))
 									result.add(parent);
@@ -87,13 +89,13 @@ public class Predicate extends PathExpr {
 					NodeSet set;
 					DocumentSet dset;
 					Value v;
-					for (Iterator i = context.iterator(); i.hasNext();) {
+					for (Iterator i = contextSet.iterator(); i.hasNext();) {
 						p = (NodeProxy) i.next();
 						set = new ArraySet(1);
 						set.add(p);
 						dset = new DocumentSet();
 						dset.add(p.doc);
-						v = first.eval(dset, set, p);
+						v = first.eval(context, dset, set, p);
 						if (v.getBooleanValue())
 							result.add(p);
 					}
@@ -114,10 +116,9 @@ public class Predicate extends PathExpr {
 					DocumentImpl doc;
 					DocumentImpl last_doc = null;
 					// evaluate predicate expression for each context node
-					for (Iterator i = context.iterator(); i.hasNext();) {
+					for (Iterator i = contextSet.iterator(); i.hasNext();) {
 						p = (NodeProxy) i.next();
-						set = new SingleNodeSet(p);
-						pos = first.eval(docs, context, p).getNumericValue();
+						pos = first.eval(context, docs, contextSet, p).getNumericValue();
 						doc = (DocumentImpl) p.getDoc();
 						level = doc.getTreeLevel(p.getGID());
 						pid =
@@ -137,7 +138,7 @@ public class Predicate extends PathExpr {
 						e_gid = f_gid + doc.getTreeLevelOrder(level);
 
 						count = 1;
-						set = context.getRange(doc, f_gid, e_gid);
+						set = contextSet.getRange(doc, f_gid, e_gid);
 						for (Iterator j = set.iterator(); j.hasNext(); count++) {
 							n = (NodeProxy) j.next();
 							if (count == pos) {
@@ -164,12 +165,13 @@ public class Predicate extends PathExpr {
 		return docs;
 	}
 
-	public Value evalBody(DocumentSet docs, NodeSet context, NodeProxy node) {
+	public Value evalBody(StaticContext context, DocumentSet docs, NodeSet contextSet, 
+		NodeProxy contextNode) {
 		if (docs.getLength() == 0)
 			return new ValueNodeSet(NodeSet.EMPTY_SET);
 		Value r;
-		if (context != null)
-			r = new ValueNodeSet(context);
+		if (contextSet != null)
+			r = new ValueNodeSet(contextSet);
 		else
 			r = new ValueNodeSet(NodeSet.EMPTY_SET);
 		NodeSet set;
@@ -180,13 +182,13 @@ public class Predicate extends PathExpr {
 			LOG.debug("processing " + expr.pprint());
 			if (expr.returnsType() != Constants.TYPE_NODELIST) {
 				if (expr instanceof Literal || expr instanceof IntNumber)
-					return expr.eval(docs, set, null);
+					return expr.eval(context, docs, set, null);
 				ValueSet values = new ValueSet();
 				for (Iterator iter2 = set.iterator(); iter2.hasNext();)
-					values.add(expr.eval(docs, set, (NodeProxy) iter2.next()));
+					values.add(expr.eval(context, docs, set, (NodeProxy) iter2.next()));
 				return values;
 			}
-			r = expr.eval(docs, set, node);
+			r = expr.eval(context, docs, set, contextNode);
 		}
 		return r;
 	}

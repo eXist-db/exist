@@ -30,6 +30,8 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Stack;
 
@@ -46,6 +48,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentTypeImpl;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.ProcessingInstructionImpl;
+import org.exist.dom.QName;
 import org.exist.dom.TextImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -105,7 +108,7 @@ public class Parser
 	protected Locator locator = null;
 	protected int normalize = XMLString.SUPPRESS_BOTH;
 	protected XMLReader parser;
-	protected Stack prefixes = new Stack();
+	protected Map nsMappings = new HashMap();
 	protected ProgressIndicator progress;
 	protected boolean replace = false;
 	protected CatalogResolver resolver;
@@ -247,8 +250,8 @@ public class Parser
 					last.appendChildInternal(text);
 					if (!validate)
 						broker.store(text, currentPath.toString());
-					charBuf.reset();
 				}
+				charBuf.reset();
 			}
 			last.appendChildInternal(comment);
 			if (!validate)
@@ -315,7 +318,7 @@ public class Parser
 		if (ignorePrefix != null && prefix.equals(ignorePrefix)) {
 			ignorePrefix = null;
 		} else {
-			prefix = (String) prefixes.pop();
+			nsMappings.remove(prefix);
 		}
 	}
 
@@ -597,7 +600,7 @@ public class Parser
 		level = 0;
 		currentPath.setLength(0);
 		stack = new Stack();
-		prefixes = new Stack();
+		nsMappings.clear();
 		rootNode = null;
 		LOG.debug("validating document " + fileName + " ...");
 		try {
@@ -702,7 +705,7 @@ public class Parser
 		level = 0;
 		currentPath.setLength(0);
 		stack = new Stack();
-		prefixes = new Stack();
+		nsMappings.clear();
 		rootNode = null;
 		LOG.debug("validating document " + fileName + " ...");
 		DOMStreamer streamer = new DOMStreamer(this, this);
@@ -778,9 +781,24 @@ public class Parser
 	}
 
 	public void startElement(String namespace, String name, String qname, Attributes attributes) {
+		// calculate number of real attributes:
+		// don't store namespace declarations
+		int attrLength = attributes.getLength();
+		String attrQName;
+		String attrNS;
+		for (int i = 0; i < attributes.getLength(); i++) {
+			attrNS = attributes.getURI(i);
+			attrQName = attributes.getQName(i);
+			if (attrQName.startsWith("xmlns")
+				|| attrNS.equals("http://exist.sourceforge.net/NS/exist"))
+				--attrLength;
+		}
+
 		ElementImpl last = null;
 		ElementImpl node = null;
-
+		int p = qname.indexOf(':');
+		String prefix = p > -1 ? qname.substring(0, p) : "";
+		QName qn = new QName(name, namespace, prefix);
 		if (!stack.empty()) {
 			last = (ElementImpl) stack.peek();
 			if (charBuf != null && charBuf.length() > 0) {
@@ -794,20 +812,22 @@ public class Parser
 					if (!validate)
 						broker.store(text, currentPath);
 					text.clear();
-					charBuf.reset();
 				}
+				charBuf.reset();
 			}
 			if (!usedElements.isEmpty()) {
 				node = (ElementImpl) usedElements.pop();
-				node.setNodeName(qname);
+				node.setNodeName(qn);
 			} else
-				node = new ElementImpl(qname);
+				node = new ElementImpl(qn);
 			last.appendChildInternal(node);
 
 			node.setOwnerDocument(document);
-			node.setAttributes((short) attributes.getLength());
-			if (prefixes.size() > 0)
-				node.setPrefixes(prefixes);
+			node.setAttributes((short) attrLength);
+			if (nsMappings != null && nsMappings.size() > 0) {
+				node.setNamespaceMappings(nsMappings);
+				nsMappings.clear();
+			}
 
 			stack.push(node);
 			currentPath.append('/').append(qname);
@@ -816,14 +836,16 @@ public class Parser
 			}
 		} else {
 			if (validate)
-				node = new ElementImpl(0, qname);
+				node = new ElementImpl(0, qn);
 			else
-				node = new ElementImpl(1, qname);
+				node = new ElementImpl(1, qn);
 			rootNode = node;
 			node.setOwnerDocument(document);
-			node.setAttributes((short) attributes.getLength());
-			if (prefixes.size() > 0)
-				node.setPrefixes(prefixes);
+			node.setAttributes((short) attrLength);
+			if (nsMappings != null && nsMappings.size() > 0) {
+				node.setNamespaceMappings(nsMappings);
+				nsMappings.clear();
+			}
 
 			stack.push(node);
 			currentPath.append('/').append(qname);
@@ -836,19 +858,24 @@ public class Parser
 		level++;
 		if (document.getMaxDepth() < level)
 			document.setMaxDepth(level);
-		int attrLength = attributes.getLength();
-		String attrQName;
+
 		String attrPrefix;
-		String attrNS;
+		String attrLocalName;
 		for (int i = 0; i < attributes.getLength(); i++) {
 			attrNS = attributes.getURI(i);
+			attrLocalName = attributes.getLocalName(i);
 			attrQName = attributes.getQName(i);
 			// skip xmlns-attributes and attributes in eXist's namespace
 			if (attrQName.startsWith("xmlns")
 				|| attrNS.equals("http://exist.sourceforge.net/NS/exist"))
 				--attrLength;
 			else {
-				final AttrImpl attr = new AttrImpl(attrQName, attributes.getValue(i));
+				p = attrQName.indexOf(':');
+				attrPrefix = (p > -1) ? attrQName.substring(0, p) : null;
+				final AttrImpl attr =
+					new AttrImpl(
+						new QName(attrLocalName, attrNS, attrPrefix),
+						attributes.getValue(i));
 				attr.setOwnerDocument(document);
 				if (attributes.getType(i).equals("ID"))
 					attr.setType(AttrImpl.ID);
@@ -879,20 +906,7 @@ public class Parser
 			ignorePrefix = prefix;
 			return;
 		}
-
-		// get the prefix for this namespace if one has been stored
-		// before
-		String oldPrefix = broker.getNamespacePrefix(uri);
-		if (oldPrefix == null) {
-			if (prefix == null || prefix.length() == 0)
-				// xmlns="namespace"
-				prefix = "#" + uri;
-
-			broker.registerNamespace(uri, prefix);
-		} else
-			prefix = oldPrefix;
-
-		prefixes.push(prefix);
+		nsMappings.put(prefix, uri);
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /* eXist Native XML Database
- * Copyright (C) 2000-01,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2000-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -35,9 +35,11 @@ public class FunBoolean extends Function {
 		return Constants.TYPE_BOOL;
 	}
 	
-	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
-		NodeSet set = new SingleNodeSet(node);
-		boolean result = getArgument(0).eval(docs, set, node).getBooleanValue();
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
+		NodeProxy contextNode) {
+		if(contextNode != null)
+			contextSet = new SingleNodeSet(contextNode);
+		boolean result = getArgument(0).eval(context, docs, contextSet, contextNode).getBooleanValue();
 		return new ValueBoolean(result);
 	}
 

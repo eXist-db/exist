@@ -26,6 +26,7 @@ import org.exist.util.FastStringBuffer;
 import org.exist.util.XMLUtil;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.RootNode;
+import org.exist.xpath.StaticContext;
 import org.exist.xpath.Value;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Comment;
@@ -399,6 +400,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		try {
 			XPathLexer lexer = new XPathLexer(new StringReader(select));
 			XPathParser parser = new XPathParser(pool, user, lexer);
+			StaticContext context = new StaticContext();
 			PathExpr expr = new PathExpr(pool);
 			RootNode root = new RootNode(pool);
 			expr.add(root);
@@ -409,7 +411,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			if (ndocs.getLength() == 0)
 				return new ArrayList(1);
 
-			Value resultValue = expr.eval(documentSet, null, null);
+			Value resultValue = expr.eval(context, documentSet, null, null);
 			if (!(resultValue.getType() == Value.isNodeList))
 				throw new SAXException("select expression should evaluate to a" + "node-set");
 			NodeList set = resultValue.getNodeList();

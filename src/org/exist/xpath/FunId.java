@@ -8,6 +8,7 @@ import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.XMLUtil;
@@ -26,10 +27,11 @@ public class FunId extends Function {
 	/**
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.dom.NodeSet, org.exist.dom.NodeProxy)
 	 */
-	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
+		NodeProxy contextNode) {
 		Expression arg = getArgument( 0 );
-		Value idval = arg.eval(docs, context, node);
-		String id = "&" + idval.getStringValue();
+		Value idval = arg.eval(context, docs, contextSet, contextNode);
+		QName id = new QName("&" + idval.getStringValue(), "", null);
 		DBBroker broker = null;
 		try {
 			broker = pool.get();

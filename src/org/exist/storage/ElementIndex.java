@@ -25,6 +25,7 @@ import org.apache.log4j.Category;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
+import org.exist.dom.QName;
 import org.exist.util.Configuration;
 
 /**
@@ -52,7 +53,7 @@ public abstract class ElementIndex extends Observable {
         this.doc = doc;
     }
         
-    public abstract void addRow(String element_id, NodeProxy proxy);
+    public abstract void addRow(QName qname, NodeProxy proxy);
 
     public abstract void flush();
     

@@ -1,5 +1,5 @@
 /* eXist Open Source Native XML Database
- * Copyright (C) 2000,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2000-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -52,10 +52,11 @@ public class Union extends PathExpr {
 		return left_docs.union(right_docs);
 	}
 
-	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
-		NodeSet lval = (NodeSet)left.eval(docs, context, node).getNodeList();
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
+		NodeProxy contextNode) {
+		NodeSet lval = (NodeSet)left.eval(context, docs, contextSet, contextNode).getNodeList();
 		LOG.debug("left " + left.pprint() + " returned: " + lval.getLength());
-		NodeSet rval = (NodeSet)right.eval(docs, context, node).getNodeList();
+		NodeSet rval = (NodeSet)right.eval(context, docs, contextSet, contextNode).getNodeList();
 		LOG.debug("right " + right.pprint() + " returned: " + rval.getLength());
 		long start = System.currentTimeMillis();
         NodeSet result = lval.union(rval);

@@ -22,33 +22,32 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 
-public class IntNumber implements Expression {
+public class IntNumber extends AbstractExpression {
 
-  protected double dValue;
+	protected double dValue;
 
-   public IntNumber(double doubleValue) {
-      this.dValue = doubleValue;
-   }
+	public IntNumber(double doubleValue) {
+		this.dValue = doubleValue;
+	}
 
-  public int returnsType() {
-    return Constants.TYPE_NUM;
-  }
+	public int returnsType() {
+		return Constants.TYPE_NUM;
+	}
 
-  public DocumentSet preselect(DocumentSet in_docs) {
-    return in_docs;
-  }
+	public DocumentSet preselect(DocumentSet in_docs) {
+		return in_docs;
+	}
 
-   public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
-      return new ValueNumber(dValue);
-   }
+	public Value eval(
+		StaticContext context,
+		DocumentSet docs,
+		NodeSet contextSet,
+		NodeProxy contextNode) {
+		return new ValueNumber(dValue);
+	}
 
-   public String pprint() {
-      return Double.toString(dValue);
-   }
-	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#setInPredicate(boolean)
-	 */
-	public void setInPredicate(boolean inPredicate) {
+	public String pprint() {
+		return Double.toString(dValue);
 	}
 
 }

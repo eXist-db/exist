@@ -34,6 +34,7 @@ import org.dbxml.core.data.Value;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
+import org.exist.dom.QName;
 import org.exist.storage.store.*;
 import org.exist.util.Configuration;
 import org.exist.util.FastQSort;
@@ -70,13 +71,13 @@ public class NativeElementIndex extends ElementIndex {
 		this.dbElement = dbElement;
 	}
 
-	public void addRow(String elementName, NodeProxy proxy) {
+	public void addRow(QName qname, NodeProxy proxy) {
 		ArrayList buf;
-		if (elementIds.containsKey(elementName))
-			buf = (ArrayList) elementIds.get(elementName);
+		if (elementIds.containsKey(qname))
+			buf = (ArrayList) elementIds.get(qname);
 		else {
 			buf = new ArrayList(50);
-			elementIds.put(elementName, buf);
+			elementIds.put(qname, buf);
 		}
 		buf.add(proxy);
 	}
@@ -86,7 +87,7 @@ public class NativeElementIndex extends ElementIndex {
 			return;
 		Lock lock = dbElement.getLock();
 		Map.Entry entry;
-		String elementName;
+		QName qname;
 		List oldList = new ArrayList(), idList;
 		NodeProxy p;
 		VariableByteInputStream is = new VariableByteInputStream();
@@ -103,8 +104,8 @@ public class NativeElementIndex extends ElementIndex {
 			for (Iterator i = elementIds.entrySet().iterator(); i.hasNext();) {
 				entry = (Map.Entry) i.next();
 				idList = (ArrayList) entry.getValue();
-				elementName = (String) entry.getKey();
-				sym = NativeBroker.getSymbols().getSymbol(elementName);
+				qname = (QName) entry.getKey();
+				sym = NativeBroker.getSymbols().getSymbol(qname.getLocalName());
 				ref = new NativeBroker.ElementValue(collectionId, sym);
 				// try to retrieve old index entry for the element
 				try {
@@ -112,7 +113,7 @@ public class NativeElementIndex extends ElementIndex {
 					//val = dbElement.get(ref);
 					dis = dbElement.getAsStream(ref);
 				} catch (LockException e) {
-					LOG.error("could not acquire lock for index on " + elementName);
+					LOG.error("could not acquire lock for index on " + qname);
 					return;
 				} finally {
 					lock.release();
@@ -155,7 +156,7 @@ public class NativeElementIndex extends ElementIndex {
 						}
 					} catch (EOFException e) {
 					} catch (IOException e) {
-						LOG.error("io-error while updating index for element " + elementName);
+						LOG.error("io-error while updating index for element " + qname);
 					}
 				}
 				if (node != null)
@@ -312,7 +313,7 @@ public class NativeElementIndex extends ElementIndex {
 		final ProgressIndicator progress = new ProgressIndicator(elementIds.size(), 5);
 
 		NodeProxy proxy;
-		String elementName;
+		QName qname;
 		ArrayList idList;
 		int count = 1, len;
 		byte[] data;
@@ -329,7 +330,7 @@ public class NativeElementIndex extends ElementIndex {
 		try {
 			for (Iterator i = elementIds.entrySet().iterator(); i.hasNext();) {
 				entry = (Map.Entry) i.next();
-				elementName = (String) entry.getKey();
+				qname = (QName) entry.getKey();
 				idList = (ArrayList) entry.getValue();
 				os.clear();
 				FastQSort.sort(idList, 0, idList.size() - 1);
@@ -344,12 +345,13 @@ public class NativeElementIndex extends ElementIndex {
 					os.writeLong(cid);
 					StorageAddress.write(proxy.internalAddress, os);
 				}
-				short sym = NativeBroker.getSymbols().getSymbol(elementName);
-				ref = new NativeBroker.ElementValue(collectionId, sym);
+				short sym = NativeBroker.getSymbols().getSymbol(qname.getLocalName());
+				short nsSym = NativeBroker.getSymbols().getNSSymbol(qname.getNamespaceURI());
+				ref = new NativeBroker.ElementValue(collectionId, sym, nsSym);
 				try {
 					lock.acquire(Lock.WRITE_LOCK);
 					if (dbElement.append(ref, os.data()) < 0) {
-						LOG.warn("could not save index for element " + elementName);
+						LOG.warn("could not save index for element " + qname);
 						continue;
 					}
 				} catch (LockException e) {

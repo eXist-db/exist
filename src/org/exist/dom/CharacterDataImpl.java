@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.util.ArrayList;
+import java.util.Set;
+
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
@@ -45,7 +47,7 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
 
 
     public CharacterDataImpl( short nodeType ) {
-        super( nodeType );
+        super( nodeType, QName.TEXT_QNAME );
     }
     
     /**
@@ -55,7 +57,7 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@param  gid       Description of the Parameter
      */
     public CharacterDataImpl( short nodeType, long gid ) {
-        super( nodeType, "", gid );
+        super( nodeType, QName.TEXT_QNAME, gid );
     }
 
 
@@ -67,7 +69,7 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@param  data      Description of the Parameter
      */
     public CharacterDataImpl( short nodeType, long gid, String data ) {
-        super( nodeType, "", gid );
+        super( nodeType, QName.TEXT_QNAME, gid );
         cdata = new XMLString(data.toCharArray());
     }
 
@@ -78,7 +80,7 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@param  data      Description of the Parameter
      */
     public CharacterDataImpl( short nodeType, String data ) {
-        super( nodeType, "" );
+        super( nodeType, QName.TEXT_QNAME );
 		cdata = new XMLString(data.toCharArray());
     }
 
@@ -92,7 +94,7 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@param  howmany   Description of the Parameter
      */
     public CharacterDataImpl( short nodeType, char[] data, int start, int howmany ) {
-        super( nodeType, "" );
+        super( nodeType, QName.TEXT_QNAME );
         cdata = new XMLString(data, start, howmany);
     }
 
@@ -278,7 +280,7 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      */
     public void toSAX( ContentHandler contentHandler,
                        LexicalHandler lexicalHandler, boolean first,
-                       ArrayList prefixes )
+                       Set namespaces)
          throws SAXException {
         if ( first ) {
             AttributesImpl attribs = new AttributesImpl();

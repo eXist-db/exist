@@ -23,9 +23,11 @@ package org.exist.dom;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Set;
 
 import org.exist.storage.Signatures;
 import org.exist.util.ByteArrayPool;
+import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
 import org.exist.util.XMLUtil;
 import org.w3c.dom.Attr;
@@ -69,9 +71,8 @@ public class AttrImpl extends NodeImpl implements Attr {
      *@param  name   Description of the Parameter
      *@param  value  Description of the Parameter
      */
-    public AttrImpl( String name, String value ) {
-        super( Node.ATTRIBUTE_NODE, name );
-        //this.value = XMLUtil.encodeAttrMarkup( value );
+    public AttrImpl( QName name, String value ) {
+        super( Node.ATTRIBUTE_NODE, name);
 		this.value = value;
     }
 
@@ -84,22 +85,37 @@ public class AttrImpl extends NodeImpl implements Attr {
      *@return       Description of the Return Value
      */
     public static NodeImpl deserialize( byte[] data, int start, int len, DocumentImpl doc ) {
-        byte idSizeType = (byte) ( data[start] & 0x3 );
-        short id = (short) Signatures.read( idSizeType, data, start + 1 );
-        int attrType = (int)( ( data[start] & 0x4 ) >> 0x2);
+    	int next = start;
+        byte idSizeType = (byte) ( data[next] & 0x3 );
+		boolean hasNamespace = (data[next] & 0x10) == 0x10;
+        int attrType = (int)( ( data[next] & 0x4 ) >> 0x2);
+		short id = (short) Signatures.read( idSizeType, data, ++next );
+		next += Signatures.getLength(idSizeType);
         String name = doc.getSymbols().getName( id );
+        short nsId = 0;
+        String prefix = null;
+		if (hasNamespace) {
+			nsId = ByteConversion.byteToShort(data, next);
+			next += 2;
+			int prefixLen = ByteConversion.byteToShort(data, next);
+			next += 2;
+			if(prefixLen > 0)
+				prefix = UTF8.decode(data, next, prefixLen).toString();
+			next += prefixLen;
+		}
+		String namespace = nsId == 0 ? "" : doc.getSymbols().getNamespace(nsId);
         String value;
         try {
             value =
-                new String( data, start + 1 + Signatures.getLength( idSizeType ),
-                len - 1 - Signatures.getLength( idSizeType ),
+                new String( data, next,
+                len - (next - start),
                 "UTF-8" );
         } catch ( UnsupportedEncodingException uee ) {
             value =
-                new String( data, start + 1 + idSizeType,
-                len - 1 - idSizeType );
+                new String( data, next,
+               		len - (next - start));
         }
-        AttrImpl attr = new AttrImpl( name, value );
+        AttrImpl attr = new AttrImpl( new QName(name, namespace, prefix), value );
         attr.setType( attrType );
         return attr;
     }
@@ -111,7 +127,7 @@ public class AttrImpl extends NodeImpl implements Attr {
      *@return    The name value
      */
     public String getName() {
-        return nodeName;
+        return nodeName.toString();
     }
 
 
@@ -171,14 +187,34 @@ public class AttrImpl extends NodeImpl implements Attr {
     public byte[] serialize() {
         final short id = ownerDocument.getSymbols().getSymbol( this );
         final byte idSizeType = Signatures.getSizeType( id );
-        final byte[] data = ByteArrayPool.getByteArray(UTF8.encoded(value) +
-            Signatures.getLength( idSizeType ) +
-            1);
-        data[0] = (byte) ( Signatures.Attr << 0x5 );
-        data[0] |= idSizeType;
-        data[0] |= (byte) (attributeType << 0x2);
-        Signatures.write( idSizeType, id, data, 1 );
-        UTF8.encode(value, data, 1 + Signatures.getLength( idSizeType ));
+		int prefixLen = 0;
+		if (nodeName.needsNamespaceDecl()) {
+			prefixLen = nodeName.getPrefix().length() > 0 ?
+				UTF8.encoded(nodeName.getPrefix()) : 0;
+		}
+		final byte[] data = ByteArrayPool.getByteArray(UTF8.encoded(value) +
+				Signatures.getLength( idSizeType ) +
+				(nodeName.needsNamespaceDecl() ? prefixLen + 4 : 0) + 1);
+		int pos = 0;
+        data[pos] = (byte) ( Signatures.Attr << 0x5 );
+        data[pos] |= idSizeType;
+        data[pos] |= (byte) (attributeType << 0x2);
+        if(nodeName.needsNamespaceDecl())
+			data[pos] |= 0x10;
+        Signatures.write( idSizeType, id, data, ++pos );
+        pos += Signatures.getLength(idSizeType);
+        if(nodeName.needsNamespaceDecl()) {
+        	final short nsId = 
+        		ownerDocument.getSymbols().getNSSymbol(nodeName.getNamespaceURI());
+        	ByteConversion.shortToByte(nsId, data, pos);
+        	pos += 2;
+			ByteConversion.shortToByte((short)prefixLen, data, pos);
+			pos += 2;
+			if(nodeName.getPrefix().length() > 0)
+				UTF8.encode(nodeName.getPrefix(), data, pos);
+			pos += prefixLen;
+        }
+        UTF8.encode(value, data, pos);
         return data;
     }
 
@@ -205,7 +241,7 @@ public class AttrImpl extends NodeImpl implements Attr {
      */
     public void toSAX( ContentHandler contentHandler,
                        LexicalHandler lexicalHandler, boolean first,
-                       ArrayList prefixes )
+                       Set namespaces)
          throws SAXException {
         if ( first ) {
             AttributesImpl attribs = new AttributesImpl();

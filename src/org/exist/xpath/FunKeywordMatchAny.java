@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001/2002 Wolfgang M. Meier
+ *  Copyright (C) 2001-03 Wolfgang M. Meier
  *  meier@ifs.tu-darmstadt.de
  *  http://exist.sourceforge.net
  *

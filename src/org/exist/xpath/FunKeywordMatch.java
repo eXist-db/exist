@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001/2002 Wolfgang M. Meier
+ *  Copyright (C) 2001-03 Wolfgang M. Meier
  *  meier@ifs.tu-darmstadt.de
  *  http://exist.sourceforge.net
  *
@@ -51,14 +51,15 @@ public class FunKeywordMatch extends Function {
 	 *@param  node     Description of the Parameter
 	 *@return          Description of the Return Value
 	 */
-	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
+		NodeProxy contextNode) {
 		Expression path = getArgument(0);
-		NodeSet nodes = (NodeSet) path.eval(docs, context, null).getNodeList();
+		NodeSet nodes = (NodeSet) path.eval(context, docs, contextSet, contextNode).getNodeList();
 
 		String[] terms = new String[getArgumentCount() - 1];
 		for (int i = 1; i < getArgumentCount(); i++)
 			terms[i - 1] =
-				getArgument(i).eval(docs, context, node).getStringValue();
+				getArgument(i).eval(context, docs, contextSet, contextNode).getStringValue();
 		DBBroker broker = null;
 		NodeSet[][] hits = new NodeSet[terms.length][];
 		try {

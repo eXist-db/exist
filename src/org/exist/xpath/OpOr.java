@@ -18,11 +18,8 @@
  */
 package org.exist.xpath;
 
-import java.util.Iterator;
-
 import org.apache.log4j.Category;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeIDSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.storage.BrokerPool;
@@ -44,16 +41,16 @@ public class OpOr extends BinaryOp {
 		return out_docs;
 	}
 
-	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy contextNode) {
 		if (getLength() == 0)
-			return new ValueNodeSet(context);
+			return new ValueNodeSet(contextSet);
 		LOG.debug("processing " + getExpression(0).pprint());
-		NodeSet rr, rl = (NodeSet) getExpression(0).eval(docs, context, null).getNodeList();
-		rl = rl.getContextNodes(context, inPredicate);
+		NodeSet rr, rl = (NodeSet) getExpression(0).eval(context, docs, contextSet, null).getNodeList();
+		rl = rl.getContextNodes(contextSet, inPredicate);
 		for (int i = 1; i < getLength(); i++) {
 			LOG.debug("processing " + getExpression(i).pprint());
-			rr = (NodeSet) getExpression(i).eval(docs, context, null).getNodeList();
-			rl = rl.union(rr.getContextNodes(context, inPredicate));
+			rr = (NodeSet) getExpression(i).eval(context, docs, contextSet, null).getNodeList();
+			rl = rl.union(rr.getContextNodes(contextSet, inPredicate));
 		}
 		return new ValueNodeSet(rl);
 	}

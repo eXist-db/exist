@@ -28,6 +28,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
 import org.exist.xpath.PathExpr;
+import org.exist.xpath.StaticContext;
 import org.exist.xpath.Value;
 import org.exist.xpath.ValueSet;
 import org.w3c.dom.NodeList;
@@ -233,6 +234,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		try {
 			XPathLexer lexer = new XPathLexer(new StringReader(query));
 			XPathParser parser = new XPathParser(pool, session.getUser(), lexer);
+			StaticContext context = new StaticContext();
 			PathExpr expr = new PathExpr(pool);
 			parser.expr(expr);
 			LOG.info("query: " + expr.pprint());
@@ -242,7 +244,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			DocumentSet ndocs = expr.preselect();
 			if (ndocs.getLength() == 0)
 				return resp;
-			Value value = expr.eval(ndocs, null, null);
+			Value value = expr.eval(context, ndocs, null, null);
 
 			QueryResponseCollection[] collections = null;
 			if (value.getType() == Value.isNodeList)

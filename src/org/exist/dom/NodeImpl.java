@@ -32,6 +32,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.exist.storage.*;
 import org.exist.util.XMLUtil;
@@ -53,7 +55,7 @@ public class NodeImpl implements Node {
 	protected short attributes = 0;
 	protected long gid;
 	protected long internalAddress = -1;
-	protected String nodeName = null;
+	protected QName nodeName = null;
 	protected int nodeNameRef = -1;
 	protected short nodeType = 0;
 	protected DocumentImpl ownerDocument = null;
@@ -68,7 +70,7 @@ public class NodeImpl implements Node {
 	 *@param  nodeType  Description of the Parameter
 	 */
 	public NodeImpl(short nodeType) {
-		this(nodeType, "", 0);
+		this(nodeType, null, 0);
 	}
 
 	/**
@@ -77,7 +79,7 @@ public class NodeImpl implements Node {
 	 *@param  n  Description of the Parameter
 	 */
 	public NodeImpl(Node n) {
-		this(n.getNodeType(), n.getNodeName(), 0);
+		this(n.getNodeType(), ((NodeImpl) n).getQName(), 0);
 		ownerDocument = (DocumentImpl) n.getOwnerDocument();
 	}
 
@@ -87,7 +89,7 @@ public class NodeImpl implements Node {
 	 *@param  gid  Description of the Parameter
 	 */
 	public NodeImpl(long gid) {
-		this((short) 0, "", gid);
+		this((short) 0, new QName("", "", null), gid);
 	}
 
 	/**
@@ -97,7 +99,7 @@ public class NodeImpl implements Node {
 	 *@param  gid       Description of the Parameter
 	 */
 	public NodeImpl(short nodeType, long gid) {
-		this(nodeType, "", gid);
+		this(nodeType, new QName("", "", null), gid);
 	}
 
 	/**
@@ -106,7 +108,7 @@ public class NodeImpl implements Node {
 	 *@param  nodeType  Description of the Parameter
 	 *@param  nodeName  Description of the Parameter
 	 */
-	public NodeImpl(short nodeType, String nodeName) {
+	public NodeImpl(short nodeType, QName nodeName) {
 		this(nodeType, nodeName, 0);
 	}
 
@@ -117,9 +119,19 @@ public class NodeImpl implements Node {
 	 *@param  nodeName  Description of the Parameter
 	 *@param  gid       Description of the Parameter
 	 */
-	public NodeImpl(short nodeType, String nodeName, long gid) {
+	public NodeImpl(short nodeType, QName nodeName, long gid) {
 		this.nodeType = nodeType;
 		this.nodeName = nodeName;
+		if (nodeName == null) {
+			switch (nodeType) {
+				case Node.TEXT_NODE :
+					nodeName = QName.TEXT_QNAME;
+					break;
+				case Node.COMMENT_NODE :
+					nodeName = QName.COMMENT_QNAME;
+					break;
+			}
+		}
 		this.gid = gid;
 	}
 
@@ -276,8 +288,15 @@ public class NodeImpl implements Node {
 	 * @see org.w3c.dom.Node#getLocalName()
 	 */
 	public String getLocalName() {
-		if (nodeName != null && nodeName.indexOf(':') > -1)
-			return nodeName.substring(nodeName.indexOf(':') + 1);
+		if (nodeName != null)
+			return nodeName.getLocalName();
+		return "";
+		//		if (nodeName != null && nodeName.indexOf(':') > -1)
+		//			return nodeName.substring(nodeName.indexOf(':') + 1);
+		//		return nodeName;
+	}
+
+	public QName getQName() {
 		return nodeName;
 	}
 
@@ -285,12 +304,14 @@ public class NodeImpl implements Node {
 	 * @see org.w3c.dom.Node#getNamespaceURI()
 	 */
 	public String getNamespaceURI() {
-		if (nodeName != null && nodeName.indexOf(':') > -1) {
-			String prefix = nodeName.substring(0, nodeName.indexOf(':'));
-			if (!prefix.equals("xml")) {
-				return ownerDocument.broker.getNamespaceURI(prefix);
-			}
-		}
+		if (nodeName != null)
+			return nodeName.getNamespaceURI();
+		//		if (nodeName != null && nodeName.indexOf(':') > -1) {
+		//			String prefix = nodeName.substring(0, nodeName.indexOf(':'));
+		//			if (!prefix.equals("xml")) {
+		//				return ownerDocument.broker.getNamespaceURI(prefix);
+		//			}
+		//		}
 		return "";
 	}
 
@@ -298,7 +319,7 @@ public class NodeImpl implements Node {
 	 * @see org.w3c.dom.Node#getNodeName()
 	 */
 	public String getNodeName() {
-		return nodeName;
+		return nodeName.toString();
 	}
 
 	/**
@@ -357,8 +378,10 @@ public class NodeImpl implements Node {
 	 * @see org.w3c.dom.Node#getPrefix()
 	 */
 	public String getPrefix() {
-		if (nodeName != null && nodeName.indexOf(':') > -1)
-			return nodeName.substring(0, nodeName.indexOf(':'));
+		if (nodeName != null)
+			return nodeName.getPrefix();
+		//		if (nodeName != null && nodeName.indexOf(':') > -1)
+		//			return nodeName.substring(0, nodeName.indexOf(':'));
 		return "";
 	}
 
@@ -516,7 +539,7 @@ public class NodeImpl implements Node {
 	 *
 	 *@param  name  The new nodeName value
 	 */
-	public void setNodeName(String name) {
+	public void setNodeName(QName name) {
 		nodeName = name;
 	}
 
@@ -545,6 +568,8 @@ public class NodeImpl implements Node {
 	 *@exception  DOMException  Description of the Exception
 	 */
 	public void setPrefix(String prefix) throws DOMException {
+		if (nodeName != null)
+			nodeName.setPrefix(prefix);
 	}
 
 	/**
@@ -567,7 +592,7 @@ public class NodeImpl implements Node {
 	 */
 	public void toSAX(ContentHandler contentHandler, LexicalHandler lexicalHandler, boolean first)
 		throws SAXException {
-		toSAX(contentHandler, lexicalHandler, first, new ArrayList(5));
+		toSAX(contentHandler, lexicalHandler, first, new TreeSet());
 	}
 
 	/**
@@ -583,7 +608,7 @@ public class NodeImpl implements Node {
 		ContentHandler contentHandler,
 		LexicalHandler lexicalHandler,
 		boolean first,
-		ArrayList prefixes)
+		Set namespaces)
 		throws SAXException {
 	}
 
@@ -647,7 +672,7 @@ public class NodeImpl implements Node {
 		} else
 			return node;
 	}
-	
+
 	//	protected NodeImpl getLastNode(NodeImpl node) {
 	//		if (node.getNodeType() == Node.ELEMENT_NODE)
 	//			return node.getChildCount() == 0 ? node : getLastNode((NodeImpl) node.getLastChild());

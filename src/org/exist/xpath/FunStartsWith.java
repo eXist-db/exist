@@ -1,5 +1,5 @@
 /* eXist Open Source Native XML Database
- * Copyright (C) 2000,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2000-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -40,13 +40,14 @@ public class FunStartsWith extends Function {
 		return Constants.TYPE_BOOL;
 	}
 	
-	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
+		NodeProxy contextNode) {
 		ArraySet set = new ArraySet(1);
-		set.add(node);
+		set.add(contextNode);
 		DocumentSet dset = new DocumentSet();
-		dset.add(node.doc);
-		String s1 = arg1.eval(dset, set, node).getStringValue();
-		String s2 = arg2.eval(dset, set, node).getStringValue();
+		dset.add(contextNode.doc);
+		String s1 = arg1.eval(context, dset, set, contextNode).getStringValue();
+		String s2 = arg2.eval(context, dset, set, contextNode).getStringValue();
 		if(s1.startsWith(s2))
 			return new ValueBoolean(true);
 		else

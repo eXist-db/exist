@@ -70,8 +70,9 @@ public class Update extends Modification {
 				case Node.ATTRIBUTE_NODE :
 					parent = (ElementImpl)node.getParentNode();
 					temp = children.item(0);
+					AttrImpl attr = (AttrImpl)node;
 					attribute = 
-						new AttrImpl(((AttrImpl)node).getName(), temp.getNodeValue());
+						new AttrImpl(attr.getQName(), temp.getNodeValue());
 					attribute.setOwnerDocument(doc);
 					parent.updateChild(node, attribute);
 					break;

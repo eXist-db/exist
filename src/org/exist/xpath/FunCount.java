@@ -1,6 +1,6 @@
 
 /* eXist Native XML Database
- * Copyright (C) 2001,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2001-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -18,10 +18,10 @@
  */
 package org.exist.xpath;
 
-import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.SingleNodeSet;
 import org.exist.storage.BrokerPool;
 
 public class FunCount extends Function {
@@ -38,8 +38,12 @@ public class FunCount extends Function {
 		return getArgument(0).preselect(in_docs);
     }
 
-    public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
-		NodeSet temp = (NodeSet)getArgument(0).eval(docs, context, node).getNodeList();
+    public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
+    	NodeProxy contextNode) {
+    	if(contextNode != null) {
+    		contextSet = new SingleNodeSet(contextNode);
+    	}
+		NodeSet temp = (NodeSet)getArgument(0).eval(context, docs, contextSet).getNodeList();
 		return new ValueNumber(temp.getLength());
 	}
 

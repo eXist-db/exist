@@ -1,5 +1,5 @@
 /* eXist Open Source Native XML Database
- * Copyright (C) 2000,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2000-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -33,7 +33,8 @@ public class FunTrue extends Function {
 		return Constants.TYPE_BOOL;
 	}
 	
-	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
+		NodeProxy contextNode) {
 		return new ValueBoolean(true);
 	}
 

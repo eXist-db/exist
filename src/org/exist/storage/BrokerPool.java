@@ -20,11 +20,15 @@
  */
 package org.exist.storage;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Stack;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.TreeMap;
 import org.apache.log4j.Logger;
+import org.dbxml.core.data.Value;
+import org.exist.dom.SymbolTable;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.sync.SyncDaemon;
 import org.exist.util.*;

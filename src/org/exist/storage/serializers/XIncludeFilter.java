@@ -15,6 +15,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.util.XMLUtil;
 import org.exist.xpath.PathExpr;
+import org.exist.xpath.StaticContext;
 import org.exist.xpath.Value;
 import org.exist.xpath.ValueSet;
 import org.xml.sax.Attributes;
@@ -220,6 +221,7 @@ public class XIncludeFilter implements ContentHandler {
 					BrokerPool pool = serializer.broker.getBrokerPool();
 					XPathParser parser = 
 						new XPathParser( pool, serializer.getUser(), lexer );
+					StaticContext context = new StaticContext();
 					PathExpr expr = new PathExpr(pool);
 					parser.xpointer( expr );
 					LOG.info( "xpointer query: " + expr.pprint() );
@@ -229,7 +231,7 @@ public class XIncludeFilter implements ContentHandler {
 					docs = expr.preselect( docs );
 					if ( docs.getLength() == 0 )
 						return;
-					Value resultValue = expr.eval( docs, null, null );
+					Value resultValue = expr.eval( context, docs, null, null );
 					switch(resultValue.getType()) {
 						case Value.isNodeList:
 							NodeSet set = (NodeSet)resultValue.getNodeList();

@@ -1,6 +1,6 @@
 
 /* eXist Open Source Native XML Database
- * Copyright (C) 2001,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2001-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -45,16 +45,17 @@ public class OpAnd extends BinaryOp {
 		return out_docs;
 	}
 
-	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
+		NodeProxy contextNode) {
 		if (getLength() == 0)
-			return new ValueNodeSet(context);
+			return new ValueNodeSet(contextSet);
 		LOG.debug("processing " + getExpression(0).pprint());
-		NodeSet rr, rl = (NodeSet) getExpression(0).eval(docs, context, null).getNodeList();
-		rl = rl.getContextNodes(context, inPredicate);
+		NodeSet rr, rl = (NodeSet) getExpression(0).eval(context, docs, contextSet, contextNode).getNodeList();
+		rl = rl.getContextNodes(contextSet, inPredicate);
 		for (int i = 1; i < getLength(); i++) {
 			LOG.debug("processing " + getExpression(i).pprint());
-			rr = (NodeSet) getExpression(i).eval(docs, context, null).getNodeList();
-			rl = rl.intersection(rr.getContextNodes(context, inPredicate));
+			rr = (NodeSet) getExpression(i).eval(context, docs, contextSet, contextNode).getNodeList();
+			rl = rl.intersection(rr.getContextNodes(contextSet, inPredicate));
 		}
 		return new ValueNodeSet(rl);
 	}

@@ -37,8 +37,15 @@
 				- max: maximum number of connections allowed.
 		   -->
 		   <pool min="1" max="15" sync-period="300000"/>
-	   </db-connection>
+   		</db-connection>
   
+		<!--db-connection database="native" files="/var/xml/data" 
+			buffers="1024" words_buffers="32768" collection_buffers="2048" 
+			elements_buffers="8192" free_mem_min="10" 
+		   pageSize="4096">
+		   <pool min="1" max="15" sync-period="300000"/>
+	   </db-connection-->
+	   
   <!-- settings for the serializer
 
        - enable-xinclude: should the database expand xinclude tags?
@@ -178,12 +185,12 @@
     </appender>
     
     <root>
-	    <appender-ref ref="console"/>
+		<appender-ref ref="console"/>
 		<priority value="debug"/>
     </root>
 
     <category name="org.exist.xmldb" additivity="false">
-		<appender-ref ref="exist.xmldb"/>
+		<appender-ref ref="console"/>
 		<priority value="debug"/>
     </category>
     

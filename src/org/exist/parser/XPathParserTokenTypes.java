@@ -1,4 +1,4 @@
-// $ANTLR : "XPathParser.g" -> "XPathLexer.java"$
+// $ANTLR 2.7.2: "XPathParser.g" -> "XPathLexer.java"$
 
 	package org.exist.parser;
 	
@@ -44,32 +44,32 @@ public interface XPathParserTokenTypes {
 	int LITERAL_collection = 25;
 	int LITERAL_xcollection = 26;
 	int INT = 27;
-	int LITERAL_text = 28;
-	// "starts-with" = 29
-	// "ends-with" = 30
-	int LITERAL_contains = 31;
-	int LITERAL_match = 32;
-	int LITERAL_near = 33;
-	int SLASH = 34;
-	int DSLASH = 35;
-	int AT = 36;
-	int ATTRIB_STAR = 37;
-	int LITERAL_node = 38;
-	int PARENT = 39;
-	int SELF = 40;
-	int COLON = 41;
-	int LITERAL_descendant = 42;
-	// "descendant-or-self" = 43
-	int LITERAL_child = 44;
-	int LITERAL_parent = 45;
-	int LITERAL_self = 46;
-	int LITERAL_attribute = 47;
-	int LITERAL_ancestor = 48;
-	// "ancestor-or-self" = 49
-	// "following-sibling" = 50
-	// "preceding-sibling" = 51
-	int LPPAREN = 52;
-	int RPPAREN = 53;
+	int SLASH = 28;
+	int DSLASH = 29;
+	int AT = 30;
+	int ATTRIB_STAR = 31;
+	int LITERAL_node = 32;
+	int PARENT = 33;
+	int SELF = 34;
+	int COLON = 35;
+	int LITERAL_descendant = 36;
+	// "descendant-or-self" = 37
+	int LITERAL_child = 38;
+	int LITERAL_parent = 39;
+	int LITERAL_self = 40;
+	int LITERAL_attribute = 41;
+	int LITERAL_ancestor = 42;
+	// "ancestor-or-self" = 43
+	// "following-sibling" = 44
+	// "preceding-sibling" = 45
+	int LPPAREN = 46;
+	int RPPAREN = 47;
+	int LITERAL_text = 48;
+	// "starts-with" = 49
+	// "ends-with" = 50
+	int LITERAL_contains = 51;
+	int LITERAL_match = 52;
+	int LITERAL_near = 53;
 	int WS = 54;
 	int BASECHAR = 55;
 	int IDEOGRAPHIC = 56;

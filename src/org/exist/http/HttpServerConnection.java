@@ -60,6 +60,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
 import org.exist.xpath.PathExpr;
+import org.exist.xpath.StaticContext;
 import org.exist.xpath.Value;
 import org.exist.xpath.ValueSet;
 import org.w3c.dom.Document;
@@ -1141,6 +1142,7 @@ public class HttpServerConnection extends Thread {
 
         try {
             XPathLexer lexer = new XPathLexer( new StringReader( query ) );
+            StaticContext context = new StaticContext();
             DocumentSet docs = new DocumentSet(  );
             parser = new XPathParser( broker.getBrokerPool(), user, lexer );
 
@@ -1157,7 +1159,7 @@ public class HttpServerConnection extends Thread {
             if ( ndocs.getLength(  ) == 0 )
                 result = formatErrorMsg( "nothing found", OK );
             else {
-                Value resultValue = expr.eval( ndocs, null, null );
+                Value resultValue = expr.eval( context, ndocs, null, null );
                 long queryTime = System.currentTimeMillis(  ) - startTime;
                 HttpServer.LOG.debug( "evaluation took " + queryTime + "ms." );
                 startTime = System.currentTimeMillis(  );

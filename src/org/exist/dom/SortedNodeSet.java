@@ -12,6 +12,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.OrderedLinkedList;
 import org.exist.xpath.PathExpr;
+import org.exist.xpath.StaticContext;
 import org.exist.xpath.Value;
 import org.exist.xpath.ValueSet;
 import org.w3c.dom.Node;
@@ -46,7 +47,6 @@ public class SortedNodeSet extends NodeSet {
 		}
 		try {
 			XPathLexer lexer = new XPathLexer(new StringReader(sortExpr));
-
 			XPathParser parser =
 				new XPathParser(pool, user, lexer);
 			expr = new PathExpr(pool);
@@ -63,12 +63,13 @@ public class SortedNodeSet extends NodeSet {
 		} catch (EXistException e) {
 			LOG.debug(e);
 		}
+		StaticContext context = new StaticContext();
 		DBBroker broker = null;
 		try {
 			broker = pool.get();
 			for (Iterator i = other.iterator(); i.hasNext();) {
 				p = (NodeProxy) i.next();
-				item = new Item(broker, p, expr, ndocs);
+				item = new Item(broker, p, expr, ndocs, context);
 				list.add(item);
 			}
 		} catch (EXistException e) {
@@ -168,10 +169,10 @@ public class SortedNodeSet extends NodeSet {
 		String value = null;
 		
 		public Item(DBBroker broker, NodeProxy proxy, PathExpr expr, 
-			DocumentSet ndocs) {
+			DocumentSet ndocs, StaticContext context) {
 			this.proxy = proxy;
-			NodeSet context = new SingleNodeSet(proxy);
-			Value v = expr.eval(ndocs, context, null);
+			NodeSet contextSet = new SingleNodeSet(proxy);
+			Value v = expr.eval(context, ndocs, contextSet, null);
 			StringBuffer buf = new StringBuffer();
 			OrderedLinkedList strings = new OrderedLinkedList();
 			switch (v.getType()) {

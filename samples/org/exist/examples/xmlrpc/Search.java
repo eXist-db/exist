@@ -2,6 +2,7 @@ package org.exist.examples.xmlrpc;
 
 import org.apache.xmlrpc.*;
 import java.util.Vector;
+import java.util.Hashtable;
 
 /**
  * Execute a query using XMLRPC.
@@ -24,6 +25,7 @@ public class Search {
 		params.addElement(new Integer(10));
 		params.addElement(new Integer(1));
 		params.addElement(new Integer(1));
+		params.addElement(new Hashtable());
 		System.out.println("Executing query " + params.elementAt(0));
         String result = (String) xmlrpc.execute("query", params);
 		System.out.println(result);

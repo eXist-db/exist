@@ -43,6 +43,7 @@ import org.exist.util.Configuration;
 import org.exist.util.Occurrences;
 import org.exist.util.SyntaxException;
 import org.exist.xpath.PathExpr;
+import org.exist.xpath.StaticContext;
 import org.exist.xpath.Value;
 import org.exist.xpath.ValueNodeSet;
 import org.exist.xpath.ValueSet;
@@ -160,8 +161,15 @@ public class RpcConnection extends Thread {
 	 *@return                Description of the Return Value
 	 *@exception  Exception  Description of the Exception
 	 */
-	protected Value doQuery(User user, String xpath, DocumentSet docs, NodeSet context)
+	protected Value doQuery(User user, String xpath, DocumentSet docs, NodeSet contextSet,
+		Hashtable namespaces)
 		throws Exception {
+		StaticContext context = new StaticContext();
+		Map.Entry entry;
+		for(Iterator i = namespaces.entrySet().iterator(); i.hasNext(); ) {
+			entry = (Map.Entry)i.next();
+			context.declareNamespace((String)entry.getKey(), (String)entry.getValue());
+		}
 		XPathLexer lexer = new XPathLexer(new StringReader(xpath));
 		XPathParser parser = new XPathParser(brokerPool, user, lexer);
 		PathExpr expr = new PathExpr(brokerPool);
@@ -174,15 +182,15 @@ public class RpcConnection extends Thread {
 		if (ndocs.getLength() == 0)
 			return null;
 		LOG.info("pre-select took " + (System.currentTimeMillis() - start) + "ms.");
-		Value result = expr.eval(ndocs, context, null);
+		Value result = expr.eval(context, ndocs, contextSet, null);
 		LOG.info("query took " + (System.currentTimeMillis() - start) + "ms.");
 		return result;
 	}
 
-	public int executeQuery(User user, String xpath) throws Exception {
+	public int executeQuery(User user, String xpath, Hashtable namespaces) throws Exception {
 		long startTime = System.currentTimeMillis();
 		LOG.debug("query: " + xpath);
-		Value resultValue = doQuery(user, xpath, null, null);
+		Value resultValue = doQuery(user, xpath, null, null, namespaces);
 		QueryResult qr = new QueryResult(resultValue, (System.currentTimeMillis() - startTime));
 		connectionPool.resultSets.put(qr.hashCode(), qr);
 		return qr.hashCode();
@@ -746,8 +754,7 @@ public class RpcConnection extends Thread {
 		int howmany,
 		int start,
 		boolean prettyPrint,
-		long queryTime,
-		String encoding)
+		long queryTime)
 		throws Exception {
 		if (resultSet.getLength() == 0)
 			return "<?xml version=\"1.0\"?>\n"
@@ -764,7 +771,7 @@ public class RpcConnection extends Thread {
 			throw new EXistException("start parameter out of range");
 		Serializer serializer = broker.getSerializer();
 		Map properties = new TreeMap();
-		properties.put(Serializer.ENCODING, encoding);
+		properties.put(Serializer.ENCODING, "UTF-8");
 		properties.put(Serializer.PRETTY_PRINT, Boolean.toString(prettyPrint));
 		serializer.setProperties(properties);
 		return serializer.serialize((NodeSet) resultSet, start, howmany, queryTime);
@@ -774,13 +781,10 @@ public class RpcConnection extends Thread {
 		ValueSet resultSet,
 		int howmany,
 		int start,
-		boolean prettyPrint,
-		String encoding)
+		boolean prettyPrint)
 		throws Exception {
 		if (resultSet.getLength() == 0)
-			return "<?xml version=\"1.0\" encoding=\""
-				+ encoding
-				+ "\"?>\n"
+			return "<?xml version=\"1.0\"?>\n"
 				+ "<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" "
 				+ "hitCount=\"0\"/>";
 		if (howmany > resultSet.getLength() || howmany == 0)
@@ -826,7 +830,7 @@ public class RpcConnection extends Thread {
 			root.appendChild(temp);
 		}
 		StringWriter sout = new StringWriter();
-		OutputFormat format = new OutputFormat("xml", encoding, prettyPrint);
+		OutputFormat format = new OutputFormat("xml", "UTF-8", prettyPrint);
 		format.setOmitXMLDeclaration(false);
 		format.setOmitComments(false);
 		format.setLineWidth(60);
@@ -847,9 +851,9 @@ public class RpcConnection extends Thread {
 		int start,
 		boolean prettyPrint,
 		boolean summary,
-		String encoding)
+		Hashtable namespaces)
 		throws Exception {
-		return query(user, xpath, howmany, start, prettyPrint, summary, encoding, null);
+		return query(user, xpath, howmany, start, prettyPrint, summary, namespaces, null);
 	}
 
 	public String query(
@@ -859,11 +863,11 @@ public class RpcConnection extends Thread {
 		int start,
 		boolean prettyPrint,
 		boolean summary,
-		String encoding,
+		Hashtable namespaces,
 		String sortExpr)
 		throws Exception {
 		long startTime = System.currentTimeMillis();
-		Value resultValue = doQuery(user, xpath, null, null);
+		Value resultValue = doQuery(user, xpath, null, null, namespaces);
 		if (resultValue == null)
 			return "<?xml version=\"1.0\"?>\n"
 				+ "<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" "
@@ -887,12 +891,11 @@ public class RpcConnection extends Thread {
 							howmany,
 							start,
 							prettyPrint,
-							(System.currentTimeMillis() - startTime),
-							encoding);
+							(System.currentTimeMillis() - startTime));
 					break;
 				default :
 					ValueSet valueSet = resultValue.getValueSet();
-					result = printValues(valueSet, howmany, start, prettyPrint, encoding);
+					result = printValues(valueSet, howmany, start, prettyPrint);
 					break;
 			}
 		} finally {
@@ -930,7 +933,7 @@ public class RpcConnection extends Thread {
 			docs = new DocumentSet();
 			docs.add(node.doc);
 		}
-		Value resultValue = doQuery(user, xpath, docs, nodes);
+		Value resultValue = doQuery(user, xpath, docs, nodes, null);
 		if (resultValue == null)
 			return result;
 		switch (resultValue.getType()) {
@@ -957,7 +960,8 @@ public class RpcConnection extends Thread {
 		return result;
 	}
 
-	public Hashtable queryP(User user, String xpath, String docName, String s_id, String sortBy)
+	public Hashtable queryP(User user, String xpath, String docName, String s_id, String sortBy,
+		Hashtable namespaces)
 		throws Exception {
 		long startTime = System.currentTimeMillis();
 		Hashtable ret = new Hashtable();
@@ -984,7 +988,7 @@ public class RpcConnection extends Thread {
 			docs = new DocumentSet();
 			docs.add(node.doc);
 		}
-		Value resultValue = doQuery(user, xpath, docs, nodes);
+		Value resultValue = doQuery(user, xpath, docs, nodes, namespaces);
 		if (resultValue == null)
 			return ret;
 		switch (resultValue.getType()) {
@@ -1307,7 +1311,7 @@ public class RpcConnection extends Thread {
 	 */
 	public Hashtable summary(User user, String xpath) throws Exception {
 		long startTime = System.currentTimeMillis();
-		Value resultValue = doQuery(user, xpath, null, null);
+		Value resultValue = doQuery(user, xpath, null, null, null);
 		if (resultValue == null)
 			return new Hashtable();
 		NodeList resultSet = resultValue.getNodeList();

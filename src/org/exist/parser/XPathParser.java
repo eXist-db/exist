@@ -1,4 +1,4 @@
-// $ANTLR : "XPathParser.g" -> "XPathParser.java"$
+// $ANTLR 2.7.2: "XPathParser.g" -> "XPathParser.java"$
 
 	package org.exist.parser;
 	
@@ -34,7 +34,7 @@ import antlr.collections.impl.BitSet;
 public class XPathParser extends antlr.LLkParser       implements XPathParserTokenTypes
  {
 
-	protected DocumentSet includeDocs = new DocumentSet();
+	protected DocumentSet includeDocs = null;
 	protected BrokerPool pool = null;
 	protected ArrayList exceptions = new ArrayList(5);
 	protected PathExpr topExpr;
@@ -111,7 +111,7 @@ protected XPathParser(TokenBuffer tokenBuf, int k) {
 }
 
 public XPathParser(TokenBuffer tokenBuf) {
-  this(tokenBuf,2);
+  this(tokenBuf,3);
 }
 
 protected XPathParser(TokenStream lexer, int k) {
@@ -120,11 +120,11 @@ protected XPathParser(TokenStream lexer, int k) {
 }
 
 public XPathParser(TokenStream lexer) {
-  this(lexer,2);
+  this(lexer,3);
 }
 
 public XPathParser(ParserSharedInputState state) {
-  super(state,2);
+  super(state,3);
   tokenNames = _tokenNames;
 }
 
@@ -175,65 +175,14 @@ public XPathParser(ParserSharedInputState state) {
 			
 		
 		try {      // for error handling
-			switch ( LA(1)) {
-			case LITERAL_doctype:
-			case LITERAL_document:
-			case LITERAL_collection:
-			case LITERAL_xcollection:
-			{
-				document_function(exprIn);
-				or_expr(exprIn);
-				if ( inputState.guessing==0 ) {
+			or_expr(expr);
+			if ( inputState.guessing==0 ) {
+				
+						RootNode rootStep = new RootNode(pool);
+				exprIn.add(rootStep);
+				exprIn.addPath(expr);
+				exprIn.setDocumentSet(includeDocs);
 					
-							exprIn.setDocumentSet(includeDocs);
-						
-				}
-				break;
-			}
-			case LPAREN:
-			case NCNAME:
-			case CONST:
-			case STAR:
-			case INT:
-			case LITERAL_text:
-			case 29:
-			case 30:
-			case LITERAL_contains:
-			case LITERAL_match:
-			case LITERAL_near:
-			case SLASH:
-			case DSLASH:
-			case AT:
-			case ATTRIB_STAR:
-			case LITERAL_node:
-			case PARENT:
-			case SELF:
-			case LITERAL_descendant:
-			case 43:
-			case LITERAL_child:
-			case LITERAL_parent:
-			case LITERAL_self:
-			case LITERAL_attribute:
-			case LITERAL_ancestor:
-			case 49:
-			case 50:
-			case 51:
-			{
-				or_expr(expr);
-				if ( inputState.guessing==0 ) {
-					
-							RootNode rootStep = new RootNode(pool);
-					exprIn.add(rootStep);
-					exprIn.addPath(expr);
-					exprIn.setDocumentSet(includeDocs);
-						
-				}
-				break;
-			}
-			default:
-			{
-				throw new NoViableAltException(LT(1), getFilename());
-			}
 			}
 		}
 		catch (RecognitionException ex) {
@@ -253,265 +202,6 @@ public XPathParser(ParserSharedInputState state) {
 			} else {
 				throw e;
 			}
-		}
-	}
-	
-	public final void document_function(
-		PathExpr expr
-	) throws RecognitionException, TokenStreamException, PermissionDeniedException,EXistException {
-		
-		Token  arg3 = null;
-		Token  arg1 = null;
-		Token  arg2 = null;
-		Token  arg6 = null;
-		Token  arg7 = null;
-		Token  arg8 = null;
-		Token  arg9 = null;
-		
-			Expression step = null;
-			boolean inclusive = true;
-			DocumentSet temp;
-		
-		
-		switch ( LA(1)) {
-		case LITERAL_doctype:
-		{
-			match(LITERAL_doctype);
-			match(LPAREN);
-			arg3 = LT(1);
-			match(CONST);
-			match(RPAREN);
-			if ( inputState.guessing==0 ) {
-				
-				DBBroker broker = null;
-				try {
-				broker = pool.get();
-				includeDocs = broker.getDocumentsByDoctype(user, arg3.getText());
-				step = new RootNode(pool);
-				expr.add(step);
-				expr.setDocumentSet(includeDocs);
-				} catch(EXistException e) {
-				e.printStackTrace();
-				} finally {
-				pool.release( broker );
-				}
-					
-			}
-			break;
-		}
-		case LITERAL_collection:
-		{
-			match(LITERAL_collection);
-			match(LPAREN);
-			arg6 = LT(1);
-			match(CONST);
-			if ( inputState.guessing==0 ) {
-				
-						DBBroker broker = null;
-					try {
-						broker = pool.get();
-					temp = broker.getDocumentsByCollection(user, arg6.getText(), true);
-					includeDocs = temp;
-				} catch(EXistException e) {
-				} finally {
-					pool.release(broker);
-				}
-				
-			}
-			{
-			_loop31:
-			do {
-				if ((LA(1)==COMMA)) {
-					match(COMMA);
-					arg7 = LT(1);
-					match(CONST);
-					if ( inputState.guessing==0 ) {
-						
-							DBBroker broker = null;
-							try {
-								broker = pool.get();
-							temp = broker.getDocumentsByCollection(user, arg7.getText(), true);
-							includeDocs.addAll(temp);
-						} catch(EXistException e) {
-						} finally {
-							pool.release(broker);
-						}
-						
-					}
-				}
-				else {
-					break _loop31;
-				}
-				
-			} while (true);
-			}
-			match(RPAREN);
-			if ( inputState.guessing==0 ) {
-				
-					step = new RootNode(pool);
-					expr.setDocumentSet(includeDocs);
-					expr.add(step);
-				
-			}
-			break;
-		}
-		case LITERAL_xcollection:
-		{
-			match(LITERAL_xcollection);
-			match(LPAREN);
-			arg8 = LT(1);
-			match(CONST);
-			if ( inputState.guessing==0 ) {
-				
-						DBBroker broker = null;
-					try {
-						broker = pool.get();
-					temp = broker.getDocumentsByCollection(user, arg8.getText(), false);
-					includeDocs.addAll(temp);
-				} catch(EXistException e) {
-				} finally {
-					pool.release(broker);
-				}
-				
-			}
-			{
-			_loop33:
-			do {
-				if ((LA(1)==COMMA)) {
-					match(COMMA);
-					arg9 = LT(1);
-					match(CONST);
-					if ( inputState.guessing==0 ) {
-						
-							DBBroker broker = null;
-							try {
-								broker = pool.get();
-							temp = broker.getDocumentsByCollection(user, arg9.getText(), false);
-							includeDocs.addAll(temp);
-						} catch(EXistException e) {
-						} finally {
-							pool.release(broker);
-						}
-						
-					}
-				}
-				else {
-					break _loop33;
-				}
-				
-			} while (true);
-			}
-			match(RPAREN);
-			if ( inputState.guessing==0 ) {
-				
-					step = new RootNode(pool);
-					expr.setDocumentSet(includeDocs);
-					expr.add(step);
-				
-			}
-			break;
-		}
-		default:
-			boolean synPredMatched27 = false;
-			if (((LA(1)==LITERAL_document) && (LA(2)==LPAREN))) {
-				int _m27 = mark();
-				synPredMatched27 = true;
-				inputState.guessing++;
-				try {
-					{
-					match(LITERAL_document);
-					match(LPAREN);
-					match(STAR);
-					}
-				}
-				catch (RecognitionException pe) {
-					synPredMatched27 = false;
-				}
-				rewind(_m27);
-				inputState.guessing--;
-			}
-			if ( synPredMatched27 ) {
-				match(LITERAL_document);
-				match(LPAREN);
-				match(STAR);
-				match(RPAREN);
-				if ( inputState.guessing==0 ) {
-					
-					DBBroker broker = null;
-					try {
-					broker = pool.get();
-					includeDocs = broker.getAllDocuments(user);
-					step = new RootNode(pool);
-					expr.setDocumentSet(includeDocs);
-					expr.add(step);
-					} catch(EXistException e) {
-					e.printStackTrace();
-					} finally {
-					pool.release( broker );
-					}
-						
-				}
-			}
-			else if ((LA(1)==LITERAL_document) && (LA(2)==LPAREN)) {
-				match(LITERAL_document);
-				match(LPAREN);
-				arg1 = LT(1);
-				match(CONST);
-				if ( inputState.guessing==0 ) {
-					
-					DBBroker broker = null;
-					try {
-					broker = pool.get();
-					step = new RootNode(pool);
-					expr.add(step);
-					DocumentImpl doc = (DocumentImpl)broker.getDocument(user, arg1.getText());
-					if(doc != null) {
-					expr.addDocument(doc);
-					includeDocs.add(doc);
-					}
-					} catch(EXistException e) {
-					e.printStackTrace();
-					} finally {
-					pool.release( broker );
-					}
-						
-				}
-				{
-				_loop29:
-				do {
-					if ((LA(1)==COMMA)) {
-						match(COMMA);
-						arg2 = LT(1);
-						match(CONST);
-						if ( inputState.guessing==0 ) {
-							
-							DBBroker broker = null;
-							try {
-							broker = pool.get();
-							DocumentImpl doc = (DocumentImpl)broker.getDocument(arg2.getText());
-							if(doc != null) {
-							expr.addDocument(doc);
-							includeDocs.add(doc);
-							}
-							} catch(EXistException e) {
-							e.printStackTrace();
-							} finally {
-							pool.release( broker );
-							}
-								
-						}
-					}
-					else {
-						break _loop29;
-					}
-					
-				} while (true);
-				}
-				match(RPAREN);
-			}
-		else {
-			throw new NoViableAltException(LT(1), getFilename());
-		}
 		}
 	}
 	
@@ -578,57 +268,12 @@ public XPathParser(ParserSharedInputState state) {
 		
 		
 		try {      // for error handling
-			switch ( LA(1)) {
-			case LITERAL_doctype:
-			case LITERAL_document:
-			case LITERAL_collection:
-			case LITERAL_xcollection:
-			{
-				document_function(exprIn);
-				or_expr(exprIn);
-				if ( inputState.guessing==0 ) {
+			or_expr(exprIn);
+			if ( inputState.guessing==0 ) {
+				
+						if(includeDocs != null)
+							exprIn.setDocumentSet(includeDocs);
 					
-					exprIn.setDocumentSet(includeDocs);
-					
-				}
-				break;
-			}
-			case LPAREN:
-			case NCNAME:
-			case CONST:
-			case STAR:
-			case INT:
-			case LITERAL_text:
-			case 29:
-			case 30:
-			case LITERAL_contains:
-			case LITERAL_match:
-			case LITERAL_near:
-			case SLASH:
-			case DSLASH:
-			case AT:
-			case ATTRIB_STAR:
-			case LITERAL_node:
-			case PARENT:
-			case SELF:
-			case LITERAL_descendant:
-			case 43:
-			case LITERAL_child:
-			case LITERAL_parent:
-			case LITERAL_self:
-			case LITERAL_attribute:
-			case LITERAL_ancestor:
-			case 49:
-			case 50:
-			case 51:
-			{
-				or_expr(exprIn);
-				break;
-			}
-			default:
-			{
-				throw new NoViableAltException(LT(1), getFilename());
-			}
 			}
 		}
 		catch (RecognitionException ex) {
@@ -1052,14 +697,12 @@ public XPathParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case NCNAME:
 		case CONST:
+		case LITERAL_doctype:
+		case LITERAL_document:
 		case STAR:
+		case LITERAL_collection:
+		case LITERAL_xcollection:
 		case INT:
-		case LITERAL_text:
-		case 29:
-		case 30:
-		case LITERAL_contains:
-		case LITERAL_match:
-		case LITERAL_near:
 		case SLASH:
 		case DSLASH:
 		case AT:
@@ -1068,19 +711,25 @@ public XPathParser(ParserSharedInputState state) {
 		case PARENT:
 		case SELF:
 		case LITERAL_descendant:
-		case 43:
+		case 37:
 		case LITERAL_child:
 		case LITERAL_parent:
 		case LITERAL_self:
 		case LITERAL_attribute:
 		case LITERAL_ancestor:
+		case 43:
+		case 44:
+		case 45:
+		case LITERAL_text:
 		case 49:
 		case 50:
-		case 51:
+		case LITERAL_contains:
+		case LITERAL_match:
+		case LITERAL_near:
 		{
 			{
-			int _cnt36=0;
-			_loop36:
+			int _cnt38=0;
+			_loop38:
 			do {
 				if ((_tokenSet_0.member(LA(1)))) {
 					result=regularexpr(expr);
@@ -1092,10 +741,10 @@ public XPathParser(ParserSharedInputState state) {
 					}
 				}
 				else {
-					if ( _cnt36>=1 ) { break _loop36; } else {throw new NoViableAltException(LT(1), getFilename());}
+					if ( _cnt38>=1 ) { break _loop38; } else {throw new NoViableAltException(LT(1), getFilename());}
 				}
 				
-				_cnt36++;
+				_cnt38++;
 			} while (true);
 			}
 			break;
@@ -1122,6 +771,287 @@ public XPathParser(ParserSharedInputState state) {
 		}
 	}
 	
+	public final Expression  document_function(
+		PathExpr expr
+	) throws RecognitionException, TokenStreamException, PermissionDeniedException,EXistException {
+		Expression step;
+		
+		Token  arg3 = null;
+		Token  arg1 = null;
+		Token  arg2 = null;
+		Token  arg6 = null;
+		Token  arg7 = null;
+		Token  arg8 = null;
+		Token  arg9 = null;
+		
+			step = null;
+			boolean inclusive = true;
+			DocumentSet temp;
+		
+		
+		switch ( LA(1)) {
+		case LITERAL_doctype:
+		{
+			match(LITERAL_doctype);
+			match(LPAREN);
+			arg3 = LT(1);
+			match(CONST);
+			match(RPAREN);
+			if ( inputState.guessing==0 ) {
+				
+				DBBroker broker = null;
+				try {
+				broker = pool.get();
+				includeDocs = broker.getDocumentsByDoctype(user, arg3.getText());
+				step = new RootNode(pool);
+				expr.add(step);
+				expr.setDocumentSet(includeDocs);
+				} catch(EXistException e) {
+				e.printStackTrace();
+				} finally {
+				pool.release( broker );
+				}
+					
+			}
+			break;
+		}
+		case LITERAL_collection:
+		{
+			match(LITERAL_collection);
+			match(LPAREN);
+			arg6 = LT(1);
+			match(CONST);
+			if ( inputState.guessing==0 ) {
+				
+						DBBroker broker = null;
+					try {
+						broker = pool.get();
+					temp = broker.getDocumentsByCollection(user, arg6.getText(), true);
+					includeDocs = temp;
+				} catch(EXistException e) {
+				} finally {
+					pool.release(broker);
+				}
+				
+			}
+			{
+			_loop33:
+			do {
+				if ((LA(1)==COMMA)) {
+					match(COMMA);
+					arg7 = LT(1);
+					match(CONST);
+					if ( inputState.guessing==0 ) {
+						
+							DBBroker broker = null;
+							try {
+								broker = pool.get();
+							temp = broker.getDocumentsByCollection(user, arg7.getText(), true);
+							includeDocs.addAll(temp);
+						} catch(EXistException e) {
+						} finally {
+							pool.release(broker);
+						}
+						
+					}
+				}
+				else {
+					break _loop33;
+				}
+				
+			} while (true);
+			}
+			match(RPAREN);
+			if ( inputState.guessing==0 ) {
+				
+					step = new RootNode(pool);
+					expr.setDocumentSet(includeDocs);
+					expr.add(step);
+				
+			}
+			break;
+		}
+		case LITERAL_xcollection:
+		{
+			match(LITERAL_xcollection);
+			match(LPAREN);
+			arg8 = LT(1);
+			match(CONST);
+			if ( inputState.guessing==0 ) {
+				
+						DBBroker broker = null;
+					try {
+						broker = pool.get();
+					temp = broker.getDocumentsByCollection(user, arg8.getText(), false);
+					includeDocs = temp;
+				} catch(EXistException e) {
+				} finally {
+					pool.release(broker);
+				}
+				
+			}
+			{
+			_loop35:
+			do {
+				if ((LA(1)==COMMA)) {
+					match(COMMA);
+					arg9 = LT(1);
+					match(CONST);
+					if ( inputState.guessing==0 ) {
+						
+							DBBroker broker = null;
+							try {
+								broker = pool.get();
+							temp = broker.getDocumentsByCollection(user, arg9.getText(), false);
+							includeDocs.addAll(temp);
+						} catch(EXistException e) {
+						} finally {
+							pool.release(broker);
+						}
+						
+					}
+				}
+				else {
+					break _loop35;
+				}
+				
+			} while (true);
+			}
+			match(RPAREN);
+			if ( inputState.guessing==0 ) {
+				
+					step = new RootNode(pool);
+					expr.setDocumentSet(includeDocs);
+					expr.add(step);
+				
+			}
+			break;
+		}
+		default:
+			boolean synPredMatched27 = false;
+			if (((LA(1)==LITERAL_document) && (LA(2)==LPAREN) && (LA(3)==STAR))) {
+				int _m27 = mark();
+				synPredMatched27 = true;
+				inputState.guessing++;
+				try {
+					{
+					match(LITERAL_document);
+					match(LPAREN);
+					match(STAR);
+					}
+				}
+				catch (RecognitionException pe) {
+					synPredMatched27 = false;
+				}
+				rewind(_m27);
+				inputState.guessing--;
+			}
+			if ( synPredMatched27 ) {
+				match(LITERAL_document);
+				match(LPAREN);
+				match(STAR);
+				match(RPAREN);
+				if ( inputState.guessing==0 ) {
+					
+					DBBroker broker = null;
+					try {
+					broker = pool.get();
+					includeDocs = broker.getAllDocuments(user);
+					step = new RootNode(pool);
+					expr.setDocumentSet(includeDocs);
+					expr.add(step);
+					System.out.println("docs added to " + expr);
+					} catch(EXistException e) {
+					e.printStackTrace();
+					} finally {
+					pool.release( broker );
+					}
+						
+				}
+			}
+			else {
+				boolean synPredMatched29 = false;
+				if (((LA(1)==LITERAL_document) && (LA(2)==LPAREN) && (LA(3)==CONST))) {
+					int _m29 = mark();
+					synPredMatched29 = true;
+					inputState.guessing++;
+					try {
+						{
+						match(LITERAL_document);
+						match(LPAREN);
+						}
+					}
+					catch (RecognitionException pe) {
+						synPredMatched29 = false;
+					}
+					rewind(_m29);
+					inputState.guessing--;
+				}
+				if ( synPredMatched29 ) {
+					match(LITERAL_document);
+					match(LPAREN);
+					arg1 = LT(1);
+					match(CONST);
+					if ( inputState.guessing==0 ) {
+						
+						DBBroker broker = null;
+						try {
+						broker = pool.get();
+						step = new RootNode(pool);
+						expr.add(step);
+						includeDocs = new DocumentSet();
+						DocumentImpl doc = (DocumentImpl)broker.getDocument(user, arg1.getText());
+						if(doc != null) {
+						expr.addDocument(doc);
+						includeDocs.add(doc);
+						}
+						} catch(EXistException e) {
+						e.printStackTrace();
+						} finally {
+						pool.release( broker );
+						}
+							
+					}
+					{
+					_loop31:
+					do {
+						if ((LA(1)==COMMA)) {
+							match(COMMA);
+							arg2 = LT(1);
+							match(CONST);
+							if ( inputState.guessing==0 ) {
+								
+								DBBroker broker = null;
+								try {
+								broker = pool.get();
+								DocumentImpl doc = (DocumentImpl)broker.getDocument(arg2.getText());
+								if(doc != null) {
+								expr.addDocument(doc);
+								includeDocs.add(doc);
+								}
+								} catch(EXistException e) {
+								e.printStackTrace();
+								} finally {
+								pool.release( broker );
+								}
+									
+							}
+						}
+						else {
+							break _loop31;
+						}
+						
+					} while (true);
+					}
+					match(RPAREN);
+				}
+			else {
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			}}
+			return step;
+		}
+		
 	public final Expression  regularexpr(
 		PathExpr expr
 	) throws RecognitionException, TokenStreamException, PermissionDeniedException,EXistException {
@@ -1133,18 +1063,80 @@ public XPathParser(ParserSharedInputState state) {
 		
 		
 		switch ( LA(1)) {
+		case NCNAME:
+		case CONST:
+		case LITERAL_doctype:
+		case LITERAL_document:
+		case STAR:
+		case LITERAL_collection:
+		case LITERAL_xcollection:
+		case INT:
+		case AT:
+		case ATTRIB_STAR:
+		case LITERAL_node:
+		case PARENT:
+		case SELF:
 		case LITERAL_descendant:
-		case 43:
+		case 37:
 		case LITERAL_child:
 		case LITERAL_parent:
 		case LITERAL_self:
 		case LITERAL_attribute:
 		case LITERAL_ancestor:
+		case 43:
+		case 44:
+		case 45:
+		case LITERAL_text:
 		case 49:
 		case 50:
-		case 51:
+		case LITERAL_contains:
+		case LITERAL_match:
+		case LITERAL_near:
 		{
-			axis=axis_spec();
+			{
+			switch ( LA(1)) {
+			case LITERAL_descendant:
+			case 37:
+			case LITERAL_child:
+			case LITERAL_parent:
+			case LITERAL_self:
+			case LITERAL_attribute:
+			case LITERAL_ancestor:
+			case 43:
+			case 44:
+			case 45:
+			{
+				axis=axis_spec();
+				break;
+			}
+			case NCNAME:
+			case CONST:
+			case LITERAL_doctype:
+			case LITERAL_document:
+			case STAR:
+			case LITERAL_collection:
+			case LITERAL_xcollection:
+			case INT:
+			case AT:
+			case ATTRIB_STAR:
+			case LITERAL_node:
+			case PARENT:
+			case SELF:
+			case LITERAL_text:
+			case 49:
+			case 50:
+			case LITERAL_contains:
+			case LITERAL_match:
+			case LITERAL_near:
+			{
+				break;
+			}
+			default:
+			{
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			}
+			}
 			result=step(expr);
 			if ( inputState.guessing==0 ) {
 				
@@ -1153,7 +1145,7 @@ public XPathParser(ParserSharedInputState state) {
 				
 			}
 			{
-			_loop52:
+			_loop43:
 			do {
 				if ((LA(1)==LPPAREN)) {
 					pred=predicate(expr);
@@ -1164,49 +1156,7 @@ public XPathParser(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop52;
-				}
-				
-			} while (true);
-			}
-			break;
-		}
-		case NCNAME:
-		case CONST:
-		case STAR:
-		case INT:
-		case LITERAL_text:
-		case 29:
-		case 30:
-		case LITERAL_contains:
-		case LITERAL_match:
-		case LITERAL_near:
-		case AT:
-		case ATTRIB_STAR:
-		case LITERAL_node:
-		case PARENT:
-		case SELF:
-		{
-			result=step(expr);
-			if ( inputState.guessing==0 ) {
-				
-						if(result instanceof Step && ((Step)result).getAxis() == -1)
-				((Step)result).setAxis(Constants.CHILD_AXIS);
-				
-			}
-			{
-			_loop54:
-			do {
-				if ((LA(1)==LPPAREN)) {
-					pred=predicate(expr);
-					if ( inputState.guessing==0 ) {
-						
-								  expr.addPredicate(pred);
-							
-					}
-				}
-				else {
-					break _loop54;
+					break _loop43;
 				}
 				
 			} while (true);
@@ -1290,6 +1240,408 @@ public XPathParser(ParserSharedInputState state) {
 		return step;
 	}
 	
+	public final int  axis_spec() throws RecognitionException, TokenStreamException {
+		int axis;
+		
+		
+			axis = -1;
+		
+		
+		switch ( LA(1)) {
+		case LITERAL_descendant:
+		{
+			match(LITERAL_descendant);
+			match(COLON);
+			match(COLON);
+			if ( inputState.guessing==0 ) {
+				
+						axis = Constants.DESCENDANT_AXIS;
+					
+			}
+			break;
+		}
+		case 37:
+		{
+			match(37);
+			match(COLON);
+			match(COLON);
+			if ( inputState.guessing==0 ) {
+				
+						axis = Constants.DESCENDANT_SELF_AXIS;
+					
+			}
+			break;
+		}
+		case LITERAL_child:
+		{
+			match(LITERAL_child);
+			match(COLON);
+			match(COLON);
+			if ( inputState.guessing==0 ) {
+				
+						axis = Constants.CHILD_AXIS;
+					
+			}
+			break;
+		}
+		case LITERAL_parent:
+		{
+			match(LITERAL_parent);
+			match(COLON);
+			match(COLON);
+			if ( inputState.guessing==0 ) {
+				
+						axis = Constants.PARENT_AXIS;
+					
+			}
+			break;
+		}
+		case LITERAL_self:
+		{
+			match(LITERAL_self);
+			match(COLON);
+			match(COLON);
+			if ( inputState.guessing==0 ) {
+				
+						axis = Constants.SELF_AXIS;
+					
+			}
+			break;
+		}
+		case LITERAL_attribute:
+		{
+			match(LITERAL_attribute);
+			match(COLON);
+			match(COLON);
+			if ( inputState.guessing==0 ) {
+				
+						axis = Constants.ATTRIBUTE_AXIS;
+					
+			}
+			break;
+		}
+		case LITERAL_ancestor:
+		{
+			match(LITERAL_ancestor);
+			match(COLON);
+			match(COLON);
+			if ( inputState.guessing==0 ) {
+				
+						axis = Constants.ANCESTOR_AXIS;
+					
+			}
+			break;
+		}
+		case 43:
+		{
+			match(43);
+			match(COLON);
+			match(COLON);
+			if ( inputState.guessing==0 ) {
+				
+						axis = Constants.ANCESTOR_SELF_AXIS;
+					
+			}
+			break;
+		}
+		case 44:
+		{
+			match(44);
+			match(COLON);
+			match(COLON);
+			if ( inputState.guessing==0 ) {
+				
+						axis = Constants.FOLLOWING_SIBLING_AXIS;
+					
+			}
+			break;
+		}
+		case 45:
+		{
+			match(45);
+			match(COLON);
+			match(COLON);
+			if ( inputState.guessing==0 ) {
+				
+						axis = Constants.PRECEDING_SIBLING_AXIS;
+					
+			}
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltException(LT(1), getFilename());
+		}
+		}
+		return axis;
+	}
+	
+	public final Expression  step(
+		PathExpr expr
+	) throws RecognitionException, TokenStreamException, PermissionDeniedException,EXistException {
+		Expression step;
+		
+		Token  any = null;
+		Token  anyAttr = null;
+		Token  l = null;
+		Token  i = null;
+		step = null; 
+		String attr;
+		
+		
+		switch ( LA(1)) {
+		case AT:
+		{
+			match(AT);
+			attr=qname();
+			if ( inputState.guessing==0 ) {
+				
+							step = new LocationStep(pool,
+								Constants.ATTRIBUTE_AXIS,
+								new NameTest(attr));
+							expr.add(step);
+					
+			}
+			break;
+		}
+		case STAR:
+		{
+			any = LT(1);
+			match(STAR);
+			if ( inputState.guessing==0 ) {
+				
+							step = new LocationStep(pool,
+								-1,
+								new TypeTest(Constants.ELEMENT_NODE));
+							expr.add(step);
+					
+			}
+			break;
+		}
+		case ATTRIB_STAR:
+		{
+			anyAttr = LT(1);
+			match(ATTRIB_STAR);
+			if ( inputState.guessing==0 ) {
+				
+						step = new LocationStep(pool, Constants.ATTRIBUTE_AXIS, new TypeTest(Constants.ATTRIBUTE_NODE));
+						expr.add(step);
+					
+			}
+			break;
+		}
+		case LITERAL_node:
+		{
+			match(LITERAL_node);
+			match(LPAREN);
+			match(RPAREN);
+			if ( inputState.guessing==0 ) {
+				
+							step = new LocationStep(pool, -1, new TypeTest(Constants.NODE_TYPE));
+							expr.add(step);
+					
+			}
+			break;
+		}
+		case PARENT:
+		{
+			match(PARENT);
+			if ( inputState.guessing==0 ) {
+				
+							step = new LocationStep(pool, 
+								Constants.PARENT_AXIS,
+								new TypeTest(Constants.NODE_TYPE));
+							expr.add(step);
+					
+			}
+			break;
+		}
+		case SELF:
+		{
+			match(SELF);
+			if ( inputState.guessing==0 ) {
+				
+							step = new LocationStep(pool,
+								Constants.SELF_AXIS,
+								new TypeTest(Constants.NODE_TYPE));
+							expr.add(step);
+					
+			}
+			break;
+		}
+		case CONST:
+		{
+			l = LT(1);
+			match(CONST);
+			if ( inputState.guessing==0 ) {
+				
+						step = new Literal(l.getText());
+						expr.add(step);
+					
+			}
+			break;
+		}
+		case INT:
+		{
+			i = LT(1);
+			match(INT);
+			if ( inputState.guessing==0 ) {
+				
+						step = new IntNumber(Double.parseDouble(i.getText()));
+						expr.add(step);
+					
+			}
+			break;
+		}
+		case NCNAME:
+		case LITERAL_doctype:
+		case LITERAL_document:
+		case LITERAL_collection:
+		case LITERAL_xcollection:
+		case LITERAL_text:
+		case 49:
+		case 50:
+		case LITERAL_contains:
+		case LITERAL_match:
+		case LITERAL_near:
+		{
+			step=function_or_qname(expr);
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltException(LT(1), getFilename());
+		}
+		}
+		return step;
+	}
+	
+	public final Predicate  predicate(
+		PathExpr expr
+	) throws RecognitionException, TokenStreamException, PermissionDeniedException,EXistException {
+		Predicate pred;
+		
+		
+		pred = new Predicate(pool);
+		
+		
+		match(LPPAREN);
+		or_expr(pred);
+		match(RPPAREN);
+		return pred;
+	}
+	
+	public final String  qname() throws RecognitionException, TokenStreamException {
+		String name;
+		
+		
+			name = null;
+			String name2 = null;
+		
+		
+		name=name_or_reserved();
+		{
+		switch ( LA(1)) {
+		case COLON:
+		{
+			match(COLON);
+			name2=name_or_reserved();
+			if ( inputState.guessing==0 ) {
+				
+							name = name + ':' + name2;
+						
+			}
+			break;
+		}
+		case EOF:
+		case RPAREN:
+		case NCNAME:
+		case LITERAL_or:
+		case LITERAL_and:
+		case CONST:
+		case ANDEQ:
+		case OREQ:
+		case EQ:
+		case NEQ:
+		case UNION:
+		case LT:
+		case GT:
+		case LTEQ:
+		case GTEQ:
+		case PLUS:
+		case LITERAL_doctype:
+		case LITERAL_document:
+		case STAR:
+		case COMMA:
+		case LITERAL_collection:
+		case LITERAL_xcollection:
+		case INT:
+		case SLASH:
+		case DSLASH:
+		case AT:
+		case ATTRIB_STAR:
+		case LITERAL_node:
+		case PARENT:
+		case SELF:
+		case LITERAL_descendant:
+		case 37:
+		case LITERAL_child:
+		case LITERAL_parent:
+		case LITERAL_self:
+		case LITERAL_attribute:
+		case LITERAL_ancestor:
+		case 43:
+		case 44:
+		case 45:
+		case LPPAREN:
+		case RPPAREN:
+		case LITERAL_text:
+		case 49:
+		case 50:
+		case LITERAL_contains:
+		case LITERAL_match:
+		case LITERAL_near:
+		{
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltException(LT(1), getFilename());
+		}
+		}
+		}
+		return name;
+	}
+	
+	public final Expression  function_or_qname(
+		PathExpr expr
+	) throws RecognitionException, TokenStreamException, PermissionDeniedException,EXistException {
+		Expression step;
+		
+		
+			String qn;
+			step = null;
+		
+		
+		if ((_tokenSet_1.member(LA(1))) && (_tokenSet_2.member(LA(2)))) {
+			qn=qname();
+			if ( inputState.guessing==0 ) {
+				
+						step = new LocationStep( pool, -1, new NameTest(qn));
+						expr.add(step);
+					
+			}
+		}
+		else if ((_tokenSet_1.member(LA(1))) && (LA(2)==LPAREN)) {
+			step=function_call(expr);
+		}
+		else {
+			throw new NoViableAltException(LT(1), getFilename());
+		}
+		
+		return step;
+	}
+	
 	public final Expression  function_call(
 		PathExpr expr
 	) throws RecognitionException, TokenStreamException, PermissionDeniedException,EXistException {
@@ -1301,8 +1653,7 @@ public XPathParser(ParserSharedInputState state) {
 		Token  l3 = null;
 		Token  l4 = null;
 		Token  i = null;
-		Token  f1 = null;
-		Token  f2 = null;
+		Token  fname = null;
 		
 			step = null;
 			PathExpr path = new PathExpr(pool);
@@ -1310,6 +1661,7 @@ public XPathParser(ParserSharedInputState state) {
 			PathExpr arg2 = null;
 			Function fun = null;
 		int distance = 1;
+		String qn;
 		
 		
 		switch ( LA(1)) {
@@ -1326,9 +1678,9 @@ public XPathParser(ParserSharedInputState state) {
 			}
 			break;
 		}
-		case 29:
+		case 49:
 		{
-			match(29);
+			match(49);
 			match(LPAREN);
 			or_expr(path);
 			match(COMMA);
@@ -1349,9 +1701,9 @@ public XPathParser(ParserSharedInputState state) {
 			}
 			break;
 		}
-		case 30:
+		case 50:
 		{
-			match(30);
+			match(50);
 			match(LPAREN);
 			or_expr(path);
 			match(COMMA);
@@ -1468,99 +1820,247 @@ public XPathParser(ParserSharedInputState state) {
 			}
 			break;
 		}
-		default:
-			boolean synPredMatched41 = false;
-			if (((LA(1)==NCNAME) && (LA(2)==LPAREN))) {
-				int _m41 = mark();
-				synPredMatched41 = true;
-				inputState.guessing++;
-				try {
-					{
-					match(NCNAME);
-					match(LPAREN);
-					match(RPAREN);
-					}
-				}
-				catch (RecognitionException pe) {
-					synPredMatched41 = false;
-				}
-				rewind(_m41);
-				inputState.guessing--;
-			}
-			if ( synPredMatched41 ) {
-				f1 = LT(1);
-				match(NCNAME);
-				if (!( env.hasFunction(f1.getText()) ))
-				  throw new SemanticException(" env.hasFunction(f1.getText()) ");
-				match(LPAREN);
-				match(RPAREN);
-				if ( inputState.guessing==0 ) {
-					
-							fun = Function.createFunction(pool, env.getFunction(f1.getText()));
+		case LITERAL_doctype:
+		case LITERAL_document:
+		case LITERAL_collection:
+		case LITERAL_xcollection:
+		{
+			step=document_function(expr);
+			break;
+		}
+		case NCNAME:
+		{
+			fname = LT(1);
+			match(NCNAME);
+			match(LPAREN);
+			if ( inputState.guessing==0 ) {
+				
+							fun = Function.createFunction(pool, env.getFunction(fname.getText()));
 							expr.addPath(fun);
 						
-				}
 			}
-			else {
-				boolean synPredMatched43 = false;
-				if (((LA(1)==NCNAME) && (LA(2)==LPAREN))) {
-					int _m43 = mark();
-					synPredMatched43 = true;
-					inputState.guessing++;
-					try {
-						{
-						match(NCNAME);
-						match(LPAREN);
-						}
-					}
-					catch (RecognitionException pe) {
-						synPredMatched43 = false;
-					}
-					rewind(_m43);
-					inputState.guessing--;
+			{
+			switch ( LA(1)) {
+			case LPAREN:
+			case NCNAME:
+			case CONST:
+			case LITERAL_doctype:
+			case LITERAL_document:
+			case STAR:
+			case LITERAL_collection:
+			case LITERAL_xcollection:
+			case INT:
+			case SLASH:
+			case DSLASH:
+			case AT:
+			case ATTRIB_STAR:
+			case LITERAL_node:
+			case PARENT:
+			case SELF:
+			case LITERAL_descendant:
+			case 37:
+			case LITERAL_child:
+			case LITERAL_parent:
+			case LITERAL_self:
+			case LITERAL_attribute:
+			case LITERAL_ancestor:
+			case 43:
+			case 44:
+			case 45:
+			case LITERAL_text:
+			case 49:
+			case 50:
+			case LITERAL_contains:
+			case LITERAL_match:
+			case LITERAL_near:
+			{
+				or_expr(arg1);
+				if ( inputState.guessing==0 ) {
+					fun.addArgument(arg1);
 				}
-				if ( synPredMatched43 ) {
-					f2 = LT(1);
-					match(NCNAME);
-					match(LPAREN);
-					if ( inputState.guessing==0 ) {
-						
-								fun = Function.createFunction(pool, env.getFunction(f2.getText()));
-								expr.addPath(fun);
-							
-					}
-					or_expr(arg1);
-					if ( inputState.guessing==0 ) {
-						fun.addArgument(arg1);
-					}
-					{
-					_loop45:
-					do {
-						if ((LA(1)==COMMA)) {
-							match(COMMA);
-							if ( inputState.guessing==0 ) {
-								arg2 = new PathExpr(pool);
-							}
-							or_expr(arg2);
-							if ( inputState.guessing==0 ) {
-								fun.addArgument(arg2);
-							}
+				{
+				_loop58:
+				do {
+					if ((LA(1)==COMMA)) {
+						match(COMMA);
+						if ( inputState.guessing==0 ) {
+							arg2 = new PathExpr(pool);
 						}
-						else {
-							break _loop45;
+						or_expr(arg2);
+						if ( inputState.guessing==0 ) {
+							fun.addArgument(arg2);
 						}
-						
-					} while (true);
 					}
-					match(RPAREN);
+					else {
+						break _loop58;
+					}
+					
+				} while (true);
 				}
-			else {
+				break;
+			}
+			case RPAREN:
+			{
+				break;
+			}
+			default:
+			{
 				throw new NoViableAltException(LT(1), getFilename());
 			}
-			}}
-			return step;
+			}
+			}
+			match(RPAREN);
+			break;
 		}
+		default:
+		{
+			throw new NoViableAltException(LT(1), getFilename());
+		}
+		}
+		return step;
+	}
+	
+	public final String  name_or_reserved() throws RecognitionException, TokenStreamException {
+		String name;
 		
+		Token  n1 = null;
+		
+			name = null;
+		
+		
+		switch ( LA(1)) {
+		case NCNAME:
+		{
+			n1 = LT(1);
+			match(NCNAME);
+			if ( inputState.guessing==0 ) {
+				name = n1.getText();
+			}
+			break;
+		}
+		case LITERAL_doctype:
+		case LITERAL_document:
+		case LITERAL_collection:
+		case LITERAL_xcollection:
+		case LITERAL_text:
+		case 49:
+		case 50:
+		case LITERAL_contains:
+		case LITERAL_match:
+		case LITERAL_near:
+		{
+			name=reserved_keywords();
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltException(LT(1), getFilename());
+		}
+		}
+		return name;
+	}
+	
+	public final String  reserved_keywords() throws RecognitionException, TokenStreamException {
+		String name;
+		
+		
+			name = null;
+		
+		
+		switch ( LA(1)) {
+		case LITERAL_document:
+		{
+			match(LITERAL_document);
+			if ( inputState.guessing==0 ) {
+				name = "document";
+			}
+			break;
+		}
+		case LITERAL_doctype:
+		{
+			match(LITERAL_doctype);
+			if ( inputState.guessing==0 ) {
+				name = "doctype";
+			}
+			break;
+		}
+		case LITERAL_collection:
+		{
+			match(LITERAL_collection);
+			if ( inputState.guessing==0 ) {
+				name = "collection";
+			}
+			break;
+		}
+		case LITERAL_xcollection:
+		{
+			match(LITERAL_xcollection);
+			if ( inputState.guessing==0 ) {
+				name = "xcollection";
+			}
+			break;
+		}
+		case LITERAL_text:
+		{
+			match(LITERAL_text);
+			if ( inputState.guessing==0 ) {
+				name = "text";
+			}
+			break;
+		}
+		case LITERAL_near:
+		{
+			match(LITERAL_near);
+			if ( inputState.guessing==0 ) {
+				name = "near";
+			}
+			break;
+		}
+		case 49:
+		{
+			match(49);
+			if ( inputState.guessing==0 ) {
+				name = "starts-with";
+			}
+			break;
+		}
+		case 50:
+		{
+			match(50);
+			if ( inputState.guessing==0 ) {
+				name = "ends-with";
+			}
+			break;
+		}
+		case LITERAL_match:
+		{
+			match(LITERAL_match);
+			if ( inputState.guessing==0 ) {
+				name = "match";
+			}
+			break;
+		}
+		case LITERAL_contains:
+		{
+			match(LITERAL_contains);
+			if ( inputState.guessing==0 ) {
+				name = "contains";
+			}
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltException(LT(1), getFilename());
+		}
+		}
+		return name;
+	}
+	
+	public final void empty_expr() throws RecognitionException, TokenStreamException {
+		
+		
+	}
+	
 	public final void empty_arglist() throws RecognitionException, TokenStreamException {
 		
 		
@@ -1580,7 +2080,7 @@ public XPathParser(ParserSharedInputState state) {
 			fun.addArgument(arg1);
 		}
 		{
-		_loop49:
+		_loop62:
 		do {
 			if ((LA(1)==COMMA)) {
 				match(COMMA);
@@ -1593,412 +2093,11 @@ public XPathParser(ParserSharedInputState state) {
 				}
 			}
 			else {
-				break _loop49;
+				break _loop62;
 			}
 			
 		} while (true);
 		}
-	}
-	
-	public final int  axis_spec() throws RecognitionException, TokenStreamException {
-		int axis;
-		
-		
-			axis = -1;
-		
-		
-		switch ( LA(1)) {
-		case LITERAL_descendant:
-		{
-			match(LITERAL_descendant);
-			match(COLON);
-			match(COLON);
-			if ( inputState.guessing==0 ) {
-				
-						axis = Constants.DESCENDANT_AXIS;
-					
-			}
-			break;
-		}
-		case 43:
-		{
-			match(43);
-			match(COLON);
-			match(COLON);
-			if ( inputState.guessing==0 ) {
-				
-						axis = Constants.DESCENDANT_SELF_AXIS;
-					
-			}
-			break;
-		}
-		case LITERAL_child:
-		{
-			match(LITERAL_child);
-			match(COLON);
-			match(COLON);
-			if ( inputState.guessing==0 ) {
-				
-						axis = Constants.CHILD_AXIS;
-					
-			}
-			break;
-		}
-		case LITERAL_parent:
-		{
-			match(LITERAL_parent);
-			match(COLON);
-			match(COLON);
-			if ( inputState.guessing==0 ) {
-				
-						axis = Constants.PARENT_AXIS;
-					
-			}
-			break;
-		}
-		case LITERAL_self:
-		{
-			match(LITERAL_self);
-			match(COLON);
-			match(COLON);
-			if ( inputState.guessing==0 ) {
-				
-						axis = Constants.SELF_AXIS;
-					
-			}
-			break;
-		}
-		case LITERAL_attribute:
-		{
-			match(LITERAL_attribute);
-			match(COLON);
-			match(COLON);
-			if ( inputState.guessing==0 ) {
-				
-						axis = Constants.ATTRIBUTE_AXIS;
-					
-			}
-			break;
-		}
-		case LITERAL_ancestor:
-		{
-			match(LITERAL_ancestor);
-			match(COLON);
-			match(COLON);
-			if ( inputState.guessing==0 ) {
-				
-						axis = Constants.ANCESTOR_AXIS;
-					
-			}
-			break;
-		}
-		case 49:
-		{
-			match(49);
-			match(COLON);
-			match(COLON);
-			if ( inputState.guessing==0 ) {
-				
-						axis = Constants.ANCESTOR_SELF_AXIS;
-					
-			}
-			break;
-		}
-		case 50:
-		{
-			match(50);
-			match(COLON);
-			match(COLON);
-			if ( inputState.guessing==0 ) {
-				
-						axis = Constants.FOLLOWING_SIBLING_AXIS;
-					
-			}
-			break;
-		}
-		case 51:
-		{
-			match(51);
-			match(COLON);
-			match(COLON);
-			if ( inputState.guessing==0 ) {
-				
-						axis = Constants.PRECEDING_SIBLING_AXIS;
-					
-			}
-			break;
-		}
-		default:
-		{
-			throw new NoViableAltException(LT(1), getFilename());
-		}
-		}
-		return axis;
-	}
-	
-	public final Expression  step(
-		PathExpr expr
-	) throws RecognitionException, TokenStreamException, PermissionDeniedException,EXistException {
-		Expression step;
-		
-		Token  any = null;
-		Token  anyAttr = null;
-		step = null; 
-		String qn;
-		String attr;
-		
-		
-		switch ( LA(1)) {
-		case AT:
-		{
-			match(AT);
-			attr=qname();
-			if ( inputState.guessing==0 ) {
-				
-							step = new LocationStep(pool,
-								Constants.ATTRIBUTE_AXIS,
-								new NameTest(attr));
-							expr.add(step);
-					
-			}
-			break;
-		}
-		case STAR:
-		{
-			any = LT(1);
-			match(STAR);
-			if ( inputState.guessing==0 ) {
-				
-							step = new LocationStep(pool,
-								-1,
-								new TypeTest(Constants.ELEMENT_NODE));
-							expr.add(step);
-					
-			}
-			break;
-		}
-		case ATTRIB_STAR:
-		{
-			anyAttr = LT(1);
-			match(ATTRIB_STAR);
-			if ( inputState.guessing==0 ) {
-				
-						step = new LocationStep(pool, Constants.ATTRIBUTE_AXIS, new TypeTest(Constants.ATTRIBUTE_NODE));
-						expr.add(step);
-					
-			}
-			break;
-		}
-		case LITERAL_node:
-		{
-			match(LITERAL_node);
-			match(LPAREN);
-			match(RPAREN);
-			if ( inputState.guessing==0 ) {
-				
-							step = new LocationStep(pool, -1, new TypeTest(Constants.NODE_TYPE));
-							expr.add(step);
-					
-			}
-			break;
-		}
-		case PARENT:
-		{
-			match(PARENT);
-			if ( inputState.guessing==0 ) {
-				
-							step = new LocationStep(pool, 
-								Constants.PARENT_AXIS,
-								new TypeTest(Constants.NODE_TYPE));
-							expr.add(step);
-					
-			}
-			break;
-		}
-		case SELF:
-		{
-			match(SELF);
-			if ( inputState.guessing==0 ) {
-				
-							step = new LocationStep(pool,
-								Constants.SELF_AXIS,
-								new TypeTest(Constants.NODE_TYPE));
-							expr.add(step);
-					
-			}
-			break;
-		}
-		case CONST:
-		case INT:
-		{
-			step=primary_expr(expr);
-			break;
-		}
-		default:
-			if ((_tokenSet_1.member(LA(1))) && (LA(2)==LPAREN)) {
-				step=function_call(expr);
-			}
-			else if ((_tokenSet_2.member(LA(1))) && (_tokenSet_3.member(LA(2)))) {
-				qn=qname();
-				if ( inputState.guessing==0 ) {
-					
-								step = new LocationStep( pool, -1, new NameTest(qn));
-								expr.add(step);
-						
-				}
-			}
-		else {
-			throw new NoViableAltException(LT(1), getFilename());
-		}
-		}
-		return step;
-	}
-	
-	public final Predicate  predicate(
-		PathExpr expr
-	) throws RecognitionException, TokenStreamException, PermissionDeniedException,EXistException {
-		Predicate pred;
-		
-		
-		pred = new Predicate(pool);
-		
-		
-		match(LPPAREN);
-		or_expr(pred);
-		match(RPPAREN);
-		return pred;
-	}
-	
-	public final String  qname() throws RecognitionException, TokenStreamException {
-		String name;
-		
-		Token  n1 = null;
-		Token  n2 = null;
-		
-			name = null;
-		
-		
-		switch ( LA(1)) {
-		case NCNAME:
-		{
-			n1 = LT(1);
-			match(NCNAME);
-			if ( inputState.guessing==0 ) {
-				name = n1.getText();
-			}
-			{
-			switch ( LA(1)) {
-			case COLON:
-			{
-				match(COLON);
-				n2 = LT(1);
-				match(NCNAME);
-				if ( inputState.guessing==0 ) {
-					name = name + ':' + n2.getText();
-				}
-				break;
-			}
-			case EOF:
-			case RPAREN:
-			case NCNAME:
-			case LITERAL_or:
-			case LITERAL_and:
-			case CONST:
-			case ANDEQ:
-			case OREQ:
-			case EQ:
-			case NEQ:
-			case UNION:
-			case LT:
-			case GT:
-			case LTEQ:
-			case GTEQ:
-			case PLUS:
-			case STAR:
-			case COMMA:
-			case INT:
-			case LITERAL_text:
-			case 29:
-			case 30:
-			case LITERAL_contains:
-			case LITERAL_match:
-			case LITERAL_near:
-			case SLASH:
-			case DSLASH:
-			case AT:
-			case ATTRIB_STAR:
-			case LITERAL_node:
-			case PARENT:
-			case SELF:
-			case LITERAL_descendant:
-			case 43:
-			case LITERAL_child:
-			case LITERAL_parent:
-			case LITERAL_self:
-			case LITERAL_attribute:
-			case LITERAL_ancestor:
-			case 49:
-			case 50:
-			case 51:
-			case LPPAREN:
-			case RPPAREN:
-			{
-				break;
-			}
-			default:
-			{
-				throw new NoViableAltException(LT(1), getFilename());
-			}
-			}
-			}
-			break;
-		}
-		case LITERAL_text:
-		{
-			match(LITERAL_text);
-			if ( inputState.guessing==0 ) {
-				name = "text";
-			}
-			break;
-		}
-		case LITERAL_contains:
-		{
-			match(LITERAL_contains);
-			if ( inputState.guessing==0 ) {
-				name = "contains";
-			}
-			break;
-		}
-		case 29:
-		{
-			match(29);
-			if ( inputState.guessing==0 ) {
-				name = "starts-with";
-			}
-			break;
-		}
-		case 30:
-		{
-			match(30);
-			if ( inputState.guessing==0 ) {
-				name = "ends-with";
-			}
-			break;
-		}
-		case LITERAL_near:
-		{
-			match(LITERAL_near);
-			if ( inputState.guessing==0 ) {
-				name = "near";
-			}
-			break;
-		}
-		default:
-		{
-			throw new NoViableAltException(LT(1), getFilename());
-		}
-		}
-		return name;
 	}
 	
 	
@@ -2031,12 +2130,6 @@ public XPathParser(ParserSharedInputState state) {
 		"\"collection\"",
 		"\"xcollection\"",
 		"INT",
-		"\"text\"",
-		"\"starts-with\"",
-		"\"ends-with\"",
-		"\"contains\"",
-		"\"match\"",
-		"\"near\"",
 		"SLASH",
 		"DSLASH",
 		"AT",
@@ -2057,6 +2150,12 @@ public XPathParser(ParserSharedInputState state) {
 		"\"preceding-sibling\"",
 		"LPPAREN",
 		"RPPAREN",
+		"\"text\"",
+		"\"starts-with\"",
+		"\"ends-with\"",
+		"\"contains\"",
+		"\"match\"",
+		"\"near\"",
 		"WS",
 		"BASECHAR",
 		"IDEOGRAPHIC",
@@ -2067,24 +2166,19 @@ public XPathParser(ParserSharedInputState state) {
 	};
 	
 	private static final long[] mk_tokenSet_0() {
-		long[] data = { 4501400478286976L, 0L};
+		long[] data = { 17803257898337408L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
 	private static final long[] mk_tokenSet_1() {
-		long[] data = { 16911433856L, 0L};
+		long[] data = { 17732923639726208L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
 	private static final long[] mk_tokenSet_2() {
-		long[] data = { 12616466560L, 0L};
+		long[] data = { 18014398509481922L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
-	private static final long[] mk_tokenSet_3() {
-		long[] data = { 18014398402527170L, 0L};
-		return data;
-	}
-	public static final BitSet _tokenSet_3 = new BitSet(mk_tokenSet_3());
 	
 	}

@@ -3,6 +3,7 @@ package org.exist.xmldb;
 
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Vector;
 
 import org.apache.xmlrpc.XmlRpcException;
@@ -18,7 +19,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
     protected int indentXML = 0;
     protected String encoding = "UTF-8";
     protected RemoteCollection collection;
-
+	protected Hashtable namespaceMappings = new Hashtable(5);
 
     public RemoteXPathQueryService( RemoteCollection collection ) {
         this.collection = collection;
@@ -41,6 +42,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
             params.addElement(query.getBytes("UTF-8"));
             if(sortExpr != null)
             	params.addElement(sortExpr.getBytes("UTF-8"));
+            params.addElement(namespaceMappings);
             Hashtable result = (Hashtable) collection.getClient().execute( "queryP", params );
             Vector resources = (Vector)result.get("results");
             int handle = -1;
@@ -76,6 +78,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
             params.addElement( resource.id );
             if(sortExpr != null)
             	params.addElement( sortExpr.getBytes("UTF-8") );
+			params.addElement(namespaceMappings);
 			Hashtable result = (Hashtable) collection.getClient().execute( "queryP", params );
 			Vector resources = (Vector)result.get("results");
 			int handle = -1;
@@ -173,6 +176,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
      *@exception  XMLDBException  Description of the Exception
      */
     public void clearNamespaces() throws XMLDBException {
+    	namespaceMappings.clear();
     }
 
 
@@ -183,7 +187,10 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
      *@exception  XMLDBException  Description of the Exception
      */
     public void removeNamespace( String ns ) throws XMLDBException {
-        throw new XMLDBException( ErrorCodes.NOT_IMPLEMENTED );
+        for(Iterator i = namespaceMappings.values().iterator(); i.hasNext(); ) {
+        	if(((String)i.next()).equals(ns))
+        		i.remove();
+        }
     }
 
 
@@ -196,7 +203,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
      */
     public void setNamespace( String prefix, String namespace )
              throws XMLDBException {
-        throw new XMLDBException( ErrorCodes.NOT_IMPLEMENTED );
+        namespaceMappings.put(prefix, namespace);
     }
 
 
@@ -208,7 +215,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
      *@exception  XMLDBException  Description of the Exception
      */
     public String getNamespace( String prefix ) throws XMLDBException {
-        throw new XMLDBException( ErrorCodes.NOT_IMPLEMENTED );
+        return (String)namespaceMappings.get(prefix);
     }
 }
 

@@ -1,6 +1,6 @@
 
-/* eXist xml document repository and xpath implementation
- * Copyright (C) 2000,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+/* eXist Native XML Database
+ * Copyright (C) 2000-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -41,10 +41,11 @@ public class VarBinding extends Step {
 
   public String getName() { return name; }
 
-  public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
+  public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
+  	NodeProxy contextNode) {
     if(binding == null)
       throw new IllegalArgumentException("variable " + name + " unbound");
-    return binding.eval(docs, context, node);
+    return binding.eval(context, docs, contextSet, contextNode);
   }
 
   public String pprint() {

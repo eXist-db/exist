@@ -25,6 +25,8 @@ package org.exist.storage.serializers;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.oro.text.perl.Perl5Util;
 import org.exist.dom.AttrImpl;
@@ -57,11 +59,11 @@ public class NativeSerializer extends Serializer {
 	public final static int EXIST_ID_NONE = 0;
 	public final static int EXIST_ID_ELEMENT = 1;
 	public final static int EXIST_ID_ALL = 2;
-	
+
 	private int showId = EXIST_ID_ELEMENT;
-	
+
 	private Perl5Util reutil = new Perl5Util();
-	
+
 	/**
 	 *  Constructor for the NativeSerializer object
 	 *
@@ -70,12 +72,11 @@ public class NativeSerializer extends Serializer {
 	 */
 	public NativeSerializer(DBBroker broker, Configuration config) {
 		super(broker, config);
-		String showIdParam =
-			(String) config.getProperty("serialization.add-exist-id");
+		String showIdParam = (String) config.getProperty("serialization.add-exist-id");
 		if (showIdParam != null) {
-			if(showIdParam.equals("element"))
+			if (showIdParam.equals("element"))
 				showId = EXIST_ID_ELEMENT;
-			else if(showIdParam.equals("all"))
+			else if (showIdParam.equals("all"))
 				showId = EXIST_ID_ALL;
 			else
 				showId = EXIST_ID_NONE;
@@ -91,11 +92,7 @@ public class NativeSerializer extends Serializer {
 	 *@param  queryTime         Description of the Parameter
 	 *@exception  SAXException  Description of the Exception
 	 */
-	protected void serializeToSAX(
-		NodeSet set,
-		int start,
-		int howmany,
-		long queryTime)
+	protected void serializeToSAX(NodeSet set, int start, int howmany, long queryTime)
 		throws SAXException {
 		Iterator iter = set.iterator();
 		for (int i = 0; i < start - 1; i++)
@@ -104,9 +101,7 @@ public class NativeSerializer extends Serializer {
 		if (!iter.hasNext())
 			return;
 		contentHandler.startDocument();
-		contentHandler.startPrefixMapping(
-			"exist",
-			EXIST_NS);
+		contentHandler.startPrefixMapping("exist", EXIST_NS);
 		AttributesImpl attribs = new AttributesImpl();
 		attribs.addAttribute(
 			"",
@@ -115,18 +110,9 @@ public class NativeSerializer extends Serializer {
 			"CDATA",
 			Integer.toString(set.getLength()));
 		if (queryTime >= 0)
-			attribs.addAttribute(
-				"",
-				"queryTime",
-				"queryTime",
-				"CDATA",
-				Long.toString(queryTime));
+			attribs.addAttribute("", "queryTime", "queryTime", "CDATA", Long.toString(queryTime));
 
-		contentHandler.startElement(
-			EXIST_NS,
-			"result",
-			"exist:result",
-			attribs);
+		contentHandler.startElement(EXIST_NS, "result", "exist:result", attribs);
 		NodeProxy p;
 		long startTime = System.currentTimeMillis();
 		Iterator domIter;
@@ -139,10 +125,7 @@ public class NativeSerializer extends Serializer {
 				continue;
 			serializeToSAX(null, domIter, p.doc, p.gid, true, p.matches);
 		}
-		contentHandler.endElement(
-			EXIST_NS,
-			"result",
-			"exist:result");
+		contentHandler.endElement(EXIST_NS, "result", "exist:result");
 		contentHandler.endDocument();
 	}
 
@@ -153,17 +136,14 @@ public class NativeSerializer extends Serializer {
 	 *@param  generateDocEvent  Description of the Parameter
 	 *@exception  SAXException  Description of the Exception
 	 */
-	protected void serializeToSAX(Document doc, boolean generateDocEvent)
-		throws SAXException {
+	protected void serializeToSAX(Document doc, boolean generateDocEvent) throws SAXException {
 		long start = System.currentTimeMillis();
 		setDocument((DocumentImpl) doc);
 		NodeList children = doc.getChildNodes();
 		if (generateDocEvent)
 			contentHandler.startDocument();
 
-		contentHandler.startPrefixMapping(
-			"exist",
-			EXIST_NS);
+		contentHandler.startPrefixMapping("exist", EXIST_NS);
 		// iterate through children
 		for (int i = 0; i < children.getLength(); i++) {
 			final NodeImpl n = (NodeImpl) children.item(i);
@@ -202,10 +182,7 @@ public class NativeSerializer extends Serializer {
 	protected void serializeToSAX(Node n) throws SAXException {
 		if (!(n instanceof NodeImpl))
 			throw new RuntimeException("wrong implementation");
-		serializeToSAX(
-			new NodeProxy(
-				(DocumentImpl) n.getOwnerDocument(),
-				((NodeImpl) n).getGID()));
+		serializeToSAX(new NodeProxy((DocumentImpl) n.getOwnerDocument(), ((NodeImpl) n).getGID()));
 	}
 
 	/**
@@ -225,14 +202,11 @@ public class NativeSerializer extends Serializer {
 	 *@param  generateDocEvents  Description of the Parameter
 	 *@exception  SAXException   Description of the Exception
 	 */
-	protected void serializeToSAX(NodeProxy p, boolean generateDocEvents)
-		throws SAXException {
+	protected void serializeToSAX(NodeProxy p, boolean generateDocEvents) throws SAXException {
 		if (generateDocEvents)
 			contentHandler.startDocument();
 
-		contentHandler.startPrefixMapping(
-			"exist",
-			EXIST_NS);
+		contentHandler.startPrefixMapping("exist", EXIST_NS);
 		Iterator domIter = broker.getNodeIterator(p);
 		serializeToSAX(null, domIter, p.doc, p.gid, true, p.matches);
 		contentHandler.endPrefixMapping("exist");
@@ -249,8 +223,7 @@ public class NativeSerializer extends Serializer {
 	 *@param  gid               Description of the Parameter
 	 *@exception  SAXException  Description of the Exception
 	 */
-	protected void serializeToSAX(Iterator iter, DocumentImpl doc, long gid)
-		throws SAXException {
+	protected void serializeToSAX(Iterator iter, DocumentImpl doc, long gid) throws SAXException {
 		serializeToSAX(null, iter, doc, gid, true, null);
 	}
 
@@ -272,7 +245,7 @@ public class NativeSerializer extends Serializer {
 		boolean first,
 		Match matches[])
 		throws SAXException {
-		serializeToSAX(node, iter, doc, gid, first, new ArrayList(), matches);
+		serializeToSAX(node, iter, doc, gid, first, new TreeSet(), matches);
 	}
 
 	/**
@@ -292,7 +265,7 @@ public class NativeSerializer extends Serializer {
 		DocumentImpl doc,
 		long gid,
 		boolean first,
-		ArrayList prefixes,
+		Set namespaces,
 		Match matches[])
 		throws SAXException {
 		setDocument(doc);
@@ -328,12 +301,12 @@ public class NativeSerializer extends Serializer {
 				if (children > 0)
 					gid = XMLUtil.getFirstChildId(doc, gid);
 				while (count < children) {
-					child = (NodeImpl)iter.next();
+					child = (NodeImpl) iter.next();
 					if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
-						if((highlightMatches & TAG_ATTRIBUTE_MATCHES) > 0)
+						if ((highlightMatches & TAG_ATTRIBUTE_MATCHES) > 0)
 							cdata = processAttribute(((AttrImpl) child).getValue(), gid, matches);
 						else
-							cdata = ((AttrImpl)child).getValue();
+							cdata = ((AttrImpl) child).getValue();
 						attributes.addAttribute(
 							child.getNamespaceURI(),
 							child.getLocalName(),
@@ -345,152 +318,114 @@ public class NativeSerializer extends Serializer {
 					} else
 						break;
 				}
-				ArrayList myPrefixes = null;
 				String defaultNS = null;
 				if (((ElementImpl) node).declaresNamespacePrefixes()) {
 					// declare namespaces used by this element
 					String prefix, uri;
-					myPrefixes = new ArrayList();
-					for (Iterator i =
-						((ElementImpl) node).getNamespacePrefixes();
-						i.hasNext();
-						) {
+					for (Iterator i = ((ElementImpl) node).getPrefixes(); i.hasNext();) {
 						prefix = (String) i.next();
-						if (!prefixes.contains(prefix)) {
-							if (prefix.startsWith("#")) {
-								defaultNS = broker.getNamespaceURI(prefix);
-								contentHandler.startPrefixMapping(
-									"",
-									defaultNS);
-							} else {
-								uri = broker.getNamespaceURI(prefix);
-								if(uri.equals(EXIST_NS))
-									continue;
-								contentHandler.startPrefixMapping(
-									prefix,
-									uri);
-							}
-							prefixes.add(prefix);
-							myPrefixes.add(prefix);
+						if (prefix.length() == 0) {
+							defaultNS = ((ElementImpl) node).getNamespaceForPrefix(prefix);
+							contentHandler.startPrefixMapping("", defaultNS);
+							namespaces.add(defaultNS);
+						} else {
+							uri = ((ElementImpl) node).getNamespaceForPrefix(prefix);
+							if (uri.equals(EXIST_NS))
+								continue;
+							contentHandler.startPrefixMapping(prefix, uri);
+							namespaces.add(uri);
 						}
 					}
 				}
-				String ns =
-					defaultNS == null ? node.getNamespaceURI() : defaultNS;
+				String ns = defaultNS == null ? node.getNamespaceURI() : defaultNS;
+				if(ns.length() > 0 && (!namespaces.contains(ns)))
+					contentHandler.startPrefixMapping(node.getPrefix(), ns);
 				contentHandler.startElement(
 					ns,
 					node.getLocalName(),
 					node.getNodeName(),
 					attributes);
 				while (count < children) {
-					serializeToSAX(
-						child,
-						iter,
-						doc,
-						gid++,
-						false,
-						prefixes,
-						matches);
+					serializeToSAX(child, iter, doc, gid++, false, namespaces, matches);
 					if (++count < children) {
-						child = (NodeImpl)iter.next();
+						child = (NodeImpl) iter.next();
 					} else
 						break;
 				}
-				contentHandler.endElement(
-					ns,
-					node.getLocalName(),
-					node.getNodeName());
-				if (((ElementImpl) node).declaresNamespacePrefixes()
-					&& myPrefixes != null) {
+				contentHandler.endElement(ns, node.getLocalName(), node.getNodeName());
+				if (((ElementImpl) node).declaresNamespacePrefixes()) {
 					String prefix;
-					for (Iterator i = myPrefixes.iterator(); i.hasNext();) {
+					for (Iterator i = ((ElementImpl) node).getPrefixes(); i.hasNext();) {
 						prefix = (String) i.next();
-						if(prefix.startsWith("#"))
-							contentHandler.endPrefixMapping("");
-						else
-							contentHandler.endPrefixMapping(prefix);
-						prefixes.remove(prefix);
+						contentHandler.endPrefixMapping(prefix);
 					}
 				}
-
+				if(ns.length() > 0 && (!namespaces.contains(ns)))
+					contentHandler.endPrefixMapping(node.getPrefix());
 				break;
 			case Node.TEXT_NODE :
 				if (first && createContainerElements) {
 					AttributesImpl attribs = new AttributesImpl();
-					if(showId > 0) {
-					attribs.addAttribute(
-						EXIST_NS,
-						"id",
-						"exist:id",
-						"CDATA",
-						Long.toString(gid));
-					attribs.addAttribute(
-						EXIST_NS,
-						"source",
-						"exist:source",
-						"CDATA",
-						doc.getFileName());
+					if (showId > 0) {
+						attribs.addAttribute(
+							EXIST_NS,
+							"id",
+							"exist:id",
+							"CDATA",
+							Long.toString(gid));
+						attribs.addAttribute(
+							EXIST_NS,
+							"source",
+							"exist:source",
+							"CDATA",
+							doc.getFileName());
 					}
-					contentHandler.startElement(
-						EXIST_NS,
-						"text",
-						"exist:text",
-						attribs);
+					contentHandler.startElement(EXIST_NS, "text", "exist:text", attribs);
 				}
-				if((highlightMatches & TAG_ELEMENT_MATCHES) == TAG_ELEMENT_MATCHES &&
-					(cdata = processText((TextImpl)node, gid, matches)) != null)
+				if ((highlightMatches & TAG_ELEMENT_MATCHES) == TAG_ELEMENT_MATCHES
+					&& (cdata = processText((TextImpl) node, gid, matches)) != null)
 					scanText(cdata);
 				else {
-					((TextImpl)node).getXMLString().toSAX(contentHandler);
+					((TextImpl) node).getXMLString().toSAX(contentHandler);
 				}
 				if (first && createContainerElements)
-					contentHandler.endElement(
-						EXIST_NS,
-						"text",
-						"exist:text");
+					contentHandler.endElement(EXIST_NS, "text", "exist:text");
 
 				break;
-			case Node.ATTRIBUTE_NODE : 
+			case Node.ATTRIBUTE_NODE :
 				if (first && createContainerElements) {
 					AttributesImpl attribs = new AttributesImpl();
-					if(showId > 0) {
-					attribs.addAttribute(
-						EXIST_NS,
-						"id",
-						"exist:id",
-						"CDATA",
-						Long.toString(gid));
-					attribs.addAttribute(
-						EXIST_NS,
-						"source",
-						"exist:source",
-						"CDATA",
-						doc.getFileName());
+					if (showId > 0) {
+						attribs.addAttribute(
+							EXIST_NS,
+							"id",
+							"exist:id",
+							"CDATA",
+							Long.toString(gid));
+						attribs.addAttribute(
+							EXIST_NS,
+							"source",
+							"exist:source",
+							"CDATA",
+							doc.getFileName());
 					}
-					if((highlightMatches & TAG_ATTRIBUTE_MATCHES) > 0)
+					if ((highlightMatches & TAG_ATTRIBUTE_MATCHES) > 0)
 						cdata = processAttribute(((AttrImpl) node).getValue(), gid, matches);
 					else
-						cdata = ((AttrImpl)node).getValue();
+						cdata = ((AttrImpl) node).getValue();
 					attribs.addAttribute(
 						node.getNamespaceURI(),
 						node.getLocalName(),
 						node.getNodeName(),
 						"CDATA",
 						cdata);
-					contentHandler.startElement(
-						EXIST_NS,
-						"attribute",
-						"exist:attribute",
-						attribs);
-					contentHandler.endElement(
-						EXIST_NS,
-						"attribute",
-						"exist:attribute");
+					contentHandler.startElement(EXIST_NS, "attribute", "exist:attribute", attribs);
+					contentHandler.endElement(EXIST_NS, "attribute", "exist:attribute");
 				} else {
-					if((highlightMatches & TAG_ATTRIBUTE_MATCHES) == TAG_ATTRIBUTE_MATCHES)
+					if ((highlightMatches & TAG_ATTRIBUTE_MATCHES) == TAG_ATTRIBUTE_MATCHES)
 						cdata = processAttribute(((AttrImpl) node).getValue(), gid, matches);
 					else
-						cdata = ((AttrImpl)node).getValue();
+						cdata = ((AttrImpl) node).getValue();
 					ch = new char[cdata.length()];
 					cdata.getChars(0, ch.length, ch, 0);
 					contentHandler.characters(ch, 0, ch.length);
@@ -513,7 +448,7 @@ public class NativeSerializer extends Serializer {
 	}
 
 	private final String processAttribute(String data, long gid, Match matches[]) {
-		if(matches == null)
+		if (matches == null)
 			return data;
 		// sort to get longest string first
 		Arrays.sort(matches);
@@ -521,61 +456,59 @@ public class NativeSerializer extends Serializer {
 		StringBuffer expr = null;
 		for (int i = 0; i < matches.length; i++)
 			if (matches[i].getNodeId() == gid) {
-				if(expr == null) {
+				if (expr == null) {
 					expr = new StringBuffer();
 					expr.append("s/\\b(");
 				}
-				if(expr.length() > 5)
+				if (expr.length() > 5)
 					expr.append('|');
 				expr.append(matches[i].getMatchingTerm());
 			}
-		if(expr != null) {
+		if (expr != null) {
 			expr.append(")\\b/||$1||/gi");
 			data = reutil.substitute(expr.toString(), data);
 		}
 		return data;
 	}
-	
+
 	private final String processText(TextImpl text, long gid, Match matches[]) {
-			if(matches == null)
-				return null;
-			// sort to get longest string first
-			Arrays.sort(matches);
-			// prepare a regular expression to mark match-terms
-			StringBuffer expr = null;
-			for (int i = 0; i < matches.length; i++)
-				if (matches[i].getNodeId() == gid) {
-					if(expr == null) {
-						expr = new StringBuffer();
-						expr.append("s/\\b(");
-					}
-					if(expr.length() > 5)
-						expr.append('|');
-					expr.append(matches[i].getMatchingTerm());
+		if (matches == null)
+			return null;
+		// sort to get longest string first
+		Arrays.sort(matches);
+		// prepare a regular expression to mark match-terms
+		StringBuffer expr = null;
+		for (int i = 0; i < matches.length; i++)
+			if (matches[i].getNodeId() == gid) {
+				if (expr == null) {
+					expr = new StringBuffer();
+					expr.append("s/\\b(");
 				}
-			if(expr != null) {
-				expr.append(")\\b/||$1||/gi");
-				return reutil.substitute(expr.toString(), text.getData());
-			} else
-				return null;
-		}
-		
+				if (expr.length() > 5)
+					expr.append('|');
+				expr.append(matches[i].getMatchingTerm());
+			}
+		if (expr != null) {
+			expr.append(")\\b/||$1||/gi");
+			return reutil.substitute(expr.toString(), text.getData());
+		} else
+			return null;
+	}
+
 	private final void scanText(String data) throws SAXException {
 		AttributesImpl atts = new AttributesImpl();
 		int p0 = 0, p1;
 		boolean inTerm = false;
-		while(p0 < data.length()) {
+		while (p0 < data.length()) {
 			p1 = data.indexOf("||", p0);
-			if(p1 < 0) {
+			if (p1 < 0) {
 				outputText(data.substring(p0));
 				break;
 			}
-			if(inTerm) {
-				contentHandler.startElement(EXIST_NS,
-					"match", "exist:match", atts);
+			if (inTerm) {
+				contentHandler.startElement(EXIST_NS, "match", "exist:match", atts);
 				outputText(data.substring(p0, p1));
-				contentHandler.endElement(EXIST_NS,
-					"match", "exist:match");
+				contentHandler.endElement(EXIST_NS, "match", "exist:match");
 				inTerm = false;
 			} else {
 				inTerm = true;
@@ -584,7 +517,7 @@ public class NativeSerializer extends Serializer {
 			p0 = p1 + 2;
 		}
 	}
-	
+
 	private final void outputText(String data) throws SAXException {
 		final char ch[] = new char[data.length()];
 		data.getChars(0, ch.length, ch, 0);

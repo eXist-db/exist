@@ -25,7 +25,7 @@ import org.w3c.dom.NodeList;
 import org.exist.*;
 import org.exist.dom.*;
 
-public class FLWR implements Expression {
+public class FLWR extends AbstractExpression {
 
   protected HashMap bindings = new HashMap();
   protected ArrayList returnList = new ArrayList();
@@ -61,11 +61,11 @@ public class FLWR implements Expression {
     return docs_in;
   }
 
-  public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
+  public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy node) {
 	  NodeSet result = new ArraySet(10);
       for(Iterator i = returnList.iterator(); i.hasNext(); ) {
 		  Expression r = (Expression)i.next();
-		  NodeList t = r.eval(docs, null, null).getNodeList();
+		  NodeList t = r.eval(context, docs, null, null).getNodeList();
 		  result.addAll(t);
       }
       return new ValueNodeSet(result);

@@ -1,7 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
  * 
- *  Copyright (C) 2001,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ *  Copyright (C) 2001-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -27,7 +27,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.storage.BrokerPool;
 
-public abstract class Step implements Expression {
+public abstract class Step extends AbstractExpression {
 
     protected int axis = -1;
     protected BrokerPool pool = null;
@@ -50,7 +50,8 @@ public abstract class Step implements Expression {
         predicates.add( expr );
     }
 
-    public abstract Value eval( DocumentSet docs, NodeSet context, NodeProxy node );
+    public abstract Value eval( StaticContext context, DocumentSet docs, NodeSet contextSet,
+    	NodeProxy contextNode );
 
     public int getAxis() {
         return axis;
