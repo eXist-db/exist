@@ -8,6 +8,8 @@ public interface NodeTest {
 
     public void setType(int nodeType);
     
+    public int getType();
+    
 	public boolean matches(NodeProxy proxy);
 
 	public boolean matches(Node node);
