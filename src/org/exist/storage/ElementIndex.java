@@ -33,9 +33,11 @@ import org.exist.util.Configuration;
 import org.exist.util.Occurrences;
 import org.exist.xquery.NodeSelector;
 
+/** base class for {@link org.exist.storage.NativeElementIndex} */
 public abstract class ElementIndex extends Observable {
 
     protected DBBroker broker;
+    /** maps a qname to a List of  NodeProxy - should be renamed ? */
     protected TreeMap elementIds = new TreeMap();
     protected DocumentImpl doc;
     protected Configuration config;

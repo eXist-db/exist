@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  * 
- * $Id:
+ * $Id$
  */
 package org.exist.storage;
 
@@ -64,6 +64,11 @@ import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Node;
 
+/** The indexing occurs in this class. That is, during the loading of a document
+ * into the database, the process of associating a long gid with each element,
+ * and the subsequent storing of the {@link NodeProxy} on disk.
+ * {@link reIndex} is the main method.
+ */
 public class NativeElementIndex extends ElementIndex {
 
     private static Logger LOG = Logger.getLogger(NativeElementIndex.class
@@ -463,6 +468,7 @@ public class NativeElementIndex extends ElementIndex {
         }
     }
 
+    /** Called by {@link NativeBroker.reIndex} */
     public void reindex(DocumentImpl oldDoc, NodeImpl node) {
         if (elementIds.size() == 0) return;
         Lock lock = dbElement.getLock();
