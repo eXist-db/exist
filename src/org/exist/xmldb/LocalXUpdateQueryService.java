@@ -7,6 +7,10 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.start.Main;
+import org.exist.cluster.ClusterClient;
+import org.exist.cluster.ClusterEvent;
+import org.exist.cluster.UpdateClusterEvent;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.security.PermissionDeniedException;
@@ -82,6 +86,14 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 				broker.flush();
 			}
             //broker.sync();
+
+            //Cluster event send
+            //TODO: fix with a new Service Binding implementation
+            if (Main.getMain().getMode().equalsIgnoreCase("cluster") ){
+                ClusterClient cc = new ClusterClient();
+                cc.sendClusterEvent( new UpdateClusterEvent(resource, c.getName(), xupdate ) );
+            }
+
             LOG.debug("xupdate took " + (System.currentTimeMillis() - start) +
             	"ms.");
 			return mods;
