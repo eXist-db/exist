@@ -140,7 +140,7 @@ public class FunctionFactory {
 				throw new XPathException(ast, "Wrong number of arguments for constructor function");
 			PathExpr arg = (PathExpr)params.get(0);
 			int code= Type.getType(qname);
-			CastExpression castExpr = new CastExpression(context, arg, code, Cardinality.EXACTLY_ONE);
+			CastExpression castExpr = new CastExpression(context, arg, code, Cardinality.ZERO_OR_ONE);
 			castExpr.setASTNode(ast);
 			step = castExpr;
 			
