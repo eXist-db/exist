@@ -24,6 +24,7 @@ import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
 
+import org.exist.schema.GenericSchemaService;
 import org.exist.schema.SchemaService;
 import org.exolab.castor.xml.schema.AttributeDecl;
 import org.exolab.castor.xml.schema.ElementDecl;
@@ -145,6 +146,22 @@ public class GenericSchemaServiceTest extends TestCase {
     }
   }
 
+  public void testValidateContentsSinglePass() throws XMLDBException {
+    insertSchemas();
+    assertTrue(((GenericSchemaService) getSchemaService()).validateContentsSinglePass(ADDRESSBOOK_DOCUMENT));
+    try {
+      getSchemaService().validateContents(ADDRESSBOOK_DOCUMENT_INVALID);
+      assertTrue(false);
+    } catch (XMLDBException e) {
+      assertTrue(true);
+      String message = e.getMessage();
+      System.out.println("ValidateContentsSinglePass:");
+      System.out.println(message);
+      assertTrue(message.indexOf("Invalid content") > -1);
+      assertTrue(message.indexOf("element 'name'") > -1);
+    }
+  }
+
   public void testValidateResource() throws XMLDBException {
     Collection collection = DatabaseManager.getCollection(URI, "admin", null);
     {
@@ -186,6 +203,11 @@ public class GenericSchemaServiceTest extends TestCase {
     assertNotNull(element);
     assertEquals("addressBook", element.getName());
   }
+  
+  /*public void testGetElementByXPath() throws XMLDBException {
+      insertSchemas();
+      //getSchemaService().getElement("/schema/element[@name='bill']");
+  }*/
 
   public void testGetType() throws XMLDBException {
     insertSchemas();
