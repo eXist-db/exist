@@ -517,9 +517,9 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 				level = doc.getTreeLevel(gid);
 			while (gid > 0) {
 				gid = XMLUtil.getParentId(doc, gid, level);
-				if ((temp = get(gid)) != null)
+				if ((temp = get(gid)) != null) {
 					return temp;
-				else if (directParent)
+				} else if (directParent)
 					return null;
 				else
 					--level;
