@@ -167,6 +167,10 @@
             tracelexer="${antlr.traceLexer}">
 			<classpath><path refid="classpath.core"/></classpath>
 		</antlr>
+		<antlr target="${src}/org/exist/xquery/parser/XQueryTree.g"
+			outputdirectory="${src}/org/exist/xquery/parser">
+			<classpath><path refid="classpath.core"/></classpath>
+		</antlr>
     </target>
     
     <target depends="antlr,jar" name="xquery"/>
