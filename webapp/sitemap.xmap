@@ -132,6 +132,26 @@
     
     <!-- pipelines -->
     <map:pipelines>
+
+         <map:pipeline>
+             <!-- jmv - WWBKB - "automount" setup
+               CAUTION: jmv: must be before other catch-all matches like **.xml ,
+               otherwise xse/foo.xml will not be passed to xse/ subsitemap.
+             -->
+               <map:match pattern="xse/**">
+                 <map:mount check-reload="yes" src="xse/" uri-prefix="xse" />
+               </map:match>
+ 
+               <!-- This causes directories added under "mount"
+               (even with Cocoon already running) to be activated automagically
+               if they contain a sitemap.xmap, without having to modify the main
+               sitemap.xmap
+             -->
+               <map:match pattern="mount/*/**">
+                 <map:mount check-reload="yes" src="mount/{1}/" uri-prefix="mount/{1}" />
+               </map:match>
+         </map:pipeline>
+
         <map:pipeline>
             <!-- graphics etc. -->
             <map:match pattern="**.css">
