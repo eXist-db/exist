@@ -53,6 +53,10 @@
             
             <action name="Running eXist as a Service">Using the included Java Server Wrapper configuration,
             eXist can now be started as a system wide service on Windows and Unix.</action>
+            
+            <action name="Schema Repository (Experimental)">A new SchemaService is provided via the
+            XMLDB API. It currently allows to upload and register a schema, and to validate resources 
+            against it. This service builds the basis for complete schema support to be added in the future.</action>
         </topic>
         
         <topic category="XQuery">
