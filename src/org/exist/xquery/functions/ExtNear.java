@@ -110,7 +110,7 @@ public class ExtNear extends ExtFulltext {
 		int distance;
 		for (Iterator i = result.iterator(); i.hasNext();) {
 			current = (NodeProxy) i.next();
-			value = current.getNodeValue();
+			value = current.getNodeValueSeparated();
 			tok.setText(value);
 			j = 0;
 			if (j < terms.length)

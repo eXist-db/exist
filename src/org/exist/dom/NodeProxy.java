@@ -286,9 +286,13 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	}
 
 	public String getNodeValue() {
-		return doc.getBroker().getNodeValue(this);
+		return doc.getBroker().getNodeValue(this, false);
 	}
 
+    public String getNodeValueSeparated() {
+        return doc.getBroker().getNodeValue(this, true);
+    }
+    
 	public String toString() {
 		return doc.getNode(gid).toString();
 	}
