@@ -33,6 +33,8 @@ public abstract class AbstractExpression implements Expression {
 	protected XQueryAST astNode = null;
 	
 	protected DocumentSet contextDocSet = null;
+
+	protected Expression parent = null;
 	
 	public AbstractExpression(XQueryContext context) {
 		this.context = context;
@@ -76,9 +78,16 @@ public abstract class AbstractExpression implements Expression {
 		return Dependency.DEFAULT_DEPENDENCIES;
 	}
 
-	public void setPrimaryAxis(int axis) {
+	public void setParent(Expression parent) {
+		this.parent = parent;
 	}
 	
+	public Expression getParent() {
+		return parent;
+	}
+	
+	public void setPrimaryAxis(int axis) {
+	}
 	
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#setContextDocSet(org.exist.dom.DocumentSet)

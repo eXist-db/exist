@@ -33,7 +33,7 @@ import org.exist.xquery.value.Sequence;
  * read the description there.
  */
 public interface Expression {
-
+	
 	/**
 	 * Evaluate the expression represented by this object.
 	 *
@@ -75,6 +75,20 @@ public interface Expression {
 	 */
 	public Sequence eval(Sequence contextSequence)
 		throws XPathException;
+	
+	/**
+	 * Set the parent expression of this expression.
+	 * 
+	 * @param parent
+	 */
+	public void setParent(Expression parent);
+	
+	/**
+	 * Returns the parent expression of this expression.
+	 * 
+	 * @return
+	 */
+	public Expression getParent();
 	
 	public void setPrimaryAxis(int axis);
 	
@@ -119,7 +133,7 @@ public interface Expression {
 	 * @param inPredicate
 	 */
 	public void setInPredicate(boolean inPredicate);
-
+	
 	/**
 	 * Return a readable representation of this expression.
 	 *
@@ -130,6 +144,13 @@ public interface Expression {
 	
 	public void setContextDocSet(DocumentSet contextSet);
 	
+	/**
+	 * Returns the {@link XQueryAST} node from which this expression
+	 * has been constructed by the parser. This node contains location information
+	 * (line number and column) important for error reports.
+	 * 
+	 * @return
+	 */
 	public XQueryAST getASTNode();
 	
 	public void setASTNode(XQueryAST ast);

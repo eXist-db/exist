@@ -63,6 +63,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      * @param s
      */
     public void add(Expression s) {
+    	s.setParent(this);
         steps.add(s);
     }
 
@@ -203,7 +204,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         }
         return deps;
     }
-
+	
     public void setFirstExpression(Expression s) {
         steps.addFirst(s);
     }
