@@ -22,6 +22,8 @@
  */
 package org.exist.xquery;
 
+import java.io.Writer;
+
 import org.exist.xmldb.CompiledExpression;
 import org.exist.xquery.value.Sequence;
 
@@ -31,15 +33,54 @@ import org.exist.xquery.value.Sequence;
  */
 public interface CompiledXQuery extends CompiledExpression {
     
+    /**
+     * Set the compile time for this query. Used to check
+     * if a query is still valid or should be recompiled from
+     * its source.
+     * 
+     * @param created
+     */
     public void setCreationTime(long created);
     
+    /**
+     * Returns the compile time of the query.
+     * 
+     * @return
+     */
     public long getCreationTime();
     
+    /**
+     * Reset the compiled expression tree. Discard all
+     * temporary expression results.
+     */
     public void reset();
     
+    /**
+     * @return the {@link XQueryContext} used to create this query
+     */
     public XQueryContext getContext();
     
+    /**
+     * Execute the compiled query, optionally using the specified
+     * sequence as context.
+     * 
+     * @param contextSequence
+     * @return
+     * @throws XPathException
+     */
     public Sequence eval(Sequence contextSequence) throws XPathException;
     
+    /**
+     * Is the compiled expression still valid? Returns false if, for example,
+     * the source code of one of the imported modules has changed.
+     * 
+     * @return
+     */
     public boolean isValid();
+    
+    /**
+     * Writes a diagnostic dump of the expression structure to the
+     * specified writer.
+     */
+    public void dump(Writer writer);
 }

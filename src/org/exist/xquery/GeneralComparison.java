@@ -23,7 +23,6 @@ package org.exist.xquery;
 
 import java.text.Collator;
 import java.util.Iterator;
-import java.util.Map;
 
 import org.exist.dom.ContextItem;
 import org.exist.dom.DocumentImpl;
@@ -31,13 +30,16 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.storage.FulltextIndexSpec;
+import org.exist.storage.IndexConfiguration;
+import org.exist.storage.IndexSpec;
 import org.exist.storage.NativeTextEngine;
-import org.exist.storage.IndexPaths;
 import org.exist.storage.analysis.SimpleTokenizer;
 import org.exist.storage.analysis.TextToken;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
-import org.exist.xquery.functions.*;
+import org.exist.xquery.functions.ExtFulltext;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
@@ -385,16 +387,20 @@ public class GeneralComparison extends BinaryOp {
 	private boolean checkArgumentTypes(XQueryContext context, DocumentSet docs)
 		throws XPathException {
 		Configuration config = context.getBroker().getConfiguration();
-		Map idxPathMap = (Map) config.getProperty("indexer.map");
+		IndexConfiguration idxConf = (IndexConfiguration) config.getProperty("indexer.map");
 		DocumentImpl doc;
-		IndexPaths idx;
+		IndexSpec idxSpec;
+		FulltextIndexSpec idx;
 		for (Iterator i = docs.iterator(); i.hasNext();) {
 			doc = (DocumentImpl) i.next();
-			idx = (IndexPaths) idxPathMap.get(doc.getDoctype().getName());
-			if (idx != null && idx.isSelective())
-				return true;
-			if (idx != null && (!idx.getIncludeAlphaNum()))
-				return true;
+			idxSpec = idxConf.getByDoctype(doc.getDoctype().getName());
+			if(idxSpec != null) {
+			    idx = idxSpec.getFulltextIndexSpec();
+			    if(idx.isSelective())
+			        return true;
+			    if(!idx.getIncludeAlphaNum())
+			        return true;
+			}
 		}
 		return false;
 	}
@@ -419,18 +425,14 @@ public class GeneralComparison extends BinaryOp {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#pprint()
-	 */
-	public String pprint() {
-		StringBuffer buf = new StringBuffer();
-		buf.append(getLeft().pprint());
-		buf.append(' ');
-		buf.append(Constants.OPS[relation]);
-		buf.append(' ');
-		buf.append(getRight().pprint());
-		return buf.toString();
-	}
-
+     * @see org.exist.xquery.PathExpr#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        getLeft().dump(dumper);
+        dumper.display(' ').display(Constants.OPS[relation]).display(' ');
+        getRight().dump(dumper);
+    }
+    
 	protected void switchOperands() {
 		switch (relation) {
 			case Constants.GT :

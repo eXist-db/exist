@@ -97,6 +97,7 @@ options {
 	}
 	
 	private static class ForLetClause {
+		XQueryAST ast;
 		String varName;
 		SequenceType sequenceType= null;
 		String posVar= null;
@@ -450,7 +451,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	// sequence constructor:
 	#(
-		COMMA
+		c:COMMA
 		{
 			PathExpr left= new PathExpr(context);
 			PathExpr right= new PathExpr(context);
@@ -459,6 +460,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		step=expr [right]
 		{
 			SequenceConstructor sc= new SequenceConstructor(context);
+			sc.setASTNode(c);
 			sc.addPath(left);
 			sc.addPath(right);
 			path.addPath(sc);
@@ -468,7 +470,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	// conditional:
 	#(
-		"if"
+		astIf:"if"
 		{
 			PathExpr testExpr= new PathExpr(context);
 			PathExpr thenExpr= new PathExpr(context);
@@ -479,6 +481,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		step=expr [elseExpr]
 		{
 			ConditionalExpression cond= new ConditionalExpression(context, testExpr, thenExpr, elseExpr);
+			cond.setASTNode(astIf);
 			path.add(cond);
 			step = cond;
 		}
@@ -578,21 +581,23 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	// FLWOR expressions: let and for
 	#(
-		"return"
+		r:"return"
 		{
 			List clauses= new ArrayList();
 			Expression action= new PathExpr(context);
+			action.setASTNode(r);
 			PathExpr whereExpr= null;
 			List orderBy= null;
 		}
 		(
 			#(
-				"for"
+				f:"for"
 				(
 					#(
 						varName:VARIABLE_BINDING
 						{
 							ForLetClause clause= new ForLetClause();
+							clause.ast = f;
 							PathExpr inputSequence= new PathExpr(context);
 						}
 						(
@@ -617,12 +622,13 @@ throws PermissionDeniedException, EXistException, XPathException
 			)
 			|
 			#(
-				"let"
+				l:"let"
 				(
 					#(
 						letVarName:VARIABLE_BINDING
 						{
 							ForLetClause clause= new ForLetClause();
+							clause.ast = l;
 							clause.isForClause= false;
 							PathExpr inputSequence= new PathExpr(context);
 						}
@@ -644,8 +650,11 @@ throws PermissionDeniedException, EXistException, XPathException
 			)
 		)+
 		(
-			"where"
-			{ whereExpr= new PathExpr(context); }
+			w:"where"
+			{ 
+				whereExpr= new PathExpr(context); 
+				whereExpr.setASTNode(w);
+			}
 			step=expr [whereExpr]
 		)?
 		(
@@ -700,6 +709,7 @@ throws PermissionDeniedException, EXistException, XPathException
 					expr= new ForExpr(context);
 				else
 					expr= new LetExpr(context);
+				expr.setASTNode(clause.ast);
 				expr.setVariable(clause.varName);
 				expr.setSequenceType(clause.sequenceType);
 				expr.setInputSequence(clause.inputSequence);

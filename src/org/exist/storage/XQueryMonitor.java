@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.exist.xquery.XQueryWatchDog;
+import org.exist.xquery.util.ExpressionDumper;
 
 /**
  * Class to keep track of all running queries in a database instance. The main
@@ -61,7 +62,8 @@ public class XQueryMonitor {
 		XQueryWatchDog watchdog;
 		for(Iterator i = runningQueries.iterator(); i.hasNext(); ) {
 			watchdog = (XQueryWatchDog) i.next();
-			LOG.debug("Killing query: " + watchdog.getContext().getRootExpression().pprint());
+			LOG.debug("Killing query: " + 
+			        ExpressionDumper.dump(watchdog.getContext().getRootExpression()));
 			watchdog.kill(waitTime);
 		}
 	}

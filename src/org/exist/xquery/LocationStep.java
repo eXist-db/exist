@@ -50,11 +50,13 @@ public class LocationStep extends Step {
 
 	protected NodeSet currentSet = null;
 	protected DocumentSet currentDocs = null;
+	protected Expression parent = null;
 	
 	// Fields for caching the last result
 	protected CachedResult cached = null;
 	
 	protected int parentDeps = -1;
+	protected boolean preload = false;
 	
 	public LocationStep(XQueryContext context, int axis) {
 		super(context, axis);
@@ -83,20 +85,9 @@ public class LocationStep extends Step {
 	 * @return
 	 */
 	protected boolean preloadNodeSets() {
-		return (getParentDependencies() & Dependency.LOCAL_VARS) 
-			== Dependency.LOCAL_VARS;
-	}
-	
-	protected int getParentDependencies() {
-		if(parentDeps < 0) {
-			if(getParent() != null)
-				parentDeps = getParent().getDependencies();
-			else {
-				LOG.warn("Parent for expression " + pprint() + " unknown");
-				parentDeps = Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
-			}
-		}
-		return parentDeps;
+		return 
+			preload ||
+			(parentDeps & Dependency.LOCAL_VARS) == Dependency.LOCAL_VARS;
 	}
 	
 	protected Sequence applyPredicate(
@@ -114,6 +105,17 @@ public class LocationStep extends Step {
 		return result;
 	}
 
+	/* (non-Javadoc)
+     * @see org.exist.xquery.Step#analyze(org.exist.xquery.Expression)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+        this.parent = parent;
+        parentDeps = parent.getDependencies();
+        if((flags & SINGLE_STEP_EXECUTION) > 0)
+            preload = true;
+        super.analyze(parent, flags);
+    }
+    
 	public Sequence eval(
 		Sequence contextSequence,
 		Item contextItem)
@@ -256,11 +258,11 @@ public class LocationStep extends Step {
 			DocumentSet docs = getDocumentSet(contextSet);
 			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
                 currentDocs = docs;
-                    currentSet =
-                        (NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
-                            ElementValue.ELEMENT,
-                            currentDocs,
-                            test.getName(), null);
+                currentSet =
+                    (NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
+                        ElementValue.ELEMENT,
+                        currentDocs,
+                        test.getName(), null);
             }
             return currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);
 		} else {
@@ -280,32 +282,26 @@ public class LocationStep extends Step {
 			VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextSet);
 			vset.setInPredicate(inPredicate);
 			return vset;
+		} else if(preloadNodeSets()){
+		    DocumentSet docs = getDocumentSet(contextSet);
+			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
+                currentDocs = docs;
+                currentSet =
+                    (NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
+                        ElementValue.ELEMENT,
+                        currentDocs,
+                        test.getName(), null);
+            }
+            return currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, 
+                    axis == Constants.DESCENDANT_SELF_AXIS, inPredicate);
 		} else {
-			NodeSet result;
-//			if(cacheResults()) {
-//			    DocumentSet docs = getDocumentSet(contextSet);
-//				if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
-//					currentDocs = docs;
-//					currentSet =
-//						(NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
-//							ElementValue.ELEMENT, currentDocs,
-//							test.getName(), null);
-//				}
-//				result = currentSet.selectAncestorDescendant(
-//					contextSet,
-//					NodeSet.DESCENDANT,
-//					axis == Constants.DESCENDANT_SELF_AXIS,
-//					inPredicate);
-//			} else {
-				DocumentSet docs = contextSet.getDocumentSet();
-				NodeSelector selector = axis == Constants.DESCENDANT_SELF_AXIS ?
-						new DescendantOrSelfSelector(contextSet, inPredicate) :
-							new DescendantSelector(contextSet, inPredicate);
-						result = context.getBroker().getElementIndex().findElementsByTagName(
-								ElementValue.ELEMENT, docs, test.getName(), selector
-						);
-//			}
-			return result;
+			DocumentSet docs = contextSet.getDocumentSet();
+			NodeSelector selector = axis == Constants.DESCENDANT_SELF_AXIS ?
+					new DescendantOrSelfSelector(contextSet, inPredicate) :
+						new DescendantSelector(contextSet, inPredicate);
+			return context.getBroker().getElementIndex().findElementsByTagName(
+					ElementValue.ELEMENT, docs, test.getName(), selector
+			);
 		}
 	}
 

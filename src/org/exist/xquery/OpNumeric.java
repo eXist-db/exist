@@ -22,6 +22,7 @@ package org.exist.xquery;
 
 import org.exist.dom.NodeSet;
 import org.exist.storage.DBBroker;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.ComputableValue;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
@@ -179,14 +180,13 @@ public class OpNumeric extends BinaryOp {
 				return null;
 		}
 	}
-
-	public String pprint() {
-		StringBuffer buf = new StringBuffer();
-		buf.append(getLeft().pprint());
-		buf.append(' ');
-		buf.append(Constants.OPS[operator]);
-		buf.append(' ');
-		buf.append(getRight().pprint());
-		return buf.toString();
-	}
+	
+	/* (non-Javadoc)
+     * @see org.exist.xquery.PathExpr#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        getLeft().dump(dumper);
+        dumper.display(' ').display(Constants.OPS[operator]).display(' ');
+        getRight().dump(dumper);
+    }
 }

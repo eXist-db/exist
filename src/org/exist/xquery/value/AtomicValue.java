@@ -28,6 +28,7 @@ import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.util.ExpressionDumper;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -181,15 +182,14 @@ public abstract class AtomicValue implements Item, Sequence {
     public DocumentSet getDocumentSet() {
         return DocumentSet.EMPTY_DOCUMENT_SET;
     }
-    
-	public String pprint() {
-		try {
-			return getStringValue();
-		} catch (XPathException e) {
-			return "";
-		}
-	}
 
+	public void dump(ExpressionDumper dumper) {
+	    try {
+            dumper.display(getStringValue());
+        } catch (XPathException e) {
+        }
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
 	 */

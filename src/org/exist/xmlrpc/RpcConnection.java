@@ -216,6 +216,7 @@ public class RpcConnection extends Thread {
 		if (treeParser.foundErrors()) {
 			throw new EXistException(treeParser.getErrorMessage());
 		}
+		expr.analyze(null, 0);
 		return expr;
 	}
 
@@ -275,6 +276,24 @@ public class RpcConnection extends Thread {
 		}
 	}
 
+	public String printDiagnostics(User user, String query, Hashtable parameters) throws Exception {
+	    DBBroker broker = null;
+		try {
+			broker = brokerPool.get(user);
+			Source source = new StringSource(query);
+			XQuery xquery = broker.getXQueryService();
+			XQueryPool pool = xquery.getXQueryPool();
+			CompiledXQuery compiled = pool.borrowCompiledXQuery(source);
+			if(compiled == null)
+			    compile(user, broker, query, parameters);
+			StringWriter writer = new StringWriter();
+			compiled.dump(writer);
+			return writer.toString();
+		} finally {
+			brokerPool.release(broker);
+		}
+	}
+	
 	/**
 	 * Check if the XQuery contains pragmas that define serialization settings.
 	 * If yes, copy the corresponding settings to the current set of output properties.

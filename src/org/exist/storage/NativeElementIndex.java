@@ -52,7 +52,6 @@ import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.store.BFile;
 import org.exist.storage.store.StorageAddress;
 import org.exist.util.ByteConversion;
-import org.exist.util.Configuration;
 import org.exist.util.FastQSort;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
@@ -67,7 +66,6 @@ import org.w3c.dom.Node;
 /** The indexing occurs in this class. That is, during the loading of a document
  * into the database, the process of associating a long gid with each element,
  * and the subsequent storing of the {@link NodeProxy} on disk.
- * {@link reIndex} is the main method.
  */
 public class NativeElementIndex extends ElementIndex {
 
@@ -78,12 +76,16 @@ public class NativeElementIndex extends ElementIndex {
 
     private VariableByteOutputStream os = new VariableByteOutputStream();
 
-    public NativeElementIndex(DBBroker broker, Configuration config,
-            BFile dbElement) {
-        super(broker, config);
+    public NativeElementIndex(DBBroker broker, BFile dbElement) {
+        super(broker);
         this.dbElement = dbElement;
     }
 
+    /**
+     * Add an index entry for the given QName and NodeProxy.
+     * Added entries are written to the list of pending entries. Call
+     * {@link #flush()} to flush all pending entries.
+     */
     public void addRow(QName qname, NodeProxy proxy) {
         ArrayList buf;
         if (elementIds.containsKey(qname))
@@ -282,6 +284,11 @@ public class NativeElementIndex extends ElementIndex {
         return (Occurrences[]) map.values().toArray(result);
     }
 
+    /**
+     * Drop all index entries for the given collection.
+     * 
+     * @param collection
+     */
     public void dropIndex(Collection collection) {
         LOG.debug("removing elements ...");
         Value ref = new ElementValue(collection.getId());
@@ -389,6 +396,12 @@ public class NativeElementIndex extends ElementIndex {
         }
     }
     
+    /**
+     * Drop all index entries for the given document.
+     * 
+     * @param doc
+     * @throws ReadOnlyException
+     */
     public void dropIndex(DocumentImpl doc) throws ReadOnlyException {
         //	  drop element-index
         short collectionId = doc.getCollection().getId();
@@ -406,7 +419,6 @@ public class NativeElementIndex extends ElementIndex {
             Value key;
             Value value;
             byte[] data;
-            // byte[] ndata;
             VariableByteArrayInput is;
             VariableByteOutputStream os;
             int len;
@@ -699,6 +711,10 @@ public class NativeElementIndex extends ElementIndex {
         return false;
     }
 
+    /**
+     * Flush all pending index entries. This method is called while
+     * a document is stored.
+     */
     public void flush() {
         if (elementIds.size() == 0) return;
         final ProgressIndicator progress = new ProgressIndicator(elementIds
@@ -708,14 +724,12 @@ public class NativeElementIndex extends ElementIndex {
         QName qname;
         ArrayList idList;
         int count = 1, len;
-        byte[] data;
         String name;
         ElementValue ref;
         Map.Entry entry;
         // get collection id for this collection
         long prevId;
         long cid;
-        long addr;
         short collectionId = doc.getCollection().getId();
         Lock lock = dbElement.getLock();
         try {

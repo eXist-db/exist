@@ -20,6 +20,7 @@
  */
 package org.exist.xquery;
 
+import java.io.Writer;
 import java.util.Iterator;
 import java.util.LinkedList;
 
@@ -28,6 +29,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.xmldb.CompiledExpression;
 import org.exist.xquery.parser.XQueryAST;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -63,7 +65,6 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      * @param s
      */
     public void add(Expression s) {
-    	s.setParent(this);
         steps.add(s);
     }
 
@@ -101,6 +102,16 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         if (e instanceof Step) ((Step) e).addPredicate(pred);
     }
 
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+        for (Iterator iter = steps.iterator(); iter.hasNext();) {
+            Expression expr = (Expression) iter.next();
+            expr.analyze(this, flags);
+        }
+    }
+    
     public Sequence eval(Sequence contextSequence, Item contextItem)
             throws XPathException {
         if (steps.size() == 0) return Sequence.EMPTY_SEQUENCE;
@@ -176,19 +187,26 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         return steps.size();
     }
 
-    public String pprint() {
-        StringBuffer buf = new StringBuffer();
-        buf.append('(');
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+//        dumper.startIndent();
         Expression next;
-        for (Iterator iter = steps.iterator(); iter.hasNext();) {
+        int count = 0;
+        for (Iterator iter = steps.iterator(); iter.hasNext(); count++) {
             next = (Expression) iter.next();
-            if (buf.length() > 1 && next instanceof Step) buf.append('/');
-            buf.append(next.pprint());
+            if(count > 0) {
+                if(next instanceof Step)
+                    dumper.display('/');
+                else
+                    dumper.nl();
+            }
+            next.dump(dumper);
         }
-        buf.append(')');
-        return buf.toString();
+//        dumper.endIndent();
     }
-
+    
     public int returnsType() {
         if (steps.size() == 0) return Type.NODE;
         int rtype = ((Expression) steps.getLast()).returnsType();
@@ -311,4 +329,12 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 	public boolean isValid() {
 		return context.checkModulesValid();
 	}
+	
+	/* (non-Javadoc)
+     * @see org.exist.xquery.CompiledXQuery#dump(java.io.Writer)
+     */
+    public void dump(Writer writer) {
+        ExpressionDumper dumper = new ExpressionDumper(writer);
+        dump(dumper);
+    }
 }

@@ -80,10 +80,5 @@ public abstract class LogicalOp extends BinaryOp {
 			getExpression(i).setInPredicate(inPredicate);
 		}
 	}
-		
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#pprint()
-	 */
-	public abstract String pprint();
 
 }

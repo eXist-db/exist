@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -73,6 +74,13 @@ public class CastableExpression extends AbstractExpression {
 	}
 	
 	/* (non-Javadoc)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+        expression.analyze(this, flags);
+    }
+    
+	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem)
@@ -93,12 +101,14 @@ public class CastableExpression extends AbstractExpression {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#pprint()
-	 */
-	public String pprint() {
-		return "(" + expression.pprint() + " castable as " + Type.getTypeName(requiredType) + ")";
-	}
-	
+     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        expression.dump(dumper);
+        dumper.display(" castable as ");
+        dumper.display(Type.getTypeName(requiredType));
+    }
+    
 	public void resetState() {
 		expression.resetState();
 	}

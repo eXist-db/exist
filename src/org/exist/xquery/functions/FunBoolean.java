@@ -61,12 +61,4 @@ public class FunBoolean extends Function {
 		contextSequence = getArgument(0).eval(contextSequence);
 		return contextSequence.effectiveBooleanValue() ? BooleanValue.TRUE : BooleanValue.FALSE;
 	}
-
-	public String pprint() {
-		StringBuffer buf = new StringBuffer();
-		buf.append("boolean(");
-		buf.append(getArgument(0).pprint());
-		buf.append(")");
-		return buf.toString();
-	}
 }

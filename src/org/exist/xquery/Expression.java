@@ -23,6 +23,7 @@ package org.exist.xquery;
 
 import org.exist.dom.DocumentSet;
 import org.exist.xquery.parser.XQueryAST;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
@@ -34,6 +35,20 @@ import org.exist.xquery.value.Sequence;
  */
 public interface Expression {
 	
+    public final static int SINGLE_STEP_EXECUTION = 1;
+    
+    /**
+     * Statically analyze the expression and its subexpressions.
+     * 
+     * During the static analysis phase, the query engine can detect
+     * unknown variables or some type errors.
+     * @param parent
+     * @param flags
+     * 
+     * @throws XPathException
+     */
+    public void analyze(Expression parent, int flags) throws XPathException;
+    
 	/**
 	 * Evaluate the expression represented by this object.
 	 *
@@ -75,20 +90,6 @@ public interface Expression {
 	 */
 	public Sequence eval(Sequence contextSequence)
 		throws XPathException;
-	
-	/**
-	 * Set the parent expression of this expression.
-	 * 
-	 * @param parent
-	 */
-	public void setParent(Expression parent);
-	
-	/**
-	 * Returns the parent expression of this expression.
-	 * 
-	 * @return
-	 */
-	public Expression getParent();
 	
 	public void setPrimaryAxis(int axis);
 	
@@ -135,12 +136,12 @@ public interface Expression {
 	public void setInPredicate(boolean inPredicate);
 	
 	/**
-	 * Return a readable representation of this expression.
-	 *
-	 * This method is called whenever the xpath-query should be
-	 * displayed to the user.
+	 * Write a diagnostic dump of the expression to the passed
+	 * {@link ExpressionDumper}.
+	 *  
+	 * @param dumper the expression dumper to write to
 	 */
-	public String pprint();
+	public void dump(ExpressionDumper dumper);
 	
 	public void setContextDocSet(DocumentSet contextSet);
 	

@@ -28,6 +28,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.util.Configuration;
+import org.exist.xquery.util.ExpressionDumper;
 
 
 /**
@@ -107,7 +108,8 @@ public class XQueryWatchDog {
         if(elapsed > timeout) {
             if(expr == null)
                 expr = context.getRootExpression();
-            LOG.warn("Query exceeded predefined timeout (" + elapsed + "ms.): " + expr.pprint());
+            LOG.warn("Query exceeded predefined timeout (" + elapsed + "ms.): " + 
+                    ExpressionDumper.dump(expr));
             cleanUp();
             throw new TerminatedException.TimeoutException(expr.getASTNode(),
                     "The query exceeded the predefined timeout and has been killed.");
@@ -119,7 +121,8 @@ public class XQueryWatchDog {
         if(builder.getSize() > maxNodesLimit) {
             if(expr == null)
                 expr = context.getRootExpression();
-            LOG.warn("Query exceeded predefined limit for document fragments: " + expr.pprint());
+            LOG.warn("Query exceeded predefined limit for document fragments: " + 
+                    ExpressionDumper.dump(expr));
             cleanUp();
             throw new TerminatedException.SizeLimitException(expr.getASTNode(),
                     "The constructed document fragment exceeded the predefined size limit (current: " +

@@ -30,6 +30,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -274,8 +275,9 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 				LOG.debug(treeParser.getErrorMessage());
 				throw new EXistException(treeParser.getErrorMessage());
 			}
-			LOG.info("query: " + expr.pprint());
+			LOG.info("query: " + ExpressionDumper.dump(expr));
 			long start = System.currentTimeMillis();
+			expr.analyze(null, 0);
 			Sequence seq= expr.eval(null, null);
 
 			QueryResponseCollection[] collections = null;

@@ -26,6 +26,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.OrderedValueSequence;
@@ -58,6 +59,41 @@ public class ForExpr extends BindingExpression {
 		positionalVariable = var;
 	}
 	
+	/* (non-Javadoc)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
+     */
+    public void analyze(Expression parent, int flags, OrderSpec orderBy[]) throws XPathException {
+        // Save the local variable stack
+		LocalVariable mark = context.markLocalVariables();
+		
+		// Declare the iteration variable
+		context.declareVariable(new LocalVariable(QName.parse(context, varName, null)));
+		
+		// Declare positional variable
+		if(positionalVariable != null)
+			context.declareVariable(new LocalVariable(QName.parse(context, positionalVariable, null)));
+		
+		inputSequence.analyze(this, flags);
+		if(whereExpr != null)
+		    whereExpr.analyze(this, flags);
+		// the order by specs should be analyzed by the last binding expression
+		// in the chain to have access to all variables. So if the return expression
+		// is another binding expression, we just forward the order specs.
+		if(returnExpr instanceof BindingExpression) {
+		    ((BindingExpression)returnExpr).analyze(this, flags, orderBy);
+		} else {
+		    // analyze the order specs
+			if(orderBy != null) {
+			    for(int i = 0; i < orderBy.length; i++)
+			        orderBy[i].analyze(this, flags);
+			}
+			returnExpr.analyze(this, flags);
+		}
+		
+		// restore the local variable stack
+		context.popLocalVariables(mark);
+    }
+    
 	/**
 	 * This implementation tries to process the "where" clause in advance, i.e. in one single
 	 * step. This is possible if the input sequence is a node set and the where expression
@@ -200,34 +236,42 @@ public class ForExpr extends BindingExpression {
 		context.popLocalVariables(mark);
 		return resultSequence;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#pprint()
-	 */
-	public String pprint() {
-		StringBuffer buf = new StringBuffer();
-		buf.append("(for ");
-		buf.append(varName);
-		if(sequenceType != null) {
-			buf.append(" as ");
-			buf.append(sequenceType.toString());
-		}
-		buf.append(" in ");
-		buf.append(inputSequence.pprint());
-		if (whereExpr != null)
-			buf.append(" where ").append(whereExpr.pprint());
-		if (orderSpecs != null) {
-			buf.append(" order by ");
-			for(int i = 0; i < orderSpecs.length; i++) {
-				buf.append(orderSpecs[i].toString());
-			}
-		}
-		buf.append(" return ");
-		buf.append(returnExpr.pprint());
-		buf.append(')');
-		return buf.toString();
-	}
 
+	/* (non-Javadoc)
+     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        dumper.display("for ", getASTNode());
+        dumper.startIndent();
+        dumper.display("$").display(varName);
+        if(positionalVariable != null)
+            dumper.display(" at ").display(positionalVariable);
+        if(sequenceType != null)
+            dumper.display(" as ").display(sequenceType);
+        dumper.display(" in ");
+        inputSequence.dump(dumper);
+        dumper.endIndent().nl();
+        if(whereExpr != null) {
+            dumper.display("where", whereExpr.getASTNode());
+            dumper.startIndent();
+            whereExpr.dump(dumper);
+            dumper.endIndent().nl();
+        }
+        if(orderSpecs != null) {
+            dumper.display("order by ");
+            for(int i = 0; i < orderSpecs.length; i++) {
+                if(i > 0)
+                    dumper.display(", ");
+                dumper.display(orderSpecs[i]);
+            }
+            dumper.nl();
+        }
+        dumper.display("return", returnExpr.getASTNode());
+        dumper.startIndent();
+        returnExpr.dump(dumper);
+        dumper.endIndent().nl();
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */

@@ -661,7 +661,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			if (treeParser.foundErrors()) {
 				throw new SAXException(treeParser.getErrorMessage());
 			}
-
+			expr.analyze(null, 0);
 			Sequence seq = expr.eval(null, null);
 			return seq;
 		} catch (RecognitionException e) {

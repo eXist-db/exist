@@ -71,8 +71,8 @@ public class FunDeepEqual extends Function {
 				if (!Type.subTypeOf(a.getType(), Type.ATOMIC) || !Type.subTypeOf(b.getType(), Type.ATOMIC)) return false;
 				return a.atomize().compareTo(context.getDefaultCollator(), b.atomize()) == 0;
 			} else {
-				assert Type.subTypeOf(a.getType(), Type.NODE);
-				assert Type.subTypeOf(b.getType(), Type.NODE);
+//				assert Type.subTypeOf(a.getType(), Type.NODE);
+//				assert Type.subTypeOf(b.getType(), Type.NODE);
 				if (a.getType() != b.getType()) return false;
 				NodeValue nva = (NodeValue) a, nvb = (NodeValue) b;
 				if (nva.equals(nvb)) return true;		// shortcut!

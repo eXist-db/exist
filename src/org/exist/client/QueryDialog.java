@@ -34,6 +34,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.Properties;
@@ -61,7 +62,9 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.border.BevelBorder;
 import javax.xml.transform.OutputKeys;
 
+import org.exist.xmldb.CompiledExpression;
 import org.exist.xmldb.XPathQueryServiceImpl;
+import org.exist.xmldb.XQueryService;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.ResourceSet;
@@ -75,6 +78,7 @@ public class QueryDialog extends JFrame {
 	private Properties properties;
 	private ClientTextArea query;
 	private ClientTextArea resultDisplay;
+	private ClientTextArea exprDisplay;
 	private JComboBox collections= null;
 	private SpinnerNumberModel count;
 	private DefaultComboBoxModel history= new DefaultComboBoxModel();
@@ -160,10 +164,19 @@ public class QueryDialog extends JFrame {
         JLabel label = new JLabel("Results:");
         vbox.add(label, BorderLayout.NORTH);
         
+        JTabbedPane tabs = new JTabbedPane();
+        
 		resultDisplay= new ClientTextArea(false, "XML");
 		resultDisplay.setText("");
 		resultDisplay.setPreferredSize(new Dimension(400, 250));
-        vbox.add(resultDisplay, BorderLayout.CENTER);
+		tabs.add("XML", resultDisplay);
+		
+		exprDisplay = new ClientTextArea(false, "Dump");
+		exprDisplay.setText("");
+		exprDisplay.setPreferredSize(new Dimension(400, 250));
+		tabs.add("Trace", exprDisplay);
+		
+        vbox.add(tabs, BorderLayout.CENTER);
         
         Box statusbar = Box.createHorizontalBox();
         statusbar.setBorder(BorderFactory
@@ -366,10 +379,14 @@ public class QueryDialog extends JFrame {
 			progress.setIndeterminate(true);
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try {
-				XPathQueryServiceImpl service= (XPathQueryServiceImpl) collection
-				.getService("XPathQueryService", "1.0");
+				XQueryService service= (XQueryService) collection.getService("XQueryService", "1.0");
 				service.setProperty(OutputKeys.INDENT, properties.getProperty(OutputKeys.INDENT, "yes"));
-				ResourceSet result= service.query(xpath);
+				CompiledExpression compiled = service.compile(xpath);
+				ResourceSet result= service.execute(compiled);
+				
+				StringWriter writer = new StringWriter();
+				service.dump(compiled, writer);
+				exprDisplay.setText(writer.toString());
 				
 				statusMessage.setText("Retrieving results ...");
 				XMLResource resource;

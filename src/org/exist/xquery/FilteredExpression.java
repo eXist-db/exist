@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
@@ -54,6 +55,17 @@ public class FilteredExpression extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+        expression.analyze(this, flags);
+        for (Iterator i = predicates.iterator(); i.hasNext();) {
+			Predicate pred = (Predicate) i.next();
+			pred.analyze(this, flags);
+        }
+    }
+    
+	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem)
@@ -74,19 +86,17 @@ public class FilteredExpression extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#pprint()
-	 */
-	public String pprint() {
-		StringBuffer buf = new StringBuffer();
-		buf.append(expression.pprint());
-		for (Iterator i = predicates.iterator(); i.hasNext();) {
-			buf.append('[');
-			buf.append(((Expression) i.next()).pprint());
-			buf.append(']');
-		}
-		return buf.toString();
-	}
-
+     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        expression.dump(dumper);
+        for (Iterator i = predicates.iterator(); i.hasNext();) {
+            dumper.display('[');
+            ((Expression)i.next()).dump(dumper);
+            dumper.display(']');
+        }
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */

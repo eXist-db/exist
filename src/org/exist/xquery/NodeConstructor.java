@@ -59,11 +59,6 @@ public abstract class NodeConstructor extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#pprint()
-	 */
-	public abstract String pprint();
-
-	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */
 	public int returnsType() {

@@ -594,14 +594,12 @@ public class XQueryContext {
 	 * @throws XPathException
 	 */
 	public LocalVariable declareVariable(LocalVariable var) throws XPathException {
-//		variables.put(var.getQName(), var);
 		if(lastVar == null)
 			lastVar = var;
 		else {
 			lastVar.addAfter(var);
 			lastVar = var;
 		}
-//		var.setStackPosition(variableStack.size());
 		var.setStackPosition(variableStackSize);
 		return var;
 	}
@@ -998,7 +996,7 @@ public class XQueryContext {
 								+ astParser.getErrorMessage(),
 							astParser.getLastException());
 					}
-					
+					path.analyze(null, 0);
 					ExternalModule modExternal = astParser.getModule();
 					if(modExternal == null)
 						throw new XPathException("source at " + location + " is not a valid module");

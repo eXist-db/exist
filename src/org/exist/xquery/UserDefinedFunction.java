@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.exist.dom.QName;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
@@ -85,30 +86,37 @@ public class UserDefinedFunction extends Function {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.functions.Function#pprint()
-	 */
-	public String pprint() {
-		FunctionSignature signature = getSignature();
-		StringBuffer buf = new StringBuffer();
-		buf.append("declare function ");
-		buf.append(toString());
-		return buf.toString();
-	}
-	
-	public String toString() {
-		FunctionSignature signature = getSignature();
-		StringBuffer buf = new StringBuffer();
-		buf.append(signature.getName());
-		buf.append('(');
-		for(int i = 0; i < signature.getArgumentTypes().length; i++) {
+     * @see org.exist.xquery.Function#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        FunctionSignature signature = getSignature();
+        dumper.display("declare function ").display(signature.getName());
+        dumper.display('(');
+        for(int i = 0; i < signature.getArgumentTypes().length; i++) {
+			if(i > 0)
+				dumper.display(", ");
+			dumper.display(signature.getArgumentTypes()[i]);
+		}
+		dumper.display(')');
+    }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    public String toString() {
+        FunctionSignature signature = getSignature();
+        StringBuffer buf = new StringBuffer();
+        buf.append(signature.getName());
+        buf.append('(');
+        for(int i = 0; i < signature.getArgumentTypes().length; i++) {
 			if(i > 0)
 				buf.append(", ");
 			buf.append(signature.getArgumentTypes()[i]);
 		}
-		buf.append(')');
-		return buf.toString();
-	}
-	
+        buf.append(')');
+        return buf.toString();
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.functions.Function#getDependencies()
 	 */

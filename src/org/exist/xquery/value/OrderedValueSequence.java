@@ -26,6 +26,7 @@ import org.exist.dom.NodeSet;
 import org.exist.util.FastQSort;
 import org.exist.xquery.OrderSpec;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.util.ExpressionDumper;
 
 /**
  * A sequence that sorts its entries in the order specified by the order specs of
@@ -149,7 +150,8 @@ public class OrderedValueSequence extends AbstractSequence {
 					values[i] = seq.itemAt(0).atomize();
 				} else if(seq.getLength() > 1)
 					throw new XPathException("expected a single value for order expression " +
-						orderSpecs[i].getSortExpression().pprint() + " ; found: " + seq.getLength());
+						ExpressionDumper.dump(orderSpecs[i].getSortExpression()) + 
+						" ; found: " + seq.getLength());
 			}
 			execTime = execTime + (System.currentTimeMillis() - start);
 		}

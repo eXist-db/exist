@@ -33,8 +33,6 @@ public abstract class AbstractExpression implements Expression {
 	protected XQueryAST astNode = null;
 	
 	protected DocumentSet contextDocSet = null;
-
-	protected Expression parent = null;
 	
 	public AbstractExpression(XQueryContext context) {
 		this.context = context;
@@ -45,15 +43,22 @@ public abstract class AbstractExpression implements Expression {
 		return eval(contextSequence, null);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+	 */
 	public abstract Sequence eval(
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException;
 
-	public abstract String pprint();
-
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.Expression#returnsType()
+	 */
 	public abstract int returnsType();
 
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.Expression#resetState()
+	 */
 	public abstract void resetState();
 
 	/**
@@ -76,14 +81,6 @@ public abstract class AbstractExpression implements Expression {
 	 */
 	public int getDependencies() {
 		return Dependency.DEFAULT_DEPENDENCIES;
-	}
-
-	public void setParent(Expression parent) {
-		this.parent = parent;
-	}
-	
-	public Expression getParent() {
-		return parent;
 	}
 	
 	public void setPrimaryAxis(int axis) {

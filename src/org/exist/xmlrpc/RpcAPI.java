@@ -387,6 +387,19 @@ public interface RpcAPI {
 	Hashtable querySummary(User user, String xquery)
 		throws EXistException, PermissionDeniedException;
 
+	/**
+	 * Returns a diagnostic dump of the expression structure after
+	 * compiling the query. The query is read from the query cache
+	 * if it has already been run before.
+	 * 
+	 * @param user
+	 * @param query
+	 * @return
+	 * @throws EXistException
+	 */
+	public String printDiagnostics(User user, String query, Hashtable parameters) 
+	throws EXistException, PermissionDeniedException;
+	
 	String createResourceId(User user, String collection)
 		throws EXistException, PermissionDeniedException;
 	

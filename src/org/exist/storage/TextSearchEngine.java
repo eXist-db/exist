@@ -153,7 +153,7 @@ public abstract class TextSearchEngine extends Observable {
 	 * @param idx
 	 * @param text
 	 */
-	public abstract void storeText(IndexPaths idx, TextImpl text, boolean onetoken);
+	public abstract void storeText(FulltextIndexSpec idx, TextImpl text, boolean onetoken);
 	
 	/**
 	 * Tokenize and index the given attribute node.
@@ -161,7 +161,7 @@ public abstract class TextSearchEngine extends Observable {
 	 * @param idx
 	 * @param text
 	 */
-	public abstract void storeAttribute(IndexPaths idx, AttrImpl text);
+	public abstract void storeAttribute(FulltextIndexSpec idx, AttrImpl text);
 
 	public abstract void flush();
 	public abstract void close();

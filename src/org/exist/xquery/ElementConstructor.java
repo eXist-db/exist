@@ -22,10 +22,13 @@
 
 package org.exist.xquery;
 
+import java.util.Iterator;
+
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
@@ -92,6 +95,20 @@ public class ElementConstructor extends NodeConstructor {
 		}
 	}
 	
+	/* (non-Javadoc)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+        qnameExpr.analyze(this, flags);
+        if(attributes != null) {
+	        for(int i = 0; i < attributes.length; i++) {
+	            attributes[i].analyze(this, flags);
+	        }
+        }
+        if(content != null)
+            content.analyze(this, flags);
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
@@ -162,41 +179,34 @@ public class ElementConstructor extends NodeConstructor {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#pprint()
-	 */
-	public String pprint() {
-		if(isDynamic)
-			return pprintDynamic();
-		StringBuffer buf = new StringBuffer();
-		buf.append('<').append(qnameExpr.pprint());
-		if(attributes != null) {
+     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        dumper.display("element { ");
+        qnameExpr.dump(dumper);
+        dumper.display(" } {");
+        dumper.startIndent();
+        if(attributes != null) {
 			AttributeConstructor attr;
 			for(int i = 0; i < attributes.length; i++) {
+			    if(i > 0)
+			        dumper.nl();
 				attr = (AttributeConstructor)attributes[i];
-				buf.append(' ').append(attr.pprint());
+				attr.dump(dumper);
 			}
 		}
-		if(content == null)
-			buf.append("/>");
-		else {
-			buf.append('>');
-			buf.append(content.pprint());
-			buf.append("</").append(qnameExpr.pprint()).append('>');
-		}
-		return buf.toString();
-	}
-	
-	public String pprintDynamic() {
-		StringBuffer buf = new StringBuffer();
-		buf.append("element { ");
-		buf.append(qnameExpr.pprint());
-		buf.append(" } { ");
-		if(content != null)
-			buf.append(content.pprint());
-		buf.append(" }");
-		return buf.toString();
-	}
-	
+        if(content != null) {
+            for(Iterator i = content.steps.iterator(); i.hasNext(); ) {
+                Expression expr = (Expression) i.next();
+                expr.dump(dumper);
+                if(i.hasNext())
+                    dumper.nl();
+            }
+        }
+        dumper.endIndent().nl();
+        dumper.display("}");
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#setPrimaryAxis(int)
 	 */

@@ -349,6 +349,4 @@ public interface NodeSet extends Sequence, NodeList {
 	public boolean hasChanged(int previousState);
 	
 	public int getState();
-	
-	public String pprint();
 }

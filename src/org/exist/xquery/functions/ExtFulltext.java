@@ -40,6 +40,7 @@ import org.exist.xquery.Module;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -100,6 +101,14 @@ public class ExtFulltext extends Function {
 		return terms.length;
 	}
 
+	/* (non-Javadoc)
+     * @see org.exist.xquery.Function#analyze(org.exist.xquery.Expression)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+        path.analyze(this, flags);
+        searchTerm.analyze(this, flags);
+    }
+    
 	public Sequence eval(
 		Sequence contextSequence,
 		Item contextItem)
@@ -178,15 +187,15 @@ public class ExtFulltext extends Function {
 		return hits;
 	}
 
-	public String pprint() {
-		StringBuffer buf = new StringBuffer();
-		buf.append(path.pprint());
-		buf.append(" &= \"");
-		buf.append(searchTerm.pprint());
-		buf.append("\")");
-		return buf.toString();
-	}
-
+	/* (non-Javadoc)
+     * @see org.exist.xquery.Function#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        path.dump(dumper);
+        dumper.display(" &= ");
+        searchTerm.dump(dumper);
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.functions.Function#getDependencies()
 	 */

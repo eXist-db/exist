@@ -24,6 +24,7 @@ package org.exist.xquery;
 
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.DocumentBuilderReceiver;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -94,15 +95,19 @@ public class EnclosedExpr extends PathExpr {
 		    LOG.warn("SAXException during serialization: " + e.getMessage(), e);
 			throw new XPathException(getASTNode(),
 				"Encountered SAX exception while serializing enclosed expression: "
-					+ pprint());
+					+ ExpressionDumper.dump(this));
 		}
 		return result;
 	}
-
+	
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.PathExpr#pprint()
-	 */
-	public String pprint() {
-		return '{' + super.pprint() + '}';
-	}
+     * @see org.exist.xquery.PathExpr#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        dumper.display("{ ");
+        dumper.startIndent();
+        super.dump(dumper);
+        dumper.endIndent();
+        dumper.nl().display("}");
+    }
 }

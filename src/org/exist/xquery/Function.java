@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.exist.dom.QName;
 import org.exist.xquery.parser.XQueryAST;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -217,15 +218,16 @@ public abstract class Function extends PathExpr {
 			if (!cardinalityMatches) {
 				if(expr.getCardinality() == Cardinality.ZERO
 				&& (type.getCardinality() & Cardinality.ZERO) == 0)
-				    throw new XPathException(astNode, "Argument " + expr.pprint() + " is empty. An " +
-						"empty argument is not allowed here.");
+				    throw new XPathException(astNode, "Argument " + 
+				            ExpressionDumper.dump(expr) + " is empty. An " +
+				    "empty argument is not allowed here.");
 			}
 		}
 		expr =
 			new DynamicCardinalityCheck(
 				context,
 				type.getCardinality(),
-				expr);
+				expr, getASTNode());
 
 		// check return type if both types are not Type.ITEM
 		int returnType = expr.returnsType();
@@ -270,7 +272,8 @@ public abstract class Function extends PathExpr {
 			if ((!Type.subTypeOf(type.getPrimaryType(), returnType)) && returnType != Type.ITEM)
 				throw new XPathException(
 					astNode,
-					"Supplied argument " + expr.pprint() + " doesn't match required type: required: "
+					"Supplied argument " + ExpressionDumper.dump(expr) + 
+					" doesn't match required type: required: "
 						+ type.toString()
 						+ "; got: "
 						+ Type.getTypeName(returnType)
@@ -281,6 +284,14 @@ public abstract class Function extends PathExpr {
 		return expr;
 	}
 
+	/* (non-Javadoc)
+     * @see org.exist.xquery.PathExpr#analyze(org.exist.xquery.Expression)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+        for(int i = 0; i < getArgumentCount(); i++)
+            getArgument(i).analyze(this, flags);
+    }
+    
 	public abstract Sequence eval(
 		Sequence contextSequence,
 		Item contextItem)
@@ -345,21 +356,22 @@ public abstract class Function extends PathExpr {
 	public int getDependencies() {
 		return Dependency.CONTEXT_ITEM | Dependency.CONTEXT_SET;
 	}
-
-	public String pprint() {
-		StringBuffer buf = new StringBuffer();
-		buf.append(getName());
-		buf.append('(');
-		for (Iterator i = steps.iterator(); i.hasNext();) {
-			Expression e = (Expression) i.next();
-			buf.append(e.pprint());
-			buf.append(',');
-		}
-		buf.deleteCharAt(buf.length() - 1);
-		buf.append(')');
-		return buf.toString();
-	}
 	
+	/* (non-Javadoc)
+     * @see org.exist.xquery.PathExpr#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        dumper.display(getName());
+        dumper.display('(');
+        for (Iterator i = steps.iterator(); i.hasNext();) {
+			Expression e = (Expression) i.next();
+			e.dump(dumper);
+			if(i.hasNext())
+			    dumper.display(", ");
+        }
+        dumper.display(')');
+    }
+    
 	public void setASTNode(XQueryAST ast) {
 		this.astNode = ast;
 	}

@@ -44,7 +44,13 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class Predicate extends PathExpr {
 
-	protected CachedResult cached = null;
+    private final static int NODE = 0;
+    private final static int BOOLEAN = 1;
+    private final static int POSITIONAL = 2;
+    
+	private CachedResult cached = null;
+	
+	private int executionMode = BOOLEAN;
 	
 	public Predicate(XQueryContext context) {
 		super(context);
@@ -56,42 +62,56 @@ public class Predicate extends PathExpr {
 	public int getDependencies() {
 		if(getLength() == 1) {
             getExpression(0).setInPredicate(true);
-			//if(Type.subTypeOf(getExpression(0).returnsType(), Type.NODE)) {
 				return getExpression(0).getDependencies();
-			//} else {
-			//	return Dependency.CONTEXT_ITEM + Dependency.CONTEXT_SET;
-            //}
 		} else {
 			return super.getDependencies();
         }
 	}
 	
+	/* (non-Javadoc)
+     * @see org.exist.xquery.PathExpr#analyze(org.exist.xquery.Expression)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+        setInPredicate(true);
+        Expression inner = getExpression(0);
+        if(inner == null)
+            return;
+        int type = inner.returnsType();
+        // Case 1: predicate expression returns a node set. Check the returned node set
+		// against the context set and return all nodes from the context, for which the
+		// predicate expression returns a non-empty sequence.
+		if (Type.subTypeOf(type, Type.NODE)) {
+			if((inner.getDependencies() & Dependency.CONTEXT_ITEM) == 0)
+			    executionMode = NODE;
+			else
+			    executionMode = BOOLEAN;
+		// Case 2: predicate expression returns a number.
+		} else if (Type.subTypeOf(type, Type.NUMBER)) {
+		    executionMode = POSITIONAL;
+		// Case 3: predicate expression evaluates to a boolean.
+		} else
+		    executionMode = BOOLEAN;
+		if(executionMode == BOOLEAN)
+		    flags |= SINGLE_STEP_EXECUTION;
+		super.analyze(parent, flags);
+    }
+    
 	public Sequence evalPredicate(
 		Sequence outerSequence,
 		Sequence contextSequence,
 		int mode)
 		throws XPathException {
-		setInPredicate(true);
-		//long start = System.currentTimeMillis();
 		Expression inner = getExpression(0);
 		if (inner == null)
 			return Sequence.EMPTY_SEQUENCE;
-		int type = inner.returnsType();
-		
-		// Case 1: predicate expression returns a node set. Check the returned node set
-		// against the context set and return all nodes from the context, for which the
-		// predicate expression returns a non-empty sequence.
-		if (Type.subTypeOf(type, Type.NODE)) {
-			if((inner.getDependencies() & Dependency.CONTEXT_ITEM) == 0)
-				return selectByNodeSet(contextSequence);
-			else
-				return evalBoolean(contextSequence, inner);
-		// Case 2: predicate expression returns a number.
-		} else if (Type.subTypeOf(type, Type.NUMBER)) {
-			return selectByPosition(outerSequence, contextSequence, mode, inner);
-		// Case 3: predicate expression evaluates to a boolean.
-		} else
-			return evalBoolean(contextSequence, inner);
+		switch(executionMode) {
+			case NODE:
+			    return selectByNodeSet(contextSequence);
+			case POSITIONAL:
+			    return selectByPosition(outerSequence, contextSequence, mode, inner);
+			default:
+			    return evalBoolean(contextSequence, inner);
+		}
 	}
 
 	/**

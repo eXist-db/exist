@@ -828,6 +828,19 @@ public class RpcServer implements RpcAPI {
         }
     }
 
+    public String printDiagnostics(User user, String query, Hashtable parameters) 
+    throws PermissionDeniedException, EXistException {
+        RpcConnection con = pool.get();
+        try {
+            return con.printDiagnostics(user, query, parameters);
+        } catch (Exception e) {
+            handleException(e);
+            return null;
+        } finally {
+            pool.release(con);
+        }
+    }
+    
     public boolean releaseQueryResult(User user, int handle) {
         RpcConnection con = pool.get();
         try {

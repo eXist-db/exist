@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
@@ -52,6 +53,15 @@ public abstract class Step extends AbstractExpression {
         predicates.add( expr );
     }
 
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+        for ( Iterator i = predicates.iterator(); i.hasNext();  ) {
+            ((Predicate) i.next()).analyze(this, flags);
+        }
+    }
+    
     public abstract Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException;
 
     public int getAxis() {
@@ -64,26 +74,26 @@ public abstract class Step extends AbstractExpression {
 	public void setPrimaryAxis(int axis) {
 		this.axis = axis;
 	}
-	
-    public String pprint() {
-        StringBuffer buf = new StringBuffer();
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
         if ( axis > -1 )
-            buf.append( Constants.AXISSPECIFIERS[axis] );
-        buf.append( "::" );
+            dumper.display( Constants.AXISSPECIFIERS[axis] );
+        dumper.display( "::" );
         if ( test != null )
-            buf.append( test.toString() );
+            dumper.display( test.toString() );
         else
-            buf.append( "*" );
+            dumper.display( "node()" );
         if ( predicates.size() > 0 )
             for ( Iterator i = predicates.iterator(); i.hasNext();  ) {
-                buf.append( '[' );
-                buf.append( ( (Predicate) i.next() ).pprint() );
-                buf.append( ']' );
+                dumper.display( '[' );
+                ( (Predicate) i.next() ).dump(dumper);
+                dumper.display( ']' );
             }
-
-        return buf.toString();
     }
-
+    
     public int returnsType() {
         return Type.NODE;
     }
