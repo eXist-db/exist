@@ -50,7 +50,7 @@ public class CollectionName extends BasicFunction {
 			new QName("collection-name", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns the name of the collection to which the passed node belongs.",
 			new SequenceType[] {
-					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
+					new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE)
 			},
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
 	
@@ -63,6 +63,8 @@ public class CollectionName extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
+	    if(args[0].getLength() == 0)
+	        return Sequence.EMPTY_SEQUENCE;
 		Item item = args[0].itemAt(0);
 		if(item.getType() == Type.JAVA_OBJECT) {
 			Object o = ((JavaObjectValue) item).getObject();
