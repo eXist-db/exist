@@ -150,8 +150,8 @@ public final class NodeIterator implements Iterator {
 					}
 					//	overflow page? load the overflow value
 					if(l == DOMFile.OVERFLOW) {
-					    LOG.warn("unexpected overflow page at " + p.getPageNum() + "; tid = " + 
-					            ItemId.getId(lastTID) + "; offset = " + offset + "; skipped = " + skipped);
+//					    LOG.warn("unexpected overflow page at " + p.getPageNum() + "; tid = " + 
+//					            ItemId.getId(lastTID) + "; offset = " + offset + "; skipped = " + skipped);
 						l = 8;
 						final long overflow = ByteConversion.byteToLong(p.data, offset);
 						offset += 8;
