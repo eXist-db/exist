@@ -69,8 +69,8 @@ public class ResourceSetImpl implements ResourceSet {
             String doc = (String) v.elementAt( 0 );
             String s_id = (String) v.elementAt( 1 );
 			String path = doc.substring(0, doc.lastIndexOf('/'));
-			CollectionImpl parent = path.equals(collection.getPath()) ?
-				collection : new CollectionImpl(rpcClient, null, path);
+			CollectionImpl parent = 
+				new CollectionImpl(collection.getClient(), null, path);
 			
             XMLResource res =
                 new XMLResourceImpl( parent, handle,
