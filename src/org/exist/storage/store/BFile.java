@@ -35,7 +35,6 @@ import org.dbxml.core.filer.BTree;
 import org.dbxml.core.filer.BTreeCallback;
 import org.dbxml.core.filer.BTreeException;
 import org.dbxml.core.indexer.IndexQuery;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
 import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
@@ -103,8 +102,8 @@ public class BFile extends BTree {
 
     public int fixedKeyLen = -1;
 
-    public BFile(BrokerPool pool, File file, int btreeBuffers, int dataBuffers) {
-        super(pool, file, btreeBuffers);
+    public BFile(File file, int btreeBuffers, int dataBuffers) {
+        super(file, btreeBuffers);
         fileHeader = (BFileHeader) getFileHeader();
         dataCache = new LRUCache(dataBuffers);
         dataCache.setFileName(getFile().getName());

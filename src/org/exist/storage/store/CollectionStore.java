@@ -7,8 +7,6 @@ package org.exist.storage.store;
 
 import java.io.File;
 
-import org.exist.storage.BrokerPool;
-
 public class CollectionStore extends BFile {
 
 	/**
@@ -16,8 +14,8 @@ public class CollectionStore extends BFile {
 	 * @param btreeBuffers
 	 * @param dataBuffers
 	 */
-	public CollectionStore(BrokerPool pool, File file, int btreeBuffers, int dataBuffers) {
-		super(pool, file, btreeBuffers, dataBuffers);
+	public CollectionStore(File file, int btreeBuffers, int dataBuffers) {
+		super(file, btreeBuffers, dataBuffers);
 	}
 	
 	
