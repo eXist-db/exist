@@ -201,15 +201,15 @@ public class XPathQueryTest extends TestCase {
 					"not(/test/abcd)");
 			assertEquals(1, result.getSize());
 			Resource r = result.getResource(0);
-			assertEquals("false", r.getContent().toString());
+			assertEquals("true", r.getContent().toString());
 			
 			result =
 				service.queryResource(
 					"strings.xml",
 					"/test/string[not(@id)]");
-			assertEquals(1, result.getSize());
+			assertEquals(3, result.getSize());
 			r = result.getResource(0);
-			assertEquals("false", r.getContent().toString());
+			assertEquals("<string>Hello World!</string>", r.getContent().toString());
 		} catch (XMLDBException e) {
 			System.out.println("testStrings(): XMLDBException: "+e);
 			fail(e.getMessage());

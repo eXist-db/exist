@@ -47,6 +47,7 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(FunCurrentDateTime.signature, FunCurrentDateTime.class),
 		new FunctionDef(FunCurrentTime.signature, FunCurrentTime.class),
 		new FunctionDef(FunData.signature, FunData.class),
+		new FunctionDef(FunDeepEqual.signature, FunDeepEqual.class),
 		new FunctionDef(FunDistinctValues.signature, FunDistinctValues.class),
 		new FunctionDef(FunDoc.signature, FunDoc.class),
 		new FunctionDef(FunDocumentURI.signature, FunDocumentURI.class),
