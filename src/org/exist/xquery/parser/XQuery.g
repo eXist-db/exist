@@ -741,6 +741,8 @@ constructor throws XPathException
 	xmlComment 
 	| 
 	xmlPI
+	|
+	cdataSection
 	;
 
 computedConstructor throws XPathException
@@ -990,6 +992,8 @@ xmlComment : XML_COMMENT XML_COMMENT_END! ;
 
 xmlPI : XML_PI XML_PI_END! ;
 
+cdataSection : XML_CDATA XML_CDATA_END! ;
+
 enclosedExpr throws XPathException
 :
 	LCURLY^
@@ -1222,6 +1226,8 @@ protected RCURLY : '}' ;
 protected XML_COMMENT_END : "-->" ;
 protected XML_PI_START : "<?" ;
 protected XML_PI_END : "?>" ;
+protected XML_CDATA_START : "<![CDATA[";
+protected XML_CDATA_END : "]]>";
 
 protected LETTER
 :
@@ -1392,6 +1398,13 @@ options {
 	XML_PI_START! NCNAME ' ' ( ~ ( '?' ) | ( '?' ~ ( '>' ) ) => '?' )+
 	;
 
+protected XML_CDATA
+options {
+	testLiterals=false;
+}:
+	XML_CDATA_START!  ( ~( ']' ) )+
+	;
+	
 /**
  * Main method that decides which token to return next.
  * We need this as many things depend on the current
@@ -1406,6 +1419,8 @@ options {
 	|
 	( XML_PI_START )
 	=> XML_PI { $setType(XML_PI); }
+	|
+	XML_CDATA { $setType(XML_CDATA); $setText("CDATA"); }
 	|
 	END_TAG_START
 	{
@@ -1537,6 +1552,8 @@ options {
 	GTEQ { $setType(GTEQ); }
 	|
 	XML_PI_END { $setType(XML_PI_END); }
+	|
+	XML_CDATA_END { $setType(XML_CDATA_END); }
 	;
 
 protected CHAR
