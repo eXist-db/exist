@@ -43,19 +43,29 @@ public class RemoteIndexQueryService implements IndexQueryService {
 	}
 
 	
-    /* (non-Javadoc)
-     * @see org.exist.xmldb.IndexQueryService#reindexCollection()
-     */
+    /** @see org.exist.xmldb.IndexQueryService#reindexCollection() */
     public void reindexCollection() throws XMLDBException {
-        throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED);
+    	reindexCollection( parent.getPath() );
     }
     
     
-    /* (non-Javadoc)
-     * @see org.exist.xmldb.IndexQueryService#reindexCollection(java.lang.String)
-     */
+    /** @see org.exist.xmldb.IndexQueryService#reindexCollection(java.lang.String) */
     public void reindexCollection(String collectionPath) throws XMLDBException {
-        throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED);
+        String path = (collectionPath.startsWith("/db") ? collectionPath : 
+    		parent.getPath() + '/' + collectionPath);
+		Vector params = new Vector();
+		params.addElement(path);
+		try {
+			Vector result = (Vector) rpcClient.execute("reindexCollection", params);
+		} catch (XmlRpcException e) {
+			throw new XMLDBException(
+					ErrorCodes.UNKNOWN_ERROR,
+					"xmlrpc error while doing reindexCollection: ", e);
+		} catch (IOException e) {
+			throw new XMLDBException(
+					ErrorCodes.UNKNOWN_ERROR,
+					"xmlrpc error while doing reindexCollection: ", e);
+		}
     }
     
 	/* (non-Javadoc)
