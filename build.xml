@@ -558,7 +558,7 @@
             <fileset dir="webapp">
                 <exclude name="**/*~"/>
                 <exclude name="WEB-INF/web.xml"/>
-                <exclude name="WEB-INF/data/*"/>
+            	<exclude name="WEB-INF/data/*.dbx"/>
                 <exclude name="**/*.log"/>
             </fileset>
             <fileset dir=".">
