@@ -2119,7 +2119,6 @@ public class InteractiveClient {
                             + getExceptionMessage(e));
                     e.getCause().printStackTrace();
                 }
-                System.exit(1);
                 
             } else {
                 
