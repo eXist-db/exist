@@ -276,7 +276,7 @@ public class BrokerPool {
 		if (syncPeriod > 0)
 			syncDaemon.executePeriodically(1000, new Sync(this, syncPeriod), false);
 		conf = config;
-		xqueryCache = new XQueryPool();
+		xqueryCache = new XQueryPool(conf);
 		monitor = new XQueryMonitor();
 		collectionsCache = new CollectionCache(this, COLLECTION_BUFFER_SIZE);
 		xmlReaderPool = new XMLReaderPool(new XMLReaderObjectFactory(this), 5, 0);

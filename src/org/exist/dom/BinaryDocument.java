@@ -43,8 +43,6 @@ import org.exist.storage.io.VariableByteOutputStream;
  * @author wolf
  */
 public class BinaryDocument extends DocumentImpl {
-
-	public final static byte DATA = -1;
 	
 	private long pageNr = -1;
 	
