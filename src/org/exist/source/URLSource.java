@@ -41,10 +41,17 @@ public class URLSource extends AbstractSource {
 	private URLConnection connection = null;
 	private long lastModified = 0;
 	
+	protected URLSource() {   
+    }
+    
 	public URLSource(URL url) {
 		this.url = url;
 	}
 	
+    protected void setURL(URL url) {
+        this.url = url;
+    }
+    
 	private long getLastModification() {
 		try {
 			if(connection == null)

@@ -49,8 +49,10 @@ import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.source.ClassLoaderSource;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
+import org.exist.source.SourceFactory;
 import org.exist.source.URLSource;
 import org.exist.storage.DBBroker;
 import org.exist.util.Collations;
@@ -1084,25 +1086,17 @@ public class XQueryContext {
 				location = location.substring("java:".length());
 				module = loadBuiltInModule(namespaceURI, location);
 			} else {
-				Source source = null;
-				if(location.indexOf(':') < 0) {
-					File f = new File(moduleLoadPath + File.separatorChar + location);
-					if(!f.canRead()) {
-						f = new File(location);
-						if(!f.canRead())
-							throw new XPathException("cannot read module source from file at " + f.getAbsolutePath());
-					}
-					location = f.toURI().toASCIIString();
-					source = new FileSource(f, "UTF-8");
-				} else {
-					URL url;
-					try {
-						url = new URL(location);
-					} catch (MalformedURLException e1) {
-						throw new XPathException("source location for module " + namespaceURI + " should be a valid URL");
-					}
-					source = new URLSource(url);
-				}
+				Source source;
+                try {
+                    source = SourceFactory.getSource(moduleLoadPath, location);
+                } catch (MalformedURLException e) {
+                    throw new XPathException("source location for module " + namespaceURI + " should be a valid URL: " +
+                            e.getMessage());
+                } catch (IOException e) {
+                    throw new XPathException("source for module " + namespaceURI + " not found: " +
+                            e.getMessage());
+                }
+                
 				LOG.debug("Loading module from " + location);
 				Reader reader;
 				try {
