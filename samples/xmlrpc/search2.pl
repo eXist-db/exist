@@ -24,7 +24,7 @@ $options = RPC::XML::struct->new(
     'encoding' => 'UTF-8',
     'highlight-matches' => 'none');
 
-$req = RPC::XML::request->new("query", $query, 20, 1, $options);
+$req = RPC::XML::request->new("query", RPC::XML::base64->new($query), 20, 1, $options);
 
 $response = $client->send_request($req);
 if($response->is_fault) {
