@@ -19,6 +19,7 @@ public interface SchemaAccess {
 	XMLType getType(QName qname) throws XMLDBException;
 
 	ElementDecl getElement(QName qname) throws XMLDBException;
+	//void getElement(String xpath) throws XMLDBException;
 
 	AttributeDecl getAttribute(QName qname) throws XMLDBException;
 	/**
