@@ -78,8 +78,16 @@ public class FunNot extends Function {
 		// subtract the set from the context node set and return
 		// the remaining set
 		if (Type.subTypeOf(arg.returnsType(), Type.NODE) &&
-			(arg.getDependencies() & Dependency.CONTEXT_ITEM) == 0 &&
-			contextSequence.getLength() > 0) {
+			(arg.getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
+			if (contextSequence.getLength() == 0) {
+				// special treatment if the context sequence is empty:
+				// within a predicate, we just return the empty sequence
+				// otherwise evaluate the argument and return a boolean result
+				if (inPredicate)
+					return Sequence.EMPTY_SEQUENCE;
+				else
+					return evalBoolean(contextSequence, contextItem, arg);
+			}
 			NodeSet result = new ExtArrayNodeSet();
 			if(contextSequence.getLength() > 0)
 				result.addAll(contextSequence);
@@ -98,10 +106,21 @@ public class FunNot extends Function {
 			
 		// case 2: simply invert the boolean value
 		} else {
-			Sequence seq =
-				arg.eval(contextSequence, contextItem);
-			return seq.effectiveBooleanValue() ? BooleanValue.FALSE : BooleanValue.TRUE;
+			return evalBoolean(contextSequence, contextItem, arg);
 		}
+	}
+
+	/**
+	 * @param contextSequence
+	 * @param contextItem
+	 * @param arg
+	 * @return
+	 * @throws XPathException
+	 */
+	private Sequence evalBoolean(Sequence contextSequence, Item contextItem, Expression arg) throws XPathException {
+		Sequence seq =
+			arg.eval(contextSequence, contextItem);
+		return seq.effectiveBooleanValue() ? BooleanValue.FALSE : BooleanValue.TRUE;
 	}
 
 	public String pprint() {

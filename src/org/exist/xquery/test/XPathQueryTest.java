@@ -122,36 +122,19 @@ public class XPathQueryTest extends TestCase {
 			XPathQueryService service = 
 				storeXMLStringAndGetQueryService("numbers.xml", numbers);
 			
-			ResourceSet result =
-				service.queryResource("numbers.xml", "sum(/test/item/price)");
-			assertEquals( 1, result.getSize() );
+			ResourceSet result = queryResource(service, "numbers.xml", "sum(/test/item/price)", 1);
 			assertEquals( "96.94", result.getResource(0).getContent() );
 
-			result =
-				service.queryResource(
-					"numbers.xml",
-					"round(sum(/test/item/price))");
-			assertEquals( 1, result.getSize() );
+			result = queryResource(service, "numbers.xml", "round(sum(/test/item/price))", 1);
 			assertEquals( "97.0", result.getResource(0).getContent() );
 
-			result =
-				service.queryResource(
-					"numbers.xml",
-					"floor(sum(/test/item/stock))");
-			assertEquals( 1, result.getSize() );
+			result = queryResource(service, "numbers.xml", "floor(sum(/test/item/stock))", 1);
 			assertEquals( "86.0", result.getResource(0).getContent());
 
-			result =
-				service.queryResource(
-					"numbers.xml",
-					"/test/item[round(price + 3) > 60]");
-			assertEquals( 1, result.getSize() );
+			queryResource(service, "numbers.xml", "/test/item[round(price + 3) > 60]", 1);
 
-			result =
-				service.queryResource(
-					"numbers.xml",
-					"min( 123456789123456789123456789, " +
-					          "123456789123456789123456789123456789123456789 )");
+			result = queryResource(service, "numbers.xml", "min( 123456789123456789123456789, " +
+					          "123456789123456789123456789123456789123456789 )", 1);
 			assertEquals("minimum of big integers",
 					"123456789123456789123456789", 
 					result.getResource(0).getContent() );
@@ -165,18 +148,13 @@ public class XPathQueryTest extends TestCase {
 			XPathQueryService service = 
 				storeXMLStringAndGetQueryService("strings.xml", strings);
 			
-			ResourceSet result =
-				service.queryResource(
-					"strings.xml",
-					"substring(/test/string[1], 1, 5)");
-			assertEquals(1, result.getSize());
+			ResourceSet result = queryResource(service, "strings.xml", "substring(/test/string[1], 1, 5)", 1);
 			assertEquals( "Hello", result.getResource(0).getContent() );
 
-			result =
-				service.queryResource(
-					"strings.xml",
-					"/test/string[starts-with(string(.), 'Hello')]");
-			assertEquals(2, result.getSize());
+			queryResource(service, "strings.xml", "/test/string[starts-with(string(.), 'Hello')]", 2);
+			
+			queryResource(service, "strings.xml", "sum(/test/item/price)", 0,
+					"Query should return an empty set (wrong document)");
 		} catch (XMLDBException e) {
 			System.out.println("testStrings(): XMLDBException: "+e);
 			fail(e.getMessage());
@@ -188,46 +166,50 @@ public class XPathQueryTest extends TestCase {
 			XPathQueryService service = 
 				storeXMLStringAndGetQueryService("strings.xml", strings);
 			
-			ResourceSet result =
-				service.queryResource(
-					"strings.xml",
-					"/test/string[not(@value)]");
-			assertEquals(2, result.getSize());
+			queryResource(service, "strings.xml", "/test/string[not(@value)]", 2);
 
-			result =
-				service.queryResource(
-					"strings.xml",
-					"not(/test/abcd)");
-			assertEquals(1, result.getSize());
+			ResourceSet result = queryResource(service, "strings.xml",	"not(/test/abcd)", 1);
 			Resource r = result.getResource(0);
 			assertEquals("true", r.getContent().toString());
 			
-			result =
-				service.queryResource(
-					"strings.xml",
-					"/test/string[not(@id)]");
-			assertEquals(3, result.getSize());
+			result = queryResource(service, "strings.xml",	"not(/test)", 1);
+			r = result.getResource(0);
+			assertEquals("false", r.getContent().toString());
+			
+			result = queryResource(service, "strings.xml", "/test/string[not(@id)]", 3);
 			r = result.getResource(0);
 			assertEquals("<string>Hello World!</string>", r.getContent().toString());
 			
-			result =
-				service.queryResource(
-					"strings.xml",
-					"sum(/test/item/price)");
-			assertEquals("Query should return an empty set (wrong document)", 0, result.getSize());
-			
-//			result =
-//				service.queryResource(
-//					"strings.xml",
-//					"document()/blah[not(blah)]");
-//			assertEquals(0, result.getSize());
-			
+			// test with non-existing items
+			queryResource(	service, "strings.xml", "document()/blah[not(blah)]", 0);
+			queryResource(service, "strings.xml", "//*[string][not(@value)]", 1);
+			queryResource(service, "strings.xml", "//*[string][not(@blah)]", 1);
+			queryResource(service, "strings.xml", "//*[blah][not(@blah)]", 0);
 		} catch (XMLDBException e) {
 			System.out.println("testStrings(): XMLDBException: "+e);
 			fail(e.getMessage());
 		}
 	}
 	
+	private ResourceSet queryResource(XPathQueryService service, String resource, String query, 
+		int expected) throws XMLDBException {
+		return queryResource(service, resource, query, expected, null);
+	}
+	
+	/**
+	 * @param service
+	 * @throws XMLDBException
+	 */
+	private ResourceSet queryResource(XPathQueryService service, String resource, String query, 
+		int expected, String message) throws XMLDBException {
+		ResourceSet result = service.queryResource(resource, query);
+		if(message == null)
+			assertEquals(expected, result.getSize());
+		else
+			assertEquals(message, expected, result.getSize());
+		return result;
+	}
+
 	/**
 	 * @return
 	 * @throws XMLDBException
