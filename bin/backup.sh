@@ -41,7 +41,7 @@ SAXFACTORY=org.apache.xerces.jaxp.SAXParserFactoryImpl
 
 # set java options
 if [ -z "$JAVA_OPTIONS" ]; then
-    export JAVA_OPTIONS="-Xms32000k -Xmx256000k -Djavax.xml.parsers.SAXParserFactory=$SAXFACTORY -Dfile.encoding=UTF-8"
+    export JAVA_OPTIONS="-Xms32000k -Xmx256000k -Djavax.xml.parsers.SAXParserFactory=$SAXFACTORY -Dfile.encoding=UTF-8 -Dexist.start.debug=true"
 fi
 
 $JAVA_HOME/bin/java $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" backup $*
