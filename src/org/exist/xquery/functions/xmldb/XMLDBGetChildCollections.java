@@ -17,38 +17,35 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * 
+ * $Id$
  *  
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.exist.collections.Collection;
-import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.DateTimeValue;
-import org.exist.xquery.value.ValueSequence;
 import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.XMLDBException;
 
-import java.util.Iterator;
 
 
-
-public class XMLDBGetChildCollections extends BasicFunction {
+public class XMLDBGetChildCollections extends XMLDBAbstractCollectionManipulator {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-child-collections", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns the subcolls of collection",
 			new SequenceType[] {
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
 			},
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
 	
@@ -56,29 +53,17 @@ public class XMLDBGetChildCollections extends BasicFunction {
 		super(context, signature);
 	}
 	
-/* (non-Javadoc)
- * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
- *
- */
-	
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
+	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		String collectionURI = args[0].getStringValue();
-		Collection collection = null;
-		collection = context.getBroker().getCollection(collectionURI);
-	
-		ValueSequence r = new ValueSequence();	
-		String child;
-		if (collection == null) {
-			throw new XPathException(getASTNode(), "Collection " + collectionURI + " does not exist");
+		ValueSequence result = new ValueSequence();
+		try {
+			String[] collections = collection.listChildCollections();
+			for(int i = 0; i < collections.length; i++) {
+				result.add(new StringValue(collections[i]));
+			}
+			return result;
+		} catch (XMLDBException e) {
+			throw new XPathException(getASTNode(), "Failed to retrieve child collections", e);
 		}
-		for (Iterator i = collection.collectionIterator(); i.hasNext(); ) 
-		{
-			child = (String) i.next();
-			r.add(new StringValue(child));
-		}
-
-		return r;
 	}
-
 }

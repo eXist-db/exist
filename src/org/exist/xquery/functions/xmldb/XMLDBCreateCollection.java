@@ -23,7 +23,6 @@
 package org.exist.xquery.functions.xmldb;
 
 import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
@@ -39,7 +38,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 /**
  * @author wolf
  */
-public class XMLDBCreateCollection extends BasicFunction {
+public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("create-collection", XMLDBModule.NAMESPACE_URI,
@@ -48,7 +47,7 @@ public class XMLDBCreateCollection extends BasicFunction {
 					+ "first argument. The second argument specifies the name of the new "
 					+ "collection.",
 			new SequenceType[]{
-					new SequenceType(Type.JAVA_OBJECT, Cardinality.EXACTLY_ONE),
+					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
 			new SequenceType(Type.JAVA_OBJECT, Cardinality.ZERO_OR_ONE));
 
@@ -66,14 +65,9 @@ public class XMLDBCreateCollection extends BasicFunction {
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet,
 	 *         org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(Sequence args[], Sequence contextSequence)
+	public Sequence evalWithCollection(Collection collection, Sequence args[], Sequence contextSequence)
 			throws XPathException {
-		JavaObjectValue obj = (JavaObjectValue) args[0].itemAt(0);
 		String collectionName = args[1].getStringValue();
-		if (!(obj.getObject() instanceof Collection))
-			throw new XPathException(getASTNode(),
-					"Argument 1 should be an instance of org.xmldb.api.base.Collection");
-		Collection collection = (Collection) obj.getObject();
 		try {
 			CollectionManagementService mgtService = (CollectionManagementService) collection
 					.getService("CollectionManagementService", "1.0");

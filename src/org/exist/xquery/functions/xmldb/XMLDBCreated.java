@@ -21,8 +21,11 @@
  */
 package org.exist.xquery.functions.xmldb;
 
+import java.util.Date;
+
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.xmldb.CollectionImpl;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -36,37 +39,58 @@ import org.exist.xquery.value.DateTimeValue;
 
 
 import org.exist.security.User;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.base.Resource;
+import org.exist.xmldb.EXistResource;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  *
  */
-public class XMLDBCreated extends BasicFunction {
+public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
+        new FunctionSignature(
+			new QName("created", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+			"Returns the creation date",
+			new SequenceType[] {
+                new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			},
+			new SequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE)
+        ),
 		new FunctionSignature(
 			new QName("created", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns the creation date",
 			new SequenceType[] {
-					new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
 			},
-			new SequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE));
+			new SequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE)
+        )
+    };
 	
-	public XMLDBCreated(XQueryContext context) {
+	public XMLDBCreated(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
+	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		NodeValue node = (NodeValue)args[0].itemAt(0);
-		if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-			NodeProxy proxy = (NodeProxy)node;
-     		return new DateTimeValue(proxy.getDocument().getCreated());
+		try {
+			if(getSignature().getArgumentCount() == 1) {
+                Date created = ((CollectionImpl)collection).getCreationTime();
+                return new DateTimeValue(created.getTime());
+			} else {
+                Resource resource = collection.getResource(args[1].getStringValue());
+                Date created = ((EXistResource)resource).getCreationTime();
+                return new DateTimeValue(created.getTime());
+            }
+		} catch(XMLDBException e) {
+			throw new XPathException(getASTNode(), "Failed to retrieve creation date: " + e.getMessage(), e);
 		}
-		return Sequence.EMPTY_SEQUENCE;
 	}
 
 }

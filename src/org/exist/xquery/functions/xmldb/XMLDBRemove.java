@@ -23,67 +23,77 @@
 package org.exist.xquery.functions.xmldb;
 
 import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.CollectionManagementService;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  *
  */
-public class XMLDBRemove extends BasicFunction {
+public class XMLDBRemove extends XMLDBAbstractCollectionManipulator {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-			new QName("remove-resource", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+			new QName("remove", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 				"Remove a resource from the collection. The first " +
 				"argument specifies the collection object as returned by the collection or " +
 				"create-collection functions. The second argument is the name of the resource " +
 				"to be removed. The resource name may be absolute or relative, but it" +
 				"should always point to a child resource of the current collection.",
 				new SequenceType[] {
-						new SequenceType(Type.JAVA_OBJECT, Cardinality.EXACTLY_ONE),
-						new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
-						new SequenceType(Type.ITEM, Cardinality.EMPTY));
+						new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)},
+						new SequenceType(Type.ITEM, Cardinality.EMPTY)
+		),
+		new FunctionSignature(
+			new QName("remove", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+			"Remove a resource from the collection. The first " +
+			"argument specifies the collection object as returned by the collection or " +
+			"create-collection functions. The second argument is the name of the resource " +
+			"to be removed. The resource name may be absolute or relative, but it" +
+			"should always point to a child resource of the current collection.",
+			new SequenceType[] {
+					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
+					new SequenceType(Type.ITEM, Cardinality.EMPTY)
+		)
+	};
 	
-	public XMLDBRemove(XQueryContext context) {
+	public XMLDBRemove(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
+	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		JavaObjectValue obj = (JavaObjectValue)args[0].itemAt(0);
-		if (!(obj.getObject() instanceof Collection))
-			throw new XPathException(getASTNode(), "Argument 1 should be an instance of org.xmldb.api.base.Collection");
-		Collection collection = (Collection) obj.getObject();
-		String doc = args[1].getStringValue();
-		if(doc.startsWith("/db")) {
-			int p =doc.lastIndexOf('/');
-			String path = doc.substring(0, p);
-			if(p + 1 < doc.length())
-				doc = doc.substring(p + 1);
-			else
-				throw new XPathException(getASTNode(), "No resource name found in " + doc);
-		}
-		try {
-			Resource resource = collection.getResource(doc);
-			if (resource == null)
-				throw new XPathException(getASTNode(), "Resource " + doc + " not found");
-			collection.removeResource(resource);
-		} catch (XMLDBException e) {
-			throw new XPathException(getASTNode(), "XMLDB exception caught: " + e.getMessage(), e);
+		if(getSignature().getArgumentCount() == 2) {
+			String doc = args[1].itemAt(0).getStringValue();
+			try {
+				Resource resource = collection.getResource(doc);
+				if (resource == null)
+					throw new XPathException(getASTNode(), "Resource " + doc + " not found");
+				collection.removeResource(resource);
+			} catch (XMLDBException e) {
+				throw new XPathException(getASTNode(), "XMLDB exception caught: " + e.getMessage(), e);
+			}
+		} else {
+			try {
+				CollectionManagementService service = (CollectionManagementService)
+					collection.getService("CollectionManagementService", "1.0");
+				service.removeCollection(collection.getName());
+			} catch (XMLDBException e) {
+				throw new XPathException(getASTNode(), "Cannot remove collection: " + e.getMessage(), e);
+			}
 		}
 		return Sequence.EMPTY_SEQUENCE;
 	}

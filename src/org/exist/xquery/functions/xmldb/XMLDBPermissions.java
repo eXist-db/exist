@@ -21,60 +21,86 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
+import org.exist.security.Permission;
+import org.exist.xmldb.UserManagementService;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Type;
-
-
-import org.exist.security.Permission;
-import org.exist.security.User;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  *
  */
-public class XMLDBPermissions extends BasicFunction {
+public class XMLDBPermissions extends XMLDBAbstractCollectionManipulator {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-			new QName("get-resource-permissions", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns document permissions",
+			new QName("get-permissions", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+			"Returns the permissions assigned to the specified collection.",
 			new SequenceType[] {
-					new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
 			},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+			new SequenceType(Type.INT, Cardinality.ZERO_OR_ONE)
+		),
+		new FunctionSignature(
+			new QName("get-permissions", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+			"Returns the permissions assigned to the resource specified in $b which is a child of the collection " +
+			"$a.",
+			new SequenceType[] {
+					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			},
+			new SequenceType(Type.INT, Cardinality.ZERO_OR_ONE)
+		)
+	};
 	
-	public XMLDBPermissions(XQueryContext context) {
+	public XMLDBPermissions(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
+	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		Permission perm = null;	
-		NodeValue node = (NodeValue)args[0].itemAt(0);
-		if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-			NodeProxy proxy = (NodeProxy)node;
-			perm = proxy.getDocument().getPermissions();
-			if(perm == null)
-				return Sequence.EMPTY_SEQUENCE;
-			else
-				return new IntegerValue(perm.getPermissions(), Type.INT);
-				
+		try {
+			Permission perm = getPermissions(collection, args);
+			return new IntegerValue(perm.getPermissions(), Type.INT);
+        } catch (XMLDBException xe) {
+            throw new XPathException(getASTNode(), "Unable to retrieve resource permissions", xe);
+        }
+	}
+
+	/**
+	 * @param collection
+	 * @param args
+	 * @return
+	 * @throws XMLDBException
+	 * @throws XPathException
+	 */
+	protected Permission getPermissions(Collection collection, Sequence[] args) throws XMLDBException, XPathException {
+		UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
+		Permission perm;
+		if(getSignature().getArgumentCount() == 2) {
+		    Resource res = collection.getResource(args[1].getStringValue());
+		    if (res != null) {
+		        perm = ums.getPermissions(res);
+		    } else {
+		        throw new XPathException(getASTNode(), "Unable to locate resource "+args[1].getStringValue());
+		    }
+		} else {
+			perm = ums.getPermissions(collection);
 		}
-		return Sequence.EMPTY_SEQUENCE;
+		return perm;
 	}
 
 }

@@ -22,26 +22,25 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
+import org.exist.xmldb.UserManagementService;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-
-import org.exist.security.User;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  *
  */
-public class XMLDBHasLock extends BasicFunction {
+public class XMLDBHasLock extends XMLDBAbstractCollectionManipulator {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -49,7 +48,8 @@ public class XMLDBHasLock extends BasicFunction {
 			"Returns the name of the user that holds a write lock on the document of the " +
 			"specified node. If no lock is in place, the empty sequence is returned.",
 			new SequenceType[] {
-					new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
 	
@@ -57,21 +57,27 @@ public class XMLDBHasLock extends BasicFunction {
 		super(context, signature);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
+	/**
+	 * @param collection
+	 * @param args
+	 * @return
+	 * @throws XMLDBException
+	 * @throws XPathException
 	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-		throws XPathException {
-		NodeValue node = (NodeValue)args[0].itemAt(0);
-		if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-			NodeProxy proxy = (NodeProxy)node;
-			User u = proxy.getDocument().getUserLock();
-			if(u == null)
-				return Sequence.EMPTY_SEQUENCE;
-			else
-				return new StringValue(u.getName());
+	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
+	throws XPathException {
+		try {
+			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
+			Resource res = collection.getResource(args[1].getStringValue());
+			if (res != null) {
+			    String lockUser = ums.hasUserLock(res);
+			    return lockUser == null ? Sequence.EMPTY_SEQUENCE : new StringValue(lockUser);
+			} else {
+			    throw new XPathException(getASTNode(), "Unable to locate resource "+args[1].getStringValue());
+			}
+		} catch (XMLDBException e) {
+			throw new XPathException(getASTNode(), "Failed to retrieve user lock", e);
 		}
-		return Sequence.EMPTY_SEQUENCE;
 	}
 
 }
