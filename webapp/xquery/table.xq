@@ -1,5 +1,6 @@
 xquery version "1.0";
 
+(: An example found in Saxon: creates a table with 10x10 cells :)
 declare namespace f="http://my-namespaces.org";
 
 declare function f:background-color($x as xs:double, $y as xs:integer)
@@ -10,8 +11,8 @@ as xs:string {
 	else "white"
 };
 
-(: create a table with 10 * 10 cells :)
-<table>{
+<body>
+	<table>{
 	for $y in 1 to 10 return
 		<tr>
 		{
@@ -24,4 +25,10 @@ as xs:string {
 					</td>
 		}
 		</tr>
-}</table>
+	}</table>
+
+	<p>
+		<small>View <a href="source/table.xq">source code</a>
+		</small>
+	</p>
+</body>

@@ -29,62 +29,63 @@ import org.w3c.dom.Node;
 
 public class NamedNodeMapImpl extends LinkedList implements NamedNodeMap {
 
-  public NamedNodeMapImpl() {
-    super();
-  }
+	public NamedNodeMapImpl() {
+		super();
+	}
 
-  public int getLength() {
-    return size();
-  }
+	public int getLength() {
+		return size();
+	}
 
-  public Node setNamedItem(Node arg) throws DOMException {
-    add(arg);
-    return arg;
-  }
+	public Node setNamedItem(Node arg) throws DOMException {
+		add(arg);
+		return arg;
+	}
 
-  public Node setNamedItemNS(Node arg) throws DOMException {
-    return setNamedItem(arg);
-  }
+	public Node setNamedItemNS(Node arg) throws DOMException {
+		return setNamedItem(arg);
+	}
 
-  public Node item(int index) {
-    if(index < size())
-      return (Node)get(index);
-    return null;
-  }
+	public Node item(int index) {
+		if (index < size())
+			return (Node) get(index);
+		return null;
+	}
 
-  public Node getNamedItem(String name) {
-    int i = indexOf(new QName(name, "", null));
-    return (i < 0) ? null : (Node)get(i);
-  }
+	public Node getNamedItem(String name) {
+		int i = indexOf(new QName(name, "", null));
+		System.out.println(i);
+		return (i < 0) ? null : (Node) get(i);
+	}
 
-  public Node getNamedItemNS(String namespaceURI, String name) {
+	public Node getNamedItemNS(String namespaceURI, String name) {
 		int i = indexOf(new QName(name, namespaceURI, null));
-		return (i < 0) ? null : (Node)get(i);
-  }
+		return (i < 0) ? null : (Node) get(i);
+	}
 
-  public Node removeNamedItem(String name) throws DOMException {
-    int i = indexOf(new QName(name, "", null));
-    Node node = (Node)get(i);
-    remove(i);
-    return node;
-  }
+	public Node removeNamedItem(String name) throws DOMException {
+		int i = indexOf(new QName(name, "", null));
+		Node node = (Node) get(i);
+		remove(i);
+		return node;
+	}
 
-  public Node removeNamedItemNS(String namespaceURI, String name)
-  throws DOMException {
-    int i = indexOf(new QName(name, namespaceURI, null));
-	Node node = (Node)get(i);
-    remove(i);
-    return node;
-  }
+	public Node removeNamedItemNS(String namespaceURI, String name)
+		throws DOMException {
+		int i = indexOf(new QName(name, namespaceURI, null));
+		Node node = (Node) get(i);
+		remove(i);
+		return node;
+	}
 
-  private int indexOf(QName name) {
-	  ListIterator i=this.listIterator();
-	  while (i.hasNext()) {
-	  	Node temp=(Node) i.next();
-	  	if(temp.getLocalName().equals(name.getLocalName()) && 
-	  		temp.getNamespaceURI().equals(name.getNamespaceURI()))
-	  		return i.previousIndex();
-	  }
-	return -1;
-  }
+	private int indexOf(QName name) {
+		ListIterator i = this.listIterator();
+		while (i.hasNext()) {
+			Node temp = (Node) i.next();
+			if (temp.getLocalName().equals(name.getLocalName())
+				&& temp.getNamespaceURI().equals(name.getNamespaceURI()))
+				return i.previousIndex();
+		}
+		return -1;
+	}
 }

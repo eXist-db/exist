@@ -54,7 +54,7 @@ import org.xml.sax.SAXException;
  *
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
  */
-public final class NodeProxy extends NodeSet implements Item, Comparable {
+public final class NodeProxy extends AbstractNodeSet implements Item, Comparable {
 
 	/**
 	 * The owner document of this node.

@@ -1035,7 +1035,6 @@ public class Collection
 			childColl = (String) i.next();
 			ostream.writeUTF(childColl);
 			ostream.writeLong(subcollections.getLong(childColl));
-
 		}
 		org.exist.security.SecurityManager secman =
 			broker.getBrokerPool().getSecurityManager();

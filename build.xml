@@ -191,26 +191,18 @@
     <!-- needs antlr distribution-directory in the classpath				   -->
     <!-- =================================================================== -->
     <target depends="prepare" name="antlr">
-        <java classname="antlr.Tool" dir="${src}/org/exist/parser" fork="true">
-            <classpath>
-				<path refid="classpath.core"/>
-            </classpath>
-			<!--arg value="-traceParser"/-->
-            <arg value="XPathParser.g"/>
-        </java>
+		<delete failonerror="false">
+			<fileset dir="${src}/org/exist/parser">
+				<include name="*.java"/>
+				<include name="*.txt"/>
+			</fileset>
+		</delete>
+		<antlr target="${src}/org/exist/parser/XPathParser2.g"
+			outputdirectory="${src}/org/exist/parser"
+			traceparser="${antlr.traceParser}"/>
     </target>
     
-    <target depends="prepare" name="antlr2">
-    	<java classname="antlr.Tool" dir="${src}/org/exist/parser" fork="true">
-    		<classpath>
-    			<path refid="classpath.core"/>
-    		</classpath>
-			<!--arg value="-traceParser"/-->
-    		<arg value="XPathParser2.g"/>
-    	</java>
-    </target>
-    
-    <target depends="antlr2,jar" name="xpath2"/>
+    <target depends="antlr,jar" name="xquery"/>
     
     <!-- ================================================================== -->
     <!-- Create samples                                                     -->

@@ -273,7 +273,23 @@ public class NodeImpl implements Node, Item, Sequence {
 	 * @see org.exist.xpath.value.Item#getType()
 	 */
 	public int getType() {
-		return Type.NODE;
+		int type = getNodeType();
+		switch(type) {
+			case Node.DOCUMENT_NODE:
+				return Type.DOCUMENT;
+			case Node.COMMENT_NODE:
+				return Type.COMMENT;
+			case Node.PROCESSING_INSTRUCTION_NODE:
+				return Type.PROCESSING_INSTRUCTION;
+			case Node.ELEMENT_NODE:
+				return Type.ELEMENT;
+			case Node.ATTRIBUTE_NODE:
+				return Type.ATTRIBUTE;
+			case Node.TEXT_NODE:
+				return Type.TEXT;
+			default:
+				return Type.NODE;
+		}
 	}
 
 	/* (non-Javadoc)

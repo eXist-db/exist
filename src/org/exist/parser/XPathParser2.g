@@ -57,8 +57,8 @@ options {
 {
 	protected ArrayList exceptions= new ArrayList(2);
 	protected boolean foundError= false;
-	protected Stack globalStack = new Stack();
-	protected Stack elementStack = new Stack();
+	protected Stack globalStack= new Stack();
+	protected Stack elementStack= new Stack();
 	protected XPathLexer2 lexer;
 
 	public XPathParser2(XPathLexer2 lexer, boolean dummy) {
@@ -89,9 +89,9 @@ imaginaryTokenDefinitions
 :
 	QNAME PREDICATE FLWOR PARENTHESIZED ABSOLUTE_SLASH ABSOLUTE_DSLASH 
 	WILDCARD PREFIX_WILDCARD FUNCTION UNARY_MINUS UNARY_PLUS XPOINTER 
-	XPOINTER_ID VARIABLE_REF VARIABLE_BINDING ELEMENT ATTRIBUTE TEXT
-	VERSION_DECL NAMESPACE_DECL DEF_NAMESPACE_DECL DEF_FUNCTION_NS_DECL 
-	GLOBAL_VAR FUNCTION_DECL PROLOG ATOMIC_TYPE MODULE ORDER_BY
+	XPOINTER_ID VARIABLE_REF VARIABLE_BINDING ELEMENT ATTRIBUTE TEXT VERSION_DECL NAMESPACE_DECL 
+	DEF_NAMESPACE_DECL DEF_FUNCTION_NS_DECL GLOBAL_VAR FUNCTION_DECL PROLOG 
+	ATOMIC_TYPE MODULE ORDER_BY POSITIONAL_VAR
 	;
 
 xpointer
@@ -110,137 +110,112 @@ xpath
 	exception catch [RecognitionException e]
 	{ handleException(e); }
 
-module
-:
-	mainModule
-	;
-	
-mainModule
-:
-	prolog queryBody
-	;
+module : mainModule ;
+
+mainModule : prolog queryBody ;
 
 prolog
 :
-		( ( "xquery" "version" ) => v:version SEMICOLON!)?
+	( ( XQUERY VERSION ) => v:version SEMICOLON! )?
+	(
 		(
-			( 
-				( "declare" "namespace" ) => nd:namespaceDecl
-				| 
-				( "declare" "default" ) => dnd:defaultNamespaceDecl
-				|
-				( "declare" "function" ) => fd:functionDecl
-				| 
-				( "declare" "variable" ) => varDecl
-			) SEMICOLON!
-		)*
+			( "declare" "namespace" )
+			=> nd:namespaceDecl
+			|
+			( "declare" "default" )
+			=> dnd:defaultNamespaceDecl
+			|
+			( "declare" "function" )
+			=> fd:functionDecl
+			|
+			( "declare" "variable" )
+			=> varDecl
+		)
+		SEMICOLON!
+	)*
 	;
 
 version
 :
-	"xquery" "version" v:STRING_LITERAL {
-		#version = #(#[VERSION_DECL, v.getText()]);
-	}
+	XQUERY VERSION v:STRING_LITERAL { #version= #(#[VERSION_DECL, v.getText()]); }
 	;
 
 namespaceDecl
 :
 	"declare" "namespace" prefix:NCNAME EQ! uri:STRING_LITERAL
-	{
-		#namespaceDecl = #(#[NAMESPACE_DECL, prefix.getText()], uri);
-	}
+	{ #namespaceDecl= #(#[NAMESPACE_DECL, prefix.getText()], uri); }
 	;
 
 defaultNamespaceDecl
 :
-	"declare" "default" 
-	( "element" "namespace" defu:STRING_LITERAL
-		{
-			#defaultNamespaceDecl = #(#[DEF_NAMESPACE_DECL, "defaultNamespaceDecl"], defu);
-		}
-	| "function" "namespace" deff:STRING_LITERAL
-		{
-			#defaultNamespaceDecl = #(#[DEF_FUNCTION_NS_DECL, "defaultFunctionNSDecl"], deff);
-		}
+	"declare" "default"
+	(
+		"element" "namespace" defu:STRING_LITERAL
+		{ #defaultNamespaceDecl= #(#[DEF_NAMESPACE_DECL, "defaultNamespaceDecl"], defu); }
+		|
+		"function" "namespace" deff:STRING_LITERAL
+		{ #defaultNamespaceDecl= #(#[DEF_FUNCTION_NS_DECL, "defaultFunctionNSDecl"], deff); }
 	)
 	;
 
 varDecl
-{ String varName = null; }
+{ String varName= null; }
 :
 	"declare" "variable" DOLLAR! varName=qName LCURLY ex:expr RCURLY
-	{
-		#varDecl = #(#[GLOBAL_VAR, varName], #ex);
-	}
+	{ #varDecl= #(#[GLOBAL_VAR, varName], #ex); }
 	;
 
 functionDecl
-{ String name = null; }:
-	"declare"! "function"! name=qName!
-	LPAREN! ( paramList )? RPAREN!
-	( returnType )?
+{ String name= null; }
+:
+	"declare"! "function"! name=qName! LPAREN! ( paramList )?
+	RPAREN! ( returnType )?
 	functionBody
-	{
-		#functionDecl = #(#[FUNCTION_DECL, name], #functionDecl);
-	}
+	{ #functionDecl= #(#[FUNCTION_DECL, name], #functionDecl); }
 	;
 
-functionBody:
-	LCURLY^ e:expr RCURLY!
+functionBody : LCURLY^ e:expr RCURLY! ;
+
+returnType : "as"^ sequenceType ;
+
+paramList
+:
+	param ( COMMA! p1:param )*
 	;
 
-returnType:
-	"as"^ sequenceType
-	;
-	
-paramList:
-	param (COMMA! p1:param )*
-	;
-	
 param
-{ String varName = null; }:
-	DOLLAR! varName=qName
-	( 
-		t:typeDeclaration 
-	)?
-	{
-		#param = #(#[VARIABLE_BINDING, varName], #t);
-	}
-	;
-	
-typeDeclaration:
-	"as"^ sequenceType
-	;
-	
-sequenceType:
-	( "empty" LPAREN) => "empty"^ LPAREN! RPAREN!
-	| itemType ( occurrenceIndicator )?
+{ String varName= null; }
+:
+	DOLLAR! varName=qName ( t:typeDeclaration )?
+	{ #param= #(#[VARIABLE_BINDING, varName], #t); }
 	;
 
-occurrenceIndicator:
+typeDeclaration : "as"^ sequenceType ;
+
+sequenceType
+:
+	( "empty" LPAREN ) => "empty"^ LPAREN! RPAREN! | itemType ( occurrenceIndicator )?
+	;
+
+occurrenceIndicator
+:
 	QUESTION | STAR | PLUS
 	;
-	
-itemType:
-	( "item" LPAREN ) => "item"^ LPAREN! RPAREN!
-	| ( . LPAREN ) => kindTest
-	| atomicType
+
+itemType
+:
+	( "item" LPAREN ) => "item"^ LPAREN! RPAREN! | ( . LPAREN ) => kindTest | atomicType
 	;
-	
+
 atomicType
-{ String name = null; }
+{ String name= null; }
 :
 	name=qName
-	{
-		#atomicType = #[ATOMIC_TYPE, name];
-	}
+	{ #atomicType= #[ATOMIC_TYPE, name]; }
 	;
-	
-queryBody
-:
-	expr
-	;
-	
+
+queryBody : expr ;
+
 expr
 :
 	exprSingle ( COMMA^ exprSingle )*
@@ -248,11 +223,7 @@ expr
 
 exprSingle
 :
-	( ( "for" | "let" ) DOLLAR ) => flworExpr
-	|
-	( "if" LPAREN ) => ifExpr
-	|
-	orExpr 
+	( ( "for" | "let" ) DOLLAR ) => flworExpr | ( "if" LPAREN ) => ifExpr | orExpr
 	;
 
 flworExpr
@@ -273,10 +244,19 @@ letClause
 inVarBinding
 { String varName; }
 :
-	DOLLAR! varName=qName "in" expr:exprSingle
-	{ #inVarBinding= #(#[VARIABLE_BINDING, varName], expr); }
+	DOLLAR! varName=qName! ( positionalVar )? "in"! exprSingle
+	{ #inVarBinding= #(#[VARIABLE_BINDING, varName], #inVarBinding); }
 	;
 
+positionalVar
+{ String varName; }
+:
+	"at" DOLLAR! varName=qName
+	{
+		#positionalVar = #[POSITIONAL_VAR, varName];
+	}
+	;
+	
 letVarBinding
 { String varName; }
 :
@@ -284,32 +264,26 @@ letVarBinding
 	{ #letVarBinding= #(#[VARIABLE_BINDING, varName], expr); }
 	;
 
-orderByClause:
+orderByClause
+:
 	"order"! "by"! orderSpecList
-	{
-		#orderByClause = #([ORDER_BY, "order by"], #orderByClause);
-	}
-	;
-	
-orderSpecList:
-	orderSpec ( COMMA! orderSpec )*
-	;
-	
-orderSpec:
-	exprSingle orderModifier
+	{ #orderByClause= #([ORDER_BY, "order by"], #orderByClause); }
 	;
 
-orderModifier:
-	("ascending" | "descending" )? 
-	( "empty"
-		( "greatest" | "least" ) 
-	)?
+orderSpecList
+:
+	orderSpec ( COMMA! orderSpec )*
 	;
-	
-ifExpr:
-	"if"^ LPAREN! expr RPAREN! "then"! exprSingle "else"! exprSingle
+
+orderSpec : exprSingle orderModifier ;
+
+orderModifier
+:
+	( "ascending" | "descending" )? ( "empty" ( "greatest" | "least" ) )?
 	;
-	
+
+ifExpr : "if"^ LPAREN! expr RPAREN! "then"! exprSingle "else"! exprSingle ;
+
 orExpr
 :
 	andExpr ( "or"^ andExpr )*
@@ -322,15 +296,14 @@ andExpr
 
 comparisonExpr
 :
-	rangeExpr ( ( ( EQ^ | NEQ^ | GT^ | GTEQ^ | LT^ | LTEQ^ ) rangeExpr ) 
-	| ( ( ANDEQ^ | OREQ^ ) rangeExpr ) )?
+	rangeExpr ( ( ( EQ^ | NEQ^ | GT^ | GTEQ^ | LT^ | LTEQ^ ) rangeExpr ) | ( ( ANDEQ^ | OREQ^ ) rangeExpr ) )?
 	;
 
 rangeExpr
 :
 	additiveExpr ( "to"^ additiveExpr )?
 	;
-	
+
 additiveExpr
 :
 	multiplicativeExpr ( ( PLUS^ | MINUS^ ) multiplicativeExpr )*
@@ -382,11 +355,11 @@ relativePathExpr
 
 stepExpr
 :
-	( ( "text" | "node" | "element" ) LPAREN ) =>
-	axisStep
+	( ( "text" | "node" | "element" ) LPAREN )
+	=> axisStep
 	|
-	( DOLLAR | ( qName LPAREN ) | SELF | LPAREN | literal | XML_COMMENT | LT ) =>
-	filterStep
+	( DOLLAR | ( qName LPAREN ) | SELF | LPAREN | literal | XML_COMMENT | LT )
+	=> filterStep
 	|
 	axisStep
 	;
@@ -502,7 +475,8 @@ numericLiteral
 
 parenthesizedExpr
 :
-	LPAREN! ( e:expr  )? RPAREN!
+	LPAREN! ( e:expr )?
+	RPAREN!
 	{ #parenthesizedExpr= #(#[PARENTHESIZED, "Parenthesized"], #e); }
 	;
 
@@ -527,8 +501,7 @@ contextItemExpr : SELF^ ;
 
 kindTest
 :
-	textTest | anyKindTest | elementTest | attributeTest | commentTest |
-	piTest | documentTest
+	textTest | anyKindTest | elementTest | attributeTest | commentTest | piTest | documentTest
 	;
 
 textTest : "text"^ LPAREN! RPAREN! ;
@@ -565,12 +538,11 @@ constructor
 
 elementConstructor
 {
-	String name = null;
-	lexer.wsExplicit = true;
+	String name= null;
+	lexer.wsExplicit= true;
 }
 :
-	( LT qName WS ) => elementWithAttributes 
-	| elementWithoutAttributes
+	( LT qName WS ) => elementWithAttributes | elementWithoutAttributes
 	;
 
 elementWithoutAttributes
@@ -580,33 +552,32 @@ elementWithoutAttributes
 	(
 		(
 			SLASH! GT!
-			{ 
-				lexer.wsExplicit = false;
-				if(!elementStack.isEmpty())
-					lexer.inElementContent = true;
+			{
+				lexer.wsExplicit= false;
+				if (!elementStack.isEmpty())
+					lexer.inElementContent= true;
 				#elementWithoutAttributes= #[ELEMENT, name];
 			}
 		)
 		|
 		(
-			GT! 
+			GT!
 			{
 				elementStack.push(name);
 				lexer.inElementContent= true;
-				lexer.wsExplicit = false;
+				lexer.wsExplicit= false;
 			}
 			content:mixedElementContent END_TAG_START! name=qName! GT!
-			{ 
-				if(elementStack.isEmpty())
+			{
+				if (elementStack.isEmpty())
 					throw new RecognitionException("found wrong closing tag: " + name);
-				String prev = (String)elementStack.pop();
-				if(!prev.equals(name))
-					throw new RecognitionException("found closing tag: " + name +
-						"; expected: " + prev);
+				String prev= (String) elementStack.pop();
+				if (!prev.equals(name))
+					throw new RecognitionException("found closing tag: " + name + "; expected: " + prev);
 				#elementWithoutAttributes= #(#[ELEMENT, name], #content);
-				if(!elementStack.isEmpty()) {
-					lexer.inElementContent = true;
-					lexer.wsExplicit = false;
+				if (!elementStack.isEmpty()) {
+					lexer.inElementContent= true;
+					lexer.wsExplicit= false;
 				}
 			}
 		)
@@ -621,32 +592,31 @@ elementWithAttributes
 		(
 			SLASH! GT!
 			{
-				if(!elementStack.isEmpty())
-					lexer.inElementContent = true;
-				lexer.wsExplicit = false;
-				#elementWithAttributes= #(#[ELEMENT, name], #attrs); 
+				if (!elementStack.isEmpty())
+					lexer.inElementContent= true;
+				lexer.wsExplicit= false;
+				#elementWithAttributes= #(#[ELEMENT, name], #attrs);
 			}
 		)
 		|
 		(
-			GT! { 
+			GT! 
+			{
 				elementStack.push(name);
 				lexer.inElementContent= true;
-				lexer.wsExplicit = false;
+				lexer.wsExplicit= false;
 			}
-			content:mixedElementContent 
-			END_TAG_START! name=qName! GT!
+			content:mixedElementContent END_TAG_START! name=qName! GT!
 			{
-				if(elementStack.isEmpty())
+				if (elementStack.isEmpty())
 					throw new RecognitionException("found wrong closing tag: " + name);
-				String prev = (String)elementStack.pop();
-				if(!prev.equals(name))
-					throw new RecognitionException("found closing tag: " + name +
-						"; expected: " + prev);
+				String prev= (String) elementStack.pop();
+				if (!prev.equals(name))
+					throw new RecognitionException("found closing tag: " + name + "; expected: " + prev);
 				#elementWithAttributes= #(#[ELEMENT, name], #attrs);
-				if(!elementStack.isEmpty()) {
-					lexer.inElementContent = true;
-					lexer.wsExplicit = false;
+				if (!elementStack.isEmpty()) {
+					lexer.inElementContent= true;
+					lexer.wsExplicit= false;
 				}
 			}
 		)
@@ -704,13 +674,13 @@ enclosedExpr
 	LCURLY^
 	{
 		globalStack.push(elementStack);
-		elementStack = new Stack();
+		elementStack= new Stack();
 		lexer.inElementContent= false;
 		lexer.wsExplicit= false;
 	}
 	expr RCURLY!
 	{
-		elementStack = (Stack)globalStack.pop();
+		elementStack= (Stack) globalStack.pop();
 		lexer.inElementContent= true;
 		lexer.wsExplicit= true;
 	}
@@ -765,11 +735,11 @@ reservedKeywords returns [String name]
 	|
 	"attribute" { name= "attribute"; }
 	|
-	"comment" { name = "comment"; }
+	"comment" { name= "comment"; }
 	|
-	"document" { name = "document"; }
+	"document" { name= "document"; }
 	|
-	"collection" { name = "collection"; }
+	"collection" { name= "collection"; }
 	|
 	"ancestor" { name= "ancestor"; }
 	|
@@ -783,31 +753,31 @@ reservedKeywords returns [String name]
 	|
 	"following-sibling" { name= "following-sibling"; }
 	|
-	"item" { name = "item"; }
+	"item" { name= "item"; }
 	|
 	"empty" { name= "empty"; }
 	|
-	"version" { name = "version"; }
+	VERSION { name= "version"; }
 	|
-	"xquery" { name = "xquery"; }
+	XQUERY { name= "xquery"; }
 	|
-	"variable" { name = "variable"; }
+	"variable" { name= "variable"; }
 	|
-	"namespace" { name = "namespace"; }
+	"namespace" { name= "namespace"; }
 	|
-	"if" { name = "if"; }
+	"if" { name= "if"; }
 	|
-	"then" { name = "then"; }
+	"then" { name= "then"; }
 	|
-	"else" { name = "else"; }
+	"else" { name= "else"; }
 	|
-	"for" { name = "for"; }
+	"for" { name= "for"; }
 	|
-	"let" { name = "let"; }
+	"let" { name= "let"; }
 	|
-	"default" { name = "default"; }
+	"default" { name= "default"; }
 	|
-	"function" { name = "function"; }
+	"function" { name= "function"; }
 	;
 
 /* -----------------------------------------------------------------------------------------------------
@@ -846,9 +816,9 @@ options {
 	}
 
 	public Exception getLastException() {
-		return (Exception)exceptions.get(exceptions.size()-1);
+		return (Exception) exceptions.get(exceptions.size() - 1);
 	}
-	
+
 	protected void handleException(Exception e) {
 		foundError= true;
 		exceptions.add(e);
@@ -856,17 +826,18 @@ options {
 
 	private static class ForLetClause {
 		String varName;
+		String posVar = null;
 		Expression inputSequence;
 		Expression action;
 		boolean isForClause= true;
 	}
-	
+
 	private static class FunctionParameter {
 		String varName;
-		SequenceType type = FunctionSignature.DEFAULT_TYPE;
-		
+		SequenceType type= FunctionSignature.DEFAULT_TYPE;
+
 		public FunctionParameter(String name) {
-			this.varName = name;
+			this.varName= name;
 		}
 	}
 }
@@ -909,143 +880,166 @@ xpath [PathExpr path]
 module [PathExpr path]
 throws PermissionDeniedException, EXistException, XPathException
 :
-	prolog[path] expr[path]
+	prolog [path] expr [path]
 	;
 
 prolog [PathExpr path]
-throws PermissionDeniedException, EXistException, XPathException:
+throws PermissionDeniedException, EXistException, XPathException
+:
 	(
-		#(v:VERSION_DECL
+		#(
+			v:VERSION_DECL
 			{
-				if(!v.getText().equals("1.0"))
+				if (!v.getText().equals("1.0"))
 					throw new XPathException("Wrong XQuery version: require 1.0");
 			}
 		)
 	)?
 	(
-		#(prefix:NAMESPACE_DECL uri:STRING_LITERAL
-			{
-				context.declareNamespace(prefix.getText(), uri.getText());
-			}
+		#(
+			prefix:NAMESPACE_DECL uri:STRING_LITERAL
+			{ context.declareNamespace(prefix.getText(), uri.getText()); }
 		)
 		|
-		#(DEF_NAMESPACE_DECL defu:STRING_LITERAL
-			{
-				context.declareNamespace("", defu.getText());
-			}
+		#(
+			DEF_NAMESPACE_DECL defu:STRING_LITERAL
+			{ context.declareNamespace("", defu.getText()); }
 		)
 		|
-		#(DEF_FUNCTION_NS_DECL deff:STRING_LITERAL
-			{
-				context.setDefaultFunctionNamespace(deff.getText());
-			}
+		#(
+			DEF_FUNCTION_NS_DECL deff:STRING_LITERAL
+			{ context.setDefaultFunctionNamespace(deff.getText()); }
 		)
 		|
-		#(qname:GLOBAL_VAR { PathExpr enclosed = new PathExpr(context); }
-			expr[enclosed]
+		#(
+			qname:GLOBAL_VAR { PathExpr enclosed= new PathExpr(context); }
+			expr [enclosed]
 			{
-				VariableDeclaration decl = new VariableDeclaration(context, qname.getText(), enclosed);
+				VariableDeclaration decl= new VariableDeclaration(context, qname.getText(), enclosed);
 				path.add(decl);
 			}
 		)
-		| functionDecl[path]
+		|
+		functionDecl [path]
 	)*
 	;
 
 functionDecl [PathExpr path]
 throws PermissionDeniedException, EXistException, XPathException
 :
-	#( name:FUNCTION_DECL { PathExpr body = new PathExpr(context); }
+	#(
+		name:FUNCTION_DECL { PathExpr body= new PathExpr(context); }
 		{
-			QName qn = QName.parse(context, name.getText());
-			FunctionSignature signature = new FunctionSignature(qn);
-			UserDefinedFunction func = new UserDefinedFunction(context, signature);
-			List varList = new ArrayList(3);
+			QName qn= QName.parse(context, name.getText());
+			FunctionSignature signature= new FunctionSignature(qn);
+			UserDefinedFunction func= new UserDefinedFunction(context, signature);
+			List varList= new ArrayList(3);
 		}
-		( paramList[varList] )?
+		( paramList [varList] )?
 		{
-			SequenceType[] types = new SequenceType[varList.size()];
-			int j = 0;
-			for(Iterator i = varList.iterator(); i.hasNext(); j++) {
-				FunctionParameter param = (FunctionParameter)i.next();
-				types[j] = param.type;
+			SequenceType[] types= new SequenceType[varList.size()];
+			int j= 0;
+			for (Iterator i= varList.iterator(); i.hasNext(); j++) {
+				FunctionParameter param= (FunctionParameter) i.next();
+				types[j]= param.type;
 				func.addVariable(param.varName);
 			}
 			signature.setArgumentTypes(types);
 			context.declareFunction(func);
 		}
-		( 
-			#("as"
-				{
-					SequenceType type = new SequenceType();
-				}
-				sequenceType[type]
-				{
-					signature.setReturnType(type);
-				}
+		(
+			#(
+				"as"
+				{ SequenceType type= new SequenceType(); }
+				sequenceType [type]
+				{ signature.setReturnType(type); }
 			)
 		)?
-		#( 
-			LCURLY expr[body] 
+		#(
+			LCURLY expr [body]
 			{ func.setFunctionBody(body); }
 		)
 	)
 	;
 
 paramList [List vars]
-throws XPathException:
-	param[vars] (param[vars])*
+throws XPathException
+:
+	param [vars] ( param [vars] )*
 	;
 
 param [List vars]
-throws XPathException:
-	#( varname:VARIABLE_BINDING
+throws XPathException
+:
+	#(
+		varname:VARIABLE_BINDING
 		{
-			FunctionParameter var = new FunctionParameter(varname.getText());
+			FunctionParameter var= new FunctionParameter(varname.getText());
 			vars.add(var);
 		}
-		( 
-			#( "as" 
-				{ 
-					SequenceType type = new SequenceType();
-				}
-				sequenceType[type] 
+		(
+			#(
+				"as"
+				{ SequenceType type= new SequenceType(); }
+				sequenceType [type]
 			)
-			{
-				var.type = type;
-			}
+			{ var.type= type; }
 		)?
 	)
 	;
 
 sequenceType [SequenceType type]
-throws XPathException:
+throws XPathException
+:
 	(
-		#( t:ATOMIC_TYPE
+		#(
+			t:ATOMIC_TYPE
 			{
-				QName qn = QName.parse(context, t.getText());
-				int code = Type.getType(qn);
+				QName qn= QName.parse(context, t.getText());
+				int code= Type.getType(qn);
 				type.setPrimaryType(code);
 			}
 		)
 		|
-		#( "empty" { type.setPrimaryType(Type.EMPTY); type.setCardinality(Cardinality.EMPTY); } )
+		#(
+			"empty" 
+			{
+				type.setPrimaryType(Type.EMPTY);
+				type.setCardinality(Cardinality.EMPTY);
+			}
+		)
 		|
-		#( "item" { type.setPrimaryType(Type.ITEM); } )
+		#(
+			"item" { type.setPrimaryType(Type.ITEM); }
+		)
 		|
-		#( "node" { type.setPrimaryType(Type.NODE); } )
+		#(
+			"node" { type.setPrimaryType(Type.NODE); }
+		)
 		|
-		#( "element" { type.setPrimaryType(Type.ELEMENT); } )
+		#(
+			"element" { type.setPrimaryType(Type.ELEMENT); }
+		)
 		|
-		#( "attribute" { type.setPrimaryType(Type.ATTRIBUTE); } )
+		#(
+			"attribute" { type.setPrimaryType(Type.ATTRIBUTE); }
+		)
 		|
-		#( "text" { type.setPrimaryType(Type.ITEM); } )
+		#(
+			"text" { type.setPrimaryType(Type.ITEM); }
+		)
 		|
-		#( "processing-instruction" { type.setPrimaryType(Type.PROCESSING_INSTRUCTION); } )
+		#(
+			"processing-instruction" { type.setPrimaryType(Type.PROCESSING_INSTRUCTION); }
+		)
 		|
-		#( "comment" { type.setPrimaryType(Type.COMMENT); } )
+		#(
+			"comment" { type.setPrimaryType(Type.COMMENT); }
+		)
 		|
-		#( "document-node" { type.setPrimaryType(Type.DOCUMENT); } )
+		#(
+			"document-node" { type.setPrimaryType(Type.DOCUMENT); }
+		)
 	)
 	(
 		STAR { type.setCardinality(Cardinality.ZERO_OR_MORE); }
@@ -1055,7 +1049,7 @@ throws XPathException:
 		QUESTION { type.setCardinality(Cardinality.ZERO_OR_ONE); }
 	)?
 	;
-	
+
 expr [PathExpr path]
 throws PermissionDeniedException, EXistException, XPathException
 { Expression step= null; }
@@ -1069,7 +1063,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		expr [left]
 		expr [right]
 		{
-			SequenceConstructor sc = new SequenceConstructor(context);
+			SequenceConstructor sc= new SequenceConstructor(context);
 			sc.addExpression(left);
 			sc.addExpression(right);
 			path.add(sc);
@@ -1079,16 +1073,15 @@ throws PermissionDeniedException, EXistException, XPathException
 	#(
 		"if"
 		{
-			PathExpr testExpr = new PathExpr(context);
-			PathExpr thenExpr = new PathExpr(context);
-			PathExpr elseExpr = new PathExpr(context);
+			PathExpr testExpr= new PathExpr(context);
+			PathExpr thenExpr= new PathExpr(context);
+			PathExpr elseExpr= new PathExpr(context);
 		}
-		expr[testExpr]
-		expr[thenExpr]
-		expr[elseExpr]
+		expr [testExpr]
+		expr [thenExpr]
+		expr [elseExpr]
 		{
-			ConditionalExpression cond = 
-				new ConditionalExpression(context, testExpr, thenExpr, elseExpr);
+			ConditionalExpression cond= new ConditionalExpression(context, testExpr, thenExpr, elseExpr);
 			path.add(cond);
 		}
 	)
@@ -1099,7 +1092,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			List clauses= new ArrayList();
 			Expression action= new PathExpr(context);
 			PathExpr whereExpr= null;
-			List orderBy = null;
+			List orderBy= null;
 		}
 		(
 			#(
@@ -1111,6 +1104,12 @@ throws PermissionDeniedException, EXistException, XPathException
 							ForLetClause clause= new ForLetClause();
 							PathExpr inputSequence= new PathExpr(context);
 						}
+						(
+							posVar:POSITIONAL_VAR
+							{
+								clause.posVar = posVar.getText();
+							}
+						)?
 						expr [inputSequence]
 						{
 							clause.varName= varName.getText();
@@ -1142,23 +1141,23 @@ throws PermissionDeniedException, EXistException, XPathException
 			)
 		)+
 		(
-			#( ORDER_BY { orderBy = new ArrayList(3); }
-				( 
-					{ 
-						PathExpr orderSpecExpr = new PathExpr(context); 
-					}
+			#(
+				ORDER_BY { orderBy= new ArrayList(3); }
+				(
+					{ PathExpr orderSpecExpr= new PathExpr(context); }
 					expr [orderSpecExpr]
 					{
-						OrderSpec orderSpec = new OrderSpec(orderSpecExpr);
-						int modifiers = 0;
+						OrderSpec orderSpec= new OrderSpec(orderSpecExpr);
+						int modifiers= 0;
 						orderBy.add(orderSpec);
 					}
 					(
 						(
-						"ascending"
-						| "descending"
-							{ 
-								modifiers = OrderSpec.DESCENDING_ORDER;
+							"ascending"
+							|
+							"descending"
+							{
+								modifiers= OrderSpec.DESCENDING_ORDER;
 								orderSpec.setModifiers(modifiers);
 							}
 						)
@@ -1167,11 +1166,12 @@ throws PermissionDeniedException, EXistException, XPathException
 						"empty"
 						(
 							"greatest"
-							| "least"
-								{ 
-									modifiers |= OrderSpec.EMPTY_LEAST; 
-									orderSpec.setModifiers(modifiers);
-								}
+							|
+							"least"
+							{
+								modifiers |= OrderSpec.EMPTY_LEAST;
+								orderSpec.setModifiers(modifiers);
+							}
 						)
 					)?
 				)+
@@ -1194,16 +1194,18 @@ throws PermissionDeniedException, EXistException, XPathException
 				expr.setVariable(clause.varName);
 				expr.setInputSequence(clause.inputSequence);
 				expr.setReturnExpression(action);
+				if (clause.isForClause)
+					((ForExpr)expr).setPositionalVariable(clause.posVar);
 				if (whereExpr != null) {
 					expr.setWhereExpression(whereExpr);
 					whereExpr= null;
 				}
 				if (orderBy != null) {
-					OrderSpec orderSpecs[] = new OrderSpec[orderBy.size()];
-					int k = 0;
-					for (Iterator j = orderBy.iterator(); j.hasNext(); k++) {
-						OrderSpec orderSpec = (OrderSpec) j.next();
-						orderSpecs[k] = orderSpec;
+					OrderSpec orderSpecs[]= new OrderSpec[orderBy.size()];
+					int k= 0;
+					for (Iterator j= orderBy.iterator(); j.hasNext(); k++) {
+						OrderSpec orderSpec= (OrderSpec) j.next();
+						orderSpecs[k]= orderSpec;
 					}
 					expr.setOrderSpecs(orderSpecs);
 				}
@@ -1298,18 +1300,19 @@ throws PermissionDeniedException, EXistException, XPathException
 		)?
 	)
 	|
-	#( "to"
+	#(
+		"to"
 		{
-			PathExpr start = new PathExpr(context);
-			PathExpr end = new PathExpr(context);
-			List args = new ArrayList(2);
+			PathExpr start= new PathExpr(context);
+			PathExpr end= new PathExpr(context);
+			List args= new ArrayList(2);
 			args.add(start);
 			args.add(end);
 		}
-		expr[start]
-		expr[end]
+		expr [start]
+		expr [end]
 		{
-			RangeExpression range = new RangeExpression(context);
+			RangeExpression range= new RangeExpression(context);
 			range.setArguments(args);
 			path.addPath(range);
 		}
@@ -1563,7 +1566,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			{ params.add(pathExpr); }
 		)*
 	)
-	{ step = FunctionFactory.createFunction(context, path, fn.getText(), params); }
+	{ step= FunctionFactory.createFunction(context, path, fn.getText(), params); }
 	;
 
 forwardAxis returns [int axis]
@@ -1722,7 +1725,7 @@ throws PermissionDeniedException, EXistException, XPathException
 					c.setContent(elementContent);
 				}
 			}
-			constructor [elementContent]
+			step = constructor [elementContent]
 		)*
 	)
 	|
@@ -1771,9 +1774,14 @@ class XPathLexer2 extends Lexer;
 
 options {
 	k = 3;
-	testLiterals = true;
+	testLiterals = false;
 	charVocabulary = '\u0003'..'\uffff';
 	codeGenBitsetTestThreshold = 20;
+}
+
+tokens {
+	XQUERY = "xquery";
+	VERSION = "version";
 }
 
 {
@@ -1788,9 +1796,9 @@ protected SLASH : '/' ;
 protected DSLASH : '/' '/' ;
 protected COLON : ':' ;
 protected COMMA : ',' ;
-protected SEMICOLON : ';';
+protected SEMICOLON : ';' ;
 protected STAR : '*' ;
-protected QUESTION : '?';
+protected QUESTION : '?' ;
 protected PLUS : '+' ;
 protected MINUS : '-' ;
 protected LPPAREN : '[' ;
@@ -1821,14 +1829,280 @@ protected XML_COMMENT_END : "-->" ;
 protected XML_PI_START : "<?" ;
 protected XML_PI_END : "?>" ;
 
-protected CHAR:
-	( '\t' | '\n' | '\r' | '\u0020'..'\u0039' | '\u003B'..'\uD7FF' | '\uE000'..'\uFFFD' )
+protected LETTER:
+	( BASECHAR | IDEOGRAPHIC )
 	;
-	
-protected BASECHAR
+
+protected DIGITS
+:
+	( DIGIT )+
+	;
+
+protected HEX_DIGITS
+:
+	( '0'..'9' | 'a'..'f' | 'A'..'F' )+
+	;
+
+protected NMSTART
+:
+	( LETTER | '_' )
+	;
+
+protected NMCHAR
+:
+	( LETTER | DIGIT | '.' | '-' | '_' | COMBINING_CHAR | EXTENDER )
+	;
+
+protected NCNAME
 options {
 	testLiterals=true;
 }
+:
+	NMSTART ( NMCHAR )*
+	;
+
+protected WS
+:
+	(
+		' '
+		|
+		'\t'
+		|
+		'\n' { newline(); }
+		|
+		'\r'
+	)+
+	;
+
+protected EXPR_COMMENT
+options {
+	testLiterals=false;
+}:
+	"(:" ( CHAR | ( ':' ~( ')' ) ) => ':' )* ":)"
+	;
+
+protected INTEGER_LITERAL : DIGITS ;
+
+protected DECIMAL_LITERAL
+:
+	( '.' DIGITS ) | ( DIGITS '.' ) => DIGITS '.' ( DIGITS )?
+	;
+
+protected DOUBLE_LITERAL
+:
+	( ( '.' DIGITS ) | ( DIGITS ( '.' ( DIGIT )* )? ) ) ( 'e' | 'E' ) ( '+' | '-' )? DIGITS
+	;
+
+protected PREDEFINED_ENTITY_REF
+:
+	'&' ( "lt" | "gt" | "amp" | "quot" | "apos" ) ';'
+	;
+
+protected CHAR_REF
+:
+	'&' '#' ( DIGITS | ( 'x' HEX_DIGITS ) ) ';'
+	;
+
+protected STRING_LITERAL
+options {
+	testLiterals = false;
+}
+:
+	'"'! ( PREDEFINED_ENTITY_REF | CHAR_REF | ( '"'! '"' ) | ~ ( '"' | '&' ) )*
+	'"'!
+	|
+	'\''! ( PREDEFINED_ENTITY_REF | CHAR_REF | ( '\''! '\'' ) | ~ ( '\'' | '&' ) )*
+	'\''!
+	;
+
+protected ATTRIBUTE_CONTENT
+options {
+	testLiterals=false;
+}
+:
+	(
+		'\t'
+		|
+		'\r'
+		|
+		'\n'
+		|
+		'\u0020'
+		|
+		'\u0021'
+		|
+		'\u0023'..'\u0025'
+		|
+		'\''..'\u003b'
+		|
+		'\u003d'..'\u007a'
+		|
+		'\u007c'
+		|
+		'\u007e'..'\uFFFD'
+	)+
+	;
+
+protected ELEMENT_CONTENT
+options {
+	testLiterals=false;
+}
+:
+	( '\t' | '\r' | '\n' | '\u0020'..'\u0025' | '\''..'\u003b' | '\u003d'..'\u007a' | '\u007c' | '\u007e'..'\uFFFD' )+
+	;
+
+protected XML_COMMENT
+options {
+	testLiterals=false;
+}
+:
+	"<!--"! ( ~ ( '-' ) | ( '-' ~ ( '-' ) ) => '-' )+
+	;
+
+protected XML_PI
+options {
+	testLiterals=false;
+}
+:
+	XML_PI_START! NCNAME ' ' ( ~ ( '?' ) | ( '?' ~ ( '>' ) ) => '?' )+
+	;
+
+NEXT_TOKEN
+options {
+	testLiterals = false;
+}:
+	XML_COMMENT { $setType(XML_COMMENT); }
+	|
+	( XML_PI_START )
+	=> XML_PI { $setType(XML_PI); }
+	|
+	END_TAG_START
+	{
+		inElementContent= false;
+		wsExplicit= false;
+		$setType(END_TAG_START);
+	}
+	|
+	LT
+	{
+		inElementContent= false;
+		$setType(LT);
+	}
+	|
+	LTEQ { $setType(LTEQ); }
+	|
+	LCURLY
+	{
+		inElementContent= false;
+		$setType(LCURLY);
+	}
+	|
+	RCURLY { $setType(RCURLY); }
+	|
+	{ inAttributeContent }? attr:ATTRIBUTE_CONTENT
+	{ 
+		$setType(ATTRIBUTE_CONTENT);
+	}
+	|
+	{ !(parseStringLiterals || inElementContent) }?
+	QUOT
+	{ $setType(QUOT); }
+	|
+	{ inElementContent }?
+	ELEMENT_CONTENT
+	{ $setType(ELEMENT_CONTENT); }
+	|
+	WS
+	{
+		if (wsExplicit) {
+			$setType(WS);
+			$setText("WS");
+		} else
+			$setType(Token.SKIP);
+	}
+	|
+	EXPR_COMMENT
+	{ $setType(Token.SKIP); }
+	|
+	ncname:NCNAME { $setType(ncname.getType()); }
+	|
+	{ parseStringLiterals }?
+	STRING_LITERAL { $setType(STRING_LITERAL); }
+	|
+	( '.' '.' )
+	=> PARENT { $setType(PARENT); }
+	|
+	( '.' INTEGER_LITERAL )
+	=> DECIMAL_LITERAL { $setType(DECIMAL_LITERAL); }
+	|
+	( '.' )
+	=> SELF { $setType(SELF); }
+	|
+	( DECIMAL_LITERAL ( 'e' | 'E' ) )
+	=> DOUBLE_LITERAL
+	{ $setType(DOUBLE_LITERAL); }
+	|
+	( INTEGER_LITERAL '.' )
+	=> DECIMAL_LITERAL
+	{ $setType(DECIMAL_LITERAL); }
+	|
+	INTEGER_LITERAL { $setType(INTEGER_LITERAL); }
+	|
+	SLASH { $setType(SLASH); }
+	|
+	DSLASH { $setType(DSLASH); }
+	|
+	COLON { $setType(COLON); }
+	|
+	COMMA { $setType(COMMA); }
+	|
+	SEMICOLON { $setType(SEMICOLON); }
+	|
+	STAR { $setType(STAR); }
+	|
+	QUESTION { $setType(QUESTION); }
+	|
+	PLUS { $setType(PLUS); }
+	|
+	MINUS { $setType(MINUS); }
+	|
+	LPPAREN { $setType(LPPAREN); }
+	|
+	RPPAREN { $setType(RPPAREN); }
+	|
+	LPAREN { $setType(LPAREN); }
+	|
+	RPAREN { $setType(RPAREN); }
+	|
+	UNION { $setType(UNION); }
+	|
+	AT { $setType(AT); }
+	|
+	DOLLAR { $setType(DOLLAR); }
+	|
+	OREQ { $setType(OREQ); }
+	|
+	ANDEQ { $setType(ANDEQ); }
+	|
+	EQ { $setType(EQ); }
+	|
+	NEQ { $setType(NEQ); }
+	|
+	XML_COMMENT_END { $setType(XML_COMMENT_END); }
+	|
+	GT { $setType(GT); }
+	|
+	GTEQ { $setType(GTEQ); }
+	|
+	XML_PI_END { $setType(XML_PI_END); }
+	;
+
+protected CHAR
+:
+	( '\t' | '\n' | '\r' | '\u0020'..'\u0039' | '\u003B'..'\uD7FF' | '\uE000'..'\uFFFD' )
+	;
+
+protected BASECHAR
 :
 	(
 		'\u0041'..'\u005a'
@@ -2497,262 +2771,4 @@ protected EXTENDER
 		|
 		'\u30fc'..'\u30fe'
 	)
-	;
-
-protected LETTER
-:
-	( BASECHAR | IDEOGRAPHIC )
-	;
-
-protected DIGITS
-:
-	( DIGIT )+
-	;
-
-
-protected HEX_DIGITS
-:
-	( '0'..'9' | 'a'..'f' | 'A'..'F' )+
-	;
-
-protected NMSTART
-:
-	( LETTER | '_' )
-	;
-
-protected NMCHAR
-:
-	( LETTER | DIGIT | '.' | '-' | '_' | COMBINING_CHAR | EXTENDER )
-	;
-
-protected NCNAME
-options {
-	testLiterals=false;
-}
-:
-	NMSTART ( NMCHAR )*
-	;
-
-protected WS
-:
-	( ' ' | '\t' | '\n' { newline(); } | '\r' )+
-	;
-
-protected EXPR_COMMENT
-:
-	"(:" ( CHAR | ( ':' ~( ')' ) ) => ':' )* ":)"
-	;
-	
-protected INTEGER_LITERAL : DIGITS ;
-
-protected DECIMAL_LITERAL
-:
-	( '.' DIGITS ) | ( DIGITS '.' ) => DIGITS '.' ( DIGITS )?
-	;
-
-protected DOUBLE_LITERAL
-:
-	( ( '.' DIGITS ) | ( DIGITS ( '.' ( DIGIT )* )? ) ) ( 'e' | 'E' ) ( '+' | '-' )? DIGITS
-	;
-
-protected PREDEFINED_ENTITY_REF
-:
-	'&' ( "lt" | "gt" | "amp" | "quot" | "apos" ) ';'
-	;
-
-protected CHAR_REF
-:
-	'&' '#' ( DIGITS | ( 'x' HEX_DIGITS ) ) ';'
-	;
-
-protected STRING_LITERAL
-options {
-	testLiterals = false;
-}
-:
-	'"'! ( PREDEFINED_ENTITY_REF | CHAR_REF | ( '"'! '"' ) | ~ ( '"' | '&' ) )*
-	'"'!
-	|
-	'\''! ( PREDEFINED_ENTITY_REF | CHAR_REF | ( '\''! '\'' ) | ~ ( '\'' | '&' ) )*
-	'\''!
-	;
-
-protected ATTRIBUTE_CONTENT
-options {
-	testLiterals=false;
-}
-:
-	(
-		'\t'
-		|
-		'\r'
-		|
-		'\n'
-		|
-		'\u0020'
-		|
-		'\u0021'
-		|
-		'\u0023'..'\u0025'
-		|
-		'\''..'\u003b'
-		|
-		'\u003d'..'\u007a'
-		|
-		'\u007c'
-		|
-		'\u007e'..'\uFFFD'
-	)+
-	;
-
-protected ELEMENT_CONTENT
-options {
-	testLiterals=false;
-}
-:
-	( '\t' | '\r' | '\n' | '\u0020'..'\u0025' | '\''..'\u003b' | '\u003d'..'\u007a' | '\u007c' | '\u007e'..'\uFFFD' )+
-	;
-
-protected XML_COMMENT
-options {
-	testLiterals=false;
-}
-:
-	"<!--"! ( ~ ( '-' ) | ( '-' ~ ( '-' ) ) => '-' )+
-	;
-
-protected XML_PI
-options {
-	testLiterals=false;
-}
-:
-	XML_PI_START! NCNAME ' ' ( ~ ( '?' ) | ( '?' ~ ( '>' ) ) => '?' )+
-	;
-
-NEXT_TOKEN
-:
-	XML_COMMENT { $setType(XML_COMMENT); }
-	|
-	( XML_PI_START )
-	=> XML_PI { $setType(XML_PI); }
-	|
-	END_TAG_START
-	{
-		inElementContent= false;
-		wsExplicit= false;
-		$setType(END_TAG_START);
-	}
-	|
-	LT
-	{
-		inElementContent= false;
-		$setType(LT);
-	}
-	|
-	LTEQ { $setType(LTEQ); }
-	|
-	LCURLY
-	{
-		inElementContent= false;
-		$setType(LCURLY);
-	}
-	|
-	RCURLY { $setType(RCURLY); }
-	|
-	{ inAttributeContent }?
-	ATTRIBUTE_CONTENT
-	{ $setType(ATTRIBUTE_CONTENT); }
-	|
-	{ !(parseStringLiterals || inElementContent) }?
-	QUOT
-	{ $setType(QUOT); }
-	|
-	{ inElementContent }?
-	ELEMENT_CONTENT
-	{ $setType(ELEMENT_CONTENT); }
-	|
-	WS
-	{
-		if (wsExplicit) {
-			$setType(WS); $setText("WS");
-		} else
-			$setType(Token.SKIP);
-	}
-	| 
-	EXPR_COMMENT
-	{
-		$setType(Token.SKIP);
-	}
-	|
-	NCNAME { $setType(NCNAME); }
-	|
-	{ parseStringLiterals }?
-	STRING_LITERAL { $setType(STRING_LITERAL); }
-	|
-	( '.' '.' )
-	=> PARENT { $setType(PARENT); }
-	|
-	( '.' INTEGER_LITERAL )
-	=> DECIMAL_LITERAL { $setType(DECIMAL_LITERAL); }
-	|
-	( '.' )
-	=> SELF { $setType(SELF); }
-	|
-	( DECIMAL_LITERAL ( 'e' | 'E' ) )
-	=> DOUBLE_LITERAL
-	{ $setType(DOUBLE_LITERAL); }
-	|
-	( INTEGER_LITERAL '.' )
-	=> DECIMAL_LITERAL
-	{ $setType(DECIMAL_LITERAL); }
-	|
-	INTEGER_LITERAL { $setType(INTEGER_LITERAL); }
-	|
-	SLASH { $setType(SLASH); }
-	|
-	DSLASH { $setType(DSLASH); }
-	|
-	COLON { $setType(COLON); }
-	|
-	COMMA { $setType(COMMA); }
-	|
-	SEMICOLON { $setType(SEMICOLON); }
-	|
-	STAR { $setType(STAR); }
-	|
-	QUESTION { $setType(QUESTION); }
-	|
-	PLUS { $setType(PLUS); }
-	|
-	MINUS { $setType(MINUS); }
-	|
-	LPPAREN { $setType(LPPAREN); }
-	|
-	RPPAREN { $setType(RPPAREN); }
-	|
-	LPAREN { $setType(LPAREN); }
-	|
-	RPAREN { $setType(RPAREN); }
-	|
-	UNION { $setType(UNION); }
-	|
-	AT { $setType(AT); }
-	|
-	DOLLAR { $setType(DOLLAR); }
-	|
-	OREQ { $setType(OREQ); }
-	|
-	ANDEQ { $setType(ANDEQ); }
-	|
-	EQ { $setType(EQ); }
-	|
-	NEQ { $setType(NEQ); }
-	|
-	XML_COMMENT_END { $setType(XML_COMMENT_END); }
-	|
-	GT { $setType(GT); }
-	|
-	GTEQ { $setType(GTEQ); }
-	|
-	XML_PI_END { $setType(XML_PI_END); }
 	;

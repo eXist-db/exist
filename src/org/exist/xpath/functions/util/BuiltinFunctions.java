@@ -40,6 +40,9 @@ import org.exist.xpath.value.Type;
 import org.exist.xpath.value.ValueSequence;
 
 /**
+ * Returns a sequence containing the QNames of all built-in functions
+ * currently registered in the query engine.
+ * 
  * @author wolf
  */
 public class BuiltinFunctions extends Function {
@@ -47,6 +50,8 @@ public class BuiltinFunctions extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("builtin-functions", UTIL_FUNCTION_NS, "util"),
+			"Returns a sequence containing the QNames of all built-in functions " +
+			"currently known to the system.",
 			null,
 			new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE));
 

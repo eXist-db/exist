@@ -9,7 +9,7 @@ import org.exist.xpath.value.Item;
 import org.exist.xpath.value.SequenceIterator;
 import org.w3c.dom.Node;
 
-public class TextSearchResult extends NodeSet {
+public class TextSearchResult extends AbstractNodeSet {
 
 	public final static int INITIAL_ARRAY_SIZE = 250;
 

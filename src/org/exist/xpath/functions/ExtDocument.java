@@ -55,6 +55,13 @@ public class ExtDocument extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("document", BUILTIN_FUNCTION_NS),
+            "Includes one or more documents " +
+            "into the input sequence. This function is specific to eXist and " +
+            "will be replaced with the corresponding fn:doc function. Currently, " +
+            "eXist interprets each argument as an absolute path pointing to a " +
+            "document in the database, as for example, '/db/shakespeare/plays/hamlet.xml'. " +
+            "If no arguments are specified, the function will load all documents in the " +
+            "database.",
 			new SequenceType[] {
 				 new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),

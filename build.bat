@@ -7,7 +7,8 @@ echo the home of you JDK.
 goto :eof
 
 :gotJavaHome
-set _LIBJARS=%CLASSPATH%;exist.jar;%JAVA_HOME%\lib\tools.jar;lib\core\ant.jar;lib\optional\jakarta-regexp-1.2.jar
+set _LIBJARS=%CLASSPATH%;"%EXIST_HOME%"\lib\core\ant-launcher.jar;%EXIST_HOME%\lib\core\junit.jar:%EXIST_HOME%\lib\core\jakarta-oro-2.0.6.jar;%JAVA_HOME%\lib\tools.jar
+
 set JAVA_ENDORSED_DIRS="%EXIST_HOME%"\lib\endorsed
 set JAVA_OPTS=-Xms32000k -Xmx256000k -Djava.endorsed.dirs="%JAVA_ENDORSED_DIRS%"
 

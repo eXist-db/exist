@@ -129,7 +129,7 @@ public class FunctionFactory {
 		// a user-defined function 
 		if (step == null) {
 			if(uri.equals(Function.BUILTIN_FUNCTION_NS) || uri.equals(Function.UTIL_FUNCTION_NS) |
-				uri.equals(Function.XMLDB_FUNCTION_NS)) {
+				uri.equals(Function.XMLDB_FUNCTION_NS) || uri.equals(Function.REQUEST_FUNCTION_NS)) {
 				Class clazz = context.getClassForFunction(qname);
 				if (clazz == null)
 					throw new XPathException("function " + qname.toString() + " ( namespace-uri = " + 

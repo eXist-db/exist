@@ -36,6 +36,8 @@ import org.exist.xpath.value.StringValue;
 import org.exist.xpath.value.Type;
 
 /**
+ * Generate an MD5 key from a string.
+ * 
  * @author wolf
  */
 public class MD5 extends Function {
@@ -43,6 +45,7 @@ public class MD5 extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("md5", UTIL_FUNCTION_NS, "util"),
+			"Generates an MD5 key from a string.",
 			new SequenceType[] {
 				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 				},

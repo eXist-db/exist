@@ -50,6 +50,11 @@ public class ExtCollection extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("collection", BUILTIN_FUNCTION_NS),
+            "Includes the documents contained in the specified collection " +
+            "into the input sequence. eXist interprets the arguments as absolute paths " +
+            "pointing to database collections, as for example, '/db/test'. Documents " +
+            "located in subcollections of a collection are included into the input " +
+            "set.",
 			new SequenceType[] {
 				 new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),

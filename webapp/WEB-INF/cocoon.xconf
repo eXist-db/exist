@@ -159,8 +159,6 @@
       <input-module name="defaults"/>
     </component-instance>
 
-    <component-instance class="org.apache.cocoon.components.modules.input.XMLFormInput" logger="core.modules.input" name="xmlform"/>
-
 </input-modules>
 
   <!--+

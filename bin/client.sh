@@ -31,7 +31,7 @@ OPTIONS="-Dexist.home=$EXIST_HOME"
 
 # set java options
 if [ -z "$JAVA_OPTIONS" ]; then
-    export JAVA_OPTIONS="-Xms32000k -Xmx128000k -Dfile.encoding=UTF-8"
+    export JAVA_OPTIONS="-Xms128m -Xmx384m -Dfile.encoding=UTF-8"
 fi
 
 JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed

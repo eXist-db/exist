@@ -374,7 +374,7 @@ public class NativeBroker extends DBBroker {
 		int docId;
 		int len;
 		short collectionId;
-		long gid;
+		long gid, address;
 		VariableByteInputStream is;
 		ElementValue ref;
 		byte[] data;
@@ -423,12 +423,14 @@ public class NativeBroker extends DBBroker {
 					gid = 0;
 					for (int k = 0; k < len; k++) {
 						gid = gid + is.readLong();
+						address = is.readFixedLong();
 						result.add(
 							new NodeProxy(
 								doc,
 								gid,
 								Node.ELEMENT_NODE,
-								StorageAddress.read(is)),
+								address),
+								//StorageAddress.read(is)),
 							len);
 					}
 				}

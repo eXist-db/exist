@@ -31,6 +31,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
@@ -121,6 +122,9 @@ public abstract class BindingExpression extends AbstractExpression {
 				}
 			}
 			return result;
+		} else if (contextSequence == null) {
+			Sequence innerSeq = whereExpr.eval(docs, null);
+			return innerSeq.effectiveBooleanValue() ? BooleanValue.TRUE : BooleanValue.FALSE;
 		} else {
 			// general where clause: just check the effective boolean value
 			NodeSet result = new ExtArrayNodeSet();

@@ -46,6 +46,9 @@ import antlr.TokenStreamException;
 import antlr.collections.AST;
 
 /**
+ * Dynamically evaluates a string argument as an XPath/Query
+ * expression.
+ * 
  * @author wolf
  */
 public class EvalFunction extends Function {
@@ -53,6 +56,11 @@ public class EvalFunction extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("eval", UTIL_FUNCTION_NS, "util"),
+			"Dynamically evaluates its string argument as " +
+			"an XPath/XQuery expression. " +
+			"The argument expression will inherit the current execution context, i.e. all " +
+			"namespace declarations and variable declarations are visible from within the " +
+			"inner expression.",
 			new SequenceType[] {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 			},
@@ -77,6 +85,7 @@ public class EvalFunction extends Function {
 		String expr = StringValue.expand(
 			getArgument(0).eval(docs, contextSequence, contextItem).getStringValue()
 		);
+		LOG.debug("eval: " + expr);
 		XPathLexer2 lexer = new XPathLexer2(new StringReader(expr));
 		XPathParser2 parser = new XPathParser2(lexer, false);
 		// shares the context of the outer expression

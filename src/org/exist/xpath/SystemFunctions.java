@@ -70,6 +70,8 @@ public final class SystemFunctions {
 		"org.exist.xpath.functions.ExtXCollection",
 		"org.exist.xpath.functions.ExtDoctype",
 		"org.exist.xpath.functions.FunDistinctValues",
+		"org.exist.xpath.functions.FunEmpty",
+		"org.exist.xpath.functions.FunItemAt",
 		"org.exist.xpath.functions.xmldb.XMLDBCollection",
 		"org.exist.xpath.functions.xmldb.XMLDBStore",
 		"org.exist.xpath.functions.xmldb.XMLDBRegisterDatabase",
@@ -77,7 +79,10 @@ public final class SystemFunctions {
 		"org.exist.xpath.functions.util.MD5",
 		"org.exist.xpath.functions.util.DescribeFunction",
 		"org.exist.xpath.functions.util.BuiltinFunctions",
-		"org.exist.xpath.functions.util.EvalFunction"
+		"org.exist.xpath.functions.util.EvalFunction",
+		"org.exist.xpath.functions.request.RequestParameter",
+		"org.exist.xpath.functions.request.GetSessionAttribute",
+		"org.exist.xpath.functions.request.SetSessionAttribute"
 	};
 
 }

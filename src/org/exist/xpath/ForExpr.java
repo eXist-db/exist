@@ -25,6 +25,7 @@ package org.exist.xpath;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.xpath.value.IntegerValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.OrderedValueSequence;
 import org.exist.xpath.value.Sequence;
@@ -39,10 +40,16 @@ import org.exist.xpath.value.ValueSequence;
  */
 public class ForExpr extends BindingExpression {
 
+	private String positionalVariable = null;
+	
 	public ForExpr(StaticContext context) {
 		super(context);
 	}
 
+	public void setPositionalVariable(String var) {
+		positionalVariable = var;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
@@ -56,13 +63,22 @@ public class ForExpr extends BindingExpression {
 		// declare the variable
 		Variable var = new Variable(QName.parse(context, varName));
 		context.declareVariable(var);
+		
+		// declare positional variable
+		Variable at = null;
+		if(positionalVariable != null) {
+			at = new Variable(QName.parse(context, positionalVariable));
+			context.declareVariable(at);
+		}
+		
 		// evaluate the "in" expression
 		Sequence in = inputSequence.eval(docs, null, null);
 		var.setValue(in);
 		if(whereExpr != null)
 			whereExpr.setInPredicate(true);
 		if(whereExpr != null && 
-			( whereExpr.getDependencies() & Dependency.CONTEXT_ITEM ) == 0) {
+			( whereExpr.getDependencies() & Dependency.CONTEXT_ITEM ) == 0 &&
+			at == null) {
 			LOG.debug("using single walk-through");
 			setContext(in);
 			in = applyWhereExpression(context, docs, null);
@@ -77,10 +93,15 @@ public class ForExpr extends BindingExpression {
 			
 		Sequence val = null;
 		int p = 1;
+		IntegerValue atVal = new IntegerValue(1);
+		if(positionalVariable != null)
+			at.setValue(atVal);
 		// loop through each variable binding
 		for (SequenceIterator i = in.iterate(); i.hasNext(); p++) {
 			contextItem = i.nextItem();
 			context.setContextPosition(p);
+			atVal.setValue(p);
+			
 			if(contextItem instanceof NodeProxy)
 				((NodeProxy)contextItem).addContextNode((NodeProxy)contextItem);
 			contextSequence = contextItem.toSequence();
@@ -89,7 +110,7 @@ public class ForExpr extends BindingExpression {
 			// check optional where clause
 			if (whereExpr != null) {
 				val = applyWhereExpression(context, docs, contextSequence);
-				if(val.getLength() == 0)
+				if(!val.effectiveBooleanValue())
 					continue;
 			} else
 				val = contextItem.toSequence();

@@ -36,6 +36,9 @@ public class FunCeiling extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("ceiling", BUILTIN_FUNCTION_NS),
+            "Returns a value of the same type as the argument. Specifically, " +
+            "returns the smallest (closest to negative infinity) number " +
+            "with no fractional part that is not less than the value of the argument.",
 			new SequenceType[] { new SequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE) },
 			new SequenceType(Type.NUMBER, Cardinality.ONE)
 		);

@@ -48,11 +48,16 @@ public class XMLDBStore extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("store", XMLDB_FUNCTION_NS, "xmldb"),
+			"Store a node as a new document into the database. The first " +
+			"argument specifies the collection object as returned by the collection or " +
+			"create-collection functions. The second argument is the name of the new " +
+			"document. The third argument represents the document root node. It will be " +
+			"serialized to a SAX stream and passed to the database.",
 			new SequenceType[] {
 				new SequenceType(Type.JAVA_OBJECT, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)},
-			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE));
+			new SequenceType(Type.ITEM, Cardinality.EMPTY));
 
 	/**
 	 * @param context

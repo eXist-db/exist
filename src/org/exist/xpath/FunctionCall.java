@@ -30,7 +30,8 @@ import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.Type;
 
 /**
- * Represents a call to a user-defined function {@see org.exist.xpath.functions.UserDefinedFunction}.
+ * Represents a call to a user-defined function 
+ * {@see org.exist.xpath.functions.UserDefinedFunction}.
  * 
  * FunctionCall wraps around a user-defined function. It makes sure that all function parameters
  * are checked against the signature of the function. 

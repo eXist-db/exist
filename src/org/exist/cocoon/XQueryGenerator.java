@@ -32,8 +32,9 @@ import org.apache.avalon.framework.parameters.Parameters;
 import org.apache.cocoon.ProcessingException;
 import org.apache.cocoon.environment.ObjectModelHelper;
 import org.apache.cocoon.environment.Request;
+import org.apache.cocoon.environment.Session;
 import org.apache.cocoon.environment.SourceResolver;
-import org.apache.cocoon.generation.AbstractGenerator;
+import org.apache.cocoon.generation.ServiceableGenerator;
 import org.apache.excalibur.source.Source;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xmldb.XPathQueryServiceImpl;
@@ -47,14 +48,13 @@ import org.xmldb.api.modules.XMLResource;
 /**
  * @author wolf
  */
-public class XQueryGenerator extends AbstractGenerator {
+public class XQueryGenerator extends ServiceableGenerator {
 
 	private Source inputSource = null;
-
-	private Request request = null;
-
-	private boolean mapRequestParams = true;
-	
+	private Map objectModel = null;
+	private boolean mapRequestParams = false;
+	private boolean createSession = false;
+		
 	private String collectionURI = null;
 	private String user = null;
 	private String password = null;
@@ -69,12 +69,14 @@ public class XQueryGenerator extends AbstractGenerator {
 		Parameters parameters)
 		throws ProcessingException, SAXException, IOException {
 		super.setup(resolver, objectModel, source, parameters);
-		this.request = ObjectModelHelper.getRequest(objectModel);
+		this.objectModel = objectModel;
+		
 		this.inputSource = resolver.resolveURI(source);
 		this.collectionURI = parameters.getParameter("collection", "xmldb:exist:///db");
 		this.user = parameters.getParameter("user", "guest");
 		this.password = parameters.getParameter("password", "guest");
 		this.mapRequestParams = parameters.getParameterAsBoolean("use-request-parameters", false);
+		this.createSession = parameters.getParameterAsBoolean("create-session", true);
 	}
 
 	/* (non-Javadoc)
@@ -84,6 +86,8 @@ public class XQueryGenerator extends AbstractGenerator {
 		throws IOException, SAXException, ProcessingException {
 		if (inputSource == null)
 			throw new ProcessingException("No input source");
+		Request request = ObjectModelHelper.getRequest(objectModel);
+		Session session = request.getSession(createSession);
 		try {
 			Collection collection = DatabaseManager.getCollection(collectionURI, user, password);
 			if(collection == null) {
@@ -94,16 +98,17 @@ public class XQueryGenerator extends AbstractGenerator {
 			XPathQueryServiceImpl service = (XPathQueryServiceImpl)
 				collection.getService("XPathQueryService", "1.0");
 			service.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
+			
+			service.declareVariable("request", request);
+			service.declareVariable("session", session);
+			
 			String xquery = readQuery();
-			if(getLogger().isDebugEnabled())
-				getLogger().debug("XQuery: " + xquery);
 			if(mapRequestParams)
-				mapRequestParams(service);
+				mapRequestParams(request, service);
 			ResourceSet result = service.query(xquery);
 			this.contentHandler.startDocument();
 			for(long i = 0; i < result.getSize(); i++) {
 				XMLResource resource = (XMLResource) result.getResource(i);
-				System.out.println(resource.getContent());
 				resource.getContentAsSAX(this.contentHandler);
 			}
 			this.contentHandler.endDocument();
@@ -112,7 +117,7 @@ public class XQueryGenerator extends AbstractGenerator {
 		}
 	}
 
-	private void mapRequestParams(XPathQueryServiceImpl service) throws XMLDBException {
+	private void mapRequestParams(Request request, XPathQueryServiceImpl service) throws XMLDBException {
 		String param;
 		String values[];
 		for(Enumeration enum = request.getParameterNames(); enum.hasMoreElements(); ) {

@@ -3,7 +3,6 @@ package org.exist.xmldb;
 import java.io.StringReader;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Properties;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
@@ -128,7 +127,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
             // declare static variables
             for(Iterator i = variableDecls.entrySet().iterator(); i.hasNext(); ) {
             	entry = (Map.Entry)i.next();
-            	context.declareVariable((String)entry.getKey(), (String)entry.getValue());
+            	context.declareVariable((String)entry.getKey(), entry.getValue());
             }
 			XPathLexer2 lexer = new XPathLexer2(new StringReader(query));
 			XPathParser2 parser = new XPathParser2(lexer, false);
@@ -149,8 +148,6 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 				throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR,
 					treeParser.getErrorMessage(), treeParser.getLastException());
 			}
-						
-			LOG.info("query: " + expr.pprint());
 			long start = System.currentTimeMillis();
 			//if (parser.foundErrors())
 			//	throw new XMLDBException(ErrorCodes.VENDOR_ERROR, parser.getErrorMsg());

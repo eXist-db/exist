@@ -41,6 +41,7 @@ public class FunBoolean extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("boolean", BUILTIN_FUNCTION_NS),
+            "Computes the xs:boolean value of the sequence argument.",
 			new SequenceType[] { new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE) },
 			new SequenceType(Type.BOOLEAN, Cardinality.ONE)
 		);

@@ -6,7 +6,7 @@ import java.util.Stack;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.SequenceIterator;
 
-public class AVLTreeNodeSet extends NodeSet {
+public class AVLTreeNodeSet extends AbstractNodeSet {
 
 	private Node root;
 	private int size = 0;
