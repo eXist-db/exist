@@ -32,8 +32,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Stack;
 import java.util.Vector;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -818,7 +816,7 @@ public class RpcServer implements RpcAPI {
      * is set to >0 (true), results are pretty printed.
      *  
      */
-    public String query(User user, byte[] xquery, int howmany, int start,
+    public byte[] query(User user, byte[] xquery, int howmany, int start,
             Hashtable parameters) throws EXistException,
             PermissionDeniedException {
         RpcConnection con = pool.get();
@@ -832,7 +830,7 @@ public class RpcServer implements RpcAPI {
         String result = null;
         try {
             result = con.query(user, xqueryStr, howmany, start, parameters);
-            return result;
+            return result.getBytes("UTF-8");
         } catch (Exception e) {
             handleException(e);
             return null;
