@@ -1498,6 +1498,12 @@ implements Comparable, EntityResolver, Cacheable {
 	public BinaryDocument addBinaryResource(DBBroker broker,
 			String name, byte[] data, String mimeType) throws EXistException,
 			PermissionDeniedException, LockException {
+		return addBinaryResource(broker, name, data, mimeType, null, null);
+	}
+
+	public BinaryDocument addBinaryResource(DBBroker broker,
+			String name, byte[] data, String mimeType, Date created, Date modified) throws EXistException,
+			PermissionDeniedException, LockException {
 		if (broker.isReadOnly())
 			throw new PermissionDeniedException("Database is read-only");
 		BinaryDocument blob = null;
@@ -1518,6 +1524,13 @@ implements Comparable, EntityResolver, Cacheable {
 				broker.removeDocument(oldDoc);
 			}
 
+			if(created != null)
+				blob.setCreated(created.getTime());
+			
+			if(modified != null)
+				blob.setLastModified(modified.getTime());
+			
+			
 			broker.storeBinaryResource(blob, data);
 			addDocument(broker, blob);
 			broker.addDocument(this, blob);
@@ -1528,6 +1541,7 @@ implements Comparable, EntityResolver, Cacheable {
 		}
 	}
 
+	
 	public void setId(short id) {
 		this.collectionId = id;
 	}
