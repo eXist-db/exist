@@ -853,9 +853,9 @@ public class NativeTextEngine extends TextSearchEngine {
 				words[0].put(word, buf);
 			} else {
 				o = (TermOccurrence)buf.getLast();
-				if(o.gid == gid)
+				if(o.gid == gid) {
 					o.frequency++;
-				else {
+				} else {
 					o = new TermOccurrence(gid);
 					buf.add(o);
 				}

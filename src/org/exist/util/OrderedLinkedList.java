@@ -110,6 +110,7 @@ public class OrderedLinkedList {
 	}
     
 	public void removeNode(Node node) {
+		--size;
 		if (node.prev == null) {
 			if (node.next != null) {
 				node.next.prev = null;
@@ -123,7 +124,6 @@ public class OrderedLinkedList {
             else
                 last = node.prev;
 		}
-		size--;
 	}
 	
     public Node removeFirst() {
