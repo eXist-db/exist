@@ -466,7 +466,6 @@ public abstract class Serializer implements XMLReader {
 		if(templates != null)
 			return;
 		String stylesheet = outputProperties.getProperty(EXistOutputKeys.STYLESHEET);
-		LOG.debug("xsl = " + stylesheet);
 		if(stylesheet != null) {
 			if(doc instanceof DocumentImpl)
 				setStylesheet((DocumentImpl)doc, stylesheet);
@@ -545,10 +544,10 @@ public abstract class Serializer implements XMLReader {
 				receiver = new ReceiverToSAX(handler);
 				try {
 					this.serializeToReceiver(xsl, true);
+					templates = handler.getTemplates();
 				} catch (SAXException e) {
 					LOG.warn("SAXException while creating template", e);
 				}
-				templates = handler.getTemplates();
 				
 				// restore handlers
 				receiver = oldReceiver;
@@ -556,8 +555,9 @@ public abstract class Serializer implements XMLReader {
             }
 			LOG.debug(
 				"compiling stylesheet took " + (System.currentTimeMillis() - start));
-			xslHandler =
-				((SAXTransformerFactory) factory).newTransformerHandler(templates);
+			if(templates != null)
+				xslHandler =
+					((SAXTransformerFactory) factory).newTransformerHandler(templates);
 //			xslHandler.getTransformer().setOutputProperties(outputProperties);
 		} catch (TransformerConfigurationException e) {
 			LOG.debug("error compiling stylesheet", e);

@@ -1619,7 +1619,7 @@ public class NativeBroker extends DBBroker {
 	}
 
 	public Serializer newSerializer() {
-		return new NativeSerializer(this, null);
+		return new NativeSerializer(this, getConfiguration());
 	}
 
 	public Node objectWith(final Document doc, final long gid) {
