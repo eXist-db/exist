@@ -31,13 +31,10 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.XMLUtil;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.NewNativeBroker.NodeRef;
-import org.exist.storage.store.CollectionStore;
 import org.exist.storage.store.DOMFile;
 import org.exist.storage.store.DOMFileIterator;
 import org.exist.storage.store.DOMTransaction;
 import org.exist.storage.store.NodeIterator;
-import org.exist.storage.store.StorageAddress;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.Collations;
@@ -459,6 +456,47 @@ final class NativeDomIndexer {
             }
         }
         return resultNodeSet;
+    }
+    
+    public final static class NodeRef extends Value {
+        /**
+         * Log4J Logger for this class
+         */
+        private static final Logger LOG = Logger.getLogger(NodeRef.class);
+
+        public NodeRef() {
+            data = new byte[12];
+        }
+
+        public NodeRef(int docId, long gid) {
+            data = new byte[12];
+            ByteConversion.intToByte(docId, data, 0);
+            ByteConversion.longToByte(gid, data, 4);
+            len = 12;
+            pos = 0;
+        }
+
+        public NodeRef(int docId) {
+            data = new byte[4];
+            ByteConversion.intToByte(docId, data, 0);
+            len = 4;
+            pos = 0;
+        }
+
+        int getDocId() {
+            return ByteConversion.byteToInt(data, 0);
+        }
+
+        long getGid() {
+            return ByteConversion.byteToLong(data, 4);
+        }
+
+        void set(int docId, long gid) {
+            ByteConversion.intToByte(docId, data, 0);
+            ByteConversion.longToByte(gid, data, 4);
+            len = 12;
+            pos = 0;
+        }
     }
     
     private final boolean compare(Collator collator, String o1, String o2, int relation) {
