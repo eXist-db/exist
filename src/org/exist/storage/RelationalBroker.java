@@ -2481,5 +2481,14 @@ public class RelationalBroker extends DBBroker {
         }
     }
 
+
+	/* (non-Javadoc)
+	 * @see org.exist.storage.DBBroker#objectWith(org.exist.dom.NodeProxy)
+	 */
+	public Node objectWith(NodeProxy p) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
 
