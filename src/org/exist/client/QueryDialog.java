@@ -115,6 +115,37 @@ public class QueryDialog extends JFrame {
 		});
 		toolbar.add(button);
 		
+			toolbar.addSeparator();
+		url = getClass().getResource("icons/Copy24.gif");
+		button = new JButton(new ImageIcon(url));
+		button.setToolTipText("Copy selection.");
+		button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				query.copy();
+			}
+		});
+		toolbar.add(button);
+		url = getClass().getResource("icons/Cut24.gif");
+		button = new JButton(new ImageIcon(url));
+		button.setToolTipText("Cut selection.");
+		button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				query.cut();
+			}
+		});
+		toolbar.add(button);
+		url = getClass().getResource("icons/Paste24.gif");
+		button = new JButton(new ImageIcon(url));
+		button.setToolTipText("Paste selection.");
+		button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			   query.paste();
+			}
+		});
+		toolbar.add(button);
+		
+		
+		
 		JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		split.setResizeWeight(0.5);
 		
