@@ -2719,6 +2719,8 @@ public class NativeBroker extends DBBroker {
 	
 	public void cleanUp() {
 		Collection temp = getCollection(TEMP_COLLECTION);
+		if(temp == null)
+			return;
 		try {
 			removeCollection(temp);
 		} catch (PermissionDeniedException e) {
