@@ -22,6 +22,7 @@
  */
 package org.exist.cocoon;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -163,9 +164,13 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 						.getParameter(param, ""));
 			}
 		}
+        Context context = ObjectModelHelper.getContext(objectModel);
+        String dbHome = context.getRealPath("WEB-INF");
 		try {
 			Class driver = Class.forName(DRIVER);
 			Database database = (Database)driver.newInstance();
+            database.setProperty("create-database", "true");
+            database.setProperty("configuration", dbHome + File.separatorChar + "conf.xml");
 			DatabaseManager.registerDatabase(database);
 		} catch(Exception e) {
 			throw new ProcessingException("Failed to initialize database driver: " + e.getMessage(), e);
