@@ -456,6 +456,8 @@ implements Comparable, EntityResolver, Cacheable {
 			    reloadRequired = false;
 			}
 	        DocumentImpl doc = (DocumentImpl) documents.get(name);
+	        if(doc == null)
+	        	return null;
 	        Lock updateLock = doc.getUpdateLock();
 	        updateLock.acquire(Lock.READ_LOCK);
 	        return doc;
