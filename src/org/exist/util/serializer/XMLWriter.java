@@ -408,6 +408,7 @@ public class XMLWriter {
 				// non-breaking space:
 				case 160:
 					writer.write("&#160;");
+					break;
 				default:
 				    writeCharacterReference(ch);
 		    }
