@@ -921,7 +921,7 @@ attributeDef
 	name=q:qName! EQ! 
 	( 
 		QUOT!
-		{ lexer.inAttributeContent= true; System.out.println("in attribute..."); }
+		{ lexer.inAttributeContent= true; }
 		attributeValue { lexer.inAttributeContent= false; }
 		QUOT!
 		{ 
