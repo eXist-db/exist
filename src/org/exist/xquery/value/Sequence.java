@@ -201,4 +201,6 @@ public interface Sequence {
 	public void setIsCached(boolean cached);
 	
 	public void setSelfAsContext();
+    
+    public boolean isPersistentSet();
 }

@@ -16,7 +16,6 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
-import org.exist.storage.NativeTextEngine;
 
 public class XQueryTest extends TestCase {
 

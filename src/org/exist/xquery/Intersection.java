@@ -22,11 +22,15 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.NodeSet;
+import java.util.Set;
+import java.util.TreeSet;
+
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -50,9 +54,22 @@ public class Intersection extends CombiningExpression {
 			if(lval.getLength() == 0 || rval.getLength() == 0)
 			    return Sequence.EMPTY_SEQUENCE;
 			if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
-				throw new XPathException("intersect operand is not a node sequence");
-			NodeSet result = lval.toNodeSet().intersection(rval.toNodeSet());
-			return result;
+				throw new XPathException(getASTNode(), "intersect operand is not a node sequence");
+            
+            if (lval.isPersistentSet() && rval.isPersistentSet())
+                return lval.toNodeSet().intersection(rval.toNodeSet());
+            else {
+                ValueSequence result = new ValueSequence();
+                Set set = new TreeSet();
+                for (SequenceIterator i = lval.unorderedIterator(); i.hasNext(); )
+                    set.add(i.nextItem());
+                for (SequenceIterator i = rval.unorderedIterator(); i.hasNext(); ) {
+                    Item next = i.nextItem();
+                    if (set.contains(next))
+                        result.add(next);
+                }
+                return result;
+            }
 	}
 	
 	/* (non-Javadoc)

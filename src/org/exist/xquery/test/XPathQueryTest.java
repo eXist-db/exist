@@ -459,7 +459,7 @@ public class XPathQueryTest extends TestCase {
 			fail(e.getMessage());
 		}
 	}
-
+    
 	/**
 	 * @param result
 	 * @throws XMLDBException

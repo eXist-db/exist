@@ -742,4 +742,12 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	    }
 	    return hasMixedContent;
 	}
+    
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.AbstractSequence#isPersistentSet()
+     */
+    public boolean isPersistentSet() {
+        // node sets are always persistent
+        return true;
+    }
 }
