@@ -392,11 +392,17 @@ public class IntegerValue extends NumericValue {
 	 * @see org.exist.xquery.value.NumericValue#max(org.exist.xquery.value.AtomicValue)
 	 */
 	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
+		if(Type.subTypeOf(other.getType(), Type.INTEGER))
 			return new IntegerValue( value.max( ((IntegerValue) other).value) );
+		else
+			return ((NumericValue) convertTo(other.getType())).max(collator, other);
 	}
 
 	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
-		return new IntegerValue( value.min( ((IntegerValue) other).value) );
+		if(Type.subTypeOf(other.getType(), Type.INTEGER))
+			return new IntegerValue( value.min( ((IntegerValue) other).value) );
+		else
+			return ((NumericValue) convertTo(other.getType())).min(collator, other);
 	}
 
 	/* (non-Javadoc)
