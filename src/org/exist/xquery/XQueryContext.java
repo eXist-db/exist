@@ -800,10 +800,7 @@ public class XQueryContext {
 		} catch (IOException e) {
 			throw new XPathException("IO exception while loading module " + namespaceURI, e);
 		}
-		XQueryContext context = new XQueryContext(broker);
-		context.setStaticallyKnownDocuments(getStaticallyKnownDocuments());
-		context.setBaseURI(baseURI);
-		context.setWatchDog(watchdog);
+		XQueryContext context = new ModuleContext(this);
 		XQueryLexer lexer = new XQueryLexer(reader);
 		XQueryParser parser = new XQueryParser(lexer);
 		XQueryTreeParser astParser = new XQueryTreeParser(context);
