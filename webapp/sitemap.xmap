@@ -533,8 +533,9 @@
                 <map:generate src="xmldb:exist:///{1}/"/>
                 <map:transform src="stylesheets/xmldb-collection.xsl">
                     <map:parameter name="collection" value="{1}"/>
-                </map:transform>
-                <map:serialize type="html"/>
+				</map:transform>
+				<map:transform type="encodeURL"/>
+				<map:serialize type="html" encoding="UTF-8"/>
             </map:match>
             
             <!-- display source XML for other resources -->
@@ -563,14 +564,15 @@
                     </map:act>
                     <map:serialize type="html"/>
                 </map:match>
-                <map:generate src="xmldb:exist:///{1}"/>
+				<map:generate src="xmldb:exist:///{1}"/>
+				<map:transform type="encodeURL"/>
                 <map:select type="browser">
                     <map:when test="explorer">
                         <map:serialize type="xml"/>
                     </map:when>
                     <map:otherwise>
                         <map:transform src="stylesheets/system/xml2html.xslt"/>
-                        <map:serialize type="html"/>
+                        <map:serialize type="html" encoding="UTF-8"/>
                     </map:otherwise>
                 </map:select>
             </map:match>
