@@ -22,43 +22,75 @@
     <chapter>
 		<title>Documentation</title>
         
-        <unorderedlist>
-            <listitem>
-                <para><ulink href="xquery.xml">XQuery Docs <img src="resources/new.gif" border="0"/></ulink></para>
-            </listitem>
-            <listitem>
-                <para><ulink href="devguide.xml">Developer's Guide</ulink></para>
-            </listitem>
-            <listitem>
-                <para><ulink href="client.xml">Java Admin Client</ulink></para>
-            </listitem>
-            <listitem>
-                <para><ulink href="deployment.xml">Deployment</ulink></para>
-            </listitem>
-            <listitem>
-                <para><ulink href="security.xml">Security</ulink></para>
-            </listitem>
-            <listitem>
-                <para><ulink href="xinclude.xml">XInclude</ulink></para>
-            </listitem>
-            <listitem>
-                <para><ulink href="configuration.xml">Server Configuration</ulink></para>
-            </listitem>
-            <listitem>
-                <para><ulink href="ant-tasks.xml">Ant Tasks</ulink></para>
-            </listitem>
-            <listitem>
-                <para><ulink href="index.xml#articles">Articles</ulink></para>
-            </listitem>
-            <listitem>
-                <para><ulink href="changes.xml">Changes</ulink></para>
-            </listitem>
-            <listitem>
-                <para><ulink href="performance.xml">Performance Issues</ulink></para>
-            </listitem>
-            <listitem>
-                <para><ulink href="howtos.xml">Misc HowTos</ulink></para>
-            </listitem>
-        </unorderedlist>
+        <section>
+            <title>Available Documentation</title>
+            
+            <unorderedlist>
+                <listitem>
+                    <para><ulink href="quickstart.xml">Quick Start</ulink>: getting started with eXist.</para>
+                </listitem>
+                <listitem>
+                    <para><ulink href="xquery.xml">XQuery</ulink>: current status, supported
+                    features and extensions.</para>
+                </listitem>
+                <listitem>
+                    <para><ulink href="devguide.xml">Developer's Guide</ulink>: describes the
+                    various interfaces: XML:DB API, XML-RPC, REST, SOAP.</para>
+                </listitem>
+                <listitem>
+                    <para><ulink href="client.xml">Java Admin Client</ulink>: manual for the 
+                    GUI client.</para>
+                </listitem>
+                <listitem>
+                    <para><ulink href="deployment.xml">Deployment</ulink>: eXist supports different
+                    alternatives for server deployment.</para>
+                </listitem>
+                <listitem>
+                    <para><ulink href="security.xml">Security</ulink>: creating/changing users, passwords
+                    and permissions.</para>
+                </listitem>
+                <listitem>
+                    <para><ulink href="configuration.xml">Server Configuration</ulink>: configuration
+                    options for the server.</para>
+                </listitem>
+                <listitem>
+                    <para><ulink href="xinclude.xml">XInclude</ulink>: XInclude support in eXist.</para>
+                </listitem>
+                <listitem>
+                    <para><ulink href="ant-tasks.xml">Ant Tasks</ulink>: how to automate tasks with Ant.</para>
+                </listitem>
+                <listitem>
+                    <para><ulink href="changes.xml">Changes</ulink></para>
+                </listitem>
+                <listitem>
+                    <para><ulink href="performance.xml">Performance Issues</ulink></para>
+                </listitem>
+                <listitem>
+                    <para><ulink href="howtos.xml">Misc HowTos</ulink></para>
+                </listitem>
+            </unorderedlist>
+        </section>
+        <section>
+            <title>Articles</title>
+            
+            <p>If you would like to know more about the internal workings of eXist, you may
+                read the following article:</p>
+
+            <p>
+                Wolfgang Meier. <ulink href="http://exist-db.org/webdb.pdf">eXist: An 
+            Open Source Native XML Database</ulink>. 
+            In: Akmal B. Chaudri, Mario Jeckle, Erhard Rahm, Rainer Unland (Eds.): 
+            Web, Web-Services, and Database Systems. NODe 2002 Web- and Database-Related 
+            Workshops, Erfurt, Germany, October 2002. Springer LNCS Series, 2593.</p>
+			
+            <p>A chapter about eXist is also contained in the book:</p>
+			
+            <p>Akmal B. Chaudri, Awais Rashid, Roberto Zicari (Eds.): 
+			<link href="http://www.aw.com/catalog/academic/product/1,4096,0201844524,00.html">XML 
+			Data Management: Native XML and XML-Enabled Database Systems</link>. 
+			ISBN: 0-201-84452-4. Published by Addison Wesley Professional,
+			March, 2003.</p>
+
+        </section>
     </chapter>
 </book>
