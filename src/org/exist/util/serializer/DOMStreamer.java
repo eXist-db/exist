@@ -154,8 +154,8 @@ public class DOMStreamer {
 				String attrName;
 				for (int i = 0; i < attrs.getLength(); i++) {
 					nextAttr = (Attr) attrs.item(i);
-					System.out.println("attr = " + nextAttr.getName());
 					attrName = nextAttr.getName();
+					System.out.println("Attr = " + attrName);
 					if (attrName.equals("xmlns")) {
 						if (nsSupport.getURI("") == null) {
 							uri = nextAttr.getValue();
@@ -163,7 +163,6 @@ public class DOMStreamer {
 							nsSupport.declarePrefix("", uri);
 						}
 					} else if (attrName.startsWith("xmlns:")) {
-						System.out.println("Found " + attrName);
 						prefix = attrName.substring(6);
 						if (nsSupport.getURI(prefix) == null) {
 							uri = nextAttr.getValue();

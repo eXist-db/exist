@@ -843,14 +843,21 @@ attributeDef
 	lexer.parseStringLiterals= false;
 }
 :
-	name=q:qName! EQ! QUOT!
-	{ lexer.inAttributeContent= true; }
-	value:attributeValue { lexer.inAttributeContent= false; }
-	QUOT! { lexer.parseStringLiterals= true; }
+	name=q:qName! EQ! 
+	( 
+		QUOT!
+		{ lexer.inAttributeContent= true; }
+		attributeValue { lexer.inAttributeContent= false; }
+		QUOT! { lexer.parseStringLiterals= true; }
+		| 
+		APOS! { lexer.inAttributeContent= true; }
+		attributeValue { lexer.inAttributeContent= false; }
+		APOS! { lexer.parseStringLiterals= true; }
+	)
 	{ 
-        #attributeDef= #(#[ATTRIBUTE, name], #value);
-        #attributeDef.copyLexInfo(#q);
-    }
+		#attributeDef= #(#[ATTRIBUTE, name], #attributeDef);
+		#attributeDef.copyLexInfo(#q);
+	}
 	;
 
 attributeValue
@@ -2632,6 +2639,7 @@ protected NEQ : "!=" ;
 protected GT : '>' ;
 protected GTEQ : ">=" ;
 protected QUOT : '"' ;
+protected APOS : "'";
 protected LTEQ : "<=" ;
 
 protected LT : '<' ;

@@ -63,7 +63,10 @@ public class ElementConstructor extends NodeConstructor {
 	
 	public void addAttribute(AttributeConstructor attr) {
 		if(attr.isNamespaceDeclaration()) {
-			addNamespaceDecl(QName.extractLocalName(attr.getQName()), attr.getLiteralValue());
+			if(attr.getQName().equals("xmlns"))
+				addNamespaceDecl("", attr.getLiteralValue());
+			else
+				addNamespaceDecl(QName.extractLocalName(attr.getQName()), attr.getLiteralValue());
 		} else	if(attributes == null) {
 			attributes = new AttributeConstructor[1];
 			attributes[0] = attr;
@@ -76,6 +79,7 @@ public class ElementConstructor extends NodeConstructor {
 	}
 	
 	public void addNamespaceDecl(String prefix, String uri) {
+		System.out.println(prefix + "=" + uri);
 		if(namespaceDecls == null) {
 			namespaceDecls = new QName[1];
 			namespaceDecls[0] = new QName(prefix, uri, "xmlns");
@@ -126,7 +130,7 @@ public class ElementConstructor extends NodeConstructor {
 			    context.proceed(this, builder);
 				constructor = (AttributeConstructor)attributes[i];
 				attrValues = constructor.eval(contextSequence, contextItem);
-				attrQName = QName.parse(context, constructor.getQName());
+				attrQName = QName.parse(context, constructor.getQName(), "");
 				attrs.addAttribute(attrQName.getNamespaceURI(), attrQName.getLocalName(),
 						attrQName.toString(), "CDATA", attrValues.getStringValue());
 			}

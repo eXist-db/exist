@@ -64,11 +64,6 @@ public class NamespaceNode extends NodeImpl implements Attr {
         QName qn = getQName();
 		return qn != null ? qn.getLocalName() : null;
     }
-    
-    public String getNamespaceURI() {
-    	QName qn = getQName();
-		return qn != null ? qn.getNamespaceURI() : null;
-    }
 
 	public boolean getSpecified() {
 		return true;
@@ -82,6 +77,7 @@ public class NamespaceNode extends NodeImpl implements Attr {
 		return getQName().toString();
 	}
 
+	
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Attr#getValue()
 	 */
