@@ -4184,7 +4184,7 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				
 							String namespaceURI= context.getURIForPrefix(nc.getText());
-							QName qname= new QName(null, namespaceURI, null);
+							QName qname= new QName(null, namespaceURI, nc.getText());
 							test= new NameTest(Type.ELEMENT, qname);
 						
 				break;

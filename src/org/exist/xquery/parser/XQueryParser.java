@@ -1051,10 +1051,9 @@ public XQueryParser(ParserSharedInputState state) {
 		returnAST = null;
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST namespaceDecl_AST = null;
-		Token  prefix = null;
-		org.exist.xquery.parser.XQueryAST prefix_AST = null;
 		Token  uri = null;
 		org.exist.xquery.parser.XQueryAST uri_AST = null;
+		String prefix = null;
 		
 		org.exist.xquery.parser.XQueryAST tmp74_AST = null;
 		tmp74_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
@@ -1064,10 +1063,8 @@ public XQueryParser(ParserSharedInputState state) {
 		tmp75_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 		astFactory.addASTChild(currentAST, tmp75_AST);
 		match(LITERAL_namespace);
-		prefix = LT(1);
-		prefix_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(prefix);
-		astFactory.addASTChild(currentAST, prefix_AST);
-		match(NCNAME);
+		prefix=ncnameOrKeyword();
+		astFactory.addASTChild(currentAST, returnAST);
 		match(EQ);
 		uri = LT(1);
 		uri_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(uri);
@@ -1075,7 +1072,7 @@ public XQueryParser(ParserSharedInputState state) {
 		match(STRING_LITERAL);
 		if ( inputState.guessing==0 ) {
 			namespaceDecl_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-			namespaceDecl_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(NAMESPACE_DECL,prefix.getText())).add(uri_AST));
+			namespaceDecl_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(NAMESPACE_DECL,prefix)).add(uri_AST));
 			currentAST.root = namespaceDecl_AST;
 			currentAST.child = namespaceDecl_AST!=null &&namespaceDecl_AST.getFirstChild()!=null ?
 				namespaceDecl_AST.getFirstChild() : namespaceDecl_AST;
@@ -1206,6 +1203,103 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		varDecl_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 		returnAST = varDecl_AST;
+	}
+	
+	public final String  ncnameOrKeyword() throws RecognitionException, TokenStreamException {
+		String name;
+		
+		returnAST = null;
+		ASTPair currentAST = new ASTPair();
+		org.exist.xquery.parser.XQueryAST ncnameOrKeyword_AST = null;
+		Token  n1 = null;
+		org.exist.xquery.parser.XQueryAST n1_AST = null;
+		name= null;
+		
+		switch ( LA(1)) {
+		case NCNAME:
+		{
+			n1 = LT(1);
+			n1_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(n1);
+			astFactory.addASTChild(currentAST, n1_AST);
+			match(NCNAME);
+			if ( inputState.guessing==0 ) {
+				name= n1.getText();
+			}
+			ncnameOrKeyword_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+			break;
+		}
+		case LITERAL_xquery:
+		case LITERAL_version:
+		case LITERAL_module:
+		case LITERAL_namespace:
+		case LITERAL_import:
+		case LITERAL_declare:
+		case LITERAL_default:
+		case LITERAL_xmlspace:
+		case LITERAL_function:
+		case LITERAL_variable:
+		case LITERAL_collation:
+		case LITERAL_element:
+		case LITERAL_preserve:
+		case LITERAL_strip:
+		case LITERAL_at:
+		case LITERAL_as:
+		case LITERAL_empty:
+		case LITERAL_item:
+		case LITERAL_for:
+		case LITERAL_let:
+		case LITERAL_some:
+		case LITERAL_every:
+		case LITERAL_if:
+		case LITERAL_return:
+		case LITERAL_order:
+		case LITERAL_by:
+		case LITERAL_then:
+		case LITERAL_else:
+		case LITERAL_or:
+		case LITERAL_and:
+		case LITERAL_instance:
+		case LITERAL_of:
+		case LITERAL_cast:
+		case LITERAL_is:
+		case LITERAL_isnot:
+		case LITERAL_to:
+		case LITERAL_div:
+		case LITERAL_mod:
+		case LITERAL_union:
+		case LITERAL_intersect:
+		case LITERAL_except:
+		case LITERAL_text:
+		case LITERAL_node:
+		case LITERAL_attribute:
+		case LITERAL_comment:
+		case 132:
+		case LITERAL_document:
+		case LITERAL_child:
+		case LITERAL_self:
+		case LITERAL_descendant:
+		case 144:
+		case 145:
+		case LITERAL_following:
+		case LITERAL_parent:
+		case LITERAL_ancestor:
+		case 149:
+		case 150:
+		case LITERAL_collection:
+		case LITERAL_preceding:
+		{
+			name=reservedKeywords();
+			astFactory.addASTChild(currentAST, returnAST);
+			ncnameOrKeyword_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltException(LT(1), getFilename());
+		}
+		}
+		returnAST = ncnameOrKeyword_AST;
+		return name;
 	}
 	
 	public final String  qName() throws RecognitionException, TokenStreamException {
@@ -4521,9 +4615,68 @@ public XQueryParser(ParserSharedInputState state) {
 				{
 				switch ( LA(1)) {
 				case NCNAME:
+				case LITERAL_xquery:
+				case LITERAL_version:
+				case LITERAL_module:
+				case LITERAL_namespace:
+				case LITERAL_import:
+				case LITERAL_declare:
+				case LITERAL_default:
+				case LITERAL_xmlspace:
+				case LITERAL_function:
+				case LITERAL_variable:
+				case LITERAL_collation:
+				case LITERAL_element:
+				case LITERAL_preserve:
+				case LITERAL_strip:
+				case LITERAL_at:
+				case LITERAL_as:
+				case LITERAL_empty:
+				case LITERAL_item:
+				case LITERAL_for:
+				case LITERAL_let:
+				case LITERAL_some:
+				case LITERAL_every:
+				case LITERAL_if:
+				case LITERAL_return:
+				case LITERAL_order:
+				case LITERAL_by:
+				case LITERAL_then:
+				case LITERAL_else:
+				case LITERAL_or:
+				case LITERAL_and:
+				case LITERAL_instance:
+				case LITERAL_of:
+				case LITERAL_cast:
+				case LITERAL_is:
+				case LITERAL_isnot:
+				case LITERAL_to:
+				case LITERAL_div:
+				case LITERAL_mod:
+				case LITERAL_union:
+				case LITERAL_intersect:
+				case LITERAL_except:
+				case LITERAL_text:
+				case LITERAL_node:
+				case LITERAL_attribute:
+				case LITERAL_comment:
+				case 132:
+				case LITERAL_document:
+				case LITERAL_child:
+				case LITERAL_self:
+				case LITERAL_descendant:
+				case 144:
+				case 145:
+				case LITERAL_following:
+				case LITERAL_parent:
+				case LITERAL_ancestor:
+				case 149:
+				case 150:
+				case LITERAL_collection:
+				case LITERAL_preceding:
 				{
 					{
-					match(NCNAME);
+					ncnameOrKeyword();
 					match(COLON);
 					match(STAR);
 					}
@@ -4649,103 +4802,6 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		
 		returnAST = wildcard_AST;
-	}
-	
-	public final String  ncnameOrKeyword() throws RecognitionException, TokenStreamException {
-		String name;
-		
-		returnAST = null;
-		ASTPair currentAST = new ASTPair();
-		org.exist.xquery.parser.XQueryAST ncnameOrKeyword_AST = null;
-		Token  n1 = null;
-		org.exist.xquery.parser.XQueryAST n1_AST = null;
-		name= null;
-		
-		switch ( LA(1)) {
-		case NCNAME:
-		{
-			n1 = LT(1);
-			n1_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(n1);
-			astFactory.addASTChild(currentAST, n1_AST);
-			match(NCNAME);
-			if ( inputState.guessing==0 ) {
-				name= n1.getText();
-			}
-			ncnameOrKeyword_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-			break;
-		}
-		case LITERAL_xquery:
-		case LITERAL_version:
-		case LITERAL_module:
-		case LITERAL_namespace:
-		case LITERAL_import:
-		case LITERAL_declare:
-		case LITERAL_default:
-		case LITERAL_xmlspace:
-		case LITERAL_function:
-		case LITERAL_variable:
-		case LITERAL_collation:
-		case LITERAL_element:
-		case LITERAL_preserve:
-		case LITERAL_strip:
-		case LITERAL_at:
-		case LITERAL_as:
-		case LITERAL_empty:
-		case LITERAL_item:
-		case LITERAL_for:
-		case LITERAL_let:
-		case LITERAL_some:
-		case LITERAL_every:
-		case LITERAL_if:
-		case LITERAL_return:
-		case LITERAL_order:
-		case LITERAL_by:
-		case LITERAL_then:
-		case LITERAL_else:
-		case LITERAL_or:
-		case LITERAL_and:
-		case LITERAL_instance:
-		case LITERAL_of:
-		case LITERAL_cast:
-		case LITERAL_is:
-		case LITERAL_isnot:
-		case LITERAL_to:
-		case LITERAL_div:
-		case LITERAL_mod:
-		case LITERAL_union:
-		case LITERAL_intersect:
-		case LITERAL_except:
-		case LITERAL_text:
-		case LITERAL_node:
-		case LITERAL_attribute:
-		case LITERAL_comment:
-		case 132:
-		case LITERAL_document:
-		case LITERAL_child:
-		case LITERAL_self:
-		case LITERAL_descendant:
-		case 144:
-		case 145:
-		case LITERAL_following:
-		case LITERAL_parent:
-		case LITERAL_ancestor:
-		case 149:
-		case 150:
-		case LITERAL_collection:
-		case LITERAL_preceding:
-		{
-			name=reservedKeywords();
-			astFactory.addASTChild(currentAST, returnAST);
-			ncnameOrKeyword_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-			break;
-		}
-		default:
-		{
-			throw new NoViableAltException(LT(1), getFilename());
-		}
-		}
-		returnAST = ncnameOrKeyword_AST;
-		return name;
 	}
 	
 	public final void primaryExpr() throws RecognitionException, TokenStreamException, XPathException {
