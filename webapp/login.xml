@@ -19,7 +19,8 @@
         <section title="Login">
             <p>This resource is protected. Please login. If you have not
             set up any users, login as &quot;admin&quot; and leave the
-            password field empty.</p>
+			password field empty. For testing purposes, you may also log in
+			as &quot;guest&quot; with password &quot;guest&quot;.</p>
             
             <form action="xadmin.xsp" method="POST">
                 <table class="login" border="0">

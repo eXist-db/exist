@@ -1,6 +1,8 @@
 package org.exist.xmldb;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -149,7 +151,7 @@ public class RemoteXMLResource implements XMLResourceImpl {
 			getContent();
 		// content can be a file
 		if (file != null)
-			readContent();
+			getData();
 		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			factory.setNamespaceAware(true);
@@ -171,7 +173,7 @@ public class RemoteXMLResource implements XMLResourceImpl {
 			getContent();
 		//		content can be a file
 		if (file != null)
-			readContent();
+			getData();
 		if (cocoonParser == null) {
 			SAXParserFactory saxFactory = SAXParserFactory.newInstance();
 			saxFactory.setNamespaceAware(true);
@@ -307,23 +309,42 @@ public class RemoteXMLResource implements XMLResourceImpl {
 	 * 
 	 * @throws XMLDBException
 	 */
-	protected void readContent() throws XMLDBException {
+	protected byte[] getData() throws XMLDBException {
 		if (file != null) {
 			if (!file.canRead())
 				throw new XMLDBException(
 					ErrorCodes.INVALID_RESOURCE,
 					"failed to read resource content from file " + file.getAbsolutePath());
 			try {
-				content = XMLUtil.readFile(file);
+				byte[] chunk = new byte[512];
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				FileInputStream in = new FileInputStream(file);
+				int l;
+				do {
+					l = in.read(chunk);
+					if (l > 0)
+						out.write(chunk, 0, l);
+
+				} while (l > -1);
+				in.close();
+				byte[] data = out.toByteArray();
+				content = new String(data);
 				file = null;
+				return data;
 			} catch (IOException e) {
 				throw new XMLDBException(
 					ErrorCodes.INVALID_RESOURCE,
 					"failed to read resource content from file " + file.getAbsolutePath(),
 					e);
 			}
-		}
-	}
+		} else if(content != null)
+			try {
+				System.out.println("returning content");
+				return content.getBytes("UTF-8");
+			} catch (UnsupportedEncodingException e) {
+			}
+		return null;
+	} 
 
 	public void setPermissions(Permission perms) {
 		permissions = perms;

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001 Wolfgang M. Meier
+ *  Copyright (C) 2001-03 Wolfgang M. Meier
  *  meier@ifs.tu-darmstadt.de
  *  http://exist.sourceforge.net
  *
@@ -296,14 +296,8 @@ public class NativeSerializer extends Serializer {
 		Match matches[])
 		throws SAXException {
 		setDocument(doc);
-		if (node == null) {
-			//Value value = (Value) iter.next();
-			//if (value != null) {
-			//	node = NodeImpl.deserialize(value.getData(), 0, value.length(), doc);
-			//	node.setOwnerDocument(doc);
-			//}
+		if (node == null)
 			node = (NodeImpl) iter.next();
-		}
 		if (node == null)
 			return;
 		char ch[];
@@ -411,7 +405,10 @@ public class NativeSerializer extends Serializer {
 					String prefix;
 					for (Iterator i = myPrefixes.iterator(); i.hasNext();) {
 						prefix = (String) i.next();
-						contentHandler.endPrefixMapping(prefix);
+						if(prefix.startsWith("#"))
+							contentHandler.endPrefixMapping("");
+						else
+							contentHandler.endPrefixMapping(prefix);
 						prefixes.remove(prefix);
 					}
 				}

@@ -6,7 +6,7 @@
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
   xmlns:exist="http://exist.sourceforge.net/NS/exist" 
   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-  xmlns:dc="http://purl.org/dc/elements/1.1/#"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
   xmlns:x="http://exist.sourceforge.net/dc-ext"
   xmlns:java="http://xml.apache.org/xslt/java"
   xmlns:xmldb="http://exist-db.org/transformer/1.0"
@@ -27,14 +27,14 @@
   	<!-- create links to the previous/next set of query results -->
   	<xsl:variable name="next">
   		<xsl:choose>
-  			<xsl:when test="$to + 1 &lt;= @count">?query=<xsl:value-of select="java:java.net.URLEncoder.encode(normalize-space(@xpath))"/>&amp;from=<xsl:value-of select="$to + 1"/>&amp;to=<xsl:value-of select="$to + 11"/>
+  			<xsl:when test="$to + 1 &lt;= @count">?query=<xsl:value-of select="java:java.net.URLEncoder.encode(normalize-space(@xpath), 'UTF-8')"/>&amp;from=<xsl:value-of select="$to + 1"/>&amp;to=<xsl:value-of select="$to + 11"/>
   			</xsl:when>
   			<xsl:otherwise></xsl:otherwise>
   		</xsl:choose>
   	</xsl:variable>
   	<xsl:variable name="prev">
   		<xsl:choose>
-  			<xsl:when test="number($from) &gt; 0">?query=<xsl:value-of select="java:java.net.URLEncoder.encode(normalize-space(@xpath))"/>&amp;from=<xsl:value-of select="$from - 11"/>&amp;to=<xsl:value-of select="$from - 1"/>
+  			<xsl:when test="number($from) &gt; 0">?query=<xsl:value-of select="java:java.net.URLEncoder.encode(normalize-space(@xpath),'UTF-8')"/>&amp;from=<xsl:value-of select="$from - 11"/>&amp;to=<xsl:value-of select="$from - 1"/>
   			</xsl:when>
   			<xsl:otherwise></xsl:otherwise>
   		</xsl:choose>
@@ -166,7 +166,7 @@
     </xsl:if>
     <xsl:variable name="creator" select="./text()"/>
     <xsl:variable name="query">document(*)//rdf:Description[near(dc:editor|dc:creator|dc:contributor,'<xsl:value-of select="$creator"/>')]</xsl:variable>
-    <xsl:variable name="encoded" select='java:java.net.URLEncoder.encode($query)'/>
+    <xsl:variable name="encoded" select='java:java.net.URLEncoder.encode($query,"UTF-8")'/>
     <a href="?query={$encoded}">
 		<xsl:apply-templates/>
     </a>
@@ -181,7 +181,7 @@
     </xsl:if>
     <xsl:variable name="editor" select="./text()"/>
     <xsl:variable name="query">document(*)//rdf:Description[near(dc:editor|dc:creator|dc:contributor,'<xsl:value-of select="$editor"/>')]</xsl:variable>
-    <xsl:variable name="encoded" select='java:java.net.URLEncoder.encode($query)'/>
+    <xsl:variable name="encoded" select='java:java.net.URLEncoder.encode($query,"UTF-8")'/>
     <a href="?query={$encoded}">
       <xsl:apply-templates/>
     </a>
@@ -209,7 +209,7 @@
   <xsl:template match="dc:subject">
     <xsl:variable name="subject" select="./text()"/>
     <xsl:variable name="query">document(*)//rdf:Description[dc:subject&amp;='<xsl:value-of select='$subject'/>']</xsl:variable>
-    <xsl:variable name="encoded" select='java:java.net.URLEncoder.encode($query)'/>
+    <xsl:variable name="encoded" select='java:java.net.URLEncoder.encode($query,"UTF-8")'/>
     <a href="?query={$encoded}">
       <xsl:apply-templates/>
     </a>

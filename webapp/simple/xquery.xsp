@@ -32,7 +32,7 @@
    <section title="Give it a try!">
        
        <p>This demo is based on Cocoon2, using XSP pages. For those who don't know XSP yet: 
-       XSP is Java code inside XML, like JSP and HTML. eXist 0.7 includes an XSP logicsheet 
+       XSP is Java code inside XML, like JSP and HTML. eXist includes an XSP logicsheet 
        (taglib), which is based on the XML:DB API. The logicsheet makes it easy to access 
        eXist from a Cocoon2 XSP page.</p>
        
@@ -106,8 +106,6 @@
 	   </tr>
 	 </table>
        </form>
-       
-       <p><small>Your query will be send to the server using XML-RPC.</small></p>
 
        <p><b>Some Examples:</b></p>
        

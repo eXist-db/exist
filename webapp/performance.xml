@@ -214,7 +214,18 @@
                     structured, setting this to 4 or 5 may yield result in better download times
                     for query results. Note that the setting will only apply to newly indexed files, not to your 
                     old ones.</para>
-            </section>
+			</section>
+			<section>
+				<title>Which OS?</title>
+				<para>From my personal experience, I recommend running eXist on
+					a Linux box. In particular, the multi-threading support
+					seems to be much better on Linux than on Windows. Win XP
+					tends to block threads if the database is accessed by 
+					multiple clients. Also, it does not really recover from 
+					high load. After indexing a large number of files, 
+					response times remain bad though the database is idle.
+				</para>
+			</section>
         </section>
     </chapter>
 </book>

@@ -425,23 +425,23 @@ public class RpcServer implements RpcAPI {
 		RpcConnection con = pool.get();
 		try {
 			return con.getCreationDate(user, collectionName);
-		} catch(Exception e) {
+		} catch (Exception e) {
 			handleException(e);
 			return null;
 		}
 	}
-	
+
 	public Vector getTimestamps(User user, String documentName)
-			throws PermissionDeniedException, EXistException {
-			RpcConnection con = pool.get();
-			try {
-				return con.getTimestamps(user, documentName);
-			} catch(Exception e) {
-				handleException(e);
-				return null;
-			}
+		throws PermissionDeniedException, EXistException {
+		RpcConnection con = pool.get();
+		try {
+			return con.getTimestamps(user, documentName);
+		} catch (Exception e) {
+			handleException(e);
+			return null;
 		}
-		
+	}
+
 	/**
 	 *  Gets the user attribute of the RpcServer object
 	 *
@@ -581,17 +581,23 @@ public class RpcServer implements RpcAPI {
 	 */
 	public boolean parse(User user, byte[] xmlData, String docName, int overwrite)
 		throws EXistException, PermissionDeniedException {
-		String xml = null;
-		try {
-			xml = new String(xmlData, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			xml = new String(xmlData);
-		}
 		// some clients (Perl) encode strings with a \0 at the end.
 		// remove it ...
-		if (xml.charAt(xml.length() - 1) == 0x0)
-			xml = xml.substring(0, xml.length() - 1);
-		return parse(user, xml, docName, overwrite);
+		if (xmlData[xmlData.length - 1] == 0) {
+			byte[] temp = new byte[xmlData.length - 1];
+			System.arraycopy(xmlData, 0, temp, 0, xmlData.length - 1);
+			xmlData = temp;
+		}
+		RpcConnection con = pool.get();
+		try {
+			return con.parse(user, xmlData, docName, (overwrite != 0));
+		} catch (Exception e) {
+			handleException(e);
+			return false;
+		} finally {
+			con.synchronize();
+			pool.release(con);
+		}
 	}
 
 	/**

@@ -48,7 +48,8 @@
             	<include name="thirdparty/"/>
             	<exclude name="**/CVS/"/>
             	<exclude name="**/*~"/>
-            	<exclude name="**/*.log*"/>
+				<exclude name="**/*.log*"/>
+				<exclude name=".*"/>
             </fileset>
             <fileset targetdir="$INSTALL_PATH/webapp" dir="webapp">
             	<exclude name="**/*.dbx"/>
@@ -57,6 +58,7 @@
 				<exclude name="bin/**"/>
 				<exclude name="**/CVS/"/>
 				<exclude name="**/*~"/>
+				<exclude name=".*"/>
             </fileset>
             <file src="installer/index.html" targetdir="$INSTALL_PATH"/>
             <fileset targetdir="$INSTALL_PATH/bin" dir="installer">

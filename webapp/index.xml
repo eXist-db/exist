@@ -9,7 +9,7 @@
 			<definitionlist>
 				<definition>
 					<term>
-						<b>August 8, 2003</b>
+						<b>August 11, 2003</b>
 					</term>
 					<def>0.9.2 is out! This is the first official release with support for
 						XUpdate. Also, much effort has been invested to ensure
@@ -65,9 +65,10 @@
                 </tr>
                 <tr>
                     <td width="40%">
-						<link href="xse/squery.xsp?cname=%2Fdb%2Fshakespeare%2Fplays">squery.xsp</link>
+						<link href="acronyms/query.xsp">XML Acronyms</link>
                     </td>
-                    <td width="60%"> XML search engine, where you don't have to type XPath, with formatting adapted for each collection, highlight of terms of the query, history .</td>
+                    <td width="60%">An eXist-based version of the 
+                    <a href="http://www.xml-acronym-demystifier.org/">XML Acronym Demystifier</a>.</td>
                 </tr>
                 <tr>
                     <td width="40%">
@@ -83,6 +84,12 @@
                     </td>
                     <td width="60%">This example provides a customized interface
                         to search through a library catalogue.</td>
+                </tr>
+                <tr>
+                    <td width="40%">
+						<link href="xse/squery.xsp?cname=%2Fdb%2Fshakespeare%2Fplays">squery.xsp</link>
+                    </td>
+                    <td width="60%"> XML search engine, where you don't have to type XPath, with formatting adapted for each collection, highlight of terms of the query, history .</td>
                 </tr>
                 <tr>
                     <td width="40%">
