@@ -29,11 +29,13 @@ import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
+import org.w3c.dom.ProcessingInstruction;
 
 /**
  * xpath-library function: local-name(object)
@@ -62,28 +64,34 @@ public class FunNamespaceURI extends Function {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		Node n = null;
-		if (contextItem != null)
-			contextSequence = contextItem.toSequence();
-		if (getArgumentCount() > 0) {
-			NodeSet result =
-				getArgument(0).eval(contextSequence).toNodeSet();
-			if (result.getLength() > 0)
-				n = result.item(0);
-		} else {
-			if (contextSequence.getLength() > 0
-				&& contextSequence.getItemType() == Type.NODE)
-				n = ((NodeSet) contextSequence).item(0);
-		}
-		if (n != null) {
-			switch (n.getNodeType()) {
-				case Node.ELEMENT_NODE :
-				case Node.ATTRIBUTE_NODE :
-					return new StringValue(n.getNamespaceURI());
-				default :
-					return new StringValue("");
-			}
-		}
-		return new StringValue("");
+        if(contextItem != null)
+            contextSequence = contextItem.toSequence();
+        Item item = null;
+        // check if the node is passed as an argument or should be taken from
+        // the context sequence
+        if(getArgumentCount() > 0) {
+            Sequence seq = getArgument(0).eval(contextSequence);
+            if(seq.getLength() > 0)
+                item = seq.itemAt(0);
+        } else {
+            if(contextSequence.getLength() > 0)
+                item = contextSequence.itemAt(0);
+            else
+                throw new XPathException(getASTNode(), "undefined context item");
+        }
+        if(item == null)
+            return Sequence.EMPTY_SEQUENCE;
+        if(!Type.subTypeOf(item.getType(), Type.NODE))
+            throw new XPathException(getASTNode(), "context item is not a node; got: " +
+                    Type.getTypeName(item.getType()));
+        
+        Node n = ((NodeValue)item).getNode();
+        switch(n.getNodeType()) {
+            case Node.ELEMENT_NODE:
+            case Node.ATTRIBUTE_NODE:
+                return new StringValue(n.getNamespaceURI());
+            default:
+                return new StringValue("");
+        }
 	}
 }

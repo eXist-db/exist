@@ -31,6 +31,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -63,29 +64,24 @@ public class FunNodeName extends Function {
     }
 
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-        Sequence retval = Sequence.EMPTY_SEQUENCE;
-        Node n = null;
-        
         if(contextItem != null)
             contextSequence = contextItem.toSequence();
-        NodeSet result = getArgument(0).eval(contextSequence).toNodeSet();
-        if(result.getLength() > 0)
-        	n = result.item(0);
-        if(n != null) {
-            switch(n.getNodeType()) {
-                case Node.ELEMENT_NODE:
-                case Node.ATTRIBUTE_NODE:
-                    QName qname = ((QNameable) n).getQName();
-                	/*if (qname.getPrefix() != null) {
-                	    context.declareNamespace(qname.getPrefix(), qname.getNamespaceURI());
-                	}*/
-                    retval = new QNameValue(context, ((QNameable) n).getQName());
-                    break;
-                default:
-                    retval = Sequence.EMPTY_SEQUENCE;
-                    break;
-            }
-        } 
-        return retval;
+        Sequence seq = getArgument(0).eval(contextSequence);
+        if(seq.getLength() == 0)
+            return Sequence.EMPTY_SEQUENCE;
+        Item item = seq.itemAt(0);
+        if(!Type.subTypeOf(item.getType(), Type.NODE))
+            throw new XPathException(getASTNode(), "argument is not a node; got: " +
+                    Type.getTypeName(item.getType()));
+        
+        Node n = ((NodeValue)item).getNode();
+        switch(n.getNodeType()) {
+            case Node.ELEMENT_NODE:
+            case Node.ATTRIBUTE_NODE:
+                QName qname = ((QNameable) n).getQName();
+                return new QNameValue(context, ((QNameable) n).getQName());
+            default:
+                return Sequence.EMPTY_SEQUENCE;
+        }
     }
 }

@@ -20,21 +20,21 @@
 
 package org.exist.xquery.functions;
 
-import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.EmptySequence;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
+import org.w3c.dom.ProcessingInstruction;
 
 /**
  * Built-in function fn:local-name().
@@ -60,29 +60,36 @@ public class FunLocalName extends Function {
     }
 	
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-        Node n = null;
-  		if ((contextSequence == null) && (contextItem == null))
-  		  return new EmptySequence();
-		if(contextItem != null)
-			contextSequence = contextItem.toSequence();
-        if(getSignature().getArgumentCount() > 0) {
-            NodeSet result = getArgument(0).eval(contextSequence).toNodeSet();
-            if(result.getLength() > 0)
-            	n = result.item(0);
+        if(contextItem != null)
+            contextSequence = contextItem.toSequence();
+        Item item = null;
+        // check if the node is passed as an argument or should be taken from
+        // the context sequence
+        if(getArgumentCount() > 0) {
+            Sequence seq = getArgument(0).eval(contextSequence);
+            if(seq.getLength() > 0)
+                item = seq.itemAt(0);
         } else {
-        	if(contextSequence.getLength() > 0 && contextSequence.getItemType() == Type.NODE)
-            	n = ((NodeSet)contextSequence).item(0);
+            if(contextSequence.getLength() > 0)
+                item = contextSequence.itemAt(0);
+            else
+                throw new XPathException(getASTNode(), "undefined context item");
         }
-        if(n != null) {
-	        switch(n.getNodeType()) {
-	        	case Node.ELEMENT_NODE:
-	            	return new StringValue(n.getLocalName());
-	        	case Node.ATTRIBUTE_NODE:
-	            	return new StringValue(n.getLocalName());
-	        	default:
-	            	return new StringValue("");
-	        }
-        } 
-        return new StringValue("");
+        if(item == null)
+            return Sequence.EMPTY_SEQUENCE;
+        if(!Type.subTypeOf(item.getType(), Type.NODE))
+            throw new XPathException(getASTNode(), "context item is not a node; got: " +
+                    Type.getTypeName(item.getType()));
+        
+        Node n = ((NodeValue)item).getNode();
+        switch(n.getNodeType()) {
+            case Node.ELEMENT_NODE:
+            case Node.ATTRIBUTE_NODE:
+                return new StringValue(n.getLocalName());
+            case Node.PROCESSING_INSTRUCTION_NODE:
+                return new StringValue(((ProcessingInstruction)n).getTarget());
+            default:
+                return new StringValue("");
+        }
     }
 }
