@@ -1191,11 +1191,11 @@ public class DOMFile extends BTree implements Lockable {
     }
     
     public void removeAll(long p) {
-    	StringBuffer debug = new StringBuffer();
-    	debug.append("Removed pages: ");
+//    	StringBuffer debug = new StringBuffer();
+//    	debug.append("Removed pages: ");
         long pnum = StorageAddress.pageFromPointer(p);
         while(-1 < pnum) {
-        	debug.append(' ').append(pnum);
+//        	debug.append(' ').append(pnum);
             DOMPage page = getCurrentPage(pnum);
             pnum = page.getPageHeader().getNextDataPage();
             dataCache.remove(page);
@@ -1212,7 +1212,7 @@ public class DOMFile extends BTree implements Lockable {
                 LOG.warn("Error while removing page: " + e.getMessage(), e);
             }
         }
-        LOG.debug(debug.toString());
+//        LOG.debug(debug.toString());
     }
     
     public String debugPages(DocumentImpl doc) {

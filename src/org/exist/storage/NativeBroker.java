@@ -2454,7 +2454,7 @@ public class NativeBroker extends DBBroker {
 					domDb.remove(doc.getAddress());
 				}
 				doc.setAddress(domDb.add(data));
-				LOG.debug("Document metadata stored to " + StorageAddress.toString(doc.getAddress()));
+//				LOG.debug("Document metadata stored to " + StorageAddress.toString(doc.getAddress()));
 				return null;
 			}
 		}
