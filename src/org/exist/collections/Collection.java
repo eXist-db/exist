@@ -559,6 +559,7 @@ public class Collection
 
 		// add observers to the indexer
 		Observer observer;
+		broker.deleteObservers();
 		if (observers != null) {
 			for (Iterator i = observers.iterator(); i.hasNext();) {
 				observer = (Observer) i.next();
@@ -641,6 +642,7 @@ public class Collection
 				broker.getBrokerPool().reloadSecurityManager(broker);
 			}
 		}
+		broker.deleteObservers();
 		return document;
 	}
 
@@ -720,6 +722,7 @@ public class Collection
 
 		// add observers to the indexer
 		Observer observer;
+		broker.deleteObservers();
 		if (observers != null) {
 			for (Iterator i = observers.iterator(); i.hasNext();) {
 				observer = (Observer) i.next();
@@ -813,6 +816,7 @@ public class Collection
 				broker.getBrokerPool().reloadSecurityManager(broker);
 			}
 		}
+		broker.deleteObservers();
 		return document;
 	}
 
@@ -889,6 +893,7 @@ public class Collection
 
 		// add observers to the indexer
 		Observer observer;
+		broker.deleteObservers();
 		if (observers != null) {
 			for (Iterator i = observers.iterator(); i.hasNext();) {
 				observer = (Observer) i.next();
@@ -952,6 +957,7 @@ public class Collection
 				broker.getBrokerPool().reloadSecurityManager(broker);
 			}
 		}
+		broker.deleteObservers();
 		return document;
 	}
 
@@ -1204,6 +1210,13 @@ public class Collection
 			observers.add(o);
 	}
 
+	/* (non-Javadoc)
+	 * @see java.util.Observable#deleteObservers()
+	 */
+	public synchronized void deleteObservers() {
+		observers.clear();
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.storage.cache.Cacheable#getKey()
 	 */

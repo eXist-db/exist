@@ -113,7 +113,9 @@ public class RemoteXMLResource implements XMLResourceImpl {
 		if (id == null) {
 			Vector params = new Vector();
 			params.addElement(path);
-			params.addElement(properties);
+            params.addElement("UTF-8");
+            params.addElement(new Integer(1));
+			//params.addElement(properties);
 			try {
 				data = (byte[]) parent.getClient().execute("getDocument", params);
 			} catch (XmlRpcException xre) {

@@ -23,6 +23,7 @@ package org.exist.xpath;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.storage.DBBroker;
+import org.exist.xpath.value.IntegerValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.NumericValue;
 import org.exist.xpath.value.Sequence;
@@ -56,26 +57,14 @@ public class OpNumeric extends BinaryOp {
 			left = new Atomize(context, left);
 		if (!Type.subTypeOf(right.returnsType(), Type.ATOMIC))
 			right = new Atomize(context, right);
-		if (left.returnsType() == right.returnsType()) {
-			returnType = left.returnsType();
-		} else if (left.returnsType() == Type.DOUBLE) {
-			right = new UntypedValueCheck(context, Type.DOUBLE, right);
+		
+		if (operator == Constants.IDIV) {
+			left = new UntypedValueCheck(context, Type.INTEGER, left);
+			right = new UntypedValueCheck(context, Type.INTEGER, right);
+		} else if(!Type.subTypeOf(left.returnsType(), Type.NUMBER)) {
 			returnType = Type.DOUBLE;
-		} else if (right.returnsType() == Type.DOUBLE) {
-			left = new UntypedValueCheck(context, Type.DOUBLE, left);
-			returnType = Type.DOUBLE;
-		} else if (left.returnsType() == Type.FLOAT) {
-			right = new UntypedValueCheck(context, Type.FLOAT, right);
-			returnType = Type.FLOAT;
-		} else if (right.returnsType() == Type.FLOAT) {
-			left = new UntypedValueCheck(context, Type.FLOAT, left);
-			returnType = Type.FLOAT;
-		} else if (Type.subTypeOf(left.returnsType(), Type.DECIMAL)) {
-			right = new UntypedValueCheck(context, left.returnsType(), right);
+		} else {
 			returnType = left.returnsType();
-		} else if (Type.subTypeOf(right.returnsType(), Type.DECIMAL)) {
-			left = new UntypedValueCheck(context, right.returnsType(), left);
-			returnType = right.returnsType();
 		}
 		add(left);
 		add(right);
@@ -98,7 +87,10 @@ public class OpNumeric extends BinaryOp {
 		NumericValue rvalue =
 			(NumericValue) getRight().eval(docs, contextSequence).convertTo(
 				returnType);
-		return applyOperator(lvalue, rvalue);
+		if(operator == Constants.IDIV)
+			return ((IntegerValue)lvalue).idiv(rvalue);
+		else
+			return applyOperator(lvalue, rvalue);
 	}
 
 	public NumericValue applyOperator(NumericValue left, NumericValue right)

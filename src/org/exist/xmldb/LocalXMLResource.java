@@ -21,6 +21,7 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.util.IncludeXMLFilter;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.DOMStreamer;
+import org.exist.util.serializer.DOMStreamerPool;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.AtomicValue;
@@ -198,9 +199,11 @@ public class LocalXMLResource implements XMLResourceImpl {
         if (root != null) {
 			try {
 				String option = parent.properties.getProperty(Serializer.GENERATE_DOC_EVENTS, "false");
-                DOMStreamer streamer = new DOMStreamer(handler, null);
+                DOMStreamer streamer = DOMStreamerPool.getInstance().borrowDOMStreamer();
+                streamer.setContentHandler(handler);
                 streamer.serialize(root, option.equalsIgnoreCase("true"));
-			} catch (SAXException e) {
+                DOMStreamerPool.getInstance().returnDOMStreamer(streamer);
+			} catch (Exception e) {
 				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
 			}
         } else if(value != null) {

@@ -6,7 +6,7 @@
 	query.
 -->
 <xsl:stylesheet 
-  xmlns:xmldb="http://exist-db.org/transformer/1.0"
+  xmlns:xdb="http://exist-db.org/transformer/1.0"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   version="1.0">
   
@@ -108,10 +108,10 @@
   				<xsl:otherwise>9</xsl:otherwise>
   			</xsl:choose>
   		</xsl:variable>
-  		<xmldb:for-each query="{normalize-space($expr)}" use-session="true"
+  		<xdb:for-each query="{normalize-space($expr)}" use-session="true"
   			from="{$start}" to="{$end}">
-			<xmldb:current-node/>
-		</xmldb:for-each>
+			<xdb:current-node/>
+		</xdb:for-each>
   	</xsl:template>
   	
   	<xsl:template match="node()|@*" priority="-1">

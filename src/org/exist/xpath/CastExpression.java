@@ -23,6 +23,7 @@
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
+import org.exist.xpath.value.AtomicValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
@@ -36,14 +37,18 @@ public class CastExpression extends AbstractExpression {
 
 	private Expression expression;
 	private int requiredType;
+	private int cardinality = Cardinality.EXACTLY_ONE;
 	
 	/**
 	 * @param context
 	 */
-	public CastExpression(StaticContext context, Expression expr, int requiredType) {
+	public CastExpression(StaticContext context, Expression expr, int requiredType, int cardinality) {
 		super(context);
 		this.expression = expr;
 		this.requiredType = requiredType;
+		this.cardinality = cardinality;
+		if(!Type.subTypeOf(expression.returnsType(), Type.ATOMIC))
+			expression = new Atomize(context, expression);
 	}
 
 	/* (non-Javadoc)
@@ -55,14 +60,13 @@ public class CastExpression extends AbstractExpression {
 		Item contextItem)
 		throws XPathException {
 		Sequence seq = expression.eval(docs, contextSequence, contextItem);
-		Item next;
-		ValueSequence result = new ValueSequence();
-		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-			next = i.nextItem();
-			System.out.println("casting to " + Type.getTypeName(requiredType));
-			result.add(next.convertTo(requiredType));
+		if(seq.getLength() == 0) {
+			if((cardinality & Cardinality.ZERO) == 0)
+				throw new XPathException("Type error: empty sequence is not allowed here");
+			else
+				return Sequence.EMPTY_SEQUENCE;
 		}
-		return result;
+		return (AtomicValue)seq.itemAt(0).convertTo(requiredType);
 	}
 
 	/* (non-Javadoc)
@@ -79,6 +83,20 @@ public class CastExpression extends AbstractExpression {
 		return requiredType;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#getDependencies()
+	 */
+	public int getDependencies() {
+		return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#getCardinality()
+	 */
+	public int getCardinality() {
+		return Cardinality.ZERO_OR_ONE;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.AbstractExpression#resetState()
 	 */

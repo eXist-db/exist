@@ -69,13 +69,26 @@ public class StringValue extends AtomicValue {
 					throw new XPathException("cannot convert string '" + value + "' to boolean");
 			case Type.FLOAT:
 			case Type.DOUBLE:
-			case Type.DECIMAL:
 			case Type.NUMBER:
 				return new DoubleValue(value);
+			case Type.DECIMAL:
+				return new DecimalValue(value);
 			case Type.INTEGER:
-				return new IntegerValue(value);
+			case Type.NON_POSITIVE_INTEGER:
+			case Type.NEGATIVE_INTEGER:
+			case Type.LONG:
+			case Type.INT:
+			case Type.SHORT:
+			case Type.BYTE:
+			case Type.NON_NEGATIVE_INTEGER:
+			case Type.UNSIGNED_LONG:
+			case Type.UNSIGNED_INT:
+			case Type.UNSIGNED_SHORT:
+			case Type.UNSIGNED_BYTE:
+				return new IntegerValue(value, requiredType);
 			default:
-				throw new XPathException("cannot convert string '" + value + "' to " + requiredType);
+				throw new XPathException("cannot convert string '" + value + "' to " + 
+					Type.getTypeName(requiredType));
 		}
 	}
 

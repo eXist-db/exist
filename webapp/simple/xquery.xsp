@@ -3,7 +3,7 @@
 <!-- Author: Wolfgang Meier "meier@ifs.tu-darmstadt.de" -->
 
 <xsp:page language="java"
-    xmlns:xmldb="http://exist-db.org/xmldb/1.0"
+    xmlns:xdb="http://exist-db.org/xmldb/1.0"
     xmlns:xsp="http://apache.org/xsp">
    
     <xsp:logic>
@@ -58,17 +58,17 @@
                         <option>all documents</option>
                         
                         <!-- connect to the server -->
-                        <xmldb:driver class="org.exist.xmldb.DatabaseImpl"/>
+                        <xdb:driver class="org.exist.xmldb.DatabaseImpl"/>
     
-                        <xmldb:collection uri="xmldb:exist:///db" user="guest" password="guest">
+                        <xdb:collection uri="xmldb:exist:///db" user="guest" password="guest">
                             <xsp:logic>
                                 ArrayList collections = new ArrayList();
-                                getAllCollections(<xmldb:get-collection/>, collections);
+                                getAllCollections(<xdb:get-collection/>, collections);
                                 for(Iterator i = collections.iterator(); i.hasNext(); ) {
                                     <option><xsp:expr>(String)i.next()</xsp:expr></option>
                                 }
                             </xsp:logic>
-                        </xmldb:collection>
+                        </xdb:collection>
                     </select>
                 </td>
                 <td align="left" width="60%">

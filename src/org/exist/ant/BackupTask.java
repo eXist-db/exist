@@ -45,12 +45,13 @@ public class BackupTask extends AbstractXMLDBTask {
 		if(dir == null)
 			throw new BuildException("missing required parameter: dir");
 		registerDatabase();
-		Backup backup = new Backup(user, password, dir);
+		Backup backup = new Backup(user, password, dir, uri);
 		log("Creating backup of collection: " + uri);
 		log("Backup directory: " + dir);
 		try {
 			backup.backup(false, null);
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new BuildException("Exception during backup: " + e.getMessage(), e);
 		}
 	}

@@ -124,6 +124,14 @@ public class FunctionFactory {
 					step = op;
 				}
 			}
+		} else if(uri.equals(StaticContext.SCHEMA_NS) || uri.equals(StaticContext.XPATH_DATATYPES_NS)) {
+			if(params.size() != 1)
+				throw new XPathException("Wrong number of arguments for constructor function");
+			PathExpr arg = (PathExpr)params.get(0);
+			int code= Type.getType(qname);
+			CastExpression castExpr = new CastExpression(context, arg, code, Cardinality.EXACTLY_ONE);
+			parent.add(castExpr);
+			step = castExpr;
 		}
 		// None of the above matched: function is either a builtin function or
 		// a user-defined function 

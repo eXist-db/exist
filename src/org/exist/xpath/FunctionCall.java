@@ -48,9 +48,14 @@ public class FunctionCall extends Function {
 		this.functionDef = functionDef;
 		this.expression = functionDef;
 		SequenceType returnType = functionDef.getSignature().getReturnType();
+		// add return type checks
 		if(returnType.getCardinality() != Cardinality.ZERO_OR_MORE)
 			expression = new DynamicCardinalityCheck(context, returnType.getCardinality(), expression);
-		if(returnType.getPrimaryType() != Type.ITEM)
+		if(Type.subTypeOf(returnType.getPrimaryType(), Type.ATOMIC))
+			expression = new Atomize(context, expression);
+		if(Type.subTypeOf(returnType.getPrimaryType(), Type.NUMBER))
+			expression = new UntypedValueCheck(context, returnType.getPrimaryType(), expression);
+		else if(returnType.getPrimaryType() != Type.ITEM)
 			expression = new DynamicTypeCheck(context, returnType.getPrimaryType(), expression);
 	}
 	

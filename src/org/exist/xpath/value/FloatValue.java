@@ -1,82 +1,71 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
- *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public License
+ *  Copyright (C) 2001-03 Wolfgang M. Meier
+ *  wolfgang@exist-db.org
+ *  http://exist.sourceforge.net
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *
- *  This library is distributed in the hope that it will be useful,
+ *  
+ *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
- *
- *  You should have received a copy of the GNU Library General Public License
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- * 
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
  *  $Id$
  */
+
 package org.exist.xpath.value;
 
 import org.exist.xpath.XPathException;
 
-public class DoubleValue extends NumericValue {
+/**
+ * @author wolf
+ */
+public class FloatValue extends NumericValue {
 
-	public final static DoubleValue NaN = new DoubleValue(Double.NaN);
-	public final static DoubleValue ZERO = new DoubleValue(0.0E0);
+	public final static FloatValue NaN = new FloatValue(Float.NaN);
+	public final static FloatValue ZERO = new FloatValue(0.0E0f);
 	
-	private double value;
+	protected float value;
 	
-	public DoubleValue(double value) {
+	public FloatValue(float value) {
 		this.value = value;
 	}
 	
-	public DoubleValue(String stringValue) throws XPathException {
+	public FloatValue(String stringValue) throws XPathException {
 		try {
-			value = Double.parseDouble(stringValue);
+			value = Float.parseFloat(stringValue);
 		} catch(NumberFormatException e) {
-			throw new XPathException("cannot convert string '" + stringValue + "' into a double");
+			throw new XPathException("cannot convert string '" + stringValue + "' into a float");
 		}
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#getType()
-	 */
-	public int getType() {
-		return Type.DOUBLE;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#getStringValue()
+	 * @see org.exist.xpath.value.Sequence#getStringValue()
 	 */
 	public String getStringValue() throws XPathException {
-		return Double.toString(value);
+		return Float.toString(value);
 	}
 
-	public double getValue() {
-		return value;
-	}
-	
-	public Item itemAt(int pos) {
-		return pos == 0 ? this : null;
-	}
-	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#convertTo(int)
+	 * @see org.exist.xpath.value.Sequence#convertTo(int)
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		switch(requiredType) {
 			case Type.ATOMIC:
 			case Type.ITEM:
 			case Type.NUMBER:
-			case Type.DOUBLE:
-				return this;
 			case Type.FLOAT:
-				if(value < Float.MIN_VALUE || value > Float.MAX_VALUE)
-					throw new XPathException("Value is out of range for type xs:float");
-				return new FloatValue((float)value);
+				return this;
+			case Type.DOUBLE:
+				return new DoubleValue(value);
 			case Type.STRING:
 				return new StringValue(getStringValue());
 			case Type.DECIMAL:
@@ -96,72 +85,47 @@ public class DoubleValue extends NumericValue {
 				return new IntegerValue((long)value, requiredType);
 			case Type.BOOLEAN:
 				return (value == 0.0 && value == Double.NaN) ? BooleanValue.FALSE : 
-					BooleanValue.TRUE;
+															 BooleanValue.TRUE;
 			default:
 				throw new XPathException("cannot convert double value '" + value + "' into " + 
-					Type.getTypeName(requiredType));
+						Type.getTypeName(requiredType));
 		}
 	}
-	
+
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#effectiveBooleanValue()
+	 * @see org.exist.xpath.value.NumericValue#negate()
 	 */
-	public boolean effectiveBooleanValue() throws XPathException {
-		return !(value == 0 || value == Double.NaN);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NumericValue#getDouble()
-	 */
-	public double getDouble() throws XPathException {
-		return value;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NumericValue#getInt()
-	 */
-	public int getInt() throws XPathException {
-		return (int)Math.round(value);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NumericValue#getLong()
-	 */
-	public long getLong() throws XPathException {
-		return (long)Math.round(value);
-	}
-	
-	public void setValue(double val) {
-		value = val;
+	public NumericValue negate() {
+		return new FloatValue(-value);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.NumericValue#ceiling()
 	 */
 	public NumericValue ceiling() {
-		return new DoubleValue(Math.ceil(value));
+		return new FloatValue((float)Math.ceil(value));
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.NumericValue#floor()
 	 */
 	public NumericValue floor() {
-		return new DoubleValue(Math.floor(value));
+		return new FloatValue((float)Math.floor(value));
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.NumericValue#round()
 	 */
 	public NumericValue round() {
-		return new DoubleValue(Math.round(value));
+		return new FloatValue((float)Math.round(value));
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.NumericValue#minus(org.exist.xpath.value.NumericValue)
 	 */
 	public NumericValue minus(NumericValue other) throws XPathException {
-		if(other instanceof DoubleValue)
-			return new DoubleValue(value - ((DoubleValue)other).value);
+		if(other instanceof FloatValue)
+			return new FloatValue(value - ((FloatValue)other).value);
 		else
 			return ((NumericValue)convertTo(other.getType())).minus(other);
 	}
@@ -170,8 +134,8 @@ public class DoubleValue extends NumericValue {
 	 * @see org.exist.xpath.value.NumericValue#plus(org.exist.xpath.value.NumericValue)
 	 */
 	public NumericValue plus(NumericValue other) throws XPathException {
-		if(other instanceof DoubleValue)
-			return new DoubleValue(value + ((DoubleValue)other).value);
+		if(other instanceof FloatValue)
+			return new FloatValue(value + ((FloatValue)other).value);
 		else
 			return ((NumericValue)convertTo(other.getType())).plus(other);
 	}
@@ -180,8 +144,8 @@ public class DoubleValue extends NumericValue {
 	 * @see org.exist.xpath.value.NumericValue#mult(org.exist.xpath.value.NumericValue)
 	 */
 	public NumericValue mult(NumericValue other) throws XPathException {
-		if(other instanceof DoubleValue)
-			return new DoubleValue(value * ((DoubleValue)other).value);
+		if(other instanceof FloatValue)
+			return new FloatValue(value * ((FloatValue)other).value);
 		else
 			return ((NumericValue)convertTo(other.getType())).mult(other);
 	}
@@ -190,8 +154,8 @@ public class DoubleValue extends NumericValue {
 	 * @see org.exist.xpath.value.NumericValue#div(org.exist.xpath.value.NumericValue)
 	 */
 	public NumericValue div(NumericValue other) throws XPathException {
-		if(other instanceof DoubleValue)
-			return new DoubleValue(value / ((DoubleValue)other).value);
+		if(other instanceof FloatValue)
+			return new FloatValue(value / ((FloatValue)other).value);
 		else
 			return ((NumericValue)convertTo(other.getType())).div(other);
 	}
@@ -200,16 +164,10 @@ public class DoubleValue extends NumericValue {
 	 * @see org.exist.xpath.value.NumericValue#mod(org.exist.xpath.value.NumericValue)
 	 */
 	public NumericValue mod(NumericValue other) throws XPathException {
-		if(other instanceof DoubleValue)
-			return new DoubleValue(value % ((DoubleValue)other).value);
+		if(other instanceof FloatValue)
+			return new FloatValue(value % ((FloatValue)other).value);
 		else
 			return ((NumericValue)convertTo(other.getType())).mod(other);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NumericValue#negate()
-	 */
-	public NumericValue negate() {
-		return new DoubleValue(-value);
-	}
 }

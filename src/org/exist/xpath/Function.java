@@ -239,9 +239,9 @@ public abstract class Function extends PathExpr {
 		}
 
 		// if the required type is an atomic type, convert the argument to an atomic 
-		if (Type.subTypeOf(type.getPrimaryType(), Type.ATOMIC)
-			&& (!Type.subTypeOf(returnType, Type.ATOMIC))) {
-			expr = new Atomize(context, expr);
+		if (Type.subTypeOf(type.getPrimaryType(), Type.ATOMIC)) {
+			if(!Type.subTypeOf(returnType, Type.ATOMIC))
+				expr = new Atomize(context, expr);
 			if (!(type.getPrimaryType() == Type.ATOMIC))
 				expr =
 					new UntypedValueCheck(context, type.getPrimaryType(), expr);

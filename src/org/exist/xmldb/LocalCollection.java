@@ -50,7 +50,6 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.Service;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.XMLResource;
 
 /**
  *  A local implementation of the Collection interface. This
@@ -508,6 +507,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 				e.getMessage(),
 				e);
 		} finally {
+			collection.deleteObservers();
 			brokerPool.release(broker);
 		}
 	}

@@ -332,9 +332,9 @@ public class RpcServer implements RpcAPI {
 			Hashtable parametri = new Hashtable();
 			
 			if (prettyPrint > 0) {
-			parametri.put(OutputKeys.INDENT, "yes");
+				parametri.put(OutputKeys.INDENT, "yes");
 			} else {
-			parametri.put(OutputKeys.INDENT, "no");
+				parametri.put(OutputKeys.INDENT, "no");
 		    }
 		    
 		    if (stylesheet != null) {
