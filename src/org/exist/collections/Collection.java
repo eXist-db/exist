@@ -703,7 +703,6 @@ implements Comparable, EntityResolver, Cacheable {
 			LockException {
 		if (broker.isReadOnly())
 			throw new PermissionDeniedException("Database is read-only");
-		System.out.println(this);
 		DocumentImpl document, oldDoc = null;
 		XMLReader reader;
 		InputSource source;
@@ -1368,8 +1367,12 @@ implements Comparable, EntityResolver, Cacheable {
 		}
 		ostream.writeByte((byte) permissions.getPermissions());
 		ostream.writeLong(created);
+		if(reloadRequired) {
+		    broker.reloadCollection(this);
+		    reloadRequired = false;
+		}
 		DocumentImpl doc;
-		for (Iterator i = iterator(broker); i.hasNext(); ) {
+		for (Iterator i = documents.values().iterator(); i.hasNext(); ) {
 			doc = (DocumentImpl) i.next();
 			doc.write(ostream);
 		}
