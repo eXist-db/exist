@@ -78,5 +78,12 @@ public class VariableByteOutputStream extends OutputStream {
     
     protected void finalize() {
     }
+    
+    public static void main(String[] args) throws Exception {
+    	VariableByteOutputStream os = new VariableByteOutputStream();
+    	os.writeUTF("a_and_c.xml");
+    	byte[] data = os.toByteArray();
+    	System.out.println(StringUtil.hexDump(data));
+    }
 }
 

@@ -47,7 +47,7 @@ public class VariableByteInputStream extends ByteArrayInputStream {
 	}
 	
     public byte readByte() {
-        return (byte) VariableByteCoding.decode( this );
+        return (byte)read();
     }
     
     public short readShort() throws EOFException {
