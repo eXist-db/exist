@@ -27,6 +27,7 @@ public class AllTests {
         suite.addTest(new XUpdateTestCases("appendAttribute", test));
         suite.addTest(new XUpdateTestCases("appendChild", test));
         suite.addTest(new XUpdateTestCases("insertafter_big", test));
+        suite.addTest(new XUpdateTestCases("conditional", test));
         
         /*
          * create new TestCase
