@@ -67,7 +67,7 @@ public class FunZeroOrOne extends Function {
 		throws XPathException {
 		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
 		if(seq.getLength() > 1)
-			throw new XPathException("fn:zero-or-one called with a sequence containing more than one item");
+			throw new XPathException("fn:zero-or-one called with a sequence containing " + seq.getLength() + " items");
 		return seq;
 	}
 
