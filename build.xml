@@ -607,14 +607,29 @@
 	<!-- ================================================================== -->
 	<target depends="all,samples,javadocs" name="installer">
         <taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
-		    classname="com.izforge.izpack.ant.IzPackTask"/>
+			classname="com.izforge.izpack.ant.IzPackTask"/>
+		<tstamp/>
+		<filter token="version" value="${project.version}"/>
 		<echo message="Calling IzPack to create installer ..."/>
 		<izpack input="installer/install.xml"
 			output="installer/${project.name}-${project.version}.jar"
 			basedir="." izPackDir="${izpack.dir}"
 			installerType="standard"/>
 	</target>
-	
+
+	<target depends="all,samples,javadocs" name="snapshot-installer">
+		<taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
+			classname="com.izforge.izpack.ant.IzPackTask"/>
+		<tstamp/>
+		<filter token="version" value="${DSTAMP}-dev"/>
+		<copy file="installer/install.xml.tmpl" tofile="installer/install.xml" filtering="true"/>
+		<echo message="Calling IzPack to create installer ..."/>
+		<izpack input="installer/install.xml"
+			output="installer/${project.name}-snapshot-${DSTAMP}.jar"
+			basedir="." izPackDir="${izpack.dir}"
+			installerType="standard"/>
+	</target>
+
     <!-- ================================================================== -->
     <!-- Create HTML files for docs on http://exist-db.org                  -->
     <!-- ================================================================== -->
@@ -639,37 +654,45 @@
 			token="index.xml#articles" summary="true"
 			value="index.html#articles"/>
         
+		<replace dir="${build.docs}" includes="sidebar.xml"
+			token="index.xml#mailing" summary="true"
+			value="index.html#mailing"/>
+		
         <replace dir="${build.docs}" includes="index.xml sidebar.xml"
 			token="examples.xml" summary="true"
-			value="http://130.83.186.203/exist/examples.xml"/>
+			value="http://demo.exist-db.org/exist/examples.xml"/>
 
         <replace dir="${build.docs}" includes="sidebar.xml"
 			token="xquery/acronyms.xq" summary="true"
-			value="http://130.83.186.203/exist/xquery/acronyms.xq"/>
+			value="http://demo.exist-db.org/exist/xquery/acronyms.xq"/>
 
         <replace dir="${build.docs}" includes="sidebar.xml"
 			token="xquery/biblio.xml" summary="true"
-			value="http://130.83.186.203/exist/xquery/biblio.xml"/>
+			value="http://demo.exist-db.org/exist/xquery/biblio.xml"/>
         
         <replace dir="${build.docs}" includes="sidebar.xml"
 			token="xquery/xquery.xq" summary="true"
-			value="http://130.83.186.203/exist/xquery/xquery.xq"/>
+			value="http://demo.exist-db.org/exist/xquery/xquery.xq"/>
 
         <replace dir="${build.docs}" includes="sidebar.xml"
 			token="xmldb/db/" summary="true"
-			value="http://130.83.186.203/exist/xmldb/db/"/>
-
-        <replace dir="${build.docs}" includes="sidebar.xml"
-			token="xmldb/db/xinclude/xinclude.xml" summary="true"
-			value="http://130.83.186.203/exist/xmldb/db/xinclude/xinclude.xml"/>
+			value="http://demo.exist-db.org/exist/xmldb/db/"/>
 
         <replace dir="${build.docs}" includes="sidebar.xml"
 			token="xadmin.xsp" summary="true"
-			value="http://130.83.186.203/exist/xadmin.xsp"/>
+			value="http://demo.exist-db.org/exist/xadmin.xsp"/>
 
 		<replace dir="${build.docs}" includes="sidebar.xml"
 			token="status" summary="true"
-			value="http://130.83.186.203/exist/status"/>
+			value="http://demo.exist-db.org/exist/status"/>
+		
+		<replace dir="${build.docs}" includes="index.xml quickstart.xml xquery.xml"
+			token="examples.xml" summary="true"
+			value="http://demo.exist-db.org/exist/examples.xml"/>
+		
+		<replace dir="${build.docs}" includes="xquery.xml"
+			token="xquery/functions.xq" summary="true"
+			value="http://demo.exist-db.org/exist/xquery/functions.xq"/>
     </target>
     
 	<target name="docs">

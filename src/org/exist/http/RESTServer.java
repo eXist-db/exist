@@ -315,7 +315,9 @@ public class RESTServer {
 			throw new BadRequestException("IO exception while parsing request: " + e.getMessage());
 		} catch (EXistException e) {
 			throw new BadRequestException(e.getMessage());
-		}
+        } catch (LockException e) {
+            throw new PermissionDeniedException(e.getMessage());
+        }
 		return response;
 	}
 	

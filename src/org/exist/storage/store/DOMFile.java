@@ -116,6 +116,8 @@ public class DOMFile extends BTree implements Lockable {
     private final Object2LongIdentityHashMap pages = new Object2LongIdentityHashMap(
             64);
 
+    private DocumentImpl currentDocument = null;
+    
     public DOMFile(int buffers, int dataBuffers) {
         super(buffers);
         lock = new ReentrantReadWriteLock("dom.dbx");
@@ -152,6 +154,10 @@ public class DOMFile extends BTree implements Lockable {
         return FILE_FORMAT_VERSION_ID;
     }
 
+    public void setCurrentDocument(DocumentImpl doc) {
+        this.currentDocument = doc;
+    }
+    
     /**
      * Append a value to the current page. 
      * 
@@ -650,7 +656,8 @@ public class DOMFile extends BTree implements Lockable {
             ph.setNextTID((short) -1);
             ph.setDataLength(0);
             ph.setRecordCount((short) 0);
-            //page.write();
+            if(currentDocument != null)
+                currentDocument.incPageCount();
             return page;
         } catch (IOException ioe) {
             LOG.warn(ioe);
@@ -1011,7 +1018,6 @@ public class DOMFile extends BTree implements Lockable {
         ph.decRecordCount();
 //        LOG.debug("size = " + ph.getRecordCount());
         if (rec.page.len == 0) {
-        	LOG.debug("freeing page " + rec.page.getPageNum());
             removePage(rec.page);
             rec.page = null;
         } else {
@@ -1120,6 +1126,8 @@ public class DOMFile extends BTree implements Lockable {
         } catch (IOException ioe) {
             LOG.warn(ioe);
         }
+        if(currentDocument != null)
+            currentDocument.decPageCount();
     }
     
     public void removeAll(long p) {

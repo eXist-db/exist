@@ -56,6 +56,7 @@ public class Head implements WebDAVMethod {
 		else
 			contentType = WebDAV.BINARY_CONTENT;
 		response.setContentType(contentType);
+		response.setContentLength(resource.getContentLength());
 		response.addDateHeader("Last-Modified", resource.getLastModified());
 	}
 }

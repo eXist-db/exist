@@ -35,10 +35,12 @@ import org.exist.xquery.value.Type;
  *  Represents the document-root node in an expression.
  *
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    02 August 2002
  */
 public class RootNode extends Step {
 
+    private Sequence cached = null;
+    private DocumentSet cachedDocs = null;
+    
 	/**  Constructor for the RootNode object */
 	public RootNode(XQueryContext context) {
 		super(context, Constants.SELF_AXIS);
@@ -50,11 +52,15 @@ public class RootNode extends Step {
 		DocumentSet ds = context.getStaticallyKnownDocuments();
 		if(ds == null || ds.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
-		//NodeSet result = new ExtArrayNodeSet(ds.getLength(), 1);
+		if(cachedDocs != null && cachedDocs.equals(ds))
+		    return cached;
+		
 		NodeSet result = new ArraySet(ds.getLength());
 		for (Iterator i = ds.iterator(); i.hasNext();) {
 			result.add(new NodeProxy((DocumentImpl) i.next(), -1));
 		}
+		cached = result;
+		cachedDocs = ds;
 		return result;
 	}
 
@@ -73,5 +79,7 @@ public class RootNode extends Step {
 	 * @see org.exist.xpath.Step#resetState()
 	 */
 	public void resetState() {
+	    cachedDocs = null;
+	    cached = null;
 	}
 }

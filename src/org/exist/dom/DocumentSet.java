@@ -25,10 +25,12 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import org.apache.log4j.Category;
-import org.exist.collections.*;
+import org.apache.log4j.Logger;
+import org.exist.collections.Collection;
 import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
+import org.exist.util.Lock;
+import org.exist.util.LockException;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -44,34 +46,40 @@ import org.w3c.dom.NodeList;
  */
 public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 
-	private final static Category LOG =
-		Category.getInstance(DocumentSet.class.getName());
+	private final static Logger LOG =
+		Logger.getLogger(DocumentSet.class.getName());
+	
 	private ArrayList list = null;
-	private boolean allDocuments = false;
 	private TreeSet collections = new TreeSet();
-
+	
+	private boolean exclusive = false;
+	
 	public DocumentSet() {
 		super(29);
 	}
 
+	public DocumentSet(int initialSize) {
+	    super(initialSize);
+	}
+	
+	public DocumentSet(boolean exclusive) {
+	    super(29);
+	    this.exclusive = exclusive;
+	}
+	
 	public void clear() {
 		super.clear();
 		collections = new TreeSet();
 		list = null;
-		allDocuments = false;
-	}
-	
-	public void setAllDocuments(boolean all) {
-		allDocuments = all;
-	}
-
-	public boolean hasAllDocuments() {
-		return allDocuments;
 	}
 
 	public void add(DocumentImpl doc) {
+	    add(doc, true);
+	}
+	
+	public void add(DocumentImpl doc, boolean checkDuplicates) {
 		final int docId = doc.getDocId();
-		if (containsKey(docId))
+		if (checkDuplicates && containsKey(docId))
 			return;
 		put(docId, doc);
 		if (list != null)
@@ -105,10 +113,23 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 		DocumentImpl doc;
 		for(Iterator i = docs.iterator(); i.hasNext(); ) {
 			doc = (DocumentImpl)i.next();
-			if((broker == null || doc.getPermissions().validate(broker.getUser(), Permission.READ)) && (!doc.isLockedForWrite()))
-				put(doc.getDocId(), doc);
-			else
-			    LOG.debug("document is locked");
+			if(broker == null || doc.getPermissions().validate(broker.getUser(), Permission.READ)) {
+			    if(doc.isLockedForWrite())
+			        continue;
+			    if(exclusive) {
+			        Lock lock = doc.getUpdateLock();
+			        try {
+                        lock.acquire(Lock.WRITE_LOCK);
+                        put(doc.getDocId(), doc);
+                    } catch (LockException e) {
+                        LOG.debug("Failed to lock document " + doc.getFileName());
+                        continue;
+                    } finally {
+                        lock.release();
+                    }
+			    } else
+			        put(doc.getDocId(), doc);
+			}
 		}
 	}
 
@@ -236,18 +257,16 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 	}
 
 	public boolean equals(Object other) {
-		DocumentSet o = (DocumentSet) other;
+		final DocumentSet o = (DocumentSet) other;
 		if (size() != o.size())
 			return false;
-		DocumentImpl d;
-		boolean equal = false;
-		for (Iterator i = iterator(); i.hasNext();) {
-			d = (DocumentImpl) i.next();
-			if (o.containsKey(d.docId))
-				equal = true;
-			else
-				equal = false;
-		}
-		return equal;
+		return hasEqualKeys(o);
+//		DocumentImpl d;
+//		for (Iterator i = iterator(); i.hasNext();) {
+//			d = (DocumentImpl) i.next();
+//			if (!o.containsKey(d.docId))
+//				return false;
+//		}
+//		return true;
 	}
 }

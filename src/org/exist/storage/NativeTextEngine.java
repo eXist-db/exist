@@ -295,7 +295,7 @@ public class NativeTextEngine extends TextSearchEngine {
 			return null;
 		if (stoplist.contains(expr))
 			return null;
-				long start = System.currentTimeMillis();
+//				long start = System.currentTimeMillis();
 		DocumentImpl doc;
 		Value ref;
 		byte[] data;
@@ -373,17 +373,17 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 		if (contextSet != null)
 			((ExtArrayNodeSet) result).sort();
-				LOG.debug(
-					"found "
-						+ expr
-						+ ": "
-						+ result.getLength()
-						+ " ("
-						+ count
-						+ ") "
-						+ " in "
-						+ (System.currentTimeMillis() - start)
-						+ "ms.");
+//				LOG.debug(
+//					"found "
+//						+ expr
+//						+ ": "
+//						+ result.getLength()
+//						+ " ("
+//						+ count
+//						+ ") "
+//						+ " in "
+//						+ (System.currentTimeMillis() - start)
+//						+ "ms.");
 		return result;
 	}
 
@@ -567,7 +567,7 @@ public class NativeTextEngine extends TextSearchEngine {
 	 * @param collection
 	 *                Description of the Parameter
 	 */
-	public void removeCollection(Collection collection) {
+	public void dropIndex(Collection collection) {
 		Lock lock = dbWords.getLock();
 		try {
 			lock.acquire(Lock.WRITE_LOCK);
@@ -588,7 +588,7 @@ public class NativeTextEngine extends TextSearchEngine {
 			lock.release();
 		}
 	}
-
+	
 	/**
 	 * Remove all index entries for the specified document
 	 * 

@@ -178,7 +178,6 @@ public class LocationStep extends Step {
 			default :
 				throw new IllegalArgumentException("Unsupported axis specified");
 		}
-//		LOG.debug("Found: " + temp.getLength());
 		if(contextSequence instanceof NodeSet)
 			timestamp = ((NodeSet)contextSequence).getState();
 		cachedResult = temp;

@@ -27,7 +27,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
-import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.security.Group;
@@ -40,6 +40,8 @@ import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.store.StorageAddress;
+import org.exist.util.Lock;
+import org.exist.util.ReentrantReadWriteLock;
 import org.exist.util.SyntaxException;
 import org.exist.xquery.DescendantSelector;
 import org.exist.xquery.NodeSelector;
@@ -69,7 +71,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	
 	private transient NodeIndexListener listener = NullNodeIndexListener.INSTANCE;
 
-	protected final static Category LOG = Category.getInstance(DocumentImpl.class.getName());
+	protected final static Logger LOG = Logger.getLogger(DocumentImpl.class.getName());
 
 	protected transient DBBroker broker = null;
 
@@ -99,6 +101,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	// time of the last modification
 	protected long lastModified = 0;
 	
+	// the number of data pages occupied by this document
+	protected int pageCount = 0;
+	
 	// number of levels in this DOM tree
 	protected int maxDepth = 0;
 
@@ -123,6 +128,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	private transient boolean writeLocked = false;
 	
 	private transient User lockOwner = null;
+	
+	private transient Lock updateLock = null;
 	
 	public DocumentImpl(DBBroker broker, Collection collection) {
 		super(Node.DOCUMENT_NODE, 0);
@@ -656,6 +663,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			((DocumentTypeImpl) docType).write(ostream);
 			ostream.writeLong(created);
 			ostream.writeLong(lastModified);
+			ostream.writeInt(pageCount);
 			final byte[] data = ostream.toByteArray();
 			ostream.close();
 			return data;
@@ -677,8 +685,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			((DocumentTypeImpl) docType).read(istream);
 			created = istream.readLong();
 			lastModified = istream.readLong();
+			if(istream.available() > 0)
+			    pageCount = istream.readInt();
 		} catch (IOException e) {
-			LOG.warn("io error while writing document data", e);
+			LOG.warn("io error while reading document data", e);
 		}
 	}
 
@@ -862,5 +872,23 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 */
 	public void setLastModified(long l) {
 		lastModified = l;
+	}
+	
+	public synchronized Lock getUpdateLock() {
+	    if(updateLock == null)
+	        updateLock = new ReentrantReadWriteLock(getFileName());
+	    return updateLock;
+	}
+	
+	public void incPageCount() {
+	    ++pageCount;
+	}
+	
+	public void decPageCount() {
+	    --pageCount;
+	}
+	
+	public int getContentLength() {
+	    return pageCount * broker.getPageSize();
 	}
 }

@@ -45,6 +45,7 @@ package org.exist.xmlrpc;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -68,7 +69,6 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.Configuration;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.xml.sax.SAXException;
-import java.io.FileOutputStream;
 
 
 /**

@@ -592,4 +592,6 @@ public abstract class DBBroker extends Observable {
 	public int getXUpdateGrowthFactor() {
 	    return xupdateGrowthFactor;
 	}
+	
+	public abstract int getPageSize();
 }

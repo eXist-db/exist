@@ -214,7 +214,7 @@ public abstract class TextSearchEngine extends Observable {
 	 * 
 	 * @param collection
 	 */
-	public abstract void removeCollection(Collection collection);
+	public abstract void dropIndex(Collection collection);
 	
 	/**
 	 * Remove all index entries for the given document.

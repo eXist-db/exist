@@ -227,6 +227,16 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 		throw new HashtableOverflowException();
 	}
 
+	protected boolean hasEqualKeys(Int2ObjectHashMap other) {
+	    for(int idx = 0; idx < tabSize; idx++) {
+	        if(values[idx] == null || values[idx] == REMOVED)
+	            continue;
+	        if(!other.containsKey(keys[idx]))
+	            return false;
+	    }
+	    return true;
+	}
+	
 	protected int rehash(int iVal) {
 		int retVal = (iVal + iVal / 2) % tabSize;
 		if (retVal == 0)

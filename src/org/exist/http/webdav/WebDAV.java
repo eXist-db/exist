@@ -52,6 +52,10 @@ public class WebDAV {
 	
 	public final static String DAV_NS = "DAV:";
 	
+	// authentication methods
+	public final static int BASIC_AUTH = 0;
+	public final static int DIGEST_AUTH = 1;
+	
 	//	default content types
 	public final static String BINARY_CONTENT = "application/octet-stream";
 	public final static String XML_CONTENT = "text/xml";
@@ -71,16 +75,17 @@ public class WebDAV {
 	
 	private final static Logger LOG = Logger.getLogger(WebDAV.class);
 	
+	private int defaultAuthMethod;
 	private Authenticator digestAuth, basicAuth;
 	private BrokerPool pool;
 	
-	public WebDAV() throws ServletException {
+	public WebDAV(int authenticationMethod) throws ServletException {
 		try {
 			pool = BrokerPool.getInstance();
 		} catch (EXistException e) {
 			throw new ServletException("Error found while initializing database: " + e.getMessage(), e);
 		}
-		
+		defaultAuthMethod = authenticationMethod;
 		digestAuth = new DigestAuthenticator(pool);
 		basicAuth = new BasicAuthenticator(pool);
 	}
@@ -141,7 +146,10 @@ public class WebDAV {
 	throws IOException {
 		String credentials = request.getHeader("Authorization");
 		if(credentials == null) {
-			digestAuth.sendChallenge(request, response);
+		    if(defaultAuthMethod == BASIC_AUTH)
+		        basicAuth.sendChallenge(request, response);
+		    else
+		        digestAuth.sendChallenge(request, response);
 			return null;
 		}
 		if(credentials.toUpperCase().startsWith("DIGEST")) {

@@ -15,6 +15,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.util.LockException;
 import org.exist.xquery.XPathException;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
@@ -225,7 +226,9 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 			throw new RemoteException(e.getMessage(), e);
 		} catch (XPathException e) {
 			throw new RemoteException(e.getMessage(), e);
-		} finally {
+		} catch (LockException e) {
+		    throw new RemoteException(e.getMessage(), e);
+        } finally {
 			pool.release(broker);
 		}
 	}
@@ -270,7 +273,9 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 			throw new RemoteException(e.getMessage(), e);
 		} catch (XPathException e) {
 			throw new RemoteException(e.getMessage(), e);
-		} finally {
+		} catch (LockException e) {
+		    throw new RemoteException(e.getMessage(), e);
+        } finally {
 			pool.release(broker);
 		}
 	}

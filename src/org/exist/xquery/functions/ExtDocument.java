@@ -22,7 +22,9 @@
  */
 package org.exist.xquery.functions;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -67,6 +69,9 @@ public class ExtDocument extends Function {
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
 			true);
 
+	private List cachedArgs = null;
+	private Sequence cached = null;
+	
 	/**
 	 * @param context
 	 * @param signature
@@ -89,32 +94,75 @@ public class ExtDocument extends Function {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		DocumentSet docs = new DocumentSet();
-		if (getArgumentCount() == 0)
-			context.getBroker().getAllDocuments(docs);
-		else {
-			for(int i = 0; i < getArgumentCount(); i++) {
-				Sequence seq = getArgument(i).eval(contextSequence, contextItem);
-				for(SequenceIterator j = seq.iterate(); j.hasNext(); ) {
-					String next = j.nextItem().getStringValue();
-					if(next.length() == 0)
-						throw new XPathException("Invalid argument to fn:doc function: empty string is not allowed here.");
-					if(next.charAt(0) != '/')
-						next = context.getBaseURI() + '/' + next;
-					try {
-						DocumentImpl doc = (DocumentImpl) context.getBroker().getDocument(next);
-						if(doc != null)
-							docs.add(doc);
-					} catch (PermissionDeniedException e) {
-						throw new XPathException("Permission denied: unable to load document " + next);
-					}
+	    DocumentSet docs = null;
+	    if (getArgumentCount() == 0) {
+	        if(cached != null)
+	            return cached;
+	        docs = new DocumentSet();
+	        context.getBroker().getAllDocuments(docs);
+	    } else {
+		    List args = getParameterValues(contextSequence, contextItem);
+			boolean cacheIsValid = false;
+			if(cachedArgs != null)
+			    cacheIsValid = compareArguments(cachedArgs, args);
+			if(cacheIsValid)
+			    return cached;
+			docs = new DocumentSet();
+			for(int i = 0; i < args.size(); i++) {
+				String next = (String)args.get(i);
+				if(next.length() == 0)
+					throw new XPathException("Invalid argument to fn:doc function: empty string is not allowed here.");
+				if(next.charAt(0) != '/')
+					next = context.getBaseURI() + '/' + next;
+				try {
+					DocumentImpl doc = (DocumentImpl) context.getBroker().getDocument(next);
+					if(doc != null)
+						docs.add(doc);
+				} catch (PermissionDeniedException e) {
+					throw new XPathException("Permission denied: unable to load document " + next);
 				}
 			}
-		}
+			cachedArgs = args;
+	    }
 		NodeSet result = new ExtArrayNodeSet(docs.getLength(), 1);
 		for (Iterator i = docs.iterator(); i.hasNext();) {
 			result.add(new NodeProxy((DocumentImpl) i.next(), -1));
 		}
+		cached = result;
 		return result;
 	}
+	
+	private List getParameterValues(Sequence contextSequence, Item contextItem) throws XPathException {
+        List args = new ArrayList(getArgumentCount() + 10);
+	    for(int i = 0; i < getArgumentCount(); i++) {
+	        Sequence seq =
+				getArgument(i).eval(contextSequence, contextItem);
+			for (SequenceIterator j = seq.iterate(); j.hasNext();) {
+				Item next = j.nextItem();
+				args.add(next.getStringValue());
+			}
+	    }
+	    return args;
+    }
+
+    private boolean compareArguments(List args1, List args2) {
+        if(args1.size() != args2.size())
+            return false;
+        for(int i = 0; i < args1.size(); i++) {
+            String arg1 = (String)args1.get(i);
+            String arg2 = (String)args2.get(i);
+            if(!arg1.equals(arg2))
+                return false;
+        }
+        return true;
+    }
+    
+    
+    /* (non-Javadoc)
+     * @see org.exist.xquery.PathExpr#resetState()
+     */
+    public void resetState() {
+        cached = null;
+        cachedArgs = null;
+    }
 }

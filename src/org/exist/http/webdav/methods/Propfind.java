@@ -23,12 +23,8 @@
 package org.exist.http.webdav.methods;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.Reader;
-import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,7 +36,6 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
@@ -53,6 +48,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.http.webdav.WebDAV;
 import org.exist.http.webdav.WebDAVMethod;
+import org.exist.http.webdav.WebDAVUtil;
 import org.exist.security.Permission;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
@@ -63,7 +59,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -75,9 +70,7 @@ import org.xml.sax.helpers.AttributesImpl;
 public class Propfind implements WebDAVMethod {
 	
 	// error messages
-	private final static String PARSE_ERR = "Request content could not be parsed: ";
-	private final static String XML_CONFIGURATION_ERR = "Failed to create XML parser: ";
-	private final static String UNEXPECTED_ELEMENT_ERR = "Unexpected element found: ";
+	
 	
 	// search types
 	private final static int FIND_ALL_PROPERTIES = 0;
@@ -104,6 +97,9 @@ public class Propfind implements WebDAVMethod {
 	private final static QName CONTENT_TYPE_PROP = new QName("getcontenttype", WebDAV.DAV_NS, PREFIX);
 	private final static QName CONTENT_LENGTH_PROP = new QName("getcontentlength", WebDAV.DAV_NS, PREFIX);
 	private final static QName LAST_MODIFIED_PROP = new QName("getlastmodified", WebDAV.DAV_NS, PREFIX);
+	private final static QName SUPPORTED_LOCK_PROP = new QName("supportedlock", WebDAV.DAV_NS, PREFIX);
+	private final static QName EXCLUSIVE_LOCK_PROP = new QName("exclusive", WebDAV.DAV_NS, PREFIX);
+	private final static QName WRITE_LOCK_PROP = new QName("write", WebDAV.DAV_NS, PREFIX);
 	private final static QName ETAG_PROP = new QName("etag", WebDAV.DAV_NS, PREFIX);
 	private final static QName STATUS_PROP = new QName("status", WebDAV.DAV_NS, PREFIX);
 	private final static QName COLLECTION_PROP = new QName("collection", WebDAV.DAV_NS, PREFIX);
@@ -120,16 +116,15 @@ public class Propfind implements WebDAVMethod {
 	        RESOURCE_TYPE_PROP,
 	        CREATION_DATE_PROP,
 	        LAST_MODIFIED_PROP,
-	        CONTENT_TYPE_PROP
+	        CONTENT_TYPE_PROP,
+	        CONTENT_LENGTH_PROP,
+	        SUPPORTED_LOCK_PROP
 	};
-	
-	private DocumentBuilderFactory docFactory;
+
 	private BrokerPool pool;
 	
 	public Propfind(BrokerPool pool) {
 		this.pool = pool;
-		docFactory = DocumentBuilderFactory.newInstance();
-		docFactory.setNamespaceAware(true);
 	}
 	
 	/* (non-Javadoc)
@@ -147,16 +142,24 @@ public class Propfind implements WebDAVMethod {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}
-		Document doc = parseRequestContent(request, response);
+		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+		docFactory.setNamespaceAware(true);
+		DocumentBuilder docBuilder;
+        try {
+            docBuilder = docFactory.newDocumentBuilder();
+        } catch (ParserConfigurationException e1) {
+            throw new ServletException(WebDAVUtil.XML_CONFIGURATION_ERR, e1);
+        }
+        Document doc = WebDAVUtil.parseRequestContent(request, response, docBuilder);
 		int type = FIND_ALL_PROPERTIES;
 		DAVProperties searchedProperties = new DAVProperties();
 		if(doc != null) {	
 			Element propfind = doc.getDocumentElement();
 			if(!(propfind.getLocalName().equals("propfind") && 
 					propfind.getNamespaceURI().equals(WebDAV.DAV_NS))) {
-				LOG.debug(UNEXPECTED_ELEMENT_ERR + propfind.getNodeName());
+				LOG.debug(WebDAVUtil.UNEXPECTED_ELEMENT_ERR + propfind.getNodeName());
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-						UNEXPECTED_ELEMENT_ERR + propfind.getNodeName());
+						WebDAVUtil.UNEXPECTED_ELEMENT_ERR + propfind.getNodeName());
 				return;
 			}
 			
@@ -177,7 +180,7 @@ public class Propfind implements WebDAVMethod {
 						// Found an unknown element: return with 400 Bad Request
 						LOG.debug("Unexpected child: " + currentNode.getNodeName());
 						response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-								UNEXPECTED_ELEMENT_ERR + currentNode.getNodeName());
+								WebDAVUtil.UNEXPECTED_ELEMENT_ERR + currentNode.getNodeName());
 						return;
 					}
 				}
@@ -353,7 +356,7 @@ public class Propfind implements WebDAVMethod {
 		}
 		
 		if(shouldIncludeProperty(type, searchedProperties, CONTENT_LENGTH_PROP)) {
-		    writeSimpleElement(CONTENT_LENGTH_PROP, "0", serializer);
+		    writeSimpleElement(CONTENT_LENGTH_PROP, Long.toString(resource.getContentLength()), serializer);
 		}
 		
 		if(shouldIncludeProperty(type, searchedProperties, CONTENT_TYPE_PROP)) {
@@ -361,6 +364,19 @@ public class Propfind implements WebDAVMethod {
 				writeSimpleElement(CONTENT_TYPE_PROP, WebDAV.XML_CONTENT, serializer);
 			else
 				writeSimpleElement(CONTENT_TYPE_PROP, WebDAV.BINARY_CONTENT, serializer);
+		}
+		
+		if(shouldIncludeProperty(type, searchedProperties, SUPPORTED_LOCK_PROP)) {
+		    serializer.startElement(WebDAV.DAV_NS, "supportedlock", "D:supportedlock", attrs);
+		    serializer.startElement(WebDAV.DAV_NS, "lockentry", "D:lockentry", attrs);
+		    serializer.startElement(WebDAV.DAV_NS, "lockscope", "D:lockscope", attrs);
+		    writeEmptyElement(EXCLUSIVE_LOCK_PROP, serializer);
+		    serializer.endElement(WebDAV.DAV_NS, "lockscope", "D:lockscope");
+		    serializer.startElement(WebDAV.DAV_NS, "locktype", "D:locktype", attrs);
+		    writeEmptyElement(WRITE_LOCK_PROP, serializer);
+		    serializer.endElement(WebDAV.DAV_NS, "locktype", "D:locktype");
+		    serializer.endElement(WebDAV.DAV_NS, "lockentry", "D:lockentry");
+		    serializer.endElement(WebDAV.DAV_NS, "supportedlock", "D:supportedlock");
 		}
 		
 		serializer.endElement(WebDAV.DAV_NS, "prop", "D:prop");
@@ -458,46 +474,6 @@ public class Propfind implements WebDAVMethod {
 	    }
 	    return depth;
 	 }
-	
-	private Document parseRequestContent(HttpServletRequest request, HttpServletResponse response) 
-	throws ServletException, IOException {
-	    if(request.getContentLength() == 0)
-	        return null;
-		try {
-			String content = getRequestContent(request);
-			if(content.length() == 0)
-			    return null;
-			LOG.debug("request:\n" + content);
-			
-			DocumentBuilder docBuilder =docFactory.newDocumentBuilder();
-			return docBuilder.parse(new InputSource(new StringReader(content)));
-		} catch (ParserConfigurationException e) {
-			throw new ServletException(XML_CONFIGURATION_ERR + e.getMessage(), e);
-		} catch (SAXException e) {
-			LOG.debug(e.getMessage(), e);
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-					PARSE_ERR + e.getMessage());
-			return null;
-		}
-	}
-	
-	private String getRequestContent(HttpServletRequest request) throws IOException {
-		String encoding = request.getCharacterEncoding();
-		if(encoding == null)
-			encoding = "UTF-8";
-		try {
-			ServletInputStream is = request.getInputStream();
-			Reader  reader = new InputStreamReader(is, encoding);
-			StringWriter content = new StringWriter();
-			char ch[] = new char[4096];
-			int len = 0;
-			while((len = reader.read(ch)) > -1)
-				content.write(ch, 0, len);
-			return content.toString();
-		} catch (UnsupportedEncodingException e) {
-			throw new IOException("Unsupported character encoding in request content: " + encoding);
-		}
-	}
 	
 	private void getPropertyNames(Node propNode, DAVProperties properties) {
 		NodeList childList = propNode.getChildNodes();
