@@ -394,7 +394,6 @@ public class NativeValueIndex {
     }
     
     public void remove() {
-		LOG.debug(pending.size() + " nodes to remove");
         if (pending.size() == 0) return;
         Lock lock = db.getLock();
         Map.Entry entry;
