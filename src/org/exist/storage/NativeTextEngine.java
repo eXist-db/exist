@@ -290,7 +290,7 @@ public class NativeTextEngine extends TextSearchEngine {
 			return null;
 		if (stoplist.contains(expr))
 			return null;
-		//		long start = System.currentTimeMillis();
+				long start = System.currentTimeMillis();
 		DocumentImpl doc;
 		Value ref;
 		byte[] data;
@@ -369,17 +369,17 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 		if (context != null)
 			((ExtArrayNodeSet) result).sort();
-		//		LOG.debug(
-		//			"found "
-		//				+ expr
-		//				+ ": "
-		//				+ result.getLength()
-		//				+ " ("
-		//				+ count
-		//				+ ") "
-		//				+ " in "
-		//				+ (System.currentTimeMillis() - start)
-		//				+ "ms.");
+				LOG.debug(
+					"found "
+						+ expr
+						+ ": "
+						+ result.getLength()
+						+ " ("
+						+ count
+						+ ") "
+						+ " in "
+						+ (System.currentTimeMillis() - start)
+						+ "ms.");
 		return result;
 	}
 
