@@ -32,9 +32,9 @@ public class FunId extends Function {
 		StaticContext context,
 		DocumentSet docs,
 		NodeSet contextSet,
-		NodeProxy contextNode) {
+		NodeProxy contextNode) throws XPathException {
 		if (getArgumentCount() < 1)
-			throw new IllegalArgumentException("function id requires one argument");
+			throw new XPathException("function id requires one argument");
 		if (contextNode != null)
 			contextSet = new SingleNodeSet(contextNode);
 		Expression arg = getArgument(0);

@@ -35,12 +35,12 @@ public class FunFloor extends Function {
 		return Constants.TYPE_NUM;
 	}
 
-	public DocumentSet preselect(DocumentSet in_docs) {
+	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
 		return getArgument(0).preselect(in_docs);
 	}
 
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
-		NodeProxy contextNode) {
+		NodeProxy contextNode) throws XPathException {
 		if(contextNode != null)
 			contextSet = new SingleNodeSet(contextNode);
 		double val;

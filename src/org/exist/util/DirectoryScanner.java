@@ -58,11 +58,11 @@ public class DirectoryScanner {
 	}
 				
 	public final static boolean match(String pattern, String name) {
-		return SelectorUtils.getInstance().matchPath(pattern, name);
+		return SelectorUtils.matchPath(pattern, name);
 	}
 
 	public final static boolean matchStart(String pattern, String name) {
-		return SelectorUtils.getInstance().matchPatternStart(pattern, name);
+		return SelectorUtils.matchPatternStart(pattern, name);
 	}
 	
 	public static void main(String args[]) {

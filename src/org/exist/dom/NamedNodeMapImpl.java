@@ -21,8 +21,8 @@
 package org.exist.dom;
 
 import java.util.LinkedList;
-import java.util.Iterator;
 import java.util.ListIterator;
+
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;

@@ -2,12 +2,12 @@ package org.exist.dom;
 
 import java.io.StringReader;
 import java.util.Iterator;
+
 import org.apache.log4j.Category;
 import org.exist.EXistException;
 import org.exist.parser.XPathLexer2;
 import org.exist.parser.XPathParser2;
 import org.exist.parser.XPathTreeParser2;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -16,6 +16,7 @@ import org.exist.xpath.PathExpr;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.Value;
 import org.exist.xpath.ValueSet;
+import org.exist.xpath.XPathException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -70,6 +71,8 @@ public class SortedNodeSet extends NodeSet {
 			LOG.debug(re);
 		} catch (antlr.TokenStreamException tse) {
 			LOG.debug(tse);
+		} catch (XPathException e) {
+			LOG.debug(e.getMessage(), e);
 		}
 		DBBroker broker = null;
 		try {
@@ -185,36 +188,40 @@ public class SortedNodeSet extends NodeSet {
 			StaticContext context) {
 			this.proxy = proxy;
 			NodeSet contextSet = new SingleNodeSet(proxy);
-			Value v = expr.eval(context, ndocs, contextSet, null);
-			StringBuffer buf = new StringBuffer();
-			OrderedLinkedList strings = new OrderedLinkedList();
-			switch (v.getType()) {
-				case Value.isNodeList :
-					NodeSet resultSet = (NodeSet) v.getNodeList();
-					if (resultSet.getLength() == 0)
-						return;
-					NodeProxy p;
-					for (Iterator i = resultSet.iterator(); i.hasNext();) {
-						p = (NodeProxy) i.next();
-						strings.add(broker.getNodeValue(p).toUpperCase());
-					}
+			try {
+				Value v = expr.eval(context, ndocs, contextSet, null);
+				StringBuffer buf = new StringBuffer();
+				OrderedLinkedList strings = new OrderedLinkedList();
+				switch (v.getType()) {
+					case Value.isNodeList :
+						NodeSet resultSet = (NodeSet) v.getNodeList();
+						if (resultSet.getLength() == 0)
+							return;
+						NodeProxy p;
+						for (Iterator i = resultSet.iterator(); i.hasNext();) {
+							p = (NodeProxy) i.next();
+							strings.add(broker.getNodeValue(p).toUpperCase());
+						}
 
-					for (Iterator j = strings.iterator(); j.hasNext();)
-						buf.append((String) j.next());
-					value = buf.toString();
-					break;
-				default :
-					ValueSet valueSet = v.getValueSet();
-					if (valueSet.getLength() == 0)
-						return;
-					for (int k = 0; k < valueSet.getLength(); k++) {
-						v = valueSet.get(k);
-						strings.add(v.getStringValueConcat().toUpperCase());
-					}
-					for (Iterator j = strings.iterator(); j.hasNext();)
-						buf.append((String) j.next());
-					value = buf.toString();
-					break;
+						for (Iterator j = strings.iterator(); j.hasNext();)
+							buf.append((String) j.next());
+						value = buf.toString();
+						break;
+					default :
+						ValueSet valueSet = v.getValueSet();
+						if (valueSet.getLength() == 0)
+							return;
+						for (int k = 0; k < valueSet.getLength(); k++) {
+							v = valueSet.get(k);
+							strings.add(v.getStringValueConcat().toUpperCase());
+						}
+						for (Iterator j = strings.iterator(); j.hasNext();)
+							buf.append((String) j.next());
+						value = buf.toString();
+						break;
+				}
+			} catch (XPathException e) {
+				LOG.warn(e.getMessage(), e);
 			}
 		}
 

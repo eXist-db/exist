@@ -42,9 +42,9 @@ public class FunConcat extends Function {
 	}
 		
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-		NodeProxy contextNode) {
+		NodeProxy contextNode) throws XPathException {
 		if(getArgumentCount() < 2)
-			throw new IllegalArgumentException("concat requires at least two arguments");
+			throw new XPathException ("concat requires at least two arguments");
 		if(contextNode != null)
 			contextSet = new SingleNodeSet(contextNode);
 		StringBuffer result = new StringBuffer();

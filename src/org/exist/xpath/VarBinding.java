@@ -42,9 +42,9 @@ public class VarBinding extends Step {
   public String getName() { return name; }
 
   public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-  	NodeProxy contextNode) {
+  	NodeProxy contextNode) throws XPathException {
     if(binding == null)
-      throw new IllegalArgumentException("variable " + name + " unbound");
+      throw new XPathException("variable " + name + " unbound");
     return binding.eval(context, docs, contextSet, contextNode);
   }
 

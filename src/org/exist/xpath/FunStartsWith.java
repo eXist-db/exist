@@ -37,9 +37,9 @@ public class FunStartsWith extends Function {
 	}
 	
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-		NodeProxy contextNode) {
+		NodeProxy contextNode) throws XPathException {
 		if (getArgumentCount() != 2)
-			throw new IllegalArgumentException("starts-with expects two arguments");
+			throw new XPathException("starts-with expects two arguments");
 		if(contextNode != null)
 			contextSet = new SingleNodeSet(contextNode);
 

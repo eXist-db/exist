@@ -35,9 +35,9 @@ public abstract class BinaryOp extends PathExpr {
   public Expression getLeft() { return getExpression(0); }
   public Expression getRight() { return getExpression(1); }
 
-  public abstract DocumentSet preselect(DocumentSet in_docs);
+  public abstract DocumentSet preselect(DocumentSet in_docs) throws XPathException;
   public abstract Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
-  	NodeProxy contextNode);
+  	NodeProxy contextNode) throws XPathException;
 
   public abstract String pprint();
 }

@@ -40,12 +40,12 @@ public class FunNot extends Function {
         return Constants.TYPE_NODELIST;
     }
 
-    public DocumentSet preselect(DocumentSet in_docs) {
+    public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
         return getArgument(0).preselect(in_docs);
     }
 
     public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-    	NodeProxy contextNode) {
+    	NodeProxy contextNode) throws XPathException {
         NodeSet result = new NodeIDSet();
         Expression path = getArgument(0);
         result.addAll(contextSet);

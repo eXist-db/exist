@@ -21,19 +21,15 @@
  */
 package org.exist.dom;
 
-import org.w3c.dom.CharacterData;
-import org.w3c.dom.DOMException;
-import java.io.IOException;
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.util.ArrayList;
 import java.util.Set;
 
+import org.exist.util.XMLString;
+import org.w3c.dom.CharacterData;
+import org.w3c.dom.DOMException;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
-import org.exist.util.*;
 
 /**
  *  Description of the Class

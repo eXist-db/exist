@@ -20,13 +20,11 @@
  */
 package org.exist.xpath;
 
-import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.SingleNodeSet;
 import org.exist.storage.BrokerPool;
-import org.w3c.dom.NodeList;
 
 public class FunRound extends Function {
 
@@ -38,11 +36,11 @@ public class FunRound extends Function {
 		return Constants.TYPE_NUM;
 	}
 
-	public DocumentSet preselect(DocumentSet in_docs) {
+	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
 		return getArgument(0).preselect(in_docs);
 	}
 
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy contextNode) {
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy contextNode) throws XPathException {
 		double val;
 		if(contextNode != null)
 			contextSet = new SingleNodeSet(contextNode);
@@ -55,6 +53,7 @@ public class FunRound extends Function {
 					val = Double.parseDouble(args.get(0).getNodeValue());
 					values.add(new ValueNumber(Math.round(val)));
 				} catch (NumberFormatException nfe) {
+					throw new XPathException("Argument is not a number");
 				}
 			}
 			return values;

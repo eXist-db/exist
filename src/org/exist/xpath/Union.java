@@ -45,7 +45,7 @@ public class Union extends PathExpr {
 	 * we check which documents contain it at all. in other cases
 	 * do nothing.
 	 */
-	public DocumentSet preselect(DocumentSet in_docs) {
+	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
         //return in_docs;
 		DocumentSet left_docs = left.preselect(in_docs);
 		DocumentSet right_docs = right.preselect(in_docs);
@@ -53,7 +53,7 @@ public class Union extends PathExpr {
 	}
 
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-		NodeProxy contextNode) {
+		NodeProxy contextNode) throws XPathException {
 		NodeSet lval = (NodeSet)left.eval(context, docs, contextSet, contextNode).getNodeList();
 		LOG.debug("left " + left.pprint() + " returned: " + lval.getLength());
 		NodeSet rval = (NodeSet)right.eval(context, docs, contextSet, contextNode).getNodeList();

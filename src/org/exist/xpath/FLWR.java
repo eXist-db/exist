@@ -18,12 +18,16 @@
  */
 package org.exist.xpath;
 
-import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+
+import org.exist.dom.ArraySet;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
 import org.w3c.dom.NodeList;
-import org.exist.*;
-import org.exist.dom.*;
 
 public class FLWR extends AbstractExpression {
 
@@ -61,7 +65,7 @@ public class FLWR extends AbstractExpression {
     return docs_in;
   }
 
-  public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy node) {
+  public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy node) throws XPathException {
 	  NodeSet result = new ArraySet(10);
       for(Iterator i = returnList.iterator(); i.hasNext(); ) {
 		  Expression r = (Expression)i.next();

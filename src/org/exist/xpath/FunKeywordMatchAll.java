@@ -64,7 +64,7 @@ public class FunKeywordMatchAll extends Function {
 	 *@return          Description of the Return Value
 	 */
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
-		NodeProxy contextNode) {
+		NodeProxy contextNode) throws XPathException {
 		Expression path = getArgument(0);
 		NodeSet nodes = (NodeSet) path.eval(context, docs, contextSet, contextNode).getNodeList();
 
@@ -146,7 +146,7 @@ public class FunKeywordMatchAll extends Function {
 	 *@param  in_docs  Description of the Parameter
 	 *@return          Description of the Return Value
 	 */
-	public DocumentSet preselect(DocumentSet in_docs) {
+	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
 		int j = 0;
 		processQuery(in_docs);
 		NodeProxy p;
@@ -174,7 +174,7 @@ public class FunKeywordMatchAll extends Function {
 		return null;
 	}
 
-	protected void processQuery(DocumentSet in_docs) {
+	protected void processQuery(DocumentSet in_docs) throws XPathException {
 		terms = new String[getArgumentCount() - 1];
 		for (int i = 1; i < getArgumentCount(); i++)
 			terms[i - 1] = getLiteral(getArgument(i)).literalValue;
@@ -182,7 +182,7 @@ public class FunKeywordMatchAll extends Function {
 		try {
 			broker = pool.get();
 			if (terms == null)
-				throw new RuntimeException("no search terms");
+				throw new XPathException("no search terms");
 			//in_docs = path.preselect(in_docs);
 			hits = new NodeSet[terms.length][];
 
@@ -195,7 +195,7 @@ public class FunKeywordMatchAll extends Function {
 						DBBroker.MATCH_REGEXP);
 			}
 		} catch (EXistException e) {
-			e.printStackTrace();
+			throw new XPathException("An error occurred while evaluating expression", e);
 		} finally {
 			pool.release(broker);
 		}

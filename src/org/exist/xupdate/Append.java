@@ -1,9 +1,5 @@
 package org.exist.xupdate;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Set;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
@@ -13,6 +9,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
+import org.exist.xpath.XPathException;
 import org.w3c.dom.NodeList;
 
 /**
@@ -32,7 +29,7 @@ public class Append extends Modification {
 	/**
 	 * @see org.exist.xupdate.Modification#process()
 	 */
-	public long process() throws PermissionDeniedException, EXistException {
+	public long process() throws PermissionDeniedException, EXistException, XPathException {
 		NodeImpl[] qr = select(docs);
 		NodeList children = content.getChildNodes();
 		if (qr == null || children.getLength() == 0)

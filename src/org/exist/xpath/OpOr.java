@@ -32,7 +32,7 @@ public class OpOr extends BinaryOp {
 		super(pool);
 	}
 
-	public DocumentSet preselect(DocumentSet in_docs) {
+	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
 		if (getLength() == 0)
 			return in_docs;
 		DocumentSet out_docs = getExpression(0).preselect(in_docs);
@@ -41,7 +41,7 @@ public class OpOr extends BinaryOp {
 		return out_docs;
 	}
 
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy contextNode) {
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy contextNode) throws XPathException {
 		if (getLength() == 0)
 			return new ValueNodeSet(contextSet);
 		LOG.debug("processing " + getExpression(0).pprint());

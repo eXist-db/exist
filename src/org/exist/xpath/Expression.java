@@ -43,7 +43,7 @@ public interface Expression {
 	 * the expression should work on.
 	 */
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
-		NodeProxy contextNode);
+		NodeProxy contextNode) throws XPathException;
 
 	/**
 	 * Evaluate the expression represented by this object.
@@ -58,7 +58,8 @@ public interface Expression {
 	 * @param docs the set of documents all nodes belong to.
 	 * @param contextSet the node-set which defines the current context node-set.
 	 */
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet);
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet)
+		throws XPathException;
 	
 	/**
 	 * Determine the documents, taken from in_docs, for which this expression
@@ -69,7 +70,7 @@ public interface Expression {
 	 * a given xpath-expression. It is called before the xpath-expression is
 	 * actually executed.
 	 */
-	public DocumentSet preselect(DocumentSet in_docs);
+	public DocumentSet preselect(DocumentSet in_docs) throws XPathException;
 
 	/**
 	 * The type of value, this expression returns.

@@ -88,7 +88,7 @@ public class ExtFulltext extends Function {
 		StaticContext context,
 		DocumentSet docs,
 		NodeSet contextSet,
-		NodeProxy contextNode) {
+		NodeProxy contextNode) throws XPathException {
 		NodeSet nodes =
 			path == null
 				? contextSet

@@ -39,7 +39,7 @@ public class FunStrLength extends Function {
 	}
 
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
-		NodeProxy contextNode) {
+		NodeProxy contextNode) throws XPathException {
 		if(contextNode != null)
 			contextSet = new SingleNodeSet(contextNode);
 		Value v = getArgument(0).eval(context, docs, contextSet);
@@ -53,13 +53,5 @@ public class FunStrLength extends Function {
 		} else
 			strval = v.getStringValue();
 		return new ValueNumber(strval.length());
-	}
-
-	public String pprint() {
-		StringBuffer buf = new StringBuffer();
-		buf.append("string-length(");
-		buf.append(getArgument(0).pprint());
-		buf.append(")");
-		return buf.toString();
 	}
 }

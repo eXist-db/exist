@@ -20,20 +20,17 @@
  */
 package org.exist.storage;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.Stack;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Stack;
 import java.util.TreeMap;
+
 import org.apache.log4j.Logger;
-import org.dbxml.core.data.Value;
-import org.exist.dom.SymbolTable;
+import org.exist.EXistException;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.sync.SyncDaemon;
-import org.exist.util.*;
-import org.exist.xmldb.*;
-import org.exist.*;
+import org.exist.util.Configuration;
+import org.exist.xmldb.ShutdownListener;
 
 /**
  *  This class controls all available instances of the database.

@@ -22,7 +22,6 @@
 package org.exist.xpath;
 
 import java.util.Iterator;
-import java.util.StringTokenizer;
 
 import org.exist.EXistException;
 import org.exist.dom.ArraySet;
@@ -46,7 +45,7 @@ public class FunLang extends Function {
 	}
 		
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-		NodeProxy contextNode) {
+		NodeProxy contextNode) throws XPathException {
 		if(getArgumentCount() < 1)
 			throw new IllegalArgumentException("lang requires an argument");
 		if(contextNode != null)

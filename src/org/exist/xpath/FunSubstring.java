@@ -42,9 +42,9 @@ public class FunSubstring extends Function {
 	}
 		
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-		NodeProxy contextNode) {
+		NodeProxy contextNode) throws XPathException {
 		if(getArgumentCount() < 2)
-			throw new IllegalArgumentException("substring requires at least two arguments");
+			throw new XPathException("substring requires at least two arguments");
 		Expression arg0 = getArgument(0);
 		Expression arg1 = getArgument(1);
 		Expression arg2 = null;

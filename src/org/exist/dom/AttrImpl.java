@@ -22,7 +22,6 @@
 package org.exist.dom;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.Set;
 
 import org.exist.storage.Signatures;

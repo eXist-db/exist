@@ -1,10 +1,12 @@
 
 package org.exist.util;
 
-import org.xmldb.api.*;
-import org.xmldb.api.base.*;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.XMLDBException;
 
 public class CollectionScanner {
 

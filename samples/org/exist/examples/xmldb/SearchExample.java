@@ -1,9 +1,11 @@
 package org.exist.examples.xmldb;
 
-import org.w3c.dom.Element;
-import org.xmldb.api.*;
-import org.xmldb.api.base.*;
-import org.xmldb.api.modules.*;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Database;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.modules.XMLResource;
+import org.xmldb.api.modules.XPathQueryService;
 
 /**
  *  Do a query on the root-Collection.

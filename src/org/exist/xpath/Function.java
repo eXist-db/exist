@@ -108,7 +108,7 @@ public abstract class Function extends PathExpr {
      *@return          Description of the Return Value
      */
     public abstract Value eval( StaticContext context, DocumentSet docs, NodeSet contextSet,
-    	NodeProxy contextNode);
+    	NodeProxy contextNode) throws XPathException;
 
 
     /**

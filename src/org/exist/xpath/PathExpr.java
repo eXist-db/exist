@@ -70,7 +70,7 @@ public class PathExpr extends AbstractExpression {
     }
 
     public Value eval( StaticContext context, DocumentSet docs, 
-    	NodeSet contextSet, NodeProxy contextNode) {
+    	NodeSet contextSet, NodeProxy contextNode) throws XPathException {
         if ( docs.getLength() == 0 )
             return new ValueNodeSet( new ArraySet( 1 ) );
         Value r;
@@ -129,11 +129,11 @@ public class PathExpr extends AbstractExpression {
         return buf.toString();
     }
 
-    public DocumentSet preselect() {
+    public DocumentSet preselect() throws XPathException {
         return preselect( docs );
     }
 
-    public DocumentSet preselect( DocumentSet in_docs ) {
+    public DocumentSet preselect( DocumentSet in_docs ) throws XPathException {
         DocumentSet docs = in_docs;
         if ( docs.getLength() == 0 )
             return docs;

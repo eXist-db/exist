@@ -57,7 +57,7 @@ public class ExtNear extends ExtFulltext {
 	}
 
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-		NodeProxy contextNode) {
+		NodeProxy contextNode) throws XPathException {
 		NodeSet nodes = (NodeSet) path.eval(context, docs, contextSet, contextNode).getNodeList();
 		if (hits == null)
 			processQuery(docs);

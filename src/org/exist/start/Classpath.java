@@ -5,15 +5,13 @@
 
 package org.exist.start;
 
-import java.util.Vector;
-import java.io.IOException;
 import java.io.File;
-import java.util.Arrays;    // 1.2
-import java.net.URLClassLoader;
-import java.net.URL;
-import java.util.StringTokenizer;
-import java.io.FilenameFilter;
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
 
 /**

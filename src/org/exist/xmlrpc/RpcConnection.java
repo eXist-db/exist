@@ -48,6 +48,7 @@ import org.exist.xpath.StaticContext;
 import org.exist.xpath.Value;
 import org.exist.xpath.ValueNodeSet;
 import org.exist.xpath.ValueSet;
+import org.exist.xpath.XPathException;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.w3c.dom.Document;
@@ -328,7 +329,7 @@ public class RpcConnection extends Thread {
 	}
 
 	public int xupdate(User user, String collectionName, String xupdate)
-		throws EXistException, PermissionDeniedException, SAXException {
+		throws SAXException, PermissionDeniedException, EXistException, XPathException {
 		DBBroker broker = brokerPool.get();
 		try {
 			Collection collection = broker.getCollection(collectionName);
@@ -354,7 +355,7 @@ public class RpcConnection extends Thread {
 	}
 
 	public int xupdateResource(User user, String resource, String xupdate)
-		throws EXistException, PermissionDeniedException, SAXException {
+		throws SAXException, PermissionDeniedException, EXistException, XPathException {
 		DBBroker broker = brokerPool.get();
 		try {
 			Document doc = broker.getDocument(resource);

@@ -96,7 +96,7 @@ public class HttpServer extends Thread {
      */
     public HttpServer( Configuration conf, int port, int min, int max ) throws EXistException {
         this.config = conf;
-        this.port = port;
+        HttpServer.port = port;
         if ( config.getProperty( "port" ) != null )
             port = ( (Integer) config.getProperty( "port" ) ).intValue();
         if ( ( basedir = (String) config.getProperty( "basedir" ) ) == null )

@@ -26,6 +26,7 @@ import org.exist.util.XMLUtil;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.Value;
+import org.exist.xpath.XPathException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
@@ -432,6 +433,8 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			throw new SAXException(e);
 		} catch (TokenStreamException e) {
 			LOG.warn("error while creating variable", e);
+			throw new SAXException(e);
+		} catch (XPathException e) {
 			throw new SAXException(e);
 		}
 	}

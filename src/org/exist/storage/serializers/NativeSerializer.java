@@ -22,7 +22,6 @@
  */
 package org.exist.storage.serializers;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Set;

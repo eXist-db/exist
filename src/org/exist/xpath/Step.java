@@ -51,7 +51,7 @@ public abstract class Step extends AbstractExpression {
     }
 
     public abstract Value eval( StaticContext context, DocumentSet docs, NodeSet contextSet,
-    	NodeProxy contextNode );
+    	NodeProxy contextNode ) throws XPathException;
 
     public int getAxis() {
         return axis;
@@ -76,7 +76,7 @@ public abstract class Step extends AbstractExpression {
         return buf.toString();
     }
 
-    public DocumentSet preselect( DocumentSet in_docs ) {
+    public DocumentSet preselect( DocumentSet in_docs ) throws XPathException {
         DocumentSet out_docs = in_docs;
         if ( predicates.size() > 0 )
             for ( Iterator i = predicates.iterator(); i.hasNext();  )

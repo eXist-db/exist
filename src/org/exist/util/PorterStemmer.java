@@ -25,7 +25,6 @@
 
 package org.exist.util;
 
-import java.io.*;
 
 /**
  *

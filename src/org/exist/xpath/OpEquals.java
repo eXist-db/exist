@@ -98,7 +98,7 @@ public class OpEquals extends BinaryOp {
 		Expression right,
 		StaticContext context,
 		DocumentSet docs,
-		NodeSet contextSet) {
+		NodeSet contextSet) throws XPathException {
 		ArraySet result = new ArraySet(100);
 		NodeProxy n;
 		boolean lvalue;
@@ -199,7 +199,7 @@ public class OpEquals extends BinaryOp {
 	 *@return          Description of the Return Value
 	 */
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
-		NodeProxy contextNode) {
+		NodeProxy contextNode) throws XPathException {
 		if (getLeft().returnsType() == Constants.TYPE_NODELIST)
 			return nodeSetCompare(getLeft(), getRight(), context, docs, contextSet);
 		else if (getRight().returnsType() == Constants.TYPE_NODELIST) {
@@ -237,7 +237,7 @@ public class OpEquals extends BinaryOp {
 		Expression right,
 		StaticContext context,
 		DocumentSet docs,
-		NodeSet contextSet) {
+		NodeSet contextSet) throws XPathException {
 		NodeSet result = new ArraySet(100);
 		// TODO: not correct: should test if right is a string literal
 		if (right.returnsType() == Constants.TYPE_STRING ||
@@ -280,7 +280,7 @@ public class OpEquals extends BinaryOp {
 				broker = pool.get();
 				result = broker.getNodesEqualTo(nodes, docs, relation, cmp);
 			} catch (EXistException e) {
-				e.printStackTrace();
+				throw new XPathException("An error occurred while processing expression", e);
 			} finally {
 				pool.release(broker);
 			}
@@ -335,7 +335,7 @@ public class OpEquals extends BinaryOp {
 		return new ValueNodeSet(result);
 	}
 
-	private boolean checkArgumentTypes(DocumentSet docs) {
+	private boolean checkArgumentTypes(DocumentSet docs) throws XPathException {
 		DBBroker broker = null;
 		try {
 			broker = pool.get();
@@ -353,6 +353,7 @@ public class OpEquals extends BinaryOp {
 			}
 		} catch(EXistException e) {
 			LOG.warn("Exception while processing expression", e);
+			throw new XPathException("An error occurred while processing expression", e);
 		} finally {
 			pool.release(broker);
 		}
@@ -375,7 +376,7 @@ public class OpEquals extends BinaryOp {
 		Expression right,
 		StaticContext context,
 		DocumentSet docs,
-		NodeSet contextSet) {
+		NodeSet contextSet) throws XPathException {
 		ArraySet result = new ArraySet(100);
 		NodeProxy current;
 		double rvalue;
@@ -430,7 +431,7 @@ public class OpEquals extends BinaryOp {
 		Expression right,
 		StaticContext context,
 		DocumentSet docs,
-		NodeSet contextSet) {
+		NodeSet contextSet) throws XPathException {
 		LOG.debug("comparing " + docs.getLength());
 		ArraySet result = new ArraySet(100);
 		NodeProxy n;

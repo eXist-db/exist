@@ -35,8 +35,6 @@ import org.exist.dom.VirtualNodeSet;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.XMLUtil;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 public class LocationStep extends Step {
@@ -56,7 +54,7 @@ public class LocationStep extends Step {
 	protected NodeSet applyPredicate(
 		StaticContext context,
 		DocumentSet documents,
-		NodeSet contextSet) {
+		NodeSet contextSet) throws XPathException {
 		Predicate pred;
 		NodeSet result = contextSet;
 		for (Iterator i = predicates.iterator(); i.hasNext();) {
@@ -70,7 +68,7 @@ public class LocationStep extends Step {
 		StaticContext context,
 		DocumentSet documents,
 		NodeSet contextSet,
-		NodeProxy contextNode) {
+		NodeProxy contextNode) throws XPathException {
 		if (contextNode != null)
 			contextSet = new SingleNodeSet(contextNode);
 
@@ -315,7 +313,7 @@ public class LocationStep extends Step {
 		return contextSet.getParents();
 	}
 
-	public DocumentSet preselect(DocumentSet inDocs) {
+	public DocumentSet preselect(DocumentSet inDocs) throws XPathException {
 		return super.preselect(inDocs);
 	}
 

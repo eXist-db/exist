@@ -1,17 +1,16 @@
 
 package org.exist.dom;
 
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+
+import org.exist.storage.Signatures;
+import org.exist.util.ByteConversion;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
-import org.w3c.dom.DOMException;
 import org.xml.sax.ContentHandler;
-import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
-import java.io.*;
-import java.util.ArrayList;
-import org.exist.util.*;
-import org.exist.storage.*;
+import org.xml.sax.ext.LexicalHandler;
 
 /**
  *  Description of the Class
