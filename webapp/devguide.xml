@@ -2022,11 +2022,12 @@ sub process {
                 <itemizedlist style="none">
                     <listitem>
                         <synopsis>Vector getIndexedElements(String collectionName, boolean inclusive)</synopsis>
-                        <para>Return a list (array[][2]) of all indexed element 
+						<para>Return a list (array[][4]) of all indexed element 
 							names for the specified collection. For each 
-							element, an array with two items is returned: the 
-							first item contains the name of the element, the 
-							second provides the number of occurrences of this 
+							element, an array with four items is returned: 1) 
+							contains the name of the element, 2) an optional namespace URI,
+							3) an optional namespace prefix, 4) the 
+							number of occurrences of this 
 							element as an integer value.</para>
                         <variablelist>
                             <varlistentry>
