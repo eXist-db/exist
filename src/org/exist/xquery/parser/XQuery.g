@@ -1024,6 +1024,8 @@ reservedKeywords returns [String name]
 	"instance" { name = "instance"; }
 	|
 	"of" { name = "of"; }
+	|
+	"declare" { name = "declare"; }
 	;
 
 /**
