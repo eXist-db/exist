@@ -439,18 +439,22 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		boolean rememberContext) {
 		NodeProxy n, p, temp;
 		NodeSet result = new ExtArrayNodeSet();
+		NodeSet ancestors;
 		for (Iterator i = iterator(); i.hasNext();) {
 			n = (NodeProxy) i.next();
-			p = al.parentWithChild(n.doc, n.gid, false, includeSelf, -1);
-			if (p != null) {
-				if ((temp = result.get(p)) == null) {
-					if (rememberContext)
-						p.addContextNode(n);
-					else
-						p.copyContext(n);
-					result.add(p);
-				} else if (rememberContext)
-					temp.addContextNode(n);
+			ancestors = al.ancestorsForChild(n.doc, n.gid, false, includeSelf, -1);
+			for(Iterator j = ancestors.iterator(); j.hasNext(); ) {
+			    p = (NodeProxy) j.next();
+				if (p != null) {
+					if ((temp = result.get(p)) == null) {
+						if (rememberContext)
+							p.addContextNode(n);
+						else
+							p.copyContext(n);
+						result.add(p);
+					} else if (rememberContext)
+						temp.addContextNode(n);
+				}
 			}
 		}
 		return result;
@@ -680,6 +684,33 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		return parentWithChild(proxy.doc, proxy.gid, directParent, includeSelf, level);
 	}
 
+	/**
+	 * Return all nodes contained in this node set that are ancestors of the node
+	 * identified by doc and gid.  
+	 */
+	public NodeSet ancestorsForChild(
+		DocumentImpl doc,
+		long gid,
+		boolean directParent,
+		boolean includeSelf,
+		int level) {
+	    NodeSet result = new ArraySet(5);
+		NodeProxy temp;
+		if (includeSelf && (temp = get(doc, gid)) != null)
+			result.add(temp);
+		if (level < 0)
+			level = doc.getTreeLevel(gid);
+		while (gid > 0) {
+			gid = XMLUtil.getParentId(doc, gid, level);
+			if ((temp = get(doc, gid)) != null)
+				result.add(temp);
+			else if (directParent)
+				return result;
+			--level;
+		}
+		return result;
+	}
+	
 	/**
 	 * Return a new node set containing the parent nodes of all nodes in the 
 	 * current set.

@@ -370,7 +370,7 @@ public class LocationStep extends Step {
 					currentSet,
 					axis == Constants.ANCESTOR_SELF_AXIS,
 					inPredicate);
-			//LOG.debug("getAncestors found " + r.getLength());
+//			LOG.debug("getAncestors found " + result.getLength());
 		} else {
 			result = new ExtArrayNodeSet();
 			NodeProxy p;
