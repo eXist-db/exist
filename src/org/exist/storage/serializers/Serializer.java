@@ -670,7 +670,7 @@ public class Serializer implements XMLReader {
 				StreamSource source = new StreamSource(stylesheet);
 				templates = factory.newTemplates(source);
 				// read stylesheet from the database
-			} else
+			} else {
 				// if stylesheet is relative, add path to the
 				// current collection
 				if (stylesheet.indexOf('/') < 0 && doc != null)
@@ -711,7 +711,7 @@ public class Serializer implements XMLReader {
 			contentHandler = oldHandler;
 			lexicalHandler = oldLexical;
 			factory.setURIResolver(null);
-
+            }
 			LOG.debug(
 				"compiling stylesheet took " + (System.currentTimeMillis() - start));
 			xslHandler =
