@@ -56,6 +56,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	private int initalSize = 128;
 	private int size = 0;
 	private boolean isSorted = false;
+	private boolean isInDocumentOrder = false;
 
 	private int lastDoc = -1;
 	private Part lastPart = null;
@@ -91,6 +92,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 		getPart(proxy.doc.docId, true, initalSize).add(proxy);
 		++size;
 		isSorted = false;
+		isInDocumentOrder = false;
 		setHasChanged();
 	}
 
@@ -105,6 +107,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 		getPart(proxy.doc.docId, true, sizeHint > -1 ? sizeHint : initalSize).add(proxy);
 		++size;
 		isSorted = false;
+		isInDocumentOrder = false;
 		setHasChanged();
 	}
 
@@ -206,6 +209,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	 * @see org.exist.xpath.value.Sequence#getLength()
 	 */
 	public int getLength() {
+		sortInDocumentOrder();
 		return size;
 	}
 
@@ -306,12 +310,15 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 			size += part.removeDuplicates();
 		}
 		isSorted = true;
+		isInDocumentOrder = false;
 		//		System.out.println("sort took " + (System.currentTimeMillis() -
 		// start) + "ms.");
 	}
 
 	public void sortInDocumentOrder() {
 		//		long start = System.currentTimeMillis();
+		if(isInDocumentOrder)
+			return;
 		Part part;
 		size = 0;
 		for (Iterator i = map.valueIterator(); i.hasNext(); ) {
@@ -320,6 +327,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 			size += part.removeDuplicates();
 		}
 		isSorted = false;
+		isInDocumentOrder = true;
 		//		System.out.println("in-document-order sort took " +
 		// (System.currentTimeMillis() - start) + "ms.");
 	}
