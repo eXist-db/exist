@@ -162,10 +162,10 @@ public class SortedNodeSet extends NodeSet {
 	 * @see org.exist.dom.NodeSet#iterate()
 	 */
 	public SequenceIterator iterate() {
-		return new SortedNodeSequenceIterator(list.iterator());
+		return new SortedNodeSetIterator(list.iterator());
 	}
 	
-	private final static class SortedNodeSetIterator implements Iterator {
+	private final static class SortedNodeSetIterator implements Iterator, SequenceIterator {
 
 		Iterator pi;
 
@@ -183,32 +183,16 @@ public class SortedNodeSet extends NodeSet {
 			return ((IteratorItem) pi.next()).proxy;
 		}
 
-		public void remove() {
-		}
-	}
-
-	private final static class SortedNodeSequenceIterator implements SequenceIterator {
-		
-		Iterator iter;
-		
-		public SortedNodeSequenceIterator(Iterator iterator) {
-			iter = iterator;
-		}
-		
-		/* (non-Javadoc)
-		 * @see java.util.Iterator#hasNext()
-		 */
-		public boolean hasNext() {
-			return iter.hasNext();
-		}
-		
 		/* (non-Javadoc)
 		 * @see org.exist.xpath.value.SequenceIterator#nextItem()
 		 */
 		public Item nextItem() {
-			if(!iter.hasNext())
+			if (!pi.hasNext())
 				return null;
-			return ((IteratorItem) iter.next()).proxy;
+			return ((IteratorItem) pi.next()).proxy;
+		}
+		
+		public void remove() {
 		}
 	}
 	
@@ -235,6 +219,7 @@ public class SortedNodeSet extends NodeSet {
 				for (Iterator j = strings.iterator(); j.hasNext();) 
 					buf.append((String) j.next());
 				value = buf.toString();
+				System.out.println(value);
 			} catch (XPathException e) {
 				LOG.warn(e.getMessage(), e);
 			}

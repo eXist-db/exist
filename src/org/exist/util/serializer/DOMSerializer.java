@@ -57,6 +57,10 @@ public class DOMSerializer {
 		this.receiver.setOutputProperties(outputProperties);
 	}
 
+	public void setProperty(String key, String value) {
+		outputProperties.setProperty(key, value);
+	}
+	
 	public void serialize(Node node) throws TransformerException {
 		Node top = node;
 		while (node != null) {
