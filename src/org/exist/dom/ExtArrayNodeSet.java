@@ -209,6 +209,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	 * @see org.exist.xpath.value.Sequence#getLength()
 	 */
 	public int getLength() {
+		sort();	// sort to remove duplicates
 		return size;
 	}
 
