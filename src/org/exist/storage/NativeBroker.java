@@ -1130,9 +1130,9 @@ public class NativeBroker extends DBBroker {
 	 */
 	public NodeList getRange(final Document doc, final long first, final long last) {
 		NodeListImpl result = new NodeListImpl((int) (last - first));
-		for (long gid = first; gid <= last; gid++)
+		for (long gid = first; gid <= last; gid++) {
 			result.add(objectWith(doc, gid));
-
+		}
 		return result;
 	}
 

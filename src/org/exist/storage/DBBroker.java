@@ -26,7 +26,6 @@ import java.util.Observable;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
@@ -77,20 +76,6 @@ public abstract class DBBroker extends Observable {
              != null )
             caseSensitive = temp.booleanValue();
 		this.pool = pool;
-    }
-
-
-    /**
-     *  load all fields of element from the database. Note that loading of nodes
-     *  is sometimes deferred until information is really needed. Method
-     *  objectWith will only load fields common to all node types. elementWith
-     *  is called by ElementImpl if needed.
-     *
-     *@param  element  Description of the Parameter
-     *@return          Description of the Return Value
-     */
-    public boolean elementWith( ElementImpl element ) {
-    	return true;
     }
 
 
