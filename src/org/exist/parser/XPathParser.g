@@ -642,7 +642,7 @@ returns [Expression result]
     }
 	| DSLASH result=regularexpr[expr] {
 		if(result instanceof Step)
-			((Step)result).setAxis(Constants.DESCENDANT_AXIS);
+			((Step)result).setAxis(Constants.DESCENDANT_SELF_AXIS);
     }
 	;
 
@@ -712,8 +712,29 @@ returns [int axis]
 {
 	axis = -1;
 }:
-	"ancestor" COLON COLON {
+	"descendant" COLON COLON {
+		axis = Constants.DESCENDANT_AXIS;
+	}
+	| "descendant-or-self" COLON COLON {
+		axis = Constants.DESCENDANT_SELF_AXIS;
+	}
+	| "child" COLON COLON {
+		axis = Constants.CHILD_AXIS;
+	}
+	| "parent" COLON COLON {
+		axis = Constants.PARENT_AXIS;
+	}
+	| "self" COLON COLON {
+		axis = Constants.SELF_AXIS;
+	}
+	| "attribute" COLON COLON {
+		axis = Constants.ATTRIBUTE_AXIS;
+	}
+	| "ancestor" COLON COLON {
 		axis = Constants.ANCESTOR_AXIS;
+	}
+	| "ancestor-or-self" COLON COLON {
+		axis = Constants.ANCESTOR_SELF_AXIS;
 	}
 	;
 	

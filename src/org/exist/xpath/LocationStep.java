@@ -63,12 +63,14 @@ public class LocationStep extends Step {
 		NodeSet temp;
 		switch (axis) {
 			case Constants.DESCENDANT_AXIS :
+			case Constants.DESCENDANT_SELF_AXIS :
 				temp = getDescendants(documents, context);
 				break;
 			case Constants.CHILD_AXIS :
 				temp = getChildren(documents, context);
 				break;
 			case Constants.ANCESTOR_AXIS :
+			case Constants.ANCESTOR_SELF_AXIS :
 				temp = getAncestors(documents, context);
 				break;
 			case Constants.SELF_AXIS :
@@ -152,7 +154,8 @@ public class LocationStep extends Step {
 				broker = pool.get();
 				if (buf == null)
 					buf = (NodeSet) broker.findElementsByTagName(documents, test.getName());
-				return buf.getDescendants(context, ArraySet.DESCENDANT);
+				return buf.getDescendants(context, ArraySet.DESCENDANT, 
+					axis == Constants.DESCENDANT_SELF_AXIS);
 
 			} catch (EXistException e) {
 				e.printStackTrace();
@@ -171,7 +174,8 @@ public class LocationStep extends Step {
 				broker = pool.get();
 				if (buf == null)
 					buf = (NodeSet) broker.findElementsByTagName(documents, test.getName());
-				NodeSet r = ((ArraySet)context).getDescendants((ArraySet)buf, ArraySet.ANCESTOR);
+				NodeSet r = ((ArraySet)context).getDescendants((ArraySet)buf, 
+					ArraySet.ANCESTOR, axis == Constants.ANCESTOR_SELF_AXIS);
 				LOG.debug("getAncestors found " + r.getLength());
 				return r;
 			} catch(EXistException e) {

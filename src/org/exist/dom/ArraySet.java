@@ -65,18 +65,19 @@ public class ArraySet extends NodeSet {
 			level = nl[i].doc.getTreeLevel(nl[i].gid);
 			if (level == 0) {
 				nl[i].gid = -1;
-				continue;
+			} else {
+				// calculate parent's gid
+				pid =
+					(nl[i].gid - nl[i].doc.treeLevelStartPoints[level])
+						/ nl[i].doc.treeLevelOrder[level]
+						+ nl[i].doc.treeLevelStartPoints[level
+						- 1];
+				//System.out.println(nl[i].doc.getDocId() + ":" + nl[i].gid + "->" + pid);
+				nl[i].gid = pid;
 			}
-			// calculate parent's gid
-			pid =
-				(nl[i].gid - nl[i].doc.treeLevelStartPoints[level])
-					/ nl[i].doc.treeLevelOrder[level]
-					+ nl[i].doc.treeLevelStartPoints[level
-					- 1];
-			//System.out.println(nl[i].doc.getDocId() + ":" + nl[i].gid + "->" + pid);
-			nl[i].gid = pid;
-			if (nl[i].gid > 0)
-				foundValid = true;
+			//if (nl[i].gid > 0)
+			// continue until all nodes are set to null
+			foundValid = true;
 		}
 		return foundValid;
 	}
@@ -435,8 +436,12 @@ public class ArraySet extends NodeSet {
 				dx++;
 			}
 		}
-		LOG.debug("getChildren found " + result.getLength() + " in " + 
-			(System.currentTimeMillis() - start) + "ms.");
+		LOG.debug(
+			"getChildren found "
+				+ result.getLength()
+				+ " in "
+				+ (System.currentTimeMillis() - start)
+				+ "ms.");
 		return result;
 	}
 
@@ -480,6 +485,10 @@ public class ArraySet extends NodeSet {
 		return result;
 	}
 
+	public ArraySet getDescendants(NodeSet other, int mode) {
+		return getDescendants(other, mode, false);
+	}
+
 	/**
 	 *  For a given set of potential ancestor nodes, get the
 	 * descendants in this node set
@@ -488,7 +497,7 @@ public class ArraySet extends NodeSet {
 	 *@param  mode  Description of the Parameter
 	 *@return       The descendants value
 	 */
-	public ArraySet getDescendants(NodeSet other, int mode) {
+	public ArraySet getDescendants(NodeSet other, int mode, boolean includeSelf) {
 		if (!(other instanceof ArraySet))
 			return super.getDescendants(other, mode);
 		ArraySet al = (ArraySet) other;
@@ -511,20 +520,17 @@ public class ArraySet extends NodeSet {
 		int dx;
 		int cmp;
 		final int dlen = dl.length;
-		boolean more = false;
-		do {
-			// calculate parent id for each node in the
-			// descendant set. Returns false if no more
-			// valid nodes are found
-			more = getParentSet(dl);
+		boolean more = includeSelf ? true : getParentSet(dl);
+		while (more) {
 			ax = 0;
 			dx = 0;
+			//more = getParentSet(dl);
 			while (dx < dlen) {
 				if (dl[dx] == null) { // || dl[dx].gid < 1) {
 					dx++;
 					continue;
 				}
-				//System.out.println(dl[dx].gid + " = " + al.nodes[ax].gid);
+				//System.out.println(dl[dx].gid + " == " + al.nodes[ax].gid);
 				cmp = dl[dx].compareTo(al.nodes[ax]);
 				if (cmp > 0) {
 					if (ax < al.counter - 1)
@@ -537,10 +543,13 @@ public class ArraySet extends NodeSet {
 					// found a matching node
 					switch (mode) {
 						case ANCESTOR :
-							dl[dx].addMatches(al.nodes[ax].matches);
-							result.add(dl[dx]);
+							// remember the ancestor-node
+							al.nodes[ax].addMatches(dl[dx].matches);
+							result.add(al.nodes[ax]);
+							//System.out.println("found: " + al.nodes[ax]);
 							break;
 						case DESCENDANT :
+							// remember the descendant-node
 							nodes[dx].addMatches(al.nodes[ax].matches);
 							result.add(nodes[dx]);
 							break;
@@ -548,8 +557,11 @@ public class ArraySet extends NodeSet {
 					dx++;
 				}
 			}
+			// calculate parent id for each node in the
+			// descendant set. Returns false if no more
+			// valid nodes are found
+			more = getParentSet(dl);
 		}
-		while (more);
 		LOG.debug(
 			"getDescendants found "
 				+ result.getLength()
