@@ -53,7 +53,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 	 * 
 	 */
 	public LocalBinaryResource(User user, BrokerPool pool, LocalCollection collection, String docId) {
-		super(user, pool, collection, docId);
+		super(user, pool, collection, docId, "application/octet-stream");
 	}
 	
 	/* (non-Javadoc)

@@ -34,6 +34,7 @@ import java.net.URISyntaxException;
 
 import org.exist.dom.QName;
 import org.exist.util.serializer.SAXSerializer;
+import org.exist.xmldb.EXistResource;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
@@ -112,9 +113,10 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 		if(docName != null && docName.length() == 0)
 			docName = null;
 		
+        String mimeType = "text/xml";
 		boolean binary = false;
 		if(getSignature().getArgumentCount() == 4) {
-			String mimeType = args[3].getStringValue();
+			mimeType = args[3].getStringValue();
 			binary = !("text/xml".equals(mimeType) || "application/xml".equals(mimeType));
 		}
 		
@@ -135,9 +137,10 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 				}
 			} else {
 				Resource resource;
-				if(binary)
+				if(binary) {
 					resource = collection.createResource(docName, "BinaryResource");
-				else
+                    ((EXistResource)resource).setMimeType(mimeType);
+                } else
 					resource = collection.createResource(docName, "XMLResource");
 				if(Type.subTypeOf(item.getType(), Type.STRING)) {
 					resource.setContent(item.getStringValue());

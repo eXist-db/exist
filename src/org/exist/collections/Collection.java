@@ -1504,13 +1504,14 @@ implements Comparable, EntityResolver, Cacheable {
 	}
 
 	public BinaryDocument addBinaryResource(DBBroker broker,
-			String name, byte[] data) throws EXistException,
+			String name, byte[] data, String mimeType) throws EXistException,
 			PermissionDeniedException, LockException {
 		if (broker.isReadOnly())
 			throw new PermissionDeniedException("Database is read-only");
 		BinaryDocument blob = null;
 		DocumentImpl oldDoc = getDocument(broker, name);
 		blob = new BinaryDocument(broker, name, this);
+        blob.setMimeType(mimeType);
 		try {
 			lock.acquire(Lock.WRITE_LOCK);
 			checkPermissions(broker, name, oldDoc);

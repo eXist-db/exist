@@ -430,6 +430,7 @@ public class RemoteCollection implements CollectionImpl {
 		Vector params = new Vector();
 		params.addElement(data);
 		params.addElement(getPath() + '/' + res.getId());
+        params.addElement(res.getMimeType());
 		params.addElement(Boolean.TRUE);
 		try {
 			rpcClient.execute("storeBinary", params);

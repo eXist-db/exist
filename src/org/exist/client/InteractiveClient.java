@@ -43,6 +43,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -86,6 +87,7 @@ import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SAXSerializerPool;
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XPathQueryServiceImpl;
@@ -1520,7 +1522,7 @@ public class InteractiveClient {
 		}
 		upload.setTotalSize(calculateFileSizes(files));
 		long totalSize = 0;
-		String resourceType;
+		String resourceType, mimeType;
 		for (int i = 0; i < files.length; i++) {
 			if (files[i].canRead()) {
 				if (files[i].isDirectory()) {
@@ -1533,14 +1535,19 @@ public class InteractiveClient {
 					upload.setCurrent(files[i].getName());
 					upload.setCurrentSize(files[i].length());
 					try {
+                        mimeType = URLConnection.guessContentTypeFromName(files[i].getName());
+                        System.out.println("Guessed mime type = " + mimeType);
 						resourceType = getResourceType(files[i].getName());
-						if(resourceType == null)
-							upload.showMessage("File " + files[i].getName() + " has an unknown " +
-							"suffix. Cannot determine file type.");
-						else {
+						if(resourceType == null) {
+                            if(mimeType.equals("text/xml") || mimeType.equals("application/xml"))
+                                resourceType = "XMLResource";
+                            else
+                                resourceType = "BinaryResource";
+                        } else {
 							document = current.createResource(
 								files[i].getName(), resourceType);
 							document.setContent(files[i]);
+                            ((EXistResource)document).setMimeType(mimeType);
 							current.storeResource(document);
 						}
 						totalSize += files[i].length();

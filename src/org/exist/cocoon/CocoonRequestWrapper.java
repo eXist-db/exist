@@ -30,7 +30,6 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.util.Enumeration;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -118,14 +117,6 @@ public class CocoonRequestWrapper implements RequestWrapper {
 	 * @param arg0
 	 * @return
 	 */
-	public long getDateHeader(String arg0) {
-		return request.getDateHeader(arg0);
-	}
-
-	/**
-	 * @param arg0
-	 * @return
-	 */
 	public String getHeader(String arg0) {
 		return request.getHeader(arg0);
 	}
@@ -143,20 +134,6 @@ public class CocoonRequestWrapper implements RequestWrapper {
 	 */
 	public Enumeration getHeaders(String arg0) {
 		return request.getHeaders(arg0);
-	}
-
-	/**
-	 * @return
-	 */
-	public Locale getLocale() {
-		return request.getLocale();
-	}
-
-	/**
-	 * @return
-	 */
-	public Enumeration getLocales() {
-		return request.getLocales();
 	}
 
 	/**

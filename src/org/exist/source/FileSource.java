@@ -103,7 +103,6 @@ public class FileSource extends AbstractSource {
             String checkedEnc = guessXQueryEncoding(new FileInputStream(filePath));
             if (checkedEnc != null)
                 encoding = checkedEnc;
-            System.out.println("ENCODING = " + encoding);
         }
     }
 }

@@ -113,7 +113,7 @@ public class Put extends AbstractWebDAVMethod {
 				while((l = is.read(chunk)) > -1) {
 					os.write(chunk, 0, l);
 				}
-				collection.addBinaryResource(broker, path, os.toByteArray());
+				collection.addBinaryResource(broker, path, os.toByteArray(), contentType);
 			}
 		} catch (EXistException e) {
 			throw new ServletException("Failed to store resource: " + e.getMessage(), e);

@@ -26,6 +26,7 @@ import java.io.File;
 
 import org.exist.dom.QName;
 import org.exist.util.DirectoryScanner;
+import org.exist.xmldb.EXistResource;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
@@ -100,8 +101,9 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
 		LOG.debug("Loading files from directory: " + baseDir);
 		Sequence patterns = args[2];
 		String resourceType = "XMLResource";
+        String mimeType = "text/xml";
 		if(getSignature().getArgumentCount() == 4) {
-			String mimeType = args[3].getStringValue();
+			mimeType = args[3].getStringValue();
 			if(!("text/xml".equals(mimeType) || "application/xml".equals(mimeType)))
 				resourceType = "BinaryResource";
 		}
@@ -115,6 +117,8 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
 					Resource resource =
 						collection.createResource(files[j].getName(), resourceType);
 					resource.setContent(files[j]);
+                    if("BinaryResource".equals(resourceType))
+                        ((EXistResource)resource).setMimeType(mimeType);
 					collection.storeResource(resource);
 					stored.add(new StringValue(collection.getName() + '/' + resource.getId()));
 				} catch (XMLDBException e) {

@@ -48,18 +48,14 @@ public class BinaryDocument extends DocumentImpl {
 	
 	private long pageNr = -1;
 	
-	private byte signature = -1;
-	
+    private String mimeType = "application/octet-stream";
+    
 	public BinaryDocument(DBBroker broker, Collection collection) {
 		super(broker, collection);
 	}
 
 	public BinaryDocument(DBBroker broker, String docName, Collection collection) {
 		super(broker, docName, collection);
-	}
-	
-	public void setSignature(byte signature) {
-		this.signature = signature;
 	}
 	
 	/* (non-Javadoc)
@@ -69,6 +65,15 @@ public class BinaryDocument extends DocumentImpl {
 		return BINARY_FILE;
 	}
 	
+    public void setMimeType(String type) {
+        this.mimeType = type;
+    }
+    
+    public String getMimeType() {
+        checkAvail();
+        return mimeType;
+    }
+    
 	public void setPage(long page) {
 		this.pageNr = page;
 	}
@@ -115,6 +120,7 @@ public class BinaryDocument extends DocumentImpl {
 			permissions.setGroup(secman.getGroup(gid).getName());
 		}
 		permissions.setPermissions(perm);
+        complete = false;
 	}
 	
 	public byte[] serialize() {
@@ -122,7 +128,7 @@ public class BinaryDocument extends DocumentImpl {
 		try {
 			ostream.writeLong(created);
 			ostream.writeLong(lastModified);
-			ostream.writeByte(signature);
+            ostream.writeUTF(mimeType);
 			final byte[] data = ostream.toByteArray();
 			ostream.close();
 			return data;
@@ -137,7 +143,7 @@ public class BinaryDocument extends DocumentImpl {
 		try {
 			created = istream.readLong();
 			lastModified = istream.readLong();
-			signature = istream.readByte();
+            mimeType = istream.readUTF();
 		} catch(IOException e) {
 			LOG.warn("IO error while reading document metadata", e);
 		}
