@@ -216,7 +216,8 @@ public class RESTServer {
 			}
 			Document doc = docBuilder.parse(src);
 			Element root = doc.getDocumentElement();
-			if(root.getNamespaceURI().equals(NS)) {
+			String rootNS = root.getNamespaceURI();
+			if(rootNS != null && rootNS.equals(NS)) {
 				if(root.getLocalName().equals("query")) {
 					// process <query>xpathQuery</query>
 					String option = root.getAttribute("start");
@@ -270,7 +271,7 @@ public class RESTServer {
 					response = new Response(search(broker, query, path, howmany, start, outputProperties));
 				else
 					throw new BadRequestException("No query specified");
-			} else if(root.getNamespaceURI().equals(XUPDATE_NS)) {
+			} else if(rootNS != null && rootNS.equals(XUPDATE_NS)) {
 				LOG.debug("Got xupdate request: " + content);
 				DocumentSet docs =new DocumentSet();
 				Collection collection = broker.getCollection(path);
@@ -324,6 +325,8 @@ public class RESTServer {
 	
 	public Response doPut(DBBroker broker, File tempFile, String contentType, String docPath) 
 	throws BadRequestException, PermissionDeniedException {
+		if(tempFile == null)
+			throw new BadRequestException("No request content found for PUT");
 		Response response;
 		try {
 			int p = docPath.lastIndexOf('/');
