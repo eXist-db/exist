@@ -272,7 +272,49 @@ public class ElementImpl extends NamedNode implements Element {
 		}
 	}
 
+	public Node appendAttributes(NodeList attribs) throws DOMException {
+	    DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
+	    Node node = null;
+		if (children == 0) {
+		    // no children: append a new child
+		    node = appendChildren(firstChildID(), this, getPath(), attribs, true);
+		} else {
+		    NodeImpl lastAttrib = getLastAttribute();
+		    if(lastAttrib.gid == lastChildID())
+		        node = appendChildren(lastChildID() + 1, lastAttrib, getPath(), attribs, true);
+		    else
+		        node = insertAfter(attribs, lastAttrib);
+		}
+		ownerDocument.broker.update(this);
+		ownerDocument.broker.reindex(prevDoc, ownerDocument, null);
+		return node;
+	}
+	
+	private NodeList checkForAttributes(NodeList nodes) throws DOMException {
+	    NodeListImpl attribs = null;
+	    NodeListImpl rest = null;
+	    for(int i = 0; i < nodes.getLength(); i++) {
+	        Node next = nodes.item(i);
+	        if(next.getNodeType() == Node.ATTRIBUTE_NODE) {
+	            if(attribs == null)
+	                attribs = new NodeListImpl();
+	            attribs.add(next);
+	        } else if(attribs != null) {
+	            if(rest == null) rest = new NodeListImpl();
+	            rest.add(next);
+	        }
+	    }
+	    if(attribs != null) {
+	        appendAttributes(attribs);
+	        return rest;
+	    } else
+	        return nodes;
+	}
+	
 	public Node appendChildren(NodeList nodes, int child) throws DOMException {
+	    nodes = checkForAttributes(nodes);
+	    if(nodes == null || nodes.getLength() == 0)
+	        return null;
 		DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
 		Node node = null;
 		if (children == 0) {
@@ -521,6 +563,18 @@ public class ElementImpl extends NamedNode implements Element {
 		return null;
 	}
 
+	private AttrImpl getLastAttribute() {
+		long start = firstChildID();
+		AttrImpl attr = null;
+		for (long i = start; i < start + children; i++) {
+			Node child = ownerDocument.getNode(i);
+			if (child != null
+				&& child.getNodeType() == Node.ATTRIBUTE_NODE)
+				attr = (AttrImpl)child;
+		}
+		return attr;
+	}
+	
 	/**
 	 * @see org.w3c.dom.Element#getAttributeNodeNS(java.lang.String, java.lang.String)
 	 */

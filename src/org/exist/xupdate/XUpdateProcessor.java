@@ -18,6 +18,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeListImpl;
 import org.exist.dom.XMLUtil;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
@@ -62,12 +63,13 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 
 	private final static Logger LOG = Logger.getLogger(XUpdateProcessor.class);
 
+	private NodeListImpl contents = null;
+	
 	private boolean inModification = false;
 	private boolean inAttribute = false;
 	private Modification modification = null;
 	private DocumentBuilder builder;
 	private Document doc;
-	private DocumentFragment fragment = null;
 	private Stack stack = new Stack();
 	private Node currentNode = null;
 	private DBBroker broker;
@@ -178,7 +180,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				Text text = doc.createTextNode(normalized);
 				if (stack.isEmpty()) {
 					//LOG.debug("appending text to fragment: " + text.getData());
-					fragment.appendChild(text);
+					contents.add(text);
 				} else {
 					Element last = (Element) stack.peek();
 					last.appendChild(text);
@@ -228,7 +230,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					throw new SAXException(
 						localName + " requires a select attribute");
 				doc = builder.newDocument();
-				fragment = doc.createDocumentFragment();
+				contents = new NodeListImpl();
 				inModification = true;
 			} else if (
 				(localName.equals("element")
@@ -281,7 +283,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				Element elem = doc.createElementNS(namespace, name);
 				elem.setPrefix(prefix);
 				if (stack.isEmpty()) {
-					fragment.appendChild(elem);
+					contents.add(elem);
 				} else {
 					Element last = (Element) stack.peek();
 					last.appendChild(elem);
@@ -306,7 +308,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				}
 				Attr attrib = doc.createAttributeNS(namespace, name);
 				if (stack.isEmpty())
-					fragment.appendChild(attrib);
+					contents.add(attrib);
 				else {
 					Element last = (Element) stack.peek();
 					last.setAttributeNode(attrib);
@@ -332,7 +334,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				for (Iterator i = nodes.iterator(); i.hasNext();) {
 					node = XMLUtil.copyNode(doc, (Node) i.next());
 					if (stack.isEmpty())
-						fragment.appendChild(node);
+						contents.add(node);
 					else {
 						Element last = (Element) stack.peek();
 						last.appendChild(node);
@@ -348,7 +350,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				elem.setAttributeNodeNS(a);
 			}
 			if (stack.isEmpty()) {
-				fragment.appendChild(elem);
+				contents.add(elem);
 			} else {
 				Element last = (Element) stack.peek();
 				last.appendChild(elem);
@@ -368,7 +370,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			if (normalized.length() > 0) {
 				Text text = doc.createTextNode(normalized);
 				if (stack.isEmpty()) {
-					fragment.appendChild(text);
+					contents.add(text);
 				} else {
 					Element last = (Element) stack.peek();
 					last.appendChild(text);
@@ -388,7 +390,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				|| localName.equals("insert-before")
 				|| localName.equals("insert-after")) {
 				inModification = false;
-				modification.setContent(fragment);
+				modification.setContent(contents);
 				modifications.add(modification);
 				modification = null;
 			}
@@ -435,7 +437,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				Text text = doc.createTextNode(normalized);
 				if (stack.isEmpty()) {
 					LOG.debug("appending text to fragment: " + text.getData());
-					fragment.appendChild(text);
+					contents.add(text);
 				} else {
 					Element last = (Element) stack.peek();
 					last.appendChild(text);
@@ -447,7 +449,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			ProcessingInstruction pi =
 				doc.createProcessingInstruction(target, data);
 			if (stack.isEmpty()) {
-				fragment.appendChild(pi);
+				contents.add(pi);
 			} else {
 				Element last = (Element) stack.peek();
 				last.appendChild(pi);
@@ -529,7 +531,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				Text text = doc.createTextNode(normalized);
 				if (stack.isEmpty()) {
 					//LOG.debug("appending text to fragment: " + text.getData());
-					fragment.appendChild(text);
+					contents.add(text);
 				} else {
 					Element last = (Element) stack.peek();
 					last.appendChild(text);
@@ -540,7 +542,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		if (inModification) {
 			Comment comment = doc.createComment(new String(ch, start, length));
 			if (stack.isEmpty()) {
-				fragment.appendChild(comment);
+				contents.add(comment);
 			} else {
 				Element last = (Element) stack.peek();
 				last.appendChild(comment);
@@ -590,7 +592,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		inAttribute = false;
 		modification = null;
 		doc = null;
-		fragment = null;
+		contents = null;
 		stack.clear();
 		currentNode = null;
 		broker = null;

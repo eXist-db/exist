@@ -345,7 +345,7 @@ public class DOMFile extends BTree implements Lockable {
                 if (rec.offset + value.length + 4 > fileHeader.getWorkSize()) {
                     // still not enough free space: create a new page
                     DOMPage newPage = new DOMPage();
-                    LOG.debug("creating additional page: " + newPage.getPageNum());
+//                    LOG.debug("creating additional page: " + newPage.getPageNum());
                     newPage.getPageHeader().setNextDataPage(
                             rec.page.getPageHeader().getNextDataPage());
                     newPage.getPageHeader().setPrevDataPage(rec.page.getPageNum());
@@ -367,7 +367,7 @@ public class DOMFile extends BTree implements Lockable {
         } else if (dataLen + value.length + 4 > fileHeader.getWorkSize()) {
             // does value fit into page?
             DOMPage newPage = new DOMPage();
-            LOG.debug("creating new page: " + newPage.getPageNum());
+//            LOG.debug("creating new page: " + newPage.getPageNum());
             long next = rec.page.getPageHeader().getNextDataPage();
             newPage.getPageHeader().setNextDataPage(
                     next);
@@ -446,9 +446,9 @@ public class DOMFile extends BTree implements Lockable {
         short tid, currentId, currentLen;
         long backLink;
         short splitRecordCount = 0;
-        LOG.debug("splitting " + rec.page.getPageNum() + ": new: "
-                + nextSplitPage.getPageNum() + "; next: " + 
-                rec.page.getPageHeader().getNextDataPage());
+//        LOG.debug("splitting " + rec.page.getPageNum() + ": new: "
+//                + nextSplitPage.getPageNum() + "; next: " + 
+//                rec.page.getPageHeader().getNextDataPage());
         for (int pos = rec.offset; pos < oldDataLen; splitRecordCount++) {
             // read the current id
             currentId = ByteConversion.byteToShort(oldData, pos);
