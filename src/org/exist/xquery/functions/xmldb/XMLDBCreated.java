@@ -64,7 +64,7 @@ public class XMLDBCreated extends BasicFunction {
 		NodeValue node = (NodeValue)args[0].itemAt(0);
 		if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			NodeProxy proxy = (NodeProxy)node;
-     		return new DateTimeValue(proxy.doc.getCreated(),0);
+     		return new DateTimeValue(proxy.doc.getCreated());
 		}
 		return Sequence.EMPTY_SEQUENCE;
 	}
