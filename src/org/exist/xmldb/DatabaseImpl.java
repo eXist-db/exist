@@ -29,7 +29,6 @@ import org.exist.EXistException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
-
 import org.xmldb.api.base.*;
 
 /**

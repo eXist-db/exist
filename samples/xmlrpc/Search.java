@@ -22,7 +22,7 @@ public class Search {
      */
     public static void main(String args[]) throws Exception {
         XmlRpcClient xmlrpc = new XmlRpcClient("http://localhost:8080/exist/xmlrpc");
-
+        xmlrpc.setBasicAuthentication( "admin", "" );
         // execute query and retrieve an id for the generated result set
         Vector params = new Vector();
         params.addElement("document(*)//SPEECH[SPEAKER='HAMLET']");

@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.File;
 
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
 import org.exist.dom.DocumentImpl;
 
 /**
@@ -40,6 +42,19 @@ import org.exist.dom.DocumentImpl;
  */
 public class XMLUtil {
 
+	public final static String dump(DocumentFragment fragment) {
+		OutputFormat format = new OutputFormat("xml", "UTF-8", true);
+		format.setLineWidth(60);
+		format.setOmitXMLDeclaration(true);
+		StringWriter writer = new StringWriter();
+		XMLSerializer serializer = new XMLSerializer(writer, format);
+        try {
+		  serializer.serialize(fragment);
+        } catch(IOException ioe) {
+        }
+        return writer.toString();
+	}
+    
 	/**
 	 *  Description of the Method
 	 *
@@ -333,11 +348,11 @@ public class XMLUtil {
 
 	public static String parseValue(String value, String key) {
 		int p = value.indexOf(key);
-		if(p < 0)
+		if (p < 0)
 			return null;
 		return parseValue(value, p);
 	}
-	
+
 	public static String parseValue(String value, int p) {
 		while ((p < value.length()) && (value.charAt(++p) != '"'));
 

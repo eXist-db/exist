@@ -274,16 +274,20 @@ public class LocalCollection extends Observable implements Collection {
         if ( name.equals( "DatabaseInstanceManager" ) )
         	return new LocalDatabaseInstanceManager( user, brokerPool );
         
+        if ( name.equals( "XUpdateQueryService" ) )
+            return new LocalXUpdateQueryService( user, brokerPool, this );
+            
         throw new XMLDBException( ErrorCodes.NO_SUCH_SERVICE );
     }
 
 
     public Service[] getServices() throws XMLDBException {
-        Service[] services = new Service[4];
+        Service[] services = new Service[5];
         services[0] = new LocalXPathQueryService( user, brokerPool, this );
         services[1] = new LocalCollectionManagementService( user, brokerPool, this );
         services[2] = new LocalUserManagementService( user, brokerPool, this );
         services[3] = new LocalDatabaseInstanceManager( user, brokerPool );
+        services[4] = new LocalXUpdateQueryService( user, brokerPool, this );
         return null;
     }
 

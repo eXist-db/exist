@@ -16,14 +16,14 @@ if [ -z "$EXIST_BASE" ]; then
 fi
 
 LOCALCLASSPATH=$JAVA_HOME/lib/tools.jar:$EXIST_BASE/exist.jar:$EXIST_BASE
-JARS=`ls -1 $EXIST_BASE/lib/core/*.jar $EXIST_BASE/lib/optional/*.jar`
+JARS=`ls -1 $EXIST_BASE/lib/*.jar`
 for jar in $JARS
 do
    LOCALCLASSPATH=$jar:$LOCALCLASSPATH ;
 done
 
 if [ -z "$JAVA_OPTS" ]; then
-    JAVA_OPTS="-Xms128000k -Xmx256000k"
+    JAVA_OPTS="-Xms64000k -Xmx256000k"
 fi
 
 SAXFACTORY=org.apache.xerces.jaxp.SAXParserFactoryImpl

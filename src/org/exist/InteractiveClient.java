@@ -89,6 +89,7 @@ public class InteractiveClient {
 	private final static int VERBOSE_OPT = 'v';
 	private final static int QUERY_FILE_OPT = 'f';
 	private final static int THREADS_OPT = 't';
+	private final static int RECURSE_DIRS_OPT = 'd';
 
 	private final static CLOptionDescriptor OPTIONS[] =
 		new CLOptionDescriptor[] {
@@ -184,7 +185,12 @@ public class InteractiveClient {
 				"threads",
 				CLOptionDescriptor.ARGUMENT_REQUIRED,
 				THREADS_OPT,
-				"number of parallel threads to test with (use with -f).")};
+				"number of parallel threads to test with (use with -f)."),
+			new CLOptionDescriptor(
+				"recurse-dirs",
+				CLOptionDescriptor.ARGUMENT_DISALLOWED,
+				RECURSE_DIRS_OPT,
+				"recurse into subdirectories during index?")};
 
 	// ANSI colors for ls display
 	private final static String ANSI_BLUE = "\033[0;34m";
@@ -224,7 +230,8 @@ public class InteractiveClient {
 	protected ResourceSet result = null;
 	protected boolean quiet = false;
 	protected boolean verbose = false;
-
+	protected boolean recurseDirs = false;
+	
 	public InteractiveClient() {
 	}
 
@@ -997,7 +1004,7 @@ public class InteractiveClient {
 					}
 					findRecursive(c, temp[i], next);
 				} else {
-					long start = System.currentTimeMillis();
+					long start1 = System.currentTimeMillis();
 					messageln("storing document " + temp[i].getName() + 
 						" to " + next + "...");
 					document =
@@ -1007,7 +1014,7 @@ public class InteractiveClient {
 					document.setContent(temp[i]);
 					collection.storeResource(document);
 					messageln("storing " + temp[i].length() + " bytes took " +
-						(System.currentTimeMillis() - start) + "ms.");
+						(System.currentTimeMillis() - start1) + "ms.");
 					
 				}
 			} catch (XMLDBException e) {
@@ -1028,9 +1035,12 @@ public class InteractiveClient {
 		String xml;
 		File files[];
 		if (file.canRead()) {
-			if (file.isDirectory())
-				return findRecursive(current, file, path);
-			else {
+			if (file.isDirectory()) {
+				if(recurseDirs)
+					return findRecursive(current, file, path);
+				else
+                    files = file.listFiles( new XMLFilenameFilter() );
+			} else {
 				files = new File[1];
 				files[0] = file;
 			}
@@ -1102,6 +1112,7 @@ public class InteractiveClient {
 			} else
 				current = c;
 		}
+		path = p;
 	}
 
 	// Reads user password from given input stream.
@@ -1244,6 +1255,9 @@ public class InteractiveClient {
 					doParse = true;
 					if (option.getArgumentCount() == 1)
 						optionalArgs.add(option.getArgument());
+					break;
+				case RECURSE_DIRS_OPT :
+					recurseDirs = true;
 					break;
 				case REMOVE_OPT :
 					optionRemove = option.getArgument();

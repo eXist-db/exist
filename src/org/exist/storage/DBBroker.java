@@ -22,14 +22,23 @@
 package org.exist.storage;
 import java.io.DataInput;
 import java.util.Iterator;
-
 import java.util.Observable;
-import org.exist.dom.*;
+
+import org.exist.dom.Collection;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.NodeImpl;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.SymbolTable;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
-import org.exist.storage.serializers.*;
-import org.exist.util.*;
-import org.w3c.dom.*;
+import org.exist.storage.serializers.Serializer;
+import org.exist.util.Configuration;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  *  Description of the Class
@@ -647,5 +656,13 @@ public abstract class DBBroker extends Observable {
 	public void insertAfter(final NodeImpl previous, final NodeImpl node) {
 		throw new RuntimeException( "not implemented" );
 	}
+	
+	public void reindex(DocumentImpl oldDoc, DocumentImpl doc) {
+		throw new RuntimeException( "not implemented" );
+	}
+    
+    public void index(NodeImpl node) {
+        throw new RuntimeException( "not implemented" );
+    }
 }
 

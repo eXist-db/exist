@@ -1,4 +1,5 @@
 #!/bin/bash
+
 unset LANG
 
 if [ -z "$EXIST_HOME" ]; then
@@ -16,17 +17,26 @@ if [ -z "$EXIST_BASE" ]; then
 fi
 
 LOCALCLASSPATH=$JAVA_HOME/lib/tools.jar:$EXIST_BASE/exist.jar:$EXIST_BASE
-JARS=`ls -1 $EXIST_BASE/lib/core/*.jar $EXIST_BASE/lib/optional/*.jar`
+JARS=`ls -1 $EXIST_BASE/lib/*.jar`
 for jar in $JARS
 do
    LOCALCLASSPATH=$jar:$LOCALCLASSPATH ;
 done
 
+OLD_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$EXIST_BASE/lib
+
+# use xerces as SAX parser
+SAXFACTORY=org.apache.xerces.jaxp.SAXParserFactoryImpl
+
+LOCALCLASSPATH=$CLASSPATH:$LOCALCLASSPATH
+
 if [ -z "$JAVA_OPTS" ]; then
-    JAVA_OPTS="-Xms128000k -Xmx256000k"
+    JAVA_OPTS="-Xms64000k -Xmx128000k"
 fi
 
-SAXFACTORY=org.apache.xerces.jaxp.SAXParserFactoryImpl
 #PROF=-Xrunjmp:nomethods
 
-$JAVA_HOME/bin/java $PROF $JAVA_OPTS -Djavax.xml.parsers.SAXParserFactory=$SAXFACTORY -Dexist.home=$EXIST_HOME -classpath $LOCALCLASSPATH:$CLASSPATH org.exist.Server $*
+$JAVA_HOME/bin/java $PROF $JAVA_OPTS -Djavax.xml.parsers.SAXParserFactory=$SAXFACTORY -Dexist.home=$EXIST_HOME -classpath $LOCALCLASSPATH org.exist.InteractiveClient $*
+
+export LD_LIBRARY_PATH=$OLD_LD_LIBRARY_PATH

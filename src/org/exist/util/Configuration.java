@@ -405,6 +405,9 @@ public class Configuration {
 				String indent = serializer.getAttribute("indent");
 				if(indent != null)
 					config.put("serialization.indent", indent);
+                String internalId = serializer.getAttribute("add-exist-id");
+                if(internalId != null)
+                    config.put("serialization.add-exist-id", internalId);
 			}
 			
 			NodeList log4j = doc.getElementsByTagName("log4j:configuration");

@@ -33,7 +33,7 @@ EXIST_OPTS="-Dexist.home=$EXIST_HOME"
 JETTY_OPTS="-Djetty.home=$JETTY_HOME"
 
 if [ -z "$JAVA_OPTIONS" ]; then
-    export JAVA_OPTIONS="-Xms32000k -Xmx128000k"
+    export JAVA_OPTIONS="-Xms128000k -Xmx128000k"
 fi
 
 

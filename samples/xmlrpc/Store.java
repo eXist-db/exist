@@ -24,7 +24,8 @@ public class Store {
 		String docName = (args.length == 2) ? args[1] : args[0];
 
 		XmlRpcClient xmlrpc = new XmlRpcClient(uri);
-
+		xmlrpc.setBasicAuthentication("admin", "");
+		
 		// read the file into a string
 		BufferedReader f = new BufferedReader(new FileReader(args[0]));
 		String line;
