@@ -66,5 +66,9 @@ public class ValueNodeSet extends Value {
         }
         return val.toString();
     }
+    
+    public void setValue(NodeSet value) {
+    	nodes = value;
+    }
 }
 

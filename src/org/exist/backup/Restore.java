@@ -56,7 +56,21 @@ public class Restore extends DefaultHandler {
 		SAXParser sax = saxFactory.newSAXParser();
 		reader = sax.getXMLReader();
 		reader.setContentHandler(this);
+		
 		stack.push(contents);
+		
+		// check if /db/system is in the backup. We have to process
+		// this first to create users.
+		File dir = contents.getParentFile();
+		if(dir.isDirectory() && dir.getName().equals("db")) {
+			File sys = new File(dir.getAbsolutePath() + File.separatorChar +
+				"system" + File.separatorChar + "__contents__.xml");
+			// put /db/system on top of the stack
+			if(sys.canRead()) {
+				System.out.println("found /db/system. It will be processed first.");
+				stack.push(sys);
+			}
+		}
 	}
 
 	public Restore(String user, String pass, File contents)
@@ -175,18 +189,5 @@ public class Restore extends DefaultHandler {
 				current = c;
 		}
 		return current;
-	}
-
-	public static void main(String args[]) {
-		try {
-			Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-			Database database = (Database) cl.newInstance();
-			database.setProperty("create-database", "true");
-			DatabaseManager.registerDatabase(database);
-			Restore restore = new Restore("admin", null, new File(args[0]));
-			restore.restore();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 }

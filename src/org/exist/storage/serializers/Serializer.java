@@ -105,6 +105,11 @@ public class Serializer implements XMLReader {
         	(String)config.getProperty("serialization.indent");
         if(option != null)
         	indent = option.equalsIgnoreCase("true");
+        option = 
+        	(String)config.getProperty("serialization.match-tagging");
+        if(option != null)
+        	highlightMatches = option.equalsIgnoreCase("true");
+        LOG.debug("highlight-matches = " + highlightMatches);
     }
 
 

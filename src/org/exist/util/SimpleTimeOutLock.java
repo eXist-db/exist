@@ -112,8 +112,10 @@ public class SimpleTimeOutLock implements Lock {
 //					" released lock: " + currentKey.hashCode());
 				if(--referenceCount == 0) {
 					currentKey = null;
-					notifyAll();
-				}
+					notify();
+				} else if (referenceCount < 0)
+					LOG.warn(Thread.currentThread().getName() + 
+						": negative reference count");
 			} else {
 				// this should never happen
 				LOG.warn(

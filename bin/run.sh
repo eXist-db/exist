@@ -15,7 +15,7 @@ if [ -z "$EXIST_BASE" ]; then
     EXIST_BASE=$EXIST_HOME
 fi
 
-LOCALCLASSPATH=$JAVA_HOME/lib/tools.jar:$EXIST_BASE/exist.jar:$EXIST_BASE/samples/classes
+LOCALCLASSPATH=$JAVA_HOME/lib/tools.jar:$EXIST_BASE/exist.jar:$EXIST_BASE/examples.jar
 JARS=`ls -1 $EXIST_BASE/lib/core/*.jar $EXIST_BASE/lib/optional/*.jar`
 for jar in $JARS
 do

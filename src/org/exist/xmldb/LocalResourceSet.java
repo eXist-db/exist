@@ -5,12 +5,10 @@ import java.util.Iterator;
 import java.util.Vector;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.SortedNodeSet;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
-
 import org.exist.xpath.*;
-
-import org.w3c.dom.*;
 import org.xmldb.api.base.*;
 
 public class LocalResourceSet implements ResourceSet {
@@ -22,6 +20,7 @@ public class LocalResourceSet implements ResourceSet {
     protected Vector resources = new Vector();
     protected boolean saxDocumentEvents = true;
     protected boolean createContainerElements = false;
+    protected boolean matchTagging = true;
     private User user;
 
 
@@ -35,7 +34,8 @@ public class LocalResourceSet implements ResourceSet {
                              Value val,
                              boolean indentXML, String encoding, 
                              boolean saxDocumentEvents, 
-                             boolean createContainerElements )
+                             boolean createContainerElements,
+                             boolean matchTagging, String sortExpr )
          throws XMLDBException {
         this.user = user;
         this.brokerPool = pool;
@@ -46,9 +46,15 @@ public class LocalResourceSet implements ResourceSet {
         this.createContainerElements = createContainerElements;
         switch ( val.getType() ) {
             case Value.isNodeList:
-                NodeList resultSet = val.getNodeList();
+                NodeSet resultSet = (NodeSet)val.getNodeList();
+                if(sortExpr != null) {
+                	SortedNodeSet sorted = 
+                		new SortedNodeSet(brokerPool, user, sortExpr);
+                	sorted.addAll(resultSet);
+                	resultSet = sorted;
+                }
                 NodeProxy p;
-                for ( Iterator i = ( (NodeSet) resultSet ).iterator();
+                for ( Iterator i = resultSet.iterator();
                     i.hasNext();  ) {
                     p = (NodeProxy) i.next();
                     if ( p == null )
@@ -108,6 +114,7 @@ public class LocalResourceSet implements ResourceSet {
 			res.setSAXDocEvents( saxDocumentEvents );
 			res.setEncoding( encoding );
 			res.setCreateContainerElements( createContainerElements );
+			res.setMatchTagging(matchTagging);
         } else if(r instanceof String) {
         	res = new LocalXMLResource( user, brokerPool, collection, null, -1);
         	res.setContent( r );

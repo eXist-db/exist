@@ -20,8 +20,8 @@
 
 package org.exist.dom;
 
-import it.unimi.dsi.fastUtil.Int2ObjectAVLTreeMap;
-import it.unimi.dsi.fastUtil.ObjectAVLTreeSet;
+import it.unimi.dsi.fastutil.Int2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.ObjectAVLTreeSet;
 
 import java.util.ArrayList;
 import java.util.Arrays;

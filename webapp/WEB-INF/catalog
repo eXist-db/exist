@@ -1,6 +1,5 @@
 OVERRIDE YES
-
 PUBLIC "-//PLAY//EN"
-       "http://localhost:8080/exist/play.dtd"
-SYSTEM "play.dtd" 
-       "play.dtd"
+       "entities/play.dtd"
+OVERRIDE YES
+SYSTEM "play.dtd" "entities/play.dtd"

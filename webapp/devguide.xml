@@ -50,7 +50,14 @@
                 (<classname>org.exist.InteractiveClient</classname> also uses
                 the XML:DB API for server communication and may serve as an
                 advanced example. Here's a simple example which retrieves a
-                document from the eXist server and prints it to standard output:</para>
+				document from the eXist server and prints it to standard output:</para>
+			<note>
+				<para>You will find several examples in directory
+					<filename>samples</filename>. To start an example, use
+					the <filename>start.jar</filename> jar and pass the
+					name of the example class as first parameter, e.g.:</para>
+				<synopsis>java -jar start.jar org.exist.examples.xmldb.Retrieve ...</synopsis>
+			</note>
             <example>
                 <title>Retrieving a document</title>
                 <programlisting format="linespecific"><![CDATA[
@@ -81,7 +88,7 @@ public class RetrieveExample {
     }
 }
         ]]></programlisting>
-            </example>
+			</example>
             <para>First, the database driver class for eXist
                 (<classname>org.exist.xmldb.DatabaseImpl</classname>) is
                 registered with the <classname>DatabaseManager</classname>. Next
@@ -318,7 +325,13 @@ DatabaseManager.registerDatabase(database1);
         </section>
         <section>
         	<title>XMLDBTransformer for Cocoon</title>
-        	
+			<para>eXist offers several ways to access the database from Cocoon
+				based applications. This includes access via the XMLDB pseudo 
+				protocol, through XSP pages, and through the XMLDBTransformer.
+				The XMLDBTransformer provides a simple way to query the
+				database. It works like other transformers supplied with 
+				Cocoon. Basically, the transformer watches out for known tags,
+				processes 
         <section>
             <title>XML:DB Logicsheet for Cocoon</title>
             <para>Cocoon offers a powerfull mechanism called XSP to write

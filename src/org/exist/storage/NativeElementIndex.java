@@ -219,8 +219,8 @@ public class NativeElementIndex extends ElementIndex {
 			LOG.warn("database is read-only");
 			return;
 		}
-		//elementIds.clear();
-		elementIds = new TreeMap();
+		elementIds.clear();
+		//elementIds = new TreeMap();
 	}
 
 	private Value findPartition(short collectionId, short symbol, int len) {

@@ -1,24 +1,22 @@
 package org.exist.dom;
+
 import java.io.StringReader;
 import java.util.Iterator;
-
 import org.apache.log4j.Category;
-import org.exist.parser.*;
+import org.exist.EXistException;
+import org.exist.parser.XPathLexer;
+import org.exist.parser.XPathParser;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
-import org.exist.storage.*;
-import org.exist.util.*;
-import org.exist.xpath.*;
-import org.exist.EXistException;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.util.OrderedLinkedList;
+import org.exist.xpath.PathExpr;
+import org.exist.xpath.Value;
+import org.exist.xpath.ValueSet;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-/**
- *  Description of the Class
- *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    28. August 2002
- */
 public class SortedNodeSet extends NodeSet {
 
 	private static Category LOG =
@@ -29,22 +27,14 @@ public class SortedNodeSet extends NodeSet {
 	private DocumentSet ndocs;
 	private String sortExpr;
 	private BrokerPool pool;
-
-	/**
-	 *  Constructor for the SortedNodeSet object
-	 *
-	 *@param  sortExpr  Description of the Parameter
-	 */
-	public SortedNodeSet(BrokerPool pool, String sortExpr) {
+	private User user = null;
+	
+	public SortedNodeSet(BrokerPool pool, User user, String sortExpr) {
 		this.sortExpr = sortExpr;
 		this.pool = pool;
+		this.user = user;
 	}
 
-	/**
-	 *  Adds a feature to the All attribute of the SortedNodeSet object
-	 *
-	 *@param  other  The feature to be added to the All attribute
-	 */
 	public void addAll(NodeSet other) {
 		long start = System.currentTimeMillis();
 		NodeProxy p;
@@ -58,10 +48,9 @@ public class SortedNodeSet extends NodeSet {
 			XPathLexer lexer = new XPathLexer(new StringReader(sortExpr));
 
 			XPathParser parser =
-				new XPathParser(pool, new User("admin", null, "dba"), lexer);
+				new XPathParser(pool, user, lexer);
 			expr = new PathExpr(pool);
 			parser.expr(expr);
-			LOG.info("query: " + expr.pprint());
 			if (parser.foundErrors())
 				LOG.debug(parser.getErrorMsg());
 			ndocs = expr.preselect(docs);
@@ -79,7 +68,7 @@ public class SortedNodeSet extends NodeSet {
 			broker = pool.get();
 			for (Iterator i = other.iterator(); i.hasNext();) {
 				p = (NodeProxy) i.next();
-				item = new Item(broker, p);
+				item = new Item(broker, p, expr, ndocs);
 				list.add(item);
 			}
 		} catch (EXistException e) {
@@ -88,39 +77,21 @@ public class SortedNodeSet extends NodeSet {
 			pool.release(broker);
 		}
 		LOG.debug(
-			"sort-expression took "
+			"sort-expression found " + list.size() + " in "
 				+ (System.currentTimeMillis() - start)
 				+ "ms.");
 	}
 
-	/**
-	 *  Adds a feature to the All attribute of the SortedNodeSet object
-	 *
-	 *@param  other  The feature to be added to the All attribute
-	 */
 	public void addAll(NodeList other) {
 		if (!(other instanceof NodeSet))
 			throw new RuntimeException("not implemented!");
 		addAll((NodeSet) other);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  doc     Description of the Parameter
-	 *@param  nodeId  Description of the Parameter
-	 *@return         Description of the Return Value
-	 */
 	public boolean contains(DocumentImpl doc, long nodeId) {
 		return contains(new NodeProxy(doc, nodeId));
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  proxy  Description of the Parameter
-	 *@return        Description of the Return Value
-	 */
 	public boolean contains(NodeProxy proxy) {
 		NodeProxy p;
 		for (Iterator i = list.iterator(); i.hasNext();) {
@@ -131,23 +102,11 @@ public class SortedNodeSet extends NodeSet {
 		return false;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  pos  Description of the Parameter
-	 *@return      Description of the Return Value
-	 */
 	public NodeProxy get(int pos) {
-		return ((Item) list.get(pos)).proxy;
+		final Item item = (Item)list.get(pos);
+		return item == null ? null : item.proxy; 
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  doc     Description of the Parameter
-	 *@param  nodeId  Description of the Parameter
-	 *@return         Description of the Return Value
-	 */
 	public NodeProxy get(DocumentImpl doc, long nodeId) {
 		NodeProxy p;
 		NodeProxy proxy = new NodeProxy(doc, nodeId);
@@ -169,31 +128,15 @@ public class SortedNodeSet extends NodeSet {
 		return null;
 	}
 
-	/**
-	 *  Gets the length attribute of the SortedNodeSet object
-	 *
-	 *@return    The length value
-	 */
 	public int getLength() {
 		return list.size();
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  pos  Description of the Parameter
-	 *@return      Description of the Return Value
-	 */
 	public Node item(int pos) {
 		NodeProxy p = ((Item) list.get(pos)).proxy;
 		return p == null ? null : p.doc.getNode(p.gid);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@return    Description of the Return Value
-	 */
 	public Iterator iterator() {
 		return new SortedNodeSetIterator(list.iterator());
 	}
@@ -202,51 +145,30 @@ public class SortedNodeSet extends NodeSet {
 
 		Iterator pi;
 
-		/**
-		 *  Constructor for the SortedNodeSetIterator object
-		 *
-		 *@param  i  Description of the Parameter
-		 */
 		public SortedNodeSetIterator(Iterator i) {
 			pi = i;
 		}
 
-		/**
-		 *  Description of the Method
-		 *
-		 *@return    Description of the Return Value
-		 */
 		public boolean hasNext() {
 			return pi.hasNext();
 		}
 
-		/**
-		 *  Description of the Method
-		 *
-		 *@return    Description of the Return Value
-		 */
 		public Object next() {
 			if (!pi.hasNext())
 				return null;
 			return ((Item) pi.next()).proxy;
 		}
 
-		/**  Description of the Method */
 		public void remove() {
 		}
 	}
 
-	private final class Item implements Comparable {
+	private static final class Item implements Comparable {
 		NodeProxy proxy;
 		String value = null;
-
-		/**
-		 *  Constructor for the Item object
-		 *
-		 *@param  proxy   Description of the Parameter
-		 *@param  broker  Description of the Parameter
-		 */
-		public Item(DBBroker broker, NodeProxy proxy) {
+		
+		public Item(DBBroker broker, NodeProxy proxy, PathExpr expr, 
+			DocumentSet ndocs) {
 			this.proxy = proxy;
 			ArraySet context = new ArraySet(1);
 			context.add(proxy);
@@ -283,12 +205,6 @@ public class SortedNodeSet extends NodeSet {
 			}
 		}
 
-		/**
-		 *  Description of the Method
-		 *
-		 *@param  other  Description of the Parameter
-		 *@return        Description of the Return Value
-		 */
 		public int compareTo(Object other) {
 			Item o = (Item) other;
 			if (value == null)

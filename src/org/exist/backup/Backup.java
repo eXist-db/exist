@@ -37,7 +37,6 @@ import org.xml.sax.helpers.AttributesImpl;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
-import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
@@ -77,6 +76,8 @@ public class Backup {
 		if (current == null)
 			return;
 		current.setProperty("encoding", "UTF-8");
+		
+		// get resources and permissions
 		String[] resources = current.listResources();
 		String path = backupDir + current.getName();
 		UserManagementService mgtService =
@@ -86,6 +87,7 @@ public class Backup {
 		Permission perms[] = mgtService.listResourcePermissions();
 		Permission currentPerms = mgtService.getPermissions(current);
 
+		// create directory and open __contents__.xml
 		File file = new File(path);
 		if (!file.exists())
 			file.mkdirs();
@@ -95,9 +97,11 @@ public class Backup {
 					new FileOutputStream(path + '/' + "__contents__.xml"),
 					"UTF-8"));
 		OutputFormat format = new OutputFormat("xml", "UTF-8", true);
+		// serializer writes to __contents__.xml
 		XMLSerializer serializer = new XMLSerializer(contents, format);
 		serializer.startDocument();
         serializer.startPrefixMapping("", NS);
+        // write <collection> element
 		AttributesImpl attr = new AttributesImpl();
 		attr.addAttribute(NS, "name", "name", "CDATA", current.getName());
 		attr.addAttribute(
@@ -120,6 +124,7 @@ public class Backup {
 			Integer.toOctalString(currentPerms.getPermissions()));
 		serializer.startElement(NS, "collection", "collection", attr);
         
+        // scan through resources
         XMLResource resource;
         FileOutputStream os;
         BufferedWriter writer;
@@ -136,6 +141,7 @@ public class Backup {
                     "UTF-8"
                 )
             );
+            // write resource to contentSerializer
             contentSerializer = new XMLSerializer(writer, format);
 			resource.getContentAsSAX(contentSerializer);
 			writer.close();
@@ -163,17 +169,22 @@ public class Backup {
 			serializer.startElement(NS, "resource", "resource", attr);
 			serializer.endElement(NS, "resource", "resource");
 		}
+		// write subcollections
         String[] collections = current.listChildCollections();
         for (int i = 0; i < collections.length; i++) {
+        	if(current.getName().equals("db") && collections[i].equals("system"))
+        		continue;
             attr.clear();
             attr.addAttribute(NS, "name", "name", "CDATA", collections[i]);
             serializer.startElement(NS, "subcollection", "subcollection", attr);
             serializer.endElement(NS, "subcollection", "subcollection");
         }
+        // close <collection>
         serializer.endElement(NS, "collection", "collection");
         serializer.endPrefixMapping("");
         serializer.endDocument();
         contents.close();
+        // descend into subcollections
 		Collection child;
 		for (int i = 0; i < collections.length; i++) {
 			child = current.getChildCollection(collections[i]);

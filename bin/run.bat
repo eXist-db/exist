@@ -11,7 +11,7 @@ if not "%EXIST_HOME%" == "" goto gotExistHome
 set EXIST_HOME=..
 
 :gotExistHome
-set _LIBJARS=%EXIST_HOME%;%EXIST_HOME%\exist.jar
+set _LIBJARS=%EXIST_HOME%;%EXIST_HOME%\exist.jar;%EXIST_HOME%\examples.jar
 for %%i in (%EXIST_HOME%\lib\*.jar) do call bin\cpappend.bat %%i
 %JAVA_HOME%\bin\java -Xms32000k -Xmx64000k -classpath %_LIBJARS% %1 %2 %3 %4 %5 %6 %7 %8
 

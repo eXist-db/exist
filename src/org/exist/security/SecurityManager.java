@@ -22,7 +22,7 @@
  */
 package org.exist.security;
 
-import it.unimi.dsi.fastUtil.Int2ObjectRBTreeMap;
+import it.unimi.dsi.fastutil.Int2ObjectRBTreeMap;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -77,8 +77,8 @@ public class SecurityManager {
 			if (sysCollection == null) {
 				sysCollection = broker.getOrCreateCollection(SYSTEM);
 				broker.saveCollection(sysCollection);
+				sysCollection.setPermissions(0770);
 			}
-			sysCollection.setPermissions(0770);
 			Document acl = broker.getDocument(SYSTEM + '/' + ACL_FILE);
 			Element docElement = null;
 			if (acl != null)
@@ -113,9 +113,11 @@ public class SecurityManager {
 						} catch (NumberFormatException e) {
 						}
 						ul = next.getElementsByTagName("user");
+						LOG.debug("found " + ul.getLength() + " users");
 						for (int j = 0; j < ul.getLength(); j++) {
 							node = (Element) ul.item(j);
 							user = new User(node);
+							LOG.debug("registered user " + user.getName());
 							users.put(user.getUID(), user);
 						}
 					} else if (next.getTagName().equals("groups")) {
@@ -281,7 +283,7 @@ public class SecurityManager {
 		broker.flush();
 		broker.sync();
 		try {
-			Parser parser = new Parser(broker, getUser(DBA_USER), true);
+			Parser parser = new Parser(broker, getUser(DBA_USER), true, true);
 			DocumentImpl doc =
 				parser.parse(buf.toString(), SYSTEM + '/' + ACL_FILE);
 			doc.setPermissions(0770);

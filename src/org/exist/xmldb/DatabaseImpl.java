@@ -24,12 +24,17 @@ package org.exist.xmldb;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.StringTokenizer;
-import org.apache.xmlrpc.*;
+
+import org.apache.xmlrpc.XmlRpc;
+import org.apache.xmlrpc.XmlRpcClient;
 import org.exist.EXistException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
-import org.xmldb.api.base.*;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Database;
+import org.xmldb.api.base.ErrorCodes;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * The XMLDB driver class for eXist. This driver manages two different
@@ -183,8 +188,7 @@ public class DatabaseImpl implements Database {
             // try to figure out server address
             int p = 0;
             if ( ( p = c.indexOf( "/db", 2 ) ) > -1 ) {
-                address = "http://" + user + ':' + password +
-                    '@' + c.substring( 2, p );
+                address = "http://" + c.substring( 2, p );
                 c = c.substring( p );
             }
             else

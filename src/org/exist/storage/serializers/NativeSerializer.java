@@ -114,7 +114,7 @@ public class NativeSerializer extends Serializer {
 			domIter = broker.getDOMIterator(p);
 			if (domIter == null)
 				continue;
-			serializeToSAX(domIter, p.doc, p.gid);
+			serializeToSAX(null, domIter, p.doc, p.gid, true, p.matches);
 		}
 		contentHandler.endElement(
 			EXIST_NS,
@@ -487,13 +487,24 @@ public class NativeSerializer extends Serializer {
 	private final String processText(String data, long gid, Match matches[]) {
 		if(matches == null)
 			return data;
-		String expr;
+		// sort to get longest string first
+		Arrays.sort(matches);
+		// prepare a regular expression to mark match-terms
+		StringBuffer expr = null;
 		for (int i = 0; i < matches.length; i++)
 			if (matches[i].getNodeId() == gid) {
-				expr = "s/(" + matches[i].getMatchingTerm() +
-					")/||$1||/gi"; 
-				data = reutil.substitute(expr, data);
+				if(expr == null) {
+					expr = new StringBuffer();
+					expr.append("s/(");
+				}
+				if(expr.length() > 3)
+					expr.append('|');
+				expr.append(matches[i].getMatchingTerm());
 			}
+		if(expr != null) {
+			expr.append(")/||$1||/gi");
+			data = reutil.substitute(expr.toString(), data);
+		}
 		return data;
 	}
 	

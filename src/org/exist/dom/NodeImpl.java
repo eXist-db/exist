@@ -155,7 +155,7 @@ public class NodeImpl implements Node {
 	public void clear() {
 		attributes = 0;
 		gid = 0;
-		internalAddress = 0;
+		internalAddress = -1;
 		nodeName = null;
 		ownerDocument = null;
 	}

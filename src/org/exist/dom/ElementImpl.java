@@ -177,9 +177,20 @@ public class ElementImpl extends NodeImpl implements Element {
 	 * @throws DOMException
 	 */
 	public void appendChildInternal(NodeImpl child) throws DOMException {
-		if (gid > 0)
+		if (gid > 0) {
 			child.setGID(firstChildID() + children);
-		else
+			if(child.getGID() < 0) {
+				final int level = ownerDocument.getTreeLevel(gid);
+				final int order = ownerDocument.getTreeLevelOrder(level);
+				throw new DOMException(DOMException.INVALID_STATE_ERR,
+					"internal error: node " + gid + "; first-child: " +
+					firstChildID() + "; level: " + level +
+					"; maxDepth: " + ownerDocument.maxDepth +
+					"; order(level+1): " + order +
+					"; start0: " + ownerDocument.getLevelStartPoint(level) +
+					"; start1: " + ownerDocument.getLevelStartPoint(level+1));
+			}
+		} else
 			child.setGID(0);
 		++children;
 	}

@@ -1,6 +1,6 @@
 package org.exist.util;
 
-/* eXist xml document repository and xpath implementation
+/* eXist Native XML Database
  * Copyright (C) 2001,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
@@ -118,7 +118,7 @@ public class OrderedLinkedList {
 		Node node = header;
 		int count = 0;
 		while (node != null) {
-			if (count == pos)
+			if (count++ == pos)
 				return node.data;
 			node = node.next;
 		}
@@ -183,7 +183,7 @@ public class OrderedLinkedList {
 		list.add("Georg");
 		list.remove("Xerces");
 		list.remove("Wolfgang");
-		for (Iterator i = list.iterator(); i.hasNext();)
-			System.out.println((String) i.next());
+		for(int i = 0; i < list.size(); i++)
+			System.out.println(list.get(i));
 	}
 }

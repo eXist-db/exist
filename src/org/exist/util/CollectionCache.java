@@ -5,7 +5,7 @@
  */
 package org.exist.util;
 
-import it.unimi.dsi.fastUtil.Object2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.Object2ObjectAVLTreeMap;
 
 import java.util.Iterator;
 
@@ -18,11 +18,11 @@ public class CollectionCache {
 
 	protected int fails = 0;
 	protected int hits = 0;
-	protected Object2ObjectLinkedOpenHashMap map;
+	protected Object2ObjectAVLTreeMap map;
 
 	public CollectionCache(int blockBuffers) {
 		this.buffers = blockBuffers;
-		map = new Object2ObjectLinkedOpenHashMap(blockBuffers);
+		map = new Object2ObjectAVLTreeMap();
 	}
 
 	public CollectionCache() {
@@ -39,10 +39,10 @@ public class CollectionCache {
 			collection.incRefCount();
 			return;
 		}
-		while (map.size() >= buffers)
-			removeOne(collection);
 		collection.setRefCount(initialRefCount);
 		map.put(name, collection);
+		while (map.size() >= buffers)
+			removeOne(collection);
 	}
 
 	public Collection get(Collection collection) {
@@ -64,6 +64,10 @@ public class CollectionCache {
 		map.remove(collection.getName());
 	}
 
+	public void clear() {
+		map.clear();
+	}
+	
 	private final void removeOne(Collection collection) {
 		Collection old;
 		boolean removed = false;

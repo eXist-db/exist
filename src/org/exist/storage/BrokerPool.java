@@ -234,7 +234,7 @@ public class BrokerPool {
 	}
 
 	/**
-	 *  Gets the securityManager attribute of the BrokerPool object
+	 *  Returns the security manager responsible for this pool
 	 *
 	 *@return    The securityManager value
 	 */
@@ -242,6 +242,11 @@ public class BrokerPool {
 		return secManager;
 	}
 
+	public void reloadSecurityManager(DBBroker broker) {
+		LOG.debug("reloading security manager");
+		secManager = new org.exist.security.SecurityManager(this, broker);
+	}
+	
 	/**
 	 *  Description of the Method
 	 *

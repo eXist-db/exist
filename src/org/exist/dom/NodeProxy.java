@@ -135,7 +135,20 @@ public final class NodeProxy implements Comparable, Cloneable {
     }
     
     public int compareTo( Object other ) {
-        return NodeProxyComparator.instance.compare( this, other );
+		if ( other == null )
+			throw new NullPointerException( "cannot compare null values" );
+		final NodeProxy p = (NodeProxy) other;
+		if ( doc.docId == p.doc.docId ) {
+			if ( gid == p.gid )
+				return 0;
+			else if ( gid < p.gid )
+				return -1;
+			else
+				return 1;
+		} else if ( doc.docId < p.doc.docId )
+			return -1;
+		else
+			return 1;
     }
 
     public boolean equals( Object other ) {
@@ -221,27 +234,11 @@ public final class NodeProxy implements Comparable, Cloneable {
         return doc.getNode( gid ).toString();
     }
 
-
-    /**
-     *  Description of the Class
-     *
-     *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
-     *@created    22. Juli 2002
-     */
     public static class NodeProxyComparator implements Comparator {
 
-        /**  Description of the Field */
         public static NodeProxyComparator instance =
             new NodeProxyComparator();
 
-
-        /**
-         *  Description of the Method
-         *
-         *@param  obj1  Description of the Parameter
-         *@param  obj2  Description of the Parameter
-         *@return       Description of the Return Value
-         */
         public int compare( Object obj1, Object obj2 ) {
             if ( obj1 == null || obj2 == null )
                 throw new NullPointerException( "cannot compare null values" );

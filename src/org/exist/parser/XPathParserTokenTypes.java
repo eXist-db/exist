@@ -1,4 +1,4 @@
-// $ANTLR : "XPathParser.g" -> "XPathLexer.java"$
+// $ANTLR 2.7.2rc2 (20030105): "XPathParser.g" -> "XPathLexer.java"$
 
 	package org.exist.parser;
 	
@@ -42,32 +42,31 @@ public interface XPathParserTokenTypes {
 	int STAR = 23;
 	int COMMA = 24;
 	int LITERAL_collection = 25;
-	int LITERAL_false = 26;
-	int LITERAL_true = 27;
-	int INT = 28;
-	int LITERAL_text = 29;
-	int SLASH = 30;
-	int DSLASH = 31;
-	int LPPAREN = 32;
-	// "starts-with" = 33
-	// "ends-with" = 34
-	int LITERAL_contains = 35;
-	int LITERAL_match = 36;
-	int LITERAL_near = 37;
-	int FUNC = 38;
-	int ATTRIB = 39;
-	int ATTRIB_STAR = 40;
-	int LITERAL_node = 41;
-	int PARENT = 42;
-	int SELF = 43;
-	int RPPAREN = 44;
-	int WS = 45;
-	int BASECHAR = 46;
-	int IDEOGRAPHIC = 47;
-	int DIGIT = 48;
-	int NMSTART = 49;
-	int NMCHAR = 50;
-	int NCNAME = 51;
-	int ID_OR_FUNC = 52;
-	int VARIABLE = 53;
+	int LITERAL_xcollection = 26;
+	int INT = 27;
+	int LITERAL_text = 28;
+	int SLASH = 29;
+	int DSLASH = 30;
+	int LPPAREN = 31;
+	// "starts-with" = 32
+	// "ends-with" = 33
+	int LITERAL_contains = 34;
+	int LITERAL_match = 35;
+	int LITERAL_near = 36;
+	int FUNC = 37;
+	int ATTRIB = 38;
+	int ATTRIB_STAR = 39;
+	int LITERAL_node = 40;
+	int PARENT = 41;
+	int SELF = 42;
+	int RPPAREN = 43;
+	int WS = 44;
+	int BASECHAR = 45;
+	int IDEOGRAPHIC = 46;
+	int DIGIT = 47;
+	int NMSTART = 48;
+	int NMCHAR = 49;
+	int NCNAME = 50;
+	int ID_OR_FUNC = 51;
+	int VARIABLE = 52;
 }

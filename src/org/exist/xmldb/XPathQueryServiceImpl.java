@@ -21,4 +21,9 @@ public interface XPathQueryServiceImpl extends XPathQueryService {
     public ResourceSet query( XMLResource res, String query )
     throws XMLDBException;
     
+    public ResourceSet query( XMLResource res, String query, String sortExpr)
+    throws XMLDBException;
+    
+    public ResourceSet query( String query, String sortExpr)
+    throws XMLDBException;
 }

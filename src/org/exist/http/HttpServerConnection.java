@@ -620,8 +620,6 @@ public class HttpServerConnection extends Thread {
     protected String printAll( NodeList resultSet, int howmany, int start,
                                long queryTime, boolean indent, String stylesheet
                                ) {
-        HttpServer.LOG.debug( "indent=" + indent );
-
         if ( resultSet.getLength(  ) == 0 )
             return formatErrorMsg( "nothing found!", OK );
 
@@ -641,8 +639,6 @@ public class HttpServerConnection extends Thread {
         serializer.setIndent( indent );
         if(stylesheet != null)
         	serializer.setStylesheet( stylesheet );
-
-        HttpServer.LOG.debug( "start = " + start );
 
         try {
             return serializer.serialize( (NodeSet) resultSet, start, howmany,

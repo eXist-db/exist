@@ -236,20 +236,23 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 *@param  child             Description of the Parameter
 	 *@exception  DOMException  Description of the Exception
 	 */
-	public void appendChild(NodeImpl child) throws DOMException {
+	public void appendChild(NodeImpl child, boolean validate) throws DOMException {
 		++children;
-		child.setGID(children);
+		if(!validate)
+			child.setGID(children);
+		if(child.getNodeType() == Node.ELEMENT_NODE)
+			setDocumentElement(children);
 		treeLevelOrder[0] = children;
 	}
 
 	/**  Description of the Method */
 	public void calculateTreeLevelStartPoints() {
-		treeLevelStartPoints = new long[maxDepth];
+		treeLevelStartPoints = new long[maxDepth + 1];
 		// we know the start point of the root element (which is always 1)
 		// and the start point of the first non-root node (2)
 		treeLevelStartPoints[0] = 1;
 		treeLevelStartPoints[1] = children + 1;
-		for (int i = 1; i < maxDepth - 1; i++) {
+		for (int i = 1; i < maxDepth; i++) {
 			treeLevelStartPoints[i + 1] =
 				(treeLevelStartPoints[i] - treeLevelStartPoints[i - 1])
 					* treeLevelOrder[i]
@@ -410,13 +413,17 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		NodeSet result = new ArraySet(100);
 		context.add(root);
 		NodeSet temp = (NodeSet) broker.findElementsByTagName(docs, tagName);
-		NodeProxy p;
-		for (Iterator iter = temp.iterator(); iter.hasNext();) {
-			p = (NodeProxy) iter.next();
-			if (context.nodeHasParent(p.doc, p.gid, true))
-				result.add(p);
-		}
-		return result;
+		return temp.getDescendants(context, NodeSet.DESCENDANT);
+//		NodeProxy p;
+//		for (Iterator iter = temp.iterator(); iter.hasNext();) {
+//			p = (NodeProxy) iter.next();
+//			if (context.nodeHasParent(p.doc, p.gid, true)) {
+//				LOG.debug("adding " + p.doc.getDocId() + ":" + p.gid);
+//				result.add(p);
+//			} else
+//				LOG.debug("skipping " + p.doc.getDocId() + ":" + p.gid);
+//		}
+//		return result;
 	}
 
 	/**
@@ -584,7 +591,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 *@return        The levelStartPoint value
 	 */
 	public long getLevelStartPoint(int level) {
-		if (level >= maxDepth || level < 0)
+		if (level > maxDepth || level < 0)
 			return -1;
 		return treeLevelStartPoints[level];
 	}
@@ -657,7 +664,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 *@return        The treeLevelOrder value
 	 */
 	public int getTreeLevelOrder(int level) {
-		if (level >= treeLevelOrder.length) {
+		if (level >maxDepth) {
 			LOG.fatal("tree level " + level + " does not exist");
 			return -1;
 		}
@@ -748,13 +755,14 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		children = istream.readInt();
 		address = DOMFile.createPointer(istream.readInt(), istream.readInt());
 		maxDepth = istream.readInt();
-		treeLevelOrder = new int[maxDepth];
-		for (int i = 0; i < maxDepth; i++)
+		treeLevelOrder = new int[maxDepth + 1];
+		for (int i = 0; i < maxDepth; i++) {
 			treeLevelOrder[i] = istream.readInt();
+		}
 		final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
 		final int uid = istream.readInt();
 		final int gid = istream.readInt();
-		final int perm = istream.readByte();
+		final int perm = (istream.readByte() & 0777);
 		if(secman == null) {
 			permissions.setOwner(SecurityManager.DBA_USER);
 			permissions.setGroup(SecurityManager.DBA_GROUP);
