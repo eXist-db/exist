@@ -764,13 +764,13 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		for (int i = 0; i < maxDepth; i++)
 			treeLevelOrder[i] = istream.readInt();
 
-		treeLevelStartPoints = new long[maxDepth];
-		for (int i = 0; i < maxDepth; i++)
-			treeLevelStartPoints[i] = istream.readLong();
-
+		//treeLevelStartPoints = new long[maxDepth];
+		//for (int i = 0; i < maxDepth; i++)
+		//	treeLevelStartPoints[i] = istream.readLong();
+		//
 		docType = new DocumentTypeImpl();
 		((DocumentTypeImpl) docType).read(istream);
-		rootPage = istream.readLong();
+		//rootPage = istream.readLong();
 		documentRootId = istream.readLong();
 		permissions.read(istream);
 		calculateTreeLevelStartPoints();
@@ -971,11 +971,11 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			ostream.writeInt(treeLevelOrder[i]);
 
 		//ostream.writeShort( treeLevelStartPoints.length );
-		for (int i = 0; i < maxDepth; i++)
-			ostream.writeLong(treeLevelStartPoints[i]);
+		//for (int i = 0; i < maxDepth; i++)
+		//	ostream.writeLong(treeLevelStartPoints[i]);
 
 		((DocumentTypeImpl) docType).write(ostream);
-		ostream.writeLong(rootPage);
+		//ostream.writeLong(rootPage);
 		ostream.writeLong(documentRootId);
 		permissions.write(ostream);
 		//symbols.write( ostream );

@@ -333,7 +333,7 @@ tryAgain:
 			match('"');
 			text.setLength(_saveIndex);
 			{
-			_loop60:
+			_loop402:
 			do {
 				if ((_tokenSet_1.member(LA(1)))) {
 					{
@@ -341,7 +341,7 @@ tryAgain:
 					}
 				}
 				else {
-					break _loop60;
+					break _loop402;
 				}
 				
 			} while (true);
@@ -357,7 +357,7 @@ tryAgain:
 			match('\'');
 			text.setLength(_saveIndex);
 			{
-			_loop63:
+			_loop405:
 			do {
 				if ((_tokenSet_2.member(LA(1)))) {
 					{
@@ -365,7 +365,7 @@ tryAgain:
 					}
 				}
 				else {
-					break _loop63;
+					break _loop405;
 				}
 				
 			} while (true);
@@ -810,13 +810,13 @@ tryAgain:
 		
 		mNMSTART(false);
 		{
-		_loop88:
+		_loop430:
 		do {
 			if ((_tokenSet_3.member(LA(1)))) {
 				mNMCHAR(false);
 			}
 			else {
-				break _loop88;
+				break _loop430;
 			}
 			
 		} while (true);
@@ -835,13 +835,13 @@ tryAgain:
 		
 		mNMSTART(false);
 		{
-		_loop91:
+		_loop433:
 		do {
 			if ((_tokenSet_3.member(LA(1)))) {
 				mNMCHAR(false);
 			}
 			else {
-				break _loop91;
+				break _loop433;
 			}
 			
 		} while (true);
@@ -872,10 +872,10 @@ tryAgain:
 		_ttype = ID_OR_FUNC;
 		int _saveIndex;
 		
-		boolean synPredMatched95 = false;
+		boolean synPredMatched437 = false;
 		if (((_tokenSet_0.member(LA(1))) && (true))) {
-			int _m95 = mark();
-			synPredMatched95 = true;
+			int _m437 = mark();
+			synPredMatched437 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -884,12 +884,12 @@ tryAgain:
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched95 = false;
+				synPredMatched437 = false;
 			}
-			rewind(_m95);
+			rewind(_m437);
 			inputState.guessing--;
 		}
-		if ( synPredMatched95 ) {
+		if ( synPredMatched437 ) {
 			mFUNC(false);
 			if ( inputState.guessing==0 ) {
 				_ttype = FUNC;
@@ -919,41 +919,41 @@ tryAgain:
 		int _saveIndex;
 		
 		{
-		int _cnt98=0;
-		_loop98:
+		int _cnt440=0;
+		_loop440:
 		do {
 			if (((LA(1) >= '0' && LA(1) <= '9'))) {
 				mDIGIT(false);
 			}
 			else {
-				if ( _cnt98>=1 ) { break _loop98; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt440>=1 ) { break _loop440; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			
-			_cnt98++;
+			_cnt440++;
 		} while (true);
 		}
 		{
-		_loop102:
+		_loop444:
 		do {
 			if ((LA(1)=='.')) {
 				match('.');
 				{
-				int _cnt101=0;
-				_loop101:
+				int _cnt443=0;
+				_loop443:
 				do {
 					if (((LA(1) >= '0' && LA(1) <= '9'))) {
 						mDIGIT(false);
 					}
 					else {
-						if ( _cnt101>=1 ) { break _loop101; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+						if ( _cnt443>=1 ) { break _loop443; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 					}
 					
-					_cnt101++;
+					_cnt443++;
 				} while (true);
 				}
 			}
 			else {
-				break _loop102;
+				break _loop444;
 			}
 			
 		} while (true);

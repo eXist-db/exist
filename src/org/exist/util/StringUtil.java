@@ -75,4 +75,13 @@ public class StringUtil {
 		}
 		return len;
 	}
+    
+    public final static String hexDump(byte[] data) {
+        StringBuffer buf = new StringBuffer(data.length);
+        for(int i = 0; i < data.length; i++) {
+            buf.append(Integer.toHexString((int)data[i]));
+            buf.append(' ');
+        }
+        return buf.toString();
+    }
 }

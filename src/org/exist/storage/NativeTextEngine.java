@@ -798,7 +798,8 @@ public class NativeTextEngine extends TextSearchEngine {
 		protected TreeMap words = new TreeMap();
 		private VariableByteOutputStream os = new VariableByteOutputStream();
         private WordRef reusableWordRef = new WordRef(512);
-
+        private long currentSize = 0;
+        
 		public InvertedIndex() {
 		}
 

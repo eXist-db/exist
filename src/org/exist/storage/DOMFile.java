@@ -1578,13 +1578,12 @@ public class DOMFile extends BTree implements Lockable {
 			try {
 				DOMFilePageHeader ph = (DOMFilePageHeader) page.getPageHeader();
 				len = ph.getDataLength();
-				Value v = readValue(page);
-				if (v.getLength() == 0) {
+				data = page.read();
+				if (data.length == 0) {
 					LOG.debug(
 						"page " + page.getPageNum() + " data length == 0");
 					return;
 				}
-				data = v.getData();
 			} catch (IOException ioe) {
 				LOG.debug(ioe);
 				ioe.printStackTrace();
