@@ -41,7 +41,7 @@
 
     <category name="org.exist.xmldb" additivity="false">
 		<priority value="debug"/>
-        <appender-ref ref="console"/>
+        <appender-ref ref="exist.xmldb"/>
     </category>
 
 	<category name="org.mortbay" additivity="false">
@@ -63,6 +63,6 @@
 
     <root>
 		<priority value="debug"/>
-		<appender-ref ref="console"/>
+		<appender-ref ref="exist.core"/>
     </root>
   </log4j:configuration>
