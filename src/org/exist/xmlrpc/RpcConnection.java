@@ -211,6 +211,7 @@ public class RpcConnection extends Thread {
 		Sequence result = expr.eval(contextSet, null);
 		LOG.info("query took " + (System.currentTimeMillis() - start) + "ms.");
 		expr.reset();
+		context.reset();
 		return result;
 	}
 

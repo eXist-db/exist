@@ -124,6 +124,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	private ResourceSet execute(DocumentSet docs, 
 		NodeSet contextSet, CompiledExpression expression, String sortExpr) 
 	throws XMLDBException {
+		long start = System.currentTimeMillis();
 		DBBroker broker = null;
 		Sequence result;
 		try {
@@ -154,6 +155,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 			}
 			result = ((PathExpr)expression).eval(contextSet, null);
 			expression.reset();
+			context.reset();
 		} catch (EXistException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (XPathException e) {
@@ -161,6 +163,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		} finally {
 			brokerPool.release(broker);
 		}
+		LOG.debug("query took " + (System.currentTimeMillis() - start) + " ms.");
 		if(result != null)
 			return new LocalResourceSet(user, brokerPool, collection, properties, result, sortExpr);
 		else
@@ -170,6 +173,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	public CompiledExpression compile(String query) throws XMLDBException {
 		DBBroker broker = null;
 		try {
+			long start = System.currentTimeMillis();
 			broker = brokerPool.get(user);
 			XQueryContext context = new XQueryContext(broker);
 			context.setBaseURI(properties.getProperty("base-uri", collection.getPath()));
@@ -210,7 +214,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 					treeParser.getErrorMessage(),
 					treeParser.getLastException());
 			}
-			LOG.debug("compiled: " + expr.pprint());
+			LOG.debug("compilation took "  +  (System.currentTimeMillis() - start));
 			return expr;
 		} catch (EXistException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);

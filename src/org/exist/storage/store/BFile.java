@@ -1522,23 +1522,26 @@ public class BFile extends BTree {
 			address_ = address;
 		}
 
-		public final long getAddress() {
+		public long getAddress() {
 			return address_;
 		}
 
 		/* (non-Javadoc)
 		 * @see java.io.InputStream#read()
 		 */
-		public final int read() throws IOException {
-			if (pageLen_ < 0)
-				return -1;
+		public int read() throws IOException {
 			if (offset_ == pageLen_) {
-				final long next = nextPage_.getPageHeader().getNextInChain();
-				if (next < 1) {
-					pageLen_ = -1;
-					offset_ = 0;
-					return -1;
-				}
+				advance();
+			}
+			return pageLen_ == -1 ? -1 : (int) (nextPage_.data[offset_++] & 0xFF);
+		}
+
+		private void advance() throws IOException {
+			long next = nextPage_.getPageHeader().getNextInChain();
+			if (next < 1) {
+				pageLen_ = -1;
+				offset_ = 0;
+			} else {
 				try {
 					lock.acquire(Lock.READ_LOCK);
 					nextPage_ = (SinglePage) getDataPage(next);
@@ -1552,9 +1555,8 @@ public class BFile extends BTree {
 					lock.release();
 				}
 			}
-			return (int) (nextPage_.data[offset_++] & 0xFF);
 		}
-
+		
 		/* (non-Javadoc)
 		 * @see java.io.InputStream#available()
 		 */

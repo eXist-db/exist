@@ -295,6 +295,13 @@ public class XQueryContext {
 		return staticDocuments;
 	}
 
+	public void reset() {
+		builder = null;
+		staticDocuments = null;
+		variableStack.clear();
+		fragmentStack.clear();
+	}
+	
 	/**
 	 * Returns true if whitespace between constructed element nodes
 	 * should be stripped by default.

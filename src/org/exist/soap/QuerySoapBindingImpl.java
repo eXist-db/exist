@@ -287,6 +287,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			resp.setHits(seq.getLength());
 			resp.setQueryTime(System.currentTimeMillis() - start);
 			expr.reset();
+			context.reset();
 		} catch (Exception e) {
 			LOG.debug(e.getMessage(), e);
 			throw new RemoteException("query execution failed: " + e.getMessage());

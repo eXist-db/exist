@@ -20,20 +20,28 @@
  */
 package org.exist.storage;
 
-import org.apache.log4j.Category;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.StreamTokenizer;
-import java.io.FileReader;
-import java.util.TreeSet;
 import java.util.Observable;
-import org.exist.util.*;
-import org.exist.collections.*;
-import org.exist.dom.*;
+import java.util.TreeSet;
+
+import org.apache.log4j.Logger;
+import org.exist.collections.Collection;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeImpl;
+import org.exist.dom.NodeSet;
+import org.exist.dom.TextImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
-import org.exist.storage.analysis.Tokenizer;
 import org.exist.storage.analysis.SimpleTokenizer;
+import org.exist.storage.analysis.Tokenizer;
+import org.exist.util.Configuration;
+import org.exist.util.Occurrences;
+import org.exist.util.PorterStemmer;
 
 /**
  * This is the base class for all classes providing access to the fulltext index.
@@ -45,8 +53,8 @@ import org.exist.storage.analysis.SimpleTokenizer;
  */
 public abstract class TextSearchEngine extends Observable {
 
-	protected final static Category LOG =
-		Category.getInstance(TextSearchEngine.class.getName());
+	protected final static Logger LOG =
+		Logger.getLogger(TextSearchEngine.class);
 		
 	protected TreeSet stoplist = new TreeSet();
 	protected DBBroker broker = null;

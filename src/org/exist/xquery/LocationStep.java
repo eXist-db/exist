@@ -196,26 +196,14 @@ public class LocationStep extends Step {
 			((VirtualNodeSet) result).setInPredicate(inPredicate);
 		} else {
 			DocumentSet docs = contextSet.getDocumentSet();
-			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
-				currentDocs = docs;
-				currentSet =
-					(NodeSet) context.getBroker().getAttributesByName(
-						currentDocs, test.getName());
-			}
-			if (axis == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
-				result =
-					currentSet.selectAncestorDescendant(
-						contextSet,
-						NodeSet.DESCENDANT,
-						inPredicate);
-				
-			} else {
-				result =
-					currentSet.selectParentChild(
-						contextSet,
-						NodeSet.DESCENDANT,
-						inPredicate);
-			}
+			NodeSelector selector; 
+			if(axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)
+				selector = new DescendantSelector(contextSet, inPredicate);
+			else
+				selector = new ChildSelector(contextSet, inPredicate);
+			result = context.getBroker().findElementsByTagName(
+					ElementValue.ATTRIBUTE, docs, test.getName(), selector
+			);
 		}
 		return result;
 	}
@@ -230,16 +218,10 @@ public class LocationStep extends Step {
 			return vset;
 		} else {
 			DocumentSet docs = contextSet.getDocumentSet();
-			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
-				currentDocs = docs;
-				currentSet =
-					(NodeSet) context.getBroker().findElementsByTagName(
-						ElementValue.ELEMENT,
-						currentDocs,
-						test.getName());
-			}
-			NodeSet result =
-				currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);
+			NodeSelector selector = new ChildSelector(contextSet, inPredicate);
+			NodeSet result = context.getBroker().findElementsByTagName(
+					ElementValue.ELEMENT, docs, test.getName(), selector
+			);
 			return result;
 		}
 	}
@@ -254,18 +236,12 @@ public class LocationStep extends Step {
 			return vset;
 		} else {
 			DocumentSet docs = contextSet.getDocumentSet();
-			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
-				currentDocs = docs;
-				currentSet =
-					(NodeSet) context.getBroker().findElementsByTagName(
-						ElementValue.ELEMENT, currentDocs,
-						test.getName());
-			}
-			NodeSet result = currentSet.selectAncestorDescendant(
-				contextSet,
-				NodeSet.DESCENDANT,
-				axis == Constants.DESCENDANT_SELF_AXIS,
-				inPredicate);
+			NodeSelector selector = axis == Constants.DESCENDANT_SELF_AXIS ?  
+				new DescendantOrSelfSelector(contextSet, inPredicate) :
+				new DescendantSelector(contextSet, inPredicate);
+			NodeSet result = context.getBroker().findElementsByTagName(
+					ElementValue.ELEMENT, docs, test.getName(), selector
+			);
 			return result;
 		}
 	}
@@ -281,7 +257,7 @@ public class LocationStep extends Step {
 				currentSet =
 					(NodeSet) context.getBroker().findElementsByTagName(
 						ElementValue.ELEMENT, currentDocs,
-						test.getName());
+						test.getName(), null);
 			}
 			result = contextSet.selectSiblings(
 				currentSet,
@@ -327,7 +303,7 @@ public class LocationStep extends Step {
 				currentSet =
 					(NodeSet) context.getBroker().findElementsByTagName(
 						ElementValue.ELEMENT, currentDocs,
-						test.getName());
+						test.getName(), null);
 			}
 			result = contextSet.selectFollowing(currentSet);
 		}
@@ -345,7 +321,7 @@ public class LocationStep extends Step {
 				currentSet =
 					(NodeSet) context.getBroker().findElementsByTagName(
 						ElementValue.ELEMENT, currentDocs,
-						test.getName());
+						test.getName(), null);
 			}
 			result =
 				contextSet.selectAncestors(
@@ -383,6 +359,7 @@ public class LocationStep extends Step {
 	public void resetState() {
 		super.resetState();
 		currentSet = null;
+		currentDocs = null;
 		cachedContext = null;
 		cachedResult = null;
 	}
