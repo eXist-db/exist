@@ -132,7 +132,7 @@
 		<echo message="Compiling Tomcat Realm"/>
 		<javac debug="${build.debug}" deprecation="${build.deprecation}" 
 			destdir="${build.classes}" encoding="UTF-8"
-			optimize="${build.optimize}" srcdir="${src}" target="1.4">
+			optimize="${build.optimize}" srcdir="${src}" source="1.4">
 			<include name="org/exist/http/realm/**"/>
 			<classpath>
 				<path refid="classpath.core"/>
@@ -209,6 +209,11 @@
 			    <include name="*.xsl"/>
 		    </fileset>
 	    </copy>
+		<copy todir="${build.classes}/org/exist/xquery/lib">
+			<fileset dir="${src}/org/exist/xquery/lib">
+				<include name="**.xq"/>
+			</fileset>
+		</copy>
         <copy file="${src}/org/exist/ant/antlib.xml" 
 			todir="${build.classes}/org/exist/ant"/>
         <copy file="${src}/org/exist/exist.xsl" 
@@ -400,7 +405,11 @@
 	<target name="copy-xapi" if="has.xmldb.src">
 		<echo message="Copying XML:DB API sources ..."/>
 		<copy todir="${build.src}">
-			<fileset dir="${xmldb.src}"/>
+			<fileset dir="${xmldb.src}">
+				<include name="org/xmldb/api/base/**"/>
+				<include name="org/xmldb/api/modules/**"/>
+				<include name="org/xmldb/api/*.java"/>
+			</fileset>
 		</copy>
 	</target>
 
