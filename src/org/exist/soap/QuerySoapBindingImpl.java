@@ -335,7 +335,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 				throw new RuntimeException(
 						"index " + start + " out of bounds (" + seq.getLength() + ")");
 			if (start + howmany > seq.getLength() || howmany == 0)
-				howmany = seq.getLength();
+				howmany = seq.getLength() - start + 1;
 			
 			String xml[] = new String[howmany];
 			Serializer serializer = broker.getSerializer();
