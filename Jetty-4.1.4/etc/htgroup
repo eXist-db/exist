@@ -1,0 +1,17 @@
+# <PRE>
+# HT Group example.
+#
+# HTAccess control may be turned on by uncommenting the HTAccessHandler from
+# the etc/demo.xml file.
+# If You can see this via a GET, HTAccessHandler is not configured.
+#
+# Use com.mortbay.Util.Password to generate crypted passwords.
+#
+
+Users: jetty tom dick harry
+
+TestGroup: jetty tom harry
+
+AdminGroup: jetty admin 
+
+

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book xmlns:xi="http://www.w3.org/2001/XInclude">
+    <bookinfo>
+        <graphic fileref="/exist/logo.jpg"/>
+        <style href="/exist/default.css"/>
+        <title>Open Source XML Database</title>
+        <author>
+            <firstname>Wolfgang M.</firstname>
+            <surname>Meier</surname>
+            <affiliation>
+                <address format="linespecific">
+                    <email>meier@ifs.tu-darmstadt.de</email>
+                </address>
+            </affiliation>
+        </author>
+    </bookinfo>
+    <xi:include href="sidebar.xml"/>
+    <chapter>
+        <title>XInclude Examples</title>
+        <para>Beginning with version 0.9, eXist comes with partial support for
+            the XInclude standard. If configured, the server will scan a
+            document stored in the database for XInclude tags and expand those
+            tags if possible. The expansion is applied during the serialization
+            of the document, i.e. whenever you retrieve a document containing
+            XInclude tags.</para>
+        <para>eXist's support for XInclude is not complete. You cannot include
+            raw text, just XML. The fallback element is ignored. Also just basic
+            XPath is allowed for XPointers.</para>
+        <para>Why do we need XInclude? One reason is that eXist does not
+            preserve entity declarations. Entities are resolved by the XML
+            parser, so eXist just sees the expanded text, not the entity itself.
+            However, external entities are handy if you want to include a given
+            fragment at several locations in different files. For example, the
+            navigation sidebar at the left will probably be used by several
+            documents throughout a site, so it would be wise to keep it in an
+            external file.</para>
+        <para>XInclude provides a powerful alternative. The following sections
+            present some examples.</para>
+        <section>
+            <title>Including a Document</title>
+            <para>To include an entire document, just specify its path
+                in the <option>href</option> attribute of an <sgmltag>xi:include</sgmltag>
+                tag. For example, the sidebar shown at the left of this
+                documents has been included as follows:</para>
+            <synopsis><![CDATA[<xi:include href="sidebar.xml"/>]]></synopsis>
+            <para>Please note that, as usual, you have to provide the correct namespace 
+                for XInclude, e.g. in the root element of the document. The official namespace is:
+            </para>
+            <synopsis>http://www.w3.org/2001/XInclude</synopsis>
+        </section>
+        <section>
+            <title>Shorthand Pointer</title>
+            <para>The fragment part of the URI reference in the href attribute
+                is interpreted as an XPointer. If the fragment is just a
+                barename - now called shorthand pointer - it will select the first 
+                element of the target
+                document that has an attribute of type ID matching the name. For
+                example, the following xinclude selects the p element from file
+                <filename>disclaimer.xml</filename>, which has an ID attribute
+                with value &quot;statement&quot;.</para>
+            <synopsis><![CDATA[<xi:include href="disclaimer.xml#statement"/>]]></synopsis>
+            <para>The result of the XInclude will be displayed below:</para>
+            <xml-source>
+                <xi:include href="disclaimer.xml#statement"/>
+            </xml-source>
+        </section>
+        <section>
+            <title>Selecting Fragments by an XPath Expression</title>
+            <para>We may also use an XPath expression to select fragments. The
+                XPath expression is passed to the <command>xpointer()</command> 
+                scheme. The results of the expression will be included in place
+                of the <sgmltag>xi:include</sgmltag> element. The following
+                expression includes a section taken from Shakespeare's Macbeth:</para>
+            <synopsis>&lt;xi:include href="/db/shakespeare/plays/macbeth.xml
+                #xpointer(//SPEECH[SPEAKER&amp;='witch' and near(LINE, 'fenny snake')])/&gt;</synopsis>
+            <para>As before, the results are included below:</para>
+            <xml-source>
+                <xi:include href="/db/shakespeare/plays/macbeth.xml#xpointer(//SPEECH[SPEAKER&amp;='witch' and near(LINE, 'fenny snake')])"/>
+            </xml-source>
+            
+            <para>An XPath expression will be applied to the entire collection if the
+                path in href points to a collection and not a single document:</para>
+            <synopsis>&lt;xi:include href="/db/shakespeare#xpointer(//SPEECH[near(LINE, 'cursed spite')])"/&gt;</synopsis>
+            <xml-source>
+                <xi:include href="/db/shakespeare#xpointer(//SPEECH[near(LINE, 'cursed spite')])"/>
+            </xml-source>
+        </section>
+    </chapter>
+</book>

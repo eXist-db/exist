@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+	<public publicId="-//PLAY//EN"
+		uri="shakespeare/play.dtd"/>
+	<!-- this doesn't work: paths are not resolved -->
+	<system systemId="../play.dtd"
+		uri="shakespeare/play.dtd"/>
+</catalog>

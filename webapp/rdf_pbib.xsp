@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsp:page language="java"
+          xmlns:xsp="http://apache.org/xsp"		  
+		  xmlns:xsp-request="http://apache.org/xsp/request/2.0"
+		  xmlns:exist="http://exist.sourceforge.net/NS/exist"
+          xmlns:xmldb="http://exist-db.org/xmldb/1.0"
+          xmlns:ci="http://apache.org/cocoon/include/1.0"
+>
+
+  <xsp:logic>
+
+    // build XPath query from the parameters passed in by the user form
+	private String buildQuery(String field, String term, String mode) {
+        String arg1, arg2;
+      arg2 = "\"" + term + "\"";  
+	  if(field.equals("any")) {
+        arg1 = ".";        
+      } else if(field.equals("au")) {
+        arg1 = "dc:creator|dc:editor|dc:contributor";
+      } else if(field.equals("ti")) {
+	    arg1 = "dc:title";
+	  } else if(field.equals("su")) {
+        arg1 = "dc:subject";
+	  } else if(field.equals("ab")) {
+        arg1 = "dc:description";
+      } else
+        return "";
+      if(mode.equals("exact"))
+        return arg1 + " = " + arg2;
+      else if(mode.equals("near"))
+        return "near(" + arg1 + ", " + arg2 + ", 5)";
+      else
+        return arg1 + "&amp;=" + arg2;
+	}
+  </xsp:logic>
+
+<document>
+
+    <!-- include header -->
+    <ci:include src="header.xml"/>
+       
+    <!-- include sidebar -->
+    <ci:include src="sidebar.xml"/>
+   
+  <body>
+  
+    <section title="Query results">
+    <xsp:logic>
+	// process parameters
+	String field1 = request.getParameter("field1");
+	String term1 = request.getParameter("term1");
+	String mode1 = request.getParameter("mode1");
+	String term2 = request.getParameter("term2");
+	String field2 = request.getParameter("field2");
+	String mode2 = request.getParameter("mode2");
+	String op = request.getParameter("operator");
+    boolean viewSource = (request.getParameter("source") != null);
+    String p_howmany = request.getParameter("howmany");
+	String p_start = request.getParameter("start");
+	String query = request.getParameter("query");
+	int howmany = 15, start = 1;
+
+	if(p_howmany != null)
+	  howmany = Integer.parseInt(p_howmany);
+	if(p_start != null)
+	  start = Integer.parseInt(p_start);
+
+	if(query == null &amp;&amp; term1 != null &amp;&amp; term1.length() > 0) {
+	  // assemble the query
+	  StringBuffer buf = new StringBuffer("document(*)//rdf:Description[");
+	  buf.append(buildQuery(field1, term1, mode1));
+	  if(term2 != null &amp;&amp; term2.length() > 0) {
+	    buf.append(" ");
+		buf.append(op);
+		buf.append(" ");
+		buf.append(buildQuery(field2, term2, mode2));
+	  }
+	  buf.append("]");
+          query = buf.toString();
+	}
+    if(query != null) {
+        <dl>
+            <dt><b>Query:</b></dt>
+            <dd><xsp:expr>query</xsp:expr></dd>
+        </dl>
+        <hr/>
+    }
+    
+    <!-- connect to the server -->
+    <xmldb:driver class="org.exist.xmldb.LocalDatabase"/>
+    <xmldb:collection uri="xmldb:exist:///db" user="guest" password="guest">
+        <exist:result>
+            <xmldb:execute encoding="ISO-8859-1">
+                <xmldb:xpath>query</xmldb:xpath>
+                    <exist:queryInfo>
+                        <xsp:logic>
+                            <!-- insert a link for retrieving the next bunch of results -->
+                            String prevLink = response.encodeURL(request.getRequestURI()) + 
+                              "?howmany=" + 
+                              howmany + "&amp;start=" + (start - howmany) +
+                              "&amp;query=" + URLEncoder.encode(query);
+                                String nextLink = response.encodeURL(request.getRequestURI()) +
+                                  "?howmany=" +
+                                  howmany + "&amp;start=" + (start + howmany) +
+                                  "&amp;query=" + URLEncoder.encode(query);
+                                String thisLink = response.encodeURL(request.getRequestURI()) + 
+                                  "?howmany=" +
+                                  howmany + "&amp;start=" + start +
+                                  "&amp;query=" + URLEncoder.encode(query);
+                                 
+                                if(start &gt; 1) {
+                                    <xsp:attribute name="prev"><xsp:expr>prevLink</xsp:expr></xsp:attribute>
+                                }
+                                if(start + howmany &lt; <xmldb:get-hit-count/>) {
+                                    <xsp:attribute name="next"><xsp:expr>nextLink</xsp:expr></xsp:attribute>
+                                }                            
+                                <xsp:attribute name="current"><xsp:expr>thisLink</xsp:expr></xsp:attribute>
+                                <xsp:attribute name="howmany">
+                                    <xsp:expr>howmany</xsp:expr>
+                                </xsp:attribute>
+                                <xsp:attribute name="hits"><xmldb:get-hit-count/></xsp:attribute> 
+                                <xsp:attribute name="qtime"><xmldb:get-query-time/></xsp:attribute>
+                            </xsp:logic>
+                        </exist:queryInfo>
+                        
+                        <xsp:logic>
+                            if(<xmldb:get-hit-count/> &gt; 0) {
+                                <xmldb:results>
+                                    <xmldb:position>start</xmldb:position>
+                                    <xmldb:count>howmany</xmldb:count>
+                                    <xsp:logic>
+                                        if(viewSource) {
+                                            <!-- display the hits in pretty printed XML -->
+                                            <xml-source>
+                                                <xmldb:get-xml as="xml"/>
+                                            </xml-source>
+                                        } else {
+                                            <!-- the actual results are inserted below and will later
+                                                 be processed by the stylesheet
+                                            -->
+                                            <xmldb:get-xml as="xml"/>
+                                        }
+                                    </xsp:logic>
+                                    <xmldb:error>
+                                        <p><xmldb:get-error/></p>
+                                    </xmldb:error>
+                                </xmldb:results>
+                            } else {
+                                <p>Nothing found for your query.</p>
+                            }
+                        </xsp:logic>
+                    </xmldb:execute>
+                </exist:result>
+            </xmldb:collection>
+      </xsp:logic>
+  </section>
+</body>
+</document>
+</xsp:page>

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<!-- Author: Wolfgang Meier "meier@ifs.tu-darmstadt.de" -->
+
+<xsp:page
+    xmlns:xsp="http://apache.org/xsp"
+    xmlns:xmldb="http://exist-db.org/xmldb/1.0"
+    xmlns:ci="http://apache.org/cocoon/include/1.0">
+ 
+    <xsp:logic>
+       private void getAllCollections(Collection collection, ArrayList collections) 
+        throws XMLDBException { 
+           collections.add(collection.getName());
+           String[] childCollections = collection.listChildCollections();
+           Collection child;
+           for(int i = 0; i &lt; childCollections.length; i++) {
+               child = collection.getChildCollection(childCollections[i]);
+               getAllCollections(child, collections);
+           }
+       }
+    </xsp:logic>
+          
+    <document xmlns:ci="http://apache.org/cocoon/include/1.0">
+
+    <!-- include header -->
+    <ci:include src="header.xml"/>
+
+    <!-- include sidebar -->
+    <ci:include src="sidebar.xml"/>
+  
+   <body>
+
+   <section title="Give it a try!">
+       
+       <p>This demo is based on Cocoon2, using XSP pages. For those who don't know XSP yet: 
+       XSP is Java code inside XML, like JSP and HTML. eXist 0.7 includes an XSP logicsheet 
+       (taglib), which is based on the XML:DB API. The logicsheet makes it easy to access 
+       eXist from a Cocoon2 XSP page.</p>
+       
+       <p>Please enter a valid XPath query below. You may select a collection name from the left.
+       The collection-expression will be automatically added if your query does not start
+       with the document() or collection() function.</p>
+
+       <form action="xprocess.xsp" method="GET">
+         
+         <table width="100%">
+            <tr>
+                <th align="left" width="10%">
+			<small>Collection</small>
+                </th>
+                <th align="left" colspan="3">
+                    <small>XPath expression</small>
+                </th>
+            </tr>
+            <tr>
+                <td align="left" width="10%">
+                    <select name="collection" size="1">
+                        <option>all documents</option>
+                        
+                        <!-- connect to the server -->
+                        <xmldb:driver class="org.exist.xmldb.DatabaseImpl"/>
+    
+                        <xmldb:collection uri="xmldb:exist:///db" user="guest" password="guest">
+                            <xsp:logic>
+                                ArrayList collections = new ArrayList();
+                                getAllCollections(<xmldb:get-collection/>, collections);
+                                for(Iterator i = collections.iterator(); i.hasNext(); ) {
+                                    <option><xsp:expr>(String)i.next()</xsp:expr></option>
+                                }
+                            </xsp:logic>
+                        </xmldb:collection>
+                    </select>
+                </td>
+                <td align="left" width="60%">
+                    <input type="text" name="query" size="40">
+                        <xsp:logic>
+                            String query = request.getParameter("query");
+                            if(query != null) {
+                                <xsp:attribute name="value"><xsp:expr>query</xsp:expr></xsp:attribute>
+                            }
+                        </xsp:logic>
+                    </input>
+                </td>
+                <td align="left" width="30%">
+                    <input type="reset"/>
+                </td>
+            </tr>
+	   <tr>
+	     <td width="50%" align="left" valign="center">
+	       <select name="howmany" size="1">
+	         <option>15</option>
+             <option>30</option>
+             <option>50</option>
+             <option>100</option>
+	       </select>
+	       <small>hits will be displayed</small>
+	     </td>
+		 <td width="20%" align="left">
+            <input type="checkbox" name="summarize" value="true" checked="true" />
+            <small>show summary first</small>
+		 </td>
+	     <td width="10%" align="left">
+       	       <input type="submit" />
+	     </td>
+	   </tr>
+	 </table>
+       </form>
+       
+       <p><small>Your query will be send to the server using XML-RPC.</small></p>
+
+       <p><b>Some Examples:</b></p>
+       
+       <menu>
+            <li><code>document('/db/shakespeare/plays/hamlet.xml')//STAGEDIR</code></li>
+            <li><code>//SPEECH &amp;= 'love'</code></li>
+            <li><code>//SPEECH[SPEAKER&amp;='JULIET'][. &amp;= 'marriage love']</code></li>
+	    <li><code>collection('/db/shakespeare/plays')//SPEECH[SPEAKER &amp;= 'witch' and near(., 'fenny snake')]</code></li>
+            <li><code>document('/db/shakespeare/plays/much_ado.xml')//ACT[TITLE='ACT I']/SCENE[1]</code></li>
+            <li><code>document(*)//SPEECH[starts-with(SPEAKER, 'LORD')]</code></li>
+            <li><code>document('/db/shakespeare/plays/r_and_j.xml')//ACT[1]/SCENE[1]</code></li>
+            <li><code>//SPEECH[LINE &amp;= 'cursed spite' and SPEAKER &amp;='HAMLET']</code></li>
+            <li><code>//rdf:Description[near(dc:creator, 'Luhmann Niklas')]</code></li>
+            <li><code>//rdf:Description[dc:title|dc:description |= 'database rdbms']</code></li>
+            <li><code>//rdf:Description[near(dc:title, 'Information Retrieval')]</code></li>
+            
+       </menu>
+
+       <p><small>Please note that collection names should be replaced
+       by the ones you specified
+       during parsing!</small></p>
+
+       <p>At this time of development there are still a lot of restrictions
+       concerning the xpath parser. On the other hand, eXist supports a number of
+       extensions. For more information read the <link
+       href="xpath.xml">document on XPath extensions</link>.</p>
+
+       </section>
+
+      </body>
+  </document>
+  
+</xsp:page>

@@ -1,0 +1,9 @@
+To build this module, call 
+
+build.sh thirdparty
+
+or
+
+build.bat thirdparty
+
+from the root directory of the eXist distribution.

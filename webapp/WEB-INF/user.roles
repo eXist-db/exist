@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<role-list>
+	<role name="org.exist.cocoon.Exist" shorthand="exist-server" default-class="org.exist.cocoon.ExistImpl"/>
+</role-list>

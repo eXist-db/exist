@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "docbookx.dtd">-->
+<book xmlns:ci="http://apache.org/cocoon/include/1.0">
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+		<title>Open Source XML Database</title>
+        <author>
+            <firstname>Wolfgang M.</firstname>
+            <surname>Meier</surname>
+            <affiliation>
+                <address format="linespecific">
+                    <email>meier@ifs.tu-darmstadt.de</email>
+                </address>
+            </affiliation>
+        </author>
+    </bookinfo>
+    <ci:include src="sidebar.xml"/>
+    <chapter>
+        <title>Quick Start</title>
+        <para>For a quick start, the following sections describe how to start
+            the server and add some files to the database.</para>
+        <section>
+            <title>Basics</title>
+            <para>Beginning with version 0.8, eXist offers <emphasis>three
+                alternatives</emphasis> to run the database. It may either run
+                as a standalone server process, embedded into an application or
+                in connection with a servlet engine. All three alternatives are
+                thread-safe and allow concurrent operations by multiple users.</para>
+            <para>In <emphasis>standalone mode</emphasis>, eXist runs in its own
+                Java virtual machine. Clients have to access the database
+                through the network, either using the XML-RPC protocol or simple
+                HTTP requests.</para>
+            <para>In <emphasis>embedded mode</emphasis>, the database is
+                controlled by the client application. It runs in the same Java
+                virtual machine as the client, thus no network connection is
+                needed and the client has full access to the db.</para>
+            <para>eXist may also run directly in a <emphasis>servlet
+                context</emphasis>. In this case, the database is deployed as
+                part of a web application. All resources used by eXist will be
+                relative to the web application's current context. For example,
+                eXist will store all its database files in the
+                <filename>WEB-INF/data</filename> directory of the web application.</para>
+            <para>Servlets running in the same web application context will have
+                direct access to the db. A Cocoon-driven application would be
+                one example. External client applications may still use the
+                supplied network interfaces. Some features of eXist require a
+                servlet engine: for example, the SOAP and WebDAV interfaces are
+                implemented as servlets. These interfaces will thus not be
+                available in standalone mode.</para>
+            <para>For a quick start it is recommended to use the server through
+                a servlet engine, i.e. using the third option described above.
+                The stand-alone and embedded deployment options are covered by
+                <ulink href="deployment.xml">deployment.xml</ulink>. </para>
+            <para>The source distribution includes a servlet engine (<ulink
+                href="http://www.jetty.org">Jetty</ulink>), so no additional
+                software is required. If you already have a running
+                servlet-engine at your hands, you may alternatively download
+                eXist as a bundled web application archive (.war-file). However,
+                I recommend downloading the source distribution for testing.</para>
+            <para>The following section applies to the source distribution. If
+                you have downloaded the war-file and have a running servlet-
+                engine available, please <ulink href="#sect2">skip the next
+                    section and continue to read below</ulink>.</para>
+        </section>
+        <section>
+            <title>Installing the source distribution</title>
+            <para>Simply unzip or untar the distribution file to some suitable
+                location, open a shell or DOS command prompt and change into the
+                newly created directory <filename>eXist-0.9</filename>. </para>
+            <para>Now set your JAVA_HOME environment variable to point to the
+                Java installation directory and EXIST_HOME to eXist's base
+                directory, e.g.:</para>
+            <synopsis>set JAVA_HOME=c:\JDK1.4 set EXIST_HOME=c:\Devel\eXist-0.9</synopsis>
+            <para>or on a Unix system:</para>
+            <synopsis>export JAVA_HOME=/usr/local/j2sdk1.4 export EXIST_HOME=/home/wolf/eXist-0.9</synopsis>
+            <para>The distribution contains several shell and batch scripts to
+                start the servers and various clients in directory
+                <filename>bin</filename>. To launch the included webserver, use
+                the scripts <filename>startup.sh</filename> or
+                <filename>startup.bat</filename> from the root directory of the
+                distribution: </para>
+            <synopsis>bin\startup.bat</synopsis>
+            <para>You may now <ulink href="#sect3">skip the next section</ulink>.</para>
+        </section>
+        <section id="sect2">
+            <title>Installing eXist as a Web Application</title>
+            <para>To install eXist with an existing servlet-engine, download the
+                .war-file and put it into a proper location where your
+                servlet-engine can find it. Most installations have a directory
+                called <filename>webapps</filename> and will automatically
+                launch any .war-files found therein. Please rename the file to <filename>exist.war</filename>.</para>
+            <important>
+                <para>Most servlet-engines will automatically unpack war-files
+                    (Tomcat does so). If not, you have to do this by hand
+                    (otherwise eXist's data may get lost if you shutdown the
+                    servlet-engine). Create a sub-directory
+                    <filename>exist</filename> in <filename>webapps</filename>,
+                    cd into it and unpack the archive using
+                    <command>jar</command>. For example:</para>
+                <example>
+                    <title>Unpack the .war file</title>
+                    <screen><![CDATA[
+mkdir exist
+cd exist
+jar xfv ../exist.war]]></screen>
+                </example>
+                <para>Finally, remove the .war file.</para>
+            </important>
+            <para>You may have to restart your servlet-engine now.</para>
+            <para>If eXist is running inside a servlet-engine, its home
+                directory will always be <filename>WEB-INF</filename>. This is
+                where the main configuration file <filename>conf.xml</filename>
+                and the database files reside. Log files will be written to
+                <filename>WEB-INF/logs</filename>. </para>
+        </section>
+        <section id="sect3">
+            <title>Check if the server is running</title>
+            <para>eXist's home page should now be available at <ulink
+                    href="http://localhost:8080/exist/index.xml">
+                http://localhost:8080/exist/index.xml</ulink>. To see if the
+                database engine is running, you may click on the <command>Server
+                status</command> menu entry in the sidebar or browse directly to
+                    <ulink href="http://localhost:8080/exist/admin">
+                http://localhost:8080/exist/admin</ulink>. The server will
+                present you some information on the configuration, the data
+                directory used by the engine and available database instances.</para>
+        </section>
+        <section>
+            <title>Index some XML files</title>
+            <para>There is no preferred way to work with eXist. The server
+                offers quite a number of different interfaces, including
+                XML-RPC, SOAP or direct access via Cocoon and the XML:DB API.
+                Alternatively, you may use the administration interface at
+                    <ulink
+                href="http://localhost:8080/exist/xadmin.xsp">http://localhost:8080/exist/xadmin.xsp</ulink>
+                or WebDAV (see <ulink href="#webdav">below</ulink>) to add files.</para>
+            <para>This section explains how to add and query files using the
+                command line client. If you installed the source distribution,
+                you will find the shell scripts to start the client in directory
+                <filename>eXist-0.9/bin</filename>. Otherwise you have to change
+                to the location where the exist.war file has been unpacked and
+                find the <filename>bin</filename> directory there.</para>
+            <para>Please make sure that the <command>EXIST_HOME</command>
+                environment variable points to the directory where the
+                configuration file <filename>conf.xml</filename> can be found.
+                The server will try to read the file from
+                <filename>EXIST_HOME/conf.xml</filename>. For the source
+                distribution EXIST_HOME is simply the root directory of the
+                distribution as explained above. If you installed eXist as a web
+                application, EXIST_HOME should be set to the
+                <filename>WEB-INF</filename> directory of the web application, e.g.:</para>
+			<synopsis>set EXIST_HOME=c:\jakarta-tomcat-4.x\webapps\exist\WEB-INF</synopsis>
+			<para>You should also ensure that you have write permissions for the <filename>data</filename>
+				directory. You will find it in <filename>webapps/WEB-INF/data</filename> or
+				<filename>WEB-INF/data</filename>.</para>
+            <para>The command-line client may either be controlled by
+                parameters, or used interactively. If no action is specified on
+                the command-line, the client will enter interactive mode and
+                present a prompt.</para>
+            <para>The shell scripts to start the client are called</para>
+            <synopsis>bin\client.bat</synopsis>
+            <para>on DOS/Windows or on Unix:</para>
+            <synopsis>bin/client.sh</synopsis>
+            <note>
+                <para>If you can't execute the shell script on Unix, try to do a
+                        <command>chmod +x bin/client.sh</command> first.</para>
+            </note>
+            <para>The shell scripts should set up the correct CLASSPATH
+                automatically. If this doesn't work for some reason, add all the
+                jar-files in directory <filename>lib/core</filename> or
+                <filename>WEB-INF/lib</filename> to your CLASSPATH environment
+                variable and call the client's class by hand:</para>
+            <synopsis>java org.exist.InteractiveClient</synopsis>
+            <important>
+                <para>If Java complains about unknown classes, please check if
+                    you have set EXIST_HOME to point to the correct location. </para>
+            </important>
+            <para>For the first time let's index some sample files provided in
+                directory <filename>samples</filename> using interactive mode.
+                You can do the same job with parameters as described below. So 
+                if you prefer the short way, skip to the 
+                <ulink href="#alt">next section</ulink>.</para>
+                
+            <para>If you start the client without arguments, it will connect to
+                the database, enter interactive mode and present a command
+                prompt. If you type <command>help</command>, a list of known
+                commands is displayed.</para>
+            <example>
+                <title>Available commands</title>
+                <screen><![CDATA[
+[wolf@zarathastra eXist-0.8]$ bin/client.sh -l
+eXist version 0.8, Copyright (C) 2002 Wolfgang M. Meier
+eXist comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions; for details read the license file.
+
+exist.home=.
+Loading catalog: /home/wolf/download/eclipse/workspace/eXist-0.8/./samples/xcatalog.xml
+
+type help or ? for help.
+exist:/db>help
+--- general commands ---
+ls                   list collection contents
+cd [collection|..]   change current collection
+put [file pattern] upload file or directory to the database
+mkcol collection     create new sub-collection in current collection
+rm document          remove document from current collection
+rmcol collection     remove collection
+set [key=value]      set property. Calling set without
+                     argument shows current settings.
+
+--- search commands ---
+find xpath-expr      execute the given XPath expression.
+show [position]      display query result value at position.
+
+--- user management (may require dba rights) ---
+users                list existing users.
+adduser username     create a new user.
+passwd username      change password for user.
+chown user group [resource]
+                     change resource ownership. chown without
+                     resource changes ownership of the current
+                     collection.
+chmod [resource] permissions
+                     change resource permissions. Format:
+                     [user|group|other]=[+|-][read|write|update].
+                     chmod without resource changes permissions for
+                     the current collection.
+quit                 quit the program
+exist:/db>]]></screen>
+            </example>
+            <para>eXist organizes all documents in hierarchical collections.
+                Collections are like directories. They are used to group related
+                documents together. So first of all we should add new
+                collections for our documents. Typing <command>mkcol
+                shakespeare</command> and pressing enter will create a
+                shakespeare-collection into which we will put some of the sample
+                documents provided with eXist. To check if the new collection is
+                present, enter <command>ls</command> to get a listing of the
+                current collection contents.</para>
+            <example>
+                <title>Adding the sample documents</title>
+                <screen><![CDATA[
+        exist:/db>mkcol shakespeare
+        created collection.
+        exist:/db>cd shakespeare
+        exist:/db/shakespeare>mkcol plays
+        created collection.
+        exist:/db/shakespeare>cd plays
+        exist:/db/shakespeare/plays>put samples/shakespeare/
+        storing document hamlet.xml (1 of 4) ...done.
+        storing document much_ado.xml (2 of 4) ...done.
+        storing document r_and_j.xml (3 of 4) ...done.
+        storing document shakes.xsl (4 of 4) ...done.
+        exist:/db/shakespeare/plays> cd
+        exist:/db>mkcol library
+        created collection.
+        exist:/db>cd library
+        exist:/db/library>put samples/biblio.rdf
+        storing document biblio.rdf (1 of 1) ...done.
+        exist:/db/library>cd
+        exist:/db>mkcol xinclude
+        created collection.
+        exist:/db>cd xinclude
+        exist:/db/xinclude>put samples/xinclude
+        ]]></screen>
+            </example>
+            <para>Next change into collection &quot;shakespeare&quot; with the
+                <command>cd</command>-command: <command>cd shakespeare</command>
+                and add another sub-collection called &quot;plays&quot;. </para>
+            <para>Adding files to the database is done using
+                <command>put</command>. Put expects either a single file, a
+                file-pattern or a directory name as argument. If a directory is
+                specified, all XML and XSL files in that directory will be put
+                into the database. To add the files in directory
+                <filename>samples/shakespeare</filename> simply enter
+                    <command>put samples/shakespeare</command>. To see if the
+                files have actually been stored, you may view the contents of
+                the current collection with <command>ls</command>. To view a
+                document, use the <command>get</command> command, e.g.:</para>
+            <synopsis>get hamlet.xml</synopsis>
+            <note>
+                <para>
+                    <command>put</command> also accepts file-patterns, i.e. a
+                    path with wildcards ? or *. ** means: any sub-directory. So
+                    the command <command>put samples/**/*.xml</command> will
+                    parse any XML files found in the
+                    <filename>samples</filename> directory and any of its
+                    sub-directories. </para>
+            </note>
+            <para>In addition to the Shakespeare plays, we create a collection
+                <filename>/db/library</filename> and put the file
+                <filename>samples/biblio.rdf</filename> into it as shown in the
+                screen dump above. Finally, to experiment with XInclude, you
+                should add the files in <filename>samples/xinclude</filename> to
+                another collection <filename>/db/xinclude</filename>.</para>
+            <note>
+                <para>If you ever run into problems while experimenting with
+                    eXist and your database files get corrupt: just remove the
+                    data files created by eXist and everything should work again.
+                    The data files all end with <filename>.dbx</filename>. You
+                    will either find them in directory <filename>webapp/WEB-INF/data</filename>
+                    or <filename>WEB-INF/data</filename>, depending on your 
+                    installation. It is also ok to backup those data-files to
+                    be able to restore them in case of a database corruption.</para>
+            </note>
+        </section>
+        <section id="alt">
+            <title>Non-interactive mode</title>
+            <para>As said above, the client can also be controlled by command-line
+                parameters. This way we only need three commands to index our files:</para>
+            <synopsis>bin/client.sh -m /db/shakespeare/plays -p samples/shakespeare</synopsis>
+            <synopsis>bin/client.sh -m /db/xinclude -p samples/xinclude</synopsis>
+            <synopsis>bin/client.sh -m /db/library -p samples/biblio.rdf</synopsis>
+            <para>The <option>-m</option> option implicitely creates all required collections,
+            <option>-p</option> interprets all remaining parameters on the command-line as
+            file or directory names to be stored to the database.</para>
+        </section>
+        <section>
+            <title>Querying documents</title>
+            <para>The interactive client understands the <command>find</command>
+                command to send XPath queries to the server. Alternatively you
+                may use the web-based interace at <ulink
+                    href="http://localhost:8080/exist/xquery.xsp"> http://localhost:8080/exist/xquery.xsp</ulink>.</para>
+            <para>For example, to find all SPEECH elements where Juliet talks
+                about love to her Romeo you may use:</para>
+            <synopsis>document(*)//SPEECH[SPEAKER &amp;= 'juliet' and . &amp;= 'love romeo']</synopsis>
+            <para>For more information on the extended XPath query syntax
+                supported by eXist, please refer to the <ulink
+                    href="xpath.xml">XPath HowTo</ulink>.</para>
+            <para>The interactive client will just print out the number of hits
+                for your query. Use the <command>show</command> command to view results:</para>
+            <example>
+                <title>Querying</title>
+                <screen><![CDATA[
+        exist:/db>find document(*)//SPEECH[SPEAKER &='juliet' and . &= 'love romeo']
+        document(*)//SPEECH[SPEAKER &='juliet' and . &= 'love romeo']
+        found 6 hits.
+        exist:/db/library>show
+        <SPEECH exist:id="41669"
+            exist:source="/db/shakespeare/plays/r_and_j.xml" 
+            xmlns:exist="http://exist.sourceforge.net/NS/exist">
+            <SPEAKER>JULIET</SPEAKER>
+            <LINE>O Romeo, Romeo! wherefore art thou Romeo?</LINE>
+            <LINE>Deny thy father and refuse thy name;</LINE>
+            <LINE>Or, if thou wilt not, be but sworn my love,</LINE>
+            <LINE>And I&apos;ll no longer be a Capulet.</LINE>
+        </SPEECH>
+        displayed items 1 to 1 of 6
+        exist:/db/library>
+            ]]></screen>
+			</example>
+			<para>You can also pass your queries on the command-line, but you have to take care that
+				parameters are correctly parsed by the shell. For example, on Linux I pass the query
+				through standard input:</para>
+			<synopsis>echo "document(*)//SPEECH[SPEAKER&amp;='juliet' and .&amp;='love romeo']" | bin/client.sh -x</synopsis>
+		</section>
+		
+        <section>
+            <title>Sample pages</title>
+            <para>Now that we have added some files to the database, you may
+                have a look at the example pages available through the web interface:</para>
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <ulink href="xadmin.xsp">xadmin.xsp</ulink>
+                    </term>
+                    <listitem>
+                        <para>A simple administration interface to eXist. You
+                            may browse through collections or add, view and
+                            remove files. This example uses eXist's XML:DB
+                            logicsheet to access the database engine.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <ulink href="xquery.xsp">xquery.xsp</ulink>
+                    </term>
+                    <listitem>
+                        <para>Generic query interface to send XPath queries to
+                            the server. Also based on the XML:DB logicsheet.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <ulink
+                            href="xmldb/db/">Cocoon
+                            based browser</ulink>
+                    </term>
+                    <listitem>
+                        <para>A database browser which uses Cocoon's xmldb://
+                            pseudo-protocol and XSL stylesheets. eXist's
+                            database contents are mapped to the URL space
+                            starting at <command>xmldb/</command>.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <ulink href="biblio.xml">Bibliography</ulink>
+                    </term>
+                    <listitem>
+                        <para>This example demonstrates using a customized query
+                            interface to query the bibliography file
+                            <filename>biblio.rdf</filename> found in the <filename>samples</filename>-directory.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </section>
+        <section id="webdav">
+            <title>Using WebDAV</title>
+            <para>The distribution includes <ulink
+                href="http://www.mucl.de/~jmetzner/xincon/">xincon</ulink>, a
+                WebDAV module to access an XML:DB database from any file manager
+                or application supporting the WebDAV protocol. WebDAV makes it
+                possible to manage database collections in eXist just like
+                directories in a file system. You may copy, remove, view or edit
+                files with any application supporting the WebDAV protocol,
+                including, for example, Windows Explorer, <ulink
+                href="http://www.webdav.org/cadaver">cadaver</ulink>, Linux
+                Davfs, XML Spy and many others.</para>
+            <para>Though xincon has been written for Xindice it works perfectly
+                well with eXist. However, xincon is still alpha, so please do
+				not expect everything to work. On my machine, Windows Explorer
+				will hang for some time when changing directories.</para>
+            <para>The xincon module listens at <ulink
+                    href="http://localhost:8080/exist/webdav/">
+                http://localhost:8080/exist/webdav/</ulink>. If you browse to
+                this URL with your web browser you will see xincon's web-based
+                administration interface. More interesting, you may use WebDAV
+                with a file manager like Windows Explorer. On Windows, just
+                create a web-folder using the above URL.</para>
+            <para>The screen dump below shows an example session using the
+                cadaver WebDAV client on Linux:</para>
+            <example>
+                <title>Using WebDAV with cadaver</title>
+                <screen><![CDATA[
+[wolf@zarathustra eXist-0.8]$ cadaver http://localhost:8080/exist/webdav
+Looking up hostname... Connecting to server... connected.
+dav:/exist/webdav/> mkcol shakespeare
+Creating `shakespeare': succeeded.
+dav:/exist/webdav/> cd shakespeare
+dav:/exist/webdav/shakespeare/> mkcol plays
+Creating `plays': succeeded.
+dav:/exist/webdav/shakespeare/> put samples/shakespeare/hamlet.xml
+Uploading samples/shakespeare/hamlet.xml to `/exist/webdav/shakespeare/hamlet.xml':
+Progress: [=============================>] 100.0% of 288832 bytes succeeded.
+dav:/exist/webdav/shakespeare/>
+]]></screen>
+            </example>
+        </section>
+        <section>
+            <title>Log Files</title>
+            <para>eXist uses the log4j-package to write logging output. If you
+                have installed eXist in a servlet-engine, you will find the log
+                files in the web-application's <filename>WEB-INF</filename>
+                directory. Otherwise logging output is written to
+                <filename>webapp/WEB-INF/logs</filename>. These settings 
+                may be changed by editing the
+                log4j-section at the end of eXist's configuration file <filename>conf.xml</filename>.</para>
+            <para>If you experience any problems with eXist, please have a look
+                at the corresponding log-files. This is also recommended if
+                Cocoon presents you an error-report. Cocoon log-files reside in
+                the <filename>WEB-INF/logs</filename> directory. Usually,
+                looking at these files helps to understand why an exception occurred.</para>
+        </section>
+        <section>
+            <title>What Next?</title>
+            <para>To use all the power of eXist you should read the 
+                <ulink href="xpath.xml">XPath HowTo</ulink>. eXist provides a number
+                of extensions to standard XPath and you can make your queries a lot faster
+                by using these extensions, so don't miss them.</para>
+            <para>If you would like to know more about the different deployment options,
+                read the document about <ulink href="deployment.xml">Server Deployment</ulink>.
+                Security related issues are covered by 
+                <ulink href="security.xml">security.xml</ulink>.</para>
+            <para>Finally, developers should have a look at the 
+                <ulink href="development.xml">Developer's Guide</ulink>.</para>
+        </section>
+    </chapter>
+</book>

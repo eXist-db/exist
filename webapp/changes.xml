@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet href="changes.xsl" type="text/xsl"?>
+<!-- Author: Wolfgang Meier "meier@ifs.tu-darmstadt.de" -->
+<changes title="History of Changes">
+    <release version="0.9">
+        <topic category="New Features">
+            <action name="User Authentication and Access Control">
+                Beginning with version 0.9, the database engine supports basic
+                user authentication and access control. Access control loosely
+                resembles Unix conventions, so Unix users should be familiar
+                with this. Access control is disabled unless a password is set for the
+                superuser.
+            </action>
+            <action name="XInclude">
+                eXist now implements basic support for XInclude on the server. XInclude
+                elements are expanded during the serialization of the document, i.e. whenever
+                a document is retrieved from the database. We don't support the whole XInclude
+                standard. The database currently recognizes simple document inclusions, 
+                shorthand pointers and the xpointer() scheme. However, the XPointer extensions 
+                to XPath are not implemented yet.
+            </action>
+        </topic>
+		<topic category="General Improvements">
+			<action name="Indexing Speed and Scalability"> The native storage backend
+				has again seen a substantial redesign: It is now possible to store more
+				than just a few megabytes or files into a single collection. The indexing
+				process scales nearly linear as long as page buffers are sufficiently large.
+				Internally, the management of overflow pages has changed: Since eXist manages
+				all indexes by collection, index entries can get very large and have to be split
+				over a number of overflow pages. When adding new data to a large index 
+				value, the data is now simply appended to the existing chain of overflow pages. 
+				Thus only the first and the last page in the chain have to remain in memory. 
+				This results in a considerable performance gain, much lower memory consumption 
+				and increased scalability.
+			</action>
+			<action name="Index Size"> Indexes for elements, attributes and text tokens
+				are now based on a combination of variable byte and delta coding to store 
+				the index data. The index data basically consists of a list of int and long
+				values, so using variable byte coding yields good compression rates. Additionally,
+				the persistent DOM's internal B+-tree is much smaller now: The B+-tree maps
+				unique node identifiers to the node's storage address in the data section. So far,
+				all nodes have been added to the B+-tree. However, most XPath expressions use
+				short-cuts to access nodes directly, so the B+-tree is only required for some
+				less time-critical operations (like the serialization of query results). I thus
+				decided to keep only top-level elements in the DOM index. Attributes and text
+				nodes are always excluded. These nodes are retrieved by looking up the nearest
+				available ancestor. As a result, the DOM file is much smaller now. The accumulated
+				size of all index files may in some cases be even less than the original raw data
+				source size. For highly structured data, the expansion factor will be around
+				1.5 to 2.</action>
+			<action name="Page Buffering">The LRU page buffers 
+				used so far have been replaced by a clock implementation, which yields
+				better page prediction rates. A priority is assigned to each page to
+				keep often used pages in the buffer, e.g. inner B+-tree nodes.</action>
+			<action name="Locking">
+				Finally, Java synchronization has been replaced by our own locking mechanism.
+				This allows locks to time out: If a thread has acquired a read 
+				lock and blocks for more than a given period of time, the lock manager will
+				remove the lock and pass it to another waiting thread.
+			</action>
+			<action name="Documentation">
+			    Lots of new documentation: There's a new performance howto, a document explaining
+			    the different deployment options and a security howto.
+			</action>
+		</topic>
+        <topic category="API Changes">
+			<action name="XMLResource.setContent"> If a File object is passed
+				to XMLResource.setContent(Object) when running in embedded mode, the
+				file is directly passed on to the indexer. Otherwise the
+				object is converted to String. Being able to pass a file is an 
+				important feature when parsing large documents since the file's 
+				content is not loaded into memory. The file object is directly 
+				passed on to the indexer.</action>
+			<action name="XMLResource.setContentAsSAX"> Fixed methods setContentAsSAX
+				and getContentAsSAX in the XMLResource class. </action>
+			<action name="DatabaseInstanceManager"> Added a new service to the
+				XML:DB API called DatabaseInstanceManager. This service contains
+				a single method shutdown() used to shut down the database instance
+				currently connected to the driver. You have to be a member of group
+				"dba" to use this method or an exception will be thrown.</action>
+            <action name="Configure Multiple Backends"> It is now possible to
+                use multiple database instances from the XML:DB API. Each
+                instance may have its own configuration file and XML:DB driver. </action>
+            <action name="Query results"> eXist usually creates a container
+                element around attribute and text nodes in the query result set
+                returned through the XML:DB API. For example, a text node is
+                returned (by XMLResource.getContent()) as
+                &lt;exist:text>content&lt;/exist:text>. The container element is
+                required for additional information like source-document or
+                internal node-id. However, this makes it hard to use the query
+                result directly in the code (one always has to remove the
+                container element). Thus, class XPathQueryService does now
+                accept a property &quot;create-container-elements&quot;. When
+                set to false, query results obtained through the service will
+                not be wrapped into a container element. Instead, for attribute
+				as well as text-nodes, the node's string value is returned. </action>
+        </topic>
+        <topic category="Indexer">
+            <action name="Indexer Configuration"> Added an &lt;exclude> element
+                to the index section of the config file to make it possible to
+                exclude portions of the source XML file from fulltext indexing. </action>
+            <action name="Indexing Attributes"> So far, fulltext searches did
+                not work correctly on attribute values. This has been fixed.
+                Attribute values are added to the fulltext index if the
+                &quot;attributes&quot; option has been set to &quot;true&quot;
+                in the &lt;index> section of the configuration file. Default is
+				&quot;true&quot;. </action>
+			<action name="XMLRPC Interface"> The XMLRPC Server now reuses created
+				Parser objects. It does no longer need to set up a new parser
+				for every file. This saves a lot of time and results in a considerable
+				increase in indexing performance when parsing large collections.
+			</action>
+        </topic>
+        <topic category="XPath Engine">
+            <action name="Querying for the Root Node"> The descendant-or-self
+                axis did not work when querying for the root node. For example,
+                /PLAY did work while //PLAY did not. Fixed. </action>
+            <action name="Node Set Processing"> Fixed a number of problems
+                related to the processing of intermediate node sets during XPath
+                evaluation. The XPath engine produced wrong results in some rare
+                cases, for example, entire documents were missing in the result
+                set, though there should have been hits. </action>
+            <action name="Simple Wildcards"> The &amp;= and |= operators and the
+                near()-function now support simple, shell-like wildcards
+                (*,?,[...]) in specified keywords. This is easier than using the
+                full-blown regular expression syntax, which is still provided
+                through the match(), match-all() and match-any() functions. The
+                simple wildcards are translated to full regular expressions by
+                the underlying regexp library (jakarta ORO). </action>
+            <action name="id() added"> Added the missing id()-function to the
+                XPath parser. The function is index-based. </action>
+			<action name="Querying Attributes"> Finally fixed the XPath parser
+				to handle queries for any attribute (e.g. //div[@*='intro']) 
+				correctly.
+			</action>
+			<action name="Any element queries"> Queries like //*[dc:title &amp;= 'computer']
+				should work now.
+			</action>
+        </topic>
+        <topic category="Bug-fixes">
+            <action name="XMLResource.getId()"> XMLResource.getId() now returns
+                the identifier of the current node, not that of the document it
+                is contained in. </action>
+            <action name="Read-only mode"> eXist again runs from a read-only
+                filesystem. This had been broken in 0.8. The server tried to
+				save some files, though no changes have been made to them.
+				The database will switch to read-only mode if any of the database
+				files is not writable. A PermissionDeniedException will be thrown
+				internally on write requests.</action>
+			<action name="Document Update"> When replacing a document through the 
+				XML:DB API, the document seemed to have no content on the client 
+				side until the client got restarted. Fixed. </action>
+            <action name="XML-RPC"> Method getDocumentListing() used to return
+                all documents in a collection (including sub-collections).
+                Fixed. </action>
+            <action name="Relational backend"> When using the relational
+                backend, documents were parsed and indexed but not correctly
+                stored. Fixed. </action>
+            <action name="Interactive command-line client"> Client throws an
+                exception if one tries to cd into a non-existing collection.
+                Fixed. </action>
+        </topic>
+    </release>
+    <release version="0.8">
+        <topic category="Bug fixes">
+            <action name="Memory usage"> A severe bug in the page buffering code
+                of the native XML data store led to uncontrolled memory
+                consumption when indexing larger documents. Freed pages have not
+                been correctly garbage collected. After fixing the bug, memory
+                consumption is much lower: for example, indexing a 12MB file
+                with only 32MB of main memory for the JVM should work. A new
+                option in the configuration file controls the amount of free
+                memory which should be available in the JVM. If free memory
+                drops below the specified minimum, eXist will try to flush all
+                caches to disk. </action>
+            <action name="XMLRPC"> Several bugs related to the XMLRPC interface
+                have been fixed. The Perl examples should work now. </action>
+            <action name="Namespace handling"> Version 0.7.1 stored all
+                namespace declarations with the document object. This is not
+                what one would expect. In 0.8, namespace declarations are stored
+                for each element node. </action>
+        </topic>
+        <topic category="Updates">
+            <action name="Cocoon"> Updated the included Cocoon to version 2.0.3. </action>
+            <action name="Documentation"> Updated documentation to reflect
+                version 0.8 </action>
+        </topic>
+        <topic category="General improvements">
+            <action name="SOAP"> Added methods to store or remove documents /
+                collections to the SOAP interface. </action>
+        </topic>
+    </release>
+    <release version="0.8beta">
+        <topic category="New features">
+            <action name="Deployment"> eXist may now run either as a stand-alone
+                server process, embedded into an application or in connection
+                with a servlet-engine. If it runs in a servlet-context, all
+                database files will reside in the web-application's /WEB-INF
+                directory. </action>
+            <action name="XML:DB API"> There are now two implementations of the
+                XML:DB API available: The first talks to a remote database
+                engine using XML-RPC calls. The second has direct access to a
+                local database instance. This allows to embed eXist into a
+                stand-alone application without running an additional
+                server-process. The DatabaseManager-class will choose the
+                correct implementation based on the XML:DB collection-URI you
+                pass to it.</action>
+            <action name="Integration with Cocoon"> Resources stored in Cocoon
+                may be directly referenced in Cocoon's site map using the
+                xmldb:// pseudo-protocol. If eXist is configured to run in the
+                same web-application context, Cocoon has direct access to the
+                database engine using the local XML:DB API driver. A new XSP
+                logic sheet (xmldb.xsl) based on the XML:DB API is available. </action>
+            <action name="SOAP interface"> A SOAP based web-service interface
+                has been added to browse and query the database. This is still
+                experimental. </action>
+            <action name="WebDAV support"> Added the Xincon WebDAV
+                implementation to the distribution to support access by WebDAV
+                enabled file managers (Windows Explorer, cadaver ...) and
+                applications (XMLSpy). WebDAV allows you to browse, add, remove
+                or rename files and collections stored in eXist using your
+                favourite file manager (if it supports the protocol). The Xincon
+                module is still alpha so don't expect everything to work. Since
+                the module had been written for Xindice, I had to make some
+                small changes to the code.</action>
+        </topic>
+        <topic category="General improvements">
+            <action name="Indexing speed"> The B+-Tree implementation and the
+                page buffering mechanisms have been optimized to improve
+                indexing performance. On my machine indexing a file will be up
+                to two times faster than before. However, there's still more
+                optimization potential for future releases.</action>
+            <action name="String tokenizer"> The string tokenizer used to break
+                up text into index terms has been replaced. The old tokenizer
+                simply split text at every non-letter character. For example, a
+                floating point number 7.10 would be split into 7 and 10. The new
+                tokenizer class handles such cases correctly. Dates, floating
+                point, various types of serial numbers (e.g. Q/14A, 35-16-7),
+                acronyms and the like are now indexed as a single term making it
+                easier to find. </action>
+            <action name="New functions for regular expressions"> Due to the
+                changed tokenization, it is no longer possible for the query
+                engine to detect if keyword arguments to &amp;= and |= are
+                regular expressions or not. To solve this, two new functions
+                have been added: match-any(path, 'regexp keyword', 'regexp
+                keyword' ...) and match-all(path, 'regexp keyword', 'regexp
+                keyword' ...). </action>
+            <action name="Compatibility with Apache's Xindice"> The XML:DB API
+                implementation has been changed to be compatible with Xindice's
+                implementation. Applications written for Xindice should now work
+                with eXist. Most important, the database root collection is now
+                called '/db'. </action>
+        </topic>
+        <topic name="Other changes">
+            <action name="Server shutdown"> The server now tries to flush all
+                unsaved buffers to disk if the Java VM gets killed or is shut
+                down. In previous versions, killing the server led to corrupted
+                data files. </action>
+        </topic>
+    </release>
+    <release version="0.7.1">
+        <topic category="New features">
+            <action name="Regular expression support">Added regular expression
+                support for search patterns. New function: match().</action>
+            <action name="Near queries">Added a near()-function to search for
+                phrases of text. Near uses the fulltext-index. Contrary to the
+                other fulltext-operators near requires search terms to occur in
+                the right sequence and near to each other. The functions
+                measures the distance between two search terms by counting the
+                words in between them. A maximum distance of 1 is assumed by default.</action>
+            <action name="Clients">A new interactive command line client has
+                been included. The client is completely based on the XML:DB API.</action>
+        </topic>
+        <topic category="Bug fixes">
+            <action name="Namespaces">Some namespace-related bugs (null-prefixes
+                in eXist's output) have been fixed.</action>
+            <action name="Native backend">Due to bad page headers, database
+                files got damaged sometimes during updates/removal.</action>
+            <action name="XPath">XPath expressions including the document's root
+                element did not work correctly, e.g. document(*)/PLAY did not
+                yield any results.</action>
+        </topic>
+    </release>
+    <release version="0.7">
+        <topic category="General improvements">
+            <action name="Space usage">Reallocation of free space in data pages
+                has been improved. In previous versions, clean ups slowed the
+                server down. Pages with free space are now kept in an ordered
+                list and reused to avoid underfull pages. This reduces the
+                overall size of data files. Overflow pages (used if an index
+                entry exceeds the size of a single page) are compressed with
+                gzip. An XML file in eXist will now occupy approx. twice the
+                disk space of the original source file for DOM nodes and indexes.</action>
+        </topic>
+        <topic category="New features">
+            <action name="XSL support">eXist's XML serializer now applies XSL
+                stylesheets to a document. The HTTP server recognizes the
+                xml-stylesheet processing instruction inside a document.
+                Alternatively, a _xsl parameter will be evaluated in
+                GET-requests. Stylesheets are read from eXist if the href is not
+                an URL. Documents referenced in xsl-include or xsl-import are
+                loaded from eXist as well.</action>
+            <action name="XSP logicsheet">An XSP taglib (logicsheet) has been
+                added to make writing XSP pages easier. The logicsheet
+                communicates with the server using XML-RPC. See process.xsp in jakarta-tomcat-4.0.1/webapps/exist.</action>
+            <action name="XML-RPC API">The XML-RPC interface now saves query
+                result sets on the server until a timeout is reached. This makes
+                it possible to process a query, display a first part of the
+                results to the user and later retrieve the rest without
+                executing the query again.</action>
+            <action name="Collections">Added method to remove complete
+                collections. This is much faster than removing every single document</action>
+            <action name="Read-only file systems">It is now possible to run
+                eXist on a read-only file system, e.g. from a cdrom. All methods
+                which imply a modification of the current database will throw an IOException.</action>
+            <action name="Case-sensitivity">A new switch has been added to the
+                configuration file which allows to switch of case-sensitivity
+                for string comparisons. This applies to the xpath equality,
+                greate than, less than operators etc. and to the contains(),
+                starts-with() etc. functions.</action>
+        </topic>
+        <topic category="Bug fixes/Compatibility">
+            <action name="JDK1.4">eXist will now run with JDK 1.4. JDK 1.4beta
+                contains Crimson, which complained about unknown SAX features.
+                This has been fixed and Crimson is now accepted as SAX parser.</action>
+            <action name="Serializer">A number of bugs in the serializer code
+                produced invalid XML.</action>
+            <action name="Relational backend">A bug has been fixed in the
+                relational backend: In some cases, old document versions have
+                been displayed to the user after a document has been updated.
+                The server had to be restarted to view the updated document.</action>
+        </topic>
+        <topic category="Other changes">
+            <action name="Collection()-function">The collection()-function now
+                accepts an optional boolean argument, indicating whether
+                documents found in sub-collections of the named collection
+                should be included into the document-set. For example,
+                collection('foo', false) will run the xpath-query against all
+                documents in collection 'foo' but not against documents in
+                sub-collection foo/baz.</action>
+            <action name="Package names">eXist source code has been moved to
+                org.exist to follow Java coding conventions. Files have been
+                grouped into sub-packages. This makes it easier to browse
+                through the code.</action>
+            <action name="Tomcat, Cocoon">The included version of tomcat has
+                been updated to 4.0.1 (Catalina). Cocoon has been updated to 2.0
+                final. The helma.xmlrpc library has been replaced by it's
+                successor, org.apache.xmlrpc.</action>
+        </topic>
+    </release>
+    <release version="0.7beta2">
+        <topic category="General improvements">
+            <action name="Concurrency">The native Java backend is now safe for
+                concurrent write access by multiple threads.</action>
+            <action name="Indexing performance">The performance breakdown which
+                occured with previous versions of the native storage backend
+                when indexing many small files has been fixed. The indexing
+                process scales much better now with small files and queries
+                perform very well. To achieve this, the indexing structure had
+                to be changed. Please note that the indexes are now organized on
+                a collection basis. If there are too many files in one
+                collection, it is recommended to split them up into subcollections.</action>
+            <action name="Retrieval performance">Because documents are now
+                stored inside a Collection-object, loading of document
+                descriptions at the start of every query is about 10 times
+                faster. On my machine, loading 5000 document descriptions took
+                about 5-7 sec. with version 0.6, resulting in a considerable
+                delay before query start. This is now reduced to 500ms..</action>
+            <action name="Attributes">Attribute values are now included in the
+                fulltext index. An attribute value may be queried with &amp;=
+                and |= operators.</action>
+            <action name="Space usage">The number of bytes used to store a node
+                in the main dom file has been heavily reduced.</action>
+        </topic>
+        <topic category="Other Changes">
+            <action name="Dropped index">The index used for string comparisons
+                (=,&lt;,>) has been removed. Building this index is expensive.
+                You may use the &amp;= and |= operators instead.
+                =,&lt;,>,contains() etc. do a full table scan. Because of the
+                reduced dom storage size, full table scans are much faster now.</action>
+        </topic>
+        <topic category="New Features">
+            <action name="Entity Resolver">Norman Walsh's resolver classes are
+                used in the parser to read XML Catalog files and resolve entities.</action>
+        </topic>
+        <topic category="Bug fixes/Compatibility">
+            <action name="Default namespaces">Default namespaces (xmlns=) do no
+                longer produce NullPointerExceptions.</action>
+            <action name="Prefixes">xml-prefixes are handled correctly (e.g.
+                xml:lang=&quot;...&quot;). </action>
+        </topic>
+    </release>
+</changes>
