@@ -23,8 +23,6 @@
 
 package org.exist.xpath.value;
 
-import java.util.Calendar;
-
 import org.exist.xpath.Constants;
 import org.exist.xpath.XPathException;
 

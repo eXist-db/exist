@@ -20,15 +20,6 @@
  */
 package org.exist.util;
 
-import org.apache.log4j.xml.DOMConfigurator;
-import org.apache.xml.resolver.tools.CatalogResolver;
-import org.exist.storage.IndexPaths;
-import org.w3c.dom.*;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -41,8 +32,17 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.log4j.xml.DOMConfigurator;
+import org.apache.xml.resolver.tools.CatalogResolver;
+import org.exist.storage.IndexPaths;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 /**
  * Description of the Class
  *

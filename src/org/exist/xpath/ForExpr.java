@@ -78,10 +78,12 @@ public class ForExpr extends BindingExpression {
 		}
 		boolean fastExec = whereExpr != null &&
 			( whereExpr.getDependencies() & Dependency.CONTEXT_ITEM ) == 0 &&
-			at == null;
+			at == null &&
+			in.getItemType() == Type.NODE;
+			
 		if(fastExec) {
 			LOG.debug("fast evaluation mode");
-			in = applyWhereExpression(context, null);
+			in = applyWhereExpression(null);
 		}
 		
 		if(orderSpecs != null)
@@ -111,7 +113,7 @@ public class ForExpr extends BindingExpression {
 			if (whereExpr != null && (!fastExec)) {
 				if(contextItem instanceof NodeProxy)
 					((NodeProxy)contextItem).addContextNode((NodeProxy)contextItem);
-				val = applyWhereExpression(context, contextSequence);
+				val = applyWhereExpression(contextSequence);
 				if(!val.effectiveBooleanValue())
 					continue;
 			} else

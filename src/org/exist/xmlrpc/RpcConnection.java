@@ -70,11 +70,10 @@ import org.xml.sax.SAXException;
 import antlr.collections.AST;
 
 /**
-	 *  Description of the Class
-	 *
-	 *@author     wolf
-	 *@created    28. Mai 2002
-	 */
+ * This class implements the actual methods defined by {@link org.exist.xmlrpc.RpcAPI}.
+ * 
+ * @author Wolfgang Meier (wolfgang@exist-db.org)
+ */
 public class RpcConnection extends Thread {
 
 	private final static Logger LOG = Logger.getLogger(RpcConnection.class);
@@ -86,19 +85,12 @@ public class RpcConnection extends Thread {
 	protected RpcServer.ConnectionPool connectionPool;
 	protected TreeMap tempFiles = new TreeMap();
 
-	/**
-	 *  Constructor for the RpcConnection object
-	 *
-	 *@param  conf                Description of the Parameter
-	 *@exception  EXistException  Description of the Exception
-	 */
 	public RpcConnection(Configuration conf, RpcServer.ConnectionPool pool)
 		throws EXistException {
 		super();
 		connectionPool = pool;
 		brokerPool = BrokerPool.getInstance();
-		DocumentBuilderFactory docFactory =
-			DocumentBuilderFactory.newInstance();
+		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		try {
 			docBuilder = docFactory.newDocumentBuilder();
 		} catch (ParserConfigurationException e) {
@@ -107,14 +99,6 @@ public class RpcConnection extends Thread {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  name                           Description of the Parameter
-	 *@param  user                           Description of the Parameter
-	 *@exception  Exception                  Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
-	 */
 	public void createCollection(User user, String name)
 		throws Exception, PermissionDeniedException {
 		DBBroker broker = null;
@@ -134,21 +118,12 @@ public class RpcConnection extends Thread {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  collName            Description of the Parameter
-	 *@param  user                Description of the Parameter
-	 *@return                     Description of the Return Value
-	 *@exception  EXistException  Description of the Exception
-	 */
 	public String createId(User user, String collName) throws EXistException {
 		DBBroker broker = brokerPool.get(user);
 		try {
 			Collection collection = broker.getCollection(collName);
 			if (collection == null)
-				throw new EXistException(
-					"collection " + collName + " not found!");
+				throw new EXistException("collection " + collName + " not found!");
 			String id;
 			Random rand = new Random();
 			boolean ok;
@@ -178,7 +153,7 @@ public class RpcConnection extends Thread {
 		Hashtable namespaces,
 		String baseURI)
 		throws Exception {
-		if(docs == null)
+		if (docs == null)
 			docs = broker.getAllDocuments(new DocumentSet());
 		StaticContext context = new StaticContext(broker);
 		context.setBaseURI(baseURI);
@@ -227,9 +202,7 @@ public class RpcConnection extends Thread {
 			Sequence resultValue =
 				doQuery(user, broker, xpath, null, null, namespaces, null);
 			QueryResult qr =
-				new QueryResult(
-					resultValue,
-					(System.currentTimeMillis() - startTime));
+				new QueryResult(resultValue, (System.currentTimeMillis() - startTime));
 			connectionPool.resultSets.put(qr.hashCode(), qr);
 			return qr.hashCode();
 		} finally {
@@ -237,12 +210,6 @@ public class RpcConnection extends Thread {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  message  Description of the Parameter
-	 *@return          Description of the Return Value
-	 */
 	protected String formatErrorMsg(String message) {
 		return formatErrorMsg("error", message);
 	}
@@ -271,8 +238,7 @@ public class RpcConnection extends Thread {
 
 			Collection collection = broker.getCollection(rootCollection);
 			if (collection == null)
-				throw new EXistException(
-					"collection " + rootCollection + " not found!");
+				throw new EXistException("collection " + rootCollection + " not found!");
 			Hashtable desc = new Hashtable();
 			Vector docs = new Vector();
 			Vector collections = new Vector();
@@ -287,14 +253,10 @@ public class RpcConnection extends Thread {
 					hash.put("name", doc.getFileName());
 					hash.put("owner", perms.getOwner());
 					hash.put("group", perms.getOwnerGroup());
-					hash.put(
-						"permissions",
-						new Integer(perms.getPermissions()));
+					hash.put("permissions", new Integer(perms.getPermissions()));
 					docs.addElement(hash);
 				}
-				for (Iterator i = collection.collectionIterator();
-					i.hasNext();
-					)
+				for (Iterator i = collection.collectionIterator(); i.hasNext();)
 					collections.addElement((String) i.next());
 			}
 			Permission perms = collection.getPermissions();
@@ -311,25 +273,21 @@ public class RpcConnection extends Thread {
 		}
 	}
 
-
-	public String getDocument(
-		User user,
-		String name,
-		Hashtable parametri)
+	public String getDocument(User user, String name, Hashtable parametri)
 		throws Exception {
 		long start = System.currentTimeMillis();
 		DBBroker broker = null;
-		
+
 		String stylesheet = null;
 		String encoding = "UTF-8";
 		Hashtable styleparam = null;
-		
+
 		try {
 			broker = brokerPool.get(user);
 			Configuration config = broker.getConfiguration();
 			String option = (String) config.getProperty("serialization.enable-xinclude");
 			String prettyPrint = (String) config.getProperty("serialization.indent");
-			
+
 			DocumentImpl doc = (DocumentImpl) broker.getDocument(name);
 			if (doc == null) {
 				LOG.debug("document " + name + " not found!");
@@ -337,50 +295,49 @@ public class RpcConnection extends Thread {
 			}
 			Serializer serializer = broker.getSerializer();
 
-		if (parametri != null) {
-			
-				  for (Enumeration en=parametri.keys(); en.hasMoreElements();) {
-            
-                  String param = (String)en.nextElement();
-                  String paramvalue = parametri.get(param).toString();                      
-	  //LOG.debug("-------Parametri passati:"+param+": "+paramvalue); 
+			if (parametri != null) {
 
-		if (param.equals(EXistOutputKeys.EXPAND_XINCLUDES)){	
-			option =  (paramvalue.equals("yes")) ? "true" : "false";
-			} 
-			
-		if (param.equals(OutputKeys.INDENT)){
-			prettyPrint = paramvalue;
-			}
-		
-		if (param.equals(OutputKeys.ENCODING)){
-			encoding= paramvalue;
-			}
-		
-		if (param.equals(EXistOutputKeys.STYLESHEET)){
-			stylesheet= paramvalue;
-			}
-		
-		if (param.equals(EXistOutputKeys.STYLESHEET_PARAM)){
-			 styleparam = (Hashtable)parametri.get(param);
-			}
-		
-		if (param.equals(OutputKeys.DOCTYPE_SYSTEM)){
-			   serializer.setProperty(OutputKeys.DOCTYPE_SYSTEM, paramvalue);
-			}
-		
-		}
-		
-		}
+				for (Enumeration en = parametri.keys(); en.hasMoreElements();) {
 
+					String param = (String) en.nextElement();
+					String paramvalue = parametri.get(param).toString();
+					//LOG.debug("-------Parametri passati:"+param+": "+paramvalue); 
 
-	  if (option.equals("true")){
-			serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");	
-	  }	else {
-			serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
-	  }	 
+					if (param.equals(EXistOutputKeys.EXPAND_XINCLUDES)) {
+						option = (paramvalue.equals("yes")) ? "true" : "false";
+					}
 
-		    serializer.setProperty(OutputKeys.ENCODING, encoding);
+					if (param.equals(OutputKeys.INDENT)) {
+						prettyPrint = paramvalue;
+					}
+
+					if (param.equals(OutputKeys.ENCODING)) {
+						encoding = paramvalue;
+					}
+
+					if (param.equals(EXistOutputKeys.STYLESHEET)) {
+						stylesheet = paramvalue;
+					}
+
+					if (param.equals(EXistOutputKeys.STYLESHEET_PARAM)) {
+						styleparam = (Hashtable) parametri.get(param);
+					}
+
+					if (param.equals(OutputKeys.DOCTYPE_SYSTEM)) {
+						serializer.setProperty(OutputKeys.DOCTYPE_SYSTEM, paramvalue);
+					}
+
+				}
+
+			}
+
+			if (option.equals("true")) {
+				serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
+			} else {
+				serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
+			}
+
+			serializer.setProperty(OutputKeys.ENCODING, encoding);
 			serializer.setProperty(OutputKeys.INDENT, prettyPrint);
 
 			if (stylesheet != null) {
@@ -391,8 +348,7 @@ public class RpcConnection extends Thread {
 						collection = doc.getCollection().getName();
 					else {
 						int cp = doc.getFileName().lastIndexOf("/");
-						collection =
-							(cp > 0) ? doc.getFileName().substring(0, cp) : "/";
+						collection = (cp > 0) ? doc.getFileName().substring(0, cp) : "/";
 					}
 					stylesheet =
 						(collection.equals("/")
@@ -400,18 +356,17 @@ public class RpcConnection extends Thread {
 							: collection + '/' + stylesheet);
 				}
 				serializer.setStylesheet(stylesheet);
-				
-	            // set stylesheet param if presents
-	 			if (styleparam != null) {
-				for (Enumeration en1=styleparam.keys(); en1.hasMoreElements();) {            
-			                  String param1 = (String)en1.nextElement();
-			                  String paramvalue1 = styleparam.get(param1).toString();  
-				              // System.out.println("-->"+param1+"--"+paramvalue1);
-				              serializer.setStylesheetParamameter(param1, paramvalue1);				
+
+				// set stylesheet param if presents
+				if (styleparam != null) {
+					for (Enumeration en1 = styleparam.keys(); en1.hasMoreElements();) {
+						String param1 = (String) en1.nextElement();
+						String paramvalue1 = styleparam.get(param1).toString();
+						// System.out.println("-->"+param1+"--"+paramvalue1);
+						serializer.setStylesheetParamameter(param1, paramvalue1);
+					}
 				}
-		     	}
-			
-			
+
 			}
 			String xml = serializer.serialize(doc);
 
@@ -425,18 +380,13 @@ public class RpcConnection extends Thread {
 	}
 
 	public int xupdate(User user, String collectionName, String xupdate)
-		throws
-			SAXException,
-			PermissionDeniedException,
-			EXistException,
-			XPathException {
+		throws SAXException, PermissionDeniedException, EXistException, XPathException {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
 			Collection collection = broker.getCollection(collectionName);
 			if (collection == null)
-				throw new EXistException(
-					"collection " + collectionName + " not found");
+				throw new EXistException("collection " + collectionName + " not found");
 			DocumentSet docs = collection.allDocs(broker, new DocumentSet(), true);
 			XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
 			Modification modifications[] =
@@ -457,11 +407,7 @@ public class RpcConnection extends Thread {
 	}
 
 	public int xupdateResource(User user, String resource, String xupdate)
-		throws
-			SAXException,
-			PermissionDeniedException,
-			EXistException,
-			XPathException {
+		throws SAXException, PermissionDeniedException, EXistException, XPathException {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
@@ -586,8 +532,7 @@ public class RpcConnection extends Thread {
 				tmp.addElement(perm.getOwnerGroup());
 				tmp.addElement(new Integer(perm.getPermissions()));
 				docName =
-					doc.getFileName().substring(
-						doc.getFileName().lastIndexOf('/') + 1);
+					doc.getFileName().substring(doc.getFileName().lastIndexOf('/') + 1);
 				result.put(docName, tmp);
 			}
 			return result;
@@ -609,8 +554,7 @@ public class RpcConnection extends Thread {
 			if (!collection.getPermissions().validate(user, Permission.READ))
 				throw new PermissionDeniedException(
 					"not allowed to read collection " + name);
-			Hashtable result =
-				new Hashtable(collection.getChildCollectionCount());
+			Hashtable result = new Hashtable(collection.getChildCollectionCount());
 			if (collection == null)
 				return result;
 			String child, path;
@@ -701,8 +645,7 @@ public class RpcConnection extends Thread {
 				collectionPath = "/db" + collectionPath;
 			Collection collection = broker.getCollection(collectionPath);
 			if (collection == null)
-				throw new EXistException(
-					"collection " + collectionPath + " not found");
+				throw new EXistException("collection " + collectionPath + " not found");
 			return new Date(collection.getCreationTime());
 		} finally {
 			brokerPool.release(broker);
@@ -757,8 +700,7 @@ public class RpcConnection extends Thread {
 		return tab;
 	}
 
-	public Vector getUsers(User user)
-		throws EXistException, PermissionDeniedException {
+	public Vector getUsers(User user) throws EXistException, PermissionDeniedException {
 		User users[] = brokerPool.getSecurityManager().getUsers();
 		Vector r = new Vector();
 		for (int i = 0; i < users.length; i++) {
@@ -775,8 +717,7 @@ public class RpcConnection extends Thread {
 		return r;
 	}
 
-	public Vector getGroups(User user)
-		throws EXistException, PermissionDeniedException {
+	public Vector getGroups(User user) throws EXistException, PermissionDeniedException {
 		String[] groups = brokerPool.getSecurityManager().getGroups();
 		Vector v = new Vector(groups.length);
 		for (int i = 0; i < groups.length; i++) {
@@ -792,11 +733,7 @@ public class RpcConnection extends Thread {
 		return r;
 	}
 
-	public boolean parse(
-		User user,
-		byte[] xml,
-		String docName,
-		boolean replace)
+	public boolean parse(User user, byte[] xml, String docName, boolean replace)
 		throws Exception {
 		DBBroker broker = null;
 		try {
@@ -808,8 +745,7 @@ public class RpcConnection extends Thread {
 			docName = docName.substring(p + 1);
 			Collection collection = broker.getCollection(collectionName);
 			if (collection == null)
-				throw new EXistException(
-					"Collection " + collectionName + " not found");
+				throw new EXistException("Collection " + collectionName + " not found");
 			long startTime = System.currentTimeMillis();
 			DocumentImpl doc =
 				collection.addDocument(
@@ -846,11 +782,7 @@ public class RpcConnection extends Thread {
 		String localFile,
 		String docName,
 		boolean replace)
-		throws
-			EXistException,
-			PermissionDeniedException,
-			SAXException,
-			TriggerException {
+		throws EXistException, PermissionDeniedException, SAXException, TriggerException {
 		File file = new File(localFile);
 		if (!file.canRead())
 			throw new EXistException("unable to read file " + localFile);
@@ -865,8 +797,7 @@ public class RpcConnection extends Thread {
 			docName = docName.substring(p + 1);
 			Collection collection = broker.getCollection(collectionName);
 			if (collection == null)
-				throw new EXistException(
-					"Collection " + collectionName + " not found");
+				throw new EXistException("Collection " + collectionName + " not found");
 			collection.addDocument(
 				broker,
 				docName,
@@ -921,11 +852,7 @@ public class RpcConnection extends Thread {
 			throw new EXistException("start parameter out of range");
 		Serializer serializer = broker.getSerializer();
 		serializer.setProperty(OutputKeys.INDENT, prettyPrint ? "yes" : "no");
-		return serializer.serialize(
-			(NodeSet) resultSet,
-			start,
-			howmany,
-			queryTime);
+		return serializer.serialize((NodeSet) resultSet, start, howmany, queryTime);
 	}
 
 	protected String printValues(
@@ -945,12 +872,8 @@ public class RpcConnection extends Thread {
 			throw new EXistException("start parameter out of range");
 		Document dest = docBuilder.newDocument();
 		Element root =
-			dest.createElementNS(
-				"http://exist.sourceforge.net/NS/exist",
-				"exist:result");
-		root.setAttribute(
-			"xmlns:exist",
-			"http://exist.sourceforge.net/NS/exist");
+			dest.createElementNS("http://exist.sourceforge.net/NS/exist", "exist:result");
+		root.setAttribute("xmlns:exist", "http://exist.sourceforge.net/NS/exist");
 		root.setAttribute("hitCount", Integer.toString(result.getLength()));
 		dest.appendChild(root);
 
@@ -1007,15 +930,7 @@ public class RpcConnection extends Thread {
 		boolean summary,
 		Hashtable namespaces)
 		throws Exception {
-		return query(
-			user,
-			xpath,
-			howmany,
-			start,
-			prettyPrint,
-			summary,
-			namespaces,
-			null);
+		return query(user, xpath, howmany, start, prettyPrint, summary, namespaces, null);
 	}
 
 	public String query(
@@ -1059,8 +974,7 @@ public class RpcConnection extends Thread {
 							(System.currentTimeMillis() - startTime));
 					break;
 				default :
-					result =
-						printValues(resultSeq, howmany, start, prettyPrint);
+					result = printValues(resultSeq, howmany, start, prettyPrint);
 					break;
 			}
 		} finally {
@@ -1096,8 +1010,7 @@ public class RpcConnection extends Thread {
 				docs = new DocumentSet();
 				docs.add(node.doc);
 			}
-			Sequence resultSeq =
-				doQuery(user, broker, xpath, docs, nodes, null, null);
+			Sequence resultSeq = doQuery(user, broker, xpath, docs, nodes, null, null);
 			if (resultSeq == null)
 				return result;
 			switch (resultSeq.getItemType()) {
@@ -1105,9 +1018,7 @@ public class RpcConnection extends Thread {
 					NodeList resultSet = (NodeList) resultSeq;
 					NodeProxy p;
 					Vector entry;
-					for (Iterator i = ((NodeSet) resultSet).iterator();
-						i.hasNext();
-						) {
+					for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext();) {
 						p = (NodeProxy) i.next();
 						entry = new Vector();
 						entry.addElement(p.doc.getFileName());
@@ -1136,10 +1047,10 @@ public class RpcConnection extends Thread {
 		Hashtable parameters)
 		throws Exception {
 		long startTime = System.currentTimeMillis();
-		String sortBy = (String)parameters.get(RpcAPI.SORT_EXPR);
-		String baseURI = (String)parameters.get(RpcAPI.BASE_URI);
-		Hashtable namespaces = (Hashtable)parameters.get(RpcAPI.NAMESPACES);
-		
+		String sortBy = (String) parameters.get(RpcAPI.SORT_EXPR);
+		String baseURI = (String) parameters.get(RpcAPI.BASE_URI);
+		Hashtable namespaces = (Hashtable) parameters.get(RpcAPI.NAMESPACES);
+
 		Hashtable ret = new Hashtable();
 		Vector result = new Vector();
 		NodeSet nodes = null;
@@ -1167,8 +1078,7 @@ public class RpcConnection extends Thread {
 				return ret;
 			LOG.debug("found " + resultSeq.getLength());
 			if (sortBy != null) {
-				SortedNodeSet sorted =
-					new SortedNodeSet(brokerPool, user, sortBy);
+				SortedNodeSet sorted = new SortedNodeSet(brokerPool, user, sortBy);
 				sorted.addAll(resultSeq);
 				resultSeq = sorted;
 			}
@@ -1189,8 +1099,7 @@ public class RpcConnection extends Thread {
 							} else {
 								entry.addElement("temp_xquery/" + next.hashCode());
 								entry.addElement(
-									String.valueOf(((NodeImpl)next).getNodeNumber())
-								);
+									String.valueOf(((NodeImpl) next).getNodeNumber()));
 							}
 							result.addElement(entry);
 						} else
@@ -1205,9 +1114,7 @@ public class RpcConnection extends Thread {
 			brokerPool.release(broker);
 		}
 		QueryResult qr =
-			new QueryResult(
-				resultSeq,
-				(System.currentTimeMillis() - startTime));
+			new QueryResult(resultSeq, (System.currentTimeMillis() - startTime));
 		connectionPool.resultSets.put(qr.hashCode(), qr);
 		ret.put("id", new Integer(qr.hashCode()));
 		ret.put("results", result);
@@ -1230,8 +1137,7 @@ public class RpcConnection extends Thread {
 			docName = docName.substring(p + 1);
 			Collection collection = broker.getCollection(collectionName);
 			if (collection == null)
-				throw new EXistException(
-					"Collection " + collectionName + " not found");
+				throw new EXistException("Collection " + collectionName + " not found");
 			collection.removeDocument(broker, docName);
 		} finally {
 			brokerPool.release(broker);
@@ -1255,8 +1161,7 @@ public class RpcConnection extends Thread {
 
 	public boolean removeUser(User user, String name)
 		throws EXistException, PermissionDeniedException {
-		org.exist.security.SecurityManager manager =
-			brokerPool.getSecurityManager();
+		org.exist.security.SecurityManager manager = brokerPool.getSecurityManager();
 		if (!manager.hasAdminPrivileges(user))
 			throw new PermissionDeniedException("you are not allowed to remove users");
 
@@ -1284,9 +1189,7 @@ public class RpcConnection extends Thread {
 			NodeProxy node = new NodeProxy(doc, id);
 			Serializer serializer = broker.getSerializer();
 			serializer.setProperty(OutputKeys.ENCODING, encoding);
-			serializer.setProperty(
-				OutputKeys.INDENT,
-				prettyPrint ? "yes" : "no");
+			serializer.setProperty(OutputKeys.INDENT, prettyPrint ? "yes" : "no");
 			return serializer.serialize(node);
 		} finally {
 			brokerPool.release(broker);
@@ -1302,12 +1205,11 @@ public class RpcConnection extends Thread {
 		throws Exception {
 		DBBroker broker = brokerPool.get(user);
 		try {
-			QueryResult qr =
-				(QueryResult) connectionPool.resultSets.get(resultId);
+			QueryResult qr = (QueryResult) connectionPool.resultSets.get(resultId);
 			if (qr == null)
 				throw new EXistException("result set unknown or timed out");
 			Item item = qr.result.itemAt(num);
-			if(item == null)
+			if (item == null)
 				throw new EXistException("index out of range");
 			if (item instanceof NodeProxy) {
 				NodeProxy proxy = (NodeProxy) item;
@@ -1315,13 +1217,13 @@ public class RpcConnection extends Thread {
 				serializer.setProperty(OutputKeys.ENCODING, encoding);
 				serializer.setProperty(OutputKeys.INDENT, prettyPrint ? "yes" : "no");
 				return serializer.serialize(proxy);
-			} else if(item instanceof Node) {
+			} else if (item instanceof Node) {
 				StringWriter writer = new StringWriter();
 				Properties props = new Properties();
 				props.setProperty(OutputKeys.ENCODING, encoding);
 				props.setProperty(OutputKeys.INDENT, prettyPrint ? "yes" : "no");
 				DOMSerializer serializer = new DOMSerializer(writer, props);
-				serializer.serialize((Node)item);
+				serializer.serialize((Node) item);
 				return writer.toString();
 			} else {
 				return item.getStringValue();
@@ -1365,8 +1267,7 @@ public class RpcConnection extends Thread {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			org.exist.security.SecurityManager manager =
-				brokerPool.getSecurityManager();
+			org.exist.security.SecurityManager manager = brokerPool.getSecurityManager();
 			Collection collection = broker.getCollection(resource);
 			if (collection == null) {
 				DocumentImpl doc = (DocumentImpl) broker.getDocument(resource);
@@ -1424,8 +1325,7 @@ public class RpcConnection extends Thread {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			org.exist.security.SecurityManager manager =
-				brokerPool.getSecurityManager();
+			org.exist.security.SecurityManager manager = brokerPool.getSecurityManager();
 			Collection collection = broker.getCollection(resource);
 			if (collection == null) {
 				DocumentImpl doc = (DocumentImpl) broker.getDocument(resource);
@@ -1487,8 +1387,7 @@ public class RpcConnection extends Thread {
 		Vector groups,
 		String home)
 		throws EXistException, PermissionDeniedException {
-		org.exist.security.SecurityManager manager =
-			brokerPool.getSecurityManager();
+		org.exist.security.SecurityManager manager = brokerPool.getSecurityManager();
 		User u;
 		if (!manager.hasUser(name)) {
 			if (!manager.hasAdminPrivileges(user))
@@ -1552,8 +1451,7 @@ public class RpcConnection extends Thread {
 				if (doctype == null)
 					continue;
 				if (doctypes.containsKey(doctype.getName())) {
-					doctypeCounter =
-						(DoctypeCount) doctypes.get(doctype.getName());
+					doctypeCounter = (DoctypeCount) doctypes.get(doctype.getName());
 					doctypeCounter.inc();
 				} else {
 					doctypeCounter = new DoctypeCount(doctype);
@@ -1636,8 +1534,7 @@ public class RpcConnection extends Thread {
 				if (doctype == null)
 					continue;
 				if (doctypes.containsKey(doctype.getName())) {
-					doctypeCounter =
-						(DoctypeCount) doctypes.get(doctype.getName());
+					doctypeCounter = (DoctypeCount) doctypes.get(doctype.getName());
 					doctypeCounter.inc();
 				} else {
 					doctypeCounter = new DoctypeCount(doctype);
@@ -1673,20 +1570,15 @@ public class RpcConnection extends Thread {
 		}
 	}
 
-	public Vector getIndexedElements(
-		User user,
-		String collectionName,
-		boolean inclusive)
+	public Vector getIndexedElements(User user, String collectionName, boolean inclusive)
 		throws EXistException, PermissionDeniedException {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
 			Collection collection = broker.getCollection(collectionName);
 			if (collection == null)
-				throw new EXistException(
-					"collection " + collectionName + " not found");
-			Occurrences occurrences[] =
-				broker.scanIndexedElements(collection, inclusive);
+				throw new EXistException("collection " + collectionName + " not found");
+			Occurrences occurrences[] = broker.scanIndexedElements(collection, inclusive);
 			Vector result = new Vector(occurrences.length);
 			Vector temp;
 			for (int i = 0; i < occurrences.length; i++) {
@@ -1713,8 +1605,7 @@ public class RpcConnection extends Thread {
 			broker = brokerPool.get(user);
 			Collection collection = broker.getCollection(collectionName);
 			if (collection == null)
-				throw new EXistException(
-					"collection " + collectionName + " not found");
+				throw new EXistException("collection " + collectionName + " not found");
 			Occurrences occurrences[] =
 				broker.getTextEngine().scanIndexTerms(
 					user,

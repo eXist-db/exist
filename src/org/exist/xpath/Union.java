@@ -20,7 +20,6 @@
 
 package org.exist.xpath;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;

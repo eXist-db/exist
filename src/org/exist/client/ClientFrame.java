@@ -59,7 +59,6 @@ import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -102,8 +101,6 @@ import org.exist.security.Permission;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XMLResourceImpl;
-import org.jedit.syntax.JEditTextArea;
-import org.jedit.syntax.XMLTokenMarker;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -684,7 +681,7 @@ public class ClientFrame extends JFrame {
 			Collection collection = client.getCollection();
 			UserManagementService service =
 				(UserManagementService) collection.getService("UserManagementService", "1.0");
-			UserDialog dialog = new UserDialog(service, "Edit Users", properties);
+			UserDialog dialog = new UserDialog(service, "Edit Users", client);
 			dialog.show();
 		} catch (XMLDBException e) {
 			showErrorMessage("Failed to retrieve UserManagementService", e);

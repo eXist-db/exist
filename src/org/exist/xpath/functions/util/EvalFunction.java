@@ -24,7 +24,6 @@ package org.exist.xpath.functions.util;
 
 import java.io.StringReader;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.parser.XPathLexer2;
 import org.exist.parser.XPathParser2;

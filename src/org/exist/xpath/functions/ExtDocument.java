@@ -104,7 +104,8 @@ public class ExtDocument extends Function {
 						next = context.getBaseURI() + '/' + next;
 					try {
 						DocumentImpl doc = (DocumentImpl) context.getBroker().getDocument(next);
-						docs.add(doc);
+						if(doc != null)
+							docs.add(doc);
 					} catch (PermissionDeniedException e) {
 						throw new XPathException("Permission denied: unable to load document " + next);
 					}

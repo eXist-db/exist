@@ -22,12 +22,8 @@
  */
 package org.exist.ant;
 
-import java.io.IOException;
-
 import org.apache.tools.ant.BuildException;
 import org.exist.backup.Backup;
-import org.xml.sax.SAXException;
-import org.xmldb.api.base.XMLDBException;
 
 /**
  * @author wolf

@@ -47,6 +47,9 @@ public class GClockCache implements Cache {
 	protected Long2ObjectHashMap map;
 	protected int hits = 0, fails = 0;
 
+	protected long syncPeriod = 10000;
+	protected long lastSync = System.currentTimeMillis();
+	
 	public GClockCache(int size) {
 		this.size = size;
 		this.items = new Cacheable[size];
@@ -70,6 +73,8 @@ public class GClockCache implements Cache {
 			map.put(item.getKey(), item);
 		} else
 			removeOne(item);
+		if(System.currentTimeMillis() - lastSync > syncPeriod)
+			flush();
 	}
 
 	public Cacheable get(Cacheable item) {
@@ -104,6 +109,7 @@ public class GClockCache implements Cache {
 			if (items[i] != null)
 				items[i].sync();
 		}
+		lastSync = System.currentTimeMillis();
 	}
 
 	protected void removeOne(Cacheable item) {

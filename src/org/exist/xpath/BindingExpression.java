@@ -37,6 +37,7 @@ import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.Type;
+import org.exist.xpath.value.ValueSequence;
 
 /**
  * Abstract superclass for the variable binding expressions "for" and "let".
@@ -97,11 +98,12 @@ public abstract class BindingExpression extends AbstractExpression {
 		throws XPathException;
 
 	protected Sequence applyWhereExpression(
-		StaticContext context,
 		Sequence contextSequence)
 		throws XPathException {
 		whereExpr.setInPredicate(true);
-		if (Type.subTypeOf(whereExpr.returnsType(), Type.NODE)) {
+		if (Type.subTypeOf(whereExpr.returnsType(), Type.NODE) &&
+			(contextSequence == null || 
+			Type.subTypeOf(contextSequence.getItemType(), Type.NODE))) {
 			// if the where expression returns a node set, check the context
 			// node of each node in the set
 			NodeSet temp = whereExpr.eval(contextSequence).toNodeSet();
@@ -135,7 +137,7 @@ public abstract class BindingExpression extends AbstractExpression {
 			return innerSeq.effectiveBooleanValue() ? BooleanValue.TRUE : BooleanValue.FALSE;
 		} else {
 			// general where clause: just check the effective boolean value
-			NodeSet result = new ExtArrayNodeSet();
+			ValueSequence result = new ValueSequence();
 			int p = 0;
 			context.setContextPosition(0);
 			for (SequenceIterator i = contextSequence.iterate();

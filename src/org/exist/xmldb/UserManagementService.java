@@ -1,10 +1,11 @@
 
 package org.exist.xmldb;
-import org.exist.security.Group;
 import org.exist.security.Permission;
-
 import org.exist.security.User;
-import org.xmldb.api.base.*;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.Service;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  *  An eXist-specific service which provides methods to manage users and

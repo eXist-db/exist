@@ -33,6 +33,7 @@ import org.exist.dom.XMLUtil;
 import org.exist.storage.ElementValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 import org.w3c.dom.Node;
 
 /**
@@ -66,7 +67,7 @@ public class LocationStep extends Step {
 	
 	protected Sequence applyPredicate(
 		StaticContext context,
-		NodeSet contextSet)
+		Sequence contextSet)
 		throws XPathException {
 		if(contextSet == null)
 			return Sequence.EMPTY_SEQUENCE;
@@ -85,7 +86,7 @@ public class LocationStep extends Step {
 		throws XPathException {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-		NodeSet temp;
+		Sequence temp;
 		switch (axis) {
 			case Constants.DESCENDANT_AXIS :
 			case Constants.DESCENDANT_SELF_AXIS :
@@ -104,19 +105,19 @@ public class LocationStep extends Step {
 					getAncestors(context, contextSequence.toNodeSet());
 				break;
 			case Constants.SELF_AXIS :
-				temp = contextSequence.toNodeSet();
 				if (inPredicate) {
-					if (temp instanceof VirtualNodeSet) {
-						((VirtualNodeSet) temp).setInPredicate(true);
-						((VirtualNodeSet) temp).setSelfIsContext();
-					} else {
+					if (contextSequence instanceof VirtualNodeSet) {
+						((VirtualNodeSet) contextSequence).setInPredicate(true);
+						((VirtualNodeSet) contextSequence).setSelfIsContext();
+					} else if(Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {
 						NodeProxy p;
-						for (Iterator i = temp.iterator(); i.hasNext();) {
+						for (Iterator i = contextSequence.toNodeSet().iterator(); i.hasNext();) {
 							p = (NodeProxy) i.next();
 							p.addContextNode(p);
 						}
 					}
 				}
+				temp = contextSequence;
 				break;
 			case Constants.PARENT_AXIS :
 				temp =

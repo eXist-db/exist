@@ -22,66 +22,76 @@
  */
 package org.exist.xpath;
 
+import org.exist.dom.QName;
+import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.Type;
-import org.exist.xpath.value.ValueSequence;
 
 /**
- * @author wolf
+ * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class Atomize extends AbstractExpression {
-
-	private Expression expression;
+public class QuantifiedExpression extends BindingExpression {
 	
-	public Atomize(StaticContext context, Expression expr) {
-		super(context);
-		this.expression = expr;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
+	/**
+	 * @param context
 	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
-		Sequence seq = expression.eval(contextSequence, contextItem);
-		Item next;
-		ValueSequence result = new ValueSequence();
-		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-			next = i.nextItem();
-			result.add(next.atomize());
-		}
-		return result;
+	public QuantifiedExpression(StaticContext context) {
+		super(context);
 	}
 
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+		context.pushLocalContext(false);
+		Variable var = new Variable(QName.parse(context, varName));
+		context.declareVariable(var);
+		Sequence inSeq = inputSequence.eval(null);
+		System.out.println(inputSequence.pprint() + " = " + inSeq.getLength());
+		Item next;
+		Sequence satisfiesSeq;
+		boolean found = false;
+		for(SequenceIterator i = inSeq.iterate(); i.hasNext(); ) {
+			next = i.nextItem();
+			var.setValue(next.toSequence());
+			System.out.println(next.getStringValue());
+			satisfiesSeq = returnExpr.eval(null);
+			if(returnExpr.returnsType() == Type.BOOLEAN)
+				found = satisfiesSeq.effectiveBooleanValue();
+			else
+				found = satisfiesSeq.getLength() != 0;
+			if(found)
+				break;
+		}
+		context.popLocalContext();
+		return found ? BooleanValue.TRUE : BooleanValue.FALSE;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#pprint()
 	 */
 	public String pprint() {
-		return "#atomize(" + expression.pprint() + ')';
+		StringBuffer buf = new StringBuffer();
+		buf.append("some $");
+		buf.append(varName);
+		buf.append(" in ");
+		buf.append(inputSequence.pprint());
+		buf.append(" satisfies ");
+		buf.append(returnExpr.pprint());
+		return buf.toString();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#returnsType()
 	 */
 	public int returnsType() {
-		return Type.ATOMIC;
+		return Type.BOOLEAN;
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.AbstractExpression#getDependencies()
 	 */
 	public int getDependencies() {
-		return expression.getDependencies();
+		return Dependency.CONTEXT_ITEM | Dependency.CONTEXT_SET;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#resetState()
-	 */
-	public void resetState() {
-		expression.resetState();
-	}
 }

@@ -25,7 +25,6 @@ package org.exist.xpath.functions.util;
 import java.lang.reflect.Field;
 import java.util.Iterator;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Function;

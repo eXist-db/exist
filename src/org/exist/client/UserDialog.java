@@ -53,13 +53,13 @@ class UserDialog extends JFrame {
 	DefaultListModel groupsModel, allGroupsModel;
 	JTable users;
 	UserTableModel userModel;
-	Properties properties;
+	InteractiveClient client;
 
-	public UserDialog(UserManagementService service, String title, Properties props)
+	public UserDialog(UserManagementService service, String title, InteractiveClient client)
 		throws XMLDBException {
 		super(title);
 		this.service = service;
-		this.properties = props;
+		this.client = client;
 		setupComponents();
 	}
 
@@ -347,9 +347,15 @@ class UserDialog extends JFrame {
 			JOptionPane.showMessageDialog(this, "Different passwords. Please check.");
 			return;
 		}
-		String myUser = properties.getProperty("user", "admin");
-		if(name.equals(myUser))
-			properties.setProperty("password", pass1);
+		String myUser = client.properties.getProperty("user", "admin");
+		if(name.equals(myUser)) {
+			client.properties.setProperty("password", pass1);
+			try {
+				client.getResources();
+			} catch (XMLDBException e) {
+				JOptionPane.showMessageDialog(this, e.getMessage());
+			}
+		}
 		
 		user.setPassword(pass1);
 		user.setHome(homedir.getText());

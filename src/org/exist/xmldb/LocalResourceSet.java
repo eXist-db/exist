@@ -2,7 +2,6 @@ package org.exist.xmldb;
 
 import java.io.StringWriter;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.Vector;
 
 import javax.xml.transform.OutputKeys;

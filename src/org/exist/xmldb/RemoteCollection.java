@@ -38,8 +38,6 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Vector;
 
-import javax.xml.transform.OutputKeys;
-
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;

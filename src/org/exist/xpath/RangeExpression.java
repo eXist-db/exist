@@ -22,7 +22,6 @@
  */
 package org.exist.xpath;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.xpath.value.IntegerValue;
 import org.exist.xpath.value.Item;
