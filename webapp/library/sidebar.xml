@@ -3,6 +3,11 @@
     <group href="../index.xml" name="Home"/>
     <group href="http://wiki.exist-db.org" name="News"/>
 	<group name="Donations" href="../donations.xml"/>
+    <group name="About Us">
+        <item>
+            <link href="../credits.xml">Credits</link>
+        </item>
+    </group>
     <group name="Documentation">
         <item id="features">
             <link href="../facts.xml">Feature Sheet</link>
