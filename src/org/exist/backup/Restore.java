@@ -160,8 +160,10 @@ public class Restore extends DefaultHandler {
 					dialog.setCollection(name);
 			} else if (localName.equals("subcollection")) {
 				
-				final String name = atts.getValue("filename");
+				 String name = atts.getValue("filename");
 				
+				if (name == null) name = atts.getValue("name");
+
 				final String fname =
 					contents.getParentFile().getAbsolutePath()
 						+ File.separatorChar
@@ -182,8 +184,9 @@ public class Restore extends DefaultHandler {
 				final String group = atts.getValue("group");
 				final String perms = atts.getValue("mode");
 				
-				final String filename = atts.getValue("filename");
-				
+				String filename = atts.getValue("filename");
+				if (filename == null) filename = name;
+
 				if (name == null)
 					throw new SAXException("collection requires a name attribute");
 				final File f =
