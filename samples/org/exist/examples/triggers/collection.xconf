@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<exist:collection xmlns:exist="http://exist-db.org/collection-config/1.0">
+	<exist:triggers>
+		<exist:trigger event="store,remove"
+			class="org.exist.examples.triggers.ExampleTrigger">
+			<exist:parameter name="contents"
+				value="contents.xml"/>
+		</exist:trigger>
+	</exist:triggers>
+</exist:collection>
+

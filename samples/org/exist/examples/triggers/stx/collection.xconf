@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<exist:collection xmlns:exist="http://exist-db.org/collection-config/1.0">
+	<exist:triggers>
+		<exist:trigger event="store,update"
+			class="org.exist.collections.STXTransformerTrigger">
+			<exist:parameter name="src"
+				value="address.stx"/>
+		</exist:trigger>
+	</exist:triggers>
+</exist:collection>
+
