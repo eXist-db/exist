@@ -344,7 +344,7 @@ public class NativeSerializer extends Serializer {
 				String defaultNS = null;
 				if (((ElementImpl) node).declaresNamespacePrefixes()) {
 					// declare namespaces used by this element
-					String prefix;
+					String prefix, uri;
 					myPrefixes = new ArrayList();
 					for (Iterator i =
 						((ElementImpl) node).getNamespacePrefixes();
@@ -357,11 +357,14 @@ public class NativeSerializer extends Serializer {
 								contentHandler.startPrefixMapping(
 									"",
 									defaultNS);
-							} else
+							} else {
+								uri = broker.getNamespaceURI(prefix);
+								if(uri.equals(EXIST_NS))
+									continue;
 								contentHandler.startPrefixMapping(
 									prefix,
-									broker.getNamespaceURI(prefix));
-
+									uri);
+							}
 							prefixes.add(prefix);
 							myPrefixes.add(prefix);
 						}

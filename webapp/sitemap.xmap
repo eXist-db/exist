@@ -569,7 +569,7 @@
                             <map:serialize type="xml"/>
                         </map:when>
                         <map:otherwise>
-                            <map:transform src="stylesheets/simple-xml2html.xslt"/>
+                            <map:transform src="stylesheets/system/xml2html.xslt"/>
                             <map:serialize type="html"/>
                         </map:otherwise>
                     </map:select>

@@ -37,6 +37,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -115,6 +116,8 @@ public class SecurityManager {
 				String lastId;
 				Group group;
 				for (int i = 0; i < nl.getLength(); i++) {
+					if(nl.item(i).getNodeType() != Node.ELEMENT_NODE)
+						continue;
 					next = (Element) nl.item(i);
 					if (next.getTagName().equals("users")) {
 						lastId = next.getAttribute("last-id");
@@ -274,7 +277,6 @@ public class SecurityManager {
 			buf.append(((User) i.next()).toString());
 		buf.append("</users>");
 		buf.append("</auth>");
-		System.out.println(buf.toString());
 		// store users.xml
 		broker.flush();
 		broker.sync();

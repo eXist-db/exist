@@ -70,12 +70,10 @@ public class XMLString implements CharSequence, Comparable {
 	public XMLString normalize(int mode) {
 		int end = start_ + length_ - 1;
 		if ((mode & SUPPRESS_LEADING_WS) != 0) {
-			System.out.println("skipping ws");
 			while (start_ <= end && isWhiteSpace(value_[start_]))
 				++start_;
 		}
 		if ((mode & SUPPRESS_TRAILING_WS) != 0) {
-			System.out.println("skipping ws");
 			while (end > start_ && isWhiteSpace(value_[end]))
 				--end;
 		}

@@ -103,7 +103,7 @@ public class Parser
 	protected boolean validate = false;
 	protected int level = 0;
 	protected Locator locator = null;
-	protected int normalize = XMLString.SUPPRESS_NONE;
+	protected int normalize = XMLString.SUPPRESS_BOTH;
 	protected XMLReader parser;
 	protected Stack prefixes = new Stack();
 	protected ProgressIndicator progress;
@@ -171,7 +171,6 @@ public class Parser
 				normalize = XMLString.SUPPRESS_TRAILING_WS;
 			else if (suppressWS.equals("none"))
 				normalize = 0;
-
 		}
 		// create a SAX parser
 		SAXParserFactory saxFactory = SAXParserFactory.newInstance();
@@ -765,14 +764,19 @@ public class Parser
 		if (!stack.empty()) {
 			last = (ElementImpl) stack.peek();
 			if (charBuf != null && charBuf.length() > 0) {
-				// mixed element content: don't normalize the text node 
-				text.setData(charBuf);
-				text.setOwnerDocument(document);
-				last.appendChildInternal(text);
-				if (!validate)
-					broker.store(text, currentPath);
-				text.clear();
-				charBuf.reset();
+				// mixed element content: don't normalize the text node, just check
+				// if there is any text at all
+				final XMLString normalized = charBuf.normalize(normalize);
+				if (normalized.length() > 0) {
+					text.setData(charBuf);
+					System.out.println(text.getData());
+					text.setOwnerDocument(document);
+					last.appendChildInternal(text);
+					if (!validate)
+						broker.store(text, currentPath);
+					text.clear();
+					charBuf.reset();
+				}
 			}
 			if (!usedElements.isEmpty()) {
 				node = (ElementImpl) usedElements.pop();
