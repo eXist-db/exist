@@ -158,9 +158,9 @@ public class DateTimeValue extends AbstractDateTimeValue {
 		return Type.DATE_TIME;
 	}
 
-	public DateValue adjustToTimezone(int offset) {
+	public DateTimeValue adjustToTimezone(int offset) {
 		Date date = calendar.getTime();
-		return new DateValue(date.getTime(), offset);
+		return new DateTimeValue(date.getTime(), offset);
 	}
 	
 	/* (non-Javadoc)
