@@ -25,9 +25,6 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-
 import org.exist.dom.NodeProxy;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xquery.BasicFunction;
@@ -84,8 +81,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
             String collectionURI = args[0].getStringValue();
             if (null != collectionURI) {
                 try {
-                    java.net.URI uri = new java.net.URI(URLEncoder.encode(collectionURI, "UTF-8"));
-                    if (null == uri.getScheme()) {
+                    if (!collectionURI.startsWith("xmldb:")) {
                         // Must be a LOCAL collection
                         collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), collectionURI);
                     } else {
@@ -93,12 +89,9 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
                         // get user information into the URL?
                         collection = org.xmldb.api.DatabaseManager.getCollection(collectionURI);
                     }
-                } catch (java.net.URISyntaxException use) {
-                    throw new XPathException(getASTNode(), "Could not parse URI: "+collectionURI, use);
                 } catch (XMLDBException xe) {
                     throw new XPathException(getASTNode(), "Could not locate collection: "+collectionURI, xe);
-                } catch (UnsupportedEncodingException e) {
-				}
+                }
             }
             if (null == collection) {
                 throw new XPathException(getASTNode(), "Unable to find collection: "+collectionURI);
