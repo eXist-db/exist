@@ -437,6 +437,7 @@
                 <include name="conf.xml"/>
                 <include name="build.xml"/>
                 <include name="log4j.xml"/>
+                <include name="examples-setup.xml"/>
                 <include name="exist.jar"/>
 				<include name="exist-optional.jar"/>
 				<include name="examples.jar"/>

@@ -54,6 +54,8 @@ public class OpOr extends LogicalOp {
 			return rl;
 		} else {
 			boolean ls = left.eval(contextSequence).effectiveBooleanValue();
+			if(ls)
+				return BooleanValue.TRUE;
 			boolean rs = right.eval(contextSequence).effectiveBooleanValue();
 			return ls || rs ? BooleanValue.TRUE : BooleanValue.FALSE;
 		}

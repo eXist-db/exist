@@ -22,7 +22,7 @@ package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.Function;
+import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
@@ -36,12 +36,13 @@ import org.exist.xquery.value.Type;
  * 
  * @author wolf
  */
-public class FunFalse extends Function {
+public class FunFalse extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("false", BUILTIN_FUNCTION_NS),
-			null,
+			"Always returns the boolean value false",
+            null,
 			new SequenceType(Type.BOOLEAN, Cardinality.ONE));
 
 	public FunFalse(XQueryContext context) {
@@ -55,9 +56,7 @@ public class FunFalse extends Function {
 	/**
 	 * Always returns false.
 	 */
-	public Sequence eval(
-		Sequence contextSet,
-		Item contextNode) {
+	public Sequence eval(Sequence[] args, Sequence contextSet) {
 		return BooleanValue.FALSE;
 	}
 
