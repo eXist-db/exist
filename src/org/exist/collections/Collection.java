@@ -176,7 +176,7 @@ implements Comparable, EntityResolver, Cacheable {
 	 * the current thread. This is a shortcut for getLock().release().
 	 */
 	public void release() {
-		LOG.debug("releasing lock on " + name);
+//		LOG.debug("releasing lock on " + name);
 		lock.release();
 	}
 	
@@ -485,6 +485,8 @@ implements Comparable, EntityResolver, Cacheable {
 			    reloadRequired = false;
 			}
 	        DocumentImpl doc = (DocumentImpl) documents.get(name);
+	        if(doc == null)
+	        	return null;
 	        Lock updateLock = doc.getUpdateLock();
 	        updateLock.acquire(lockMode);
 	        return doc;
