@@ -43,15 +43,14 @@ public class EnclosedExpr extends PathExpr {
 	/**
 	 * 
 	 */
-	public EnclosedExpr() {
-		super();
+	public EnclosedExpr(StaticContext context) {
+		super(context);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.AbstractExpression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence)
 	 */
 	public Sequence eval(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
@@ -60,29 +59,32 @@ public class EnclosedExpr extends PathExpr {
 		MemTreeBuilder builder = context.getDocumentBuilder();
 		Receiver receiver = new Receiver(builder);
 		Sequence result =
-			super.eval(context, docs, contextSequence, contextItem);
+			super.eval(docs, contextSequence, contextItem);
 		start = System.currentTimeMillis();
-		Item next;
-		StringBuffer buf = new StringBuffer();
-		for (SequenceIterator i = result.iterate(); i.hasNext();) {
-			next = i.nextItem();
-			try {
-				// if item is an atomic value, collect the string values of all
-				// following atomic values and seperate them by a space. 
-				if(Type.subTypeOf(next.getType(), Type.ATOMIC)) {
-					if(buf.length() == 0)
-						buf.append(' ');
-					buf.append(next.getStringValue());
-				} else {
-					if(buf.length() > 0) {
-						receiver.characters(buf);
-						buf.setLength(0);
+		try {
+			Item next;
+			StringBuffer buf = new StringBuffer();
+			for (SequenceIterator i = result.iterate(); i.hasNext();) {
+				next = i.nextItem();
+					// if item is an atomic value, collect the string values of all
+					// following atomic values and seperate them by a space. 
+					if(Type.subTypeOf(next.getType(), Type.ATOMIC)) {
+						if(buf.length() > 0)
+							buf.append(' ');
+						buf.append(next.getStringValue());
+					} else {
+						if(buf.length() > 0) {
+							receiver.characters(buf);
+							buf.setLength(0);
+						}
+						next.toSAX(context.getBroker(), receiver);
 					}
-					next.toSAX(context.getBroker(), receiver);
-				}
-			} catch (SAXException e) {
-				throw new XPathException("SAX exception while evaluating enclosed expression");
 			}
+			if(buf.length() > 0)
+				receiver.characters(buf);
+		} catch (SAXException e) {
+			throw new XPathException("Encountered SAX exception while serializing enclosed expression: " +
+				pprint());
 		}
 		return result;
 	}

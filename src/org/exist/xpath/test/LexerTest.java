@@ -106,7 +106,7 @@ public class LexerTest extends TestCase {
 			AST ast = xparser.getAST();
 			System.out.println("generated AST: " + ast.toStringTree());
 
-			PathExpr expr = new PathExpr();
+			PathExpr expr = new PathExpr(context);
 			treeParser.xpath(ast, expr);
 			if (treeParser.foundErrors()) {
 				System.err.println(treeParser.getErrorMessage());
@@ -115,7 +115,7 @@ public class LexerTest extends TestCase {
 
 			// execute the query
 			DocumentSet docs = expr.preselect(context);
-			Sequence result = expr.eval(context, docs, null, null);
+			Sequence result = expr.eval(docs, null, null);
 
 			// check results
 			NodeSet resultSet = (NodeSet) result;

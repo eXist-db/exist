@@ -24,11 +24,14 @@ package org.exist.xpath.functions;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
+import org.exist.dom.QName;
+import org.exist.xpath.Cardinality;
 import org.exist.xpath.Expression;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.StringValue;
 import org.exist.xpath.value.Type;
 
@@ -37,38 +40,33 @@ import org.exist.xpath.value.Type;
  */
 public class FunDocumentURI extends Function {
 
-	/**
-	 * @param name
-	 */
-	public FunDocumentURI(String name) {
-		super(name);
-	}
-
+	public final static FunctionSignature signature =
+		new FunctionSignature(
+			new QName("document-uri", BUILTIN_FUNCTION_NS),
+			new SequenceType[] {
+				 new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+			},
+			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+			
 	/**
 	 * 
 	 */
-	public FunDocumentURI() {
-		super();
+	public FunDocumentURI(StaticContext context) {
+		super(context, signature);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
 		Expression arg = getArgument(0);
-		Sequence s = arg.eval(context, docs, contextSequence, contextItem);
-		if(s.getLength() == 0)
-			throw new XPathException("argument to document-uri() returned empty sequence");
-		Item item = s.itemAt(0);
-		if(!Type.isNode(item.getType()))
-			throw new XPathException("argument to document-uri() is not a node");
-		NodeProxy node = (NodeProxy)item;
-		return new StringValue(node.doc.getFileName()); 
+		Sequence s = arg.eval(docs, contextSequence, contextItem);
+		NodeProxy node = (NodeProxy) s.itemAt(0);
+		return new StringValue(node.doc.getFileName());
 	}
 
 }

@@ -58,8 +58,8 @@ public class ExtNear extends ExtFulltext {
 	private PatternCompiler globCompiler = new GlobCompiler();
 	private Expression distance = null;
 
-	public ExtNear() {
-		super(Constants.FULLTEXT_AND);
+	public ExtNear(StaticContext context) {
+		super(context, Constants.FULLTEXT_AND);
 	}
 
 	public Sequence evalQuery(
@@ -69,7 +69,7 @@ public class ExtNear extends ExtFulltext {
 		NodeSet nodes)
 		throws XPathException {
 		if(distance != null)
-			max_distance = ((IntegerValue)distance.eval(context, docs, nodes).convertTo(Type.INTEGER)).getInt();
+			max_distance = ((IntegerValue)distance.eval(docs, nodes).convertTo(Type.INTEGER)).getInt();
 		try {
 			getSearchTerms(context, searchArg);
 		} catch (EXistException e) {
@@ -78,7 +78,7 @@ public class ExtNear extends ExtFulltext {
 		NodeSet hits = processQuery(context, docs, nodes);
 		if (hits == null)
 			return Sequence.EMPTY_SEQUENCE;
-		LOG.debug("scanning " + hits.getLength() + " matches ...");
+		//LOG.debug("scanning " + hits.getLength() + " matches ...");
 				
 		boolean hasWildcards = false;
 		for(int i = 0; i < terms.length; i++) {
@@ -141,7 +141,7 @@ public class ExtNear extends ExtFulltext {
 
 			}
 		}
-		LOG.debug("found " + r.getLength());
+		//LOG.debug("found " + r.getLength());
 		return r;
 	}
 

@@ -33,21 +33,20 @@ import org.exist.xpath.value.ValueSequence;
 
 public class OpAnd extends BinaryOp {
 
-	public OpAnd() {
-		super();
+	public OpAnd(StaticContext context) {
+		super(context);
 	}
 
-	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException {
+	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
 		if (getLength() == 0)
 			return in_docs;
-		DocumentSet out_docs = getExpression(0).preselect(in_docs, context);
+		DocumentSet out_docs = getExpression(0).preselect(in_docs);
 		for (int i = 1; i < getLength(); i++)
-			out_docs = out_docs.intersection(getExpression(i).preselect(out_docs, context));
+			out_docs = out_docs.intersection(getExpression(i).preselect(out_docs));
 		return out_docs;
 	}
 
-	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, 
-		Item contextItem) throws XPathException {
+	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
 		if (getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		
@@ -58,11 +57,11 @@ public class OpAnd extends BinaryOp {
 		}
 		
 		if(nodeSetCompare) {
-			NodeSet rr, rl = (NodeSet) getExpression(0).eval(context, docs, contextSequence, contextItem);
+			NodeSet rr, rl = (NodeSet) getExpression(0).eval(docs, contextSequence, contextItem);
 			rl = rl.getContextNodes((NodeSet)contextSequence, inPredicate);
 			for (int i = 1; i < getLength(); i++) {
 				LOG.debug("processing " + getExpression(i).pprint());
-				rr = (NodeSet) getExpression(i).eval(context, docs, contextSequence, contextItem);
+				rr = (NodeSet) getExpression(i).eval(docs, contextSequence, contextItem);
 				rl = rl.intersection(rr.getContextNodes((NodeSet)contextSequence, inPredicate));
 			}
 			return rl;
@@ -78,7 +77,8 @@ public class OpAnd extends BinaryOp {
 				item = i.nextItem();
 				r = true;
 				for(int j = 0; j < getLength(); j++) {
-					r = ((BooleanValue)getExpression(j).eval(context, docs, contextSequence, item).convertTo(Type.BOOLEAN)).getValue();
+					r = getExpression(j).
+						eval(docs, contextSequence, item).effectiveBooleanValue();
 					if(!r)
 						break;
 				}

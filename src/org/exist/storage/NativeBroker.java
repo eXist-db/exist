@@ -243,7 +243,7 @@ public class NativeBroker extends DBBroker {
 	private final boolean compare(String o1, String o2, int relation) {
 		int cmp;
 		if (!isCaseSensitive())
-			cmp = o1.toLowerCase().compareTo(o2.toLowerCase());
+			cmp = o1.compareToIgnoreCase(o2);
 		else
 			cmp = o1.compareTo(o2);
 		switch (relation) {
@@ -975,7 +975,7 @@ public class NativeBroker extends DBBroker {
 	 *@return           The nodesEqualTo value
 	 */
 	public NodeSet getNodesEqualTo(NodeSet context, DocumentSet docs, int relation, String expr) {
-		long start = System.currentTimeMillis();
+//		long start = System.currentTimeMillis();
 		NodeSet temp;
 		int truncation = Constants.TRUNC_NONE;
 		if (expr.length() > 0 && expr.charAt(0) == '%') {
@@ -990,12 +990,12 @@ public class NativeBroker extends DBBroker {
 		if(!isCaseSensitive())
 			expr = expr.toLowerCase();
 		NodeSet result = scanSequential(context, docs, relation, truncation, expr);
-		LOG.debug(
-			"searching "
-				+ context.getLength()
-				+ " nodes took "
-				+ (System.currentTimeMillis() - start)
-				+ "ms.");
+//		LOG.debug(
+//			"searching "
+//				+ context.getLength()
+//				+ " nodes took "
+//				+ (System.currentTimeMillis() - start)
+//				+ "ms.");
 		return result;
 	}
 

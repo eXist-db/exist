@@ -24,6 +24,9 @@ import org.exist.xpath.XPathException;
 
 public class DoubleValue extends NumericValue {
 
+	public final static DoubleValue NaN = new DoubleValue(Double.NaN);
+	public final static DoubleValue ZERO = new DoubleValue(0.0E0);
+	
 	private double value;
 	
 	public DoubleValue(double value) {
@@ -76,7 +79,8 @@ public class DoubleValue extends NumericValue {
 			case Type.INTEGER:
 				return new IntegerValue((long)value);
 			case Type.BOOLEAN:
-				return new BooleanValue(value != 0.0);
+				return (value == 0.0 && value == Double.NaN) ? BooleanValue.FALSE : 
+					BooleanValue.TRUE;
 			default:
 				throw new XPathException("cannot convert decimal value '" + value + "' into " + 
 					Type.getTypeName(requiredType));
@@ -101,17 +105,38 @@ public class DoubleValue extends NumericValue {
 	 * @see org.exist.xpath.value.NumericValue#getInt()
 	 */
 	public int getInt() throws XPathException {
-		return (int)value;
+		return (int)Math.round(value);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.NumericValue#getLong()
 	 */
 	public long getLong() throws XPathException {
-		return (long)value;
+		return (long)Math.round(value);
 	}
 	
 	public void setValue(double val) {
 		value = val;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#ceiling()
+	 */
+	public NumericValue ceiling() {
+		return new DoubleValue(Math.ceil(value));
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#floor()
+	 */
+	public NumericValue floor() {
+		return new DoubleValue(Math.floor(value));
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#round()
+	 */
+	public NumericValue round() {
+		return new DoubleValue(Math.round(value));
 	}
 }

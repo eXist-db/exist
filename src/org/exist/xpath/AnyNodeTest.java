@@ -10,9 +10,6 @@ import org.exist.dom.QName;
 import org.w3c.dom.Node;
 
 public class AnyNodeTest implements NodeTest {
-
-	public AnyNodeTest() {
-	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.NodeTest#getName()

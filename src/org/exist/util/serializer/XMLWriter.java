@@ -30,6 +30,12 @@ import javax.xml.transform.TransformerException;
 import org.exist.util.XMLString;
 import org.exist.util.serializer.encodings.CharacterSet;
 
+/**
+ * Write XML to a writer. This class defines methods similar to SAX.
+ * It deals with opening and closing tags, writing attributes and so on.
+ * 
+ * @author wolf
+ */
 public class XMLWriter {
 
 	protected Writer writer;
@@ -48,6 +54,11 @@ public class XMLWriter {
 		this.writer = writer;
 	}
 
+	/**
+	 * Set the output properties.
+	 * 
+	 * @param outputProperties
+	 */
 	public void setOutputProperties(Properties outputProperties) {
 		this.outputProperties = outputProperties;
 		String encoding =
@@ -55,6 +66,20 @@ public class XMLWriter {
 		charSet = CharacterSet.getCharacterSet(encoding);
 	}
 
+	/**
+	 * Set a new writer. Calling this method will reset the state
+	 * of the object.
+	 * 
+	 * @param writer
+	 */
+	public void setWriter(Writer writer) {
+		this.writer = writer;
+		tagIsOpen = false;
+		tagIsEmpty = true;
+		declarationWritten = false;
+		elementStack.clear();
+	}
+	
 	public void startDocument() throws TransformerException {
 	}
 

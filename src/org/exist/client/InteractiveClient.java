@@ -1753,7 +1753,11 @@ public class InteractiveClient {
 			if (optionXpath.equals("stdin")) {
 				try {
 					BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
-					optionXpath = stdin.readLine();
+					StringBuffer buf = new StringBuffer();
+					String line;
+					while((line = stdin.readLine()) != null)
+						buf.append(line);
+					optionXpath = buf.toString();
 				} catch (IOException e) {
 					System.err.println("failed to read query from stdin");
 					optionXpath = null;

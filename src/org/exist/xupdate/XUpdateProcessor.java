@@ -472,16 +472,16 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			AST ast = parser.getAST();
 			LOG.debug("generated AST: " + ast.toStringTree());
 
-			PathExpr expr = new PathExpr();
+			PathExpr expr = new PathExpr(context);
 			treeParser.xpath(ast, expr);
 			if (treeParser.foundErrors()) {
 				throw new SAXException(treeParser.getErrorMessage());
 			}
-			DocumentSet ndocs = expr.preselect(documentSet, context);
+			DocumentSet ndocs = expr.preselect(documentSet);
 			if (ndocs.getLength() == 0)
 				return new ArrayList(1);
 
-			Sequence seq = expr.eval(context, documentSet, null, null);
+			Sequence seq = expr.eval(documentSet, null, null);
 			if (!(seq.getItemType() == Type.NODE))
 				throw new SAXException(
 					"select expression should evaluate to a" + "node-set");

@@ -56,6 +56,10 @@ public class QName implements Comparable {
 		namespaceURI_ = namespaceURI;
 		prefix_ = prefix;
 	}
+	
+	public QName(String localName, String namespaceURI) {
+		this(localName, namespaceURI, null);
+	}
 
 	public String getLocalName() {
 		return localName_;

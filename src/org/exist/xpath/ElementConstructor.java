@@ -35,13 +35,19 @@ import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.xml.sax.helpers.AttributesImpl;
 
+/**
+ * Constructor for element nodes.
+ * 
+ * @author wolf
+ */
 public class ElementConstructor extends NodeConstructor {
 
 	private String qname;
 	private PathExpr content = null;
 	private List attributes = null;
 	
-	public ElementConstructor(String qname) {
+	public ElementConstructor(StaticContext context, String qname) {
+		super(context);
 		this.qname = qname;
 	}
 	
@@ -59,7 +65,6 @@ public class ElementConstructor extends NodeConstructor {
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
@@ -89,7 +94,7 @@ public class ElementConstructor extends NodeConstructor {
 			for(Iterator i = attributes.iterator(); i.hasNext(); ) {
 				constructor = (AttributeConstructor)i.next();
 				if(!constructor.isNamespaceDeclaration()) {
-					attrValues = constructor.eval(context, docs, contextSequence, contextItem);
+					attrValues = constructor.eval(docs, contextSequence, contextItem);
 					attrQName = QName.parse(context, constructor.getQName());
 					attrs.addAttribute(attrQName.getNamespaceURI(), attrQName.getLocalName(),
 						attrQName.toString(), "CDATA", attrValues.getStringValue());
@@ -101,7 +106,7 @@ public class ElementConstructor extends NodeConstructor {
 		int nodeNr = builder.startElement(qn, attrs);
 		// process element contents
 		if(content != null) {
-			content.eval(context, docs, contextSequence, contextItem);
+			content.eval(docs, contextSequence, contextItem);
 		}
 		builder.endElement();
 		NodeImpl node = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
@@ -135,10 +140,10 @@ public class ElementConstructor extends NodeConstructor {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.NodeConstructor#preselect(org.exist.dom.DocumentSet, org.exist.xpath.StaticContext)
 	 */
-	public DocumentSet preselect(DocumentSet in_docs, StaticContext context)
+	public DocumentSet preselect(DocumentSet in_docs)
 		throws XPathException {
 		if(content != null)
-			return content.preselect(in_docs, context);
+			return content.preselect(in_docs);
 		else
 			return in_docs;
 	}

@@ -22,10 +22,13 @@ package org.exist.xpath.functions;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.xpath.Cardinality;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.StringValue;
 import org.exist.xpath.value.Type;
 import org.w3c.dom.Node;
@@ -36,37 +39,44 @@ import org.w3c.dom.Node;
  */
 public class FunNamespaceURI extends Function {
 
-    public FunNamespaceURI() {
-        super("namespace-uri");
-    }
-	
-    public int returnsType() {
-        return Type.STRING;
-    }
-	
-	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, 
-		Item contextItem) throws XPathException {
+	public final static FunctionSignature signature =
+		new FunctionSignature(
+			new QName("namespace-uri", BUILTIN_FUNCTION_NS),
+			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
+			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+			true);
+
+	public FunNamespaceURI(StaticContext context) {
+		super(context, signature);
+	}
+
+	public Sequence eval(
+		DocumentSet docs,
+		Sequence contextSequence,
+		Item contextItem)
+		throws XPathException {
 		Node n = null;
-		if(contextItem != null)
+		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-		if(getArgumentCount() > 0) {
-			NodeSet result = (NodeSet)getArgument(0).eval(context, docs, contextSequence);
-			if(result.getLength() > 0)
+		if (getArgumentCount() > 0) {
+			NodeSet result =
+				getArgument(0).eval(docs, contextSequence).toNodeSet();
+			if (result.getLength() > 0)
 				n = result.item(0);
 		} else {
-			if(contextSequence.getLength() > 0 && contextSequence.getItemType() == Type.NODE)
-				n = ((NodeSet)contextSequence).item(0);
+			if (contextSequence.getLength() > 0
+				&& contextSequence.getItemType() == Type.NODE)
+				n = ((NodeSet) contextSequence).item(0);
 		}
-		if(n != null) {
-			switch(n.getNodeType()) {
-				case Node.ELEMENT_NODE:
+		if (n != null) {
+			switch (n.getNodeType()) {
+				case Node.ELEMENT_NODE :
+				case Node.ATTRIBUTE_NODE :
 					return new StringValue(n.getNamespaceURI());
-				case Node.ATTRIBUTE_NODE:
-					return new StringValue(n.getNamespaceURI());
-				default:
+				default :
 					return new StringValue("");
 			}
-		} 
+		}
 		return new StringValue("");
 	}
 }

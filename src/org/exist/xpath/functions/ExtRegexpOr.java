@@ -22,18 +22,32 @@
  */
 package org.exist.xpath.functions;
 
+import org.exist.dom.QName;
+import org.exist.xpath.Cardinality;
 import org.exist.xpath.Constants;
+import org.exist.xpath.StaticContext;
+import org.exist.xpath.value.SequenceType;
+import org.exist.xpath.value.Type;
 
 /**
  * @author wolf
  */
 public class ExtRegexpOr extends ExtRegexp {
 
+	public final static FunctionSignature signature =
+		new FunctionSignature(
+			new QName("match-any", BUILTIN_FUNCTION_NS),
+			new SequenceType[] {
+				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
+			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+			true);
+
 	/**
 	 * 
 	 */
-	public ExtRegexpOr() {
-		super("match-any", Constants.FULLTEXT_OR);
+	public ExtRegexpOr(StaticContext context) {
+		super(context, Constants.FULLTEXT_OR);
 	}
 
 }

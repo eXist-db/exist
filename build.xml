@@ -206,7 +206,6 @@
     			<path refid="classpath.core"/>
     		</classpath>
 			<!--arg value="-traceLexer"/-->
-			<arg value="-html"/>
     		<arg value="XPathParser2.g"/>
     	</java>
     </target>

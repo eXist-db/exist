@@ -122,6 +122,10 @@ public abstract class AtomicValue implements Item, Sequence  {
 		throw new XPathException("cannot convert value of type " +
 			Type.getTypeName(getType()) + " to a node set");
 	}
+
+	public String pprint() {
+		return getStringValue();
+	}
 	
 	private final static class EmptyValue extends AtomicValue {
 		

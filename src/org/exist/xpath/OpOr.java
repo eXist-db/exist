@@ -27,29 +27,28 @@ import org.exist.xpath.value.Sequence;
 
 public class OpOr extends BinaryOp {
 
-	public OpOr() {
-		super();
+	public OpOr(StaticContext context) {
+		super(context);
 	}
 
-	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException {
+	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
 		if (getLength() == 0)
 			return in_docs;
-		DocumentSet out_docs = getExpression(0).preselect(in_docs, context);
+		DocumentSet out_docs = getExpression(0).preselect(in_docs);
 		for (int i = 1; i < getLength(); i++)
-			out_docs = out_docs.union(getExpression(i).preselect(in_docs, context));
+			out_docs = out_docs.union(getExpression(i).preselect(in_docs));
 		return out_docs;
 	}
 
-	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, 
-		Item contextItem) throws XPathException {
+	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
 		if (getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		LOG.debug("processing " + getExpression(0).pprint());
-		NodeSet rr, rl = (NodeSet) getExpression(0).eval(context, docs, contextSequence, null);
+		NodeSet rr, rl = (NodeSet) getExpression(0).eval(docs, contextSequence, null);
 		rl = rl.getContextNodes((NodeSet)contextSequence, inPredicate);
 		for (int i = 1; i < getLength(); i++) {
 			LOG.debug("processing " + getExpression(i).pprint());
-			rr = (NodeSet) getExpression(i).eval(context, docs, contextSequence, null);
+			rr = (NodeSet) getExpression(i).eval(docs, contextSequence, null);
 			rl = rl.union(rr.getContextNodes((NodeSet)contextSequence, inPredicate));
 		}
 		return rl;

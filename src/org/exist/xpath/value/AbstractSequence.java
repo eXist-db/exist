@@ -35,9 +35,7 @@ public abstract class AbstractSequence implements Sequence {
 	public abstract int getLength();
 	
 	public AtomicValue convertTo(int requiredType) throws XPathException {
-		if(getLength() == 0)
-			return AtomicValue.EMPTY_VALUE.convertTo(requiredType);
-		Item first = iterate().nextItem();
+		Item first = itemAt(0);
 		if(Type.subTypeOf(first.getType(), Type.ATOMIC))
 			return ((AtomicValue)first).convertTo(requiredType);
 		else
@@ -70,6 +68,19 @@ public abstract class AbstractSequence implements Sequence {
 	 * @see org.exist.xpath.value.Sequence#effectiveBooleanValue()
 	 */
 	public boolean effectiveBooleanValue() throws XPathException {
-		return getLength() > 0;
+		int len = getLength();
+		if (len == 0)
+			return false;
+		if (len > 1)
+			return true;
+		Item first = itemAt(0);
+		if(first instanceof StringValue)
+			return first.getStringValue().equals("") ? true : false;
+		else if(first instanceof BooleanValue)
+			return ((BooleanValue)first).getValue();
+		else if(first instanceof NumericValue)
+			return ((BooleanValue)first.convertTo(Type.BOOLEAN)).getValue();
+		else
+			return true;
 	}
 }

@@ -1,8 +1,21 @@
-/*
- * Created on Oct 22, 2003
+/* eXist Native XML Database
+ * Copyright (C) 2000-03,  Wolfgang M. Meier (wolfgang@exist-db.org)
  *
- * To change the template for this generated file go to
- * Window - Preferences - Java - Code Generation - Code and Comments
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Library General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * $Id$
  */
 package org.exist.xpath;
 
@@ -11,20 +24,25 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.QName;
 import org.exist.xpath.value.AtomicValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.StringValue;
 
+/**
+ * Node constructor for attribute nodes.
+ * 
+ * @author wolf
+ */
 public class AttributeConstructor extends NodeConstructor {
 
 	String qname;
 	List contents = new ArrayList();
 	boolean isNamespaceDecl = false;
 	
-	public AttributeConstructor(String name) {
+	public AttributeConstructor(StaticContext context, String name) {
+		super(context);
 		if(name.startsWith("xmlns"))
 			isNamespaceDecl = true;
 		this.qname = name;
@@ -53,7 +71,6 @@ public class AttributeConstructor extends NodeConstructor {
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
@@ -63,7 +80,7 @@ public class AttributeConstructor extends NodeConstructor {
 		for(Iterator i = contents.iterator(); i.hasNext(); ) {
 			next = i.next();
 			if(next instanceof Expression)
-				evalEnclosedExpr(((Expression)next).eval(context, docs, contextSequence, contextItem), buf);
+				evalEnclosedExpr(((Expression)next).eval(docs, contextSequence, contextItem), buf);
 			else
 				buf.append(next);
 		}

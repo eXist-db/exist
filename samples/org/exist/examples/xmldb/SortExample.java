@@ -21,7 +21,7 @@ public class SortExample {
     protected static String driver = "org.exist.xmldb.DatabaseImpl";
 
 	protected static String query = "//SPEECH[LINE &= 'marriage']";
-	protected static String sortBy = "/SPEAKER[1]";
+	protected static String sortBy = "./SPEAKER";
 	
     public static void main( String args[] ) {
     	if(args.length == 2) {
@@ -46,6 +46,7 @@ public class SortExample {
             service.setProperty( OutputKeys.ENCODING, "ISO-8859-1" );
             // execute query and get results in ResourceSet
             ResourceSet result = service.query( query, sortBy );
+            System.out.println("found: " + result.getSize());
             // create iterator
             for(ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
                 XMLResource resource = (XMLResource) i.nextResource();

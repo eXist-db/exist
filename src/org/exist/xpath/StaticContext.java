@@ -45,7 +45,7 @@ public class StaticContext {
 				"org.exist.xpath.functions.FunSubstringAfter" },
 				{
 			"normalize-space",
-				"org.exist.xpath.functions.FunNormalizeString" },
+				"org.exist.xpath.functions.FunNormalizeSpace" },
 				{
 			"concat", "org.exist.xpath.functions.FunConcat" }, {
 			"starts-with", "org.exist.xpath.functions.FunStartsWith" }, {
@@ -95,6 +95,13 @@ public class StaticContext {
 	 */
 	private boolean backwardsCompatible = true;
 
+	/**
+	 * The position of the currently processed item in the context 
+	 * sequence. This field has to be set on demand, for example,
+	 * before calling the fn:position() function. 
+	 */
+	private int contextPosition = 0;
+	
 	/**
 	 * The builder used for creating in-memory document 
 	 * fragments
@@ -262,6 +269,9 @@ public class StaticContext {
 	/**
 	 * XPath 1.0 backwards compatibility turned on?
 	 * 
+	 * In XPath 1.0 compatible mode, additional conversions
+	 * will be applied to values if a numeric value is expected.
+	 *  
 	 * @return
 	 */
 	public boolean isBackwardsCompatible() {
@@ -270,6 +280,9 @@ public class StaticContext {
 
 	/**
 	 * Get the DBBroker instance used for the current query.
+	 * 
+	 * The DBBroker is the main database access object, providing
+	 * access to all internal database functions.
 	 * 
 	 * @return
 	 */
@@ -286,6 +299,13 @@ public class StaticContext {
 		return broker.getUser();
 	}
 
+	/**
+	 * Get the document builder currently used for creating
+	 * temporary document fragments. A new document builder
+	 * will be created on demand.
+	 * 
+	 * @return
+	 */
 	public MemTreeBuilder getDocumentBuilder() {
 		if (builder == null) {
 			builder = new MemTreeBuilder();
@@ -294,6 +314,14 @@ public class StaticContext {
 		return builder;
 	}
 
+	/**
+	 * Set the base URI for the evaluation context.
+	 * 
+	 * This is the URI returned by the fn:base-uri()
+	 * function.
+	 * 
+	 * @param uri
+	 */
 	public void setBaseURI(String uri) {
 		baseURI = uri;
 	}
@@ -302,6 +330,21 @@ public class StaticContext {
 		return baseURI;
 	}
 
+	/**
+	 * Set the current context position, i.e. the position
+	 * of the currently processed item in the context sequence.
+	 * This value is required by some expressions, e.g. fn:position().
+	 * 
+	 * @param pos
+	 */
+	public void setContextPosition(int pos) {
+		contextPosition = pos;
+	}
+	
+	public int getContextPosition() {
+		return contextPosition;
+	}
+	
 	/**
 	 * Save the current context on top of a stack. 
 	 * 

@@ -21,25 +21,33 @@
 package org.exist.xpath.functions;
 
 import org.exist.dom.DocumentSet;
+import org.exist.dom.QName;
+import org.exist.xpath.Cardinality;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.Type;
 
 public class FunTrue extends Function {
 
-	public FunTrue() {
-		super("true");
+	private final static FunctionSignature signature =
+			new FunctionSignature(
+				new QName("true", BUILTIN_FUNCTION_NS),
+				null,
+				new SequenceType(Type.BOOLEAN, Cardinality.ONE));
+				
+	public FunTrue(StaticContext context) {
+		super(context, signature);
 	}
 	
 	public int returnsType() {
 		return Type.BOOLEAN;
 	}
 	
-	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, 
-		Item contextItem) {
-		return new BooleanValue(true);
+	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) {
+		return BooleanValue.FALSE;
 	}
 
 	public String pprint() {

@@ -249,7 +249,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			AST ast = parser.getAST();
 			LOG.debug("generated AST: " + ast.toStringTree());
 
-			PathExpr expr = new PathExpr();
+			PathExpr expr = new PathExpr(context);
 			treeParser.xpath(ast, expr);
 			if (treeParser.foundErrors()) {
 				throw new EXistException(treeParser.getErrorMessage());
@@ -259,7 +259,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			DocumentSet ndocs = expr.preselect( context );
 			if (ndocs.getLength() == 0)
 				return resp;
-			Sequence seq= expr.eval(context, ndocs, null, null);
+			Sequence seq= expr.eval(ndocs, null, null);
 
 			QueryResponseCollection[] collections = null;
 			if (seq.getItemType() == Type.NODE)

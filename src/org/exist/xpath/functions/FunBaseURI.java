@@ -23,42 +23,44 @@
 package org.exist.xpath.functions;
 
 import org.exist.dom.DocumentSet;
+import org.exist.dom.QName;
+import org.exist.xpath.Cardinality;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.StringValue;
+import org.exist.xpath.value.Type;
 
 /**
  * @author wolf
  */
 public class FunBaseURI extends Function {
 
+	public final static FunctionSignature signature =
+			new FunctionSignature(
+				new QName("base-uri", BUILTIN_FUNCTION_NS),
+				null,
+				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+			);
+			
 	/**
 	 * @param name
 	 */
-	public FunBaseURI(String name) {
-		super(name);
-	}
-
-	/**
-	 * 
-	 */
-	public FunBaseURI() {
-		super();
+	public FunBaseURI(StaticContext context) {
+		super(context, signature);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		//if(getArgumentCount() == 0)
-			return new StringValue(context.getBaseURI());
+		return new StringValue(context.getBaseURI());
 	}
 
 }

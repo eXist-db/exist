@@ -1162,7 +1162,7 @@ public class HttpServerConnection extends Thread {
 			AST ast = parser.getAST();
 			HttpServer.LOG.debug("generated AST: " + ast.toStringTree());
 
-			PathExpr expr = new PathExpr();
+			PathExpr expr = new PathExpr(context);
 			treeParser.xpath(ast, expr);
 			if (treeParser.foundErrors()) {
 				return formatErrorMsg(
@@ -1181,7 +1181,7 @@ public class HttpServerConnection extends Thread {
 			if (ndocs.getLength() == 0)
 				result = formatErrorMsg("nothing found", OK);
 			else {
-				Sequence resultSequence = expr.eval(context, ndocs, null, null);
+				Sequence resultSequence = expr.eval(ndocs, null, null);
 				long queryTime = System.currentTimeMillis() - startTime;
 				HttpServer.LOG.debug("evaluation took " + queryTime + "ms.");
 				startTime = System.currentTimeMillis();

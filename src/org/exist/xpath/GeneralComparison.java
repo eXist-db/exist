@@ -40,17 +40,25 @@ import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
+import org.exist.xpath.value.StringValue;
 import org.exist.xpath.value.Type;
 
+/**
+ * A general XQuery/XPath2 comparison expression.
+ * 
+ * @author wolf
+ */
 public class GeneralComparison extends BinaryOp {
 
 	protected int relation = Constants.EQ;
 
-	public GeneralComparison(int relation) {
+	public GeneralComparison(StaticContext context, int relation) {
+		super(context);
 		this.relation = relation;
 	}
 
-	public GeneralComparison(Expression left, Expression right, int relation) {
+	public GeneralComparison(StaticContext context, Expression left, Expression right, int relation) {
+		super(context);
 		this.relation = relation;
 		// simplify arguments
 		if (left instanceof PathExpr && ((PathExpr) left).getLength() == 1)
@@ -96,7 +104,7 @@ public class GeneralComparison extends BinaryOp {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#preselect(org.exist.dom.DocumentSet, org.exist.xpath.StaticContext)
 	 */
-	public DocumentSet preselect(DocumentSet in_docs, StaticContext context)
+	public DocumentSet preselect(DocumentSet in_docs)
 		throws XPathException {
 		return in_docs;
 	}
@@ -105,7 +113,6 @@ public class GeneralComparison extends BinaryOp {
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
@@ -117,12 +124,13 @@ public class GeneralComparison extends BinaryOp {
 		 */
 		if (inPredicate) {
 			if (Type.isNode(getLeft().returnsType())) {
-				//if (getRight() instanceof Literal)
-				if ((getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0)
+				if ((getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0 &&
+					(Type.subTypeOf(getRight().returnsType(), Type.STRING) ||
+					Type.subTypeOf(getRight().returnsType(), Type.NODE)))
 					// lookup search terms in the fulltext index
-					return quickNodeSetCompare(context, docs, contextSequence);
+					return quickNodeSetCompare(docs, contextSequence);
 				else
-					return nodeSetCompare(context, docs, contextSequence);
+					return nodeSetCompare(docs, contextSequence);
 			}
 		}
 		// Fall back to the generic compare process
@@ -136,9 +144,9 @@ public class GeneralComparison extends BinaryOp {
 		Item contextItem)
 		throws XPathException {
 		Sequence ls =
-			getLeft().eval(context, docs, contextSequence, contextItem);
+			getLeft().eval(docs, contextSequence, contextItem);
 		Sequence rs =
-			getRight().eval(context, docs, contextSequence, contextItem);
+			getRight().eval(docs, contextSequence, contextItem);
 		AtomicValue lv, rv;
 		if (ls.getLength() == 1 && rs.getLength() == 1) {
 			lv = ls.itemAt(0).atomize();
@@ -168,14 +176,13 @@ public class GeneralComparison extends BinaryOp {
 	 * All matching context nodes are then passed to the right expression.
 	 */
 	protected Sequence nodeSetCompare(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence)
 		throws XPathException {
 		NodeSet result = new ExtArrayNodeSet();
 		// evaluate left expression (returning node set)
 		NodeSet nodes =
-			(NodeSet) getLeft().eval(context, docs, contextSequence);
+			(NodeSet) getLeft().eval(docs, contextSequence);
 		NodeProxy current;
 		ContextItem c;
 		Sequence rs;
@@ -185,7 +192,7 @@ public class GeneralComparison extends BinaryOp {
 			c = current.getContext();
 			do {
 				lv = current.atomize();
-				rs = getRight().eval(context, docs, c.getNode().toSequence());
+				rs = getRight().eval(docs, c.getNode().toSequence());
 				for (SequenceIterator si = rs.iterate(); si.hasNext();) {
 					if (compareValues(context, lv, si.nextItem().atomize()))
 						result.add(current);
@@ -201,15 +208,14 @@ public class GeneralComparison extends BinaryOp {
 	 * operand returns a node set and the right operand is a string literal.
 	 */
 	protected Sequence quickNodeSetCompare(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence)
 		throws XPathException {
 		//	evaluate left expression
 		NodeSet nodes =
-			(NodeSet) getLeft().eval(context, docs, contextSequence);
+			(NodeSet) getLeft().eval(docs, contextSequence);
 		String cmp =
-			getRight().eval(context, docs, contextSequence).getStringValue();
+			getRight().eval(docs, contextSequence).getStringValue();
 		if (getLeft().returnsType() == Type.NODE
 			&& relation == Constants.EQ
 			&& nodes.hasIndex()
@@ -224,7 +230,7 @@ public class GeneralComparison extends BinaryOp {
 			String term;
 			boolean foundNumeric = false;
 			// setup up an &= expression using the fulltext index
-			ExtFulltext containsExpr = new ExtFulltext(Constants.FULLTEXT_AND);
+			ExtFulltext containsExpr = new ExtFulltext(context, Constants.FULLTEXT_AND);
 			int i = 0;
 			for ( ; i < 5 && (token = tokenizer.nextToken(true)) != null;
 				i++) {
@@ -238,8 +244,8 @@ public class GeneralComparison extends BinaryOp {
 				foundNumeric = checkArgumentTypes(context, docs);
 			if ((!foundNumeric) && i > 0) {
 				// all elements are indexed: use the fulltext index
-				containsExpr.addTerm(new Literal(cmp));
-				nodes = (NodeSet) containsExpr.eval(context, docs, nodes, null);
+				containsExpr.addTerm(new LiteralValue(context, new StringValue(cmp)));
+				nodes = (NodeSet) containsExpr.eval(docs, nodes, null);
 			}
 			cmp = cmpCopy;
 		}
@@ -284,6 +290,7 @@ public class GeneralComparison extends BinaryOp {
 				rv = rv.convertTo(Type.DOUBLE);
 			}
 		}
+		System.out.println(lv.getStringValue() + " = " + rv.getStringValue());
 		return lv.compareTo(relation, rv);
 	}
 

@@ -40,13 +40,18 @@ public class SortedNodeSet extends NodeSet {
 		this.user = user;
 	}
 
+	public void addAll(Sequence other) throws XPathException {
+		addAll(other.toNodeSet());
+	}
+	
 	public void addAll(NodeSet other) {
 		long start = System.currentTimeMillis();
 		NodeProxy p;
 		IteratorItem item;
+		Item next;
 		DocumentSet docs = new DocumentSet();
 		for (Iterator i = other.iterator(); i.hasNext();) {
-			p = (NodeProxy) i.next();
+			p = (NodeProxy)i.next();
 			docs.add(p.doc);
 		}
 		DBBroker broker = null;
@@ -64,14 +69,14 @@ public class SortedNodeSet extends NodeSet {
 			AST ast = parser.getAST();
 			LOG.debug("generated AST: " + ast.toStringTree());
 
-			expr = new PathExpr();
+			expr = new PathExpr(context);
 			treeParser.xpath(ast, expr);
 			if (treeParser.foundErrors()) {
 				LOG.debug(treeParser.getErrorMessage());
 			}
-			ndocs = expr.preselect(docs, context);
-			for (Iterator i = other.iterator(); i.hasNext();) {
-				p = (NodeProxy) i.next();
+			ndocs = expr.preselect(docs);
+			for (SequenceIterator i = other.iterate(); i.hasNext();) {
+				p = (NodeProxy) i.nextItem();
 				item = new IteratorItem(broker, p, expr, ndocs, context);
 				list.add(item);
 			}
@@ -208,7 +213,7 @@ public class SortedNodeSet extends NodeSet {
 			StaticContext context) {
 			this.proxy = proxy;
 			try {
-				Sequence seq = expr.eval(context, ndocs, proxy, null);
+				Sequence seq = expr.eval(ndocs, proxy);
 				StringBuffer buf = new StringBuffer();
 				OrderedLinkedList strings = new OrderedLinkedList();
 				Item item;
@@ -219,7 +224,6 @@ public class SortedNodeSet extends NodeSet {
 				for (Iterator j = strings.iterator(); j.hasNext();) 
 					buf.append((String) j.next());
 				value = buf.toString();
-				System.out.println(value);
 			} catch (XPathException e) {
 				LOG.warn(e.getMessage(), e);
 			}

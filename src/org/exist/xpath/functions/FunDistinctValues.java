@@ -27,6 +27,8 @@ import java.util.Iterator;
 import java.util.TreeSet;
 
 import org.exist.dom.DocumentSet;
+import org.exist.dom.QName;
+import org.exist.xpath.Cardinality;
 import org.exist.xpath.Dependency;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
@@ -34,6 +36,7 @@ import org.exist.xpath.value.AtomicValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.Type;
 import org.exist.xpath.value.ValueSequence;
 
@@ -42,8 +45,15 @@ import org.exist.xpath.value.ValueSequence;
  */
 public class FunDistinctValues extends Function {
 
-	public FunDistinctValues() {
-		super("distinct-values");
+	private final static FunctionSignature signature =
+		new FunctionSignature(
+			new QName("distinct-values", BUILTIN_FUNCTION_NS),
+			new SequenceType[] { new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE) },
+			new SequenceType(Type.ATOMIC, Cardinality.ONE)
+		);
+		
+	public FunDistinctValues(StaticContext context) {
+		super(context, signature);
 	}
 
 	/* (non-Javadoc)
@@ -67,16 +77,14 @@ public class FunDistinctValues extends Function {
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		if(getArgumentCount() < 1)
-			throw new XPathException("distinct-values requires an argument");
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
-		Sequence values = getArgument(0).eval(context, docs, contextSequence);
+		long start = System.currentTimeMillis();
+		Sequence values = getArgument(0).eval(docs, contextSequence);
 		TreeSet set = new TreeSet(new Comparator() {
 			public int compare(Object o1, Object o2) {
 				try {
@@ -88,17 +96,18 @@ public class FunDistinctValues extends Function {
 		});
 		AtomicValue value;
 		for(SequenceIterator i = values.iterate(); i.hasNext(); ) {
-			contextItem = i.nextItem();
-			value = contextItem.atomize();
+			value = (AtomicValue)i.nextItem();
 			if(!set.contains(value))
 				set.add(value);
 		}
 		ValueSequence result = new ValueSequence();
 		for(Iterator i = set.iterator(); i.hasNext(); ) {
 			value = (AtomicValue)i.next();
-			LOG.debug("value: " + value.getStringValue());
+			//LOG.debug("value: " + value.getStringValue());
 			result.add(value);
 		}
+		LOG.debug("distinct-values found " + result.getLength() + 
+			" in " + (System.currentTimeMillis() - start));
 		return result;
 	}
 

@@ -21,70 +21,75 @@
 
 package org.exist.xpath.functions;
 
-import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.xpath.Cardinality;
+import org.exist.xpath.Dependency;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.IntegerValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.Type;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Node;
 
+/**
+ * Built-in function fn:last().
+ * 
+ * @author wolf
+ */
 public class FunLast extends Function {
 
-  public FunLast() {
-    super("last");
-  }
+	public final static FunctionSignature signature =
+		new FunctionSignature(
+			new QName("last", BUILTIN_FUNCTION_NS),
+			null,
+			new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
 
-  public int returnsType() {
-    return Type.INTEGER;
-  }
+	public FunLast(StaticContext context) {
+		super(context, signature);
+	}
 
-  public DocumentSet preselect(DocumentSet in_docs, StaticContext context) {
-    return in_docs;
-  }
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.functions.Function#getDependencies()
+	 */
+	public int getDependencies() {
+		return Dependency.CONTEXT_ITEM + Dependency.CONTEXT_SET;
+	}
 
-   public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
-   	Item contextItem) throws XPathException {
-   		if(!Type.subTypeOf(contextItem.getType(), Type.NODE))
-   			throw new XPathException("last() can only be applied to nodes");
-   		NodeProxy contextNode = (NodeProxy)contextItem;
-      DocumentImpl doc = contextNode.getDoc();
-      int level = doc.getTreeLevel(contextNode.getGID());
-      long pid = (contextNode.getGID() - doc.getLevelStartPoint(level)) /
-        doc.getTreeLevelOrder(level)
-        + doc.getLevelStartPoint(level - 1);
-      long f_gid = (pid - doc.getLevelStartPoint(level -1)) *
-        doc.getTreeLevelOrder(level) +
-        doc.getLevelStartPoint(level);
-      long e_gid = f_gid + doc.getTreeLevelOrder(level);
-      NodeSet set = ((NodeSet)contextSequence).getRange(doc, f_gid, e_gid);
-      int len = set.getLength();
-      return new IntegerValue(len);
-   }
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.functions.Function#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
+	 */
+	public Sequence eval(
+		DocumentSet docs,
+		Sequence contextSequence,
+		Item contextItem)
+		throws XPathException {
+		if(contextSequence == null || contextSequence.getLength() == 0)
+			return Sequence.EMPTY_SEQUENCE;
+		return new IntegerValue(contextSequence.getLength());
+	}
 
-  public static boolean nodesEqual(NodeImpl n1, NodeImpl n2) {
-    if(n1.getNodeType() != n2.getNodeType())
-      return false;
-    switch(n1.getNodeType()) {
-      case Node.ELEMENT_NODE:
-        return n1.getNodeName().equals(n2.getNodeName());
-      case Node.ATTRIBUTE_NODE:
-        return n1.getNodeName().equals(n2.getNodeName()) &&
-          ((Attr)n1).getValue().equals(((Attr)n2).getValue());
-      case Node.TEXT_NODE:
-        return n1.getNodeValue().equals(n2.getNodeValue());
-      default:
-        return false;
-    }
-  }
+	/*public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
+		Item contextItem) throws XPathException {
+			if(!Type.subTypeOf(contextItem.getType(), Type.NODE))
+				throw new XPathException("last() can only be applied to nodes");
+			NodeProxy contextNode = (NodeProxy)contextItem;
+	   DocumentImpl doc = contextNode.getDoc();
+	   int level = doc.getTreeLevel(contextNode.getGID());
+	   long pid = (contextNode.getGID() - doc.getLevelStartPoint(level)) /
+	     doc.getTreeLevelOrder(level)
+	     + doc.getLevelStartPoint(level - 1);
+	   long f_gid = (pid - doc.getLevelStartPoint(level -1)) *
+	     doc.getTreeLevelOrder(level) +
+	     doc.getLevelStartPoint(level);
+	   long e_gid = f_gid + doc.getTreeLevelOrder(level);
+	   NodeSet set = ((NodeSet)contextSequence).getRange(doc, f_gid, e_gid);
+	   int len = set.getLength();
+	   return new IntegerValue(len);
+	}*/
 
-  public String pprint() {
-     return "last()";
-  }
+	public String pprint() {
+		return "last()";
+	}
 }

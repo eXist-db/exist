@@ -24,33 +24,44 @@
 package org.exist.xpath.functions;
 
 import org.exist.dom.DocumentSet;
+import org.exist.dom.QName;
+import org.exist.xpath.Cardinality;
 import org.exist.xpath.Expression;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
+import org.exist.xpath.value.DoubleValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.NumericValue;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.StringValue;
 import org.exist.xpath.value.Type;
 
 /**
- * xpath-library function: string(object)
+ * Built-in function fn:substring().
  *
  */
 public class FunSubstring extends Function {
 	
-	public FunSubstring() {
-		super("substring");
+	public final static FunctionSignature signature =
+			new FunctionSignature(
+				new QName("substring", BUILTIN_FUNCTION_NS),
+				new SequenceType[] {
+					 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+					 new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)
+				},
+				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+				,true);
+				
+	public FunSubstring(StaticContext context) {
+		super(context, signature);
 	}
 
 	public int returnsType() {
 		return Type.STRING;
 	}
 		
-	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, 
-		Item contextItem) throws XPathException {
-		if(getArgumentCount() < 2)
-			throw new XPathException("substring requires at least two arguments");
+	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
 		Expression arg0 = getArgument(0);
 		Expression arg1 = getArgument(1);
 		Expression arg2 = null;
@@ -59,14 +70,18 @@ public class FunSubstring extends Function {
 
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
-		int start = ((NumericValue)arg1.eval(context, docs, contextSequence).convertTo(Type.INTEGER)).getInt();
-		int length = 1;
+		Sequence seq = arg0.eval(docs, contextSequence);
+		if(seq.getLength() == 0)
+			return Sequence.EMPTY_SEQUENCE;
+		int start = ((DoubleValue)arg1.eval(docs, contextSequence).itemAt(0).convertTo(Type.DOUBLE)).getInt();
+		int length = 0;
 		if(arg2 != null)
-			length = ((NumericValue)arg2.eval(context, docs, contextSequence).convertTo(Type.INTEGER)).getInt();
+			length = ((NumericValue)arg2.eval(docs, contextSequence).
+				itemAt(0).convertTo(Type.DOUBLE)).getInt();
 		if(start <= 0 || length < 0)
 			throw new IllegalArgumentException("Illegal start or length argument");
-		Sequence nodes = arg0.eval(context, docs, contextSequence);
-		String result = nodes.getStringValue();
+			 
+		String result = seq.getStringValue();
 		if(start < 0 || --start + length >= result.length())
 			return new StringValue("");
 		return new StringValue((length > 0) ? result.substring(start, start + length) : result.substring(start));

@@ -34,13 +34,6 @@ public class BooleanValue extends AtomicValue {
 		value = bool;
 	}
 	
-	public BooleanValue(String stringValue) {
-		if(stringValue == null || stringValue.length() == 0)
-			value = false;
-		else
-			value = true;
-	}
-	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.AtomicValue#getType()
 	 */

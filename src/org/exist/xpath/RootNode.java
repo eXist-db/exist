@@ -32,7 +32,7 @@ import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.Type;
 
 /**
- *  Description of the Class
+ *  Represents the document-root node in an expression.
  *
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
  *@created    02 August 2002
@@ -40,12 +40,11 @@ import org.exist.xpath.value.Type;
 public class RootNode extends Step {
 
 	/**  Constructor for the RootNode object */
-	public RootNode() {
-		super(Constants.SELF_AXIS);
+	public RootNode(StaticContext context) {
+		super(context, Constants.SELF_AXIS);
 	}
 
 	public Sequence eval(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem) {

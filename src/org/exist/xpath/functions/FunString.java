@@ -22,10 +22,13 @@
 package org.exist.xpath.functions;
 
 import org.exist.dom.DocumentSet;
+import org.exist.dom.QName;
+import org.exist.xpath.Cardinality;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.StringValue;
 import org.exist.xpath.value.Type;
 
@@ -35,19 +38,29 @@ import org.exist.xpath.value.Type;
  */
 public class FunString extends Function {
 
-	public FunString() {
-		super("string");
+	public final static FunctionSignature signature =
+		new FunctionSignature(
+			new QName("number", BUILTIN_FUNCTION_NS),
+			new SequenceType[] {
+				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE)},
+			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+			true);
+
+	public FunString(StaticContext context) {
+		super(context, signature);
 	}
-	
-	public int returnsType() {
-		return Type.STRING;
-	}
-	
-	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
-		Item contextItem) throws XPathException {
-		if(contextItem != null)
+
+	public Sequence eval(
+		DocumentSet docs,
+		Sequence contextSequence,
+		Item contextItem)
+		throws XPathException {
+		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-		String strval;
-		return new StringValue(getArgument(0).eval(context, docs, contextSequence).getStringValue());
+		if(getArgumentCount() == 1)
+			contextSequence = getArgument(0).eval(docs, contextSequence);
+		if(contextSequence.getLength() == 0)
+			return StringValue.EMPTY_STRING;
+		return contextSequence.convertTo(Type.STRING);
 	}
 }

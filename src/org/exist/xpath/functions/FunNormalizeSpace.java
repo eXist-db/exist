@@ -26,10 +26,13 @@ package org.exist.xpath.functions;
 import java.util.StringTokenizer;
 
 import org.exist.dom.DocumentSet;
+import org.exist.dom.QName;
+import org.exist.xpath.Cardinality;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.StringValue;
 import org.exist.xpath.value.Type;
 
@@ -37,25 +40,35 @@ import org.exist.xpath.value.Type;
  * xpath-library function: string(object)
  *
  */
-public class FunNormalizeString extends Function {
+public class FunNormalizeSpace extends Function {
 	
-	public FunNormalizeString() {
-		super("normalize-space");
+	public final static FunctionSignature signature =
+			new FunctionSignature(
+				new QName("normalize-space", BUILTIN_FUNCTION_NS),
+				new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE) },
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				true);
+				
+	public FunNormalizeSpace(StaticContext context) {
+		super(context, signature);
 	}
 
 	public int returnsType() {
 		return Type.STRING;
 	}
 		
-	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, 
-		Item contextItem) throws XPathException {
+	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
 		String value;
 		if(getArgumentCount() == 0)
-			value = contextSequence.getLength() > 0 ? contextSequence.getStringValue() : "";
-		else
-			value = getArgument(0).eval(context, docs, contextSequence).getStringValue();
+			value = contextSequence.getLength() > 0 ? contextSequence.itemAt(0).getStringValue() : "";
+		else {
+			Sequence seq = getArgument(0).eval(docs, contextSequence);
+			if(seq.getLength() == 0)
+				return Sequence.EMPTY_SEQUENCE;
+			value = seq.getStringValue();
+		}
 		StringBuffer result = new StringBuffer();
 		if(value.length() > 0) {
 			StringTokenizer tok = new StringTokenizer(value);

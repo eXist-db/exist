@@ -20,15 +20,23 @@
 
 package org.exist.xpath.functions;
 
+import java.util.Iterator;
+import java.util.List;
+
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.xpath.Cardinality;
+import org.exist.xpath.Expression;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.StringValue;
 import org.exist.xpath.value.Type;
 import org.w3c.dom.Node;
+import org.w3c.dom.ProcessingInstruction;
 
 /**
  * xpath-library function: string(object)
@@ -36,21 +44,23 @@ import org.w3c.dom.Node;
  */
 public class FunName extends Function {
 
-    public FunName() {
-        super("name");
-    }
+	public final static FunctionSignature signature =
+		new FunctionSignature(
+			new QName("name", BUILTIN_FUNCTION_NS),
+			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
+			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+			true);
+
+	public FunName(StaticContext context) {
+		super(context, signature);
+	}
 	
-    public int returnsType() {
-        return Type.STRING;
-    }
-	
-	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, 
-			Item contextItem) throws XPathException {
+	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
 			Node n = null;
 			if(contextItem != null)
 				contextSequence = contextItem.toSequence();
 			if(getArgumentCount() > 0) {
-				NodeSet result = (NodeSet)getArgument(0).eval(context, docs, contextSequence);
+				NodeSet result = getArgument(0).eval(docs, contextSequence).toNodeSet();
 				if(result.getLength() > 0)
 					n = result.item(0);
 			} else {
@@ -60,13 +70,14 @@ public class FunName extends Function {
 			if(n != null) {
 				switch(n.getNodeType()) {
 					case Node.ELEMENT_NODE:
-						return new StringValue(n.getNodeName());
 					case Node.ATTRIBUTE_NODE:
 						return new StringValue(n.getNodeName());
+					case Node.PROCESSING_INSTRUCTION_NODE:
+						return new StringValue(((ProcessingInstruction)n).getTarget());
 					default:
 						return new StringValue("");
 				}
 			} 
 			return new StringValue("");
-			}
+		}
 }

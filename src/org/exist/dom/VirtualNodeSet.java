@@ -109,9 +109,10 @@ public class VirtualNodeSet extends NodeSet {
 				// if we're on the child axis, test if
 				// the node is a direct child of the context node
 				if ((parent = context.get(new NodeProxy(node.doc, pid))) != null) {
-					if (useSelfAsContext && inPredicate)
+					if (useSelfAsContext && inPredicate) {
 						node.addContextNode(node);
-					else if (inPredicate)
+						System.out.println("self: " + node.gid);
+					} else if (inPredicate)
 						node.addContextNode(parent);
 					else
 						node.copyContext(parent);
@@ -136,18 +137,22 @@ public class VirtualNodeSet extends NodeSet {
 		parent = context.get(node.doc, pid);
 
 		if (parent != null && test.matches(first)) {
-//			if(directParent)
-//				node = first;
-			if (useSelfAsContext && inPredicate)
+			if(axis != Constants.CHILD_AXIS) {
+				// if we are on the descendant-axis, we return the first node 
+				// we found while walking bottom-up.
+				// Otherwise, we return the last one (which is node)
+				node = first;
+			}
+			if (useSelfAsContext && inPredicate) {
 				node.addContextNode(node);
-			else if (inPredicate)
+			} else if (inPredicate) {
 				node.addContextNode(parent);
-			else {
+			} else {
 				node.copyContext(parent);
 			}
 			// Timo Boehme: we return the ancestor which is child of context
 			// TODO 
-			return first;
+			return node;
 		} else if (pid < 0)
 			// no matching node has been found in the context
 			return null;
@@ -299,6 +304,8 @@ public class VirtualNodeSet extends NodeSet {
 	private final void realize() {
 		if (realSet != null)
 			return;
+		System.out.println("realize");
+		Thread.dumpStack();
 		realSet = getNodes();
 	}
 

@@ -61,8 +61,7 @@ public interface Expression {
 	 * @param contextItem a single item, taken from context. This defines the item,
 	 * the expression should work on.
 	 */
-	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
-		Item contextItem) throws XPathException;
+	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException;
 
 	/**
 	 * Evaluate the expression represented by this object.
@@ -74,7 +73,7 @@ public interface Expression {
 	 * @param docs the set of documents all nodes belong to.
 	 * @param contextSet the node-set which defines the current context node-set.
 	 */
-	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence)
+	public Sequence eval(DocumentSet docs, Sequence contextSequence)
 		throws XPathException;
 	
 	/**
@@ -86,7 +85,7 @@ public interface Expression {
 	 * a given xpath-expression. It is called before the xpath-expression is
 	 * actually executed.
 	 */
-	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException;
+	public DocumentSet preselect(DocumentSet in_docs) throws XPathException;
 
 	/**
 	 * The static return type of the expression.
@@ -96,6 +95,13 @@ public interface Expression {
 	 * statically, return Type.ITEM.
 	 */
 	public int returnsType();
+	
+	/**
+	 * The expected cardinality of the return value of the expression.
+	 * 
+	 * Should return a bit mask with bits set as defined in class {@link Cardinality}.
+	 */
+	public int getCardinality();
 	
 	/**
 	 * Returns a set of bit-flags, indicating some of the parameters
@@ -108,7 +114,7 @@ public interface Expression {
 	
 	/**
 	 * This method is called to inform the expression object that
-	 * it is executed inside an XPath predicate.
+	 * it is executed inside an XPath predicate (or in a where clause).
 	 * 
 	 * @param inPredicate
 	 */

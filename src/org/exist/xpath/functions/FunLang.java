@@ -31,41 +31,48 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.XMLUtil;
+import org.exist.xpath.Cardinality;
+import org.exist.xpath.Dependency;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.Type;
+import org.w3c.dom.Node;
 
 /**
- * xpath-library function: string(object)
+ * Built-in function fn:lang().
  *
  */
 public class FunLang extends Function {
 
-	public FunLang() {
-		super("lang");
+	public final static FunctionSignature signature =
+		new FunctionSignature(
+			new QName("lang", BUILTIN_FUNCTION_NS),
+			new SequenceType[] {
+				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
+			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE));
+
+	public FunLang(StaticContext context) {
+		super(context, signature);
 	}
 
 	public Sequence eval(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		if (getArgumentCount() < 1)
-			throw new IllegalArgumentException("lang requires an argument");
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
 		if (contextSequence.getItemType() != Type.NODE)
 			return Sequence.EMPTY_SEQUENCE;
 		String lang =
 			getArgument(0)
-				.eval(context, docs, contextSequence)
+				.eval(docs, contextSequence)
 				.getStringValue();
 		QName qname = new QName("lang", context.getURIForPrefix("xml"), "xml");
 		NodeSet attribs = context.getBroker().getAttributesByName(docs, qname);
-		System.out.println("found " + attribs.getLength() + " attributes");
 		NodeSet temp = new ExtArrayNodeSet();
 		NodeProxy p;
 		String langValue;
@@ -83,11 +90,12 @@ public class FunLang extends Function {
 					include = lang.equalsIgnoreCase(langValue);
 				}
 			}
-			System.out.println(langValue + " == " + lang);
 			if (include) {
 				p.gid = XMLUtil.getParentId(p.doc, p.gid);
-				if (p.gid > -1)
+				if (p.gid > -1) {
+					p.setNodeType(Node.ELEMENT_NODE);
 					temp.add(p);
+				}
 			}
 		}
 		if (temp.getLength() > 0) {
@@ -104,5 +112,12 @@ public class FunLang extends Function {
 			return result;
 		}
 		return Sequence.EMPTY_SEQUENCE;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.functions.Function#getDependencies()
+	 */
+	public int getDependencies() {
+		return Dependency.CONTEXT_SET;
 	}
 }
