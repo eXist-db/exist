@@ -300,6 +300,16 @@ public class XMLWriter {
 		}
 	}
 
+    public void cdataSection(char[] ch, int start, int len) throws TransformerException {
+        try {
+            writer.write("<![CDATA[");
+            writer.write(ch, start, len);
+            writer.write("]]>");
+        } catch (IOException e) {
+            throw new TransformerException(e.getMessage(), e);
+        }
+    }
+    
 	protected void closeStartTag(boolean isEmpty) throws TransformerException {
 		try {
 			if (tagIsOpen) {

@@ -169,6 +169,13 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 	    builder.processingInstruction(target, data);
 	}
 
+    /* (non-Javadoc)
+     * @see org.exist.util.serializer.Receiver#cdataSection(char[], int, int)
+     */
+    public void cdataSection(char[] ch, int start, int len) throws SAXException {
+        builder.cdataSection(new String(ch, start, len));
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#skippedEntity(java.lang.String)
 	 */

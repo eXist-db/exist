@@ -184,11 +184,11 @@ public interface XQueryTreeParserTokenTypes {
 	int XML_COMMENT_END = 159;
 	int XML_PI_END = 160;
 	int XML_CDATA = 161;
-	int XML_CDATA_END = 162;
-	int LITERAL_collection = 163;
-	int LITERAL_preceding = 164;
-	int XML_PI_START = 165;
-	int XML_CDATA_START = 166;
+	int LITERAL_collection = 162;
+	int LITERAL_preceding = 163;
+	int XML_PI_START = 164;
+	int XML_CDATA_START = 165;
+	int XML_CDATA_END = 166;
 	int LETTER = 167;
 	int DIGITS = 168;
 	int HEX_DIGITS = 169;

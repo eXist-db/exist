@@ -330,6 +330,9 @@ public class DocumentImpl extends NodeImpl implements Document {
             case Node.PROCESSING_INSTRUCTION_NODE:
                 node = new ProcessingInstructionImpl(this, nodeNr);
                 break;
+            case Node.CDATA_SECTION_NODE:
+                node = new CDATASectionImpl(this, nodeNr);
+                break;
             case NodeImpl.REFERENCE_NODE:
                 node = new ReferenceNode(this, nodeNr);
                 break;
@@ -724,13 +727,17 @@ public class DocumentImpl extends NodeImpl implements Document {
     	case Node.COMMENT_NODE:
     		receiver.comment(document.characters, document.alpha[nr],
     				document.alphaLen[nr]);
-    	break;
+    		break;
     	case Node.PROCESSING_INSTRUCTION_NODE:
     		QName qn = (QName) document.namePool.get(document.nodeName[nr]);
-    	String data = new String(document.characters,
-    			document.alpha[nr], document.alphaLen[nr]);
-    	receiver.processingInstruction(qn.getLocalName(), data);
-    	break;
+        	String data = new String(document.characters,
+        			document.alpha[nr], document.alphaLen[nr]);
+        	receiver.processingInstruction(qn.getLocalName(), data);
+        	break;
+        case Node.CDATA_SECTION_NODE:
+            receiver.cdataSection(document.characters, document.alpha[nr],
+                    document.alphaLen[nr]);
+            break;
     	case NodeImpl.REFERENCE_NODE:
     		serializer.toReceiver(document.references[document.alpha[nr]]);
     	break;

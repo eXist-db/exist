@@ -627,7 +627,7 @@ primaryExpr throws XPathException
 	|
 	( ( "element" | "attribute" | "processing-instruction" | "namespace" ) qName LCURLY ) => computedConstructor
 	|
-	constructor
+	directConstructor
 	|
 	functionCall
 	|
@@ -734,17 +734,15 @@ qName returns [String name]
 	name=ncnameOrKeyword
 	;
 
-constructor throws XPathException
+directConstructor throws XPathException
 :
 	elementConstructor
-	| 
-	xmlComment 
-	| 
-	xmlPI
 	|
-	cdataSection
+	xmlComment
+	|
+	xmlPI
 	;
-
+	
 computedConstructor throws XPathException
 :
 	compElemConstructor
@@ -983,7 +981,7 @@ elementContent throws XPathException
 	|
 	xmlComment
 	|
-	xmlPI
+	cdataSection
 	|
 	enclosedExpr
 	;
@@ -992,7 +990,7 @@ xmlComment : XML_COMMENT XML_COMMENT_END! ;
 
 xmlPI : XML_PI XML_PI_END! ;
 
-cdataSection : XML_CDATA XML_CDATA_END! ;
+cdataSection : XML_CDATA;
 
 enclosedExpr throws XPathException
 :
@@ -1401,8 +1399,11 @@ options {
 protected XML_CDATA
 options {
 	testLiterals=false;
+	paraphrase="CDATA";
 }:
-	XML_CDATA_START!  ( ~( ']' ) )+
+	XML_CDATA_START!  
+	( ~ ( ']' ) | ( ']' ~ ( ']' ) ) => ']' | ( ']' ']' ~ ( '>' ) ) => ( ']' ']' ) )* 
+	XML_CDATA_END!
 	;
 	
 /**
@@ -1420,7 +1421,7 @@ options {
 	( XML_PI_START )
 	=> XML_PI { $setType(XML_PI); }
 	|
-	XML_CDATA { $setType(XML_CDATA); $setText("CDATA"); }
+	XML_CDATA { $setType(XML_CDATA);  }
 	|
 	END_TAG_START
 	{

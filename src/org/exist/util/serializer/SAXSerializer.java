@@ -381,6 +381,14 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 			throw new SAXException(e.getMessage(), e);
 		}
 	}
+    
+    public void cdataSection(char[] ch, int start, int len) throws SAXException {
+        try {
+            receiver.cdataSection(ch, start, len);
+        } catch (TransformerException e) {
+            throw new SAXException(e.getMessage(), e);
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#skippedEntity(java.lang.String)

@@ -163,10 +163,7 @@ public class MemTreeBuilder {
 		int nodeNr = doc.addNode(NodeImpl.REFERENCE_NODE, level, null);
 		doc.addReferenceNode(nodeNr, proxy);
 		int prevNr = prevNodeInLevel[level];
-		if (prevNr > -1)
-			doc.next[prevNr] = nodeNr;
-		doc.next[nodeNr] = prevNodeInLevel[level - 1];
-		prevNodeInLevel[level] = nodeNr;
+		linkNode(nodeNr);
 		return nodeNr;
 	}
 	
@@ -188,11 +185,7 @@ public class MemTreeBuilder {
 	public int characters(char[] ch, int start, int len) {
 		int nodeNr = doc.addNode(Node.TEXT_NODE, level, null);
 		doc.addChars(nodeNr, ch, start, len);
-		int prevNr = prevNodeInLevel[level];
-		if (prevNr > -1)
-			doc.next[prevNr] = nodeNr;
-		doc.next[nodeNr] = prevNodeInLevel[level - 1];
-		prevNodeInLevel[level] = nodeNr;
+		linkNode(nodeNr);
 		return nodeNr;
 	}
 
@@ -204,45 +197,36 @@ public class MemTreeBuilder {
 	public int characters(CharSequence s) {
 		int nodeNr = doc.addNode(Node.TEXT_NODE, level, null);
 		doc.addChars(nodeNr, s);
-		int prevNr = prevNodeInLevel[level];
-		if (prevNr > -1)
-			doc.next[prevNr] = nodeNr;
-		doc.next[nodeNr] = prevNodeInLevel[level - 1];
-		prevNodeInLevel[level] = nodeNr;
+		linkNode(nodeNr);
 		return nodeNr;
 	}
 	
 	public int comment(CharSequence data) {
 		int nodeNr = doc.addNode(Node.COMMENT_NODE, level, null);
 		doc.addChars(nodeNr, data);
-		int prevNr = prevNodeInLevel[level];
-		if (prevNr > -1)
-			doc.next[prevNr] = nodeNr;
-		doc.next[nodeNr] = prevNodeInLevel[level - 1];
-		prevNodeInLevel[level] = nodeNr;
+		linkNode(nodeNr);
 		return nodeNr;
 	}
 	
 	public int comment(char ch[], int start, int len) {
 	    int nodeNr = doc.addNode(Node.COMMENT_NODE, level, null);
 		doc.addChars(nodeNr, ch, start, len);
-		int prevNr = prevNodeInLevel[level];
-		if (prevNr > -1)
-			doc.next[prevNr] = nodeNr;
-		doc.next[nodeNr] = prevNodeInLevel[level - 1];
-		prevNodeInLevel[level] = nodeNr;
+		linkNode(nodeNr);
 		return nodeNr;
 	}
+    
+    public int cdataSection(CharSequence data) {
+        int nodeNr = doc.addNode(Node.CDATA_SECTION_NODE, level, null);
+        doc.addChars(nodeNr, data);
+        linkNode(nodeNr);
+        return nodeNr;
+    }
 	
 	public int processingInstruction(String target, String data) {
 		QName qn = new QName(target, null, null);
 		int nodeNr = doc.addNode(Node.PROCESSING_INSTRUCTION_NODE, level, qn);
 		doc.addChars(nodeNr, data);
-		int prevNr = prevNodeInLevel[level];
-		if (prevNr > -1)
-			doc.next[prevNr] = nodeNr;
-		doc.next[nodeNr] = prevNodeInLevel[level - 1];
-		prevNodeInLevel[level] = nodeNr;
+		linkNode(nodeNr);
 		return nodeNr;
 	}
 	
@@ -255,4 +239,12 @@ public class MemTreeBuilder {
 		int nodeNr = doc.addNamespace(lastNode, qn);
 		return nodeNr;
 	}
+    
+    private void linkNode(int nodeNr) {
+        int prevNr = prevNodeInLevel[level];
+        if (prevNr > -1)
+            doc.next[prevNr] = nodeNr;
+        doc.next[nodeNr] = prevNodeInLevel[level - 1];
+        prevNodeInLevel[level] = nodeNr;
+    }
 }
