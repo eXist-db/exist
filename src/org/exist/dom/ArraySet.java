@@ -59,19 +59,10 @@ public class ArraySet extends AbstractNodeSet {
 				nl[i] = null;
 				continue;
 			}
-			level = node.doc.getTreeLevel(node.gid);
-			if (level == 0) {
-				node.gid = -1;
-			} else {
-				// calculate parent's gid
-				pid =
-					(node.gid - node.doc.treeLevelStartPoints[level])
-						/ node.doc.treeLevelOrder[level]
-						+ node.doc.treeLevelStartPoints[level
-						- 1];
-				//System.out.println(node.doc.getDocId() + ":" + node.gid + "->" + pid);
-				node.gid = pid;
-			}
+			
+			pid = XMLUtil.getParentId(node);
+			//System.out.println(node.doc.getDocId() + ":" + node.gid + "->" + pid);
+			node.gid = pid;	
 			// continue until all nodes are set to invalid
 			foundValid = true;
 		}

@@ -652,14 +652,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		if (level < 0)
 			level = doc.getTreeLevel(gid);
 		while (gid > 0) {
-			if (level == 0)
-				gid = -1;
-			else
-				// calculate parent's gid
-				gid =
-					(gid - doc.treeLevelStartPoints[level]) / doc.treeLevelOrder[level]
-						+ doc.treeLevelStartPoints[level
-						- 1];
+			gid = XMLUtil.getParentId(doc, gid, level);
 			if ((temp = get(doc, gid)) != null)
 				return temp;
 			else if (directParent)
