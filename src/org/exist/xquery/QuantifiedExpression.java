@@ -76,7 +76,7 @@ public class QuantifiedExpression extends BindingExpression {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#pprint()
+	 * @see org.exist.xquery.Expression#pprint()
 	 */
 	public String pprint() {
 		StringBuffer buf = new StringBuffer();
@@ -90,14 +90,14 @@ public class QuantifiedExpression extends BindingExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#returnsType()
+	 * @see org.exist.xquery.Expression#returnsType()
 	 */
 	public int returnsType() {
 		return Type.BOOLEAN;
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#getDependencies()
+	 * @see org.exist.xquery.AbstractExpression#getDependencies()
 	 */
 	public int getDependencies() {
 		return Dependency.CONTEXT_ITEM | Dependency.CONTEXT_SET;

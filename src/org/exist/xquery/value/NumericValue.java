@@ -26,7 +26,7 @@ public abstract class NumericValue extends ComputableValue {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#compareTo(int, org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 	 */
 	public boolean compareTo(int operator, AtomicValue other)
 		throws XPathException {
@@ -56,7 +56,7 @@ public abstract class NumericValue extends ComputableValue {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#compareTo(org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
 	 */
 	public int compareTo(AtomicValue other) throws XPathException {
 		if(Type.subTypeOf(other.getType(), Type.NUMBER)) {

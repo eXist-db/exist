@@ -32,6 +32,14 @@ public class RemoteIndexQueryService implements IndexQueryService {
 		this.parent = parent;
 	}
 
+	
+    /* (non-Javadoc)
+     * @see org.exist.xmldb.IndexQueryService#reindexCollection()
+     */
+    public void reindexCollection() throws XMLDBException {
+        throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED);
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.IndexQueryService#getIndexedElements(boolean)
 	 */

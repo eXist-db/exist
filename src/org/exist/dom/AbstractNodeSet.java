@@ -34,7 +34,7 @@ import org.w3c.dom.Node;
 
 /**
  * Abstract base class for all node set implementations. A node set is a special type of sequence,
- * which contains only nodes. Class NodeSet thus implements the {@link org.exist.xpath.value.Sequence} 
+ * which contains only nodes. Class NodeSet thus implements the {@link org.exist.xquery.value.Sequence} 
  * as well as the DOM {@link org.w3c.dom.NodeList} interfaces.
  * 
  * Please note that a node set may or may not contain duplicate nodes. Some implementations
@@ -57,17 +57,17 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	public abstract Iterator iterator();
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#iterate()
+	 * @see org.exist.xquery.value.Sequence#iterate()
 	 */
 	public abstract SequenceIterator iterate();
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#unorderedIterator()
+	 * @see org.exist.xquery.value.Sequence#unorderedIterator()
 	 */
 	public abstract SequenceIterator unorderedIterator();
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#getItemType()
+	 * @see org.exist.xquery.value.Sequence#getItemType()
 	 */
 	public int getItemType() {
 		return Type.NODE;

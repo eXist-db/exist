@@ -37,21 +37,21 @@ public class UntypedAtomicValue extends AtomicValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#getType()
+	 * @see org.exist.xquery.value.AtomicValue#getType()
 	 */
 	public int getType() {
 		return Type.ATOMIC;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#getStringValue()
+	 * @see org.exist.xquery.value.Sequence#getStringValue()
 	 */
 	public String getStringValue() throws XPathException {
 		return value;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#convertTo(int)
+	 * @see org.exist.xquery.value.Sequence#convertTo(int)
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		switch (requiredType) {
@@ -109,7 +109,7 @@ public class UntypedAtomicValue extends AtomicValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#compareTo(int, org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 	 */
 	public boolean compareTo(int operator, AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.STRING)) {
@@ -137,14 +137,14 @@ public class UntypedAtomicValue extends AtomicValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#compareTo(org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
 	 */
 	public int compareTo(AtomicValue other) throws XPathException {
 		return value.compareTo(other.getStringValue());
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#max(org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
 	 */
 	public AtomicValue max(AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.STRING))
@@ -157,7 +157,7 @@ public class UntypedAtomicValue extends AtomicValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#min(org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#min(org.exist.xquery.value.AtomicValue)
 	 */
 	public AtomicValue min(AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.STRING))
@@ -170,7 +170,7 @@ public class UntypedAtomicValue extends AtomicValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#conversionPreference(java.lang.Class)
+	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
 	 */
 	public int conversionPreference(Class javaClass) {
 		if (javaClass.isAssignableFrom(StringValue.class))
@@ -200,7 +200,7 @@ public class UntypedAtomicValue extends AtomicValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#toJavaObject(java.lang.Class)
+	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 	 */
 	public Object toJavaObject(Class target) throws XPathException {
 		if (target.isAssignableFrom(StringValue.class))

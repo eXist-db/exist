@@ -52,14 +52,14 @@ public class FunLast extends Function {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.functions.Function#getDependencies()
+	 * @see org.exist.xquery.functions.Function#getDependencies()
 	 */
 	public int getDependencies() {
 		return Dependency.CONTEXT_ITEM + Dependency.CONTEXT_SET;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.functions.Function#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
+	 * @see org.exist.xquery.functions.Function#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(
 		Sequence contextSequence,

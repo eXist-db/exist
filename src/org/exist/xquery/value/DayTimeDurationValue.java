@@ -145,7 +145,7 @@ public class DayTimeDurationValue extends DurationValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.DurationValue#getType()
+	 * @see org.exist.xquery.value.DurationValue#getType()
 	 */
 	public int getType() {
 		return Type.DAY_TIME_DURATION;
@@ -190,7 +190,7 @@ public class DayTimeDurationValue extends DurationValue {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#getStringValue()
+	 * @see org.exist.xquery.value.Sequence#getStringValue()
 	 */
 	public String getStringValue() throws XPathException {
 		StringBuffer buf = new StringBuffer();
@@ -209,7 +209,7 @@ public class DayTimeDurationValue extends DurationValue {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.DurationValue#convertTo(int)
+	 * @see org.exist.xquery.value.DurationValue#convertTo(int)
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		switch(requiredType) {
@@ -229,7 +229,7 @@ public class DayTimeDurationValue extends DurationValue {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#compareTo(int, org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 	 */
 	public boolean compareTo(int operator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.DAY_TIME_DURATION) {
@@ -258,7 +258,7 @@ public class DayTimeDurationValue extends DurationValue {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#compareTo(org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
 	 */
 	public int compareTo(AtomicValue other) throws XPathException {
 		if (other.getType() == Type.DAY_TIME_DURATION) {
@@ -277,7 +277,7 @@ public class DayTimeDurationValue extends DurationValue {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#max(org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
 	 */
 	public AtomicValue max(AtomicValue other) throws XPathException {
 		if (other.getType() == Type.DAY_TIME_DURATION)
@@ -289,7 +289,7 @@ public class DayTimeDurationValue extends DurationValue {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#max(org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
 	 */
 	public AtomicValue min(AtomicValue other) throws XPathException {
 		if (other.getType() == Type.DAY_TIME_DURATION)
@@ -301,7 +301,7 @@ public class DayTimeDurationValue extends DurationValue {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.DurationValue#plus(org.exist.xpath.value.ComputableValue)
+	 * @see org.exist.xquery.value.DurationValue#plus(org.exist.xquery.value.ComputableValue)
 	 */
 	public ComputableValue plus(ComputableValue other) throws XPathException {
 		long delta;
@@ -325,7 +325,7 @@ public class DayTimeDurationValue extends DurationValue {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.DurationValue#minus(org.exist.xpath.value.ComputableValue)
+	 * @see org.exist.xquery.value.DurationValue#minus(org.exist.xquery.value.ComputableValue)
 	 */
 	public ComputableValue minus(ComputableValue other) throws XPathException {
 		if(other.getType() == Type.DAY_TIME_DURATION) {

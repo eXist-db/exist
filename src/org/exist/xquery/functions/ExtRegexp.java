@@ -83,7 +83,7 @@ public class ExtRegexp extends Function {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.functions.Function#getDependencies()
+	 * @see org.exist.xquery.functions.Function#getDependencies()
 	 */
 	public int getDependencies() {
 		int deps = 0;
@@ -140,7 +140,7 @@ public class ExtRegexp extends Function {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.functions.ExtFulltext#evalQuery(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, java.lang.String, org.exist.dom.NodeSet)
+	 * @see org.exist.xquery.functions.ExtFulltext#evalQuery(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, java.lang.String, org.exist.dom.NodeSet)
 	 */
 	public Sequence evalQuery(
 		XQueryContext context,

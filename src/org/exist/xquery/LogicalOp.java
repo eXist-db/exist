@@ -41,7 +41,7 @@ public abstract class LogicalOp extends BinaryOp {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
+	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public abstract Sequence eval(
 		Sequence contextSequence,
@@ -49,7 +49,7 @@ public abstract class LogicalOp extends BinaryOp {
 		throws XPathException;
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.BinaryOp#returnsType()
+	 * @see org.exist.xquery.BinaryOp#returnsType()
 	 */
 	public int returnsType() {
 		if(Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
@@ -62,7 +62,7 @@ public abstract class LogicalOp extends BinaryOp {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.PathExpr#getDependencies()
+	 * @see org.exist.xquery.PathExpr#getDependencies()
 	 */
 	public int getDependencies() {
 		if(returnsType() == Type.BOOLEAN)
@@ -72,7 +72,7 @@ public abstract class LogicalOp extends BinaryOp {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#setInPredicate(boolean)
+	 * @see org.exist.xquery.Expression#setInPredicate(boolean)
 	 */
 	public void setInPredicate(boolean inPredicate) {
 		super.setInPredicate(inPredicate);
@@ -82,7 +82,7 @@ public abstract class LogicalOp extends BinaryOp {
 	}
 		
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#pprint()
+	 * @see org.exist.xquery.Expression#pprint()
 	 */
 	public abstract String pprint();
 

@@ -117,14 +117,14 @@ public class DateValue extends AbstractDateTimeValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#getType()
+	 * @see org.exist.xquery.value.AtomicValue#getType()
 	 */
 	public int getType() {
 		return Type.DATE;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#getStringValue()
+	 * @see org.exist.xquery.value.Sequence#getStringValue()
 	 */
 	public String getStringValue() throws XPathException {
 		StringBuffer buf = new StringBuffer();
@@ -158,7 +158,7 @@ public class DateValue extends AbstractDateTimeValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#convertTo(int)
+	 * @see org.exist.xquery.value.Sequence#convertTo(int)
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		switch (requiredType) {
@@ -178,7 +178,7 @@ public class DateValue extends AbstractDateTimeValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#compareTo(int, org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 	 */
 	public boolean compareTo(int operator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.DATE) {
@@ -206,7 +206,7 @@ public class DateValue extends AbstractDateTimeValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#compareTo(org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
 	 */
 	public int compareTo(AtomicValue other) throws XPathException {
 		if (other.getType() == Type.DATE) {
@@ -218,7 +218,7 @@ public class DateValue extends AbstractDateTimeValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#max(org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
 	 */
 	public AtomicValue max(AtomicValue other) throws XPathException {
 		if (other.getType() == Type.DATE)
@@ -230,7 +230,7 @@ public class DateValue extends AbstractDateTimeValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#min(org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#min(org.exist.xquery.value.AtomicValue)
 	 */
 	public AtomicValue min(AtomicValue other) throws XPathException {
 		if (other.getType() == Type.DATE)
@@ -242,7 +242,7 @@ public class DateValue extends AbstractDateTimeValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.ComputableValue#minus(org.exist.xpath.value.NumericValue)
+	 * @see org.exist.xquery.value.ComputableValue#minus(org.exist.xquery.value.NumericValue)
 	 */
 	public ComputableValue minus(ComputableValue other) throws XPathException {
 		Calendar ncal;
@@ -270,7 +270,7 @@ public class DateValue extends AbstractDateTimeValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.ComputableValue#plus(org.exist.xpath.value.NumericValue)
+	 * @see org.exist.xquery.value.ComputableValue#plus(org.exist.xquery.value.NumericValue)
 	 */
 	public ComputableValue plus(ComputableValue other) throws XPathException {
 		Calendar ncal;
@@ -294,7 +294,7 @@ public class DateValue extends AbstractDateTimeValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.ComputableValue#mult(org.exist.xpath.value.NumericValue)
+	 * @see org.exist.xquery.value.ComputableValue#mult(org.exist.xquery.value.NumericValue)
 	 */
 	public ComputableValue mult(ComputableValue other) throws XPathException {
 		// TODO Auto-generated method stub
@@ -302,7 +302,7 @@ public class DateValue extends AbstractDateTimeValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.ComputableValue#div(org.exist.xpath.value.NumericValue)
+	 * @see org.exist.xquery.value.ComputableValue#div(org.exist.xquery.value.NumericValue)
 	 */
 	public ComputableValue div(ComputableValue other) throws XPathException {
 		// TODO Auto-generated method stub
@@ -310,7 +310,7 @@ public class DateValue extends AbstractDateTimeValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#conversionPreference(java.lang.Class)
+	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
 	 */
 	public int conversionPreference(Class javaClass) {
 		if (javaClass.isAssignableFrom(DateValue.class))
@@ -324,7 +324,7 @@ public class DateValue extends AbstractDateTimeValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#toJavaObject(java.lang.Class)
+	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 	 */
 	public Object toJavaObject(Class target) throws XPathException {
 		if (target.isAssignableFrom(DateValue.class))

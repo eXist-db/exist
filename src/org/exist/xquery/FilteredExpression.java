@@ -32,7 +32,7 @@ import org.exist.xquery.value.Sequence;
 /**
  * FilteredExpression represents a primary expression with a predicate. Examples:
  * for $i in (1 to 10)[$i mod 2 = 0], $a[1], (doc("test.xml")//section)[2]. Other predicate
- * expressions are handled by class {@link org.exist.xpath.LocationStep}.
+ * expressions are handled by class {@link org.exist.xquery.LocationStep}.
  * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
@@ -54,7 +54,7 @@ public class FilteredExpression extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
+	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
@@ -74,7 +74,7 @@ public class FilteredExpression extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#pprint()
+	 * @see org.exist.xquery.Expression#pprint()
 	 */
 	public String pprint() {
 		StringBuffer buf = new StringBuffer();
@@ -88,14 +88,14 @@ public class FilteredExpression extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#returnsType()
+	 * @see org.exist.xquery.Expression#returnsType()
 	 */
 	public int returnsType() {
 		return expression.returnsType();
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#resetState()
+	 * @see org.exist.xquery.Expression#resetState()
 	 */
 	public void resetState() {
 		expression.resetState();
@@ -106,14 +106,14 @@ public class FilteredExpression extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#setPrimaryAxis(int)
+	 * @see org.exist.xquery.AbstractExpression#setPrimaryAxis(int)
 	 */
 	public void setPrimaryAxis(int axis) {
 		expression.setPrimaryAxis(axis);
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#getDependencies()
+	 * @see org.exist.xquery.AbstractExpression#getDependencies()
 	 */
 	public int getDependencies() {
 		int deps = Dependency.CONTEXT_SET;

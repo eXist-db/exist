@@ -57,14 +57,14 @@ public class UserDefinedFunction extends Function {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Function#setArguments(java.util.List)
+	 * @see org.exist.xquery.Function#setArguments(java.util.List)
 	 */
 	public void setArguments(Sequence[] args) throws XPathException {
 		this.currentArguments = args;
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
+	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(
 		Sequence contextSequence,
@@ -85,7 +85,7 @@ public class UserDefinedFunction extends Function {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.functions.Function#pprint()
+	 * @see org.exist.xquery.functions.Function#pprint()
 	 */
 	public String pprint() {
 		FunctionSignature signature = getSignature();
@@ -103,7 +103,7 @@ public class UserDefinedFunction extends Function {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.functions.Function#getDependencies()
+	 * @see org.exist.xquery.functions.Function#getDependencies()
 	 */
 	public int getDependencies() {
 		return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM
@@ -111,7 +111,7 @@ public class UserDefinedFunction extends Function {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.PathExpr#resetState()
+	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
 	public void resetState() {
 		if(!isReset) {

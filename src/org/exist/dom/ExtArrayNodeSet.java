@@ -150,7 +150,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.exist.xpath.value.Sequence#iterate()
+	 * @see org.exist.xquery.value.Sequence#iterate()
 	 */
 	public SequenceIterator iterate() {
 		sortInDocumentOrder();
@@ -210,7 +210,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.exist.xpath.value.Sequence#getLength()
+	 * @see org.exist.xquery.value.Sequence#getLength()
 	 */
 	public int getLength() {
 		sort(); // sort to remove duplicates
@@ -269,7 +269,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.exist.xpath.value.Sequence#itemAt(int)
+	 * @see org.exist.xquery.value.Sequence#itemAt(int)
 	 */
 	public Item itemAt(int pos) {
 		sortInDocumentOrder();
@@ -341,7 +341,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.exist.xpath.value.AbstractSequence#setSelfAsContext()
+	 * @see org.exist.xquery.value.AbstractSequence#setSelfAsContext()
 	 */
 	public void setSelfAsContext() {
 		Part part;
@@ -700,7 +700,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 		/*
 		 * (non-Javadoc)
 		 * 
-		 * @see org.exist.xpath.value.SequenceIterator#nextItem()
+		 * @see org.exist.xquery.value.SequenceIterator#nextItem()
 		 */
 		public Item nextItem() {
 			return (Item) next();

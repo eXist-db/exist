@@ -115,7 +115,7 @@ public class FunLang extends Function {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.functions.Function#getDependencies()
+	 * @see org.exist.xquery.functions.Function#getDependencies()
 	 */
 	public int getDependencies() {
 		return Dependency.CONTEXT_SET;

@@ -26,28 +26,28 @@ import org.exist.xquery.XPathException;
 public class EmptySequence extends AbstractSequence {
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#getItemType()
+	 * @see org.exist.xquery.value.Sequence#getItemType()
 	 */
 	public int getItemType() {
 		return Type.EMPTY;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#iterate()
+	 * @see org.exist.xquery.value.Sequence#iterate()
 	 */
 	public SequenceIterator iterate() {
 		return EmptySequenceIterator.EMPTY_ITERATOR;
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AbstractSequence#unorderedIterator()
+	 * @see org.exist.xquery.value.AbstractSequence#unorderedIterator()
 	 */
 	public SequenceIterator unorderedIterator() {
 		return EmptySequenceIterator.EMPTY_ITERATOR;
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#getLength()
+	 * @see org.exist.xquery.value.Sequence#getLength()
 	 */
 	public int getLength() {
 		return 0;
@@ -74,7 +74,7 @@ public class EmptySequence extends AbstractSequence {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#toNodeSet()
+	 * @see org.exist.xquery.value.Sequence#toNodeSet()
 	 */
 	public NodeSet toNodeSet() throws XPathException {
 		return NodeSet.EMPTY_SET;

@@ -69,14 +69,14 @@ public class RootNode extends Step {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Step#returnsType()
+	 * @see org.exist.xquery.Step#returnsType()
 	 */
 	public int returnsType() {
 		return Type.NODE;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Step#resetState()
+	 * @see org.exist.xquery.Step#resetState()
 	 */
 	public void resetState() {
 	    cachedDocs = null;

@@ -28,7 +28,7 @@ import org.exist.xquery.XPathException;
  * 
  * A sequence is a sequence of items. Each item is either an atomic value or a
  * node. A single item is also a sequence, containing only the item. The base classes for 
- * {@link org.exist.xpath.value.AtomicValue atomic values} and {@link org.exist.dom.NodeProxy
+ * {@link org.exist.xquery.value.AtomicValue atomic values} and {@link org.exist.dom.NodeProxy
  * nodes} thus implement the Sequence interface.
  * 
  * Also, a {@link org.exist.dom.NodeSet node set} is a special type of sequence, where all 
@@ -65,7 +65,7 @@ public interface Sequence {
 	
 	/**
 	 * Return the primary type to which all items in this sequence belong. This is
-	 * {@link org.exist.xpath.value.Type#NODE} for node sets, {@link Type#ITEM}
+	 * {@link org.exist.xquery.value.Type#NODE} for node sets, {@link Type#ITEM}
 	 * for other sequences with mixed items.
 	 * 
 	 * @return the primary type of the items in this sequence.

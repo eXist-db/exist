@@ -46,25 +46,25 @@ public abstract class CombiningExpression extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
+	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public abstract Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException;
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#pprint()
+	 * @see org.exist.xquery.Expression#pprint()
 	 */
 	public abstract String pprint();
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#returnsType()
+	 * @see org.exist.xquery.Expression#returnsType()
 	 */
 	public int returnsType() {
 		return Type.NODE;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#resetState()
+	 * @see org.exist.xquery.Expression#resetState()
 	 */
 	public void resetState() {
 		left.resetState();
@@ -72,7 +72,7 @@ public abstract class CombiningExpression extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#setPrimaryAxis(int)
+	 * @see org.exist.xquery.AbstractExpression#setPrimaryAxis(int)
 	 */
 	public void setPrimaryAxis(int axis) {
 		left.setPrimaryAxis(axis);
@@ -80,7 +80,7 @@ public abstract class CombiningExpression extends AbstractExpression {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#setInPredicate(boolean)
+	 * @see org.exist.xquery.Expression#setInPredicate(boolean)
 	 */
 	public void setInPredicate(boolean inPredicate) {
 		super.setInPredicate(inPredicate);

@@ -29,7 +29,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
 
 /**
- * Default implementation of an {@link org.exist.xpath.ExternalModule}.
+ * Default implementation of an {@link org.exist.xquery.ExternalModule}.
  * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
@@ -53,35 +53,35 @@ public class ExternalModuleImpl implements ExternalModule {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.ExternalModule#declareFunction(org.exist.xpath.UserDefinedFunction)
+	 * @see org.exist.xquery.ExternalModule#declareFunction(org.exist.xquery.UserDefinedFunction)
 	 */
 	public void declareFunction(UserDefinedFunction func) {
 		mFunctionMap.put(func.getSignature().getName(), func);
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Module#getNamespaceURI()
+	 * @see org.exist.xquery.Module#getNamespaceURI()
 	 */
 	public String getNamespaceURI() {
 		return mNamespaceURI;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Module#getDefaultPrefix()
+	 * @see org.exist.xquery.Module#getDefaultPrefix()
 	 */
 	public String getDefaultPrefix() {
 		return mPrefix;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Module#isInternalModule()
+	 * @see org.exist.xquery.Module#isInternalModule()
 	 */
 	public boolean isInternalModule() {
 		return false;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Module#listFunctions()
+	 * @see org.exist.xquery.Module#listFunctions()
 	 */
 	public FunctionSignature[] listFunctions() {
 		FunctionSignature signatures[] = new FunctionSignature[mFunctionMap.size()];
@@ -93,7 +93,7 @@ public class ExternalModuleImpl implements ExternalModule {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Module#getSignatureForFunction(org.exist.dom.QName)
+	 * @see org.exist.xquery.Module#getSignatureForFunction(org.exist.dom.QName)
 	 */
 	public FunctionSignature getSignatureForFunction(QName qname) {
 		UserDefinedFunction func = (UserDefinedFunction) mFunctionMap.get(qname);
@@ -103,7 +103,7 @@ public class ExternalModuleImpl implements ExternalModule {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Module#declareVariable(org.exist.dom.QName, java.lang.Object)
+	 * @see org.exist.xquery.Module#declareVariable(org.exist.dom.QName, java.lang.Object)
 	 */
 	public Variable declareVariable(QName qname, Object value) throws XPathException {
 		Sequence val = XPathUtil.javaObjectToXPath(value);
@@ -121,7 +121,7 @@ public class ExternalModuleImpl implements ExternalModule {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Module#resolveVariable(org.exist.dom.QName)
+	 * @see org.exist.xquery.Module#resolveVariable(org.exist.dom.QName)
 	 */
 	public Variable resolveVariable(QName qname) throws XPathException {
 		VariableDeclaration decl = (VariableDeclaration)mGlobalVariables.get(qname);

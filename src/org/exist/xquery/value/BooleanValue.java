@@ -35,21 +35,21 @@ public class BooleanValue extends AtomicValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#getType()
+	 * @see org.exist.xquery.value.AtomicValue#getType()
 	 */
 	public int getType() {
 		return Type.BOOLEAN;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#getStringValue()
+	 * @see org.exist.xquery.value.Item#getStringValue()
 	 */
 	public String getStringValue() throws XPathException {
 		return value ? "true" : "false";
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#convertTo(int)
+	 * @see org.exist.xquery.value.AtomicValue#convertTo(int)
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		switch (requiredType) {
@@ -69,7 +69,7 @@ public class BooleanValue extends AtomicValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#compareTo(int, org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 	 */
 	public boolean compareTo(int operator, AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.BOOLEAN)) {
@@ -101,7 +101,7 @@ public class BooleanValue extends AtomicValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#effectiveBooleanValue()
+	 * @see org.exist.xquery.value.AtomicValue#effectiveBooleanValue()
 	 */
 	public boolean effectiveBooleanValue() throws XPathException {
 		return value;
@@ -112,7 +112,7 @@ public class BooleanValue extends AtomicValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#max(org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
 	 */
 	public AtomicValue max(AtomicValue other) throws XPathException {
 		if (other.getType() == Type.BOOLEAN) {
@@ -135,7 +135,7 @@ public class BooleanValue extends AtomicValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#conversionPreference(java.lang.Class)
+	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
 	 */
 	public int conversionPreference(Class javaClass) {
 		if(javaClass.isAssignableFrom(BooleanValue.class)) return 0;
@@ -147,7 +147,7 @@ public class BooleanValue extends AtomicValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#toJavaObject(java.lang.Class)
+	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 	 */
 	public Object toJavaObject(Class target) throws XPathException {
 		if(target.isAssignableFrom(BooleanValue.class))

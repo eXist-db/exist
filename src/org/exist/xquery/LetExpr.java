@@ -41,7 +41,7 @@ public class LetExpr extends BindingExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
+	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem, Sequence resultSequence)
 		throws XPathException {
@@ -85,7 +85,7 @@ public class LetExpr extends BindingExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#pprint()
+	 * @see org.exist.xquery.Expression#pprint()
 	 */
 	public String pprint() {
 		StringBuffer buf = new StringBuffer();

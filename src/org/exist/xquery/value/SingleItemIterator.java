@@ -30,14 +30,14 @@ public class SingleItemIterator implements SequenceIterator {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.SequenceIterator#hasNext()
+	 * @see org.exist.xquery.value.SequenceIterator#hasNext()
 	 */
 	public boolean hasNext() {
 		return more;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.SequenceIterator#nextItem()
+	 * @see org.exist.xquery.value.SequenceIterator#nextItem()
 	 */
 	public Item nextItem() {
 		if (!more)

@@ -58,9 +58,9 @@
 	<classpathentry kind="lib" path="lib/optional/commons-jexl-1.0-beta-1-20040113.jar"/>
 	<classpathentry kind="lib" path="lib/optional/excalibur-component-20040122.jar"/>
 	<classpathentry kind="lib" path="lib/optional/excalibur-store-1.0-dev-20040206.jar"/>
-	<classpathentry kind="lib" path="lib/optional/javacApi-0.9.jar"/>
-	<classpathentry kind="lib" path="lib/optional/javacImpl-0.9.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jdtcore-2.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/xml-commons-resolver-1.1.jar"/>
+	<classpathentry kind="lib" path="/home/wolf/Java/jakarta-tomcat-5.0.19/common/lib/jmx.jar"/>
+	<classpathentry kind="lib" path="/home/wolf/Java/jakarta-tomcat-5.0.19/common/lib/catalina.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

@@ -97,14 +97,14 @@ public class JavaCall extends Function {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Function#getName()
+	 * @see org.exist.xquery.Function#getName()
 	 */
 	public QName getName() {
 		return qname;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Function#setArguments(java.util.List)
+	 * @see org.exist.xquery.Function#setArguments(java.util.List)
 	 */
 	public void setArguments(List arguments) throws XPathException {
 		final int argCount = arguments.size();
@@ -152,7 +152,7 @@ public class JavaCall extends Function {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
+	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
@@ -248,7 +248,7 @@ public class JavaCall extends Function {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Function#returnsType()
+	 * @see org.exist.xquery.Function#returnsType()
 	 */
 	public int returnsType() {
 		return Type.ITEM;

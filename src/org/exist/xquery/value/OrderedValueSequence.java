@@ -42,35 +42,35 @@ public class OrderedValueSequence extends AbstractSequence {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#getItemType()
+	 * @see org.exist.xquery.value.Sequence#getItemType()
 	 */
 	public int getItemType() {
 		return Type.ATOMIC;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#iterate()
+	 * @see org.exist.xquery.value.Sequence#iterate()
 	 */
 	public SequenceIterator iterate() {
 		return new OrderedValueSequenceIterator();
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AbstractSequence#unorderedIterator()
+	 * @see org.exist.xquery.value.AbstractSequence#unorderedIterator()
 	 */
 	public SequenceIterator unorderedIterator() {
 		return new OrderedValueSequenceIterator();
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#getLength()
+	 * @see org.exist.xquery.value.Sequence#getLength()
 	 */
 	public int getLength() {
 		return (items == null) ? 0 : count;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#add(org.exist.xpath.value.Item)
+	 * @see org.exist.xquery.value.Sequence#add(org.exist.xquery.value.Item)
 	 */
 	public void add(Item item) throws XPathException {
 		if(count == items.length) {
@@ -82,7 +82,7 @@ public class OrderedValueSequence extends AbstractSequence {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AbstractSequence#addAll(org.exist.xpath.value.Sequence)
+	 * @see org.exist.xquery.value.AbstractSequence#addAll(org.exist.xquery.value.Sequence)
 	 */
 	public void addAll(Sequence other) throws XPathException {
 		if(other.getLength() > 0) {
@@ -101,7 +101,7 @@ public class OrderedValueSequence extends AbstractSequence {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#itemAt(int)
+	 * @see org.exist.xquery.value.Sequence#itemAt(int)
 	 */
 	public Item itemAt(int pos) {
 		if(items != null && pos > -1 && pos < count)
@@ -111,7 +111,7 @@ public class OrderedValueSequence extends AbstractSequence {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#toNodeSet()
+	 * @see org.exist.xquery.value.Sequence#toNodeSet()
 	 */
 	public NodeSet toNodeSet() throws XPathException {
 		throw new XPathException("Operation not supported");
@@ -175,14 +175,14 @@ public class OrderedValueSequence extends AbstractSequence {
 		int pos = 0;
 		
 		/* (non-Javadoc)
-		 * @see org.exist.xpath.value.SequenceIterator#hasNext()
+		 * @see org.exist.xquery.value.SequenceIterator#hasNext()
 		 */
 		public boolean hasNext() {
 			return pos < count;
 		}
 		
 		/* (non-Javadoc)
-		 * @see org.exist.xpath.value.SequenceIterator#nextItem()
+		 * @see org.exist.xquery.value.SequenceIterator#nextItem()
 		 */
 		public Item nextItem() {
 			if(pos < count)

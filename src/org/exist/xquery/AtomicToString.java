@@ -46,7 +46,7 @@ public class AtomicToString extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
+	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(
 		Sequence contextSequence,
@@ -65,28 +65,28 @@ public class AtomicToString extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#pprint()
+	 * @see org.exist.xquery.Expression#pprint()
 	 */
 	public String pprint() {
 		return expression.pprint() + " cast as xs:string";
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#returnsType()
+	 * @see org.exist.xquery.Expression#returnsType()
 	 */
 	public int returnsType() {
 		return Type.STRING;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#preselect(org.exist.dom.DocumentSet)
+	 * @see org.exist.xquery.AbstractExpression#preselect(org.exist.dom.DocumentSet)
 	 */
 	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
 		return in_docs;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#resetState()
+	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
 	public void resetState() {
 		expression.resetState();

@@ -30,6 +30,7 @@ import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
@@ -38,7 +39,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
-import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
@@ -87,7 +87,7 @@ public class DocumentImpl extends NodeImpl implements Document {
     protected NodeProxy references[];
 
     protected int nextRef = 0;
-
+    
     private final static int NODE_SIZE = 128;
     private final static int ATTR_SIZE = 64;
     private final static int CHAR_BUF_SIZE = 1024;
@@ -194,7 +194,7 @@ public class DocumentImpl extends NodeImpl implements Document {
     public int getLastNode() {
         return size - 1;
     }
-
+    
     private void grow() {
         int newSize = (size * 3) / 2;
 

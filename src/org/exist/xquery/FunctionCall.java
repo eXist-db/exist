@@ -32,7 +32,7 @@ import org.exist.xquery.value.Type;
 
 /**
  * Represents a call to a user-defined function 
- * {@see org.exist.xpath.functions.UserDefinedFunction}.
+ * {@link org.exist.xquery.functions.UserDefinedFunction}.
  * 
  * FunctionCall wraps around a user-defined function. It makes sure that all function parameters
  * are checked against the signature of the function. 
@@ -92,7 +92,7 @@ public class FunctionCall extends Function {
 	 * The return value of the user-defined function will be checked against the
 	 * provided function signature.
 	 * 
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
+	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(
 		Sequence contextSequence,
@@ -119,7 +119,7 @@ public class FunctionCall extends Function {
 	}
 
 	 /* (non-Javadoc)
-	 * @see org.exist.xpath.PathExpr#resetState()
+	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
 	public void resetState() {
 		functionDef.resetState();

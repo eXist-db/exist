@@ -65,7 +65,7 @@ public class LocationStep extends Step {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Step#returnsType()
+	 * @see org.exist.xquery.Step#returnsType()
 	 */
 //	public int returnsType() {
 //		if(axis == Constants.SELF_AXIS)
@@ -75,7 +75,7 @@ public class LocationStep extends Step {
 //	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#getDependencies()
+	 * @see org.exist.xquery.AbstractExpression#getDependencies()
 	 */
 	public int getDependencies() {
 		int deps = Dependency.CONTEXT_SET;
@@ -403,7 +403,7 @@ public class LocationStep extends Step {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Step#resetState()
+	 * @see org.exist.xquery.Step#resetState()
 	 */
 	public void resetState() {
 		super.resetState();

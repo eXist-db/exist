@@ -35,7 +35,7 @@ public class AllTests {
 	}
 
 	public static Test suite() {
-		TestSuite suite = new TestSuite("Test for org.exist.xpath.test");
+		TestSuite suite = new TestSuite("Test for org.exist.xquery.test");
 		//$JUnit-BEGIN$
 		suite.addTestSuite(LexerTest.class);
 		suite.addTestSuite(XPathQueryTest.class);

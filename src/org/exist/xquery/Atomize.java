@@ -42,7 +42,7 @@ public class Atomize extends AbstractExpression {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
+	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(
 		Sequence contextSequence,
@@ -59,28 +59,28 @@ public class Atomize extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#pprint()
+	 * @see org.exist.xquery.Expression#pprint()
 	 */
 	public String pprint() {
 		return "#atomize(" + expression.pprint() + ')';
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#returnsType()
+	 * @see org.exist.xquery.Expression#returnsType()
 	 */
 	public int returnsType() {
 		return Type.ATOMIC;
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#getDependencies()
+	 * @see org.exist.xquery.AbstractExpression#getDependencies()
 	 */
 	public int getDependencies() {
 		return expression.getDependencies();
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#resetState()
+	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
 	public void resetState() {
 		expression.resetState();

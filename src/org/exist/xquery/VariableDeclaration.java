@@ -29,8 +29,8 @@ import org.exist.xquery.value.SequenceType;
 
 /**
  * A global variable declaration (with: declare variable). Variable bindings within
- * for and let expressions are handled by {@link org.exist.xpath.ForExpr} and
- * {@link org.exist.xpath.LetExpr}.
+ * for and let expressions are handled by {@link org.exist.xquery.ForExpr} and
+ * {@link org.exist.xquery.LetExpr}.
  * 
  * @author wolf
  */
@@ -59,7 +59,7 @@ public class VariableDeclaration extends AbstractExpression {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
+	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(
 		Sequence contextSequence,
@@ -85,35 +85,35 @@ public class VariableDeclaration extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#pprint()
+	 * @see org.exist.xquery.Expression#pprint()
 	 */
 	public String pprint() {
 		return "";
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#returnsType()
+	 * @see org.exist.xquery.Expression#returnsType()
 	 */
 	public int returnsType() {
 		return expression.returnsType();
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#getDependencies()
+	 * @see org.exist.xquery.AbstractExpression#getDependencies()
 	 */
 	public int getDependencies() {
 		return expression.getDependencies();
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#getCardinality()
+	 * @see org.exist.xquery.AbstractExpression#getCardinality()
 	 */
 	public int getCardinality() {
 		return expression.getCardinality();
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#resetState()
+	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
 	public void resetState() {
 		expression.resetState();

@@ -786,6 +786,10 @@ public class ElementImpl extends NodeImpl implements Element {
 		return (String) namespaceMappings.get(prefix);
 	}
 
+	public int getPrefixCount() {
+	    return namespaceMappings.size();
+	}
+	
 	public void toSAX(
 		ContentHandler contentHandler,
 		LexicalHandler lexicalHandler,

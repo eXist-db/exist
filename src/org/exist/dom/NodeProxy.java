@@ -50,7 +50,7 @@ import org.xml.sax.SAXException;
  * the real node for a proxy, simply call {@link #getNode()}. 
  * 
  * All sets of type NodeSet operate on NodeProxys. A node set is a special type of 
- * sequence, so NodeProxy does also implement {@link org.exist.xpath.value.Item} and
+ * sequence, so NodeProxy does also implement {@link org.exist.xquery.value.Item} and
  * can thus be an item in a sequence. Since, according to XPath 2, a single node is also 
  * a sequence, NodeProxy does itself extend NodeSet. It thus represents a node set containing
  * just one, single node.
@@ -141,7 +141,7 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NodeValue#getImplementation()
+	 * @see org.exist.xquery.value.NodeValue#getImplementation()
 	 */
 	public int getImplementationType() {
 		return NodeValue.PERSISTENT_NODE;
@@ -436,7 +436,7 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 	 * SCENE nodes become context items of the SPEECH nodes and this context
 	 * information is preserved through all following steps.
 	 * 
-	 * To process the predicate expression, {@link org.exist.xpath.Predicate} will take the
+	 * To process the predicate expression, {@link org.exist.xquery.Predicate} will take the
 	 * context nodes returned by the filter expression and compare them to its context
 	 * node set.
 	 */
@@ -484,7 +484,7 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 	//	methods of interface Item
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#getType()
+	 * @see org.exist.xquery.value.Item#getType()
 	 */
 	public int getType() {
 		switch (nodeType) {
@@ -504,28 +504,28 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#toSequence()
+	 * @see org.exist.xquery.value.Item#toSequence()
 	 */
 	public Sequence toSequence() {
 		return this;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#getStringValue()
+	 * @see org.exist.xquery.value.Item#getStringValue()
 	 */
 	public String getStringValue() {
 		return getNodeValue();
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#convertTo(int)
+	 * @see org.exist.xquery.value.Item#convertTo(int)
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		return new StringValue(getNodeValue()).convertTo(requiredType);
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#atomize()
+	 * @see org.exist.xquery.value.Item#atomize()
 	 */
 	public AtomicValue atomize() throws XPathException {
 		return new UntypedAtomicValue(getNodeValue());
@@ -550,7 +550,7 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#unorderedIterator()
+	 * @see org.exist.xquery.value.Sequence#unorderedIterator()
 	 */
 	public SequenceIterator unorderedIterator() {
 		return new SingleNodeIterator(this);
@@ -597,7 +597,7 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#itemAt(int)
+	 * @see org.exist.xquery.value.Sequence#itemAt(int)
 	 */
 	public Item itemAt(int pos) {
 		return pos > 0 ? null : this;
@@ -643,7 +643,7 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#conversionPreference(java.lang.Class)
+	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
 	 */
 	public int conversionPreference(Class javaClass) {
 		if (javaClass.isAssignableFrom(NodeProxy.class))
@@ -675,7 +675,7 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#toJavaObject(java.lang.Class)
+	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 	 */
 	public Object toJavaObject(Class target) throws XPathException {
 		if (target.isAssignableFrom(NodeProxy.class))
@@ -716,7 +716,7 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 		}
 
 		/* (non-Javadoc)
-		 * @see org.exist.xpath.value.SequenceIterator#nextItem()
+		 * @see org.exist.xquery.value.SequenceIterator#nextItem()
 		 */
 		public Item nextItem() {
 			if (hasNext) {

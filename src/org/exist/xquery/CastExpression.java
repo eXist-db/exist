@@ -55,7 +55,7 @@ public class CastExpression extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
+	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(
 		Sequence contextSequence,
@@ -78,35 +78,35 @@ public class CastExpression extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#pprint()
+	 * @see org.exist.xquery.Expression#pprint()
 	 */
 	public String pprint() {
 		return "(" + expression.pprint() + " cast as " + Type.getTypeName(requiredType) + ")";
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#returnsType()
+	 * @see org.exist.xquery.Expression#returnsType()
 	 */
 	public int returnsType() {
 		return requiredType;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#getDependencies()
+	 * @see org.exist.xquery.AbstractExpression#getDependencies()
 	 */
 	public int getDependencies() {
 		return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#getCardinality()
+	 * @see org.exist.xquery.AbstractExpression#getCardinality()
 	 */
 	public int getCardinality() {
 		return Cardinality.ZERO_OR_ONE;
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#resetState()
+	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
 	public void resetState() {
 		expression.resetState();

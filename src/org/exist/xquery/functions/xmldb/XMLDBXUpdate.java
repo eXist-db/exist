@@ -70,7 +70,7 @@ public class XMLDBXUpdate extends BasicFunction {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.BasicFunction#eval(org.exist.xpath.value.Sequence[], org.exist.xpath.value.Sequence)
+	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {

@@ -26,7 +26,7 @@ import org.exist.dom.QName;
 
 /**
  * Defines an internal module implemented in Java. The class maintains a collection of 
- * Java classes each being a subclass of {@link org.exist.xpath.Function}. For internal
+ * Java classes each being a subclass of {@link org.exist.xquery.Function}. For internal
  * modules, a new function object is created from its class for each function reference in the
  * XQuery script.
  * 

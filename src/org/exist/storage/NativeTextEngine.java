@@ -227,7 +227,7 @@ public class NativeTextEngine extends TextSearchEngine {
 					word = token.getText().toString();
 					if (stoplist.contains(word))
 						continue;
-					words.add(word);
+					words.add(word.toLowerCase());
 				}
 				break;
 			case Node.ATTRIBUTE_NODE :
@@ -248,7 +248,7 @@ public class NativeTextEngine extends TextSearchEngine {
 					word = token.getText().toString();
 					if (stoplist.contains(word))
 						continue;
-					words.add(word);
+					words.add(word.toLowerCase());
 				}
 				break;
 		}
@@ -635,8 +635,10 @@ public class NativeTextEngine extends TextSearchEngine {
 				} finally {
 					lock.release();
 				}
-				if (is == null)
+				if (is == null) {
+				    LOG.warn(word + " not found in the index. This should not happen!");
 					continue;
+				}
 				os = new VariableByteOutputStream();
 				changed = false;
 				try {
@@ -657,7 +659,9 @@ public class NativeTextEngine extends TextSearchEngine {
 						}
 					}
 				} catch (EOFException e) {
+				    LOG.debug(e.getMessage(), e);
 				} catch (IOException e) {
+				    LOG.debug(e.getMessage(), e);
 				}
 				if (changed) {
 					try {

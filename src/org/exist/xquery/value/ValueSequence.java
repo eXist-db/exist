@@ -63,28 +63,28 @@ public class ValueSequence extends AbstractSequence {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#getItemType()
+	 * @see org.exist.xquery.value.Sequence#getItemType()
 	 */
 	public int getItemType() {
 		return itemType;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#iterate()
+	 * @see org.exist.xquery.value.Sequence#iterate()
 	 */
 	public SequenceIterator iterate() {
 		return new ValueSequenceIterator(values.iterator());
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AbstractSequence#unorderedIterator()
+	 * @see org.exist.xquery.value.AbstractSequence#unorderedIterator()
 	 */
 	public SequenceIterator unorderedIterator() {
 		return new ValueSequenceIterator(values.iterator());
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#getLength()
+	 * @see org.exist.xquery.value.Sequence#getLength()
 	 */
 	public int getLength() {
 		return values.size();
@@ -95,7 +95,7 @@ public class ValueSequence extends AbstractSequence {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#toNodeSet()
+	 * @see org.exist.xquery.value.Sequence#toNodeSet()
 	 */
 	public NodeSet toNodeSet() throws XPathException {
 		if(values.size() == 0)
@@ -124,14 +124,14 @@ public class ValueSequence extends AbstractSequence {
 		}
 		
 		/* (non-Javadoc)
-		 * @see org.exist.xpath.value.SequenceIterator#hasNext()
+		 * @see org.exist.xquery.value.SequenceIterator#hasNext()
 		 */
 		public boolean hasNext() {
 			return iter.hasNext();
 		}
 		
 		/* (non-Javadoc)
-		 * @see org.exist.xpath.value.SequenceIterator#nextItem()
+		 * @see org.exist.xquery.value.SequenceIterator#nextItem()
 		 */
 		public Item nextItem() {
 			if(iter.hasNext())

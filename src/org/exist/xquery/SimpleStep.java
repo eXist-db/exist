@@ -44,7 +44,7 @@ public class SimpleStep extends Step {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
+	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
@@ -68,14 +68,14 @@ public class SimpleStep extends Step {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Step#pprint()
+	 * @see org.exist.xquery.Step#pprint()
 	 */
 	public String pprint() {
 		return "simple: " + (axis == Constants.DESCENDANT_SELF_AXIS ? "//" + expression.pprint() : '/' + expression.pprint());
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Step#resetState()
+	 * @see org.exist.xquery.Step#resetState()
 	 */
 	public void resetState() {
 		super.resetState();
@@ -83,7 +83,7 @@ public class SimpleStep extends Step {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Step#setInPredicate(boolean)
+	 * @see org.exist.xquery.Step#setInPredicate(boolean)
 	 */
 	public void setInPredicate(boolean inPredicate) {
 		super.setInPredicate(inPredicate);
@@ -91,7 +91,7 @@ public class SimpleStep extends Step {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#setPrimaryAxis(int)
+	 * @see org.exist.xquery.AbstractExpression#setPrimaryAxis(int)
 	 */
 	public void setPrimaryAxis(int axis) {
 		expression.setPrimaryAxis(axis);

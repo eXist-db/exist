@@ -46,7 +46,7 @@ public class TypeTest implements NodeTest {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.NodeTest#matches(org.exist.dom.NodeProxy)
+	 * @see org.exist.xquery.NodeTest#matches(org.exist.dom.NodeProxy)
 	 */
 	public boolean matches(NodeProxy proxy) {
 		int type = proxy.getType();
@@ -67,7 +67,7 @@ public class TypeTest implements NodeTest {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.NodeTest#isWildcardTest()
+	 * @see org.exist.xquery.NodeTest#isWildcardTest()
 	 */
 	public boolean isWildcardTest() {
 		return true;
