@@ -86,6 +86,9 @@ public abstract class RemoteDBTest extends TestCase {
         //Server.main(args);
         // Thread ??
         Server.main(new String[] {});
+        synchronized(this) {
+        	wait(500);
+        }
     }
 
     /**
@@ -103,6 +106,13 @@ public abstract class RemoteDBTest extends TestCase {
         DatabaseInstanceManager mgr = (DatabaseInstanceManager) current.getService("DatabaseInstanceManager", "1.0");
         if (mgr != null)
             mgr.shutdown();
+        Server.shutdown();
+        synchronized(this) {
+        	try {
+				wait(1000);
+			} catch (InterruptedException e) {
+			}
+        }
     }
 
     /**

@@ -7,6 +7,8 @@ package org.exist.xmldb.test;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import junit.textui.TestRunner;
+
 import org.exist.schema.RemoteSchemaService;
 import org.exist.xmldb.RemoteCollectionManagementService;
 import org.exist.xmldb.RemoteDatabaseInstanceManager;
@@ -37,8 +39,8 @@ public class RemoteCollectionTest extends RemoteDBTest {
 
   	protected void tearDown() throws Exception {
 	    removeCollection();
+	    stopServer(getCollection());
 	}
-
 
     public void testIndexQueryService() {
 		// TODO .............
@@ -82,6 +84,13 @@ public class RemoteCollectionTest extends RemoteDBTest {
 	    }
 	}
 	
+	public void testGetNonExistentResource() throws XMLDBException {
+		System.out.println("Retrieving non-existing resource -----------------");
+		Collection collection = getCollection();
+		Resource resource = collection.getResource("12345.xml");
+		assertNull(resource);
+	}
+	
 	public void testListResources() throws XMLDBException {
 	    ArrayList xmlNames = new ArrayList();
 	    xmlNames.add("xml1");
@@ -114,4 +123,7 @@ public class RemoteCollectionTest extends RemoteDBTest {
             getCollection().createResource((String) i.next(), type);        
     }
 
+    public static void main(String[] args) {
+    	TestRunner.run(RemoteCollectionTest.class);
+	}
 }
