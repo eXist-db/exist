@@ -33,7 +33,7 @@
 	<classpathentry kind="lib" path="lib/optional/commons-collections-3.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-jexl-1.0-beta-1-20040113.jar"/>
 	<classpathentry kind="lib" path="lib/core/jakarta-oro-2.0.8.jar"/>
-	<classpathentry kind="lib" path="lib/core/log4j-1.2.8.jar"/>
+	<classpathentry kind="lib" path="lib/core/log4j-1.2.9.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/jakarta-bcel-20040329.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/jakarta-regexp-1.3.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xalan-2.6.0.jar"/>
