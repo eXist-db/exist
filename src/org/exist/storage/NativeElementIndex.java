@@ -792,4 +792,12 @@ public class NativeElementIndex extends ElementIndex {
             lock.release();
         }
     }
+    
+    public boolean close() throws DBException {
+        return dbElement.close();
+    }
+    
+    public void printStatistics() {
+        dbElement.printStatistics();
+    }
 }
