@@ -63,7 +63,6 @@ public class PreorderedValueSequence extends AbstractSequence {
 		long start = System.currentTimeMillis();
 		for(int i = 0; i < orderSpecs.length; i++) {
 			Expression expr = orderSpecs[i].getSortExpression();
-			expr.setInPredicate(true);
 			NodeSet result = expr.eval(null).toNodeSet();
 			for(Iterator j = result.iterator(); j.hasNext(); ) {
 				NodeProxy p = (NodeProxy)j.next();

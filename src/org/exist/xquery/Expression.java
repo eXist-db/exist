@@ -35,15 +35,32 @@ import org.exist.xquery.value.Sequence;
  */
 public interface Expression {
 	
+	// Flags to be passed to analyze:
+	
+	/**
+	 * Indicates that the query engine will call the expression once for every
+	 * item in the context sequence. This is what you would expect to be the
+	 * normal behaviour of an XQuery processor. However, eXist tries to process 
+	 * some types of expressions in one single step for the whole input sequence.
+	 * So if the flag is not set, the expression is only called once.   
+	 */
     public final static int SINGLE_STEP_EXECUTION = 1;
+    
+    /**
+     * Indicates that the expression is within a predicate or the where clause of
+     * a FLWOR.
+     */
+    public final static int IN_PREDICATE = 2;
     
     /**
      * Statically analyze the expression and its subexpressions.
      * 
      * During the static analysis phase, the query engine can detect
      * unknown variables or some type errors.
-     * @param parent
-     * @param flags
+     * 
+     * @param parent the parent expression which calls this method
+     * @param flags int value containing a set of flags. See the constants defined
+     * in this class.
      * 
      * @throws XPathException
      */
@@ -126,14 +143,6 @@ public interface Expression {
 	 * set has changed.
 	 */	
 	public void resetState();
-
-	/**
-	 * This method is called to inform the expression object that
-	 * it is executed inside an XPath predicate (or in a where clause).
-	 * 
-	 * @param inPredicate
-	 */
-	public void setInPredicate(boolean inPredicate);
 	
 	/**
 	 * Write a diagnostic dump of the expression to the passed

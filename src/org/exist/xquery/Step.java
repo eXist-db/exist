@@ -57,6 +57,7 @@ public abstract class Step extends AbstractExpression {
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
     public void analyze(Expression parent, int flags) throws XPathException {
+    	inPredicate = (flags & IN_PREDICATE) > 0;
         for ( Iterator i = predicates.iterator(); i.hasNext();  ) {
             ((Predicate) i.next()).analyze(this, flags);
         }
@@ -105,10 +106,6 @@ public abstract class Step extends AbstractExpression {
     public void setTest( NodeTest test ) {
         this.test = test;
     }
-
-	public void setInPredicate(boolean inPredicate) {
-		this.inPredicate = inPredicate;
-	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#resetState()

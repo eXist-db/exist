@@ -42,7 +42,7 @@ public class UserDefinedFunction extends Function {
 	
 	private Sequence[] currentArguments = null;
 	
-	private boolean isReset = false;
+	private boolean inRecursion = false;
 	
 	public UserDefinedFunction(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
@@ -65,12 +65,39 @@ public class UserDefinedFunction extends Function {
 	}
 	
 	/* (non-Javadoc)
+	 * @see org.exist.xquery.Function#analyze(org.exist.xquery.Expression, int)
+	 */
+	public void analyze(Expression parent, int flags) throws XPathException {
+		if(!inRecursion) {
+			inRecursion = true;
+			// Save the local variable stack
+			LocalVariable mark = context.markLocalVariables();
+			QName varName;
+			LocalVariable var;
+			for(Iterator i = parameters.iterator(); i.hasNext(); ) {
+				varName = (QName)i.next();
+				var = new LocalVariable(varName);
+				context.declareVariable(var);
+			}
+			
+			body.analyze(this, flags);
+			
+			// restore the local variable stack
+			context.popLocalVariables(mark);
+			inRecursion = false;
+		}
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
+		// Save the local variable stack
+		LocalVariable mark = context.markLocalVariables();
+		
 		QName varName;
 		LocalVariable var;
 		Sequence argSeq;
@@ -82,6 +109,9 @@ public class UserDefinedFunction extends Function {
 			context.declareVariable(var);
 		}
 		Sequence result = body.eval(contextSequence, contextItem);
+		
+		// restore the local variable stack
+		context.popLocalVariables(mark);
 		return result;
 	}
 	
@@ -129,10 +159,10 @@ public class UserDefinedFunction extends Function {
 	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
 	public void resetState() {
-		if(!isReset) {
-			isReset = true;
+		if(!inRecursion) {
+			inRecursion = true;
 			body.resetState();
-			isReset = false;
+			inRecursion = false;
 		}
 	}
 }

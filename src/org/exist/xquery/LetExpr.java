@@ -53,8 +53,9 @@ public class LetExpr extends BindingExpression {
 		context.declareVariable(new LocalVariable(QName.parse(context, varName, null)));
 		
 		inputSequence.analyze(this, flags);
-		if(whereExpr != null)
-		    whereExpr.analyze(this, flags);
+		if(whereExpr != null) {
+		    whereExpr.analyze(this, flags | IN_PREDICATE);
+		}
 		if(returnExpr instanceof BindingExpression) {
 		    ((BindingExpression)returnExpr).analyze(this, flags, orderBy);
 		} else {

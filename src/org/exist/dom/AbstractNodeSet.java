@@ -602,12 +602,10 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	}
 	
 	public NodeSet except(NodeSet other) {
-	    System.out.println(other.getClass().getName());
 		AVLTreeNodeSet r = new AVLTreeNodeSet();
 		NodeProxy l, p;
 		for (Iterator i = iterator(); i.hasNext();) {
 			l = (NodeProxy) i.next();
-			System.out.println("Checking " + l.gid);
 			if (!other.contains(l)) {
 				r.add(l);
 			}

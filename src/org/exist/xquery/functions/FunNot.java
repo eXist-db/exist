@@ -64,14 +64,13 @@ public class FunNot extends Function {
 	public int getDependencies() {
 		return Dependency.CONTEXT_SET | getArgument(0).getDependencies();
 	}
-
+	
 	public Sequence eval(
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
-		
 		Expression arg = getArgument(0);
 		
 		// case 1: if the argument expression returns a node set,

@@ -288,6 +288,7 @@ public abstract class Function extends PathExpr {
      * @see org.exist.xquery.PathExpr#analyze(org.exist.xquery.Expression)
      */
     public void analyze(Expression parent, int flags) throws XPathException {
+    	inPredicate = (flags & IN_PREDICATE) > 0;
         for(int i = 0; i < getArgumentCount(); i++)
             getArgument(i).analyze(this, flags);
     }

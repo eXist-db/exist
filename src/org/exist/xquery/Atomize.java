@@ -98,7 +98,6 @@ public class Atomize extends AbstractExpression {
 		expression.resetState();
 	}
 	
-	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#getASTNode()
 	 */

@@ -117,9 +117,8 @@ public class LexerTest extends TestCase {
 			Sequence result = expr.eval(null, null);
 
 			// check results
-			NodeSet resultSet = (NodeSet) result;
 			System.out.println("----------------------------------");
-			System.out.println("found: " + resultSet.getLength());
+			System.out.println("found: " + result.getLength());
 		} catch (RecognitionException e) {
 			e.printStackTrace();
 		} catch (TokenStreamException e) {

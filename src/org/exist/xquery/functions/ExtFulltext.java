@@ -47,6 +47,14 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+/**
+ * Implements the fulltext operators: &amp;= and |=.
+ * 
+ * This is internally handled like a special function and thus inherits
+ * from {@link org.exist.xquery.Function}.
+ * 
+ * @author wolf
+ */
 public class ExtFulltext extends Function {
 
 	public final static FunctionSignature signature =
@@ -242,14 +250,6 @@ public class ExtFulltext extends Function {
 
 	public void setPath(PathExpr path) {
 		this.path = path;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#setInPredicate(boolean)
-	 */
-	public void setInPredicate(boolean inPredicate) {
-		if (path != null)
-			path.setInPredicate(inPredicate);
 	}
 	
 	/* (non-Javadoc)
