@@ -42,7 +42,7 @@ public class FunName extends Function {
     }
 	
     public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-    	NodeProxy contextNode) {
+    	NodeProxy contextNode) throws XPathException {
         Node n = null;
 		if(contextNode != null)
 			contextSet = new SingleNodeSet(contextNode);

@@ -18,9 +18,9 @@ import org.exist.storage.BrokerPool;
 import org.exist.util.StorageAddress;
 import org.exist.util.XMLUtil;
 import org.exist.xpath.PathExpr;
-import org.exist.xpath.RootNode;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.Value;
+import org.exist.xpath.XPathException;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.NodeList;
 
@@ -53,7 +53,7 @@ public abstract class Modification {
 		this.docs = docs;
 	}
 
-	public abstract long process() throws PermissionDeniedException, EXistException;
+	public abstract long process() throws PermissionDeniedException, EXistException, XPathException;
 
 	public abstract String getName();
 
@@ -62,7 +62,7 @@ public abstract class Modification {
 	}
 
 	protected NodeImpl[] select(DocumentSet docs)
-		throws PermissionDeniedException, EXistException {
+		throws PermissionDeniedException, EXistException, XPathException {
 		try {
 			StaticContext context = new StaticContext(user);
 			XPathLexer2 lexer = new XPathLexer2(new StringReader(selectStmt));

@@ -19,14 +19,12 @@
 package org.exist.xpath;
 
 import org.apache.log4j.Category;
-import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.SingleNodeSet;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.w3c.dom.NodeList;
 
 /**
  * numeric operation on two operands by +, -, *, div, mod etc..
@@ -57,7 +55,7 @@ public class OpNumeric extends BinaryOp {
 		return Constants.TYPE_NUM;
 	}
 
-    public DocumentSet preselect(DocumentSet in_docs) {
+    public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
 		if(getLength() == 0)
 			return in_docs;
 		DocumentSet out_docs = getExpression(0).preselect(in_docs);
@@ -66,7 +64,7 @@ public class OpNumeric extends BinaryOp {
 		return out_docs;
     }
 
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy node) {
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy node) throws XPathException {
 		if(node != null)
 			contextSet = new SingleNodeSet(node);
 		double lvalue = getLeft().eval(context, docs, contextSet).getNumericValue();

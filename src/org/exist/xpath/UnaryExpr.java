@@ -24,11 +24,11 @@ public class UnaryExpr extends PathExpr {
 		return Constants.TYPE_NUM;
 	}
 	
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy node) {
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy node) throws XPathException {
 		if(node != null)
 			contextSet = new SingleNodeSet(node);
 		if(getLength() == 0)
-			throw new IllegalArgumentException("unary expression requires an operand");
+			throw new XPathException("unary expression requires an operand");
 		double value = getExpression(0).eval(context, docs, contextSet).getNumericValue();
 		switch(mode) {
 			case Constants.MINUS :

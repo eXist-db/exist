@@ -21,22 +21,21 @@
  */
 package org.exist.dom;
 
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Document;
-import org.w3c.dom.DOMException;
-import org.apache.log4j.Category;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.ext.LexicalHandler;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.exist.storage.*;
-import org.exist.util.XMLUtil;
+import org.apache.log4j.Category;
+import org.exist.storage.DBBroker;
+import org.exist.storage.Signatures;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.ext.LexicalHandler;
 
 /**
  * NodeImpl.java

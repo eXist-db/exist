@@ -1,6 +1,6 @@
 
-/* eXist xml document repository and xpath implementation
- * Copyright (C) 2001,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
+/* eXist Native XML Database
+ * Copyright (C) 2001-03,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,10 +18,8 @@
  */
 package org.exist.xpath;
 
+import org.exist.dom.ArraySet;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
-import org.exist.*;
-import org.exist.dom.*;
 
 public class ValueString extends Value {
 

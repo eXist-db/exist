@@ -17,14 +17,15 @@ import org.exist.dom.NodeSet;
  */
 public abstract class AbstractExpression implements Expression {
 
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet) {
-		return eval(context, docs, contextSet, null);
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet) 
+		throws XPathException {
+		return eval(context, docs, contextSet, null); 
 	}
 	
 	public abstract Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
-		NodeProxy contextNode);
+		NodeProxy contextNode) throws XPathException;
 		
-	public abstract DocumentSet preselect(DocumentSet in_docs);
+	public abstract DocumentSet preselect(DocumentSet in_docs) throws XPathException;
 	
 	public abstract String pprint();
 	

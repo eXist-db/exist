@@ -1,9 +1,5 @@
 package org.exist.xupdate;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Set;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -14,6 +10,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
+import org.exist.xpath.XPathException;
 import org.w3c.dom.Node;
 
 /**
@@ -39,7 +36,7 @@ public class Remove extends Modification {
 	 * @see org.exist.xupdate.Modification#process(org.exist.dom.DocumentSet)
 	 */
 	public long process()
-		throws PermissionDeniedException, EXistException {
+		throws PermissionDeniedException, EXistException, XPathException {
 		NodeImpl[] qr = select(docs);
 		if(qr == null)
 			return 0;

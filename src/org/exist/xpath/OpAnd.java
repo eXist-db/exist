@@ -19,11 +19,8 @@
 
 package org.exist.xpath;
 
-import java.util.Iterator;
-
 import org.apache.log4j.Category;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeIDSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.storage.BrokerPool;
@@ -36,7 +33,7 @@ public class OpAnd extends BinaryOp {
 		super(pool);
 	}
 
-	public DocumentSet preselect(DocumentSet in_docs) {
+	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
 		if (getLength() == 0)
 			return in_docs;
 		DocumentSet out_docs = getExpression(0).preselect(in_docs);
@@ -46,7 +43,7 @@ public class OpAnd extends BinaryOp {
 	}
 
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-		NodeProxy contextNode) {
+		NodeProxy contextNode) throws XPathException {
 		if (getLength() == 0)
 			return new ValueNodeSet(contextSet);
 		LOG.debug("processing " + getExpression(0).pprint());

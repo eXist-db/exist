@@ -30,7 +30,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -52,8 +51,6 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-
-import javax.swing.JOptionPane;
 
 import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
@@ -975,7 +972,7 @@ public class InteractiveClient {
 		} catch (XMLDBException xde) {
 			xde.printStackTrace();
 			if (startGUI)
-				frame.showErrorMessage("XMLDBException: " + xde.getMessage(), xde);
+				ClientFrame.showErrorMessage("XMLDBException: " + xde.getMessage(), xde);
 			else
 				System.err.println(
 					"XMLDBException: " + xde.getMessage() + " [" + xde.errorCode + "]");
@@ -1763,7 +1760,7 @@ public class InteractiveClient {
 				System.out.println(
 					"XMLDBException while retrieving collection " + "contents: " + e1.getMessage());
 				e1.getCause().printStackTrace();
-				frame.showErrorMessage(
+				ClientFrame.showErrorMessage(
 					"XMLDBException occurred while retrieving collection: " + e1.getMessage(),
 					e1);
 				frame.setVisible(false);

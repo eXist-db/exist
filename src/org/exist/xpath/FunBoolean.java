@@ -36,7 +36,7 @@ public class FunBoolean extends Function {
 	}
 	
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
-		NodeProxy contextNode) {
+		NodeProxy contextNode) throws XPathException {
 		if(contextNode != null)
 			contextSet = new SingleNodeSet(contextNode);
 		boolean result = getArgument(0).eval(context, docs, contextSet, contextNode).getBooleanValue();

@@ -33,12 +33,12 @@ public class FunSum extends Function {
 		return Constants.TYPE_NUM;
     }
 
-    public DocumentSet preselect(DocumentSet in_docs) {
+    public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
 		return getArgument(0).preselect(in_docs);
     }
 
     public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
-    	NodeProxy contextNode) {
+    	NodeProxy contextNode) throws XPathException {
 		double sum = 0.0, val;
 		// does argument return a node list?
 		if(getArgument(0).returnsType() == Constants.TYPE_NODELIST) {
@@ -67,13 +67,5 @@ public class FunSum extends Function {
 		}
 		return new ValueNumber(sum);
 	}
-
-	public String pprint() {
-		StringBuffer buf = new StringBuffer();
-		buf.append("sum(");
-		buf.append(getArgument(0).pprint());
-		buf.append(')');
-		return buf.toString();
-    }
 }
 			  

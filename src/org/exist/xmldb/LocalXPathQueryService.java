@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
-import org.exist.EXistException;
 import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
@@ -13,13 +12,13 @@ import org.exist.dom.NodeSet;
 import org.exist.parser.XPathLexer2;
 import org.exist.parser.XPathParser2;
 import org.exist.parser.XPathTreeParser2;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.Value;
 import org.exist.xpath.ValueNodeSet;
+import org.exist.xpath.XPathException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.ResourceSet;
@@ -153,6 +152,8 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 		} catch (antlr.TokenStreamException te) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, te.getMessage(), te);
 		} catch (IllegalArgumentException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		} catch (XPathException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
 	}

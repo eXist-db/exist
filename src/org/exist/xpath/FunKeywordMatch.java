@@ -52,7 +52,7 @@ public class FunKeywordMatch extends Function {
 	 *@return          Description of the Return Value
 	 */
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
-		NodeProxy contextNode) {
+		NodeProxy contextNode) throws XPathException {
 		Expression path = getArgument(0);
 		NodeSet nodes = (NodeSet) path.eval(context, docs, contextSet, contextNode).getNodeList();
 
@@ -70,7 +70,7 @@ public class FunKeywordMatch extends Function {
 					broker.getNodesContaining(docs, t, DBBroker.MATCH_REGEXP);
 			}
 		} catch (EXistException e) {
-			e.printStackTrace();
+			throw new XPathException("An error occurred while evaluating expression", e);
 		} finally {
 			pool.release(broker);
 		}
@@ -132,23 +132,6 @@ public class FunKeywordMatch extends Function {
 	 */
 	protected int getOperatorType() {
 		return Constants.FULLTEXT_AND;
-	}
-
-	/**
-	 *  Description of the Method
-	 *
-	 *@return    Description of the Return Value
-	 */
-	public String pprint() {
-		StringBuffer buf = new StringBuffer();
-		buf.append("match-keywords(");
-		buf.append(getArgument(0).pprint());
-		for (int i = 1; i < getArgumentCount(); i++) {
-			buf.append(", ");
-			buf.append(getArgument(i).pprint());
-		}
-		buf.append(')');
-		return buf.toString();
 	}
 
 	/**

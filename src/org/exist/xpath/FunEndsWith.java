@@ -38,7 +38,7 @@ public class FunEndsWith extends Function {
 		StaticContext context,
 		DocumentSet docs,
 		NodeSet contextSet,
-		NodeProxy contextNode) {
+		NodeProxy contextNode) throws XPathException {
 		if (getArgumentCount() != 2)
 			throw new IllegalArgumentException("ends-with expects two arguments");
 		if (contextNode != null)

@@ -22,10 +22,9 @@
 package org.exist.xmlrpc;
 import java.util.Date;
 import java.util.Hashtable;
-import java.util.Map;
-
 import java.util.Vector;
-import org.exist.*;
+
+import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.xml.sax.SAXException;

@@ -10,7 +10,6 @@ import java.util.Properties;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.plaf.FileChooserUI;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.avalon.excalibur.cli.CLArgsParser;

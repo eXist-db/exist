@@ -22,7 +22,7 @@ public class FunContains extends Function {
 	}
 	
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-		NodeProxy contextNode) {
+		NodeProxy contextNode) throws XPathException {
 		if (getArgumentCount() != 2)
 			throw new IllegalArgumentException("starts-with expects two arguments");
 		if(contextNode != null)

@@ -7,7 +7,6 @@ package org.exist.security;
 
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 public class Group implements Comparable {
 

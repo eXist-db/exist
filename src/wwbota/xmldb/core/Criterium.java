@@ -4,7 +4,6 @@
  */
 package wwbota.xmldb.core;
 
-import java.util.*;
 
 /**
  * <p>

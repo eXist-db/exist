@@ -4,7 +4,6 @@ import java.io.StringReader;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
-import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
@@ -19,6 +18,7 @@ import org.exist.xpath.PathExpr;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.Value;
 import org.exist.xpath.ValueSet;
+import org.exist.xpath.XPathException;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
@@ -257,6 +257,8 @@ public class XIncludeFilter implements ContentHandler {
 					throw new SAXException(e);
 				} catch (PermissionDeniedException e) {
 					LOG.warn("xpointer error", e);
+					throw new SAXException(e);
+				} catch (XPathException e) {
 					throw new SAXException(e);
 				}
 			}

@@ -21,7 +21,6 @@ import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;
-import org.exist.util.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;

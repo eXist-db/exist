@@ -2,7 +2,6 @@
 <classpath>
     <classpathentry kind="src" path="src"/>
     <classpathentry kind="src" path="samples"/>
-    <classpathentry kind="src" path="src14"/>
     <classpathentry kind="lib" path="lib/core/ant.jar"/>
     <classpathentry kind="lib" path="lib/core/antlr.jar"/>
     <classpathentry kind="lib" path="lib/core/jakarta-oro-2.0.6.jar"/>
@@ -63,5 +62,5 @@
     <classpathentry kind="lib" path="lib/optional/excalibur-sourceresolve-20030715.jar"/>
     <classpathentry kind="lib" path="lib/optional/excalibur-store-20030726.jar"/>
     <classpathentry kind="lib" path="lib/optional/jisp-2.5.1.jar"/>
-    <classpathentry kind="output" path="classes"/>
+    <classpathentry kind="output" path="build/classes"/>
 </classpath>

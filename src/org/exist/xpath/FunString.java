@@ -40,7 +40,7 @@ public class FunString extends Function {
 	}
 	
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
-		NodeProxy contextNode) {
+		NodeProxy contextNode) throws XPathException {
 		if(contextNode != null)
 			contextSet = new SingleNodeSet(contextNode);
 		String strval;
@@ -54,13 +54,5 @@ public class FunString extends Function {
 		} else
 			strval = v.getStringValue();
 		return new ValueString(strval);
-	}
-
-	public String pprint() {
-		StringBuffer buf = new StringBuffer();
-		buf.append("string(");
-		buf.append(getArgument(0).pprint());
-		buf.append(")");
-		return buf.toString();
 	}
 }

@@ -4,12 +4,13 @@
  */
 package wwbota.xmldb.core;
 
-import java.util.*;
-import java.util.regex.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 
 /**
  * <p>
- * Utility to translate a simple Query à la Google into an XPath constraints string.
+ * Utility to translate a simple Query ï¿½ la Google into an XPath constraints string.
  * Modelizes a Query on an XML database.
  * </p>
  * <p>

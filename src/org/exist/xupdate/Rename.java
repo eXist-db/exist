@@ -17,6 +17,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
+import org.exist.xpath.XPathException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -34,7 +35,7 @@ public class Rename extends Modification {
 	/* (non-Javadoc)
 	 * @see org.exist.xupdate.Modification#process(org.exist.dom.DocumentSet)
 	 */
-	public long process() throws PermissionDeniedException, EXistException {
+	public long process() throws PermissionDeniedException, EXistException, XPathException {
 		NodeImpl qr[] = select(docs);
 		NodeList children = content.getChildNodes();
 		if (qr == null || children.getLength() == 0)

@@ -23,12 +23,10 @@
  */
 package org.exist.xmldb;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,7 +37,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Vector;
 
-import org.apache.log4j.spi.ErrorCode;
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;

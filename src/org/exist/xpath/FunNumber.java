@@ -41,7 +41,7 @@ public class FunNumber extends Function {
 	}
 	
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
-		NodeProxy contextNode) {
+		NodeProxy contextNode) throws XPathException {
 		if(contextNode != null)
 			contextSet = new SingleNodeSet(contextNode);
 		double result = getArgument(0).eval(context, docs, contextSet).getNumericValue();

@@ -46,7 +46,7 @@ public class Predicate extends PathExpr {
 		super(pool);
 	}
 
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy contextNode) {
+	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy contextNode) throws XPathException {
 		//long start = System.currentTimeMillis();
 		ArraySet result = new ArraySet(100);
 		Expression first = getExpression(0);
@@ -66,8 +66,7 @@ public class Predicate extends PathExpr {
 						current = (NodeProxy)i.next();
 						contextNodes = current.getContext();
 						if(contextNodes == null) {
-							LOG.warn("context node is missing!");
-							break;
+							throw new XPathException("Internal evaluation error: context node is missing!");
 						}
 						for(Iterator j = contextNodes.iterator(); j.hasNext(); ) {
 							next = (LongLinkedList.ListItem)j.next();
@@ -158,7 +157,7 @@ public class Predicate extends PathExpr {
 		return new ValueNodeSet(result);
 	}
 
-	public DocumentSet preselect(DocumentSet in_docs) {
+	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
 		DocumentSet docs = in_docs;
 		for (Iterator iter = steps.iterator(); iter.hasNext();)
 			docs = ((Expression) iter.next()).preselect(docs);
@@ -166,7 +165,7 @@ public class Predicate extends PathExpr {
 	}
 
 	public Value evalBody(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-		NodeProxy contextNode) {
+		NodeProxy contextNode) throws XPathException {
 		if (docs.getLength() == 0)
 			return new ValueNodeSet(NodeSet.EMPTY_SET);
 		Value r;
