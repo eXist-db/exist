@@ -882,7 +882,7 @@ public class NewNativeBroker extends DBBroker {
 			elementIndex.dropIndex(doc);
 			
 			// dropping dom index
-			domIndexer.n5(doc);
+			domIndexer.removeDocument(doc);
             
 			// create a copy of the old doc to copy the nodes into it
 			DocumentImpl tempDoc = new DocumentImpl(this, doc.getFileName(), doc.getCollection());
@@ -1095,7 +1095,7 @@ public class NewNativeBroker extends DBBroker {
 	    
 	    for (Iterator i = collection.iterator(this); i.hasNext();) {
 	        final DocumentImpl doc = (DocumentImpl) i.next();
-	        domIndexer.n10(doc);
+	        domIndexer.dropIndex(doc);
 	    }
 	}
 	

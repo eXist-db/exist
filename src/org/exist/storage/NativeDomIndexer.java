@@ -1,8 +1,21 @@
 /*
- * Created on Oct 1, 2004
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * eXist Open Source Native XML Database 
+ * 
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Library General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option) any
+ * later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Library General Public License
+ * along with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * 
+ * $Id$
  */
 package org.exist.storage;
 
@@ -48,10 +61,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * @author tjaeger
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Class which encapsulates the DOMFile implementation.
  */
 final class NativeDomIndexer {
     
@@ -424,7 +434,7 @@ final class NativeDomIndexer {
             } finally {
                 domDb.getLock().release();
             }
-            if (/* TODO isCaseSensitive()*/ true)
+            if (broker.isCaseSensitive())
                 cmp = content;
             else {
                 cmp = content.toLowerCase();
@@ -626,7 +636,7 @@ final class NativeDomIndexer {
         .run();
     }
     
-    public void n5(final DocumentImpl doc) {
+    public void removeDocument(final DocumentImpl doc) {
         NodeRef ref = new NodeRef(doc.getDocId());
         final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
         new DOMTransaction(this, domDb) {
@@ -649,6 +659,7 @@ final class NativeDomIndexer {
         .run();
     }
     
+    // See n7 first part!
     public void n6(final long firstChild) {
         new DOMTransaction(this, domDb) {
             public Object start() {
@@ -678,6 +689,8 @@ final class NativeDomIndexer {
         }
         .run();
         
+        removeDocument(document);
+        /* replaced by removeDocument(document);
         NodeRef ref = new NodeRef(document.getDocId());
         final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
         new DOMTransaction(this, domDb) {
@@ -698,6 +711,7 @@ final class NativeDomIndexer {
             }
         }
         .run();
+        */
     }
     
     public void n8(final DocumentImpl doc, final NodeImpl node, 
@@ -725,7 +739,8 @@ final class NativeDomIndexer {
         .run();
     }
     
-    // TODO check if this is ok with external "lock" of collection cache 
+    // TODO check if this is ok with external "lock" of collection cache
+    // first part can be replaced by removeBinaryResource and by n7
     public void n9(final DocumentImpl doc) {
         LOG.debug("removing document " + doc.getFileName());
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
@@ -741,6 +756,9 @@ final class NativeDomIndexer {
             }
         }
         .run();
+        
+        dropIndex(doc);
+        /* replaced by dropIndex
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
             public Object start() {
                 try {
@@ -762,9 +780,10 @@ final class NativeDomIndexer {
             }
         }
         .run();
+        */
     }
     
-    public void n10(final DocumentImpl doc) {
+    public void dropIndex(final DocumentImpl doc) {
         LOG.debug("Dropping index for document " + doc.getFileName());
         
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
