@@ -64,6 +64,7 @@ public class RpcServlet extends HttpServlet {
             //RpcServer rpcserv = new RpcServer( conf );
             xmlrpc.addHandler( "$default", rpcserv );
             XmlRpc.setDebug( false );
+            XmlRpc.setEncoding( "UTF-8" );
         } catch (EXistException e) {
         	throw new ServletException( e );
         } catch ( XmlRpcException e ) {
