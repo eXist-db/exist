@@ -22,24 +22,6 @@
  */
 package org.exist.collections;
 
-import java.io.EOFException;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.TreeMap;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.apache.log4j.Logger;
 import org.apache.xml.resolver.tools.CatalogResolver;
 import org.exist.EXistException;
@@ -50,31 +32,25 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.security.Group;
-import org.exist.security.Permission;
-import org.exist.security.PermissionDeniedException;
+import org.exist.security.*;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.store.CollectionStore;
-import org.exist.util.Configuration;
-import org.exist.util.Lock;
-import org.exist.util.LockException;
-import org.exist.util.ReentrantReadWriteLock;
-import org.exist.util.SyntaxException;
+import org.exist.util.*;
 import org.exist.util.hashtable.ObjectHashSet;
 import org.exist.util.serializer.DOMStreamer;
 import org.w3c.dom.Node;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.XMLReader;
+import org.xml.sax.*;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.*;
+import java.net.URL;
+import java.util.*;
 
 /**
  * This class represents a collection in the database. A collection maintains a list of 
@@ -155,11 +131,15 @@ implements Comparable, EntityResolver, Cacheable {
 	    this.name = name;
 	}
 	
-	public Lock getLock() {
-		return lock;
+	public Lock getLockOld() {
+		return getLock();
 	}
-	
-	/**
+
+    public Lock getLock() {
+        return lock;
+    }
+
+    /**
 	 *  Add a new sub-collection to the collection.
 	 *
 	 *@param  name
@@ -181,7 +161,7 @@ implements Comparable, EntityResolver, Cacheable {
 	 */
 	public void release() {
 //		LOG.debug("releasing lock on " + name);
-		lock.release();
+		getLock().release();
 	}
 	
 	/**
@@ -243,13 +223,13 @@ implements Comparable, EntityResolver, Cacheable {
 	 */
 	public Iterator collectionIterator() {
 		try {
-			lock.acquire(Lock.READ_LOCK);
+			getLock().acquire(Lock.READ_LOCK);
 			return subcollections.stableIterator();
 		} catch (LockException e) {
 			LOG.warn(e.getMessage(), e);
 			return null;
 		} finally {
-			lock.release();
+			getLock().release();
 		}
 	}
 
@@ -262,7 +242,7 @@ implements Comparable, EntityResolver, Cacheable {
 	public List getDescendants(DBBroker broker, User user) {
 		final ArrayList cl = new ArrayList(subcollections.size());
 		try {
-			lock.acquire(Lock.READ_LOCK);
+			getLock().acquire(Lock.READ_LOCK);
 			Collection child;
 			String childName;
 			for (Iterator i = subcollections.iterator(); i.hasNext(); ) {
@@ -277,7 +257,7 @@ implements Comparable, EntityResolver, Cacheable {
 		} catch (LockException e) {
 			LOG.warn(e.getMessage(), e);
 		} finally {
-			lock.release();
+			getLock().release();
 		}
 		return cl;
 	}
@@ -306,12 +286,13 @@ implements Comparable, EntityResolver, Cacheable {
 	}
 
 	private DocumentSet allDocs(DBBroker broker, DocumentSet docs, boolean checkPermissions) {
-		try {
-			lock.acquire(Lock.READ_LOCK);
+        try {
+			getLock().acquire(Lock.READ_LOCK);
 			Collection child;
 			String childName;
 			long addr;
-			for (Iterator i = subcollections.iterator(); i.hasNext(); ) {
+            Iterator i = subcollections.iterator();
+			while (i.hasNext() ) {
 				childName = (String) i.next();
 				child = broker.getCollection(name + '/' + childName);
 				if(child == null) {
@@ -319,14 +300,14 @@ implements Comparable, EntityResolver, Cacheable {
 					// we always check if we have permissions to read the child collection
 				} else if (child.permissions.validate(broker.getUser(), Permission.READ)) {
 					child.getDocuments(broker, docs, checkPermissions);
-					if (child.getChildCollectionCount() > 0)
+                    if (child.getChildCollectionCount() > 0)
 						child.allDocs(broker, docs, checkPermissions);
 				}
 			}
 		} catch (LockException e) {
 			LOG.warn(e.getMessage(), e);
 		} finally {
-			lock.release();
+            getLock().release();
 		}
 		return docs;
 	}
@@ -338,7 +319,7 @@ implements Comparable, EntityResolver, Cacheable {
 	 */
 	public DocumentSet getDocuments(DBBroker broker, DocumentSet docs, boolean checkPermissions) {
 		try {
-			lock.acquire(Lock.READ_LOCK);
+			getLock().acquire(Lock.READ_LOCK);
 			if(reloadRequired) {
 			    broker.reloadCollection(this);
 			    reloadRequired = false;
@@ -348,7 +329,7 @@ implements Comparable, EntityResolver, Cacheable {
 		} catch (LockException e) {
 			LOG.warn(e.getMessage(), e);
 		} finally {
-			lock.release();
+			getLock().release();
 		}
 		return docs;
 	}
@@ -408,13 +389,13 @@ implements Comparable, EntityResolver, Cacheable {
 	 */
 	public int getChildCollectionCount() {
 		try {
-			lock.acquire(Lock.READ_LOCK);
+			getLock().acquire(Lock.READ_LOCK);
 			return subcollections.size();
 		} catch (LockException e) {
 			LOG.warn(e.getMessage(), e);
 			return 0;
 		} finally {
-			lock.release();
+			getLock().release();
 		}
 	}
 
@@ -428,7 +409,7 @@ implements Comparable, EntityResolver, Cacheable {
 	 */
 	public DocumentImpl getDocument(DBBroker broker, String name) {
 		try {
-			lock.acquire(Lock.READ_LOCK);
+			getLock().acquire(Lock.READ_LOCK);
 			if(reloadRequired) {
 			    broker.reloadCollection(this);
 			    reloadRequired = false;
@@ -441,7 +422,7 @@ implements Comparable, EntityResolver, Cacheable {
 			LOG.warn(e.getMessage(), e);
 			return null;
 		} finally {
-			lock.release();
+			getLock().release();
 		}
 	}
 	
@@ -457,7 +438,7 @@ implements Comparable, EntityResolver, Cacheable {
 	public DocumentImpl getDocumentWithLock(DBBroker broker, String name) 
 	throws LockException {
 	    try {
-	        lock.acquire(Lock.READ_LOCK);
+	        getLock().acquire(Lock.READ_LOCK);
 	        if(reloadRequired) {
 			    broker.reloadCollection(this);
 			    reloadRequired = false;
@@ -469,7 +450,7 @@ implements Comparable, EntityResolver, Cacheable {
 	        updateLock.acquire(Lock.READ_LOCK);
 	        return doc;
         } finally {
-	        lock.release();
+	        getLock().release();
 	    }
 	}
 
@@ -485,7 +466,7 @@ implements Comparable, EntityResolver, Cacheable {
 	public DocumentImpl getDocumentWithLock(DBBroker broker, String name, int lockMode) 
 	throws LockException {
 	    try {
-	        lock.acquire(Lock.READ_LOCK);
+	        getLock().acquire(Lock.READ_LOCK);
 	        if(reloadRequired) {
 			    broker.reloadCollection(this);
 			    reloadRequired = false;
@@ -497,7 +478,7 @@ implements Comparable, EntityResolver, Cacheable {
 	        updateLock.acquire(lockMode);
 	        return doc;
         } finally {
-	        lock.release();
+	        getLock().release();
 	    }
 	}
 	
@@ -519,13 +500,13 @@ implements Comparable, EntityResolver, Cacheable {
 	 */
 	public int getDocumentCount() {
 		try {
-			lock.acquire(Lock.READ_LOCK);
+			getLock().acquire(Lock.READ_LOCK);
 			return documents.size();
 		} catch (LockException e) {
 			LOG.warn(e.getMessage(), e);
 			return 0;
 		} finally {
-			lock.release();
+			getLock().release();
 		}
 	}
 	
@@ -568,13 +549,13 @@ implements Comparable, EntityResolver, Cacheable {
 	 */
 	public Permission getPermissions() {
 		try {
-			lock.acquire(Lock.READ_LOCK);
+			getLock().acquire(Lock.READ_LOCK);
 			return permissions;
 		} catch (LockException e) {
 			LOG.warn(e.getMessage(), e);
 			return permissions;
 		} finally {
-			lock.release();
+			getLock().release();
 		}
 	}
 
@@ -596,13 +577,13 @@ implements Comparable, EntityResolver, Cacheable {
 	 */
 	public boolean hasSubcollection(String name) {
 		try {
-			lock.acquire(Lock.READ_LOCK);
+			getLock().acquire(Lock.READ_LOCK);
 			return subcollections.contains(name);
 		} catch (LockException e) {
 			LOG.warn(e.getMessage(), e);
 			return subcollections.contains(name);
 		} finally {
-			lock.release();
+			getLock().release();
 		}
 	}
 
@@ -678,10 +659,10 @@ implements Comparable, EntityResolver, Cacheable {
 	 */
 	public void removeCollection(String name) throws LockException {
 		try {
-			lock.acquire(Lock.WRITE_LOCK);
+			getLock().acquire(Lock.WRITE_LOCK);
 			subcollections.remove(name);
 		} finally {
-			lock.release();
+			getLock().release();
 		}
 	}
 	
@@ -693,7 +674,7 @@ implements Comparable, EntityResolver, Cacheable {
 	public void removeDocument(DBBroker broker, String docname)
 			throws PermissionDeniedException, TriggerException, LockException {
 		try {
-			lock.acquire(Lock.READ_LOCK);
+			getLock().acquire(Lock.READ_LOCK);
 			DocumentTrigger trigger = null;
 			if (!docname.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX)) {
 				if (triggersEnabled) {
@@ -732,14 +713,14 @@ implements Comparable, EntityResolver, Cacheable {
 			}
 
 		} finally {
-			lock.release();
+			getLock().release();
 		}
 	}
 
 	public void removeBinaryResource(DBBroker broker,
 			String docname) throws PermissionDeniedException, LockException {
 		try {
-			lock.acquire(Lock.WRITE_LOCK);
+			getLock().acquire(Lock.WRITE_LOCK);
 			DocumentImpl doc = getDocument(broker, docname);
 			if(doc.isLockedForWrite())
 				throw new PermissionDeniedException("Document " + doc.getFileName() + 
@@ -751,7 +732,7 @@ implements Comparable, EntityResolver, Cacheable {
 				throw new PermissionDeniedException("permission to remove document denied");
 			removeBinaryResource(broker, doc);
 		} finally {
-			lock.release();
+			getLock().release();
 		}
 	}
 
@@ -771,12 +752,12 @@ implements Comparable, EntityResolver, Cacheable {
 		if (!doc.getPermissions().validate(broker.getUser(), Permission.WRITE))
 			throw new PermissionDeniedException("permission to remove document denied");
 		try {
-			lock.acquire(Lock.WRITE_LOCK);
+			getLock().acquire(Lock.WRITE_LOCK);
 			broker.removeBinaryResource((BinaryDocument) doc);
 			documents.remove(doc.getFileName());
 			broker.saveCollection(this);
 		} finally {
-			lock.release();
+			getLock().release();
 		}
 	}
 
@@ -786,14 +767,14 @@ implements Comparable, EntityResolver, Cacheable {
 		if (broker.isReadOnly())
 			throw new PermissionDeniedException("Database is read-only");
 		try {
-			lock.acquire(Lock.WRITE_LOCK);
+			getLock().acquire(Lock.WRITE_LOCK);
 			XMLReader currentReader = getReader(broker);
 			DocumentImpl oldDoc = (DocumentImpl)documents.get(name);
 			DocumentImpl document = new DocumentImpl(broker, name, this);
 			// first pass: parse the document to determine tree structure
 			return determineTreeStructure(broker, name, document, oldDoc, currentReader, source);
 		} finally {
-			lock.release();
+			getLock().release();
 		}
 	}
 	
@@ -857,7 +838,7 @@ implements Comparable, EntityResolver, Cacheable {
 			throw new PermissionDeniedException("Database is read-only");
 		InputSource source;
 		try {
-			lock.acquire(Lock.WRITE_LOCK);
+			getLock().acquire(Lock.WRITE_LOCK);
 			source = new InputSource(new StringReader(data));
 			XMLReader currentReader = getReader(broker);
 			if(currentReader == null)
@@ -867,7 +848,7 @@ implements Comparable, EntityResolver, Cacheable {
 			// first pass: parse the document to determine tree structure
 			return determineTreeStructure(broker, name, document, oldDoc, currentReader, source);
 		} finally {
-			lock.release();
+			getLock().release();
 		}
 	}
 	
@@ -921,7 +902,7 @@ implements Comparable, EntityResolver, Cacheable {
 			throw new PermissionDeniedException("Database is read-only");
 		DocumentImpl document, oldDoc = null;
 		try {
-			lock.acquire(Lock.WRITE_LOCK);
+			getLock().acquire(Lock.WRITE_LOCK);
 			oldDoc = getDocument(broker, name);
 			document = new DocumentImpl(broker, name,	this);
 		
@@ -990,7 +971,7 @@ implements Comparable, EntityResolver, Cacheable {
 		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
 		    throw e;
 		} finally {
-			lock.release();
+			getLock().release();
 		}
 	}
 	
@@ -1049,7 +1030,7 @@ implements Comparable, EntityResolver, Cacheable {
 		XMLReader reader;
 		InputSource source;
 		try {
-			lock.acquire(Lock.WRITE_LOCK);
+			getLock().acquire(Lock.WRITE_LOCK);
 			source = new InputSource(new StringReader(data));
 			document = new DocumentImpl(broker, name, this);
 			reader = getReader(broker);
@@ -1059,7 +1040,7 @@ implements Comparable, EntityResolver, Cacheable {
 			IndexInfo info = determineTreeStructure(broker, name, document, oldDoc, reader, source);
 			document = info.getIndexer().getDocument();
 		} finally {
-			lock.release();
+			getLock().release();
 		}
 		
 		// reset the input source
@@ -1308,7 +1289,7 @@ implements Comparable, EntityResolver, Cacheable {
 		DocumentImpl document = null, oldDoc = null;
 		XMLReader reader;
 		try {
-			lock.acquire(Lock.WRITE_LOCK);
+			getLock().acquire(Lock.WRITE_LOCK);
 			oldDoc = getDocument(broker, name);
 			document = new DocumentImpl(broker, name,	this);
 			reader = getReader(broker);
@@ -1317,7 +1298,7 @@ implements Comparable, EntityResolver, Cacheable {
 			IndexInfo info = determineTreeStructure(broker, name, document, oldDoc, reader, source);
 			document = info.getIndexer().getDocument();
 		} finally {
-			lock.release();
+			getLock().release();
 		}
 		
 		// reset the input source
@@ -1384,7 +1365,7 @@ implements Comparable, EntityResolver, Cacheable {
 		DocumentImpl document, oldDoc = null;
 		DOMStreamer streamer;
 		try {
-			lock.acquire(Lock.WRITE_LOCK);
+			getLock().acquire(Lock.WRITE_LOCK);
 			oldDoc = getDocument(broker, name);
 			document = new DocumentImpl(broker, name,	this);
 		
@@ -1448,7 +1429,7 @@ implements Comparable, EntityResolver, Cacheable {
 		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
 		    throw e;
 		} finally {
-			lock.release();
+			getLock().release();
 		}//ffffffffffffffffffffffffffffffffffffffffffffffff
 		
 		try {
@@ -1524,7 +1505,7 @@ implements Comparable, EntityResolver, Cacheable {
 		blob = new BinaryDocument(broker, name, this);
         blob.setMimeType(mimeType);
 		try {
-			lock.acquire(Lock.WRITE_LOCK);
+			getLock().acquire(Lock.WRITE_LOCK);
 			checkPermissions(broker, name, oldDoc);
 
 			manageDocumentInformation(broker, name, oldDoc, blob );
@@ -1543,7 +1524,7 @@ implements Comparable, EntityResolver, Cacheable {
 			broker.closeDocument();
 			return blob;
 		} finally {
-			lock.release();
+			getLock().release();
 		}
 	}
 
@@ -1553,19 +1534,19 @@ implements Comparable, EntityResolver, Cacheable {
 
 	public void setPermissions(int mode) throws LockException {
 		try {
-			lock.acquire(Lock.WRITE_LOCK);
+			getLock().acquire(Lock.WRITE_LOCK);
 		permissions.setPermissions(mode);
 		} finally {
-			lock.release();
+			getLock().release();
 		}
 	}
 
 	public void setPermissions(String mode) throws SyntaxException, LockException {
 		try {
-			lock.acquire(Lock.WRITE_LOCK);
+			getLock().acquire(Lock.WRITE_LOCK);
 			permissions.setPermissions(mode);
 		} finally {
-			lock.release();
+			getLock().release();
 		}
 	}
 
@@ -1576,10 +1557,10 @@ implements Comparable, EntityResolver, Cacheable {
 	 */
 	public void setPermissions(Permission permissions) throws LockException {
 		try {
-			lock.acquire(Lock.WRITE_LOCK);
+			getLock().acquire(Lock.WRITE_LOCK);
 			this.permissions = permissions;
 		} finally {
-			lock.release();
+			getLock().release();
 		}
 	}
 
@@ -1678,17 +1659,18 @@ implements Comparable, EntityResolver, Cacheable {
 
 	public void setTriggersEnabled(boolean enabled) {
 		try {
-			lock.acquire(Lock.WRITE_LOCK);
+			getLock().acquire(Lock.WRITE_LOCK);
 			this.triggersEnabled = enabled;
 		} catch (LockException e) {
 			LOG.warn(e.getMessage(), e);
 			this.triggersEnabled = enabled;
 		} finally {
-			lock.release();
+			getLock().release();
 		}
 	}
 
-	/** set user-defined Reader */
+
+    /** set user-defined Reader */
 	public void setReader(XMLReader reader){
 			userReader = reader;
 	}
