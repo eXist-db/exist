@@ -93,9 +93,7 @@ public abstract class TextSearchEngine extends Observable {
 		if (stem)
 			stemmer = new PorterStemmer();
 		tokenizer.setStemming(stem);
-		if ((stopword = (String) config.getProperty("stopwords")) == null)
-			stopword = null;
-		if (stopword != null) {
+		if ((stopword = (String) config.getProperty("stopwords")) != null) {
 			try {
 				FileReader in = new FileReader(stopword);
 				StreamTokenizer tok = new StreamTokenizer(in);

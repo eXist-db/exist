@@ -211,6 +211,8 @@ public class ExtFulltext extends Function {
 					contextSet.getDocumentSet(),
 					contextSet,
 					terms[k]);
+			if (hits == null)
+				return NodeSet.EMPTY_SET;
 			if (type == Constants.FULLTEXT_AND)
 				contextSet = hits;
 		}

@@ -13,8 +13,10 @@ import javax.xml.parsers.SAXParserFactory;
 
 import junit.framework.TestCase;
 
+import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.Receiver;
 import org.exist.util.serializer.DOMSerializer;
+import org.exist.xpath.StaticContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;

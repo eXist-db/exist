@@ -590,6 +590,7 @@ public class RpcConnection extends Thread {
 		QueryResult qr = (QueryResult) connectionPool.resultSets.get(resultId);
 		if (qr == null)
 			throw new EXistException("result set unknown or timed out");
+		qr.timestamp = System.currentTimeMillis();
 		if (qr.result == null)
 			return 0;
 		return qr.result.getLength();
@@ -1209,6 +1210,7 @@ public class RpcConnection extends Thread {
 			QueryResult qr = (QueryResult) connectionPool.resultSets.get(resultId);
 			if (qr == null)
 				throw new EXistException("result set unknown or timed out");
+			qr.timestamp = System.currentTimeMillis();
 			Item item = qr.result.itemAt(num);
 			if (item == null)
 				throw new EXistException("index out of range");
@@ -1505,6 +1507,7 @@ public class RpcConnection extends Thread {
 		QueryResult qr = (QueryResult) connectionPool.resultSets.get(resultId);
 		if (qr == null)
 			throw new EXistException("result set unknown or timed out");
+		qr.timestamp = System.currentTimeMillis();
 		Hashtable result = new Hashtable();
 		result.put("queryTime", new Integer((int) qr.queryTime));
 		if (qr.result == null) {

@@ -226,10 +226,9 @@ public class Configuration implements ErrorHandler {
 					if (!sf.canRead()) {
 						stopwordFile = dbHome + pathSep + stopwordFile;
 						sf = new File(stopwordFile);
-
-						if (sf.canRead())
-							config.put("stopwords", stopwordFile);
 					}
+					if (sf.canRead())
+						config.put("stopwords", stopwordFile);
 				}
 
 				CatalogResolver resolver = new CatalogResolver(true);

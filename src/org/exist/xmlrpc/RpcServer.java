@@ -82,15 +82,6 @@ public class RpcServer implements RpcAPI {
 		pool = new ConnectionPool(MIN_CONNECT, MAX_CONNECT, conf);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  name                           Description of the Parameter
-	 *@param  user                           Description of the Parameter
-	 *@return                                Description of the Return Value
-	 *@exception  EXistException             Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
-	 */
 	public boolean createCollection(User user, String name)
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = pool.get();
@@ -105,15 +96,6 @@ public class RpcServer implements RpcAPI {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  collection                     Description of the Parameter
-	 *@param  user                           Description of the Parameter
-	 *@return                                Description of the Return Value
-	 *@exception  EXistException             Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
-	 */
 	public String createId(User user, String collection)
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = pool.get();
@@ -124,15 +106,6 @@ public class RpcServer implements RpcAPI {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  xpath                          Description of the Parameter
-	 *@param  user                           Description of the Parameter
-	 *@return                                Description of the Return Value
-	 *@exception  EXistException             Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
-	 */
 	public int executeQuery(User user, String xpath, Hashtable namespaces)
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = pool.get();
@@ -146,17 +119,11 @@ public class RpcServer implements RpcAPI {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  xpath                          Description of the Parameter
-	 *@param  encoding                       Description of the Parameter
-	 *@param  user                           Description of the Parameter
-	 *@return                                Description of the Return Value
-	 *@exception  EXistException             Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
-	 */
-	public int executeQuery(User user, byte[] xpath, String encoding, Hashtable namespaces)
+	public int executeQuery(
+		User user,
+		byte[] xpath,
+		String encoding,
+		Hashtable namespaces)
 		throws EXistException, PermissionDeniedException {
 		String xpathString = null;
 		if (encoding != null)
@@ -172,15 +139,6 @@ public class RpcServer implements RpcAPI {
 		return executeQuery(user, xpathString, namespaces);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  xpath                          Description of the Parameter
-	 *@param  user                           Description of the Parameter
-	 *@return                                Description of the Return Value
-	 *@exception  EXistException             Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
-	 */
 	public int executeQuery(User user, byte[] xpath, Hashtable namespaces)
 		throws EXistException, PermissionDeniedException {
 		return executeQuery(user, xpath, null, namespaces);
@@ -227,19 +185,18 @@ public class RpcServer implements RpcAPI {
 		RpcConnection con = pool.get();
 		try {
 			Hashtable parametri = new Hashtable();
-			
-			if (prettyPrint > 0) {
-			parametri.put(OutputKeys.INDENT, "yes");
-			} else {
-			parametri.put(OutputKeys.INDENT, "no");
-		    }
-		    
-		    parametri.put(OutputKeys.ENCODING, encoding);
 
-			
-		//	String xml = con.getDocument(user, name, (prettyPrint > 0), encoding, null);
+			if (prettyPrint > 0) {
+				parametri.put(OutputKeys.INDENT, "yes");
+			} else {
+				parametri.put(OutputKeys.INDENT, "no");
+			}
+
+			parametri.put(OutputKeys.ENCODING, encoding);
+
+			//	String xml = con.getDocument(user, name, (prettyPrint > 0), encoding, null);
 			String xml = con.getDocument(user, name, parametri);
-			
+
 			if (xml == null)
 				throw new EXistException("document " + name + " not found!");
 			try {
@@ -281,19 +238,18 @@ public class RpcServer implements RpcAPI {
 		try {
 
 			Hashtable parametri = new Hashtable();
-			
-			if (prettyPrint > 0) {
-			parametri.put(OutputKeys.INDENT, "yes");
-			} else {
-			parametri.put(OutputKeys.INDENT, "no");
-		    }
-		    
-   		    if (stylesheet != null) {
-		    parametri.put(EXistOutputKeys.STYLESHEET, stylesheet);
-		    }
 
-		    
-		    parametri.put(OutputKeys.ENCODING, encoding);
+			if (prettyPrint > 0) {
+				parametri.put(OutputKeys.INDENT, "yes");
+			} else {
+				parametri.put(OutputKeys.INDENT, "no");
+			}
+
+			if (stylesheet != null) {
+				parametri.put(EXistOutputKeys.STYLESHEET, stylesheet);
+			}
+
+			parametri.put(OutputKeys.ENCODING, encoding);
 
 			//String xml = con.getDocument(user, name, (prettyPrint > 0), encoding, stylesheet);
 			String xml = con.getDocument(user, name, parametri);
@@ -311,7 +267,6 @@ public class RpcServer implements RpcAPI {
 			pool.release(con);
 		}
 	}
-	
 
 	/**
 	 * Retrieve a document. The document data is returned as a string.
@@ -324,26 +279,29 @@ public class RpcServer implements RpcAPI {
 	/**
 	 * Retrieve a document. The document data is returned as a string.
 	 */
-	public String getDocumentAsString(User user, String name, int prettyPrint, String stylesheet)
+	public String getDocumentAsString(
+		User user,
+		String name,
+		int prettyPrint,
+		String stylesheet)
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = pool.get();
 		try {
 			//String xml = con.getDocument(user, name, (prettyPrint > 0), "UTF-8", stylesheet);
 			Hashtable parametri = new Hashtable();
-			
+
 			if (prettyPrint > 0) {
 				parametri.put(OutputKeys.INDENT, "yes");
 			} else {
 				parametri.put(OutputKeys.INDENT, "no");
-		    }
-		    
-		    if (stylesheet != null) {
-		    parametri.put(EXistOutputKeys.STYLESHEET, stylesheet);
-		    }
-		    
+			}
+
+			if (stylesheet != null) {
+				parametri.put(EXistOutputKeys.STYLESHEET, stylesheet);
+			}
+
 			String xml = con.getDocument(user, name, parametri);
-			
-			
+
 			if (xml == null)
 				throw new EXistException("document " + name + " not found!");
 			else
@@ -355,7 +313,6 @@ public class RpcServer implements RpcAPI {
 			pool.release(con);
 		}
 	}
-
 
 	/**
 	 *  This method is provided to retrieve a document with encodings other than
@@ -370,20 +327,17 @@ public class RpcServer implements RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	public byte[] getDocument(
-		User user,
-		String name,
-		Hashtable parametri)
+	public byte[] getDocument(User user, String name, Hashtable parametri)
 		throws EXistException, PermissionDeniedException {
-		
+
 		String encoding = "UTF-8";
-		
-		if (((String) parametri.get("encoding")) == null){
-			encoding ="UTF-8";
-		} else	{
-		    encoding=(String)parametri.get("encoding");
+
+		if (((String) parametri.get("encoding")) == null) {
+			encoding = "UTF-8";
+		} else {
+			encoding = (String) parametri.get("encoding");
 		}
-		
+
 		RpcConnection con = pool.get();
 		try {
 			String xml = con.getDocument(user, name, parametri);
@@ -402,9 +356,6 @@ public class RpcServer implements RpcAPI {
 		}
 	}
 
-
-
-
 	/**
 	 *  get a list of all documents contained in the repository.
 	 *
@@ -413,7 +364,8 @@ public class RpcServer implements RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	public Vector getDocumentListing(User user) throws EXistException, PermissionDeniedException {
+	public Vector getDocumentListing(User user)
+		throws EXistException, PermissionDeniedException {
 		RpcConnection con = pool.get();
 		try {
 			Vector result = con.getDocumentListing(user);
@@ -481,7 +433,8 @@ public class RpcServer implements RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	public int getHits(User user, int resultId) throws EXistException, PermissionDeniedException {
+	public int getHits(User user, int resultId)
+		throws EXistException, PermissionDeniedException {
 		RpcConnection con = pool.get();
 		try {
 			return con.getHits(user, resultId);
@@ -607,7 +560,8 @@ public class RpcServer implements RpcAPI {
 		}
 	}
 
-	private void handleException(Exception e) throws EXistException, PermissionDeniedException {
+	private void handleException(Exception e)
+		throws EXistException, PermissionDeniedException {
 		LOG.debug(e.getMessage(), e);
 		if (e instanceof EXistException)
 			throw (EXistException) e;
@@ -730,7 +684,11 @@ public class RpcServer implements RpcAPI {
 	 * @throws EXistException
 	 * @throws IOException
 	 */
-	public boolean parseLocal(User user, String localFile, String docName, boolean replace)
+	public boolean parseLocal(
+		User user,
+		String localFile,
+		String docName,
+		boolean replace)
 		throws EXistException, PermissionDeniedException, SAXException {
 		RpcConnection con = pool.get();
 		try {
@@ -783,7 +741,12 @@ public class RpcServer implements RpcAPI {
 		return queryP(user, xpath, null, null, parameters);
 	}
 
-	public Hashtable queryP(User user, byte[] xpath, String docName, String s_id, Hashtable parameters)
+	public Hashtable queryP(
+		User user,
+		byte[] xpath,
+		String docName,
+		String s_id,
+		Hashtable parameters)
 		throws EXistException, PermissionDeniedException {
 		String xpathString = null;
 		try {
@@ -816,7 +779,8 @@ public class RpcServer implements RpcAPI {
 		}
 	}
 
-	public Vector query(User user, byte[] xpath) throws EXistException, PermissionDeniedException {
+	public Vector query(User user, byte[] xpath)
+		throws EXistException, PermissionDeniedException {
 		try {
 			return query(user, new String(xpath, "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
@@ -824,7 +788,8 @@ public class RpcServer implements RpcAPI {
 		}
 	}
 
-	public Vector query(User user, String xpath) throws EXistException, PermissionDeniedException {
+	public Vector query(User user, String xpath)
+		throws EXistException, PermissionDeniedException {
 		return query(user, xpath, null, null);
 	}
 
@@ -858,7 +823,12 @@ public class RpcServer implements RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	public String query(User user, String xpath, int howmany, int start, int prettyPrint,
+	public String query(
+		User user,
+		String xpath,
+		int howmany,
+		int start,
+		int prettyPrint,
 		Hashtable namespaces)
 		throws EXistException, PermissionDeniedException {
 		return query(user, xpath, howmany, start, prettyPrint, namespaces, null);
@@ -894,8 +864,16 @@ public class RpcServer implements RpcAPI {
 		RpcConnection con = pool.get();
 		String result = null;
 		try {
-			result = con.query(user, xpath, howmany, start, (prettyPrint > 0), false, 
-				namespaces, sortExpr);
+			result =
+				con.query(
+					user,
+					xpath,
+					howmany,
+					start,
+					(prettyPrint > 0),
+					false,
+					namespaces,
+					sortExpr);
 			return result;
 		} catch (Exception e) {
 			handleException(e);
@@ -1115,7 +1093,12 @@ public class RpcServer implements RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	public byte[] retrieve(User user, String doc, String id, int prettyPrint, String encoding)
+	public byte[] retrieve(
+		User user,
+		String doc,
+		String id,
+		int prettyPrint,
+		String encoding)
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = pool.get();
 		String xml = null;
@@ -1159,7 +1142,12 @@ public class RpcServer implements RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	public byte[] retrieve(User user, int resultId, int num, int prettyPrint, String encoding)
+	public byte[] retrieve(
+		User user,
+		int resultId,
+		int num,
+		int prettyPrint,
+		String encoding)
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = pool.get();
 		try {
@@ -1273,7 +1261,12 @@ public class RpcServer implements RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	public boolean setUser(User user, String name, String password, Vector groups, String home)
+	public boolean setUser(
+		User user,
+		String name,
+		String password,
+		Vector groups,
+		String home)
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = null;
 		try {
@@ -1330,7 +1323,8 @@ public class RpcServer implements RpcAPI {
 
 	public boolean shutdown(User user) throws PermissionDeniedException {
 		if (!user.hasGroup("dba"))
-			throw new PermissionDeniedException("not allowed to shut down" + "the database");
+			throw new PermissionDeniedException(
+				"not allowed to shut down" + "the database");
 		try {
 			BrokerPool.stop();
 			return true;
@@ -1460,60 +1454,56 @@ public class RpcServer implements RpcAPI {
 		}
 	}
 
-
- 	/**
-	 *  Description of the Method
-	 *
-	 *@param  name                           Source dir
-	 *@param  namedest                       Destination dir
-	 *@param  user                           Description of the Parameter
-	 *@return                                Description of the Return Value
-	 *@exception  EXistException             Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
-	 *@author Giulio
-	 */
+	/**
+	*  Description of the Method
+	*
+	*@param  name                           Source dir
+	*@param  namedest                       Destination dir
+	*@param  user                           Description of the Parameter
+	*@return                                Description of the Return Value
+	*@exception  EXistException             Description of the Exception
+	*@exception  PermissionDeniedException  Description of the Exception
+	*@author Giulio
+	*/
 
 	public boolean copyCollection(User user, String name, String namedest)
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = pool.get();
 		try {
-							
+
 			createCollection(user, namedest);
-			
-	        Hashtable parametri = new Hashtable();
+
+			Hashtable parametri = new Hashtable();
 			parametri.put(OutputKeys.INDENT, "no");
 			parametri.put(EXistOutputKeys.EXPAND_XINCLUDES, "no");
 			parametri.put(OutputKeys.ENCODING, "UTF-8");
 
-			
-			Hashtable lista = getCollectionDesc(user,name);
+			Hashtable lista = getCollectionDesc(user, name);
 			Vector collezioni = (Vector) lista.get("collections");
 			Vector documents = (Vector) lista.get("documents");
-			
+
 			//ricrea le directory
 			Iterator collezioniItr = collezioni.iterator();
 			String nome;
-			while (collezioniItr.hasNext())
-			{
-			nome = collezioniItr.next().toString();
-			createCollection(user, namedest+"/"+nome);
-			copyCollection(user, name+"/"+nome, namedest+"/"+nome);			
+			while (collezioniItr.hasNext()) {
+				nome = collezioniItr.next().toString();
+				createCollection(user, namedest + "/" + nome);
+				copyCollection(user, name + "/" + nome, namedest + "/" + nome);
 			}
-			
+
 			//Copy i file
 			Hashtable hash;
-			int p, dsize= documents.size();
-			for (int i = 0; i <dsize; i++){
+			int p, dsize = documents.size();
+			for (int i = 0; i < dsize; i++) {
 				hash = (Hashtable) documents.elementAt(i);
 				nome = (String) hash.get("name");
 				if ((p = nome.lastIndexOf('/')) > -1)
-				   nome = nome.substring(p+1);
-				   
-			byte[] xml = getDocument(user,name+"/"+nome, parametri);
-			parse(user, xml, namedest +"/"+nome);						
-	        }		
-			
-			
+					nome = nome.substring(p + 1);
+
+				byte[] xml = getDocument(user, name + "/" + nome, parametri);
+				parse(user, xml, namedest + "/" + nome);
+			}
+
 			return true;
 		} catch (Exception e) {
 			handleException(e);
