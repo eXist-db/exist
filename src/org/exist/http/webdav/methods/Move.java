@@ -58,9 +58,8 @@ public class Move implements WebDAVMethod {
     public void process(User user, HttpServletRequest request,
             HttpServletResponse response, Collection collection,
             DocumentImpl resource) throws ServletException, IOException {
-        if(resource != null) {
-            response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED,
-                    "Move is not yet implemented for resources");
+        if(collection == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Resource or collection not found");
             return;
         }
         String destination = request.getHeader("Destination");
@@ -82,11 +81,13 @@ public class Move implements WebDAVMethod {
         } catch (URISyntaxException e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Malformed URL in destination header");
         }
-        LOG.debug("Moving " + collection.getName() + " to " + path);
-        moveCollection(user, response, collection, path);
+        if(resource != null)
+            moveResource(user, request, response, resource, path);
+        else
+            moveCollection(user, request, response, collection, path);
     }
 
-    private void moveCollection(User user, HttpServletResponse response, 
+    private void moveCollection(User user, HttpServletRequest request, HttpServletResponse response, 
             Collection collection, String destination) throws ServletException, IOException {
         if(collection.getName().equals(destination)) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN,
@@ -96,11 +97,17 @@ public class Move implements WebDAVMethod {
         DBBroker broker = null;
         try {
             broker = pool.get(user);
+            boolean replaced = false;
             Collection destCollection = broker.getCollection(destination);
             if(destCollection != null) {
-                response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED,
+                boolean overwrite = overwrite(request);
+                if(!overwrite) {
+                    response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED,
                         "Destination collection exists");
-                return;
+                    return;
+                }
+                broker.removeCollection(destCollection.getName());
+                replaced = true;
             }
             int p = destination.lastIndexOf('/');
             if(p < 0) {
@@ -118,7 +125,10 @@ public class Move implements WebDAVMethod {
                 return;
             }
             broker.moveCollection(collection, parent, newCollectionName);
-            response.setStatus(HttpServletResponse.SC_CREATED);
+            if(replaced)
+                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            else
+                response.setStatus(HttpServletResponse.SC_CREATED);
         } catch (EXistException e) {
             throw new ServletException(e.getMessage(), e);
         } catch (PermissionDeniedException e) {
@@ -128,5 +138,59 @@ public class Move implements WebDAVMethod {
         } finally {
             pool.release(broker);
         }
+    }
+    
+    private void moveResource(User user, HttpServletRequest request, HttpServletResponse response, DocumentImpl resource, 
+            String destination)
+    throws ServletException, IOException {
+        int p = destination.lastIndexOf('/');
+        if(p < 0) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                    "Bad destination: " + destination);
+            return;
+        }
+        String newResourceName = destination.substring(p + 1);
+        destination = destination.substring(0, p);
+        boolean replaced = false;
+        DBBroker broker = null;
+        try {
+            broker = pool.get(user);
+            Collection destCollection = broker.getCollection(destination);
+            if(destCollection == null) {
+                response.sendError(HttpServletResponse.SC_CONFLICT,
+                        "Destination collection not found");
+                return;
+            }
+            DocumentImpl oldDoc = destCollection.getDocument(newResourceName);
+            if(oldDoc != null) {
+                boolean overwrite = overwrite(request);
+                if(!overwrite) {
+                    response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED,
+                            "Destination resource exists and overwrite is not allowed");
+                    return;
+                }
+                replaced = true;
+            }
+            broker.moveResource(resource, destCollection, newResourceName);
+            if(replaced)
+                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            else
+                response.setStatus(HttpServletResponse.SC_CREATED);
+        } catch (EXistException e) {
+            throw new ServletException(e.getMessage(), e);
+        } catch (PermissionDeniedException e) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+        } catch (LockException e) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+        } finally {
+            pool.release(broker);
+        }
+    }
+    
+    private boolean overwrite(HttpServletRequest request) {
+        String header = request.getHeader("Overwrite");
+        if(header == null)
+            return false;
+        return header.equals("T");
     }
 }
