@@ -88,6 +88,7 @@ public class NativeSerializer extends Serializer {
 
     protected void serializeToReceiver(NodeProxy p, boolean generateDocEvent)
     throws SAXException {
+    	setDocument(p.getDocument());
     	if (generateDocEvent) receiver.startDocument();
         Iterator domIter = broker.getNodeIterator(p);
         serializeToReceiver(null, domIter, p.getDocument(), p.gid, true, p.getMatches(), new TreeSet());
