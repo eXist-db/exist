@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.Collator;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Observer;
@@ -34,9 +33,7 @@ import java.util.Observer;
 import org.apache.log4j.Logger;
 import org.dbxml.core.DBException;
 import org.dbxml.core.data.Value;
-import org.dbxml.core.filer.BTreeException;
 import org.dbxml.core.filer.Paged;
-import org.dbxml.core.indexer.IndexQuery;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
@@ -62,17 +59,14 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.store.BFile;
 import org.exist.storage.store.CollectionStore;
 import org.exist.storage.store.DOMFile;
-import org.exist.storage.store.DOMTransaction;
 import org.exist.storage.store.StorageAddress;
 import org.exist.storage.sync.Sync;
-import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.Configuration;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
 import org.exist.xquery.Constants;
-import org.exist.xquery.TerminatedException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
@@ -109,9 +103,9 @@ public class NewNativeBroker extends DBBroker {
     /** Indexer to access the dom db */
     protected NativeDomIndexer domIndexer = null;
     
+    /** Indexer to access elements db */
 	protected NativeElementIndex elementIndex;
-	protected BFile elementsDb = null;
-	
+
 	protected NativeTextEngine textEngine;
 	protected Serializer xmlSerializer;
 	
@@ -155,7 +149,9 @@ public class NewNativeBroker extends DBBroker {
 		Paged.setPageSize(pageSize);
 		String pathSep = System.getProperty("file.separator", "/");
 		int indexBuffers, dataBuffers;
+        
 		try {
+            BFile elementsDb = null;
 			if ((elementsDb = (BFile) config.getProperty("db-connection.elements"))
 				== null) {
 				if ((indexBuffers = config.getInteger("db-connection.elements.buffers"))
@@ -1463,7 +1459,7 @@ public class NewNativeBroker extends DBBroker {
 			sync(Sync.MAJOR_SYNC);
 			textEngine.close();
 			domIndexer.close();
-			elementsDb.close();
+			elementIndex.close();
 			collectionIndexer.close();
 		} catch (Exception e) {
 			LOG.debug(e);
@@ -1603,7 +1599,7 @@ public class NewNativeBroker extends DBBroker {
 						(runtime.freeMemory() / 1024) + "K free");
 				
 				// uncomment this to get statistics on page buffer usage
-				elementsDb.printStatistics();
+				elementIndex.printStatistics();
 				collectionIndexer.printStatistics();
 				domIndexer.printStatistics();
 			}
