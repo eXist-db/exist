@@ -63,7 +63,7 @@ public class Dumper extends FilteringTrigger {
 			System.out.println("replacing document " + ((DocumentImpl)existingDocument).getFileName());
 		System.out.println("collection contents:");
 		DocumentSet docs = new DocumentSet();
-		collection.getDocuments(docs);
+		collection.getDocuments(broker, docs);
 		for(int i = 0; i < docs.getLength(); i++)
 			System.out.println("\t" + ((DocumentImpl)docs.item(i)).getFileName());
 	}

@@ -9,11 +9,20 @@ use RPC::XML::Client;
 # retrieve results.
 
 $query = <<END;
-for \$speech in //SPEECH[LINE &= 'corrupt*']
+for \$speech in //SPEECH[LINE &= \$query]
 order by \$speech/SPEAKER[1]
 return
     \$speech
 END
+
+# user-supplied variables
+$vars = RPC::XML::struct->new('query' => 'corrupt*');
+# Output options
+$options = RPC::XML::struct->new(
+    'indent' => 'yes', 
+    'encoding' => 'UTF-8',
+	'variables' => $vars
+);
 
 $URL = "http://guest:guest\@localhost:8080/exist/xmlrpc";
 print "connecting to $URL...\n";
@@ -23,7 +32,7 @@ $client = new RPC::XML::Client $URL;
 # to the created result set.
 $req = RPC::XML::request->new("executeQuery", 
     RPC::XML::base64->new($query), 
-	"UTF-8");
+	"UTF-8", $options);
 $resp = process($req);
 $result_id = $resp->value;
 
@@ -32,11 +41,6 @@ $req = RPC::XML::request->new("getHits", $result_id);
 $resp = process($req);
 $hits = $resp->value;
 print "Found $hits hits.\n";
-
-# Output options
-$options = RPC::XML::struct->new(
-    'indent' => 'yes', 
-    'encoding' => 'UTF-8');
 
 # Retrieve query results 1 to 10
 for($i = 1; $i < 10 && $i < $hits; $i++) {

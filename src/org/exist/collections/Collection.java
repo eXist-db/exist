@@ -231,9 +231,11 @@ implements Comparable, EntityResolver, Cacheable {
 	 */
 	public DocumentSet allDocs(DBBroker broker, DocumentSet docs,
 			boolean recursive) {
-		getDocuments(docs);
-		if (recursive)
-			allDocs(broker, docs);
+		if (permissions.validate(broker.getUser(), Permission.READ)) {
+			getDocuments(broker, docs);
+			if (recursive)
+				allDocs(broker, docs);
+		}
 		return docs;
 	}
 
@@ -249,8 +251,8 @@ implements Comparable, EntityResolver, Cacheable {
 				child = broker.getCollection(name + '/' + childName);
 				if(child == null) {
 					LOG.warn("child collection " + childName + " not found. Skipping ...");
-				} else if (permissions.validate(broker.getUser(), Permission.READ)) {
-					child.getDocuments(docs);
+				} else if (child.permissions.validate(broker.getUser(), Permission.READ)) {
+					child.getDocuments(broker, docs);
 					if (child.getChildCollectionCount() > 0)
 						child.allDocs(broker, docs);
 				}
@@ -268,12 +270,12 @@ implements Comparable, EntityResolver, Cacheable {
 	 *  
 	 * @param docs
 	 */
-	public DocumentSet getDocuments(DocumentSet docs) {
+	public DocumentSet getDocuments(DBBroker broker, DocumentSet docs) {
 		Lock lock = db.getLock();
 		try {
 			lock.acquire(Lock.READ_LOCK);
 			docs.addCollection(this);
-			docs.addAll(documents.values());
+			docs.addAll(broker, documents.values());
 		} catch (LockException e) {
 			LOG.warn(e.getMessage(), e);
 		} finally {
@@ -456,10 +458,13 @@ implements Comparable, EntityResolver, Cacheable {
 	 *@return
 	 */
 	public Iterator iterator() {
-		return getDocuments(new DocumentSet()).iterator();
-		//return documents.values().iterator();
+		return getDocuments(null, new DocumentSet()).iterator();
 	}
 
+	public Iterator iterator(DBBroker broker) {
+		return getDocuments(broker, new DocumentSet()).iterator();
+	}
+	
 	/**
 	 * Read collection contents from the stream.
 	 * 
