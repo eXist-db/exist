@@ -6,7 +6,7 @@
 # -----------------------------------------------------------------------------
 
 # will be set by the installer
-if [ -z "$EXIST_HOME"]; then
+if [ -z "$EXIST_HOME" ]; then
 	EXIST_HOME="%{INSTALL_PATH}"
 fi
 
