@@ -40,7 +40,7 @@
     <!-- Binary mime types -->
     <mime-type name="application/xquery" type="binary">
         <description>XQuery script</description>
-        <extensions>.xq,.xql,.xqm,.xquery</extensions>
+        <extensions>.xq,.xql,.xqm,.xquery,.xqy</extensions>
     </mime-type>
     <mime-type name="application/octet-stream" type="binary">
         <description>Generic binary stream</description>
@@ -52,7 +52,7 @@
     </mime-type>
     <mime-type name="text/plain" type="binary">
         <description>Plain text</description>
-        <extensions>.txt,.text,.java</extensions>
+        <extensions>.txt,.text,.java,.dtd</extensions>
     </mime-type>
     <mime-type name="text/css" type="binary">
         <description>CSS stylesheet</description>
