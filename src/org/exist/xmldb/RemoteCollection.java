@@ -39,6 +39,7 @@ import java.util.Vector;
 
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
+import org.exist.schema.RemoteSchemaService;
 import org.exist.security.Permission;
 import org.exist.xmlrpc.RpcServer;
 import org.xmldb.api.base.Collection;
@@ -202,17 +203,20 @@ public class RemoteCollection implements CollectionImpl {
 			return new RemoteIndexQueryService(rpcClient, this);
 		if (name.equals("XUpdateQueryService"))
 			return new RemoteXUpdateQueryService(this);
+		if (name.equals("SchemaService"))
+			return new RemoteSchemaService(this);
 		throw new XMLDBException(ErrorCodes.NO_SUCH_SERVICE);
 	}
 
 	public Service[] getServices() throws XMLDBException {
-		Service[] services = new Service[6];
+		Service[] services = new Service[7];
 		services[0] = new RemoteXPathQueryService(this);
 		services[1] = new RemoteCollectionManagementService(this, rpcClient);
 		services[2] = new RemoteUserManagementService(this);
 		services[3] = new RemoteDatabaseInstanceManager(rpcClient);
 		services[4] = new RemoteIndexQueryService(rpcClient, this);
 		services[5] = new RemoteXUpdateQueryService(this);
+		services[6] = new RemoteSchemaService(this);
 		return services;
 	}
 
