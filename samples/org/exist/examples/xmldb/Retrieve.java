@@ -41,6 +41,7 @@ public class Retrieve {
 		// get the collection
 		Collection col = DatabaseManager.getCollection(URI + collection);
 		col.setProperty("pretty", "false");
+		col.setProperty("expand-xincludes", "false");
 		XMLResource res = (XMLResource)col.getResource(args[1]);
 		if(res == null)
 			System.out.println("document not found!");
