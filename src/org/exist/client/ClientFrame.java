@@ -510,7 +510,7 @@ public class ClientFrame extends JFrame
 				properties.setProperty("user", loginData[0]);
 				properties.setProperty("password", loginData[1]);
 				try {
-					client.getResources();
+					client.reloadCollection();
 				} catch (XMLDBException e1) {
 					showErrorMessage("Login failed!", e1);
 				}
