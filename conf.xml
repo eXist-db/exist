@@ -98,7 +98,7 @@
 	-->
 
 	<xupdate growth-factor="20" allowed-fragmentation="20"
-		enable-consistency-checks="yes"/>
+		enable-consistency-checks="no"/>
 
     <!-- 
         Settings for the indexer:
