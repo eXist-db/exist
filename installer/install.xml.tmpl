@@ -15,7 +15,7 @@
     </resources>
     <native type="izpack" name="ShellLink.dll"/>
     <variables>
-        <variable name="JETTY_HOME" value="$EXIST_HOME/Jetty-4.1.4"/>
+        <variable name="JETTY_HOME" value="$EXIST_HOME/tools/jetty"/>
     </variables>
     <panels>
         <panel classname="HelloPanel"/>
@@ -42,8 +42,6 @@
             	<include name="start.jar"/>
                 <include name="examples.jar"/>
                 <include name="examples-setup.xml"/>
-                <include name="Jetty*/**"/>
-                <include name="Jetty*/logs/"/>
             	<include name="lib/"/>
             	<include name="samples/**"/>
             	<include name="thirdparty/"/>
@@ -55,6 +53,9 @@
 			<fileset targetdir="$INSTALL_PATH/tools" dir="tools">
 				<include name="**/*.jar"/>
 				<include name="wrapper/**"/>
+				<include name="jetty/**"/>
+                <exclude name="jetty/logs/*"/>
+                <exclude name="jetty/work/*"/>
 			</fileset>
             <fileset targetdir="$INSTALL_PATH/webapp" dir="webapp">
             	<exclude name="**/*.dbx"/>
