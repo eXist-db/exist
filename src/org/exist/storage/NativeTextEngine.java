@@ -121,7 +121,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		int indexBuffers, dataBuffers;
 		if ((indexBuffers = config.getInteger("db-connection.words.buffers")) < 0) {
 			indexBuffers = buffers * 14;
-			dataBuffers = indexBuffers;
+			dataBuffers = buffers * 12;
 		} else
 			dataBuffers = indexBuffers;
 		if ((temp = (String) config.getProperty("db-connection.compress")) != null)
