@@ -121,6 +121,7 @@ public class Restore extends DefaultHandler {
 		} else {
 			while(!stack.isEmpty()) {
 				contents = (File) stack.pop();
+				System.out.println("restoring " + contents.getAbsolutePath());
 				reader.parse(new InputSource(new FileInputStream(contents)));
 			}
 		}
@@ -149,7 +150,7 @@ public class Restore extends DefaultHandler {
 					service.chown(u, group);
 					service.chmod(Integer.parseInt(mode, 8));
 				} catch (XMLDBException e) {
-					throw new SAXException(e);
+					throw new SAXException(e.getMessage(), e);
 				}
 				if(dialog != null)
 					dialog.setCollection(name);
@@ -180,7 +181,8 @@ public class Restore extends DefaultHandler {
 					if (dialog != null && current instanceof Observable) {
 						((Observable) current).addObserver(dialog.getObserver());
 					}
-					dialog.setResource(name);
+					if(dialog != null)
+						dialog.setResource(name);
 					final XMLResource res =
 						(XMLResource) current.createResource(name, "XMLResource");
 					res.setContent(f);
