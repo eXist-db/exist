@@ -10,7 +10,7 @@ public class ComplexUpdateTest extends ConcurrentTestBase {
 	private final static String URI = "xmldb:exist:///db";
 	
 	private final static String XML =
-		"<TEST><USER-SESSION-DATA version=\"1\"/></TEST>";
+		"<TEST><USER-SESSION-DATA version=\"0\"/></TEST>";
 	
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(ComplexUpdateTest.class);
@@ -36,7 +36,14 @@ public class ComplexUpdateTest extends ConcurrentTestBase {
 		getTestCollection().storeResource(res);
 		getTestCollection().close();
 		
-		addAction(new ComplexUpdateAction(URI + "/complex", "R01.xml", 10000), 1, 0, 0);
+		addAction(new ComplexUpdateAction(URI + "/complex", "R01.xml", 200), 1, 0, 0);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.test.concurrent.ConcurrentTestBase#tearDown()
+	 */
+	protected void tearDown() throws Exception {
+		DBUtils.shutdownDB(rootColURI);
 	}
 
 }

@@ -34,6 +34,10 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 
 /**
+ * Check if database shutdown/restart works properly. The test opens
+ * the database, stores a few files and queries them, then shuts down the
+ * db.
+ *  
  * @author wolf
  */
 public class ShutdownTest extends TestCase {
@@ -68,20 +72,12 @@ public class ShutdownTest extends TestCase {
 	}
 	
 	public void testShutdown() throws Exception {
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 50; i++) {
 			System.out.println("Starting the database ...");
 			Collection rootCol = DBUtils.setupDB(URI);
-			Collection testCol = rootCol.getChildCollection("C1");
-			if(testCol == null) {
-				testCol = DBUtils.addCollection(rootCol, "C1");
-				assertNotNull(testCol);
-			}
 			
-			String xml =
-				"<data now=\"" + System.currentTimeMillis() + "\" count=\"" +
-				i + "\">" + XML + "</data>";
-			System.out.println("Storing resource ...");
-			DBUtils.addXMLResource(testCol, "R1.xml", xml);
+			// after restarting the db, we first try a bunch of queries
+			Collection testCol = rootCol.getChildCollection("C1");
 			
 			ResourceSet result = DBUtils.query(testCol, TEST_QUERY1);
 			Assert.assertEquals(1, result.getSize());
@@ -93,12 +89,19 @@ public class ShutdownTest extends TestCase {
 			result = DBUtils.query(testCol, TEST_QUERY3);
 			Assert.assertEquals(1, result.getSize());
 			
-			System.out.println("Storing large file ...");
-			File tempFile = DBUtils.generateXMLFile(5000, 7, wordList);
-			DBUtils.addXMLResource(testCol, "R1.xml", tempFile);
-			
 			result = DBUtils.query(testCol, TEST_QUERY4);
 			Assert.assertEquals(5000, result.getSize());
+			
+			// now replace the data files
+			String xml =
+				"<data now=\"" + System.currentTimeMillis() + "\" count=\"" +
+				i + "\">" + XML + "</data>";
+			System.out.println("Storing resource ...");
+			DBUtils.addXMLResource(testCol, "R1.xml", xml);
+			
+			System.out.println("Storing large file ...");
+			File tempFile = DBUtils.generateXMLFile(5000, 7, wordList);
+			DBUtils.addXMLResource(testCol, "R2.xml", tempFile);
 			
 			System.out.println("Shut down the database ...");
 			DBUtils.shutdownDB(URI);
@@ -117,6 +120,16 @@ public class ShutdownTest extends TestCase {
 		}
 		DBUtils.addXMLResource(rootCol, "biblio.rdf", new File("samples/biblio.rdf"));
 		wordList = DBUtils.wordList(rootCol);
+		
+		// store the data files
+		String xml =
+			"<data now=\"" + System.currentTimeMillis() + "\" count=\"1\">" + XML + "</data>";
+		DBUtils.addXMLResource(testCol, "R1.xml", xml);
+		
+		File tempFile = DBUtils.generateXMLFile(5000, 7, wordList);
+		DBUtils.addXMLResource(testCol, "R2.xml", tempFile);
+		
+		DBUtils.shutdownDB(URI);
 	}
 	
 	/* (non-Javadoc)

@@ -1,5 +1,7 @@
 package org.exist.xmldb.test.concurrent;
 
+import junit.framework.Assert;
+
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
@@ -74,10 +76,10 @@ public class ComplexUpdateAction extends Action {
 	 * @see org.exist.xmldb.test.concurrent.Action#execute()
 	 */
 	public boolean execute() throws Exception {
-		Collection col = DatabaseManager.getCollection(collectionPath);
+		Collection col = DatabaseManager.getCollection(collectionPath, "admin", null);
 		for(int i = 0; i < repeat; i++) {
 			System.out.println("Starting run " + (i + 1));
-			query(col); 
+			query(col, i); 
 			col.close();
 			
 			update(col, sessionUpdate);
@@ -95,15 +97,20 @@ public class ComplexUpdateAction extends Action {
 	/**
 	 * @param col
 	 */
-	private void query(Collection col) throws XMLDBException {
+	private void query(Collection col, int repeat) throws XMLDBException {
 		XPathQueryService service = (XPathQueryService)col.getService("XPathQueryService", "1.0");
 		ResourceSet r = service.query("//USER-SESSION-DATA");
+		Assert.assertEquals(1, r.getSize());
 		System.out.println("------------------------------------------------------------------");
 		for(long i = 0; i < r.getSize(); i++) {
 			XMLResource res = (XMLResource)r.getResource(i);
 			System.out.println(res.getContent());
 		}
 		System.out.println("------------------------------------------------------------------");
+		
+		r = service.query("//USER-SESSION-DATA[1]/@version");
+		Assert.assertEquals(1, r.getSize());
+		Assert.assertEquals(repeat, Integer.parseInt(r.getResource(0).getContent().toString()));
 	}
 
 	private void update(Collection col, String xupdate) throws XMLDBException {
