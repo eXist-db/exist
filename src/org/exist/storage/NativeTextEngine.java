@@ -363,7 +363,7 @@ public class NativeTextEngine extends TextSearchEngine {
 						last = gid;
 						count++;
 						if (context != null) {
-							parent = XMLUtil.parentWithChild(context, doc, gid, -1);
+							parent = context.parentWithChild(doc, gid, false, true, -1);
 							if (parent != null) {
 								result.add(parent, sizeHint);
 								if (trackMatches != Serializer.TAG_NONE)
@@ -1179,10 +1179,9 @@ public class NativeTextEngine extends TextSearchEngine {
 							last = gid;
 							if (context != null) {
 								parent =
-									XMLUtil.parentWithChild(context, doc, gid, -1);
+									context.parentWithChild(doc, gid, false, true, -1);
 								if (parent != null) {
-									if (!result.contains(parent))
-										result.add(parent, sizeHint);
+									result.add(parent, sizeHint);
 									if (trackMatches != Serializer.TAG_NONE)
 										parent.addMatch(new Match(word, gid));
 								}

@@ -74,12 +74,9 @@ public class ExtArrayNodeSet extends NodeSet {
 	}
 	
 	private final Part getPart(int docId, boolean create, int sizeHint) {
-		Part part;
-		if(docId == lastDoc && lastPart != null) {
-			part = lastPart;
-			return part;
-		} else
-			part = (Part) map.get(docId);
+		if(docId == lastDoc && lastPart != null)
+			return lastPart;
+		Part part = (Part) map.get(docId);
 		if(part == null && create) {
 			part = new Part(sizeHint);
 			map.put(docId, part);
@@ -116,7 +113,7 @@ public class ExtArrayNodeSet extends NodeSet {
 	 * @see org.exist.dom.NodeSet#contains(org.exist.dom.DocumentImpl, long)
 	 */
 	public boolean contains(DocumentImpl doc, long nodeId) {
-		Part part = getPart(doc.docId, false, 0);
+		final Part part = getPart(doc.docId, false, 0);
 		return part == null ? false : part.contains(nodeId);
 	}
 
@@ -124,7 +121,7 @@ public class ExtArrayNodeSet extends NodeSet {
 	 * @see org.exist.dom.NodeSet#contains(org.exist.dom.NodeProxy)
 	 */
 	public boolean contains(NodeProxy proxy) {
-		Part part = getPart(proxy.doc.docId, false, 0);
+		final Part part = getPart(proxy.doc.docId, false, 0);
 		return part == null ? false : part.contains(proxy.gid);
 	}
 
@@ -171,7 +168,7 @@ public class ExtArrayNodeSet extends NodeSet {
 	 * @see org.exist.dom.NodeSet#get(org.exist.dom.NodeProxy)
 	 */
 	public NodeProxy get(NodeProxy p) {
-		Part part = getPart(p.doc.docId, false, 0);
+		final Part part = getPart(p.doc.docId, false, 0);
 		return part == null ? null : part.get(p.gid);
 	}
 
@@ -179,7 +176,7 @@ public class ExtArrayNodeSet extends NodeSet {
 	 * @see org.exist.dom.NodeSet#get(org.exist.dom.DocumentImpl, long)
 	 */
 	public NodeProxy get(DocumentImpl doc, long nodeId) {
-		Part part = getPart(doc.docId, false, 0);
+		final Part part = getPart(doc.docId, false, 0);
 		return part == null ? null : part.get(nodeId);
 	}
 
@@ -221,8 +218,8 @@ public class ExtArrayNodeSet extends NodeSet {
 				return;
 			}
 			if (length == array.length) {
-				int newLength = (length * 3)/2 + 1;
-				System.out.println("reallocating " + length + " -> " + newLength);
+				//int newLength = (length * 3)/2 + 1;
+				final int newLength = length << 1;
 				NodeProxy temp[] = new NodeProxy[newLength];
 				System.arraycopy(array, 0, temp, 0, length);
 				array = temp;
@@ -231,7 +228,7 @@ public class ExtArrayNodeSet extends NodeSet {
 		}
 
 		boolean contains(long gid) {
-			return search(gid) != -1;
+			return search(gid) != null;
 		}
 
 		NodeProxy get(int pos) {
@@ -239,29 +236,29 @@ public class ExtArrayNodeSet extends NodeSet {
 		}
 
 		NodeProxy get(long gid) {
-			int p = search(gid);
-			return p == -1 ? null : array[p];
+			return search(gid);
 		}
 
 		void sort() {
 			FastQSort.sortByNodeId(array, 0, length - 1);
 		}
 
-		private int search(long gid) {
+		private final NodeProxy search(long gid) {
 			int low = 0;
 			int high = length - 1;
 			int mid;
-			int cmp;
+			NodeProxy p;
 			while (low <= high) {
 				mid = (low + high) / 2;
-				if (array[mid].gid == gid)
-					return mid;
-				if (array[mid].gid > gid)
+				p = array[mid];
+				if (p.gid == gid)
+					return p;
+				if (p.gid > gid)
 					high = mid - 1;
 				else
 					low = mid + 1;
 			}
-			return -1;
+			return null;
 		}
 		
 		int removeDuplicates() {

@@ -58,8 +58,7 @@ public class LocationStep extends Step {
 		NodeSet result = contextSet;
 		for (Iterator i = predicates.iterator(); i.hasNext();) {
 			pred = (Predicate) i.next();
-			result =
-				(NodeSet) pred.eval(context, documents, (Sequence)result);
+			result = (NodeSet) pred.eval(context, documents, (Sequence) result);
 		}
 		return result;
 	}
@@ -70,23 +69,29 @@ public class LocationStep extends Step {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		if(contextItem != null)
+		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
 		NodeSet temp;
 		switch (axis) {
 			case Constants.DESCENDANT_AXIS :
 			case Constants.DESCENDANT_SELF_AXIS :
-				temp = getDescendants(context, documents, (NodeSet)contextSequence);
+				temp =
+					getDescendants(
+						context,
+						documents,
+						(NodeSet) contextSequence);
 				break;
 			case Constants.CHILD_AXIS :
-				temp = getChildren(context, documents, (NodeSet)contextSequence);
+				temp =
+					getChildren(context, documents, (NodeSet) contextSequence);
 				break;
 			case Constants.ANCESTOR_AXIS :
 			case Constants.ANCESTOR_SELF_AXIS :
-				temp = getAncestors(context, documents, (NodeSet)contextSequence);
+				temp =
+					getAncestors(context, documents, (NodeSet) contextSequence);
 				break;
 			case Constants.SELF_AXIS :
-				temp = (NodeSet)contextSequence;
+				temp = (NodeSet) contextSequence;
 				if (inPredicate) {
 					if (temp instanceof VirtualNodeSet) {
 						((VirtualNodeSet) temp).setInPredicate(true);
@@ -101,16 +106,22 @@ public class LocationStep extends Step {
 				}
 				break;
 			case Constants.PARENT_AXIS :
-				temp = getParents(context, documents, (NodeSet)contextSequence);
+				temp =
+					getParents(context, documents, (NodeSet) contextSequence);
 				break;
 			case Constants.ATTRIBUTE_AXIS :
 				// combines /descendant-or-self::node()/attribute:*
 			case Constants.DESCENDANT_ATTRIBUTE_AXIS :
-				temp = getAttributes(context, documents, (NodeSet)contextSequence);
+				temp =
+					getAttributes(
+						context,
+						documents,
+						(NodeSet) contextSequence);
 				break;
 			case Constants.PRECEDING_SIBLING_AXIS :
 			case Constants.FOLLOWING_SIBLING_AXIS :
-				temp = getSiblings(context, documents, (NodeSet)contextSequence);
+				temp =
+					getSiblings(context, documents, (NodeSet) contextSequence);
 				break;
 			default :
 				throw new IllegalArgumentException("Unsupported axis specified");
@@ -186,10 +197,7 @@ public class LocationStep extends Step {
 						documents,
 						test.getName());
 			}
-			return buf.getChildren(
-				contextSet,
-				ArraySet.DESCENDANT,
-				inPredicate);
+			return buf.getChildren(contextSet, NodeSet.DESCENDANT, inPredicate);
 		}
 	}
 
@@ -197,7 +205,12 @@ public class LocationStep extends Step {
 		StaticContext context,
 		DocumentSet documents,
 		NodeSet contextSet) {
-		if (!test.isWildcardTest()) {
+		if (test.isWildcardTest()) {
+			// test is one out of *, text(), node()
+			VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextSet);
+			vset.setInPredicate(inPredicate);
+			return vset;
+		} else {
 			if (buf == null) {
 				buf =
 					(NodeSet) context.getBroker().findElementsByTagName(
@@ -206,13 +219,9 @@ public class LocationStep extends Step {
 			}
 			return buf.getDescendants(
 				contextSet,
-				ArraySet.DESCENDANT,
+				NodeSet.DESCENDANT,
 				axis == Constants.DESCENDANT_SELF_AXIS,
 				inPredicate);
-		} else {
-			VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextSet);
-			vset.setInPredicate(inPredicate);
-			return vset;
 		}
 	}
 
@@ -285,7 +294,8 @@ public class LocationStep extends Step {
 			for (Iterator i = contextSet.iterator(); i.hasNext();) {
 				p = (NodeProxy) i.next();
 				if (axis == Constants.ANCESTOR_SELF_AXIS && test.matches(p))
-					result.add(new NodeProxy(p.doc, p.gid, p.getInternalAddress()));
+					result.add(
+						new NodeProxy(p.doc, p.gid, p.getInternalAddress()));
 				while ((p.gid = XMLUtil.getParentId(p.doc, p.gid)) > 0) {
 					p.nodeType = Node.ELEMENT_NODE;
 					if (test.matches(p))

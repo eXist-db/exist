@@ -49,7 +49,7 @@ public final class NodeProxy implements Item, Comparable {
 	public Match match = null;
 	private ContextItem context = null;
 	private long internalAddress = -1;
-	
+
 	public NodeProxy() {
 	}
 
@@ -77,17 +77,23 @@ public final class NodeProxy implements Item, Comparable {
 		this.nodeType = nodeType;
 	}
 
-	public NodeProxy(DocumentImpl doc, long gid, short nodeType, long address) {
-			this(doc, gid, nodeType);
-			this.internalAddress = address;
-		}
-	
-		public NodeProxy(DocumentImpl doc, long gid, long address) {
-			this.gid = gid;
-			this.doc = doc;
-			this.internalAddress = address;
-		}
-		
+	public NodeProxy(
+		DocumentImpl doc,
+		long gid,
+		short nodeType,
+		long address) {
+		this.doc = doc;
+		this.gid = gid;
+		this.nodeType = nodeType;
+		this.internalAddress = address;
+	}
+
+	public NodeProxy(DocumentImpl doc, long gid, long address) {
+		this.gid = gid;
+		this.doc = doc;
+		this.internalAddress = address;
+	}
+
 	public NodeProxy(NodeProxy p) {
 		doc = p.doc;
 		gid = p.gid;
@@ -97,10 +103,10 @@ public final class NodeProxy implements Item, Comparable {
 	}
 
 	public NodeProxy(NodeImpl node) {
-			this((DocumentImpl) node.getOwnerDocument(), node.getGID());
-			internalAddress = node.getInternalAddress();
-		}
-		
+		this((DocumentImpl) node.getOwnerDocument(), node.getGID());
+		internalAddress = node.getInternalAddress();
+	}
+
 	public int compareTo(NodeProxy other) {
 		final int diff = doc.docId - other.doc.docId;
 		return diff == 0
@@ -206,30 +212,30 @@ public final class NodeProxy implements Item, Comparable {
 		 * Returns the storage address of this node in dom.dbx.
 		 * @return long
 		 */
-		public long getInternalAddress() {
-			return internalAddress;
-		}
+	public long getInternalAddress() {
+		return internalAddress;
+	}
 
-		/**
-		 * Sets the storage address of this node in dom.dbx.
-		 * 
-		 * @param internalAddress The internalAddress to set
-		 */
-		public void setInternalAddress(long internalAddress) {
-			this.internalAddress = internalAddress;
-		}
+	/**
+	 * Sets the storage address of this node in dom.dbx.
+	 * 
+	 * @param internalAddress The internalAddress to set
+	 */
+	public void setInternalAddress(long internalAddress) {
+		this.internalAddress = internalAddress;
+	}
 
-		public void setHasIndex(boolean hasIndex) {
-			internalAddress =
-				(hasIndex
-					? internalAddress | 0x10000L
-					: internalAddress & (~0x10000L));
-		}
+	public void setHasIndex(boolean hasIndex) {
+		internalAddress =
+			(hasIndex
+				? internalAddress | 0x10000L
+				: internalAddress & (~0x10000L));
+	}
 
-		public boolean hasIndex() {
-			return (internalAddress & 0x10000L) > 0;
-		}
-		
+	public boolean hasIndex() {
+		return (internalAddress & 0x10000L) > 0;
+	}
+
 	public boolean hasMatch(Match m) {
 		if (m == null || match == null)
 			return false;
@@ -296,23 +302,23 @@ public final class NodeProxy implements Item, Comparable {
 	}
 
 	public void addContextNode(NodeProxy node) {
-		if(context == null) {
+		if (context == null) {
 			context = new ContextItem(node);
 			return;
 		}
 		ContextItem next = context;
-		while(next != null) {
-			if(next.getNextItem() == null) {
+		while (next != null) {
+			if (next.getNextItem() == null) {
 				next.setNextItem(new ContextItem(node));
 				return;
 			}
 			next = next.getNextItem();
 		}
-//		System.out.print(gid + " context: ");
-//		for(Iterator i = contextNodes.iterator(); i.hasNext(); ) {
-//			System.out.print(((NodeProxy)i.next()).gid + " ");
-//		}
-//		System.out.println();
+		//		System.out.print(gid + " context: ");
+		//		for(Iterator i = contextNodes.iterator(); i.hasNext(); ) {
+		//			System.out.print(((NodeProxy)i.next()).gid + " ");
+		//		}
+		//		System.out.println();
 	}
 
 	public void copyContext(NodeProxy node) {

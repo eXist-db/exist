@@ -47,7 +47,7 @@ import org.w3c.dom.NodeList;
 public abstract class NodeSet extends AbstractSequence implements NodeList {
 
 	private final static Logger LOG = Logger.getLogger(NodeSet.class);
-	
+
 	public final static int ANCESTOR = 0;
 	public final static int DESCENDANT = 1;
 	public final static int PRECEDING = 2;
@@ -95,7 +95,7 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 	public void add(NodeProxy proxy, int sizeHint) {
 		add(proxy);
 	}
-	
+
 	public void add(Item item) throws XPathException {
 		if (!Type.subTypeOf(item.getType(), Type.NODE))
 			throw new XPathException("item has wrong type");
@@ -158,11 +158,11 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 		boolean includeSelf,
 		int level) {
 		NodeProxy parent;
-		if(includeSelf && (parent = get(doc, gid)) != null)
+		if (includeSelf && (parent = get(doc, gid)) != null)
 			return parent;
 		if (level < 0)
 			level = doc.getTreeLevel(gid);
-		while(gid > 0) {
+		while (gid > 0) {
 			// calculate parent's gid
 			gid = XMLUtil.getParentId(doc, gid, level);
 			if ((parent = get(doc, gid)) != null)
@@ -180,12 +180,9 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 		return getChildren(al, mode, false);
 	}
 
-	public NodeSet getChildren(
-		NodeSet al,
-		int mode,
-		boolean rememberContext) {
+	public NodeSet getChildren(NodeSet al, int mode, boolean rememberContext) {
 		NodeProxy n, p;
-		long start = System.currentTimeMillis();
+//		long start = System.currentTimeMillis();
 		ExtArrayNodeSet result = new ExtArrayNodeSet();
 		DocumentImpl lastDoc = null;
 		int sizeHint = -1;
@@ -193,11 +190,12 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 			case DESCENDANT :
 				for (Iterator i = iterator(); i.hasNext();) {
 					n = (NodeProxy) i.next();
-					if(lastDoc == null || n.doc != lastDoc) {
+					if (lastDoc == null || n.doc != lastDoc) {
 						lastDoc = n.doc;
 						sizeHint = getSizeHint(lastDoc);
 					}
-					if ((p = al.nodeHasParent(n.doc, n.gid, true, false, -1)) != null) {
+					if ((p = al.nodeHasParent(n.doc, n.gid, true, false, -1))
+						!= null) {
 						if (rememberContext)
 							n.addContextNode(p);
 						else
@@ -209,7 +207,7 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 			case ANCESTOR :
 				for (Iterator i = iterator(); i.hasNext();) {
 					n = (NodeProxy) i.next();
-					if(lastDoc == null || n.doc != lastDoc) {
+					if (lastDoc == null || n.doc != lastDoc) {
 						lastDoc = n.doc;
 						sizeHint = al.getSizeHint(lastDoc);
 					}
@@ -224,8 +222,11 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 				}
 				break;
 		}
-		LOG.debug("getChildren found " + result.getLength() + " in " +
-			(System.currentTimeMillis() - start));
+//		LOG.debug(
+//			"getChildren found "
+//				+ result.getLength()
+//				+ " in "
+//				+ (System.currentTimeMillis() - start));
 		result.sort();
 		return result;
 	}
@@ -253,7 +254,7 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 		boolean includeSelf,
 		boolean rememberContext) {
 		NodeProxy n, p;
-		long start = System.currentTimeMillis();
+//		long start = System.currentTimeMillis();
 		DocumentImpl lastDoc = null;
 		int sizeHint = -1;
 		ExtArrayNodeSet result = new ExtArrayNodeSet();
@@ -261,11 +262,13 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 			case DESCENDANT :
 				for (Iterator i = iterator(); i.hasNext();) {
 					n = (NodeProxy) i.next();
-					if(lastDoc == null || n.doc != lastDoc) {
+					// get a size hint for every new document encountered
+					if (lastDoc == null || n.doc != lastDoc) {
 						lastDoc = n.doc;
 						sizeHint = getSizeHint(lastDoc);
 					}
-					if ((p = al.nodeHasParent(n.doc, n.gid, false, false, -1)) != null) {
+					if ((p = al.nodeHasParent(n.doc, n.gid, false, false, -1))
+						!= null) {
 						if (rememberContext)
 							n.addContextNode(p);
 						else
@@ -277,7 +280,8 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 			case ANCESTOR :
 				for (Iterator i = iterator(); i.hasNext();) {
 					n = (NodeProxy) i.next();
-					if(lastDoc == null || n.doc != lastDoc) {
+					// get a size hint for every new document encountered
+					if (lastDoc == null || n.doc != lastDoc) {
 						lastDoc = n.doc;
 						sizeHint = al.getSizeHint(lastDoc);
 					}
@@ -293,8 +297,11 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 				break;
 		}
 		//result.sort();
-		LOG.debug("getDescendants found " + result.getLength() + " in " +
-			(System.currentTimeMillis() - start));
+//		LOG.debug(
+//			"getDescendants found "
+//				+ result.getLength()
+//				+ " in "
+//				+ (System.currentTimeMillis() - start));
 		return result;
 	}
 
@@ -430,22 +437,28 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 	 * If includeSelf is true, the method returns true even if
 	 * the node itself is contained in the node set.
 	 */
-	protected NodeProxy parentWithChild(
+	public NodeProxy parentWithChild(
 		DocumentImpl doc,
 		long gid,
 		boolean directParent,
 		boolean includeSelf,
 		int level) {
 		NodeProxy temp;
+		if (includeSelf && (temp = get(doc, gid)) != null)
+			return temp;
 		if (level < 0)
 			level = doc.getTreeLevel(gid);
-		while(gid > 0) {
-			if (includeSelf && (temp = get(doc, gid)) != null)
-				return temp;
-			includeSelf = false;
-			// calculate parent's gid
-			gid = XMLUtil.getParentId(doc, gid, level);
-			if (gid > 0 && (temp = get(doc, gid)) != null)
+		while (gid > 0) {
+			if (level == 0)
+				gid = -1;
+			else
+				// calculate parent's gid
+				gid =
+					(gid - doc.treeLevelStartPoints[level])
+						/ doc.treeLevelOrder[level]
+						+ doc.treeLevelStartPoints[level
+						- 1];
+			if ((temp = get(doc, gid)) != null)
 				return temp;
 			else if (directParent)
 				return null;
@@ -458,13 +471,14 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 	public NodeProxy parentWithChild(
 		NodeProxy proxy,
 		boolean directParent,
-		boolean includeSelf) {
+		boolean includeSelf,
+		int level) {
 		return parentWithChild(
 			proxy.doc,
 			proxy.gid,
 			directParent,
 			includeSelf,
-			-1);
+			level);
 	}
 
 	public NodeSet getParents() {
@@ -503,7 +517,7 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 	public int getSizeHint(DocumentImpl doc) {
 		return -1;
 	}
-	
+
 	public NodeSet intersection(NodeSet other) {
 		long start = System.currentTimeMillis();
 		AVLTreeNodeSet r = new AVLTreeNodeSet();
@@ -551,7 +565,7 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 		for (Iterator i = iterator(); i.hasNext();) {
 			current = (NodeProxy) i.next();
 			contextNode = current.getContext();
-			while(contextNode != null) {
+			while (contextNode != null) {
 				item = contextNode.getNode();
 				context = contextNodes.get(item);
 				if (context != null) {

@@ -54,16 +54,11 @@ public class Union extends PathExpr {
 
 	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, 
 		Item contextItem) throws XPathException {
-		
 		Sequence lval = left.eval(context, docs, contextSequence, contextItem);
-		LOG.debug("left " + left.pprint() + " returned: " + lval.getLength());
 		Sequence rval = right.eval(context, docs, contextSequence, contextItem);
-		LOG.debug("right " + right.pprint() + " returned: " + rval.getLength());
 		if(lval.getItemType() != Type.NODE || rval.getItemType() != Type.NODE)
 			throw new XPathException("union operand is not a node sequence");
-		long start = System.currentTimeMillis();
         NodeSet result = ((NodeSet)lval).union((NodeSet)rval);
-		LOG.debug("union found " + result.getLength() + " in "+ (System.currentTimeMillis() - start));
 		return result;
 	}
 
