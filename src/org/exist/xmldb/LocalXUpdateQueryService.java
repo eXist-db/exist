@@ -56,17 +56,17 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 		long start = System.currentTimeMillis();
 		DocumentSet docs = new DocumentSet();
 		DBBroker broker = null;
+		org.exist.collections.Collection c = parent.getCollection();
 		try {
 			broker = pool.get(user);
 			if (resource == null) {
-				docs = parent.collection.allDocs(broker, docs, true);
+				docs = c.allDocs(broker, docs, true);
 			} else {
 				String id = parent.getName() + '/' + resource;
-				DocumentImpl doc = parent.collection.getDocument(id);
+				DocumentImpl doc = c.getDocument(id);
 				LOG.debug("updating resource " + doc.getFileName());
 				docs.add(doc);
 			}
-			//LOG.debug(xupdate);
 			XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
 			Modification modifications[] =
 				processor.parse(new InputSource(new StringReader(xupdate)));

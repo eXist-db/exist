@@ -176,7 +176,7 @@ public class DatabaseImpl implements Database {
             }
             try {
                 current = new LocalCollection( u, pool, c.substring( 2 ) );
-                return ( current != null && ( (LocalCollection) current ).isValid() )
+                return ( current != null )
                      ? current : null;
             } catch ( XMLDBException e ) {
                 switch ( e.errorCode ) {

@@ -207,6 +207,7 @@ public class LocalXMLResource implements XMLResource, EXistResource {
 
 	public void getContentAsSAX(ContentHandler handler) throws XMLDBException {
 		DBBroker broker = null;
+		// case 1: content is an external DOM node
 		if (root != null && !(root instanceof NodeValue)) {
 			try {
 				String option = parent.properties.getProperty(
@@ -220,6 +221,8 @@ public class LocalXMLResource implements XMLResource, EXistResource {
 				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e
 						.getMessage(), e);
 			}
+			
+		// case 2: content is an atomic value
 		} else if (value != null) {
 			try {
 				broker = brokerPool.get(user);
@@ -233,6 +236,8 @@ public class LocalXMLResource implements XMLResource, EXistResource {
 			} finally {
 				brokerPool.release(broker);
 			}
+			
+		// case 3: content is an internal node or a document
 		} else {
 			try {
 				broker = brokerPool.get(user);

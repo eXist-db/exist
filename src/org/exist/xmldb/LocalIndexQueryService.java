@@ -1,8 +1,3 @@
-/*
- * LocalIndexQueryService.java - Mar 5, 2003
- * 
- * @author wolf
- */
 package org.exist.xmldb;
 
 import org.exist.EXistException;
@@ -15,12 +10,6 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
-/**
- * @author wolf
- *
- * To change this generated comment go to 
- * Window>Preferences>Java>Code Generation>Code and Comments
- */
 public class LocalIndexQueryService implements IndexQueryService {
 
 	private LocalCollection parent = null;
@@ -44,7 +33,7 @@ public class LocalIndexQueryService implements IndexQueryService {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			return broker.scanIndexedElements(parent.collection, inclusive);
+			return broker.scanIndexedElements(parent.getCollection(), inclusive);
 		} catch (EXistException e) {
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
@@ -107,7 +96,7 @@ public class LocalIndexQueryService implements IndexQueryService {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			return broker.getTextEngine().scanIndexTerms(user, parent.collection, 
+			return broker.getTextEngine().scanIndexTerms(user, parent.getCollection(), 
 					start, end, inclusive);
 		} catch (PermissionDeniedException e) {
 			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,

@@ -111,8 +111,8 @@ public class GClockCache implements Cache {
 		lastSync = System.currentTimeMillis();
 	}
 
-	protected void removeOne(Cacheable item) {
-		Cacheable old;
+	protected Cacheable removeOne(Cacheable item) {
+		Cacheable old = null;
 		boolean removed = false;
 		int bucket;
 		do {
@@ -139,6 +139,7 @@ public class GClockCache implements Cache {
 				removed = true;
 			}
 		} while (!removed);
+		return old;
 	}
 
 	public int getBuffers() {

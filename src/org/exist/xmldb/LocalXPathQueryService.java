@@ -110,7 +110,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			docs = collection.collection.allDocs(broker, new DocumentSet(), true);
+			docs = collection.getCollection().allDocs(broker, new DocumentSet(), true);
 		} catch (EXistException e) {
 			throw new XMLDBException(
 				ErrorCodes.UNKNOWN_ERROR,
@@ -151,15 +151,16 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		Sequence result;
 		try {
 			broker = brokerPool.get(user);
-			if(docs == null)
-				docs = collection.collection.allDocs(broker, new DocumentSet(), true);
-		
+			if(docs == null) {
+				docs = collection.getCollection().allDocs(broker, new DocumentSet(), true);
+			}
+			
 			expression.reset();
 			XQueryContext context = ((PathExpr)expression).getContext();
 			context.setBroker(broker);
 			context.setBackwardsCompatibility(xpathCompatible);
 			context.setStaticallyKnownDocuments(docs);
-			
+			LOG.debug("docs: " + docs.getLength());
 			Map.Entry entry;
 			// declare namespace/prefix mappings
 			for (Iterator i = namespaceDecls.entrySet().iterator(); i.hasNext();) {

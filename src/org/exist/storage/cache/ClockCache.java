@@ -136,7 +136,7 @@ public class ClockCache implements Cache {
 			return;
 		for (int i = 0; i < count; i++) {
 			if (items[i] != null && items[i].getKey() == key) {
-				items[i] = null;
+			    System.arraycopy(items, i + 1, items, i, --count - i);
 				return;
 			}
 		}
