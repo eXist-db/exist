@@ -42,13 +42,14 @@ public class LocalUserManagementService implements UserManagementService {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		DBBroker broker = null;
 		try {
-			broker = pool.get();
+			broker = pool.get(user);
 			DocumentImpl document = ((LocalXMLResource) resource).getDocument();
-			if (!document.getPermissions().getOwner().equals(user.getName())
-				&& !manager.hasAdminPrivileges(user))
+			if (!(document.getPermissions().getOwner().equals(user.getName())
+				|| manager.hasAdminPrivileges(user)))
 				throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
-					"you are not the owner of this resource");
+					"you are not the owner of this resource; owner = " +
+                    document.getPermissions().getOwner());
 
 			document.setPermissions(perm);
 			broker.saveCollection(collection.getCollection());
@@ -71,7 +72,7 @@ public class LocalUserManagementService implements UserManagementService {
 		coll.setPermissions(perm);
 		DBBroker broker = null;
 		try {
-			broker = pool.get();
+			broker = pool.get(user);
 			broker.saveCollection(coll);
 			broker.flush();
 		} catch (EXistException e) {
@@ -97,7 +98,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 		DBBroker broker = null;
 		try {
-			broker = pool.get();
+			broker = pool.get(user);
 			broker.saveCollection(coll);
 			broker.flush();
 			//broker.sync();
@@ -114,7 +115,7 @@ public class LocalUserManagementService implements UserManagementService {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		DBBroker broker = null;
 		try {
-			broker = pool.get();
+			broker = pool.get(user);
 			DocumentImpl document = ((LocalXMLResource) resource).getDocument();
 			if (!document.getPermissions().getOwner().equals(user.getName())
 				&& !manager.hasAdminPrivileges(user))
@@ -143,7 +144,7 @@ public class LocalUserManagementService implements UserManagementService {
 		DBBroker broker = null;
 		try {
 			coll.setPermissions(mode);
-			broker = pool.get();
+			broker = pool.get(user);
 			broker.saveCollection(coll);
 			broker.flush();
 		} catch (EXistException e) {
@@ -159,7 +160,7 @@ public class LocalUserManagementService implements UserManagementService {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		DBBroker broker = null;
 		try {
-			broker = pool.get();
+			broker = pool.get(user);
 			DocumentImpl document = ((LocalXMLResource) resource).getDocument();
 			if (!document.getPermissions().getOwner().equals(user.getName())
 				&& !manager.hasAdminPrivileges(user))
@@ -192,7 +193,7 @@ public class LocalUserManagementService implements UserManagementService {
 			coll.getPermissions().setOwner(u);
 			coll.getPermissions().setGroup(group);
 
-			broker = pool.get();
+			broker = pool.get(user);
 			broker.saveCollection(coll);
 			broker.flush();
 			//broker.sync();
@@ -217,7 +218,7 @@ public class LocalUserManagementService implements UserManagementService {
 			perm.setGroup(group);
 			DBBroker broker = null;
 			try {
-				broker = pool.get();
+				broker = pool.get(user);
 				broker.saveCollection(collection.getCollection());
 				broker.flush();
 			} catch (EXistException e) {
@@ -267,7 +268,7 @@ public class LocalUserManagementService implements UserManagementService {
 		Permission perms[] = new Permission[collection.collection.getChildCollectionCount()];
 		DBBroker broker = null;
 		try {
-			broker = pool.get();
+			broker = pool.get(user);
 			String child;
 			org.exist.collections.Collection childColl;
 			int j = 0;

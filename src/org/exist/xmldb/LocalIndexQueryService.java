@@ -107,7 +107,7 @@ public class LocalIndexQueryService implements IndexQueryService {
 		throws XMLDBException {
 		DBBroker broker = null;
 		try {
-			broker = pool.get();
+			broker = pool.get(user);
 			return broker.getTextEngine().scanIndexTerms(user, parent.collection, 
 					start, end, inclusive);
 		} catch (PermissionDeniedException e) {

@@ -100,10 +100,6 @@ public class StaticContext {
 		return (String)functions.get(fnName);
 	}
 	
-	public void setBroker(DBBroker broker) {
-		this.broker = broker;
-	}
-	
 	public DBBroker getBroker() {
 		return broker;
 	}

@@ -3,6 +3,7 @@ package org.exist.xmldb;
 import java.io.StringReader;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
@@ -38,26 +39,16 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	protected BrokerPool brokerPool;
 	protected LocalCollection collection;
 	protected User user;
-	protected StaticContext context = null;
+	protected TreeMap namespaceDecls = new TreeMap();
 	
 	public LocalXPathQueryService(User user, BrokerPool pool, LocalCollection collection) {
 		this.user = user;
 		this.collection = collection;
 		this.brokerPool = pool;
-		DBBroker broker = null;
-		try {
-			broker = brokerPool.get(user);
-			context = new StaticContext(broker);
-		} catch (EXistException e) {
-			LOG.warn(e.getMessage(), e);
-		} finally {
-			brokerPool.release(broker);
-		}
-		
 	}
 
 	public void clearNamespaces() throws XMLDBException {
-		context.clearNamespaces();
+		namespaceDecls.clear();
 	}
 
 	public String getName() throws XMLDBException {
@@ -123,11 +114,16 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			context.setBroker(broker);
+            StaticContext context = new StaticContext(broker);
+            Map.Entry entry;
+            for(Iterator i = namespaceDecls.entrySet().iterator(); i.hasNext(); ) {
+                entry = (Map.Entry)i.next();
+                LOG.debug("prefix " + entry.getKey() + " = " + entry.getValue());
+                context.declareNamespace((String)entry.getKey(), (String)entry.getValue());
+            }
 			XPathLexer2 lexer = new XPathLexer2(new StringReader(query));
 			XPathParser2 parser = new XPathParser2(lexer);
 			XPathTreeParser2 treeParser = new XPathTreeParser2(context);
-			
 			parser.xpath();
 			if(parser.foundErrors()) {
 				throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR,
@@ -205,7 +201,11 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	 *@exception  XMLDBException  Description of the Exception
 	 */
 	public void removeNamespace(String ns) throws XMLDBException {
-		context.removeNamespace(ns);
+		for (Iterator i = namespaceDecls.values().iterator(); i.hasNext();) {
+			if (((String) i.next()).equals(ns)) {
+				i.remove();
+			}
+		}
 	}
 
 	/**
@@ -225,7 +225,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	 *@exception  XMLDBException  Description of the Exception
 	 */
 	public void setNamespace(String prefix, String namespace) throws XMLDBException {
-		context.declareNamespace(prefix, namespace);
+		namespaceDecls.put(prefix, namespace);
 	}
 
 	/**

@@ -113,8 +113,7 @@ public class RpcConnection extends Thread {
 		throws Exception, PermissionDeniedException {
 		DBBroker broker = null;
 		try {
-			broker = brokerPool.get();
-			broker.setUser(user);
+			broker = brokerPool.get(user);
 			Collection current = broker.getOrCreateCollection(name);
 			LOG.debug("creating collection " + name);
 			broker.saveCollection(current);
@@ -138,7 +137,7 @@ public class RpcConnection extends Thread {
 	 *@exception  EXistException  Description of the Exception
 	 */
 	public String createId(User user, String collName) throws EXistException {
-		DBBroker broker = brokerPool.get();
+		DBBroker broker = brokerPool.get(user);
 		try {
 			Collection collection = broker.getCollection(collName);
 			if (collection == null)
@@ -266,7 +265,7 @@ public class RpcConnection extends Thread {
 
 	public Hashtable getCollectionDesc(User user, String rootCollection)
 		throws Exception {
-		DBBroker broker = brokerPool.get();
+		DBBroker broker = brokerPool.get(user);
 		try {
 			if (rootCollection == null)
 				rootCollection = "/db";
@@ -323,7 +322,7 @@ public class RpcConnection extends Thread {
 		long start = System.currentTimeMillis();
 		DBBroker broker = null;
 		try {
-			broker = brokerPool.get();
+			broker = brokerPool.get(user);
 			broker.setUser(user);
 			DocumentImpl doc = (DocumentImpl) broker.getDocument(name);
 			if (doc == null) {
@@ -455,7 +454,7 @@ public class RpcConnection extends Thread {
 	public Vector getDocumentListing(User user) throws EXistException {
 		DBBroker broker = null;
 		try {
-			broker = brokerPool.get();
+			broker = brokerPool.get(user);
 			DocumentSet docs = broker.getAllDocuments();
 			String names[] = docs.getNames();
 			Vector vec = new Vector();
@@ -481,7 +480,7 @@ public class RpcConnection extends Thread {
 		throws EXistException, PermissionDeniedException {
 		DBBroker broker = null;
 		try {
-			broker = brokerPool.get();
+			broker = brokerPool.get(user);
 			if (!name.startsWith("/"))
 				name = '/' + name;
 			if (!name.startsWith("/db"))
@@ -507,7 +506,7 @@ public class RpcConnection extends Thread {
 		throws EXistException, PermissionDeniedException {
 		DBBroker broker = null;
 		try {
-			broker = brokerPool.get();
+			broker = brokerPool.get(user);
 			if (!name.startsWith("/"))
 				name = '/' + name;
 			if (!name.startsWith("/db"))
@@ -545,7 +544,7 @@ public class RpcConnection extends Thread {
 		throws EXistException, PermissionDeniedException {
 		DBBroker broker = null;
 		try {
-			broker = brokerPool.get();
+			broker = brokerPool.get(user);
 			if (!name.startsWith("/"))
 				name = '/' + name;
 			if (!name.startsWith("/db"))
@@ -614,8 +613,7 @@ public class RpcConnection extends Thread {
 		throws EXistException, PermissionDeniedException {
 		DBBroker broker = null;
 		try {
-			broker = brokerPool.get();
-			broker.setUser(user);
+			broker = brokerPool.get(user);
 			if (!name.startsWith("/"))
 				name = '/' + name;
 			if (!name.startsWith("/db"))
@@ -645,7 +643,7 @@ public class RpcConnection extends Thread {
 		throws PermissionDeniedException, EXistException {
 		DBBroker broker = null;
 		try {
-			broker = brokerPool.get();
+			broker = brokerPool.get(user);
 			if (!collectionPath.startsWith("/"))
 				collectionPath = '/' + collectionPath;
 			if (!collectionPath.startsWith("/db"))
@@ -664,8 +662,7 @@ public class RpcConnection extends Thread {
 		throws PermissionDeniedException, EXistException {
 		DBBroker broker = null;
 		try {
-			broker = brokerPool.get();
-			broker.setUser(user);
+			broker = brokerPool.get(user);
 			if (!documentPath.startsWith("/"))
 				documentPath = '/' + documentPath;
 			if (!documentPath.startsWith("/db"))
@@ -738,7 +735,7 @@ public class RpcConnection extends Thread {
 	}
 
 	public boolean hasDocument(User user, String name) throws Exception {
-		DBBroker broker = brokerPool.get();
+		DBBroker broker = brokerPool.get(user);
 		boolean r = (broker.getDocument(name) != null);
 		brokerPool.release(broker);
 		return r;
@@ -752,8 +749,7 @@ public class RpcConnection extends Thread {
 		throws Exception {
 		DBBroker broker = null;
 		try {
-			broker = brokerPool.get();
-			broker.setUser(user);
+			broker = brokerPool.get(user);
 			int p = docName.lastIndexOf('/');
 			if (p < 0 || p == docName.length() - 1)
 				throw new EXistException("Illegal document path");
@@ -810,8 +806,7 @@ public class RpcConnection extends Thread {
 		DBBroker broker = null;
 		DocumentImpl doc = null;
 		try {
-			broker = brokerPool.get();
-			broker.setUser(user);
+			broker = brokerPool.get(user);
 			int p = docName.lastIndexOf('/');
 			if (p < 0 || p == docName.length() - 1)
 				throw new EXistException("Illegal document path");
@@ -1171,8 +1166,7 @@ public class RpcConnection extends Thread {
 	public void remove(User user, String docName) throws Exception {
 		DBBroker broker = null;
 		try {
-			broker = brokerPool.get();
-			broker.setUser(user);
+			broker = brokerPool.get(user);
 			int p = docName.lastIndexOf('/');
 			if (p < 0 || p == docName.length() - 1)
 				throw new EXistException("Illegal document path");
@@ -1221,7 +1215,7 @@ public class RpcConnection extends Thread {
 		boolean prettyPrint,
 		String encoding)
 		throws Exception {
-		DBBroker broker = brokerPool.get();
+		DBBroker broker = brokerPool.get(user);
 		try {
 			long id = Long.parseLong(s_id);
 			DocumentImpl doc;
@@ -1262,7 +1256,7 @@ public class RpcConnection extends Thread {
 		boolean prettyPrint,
 		String encoding)
 		throws Exception {
-		DBBroker broker = brokerPool.get();
+		DBBroker broker = brokerPool.get(user);
 		try {
 			QueryResult qr =
 				(QueryResult) connectionPool.resultSets.get(resultId);
@@ -1325,8 +1319,7 @@ public class RpcConnection extends Thread {
 		throws EXistException, PermissionDeniedException {
 		DBBroker broker = null;
 		try {
-			broker = brokerPool.get();
-			broker.setUser(user);
+			broker = brokerPool.get(user);
 			org.exist.security.SecurityManager manager =
 				brokerPool.getSecurityManager();
 			Collection collection = broker.getCollection(resource);
@@ -1385,8 +1378,7 @@ public class RpcConnection extends Thread {
 		throws EXistException, PermissionDeniedException {
 		DBBroker broker = null;
 		try {
-			broker = brokerPool.get();
-			broker.setUser(user);
+			broker = brokerPool.get(user);
 			org.exist.security.SecurityManager manager =
 				brokerPool.getSecurityManager();
 			Collection collection = broker.getCollection(resource);
@@ -1575,7 +1567,7 @@ public class RpcConnection extends Thread {
 			result.put("hits", new Integer(0));
 			return result;
 		}
-		DBBroker broker = brokerPool.get();
+		DBBroker broker = brokerPool.get(user);
 		try {
 			NodeList resultSet = qr.result.getNodeList();
 			HashMap map = new HashMap();
@@ -1673,7 +1665,7 @@ public class RpcConnection extends Thread {
 		throws PermissionDeniedException, EXistException {
 		DBBroker broker = null;
 		try {
-			broker = brokerPool.get();
+			broker = brokerPool.get(user);
 			Collection collection = broker.getCollection(collectionName);
 			if (collection == null)
 				throw new EXistException(

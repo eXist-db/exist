@@ -75,8 +75,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		Session session = SessionManager.getInstance().getSession(sessionId);
 		DBBroker broker = null;
 		try {
-			broker = pool.get();
-			broker.setUser(session.getUser());
+			broker = pool.get(session.getUser());
 			LOG.debug("creating collection " + collection);
 			org.exist.collections.Collection coll =
 				broker.getOrCreateCollection(collection);
@@ -258,7 +257,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		DBBroker broker = null;
 		Session session = getSession(sessionId);
 		try {
-			broker = pool.get();
+			broker = pool.get(session.getUser());
 			Document doc = broker.getDocument(documentName);
 			if (doc == null)
 				throw new RemoteException(

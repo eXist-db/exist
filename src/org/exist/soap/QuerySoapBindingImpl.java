@@ -139,8 +139,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		Session session = getSession(sessionId);
 		DBBroker broker = null;
 		try {
-			broker = pool.get();
-			broker.setUser(session.getUser());
+			broker = pool.get(session.getUser());
 			DocumentImpl document = (DocumentImpl) broker.getDocument(name);
 			if (document == null)
 				throw new RemoteException("resource " + name + " not found");
@@ -184,7 +183,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		Session session = getSession(sessionId);
 		DBBroker broker = null;
 		try {
-			broker = pool.get();
+			broker = pool.get(session.getUser());
 			if (path == null)
 				path = "/db";
 			org.exist.collections.Collection collection = broker.getCollection(path);
@@ -298,7 +297,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		Session session = SessionManager.getInstance().getSession(sessionId);
 		DBBroker broker = null;
 		try {
-			broker = pool.get();
+			broker = pool.get(session.getUser());
 			Value qr = (Value) session.getQueryResult().result;
 			if (qr == null)
 				throw new RemoteException("result set unknown or timed out");
@@ -375,7 +374,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		Session session = SessionManager.getInstance().getSession(sessionId);
 		DBBroker broker = null;
 		try {
-			broker = pool.get();
+			broker = pool.get(session.getUser());
 			Value qr = (Value) session.getQueryResult().result;
 			if (qr == null)
 				throw new RemoteException("result set unknown or timed out");
