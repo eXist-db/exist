@@ -797,8 +797,8 @@ public class DOMFile extends BTree implements Lockable {
             n.setGID(id);
             final long address = findNode(n, node.gid, iter);
             if(address == 0) {
-            	if(LOG.isDebugEnabled())
-            		LOG.debug("Node data location not found for node " + node.gid);
+//            	if(LOG.isDebugEnabled())
+//            		LOG.debug("Node data location not found for node " + node.gid);
             	return KEY_NOT_FOUND;
             } else
             	return address;

@@ -38,6 +38,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.util.Lock;
 import org.exist.util.LockException;
 
 
@@ -108,14 +109,21 @@ public class Copy implements WebDAVMethod {
         boolean replaced = false;
         DBBroker broker = null;
         Collection destCollection = null;
+        Collection sourceCollection = null;
         try {
             broker = pool.get(user);
-            destCollection = broker.getCollection(destination);
+            destCollection = broker.openCollection(destination, Lock.WRITE_LOCK);
             if(destCollection == null) {
                 response.sendError(HttpServletResponse.SC_CONFLICT,
                         "Destination collection not found");
                 return;
             }
+            String sourcePath = resource.getName();
+            int pos = sourcePath.lastIndexOf('/');
+    		String collName = sourcePath.substring(0, pos);
+    		String docName = sourcePath.substring(pos + 1);
+    		sourceCollection = broker.openCollection(collName, Lock.READ_LOCK);
+    		
             DocumentImpl oldDoc = destCollection.getDocument(broker, newResourceName);
             if(oldDoc != null) {
                 boolean overwrite = overwrite(request);
@@ -138,6 +146,8 @@ public class Copy implements WebDAVMethod {
         } catch (LockException e) {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         } finally {
+        	if(sourceCollection != null)
+        		sourceCollection.release();
         	if(destCollection != null)
         		destCollection.release();
             pool.release(broker);

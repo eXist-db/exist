@@ -4,10 +4,14 @@ import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
+
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;
 import org.exist.security.User;
-import org.xmldb.api.base.*;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.ErrorCodes;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.XMLDBException;
 
 public class RemoteUserManagementService implements UserManagementService {
 

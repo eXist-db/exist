@@ -23,7 +23,6 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
 public class ResourceTest extends TestCase {
@@ -75,15 +74,18 @@ public class ResourceTest extends TestCase {
 			Element elem = (Element) doc.getContentAsDOM();
 			assertNotNull(elem);
 			assertEquals(elem.getNodeName(), "PLAY");
-			System.out.println("root element: " + elem.getNodeName());
+			System.out.println("Root element: " + elem.getNodeName());
 			NodeList children = elem.getChildNodes();
 			Node node;
 			for (int i = 0; i < children.getLength(); i++) {
 				node = children.item(i);
+				System.out.println("Child: " + node.getNodeName());
 				assertNotNull(node);
 				node = node.getFirstChild();
-				while((node = node.getNextSibling() ) != null)
+				while(node != null) {
 					System.out.println("child: " + node.getNodeName());
+					node = node.getNextSibling();
+				}
 			}
 		} catch (XMLDBException e) {
 			fail(e.getMessage());
@@ -213,6 +215,21 @@ public class ResourceTest extends TestCase {
 			+ "<para>Paragraph1</para>"
 			+ "<para>Paragraph2</para>"
 			+ "</test>";
+	}
+	
+	protected void setUp() {
+		try {
+			// initialize driver
+			Class cl = Class.forName(DRIVER);
+			Database database = (Database) cl.newInstance();
+			database.setProperty("create-database", "true");
+			DatabaseManager.registerDatabase(database);
+		} catch (ClassNotFoundException e) {
+		} catch (InstantiationException e) {
+		} catch (IllegalAccessException e) {
+		} catch (XMLDBException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static void main(String[] args) {

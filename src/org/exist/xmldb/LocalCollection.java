@@ -38,6 +38,7 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.collections.Collection;
+import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
@@ -568,7 +569,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 				uri = new URI(res.file.toURL().toString()).toASCIIString();
 			DocumentImpl newDoc;
 			Collection collection = broker.openCollection(path, Lock.WRITE_LOCK);
-			Indexer indexer = null;
+			IndexInfo info = null;
 			try {
 				if(collection == null)
 					throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
@@ -578,18 +579,21 @@ public class LocalCollection extends Observable implements CollectionImpl {
 					collection.addObserver(observer);
 				}
 				if (uri != null) {
-					indexer = collection.validate(broker, name, new InputSource(uri));
+					info = collection.validate(broker, name, new InputSource(uri));
 				} else if (res.root != null)
-					newDoc = collection.addDocument(broker, name, res.root);
+					info = collection.validate(broker, name, res.root);
 				else
-					indexer = collection.validate(broker, name, res.content);
+					info = collection.validate(broker, name, res.content);
 			} finally {
 				collection.release();
 			}
 			if (uri != null) {
-				collection.store(broker, indexer, new InputSource(uri), false);
-			} else
-				collection.store(broker, indexer, res.content, false);
+				collection.store(broker, info, new InputSource(uri), false);
+			} else if (res.root != null) {
+				collection.store(broker, info, res.root, false);
+			} else {
+				collection.store(broker, info, res.content, false);
+			}
 			collection.deleteObservers();
 		} catch (Exception e) {
 			e.printStackTrace();

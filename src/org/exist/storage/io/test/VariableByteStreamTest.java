@@ -1,10 +1,10 @@
 package org.exist.storage.io.test;
 
-import junit.framework.TestCase;
-
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.Random;
+
+import junit.framework.TestCase;
 
 import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteOutputStream;
