@@ -45,7 +45,7 @@ public abstract class AbstractMatchFunction extends ExtRegexp {
 	}
 
 	public abstract Sequence evalQuery(XQueryContext context, NodeSet nodes,
-		String[] terms) throws XPathException;
+		List terms) throws XPathException;
 	
 	public NodeSet mergeResults(NodeSet[] hits) {
 		NodeSet result = hits[0];
