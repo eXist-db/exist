@@ -280,15 +280,15 @@ public class BrokerPool {
 			LOG.info("Max. wait during shutdown: " + maxShutdownWait);
 		}
 		LOG.info("Instances: min = " + min + "; max = " + max + "; sync = " + syncPeriod);
-		syncDaemon = new SyncDaemon();
-		if (syncPeriod > 0)
-			syncDaemon.executePeriodically(1000, new Sync(this, syncPeriod), false);
 		conf = config;
 		xqueryCache = new XQueryPool(conf);
 		monitor = new XQueryMonitor();
 		collectionsCache = new CollectionCache(this, COLLECTION_BUFFER_SIZE);
 		xmlReaderPool = new XMLReaderPool(new XMLReaderObjectFactory(this), 5, 0);
 		initialize();
+        syncDaemon = new SyncDaemon();
+        if (syncPeriod > 0)
+            syncDaemon.executePeriodically(1000, new Sync(this, syncPeriod), false);
 	}
 
     public String getId() {
