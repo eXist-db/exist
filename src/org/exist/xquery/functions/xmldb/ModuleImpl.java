@@ -20,6 +20,7 @@
  *  
  *  $Id$
  */
+ 
 package org.exist.xquery.functions.xmldb;
 
 import org.exist.xquery.AbstractInternalModule;
@@ -44,7 +45,10 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(XMLDBRemove.signature, XMLDBRemove.class),
 		new FunctionDef(XMLDBHasLock.signature, XMLDBHasLock.class),
 		new FunctionDef(XMLDBCreated.signature, XMLDBCreated.class),
-		new FunctionDef(XMLDBLastModified.signature, XMLDBLastModified.class)
+		new FunctionDef(XMLDBLastModified.signature, XMLDBLastModified.class),
+		new FunctionDef(XMLDBPermissions.signature, XMLDBPermissions.class),
+		new FunctionDef(XMLDBGroup.signature, XMLDBGroup.class),
+		new FunctionDef(XMLDBOwner.signature, XMLDBOwner.class)
 	};
 	
 	public ModuleImpl() {
