@@ -721,7 +721,7 @@ public class DOMFile extends BTree implements Lockable {
         try {
             query(query, cb);
         } catch (TerminatedException e) {
-            // Should never happen hear
+            // Should never happen here
             LOG.warn("Method terminated");
         }
         return cb.getValues();
@@ -1191,11 +1191,11 @@ public class DOMFile extends BTree implements Lockable {
     }
     
     public void removeAll(long p) {
-//    	StringBuffer debug = new StringBuffer();
-//    	debug.append("Removed pages: ");
+    	StringBuffer debug = new StringBuffer();
+    	debug.append("Removed pages: ");
         long pnum = StorageAddress.pageFromPointer(p);
         while(-1 < pnum) {
-//        	debug.append(' ').append(pnum);
+        	debug.append(' ').append(pnum);
             DOMPage page = getCurrentPage(pnum);
             pnum = page.getPageHeader().getNextDataPage();
             dataCache.remove(page);
@@ -1212,7 +1212,7 @@ public class DOMFile extends BTree implements Lockable {
                 LOG.warn("Error while removing page: " + e.getMessage(), e);
             }
         }
-//        LOG.debug(debug.toString());
+        LOG.debug(debug.toString());
     }
     
     public String debugPages(DocumentImpl doc) {
@@ -1226,6 +1226,7 @@ public class DOMFile extends BTree implements Lockable {
             buf.append(' ').append(pnum);
             pnum = page.getPageHeader().getNextDataPage();
         }
+        buf.append("; Document metadata at " +StorageAddress.toString(doc.getAddress()));
         return buf.toString();
     }
     
@@ -1381,7 +1382,7 @@ public class DOMFile extends BTree implements Lockable {
 	        } else
 	        	foundNext = true;
     	} while(!foundNext);
-        short len = ByteConversion.byteToShort(rec.page.data, rec.offset);
+        int len = ByteConversion.byteToShort(rec.page.data, rec.offset);
         rec.offset += 2;
         if(ItemId.isRelocated(rec.tid))
             rec.offset += 8;
@@ -1391,24 +1392,24 @@ public class DOMFile extends BTree implements Lockable {
             final long op = ByteConversion.byteToLong(data,
                     rec.offset);
             data = getOverflowValue(op);
-            len = (short) data.length;
+            len = data.length;
             readOffset = 0;
             rec.offset += 8;
         }
         final short type = Signatures.getType(data[readOffset]);
         switch (type) {
         case Node.ELEMENT_NODE:
-            final int children = ByteConversion.byteToInt(data, readOffset + 1);
-            final byte attrSizeType = (byte) ((data[readOffset] & 0x0C) >> 0x2);
-            final short attributes = (short) Signatures.read(attrSizeType,
-                    data, readOffset + 5);
-            rec.offset += len + 2;
-            for (int i = 0; i < children; i++) {
-                getNodeValue(os, rec, false);
-                //if (children - attributes > 1)
-                //	os.write((byte) 0x20);
-            }
-            return;
+        	final int children = ByteConversion.byteToInt(data, readOffset + 1);
+	        final byte attrSizeType = (byte) ((data[readOffset] & 0x0C) >> 0x2);
+	        final short attributes = (short) Signatures.read(attrSizeType,
+	        		data, readOffset + 5);
+	        rec.offset += len + 2;
+	        for (int i = 0; i < children; i++) {
+	        	getNodeValue(os, rec, false);
+	        	if (children - attributes > 1)
+	        		os.write((byte) 0x20);
+	        }
+	        return;
         case Node.TEXT_NODE:
             os.write(data, readOffset + 1, len - 1);
             break;
@@ -1429,7 +1430,8 @@ public class DOMFile extends BTree implements Lockable {
             }
             break;
         }
-        rec.offset += len + 2;
+        if(len != OVERFLOW)
+        	rec.offset += len + 2;
     }
 
     protected RecordPos findRecord(long p) {
