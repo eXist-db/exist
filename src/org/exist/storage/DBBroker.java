@@ -39,18 +39,15 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
 import org.exist.dom.SymbolTable;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.io.VariableByteInput;
-import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.io.VariableByteInputStream;
+import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
-import org.exist.util.Occurrences;
-import org.exist.xquery.NodeSelector;
 import org.exist.xquery.XQuery;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -486,7 +483,7 @@ public abstract class DBBroker extends Observable {
 		throw new RuntimeException("not implemented");
 	}
 
-	public void removeNode(final NodeImpl node, String currentPath) {
+	public void removeNode(final NodeImpl node, NodePath currentPath) {
 		throw new RuntimeException("not implemented");
 	}
 

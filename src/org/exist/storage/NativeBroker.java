@@ -1533,7 +1533,7 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
-	public void removeNode(final NodeImpl node, String currentPath) {
+	public void removeNode(final NodeImpl node, NodePath currentPath) {
 		final IndexPaths idx =
 			(IndexPaths) idxPathMap.get(node.getOwnerDocument().getDoctype().getName());
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
@@ -1572,7 +1572,16 @@ public class NativeBroker extends DBBroker {
 				elementIndex.addRow(qname, tempProxy);
 				// check if attribute value should be fulltext-indexed
 				// by calling IndexPaths.match(path) 
-				if (idx == null || idx.getIncludeAttributes())
+				boolean indexAttribs = true;
+				if(idx != null) {
+				    if(idx.getIncludeAttributes()) {
+					    currentPath.addComponent('@' + ((AttrImpl)node).getName());
+					    indexAttribs = idx.match(currentPath);
+					    currentPath.removeLastComponent();
+				    } else
+				        indexAttribs = false;
+				}
+				if (indexAttribs)
 					textEngine.storeAttribute(idx, (AttrImpl) node);
 				// if the attribute has type ID, store the ID-value
 				// to the element index as well
@@ -1585,8 +1594,9 @@ public class NativeBroker extends DBBroker {
 			case Node.TEXT_NODE :
 				// check if this textual content should be fulltext-indexed
 				// by calling IndexPaths.match(path)
-				// if (idx == null || idx.match(currentPath))
-				textEngine.storeText(idx, (TextImpl) node, false);
+				if (idx == null || idx.match(currentPath)){
+					boolean valore = (idx == null ? false : idx.preserveContent(currentPath));
+					textEngine.storeText(idx, (TextImpl) node, valore);}
 				break;
 		}
 	}
