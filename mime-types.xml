@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    ======================================================
+    This file lists all mime types known to eXist.      
+    When storing a document with the Java client, the type 
+    of the resource is looked up here. A resource will be 
+    stored as an XML or a binary resource, depending on the 
+    "type" attribute of the corresponding mime-type entry.
+    ======================================================= 
+-->
+
+<mime-types>
+    <!-- Mime types stored as XML -->
+    <mime-type name="text/xml" type="xml">
+        <description>XML document</description>
+        <extensions>.xml,.xsl,.xsd,.mods,.xmi,.xconf</extensions>
+    </mime-type>
+    <mime-type name="application/xml" type="xml">
+        <description>XML document</description>
+        <extensions>.xml</extensions>
+    </mime-type>
+    <mime-type name="application/rdf+xml" type="xml">
+        <description>RDF document</description>
+        <extensions>.rdf</extensions>
+    </mime-type>
+    <mime-type name="application/xhtml+xml" type="xml">
+        <description>XHTML document</description>
+        <extensions>.xht, .xhtml</extensions>
+    </mime-type>
+    <mime-type name="text/html" type="xml">
+        <description>HTML document</description>
+        <extensions>.html,.htm</extensions>
+    </mime-type>
+    <mime-type name="image/svg+xml" type="xml">
+        <description>SVG image</description>
+        <extensions>.svg,.svgz</extensions>
+    </mime-type>
+    
+    <!-- Binary mime types -->
+    <mime-type name="application/xquery" type="binary">
+        <description>XQuery script</description>
+        <extensions>.xq,.xql,.xqm,.xquery</extensions>
+    </mime-type>
+    <mime-type name="application/octet-stream" type="binary">
+        <description>Generic binary stream</description>
+        <extensions>.jar,.exe,.o</extensions>
+    </mime-type>
+    <mime-type name="application/zip" type="binary">
+        <description>ZIP archive</description>
+        <extensions>.zip</extensions>
+    </mime-type>
+    <mime-type name="text/plain" type="binary">
+        <description>Plain text</description>
+        <extensions>.txt,.text,.java</extensions>
+    </mime-type>
+    <mime-type name="text/css" type="binary">
+        <description>CSS stylesheet</description>
+        <extensions>.css</extensions>
+    </mime-type>
+    <mime-type name="image/gif" type="binary">
+        <description>GIF image</description>
+        <extensions>.gif</extensions>
+    </mime-type>
+    <mime-type name="image/jpeg" type="binary">
+        <description>JPEG image</description>
+        <extensions>.jpg,.jpeg</extensions>
+    </mime-type>
+    <mime-type name="image/x-portable-bitmap" type="binary">
+        <description>PBM Bitmap Format</description>
+        <extensions>.pbm</extensions>
+    </mime-type>
+</mime-types>

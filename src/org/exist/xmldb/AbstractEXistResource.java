@@ -44,6 +44,7 @@ public abstract class AbstractEXistResource implements EXistResource {
 	protected LocalCollection parent;
 	protected String docId = null;
 	protected String mimeType = null;
+    protected boolean isNewResource = false;
     
 	public AbstractEXistResource(User user, BrokerPool pool, LocalCollection parent, String docId, String mimeType) {
 		this.user = user;
@@ -80,7 +81,7 @@ public abstract class AbstractEXistResource implements EXistResource {
         this.mimeType = mime;
     }
     
-    public String getMimeType() {
+    public String getMimeType() throws XMLDBException {
         return mimeType;
     }
     

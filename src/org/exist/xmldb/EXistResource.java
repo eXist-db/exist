@@ -49,5 +49,5 @@ public interface EXistResource {
     
     void setMimeType(String mime);
 
-    String getMimeType();
+    String getMimeType() throws XMLDBException;
 }

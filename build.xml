@@ -228,6 +228,8 @@
 			todir="${build.classes}/org/exist/security"/>
 		<copy file="${src}/org/exist/system.properties" 
 			todir="${build.classes}/org/exist" filtering="true"/>
+		<copy file="${src}/org/exist/util/mime-types.xml"
+			todir="${build.classes}/org/exist/util"/>
 
         <echo message="Creating exist.jar ..."/>
         <jar basedir="${build.classes}" compress="true" jarfile="exist.jar">

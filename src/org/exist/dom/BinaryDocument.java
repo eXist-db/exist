@@ -45,15 +45,15 @@ import org.exist.storage.io.VariableByteOutputStream;
 public class BinaryDocument extends DocumentImpl {
 	
 	private long pageNr = -1;
-	
-    private String mimeType = "application/octet-stream";
     
 	public BinaryDocument(DBBroker broker, Collection collection) {
 		super(broker, collection);
+        this.mimeType = "application/octet-stream";
 	}
 
 	public BinaryDocument(DBBroker broker, String docName, Collection collection) {
 		super(broker, docName, collection);
+        this.mimeType = "application/octet-stream";
 	}
 	
 	/* (non-Javadoc)
@@ -62,15 +62,6 @@ public class BinaryDocument extends DocumentImpl {
 	public byte getResourceType() {
 		return BINARY_FILE;
 	}
-	
-    public void setMimeType(String type) {
-        this.mimeType = type;
-    }
-    
-    public String getMimeType() {
-        checkAvail();
-        return mimeType;
-    }
     
 	public void setPage(long page) {
 		this.pageNr = page;

@@ -43,7 +43,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,6 +78,8 @@ import org.exist.security.Permission;
 import org.exist.security.User;
 import org.exist.util.CollectionScanner;
 import org.exist.util.DirectoryScanner;
+import org.exist.util.MimeTable;
+import org.exist.util.MimeType;
 import org.exist.util.Occurrences;
 import org.exist.util.ProgressBar;
 import org.exist.util.ProgressIndicator;
@@ -1378,9 +1379,11 @@ public class InteractiveClient {
 	private final void storeBinary(String fileName) throws XMLDBException {
 		File file = new File(fileName);
 		if (file.canRead()) {
+            MimeType mime = MimeTable.getInstance().getContentTypeFor(file.getName());
 			BinaryResource resource = (BinaryResource) current.createResource(
 					file.getName(), "BinaryResource");
 			resource.setContent(file);
+            ((EXistResource)resource).setMimeType(mime == null ? "application/octet-stream" : mime.getName());
 			current.storeResource(resource);
 		}
 	}
@@ -1406,7 +1409,8 @@ public class InteractiveClient {
 		Collection c;
 		Resource document;
 		CollectionManagementService mgtService;
-		String next, resourceType;
+		String next;
+        MimeType mimeType;
 		for (int i = 0; i < temp.length; i++) {
 			next = base + '/' + temp[i].getName();
 			try {
@@ -1426,16 +1430,17 @@ public class InteractiveClient {
 					findRecursive(c, temp[i], next);
 				} else {
 					long start1 = System.currentTimeMillis();
-					resourceType = getResourceType(temp[i].getName());
-					if(resourceType == null)
+                    mimeType = MimeTable.getInstance().getContentTypeFor(temp[i].getName());
+					if(mimeType == null)
 						messageln("File " + temp[i].getName() + " has an unknown " +
 						"suffix. Cannot determine file type.");
 					else {
 						message("storing document " + temp[i].getName() + " (" + i
 								+ " of " + temp.length + ") " + "...");
 						document = collection.createResource(temp[i]
-								.getName(), resourceType);
+								.getName(), mimeType.getXMLDBType());
 						document.setContent(temp[i]);
+                        ((EXistResource)document).setMimeType(mimeType.getName());
 						collection.storeResource(document);
 						++filesCount;
 						messageln(" " + temp[i].length() + " bytes in "
@@ -1476,7 +1481,7 @@ public class InteractiveClient {
 							+ "sec.");
 					return result;
 				} else
-					files = file.listFiles(new XMLFilenameFilter());
+					files = file.listFiles();
 			} else {
 				files = new File[1];
 				files[0] = file;
@@ -1487,19 +1492,20 @@ public class InteractiveClient {
 		long start;
 		long start0 = System.currentTimeMillis();
 		long bytes = 0;
-		String resourceType;
+        MimeType mimeType;
 		for (int i = 0; i < files.length; i++) {
 			start = System.currentTimeMillis();
-			resourceType = getResourceType(files[i].getName());
-			if(resourceType == null)
+            mimeType = MimeTable.getInstance().getContentTypeFor(files[i].getName());
+			if(mimeType == null)
 				messageln("File " + files[i].getName() + " has an unknown " +
 				"suffix. Cannot determine file type.");
 			else {
 				document = current.createResource(files[i].getName(),
-					resourceType);
+                        mimeType.getXMLDBType());
 				message("storing document " + files[i].getName() + " (" + (i + 1)
 					+ " of " + files.length + ") ...");
 				document.setContent(files[i]);
+                ((EXistResource)document).setMimeType(mimeType.getName());
 				current.storeResource(document);
 				messageln("done.");
 				messageln("parsing " + files[i].length() + " bytes took "
@@ -1522,7 +1528,8 @@ public class InteractiveClient {
 		}
 		upload.setTotalSize(calculateFileSizes(files));
 		long totalSize = 0;
-		String resourceType, mimeType;
+		String resourceType;
+        MimeType mimeType;
 		for (int i = 0; i < files.length; i++) {
 			if (files[i].canRead()) {
 				if (files[i].isDirectory()) {
@@ -1535,21 +1542,13 @@ public class InteractiveClient {
 					upload.setCurrent(files[i].getName());
 					upload.setCurrentSize(files[i].length());
 					try {
-                        mimeType = URLConnection.guessContentTypeFromName(files[i].getName());
-                        System.out.println("Guessed mime type = " + mimeType);
-						resourceType = getResourceType(files[i].getName());
-						if(resourceType == null) {
-                            if(mimeType.equals("text/xml") || mimeType.equals("application/xml"))
-                                resourceType = "XMLResource";
-                            else
-                                resourceType = "BinaryResource";
-                        } else {
-							document = current.createResource(
-								files[i].getName(), resourceType);
-							document.setContent(files[i]);
-                            ((EXistResource)document).setMimeType(mimeType);
-							current.storeResource(document);
-						}
+                        mimeType = MimeTable.getInstance().getContentTypeFor(files[i].getName());
+                        resourceType = mimeType.getType() == MimeType.XML ? "XMLResource" : "BinaryResource";
+                        document = current.createResource(
+                                files[i].getName(), resourceType);
+                        ((EXistResource)document).setMimeType(mimeType.getName());
+                        document.setContent(files[i]);
+                        current.storeResource(document);
 						totalSize += files[i].length();
 						upload.setStoredSize(totalSize);
 					} catch (XMLDBException e) {
@@ -1586,7 +1585,8 @@ public class InteractiveClient {
 		Collection c;
 		Resource document;
 		CollectionManagementService mgtService;
-		String next, resourceType;
+		String next;
+        MimeType mimeType;
 		for (int i = 0; i < temp.length; i++) {
 			next = base + '/' + temp[i].getName();
 			try {
@@ -1610,13 +1610,13 @@ public class InteractiveClient {
 					upload.setCurrent(temp[i].getName());
 					upload.setCurrentSize(temp[i].length());
 					
-					resourceType = getResourceType(temp[i].getName());
-					if(resourceType == null)
+					mimeType = MimeTable.getInstance().getContentTypeFor(temp[i].getName());
+					if(mimeType == null)
 						upload.showMessage("File " + temp[i].getName() + " has an unknown " +
 								"suffix. Cannot determine file type.");
 					else {
 						document = collection.createResource(temp[i]
-								.getName(), resourceType);
+								.getName(), mimeType.getXMLDBType());
 						document.setContent(temp[i]);
 						collection.storeResource(document);
 					}
@@ -1630,22 +1630,6 @@ public class InteractiveClient {
 			}
 		}
 		return totalSize;
-	}
-
-	private String getResourceType(String name) {
-		int p = name.lastIndexOf('.');
-		if(p < 0 || p + 1 == name.length())
-			return null;
-		String suffix = name.substring(p + 1);
-		String resourceType = null;
-		if(suffix != null) {
-			if(Arrays.binarySearch(xmlSuffixes, suffix) < 0) {
-				if(Arrays.binarySearch(binarySuffixes, suffix) > -1)
-					resourceType = "BinaryResource";
-			} else
-				resourceType = "XMLResource";
-		}
-		return resourceType;
 	}
 	
 	private void mkcol(String collPath) throws XMLDBException {
@@ -1777,7 +1761,7 @@ public class InteractiveClient {
 		boolean interactive = true;
 		boolean foundCollection = false;
 		boolean openQueryGui = false;
-		boolean doParse = false;
+		boolean doStore = false;
 		boolean doReindex = false;
 		String optionRemove = null;
 		String optionGet = null;
@@ -1832,7 +1816,7 @@ public class InteractiveClient {
 					optionOutputFile = option.getArgument();
 					break;
 				case PARSE_OPT :
-					doParse = true;
+					doStore = true;
 					if (option.getArgumentCount() == 1)
 						optionalArgs.add(option.getArgument());
 					interactive = false;
@@ -2078,7 +2062,7 @@ public class InteractiveClient {
 					e.printStackTrace();
 				}
 			}
-		} else if (doParse) {
+		} else if (doStore) {
 			if (!foundCollection) {
 				System.err
 						.println("Please specify target collection with --collection");

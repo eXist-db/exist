@@ -248,6 +248,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			throw new XMLDBException(
 				ErrorCodes.INVALID_RESOURCE,
 				"unknown resource type: " + type);
+        ((AbstractEXistResource)r).isNewResource = true;
 		return r;
 	}
 
@@ -535,6 +536,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			throw new XMLDBException(
 				ErrorCodes.UNKNOWN_RESOURCE_TYPE,
 				"unknown resource type: " + resource.getResourceType());
+        ((AbstractEXistResource)resource).isNewResource = false;
 		needsSync = true;
 	}
 
