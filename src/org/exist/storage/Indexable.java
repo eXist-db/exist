@@ -41,6 +41,4 @@ public interface Indexable extends Comparable {
      * @return
      */
     public byte[] serialize(short collectionId);
-    
-    public void deserialize(byte[] data);
 }

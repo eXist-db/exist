@@ -23,6 +23,7 @@
 package org.exist.xquery.functions;
 
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.apache.oro.text.regex.Pattern;
@@ -62,23 +63,25 @@ public class FunMatches extends Function {
 		new FunctionSignature(
 			new QName("matches", Module.BUILTIN_FUNCTION_NS),
 			"Returns true if the first argument string matches the regular expression specified " +
-			"by the second argument.",
+			"by the second argument. This function is optimized internally if a range index of type xs:string " +
+			"is defined on the nodes passed to the first argument.",
 			new SequenceType[] {
-				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
-				 new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)
+				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
-			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
 		),
 		new FunctionSignature(
 			new QName("matches", Module.BUILTIN_FUNCTION_NS),
 			"Returns true if the first argument string matches the regular expression specified " +
-			"by the second argument.",
+			"by the second argument. This function is optimized internally if a range index of type xs:string " +
+			"is defined on the nodes passed to the first argument.",
 			new SequenceType[] {
-				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
-				 new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE),
+				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
-			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
 		)
 	};
 	
@@ -96,6 +99,13 @@ public class FunMatches extends Function {
 	}
 	
 	/* (non-Javadoc)
+	 * @see org.exist.xquery.Function#setArguments(java.util.List)
+	 */
+	public void setArguments(List arguments) throws XPathException {
+		steps.addAll(arguments);
+	}
+	
+	/* (non-Javadoc)
      * @see org.exist.xquery.Function#getDependencies()
      */
     public int getDependencies() {
@@ -104,10 +114,8 @@ public class FunMatches extends Function {
         if(Type.subTypeOf(stringArg.returnsType(), Type.NODE) &&
             (stringArg.getDependencies() & Dependency.CONTEXT_ITEM) == 0 &&
             (patternArg.getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
-            LOG.debug("context set");
             return Dependency.CONTEXT_SET;
         } else {
-            LOG.debug("context item");
             return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
         }
     }
@@ -168,6 +176,7 @@ public class FunMatches extends Function {
 		int indexType = nodes.getIndexType();
 		if(Type.subTypeOf(indexType, Type.STRING)) {
 		    DocumentSet docs = nodes.getDocumentSet();
+		    LOG.debug("Using index ...");
 		    try {
 				return context.getBroker().getValueIndex().match(docs, nodes, pattern, 
 						DBBroker.MATCH_REGEXP);

@@ -509,11 +509,8 @@ public class StringValue extends AtomicValue implements Indexable {
 		return data;
     }
     
-    /* (non-Javadoc)
-     * @see org.exist.storage.Indexable#deserialize(byte[])
-     */
-    public void deserialize(byte[] data) {
-        value = new String(data, 3, data.length - 3);
+    public static String deserializeString(byte[] data) {
+    	return new String(data, 3, data.length - 3);
     }
     
     public static void main(String[] args) {

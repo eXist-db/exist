@@ -298,14 +298,6 @@ public class FloatValue extends NumericValue implements Indexable {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.storage.Indexable#deserialize(byte[])
-     */
-    public void deserialize(byte[] data) {
-        final int bits = ByteConversion.byteToInt(data, 3);
-        value = Float.intBitsToFloat(bits);
-    }
-
-    /* (non-Javadoc)
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
     public int compareTo(Object o) {

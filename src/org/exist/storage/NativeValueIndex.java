@@ -257,7 +257,6 @@ public class NativeValueIndex {
                             // copy data to new buffer
                             os.writeInt(docId);
                             os.writeInt(len);
-                            LOG.debug("Copying " + len);
                             for (int j = 0; j < len; j++) {
                                 delta = is.readLong();
                                 os.writeLong(delta);
@@ -502,6 +501,12 @@ public class NativeValueIndex {
     
     public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, Indexable value) 
     throws TerminatedException {
+    	try {
+			LOG.debug("Searching " + ((AtomicValue)value).getStringValue());
+		} catch (XPathException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
         int idxOp =  checkRelationOp(relation);
         NodeSet result = new ExtArrayNodeSet();
         SearchCallback callback = new SearchCallback(docs, contextSet, result);
@@ -705,9 +710,8 @@ public class NativeValueIndex {
 		 */
 		public boolean indexInfo(Value value, long pointer)
 				throws TerminatedException {
-			StringValue val = new StringValue(null);
-			val.deserialize(value.getData());
-			if(matcher.matches(val.getStringValue())) {
+			String key = StringValue.deserializeString(value.getData());
+			if(matcher.matches(key)) {
 				super.indexInfo(value, pointer);
 			}
 			return true;
