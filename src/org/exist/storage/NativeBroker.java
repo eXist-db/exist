@@ -45,6 +45,7 @@ import org.dbxml.core.filer.Paged;
 import org.dbxml.core.indexer.IndexQuery;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.CollectionCache;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.ArraySet;
 import org.exist.dom.AttrImpl;
@@ -75,6 +76,7 @@ import org.exist.storage.store.NodeIterator;
 import org.exist.storage.store.StorageAddress;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
+import org.exist.util.CollectionScanner;
 import org.exist.util.Configuration;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
@@ -252,7 +254,8 @@ public class NativeBroker extends DBBroker {
 			xmlSerializer = new NativeSerializer(this, config);
 			elementIndex = new NativeElementIndex(this, config, elementsDb);
 			user = new User("admin", null, "dba");
-			getOrCreateCollection(ROOT_COLLECTION);
+			if(pool.isInitializing())
+				getOrCreateCollection(ROOT_COLLECTION);
 		} catch (DBException e) {
 			LOG.debug("failed to initialize database: " + e.getMessage(), e);
 			throw new EXistException(e);
@@ -386,6 +389,7 @@ public class NativeBroker extends DBBroker {
 		if (name.endsWith("/") && name.length() > 1)
 			name = name.substring(0, name.length() - 1);
 
+		CollectionCache collectionsCache = pool.getCollectionsCache();
 		synchronized(collectionsCache) {
 			Collection collection = collectionsCache.get(name);
 			if(collection == null) {
@@ -425,9 +429,9 @@ public class NativeBroker extends DBBroker {
 			}
 			if(lockMode != Lock.NO_LOCK) {
 				try {
-					//			LOG.debug("acquiring lock on " + collection.getName());
+					LOG.debug("acquiring lock on " + collection.getName());
 					collection.getLock().acquire(lockMode);
-					//			Thread.dumpStack();
+					LOG.debug("lock acquired");
 				} catch (LockException e1) {
 					LOG.warn("Could not acquire lock on collection " + name);
 				}
@@ -1514,7 +1518,7 @@ public class NativeBroker extends DBBroker {
 		//						+ "ms.");
 		return result;
 	}
-
+	
 	/**
 	 *  get collection object If the collection does not yet exists, it is
 	 *  created automatically.
@@ -1537,7 +1541,7 @@ public class NativeBroker extends DBBroker {
 
 		if (name.endsWith("/") && name.length() > 1)
 			name = name.substring(0, name.length() - 1);
-
+		final CollectionCache collectionsCache = pool.getCollectionsCache();
 		synchronized(collectionsCache) {
 			try {
 				StringTokenizer tok = new StringTokenizer(name, "/");
@@ -1584,7 +1588,7 @@ public class NativeBroker extends DBBroker {
 			}
 		}
 	}
-
+	
 	/**
 	 *  Gets a range of nodes, starting with first, ending with last
 	 *
@@ -1747,6 +1751,7 @@ public class NativeBroker extends DBBroker {
 	    if (!collection.getPermissions().validate(user, Permission.WRITE))
 	    	throw new PermissionDeniedException("not allowed to remove collection");
 	    
+	    final CollectionCache collectionsCache = pool.getCollectionsCache();
 	    synchronized(collectionsCache) {
 		    String name = collection.getName();
 		    // remove from parent collection
@@ -2008,7 +2013,7 @@ public class NativeBroker extends DBBroker {
 	public void saveCollection(Collection collection) throws PermissionDeniedException {
 		if (readOnly)
 			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-		collectionsCache.add(collection);
+		pool.getCollectionsCache().add(collection);
 		Lock lock = null;
 		try {
 			lock = collectionsDb.getLock();
@@ -2190,6 +2195,7 @@ public class NativeBroker extends DBBroker {
 	    	}
 	    }
 	    String name = collection.getName();
+	    final CollectionCache collectionsCache = pool.getCollectionsCache();
 	    synchronized(collectionsCache) {
 		    Collection parent = openCollection(collection.getParentPath(), Lock.WRITE_LOCK);
 	        if(parent != null) {

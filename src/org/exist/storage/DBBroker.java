@@ -33,7 +33,6 @@ import java.util.Observable;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.CollectionCache;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -72,12 +71,6 @@ public abstract class DBBroker extends Observable {
 	public final static int ORACLE = 1;
 	public final static int POSTGRESQL = 2;
 	public final static int DBM = 3;
-
-	//	size of the internal buffer for collection objects
-	public static final int COLLECTION_BUFFER_SIZE = 128;
-	
-	protected static CollectionCache collectionsCache = 
-		new CollectionCache(COLLECTION_BUFFER_SIZE);
 	
 	protected final static Logger LOG = Logger.getLogger(DBBroker.class);
 	
@@ -153,10 +146,6 @@ public abstract class DBBroker extends Observable {
 
 	public SymbolTable getSymbols() {
 		return symbols;
-	}
-
-	public CollectionCache getCollectionsCache() {
-		return collectionsCache;
 	}
 	
 	public DBBroker(BrokerPool pool, Configuration config)

@@ -30,6 +30,7 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.collections.CollectionCache;
 import org.exist.security.User;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.sync.SyncDaemon;
@@ -52,9 +53,15 @@ import org.exist.xmldb.ShutdownListener;
 public class BrokerPool {
 
 	private final static Logger LOG = Logger.getLogger(BrokerPool.class);
+	
 	private final static TreeMap instances = new TreeMap();
+	
 	private static long timeOut = 30000L;
+	
 	private final static ShutdownThread shutdownThread = new ShutdownThread();
+	
+	//	size of the internal buffer for collection objects
+	public static final int COLLECTION_BUFFER_SIZE = 128;
 	
 	public final static String DEFAULT_INSTANCE = "exist";
 
@@ -163,12 +170,15 @@ public class BrokerPool {
 	private int brokers = 0;
 	private Stack pool = new Stack();
 	private Map threads = new HashMap();
-	private org.exist.security.SecurityManager secManager = null;
 	private String instanceId;
 	private boolean syncRequired = false;
+	private boolean initializing = true;
+	
+	private org.exist.security.SecurityManager secManager = null;
 	private SyncDaemon syncDaemon;
 	private ShutdownListener shutdownListener = null;
 	private XQueryPool xqueryCache;
+	protected CollectionCache collectionsCache;
 	private Lock globalXUpdateLock = new ReentrantReadWriteLock("xupdate");
 
 	/**
@@ -197,6 +207,7 @@ public class BrokerPool {
 			syncDaemon.executePeriodically(syncPeriod, new Sync(this), false);
 		conf = config;
 		xqueryCache = new XQueryPool();
+		collectionsCache = new CollectionCache(COLLECTION_BUFFER_SIZE);
 		initialize();
 	}
 
@@ -224,6 +235,10 @@ public class BrokerPool {
 		return conf;
 	}
 
+	public CollectionCache getCollectionsCache() {
+		return collectionsCache;
+	}
+	
 	protected DBBroker createBroker() throws EXistException {
 		DBBroker broker = BrokerFactory.getInstance(this, conf);
 		//Thread.dumpStack();
@@ -313,13 +328,19 @@ public class BrokerPool {
 	 */
 	protected void initialize() throws EXistException {
 		LOG.debug("initializing database " + instanceId);
+		initializing = true;
 		for (int i = 0; i < min; i++)
 			createBroker();
+		initializing = false;
 		DBBroker broker = (DBBroker) pool.peek();
 		secManager = new org.exist.security.SecurityManager(this, broker);
 		LOG.debug("database engine " + instanceId + " initialized.");
 	}
 
+	protected boolean isInitializing() {
+		return initializing;
+	}
+	
 	/**
 	 *  Release a DBBroker instance into the pool.
 	 *	If all active instances are in the pool (i.e.
