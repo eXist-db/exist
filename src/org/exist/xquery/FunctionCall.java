@@ -119,10 +119,20 @@ public class FunctionCall extends Function {
 			seq[i] = getArgument(i).eval(contextSequence, contextItem);
 //			System.out.println("found " + seq[i].getLength() + " for " + getArgument(i).pprint());
 		}
-		functionDef.setArguments(seq);
-		
-		LocalVariable mark = context.markLocalVariables();
-		try {
+		return evalFunction(contextSequence, contextItem, seq);
+	}
+
+    /**
+     * @param contextSequence
+     * @param contextItem
+     * @param seq
+     * @return
+     * @throws XPathException
+     */
+    public Sequence evalFunction(Sequence contextSequence, Item contextItem, Sequence[] seq) throws XPathException {
+        functionDef.setArguments(seq);
+        LocalVariable mark = context.markLocalVariables();
+        try {
 			Sequence returnSeq = expression.eval(contextSequence, contextItem);
 			return returnSeq;
 		} catch(XPathException e) {
@@ -136,7 +146,7 @@ public class FunctionCall extends Function {
 		} finally {
 			context.popLocalVariables(mark);
 		}
-	}
+    }
 
 	 /* (non-Javadoc)
 	 * @see org.exist.xquery.PathExpr#resetState()

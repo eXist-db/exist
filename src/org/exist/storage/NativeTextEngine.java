@@ -510,8 +510,11 @@ public class NativeTextEngine extends TextSearchEngine {
 		for (Iterator i = collections.iterator(); i.hasNext();) {
 			current = (Collection) i.next();
 			collectionId = current.getId();
-			query = new IndexQuery(IndexQuery.BW, new WordRef(collectionId,
-					start), new WordRef(collectionId, end));
+            if (end == null)
+                query = new IndexQuery(IndexQuery.TRUNC_RIGHT, new WordRef(collectionId, start));
+            else
+    			query = new IndexQuery(IndexQuery.BW, new WordRef(collectionId,
+    					start), new WordRef(collectionId, end));
 			try {
 				lock.acquire();
 				values = dbWords.findEntries(query);
@@ -528,6 +531,7 @@ public class NativeTextEngine extends TextSearchEngine {
 					try {
 						while (is.available() > 0) {
 							docId = is.readInt();
+                            oc.addDocument(docId);
 							section = is.readByte();
 							len = is.readInt();
 							for(int k = 0; k < len; k++) {
