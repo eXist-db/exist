@@ -593,7 +593,7 @@ parenthesizedExpr
 functionCall
 { String fnName= null; }
 :
-	fnName=qName l:LPAREN!
+	fnName=q:qName l:LPAREN!
 	{ 
         #functionCall = #[FUNCTION, fnName];
     }
@@ -601,7 +601,7 @@ functionCall
 		params:functionParameters
 		{ #functionCall= #(#[FUNCTION, fnName], #params); }
 	)?
-    { #functionCall.copyLexInfo(#l); }
+    { #functionCall.copyLexInfo(#q); }
 	RPAREN!
 	;
 
@@ -638,8 +638,11 @@ qName returns [String name]
 }
 :
 	( ncnameOrKeyword COLON ncnameOrKeyword )
-	=> name=ncnameOrKeyword COLON name2=ncnameOrKeyword
-	{ name= name + ':' + name2; }
+	=> name=nc1:ncnameOrKeyword COLON name2=ncnameOrKeyword
+	{ 
+		name= name + ':' + name2;
+		#qName.copyLexInfo(#nc1);
+	}
 	|
 	name=ncnameOrKeyword
 	;
@@ -1123,6 +1126,7 @@ options {
 }
 
 xpointer [PathExpr path]
+throws XPathException
 { Expression step = null; }:
 	#( XPOINTER step=expr [path] )
 	|
@@ -1135,16 +1139,17 @@ xpointer [PathExpr path]
 		path.addPath(fun);
 	}
 	;
-	exception catch [RecognitionException e]
-	{ handleException(e); }
-	catch [EXistException e]
+//	exception catch [RecognitionException e]
+//	{ handleException(e); }
+	exception catch [EXistException e]
 	{ handleException(e); }
 	catch [PermissionDeniedException e]
 	{ handleException(e); }
-	catch [XPathException e]
-	{ handleException(e); }
+//	catch [XPathException e]
+//	{ handleException(e); }
 
 xpath [PathExpr path]
+throws XPathException
 { context.setRootExpression(path); }
 :
 	module [path]
@@ -1158,8 +1163,8 @@ xpath [PathExpr path]
 	{ handleException(e); }
 	catch [PermissionDeniedException e]
 	{ handleException(e); }
-	catch [XPathException e]
-	{ handleException(e); }
+//	catch [XPathException e]
+//	{ handleException(e); }
 
 module [PathExpr path]
 throws PermissionDeniedException, EXistException, XPathException
