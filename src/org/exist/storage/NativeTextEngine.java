@@ -1264,11 +1264,13 @@ public class NativeTextEngine extends TextSearchEngine {
 				int len;
 				long gid;
 				long last = -1;
+				int freq = 1;
 				long delta;
 				int sizeHint = -1;
 				byte section;
 				DocumentImpl doc;
 				NodeProxy parent, proxy;
+				Match match;
 				try {
 					while (is.available() > 0) {
 					    if(context != null)
@@ -1277,7 +1279,7 @@ public class NativeTextEngine extends TextSearchEngine {
 						section = is.readByte();
 						len = is.readInt();
 						if ((doc = docs.getDoc(docId)) == null) {
-							is.skip(len);
+							is.skip(termFreq ? len * 2 : len);
 							continue;
 						}
 						if (contextSet != null)
@@ -1287,6 +1289,8 @@ public class NativeTextEngine extends TextSearchEngine {
 							delta = is.readLong();
 							gid = (last < 0 ? delta : last + delta);
 							last = gid;
+							if(termFreq)
+								freq = is.readInt();
 							if (contextSet != null) {
 								proxy = (section == TEXT_SECTION
 										? new NodeProxy(doc, gid,
@@ -1297,8 +1301,11 @@ public class NativeTextEngine extends TextSearchEngine {
 										true, -1);
 								if (parent != null) {
 									result.add(parent, sizeHint);
-									if (trackMatches != Serializer.TAG_NONE)
-										parent.addMatch(new Match(word, gid));
+									if (trackMatches != Serializer.TAG_NONE) {
+										match = new Match(word, gid);
+										match.setFrequency(freq);
+										parent.addMatch(match);
+									}
 								}
 							} else
 								((TextSearchResult) result).add(doc, gid, word);
