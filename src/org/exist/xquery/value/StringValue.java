@@ -290,6 +290,30 @@ public class StringValue extends AtomicValue {
 		return value.compareTo(other.getStringValue());
 	}
 
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.AtomicValue#startsWith(org.exist.xquery.value.AtomicValue)
+	 */
+	public boolean startsWith(AtomicValue other) throws XPathException {
+		return value.startsWith(other.getStringValue());
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.AtomicValue#endsWith(org.exist.xquery.value.AtomicValue)
+	 */
+	public boolean endsWith(AtomicValue other) throws XPathException {
+		return value.endsWith(other.getStringValue());
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.AtomicValue#contains(org.exist.xquery.value.AtomicValue)
+	 */
+	public boolean contains(AtomicValue other) throws XPathException {
+		return value.indexOf(other.getStringValue()) > -1;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.AtomicValue#effectiveBooleanValue()
 	 */

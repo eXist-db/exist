@@ -135,23 +135,6 @@ public class ForExpr extends BindingExpression {
 				resultSequence.addAll(val);
 			}
 		}
-//		if(orderSpecs != null) {
-//			// sort the result and call return for every item
-//			((OrderedValueSequence)result).sort();
-//			Sequence orderedResult = new ValueSequence();
-//			LOG.debug("ordered: " + result.getLength());
-//			p = 1;
-//			for(SequenceIterator i = result.iterate(); i.hasNext(); p++) {
-//				contextItem = i.nextItem();
-//				contextSequence = contextItem.toSequence();
-//				// set variable value to current item
-//				var.setValue(contextSequence);
-//				context.setContextPosition(p);
-//				val = returnExpr.eval(contextSequence);
-//				orderedResult.addAll(val);
-//			}
-//			result = orderedResult;
-//		}
 		if(orderSpecs != null)
 			((OrderedValueSequence)resultSequence).sort();
 		context.popLocalContext();

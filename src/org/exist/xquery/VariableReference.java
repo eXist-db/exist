@@ -72,7 +72,8 @@ public class VariableReference extends AbstractExpression {
 		try {
 			Variable var = context.resolveVariable(qname);
 			if (var != null && var.getValue() != null) {
-				return var.getValue().getItemType();
+				int type = var.getValue().getItemType();
+				return type;
 			}
 		} catch (XPathException e) {
 		}
@@ -86,7 +87,8 @@ public class VariableReference extends AbstractExpression {
 		try {
 			Variable var = context.resolveVariable(qname);
 			if (var != null && var.getValue() != null) {
-				return var.getDependencies(context);
+				int deps = var.getDependencies(context);
+				return deps;
 			}
 		} catch (XPathException e) {
 		}
@@ -100,7 +102,8 @@ public class VariableReference extends AbstractExpression {
 		try {
 			Variable var = context.resolveVariable(qname);
 			if (var != null && var.getValue() != null) {
-				return var.getCardinality();
+				int card = var.getValue().getCardinality();
+				return card;
 			}
 		} catch (XPathException e) {
 		}

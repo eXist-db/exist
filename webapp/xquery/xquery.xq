@@ -2,7 +2,7 @@ xquery version "1.0";
 
 (: Test module import :)
 import module namespace utils="http://exist-db.org/xquery/collection-utils"
-at "http://localhost:8080/exist/xquery/collections.xqm";
+at "http://exist-db.org/exist/xquery/collections.xqm";
 
 (: Namespace for the local functions in this script :)
 declare namespace f="http://exist-db.org/xquery/local-functions";
