@@ -229,7 +229,7 @@ public class StandaloneServer {
     throws UnknownHostException, IllegalArgumentException, MultiException {
         httpServer = new HttpServer();
         SocketListener listener = new SocketListener();
-        listener.setHost("localhost");
+        listener.setHost(null);
         listener.setPort(httpPort);
         listener.setMinThreads(5);
         listener.setMaxThreads(50);
