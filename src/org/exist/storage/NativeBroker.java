@@ -1091,6 +1091,172 @@ public class NativeBroker extends DBBroker {
 		LOG.debug("reindex took " + (System.currentTimeMillis() - start) + "ms.");
 	}
 	
+	public void copyResource(DocumentImpl doc, Collection destination, String newName) 
+	throws PermissionDeniedException, LockException {
+		if (readOnly)
+			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+	    Collection collection = doc.getCollection();
+	    if(!collection.getPermissions().validate(user, Permission.READ))
+	        throw new PermissionDeniedException("Insufficient privileges to copy resource " +
+	                doc.getFileName());
+	    if(!doc.getPermissions().validate(user, Permission.READ))
+	    	throw new PermissionDeniedException("Insufficient privileges to copy resource " +
+	                doc.getFileName());
+	    if(newName == null) {
+            int p = doc.getFileName().lastIndexOf('/');
+            newName = doc.getFileName().substring(p + 1);
+        }
+	    Lock lock = null;
+	    try {
+	        lock = collectionsDb.getLock();
+	        lock.acquire(Lock.WRITE_LOCK);
+	        // check if the move would overwrite a collection
+	        if(getCollection(destination.getName() + '/' + newName) != null)
+	            throw new PermissionDeniedException("A resource can not replace an existing collection");
+	        DocumentImpl oldDoc = destination.getDocument(this, newName);
+	        if(oldDoc != null) {
+	            if(!destination.getPermissions().validate(user, Permission.UPDATE))
+	                throw new PermissionDeniedException("Resource with same name exists in target " +
+	                		"collection and update is denied");
+	            if(!oldDoc.getPermissions().validate(user, Permission.UPDATE))
+	                throw new PermissionDeniedException("Resource with same name exists in target " +
+	                		"collection and update is denied");
+	            collection.removeDocument(this, oldDoc.getFileName());
+	        } else
+	            if(!destination.getPermissions().validate(user, Permission.WRITE))
+	    	        throw new PermissionDeniedException("Insufficient privileges on target collection " +
+	    	                destination.getName());
+	        
+	        DocumentImpl newDoc = new DocumentImpl(this, newName, destination);
+	        newDoc.copyOf(doc);
+	        copyResource(doc, newDoc);
+	        flush();
+	        destination.addDocument(this, doc);
+	        saveCollection(destination);
+		} catch (TriggerException e) {
+			throw new PermissionDeniedException(e.getMessage());
+		} finally {
+	    	lock.release();
+	    }
+	}
+	
+	private void copyResource(DocumentImpl oldDoc, DocumentImpl newDoc) {
+		LOG.debug("Copying document " + oldDoc.getFileName() + " to " + newDoc.getCollection().getName());
+		final long start = System.currentTimeMillis();
+		Iterator iterator;
+		NodeList nodes = oldDoc.getChildNodes();
+		NodeImpl n;
+		for (int i = 0; i < nodes.getLength(); i++) {
+		    n = (NodeImpl) nodes.item(i);
+		    iterator =
+		        getNodeIterator(
+		                new NodeProxy(oldDoc, n.getGID(), n.getInternalAddress()));
+		    iterator.next();
+		    copyNodes(iterator, n, new NodePath(), newDoc);
+		}
+		flush();
+		LOG.debug("Copy took " + (System.currentTimeMillis() - start) + "ms.");
+	}
+	
+	public void defrag(final DocumentImpl doc) throws PermissionDeniedException {
+		LOG.debug("--------------------> Defragmenting document " + doc.getFileName());
+		final long start = System.currentTimeMillis();
+		try {
+			// dropping old index
+			elementIndex.dropIndex(doc);
+			textEngine.dropIndex(doc);
+			// dropping dom index
+			NodeRef ref = new NodeRef(doc.getDocId());
+			final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+			new DOMTransaction(this, domDb) {
+				public Object start() {
+					try {
+						domDb.remove(idx, null);
+						domDb.flush();
+					} catch (BTreeException e) {
+			            LOG.warn("start() - " + "error while removing doc", e);
+					} catch (DBException e) {
+			            LOG.warn("start() - " + "error while removing doc", e);
+					} catch (IOException e) {
+			            LOG.warn("start() - " + "error while removing doc", e);
+					} catch (TerminatedException e) {
+			            LOG.warn("method terminated", e);
+			        }
+					return null;
+				}
+			}
+			.run();
+			
+			DocumentImpl tempDoc = new DocumentImpl(this, doc.getFileName(), doc.getCollection());
+			tempDoc.copyOf(doc);
+			
+			Iterator iterator;
+			NodeList nodes = doc.getChildNodes();
+			NodeImpl n;
+			for (int i = 0; i < nodes.getLength(); i++) {
+			    n = (NodeImpl) nodes.item(i);
+			    iterator =
+			        getNodeIterator(
+			                new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
+			    iterator.next();
+			    copyNodes(iterator, n, new NodePath(), tempDoc);
+			}
+			flush();
+			
+			LOG.debug("Removing old dom...");
+			new DOMTransaction(this, domDb) {
+				public Object start() {
+				    NodeImpl node = (NodeImpl)doc.getFirstChild();
+					domDb.removeAll(node.getInternalAddress());
+					return null;
+				}
+			}
+			.run();
+			
+			doc.copyChildren(tempDoc);
+			saveCollection(doc.getCollection());
+			LOG.debug("Defragmentation took " + (System.currentTimeMillis() - start) + "ms.");
+		} catch (ReadOnlyException e) {
+			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+		}
+	}
+	
+	private void copyNodes(Iterator iterator, NodeImpl node, NodePath currentPath, DocumentImpl newDoc) {
+		if (node.getNodeType() == Node.ELEMENT_NODE)
+		    currentPath.addComponent(node.getNodeName());
+		final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+		node.setOwnerDocument(newDoc);
+		node.setInternalAddress(-1);
+		store(node, currentPath);
+		node.setOwnerDocument(doc);
+		
+		if (node.hasChildNodes()) {
+			final long firstChildId = XMLUtil.getFirstChildId(doc, node.getGID());
+			if (firstChildId < 0) {
+				LOG.fatal(
+					"no child found: expected = "
+						+ node.getChildCount()
+						+ "; node = "
+						+ node.getNodeName()
+						+ "; gid = "
+						+ node.getGID());
+				throw new IllegalStateException("wrong node id");
+			}
+			final long lastChildId = firstChildId + node.getChildCount();
+			NodeImpl child;
+			for (long gid = firstChildId; gid < lastChildId; gid++) {
+				child = (NodeImpl) iterator.next();
+				if(child == null)
+					LOG.debug("child " + gid + " not found for node: " + node.getNodeName() +
+							"; last = " + lastChildId + "; children = " + node.getChildCount());
+				child.setGID(gid);
+				copyNodes(iterator, child, currentPath, newDoc);
+			}
+		}
+		if(node.getNodeType() == Node.ELEMENT_NODE)
+		    currentPath.removeLastComponent();
+	}
+	
 	public String getNodeValue(final NodeProxy proxy) {
 		return (String) new DOMTransaction(this, domDb, Lock.READ_LOCK) {
 			public Object start() {
@@ -1493,7 +1659,7 @@ public class NativeBroker extends DBBroker {
             }
 
 			elementIndex.dropIndex(doc);
-			textEngine.removeDocument(doc);
+			textEngine.dropIndex(doc);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("removeDocument() - removing dom");
             }
@@ -1711,7 +1877,7 @@ public class NativeBroker extends DBBroker {
 	    	                destination.getName());
 	        collection.unlinkDocument(doc);
 	        elementIndex.dropIndex(doc);
-			textEngine.removeDocument(doc);
+			textEngine.dropIndex(doc);
 			saveCollection(collection);
 			
 			doc.setFileName(newName);

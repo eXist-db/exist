@@ -187,6 +187,41 @@ public class LocalCollectionManagementService implements CollectionManagementSer
             brokerPool.release( broker );
         }
     }
+    
+    /* (non-Javadoc)
+	 * @see org.exist.xmldb.CollectionManagementServiceImpl#copyResource(java.lang.String, java.lang.String, java.lang.String)
+	 */
+	public void copyResource(String resourcePath, String destinationPath,
+			String newName) throws XMLDBException {
+		if(!resourcePath.startsWith("/db"))
+            resourcePath = parent.getPath() + '/' + resourcePath;
+        if(!destinationPath.startsWith("/db"))
+            destinationPath = parent.getPath() + '/' + destinationPath;
+        DBBroker broker = null;
+        try {
+            broker = brokerPool.get(user);
+            DocumentImpl doc = (DocumentImpl)broker.getDocument(resourcePath);
+            if(doc == null)
+                throw new XMLDBException(ErrorCodes.NO_SUCH_RESOURCE, "Resource " + resourcePath + " not found");
+            org.exist.collections.Collection destination = broker.getCollection(destinationPath);
+            if(destination == null)
+                throw new XMLDBException(ErrorCodes.NO_SUCH_COLLECTION, "Collection " + destinationPath + " not found");
+            broker.copyResource(doc, destination, newName);
+        } catch ( EXistException e ) {
+        	e.printStackTrace();
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
+                "failed to move resource " + resourcePath, e );
+        } catch ( PermissionDeniedException e ) {
+            throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
+                e.getMessage(), e );
+        } catch (LockException e) {
+            throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
+                    e.getMessage(), e );
+        } finally {
+            brokerPool.release( broker );
+        }
+	}
+	
     public void setCollection( Collection parent ) throws XMLDBException {
         this.parent = (LocalCollection) parent;
     }

@@ -76,7 +76,8 @@ public class WebDAV {
 	private final static Logger LOG = Logger.getLogger(WebDAV.class);
 	
 	private int defaultAuthMethod;
-	private Authenticator digestAuth, basicAuth;
+	private Authenticator digestAuth;
+	private Authenticator basicAuth;
 	private BrokerPool pool;
 	
 	public WebDAV(int authenticationMethod) throws ServletException {

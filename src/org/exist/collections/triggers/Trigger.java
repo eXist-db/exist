@@ -135,7 +135,7 @@ public interface Trigger extends ContentHandler, LexicalHandler {
 	 * @param event the type of event that triggered this call (see the constants defined in this interface).
 	 * @param broker the database instance used to process the current action.
 	 * @param documentName the name of the document currently processed (relative to the collection path).
-	 * @param existingDocument optional: if event is a {@link #UPDATE_DOCUMENT_EVENT UPDATE_DOCUMENT_EVENT},
+	 * @param existingDocument optional: if event is a {@link #UPDATE_DOCUMENT_EVENT},
 	 * 	existingDocument will contain the Document object for the old document, which will be overwritten. Otherwise, the parameter
 	 * 	is null.
 	 * @throws TriggerException throwing a TriggerException will abort the current action.

@@ -49,7 +49,9 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	 */
 	private org.apache.excalibur.xml.sax.SAXParser cocoonParser = null;
 	
-	protected String id, documentName, path = null;
+	protected String id;
+	protected String documentName;
+	protected String path = null ;
 	protected int handle = -1;
 	protected int pos = -1;
 	protected RemoteCollection parent;

@@ -581,15 +581,6 @@ public class DOMFile extends BTree implements Lockable {
 	            firstSplitPage.setDirty(true);
 	            dataCache.add(firstSplitPage);
 	        }
-//	        long next = nextSplitPage.getPageHeader().getNextDataPage();
-//	        if (-1 < next) {
-//	            DOMPage nextPage = getCurrentPage(nextSplitPage.getPageHeader()
-//	                    .getNextDataPage());
-//	            nextPage.getPageHeader()
-//	                    .setPrevDataPage(nextSplitPage.getPageNum());
-//	            nextPage.setDirty(true);
-//	            dataCache.add(nextPage);
-//	        }
         }
         long next = rec.page.getPageHeader().getNextDataPage();
         if(-1 < next) {
@@ -604,6 +595,10 @@ public class DOMFile extends BTree implements Lockable {
         rec.page.getPageHeader().setDataLength(rec.page.len);
         rec.page.getPageHeader().setRecordCount(countRecordsInPage(rec.page));
         rec.offset = rec.page.len;
+//        if(currentDocument != null) {
+//        	currentDocument.incSplitCount();
+//        	System.out.println(currentDocument.getFileName() + " split: " + currentDocument.getSplitCount());
+//        }
         return rec;
     }
 

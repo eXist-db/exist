@@ -49,7 +49,8 @@ class UserDialog extends JFrame {
 	JTextField homedir;
 	JList groups;
 	JList allGroups;
-	DefaultListModel groupsModel, allGroupsModel;
+	DefaultListModel groupsModel;
+	DefaultListModel allGroupsModel;
 	JTable users;
 	UserTableModel userModel;
 	InteractiveClient client;

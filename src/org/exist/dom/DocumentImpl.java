@@ -95,6 +95,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	// the number of data pages occupied by this document
 	protected int pageCount = 0;
 	
+//	protected transient int splitCount = 0;
+	
 	// number of levels in this DOM tree
 	protected int maxDepth = 0;
 
@@ -181,6 +183,11 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	    treeLevelOrder = other.treeLevelOrder;
 	    treeLevelStartPoints = other.treeLevelStartPoints;
 	    internalAddress = -1;
+	}
+	
+	public void copyChildren(DocumentImpl other) {
+		childList = other.childList;
+		children = other.children;
 	}
 	
 	/**
@@ -909,4 +916,16 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	        System.arraycopy(childList, 0, newChildList, 0, childList.length);
 	    childList = newChildList;
 	}
+	
+//	public void incSplitCount() {
+//		splitCount++;
+//	}
+//	
+//	public int getSplitCount() {
+//		return splitCount;
+//	}
+//	
+//	public void setSplitCount(int count) {
+//		splitCount = count;
+//	}
 }

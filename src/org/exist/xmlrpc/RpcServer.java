@@ -1553,11 +1553,11 @@ public class RpcServer implements RpcAPI {
     
     public static byte[] compress(byte[] whatToCompress, int length) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        GZIPOutputStream gzos = new GZIPOutputStream(baos);
-//        gzos.setMethod(gzos.DEFLATED);
-//        gzos.putNextEntry(new ZipEntry(length + ""));
+        ZipOutputStream gzos = new ZipOutputStream(baos);
+        gzos.setMethod(ZipOutputStream.DEFLATED);
+        gzos.putNextEntry(new ZipEntry(length + ""));
         gzos.write(whatToCompress, 0, length);
-//        gzos.closeEntry();
+        gzos.closeEntry();
         gzos.finish();
         gzos.close();
         return baos.toByteArray();
@@ -1566,15 +1566,15 @@ public class RpcServer implements RpcAPI {
     public static byte[] uncompress(byte[] whatToUncompress)
             throws IOException {
         ByteArrayInputStream bais = new ByteArrayInputStream(whatToUncompress);
-        GZIPInputStream gzis = new GZIPInputStream(bais);
-//        ZipEntry zipentry = gzis.getNextEntry();
-//        int len = Integer.parseInt(zipentry.getName());
+        ZipInputStream gzis = new ZipInputStream(bais);
+        ZipEntry zipentry = gzis.getNextEntry();
+        int len = Integer.parseInt(zipentry.getName());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] buf = new byte[512];
         int bread;
         while ((bread = gzis.read(buf)) != -1)
             baos.write(buf, 0, bread);
-//        gzis.closeEntry();
+        gzis.closeEntry();
         gzis.close();
         return baos.toByteArray();
     }

@@ -615,6 +615,10 @@ public class RESTServer {
 			LOG.warn(e);
 			throw new BadRequestException("Error while serializing xml: "
 					+ e.toString(), e);
+		} catch(Exception e) {
+			LOG.warn(e.getMessage(), e);
+			throw new BadRequestException("Error while serializing xml: "
+					+ e.toString(), e);
 		}
 	}
 }

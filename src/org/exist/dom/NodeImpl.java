@@ -59,11 +59,6 @@ public class NodeImpl implements Node {
 		this(nodeType, 0);
 	}
 
-	public NodeImpl(Node n) {
-		this(n.getNodeType(), 0);
-		ownerDocument = (DocumentImpl) n.getOwnerDocument();
-	}
-
 	public NodeImpl(long gid) {
 		this((short) 0, gid);
 	}
@@ -149,7 +144,7 @@ public class NodeImpl implements Node {
 	public Node cloneNode(boolean deep) {
 		return this;
 	}
-
+ 
 	/**
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */

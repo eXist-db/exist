@@ -31,7 +31,8 @@ public class RemoteResourceIterator implements ResourceIterator {
 	protected XmlRpcClient rpcClient;
 	protected RemoteCollection collection;
 	protected Vector resources;
-	protected int pos = 0, indentXML;
+	protected int pos = 0 ;
+	protected int indentXML;
 	protected String encoding = "UTF-8";
 
 	public RemoteResourceIterator(RemoteCollection col, Vector resources, 

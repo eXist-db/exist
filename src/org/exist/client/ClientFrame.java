@@ -337,7 +337,7 @@ public class ClientFrame extends JFrame
 		});
 		fileMenu.add(item);
 
-		item = new JMenuItem("Create collection", KeyEvent.VK_C);
+		item = new JMenuItem("Create collection", KeyEvent.VK_N);
 		item.setAccelerator(KeyStroke.getKeyStroke("control N"));
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -355,6 +355,15 @@ public class ClientFrame extends JFrame
 		});
 		fileMenu.add(item);
 
+		item = new JMenuItem("Copy", KeyEvent.VK_C);
+		item.setAccelerator(KeyStroke.getKeyStroke("control C"));
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				copyAction(e);
+			}
+		});
+		fileMenu.add(item);
+		
 		item = new JMenuItem("Move", KeyEvent.VK_M);
 		item.setAccelerator(KeyStroke.getKeyStroke("control M"));
 		item.addActionListener(new ActionListener() {
@@ -791,6 +800,50 @@ public class ClientFrame extends JFrame
 		                    service.move(res[i].toString(), destinationPath, null);
 		                else
 		                    service.moveResource(res[i].toString(), destinationPath, null);
+		            }
+		            client.reloadCollection();
+		        } catch (XMLDBException e) {
+		            showErrorMessage(e.getMessage(), e);
+		        }
+		        setStatus("Move completed.");
+			}
+		};
+		new Thread(moveTask).start();
+	}
+	
+	private void copyAction(ActionEvent ev) {
+	    final int[] rows = fileman.getSelectedRows();
+	    final Object[] res = new Object[rows.length];
+		for (int i = 0; i < rows.length; i++) {
+			res[i] = resources.getValueAt(rows[i], 3);
+		}
+		String[] collections = null;
+		try {
+            Collection root = client.getCollection("/db");
+            Vector collectionsVec = getCollections(root, new Vector());
+            collections = new String[collectionsVec.size()];
+            collectionsVec.toArray(collections);
+        } catch (XMLDBException e) {
+            showErrorMessage(e.getMessage(), e);
+            return;
+        }
+		Object val = JOptionPane.showInputDialog(this, "Select target collection", "Move", JOptionPane.QUESTION_MESSAGE,
+		        null, collections, collections[0]);
+		if(val == null)
+		    return;
+		final String destinationPath = (String)val;
+		Runnable moveTask = new Runnable() {
+			public void run() {
+				try {
+				    CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
+                		client.current.getService("CollectionManagementService", "1.0");
+		            for(int i = 0; i < res.length; i++) {
+		                setStatus("Copying " + res[i].toString() + " to " + destinationPath + "...");
+		                if(res[i] instanceof InteractiveClient.CollectionName)
+		                    //service.move(res[i].toString(), destinationPath, null);
+		                	showErrorMessage("Copy is not yet implemented for collections", null);
+		                else
+		                    service.copyResource(res[i].toString(), destinationPath, null);
 		            }
 		            client.reloadCollection();
 		        } catch (XMLDBException e) {

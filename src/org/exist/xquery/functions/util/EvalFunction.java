@@ -116,9 +116,11 @@ public class EvalFunction extends Function {
 					throw new XPathException("error found while executing expression: " +
 						astParser.getErrorMessage(), astParser.getLastException());
 				}
+				long start = System.currentTimeMillis();
 			    Sequence sequence = path.eval(null, null);
 			    path.reset();
-			    LOG.debug("found " + sequence.getLength() + " for " + expr);
+			    LOG.debug("Found " + sequence.getLength() + " for " + expr);
+			    LOG.debug("Query took " + (System.currentTimeMillis() - start));
 			    return sequence;
 		} catch (RecognitionException e) {
 			throw new XPathException("error found while executing expression: " +

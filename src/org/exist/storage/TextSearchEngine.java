@@ -62,7 +62,8 @@ public abstract class TextSearchEngine extends Observable {
 	protected DBBroker broker = null;
 	protected Tokenizer tokenizer;
 	protected Configuration config;
-	protected boolean indexNumbers = false, stem = false;
+	protected boolean indexNumbers = false ;
+	protected boolean stem = false ;
 	protected PorterStemmer stemmer = null;
 
 	/**
@@ -221,7 +222,7 @@ public abstract class TextSearchEngine extends Observable {
 	 * 
 	 * @param doc
 	 */
-	public abstract void removeDocument(DocumentImpl doc);
+	public abstract void dropIndex(DocumentImpl doc);
 	
 	/**
 	 * Reindex a document or node.
