@@ -542,9 +542,8 @@ public class DOMFile extends BTree implements Lockable {
 	 *@exception  DBException  Description of the Exception
 	 */
 	public boolean flush() throws DBException {
-		//super.flush();
+		super.flush();
 		buffer.flush();
-		pages.remove(owner);
 		try {
 			if (fileHeader.isDirty())
 				fileHeader.write();
@@ -1166,7 +1165,7 @@ public class DOMFile extends BTree implements Lockable {
 					long nextPage = ph.getNextDataPage();
 					if (nextPage < 0) {
 						LOG.debug(
-							"offset out of range " + p.page.getPageInfo());
+							"bad link to next " + p.page.getPageInfo());
 						lock.release(lockKey);
 						return null;
 					}

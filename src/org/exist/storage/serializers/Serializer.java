@@ -59,9 +59,11 @@ import org.xml.sax.helpers.*;
  */
 public class Serializer implements XMLReader {
 
-    protected static Logger LOG =
+    protected final static Logger LOG =
         Logger.getLogger( Serializer.class );
 
+	public final static String EXIST_NS = "http://exist.sourceforge.net/NS/exist";
+	 
     protected DBBroker broker;
     protected String encoding = "ISO-8859-1";
     private EntityResolver entityResolver = null;
@@ -71,6 +73,7 @@ public class Serializer implements XMLReader {
     protected boolean createContainerElements = true;
 	protected boolean processXInclude = true;
 	protected boolean processXSL = false;
+	protected boolean highlightMatches = true;
     protected Templates templates = null;
     protected TransformerHandler xslHandler = null;
 	protected XIncludeFilter xinclude;
@@ -380,7 +383,7 @@ public class Serializer implements XMLReader {
         if ( generateDocEvent )
             contentHandler.startDocument();
 
-        contentHandler.startPrefixMapping( "exist", "http://exist.sourceforge.net/NS/exist" );
+        contentHandler.startPrefixMapping( "exist", EXIST_NS );
         for ( int i = 0; i < children.getLength(); i++ )
             ( (NodeImpl) children.item( i ) ).toSAX( contentHandler, lexicalHandler, false );
 
@@ -406,14 +409,14 @@ public class Serializer implements XMLReader {
         NodeImpl n;
         long startTime = System.currentTimeMillis();
         contentHandler.startDocument();
-        contentHandler.startPrefixMapping( "exist", "http://exist.sourceforge.net/NS/exist" );
+        contentHandler.startPrefixMapping( "exist", EXIST_NS );
         AttributesImpl attribs = new AttributesImpl();
         attribs.addAttribute( "", "hitCount", "hitCount",
             "CDATA", Integer.toString( set.getLength() ) );
         if ( queryTime >= 0 )
             attribs.addAttribute( "", "queryTime", "queryTime", "CDATA", Long.toString( queryTime ) );
 
-        contentHandler.startElement( "http://exist.sourceforge.net/NS/exist", "result",
+        contentHandler.startElement( EXIST_NS, "result",
             "exist:result", attribs );
         for ( int i = start - 1; i < start + howmany - 1 && i < set.getLength(); i++ ) {
             n = (NodeImpl) set.item( i );
@@ -422,7 +425,7 @@ public class Serializer implements XMLReader {
                 n.toSAX( contentHandler, lexicalHandler, true );
 
         }
-        contentHandler.endElement( "http://exist.sourceforge.net/NS/exist", "result",
+        contentHandler.endElement( EXIST_NS, "result",
             "exist:result" );
         contentHandler.endPrefixMapping( "exist" );
         contentHandler.endDocument();
@@ -441,7 +444,7 @@ public class Serializer implements XMLReader {
         if ( generateDocEvents )
             contentHandler.startDocument();
 
-        contentHandler.startPrefixMapping( "exist", "http://exist.sourceforge.net/NS/exist" );
+        contentHandler.startPrefixMapping( "exist", EXIST_NS );
 		setDocument((DocumentImpl)n.getOwnerDocument());
         ( (NodeImpl) n ).toSAX( contentHandler, lexicalHandler, true );
         contentHandler.endPrefixMapping( "exist" );
@@ -862,5 +865,8 @@ public class Serializer implements XMLReader {
         this.createContainerElements = createContainerElements;
     }
 
+	public void setHighlightMatches(boolean highlight) {
+		this.highlightMatches = highlight;
+	}
 }
 

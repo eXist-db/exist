@@ -17,9 +17,6 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.XMLUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -53,7 +50,8 @@ public class LocalXMLResource implements XMLResource {
 	protected User user;
 	protected String content = null;
 	protected File file = null;
-
+	protected Node root = null;
+	
 	public LocalXMLResource(
 		User user,
 		BrokerPool pool,
@@ -308,26 +306,27 @@ public class LocalXMLResource implements XMLResource {
 	}
 
 	public void setContentAsDOM(Node root) throws XMLDBException {
-		OutputFormat format = new OutputFormat("xml", encoding, false);
-		InternalXMLSerializer xmlout = new InternalXMLSerializer(format);
-		try {
-            switch(root.getNodeType()) {
-                case Node.ELEMENT_NODE:
-                    xmlout.serialize((Element)root);
-                    break;
-                case Node.DOCUMENT_NODE:
-                    xmlout.serialize((Document)root);
-                    break;
-                case Node.DOCUMENT_FRAGMENT_NODE:
-                    xmlout.serialize((DocumentFragment)root);
-                    break;
-                default:
-                    throw new XMLDBException(ErrorCodes.WRONG_CONTENT_TYPE,
-                        "argument should be an Element, Document or DocumentFragment");
-            }
-		} catch (IOException ioe) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
-		}
+		this.root = root;
+//		OutputFormat format = new OutputFormat("xml", encoding, false);
+//		InternalXMLSerializer xmlout = new InternalXMLSerializer(format);
+//		try {
+//            switch(root.getNodeType()) {
+//                case Node.ELEMENT_NODE:
+//                    xmlout.serialize((Element)root);
+//                    break;
+//                case Node.DOCUMENT_NODE:
+//                    xmlout.serialize((Document)root);
+//                    break;
+//                case Node.DOCUMENT_FRAGMENT_NODE:
+//                    xmlout.serialize((DocumentFragment)root);
+//                    break;
+//                default:
+//                    throw new XMLDBException(ErrorCodes.WRONG_CONTENT_TYPE,
+//                        "argument should be an Element, Document or DocumentFragment");
+//            }
+//		} catch (IOException ioe) {
+//			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
+//		}
 	}
 
 	public ContentHandler setContentAsSAX() throws XMLDBException {
@@ -366,6 +365,7 @@ public class LocalXMLResource implements XMLResource {
 		public void endDocument() throws SAXException {
 			super.endDocument();
 			content = writer.toString();
+			System.out.println(content);
 		}
 	}
 	/* (non-Javadoc)

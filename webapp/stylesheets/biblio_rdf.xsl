@@ -132,10 +132,10 @@
     <xsl:variable name="query">document(*)//rdf:Description[near(dc:editor|dc:creator|dc:contributor,'<xsl:value-of select="$creator"/>')]</xsl:variable>
     <xsl:variable name="encoded" select='java:java.net.URLEncoder.encode($query)'/>
     <a href="/exist/rdf_pbib.xsp?start=1&amp;howmany=15&amp;query={$encoded}">
-      <xsl:value-of select="text()"/>
+      <xsl:apply-templates/>
     </a>
   </xsl:template>
-        
+  	
   <xsl:template match="dc:editor">
     <xsl:if test="position()=1">
       <xsl:text>ed. by </xsl:text>
@@ -147,7 +147,7 @@
     <xsl:variable name="query">document(*)//rdf:Description[near(dc:editor|dc:creator|dc:contributor,'<xsl:value-of select="$editor"/>')]</xsl:variable>
     <xsl:variable name="encoded" select='java:java.net.URLEncoder.encode($query)'/>
     <a href="/exist/rdf_pbib.xsp?start=1&amp;howmany=15&amp;query={$encoded}">
-      <xsl:value-of select="text()"/>
+      <xsl:apply-templates/>
     </a>
   </xsl:template>
 
@@ -162,12 +162,12 @@
     <xsl:variable name="query">document(*)//rdf:Description[near(dc:editor|dc:creator|dc:contributor,'<xsl:value-of select="$contributor"/>')]</xsl:variable>
     <xsl:variable name="encoded" select='java:java.net.URLEncoder.encode($query)'/>
     <a href="/exist/rdf_pbib.xsp?start=1&amp;howmany=15&amp;query={$encoded}">
-      <xsl:value-of select="text()"/>
+		<xsl:apply-templates/>
     </a>
   </xsl:template>
 
   <xsl:template match="dc:title">
-    <b><xsl:value-of select="text()"/></b><br />
+    <b><xsl:apply-templates/></b><br />
   </xsl:template>
 
   <xsl:template match="dc:subject">
@@ -175,7 +175,7 @@
     <xsl:variable name="query">document(*)//rdf:Description[dc:subject&amp;='<xsl:value-of select='$subject'/>']</xsl:variable>
     <xsl:variable name="encoded" select='java:java.net.URLEncoder.encode($query)'/>
     <a href="/exist/rdf_pbib.xsp?start=1&amp;howmany=15&amp;query={$encoded}">
-      <xsl:value-of select="text()"/>
+      <xsl:apply-templates/>
     </a>
     <xsl:if test="position()&lt;last()">
       <xsl:text>; </xsl:text>
@@ -183,7 +183,12 @@
   </xsl:template>
     
   <xsl:template match="dc:identifier">
-	<xsl:value-of select="text()"/>
+	<xsl:apply-templates/>
   </xsl:template>
   
+  <xsl:template match="exist:match">
+  	<span style="background-color: #FFFF00">
+  		<xsl:apply-templates/>
+  	</span>
+  </xsl:template>
 </xsl:stylesheet>

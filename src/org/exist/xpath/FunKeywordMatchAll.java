@@ -83,9 +83,14 @@ public class FunKeywordMatchAll extends Function {
 				for (Iterator i = hits[j][k].iterator(); i.hasNext();) {
 					current = (NodeProxy) i.next();
 					parent = nodes.parentWithChild(current, false, true);
-					if (parent != null
-						&& (!temp.contains(current.doc, parent.gid)))
-						temp.add(parent);
+					if (parent != null) {
+						if (temp.contains(parent)) {
+							parent.addMatches(current.matches);
+						} else {
+							parent.addMatches(current.matches);
+							temp.add(parent);
+						}
+					}
 				}
 			}
 			hits[j][0] = (temp == null) ? new ArraySet(1) : temp;
@@ -97,8 +102,10 @@ public class FunKeywordMatchAll extends Function {
 			if (t0 == null)
 				t0 = t1;
 			else
-				t0 = ( getOperatorType() == Constants.FULLTEXT_AND ) ?
-					t0.intersection( t1 ) : t0.union( t1 );
+				t0 =
+					(getOperatorType() == Constants.FULLTEXT_AND)
+						? t0.intersection(t1)
+						: t0.union(t1);
 		}
 		if (t0 == null)
 			t0 = new ArraySet(1);
@@ -158,13 +165,13 @@ public class FunKeywordMatchAll extends Function {
 	}
 
 	private Literal getLiteral(Expression expr) {
-		if(expr instanceof PathExpr && ((PathExpr)expr).getLength() == 1)
-			expr = ((PathExpr)expr).getExpression(0);
-		if(expr instanceof Literal)
-			return (Literal)expr;
+		if (expr instanceof PathExpr && ((PathExpr) expr).getLength() == 1)
+			expr = ((PathExpr) expr).getExpression(0);
+		if (expr instanceof Literal)
+			return (Literal) expr;
 		return null;
 	}
-	
+
 	protected void processQuery(DocumentSet in_docs) {
 		terms = new String[getArgumentCount() - 1];
 		for (int i = 1; i < getArgumentCount(); i++)

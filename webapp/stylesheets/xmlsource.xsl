@@ -2,6 +2,7 @@
 
 <xsl:stylesheet 
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
+  xmlns:exist="http://exist.sourceforge.net/NS/exist"
   version="1.0">
   
 <!-- the following templates pretty-print xml source code.
@@ -16,9 +17,7 @@
 
 <xsl:template match="text()" mode="xmlsrc">
   <xsl:if test="normalize-space(.)!=''">
-    <dd>
       <xsl:value-of select="."/>
-    </dd>
   </xsl:if>
 </xsl:template>
 
@@ -39,7 +38,7 @@
   </xsl:text>
   <xsl:choose>
     <xsl:when test="not(namespace-uri(.)='')">
-			<font color="purple">
+	  <font color="purple">
         <xsl:value-of select="name(.)"/>
       </font>
     </xsl:when>
@@ -49,7 +48,15 @@
       	</font>
     </xsl:otherwise>
   </xsl:choose>
-  ="<font color="lime"><xsl:value-of select="."/></font>"
+  ="<font color="lime">
+  	<xsl:call-template name="highlight">
+  		<xsl:with-param name="string"><xsl:value-of select="."/></xsl:with-param>
+  	</xsl:call-template>
+  </font>"
+</xsl:template>
+
+<xsl:template match="exist:match" mode="xmlsrc">
+	<span style="background-color: #FFFF00"><xsl:apply-templates/></span>
 </xsl:template>
 
 <xsl:template match="*" mode="xmlsrc">
@@ -71,6 +78,28 @@
     </xsl:choose>
     <xsl:apply-templates select="@*" mode="xmlsrc"/>
     <xsl:choose>
+      <xsl:when test="exist:match">
+        <font color="navy">
+          &gt;
+        </font>
+        	<xsl:apply-templates mode="xmlsrc"/>
+        <font color="navy">
+          &lt;/
+          <xsl:value-of select="name()"/>
+          &gt;
+        </font>
+      </xsl:when>    
+      <xsl:when test="text()">
+      	<font color="navy">
+          &gt;
+        </font>
+        <xsl:apply-templates mode="xmlsrc"/>
+        <font color="navy">
+          &lt;/
+          <xsl:value-of select="name()"/>
+          &gt;
+        </font>
+      </xsl:when>
       <xsl:when test="*">
         <font color="navy">
           &gt;
@@ -97,19 +126,6 @@
           &gt;
         </font>
       </xsl:when>
-      <xsl:when test="text()">
-        <font color="navy">
-          &gt;
-        </font>
-        <font color="black">
-          <xsl:value-of select="text()"/>
-        </font>
-        <font color="navy">
-          &lt;/
-          <xsl:value-of select="name()"/>
-          &gt;
-        </font>
-      </xsl:when>
       <xsl:otherwise>
         <font color="navy">
           /&gt;
@@ -117,6 +133,28 @@
       </xsl:otherwise>
     </xsl:choose>
   </dd>
+</xsl:template>
+
+<xsl:template name="highlight">
+	<xsl:param name="string"/>
+	<xsl:choose>
+		<xsl:when test="contains($string, '||')">
+			<xsl:variable name="before" select="substring-before($string, '||')"/>
+			<xsl:variable name="after" select="substring-after($string, '||')"/>
+			<xsl:value-of select="$before"/>
+			<span style="background-color: #FFFF00">
+				<xsl:value-of select="substring-before($after, '||')"/>
+			</span>
+			<xsl:call-template name="highlight">
+				<xsl:with-param name="string">
+					<xsl:value-of select="substring-after($after, '||')"/>
+				</xsl:with-param>
+			</xsl:call-template>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:value-of select="$string"/>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 </xsl:stylesheet>

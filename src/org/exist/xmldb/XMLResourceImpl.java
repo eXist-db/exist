@@ -276,7 +276,6 @@ public class XMLResourceImpl implements XMLResource {
 	 */
 	public boolean getSAXFeature(String arg0)
 		throws SAXNotRecognizedException, SAXNotSupportedException {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -285,8 +284,6 @@ public class XMLResourceImpl implements XMLResource {
 	 */
 	public void setSAXFeature(String arg0, boolean arg1)
 		throws SAXNotRecognizedException, SAXNotSupportedException {
-		// TODO Auto-generated method stub
-
 	}
 
 }

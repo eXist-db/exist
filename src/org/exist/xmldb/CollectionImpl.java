@@ -238,8 +238,8 @@ public class CollectionImpl implements Collection {
                 xre.getMessage(),
                 xre );
         } catch ( IOException ioe ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                ioe.getMessage(),
+            throw new XMLDBException( ErrorCodes.INVALID_COLLECTION,
+                "an io error occurred",
                 ioe );
         }
         Vector documents = (Vector) collection.get( "documents" );

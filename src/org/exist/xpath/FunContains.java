@@ -1,5 +1,5 @@
 /*
- *  eXist                                Open Source Native XML Database
+ *  eXist Open Source Native XML Database
  * Copyright (C) 2001, Wolfgang M. Meier (meier@ifs. tu- darmstadt. de)
  *
  *  This library is free software; you can redistribute it and/or
@@ -72,14 +72,6 @@ public class FunContains extends Function {
 		this.containsExpr.add(arg);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  docs     Description of the Parameter
-	 *@param  context  Description of the Parameter
-	 *@param  node     Description of the Parameter
-	 *@return          Description of the Return Value
-	 */
 	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
 		NodeSet nodes = (NodeSet) path.eval(docs, context, null).getNodeList();
 		if (hits == null)
@@ -98,9 +90,14 @@ public class FunContains extends Function {
 				for (Iterator i = hits[j][k].iterator(); i.hasNext();) {
 					current = (NodeProxy) i.next();
 					parent = nodes.parentWithChild(current, false, true);
-					if (parent != null
-						&& (!temp.contains(current.doc, parent.gid)))
-						temp.add(parent);
+					if (parent != null) {
+						if(temp.contains(parent)) {
+							parent.addMatches(current.matches);
+						} else {
+							parent.addMatches(current.matches);
+							temp.add(parent);
+						}
+					}
 				}
 			}
 			hits[j][0] = (temp == null) ? new ArraySet(1) : temp;
@@ -119,7 +116,7 @@ public class FunContains extends Function {
 
 		}
 		if (t0 == null)
-			t0 = new ArraySet(1);
+			t0 = NodeSet.EMPTY_SET;
 		return new ValueNodeSet(t0);
 	}
 
@@ -151,8 +148,6 @@ public class FunContains extends Function {
 	 *@return          Description of the Return Value
 	 */
 	public DocumentSet preselect(DocumentSet in_docs) {
-		//        if ( skip_preselect )
-		//            return in_docs;
 
 		processQuery(in_docs);
 		NodeProxy p;
@@ -184,16 +179,12 @@ public class FunContains extends Function {
 		int j = 0;
 		for (Iterator i = containsExpr.iterator(); i.hasNext(); j++) {
 			terms[j] = (String) i.next();
-			//            if ( NativeTextEngine.startsWithWildcard( terms[j] ) )
-			//                skip_preselect = true;
-
 		}
 		DBBroker broker = null;
 		try {
 			broker = pool.get();
 			if (terms == null)
 				throw new RuntimeException("no search terms");
-			//in_docs = path.preselect(in_docs);
 			hits = new NodeSet[terms.length][];
 
 			for (int k = 0; k < terms.length; k++) {

@@ -66,9 +66,14 @@ public class Predicate extends PathExpr {
                     l = (NodeProxy) i.next();
                     parent =
                         context.parentWithChild( l, false, includeSelf );
-                    if ( parent != null && 
-                        ( !result.contains( parent.doc, parent.gid ) ) )
-                        result.add( parent );
+                    if ( parent != null) {
+                    	if(result.contains(parent.doc, parent.gid))
+                    		parent.addMatches(l.matches);
+                    	else {
+                    		parent.addMatches(l.matches);
+                    		result.add( parent );
+                        }
+                    }
                 }
                 LOG.debug("merging predicate values took " +
                     (System.currentTimeMillis() - start) + "ms.");

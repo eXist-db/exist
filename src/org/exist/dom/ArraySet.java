@@ -202,7 +202,7 @@ public class ArraySet extends NodeSet {
 		if (counter < length)
 			nodes[counter++] = proxy;
 		else {
-			int grow = (length < 10) ? 50 : length / 2;
+			final int grow = (length < 10) ? 50 : length >> 1;
 			NodeProxy temp[] = new NodeProxy[length + grow];
 			System.arraycopy(nodes, 0, temp, 0, length);
 			length = length + grow;
@@ -318,6 +318,13 @@ public class ArraySet extends NodeSet {
 		return nodes[pos];
 	}
 
+	public NodeProxy get(NodeProxy p) {
+		int pos = search(nodes, 0, counter - 1, p);
+		if (pos < 0)
+			return null;
+		return nodes[pos];
+	}
+
 	/**
 	 *  Description of the Method
 	 *
@@ -378,9 +385,9 @@ public class ArraySet extends NodeSet {
 	}
 
 	public ArraySet getChildren(NodeSet ancestors, int mode) {
-		if(!(ancestors instanceof ArraySet))
+		if (!(ancestors instanceof ArraySet))
 			return super.getChildren(ancestors, mode);
-		ArraySet al = (ArraySet)ancestors;
+		ArraySet al = (ArraySet) ancestors;
 		if (al.counter == 0)
 			return new ArraySet(1);
 		long start = System.currentTimeMillis();
@@ -390,12 +397,8 @@ public class ArraySet extends NodeSet {
 		NodeProxy[] dl = null;
 		if (mode == DESCENDANT) {
 			dl = new NodeProxy[counter];
-			try {
-				for (int i = 0; i < counter; i++)
-					dl[i] = (NodeProxy)nodes[i].clone();
-			} catch(CloneNotSupportedException e) {
-				LOG.error(e);
-			}
+			for (int i = 0; i < counter; i++)
+				dl[i] = new NodeProxy(nodes[i]);
 		} else
 			dl = nodes;
 
@@ -409,9 +412,9 @@ public class ArraySet extends NodeSet {
 				dx++;
 				continue;
 			}
-//            System.out.println(dl[dx].doc.getDocId() + ":" + dl[dx].gid + 
-//                        " = " + al.nodes[ax].doc.getDocId() + ':' + 
-//                        al.nodes[ax].gid);
+			//            System.out.println(dl[dx].doc.getDocId() + ":" + dl[dx].gid + 
+			//                        " = " + al.nodes[ax].doc.getDocId() + ':' + 
+			//                        al.nodes[ax].gid);
 			cmp = dl[dx].compareTo(al.nodes[ax]);
 			if (cmp > 0) {
 				if (ax < al.counter - 1)
@@ -486,8 +489,8 @@ public class ArraySet extends NodeSet {
 	 *@return       The descendants value
 	 */
 	public ArraySet getDescendants(ArraySet al, int mode) {
-        if(al.counter == 0 || counter == 0)
-            return new ArraySet(1);
+		if (al.counter == 0 || counter == 0)
+			return new ArraySet(1);
 		long start = System.currentTimeMillis();
 		al.sort();
 		sort();
@@ -495,11 +498,8 @@ public class ArraySet extends NodeSet {
 		NodeProxy[] dl = null;
 		if (mode == DESCENDANT) {
 			dl = new NodeProxy[counter];
-			try {
 				for (int i = 0; i < counter; i++)
-					dl[i] = (NodeProxy)nodes[i].clone();
-			} catch(CloneNotSupportedException e) {
-			}
+					dl[i] = new NodeProxy(nodes[i]);
 		} else
 			dl = nodes;
 
@@ -520,7 +520,7 @@ public class ArraySet extends NodeSet {
 					dx++;
 					continue;
 				}
-//				System.out.println(dl[dx].gid + " = " + al.nodes[ax].gid);
+				//				System.out.println(dl[dx].gid + " = " + al.nodes[ax].gid);
 				cmp = dl[dx].compareTo(al.nodes[ax]);
 				if (cmp > 0) {
 					if (ax < al.counter - 1)
@@ -542,9 +542,12 @@ public class ArraySet extends NodeSet {
 					dx++;
 				}
 			}
-		} while(more);
-		LOG.debug("getDescendants took " + 
-			(System.currentTimeMillis() - start) + "ms.");
+		}
+		while (more);
+		LOG.debug(
+			"getDescendants took "
+				+ (System.currentTimeMillis() - start)
+				+ "ms.");
 		return result;
 	}
 
@@ -615,32 +618,6 @@ public class ArraySet extends NodeSet {
 				/ doc.getTreeLevelOrder(level)
 				+ doc.getLevelStartPoint(level - 1);
 		return pid == parent;
-	}
-
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  other  Description of the Parameter
-	 *@return        Description of the Return Value
-	 */
-	public NodeSet intersection(NodeSet other) {
-		long start = System.currentTimeMillis();
-		NodeIDSet r = new NodeIDSet();
-		NodeProxy l;
-		for (Iterator i = iterator(); i.hasNext();) {
-			l = (NodeProxy) i.next();
-			if (other.contains(l))
-				r.add(l);
-
-		}
-		for (Iterator i = other.iterator(); i.hasNext();) {
-			l = (NodeProxy) i.next();
-			if (contains(l) && (!r.contains(l)))
-				r.add(l);
-
-		}
-		LOG.debug("intersection took " + (System.currentTimeMillis() - start));
-		return r;
 	}
 
 	/**

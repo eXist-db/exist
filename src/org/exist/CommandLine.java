@@ -512,7 +512,7 @@ public class CommandLine {
                             System.out.println( "first pass: scanning document to determine tree structure ..." );
                             parser.scan( src, docName );
                             System.out.println( "second pass: storing nodes ..." );
-                            DocumentImpl doc = parser.store();
+                            DocumentImpl doc = parser.store(src);
                             broker.flush();
                             if ( sync )
                                 broker.sync();
@@ -552,7 +552,7 @@ public class CommandLine {
                     System.out.println( "first pass: scanning document to determine tree structure ..." );
                     parser.scan( src, docName );
                     System.out.println( "second pass: storing nodes ..." );
-                    DocumentImpl doc = parser.store();
+                    DocumentImpl doc = parser.store(src);
                     broker.flush();
                     System.out.println();
                     System.out.println( "\nparsing took " +

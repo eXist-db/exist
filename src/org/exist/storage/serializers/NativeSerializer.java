@@ -23,6 +23,8 @@
 package org.exist.storage.serializers;
 
 import java.util.*;
+
+import org.apache.oro.text.perl.Perl5Util;
 import org.dbxml.core.data.Value;
 import org.exist.dom.*;
 import org.exist.storage.DBBroker;
@@ -41,7 +43,8 @@ import org.xml.sax.helpers.*;
 public class NativeSerializer extends Serializer {
 
 	private boolean showId = false;
-
+	private Perl5Util reutil = new Perl5Util();
+	
 	/**
 	 *  Constructor for the NativeSerializer object
 	 *
@@ -80,7 +83,7 @@ public class NativeSerializer extends Serializer {
 		contentHandler.startDocument();
 		contentHandler.startPrefixMapping(
 			"exist",
-			"http://exist.sourceforge.net/NS/exist");
+			EXIST_NS);
 		AttributesImpl attribs = new AttributesImpl();
 		attribs.addAttribute(
 			"",
@@ -97,7 +100,7 @@ public class NativeSerializer extends Serializer {
 				Long.toString(queryTime));
 
 		contentHandler.startElement(
-			"http://exist.sourceforge.net/NS/exist",
+			EXIST_NS,
 			"result",
 			"exist:result",
 			attribs);
@@ -114,7 +117,7 @@ public class NativeSerializer extends Serializer {
 			serializeToSAX(domIter, p.doc, p.gid);
 		}
 		contentHandler.endElement(
-			"http://exist.sourceforge.net/NS/exist",
+			EXIST_NS,
 			"result",
 			"exist:result");
 		contentHandler.endDocument();
@@ -137,22 +140,24 @@ public class NativeSerializer extends Serializer {
 
 		contentHandler.startPrefixMapping(
 			"exist",
-			"http://exist.sourceforge.net/NS/exist");
+			EXIST_NS);
 		// iterate through children
 		for (int i = 0; i < children.getLength(); i++) {
-			final NodeImpl n =(NodeImpl) children.item(i);
-            final NodeProxy p =
-                new NodeProxy((DocumentImpl)n.getOwnerDocument(), 
-                    n.getGID(), n.getInternalAddress());
-			Iterator domIter =
-				broker.getDOMIterator(p);
-            domIter.next();
+			final NodeImpl n = (NodeImpl) children.item(i);
+			final NodeProxy p =
+				new NodeProxy(
+					(DocumentImpl) n.getOwnerDocument(),
+					n.getGID(),
+					n.getInternalAddress());
+			Iterator domIter = broker.getDOMIterator(p);
+			domIter.next();
 			serializeToSAX(
 				n,
 				domIter,
 				(DocumentImpl) n.getOwnerDocument(),
 				n.getGID(),
-				false);
+				false,
+				null);
 		}
 		LOG.debug(
 			"serializing document "
@@ -204,9 +209,9 @@ public class NativeSerializer extends Serializer {
 
 		contentHandler.startPrefixMapping(
 			"exist",
-			"http://exist.sourceforge.net/NS/exist");
+			EXIST_NS);
 		Iterator domIter = broker.getDOMIterator(p);
-		serializeToSAX(null, domIter, p.doc, p.getGID(), true);
+		serializeToSAX(null, domIter, p.doc, p.gid, true, p.matches);
 		contentHandler.endPrefixMapping("exist");
 		if (generateDocEvents)
 			contentHandler.endDocument();
@@ -223,7 +228,7 @@ public class NativeSerializer extends Serializer {
 	 */
 	protected void serializeToSAX(Iterator iter, DocumentImpl doc, long gid)
 		throws SAXException {
-		serializeToSAX(null, iter, doc, gid, true);
+		serializeToSAX(null, iter, doc, gid, true, null);
 	}
 
 	/**
@@ -241,9 +246,10 @@ public class NativeSerializer extends Serializer {
 		Iterator iter,
 		DocumentImpl doc,
 		long gid,
-		boolean first)
+		boolean first,
+		Match matches[])
 		throws SAXException {
-		serializeToSAX(node, iter, doc, gid, first, new ArrayList());
+		serializeToSAX(node, iter, doc, gid, first, new ArrayList(), matches);
 	}
 
 	/**
@@ -263,7 +269,8 @@ public class NativeSerializer extends Serializer {
 		DocumentImpl doc,
 		long gid,
 		boolean first,
-		ArrayList prefixes)
+		ArrayList prefixes,
+		Match matches[])
 		throws SAXException {
 		setDocument(doc);
 		if (node == null) {
@@ -276,6 +283,7 @@ public class NativeSerializer extends Serializer {
 		if (node == null)
 			return;
 		char ch[];
+		String cdata;
 		switch (node.getNodeType()) {
 			case Node.ELEMENT_NODE :
 				int children = node.getChildCount();
@@ -285,35 +293,36 @@ public class NativeSerializer extends Serializer {
 				AttributesImpl attributes = new AttributesImpl();
 				if (first || showId) {
 					attributes.addAttribute(
-						"http://exist.sourceforge.net/NS/exist",
+						EXIST_NS,
 						"id",
 						"exist:id",
 						"CDATA",
 						Long.toString(gid));
-                }
-                if (first) {
+				}
+				if (first) {
 					attributes.addAttribute(
-						"http://exist.sourceforge.net/NS/exist",
+						EXIST_NS,
 						"source",
 						"exist:source",
 						"CDATA",
 						doc.getFileName());
 				}
-				if(children > 0)
-                	gid = XMLUtil.getFirstChildId(doc, gid);
+				if (children > 0)
+					gid = XMLUtil.getFirstChildId(doc, gid);
 				while (count < children) {
 					Value value = (Value) iter.next();
 					child = NodeImpl.deserialize(value.getData(), doc);
 					child.setOwnerDocument(doc);
 					if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
+						cdata = processText(((AttrImpl) child).getValue(), gid, matches);
 						attributes.addAttribute(
 							child.getNamespaceURI(),
 							child.getLocalName(),
 							child.getNodeName(),
 							"CDATA",
-							((AttrImpl) child).getValue());
+							cdata);
 						count++;
-                        gid++;
+						gid++;
 					} else
 						break;
 				}
@@ -352,7 +361,14 @@ public class NativeSerializer extends Serializer {
 					node.getNodeName(),
 					attributes);
 				while (count < children) {
-					serializeToSAX(child, iter, doc, gid++, false, prefixes);
+					serializeToSAX(
+						child,
+						iter,
+						doc,
+						gid++,
+						false,
+						prefixes,
+						matches);
 					if (++count < children) {
 						Value value = (Value) iter.next();
 						child = NodeImpl.deserialize(value.getData(), doc);
@@ -379,68 +395,76 @@ public class NativeSerializer extends Serializer {
 				if (first && createContainerElements) {
 					AttributesImpl attribs = new AttributesImpl();
 					attribs.addAttribute(
-						"http://exist.sourceforge.net/NS/exist",
+						EXIST_NS,
 						"id",
 						"exist:id",
 						"CDATA",
 						Long.toString(gid));
 					attribs.addAttribute(
-						"http://exist.sourceforge.net/NS/exist",
+						EXIST_NS,
 						"source",
 						"exist:source",
 						"CDATA",
 						doc.getFileName());
 					contentHandler.startElement(
-						"http://exist.sourceforge.net/NS/exist",
+						EXIST_NS,
 						"text",
 						"exist:text",
 						attribs);
 				}
-				String cdata = ((Text) node).getData();
-				ch = new char[cdata.length()];
-				cdata.getChars(0, ch.length, ch, 0);
-				contentHandler.characters(ch, 0, ch.length);
+				if(highlightMatches)
+					cdata = processText(((Text) node).getData(), gid, matches);
+				else
+					cdata = ((Text)node).getData();
+				if(cdata.indexOf('|') > -1)
+					scanText(cdata);
+				else {
+					ch = new char[cdata.length()];
+					cdata.getChars(0, cdata.length(), ch, 0);
+					contentHandler.characters(ch, 0, ch.length);
+				}
 				if (first && createContainerElements)
 					contentHandler.endElement(
-						"http://exist.sourceforge.net/NS/exist",
+						EXIST_NS,
 						"text",
 						"exist:text");
 
 				break;
-			case Node.ATTRIBUTE_NODE :
+			case Node.ATTRIBUTE_NODE : 
 				if (first && createContainerElements) {
 					AttributesImpl attribs = new AttributesImpl();
 					attribs.addAttribute(
-						"http://exist.sourceforge.net/NS/exist",
+						EXIST_NS,
 						"id",
 						"exist:id",
 						"CDATA",
 						Long.toString(gid));
 					attribs.addAttribute(
-						"http://exist.sourceforge.net/NS/exist",
+						EXIST_NS,
 						"source",
 						"exist:source",
 						"CDATA",
 						doc.getFileName());
+					cdata = processText(((AttrImpl) node).getValue(), gid, matches);
 					attribs.addAttribute(
 						node.getNamespaceURI(),
 						node.getLocalName(),
 						node.getNodeName(),
 						"CDATA",
-						((AttrImpl) node).getValue());
+						cdata);
 					contentHandler.startElement(
-						"http://exist.sourceforge.net/NS/exist",
+						EXIST_NS,
 						"attribute",
 						"exist:attribute",
 						attribs);
 					contentHandler.endElement(
-						"http://exist.sourceforge.net/NS/exist",
+						EXIST_NS,
 						"attribute",
 						"exist:attribute");
 				} else {
-					String aval = ((AttrImpl) node).getValue();
-					ch = new char[aval.length()];
-					aval.getChars(0, ch.length, ch, 0);
+					cdata = processText(((AttrImpl) node).getValue(), gid, matches);
+					ch = new char[cdata.length()];
+					cdata.getChars(0, ch.length, ch, 0);
 					contentHandler.characters(ch, 0, ch.length);
 				}
 				break;
@@ -458,5 +482,49 @@ public class NativeSerializer extends Serializer {
 				}
 				break;
 		}
+	}
+
+	private final String processText(String data, long gid, Match matches[]) {
+		if(matches == null)
+			return data;
+		String expr;
+		for (int i = 0; i < matches.length; i++)
+			if (matches[i].getNodeId() == gid) {
+				expr = "s/(" + matches[i].getMatchingTerm() +
+					")/||$1||/gi"; 
+				data = reutil.substitute(expr, data);
+			}
+		return data;
+	}
+	
+	private final void scanText(String data) throws SAXException {
+		AttributesImpl atts = new AttributesImpl();
+		int p0 = 0, p1;
+		boolean inTerm = false;
+		while(p0 < data.length()) {
+			p1 = data.indexOf("||", p0);
+			if(p1 < 0) {
+				outputText(data.substring(p0));
+				break;
+			}
+			if(inTerm) {
+				contentHandler.startElement(EXIST_NS,
+					"match", "exist:match", atts);
+				outputText(data.substring(p0, p1));
+				contentHandler.endElement(EXIST_NS,
+					"match", "exist:match");
+				inTerm = false;
+			} else {
+				inTerm = true;
+				outputText(data.substring(p0, p1));
+			}
+			p0 = p1 + 2;
+		}
+	}
+	
+	private final void outputText(String data) throws SAXException {
+		final char ch[] = new char[data.length()];
+		data.getChars(0, ch.length, ch, 0);
+		contentHandler.characters(ch, 0, ch.length);
 	}
 }
