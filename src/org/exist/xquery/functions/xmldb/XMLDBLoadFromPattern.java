@@ -97,6 +97,7 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
 	protected Sequence evalWithCollection(Collection collection, Sequence[] args,
 			Sequence contextSequence) throws XPathException {
 		File baseDir = new File(args[1].getStringValue());
+		LOG.debug("Loading files from directory: " + baseDir);
 		Sequence patterns = args[2];
 		String resourceType = "XMLResource";
 		if(getSignature().getArgumentCount() == 4) {

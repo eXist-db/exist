@@ -83,9 +83,12 @@ public class EXistServlet extends HttpServlet {
 					confFile = "conf.xml";
 				dbHome = (dbHome == null) ? config.getServletContext().getRealPath(
 						".") : config.getServletContext().getRealPath(dbHome);
-				this.log("DatabaseAdminServlet: exist.home=" + dbHome);
+				this.log("EXistServlet: exist.home=" + dbHome);
+				System.setProperty("exist.home", dbHome);
+				
 				File f = new File(dbHome + File.separator + confFile);
 				this.log("reading configuration from " + f.getAbsolutePath());
+
 				if (!f.canRead())
 					throw new ServletException("configuration file " + confFile
 							+ " not found or not readable");

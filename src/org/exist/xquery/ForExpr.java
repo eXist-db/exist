@@ -86,6 +86,7 @@ public class ForExpr extends BindingExpression {
 		
 		// Evaluate the "in" expression
 		Sequence in = inputSequence.eval(null, null);
+		clearContext(in);
 		
 		// Assign the whole input sequence to the bound variable.
 		// This is required if we process the "where" or "order by" clause
@@ -232,23 +233,5 @@ public class ForExpr extends BindingExpression {
 	 */
 	public int returnsType() {
 		return Type.ITEM;
-	}
-	
-	public final static void setContext(Sequence seq) {
-		Item next;
-		for (SequenceIterator i = seq.unorderedIterator(); i.hasNext();) {
-			next = i.nextItem();
-			if (next instanceof NodeProxy)
-				 ((NodeProxy) next).addContextNode((NodeProxy) next);
-		}
-	}
-	
-	public final static void clearContext(Sequence seq) {
-		Item next;
-		for (SequenceIterator i = seq.unorderedIterator(); i.hasNext();) {
-			next = i.nextItem();
-			if (next instanceof NodeProxy)
-				 ((NodeProxy)next).clearContext();
-		}
 	}
 }

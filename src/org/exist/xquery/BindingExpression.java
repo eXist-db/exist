@@ -222,4 +222,22 @@ public abstract class BindingExpression extends AbstractExpression {
 		    }
 		}
 	}
+	
+	protected final static void setContext(Sequence seq) {
+		Item next;
+		for (SequenceIterator i = seq.unorderedIterator(); i.hasNext();) {
+			next = i.nextItem();
+			if (next instanceof NodeProxy)
+				 ((NodeProxy) next).addContextNode((NodeProxy) next);
+		}
+	}
+	
+	protected final static void clearContext(Sequence seq) {
+		Item next;
+		for (SequenceIterator i = seq.unorderedIterator(); i.hasNext();) {
+			next = i.nextItem();
+			if (next instanceof NodeProxy)
+				 ((NodeProxy)next).clearContext();
+		}
+	}
 }
