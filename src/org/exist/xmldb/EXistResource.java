@@ -25,6 +25,7 @@ package org.exist.xmldb;
 import java.util.Date;
 
 import org.exist.security.Permission;
+import org.xml.sax.ext.LexicalHandler;
 import org.xmldb.api.base.XMLDBException;
 
 /**
@@ -43,5 +44,7 @@ public interface EXistResource {
 	Permission getPermissions() throws XMLDBException;
 	
 	int getContentLength() throws XMLDBException;
+	
+	void setLexicalHandler(LexicalHandler handler);
 
 }

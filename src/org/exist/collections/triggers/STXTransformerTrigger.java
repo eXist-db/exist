@@ -85,7 +85,7 @@ public class STXTransformerTrigger extends FilteringTrigger {
 					throw new CollectionConfigurationException("stylesheet " + stylesheet + " not found in database");
 				Serializer serializer = broker.getSerializer();
 				TemplatesHandler thandler = factory.newTemplatesHandler();
-				serializer.setContentHandler(thandler);
+				serializer.setSAXHandlers(thandler, null);
 				serializer.toSAX(doc);
 				template = thandler.getTemplates();
 				handler = factory.newTransformerHandler(template);

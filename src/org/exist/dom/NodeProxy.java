@@ -645,7 +645,7 @@ public class NodeProxy extends AbstractNodeSet implements NodeValue, Comparable 
 		Serializer serializer = broker.getSerializer();
 		serializer.reset();
 		serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
-		serializer.setContentHandler(handler);
+		serializer.setSAXHandlers(handler, null);
 		serializer.toSAX(this);
 	}
 

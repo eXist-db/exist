@@ -530,7 +530,7 @@ public class NodeImpl implements Node, NodeValue, QNameable {
 		    Serializer serializer = broker.getSerializer();
 		    serializer.reset();
 			serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
-			serializer.setContentHandler(handler);
+			serializer.setSAXHandlers(handler, null);
 			streamer = DOMStreamerPool.getInstance().borrowDOMStreamer(serializer);
 			streamer.setContentHandler(handler);
 			streamer.serialize(this, false);

@@ -32,6 +32,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.ext.LexicalHandler;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
@@ -47,7 +48,8 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	protected long id = -1;
 	
 	protected Properties outputProperties = null;
-
+	protected LexicalHandler lexicalHandler = null;
+	
 	// those are the different types of content this resource
 	// may have to deal with
 	protected String content = null;
@@ -193,6 +195,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 				DOMStreamer streamer = DOMStreamerPool.getInstance()
 						.borrowDOMStreamer();
 				streamer.setContentHandler(handler);
+				streamer.setLexicalHandler(lexicalHandler);
 				streamer.serialize(root, option.equalsIgnoreCase("true"));
 				DOMStreamerPool.getInstance().returnDOMStreamer(streamer);
 			} catch (Exception e) {
@@ -222,8 +225,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 				Serializer serializer = broker.getSerializer();
 				serializer.setUser(user);
 				serializer.setProperties(getProperties());
-				serializer.setContentHandler(handler);
-
+				serializer.setSAXHandlers(handler, lexicalHandler);
 				if (root != null)
 					serializer.toSAX((NodeValue) root);
 				else {
@@ -406,6 +408,13 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
         } finally {
 	        pool.release(broker);
 	    }
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.EXistResource#setLexicalHandler(org.xml.sax.ext.LexicalHandler)
+	 */
+	public void setLexicalHandler(LexicalHandler handler) {
+		lexicalHandler = handler;
 	}
 	
 	protected void setProperties(Properties properties) {

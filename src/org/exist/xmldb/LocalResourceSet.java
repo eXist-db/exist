@@ -100,7 +100,7 @@ public class LocalResourceSet implements ResourceSet {
 			collection.properties.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
 			serializer.setProperties(outputProperties);
 			serializer.setUser(user);
-			serializer.setContentHandler(handler);
+			serializer.setSAXHandlers(handler, handler);
 
 			//	serialize results
 			handler.startDocument();

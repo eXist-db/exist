@@ -28,8 +28,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -575,8 +573,7 @@ public class RESTServer {
 			sax.setWriter(writer);
 			sax.setOutputProperties(outputProperties);
 			serializer.setProperties(outputProperties);
-			serializer.setLexicalHandler(sax);
-			serializer.setContentHandler(sax);
+			serializer.setSAXHandlers(sax, sax);
 			
 			AttributesImpl attrs = new AttributesImpl();
 			attrs.addAttribute("", "hits", "hits", "CDATA", Integer.toString(rlen));

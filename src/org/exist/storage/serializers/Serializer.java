@@ -380,8 +380,8 @@ public abstract class Serializer implements XMLReader {
 	 *
 	 *@param  contentHandler  The new contentHandler value
 	 */
-	public void setContentHandler(ContentHandler handler) {
-		ReceiverToSAX toSAX = new ReceiverToSAX(handler);
+	public void setSAXHandlers(ContentHandler contentHandler, LexicalHandler lexicalHandler) {
+		ReceiverToSAX toSAX = new ReceiverToSAX(contentHandler);
 		toSAX.setLexicalHandler(lexicalHandler);
 		if (getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes")
 			.equals("yes")) {
@@ -391,6 +391,13 @@ public abstract class Serializer implements XMLReader {
 			receiver = toSAX;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.xml.sax.XMLReader#setContentHandler(org.xml.sax.ContentHandler)
+	 */
+	public void setContentHandler(ContentHandler handler) {
+		setSAXHandlers(handler, null);
+	}
+	
 	/**
 	 * Required by interface XMLReader. Always returns null.
 	 * 
@@ -432,15 +439,6 @@ public abstract class Serializer implements XMLReader {
 			|| name.equals("http://xml.org/sax/features/namespace-prefixes"))
 			throw new SAXNotSupportedException(name);
 		throw new SAXNotRecognizedException(name);
-	}
-
-	/**
-	 *  Sets the lexicalHandler attribute of the Serializer object
-	 *
-	 *@param  lexicalHandler  The new lexicalHandler value
-	 */
-	public void setLexicalHandler(LexicalHandler lexicalHandler) {
-		this.lexicalHandler = lexicalHandler;
 	}
 
 	protected StringWriter setPrettyPrinter(boolean xmlDecl) {
