@@ -60,12 +60,14 @@ public class ValueComparison extends GeneralComparison {
 		super(context, left, right, relation);
 	}
 
-	protected BooleanValue genericCompare(
+	protected Sequence genericCompare(
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
 		Sequence ls = getLeft().eval(contextSequence, contextItem);
 		Sequence rs = getRight().eval(contextSequence, contextItem);
+		if(ls.getLength() == 0 || rs.getLength() == 0)
+			return Sequence.EMPTY_SEQUENCE;
 		AtomicValue lv, rv;
 		if (ls.getLength() == 1 && rs.getLength() == 1) {
 			lv = ls.itemAt(0).atomize();

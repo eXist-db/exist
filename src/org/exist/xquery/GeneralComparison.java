@@ -158,7 +158,7 @@ public class GeneralComparison extends BinaryOp {
 		return genericCompare(contextSequence, contextItem);
 	}
 
-	protected BooleanValue genericCompare(
+	protected Sequence genericCompare(
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
