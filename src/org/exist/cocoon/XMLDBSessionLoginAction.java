@@ -1,20 +1,22 @@
 
 package org.exist.cocoon;
 
-import org.apache.cocoon.environment.Request;
-import org.apache.cocoon.environment.Redirector;
-import org.apache.cocoon.environment.SourceResolver;
-import org.apache.cocoon.environment.ObjectModelHelper;
-import org.apache.cocoon.environment.Session;
-import org.apache.cocoon.acting.ServiceableAction;
-import org.apache.avalon.framework.parameters.Parameters;
-import org.apache.avalon.framework.thread.ThreadSafe;
-
 import java.util.HashMap;
 import java.util.Map;
 
-import org.xmldb.api.*;
-import org.xmldb.api.base.*;
+import org.apache.avalon.framework.parameters.Parameters;
+import org.apache.avalon.framework.thread.ThreadSafe;
+import org.apache.cocoon.acting.ServiceableAction;
+import org.apache.cocoon.environment.ObjectModelHelper;
+import org.apache.cocoon.environment.Redirector;
+import org.apache.cocoon.environment.Request;
+import org.apache.cocoon.environment.Session;
+import org.apache.cocoon.environment.SourceResolver;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.Item;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  *  Cocoon action to authenticate a user against the database.
@@ -80,13 +82,26 @@ public class XMLDBSessionLoginAction extends ServiceableAction
         }
         else {
             // retrieve user info from session
-            user = (String) session.getAttribute( "user" );
-            passwd = (String) session.getAttribute( "password" );
+        	user = getSessionAttribute(session, "user");
+        	passwd = getSessionAttribute(session, "password");
         }
         // return data to the sitemap
         map.put( "user", user );
         map.put( "password", passwd );
         return map;
     }
+    
+    private String getSessionAttribute(Session session, String attribute) {
+		Object obj = session.getAttribute(attribute);
+		if(obj == null)
+			return null;
+		if(obj instanceof Item)
+			try {
+				return ((Item)obj).getStringValue();
+			} catch (XPathException e) {
+				return null;
+			}
+		return obj.toString();
+	}
 }
 
