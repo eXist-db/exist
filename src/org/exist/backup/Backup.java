@@ -308,7 +308,13 @@ public class Backup {
 					"CDATA",
 					encode( ""+resources[i] )
 					 );
-
+			attr.addAttribute(
+					NS,
+					"mimetype",
+					"mimetype",
+					"CDATA",
+					encode( ((EXistResource)resource).getMimeType())
+					 );
 			
 			serializer.startElement(NS, "resource", "resource", attr);
 			serializer.endElement(NS, "resource", "resource");
