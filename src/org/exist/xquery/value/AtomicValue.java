@@ -237,6 +237,30 @@ public abstract class AtomicValue implements Item, Sequence {
 	public void setSelfAsContext() {
 	}
 	
+	public final static AtomicValue read(byte[] data) {
+	    int type = data[2];
+	    switch(type) {
+	        case Type.STRING:
+	            StringValue strval = new StringValue("");
+	        	strval.deserialize(data);
+	        	return strval;
+	        case Type.INTEGER:
+	            IntegerValue intval = new IntegerValue(0);
+	        	intval.deserialize(data);
+	        	return intval;
+	        case Type.FLOAT:
+	            FloatValue floatval = new FloatValue(0);
+	        	floatval.deserialize(data);
+	        	return floatval;
+	        case Type.DOUBLE:
+	            DoubleValue dval = new DoubleValue(0);
+	        	dval.deserialize(data);
+	        	return dval;
+	        default:
+	            return null;
+	    }
+	}
+	
 	private final static class EmptyValue extends AtomicValue {
 
 		/* (non-Javadoc)

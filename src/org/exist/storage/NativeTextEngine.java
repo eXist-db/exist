@@ -305,7 +305,6 @@ public class NativeTextEngine extends TextSearchEngine {
 		int section;
 		int sizeHint = -1;
 		long last;
-		long delta;
 		int freq = 1;
 		Collection collection;
 		short collectionId;

@@ -213,13 +213,6 @@ public class ArraySet extends AbstractNodeSet {
 
 	}
 
-	public boolean hasIndex() {
-		for (int i = 0; i < counter; i++)
-			if (!nodes[i].hasIndex())
-				return false;
-		return true;
-	}
-
 	public boolean contains(DocumentImpl doc, long nodeId) {
 		sort();
 		NodeProxy p = new NodeProxy(doc, nodeId);

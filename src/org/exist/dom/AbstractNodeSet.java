@@ -43,14 +43,10 @@ import org.w3c.dom.Node;
 public abstract class AbstractNodeSet extends AbstractSequence implements NodeSet {
 	
     protected final static Logger LOG = Logger.getLogger(AbstractNodeSet.class);
-    
-    private final static int UNKNOWN = -1;
-	private final static int NOT_INDEXED = 0;
-	private final static int ALL_NODES_IN_INDEX = 1;
 	
 	// indicates if the nodes in this set and their descendant nodes
 	// have been fulltext indexed
-	private int hasIndex = UNKNOWN;
+	private int indexType = Type.ITEM;
 	
 	private boolean isCached = false;
 	
@@ -686,25 +682,30 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	}
 	
 	/**
-	 * Returns true if all nodes in this node set and their descendants
-	 * are included in the fulltext index. This information is required
-	 * to determine if comparison operators can use the
-	 * fulltext index to speed up equality comparisons.
+	 * If all nodes in this set have an index, returns the common
+	 * supertype used to build the index, e.g. xs:integer or xs:string.
+	 * If the nodes have different index types or no node has been indexed,
+	 * returns {@link Type#ITEM}.
 	 * 
 	 * @see org.exist.xquery.GeneralComparison
 	 * @see org.exist.xquery.ValueComparison
 	 * @return
 	 */
-	public boolean hasIndex() {
-		if(hasIndex == UNKNOWN) {
-			hasIndex = ALL_NODES_IN_INDEX;
+	public int getIndexType() {
+		if(indexType == Type.ITEM) {
+		    int type;
+		    NodeProxy p;
 			for (Iterator i = iterator(); i.hasNext();) {
-				if (!((NodeProxy) i.next()).hasIndex()) {
-					hasIndex = NOT_INDEXED;
-					break;
+			    p = (NodeProxy) i.next();
+			    type = p.getIndexType();
+				if(indexType == Type.ITEM)
+				    indexType = type;
+				else if(indexType != type) {
+				    indexType = Type.ITEM;
+				    break;
 				}
 			}
 		}
-		return hasIndex == ALL_NODES_IN_INDEX;
+		return indexType;
 	}
 }

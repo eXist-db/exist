@@ -25,12 +25,14 @@ package org.exist.xquery.value;
 
 import java.text.Collator;
 
+import org.exist.storage.Indexable;
+import org.exist.util.ByteConversion;
 import org.exist.xquery.XPathException;
 
 /**
  * @author wolf
  */
-public class FloatValue extends NumericValue {
+public class FloatValue extends NumericValue implements Indexable {
 
 	public final static FloatValue NaN = new FloatValue(Float.NaN);
 	public final static FloatValue ZERO = new FloatValue(0.0E0f);
@@ -276,4 +278,34 @@ public class FloatValue extends NumericValue {
 				+ target.getName());
 	}
 
+	/* (non-Javadoc)
+     * @see org.exist.storage.Indexable#serialize(short)
+     */
+    public byte[] serialize(short collectionId) {
+        final byte[] data = new byte[7];
+        ByteConversion.shortToByte(collectionId, data, 0);
+        data[2] = (byte) Type.FLOAT;
+        final int bits = Float.floatToRawIntBits(value);
+        ByteConversion.intToByte(bits, data, 3);
+        return data;
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.storage.Indexable#deserialize(byte[])
+     */
+    public void deserialize(byte[] data) {
+        final int bits = ByteConversion.byteToInt(data, 3);
+        value = Float.intBitsToFloat(bits);
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    public int compareTo(Object o) {
+        final AtomicValue other = (AtomicValue)o;
+        if(Type.subTypeOf(other.getType(), Type.FLOAT))
+            return Float.compare(value, ((FloatValue)other).value);
+        else
+            return getType() > other.getType() ? 1 : -1;
+    }
 }

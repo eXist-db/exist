@@ -23,9 +23,11 @@ package org.exist.xquery.value;
 import java.math.BigDecimal;
 import java.text.Collator;
 
+import org.exist.storage.Indexable;
+import org.exist.util.ByteConversion;
 import org.exist.xquery.XPathException;
 
-public class DoubleValue extends NumericValue {
+public class DoubleValue extends NumericValue implements Indexable {
 
 	public final static DoubleValue NaN = new DoubleValue(Double.NaN);
 	public final static DoubleValue ZERO = new DoubleValue(0.0E0);
@@ -372,4 +374,35 @@ public class DoubleValue extends NumericValue {
 				+ " to Java object of type "
 				+ target.getName());
 	}
+
+    /* (non-Javadoc)
+     * @see org.exist.storage.Indexable#serialize(short)
+     */
+    public byte[] serialize(short collectionId) {
+        final byte[] data = new byte[11];
+        ByteConversion.shortToByte(collectionId, data, 0);
+        data[2] = (byte) Type.DOUBLE;
+        final long bits = Double.doubleToRawLongBits(value);
+        ByteConversion.longToByte(bits, data, 3);
+        return data;
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.storage.Indexable#deserialize(byte[])
+     */
+    public void deserialize(byte[] data) {
+        final long bits = ByteConversion.byteToLong(data, 3);
+        value = Double.longBitsToDouble(bits);
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    public int compareTo(Object o) {
+        final AtomicValue other = (AtomicValue)o;
+        if(Type.subTypeOf(other.getType(), Type.DOUBLE))
+            return Double.compare(value, ((DoubleValue)other).value);
+        else
+            return getType() > other.getType() ? 1 : -1;
+    }
 }

@@ -390,6 +390,8 @@ public abstract class DBBroker extends Observable {
 	 */
 	public abstract TextSearchEngine getTextEngine();
 
+	public abstract NativeValueIndex getValueIndex();
+	
 	/**
 	 *  Is string comparison case sensitive?
 	 *

@@ -23,7 +23,7 @@ package org.exist.storage;
 
 /**
  * This interface should be implemented by all basic types
- * that can be used as keys in a typed value index.
+ * to be used as keys in a value index.
  * 
  * @see org.exist.storage.NativeValueIndex
  * @author wolf
@@ -41,4 +41,6 @@ public interface Indexable extends Comparable {
      * @return
      */
     public byte[] serialize(short collectionId);
+    
+    public void deserialize(byte[] data);
 }

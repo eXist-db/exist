@@ -38,6 +38,7 @@ public class AllTests {
 		TestSuite suite = new TestSuite("Test for org.exist.xquery.test");
 		//$JUnit-BEGIN$
 		suite.addTestSuite(XPathQueryTest.class);
+		suite.addTestSuite(ValueIndexTest.class);
 		suite.addTestSuite(LexerTest.class); // jmv: Note: LexerTest needs /db/test created by XPathQueryTest
 		suite.addTestSuite(DeepEqualTest.class);
 		suite.addTestSuite(SeqOpTest.class);

@@ -22,10 +22,12 @@ package org.exist.xquery.value;
 
 import java.text.Collator;
 
+import org.exist.storage.Indexable;
+import org.exist.util.ByteConversion;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
-public class BooleanValue extends AtomicValue {
+public class BooleanValue extends AtomicValue implements Indexable {
 
 	public final static BooleanValue TRUE = new BooleanValue(true);
 	public final static BooleanValue FALSE = new BooleanValue(false);
@@ -175,4 +177,38 @@ public class BooleanValue extends AtomicValue {
 		throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) +
 			" to Java object of type " + target.getName());
 	}
+
+    /* (non-Javadoc)
+     * @see org.exist.storage.Indexable#serialize(short)
+     */
+    public byte[] serialize(short collectionId) {
+        byte[] data = new byte[4];
+        ByteConversion.shortToByte(collectionId, data, 0);
+        data[2] = Type.BOOLEAN;
+        data[3] = (byte)(value ? 1 : 0);
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.storage.Indexable#deserialize(byte[])
+     */
+    public void deserialize(byte[] data) {
+        value = data[3] == 0 ? false : true;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    public int compareTo(Object o) {
+        final AtomicValue other = (AtomicValue)o;
+        if(Type.subTypeOf(other.getType(), Type.BOOLEAN)) {
+            if(value == ((BooleanValue)other).value)
+                return 0;
+            else if(value)
+                return 1;
+            else
+                return -1;
+        } else
+            return getType() > other.getType() ? 1 : -1;
+    }
 }

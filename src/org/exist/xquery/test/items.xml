@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<items>
+    <item>
+        <itemno>1</itemno>
+        <name>Red Bicycle</name>
+        <price>645.5</price>
+        <stock>15</stock>
+    </item>
+    <item>
+        <itemno>2</itemno>
+        <name>Racing Bicycle</name>
+        <price>1024.99</price>
+        <stock>8</stock>
+    </item>
+    <item>
+        <itemno>3</itemno>
+        <name>Mountainbike</name>
+        <price>453.00</price>
+        <stock>29</stock>
+    </item>
+    <item>
+        <itemno>4</itemno>
+        <name>Snowboard</name>
+        <price>230.10</price>
+        <stock>5</stock>
+    </item>
+    <item>
+        <itemno>5</itemno>
+        <name>Racing Ski</name>
+        <price>400.50</price>
+        <stock>10</stock>
+    </item>
+</items>
