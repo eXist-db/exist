@@ -50,6 +50,10 @@ public class LocalDatabaseInstanceManager implements DatabaseInstanceManager {
 		return "1.0";
 	}
 
+	public boolean isLocalInstance() {
+		return true;
+	}
+	
 	/**
 	 * @see org.xmldb.api.base.Service#setCollection(org.xmldb.api.base.Collection)
 	 */

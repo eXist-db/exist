@@ -14,5 +14,12 @@ public interface DatabaseInstanceManager extends Service {
 	public void shutdown() throws XMLDBException;
 	
 	public DatabaseStatus getStatus() throws XMLDBException;
-
+	
+	/**
+	 * Returns true if the database instance is running local, i.e. in
+	 * the same thread as this service.
+	 *  
+	 * @return
+	 */
+	public boolean isLocalInstance();
 }

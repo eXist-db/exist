@@ -3,6 +3,7 @@ package org.exist.xmldb;
 import java.util.Iterator;
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
+import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -17,10 +18,7 @@ public class LocalUserManagementService implements UserManagementService {
 	private BrokerPool pool;
 	private User user;
 
-	public LocalUserManagementService(
-		User user,
-		BrokerPool pool,
-		LocalCollection collection) {
+	public LocalUserManagementService(User user, BrokerPool pool, LocalCollection collection) {
 		this.pool = pool;
 		this.collection = collection;
 		this.user = user;
@@ -33,10 +31,53 @@ public class LocalUserManagementService implements UserManagementService {
 				ErrorCodes.PERMISSION_DENIED,
 				" you are not allowed to change this user");
 		if (manager.hasUser(u.getName()))
-			throw new XMLDBException(
-				ErrorCodes.VENDOR_ERROR,
-				"user " + user.getName() + " exists");
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "user " + user.getName() + " exists");
 		manager.setUser(u);
+	}
+
+	public void setPermissions(Resource resource, Permission perm) throws XMLDBException {
+		org.exist.security.SecurityManager manager = pool.getSecurityManager();
+		DBBroker broker = null;
+		try {
+			broker = pool.get();
+			DocumentImpl document = ((LocalXMLResource) resource).getDocument();
+			if (!document.getPermissions().getOwner().equals(user.getName())
+				&& !manager.hasAdminPrivileges(user))
+				throw new XMLDBException(
+					ErrorCodes.PERMISSION_DENIED,
+					"you are not the owner of this resource");
+
+			document.setPermissions(perm);
+			broker.saveCollection(collection.getCollection());
+		} catch (EXistException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		} catch (PermissionDeniedException e) {
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e);
+		} finally {
+			pool.release(broker);
+		}
+	}
+
+	public void setPermissions(Collection child, Permission perm) throws XMLDBException {
+		org.exist.security.SecurityManager manager = pool.getSecurityManager();
+		if (!collection.checkOwner(user) && !manager.hasAdminPrivileges(user))
+			throw new XMLDBException(
+				ErrorCodes.PERMISSION_DENIED,
+				"you are not the owner of this collection");
+		org.exist.dom.Collection coll = ((LocalCollection) child).getCollection();
+		coll.setPermissions(perm);
+		DBBroker broker = null;
+		try {
+			broker = pool.get();
+			broker.saveCollection(coll);
+			broker.flush();
+		} catch (EXistException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		} catch (PermissionDeniedException e) {
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
+		} finally {
+			pool.release(broker);
+		}
 	}
 
 	public void chmod(String modeStr) throws XMLDBException {
@@ -60,9 +101,7 @@ public class LocalUserManagementService implements UserManagementService {
 		} catch (EXistException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
-			throw new XMLDBException(
-				ErrorCodes.PERMISSION_DENIED,
-				e.getMessage(),e);
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
 		} finally {
 			pool.release(broker);
 		}
@@ -83,9 +122,9 @@ public class LocalUserManagementService implements UserManagementService {
 			document.setPermissions(mode);
 			broker.saveCollection(collection.getCollection());
 		} catch (EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
-			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,e);
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e);
 		} finally {
 			pool.release(broker);
 		}
@@ -105,18 +144,15 @@ public class LocalUserManagementService implements UserManagementService {
 			broker.saveCollection(coll);
 			broker.flush();
 		} catch (EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
-			throw new XMLDBException(
-				ErrorCodes.PERMISSION_DENIED,
-				e.getMessage(),e);
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
 		} finally {
 			pool.release(broker);
 		}
 	}
 
-	public void chmod(Resource resource, String modeStr)
-		throws XMLDBException {
+	public void chmod(Resource resource, String modeStr) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		DBBroker broker = null;
 		try {
@@ -131,11 +167,11 @@ public class LocalUserManagementService implements UserManagementService {
 			document.setPermissions(modeStr);
 			broker.saveCollection(collection.getCollection());
 		} catch (EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (SyntaxException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
-			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,e);
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e);
 		} finally {
 			pool.release(broker);
 		}
@@ -157,27 +193,22 @@ public class LocalUserManagementService implements UserManagementService {
 			broker.flush();
 			//broker.sync();
 		} catch (EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
-			throw new XMLDBException(
-				ErrorCodes.PERMISSION_DENIED,
-				e.getMessage(),
-				e);
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
 		} finally {
 			pool.release(broker);
 		}
 	}
 
-	public void chown(Resource res, User u, String group)
-		throws XMLDBException {
+	public void chown(Resource res, User u, String group) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		if (!manager.hasAdminPrivileges(user))
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				"need admin privileges for chown");
 		if (res instanceof LocalXMLResource) {
-			Permission perm =
-				((LocalXMLResource) res).getDocument().getPermissions();
+			Permission perm = ((LocalXMLResource) res).getDocument().getPermissions();
 			perm.setOwner(u);
 			perm.setGroup(group);
 			DBBroker broker = null;
@@ -186,22 +217,14 @@ public class LocalUserManagementService implements UserManagementService {
 				broker.saveCollection(collection.getCollection());
 				broker.flush();
 			} catch (EXistException e) {
-				throw new XMLDBException(
-					ErrorCodes.VENDOR_ERROR,
-					e.getMessage(),
-					e);
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 			} catch (PermissionDeniedException e) {
-				throw new XMLDBException(
-					ErrorCodes.PERMISSION_DENIED,
-					e.getMessage(),
-					e);
+				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
 			} finally {
 				pool.release(broker);
 			}
 		} else
-			throw new XMLDBException(
-				ErrorCodes.INVALID_RESOURCE,
-				"resource not found");
+			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "resource not found");
 	}
 
 	public String getName() {
@@ -221,13 +244,9 @@ public class LocalUserManagementService implements UserManagementService {
 	}
 
 	public Permission[] listResourcePermissions() throws XMLDBException {
-		if (!collection
-			.collection
-			.getPermissions()
-			.validate(user, Permission.READ))
+		if (!collection.collection.getPermissions().validate(user, Permission.READ))
 			return new Permission[0];
-		Permission perms[] =
-			new Permission[collection.collection.getDocumentCount()];
+		Permission perms[] = new Permission[collection.collection.getDocumentCount()];
 		int j = 0;
 		DocumentImpl doc;
 		for (Iterator i = collection.collection.iterator(); i.hasNext(); j++) {
@@ -238,30 +257,23 @@ public class LocalUserManagementService implements UserManagementService {
 	}
 
 	public Permission[] listCollectionPermissions() throws XMLDBException {
-		if (!collection
-			.collection
-			.getPermissions()
-			.validate(user, Permission.READ))
+		if (!collection.collection.getPermissions().validate(user, Permission.READ))
 			return new Permission[0];
-		Permission perms[] =
-			new Permission[collection.collection.getChildCollectionCount()];
+		Permission perms[] = new Permission[collection.collection.getChildCollectionCount()];
 		DBBroker broker = null;
 		try {
 			broker = pool.get();
 			String child;
 			org.exist.dom.Collection childColl;
 			int j = 0;
-			for (Iterator i = collection.collection.collectionIterator();
-				i.hasNext();
-				j++) {
+			for (Iterator i = collection.collection.collectionIterator(); i.hasNext(); j++) {
 				child = (String) i.next();
-				childColl =
-					broker.getCollection(collection.getPath() + '/' + child);
+				childColl = broker.getCollection(collection.getPath() + '/' + child);
 				perms[j] = childColl.getPermissions();
 			}
 			return perms;
 		} catch (EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} finally {
 			pool.release(broker);
 		}
@@ -281,31 +293,41 @@ public class LocalUserManagementService implements UserManagementService {
 		return manager.getUsers();
 	}
 
+	public String[] getGroups() throws XMLDBException {
+		org.exist.security.SecurityManager manager = pool.getSecurityManager();
+		return manager.getGroups();
+	}
+
 	public String getVersion() {
 		return "1.0";
 	}
 
-	public void removeUser(String name) throws XMLDBException {
+	public void removeUser(User u) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		if (!manager.hasAdminPrivileges(user))
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				"you are not allowed to remove users");
-		manager.deleteUser(name);
+		try {
+			manager.deleteUser(u);
+		} catch (PermissionDeniedException e) {
+			throw new XMLDBException(
+				ErrorCodes.PERMISSION_DENIED,
+				"unable to remove user " + u.getName(),
+				e);
+		}
 	}
 
 	public void setCollection(Collection collection) throws XMLDBException {
 		this.collection = (LocalCollection) collection;
 	}
 
-	public void setProperty(String property, String value)
-		throws XMLDBException {
+	public void setProperty(String property, String value) throws XMLDBException {
 	}
 
 	public void updateUser(User u) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
-		if (!(u.getName().equals(user.getName())
-			|| manager.hasAdminPrivileges(user)))
+		if (!(u.getName().equals(user.getName()) || manager.hasAdminPrivileges(user)))
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				" you are not allowed to change this user");

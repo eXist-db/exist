@@ -1,6 +1,7 @@
 #!/bin/bash
 # -----------------------------------------------------------------------------
-# startup.sh - Start Script for Jetty + eXist
+#
+# Shell script to start up the eXist command line client.
 #
 # $Id: startup.sh,v 1.6 2002/12/28 17:37:22 wolfgang_m Exp $
 # -----------------------------------------------------------------------------
@@ -16,6 +17,13 @@ exist_home () {
 	esac
 		(cd `/usr/bin/dirname $p` ; /bin/pwd)
 }
+
+# will be set by the installer
+if [ -z "$EXIST_HOME"]; then
+	EXIST_HOME="$INSTALL_PATH"
+fi
+
+JAVA_CMD="$JAVA_HOME/bin/java"
 
 unset LANG
 OPTIONS=
@@ -41,7 +49,7 @@ SAXFACTORY=org.apache.xerces.jaxp.SAXParserFactoryImpl
 
 # set java options
 if [ -z "$JAVA_OPTIONS" ]; then
-    export JAVA_OPTIONS="-Xms32000k -Xmx384000k -Djavax.xml.parsers.SAXParserFactory=$SAXFACTORY -Dfile.encoding=UTF-8"
+    export JAVA_OPTIONS="-Xms64000k -Xmx256000k -Djavax.xml.parsers.SAXParserFactory=$SAXFACTORY -Dfile.encoding=ISO8859-1"
 fi
 
 # save LD_LIBRARY_PATH
@@ -51,7 +59,7 @@ fi
 # add lib/core to LD_LIBRARY_PATH for readline support
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$EXIST_HOME/lib/core"
 
-$JAVA_HOME/bin/java $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" client $*
+$JAVA_CMD $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" client -U $*
 
 if [ -n "$OLD_LIBRARY_PATH" ]; then
 	LD_LIBRARY_PATH="$OLD_LIBRARY_PATH"

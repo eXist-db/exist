@@ -22,11 +22,14 @@
  */
 package org.exist.backup;
 
+import java.awt.Dimension;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+
+import javax.swing.JFrame;
 
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
@@ -47,50 +50,70 @@ public class Backup {
 	private String user;
 	private String pass;
 
-    public final static String NS = "http://exist.sourceforge.net/NS/exist";
-    
-	public Backup(
-		String user,
-		String pass,
-		String backupDir,
-		String rootCollection) {
+	public final static String NS = "http://exist.sourceforge.net/NS/exist";
+
+	public Backup(String user, String pass, String backupDir, String rootCollection) {
 		this.user = user;
 		this.pass = pass;
 		this.backupDir = backupDir;
 		this.rootCollection = rootCollection;
-        System.out.println("using root collection: " + rootCollection);
 	}
 
 	public Backup(String user, String pass, String backupDir) {
 		this(user, pass, backupDir, "xmldb:exist:///db");
 	}
 
-	public void backup() throws XMLDBException, IOException, SAXException {
-		Collection current =
-			DatabaseManager.getCollection(rootCollection, user, pass);
-		backup(current);
+	public void backup(boolean guiMode, JFrame parent) throws XMLDBException, IOException, SAXException {
+		Collection current = DatabaseManager.getCollection(rootCollection, user, pass);
+		if (guiMode) {
+			BackupDialog dialog = new BackupDialog(parent, false);
+			dialog.setSize(new Dimension(350, 150));
+			dialog.setVisible(true);
+			BackupThread thread = new BackupThread(current, dialog);
+			thread.start();
+			if(parent == null) {
+				// if backup runs as a single dialog, wait for it (or app will terminate)
+				while (thread.isAlive()) {
+					synchronized (this) {
+						try {
+							wait(20);
+						} catch (InterruptedException e) {
+						}
+					}
+				}
+			}
+		} else
+			backup(current, null);
 	}
 
-	public void backup(Collection current)
+	private void backup(Collection current, BackupDialog dialog)
 		throws XMLDBException, IOException, SAXException {
 		if (current == null)
 			return;
 		current.setProperty("encoding", "UTF-8");
-		
+
 		// get resources and permissions
 		String[] resources = current.listResources();
-		String path = backupDir + current.getName();
+		String cname = current.getName();
+		if (cname.charAt(0) != '/')
+			cname = '/' + cname;
+		String path = backupDir + cname;
 		UserManagementService mgtService =
-			(UserManagementService) current.getService(
-				"UserManagementService",
-				"1.0");
+			(UserManagementService) current.getService("UserManagementService", "1.0");
 		Permission perms[] = mgtService.listResourcePermissions();
 		Permission currentPerms = mgtService.getPermissions(current);
 
+		if (dialog != null) {
+			dialog.setCollection(current.getName());
+			dialog.setResourceCount(resources.length);
+		}
 		// create directory and open __contents__.xml
 		File file = new File(path);
-		if (!file.exists())
-			file.mkdirs();
+		if(file.exists()) {
+			System.out.println("removing " + path);
+			file.delete();
+		}
+		file.mkdirs();
 		BufferedWriter contents =
 			new BufferedWriter(
 				new OutputStreamWriter(
@@ -100,22 +123,12 @@ public class Backup {
 		// serializer writes to __contents__.xml
 		XMLSerializer serializer = new XMLSerializer(contents, format);
 		serializer.startDocument();
-        serializer.startPrefixMapping("", NS);
-        // write <collection> element
+		serializer.startPrefixMapping("", NS);
+		// write <collection> element
 		AttributesImpl attr = new AttributesImpl();
 		attr.addAttribute(NS, "name", "name", "CDATA", current.getName());
-		attr.addAttribute(
-			NS,
-			"owner",
-			"owner",
-			"CDATA",
-			currentPerms.getOwner());
-		attr.addAttribute(
-			NS,
-			"group",
-			"group",
-			"CDATA",
-			currentPerms.getOwnerGroup());
+		attr.addAttribute(NS, "owner", "owner", "CDATA", currentPerms.getOwner());
+		attr.addAttribute(NS, "group", "group", "CDATA", currentPerms.getOwnerGroup());
 		attr.addAttribute(
 			NS,
 			"mode",
@@ -123,43 +136,37 @@ public class Backup {
 			"CDATA",
 			Integer.toOctalString(currentPerms.getPermissions()));
 		serializer.startElement(NS, "collection", "collection", attr);
-        
-        // scan through resources
-        XMLResource resource;
-        FileOutputStream os;
-        BufferedWriter writer;
-        XMLSerializer contentSerializer;
+
+		// scan through resources
+		XMLResource resource;
+		FileOutputStream os;
+		BufferedWriter writer;
+		XMLSerializer contentSerializer;
 		for (int i = 0; i < resources.length; i++) {
-			resource = (XMLResource)current.getResource(resources[i]);
+			resource = (XMLResource) current.getResource(resources[i]);
 			file = new File(path);
 			if (!file.exists())
 				file.mkdirs();
-			System.out.println("writing " + path + '/' + resources[i]);
-			writer = new BufferedWriter(
-                new OutputStreamWriter(
-                    new FileOutputStream(path + '/' + resources[i]), 
-                    "UTF-8"
-                )
-            );
-            // write resource to contentSerializer
-            contentSerializer = new XMLSerializer(writer, format);
+			if (dialog == null)
+				System.out.println("writing " + path + '/' + resources[i]);
+			else {
+				dialog.setResource(resources[i]);
+				dialog.setProgress(i);
+			}
+			writer =
+				new BufferedWriter(
+					new OutputStreamWriter(
+						new FileOutputStream(path + '/' + resources[i]),
+						"UTF-8"));
+			// write resource to contentSerializer
+			contentSerializer = new XMLSerializer(writer, format);
 			resource.getContentAsSAX(contentSerializer);
 			writer.close();
 			// store permissions
 			attr.clear();
 			attr.addAttribute(NS, "name", "name", "CDATA", resources[i]);
-			attr.addAttribute(
-				NS,
-				"owner",
-				"owner",
-				"CDATA",
-				perms[i].getOwner());
-			attr.addAttribute(
-				NS,
-				"group",
-				"group",
-				"CDATA",
-				perms[i].getOwnerGroup());
+			attr.addAttribute(NS, "owner", "owner", "CDATA", perms[i].getOwner());
+			attr.addAttribute(NS, "group", "group", "CDATA", perms[i].getOwnerGroup());
 			attr.addAttribute(
 				NS,
 				"mode",
@@ -170,25 +177,45 @@ public class Backup {
 			serializer.endElement(NS, "resource", "resource");
 		}
 		// write subcollections
-        String[] collections = current.listChildCollections();
-        for (int i = 0; i < collections.length; i++) {
-        	if(current.getName().equals("db") && collections[i].equals("system"))
-        		continue;
-            attr.clear();
-            attr.addAttribute(NS, "name", "name", "CDATA", collections[i]);
-            serializer.startElement(NS, "subcollection", "subcollection", attr);
-            serializer.endElement(NS, "subcollection", "subcollection");
-        }
-        // close <collection>
-        serializer.endElement(NS, "collection", "collection");
-        serializer.endPrefixMapping("");
-        serializer.endDocument();
-        contents.close();
-        // descend into subcollections
+		String[] collections = current.listChildCollections();
+		for (int i = 0; i < collections.length; i++) {
+			if (current.getName().equals("db") && collections[i].equals("system"))
+				continue;
+			attr.clear();
+			attr.addAttribute(NS, "name", "name", "CDATA", collections[i]);
+			serializer.startElement(NS, "subcollection", "subcollection", attr);
+			serializer.endElement(NS, "subcollection", "subcollection");
+		}
+		// close <collection>
+		serializer.endElement(NS, "collection", "collection");
+		serializer.endPrefixMapping("");
+		serializer.endDocument();
+		contents.close();
+		// descend into subcollections
 		Collection child;
 		for (int i = 0; i < collections.length; i++) {
 			child = current.getChildCollection(collections[i]);
-			backup(child);
+			backup(child, dialog);
+		}
+	}
+
+	class BackupThread extends Thread {
+
+		Collection collection_;
+		BackupDialog dialog_;
+		
+		public BackupThread(Collection collection, BackupDialog dialog) {
+			super();
+			collection_ = collection;
+			dialog_ = dialog;
+		}
+
+		public void run() {
+			try {
+				backup(collection_, dialog_);
+				dialog_.setVisible(false);
+			} catch (Exception e) {
+			}
 		}
 	}
 
@@ -199,7 +226,7 @@ public class Backup {
 			database.setProperty("create-database", "true");
 			DatabaseManager.registerDatabase(database);
 			Backup backup = new Backup("admin", null, "backup", args[0]);
-			backup.backup();
+			backup.backup(false, null);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

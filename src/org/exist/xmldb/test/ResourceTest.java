@@ -78,7 +78,9 @@ public class ResourceTest extends TestCase {
 			for (int i = 0; i < children.getLength(); i++) {
 				node = children.item(i);
 				assertNotNull(node);
-				System.out.println("child: " + node.getNodeName());
+				node = node.getFirstChild();
+				while((node = node.getNextSibling() ) != null)
+					System.out.println("child: " + node.getNodeName());
 			}
 		} catch (XMLDBException e) {
 			fail(e.getMessage());

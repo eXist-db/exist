@@ -26,7 +26,7 @@ import java.util.ArrayList;
 
 import org.exist.storage.Signatures;
 import org.exist.util.ByteArrayPool;
-import org.exist.util.StringUtil;
+import org.exist.util.UTF8;
 import org.exist.util.XMLUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
@@ -171,14 +171,14 @@ public class AttrImpl extends NodeImpl implements Attr {
     public byte[] serialize() {
         final short id = ownerDocument.getSymbols().getSymbol( this );
         final byte idSizeType = Signatures.getSizeType( id );
-        final byte[] data = ByteArrayPool.getByteArray(StringUtil.utflen(value) +
+        final byte[] data = ByteArrayPool.getByteArray(UTF8.encoded(value) +
             Signatures.getLength( idSizeType ) +
             1);
         data[0] = (byte) ( Signatures.Attr << 0x5 );
         data[0] |= idSizeType;
         data[0] |= (byte) (attributeType << 0x2);
         Signatures.write( idSizeType, id, data, 1 );
-        StringUtil.utfwrite(data, 1 + Signatures.getLength( idSizeType ), value);
+        UTF8.encode(value, data, 1 + Signatures.getLength( idSizeType ));
         return data;
     }
 

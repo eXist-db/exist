@@ -34,7 +34,6 @@ import org.dbxml.core.data.Value;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
-import org.exist.util.ByteArrayPool;
 import org.exist.util.Configuration;
 import org.exist.util.FastQSort;
 import org.exist.util.Lock;
@@ -372,7 +371,6 @@ public class NativeElementIndex extends ElementIndex {
 		setChanged();
 		notifyObservers(progress);
 		elementIds.clear();
-		//elementIds = new TreeMap();
 	}
 
 	public void sync() {

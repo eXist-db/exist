@@ -862,7 +862,7 @@ public class InteractiveClient {
 				System.out.println(mods + " modifications processed.");
 				
 			} else if (args[0].equalsIgnoreCase("shutdown")) {
-				shutdown();
+				shutdown(true);
 				return true;
 			} else if (args[0].equalsIgnoreCase("help") || args[0].equals("?"))
 				displayHelp();
@@ -881,15 +881,16 @@ public class InteractiveClient {
 		}
 	}
 
-	private final void shutdown() {
-		System.out.println("shutting down database...");
+	private final void shutdown(boolean force) {
 		try {
 			DatabaseInstanceManager mgr =
 				(DatabaseInstanceManager) current.getService("DatabaseInstanceManager", "1.0");
 			if (mgr == null) {
 				System.err.println("service is not available");
-			} else
+			} else if(mgr.isLocalInstance() || force) {
+				System.out.println("shutting down database...");
 				mgr.shutdown();
+			}
 		} catch (XMLDBException e) {
 			System.err.println("database shutdown failed: ");
 			e.printStackTrace();
@@ -1074,10 +1075,6 @@ public class InteractiveClient {
 
 	private final boolean findRecursive(Collection collection, File dir, String base) {
 		File temp[] = dir.listFiles();
-		if (collection instanceof Observable && verbose) {
-			ProgressObserver observer = new ProgressObserver();
-			((Observable) collection).addObserver(observer);
-		}
 		Collection c;
 		XMLResource document;
 		CollectionManagementService mgtService;
@@ -1094,7 +1091,10 @@ public class InteractiveClient {
 								"CollectionManagementService",
 								"1.0");
 						c = mgtService.createCollection(temp[i].getName());
-
+					}
+					if (c instanceof Observable && verbose) {
+						ProgressObserver observer = new ProgressObserver();
+						((Observable) c).addObserver(observer);
 					}
 					findRecursive(c, temp[i], next);
 				} else {
@@ -1134,6 +1134,10 @@ public class InteractiveClient {
 		XMLResource document;
 		String xml;
 		File files[];
+		if (current instanceof Observable && verbose) {
+			ProgressObserver observer = new ProgressObserver();
+			((Observable) current).addObserver(observer);
+		}
 		if (file.canRead()) {
 			if (file.isDirectory()) {
 				if (recurseDirs) {
@@ -1155,10 +1159,6 @@ public class InteractiveClient {
 			}
 		} else
 			files = DirectoryScanner.scanDir(fileName);
-		if (current instanceof Observable && verbose) {
-			ProgressObserver observer = new ProgressObserver();
-			((Observable) current).addObserver(observer);
-		}
 
 		long start;
 		long start0 = System.currentTimeMillis();
@@ -1590,8 +1590,7 @@ public class InteractiveClient {
 			messageln("quit.");
 		}
 		// in local-mode: shutdown the db
-		if(current.getClass().getName().equals("org.exist.xmldb.LocalCollection"))
-			shutdown();
+		shutdown(false);
 	}
 
 	private final void printUsage() {

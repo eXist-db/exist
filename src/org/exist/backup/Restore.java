@@ -4,9 +4,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Observable;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
+import javax.swing.JFrame;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -39,6 +41,7 @@ public class Restore extends DefaultHandler {
 	private XMLReader reader;
 	private Collection current;
 	private Stack stack = new Stack();
+	private RestoreDialog dialog = null;
 
 	public final static String NS = "http://exist.sourceforge.net/NS/exist";
 
@@ -56,17 +59,22 @@ public class Restore extends DefaultHandler {
 		SAXParser sax = saxFactory.newSAXParser();
 		reader = sax.getXMLReader();
 		reader.setContentHandler(this);
-		
+
 		stack.push(contents);
-		
+
 		// check if /db/system is in the backup. We have to process
 		// this first to create users.
 		File dir = contents.getParentFile();
-		if(dir.isDirectory() && dir.getName().equals("db")) {
-			File sys = new File(dir.getAbsolutePath() + File.separatorChar +
-				"system" + File.separatorChar + "__contents__.xml");
+		if (dir.isDirectory() && dir.getName().equals("db")) {
+			File sys =
+				new File(
+					dir.getAbsolutePath()
+						+ File.separatorChar
+						+ "system"
+						+ File.separatorChar
+						+ "__contents__.xml");
 			// put /db/system on top of the stack
-			if(sys.canRead()) {
+			if (sys.canRead()) {
 				System.out.println("found /db/system. It will be processed first.");
 				stack.push(sys);
 			}
@@ -78,22 +86,51 @@ public class Restore extends DefaultHandler {
 		this(user, pass, contents, "xmldb:exist://");
 	}
 
-	public void restore()
+	public void restore(boolean showGUI, JFrame parent)
 		throws XMLDBException, FileNotFoundException, IOException, SAXException {
-		while (!stack.isEmpty()) {
-			contents = (File) stack.pop();
-			reader.parse(new InputSource(new FileInputStream(contents)));
+		if (showGUI) {
+			dialog = new RestoreDialog(parent, "Restoring data ...", false);
+			dialog.setVisible(true);
+			Thread restoreThread = new Thread() {
+				public void run() {
+					while (!stack.isEmpty()) {
+						try {
+							contents = (File) stack.pop();
+							reader.parse(new InputSource(new FileInputStream(contents)));
+						} catch (FileNotFoundException e) {
+							dialog.displayMessage(e.getMessage());
+						} catch (IOException e) {
+							dialog.displayMessage(e.getMessage());
+						} catch (SAXException e) {
+							dialog.displayMessage(e.getMessage());
+						}
+					}
+					dialog.setVisible(false);
+				}
+			};
+			restoreThread.start();
+			if(parent == null) {
+				while (restoreThread.isAlive()) {
+					synchronized (this) {
+						try {
+							wait(20);
+						} catch (InterruptedException e) {
+						}
+					}
+				}
+			}
+		} else {
+			while(!stack.isEmpty()) {
+				contents = (File) stack.pop();
+				reader.parse(new InputSource(new FileInputStream(contents)));
+			}
 		}
 	}
 
 	/**
 	 * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
 	 */
-	public void startElement(
-		String namespaceURI,
-		String localName,
-		String qName,
-		Attributes atts)
+	public void startElement(String namespaceURI, String localName, String qName, Attributes atts)
 		throws SAXException {
 		if (namespaceURI.equals(NS)) {
 			if (localName.equals("collection")) {
@@ -102,20 +139,21 @@ public class Restore extends DefaultHandler {
 				final String group = atts.getValue("group");
 				final String mode = atts.getValue("mode");
 				if (name == null)
-					throw new SAXException(
-						"collection requires a name " + "attribute");
+					throw new SAXException("collection requires a name " + "attribute");
 				try {
+					if(dialog != null)
+						dialog.displayMessage("creating collection " + name);
 					current = mkcol(name);
 					UserManagementService service =
-						(UserManagementService) current.getService(
-							"UserManagementService",
-							"1.0");
-				    User u = new User(owner, null, group);
+						(UserManagementService) current.getService("UserManagementService", "1.0");
+					User u = new User(owner, null, group);
 					service.chown(u, group);
 					service.chmod(Integer.parseInt(mode, 8));
 				} catch (XMLDBException e) {
 					throw new SAXException(e);
 				}
+				if(dialog != null)
+					dialog.setCollection(name);
 			} else if (localName.equals("subcollection")) {
 				final String name = atts.getValue("name");
 				final String fname =
@@ -128,37 +166,35 @@ public class Restore extends DefaultHandler {
 				if (f.exists() && f.canRead())
 					stack.push(f);
 				else
-					System.err.println(
-						f.getAbsolutePath()
-							+ " does not exist or is not readable.");
+					System.err.println(f.getAbsolutePath() + " does not exist or is not readable.");
 			} else if (localName.equals("resource")) {
 				final String name = atts.getValue("name");
 				final String owner = atts.getValue("owner");
 				final String group = atts.getValue("group");
 				final String perms = atts.getValue("mode");
 				if (name == null)
-					throw new SAXException(
-						"collection requires a name " + "attribute");
+					throw new SAXException("collection requires a name " + "attribute");
 				final File f =
 					new File(
-						contents.getParentFile().getAbsolutePath()
-							+ File.separatorChar
-							+ name);
+						contents.getParentFile().getAbsolutePath() + File.separatorChar + name);
 				try {
+					if (dialog != null && current instanceof Observable) {
+						((Observable) current).addObserver(dialog.getObserver());
+						dialog.setResource(name);
+					}
 					final XMLResource res =
-						(XMLResource) current.createResource(
-							name,
-							"XMLResource");
+						(XMLResource) current.createResource(name, "XMLResource");
 					res.setContent(f);
-					System.out.println("restoring " + name);
+					if(dialog == null)
+						System.out.println("restoring " + name);
 					current.storeResource(res);
 					UserManagementService service =
-						(UserManagementService) current.getService(
-							"UserManagementService",
-							"1.0");
-				    User u = new User(owner, null, group);
+						(UserManagementService) current.getService("UserManagementService", "1.0");
+					User u = new User(owner, null, group);
 					service.chown(res, u, group);
 					service.chmod(res, Integer.parseInt(perms, 8));
+					if(dialog != null)
+						dialog.displayMessage("restored " + name);
 				} catch (XMLDBException e) {
 					throw new SAXException(e);
 				}
@@ -171,8 +207,7 @@ public class Restore extends DefaultHandler {
 			collPath = collPath.substring("/db".length());
 		CollectionManagementService mgtService;
 		Collection c;
-		Collection current =
-			DatabaseManager.getCollection(uri + "/db", username, pass);
+		Collection current = DatabaseManager.getCollection(uri + "/db", username, pass);
 		String p = "/db", token;
 		StringTokenizer tok = new StringTokenizer(collPath, "/");
 		while (tok.hasMoreTokens()) {

@@ -1,5 +1,6 @@
 
 package org.exist.xmldb;
+import org.exist.security.Group;
 import org.exist.security.Permission;
 
 import org.exist.security.User;
@@ -29,7 +30,24 @@ public interface UserManagementService extends Service {
      */
     public String getVersion();
 
-
+	/**
+	 * Set permissions for the specified collection.
+	 * 
+	 * @param child
+	 * @param perm
+	 * @throws XMLDBException
+	 */
+	public void setPermissions(Collection child, Permission perm) throws XMLDBException;
+	
+	/**
+	 * Set permissions for the specified resource.
+	 * 
+	 * @param resource
+	 * @param perm
+	 * @throws XMLDBException
+	 */
+	public void setPermissions(Resource resource, Permission perm) throws XMLDBException;
+	
     /**
      *  Change owner and group of the current collection.
      *
@@ -124,7 +142,17 @@ public interface UserManagementService extends Service {
      */
     public User[] getUsers() throws XMLDBException;
 
-
+	/**
+	 * Retrieve a list of all existing groups.
+	 * 
+	 * Please note: new groups are created automatically if a new group
+	 * is assigned to a user. You can't add or remove them.
+	 * 
+	 * @return
+	 * @throws XMLDBException
+	 */
+	public String[] getGroups() throws XMLDBException;
+	
     /**
      *  Get a property defined by this service.
      *
@@ -202,6 +230,6 @@ public interface UserManagementService extends Service {
      *@param  name                Description of the Parameter
      *@exception  XMLDBException  Description of the Exception
      */
-    public void removeUser( String name ) throws XMLDBException;
+    public void removeUser( User user ) throws XMLDBException;
 }
 

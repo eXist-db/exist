@@ -418,7 +418,20 @@ public class RpcServer implements RpcAPI {
 			pool.release(con);
 		}
 	}
-
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xmlrpc.RpcAPI#getGroups(org.exist.security.User)
+	 */
+	public Vector getGroups(User user) throws EXistException, PermissionDeniedException {
+		RpcConnection con = null;
+		try {
+			con = pool.get();
+			return con.getGroups(user);
+		} finally {
+			pool.release(con);
+		}
+	}
+	
 	public Vector getIndexedElements(User user, String collectionName, boolean inclusive)
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = null;

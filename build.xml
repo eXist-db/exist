@@ -25,7 +25,7 @@
     <property name="build.compiler" value="modern"/>
     <property name="debug" value="on"/>
     <property name="optimize" value="on"/>
-    <property name="deprecation" value="off"/>
+    <property name="deprecation" value="on"/>
 	<property name="jvmarg" value="-Xmx128000k -Xms32000k -Djetty.home=${jetty.dir} -Dexist.home=${basedir}"/>
     <path id="classpath.core">
         <fileset dir="${lib.core}">
@@ -201,6 +201,13 @@
         <copy file="${src}/org/exist/xmldb.xsl" todir="${build.classes}/org/exist"/>
         <copy file="${src}/org/exist/xmldb2.xsl" todir="${build.classes}/org/exist"/>
         <copy file="${src}/CatalogManager.properties" todir="${build.classes}"/>
+	<copy todir="${build.classes}/org/exist/client">
+		<fileset dir="${src}/org/exist/client">
+			<include name="icons/**.png"/>
+			<include name="icons/**.gif"/>
+			<include name="*.xsl"/>
+		</fileset>
+	</copy>
         <jar basedir="${build.classes}" compress="true" jarfile="exist.jar"
         	excludes="org/exist/start/**"/>
     </target>

@@ -174,18 +174,4 @@ public class VariableByteCoding {
 		}
 		return i + 1;
 	}
-
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  args  Description of the Parameter
-	 */
-	public static void main(String args[]) {
-		int t0 = 11;
-		int t1 = 12;
-		byte[] d0 = encode(t0);
-		byte[] d1 = encode(t1);
-		System.out.println(StringUtil.hexDump(d0));
-		System.out.println(StringUtil.hexDump(d1));
-	}
 }

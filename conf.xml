@@ -239,7 +239,7 @@
     </appender>
     
     <root>
-		<appender-ref ref="console"/>
+	    <appender-ref ref="console"/>
 		<priority value="debug"/>
     </root>
 
