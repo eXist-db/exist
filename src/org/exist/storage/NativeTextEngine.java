@@ -625,7 +625,6 @@ public class NativeTextEngine extends TextSearchEngine {
 			Lock lock = dbWords.getLock();
 			for (Iterator iter = words.iterator(); iter.hasNext();) {
 				word = (String) iter.next();
-				LOG.debug("removing " + word);
 				ref = new WordRef(collectionId, word);
 				try {
 					lock.acquire(Lock.READ_LOCK);
