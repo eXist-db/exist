@@ -134,15 +134,6 @@ public class LocationStep extends Step {
 				broker = pool.get();
 				if (buf == null)
 					buf = (NodeSet) broker.findElementsByTagName(documents, test.getName());
-				/*if (context.getLength() == 1) {
-					NodeProxy n = context.get(0);
-					NodeProxy p = buf.parentWithChild(n, true, false);
-					if (p != null) {
-						ArraySet result = new ArraySet(1);
-						result.add(p);
-						return result;
-					}
-				}*/
 				return buf.getChildren(context, NodeSet.DESCENDANT);
 
 			} catch (EXistException e) {
@@ -161,15 +152,6 @@ public class LocationStep extends Step {
 				broker = pool.get();
 				if (buf == null)
 					buf = (NodeSet) broker.findElementsByTagName(documents, test.getName());
-				if (context.getLength() == 1) {
-					NodeProxy n = context.get(0);
-					NodeProxy p = buf.parentWithChild(n, false, false);
-					if (p != null) {
-						ArraySet result = new ArraySet(1);
-						result.add(p);
-						return result;
-					}
-				}
 				return buf.getDescendants(context, ArraySet.DESCENDANT);
 
 			} catch (EXistException e) {

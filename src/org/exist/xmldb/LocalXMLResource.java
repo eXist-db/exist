@@ -167,6 +167,8 @@ public class LocalXMLResource implements XMLResource {
 					"permission denied to read resource");
 			if (id < 0)
 				return document.getDocumentElement();
+			else if(proxy != null)
+				return document.getNode(proxy);
 			else
 				return document.getNode(id);
 		} catch (EXistException e) {

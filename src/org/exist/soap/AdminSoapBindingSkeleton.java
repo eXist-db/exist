@@ -31,10 +31,11 @@ public class AdminSoapBindingSkeleton implements org.exist.soap.Admin, org.apach
         org.apache.axis.description.FaultDesc _fault;
         org.apache.axis.description.ParameterDesc [] _params;
         _params = new org.apache.axis.description.ParameterDesc [] {
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in0"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "base64Binary"), byte[].class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in1"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in0"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in1"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "base64Binary"), byte[].class, false, false), 
             new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in2"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in3"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in3"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in4"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, false, false), 
         };
         _oper = new org.apache.axis.description.OperationDesc("store", _params, null);
         _oper.setElementQName(new javax.xml.namespace.QName("urn:exist", "store"));
@@ -46,6 +47,31 @@ public class AdminSoapBindingSkeleton implements org.exist.soap.Admin, org.apach
         ((java.util.List)_myOperations.get("store")).add(_oper);
         _params = new org.apache.axis.description.ParameterDesc [] {
             new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in0"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in1"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+        };
+        _oper = new org.apache.axis.description.OperationDesc("connect", _params, new javax.xml.namespace.QName("", "connectReturn"));
+        _oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        _oper.setElementQName(new javax.xml.namespace.QName("urn:exist", "connect"));
+        _oper.setSoapAction("");
+        _myOperationsList.add(_oper);
+        if (_myOperations.get("connect") == null) {
+            _myOperations.put("connect", new java.util.ArrayList());
+        }
+        ((java.util.List)_myOperations.get("connect")).add(_oper);
+        _params = new org.apache.axis.description.ParameterDesc [] {
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in0"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+        };
+        _oper = new org.apache.axis.description.OperationDesc("disconnect", _params, null);
+        _oper.setElementQName(new javax.xml.namespace.QName("urn:exist", "disconnect"));
+        _oper.setSoapAction("");
+        _myOperationsList.add(_oper);
+        if (_myOperations.get("disconnect") == null) {
+            _myOperations.put("disconnect", new java.util.ArrayList());
+        }
+        ((java.util.List)_myOperations.get("disconnect")).add(_oper);
+        _params = new org.apache.axis.description.ParameterDesc [] {
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in0"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in1"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
         };
         _oper = new org.apache.axis.description.OperationDesc("removeCollection", _params, new javax.xml.namespace.QName("", "removeCollectionReturn"));
         _oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"));
@@ -58,6 +84,7 @@ public class AdminSoapBindingSkeleton implements org.exist.soap.Admin, org.apach
         ((java.util.List)_myOperations.get("removeCollection")).add(_oper);
         _params = new org.apache.axis.description.ParameterDesc [] {
             new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in0"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in1"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
         };
         _oper = new org.apache.axis.description.OperationDesc("removeDocument", _params, new javax.xml.namespace.QName("", "removeDocumentReturn"));
         _oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"));
@@ -70,6 +97,7 @@ public class AdminSoapBindingSkeleton implements org.exist.soap.Admin, org.apach
         ((java.util.List)_myOperations.get("removeDocument")).add(_oper);
         _params = new org.apache.axis.description.ParameterDesc [] {
             new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in0"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in1"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
         };
         _oper = new org.apache.axis.description.OperationDesc("createCollection", _params, new javax.xml.namespace.QName("", "createCollectionReturn"));
         _oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"));
@@ -89,26 +117,37 @@ public class AdminSoapBindingSkeleton implements org.exist.soap.Admin, org.apach
     public AdminSoapBindingSkeleton(org.exist.soap.Admin impl) {
         this.impl = impl;
     }
-    public void store(byte[] in0, java.lang.String in1, java.lang.String in2, boolean in3) throws java.rmi.RemoteException
+    public void store(java.lang.String in0, byte[] in1, java.lang.String in2, java.lang.String in3, boolean in4) throws java.rmi.RemoteException
     {
-        impl.store(in0, in1, in2, in3);
+        impl.store(in0, in1, in2, in3, in4);
     }
 
-    public boolean removeCollection(java.lang.String in0) throws java.rmi.RemoteException
+    public java.lang.String connect(java.lang.String in0, java.lang.String in1) throws java.rmi.RemoteException
     {
-        boolean ret = impl.removeCollection(in0);
+        java.lang.String ret = impl.connect(in0, in1);
         return ret;
     }
 
-    public boolean removeDocument(java.lang.String in0) throws java.rmi.RemoteException
+    public void disconnect(java.lang.String in0) throws java.rmi.RemoteException
     {
-        boolean ret = impl.removeDocument(in0);
+        impl.disconnect(in0);
+    }
+
+    public boolean removeCollection(java.lang.String in0, java.lang.String in1) throws java.rmi.RemoteException
+    {
+        boolean ret = impl.removeCollection(in0, in1);
         return ret;
     }
 
-    public boolean createCollection(java.lang.String in0) throws java.rmi.RemoteException
+    public boolean removeDocument(java.lang.String in0, java.lang.String in1) throws java.rmi.RemoteException
     {
-        boolean ret = impl.createCollection(in0);
+        boolean ret = impl.removeDocument(in0, in1);
+        return ret;
+    }
+
+    public boolean createCollection(java.lang.String in0, java.lang.String in1) throws java.rmi.RemoteException
+    {
+        boolean ret = impl.createCollection(in0, in1);
         return ret;
     }
 

@@ -33,7 +33,7 @@ public class QueryServiceLocator extends org.apache.axis.client.Service implemen
             endpoint = new java.net.URL(Query_address);
         }
         catch (java.net.MalformedURLException e) {
-            return null; // unlikely as URL was validated in WSDL2Java
+            throw new javax.xml.rpc.ServiceException(e);
         }
         return getQuery(endpoint);
     }

@@ -30,15 +30,20 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * This node set is called virtual because it does not really contain all
- * the relevant nodes. If the user searches for descendant::*,
- * descendant-or-self::node() etc. it would be totally unefficient to actually
- * retrieve all the descendants. Instead this class is used for such
- * cases. It basically provides method getFirstParent to retrieve the first
+ * This node set is called virtual because it is just a placeholder for
+ * the set of relevant nodes. For XPath expressions like //* or //node(), 
+ * it would be totally unefficient to actually retrieve all descendant nodes.
+ * In many cases, the expression can be resolved at a later point in time
+ * without retrieving the whole node set. 
+ *
+ * VirtualNodeSet basically provides method getFirstParent to retrieve the first
  * matching descendant of its context according to the primary type axis.
  *
  * Class LocationStep will always return an instance of VirtualNodeSet
  * if it finds something like descendant::* etc..
+ *
+ * @author Wolfgang Meier
+ * @author Timo Boehme
  */
 public class VirtualNodeSet extends NodeSet {
 
@@ -86,11 +91,22 @@ public class VirtualNodeSet extends NodeSet {
 
 	protected NodeProxy getFirstParent(NodeProxy node, NodeProxy first,
 		boolean includeSelf, boolean directParent, int recursions) {
-		// if includeSelf is true set first to gid during the first recursion
-		if (recursions == 0 && includeSelf && 
-			isOfType(node.doc, node.gid, node.nodeType, test))
-			return node;
 		long pid = XMLUtil.getParentId(node.doc, node.gid);
+		// check if the start-node should be included, e.g. to process an
+		// expression like *[. = 'xxx'] 
+		if (recursions == 0 && includeSelf && 
+			isOfType(node, node.nodeType, test)) {
+			if(axis == Constants.CHILD_AXIS) {
+				// if we're on the child axis, test if
+				// the node is a direct child of the context node
+				if(context.contains(new NodeProxy(node.doc, pid)))
+					return node;
+			} else
+				// descendant axis: remember the node and continue 
+				first = node;
+		}
+		// if this is the first call to this method, remember the first parent node
+		// and re-evaluate the method
 		if(first == null) {
 			first = new NodeProxy(node.doc, pid, Node.ELEMENT_NODE);
 			// Timo Boehme: we need a real parent (child from context)
@@ -100,16 +116,17 @@ public class VirtualNodeSet extends NodeSet {
 		// is pid member of the context set?
 		NodeProxy parent = context.get(node.doc, pid);
 
-
 		if (parent != null)
 		    // Timo Boehme: we return the ancestor which is child of context 
-		    //return first == null ? parent : first;
 			return node;
 		else if (pid < 0)
+			// no matching node has been found in the context
 			return null;
 		else if (directParent && axis == Constants.CHILD_AXIS && recursions == 1)
+			// break here if the expression is like /*/n
 			return null;
 		else {
+			// continue for expressions like //*/n or /*//n
 			parent = new NodeProxy(node.doc, pid, Node.ELEMENT_NODE);
 			return getFirstParent(
 				parent,
@@ -121,14 +138,13 @@ public class VirtualNodeSet extends NodeSet {
 	}
 
 	protected final static boolean isOfType(
-		DocumentImpl doc,
-		long gid,
+		NodeProxy proxy,
 		short type,
 		TypeTest test) {
 		if (test.getNodeType() == Constants.NODE_TYPE)
 			return true;
 		if (type == Constants.TYPE_UNKNOWN) {
-			Node node = doc.getNode(gid);
+			Node node = proxy.doc.getNode(proxy);
 			if (node == null)
 				return false;
 			type = node.getNodeType();
@@ -208,7 +224,7 @@ public class VirtualNodeSet extends NodeSet {
 		return first;
 	}
 	
-	private final NodeSet getNodes(boolean recursive) {
+	private final NodeSet getNodes() {
 		ArraySet result = new ArraySet(100);
 		Node p, c;
 		NodeProxy proxy;
@@ -223,22 +239,22 @@ public class VirtualNodeSet extends NodeSet {
 				// -- inserted by Timo Boehme --
 				NodeProxy docElemProxy = new NodeProxy(proxy.getDoc(), 1);
 				result.add(docElemProxy);
-				if (recursive)
-					addChildren(result, docElemProxy.getNode(), recursive);
+				if (axis == Constants.DESCENDANT_AXIS || 
+					axis == Constants.DESCENDANT_SELF_AXIS) {
+					domIter = docElemProxy.doc.getBroker().getNodeIterator(docElemProxy);
+					NodeImpl node = (NodeImpl)domIter.next();
+					node.setOwnerDocument(docElemProxy.doc);
+					node.setGID(docElemProxy.gid);
+					addChildren(result, node, proxy, domIter, 0);
+				}
 				continue;
 				// -- end of insertion --
-			}
-			if (proxy.getBrokerType() == DBBroker.NATIVE) {
+			} else if (proxy.getBrokerType() == DBBroker.NATIVE) {
 				domIter = proxy.doc.getBroker().getNodeIterator(proxy);
 				NodeImpl node = (NodeImpl)domIter.next();
 				node.setOwnerDocument(proxy.doc);
 				node.setGID(proxy.gid);
-				addChildren(result, node, proxy, domIter, recursive);
-			} else {
-				p = proxy.getNode();
-				if (p == null)
-					continue;
-				addChildren(result, p, recursive);
+				addChildren(result, node, proxy, domIter, 0);
 			}
 		}
 		return result;
@@ -249,7 +265,7 @@ public class VirtualNodeSet extends NodeSet {
 		NodeImpl node,
 		NodeProxy proxy,
 		Iterator iter,
-		boolean recursive) {
+		int recursions) {
 		if (node.hasChildNodes()) {
 			NodeImpl child;
 			Value value;
@@ -261,46 +277,24 @@ public class VirtualNodeSet extends NodeSet {
 				p = new NodeProxy(child.ownerDocument, child.gid, 
 					child.getNodeType(), child.internalAddress);
 				p.matches = proxy.matches;
-				if (isOfType(child.getNodeType(), test)) {
+				if (axis == Constants.CHILD_AXIS && recursions == 0 &&
+					isOfType(child.getNodeType(), test)) {
+					result.add(p);
+				} else if ((axis == Constants.DESCENDANT_AXIS ||
+					axis == Constants.DESCENDANT_SELF_AXIS) &&
+					isOfType(child.getNodeType(), test)) {
 					result.add(p);
 				} else if (axis == Constants.ATTRIBUTE_AXIS)
 					return;
-				if (recursive)
-					addChildren(result, child, p, iter, recursive);
-			}
-		}
-	}
-
-	private final void addChildren(NodeSet result, Node n, boolean recursive) {
-		if (n.hasChildNodes()) {
-			Node c;
-			NodeList cl;
-			cl = n.getChildNodes();
-			for (int j = 0; j < cl.getLength(); j++) {
-				c = cl.item(j);
-				if (isOfType(c.getNodeType(), test)) {
-					result.add(c);
-				} else if (axis == Constants.ATTRIBUTE_AXIS)
-					return;
-				if (recursive)
-					addChildren(result, c, recursive);
+				addChildren(result, child, p, iter, recursions + 1);
 			}
 		}
 	}
 
 	private final void realize() {
-		System.out.println("realizing node set ...");
 		if (realSet != null)
 			return;
-		switch (axis) {
-			case Constants.ATTRIBUTE_AXIS :
-			case Constants.CHILD_AXIS :
-				realSet = getNodes(false);
-				break;
-			case Constants.DESCENDANT_AXIS :
-				realSet = getNodes(true);
-				break;
-		}
+		realSet = getNodes();
 	}
 
 	/* the following methods are normally never called in this context,

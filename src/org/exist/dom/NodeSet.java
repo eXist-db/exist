@@ -144,6 +144,7 @@ public abstract class NodeSet implements NodeList {
 
 	public ArraySet getChildren(NodeSet al, int mode) {
 		NodeProxy n, p;
+		long start = System.currentTimeMillis();
 		ArraySet result = new ArraySet(getLength());
 		switch (mode) {
 			case DESCENDANT :
@@ -156,12 +157,14 @@ public abstract class NodeSet implements NodeList {
 			case ANCESTOR :
 				for (Iterator i = iterator(); i.hasNext();) {
 					n = (NodeProxy) i.next();
-					p = al.parentWithChild(n.doc, n.gid, true);
+					p = al.parentWithChild(n, true, false);
 					if (p != null)
 						result.add(p);
 				}
 				break;
 		}
+		System.out.println("getChildren found " + result.getLength() + " in " + 
+			(System.currentTimeMillis() - start) + "ms.");
 		return result;
 	}
 
@@ -220,14 +223,15 @@ public abstract class NodeSet implements NodeList {
 		int level) {
 		if (gid < 1)
 			return null;
-		if (includeSelf && contains(doc, gid))
-			return get(doc, gid);
+		NodeProxy temp;
+		if (includeSelf && (temp = get(doc, gid)) != null)
+			return temp;
 		if (level < 0)
 			level = doc.getTreeLevel(gid);
 		// calculate parent's gid
 		long pid = XMLUtil.getParentId(doc, gid);
-		if (contains(doc, pid))
-			return get(doc, pid);
+		if ((temp = get(doc, pid)) != null)
+			return temp;
 		else if (directParent)
 			return null;
 		else
@@ -286,8 +290,7 @@ public abstract class NodeSet implements NodeList {
 		for (Iterator i = other.iterator(); i.hasNext();) {
 			l = (NodeProxy) i.next();
 			if (contains(l)) {
-				if(r.contains(l)) {
-					p = r.get(l);
+				if((p = r.get(l)) != null) {
 					p.addMatches(l.matches);
 				} else
 					r.add(l);

@@ -65,8 +65,8 @@ public class LocalCollection extends Observable implements Collection {
     protected Map properties = new TreeMap();
     protected LocalCollection parent = null;
     protected User user = null;
-	
 	protected ArrayList observers = new ArrayList(1);
+	protected boolean needsSync = false;
 	
     public LocalCollection( User user, BrokerPool brokerPool, String collection )
          throws XMLDBException {
@@ -129,15 +129,17 @@ public class LocalCollection extends Observable implements Collection {
 	 * open buffers to disk.
 	 */
     public void close() throws XMLDBException {
-		DBBroker broker = null;
-		try {
-			broker = brokerPool.get();
-			broker.sync();
-		} catch (EXistException e) {
-			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
-		} finally {
-			brokerPool.release(broker);
-		}
+    	if(needsSync) {
+			DBBroker broker = null;
+			try {
+				broker = brokerPool.get();
+				broker.sync();
+			} catch (EXistException e) {
+				throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+			} finally {
+				brokerPool.release(broker);
+			}
+    	}
     }
 
 
@@ -369,6 +371,7 @@ public class LocalCollection extends Observable implements Collection {
         } finally {
             brokerPool.release( broker );
         }
+        needsSync = true;
 		load(getPath());
     }
 
@@ -376,11 +379,6 @@ public class LocalCollection extends Observable implements Collection {
     public void setProperty( String property,
                              String value ) throws XMLDBException {
         properties.put(property, value);
-    }
-
-
-    protected void setUser( User user ) {
-        this.user = user;
     }
 
 
@@ -416,6 +414,7 @@ public class LocalCollection extends Observable implements Collection {
         } finally {
             brokerPool.release( broker );
         }
+        needsSync = true;
     }
 
 	/**

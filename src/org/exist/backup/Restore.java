@@ -180,8 +180,8 @@ public class Restore extends DefaultHandler {
 				try {
 					if (dialog != null && current instanceof Observable) {
 						((Observable) current).addObserver(dialog.getObserver());
-						dialog.setResource(name);
 					}
+					dialog.setResource(name);
 					final XMLResource res =
 						(XMLResource) current.createResource(name, "XMLResource");
 					res.setContent(f);

@@ -459,6 +459,7 @@ public class ClientFrame extends JFrame {
 						new File(restoreFile),
 						properties.getProperty("uri", "xmldb:exist://"));
 				restore.restore(true, this);
+				client.getResources();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

@@ -251,12 +251,12 @@ public class ArraySet extends NodeSet {
 	}
 
 	public boolean hasIndex() {
-		for(int i = 0; i < counter; i++)
-			if(!nodes[i].hasIndex())
+		for (int i = 0; i < counter; i++)
+			if (!nodes[i].hasIndex())
 				return false;
 		return true;
 	}
-	
+
 	/**  Description of the Method */
 	protected void checkSorted() {
 		if (counter > 1 && nodes[counter - 1].compareTo(nodes[counter - 2]) < 0)
@@ -382,7 +382,7 @@ public class ArraySet extends NodeSet {
 		ArraySet al = (ArraySet) ancestors;
 		if (al.counter == 0)
 			return new ArraySet(1);
-		//		long start = System.currentTimeMillis();
+		long start = System.currentTimeMillis();
 		sort();
 		al.sort();
 		// get a deep copy of array - will be modified
@@ -405,14 +405,14 @@ public class ArraySet extends NodeSet {
 				dx++;
 				continue;
 			}
-//			System.out.println(
-//				dl[dx].doc.getDocId()
-//					+ ":"
-//					+ dl[dx].gid
-//					+ " = "
-//					+ al.nodes[ax].doc.getDocId()
-//					+ ':'
-//					+ al.nodes[ax].gid);
+			//			System.out.println(
+			//				dl[dx].doc.getDocId()
+			//					+ ":"
+			//					+ dl[dx].gid
+			//					+ " = "
+			//					+ al.nodes[ax].doc.getDocId()
+			//					+ ':'
+			//					+ al.nodes[ax].gid);
 			cmp = dl[dx].compareTo(al.nodes[ax]);
 			if (cmp > 0) {
 				if (ax < al.counter - 1)
@@ -435,8 +435,8 @@ public class ArraySet extends NodeSet {
 				dx++;
 			}
 		}
-		//		LOG.debug(
-		//			"getChildren took " + (System.currentTimeMillis() - start) + "ms.");
+		LOG.debug("getChildren found " + result.getLength() + " in " + 
+			(System.currentTimeMillis() - start) + "ms.");
 		return result;
 	}
 
@@ -489,9 +489,9 @@ public class ArraySet extends NodeSet {
 	 *@return       The descendants value
 	 */
 	public ArraySet getDescendants(NodeSet other, int mode) {
-		if(!(other instanceof ArraySet))
+		if (!(other instanceof ArraySet))
 			return super.getDescendants(other, mode);
-		ArraySet al = (ArraySet)other;
+		ArraySet al = (ArraySet) other;
 		if (al.counter == 0 || counter == 0)
 			return new ArraySet(1);
 		long start = System.currentTimeMillis();
@@ -550,10 +550,12 @@ public class ArraySet extends NodeSet {
 			}
 		}
 		while (more);
-				LOG.debug(
-					"getDescendants took "
-						+ (System.currentTimeMillis() - start)
-						+ "ms.");
+		LOG.debug(
+			"getDescendants found "
+				+ result.getLength()
+				+ " in "
+				+ (System.currentTimeMillis() - start)
+				+ "ms.");
 		return result;
 	}
 

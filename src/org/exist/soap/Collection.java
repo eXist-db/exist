@@ -1,12 +1,10 @@
-/**
- * Collection.java
- *
- * This file was auto-generated from WSDL
- * by the Apache Axis WSDL2Java emitter.
- */
-
 package org.exist.soap;
 
+/**
+ * A wrapper around collection information.
+ * 
+ * @author wolf
+ */
 public class Collection  implements java.io.Serializable {
     private java.lang.String[] collections;
     private java.lang.String[] resources;
@@ -14,6 +12,11 @@ public class Collection  implements java.io.Serializable {
     public Collection() {
     }
 
+	/**
+	 * Return the list of child collections in this collection.
+	 * 
+	 * @return
+	 */
     public java.lang.String[] getCollections() {
         return collections;
     }
@@ -22,6 +25,10 @@ public class Collection  implements java.io.Serializable {
         this.collections = collections;
     }
 
+	/**
+	 * Return the list of resources contained in this collection.
+	 * @return
+	 */
     public java.lang.String[] getResources() {
         return resources;
     }
@@ -42,12 +49,12 @@ public class Collection  implements java.io.Serializable {
         __equalsCalc = obj;
         boolean _equals;
         _equals = true && 
-            ((collections==null && other.getCollections()==null) || 
-             (collections!=null &&
-              java.util.Arrays.equals(collections, other.getCollections()))) &&
-            ((resources==null && other.getResources()==null) || 
-             (resources!=null &&
-              java.util.Arrays.equals(resources, other.getResources())));
+            ((this.collections==null && other.getCollections()==null) || 
+             (this.collections!=null &&
+              java.util.Arrays.equals(this.collections, other.getCollections()))) &&
+            ((this.resources==null && other.getResources()==null) || 
+             (this.resources!=null &&
+              java.util.Arrays.equals(this.resources, other.getResources())));
         __equalsCalc = null;
         return _equals;
     }
@@ -90,17 +97,18 @@ public class Collection  implements java.io.Serializable {
         new org.apache.axis.description.TypeDesc(Collection.class);
 
     static {
-        org.apache.axis.description.FieldDesc field = new org.apache.axis.description.ElementDesc();
-        field.setFieldName("collections");
-        field.setXmlName(new javax.xml.namespace.QName("", "collections"));
-        field.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
-        typeDesc.addFieldDesc(field);
-        field = new org.apache.axis.description.ElementDesc();
-        field.setFieldName("resources");
-        field.setXmlName(new javax.xml.namespace.QName("", "resources"));
-        field.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
-        typeDesc.addFieldDesc(field);
-    };
+        typeDesc.setXmlType(new javax.xml.namespace.QName("urn:exist", "Collection"));
+        org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("collections");
+        elemField.setXmlName(new javax.xml.namespace.QName("", "collections"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("resources");
+        elemField.setXmlName(new javax.xml.namespace.QName("", "resources"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        typeDesc.addFieldDesc(elemField);
+    }
 
     /**
      * Return type metadata object

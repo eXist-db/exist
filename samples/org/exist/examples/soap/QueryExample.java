@@ -5,14 +5,22 @@ import org.exist.soap.*;
 public class QueryExample {
 
     public static void main( String[] args ) throws Exception {
+    	String xpath = args.length > 0 ? args[0] : "//SPEECH[LINE &= 'curse*']";
+    	 
         QueryService service = new QueryServiceLocator();
         Query query = service.getQuery();
 
+		// connect to the database
+		String sessionId = query.connect("guest", "guest");
+		
+		// execute the query
         QueryResponse resp =
-                query.query( "//SPEECH[LINE &= 'curse*']" );
+        	query.query( sessionId, xpath );
         System.out.println( "found: " + resp.getHits() );
-		if(resp.getHits() == 0)
+		if(resp.getHits() == 0)	// nothing found
 			return;
+			
+		// iterate through collections and print hits for each document
         QueryResponseCollection collections[] = resp.getCollections();
         for ( int i = 0; i < collections.length; i++ ) {
             System.out.println( "Collection: " +
@@ -24,13 +32,17 @@ public class QueryExample {
             }
 
         }
-        for(int i = 1; i <= resp.getHits() && i < 10; i++) {
-        	byte[] record =
-                query.retrieve( resp.getResultSetId(), i,
-                "ISO-8859-1",
-                true );
-        	System.out.println( new String( record, "ISO-8859-1" ) );
-        }
+        
+        // retrieve first 10 results, indenting is on, xinclude is off, matches in elements 
+        // are highlighted (tagged)
+		String[] hits = query.retrieve( sessionId, 1, 10,
+			true, false, "elements");
+		for(int i = 0; i < hits.length; i++) {
+			System.out.println(hits[i]);
+		}
+		
+		// close the connection (release session on the server)
+		query.disconnect(sessionId);
     }
 }
 

@@ -7,9 +7,11 @@
 
    </wsdl:message>
 
-   <wsdl:message name="removeDocumentRequest">
+   <wsdl:message name="createCollectionRequest">
 
       <wsdl:part name="in0" type="xsd:string"/>
+
+      <wsdl:part name="in1" type="xsd:string"/>
 
    </wsdl:message>
 
@@ -19,13 +21,25 @@
 
    </wsdl:message>
 
-   <wsdl:message name="storeResponse">
+   <wsdl:message name="connectRequest">
+
+      <wsdl:part name="in0" type="xsd:string"/>
+
+      <wsdl:part name="in1" type="xsd:string"/>
 
    </wsdl:message>
 
-   <wsdl:message name="createCollectionRequest">
+   <wsdl:message name="storeRequest">
 
       <wsdl:part name="in0" type="xsd:string"/>
+
+      <wsdl:part name="in1" type="xsd:base64Binary"/>
+
+      <wsdl:part name="in2" type="xsd:string"/>
+
+      <wsdl:part name="in3" type="xsd:string"/>
+
+      <wsdl:part name="in4" type="xsd:boolean"/>
 
    </wsdl:message>
 
@@ -39,57 +53,91 @@
 
       <wsdl:part name="in0" type="xsd:string"/>
 
+      <wsdl:part name="in1" type="xsd:string"/>
+
    </wsdl:message>
 
-   <wsdl:message name="storeRequest">
+   <wsdl:message name="storeResponse">
 
-      <wsdl:part name="in0" type="xsd:base64Binary"/>
+   </wsdl:message>
+
+   <wsdl:message name="removeDocumentRequest">
+
+      <wsdl:part name="in0" type="xsd:string"/>
 
       <wsdl:part name="in1" type="xsd:string"/>
 
-      <wsdl:part name="in2" type="xsd:string"/>
+   </wsdl:message>
 
-      <wsdl:part name="in3" type="xsd:boolean"/>
+   <wsdl:message name="disconnectResponse">
+
+   </wsdl:message>
+
+   <wsdl:message name="disconnectRequest">
+
+      <wsdl:part name="in0" type="xsd:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="connectResponse">
+
+      <wsdl:part name="connectReturn" type="xsd:string"/>
 
    </wsdl:message>
 
    <wsdl:portType name="Admin">
 
-      <wsdl:operation name="store" parameterOrder="in0 in1 in2 in3">
+      <wsdl:operation name="store" parameterOrder="in0 in1 in2 in3 in4">
 
-         <wsdl:input message="intf:storeRequest" name="storeRequest"/>
+         <wsdl:input message="impl:storeRequest" name="storeRequest"/>
 
-         <wsdl:output message="intf:storeResponse" name="storeResponse"/>
-
-      </wsdl:operation>
-
-      <wsdl:operation name="removeCollection" parameterOrder="in0">
-
-         <wsdl:input message="intf:removeCollectionRequest" name="removeCollectionRequest"/>
-
-         <wsdl:output message="intf:removeCollectionResponse" name="removeCollectionResponse"/>
+         <wsdl:output message="impl:storeResponse" name="storeResponse"/>
 
       </wsdl:operation>
 
-      <wsdl:operation name="removeDocument" parameterOrder="in0">
+      <wsdl:operation name="connect" parameterOrder="in0 in1">
 
-         <wsdl:input message="intf:removeDocumentRequest" name="removeDocumentRequest"/>
+         <wsdl:input message="impl:connectRequest" name="connectRequest"/>
 
-         <wsdl:output message="intf:removeDocumentResponse" name="removeDocumentResponse"/>
+         <wsdl:output message="impl:connectResponse" name="connectResponse"/>
 
       </wsdl:operation>
 
-      <wsdl:operation name="createCollection" parameterOrder="in0">
+      <wsdl:operation name="disconnect" parameterOrder="in0">
 
-         <wsdl:input message="intf:createCollectionRequest" name="createCollectionRequest"/>
+         <wsdl:input message="impl:disconnectRequest" name="disconnectRequest"/>
 
-         <wsdl:output message="intf:createCollectionResponse" name="createCollectionResponse"/>
+         <wsdl:output message="impl:disconnectResponse" name="disconnectResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="removeCollection" parameterOrder="in0 in1">
+
+         <wsdl:input message="impl:removeCollectionRequest" name="removeCollectionRequest"/>
+
+         <wsdl:output message="impl:removeCollectionResponse" name="removeCollectionResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="removeDocument" parameterOrder="in0 in1">
+
+         <wsdl:input message="impl:removeDocumentRequest" name="removeDocumentRequest"/>
+
+         <wsdl:output message="impl:removeDocumentResponse" name="removeDocumentResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="createCollection" parameterOrder="in0 in1">
+
+         <wsdl:input message="impl:createCollectionRequest" name="createCollectionRequest"/>
+
+         <wsdl:output message="impl:createCollectionResponse" name="createCollectionResponse"/>
 
       </wsdl:operation>
 
    </wsdl:portType>
 
-   <wsdl:binding name="AdminSoapBinding" type="intf:Admin">
+   <wsdl:binding name="AdminSoapBinding" type="impl:Admin">
 
       <wsdlsoap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
 
@@ -104,6 +152,42 @@
          </wsdl:input>
 
          <wsdl:output name="storeResponse">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="connect">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="connectRequest">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="connectResponse">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="disconnect">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="disconnectRequest">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="disconnectResponse">
 
             <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
 
@@ -169,7 +253,7 @@
 
    <wsdl:service name="AdminService">
 
-      <wsdl:port binding="intf:AdminSoapBinding" name="Admin">
+      <wsdl:port binding="impl:AdminSoapBinding" name="Admin">
 
          <wsdlsoap:address location="http://localhost:8080/exist/services/Admin"/>
 

@@ -80,7 +80,8 @@ public final class NodeProxy implements Comparable, Cloneable {
      *@param  nodeType  Description of the Parameter
      */
     public NodeProxy( DocumentImpl doc, long gid, short nodeType ) {
-        this( doc, gid );
+		this.doc = doc;
+		this.gid = gid;
         this.nodeType = nodeType;
     }
 
@@ -95,8 +96,10 @@ public final class NodeProxy implements Comparable, Cloneable {
      */
     public NodeProxy( DocumentImpl doc, long gid, short nodeType,
                       long address ) {
-        this( doc, gid, address );
-        this.internalAddress = address;
+		this.gid = gid;
+		this.doc = doc;
+		this.internalAddress = address;
+        this.nodeType = nodeType;
     }
 
 
@@ -109,6 +112,7 @@ public final class NodeProxy implements Comparable, Cloneable {
         this.gid = p.gid;
         this.doc = p.doc;
 		this.internalAddress = p.internalAddress;
+		this.nodeType = p.nodeType;
 		this.matches = p.matches;
     }
 
@@ -195,7 +199,7 @@ public final class NodeProxy implements Comparable, Cloneable {
      *@return    The node value
      */
     public Node getNode() {
-        return doc.getNode( gid );
+        return doc.getNode( this );
     }
 
 

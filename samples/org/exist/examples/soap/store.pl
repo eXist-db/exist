@@ -24,9 +24,18 @@ sub iso2utf8 {
     return $buffer;
 }
 
-my $doc = "../shakespeare/hamlet.xml";
+my $doc = "samples/shakespeare/hamlet.xml";
+$doc = $ARGV[0] unless @ARGV == 0;
+
 my $xml = loadFile($doc);
 print "$xml\n";
-my $service = SOAP::Lite->service("http://localhost:8080/exist/services/Admin?WSDL");
-$resp = $service->store($xml, "/db/shakespeare/plays/hamlet.xml", "UTF-8", 1);
 
+my $service = SOAP::Lite->service("http://localhost:8080/exist/services/Admin?WSDL");
+
+print "Connecting ...\n";
+$session = $service->connect("admin", "");
+
+print "Storing file ...\n";
+$resp = $service->store($session, SOAP::Data->type("base64" => iso2utf8($xml)), 
+	"UTF-8", "/db/shakespeare/plays/hamlet.xml", TRUE);
+$service->disconnect($session);
