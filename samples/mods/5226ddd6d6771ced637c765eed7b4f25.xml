@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3">
+    <titleInfo>
+        <title>Motivational and Structural Prerequisites of Knowledge Management</title>
+        <title type="alternative">Paper presented at the XV World Congress of
+            Sociology, Brisbane, Australia, July 7-13, 2002, RC 30
+            Sociology of Work: Thematic Seminar II: The organisation of
+            knowledge production (Diskussionspapiere aus der Fakultät
+            für Sozialwissenschaft, Ruhr-Universität Bochum, Nr. 02-2)</title>
+    </titleInfo>
+    <abstract>Our main question in this paper is: Which
+            motivational and structural prerequisites support knowledge
+            management? We will develop a theoretical model to answer
+            these questions and illustrate it with three case studies.</abstract>
+    <name>
+        <namePart>Wilkesmann, Uwe</namePart>
+    </name>
+    <name>
+        <namePart>Rascher, Ingolf</namePart>
+    </name>
+    <location>
+        <url>http://www.ruhr-uni-bochum.de/sowi/top/sowibibliothek/dkpaper/dp02-2.pdf</url>
+    </location>
+    <originInfo>
+        <publisher>Fakultät für Sozialwissenschaft, Ruhr-Universität Bochum</publisher>
+        <dateCreated encoding="w3cdtf">2002-06-12</dateCreated>
+    </originInfo>
+    <physicalDescription>
+        <internetMediaType>application/pdf</internetMediaType>
+    </physicalDescription>
+    <subject>
+        <topic>knowledge management</topic>
+    </subject>
+    <classification authority="IZSOZ">10204</classification>
+    <classification authority="IZSOZ">10207</classification>
+    <classification authority="IZSOZ">10219</classification>
+    <subject authority="IZSOZ">
+        <topic>Bedingung</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Informationsmanagement</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Informationssystem</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Wissenssoziologie</topic>
+    </subject>
+</mods>

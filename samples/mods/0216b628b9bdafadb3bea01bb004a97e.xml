@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3">
+    <titleInfo>
+        <title>Managing Conflict Through Democratic Institutions: A Tentative Balance Sheet</title>
+        <title type="alternative">African Studies Association in Germany (VAD): Biennial Conference "Africa's Diversity: Ending the Monologues?", Hamburg, May 23-26, 2002</title>
+    </titleInfo>
+    <abstract>The paper starts from the premise that the specific role of democratic institutions in conflict management is still not adequately considered in the African context, especially with regard to crisis prevention. Some of the main hypothesis drawn from the general literature on the topic are presented and three levers of democratic intervention, i.e. the system of government, the electoral system, and the territorial structure of the state, are tested with regard to Africa (including discussion of case studies). As a last step the paper deals with the specific African contexts of democratic reform that have to be taken into account in processes of institutional engineering.</abstract>
+    <name>
+        <namePart>Hartmann, Christof</namePart>
+    </name>
+    <location>
+        <url>http://homepage.ruhr-uni-bochum.de/christof.hartmann/downloads/2002-VAD-Paper.pdf</url>
+    </location>
+    <originInfo>
+        <dateCreated encoding="w3cdtf">2002-05-23</dateCreated>
+    </originInfo>
+    <physicalDescription>
+        <internetMediaType>application/pdf</internetMediaType>
+    </physicalDescription>
+    <classification authority="IZSOZ">10507</classification>
+    <classification authority="IZSOZ">10503</classification>
+    <classification authority="IZSOZ">10505</classification>
+    <subject authority="IZSOZ">
+        <topic>Afrika</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Demokratisierung</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Staatsform</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Staatsgebiet</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Systemvergleich</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Transformation</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Wahlsystem</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>ethnischer Konflikt</topic>
+    </subject>
+</mods>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3">
+    <titleInfo>
+        <title>Social Indicators for East European Transition Countries</title>
+    </titleInfo>
+    <abstract>The East European transition countries have been facing severe problems regarding both economic performance and living conditions in general since the beginning of the transformation process in 1989. This is the reason why this topic has been chosen. It is intended to present some fundamental social indicators for the East European transition countries. The data presented refer to the whole of Eastern and South Eastern Europe, including the Western follow-up states of the former Soviet Union, i.e. the Baltic countries, Russia, Moldavia, Ukraine and Belarus.</abstract>
+    <name>
+        <namePart>Rothenbacher, Franz</namePart>
+    </name>
+    <location>
+        <url>http://www.mzes.uni-mannheim.de/eurodata/newsletter/no4/rothenb1.html</url>
+    </location>
+    <originInfo>
+        <publisher>EURODATA Research Archive. Mannheim Centre for European Social Research (MZES)</publisher>
+        <dateCreated encoding="w3cdtf">1996</dateCreated>
+    </originInfo>
+    <physicalDescription>
+        <internetMediaType>text/html</internetMediaType>
+    </physicalDescription>
+    <relatedItem type="otherFormat">
+        <titleInfo>
+            <title>EURODATA Newsletter No.4</title>
+        </titleInfo>
+    </relatedItem>
+    <classification authority="IZSOZ">10303</classification>
+    <classification authority="IZSOZ">10305</classification>
+    <subject authority="IZSOZ">
+        <topic>Altersstruktur</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Arbeitsmarktanalyse</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Geburtenentwicklung</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Osteuropaforschung</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>soziale Indikatoren</topic>
+    </subject>
+</mods>

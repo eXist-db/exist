@@ -86,7 +86,7 @@ as xs:string
 declare function b:displayOverview($recs as item()*, $collection) as element()
 {
     let $count := count($recs),
-        $max := request:request-parameter("howmany", "5") cast as xs:int,
+        $max := request:request-parameter("howmany", "10") cast as xs:int,
         $start := request:request-parameter("start", "1") cast as xs:int,
         $end := if ($start + $max - 1 < $count) then $start + $max - 1 else $count
     return
@@ -106,13 +106,13 @@ declare function b:displayOverview($recs as item()*, $collection) as element()
 declare function b:displayDetails($recs as item()*, $collection) as element()
 {
     let $count := count($recs),
-        $max := xs:int(request:request-parameter("howmany", "5")),
+        $max := xs:int(request:request-parameter("howmany", "10")),
         $start := xs:int(request:request-parameter("start", "1")),
         $hit := item-at($recs, $start)
     return
         <items hits="{$count}" start="{$start}" view="details"
             next="{$start + 1}" max="{$max}"
-            collection="{collection}">
+            collection="{$collection}">
             <item pos="{$start}" doc="{util:document-name($hit)}">
                 {$hit/*}
             </item>
@@ -192,7 +192,7 @@ as element()+
     )
 };
 
-declare function b:get-collection($user) as xs:string {
+declare function b:get-collection($user as xs:string?) as xs:string {
     let $colParam := request:request-parameter("collection", ())
     return
         if($colParam) then
@@ -205,7 +205,10 @@ declare function b:get-collection($user) as xs:string {
             return
                 $collection
         else
-            request:get-session-attribute("modscol")
+            if(request:get-session-attribute("modscol")) then
+                request:get-session-attribute("modscol")
+            else
+                "/db/mods" (: fallback :)
 };
 
 let $user := request:get-session-attribute("user"),
