@@ -85,15 +85,15 @@ public class Mkcol implements WebDAVMethod {
             broker = pool.get(user);
             Collection parent = broker.getCollection(parentPath);
             if(parent == null) {
-                LOG.debug("parent collection " + parentPath + " not found");
+                LOG.debug("Parent collection " + parentPath + " not found");
                 response.sendError(HttpServletResponse.SC_CONFLICT,
-                        "parent collection not found");
+                        "Parent collection not found");
                 return;
             }
             Collection created = broker.getOrCreateCollection(path);
             broker.saveCollection(created);
             broker.flush();
-            LOG.debug("created collection " + path);
+            LOG.debug("Created collection " + path);
             response.setStatus(HttpServletResponse.SC_CREATED);
         } catch(EXistException e) {
             throw new ServletException("Database error: " + e.getMessage(), e);

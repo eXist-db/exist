@@ -46,6 +46,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -91,14 +92,16 @@ public class Put implements WebDAVMethod {
 				}
 				String collectionName = path.substring(0, p);
 				path = path.substring(p + 1);
-				collection = broker.getCollection(collectionName);
+				collection = broker.openCollection(collectionName, Lock.WRITE_LOCK);
 				if(collection == null) {
 					response.sendError(HttpServletResponse.SC_CONFLICT, "Parent collection " + collectionName +
 							" not found");
 					return;
 				}
-			} else
+			} else {
+				collection.getLock().acquire(Lock.WRITE_LOCK);
 				path = path.substring(collection.getName().length() + 1);
+			}
 			if(contentType == null) {
 			    contentType = URLConnection.guessContentTypeFromName(path);
 			}
@@ -128,6 +131,7 @@ public class Put implements WebDAVMethod {
 		} catch (LockException e) {
 			response.sendError(HttpServletResponse.SC_CONFLICT);
 		} finally {
+			collection.release();
 			pool.release(broker);
 		}
 		response.setStatus(HttpServletResponse.SC_CREATED);
