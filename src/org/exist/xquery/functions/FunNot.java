@@ -82,9 +82,10 @@ public class FunNot extends Function {
 				// special treatment if the context sequence is empty:
 				// within a predicate, we just return the empty sequence
 				// otherwise evaluate the argument and return a boolean result
-				if (inPredicate)
-					return Sequence.EMPTY_SEQUENCE;
-				else
+// TODO: why do we need this special case here?			    
+//				if (inPredicate)
+//					return Sequence.EMPTY_SEQUENCE;
+//				else
 					return evalBoolean(contextSequence, contextItem, arg);
 			}
 			NodeSet result = new ExtArrayNodeSet();

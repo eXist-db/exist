@@ -26,11 +26,21 @@ public class Dependency {
 	public final static int CONTEXT_ITEM = 2;
 	
 	/**
-	 * Expression depends on one or more in-scope variables. 
+	 * Expression depends on a variable declared within the
+	 * same for or let expression. 
 	 */
 	public final static int LOCAL_VARS = 4;
 	
-	public final static int GLOBAL_VARS = 8;
+	/**
+	 * Expression depends on a variable declared in the context, i.e.
+	 * an outer let or for.
+	 */
+	public final static int CONTEXT_VARS = 8;
+	
+	/**
+	 * Bit mask to test if the expression depends on a variable reference.
+	 */
+	public final static int VARS = LOCAL_VARS + CONTEXT_VARS;
 	
 	/**
 	 * Expression evaluates the context position and thus requires

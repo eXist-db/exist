@@ -53,10 +53,16 @@ public interface Expression {
     public final static int IN_PREDICATE = 2;
     
     /**
+     * Indicates that the expression is within a where clause of a FLWOR. This
+     * flag will be set in addition to {@link #IN_PREDICATE}.
+     */
+    public final static int IN_WHERE_CLAUSE = 4;
+    
+    /**
      * Statically analyze the expression and its subexpressions.
      * 
      * During the static analysis phase, the query engine can detect
-     * unknown variables or some type errors.
+     * unknown variables and some type errors.
      * 
      * @param parent the parent expression which calls this method
      * @param flags int value containing a set of flags. See the constants defined

@@ -75,7 +75,7 @@ public class ForExpr extends BindingExpression {
 		
 		inputSequence.analyze(this, flags);
 		if(whereExpr != null) {
-		    whereExpr.analyze(this, flags | IN_PREDICATE);
+		    whereExpr.analyze(this, flags | IN_PREDICATE | IN_WHERE_CLAUSE);
 		}
 		// the order by specs should be analyzed by the last binding expression
 		// in the chain to have access to all variables. So if the return expression

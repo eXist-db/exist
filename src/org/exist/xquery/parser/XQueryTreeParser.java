@@ -5847,9 +5847,12 @@ public XQueryTreeParser() {
 		"ELEMENT_CONTENT",
 		"XML_COMMENT_END",
 		"XML_PI_END",
+		"XML_CDATA",
+		"XML_CDATA_END",
 		"\"collection\"",
 		"\"preceding\"",
 		"XML_PI_START",
+		"XML_CDATA_START",
 		"LETTER",
 		"DIGITS",
 		"HEX_DIGITS",
@@ -5872,7 +5875,7 @@ public XQueryTreeParser() {
 	};
 	
 	private static final long[] mk_tokenSet_0() {
-		long[] data = { -9169021063967113328L, -144115207402451832L, 17246976471L, 0L, 0L, 0L};
+		long[] data = { -9169021063967113328L, -144115207402451832L, 68786584023L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
