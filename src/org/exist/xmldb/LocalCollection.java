@@ -42,6 +42,7 @@ import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
+import org.exist.schema.LocalSchemaService;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -400,17 +401,21 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		if (name.equals("IndexQueryService"))
 			return new LocalIndexQueryService(user, brokerPool, this);
 
+		if (name.equals("SchemaService"))
+			return new LocalSchemaService(user, brokerPool, this);
+		
 		throw new XMLDBException(ErrorCodes.NO_SUCH_SERVICE);
 	}
 
 	public Service[] getServices() throws XMLDBException {
-		Service[] services = new Service[6];
+		Service[] services = new Service[7];
 		services[0] = new LocalXPathQueryService(user, brokerPool, this);
 		services[1] = new LocalCollectionManagementService(user, brokerPool, this);
 		services[2] = new LocalUserManagementService(user, brokerPool, this);
 		services[3] = new LocalDatabaseInstanceManager(user, brokerPool);
 		services[4] = new LocalXUpdateQueryService(user, brokerPool, this);
 		services[5] = new LocalIndexQueryService(user, brokerPool, this);
+		services[6] = new LocalSchemaService(user, brokerPool, this);
 		return services; // jmv null;
 	}
 
