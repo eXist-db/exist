@@ -30,10 +30,13 @@ import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.URIResolver;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TemplatesHandler;
@@ -43,8 +46,6 @@ import javax.xml.transform.stream.StreamSource;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.Receiver;
-import org.exist.util.serializer.DOMStreamer;
-import org.exist.util.serializer.DOMStreamerPool;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -157,6 +158,7 @@ public class Transform extends BasicFunction {
 	
 	private Templates getSource(TransformerFactory factory, String stylesheet) 
 	throws XPathException, TransformerConfigurationException {
+		String base;
 		if(stylesheet.indexOf(':') < 0) {
 			File f = new File(stylesheet);
 			if(f.canRead())
@@ -168,10 +170,15 @@ public class Transform extends BasicFunction {
 					stylesheet = f.toURI().toASCIIString();
 			}
 		}
+		int p = stylesheet.lastIndexOf('/');
+		if(p > -1)
+			base = stylesheet.substring(0, p);
+		else
+			base = stylesheet;
 		CachedStylesheet cached = (CachedStylesheet)cache.get(stylesheet);
 		try {
 			if(cached == null) {
-				cached = new CachedStylesheet(factory, new URL(stylesheet));
+				cached = new CachedStylesheet(factory, new URL(stylesheet), base);
 				cache.put(stylesheet, cached);
 			}
 			return cached.getTemplates();
@@ -203,10 +210,11 @@ public class Transform extends BasicFunction {
 		Templates templates = null;
 		URL url;
 		
-		public CachedStylesheet(TransformerFactory factory, URL url) 
+		public CachedStylesheet(TransformerFactory factory, URL url, String baseURI) 
 		throws TransformerConfigurationException, IOException {
 			this.factory = factory;
 			this.url = url;
+			factory.setURIResolver(new Resolver(baseURI));
 			getTemplates();
 		}
 		
@@ -219,6 +227,33 @@ public class Transform extends BasicFunction {
 			}
 			lastModified = modified;
 			return templates;
+		}
+	}
+	
+	private class Resolver implements URIResolver {
+		
+		private String baseURI;
+		
+		public Resolver(String base) {
+			this.baseURI = base;
+		}
+		
+		
+		/* (non-Javadoc)
+		 * @see javax.xml.transform.URIResolver#resolve(java.lang.String, java.lang.String)
+		 */
+		public Source resolve(String href, String base)
+				throws TransformerException {
+			URL url;
+			try {
+				url = new URL(baseURI + '/'  + href);
+				URLConnection connection = url.openConnection();
+				return new StreamSource(connection.getInputStream());
+			} catch (MalformedURLException e) {
+				return null;
+			} catch (IOException e) {
+				return null;
+			}
 		}
 	}
 }

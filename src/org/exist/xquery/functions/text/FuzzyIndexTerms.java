@@ -20,39 +20,38 @@
  *  
  *  $Id$
  */
-package org.exist.xquery.functions.xmldb;
+package org.exist.xquery.functions.text;
 
-import org.exist.dom.NodeProxy;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
-import org.exist.security.User;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
- *
  */
-public class XMLDBHaveLock extends BasicFunction {
+public class FuzzyIndexTerms extends BasicFunction {
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("havelock", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
-			"Return the name of the user that lock the resource otherwise null",
-			new SequenceType[] {
-					new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
-			},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+	public final static FunctionSignature signature = new FunctionSignature(
+			new QName("fuzzy-index-terms", TextModule.NAMESPACE_URI, TextModule.PREFIX),
+			"Fuzzy keyword search, which compares strings based on the Levenshtein distance " +
+			"(or edit distance). The function tries to match each of the keywords specified in the " +
+			"keyword string $b against the string value of each item in the sequence $a.",
+			new SequenceType[]{
+					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
+			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
 	
-	public XMLDBHaveLock(XQueryContext context) {
+	public FuzzyIndexTerms(XQueryContext context) {
 		super(context, signature);
 	}
 	
@@ -61,13 +60,19 @@ public class XMLDBHaveLock extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		NodeValue node = (NodeValue)args[0].itemAt(0);
-		if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-			NodeProxy proxy = (NodeProxy)node;
-			User u = proxy.doc.getUserLock();
-			return new StringValue(u == null ? "" : u.getName());
-		}
-		return Sequence.EMPTY_SEQUENCE;
+		if(args[0].getLength() == 0)
+			return Sequence.EMPTY_SEQUENCE;
+		DocumentSet docs;
+		if(contextSequence instanceof NodeSet)
+			docs = ((NodeSet)contextSequence).getDocumentSet();
+		else
+			docs = context.getStaticallyKnownDocuments();
+		String term = args[0].getStringValue();
+		String[] matches =
+			context.getBroker().getTextEngine().getIndexTerms(docs, new FuzzyMatcher(term, 0.65));
+		ValueSequence result = new ValueSequence();
+		for(int i = 0; i < matches.length; i++)
+			result.add(new StringValue(matches[i]));
+		return result;
 	}
-
 }

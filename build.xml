@@ -5,6 +5,8 @@
 <!-- ======================================================================= -->
 <project basedir="." default="all" name="exist">
 
+	<property file="build.properties"/>
+
     <property name="jetty.dir" value="Jetty-4.1.4"/>
     <property name="src" value="./src"/>
 	<property name="samples" value="./samples"/>
@@ -26,11 +28,11 @@
     <property name="build.optimize" value="on"/>
     <property name="build.deprecation" value="on"/>
 	<property name="jvmarg" value="-Xmx128000k -Xms32000k -Djetty.home=${jetty.dir} -Dexist.home=${basedir}"/>
-
-    <property file="build.properties"/>
+	<property name="xmldb.src" value="undefined"/> 
 	
     <property name="dist.dir" value="${dist}/${project.name}-${project.version}"/>
-	
+	<available file="${xmldb.src}" type="dir" property="has.xmldb.src"/>
+
     <path id="classpath.core">
         <fileset dir="${lib.core}">
             <include name="*.jar"/>
@@ -173,7 +175,7 @@
             <exclude name="org/exist/soap/**"/>
             <exclude name="org/exist/ant/**"/>
             <exclude name="org/exist/http/servlets/**"/>
-            <exclude name="org/exist/xpath/functions/request/**"/>
+            <exclude name="org/exist/xquery/functions/request/**"/>
             <exclude name="org/exist/cocoon/**"/>
             <exclude name="org/exist/*.xsl"/>
 		</jar>
@@ -189,7 +191,7 @@
             <include name="org/exist/soap/**"/>
             <include name="org/exist/ant/**"/>
             <include name="org/exist/http/servlets/**"/>
-            <include name="org/exist/xpath/functions/request/**"/>
+            <include name="org/exist/xquery/functions/request/**"/>
             <include name="org/exist/cocoon/**"/>
             <include name="org/exist/*.xsl"/>
         </jar>
@@ -232,6 +234,8 @@
     <target depends="prepare" name="javadocs">
 		<!--delete dir="webapp/api"/>
 		<mkdir dir="webapp/api"/-->
+		<echo message="Generating Javadocs ..."/>
+		<echo message="XMLDB: ${xmldb.src}"/>
         <javadoc bottom="Copyright (C) Wolfgang Meier. All rights reserved."
 			destdir="webapp/api" doctitle="eXist Javadocs"
 			noindex="true" notree="true" access="public"
@@ -239,8 +243,9 @@
 			<fileset dir="${src}" defaultexcludes="yes">
 				<include name="org/exist/**/*.java"/>
 			</fileset>
-			<fileset dir="${xmldb.src}" defaultexcludes="yes">
-				<include name="org/**/*.java"/>
+			<fileset dir="${xmldb.src}">
+				<include if="${has.xmldb.src}" 
+					name="org/**/*.java"/>
 			</fileset>
             <classpath>
                 <path refid="classpath.core"/>

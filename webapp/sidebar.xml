@@ -43,9 +43,9 @@
         <item>
             <link href="changes.xml">Changes</link>
         </item>
-        <item>
+        <!--item>
             <link href="design.xml">Design</link>
-        </item>
+        </item-->
     </group>
     <group name="HowTo">
         <item>

@@ -20,47 +20,45 @@
  *  
  *  $Id$
  */
-package org.exist.xquery.functions.xmldb;
+package org.exist.xquery.functions.text;
 
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
+
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class ModuleImpl extends AbstractInternalModule {
+public class TextModule extends AbstractInternalModule {
 
-	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/xmldb";
+	public static final String NAMESPACE_URI = "http://exist-db.org/xquery/text";
 	
-	public final static String PREFIX = "xmldb";
+	public static final String PREFIX = "text";
 	
-	public final static FunctionDef[] functions = {
-		new FunctionDef(XMLDBCollection.signature, XMLDBCollection.class),
-		new FunctionDef(XMLDBCreateCollection.signature, XMLDBCreateCollection.class),
-		new FunctionDef(XMLDBRegisterDatabase.signature, XMLDBRegisterDatabase.class),
-		new FunctionDef(XMLDBStore.signature, XMLDBStore.class),
-		new FunctionDef(XMLDBAuthenticate.signature, XMLDBAuthenticate.class),
-		new FunctionDef(XMLDBXUpdate.signature, XMLDBXUpdate.class),
-		new FunctionDef(XMLDBRemove.signature, XMLDBRemove.class),
-		new FunctionDef(XMLDBHasLock.signature, XMLDBHasLock.class)
+	public static final FunctionDef[] functions = {
+		new FunctionDef(FuzzyMatchAll.signature, FuzzyMatchAll.class),
+		new FunctionDef(FuzzyMatchAny.signature, FuzzyMatchAny.class),
+		new FunctionDef(FuzzyIndexTerms.signature, FuzzyIndexTerms.class)
 	};
 	
-	public ModuleImpl() {
+	/**
+	 * @param functions
+	 */
+	public TextModule() {
 		super(functions);
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Module#getNamespaceURI()
+	 * @see org.exist.xquery.Module#getNamespaceURI()
 	 */
 	public String getNamespaceURI() {
 		return NAMESPACE_URI;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Module#getDefaultPrefix()
+	 * @see org.exist.xquery.Module#getDefaultPrefix()
 	 */
 	public String getDefaultPrefix() {
 		return PREFIX;
 	}
-
 }

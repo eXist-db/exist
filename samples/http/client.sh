@@ -26,6 +26,12 @@ Parameters:
 
     --query|-q xquery-file      Load XQuery from file and execute it. 
 
+	--start						The first item to retrieve from the
+								query result.
+	
+	--max						The maximum number of items to retrieve
+								from the query result set.
+
     --get|-g document           Retrieve document from collection.
 
     --remove|-r document or collection
@@ -50,6 +56,8 @@ collection=/db
 indent=no
 contentType=text/xml
 binmode=no
+offset=1
+max=20
 
 while [ -n "$1" ]
 do
@@ -121,6 +129,24 @@ do
         --binary|-b)
             binmode=yes
             ;;
+		--start)
+			if [ -z $2 ]
+            then
+                echo "--start requires an argument"
+                exit 1
+            fi
+            offset=$2
+            shift
+            ;;
+		--max)
+			if [ -z $2 ]
+			then
+				echo "--max requires an argument"
+				exit 1
+			fi
+			max=$2
+			shift
+			;;
         *)
             echo "Unknown parameter: $1"
             exit 1
@@ -171,7 +197,7 @@ case $action in
         request=`cat <<END
 <?xml version="1.0" encoding="UTF-8"?> \
 <query xmlns="http://exist.sourceforge.net/NS/exist" \
-    start="1" max="20"> \
+    start="$offset" max="$max"> \
     <text><![CDATA[$query]]></text>
 </query>
 END

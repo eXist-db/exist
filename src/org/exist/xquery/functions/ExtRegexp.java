@@ -60,7 +60,7 @@ public class ExtRegexp extends Function {
 			true
 		);
 			
-	private int type = Constants.FULLTEXT_AND;
+	protected int type = Constants.FULLTEXT_AND;
 
 	public ExtRegexp(XQueryContext context) {
 		super(context, signature);
@@ -74,6 +74,11 @@ public class ExtRegexp extends Function {
 		this.type = type;
 	}
 
+	public ExtRegexp(XQueryContext context, int type, FunctionSignature signature) {
+		super(context, signature);
+		this.type = type;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.functions.Function#getDependencies()
 	 */
@@ -89,7 +94,7 @@ public class ExtRegexp extends Function {
 		Item contextItem)
 		throws XPathException {
 		if(getArgumentCount() < 2)
-			throw new XPathException("function requires at least two arguments");
+			throw new XPathException(getASTNode(), "function requires at least two arguments");
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
 		Expression path = getArgument(0);
@@ -141,23 +146,29 @@ public class ExtRegexp extends Function {
 		throws XPathException {
 		if(terms == null || terms.length == 0)
 			return Sequence.EMPTY_SEQUENCE;	// no search terms
-		NodeSet hits = null;
+		NodeSet hits[] = new NodeSet[terms.length];
 		for (int k = 0; k < terms.length; k++) {
-			hits =
+			hits[k] =
 				context.getBroker().getTextEngine().getNodesContaining(
 					nodes.getDocumentSet(),
 					nodes,
-					terms[k],
-					DBBroker.MATCH_REGEXP);
-			if (type == Constants.FULLTEXT_AND)
-				nodes = hits;
+					terms[k], DBBroker.MATCH_REGEXP);
 		}
-		return hits;
+		NodeSet result = hits[0];
+		if(result != null) {
+			for(int k = 1; k < hits.length; k++) {
+				if(hits[k] != null)
+					result = (type == Constants.FULLTEXT_AND ? 
+							result.deepIntersection(hits[k]) : result.union(hits[k]));
+			}
+			return result;
+		} else
+			return NodeSet.EMPTY_SET;
 	}
 	
 	protected String[] getSearchTerms(XQueryContext context, Sequence contextSequence) throws XPathException {
 		if(getArgumentCount() < 2)
-			throw new XPathException("function requires at least 2 arguments");
+			throw new XPathException(getASTNode(), "function requires at least 2 arguments");
 		String[] terms = new String[getArgumentCount() - 1];
 		Expression next;
 		for(int i = 1; i < getLength(); i++) {
