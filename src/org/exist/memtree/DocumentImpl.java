@@ -24,9 +24,9 @@ import java.util.Arrays;
 
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.serializers.Serializer;
+import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.util.hashtable.NamePool;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
@@ -111,11 +111,13 @@ public class DocumentImpl extends NodeImpl implements Document {
     protected NodeProxy references[];
 
     protected int nextRef = 0;
-     
+    
     private final static int NODE_SIZE = 128;
     private final static int ATTR_SIZE = 64;
     private final static int CHAR_BUF_SIZE = 1024;
     private final static int REF_SIZE = 128;
+
+	private Int2ObjectHashMap storedNodes = null;
     
     public DocumentImpl(XQueryContext context) {
         super(null, 0);
@@ -400,6 +402,52 @@ public class DocumentImpl extends NodeImpl implements Document {
             return null;
     }
 
+    public int getAttributesCountFor(int nodeNumber) {
+        int count = 0;
+        int attr = alpha[nodeNumber];
+        if (-1 < attr) {
+            while (attr < nextAttr
+                    && attrParent[attr++] == nodeNumber) {
+                ++count;
+            }
+        }
+        return count;
+    }
+    
+    public int getChildCountFor(int nodeNumber) {
+        int count = 0;
+        short level = (short)(treeLevel[nodeNumber] + 1);
+        int nextNode = nodeNumber;
+        while (++nextNode < size) {
+            if(treeLevel[nextNode] == level)
+                ++count;
+            if (next[nextNode] <= nodeNumber) break;
+        }
+        return count;
+    }
+    
+    public int getFirstChildFor(int nodeNumber) {
+        short level = treeLevel[nodeNumber];
+        int nextNode = nodeNumber + 1;
+        if (nextNode < size && treeLevel[nextNode] > level) {
+            return nextNode;
+        } else
+            return -1;
+    }
+    
+    public int getNextSiblingFor(int nodeNumber) {
+        int nextNr = next[nodeNumber];
+        return nextNr < nodeNumber ? -1 : nextNr;
+    }
+    
+    public int getParentNodeFor(int nodeNumber) {
+        int nextNode = next[nodeNumber];
+        while (nextNode > nodeNumber) {
+            nextNode = next[nextNode];
+        }
+        return nextNode;
+    }
+    
     /*
      * (non-Javadoc)
      * 
@@ -831,18 +879,38 @@ public class DocumentImpl extends NodeImpl implements Document {
     	}
     }
     
-    protected NodeSet toNodeSet(NodeImpl node) throws XPathException {
-    	Serializer serializer = context.getBroker().getSerializer();
-    	serializer.reset();
-    	String data;
-		try {
-			data = serializer.serialize(node);
-		} catch (SAXException e) {
-			throw new XPathException("Error occurred while storing temporary fragment: " + e.getMessage(), e);
-		}
-		return context.storeTemporaryDoc(data);
+    protected NodeProxy toNodeSet(NodeImpl node) throws XPathException {
+    	if (storedNodes == null)
+    		makePersistent();
+    	return (NodeProxy) storedNodes.get(node.nodeNumber);
     }
-
+    
+    protected void makePersistent() throws XPathException {
+    	expand();
+    	org.exist.dom.DocumentImpl doc = context.storeTemporaryDoc(this);
+    	NodeList cl = doc.getDocumentElement().getChildNodes();
+    	storedNodes = new Int2ObjectHashMap();
+    	int top = size > 1 ? 1 : -1;
+    	int i = 0;
+        while(top > 0 && i < cl.getLength()) {
+            org.exist.dom.NodeImpl node = (org.exist.dom.NodeImpl) cl.item(i);
+            NodeProxy proxy = new NodeProxy(doc, node.getGID(), node.getInternalAddress());
+            storedNodes.put(top, proxy);
+            top = getNextSiblingFor(top);
+            i++;
+        }
+    }
+    
+    public int getChildCount() {
+    	int count = 0;
+    	int top = size > 1 ? 1 : -1;
+        while(top > 0) {
+            ++count;
+            top = getNextSiblingFor(top);
+        }
+        return count;
+    }
+    
 	/** ? @see org.w3c.dom.Document#getInputEncoding()
 	 */
 	public String getInputEncoding() {

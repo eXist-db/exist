@@ -31,13 +31,14 @@ import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
+import org.xml.sax.ext.LexicalHandler;
 
 /**
  * Adapter class to build an internal, in-memory DOM from a SAX stream.
  * 
  * @author wolf
  */
-public class SAXAdapter implements ContentHandler {
+public class SAXAdapter implements ContentHandler, LexicalHandler {
 
 	private MemTreeBuilder builder = new MemTreeBuilder();
 	private HashMap namespaces = null;
@@ -141,4 +142,47 @@ public class SAXAdapter implements ContentHandler {
 		}
 		namespaces = null;
 	}
+
+    /* (non-Javadoc)
+     * @see org.xml.sax.ext.LexicalHandler#endCDATA()
+     */
+    public void endCDATA() throws SAXException {
+    }
+
+    /* (non-Javadoc)
+     * @see org.xml.sax.ext.LexicalHandler#endDTD()
+     */
+    public void endDTD() throws SAXException {
+    }
+
+    /* (non-Javadoc)
+     * @see org.xml.sax.ext.LexicalHandler#startCDATA()
+     */
+    public void startCDATA() throws SAXException {
+    }
+
+    /* (non-Javadoc)
+     * @see org.xml.sax.ext.LexicalHandler#comment(char[], int, int)
+     */
+    public void comment(char[] ch, int start, int length) throws SAXException {
+        builder.comment(ch, start, length);
+    }
+
+    /* (non-Javadoc)
+     * @see org.xml.sax.ext.LexicalHandler#endEntity(java.lang.String)
+     */
+    public void endEntity(String name) throws SAXException {
+    }
+
+    /* (non-Javadoc)
+     * @see org.xml.sax.ext.LexicalHandler#startEntity(java.lang.String)
+     */
+    public void startEntity(String name) throws SAXException {
+    }
+
+    /* (non-Javadoc)
+     * @see org.xml.sax.ext.LexicalHandler#startDTD(java.lang.String, java.lang.String, java.lang.String)
+     */
+    public void startDTD(String name, String publicId, String systemId) throws SAXException {
+    }
 }

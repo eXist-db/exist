@@ -42,6 +42,7 @@ import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.SymbolTable;
+import org.exist.memtree.ElementImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.io.VariableByteInput;
@@ -660,7 +661,7 @@ public abstract class DBBroker extends Observable {
 	 * @throws PermissionDeniedException
 	 * @throws LockException
 	 */
-	public abstract DocumentImpl storeTemporaryDoc(String data) 
+	public abstract DocumentImpl storeTemporaryDoc(org.exist.memtree.DocumentImpl doc) 
 		throws EXistException, PermissionDeniedException, LockException;
 	
 	/**

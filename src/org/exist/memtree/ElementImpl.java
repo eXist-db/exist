@@ -89,6 +89,10 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 		return nl;
 	}
 	
+    public int getChildCount() {
+        return document.getChildCountFor(nodeNumber);
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getNamespaceURI()
 	 */
@@ -150,6 +154,10 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 
 	}
 
+    public int getAttributesCount() {
+       return document.getAttributesCountFor(nodeNumber);
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getAttributes()
 	 */
@@ -173,7 +181,6 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 			map.add(node);
 			++ns;
 		}
-		System.out.println(map.getLength());
 		return map;
 	}
 

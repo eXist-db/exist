@@ -41,7 +41,6 @@ import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.SymbolTable;
 import org.exist.memtree.MemTreeBuilder;
@@ -1273,11 +1272,13 @@ public class XQueryContext {
 	 * @return
 	 * @throws XPathException
 	 */
-	public NodeSet storeTemporaryDoc(String data) throws XPathException {
+	public DocumentImpl storeTemporaryDoc(org.exist.memtree.DocumentImpl doc) throws XPathException {
 		try {
-			DocumentImpl doc = broker.storeTemporaryDoc(data);
-			watchdog.addTemporaryFragment(doc.getFileName());
-			return new NodeProxy(doc, 1, doc.getFirstChildAddress());
+			DocumentImpl targetDoc = broker.storeTemporaryDoc(doc);
+			watchdog.addTemporaryFragment(targetDoc.getFileName());
+            LOG.debug("Stored: " + targetDoc.getDocId() + ": " + targetDoc.getName() +
+            		": " + targetDoc.printTreeLevelOrder());
+			return targetDoc;
 		} catch (EXistException e) {
 			throw new XPathException(TEMP_STORE_ERROR, e);
 		} catch (PermissionDeniedException e) {
