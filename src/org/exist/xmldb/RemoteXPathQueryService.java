@@ -6,6 +6,8 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
 
+import javax.xml.transform.OutputKeys;
+
 import org.apache.xmlrpc.XmlRpcException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -30,13 +32,6 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
 	}
 	
     public ResourceSet query( String query, String sortExpr ) throws XMLDBException {
-        if ( !( query.startsWith( "document(" ) || query.startsWith( "collection(" ) ||
-        	query.startsWith("xcollection("))) {
-            if ( collection.getName().equals( "/" ) )
-                query = "document()" + query;
-            else
-                query = "collection('" + collection.getPath() + "')" + query;
-        }
         try {
             Vector params = new Vector();
             params.addElement(query.getBytes("UTF-8"));
@@ -64,13 +59,6 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
     public ResourceSet query( XMLResource res, String query, String sortExpr )
         throws XMLDBException {
         RemoteXMLResource resource = (RemoteXMLResource)res;
-        if(resource.id == null) {
-            // resource is a document
-            if(!(query.startsWith( "document(" ) || query.startsWith("collection(") ||
-            	query.startsWith("xcollection("))) 
-                query = "document('" + res.getDocumentId() + "')" + query;
-            return query( query );
-        }
         try {
             Vector params = new Vector();
             params.addElement( query.getBytes("UTF-8") );
@@ -101,8 +89,6 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
      *@exception  XMLDBException  Description of the Exception
      */
     public ResourceSet queryResource( String resource, String query ) throws XMLDBException {
-        if ( !( query.startsWith( "document(" ) || query.startsWith( "collection(" ) ) )
-            query = "document('" + resource + "')" + query;
         return query( query );
     }
 
@@ -147,9 +133,9 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
      *@exception  XMLDBException  Description of the Exception
      */
     public String getProperty( String property ) throws XMLDBException {
-        if ( property.equals( "pretty" ) )
-            return ( indentXML == 1 ) ? "true" : "false";
-        if ( property.equals( "encoding" ) )
+        if ( property.equals( OutputKeys.INDENT ) )
+            return ( indentXML == 1 ) ? "yes" : "no";
+        if ( property.equals( OutputKeys.ENCODING ) )
             return encoding;
         return null;
     }
@@ -163,9 +149,9 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
      *@exception  XMLDBException  Description of the Exception
      */
     public void setProperty( String property, String value ) throws XMLDBException {
-        if ( property.equals( "pretty" ) )
-            indentXML = ( value.equals( "true" ) ? 1 : -1 );
-        if ( property.equals( "encoding" ) )
+        if ( property.equals( OutputKeys.INDENT ) )
+            indentXML = ( value.equals( "yes" ) ? 1 : -1 );
+        if ( property.equals( OutputKeys.ENCODING ) )
             encoding = value;
     }
 
@@ -217,5 +203,14 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
     public String getNamespace( String prefix ) throws XMLDBException {
         return (String)namespaceMappings.get(prefix);
     }
+
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.XPathQueryServiceImpl#declareVariable(java.lang.String, java.lang.Object)
+	 */
+	public void declareVariable(String qname, Object initialValue) throws XMLDBException {
+		// TODO Not implemented
+		throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED,
+			"method not implemented");
+	}
 }
 

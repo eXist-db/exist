@@ -32,6 +32,8 @@
                 <xsp:include>org.xmldb.api.modules.*</xsp:include>
                 <xsp:include>org.apache.cocoon.components.language.markup.xsp.XSPUtil</xsp:include>
                 <xsp:include>org.exist.util.IncludeXMLFilter</xsp:include>
+                <xsp:include>org.exist.storage.serializers.EXistOutputKeys</xsp:include>
+                <xsp:include>javax.xml.transform.OutputKeys</xsp:include>
                 <xsp:include>org.exist.xmldb.UserManagementService</xsp:include>
                 <xsp:include>org.exist.security.User</xsp:include>
                 <xsp:include>org.exist.storage.serializers.Serializer</xsp:include>
@@ -178,8 +180,8 @@
                 if((_result = (ResourceSet)session.getAttribute(_query)) == null) {
                     XPathQueryService _service =
                         ( XPathQueryService ) collection.getService( "XPathQueryService", "1.0" );
-                    _service.setProperty(Serializer.HIGHLIGHT_MATCHES, "elements");
-                    _service.setProperty(Serializer.PRETTY_PRINT, "false");
+                    _service.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
+                    _service.setProperty(OutputKeys.INDENT, "no");
                     <xsl:for-each select="./xmldb:namespace">
                     	<xsp:logic>
                     		_service.setNamespace("<xsl:value-of select="@prefix"/>", "<xsl:value-of select="."/>");
@@ -518,8 +520,8 @@
             </xsl:call-template>
         </xsl:variable>
         <xsp:logic>
-            collection.setProperty("pretty", "false");
-            collection.setProperty("encoding", <xsl:value-of select="$encoding"/>);
+            collection.setProperty(OutputKeys.INDENT, "no");
+            collection.setProperty(OutputKeys.ENCODING, <xsl:value-of select="$encoding"/>);
             collection.setProperty("sax-document-events", "false");
             XMLResource _res = (XMLResource) collection.getResource(<xsl:value-of select="$name"/>);
             if(<xsl:value-of select="$as"/>.equals("xml")) {

@@ -19,4 +19,12 @@ public class Range {
 	public long getEnd() {
 		return end_;
 	}
+	
+	public boolean inRange(long value) {
+		return value >= start_ && value <= end_;
+	}
+	
+	public int getDistance() {
+		return (int)(end_ - start_) + 1;
+	}
 }

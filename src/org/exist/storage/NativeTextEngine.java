@@ -50,7 +50,6 @@ import org.dbxml.core.filer.BTreeCallback;
 import org.dbxml.core.filer.BTreeException;
 import org.dbxml.core.indexer.IndexQuery;
 import org.exist.collections.Collection;
-import org.exist.dom.AVLTreeNodeSet;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -146,7 +145,7 @@ public class NativeTextEngine extends TextSearchEngine {
 					new BFile(
 						new File(dataDir + pathSep + "words.dbx"),
 						buffers,
-						128);
+						buffers / 2);
 				if (!dbWords.exists())
 					dbWords.create();
 				else
@@ -308,7 +307,7 @@ public class NativeTextEngine extends TextSearchEngine {
 			return null;
 		if (stoplist.contains(expr))
 			return null;
-		long start = System.currentTimeMillis();
+		//long start = System.currentTimeMillis();
 		DocumentImpl doc;
 		Value ref;
 		byte[] data;
@@ -384,12 +383,12 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 		if(context != null)
 			((ExtArrayNodeSet)result).sort();
-		LOG.debug(
-			"found " + expr + ": "
-				+ result.getLength() + " (" + count + ") "
-				+ " in "
-				+ (System.currentTimeMillis() - start)
-				+ "ms.");
+//		LOG.debug(
+//			"found " + expr + ": "
+//				+ result.getLength() + " (" + count + ") "
+//				+ " in "
+//				+ (System.currentTimeMillis() - start)
+//				+ "ms.");
 		return result;
 	}
 
@@ -407,7 +406,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		NodeSet context,
 		String expr,
 		int type) {
-		long start = System.currentTimeMillis();
+		//long start = System.currentTimeMillis();
 		NodeSet result;
 		if (context == null)
 			result = new TextSearchResult(trackMatches != Serializer.TAG_NONE);
@@ -471,12 +470,12 @@ public class NativeTextEngine extends TextSearchEngine {
 				lock.release();
 			}
 		}
-		LOG.debug(
-			"regexp found: "
-				+ result.getLength()
-				+ " in "
-				+ (System.currentTimeMillis() - start)
-				+ "ms.");
+//		LOG.debug(
+//			"regexp found: "
+//				+ result.getLength()
+//				+ " in "
+//				+ (System.currentTimeMillis() - start)
+//				+ "ms.");
 		return result;
 	}
 

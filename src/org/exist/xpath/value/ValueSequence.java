@@ -24,9 +24,19 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.xpath.XPathException;
+
 public class ValueSequence extends AbstractSequence {
 
 	List values;
+	
+	// used to keep track of the type of added items.
+	// will be Type.ANY_TYPE if the type is unknown
+	// and Type.ITEM if there are items of mixed type.
+	int itemType = Type.ANY_TYPE;
 	
 	public ValueSequence() {
 		values = new ArrayList();
@@ -39,18 +49,22 @@ public class ValueSequence extends AbstractSequence {
 	
 	public void add(Item item) {
 		values.add(item);
+		if(itemType == Type.ANY_TYPE)
+			itemType = Type.getSuperType(item.getType());
+		else if(Type.getSuperType(item.getType()) != itemType)
+			itemType = Type.ITEM;
 	}
 	
 	public void addAll(Sequence otherSequence) {
 		for(SequenceIterator iterator = otherSequence.iterate(); iterator.hasNext(); )
-			values.add(iterator.nextItem());
+			add(iterator.nextItem());
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Sequence#getItemType()
 	 */
 	public int getItemType() {
-		return Type.ITEM;
+		return itemType;
 	}
 
 	/* (non-Javadoc)
@@ -69,6 +83,21 @@ public class ValueSequence extends AbstractSequence {
 
 	public Item itemAt(int pos) {
 		return (Item)values.get(pos);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Sequence#toNodeSet()
+	 */
+	public NodeSet toNodeSet() throws XPathException {
+		if(itemType == Type.NODE) {
+			NodeSet set = new ExtArrayNodeSet();
+			for(Iterator i = values.iterator(); i.hasNext(); ) {
+				set.add((NodeProxy)i.next());
+			}
+			return set;
+		} else
+			throw new XPathException("Type error: the sequence cannot be converted into" +
+				" a node set. Item type is " + Type.getTypeName(itemType));
 	}
 	
 	private class ValueSequenceIterator implements SequenceIterator {

@@ -118,7 +118,8 @@ public class CompareDocuments {
         NamedNodeMap attr2 = node2.getAttributes();
         if (attr1!=null && attr2!=null) { 
             if (attr1.getLength()!=attr2.getLength()) {
-                throw new Exception("different attribute counts...");
+                throw new Exception("different attribute counts: node1: " + attr1.getLength() +
+                	"; node2: " + attr2.getLength());
             } 
             for (int i=0; i<attr1.getLength(); i++) {
                 compare(attr1.item(i), attr2.item(i), space, show);

@@ -223,9 +223,8 @@ public class SortedNodeSet extends NodeSet {
 			DocumentSet ndocs,
 			StaticContext context) {
 			this.proxy = proxy;
-			NodeSet contextSet = new SingleNodeSet(proxy);
 			try {
-				Sequence seq = expr.eval(context, ndocs, contextSet, null);
+				Sequence seq = expr.eval(context, ndocs, proxy, null);
 				StringBuffer buf = new StringBuffer();
 				OrderedLinkedList strings = new OrderedLinkedList();
 				Item item;

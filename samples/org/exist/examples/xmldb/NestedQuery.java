@@ -1,5 +1,7 @@
 package org.exist.examples.xmldb;
 
+import javax.xml.transform.OutputKeys;
+
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -37,8 +39,8 @@ public class NestedQuery {
                 (XPathQueryService) col.getService( "XPathQueryService", "1.0" );
                 
             // set properties
-            service.setProperty( "pretty", "true" );
-            service.setProperty( "encoding", "ISO-8859-1" );
+            service.setProperty( OutputKeys.INDENT, "yes" );
+            service.setProperty( OutputKeys.ENCODING, "ISO-8859-1" );
             
             // execute first query
             ResourceSet result = service.query( query1 );

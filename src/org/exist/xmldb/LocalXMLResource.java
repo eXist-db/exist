@@ -4,11 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Date;
-import java.util.Map;
+import java.util.Properties;
+
+import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
@@ -19,6 +19,8 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
+import org.exist.util.serializer.DOMSerializer;
+import org.exist.util.serializer.SAXSerializer;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -41,7 +43,7 @@ public class LocalXMLResource implements XMLResourceImpl {
 	protected LocalCollection parent;
 	protected NodeProxy proxy = null;
 	protected long id = -1;
-	protected Map properties = null;
+	protected Properties properties = null;
 	protected User user;
 	protected String content = null;
 	protected File file = null;
@@ -63,7 +65,7 @@ public class LocalXMLResource implements XMLResourceImpl {
 		LocalCollection parent,
 		String did,
 		long id,
-		Map properties)
+		Properties properties)
 		throws XMLDBException {
 		this.user = user;
 		this.brokerPool = pool;
@@ -82,7 +84,7 @@ public class LocalXMLResource implements XMLResourceImpl {
 		LocalCollection parent,
 		DocumentImpl doc,
 		long id,
-		Map properties)
+		Properties properties)
 		throws XMLDBException {
 		this.user = user;
 		this.brokerPool = pool;
@@ -101,7 +103,7 @@ public class LocalXMLResource implements XMLResourceImpl {
 		BrokerPool pool,
 		LocalCollection parent,
 		NodeProxy p,
-		Map properties)
+		Properties properties)
 		throws XMLDBException {
 		this(user, pool, parent, p.doc, p.gid, properties);
 		this.proxy = p;
@@ -110,7 +112,17 @@ public class LocalXMLResource implements XMLResourceImpl {
 	public Object getContent() throws XMLDBException {
 		if (content != null)
 			return content;
-		else if (file != null) {
+		else if (root != null) {
+			try {
+				StringWriter writer = new StringWriter();
+				DOMSerializer serializer = new DOMSerializer(writer, properties);
+				serializer.serialize(root);
+				content = writer.toString();
+			} catch (TransformerException e) {
+				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
+			}
+			return content;
+		} else if (file != null) {
 			try {
 				content = XMLUtil.readFile(file);
 				return content;
@@ -188,14 +200,14 @@ public class LocalXMLResource implements XMLResourceImpl {
 				throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
 					"permission denied to read resource");
-			if (!properties.containsKey(Serializer.GENERATE_DOC_EVENTS))
+			if (properties.getProperty(Serializer.GENERATE_DOC_EVENTS) == null)
 				properties.put(Serializer.GENERATE_DOC_EVENTS, "true");
 			Serializer serializer = broker.getSerializer();
 			serializer.setContentHandler(handler);
 			serializer.setUser(user);
-			serializer.setProperties(properties);
 			String xml;
 			try {
+				serializer.setProperties(properties);
 				if (id < 0)
 					serializer.toSAX(document);
 				else {
@@ -216,6 +228,8 @@ public class LocalXMLResource implements XMLResourceImpl {
 	}
 
 	protected DocumentImpl getDocument() {
+		if(document == null)
+			LOG.warn("document object is null");
 		return document;
 	}
 
@@ -327,17 +341,13 @@ public class LocalXMLResource implements XMLResourceImpl {
 		String encoding = "UTF-8";
 		if (properties != null && properties.containsKey("encoding"))
 			encoding = (String) properties.get("encoding");
-		OutputFormat format = new OutputFormat("xml", encoding, false);
-		return new InternalXMLSerializer(format);
+		return new InternalXMLSerializer();
 	}
 
-	private class InternalXMLSerializer extends XMLSerializer {
+	private class InternalXMLSerializer extends SAXSerializer {
 
-		StringWriter writer = new StringWriter();
-
-		public InternalXMLSerializer(OutputFormat format) {
-			super(format);
-			setOutputCharStream(writer);
+		public InternalXMLSerializer() {
+			super(new StringWriter(), null);
 		}
 
 		/**
@@ -345,7 +355,7 @@ public class LocalXMLResource implements XMLResourceImpl {
 		 */
 		public void endDocument() throws SAXException {
 			super.endDocument();
-			content = writer.toString();
+			content = getWriter().toString();
 		}
 	}
 

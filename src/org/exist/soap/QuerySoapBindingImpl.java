@@ -11,6 +11,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.xml.transform.OutputKeys;
+
 import org.apache.log4j.Category;
 import org.exist.EXistException;
 import org.exist.dom.ArraySet;
@@ -26,6 +28,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
 import org.exist.xpath.PathExpr;
@@ -145,12 +148,8 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			if (document == null)
 				throw new RemoteException("resource " + name + " not found");
 			Serializer serializer = broker.getSerializer();
-			Map props = new TreeMap();
-			props.put(Serializer.ENCODING, "UTF-8");
-			props.put(Serializer.PRETTY_PRINT, Boolean.toString(indent));
-			props.put(Serializer.EXPAND_XINCLUDES, Boolean.toString(xinclude));
-			serializer.setProperties(props);
-
+			serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, xinclude ? "yes" : "no");
+			serializer.setProperty(OutputKeys.INDENT, indent ? "yes" : "no");
 			return serializer.serialize(document);
 
 			//			if (xml != null)
@@ -313,12 +312,9 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 					if (start + howmany >= resultSet.getLength())
 						howmany = resultSet.getLength() - start;
 					Serializer serializer = broker.getSerializer();
-					Map properties = new TreeMap();
-					properties.put(Serializer.ENCODING, "UTF-8");
-					properties.put(Serializer.PRETTY_PRINT, Boolean.toString(indent));
-					properties.put(Serializer.EXPAND_XINCLUDES, Boolean.toString(xinclude));
-					properties.put(Serializer.HIGHLIGHT_MATCHES, highlight);
-					serializer.setProperties(properties);
+					serializer.setProperty(OutputKeys.INDENT, indent ? "yes" : "no");
+					serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, xinclude ? "yes" : "no");
+					serializer.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, highlight);
 
 					xml = new String[howmany];
 					for (int i = 0; i < howmany; i++) {
@@ -385,12 +381,10 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 					if (start + howmany >= hitsByDoc.getLength())
 						howmany = hitsByDoc.getLength() - start;
 					Serializer serializer = broker.getSerializer();
-					Map properties = new TreeMap();
-					properties.put(Serializer.ENCODING, "UTF-8");
-					properties.put(Serializer.PRETTY_PRINT, Boolean.toString(indent));
-					properties.put(Serializer.EXPAND_XINCLUDES, Boolean.toString(xinclude));
-					properties.put(Serializer.HIGHLIGHT_MATCHES, highlight);
-					serializer.setProperties(properties);
+					serializer.setProperty(OutputKeys.INDENT, indent ? "yes" : "no");
+					serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, xinclude ? "yes" : "no");
+					serializer.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, highlight);
+
 					xml = new String[howmany];
 					for (int i = 0; i < howmany; i++) {
 						NodeProxy proxy = ((NodeSet) hitsByDoc).get(start);

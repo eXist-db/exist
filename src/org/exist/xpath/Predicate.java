@@ -23,7 +23,6 @@ package org.exist.xpath;
 
 import java.util.Iterator;
 
-import org.exist.dom.ArraySet;
 import org.exist.dom.ContextItem;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -54,6 +53,7 @@ public class Predicate extends PathExpr {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
+		setInPredicate(true);
 		//long start = System.currentTimeMillis();
 		Expression inner = getExpression(0);
 		if (inner == null)
@@ -62,12 +62,10 @@ public class Predicate extends PathExpr {
 			contextSequence = contextItem.toSequence();
 		int type = inner.returnsType();
 		if (Type.subTypeOf(type, Type.NODE)) {
-			setInPredicate(true);
 			ExtArrayNodeSet result = new ExtArrayNodeSet();
 			NodeSet nodes =
 				(NodeSet) super.eval(context, docs, contextSequence, null);
-			NodeProxy current, parent;
-			NodeSet contextSet = (NodeSet) contextSequence;
+			NodeProxy current;
 			ContextItem contextNode;
 			NodeProxy next;
 			DocumentImpl lastDoc = null;
@@ -95,7 +93,7 @@ public class Predicate extends PathExpr {
 			Type.subTypeOf(type, Type.BOOLEAN)
 				|| Type.subTypeOf(type, Type.STRING)) {
 			//string has no special meaning
-			ArraySet result = new ArraySet(contextSequence.getLength());
+			NodeSet result = new ExtArrayNodeSet();
 			Item item;
 			Sequence v;
 			for (SequenceIterator i = contextSequence.iterate();
@@ -121,7 +119,7 @@ public class Predicate extends PathExpr {
 			DocumentImpl doc;
 			DocumentImpl last_doc = null;
 			NodeSet contextSet = (NodeSet) contextSequence;
-			NodeSet result = new ArraySet(contextSequence.getLength());
+			NodeSet result = new ExtArrayNodeSet();
 			// evaluate predicate expression for each context node
 			for (Iterator i = contextSet.iterator(); i.hasNext();) {
 				p = (NodeProxy) i.next();
@@ -162,12 +160,6 @@ public class Predicate extends PathExpr {
 		} else
 			LOG.debug("unable to determine return type of predicate expression");
 		return Sequence.EMPTY_SEQUENCE;
-		//		LOG.debug(
-		//			"predicate expression found "
-		//				+ result.getLength()
-		//				+ " in "
-		//				+ (System.currentTimeMillis() - start)
-		//				+ "ms.");
 	}
 
 	public DocumentSet preselect(DocumentSet in_docs, StaticContext context)

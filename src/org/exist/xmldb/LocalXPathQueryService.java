@@ -3,6 +3,7 @@ package org.exist.xmldb;
 import java.io.StringReader;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
@@ -34,11 +35,12 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	private final static Logger LOG = 
 		Logger.getLogger(LocalXPathQueryService.class);
 	
-	protected Map properties = new TreeMap();
+	protected Properties properties = new Properties();
 	protected BrokerPool brokerPool;
 	protected LocalCollection collection;
 	protected User user;
 	protected TreeMap namespaceDecls = new TreeMap();
+	protected TreeMap variableDecls = new TreeMap();
 	
 	public LocalXPathQueryService(User user, BrokerPool pool, LocalCollection collection) {
 		this.user = user;
@@ -59,7 +61,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	}
 
 	public String getProperty(String property) throws XMLDBException {
-		return (String)properties.get(property);
+		return properties.getProperty(property);
 	}
 
 	public String getVersion() throws XMLDBException {
@@ -115,14 +117,22 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 		try {
 			broker = brokerPool.get(user);
             StaticContext context = new StaticContext(broker);
+            context.setBaseURI(collection.getPath());
+            
             Map.Entry entry;
+            // declare namespace/prefix mappings
             for(Iterator i = namespaceDecls.entrySet().iterator(); i.hasNext(); ) {
                 entry = (Map.Entry)i.next();
                 LOG.debug("prefix " + entry.getKey() + " = " + entry.getValue());
                 context.declareNamespace((String)entry.getKey(), (String)entry.getValue());
             }
+            // declare static variables
+            for(Iterator i = variableDecls.entrySet().iterator(); i.hasNext(); ) {
+            	entry = (Map.Entry)i.next();
+            	context.declareVariable((String)entry.getKey(), (String)entry.getValue());
+            }
 			XPathLexer2 lexer = new XPathLexer2(new StringReader(query));
-			XPathParser2 parser = new XPathParser2(lexer);
+			XPathParser2 parser = new XPathParser2(lexer, false);
 			XPathTreeParser2 treeParser = new XPathTreeParser2(context);
 			parser.xpath();
 			if(parser.foundErrors()) {
@@ -208,7 +218,14 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	}
 
 	public void setProperty(String property, String value) throws XMLDBException {
-		properties.put(property, value);
+		properties.setProperty(property, value);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.XPathQueryServiceImpl#declareVariable(java.lang.String, java.lang.Object)
+	 */
+	public void declareVariable(String qname, Object initialValue) throws XMLDBException {
+		variableDecls.put(qname, initialValue);	
 	}
 
 }

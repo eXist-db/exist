@@ -3,6 +3,8 @@ package org.exist.xpath.test;
 import java.io.File;
 
 import junit.framework.TestCase;
+
+import org.exist.xmldb.XPathQueryServiceImpl;
 import org.xmldb.api.*;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.*;
@@ -50,7 +52,10 @@ public class XPathQueryTest extends TestCase {
 			database.setProperty("create-database", "true");
 			DatabaseManager.registerDatabase(database);
 			Collection root =
-				DatabaseManager.getCollection("xmldb:exist:///db");
+				DatabaseManager.getCollection(
+					"xmldb:exist:///db",
+					"admin",
+					null);
 			CollectionManagementService service =
 				(CollectionManagementService) root.getService(
 					"CollectionManagementService",
@@ -102,6 +107,12 @@ public class XPathQueryTest extends TestCase {
 					"floor(sum(/test/item/stock))");
 			assertEquals(result.getSize(), 1);
 			assertEquals(result.getResource(0).getContent(), "86.0");
+
+			result =
+				service.queryResource(
+					"numbers.xml",
+					"/test/item[round(price + 3) > 60]");
+			assertEquals(result.getSize(), 1);
 		} catch (XMLDBException e) {
 			fail(e.getMessage());
 		}
@@ -123,12 +134,16 @@ public class XPathQueryTest extends TestCase {
 					"XPathQueryService",
 					"1.0");
 			ResourceSet result =
-				service.queryResource("strings.xml", "substring(/test/string[1], 1, 5)");
+				service.queryResource(
+					"strings.xml",
+					"substring(/test/string[1], 1, 5)");
 			assertEquals(1, result.getSize());
 			assertEquals(result.getResource(0).getContent(), "Hello");
 
 			result =
-				service.queryResource("strings.xml", "/test/string[starts-with(string(.), 'Hello')]");
+				service.queryResource(
+					"strings.xml",
+					"/test/string[starts-with(string(.), 'Hello')]");
 			assertEquals(2, result.getSize());
 		} catch (XMLDBException e) {
 			fail(e.getMessage());
@@ -161,7 +176,7 @@ public class XPathQueryTest extends TestCase {
 
 			result = service.queryResource("namespaces.xml", "//c:*");
 			assertEquals(1, result.getSize());
-			
+
 			result = service.queryResource("namespaces.xml", "//*:comment");
 			assertEquals(1, result.getSize());
 		} catch (XMLDBException e) {
@@ -192,6 +207,35 @@ public class XPathQueryTest extends TestCase {
 				System.out.println(r.getContent());
 			}
 			assertEquals(result.getSize(), 3);
+		} catch (XMLDBException e) {
+			fail(e.getMessage());
+		}
+	}
+
+	public void testStaticVariables() {
+		try {
+			Collection testCollection =
+				DatabaseManager.getCollection(URI + "/test");
+			assertNotNull(testCollection);
+			XMLResource doc =
+				(XMLResource) testCollection.createResource(
+					"nested.xml",
+					"XMLResource");
+			doc.setContent(nested);
+			testCollection.storeResource(doc);
+			XPathQueryServiceImpl service =
+				(XPathQueryServiceImpl) testCollection.getService(
+					"XPathQueryService",
+					"1.0");
+			service.declareVariable("name", "MONTAGUE");
+			ResourceSet result = service.query("//SPEECH[SPEAKER=$name]");
+			for (ResourceIterator i = result.getIterator();
+				i.hasMoreResources();
+				) {
+				Resource r = i.nextResource();
+				System.out.println(r.getContent());
+			}
+			assertEquals(result.getSize(), 10);
 		} catch (XMLDBException e) {
 			fail(e.getMessage());
 		}

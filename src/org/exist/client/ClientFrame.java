@@ -71,6 +71,7 @@ import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Keymap;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import javax.swing.text.TextAction;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -798,7 +799,8 @@ public class ClientFrame extends JFrame {
 					try {
 						//final StringWriter writer = new StringWriter();
 						//transformer.setResult(new StreamResult(writer));
-						final XMLResource res = client.retrieve(resource.toString(), "true");
+						final XMLResource res = client.retrieve(resource.toString(), "yes");
+						//res.getContentAsSAX(view.getSerializer());
 						//res.getContentAsSAX(transformer);
 						//view.setText(writer.toString());
 						view.setText((String) res.getContent());
@@ -971,11 +973,12 @@ public class ClientFrame extends JFrame {
 	class DocumentView extends JDialog {
 
 		JTextArea text;
-
+		
 		public DocumentView(JFrame owner) {
 			super(owner, "View Document", false);
+			DefaultStyledDocument doc = new DefaultStyledDocument();
 			text = new JTextArea();
-			text.setText("Loading document...");
+			text.setFont(new Font("Monospaced", Font.PLAIN, 12));
 			JScrollPane scroll = new JScrollPane(text);
 			getContentPane().add(scroll);
 			pack();
@@ -983,7 +986,6 @@ public class ClientFrame extends JFrame {
 
 		public void setText(String content) {
 			text.setText(content);
-			text.setCaretPosition(0);
 		}
 	}
 

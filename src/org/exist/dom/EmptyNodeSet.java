@@ -30,8 +30,10 @@ import org.w3c.dom.Node;
 
 public class EmptyNodeSet extends NodeSet {
 
+	private final static EmptyNodeSetIterator EMPTY_ITERATOR = new EmptyNodeSetIterator();
+	
     public Iterator iterator() {
-	    return null;
+	    return EMPTY_ITERATOR;
     }
     
     /* (non-Javadoc)
@@ -95,4 +97,27 @@ public class EmptyNodeSet extends NodeSet {
     	return null;
     }
 
+	private final static class EmptyNodeSetIterator implements Iterator {
+
+		/* (non-Javadoc)
+		 * @see java.util.Iterator#remove()
+		 */
+		public void remove() {
+		}
+
+		/* (non-Javadoc)
+		 * @see java.util.Iterator#hasNext()
+		 */
+		public boolean hasNext() {
+			return false;
+		}
+
+		/* (non-Javadoc)
+		 * @see java.util.Iterator#next()
+		 */
+		public Object next() {
+			return null;
+		}
+		
+	} 
 }

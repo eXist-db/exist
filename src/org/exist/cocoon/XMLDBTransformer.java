@@ -24,6 +24,7 @@ import org.apache.cocoon.environment.Session;
 import org.apache.cocoon.environment.SourceResolver;
 import org.apache.cocoon.transformation.AbstractSAXTransformer;
 import org.apache.cocoon.xml.dom.DOMStreamer;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xmldb.XPathQueryServiceImpl;
 import org.w3c.dom.DocumentFragment;
@@ -225,7 +226,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 				highlighting = "elements";
 			else if (highlightAttributeMatches)
 				highlighting = "attributes";
-			service.setProperty(Serializer.HIGHLIGHT_MATCHES, highlighting);
+			service.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, highlighting);
 			setQueryContext(service);
 			ResourceSet queryResult =
 				(resource == null) ? service.query(xpath) : service.query(resource, xpath);
@@ -307,7 +308,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 				highlighting = "elements";
 			else if (highlightAttributeMatches)
 				highlighting = "attributes";
-			service.setProperty(Serializer.HIGHLIGHT_MATCHES, highlighting);
+			service.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, highlighting);
 			setQueryContext(service);
 			// check if query result is already stored in the session
 			if (createSession && resource == null)

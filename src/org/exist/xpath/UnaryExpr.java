@@ -23,7 +23,7 @@
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.xpath.value.DecimalValue;
+import org.exist.xpath.value.DoubleValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.Type;
@@ -47,7 +47,7 @@ public class UnaryExpr extends PathExpr {
 			contextSequence = contextItem.toSequence();
 		if(getLength() == 0)
 			throw new XPathException("unary expression requires an operand");
-		DecimalValue value = (DecimalValue)
+		DoubleValue value = (DoubleValue)
 			getExpression(0).eval(context, docs, contextSequence).convertTo(Type.DECIMAL);
 		switch(mode) {
 			case Constants.MINUS :

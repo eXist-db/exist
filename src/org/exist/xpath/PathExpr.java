@@ -25,10 +25,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
@@ -88,17 +86,22 @@ public class PathExpr extends AbstractExpression {
         NodeSet set;
 		Item current;
         Expression expr;
-        ValueSequence values;
+        Sequence values;
         for ( Iterator iter = steps.iterator(); iter.hasNext();  ) {
             expr = (Expression) iter.next();
             if ( expr.returnsType() != Type.NODE ) {
 				if(r.getLength() == 0)
                     r = expr.eval( context, docs, null, null );
                 else {
-                	values = new ValueSequence();
+                	values = null;
+                	if(r.getLength() > 1)
+                		values = new ValueSequence();
                 	for ( SequenceIterator iterInner = r.iterate(); iterInner.hasNext(); ) {
                 		current = iterInner.nextItem();
-                		values.addAll( expr.eval(context, docs, r));
+                		if(values == null)
+                			values = expr.eval(context, docs, r, current);
+                		else
+                			values.addAll( expr.eval(context, docs, r, current) );
                 	}
 	                r = values;
             	}
@@ -116,13 +119,19 @@ public class PathExpr extends AbstractExpression {
         return (Expression) steps.get( pos );
     }
 
+	public Expression getLastExpression() {
+		if(steps.size() == 0)
+			return null;
+		return (Expression) steps.getLast();
+	}
+	
     public int getLength() {
         return steps.size();
     }
 
     public String pprint() {
         StringBuffer buf = new StringBuffer();
-        buf.append( '(' );
+        buf.append('(');
         for ( Iterator iter = steps.iterator(); iter.hasNext();  ) {
             if ( buf.length() > 1 )
                 buf.append( '/' );
@@ -144,11 +153,24 @@ public class PathExpr extends AbstractExpression {
     }
 		
     public int returnsType() {
-        if ( steps.get( 0 ) != null )
-            return ( (Expression) steps.get( 0 ) ).returnsType();
-        return Type.NODE;
+    	if( steps.size() == 0 )
+    		return Type.NODE;
+    	return ((Expression) steps.getLast()).returnsType();
     }
 
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#getDependencies()
+	 */
+	public int getDependencies() {
+		Expression next;
+		int deps = 0;
+		for(Iterator i = steps.iterator(); i.hasNext(); ) {
+			next = (Expression)i.next();
+			deps = deps | next.getDependencies();
+		}
+		return deps;
+	}
+	
     public void setDocumentSet( DocumentSet docs ) {
         this.docs = docs;
     }

@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -19,6 +20,7 @@ import java.util.WeakHashMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 
 import org.apache.log4j.Logger;
 import org.apache.xml.serialize.OutputFormat;
@@ -33,6 +35,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.SortedNodeSet;
+import org.exist.memtree.NodeImpl;
 import org.exist.parser.XPathLexer2;
 import org.exist.parser.XPathParser2;
 import org.exist.parser.XPathTreeParser2;
@@ -45,11 +48,13 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
 import org.exist.util.Occurrences;
 import org.exist.util.SyntaxException;
+import org.exist.util.serializer.DOMSerializer;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.Type;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
@@ -179,8 +184,10 @@ public class RpcConnection extends Thread {
 		NodeSet contextSet,
 		Hashtable namespaces)
 		throws Exception {
+		if(docs == null)
+			docs = broker.getAllDocuments();
 		StaticContext context = new StaticContext(broker);
-		if(namespaces != null) {
+		if (namespaces != null) {
 			Map.Entry entry;
 			for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {
 				entry = (Map.Entry) i.next();
@@ -189,9 +196,11 @@ public class RpcConnection extends Thread {
 					(String) entry.getValue());
 			}
 		}
+		LOG.debug("query = " + xpath);
 		XPathLexer2 lexer = new XPathLexer2(new StringReader(xpath));
-		XPathParser2 parser = new XPathParser2(lexer);
+		XPathParser2 parser = new XPathParser2(lexer, false);
 		XPathTreeParser2 treeParser = new XPathTreeParser2(context);
+
 		parser.xpath();
 		if (parser.foundErrors()) {
 			throw new EXistException(parser.getErrorMessage());
@@ -211,8 +220,6 @@ public class RpcConnection extends Thread {
 			(docs == null
 				? expr.preselect(context)
 				: expr.preselect(docs, context));
-		if (ndocs.getLength() == 0)
-			return null;
 		LOG.info(
 			"pre-select took " + (System.currentTimeMillis() - start) + "ms.");
 		Sequence result = expr.eval(context, ndocs, contextSet, null);
@@ -331,12 +338,9 @@ public class RpcConnection extends Thread {
 				throw new EXistException("document not found");
 			}
 			Serializer serializer = broker.getSerializer();
-			Map properties = new TreeMap();
-			properties.put(Serializer.ENCODING, encoding);
-			properties.put(
-				Serializer.PRETTY_PRINT,
-				Boolean.toString(prettyPrint));
-			serializer.setProperties(properties);
+			serializer.setProperty(
+				OutputKeys.INDENT,
+				prettyPrint ? "yes" : "no");
 
 			if (stylesheet != null) {
 				if (!stylesheet.startsWith("/")) {
@@ -381,8 +385,7 @@ public class RpcConnection extends Thread {
 				throw new EXistException(
 					"collection " + collectionName + " not found");
 			DocumentSet docs = collection.allDocs(broker, true);
-			XUpdateProcessor processor =
-				new XUpdateProcessor(broker, docs);
+			XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
 			Modification modifications[] =
 				processor.parse(new InputSource(new StringReader(xupdate)));
 			long mods = 0;
@@ -414,8 +417,7 @@ public class RpcConnection extends Thread {
 				throw new EXistException("document " + resource + " not found");
 			DocumentSet docs = new DocumentSet();
 			docs.add(doc);
-			XUpdateProcessor processor =
-				new XUpdateProcessor(broker, docs);
+			XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
 			Modification modifications[] =
 				processor.parse(new InputSource(new StringReader(xupdate)));
 			long mods = 0;
@@ -865,10 +867,7 @@ public class RpcConnection extends Thread {
 		if (start < 1 || start > resultSet.getLength())
 			throw new EXistException("start parameter out of range");
 		Serializer serializer = broker.getSerializer();
-		Map properties = new TreeMap();
-		properties.put(Serializer.ENCODING, "UTF-8");
-		properties.put(Serializer.PRETTY_PRINT, Boolean.toString(prettyPrint));
-		serializer.setProperties(properties);
+		serializer.setProperty(OutputKeys.INDENT, prettyPrint ? "yes" : "no");
 		return serializer.serialize(
 			(NodeSet) resultSet,
 			start,
@@ -990,8 +989,8 @@ public class RpcConnection extends Thread {
 					+ "hitCount=\"0\"/>";
 
 			switch (resultSeq.getItemType()) {
-				case Type.NODE:
-					NodeSet resultSet = (NodeSet)resultSeq;
+				case Type.NODE :
+					NodeSet resultSet = (NodeSet) resultSeq;
 					if (sortExpr != null) {
 						SortedNodeSet sorted =
 							new SortedNodeSet(brokerPool, user, sortExpr);
@@ -1008,7 +1007,8 @@ public class RpcConnection extends Thread {
 							(System.currentTimeMillis() - startTime));
 					break;
 				default :
-					result = printValues(resultSeq, howmany, start, prettyPrint);
+					result =
+						printValues(resultSeq, howmany, start, prettyPrint);
 					break;
 			}
 		} finally {
@@ -1044,12 +1044,13 @@ public class RpcConnection extends Thread {
 				docs = new DocumentSet();
 				docs.add(node.doc);
 			}
-			Sequence resultSeq = doQuery(user, broker, xpath, docs, nodes, null);
+			Sequence resultSeq =
+				doQuery(user, broker, xpath, docs, nodes, null);
 			if (resultSeq == null)
 				return result;
 			switch (resultSeq.getItemType()) {
 				case Type.NODE :
-					NodeList resultSet = (NodeList)resultSeq;
+					NodeList resultSet = (NodeList) resultSeq;
 					NodeProxy p;
 					Vector entry;
 					for (Iterator i = ((NodeSet) resultSet).iterator();
@@ -1109,39 +1110,42 @@ public class RpcConnection extends Thread {
 			resultSeq = doQuery(user, broker, xpath, docs, nodes, namespaces);
 			if (resultSeq == null)
 				return ret;
-			switch (resultSeq.getItemType()) {
-				case Type.NODE :
-					NodeSet resultSet = (NodeSet) resultSeq;
-					if (sortBy != null) {
-						SortedNodeSet sorted =
-							new SortedNodeSet(brokerPool, user, sortBy);
-						sorted.addAll(resultSet);
-						resultSeq = sorted;
-					}
-					NodeProxy p;
-					Vector entry;
-					if (resultSet != null) {
-						Iterator i = ((NodeSet) resultSeq).iterator();
-						if(i != null) {
-							while (i.hasNext()) {
-								p = (NodeProxy) i.next();
-								entry = new Vector();
+			if (sortBy != null) {
+				SortedNodeSet sorted =
+					new SortedNodeSet(brokerPool, user, sortBy);
+				sorted.addAll(resultSeq);
+				resultSeq = sorted;
+			}
+			NodeProxy p;
+			Vector entry;
+			if (resultSeq != null) {
+				SequenceIterator i = resultSeq.iterate();
+				if (i != null) {
+					Item next;
+					while (i.hasNext()) {
+						next = i.nextItem();
+						if (Type.isNode(next.getType())) {
+							entry = new Vector();
+							if (next instanceof NodeProxy) {
+								p = (NodeProxy) next;
+								System.out.println(p.gid);
 								entry.addElement(p.doc.getFileName());
 								entry.addElement(Long.toString(p.getGID()));
-								result.addElement(entry);
+							} else {
+								entry.addElement("temp_xquery/" + next.hashCode());
+								entry.addElement(
+									String.valueOf(((NodeImpl)next).getNodeNumber())
+								);
 							}
+							result.addElement(entry);
 						} else
-							LOG.debug("iterator was null. Should not!");
-					} else
-						LOG.debug("result set was null. Should not!");
-					break;
-				default :
-					Item item;
-					for (int i = 0; i < resultSeq.getLength(); i++) {
-						item = resultSeq.itemAt(i);
-						result.addElement(item.getStringValue());
+							result.addElement(next.getStringValue());
 					}
-			}
+				} else {
+					LOG.debug("sequence iterator is null. Should not");
+				}
+			} else
+				LOG.debug("result sequence is null. Skipping it...");
 		} finally {
 			brokerPool.release(broker);
 		}
@@ -1224,28 +1228,16 @@ public class RpcConnection extends Thread {
 
 			NodeProxy node = new NodeProxy(doc, id);
 			Serializer serializer = broker.getSerializer();
-			Map properties = new TreeMap();
-			properties.put(Serializer.ENCODING, encoding);
-			properties.put(
-				Serializer.PRETTY_PRINT,
-				Boolean.toString(prettyPrint));
+			serializer.setProperty(OutputKeys.ENCODING, encoding);
+			serializer.setProperty(
+				OutputKeys.INDENT,
+				prettyPrint ? "yes" : "no");
 			return serializer.serialize(node);
 		} finally {
 			brokerPool.release(broker);
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  resultId       Description of the Parameter
-	 *@param  num            Description of the Parameter
-	 *@param  prettyPrint    Description of the Parameter
-	 *@param  encoding       Description of the Parameter
-	 *@param  user           Description of the Parameter
-	 *@return                Description of the Return Value
-	 *@exception  Exception  Description of the Exception
-	 */
 	public String retrieve(
 		User user,
 		int resultId,
@@ -1259,23 +1251,25 @@ public class RpcConnection extends Thread {
 				(QueryResult) connectionPool.resultSets.get(resultId);
 			if (qr == null)
 				throw new EXistException("result set unknown or timed out");
-			switch (qr.result.getItemType()) {
-				case Type.NODE :
-					NodeList resultSet = (NodeList)qr.result;
-					NodeProxy proxy = (NodeProxy)qr.result.itemAt(num);
-					if (proxy == null)
-						throw new EXistException("index out of range");
-					Serializer serializer = broker.getSerializer();
-					Map properties = new TreeMap();
-					properties.put(Serializer.ENCODING, encoding);
-					properties.put(
-						Serializer.PRETTY_PRINT,
-						Boolean.toString(prettyPrint));
-					serializer.setProperties(properties);
-					return serializer.serialize(proxy);
-				default :
-					Item item = qr.result.itemAt(num);
-					return item.getStringValue();
+			Item item = qr.result.itemAt(num);
+			if(item == null)
+				throw new EXistException("index out of range");
+			if (item instanceof NodeProxy) {
+				NodeProxy proxy = (NodeProxy) item;
+				Serializer serializer = broker.getSerializer();
+				serializer.setProperty(OutputKeys.ENCODING, encoding);
+				serializer.setProperty(OutputKeys.INDENT, prettyPrint ? "yes" : "no");
+				return serializer.serialize(proxy);
+			} else if(item instanceof Node) {
+				StringWriter writer = new StringWriter();
+				Properties props = new Properties();
+				props.setProperty(OutputKeys.ENCODING, encoding);
+				props.setProperty(OutputKeys.INDENT, prettyPrint ? "yes" : "no");
+				DOMSerializer serializer = new DOMSerializer(writer, props);
+				serializer.serialize((Node)item);
+				return writer.toString();
+			} else {
+				return item.getStringValue();
 			}
 		} finally {
 			brokerPool.release(broker);
@@ -1481,7 +1475,7 @@ public class RpcConnection extends Thread {
 			Sequence resultSeq = doQuery(user, broker, xpath, null, null, null);
 			if (resultSeq == null)
 				return new Hashtable();
-			NodeList resultSet = (NodeList)resultSeq;
+			NodeList resultSet = (NodeList) resultSeq;
 			HashMap map = new HashMap();
 			HashMap doctypes = new HashMap();
 			NodeProxy p;
@@ -1565,7 +1559,7 @@ public class RpcConnection extends Thread {
 		}
 		DBBroker broker = brokerPool.get(user);
 		try {
-			NodeList resultSet = (NodeList)qr.result;
+			NodeList resultSet = (NodeList) qr.result;
 			HashMap map = new HashMap();
 			HashMap doctypes = new HashMap();
 			NodeProxy p;

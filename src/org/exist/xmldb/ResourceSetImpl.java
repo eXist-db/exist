@@ -76,8 +76,7 @@ public class ResourceSetImpl implements ResourceSet {
                 new RemoteXMLResource( parent, handle,
                 	(int)pos, doc, s_id, indentXML, encoding );
             return res;
-        }
-        else if ( resources.elementAt( (int) pos ) instanceof Resource )
+        } else if ( resources.elementAt( (int) pos ) instanceof Resource )
             return (Resource) resources.elementAt( (int) pos );
         else {
             // value

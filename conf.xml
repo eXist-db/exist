@@ -22,8 +22,8 @@
        -->
        
 	   <db-connection database="native" files="webapp/WEB-INF/data" 
-		   buffers="512" words_buffers="1024" collection_buffers="256" 
-		   elements_buffers="512" free_mem_min="10" 
+		   buffers="1024" words_buffers="4096" collection_buffers="256" 
+		   elements_buffers="1024" free_mem_min="10" 
 		   pageSize="4096">
 
 		   <!-- Settings for the database connection pool

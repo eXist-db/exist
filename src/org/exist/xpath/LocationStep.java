@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
@@ -79,19 +80,19 @@ public class LocationStep extends Step {
 					getDescendants(
 						context,
 						documents,
-						(NodeSet) contextSequence);
+						contextSequence.toNodeSet());
 				break;
 			case Constants.CHILD_AXIS :
 				temp =
-					getChildren(context, documents, (NodeSet) contextSequence);
+					getChildren(context, documents, contextSequence.toNodeSet());
 				break;
 			case Constants.ANCESTOR_AXIS :
 			case Constants.ANCESTOR_SELF_AXIS :
 				temp =
-					getAncestors(context, documents, (NodeSet) contextSequence);
+					getAncestors(context, documents, contextSequence.toNodeSet());
 				break;
 			case Constants.SELF_AXIS :
-				temp = (NodeSet) contextSequence;
+				temp = contextSequence.toNodeSet();
 				if (inPredicate) {
 					if (temp instanceof VirtualNodeSet) {
 						((VirtualNodeSet) temp).setInPredicate(true);
@@ -107,7 +108,7 @@ public class LocationStep extends Step {
 				break;
 			case Constants.PARENT_AXIS :
 				temp =
-					getParents(context, documents, (NodeSet) contextSequence);
+					getParents(context, documents, contextSequence.toNodeSet());
 				break;
 			case Constants.ATTRIBUTE_AXIS :
 				// combines /descendant-or-self::node()/attribute:*
@@ -116,12 +117,12 @@ public class LocationStep extends Step {
 					getAttributes(
 						context,
 						documents,
-						(NodeSet) contextSequence);
+						contextSequence.toNodeSet());
 				break;
 			case Constants.PRECEDING_SIBLING_AXIS :
 			case Constants.FOLLOWING_SIBLING_AXIS :
 				temp =
-					getSiblings(context, documents, (NodeSet) contextSequence);
+					getSiblings(context, documents, contextSequence.toNodeSet());
 				break;
 			default :
 				throw new IllegalArgumentException("Unsupported axis specified");
@@ -150,18 +151,16 @@ public class LocationStep extends Step {
 			}
 			if (axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)
 				result =
-					buf.getDescendants(
+					buf.selectAncestorDescendant(
 						contextSet,
-						ArraySet.DESCENDANT,
+						NodeSet.DESCENDANT,
 						inPredicate);
 			else
 				result =
-					buf.getChildren(
+					buf.selectParentChild(
 						contextSet,
-						ArraySet.DESCENDANT,
+						NodeSet.DESCENDANT,
 						inPredicate);
-
-			LOG.debug("found " + result.getLength() + " attributes");
 			//		} else {
 			//				Node n;
 			//				Node attr;
@@ -197,7 +196,7 @@ public class LocationStep extends Step {
 						documents,
 						test.getName());
 			}
-			return buf.getChildren(contextSet, NodeSet.DESCENDANT, inPredicate);
+			return buf.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);
 		}
 	}
 
@@ -217,7 +216,7 @@ public class LocationStep extends Step {
 						documents,
 						test.getName());
 			}
-			return buf.getDescendants(
+			return buf.selectAncestorDescendant(
 				contextSet,
 				NodeSet.DESCENDANT,
 				axis == Constants.DESCENDANT_SELF_AXIS,
@@ -236,7 +235,7 @@ public class LocationStep extends Step {
 						documents,
 						test.getName());
 			}
-			return contextSet.getSiblings(
+			return contextSet.selectSiblings(
 				buf,
 				axis == Constants.PRECEDING_SIBLING_AXIS
 					? NodeSet.PRECEDING
@@ -282,14 +281,14 @@ public class LocationStep extends Step {
 						test.getName());
 			}
 			NodeSet r =
-				contextSet.getAncestors(
+				contextSet.selectAncestors(
 					buf,
 					axis == Constants.ANCESTOR_SELF_AXIS,
 					inPredicate);
-			LOG.debug("getAncestors found " + r.getLength());
+			//LOG.debug("getAncestors found " + r.getLength());
 			return r;
 		} else {
-			NodeSet result = new ArraySet(contextSet.getLength());
+			NodeSet result = new ExtArrayNodeSet();
 			NodeProxy p;
 			for (Iterator i = contextSet.iterator(); i.hasNext();) {
 				p = (NodeProxy) i.next();

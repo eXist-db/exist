@@ -44,4 +44,11 @@ public abstract class AbstractExpression implements Expression {
 	public void setInPredicate(boolean inPredicate) {
 		// has no effect by default
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.Expression#getDependencies()
+	 */
+	public int getDependencies() {
+		return Dependency.DEFAULT_DEPENDENCIES;
+	}
 }

@@ -20,6 +20,7 @@
  */
 package org.exist.xpath.value;
 
+import org.exist.xpath.Constants;
 import org.exist.xpath.XPathException;
 
 public class StringValue extends AtomicValue {
@@ -59,9 +60,11 @@ public class StringValue extends AtomicValue {
 				return this;
 			case Type.BOOLEAN:
 				return new BooleanValue(value);
+			case Type.FLOAT:
+			case Type.DOUBLE:
 			case Type.DECIMAL:
 			case Type.NUMBER:
-				return new DecimalValue(value);
+				return new DoubleValue(value);
 			case Type.INTEGER:
 				return new IntegerValue(value);
 			default:
@@ -69,4 +72,50 @@ public class StringValue extends AtomicValue {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.AtomicValue#compareTo(int, org.exist.xpath.value.AtomicValue)
+	 */
+	public boolean compareTo(int operator, AtomicValue other) throws XPathException {
+		if(Type.subTypeOf(other.getType(), Type.STRING)) {
+			int cmp = value.compareTo(other.getStringValue());
+			switch(operator) {
+				case Constants.EQ:
+					return cmp == 0;
+				case Constants.NEQ:
+					return cmp != 0;
+				case Constants.LT:
+					return cmp < 0;
+				case Constants.LTEQ:
+					return cmp <= 0;
+				case Constants.GT:
+					return cmp > 0;
+				case Constants.GTEQ:
+					return cmp >= 0;
+				default:
+					throw new XPathException("Type error: cannot apply operand to string value");
+			}
+		}
+		throw new XPathException("Type error: operands are not comparable");
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.AtomicValue#compareTo(org.exist.xpath.value.AtomicValue)
+	 */
+	public int compareTo(AtomicValue other) throws XPathException {
+		return value.compareTo(other.getStringValue());
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.AtomicValue#effectiveBooleanValue()
+	 */
+	public boolean effectiveBooleanValue() throws XPathException {
+		return value.length() > 0;
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		return value;
+	}
 }

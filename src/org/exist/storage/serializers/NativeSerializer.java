@@ -46,12 +46,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-/**
- *  Description of the Class
- *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    13. April 2002
- */
 public class NativeSerializer extends Serializer {
 
 	public final static int EXIST_ID_NONE = 0;
@@ -62,12 +56,6 @@ public class NativeSerializer extends Serializer {
 
 	private Perl5Util reutil = new Perl5Util();
 
-	/**
-	 *  Constructor for the NativeSerializer object
-	 *
-	 *@param  broker  Description of the Parameter
-	 *@param  pool    Description of the Parameter
-	 */
 	public NativeSerializer(DBBroker broker, Configuration config) {
 		super(broker, config);
 		String showIdParam = (String) config.getProperty("serialization.add-exist-id");
@@ -81,15 +69,6 @@ public class NativeSerializer extends Serializer {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  set               Description of the Parameter
-	 *@param  start             Description of the Parameter
-	 *@param  howmany           Description of the Parameter
-	 *@param  queryTime         Description of the Parameter
-	 *@exception  SAXException  Description of the Exception
-	 */
 	protected void serializeToSAX(NodeSet set, int start, int howmany, long queryTime)
 		throws SAXException {
 		Iterator iter = set.iterator();
@@ -127,13 +106,6 @@ public class NativeSerializer extends Serializer {
 		contentHandler.endDocument();
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  doc               Description of the Parameter
-	 *@param  generateDocEvent  Description of the Parameter
-	 *@exception  SAXException  Description of the Exception
-	 */
 	protected void serializeToSAX(Document doc, boolean generateDocEvent) throws SAXException {
 		long start = System.currentTimeMillis();
 		setDocument((DocumentImpl) doc);
@@ -171,35 +143,16 @@ public class NativeSerializer extends Serializer {
 
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  n                 Description of the Parameter
-	 *@exception  SAXException  Description of the Exception
-	 */
 	protected void serializeToSAX(Node n) throws SAXException {
 		if (!(n instanceof NodeImpl))
 			throw new RuntimeException("wrong implementation");
 		serializeToSAX(new NodeProxy((DocumentImpl) n.getOwnerDocument(), ((NodeImpl) n).getGID()));
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  p                 Description of the Parameter
-	 *@exception  SAXException  Description of the Exception
-	 */
 	protected void serializeToSAX(NodeProxy p) throws SAXException {
 		serializeToSAX(p, true);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  p                  Description of the Parameter
-	 *@param  generateDocEvents  Description of the Parameter
-	 *@exception  SAXException   Description of the Exception
-	 */
 	protected void serializeToSAX(NodeProxy p, boolean generateDocEvents) throws SAXException {
 		if (generateDocEvents)
 			contentHandler.startDocument();
@@ -212,29 +165,11 @@ public class NativeSerializer extends Serializer {
 			contentHandler.endDocument();
 
 	}
-
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  iter              Description of the Parameter
-	 *@param  doc               Description of the Parameter
-	 *@param  gid               Description of the Parameter
-	 *@exception  SAXException  Description of the Exception
-	 */
+	
 	protected void serializeToSAX(Iterator iter, DocumentImpl doc, long gid) throws SAXException {
 		serializeToSAX(null, iter, doc, gid, true, null);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  node              Description of the Parameter
-	 *@param  iter              Description of the Parameter
-	 *@param  doc               Description of the Parameter
-	 *@param  gid               Description of the Parameter
-	 *@param  first             Description of the Parameter
-	 *@exception  SAXException  Description of the Exception
-	 */
 	protected void serializeToSAX(
 		NodeImpl node,
 		Iterator iter,
@@ -246,17 +181,6 @@ public class NativeSerializer extends Serializer {
 		serializeToSAX(node, iter, doc, gid, first, new TreeSet(), match);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  node              Description of the Parameter
-	 *@param  iter              Description of the Parameter
-	 *@param  doc               Description of the Parameter
-	 *@param  gid               Description of the Parameter
-	 *@param  first             Description of the Parameter
-	 *@param  prefixes          Description of the Parameter
-	 *@exception  SAXException  Description of the Exception
-	 */
 	protected void serializeToSAX(
 		NodeImpl node,
 		Iterator iter,
@@ -301,7 +225,7 @@ public class NativeSerializer extends Serializer {
 				while (count < children) {
 					child = (NodeImpl) iter.next();
 					if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
-						if ((highlightMatches & TAG_ATTRIBUTE_MATCHES) > 0)
+						if ((getHighlightingMode() & TAG_ATTRIBUTE_MATCHES) > 0)
 							cdata = processAttribute(((AttrImpl) child).getValue(), gid, match);
 						else
 							cdata = ((AttrImpl) child).getValue();
@@ -380,7 +304,7 @@ public class NativeSerializer extends Serializer {
 					}
 					contentHandler.startElement(EXIST_NS, "text", "exist:text", attribs);
 				}
-				if ((highlightMatches & TAG_ELEMENT_MATCHES) == TAG_ELEMENT_MATCHES
+				if ((getHighlightingMode() & TAG_ELEMENT_MATCHES) == TAG_ELEMENT_MATCHES
 					&& (cdata = processText((TextImpl) node, gid, match)) != null)
 					scanText(cdata);
 				else {
@@ -407,7 +331,7 @@ public class NativeSerializer extends Serializer {
 							"CDATA",
 							doc.getFileName());
 					}
-					if ((highlightMatches & TAG_ATTRIBUTE_MATCHES) > 0)
+					if ((getHighlightingMode() & TAG_ATTRIBUTE_MATCHES) > 0)
 						cdata = processAttribute(((AttrImpl) node).getValue(), gid, match);
 					else
 						cdata = ((AttrImpl) node).getValue();
@@ -420,7 +344,7 @@ public class NativeSerializer extends Serializer {
 					contentHandler.startElement(EXIST_NS, "attribute", "exist:attribute", attribs);
 					contentHandler.endElement(EXIST_NS, "attribute", "exist:attribute");
 				} else {
-					if ((highlightMatches & TAG_ATTRIBUTE_MATCHES) == TAG_ATTRIBUTE_MATCHES)
+					if ((getHighlightingMode() & TAG_ATTRIBUTE_MATCHES) == TAG_ATTRIBUTE_MATCHES)
 						cdata = processAttribute(((AttrImpl) node).getValue(), gid, match);
 					else
 						cdata = ((AttrImpl) node).getValue();

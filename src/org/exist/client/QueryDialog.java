@@ -19,12 +19,15 @@ import java.util.TreeMap;
 import java.util.Vector;
 
 import javax.swing.Box;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JSplitPane;
@@ -33,6 +36,7 @@ import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.table.AbstractTableModel;
+import javax.xml.transform.OutputKeys;
 
 import org.exist.xmldb.XPathQueryServiceImpl;
 import org.xmldb.api.base.Collection;
@@ -51,12 +55,13 @@ public class QueryDialog extends JFrame {
 
 	private Collection collection;
 	private Properties properties;
-	private JComboBox query;
+	private JTextArea query;
 	private QueryResultTableModel model;
 	private JTable resultDocs;
 	private JTextArea resultDisplay;
 	private JComboBox collections = null;
 	private SpinnerNumberModel count;
+	private DefaultComboBoxModel history = new DefaultComboBoxModel();
 
 	public QueryDialog(Collection collection, Properties properties) {
 		this.collection = collection;
@@ -81,7 +86,7 @@ public class QueryDialog extends JFrame {
 			}
 		});
 		JScrollPane tableScroll = new JScrollPane(resultDocs);
-		tableScroll.setPreferredSize(new Dimension(250, 150));
+		tableScroll.setPreferredSize(new Dimension(150, 75));
 
 		resultDisplay = new JTextArea(20, 70);
 		resultDisplay.setLineWrap(true);
@@ -96,21 +101,42 @@ public class QueryDialog extends JFrame {
 	private JComponent createQueryBox() {
 		Box vbox = Box.createVerticalBox();
 
+		Box inputVBox = Box.createVerticalBox();
+
+		Box historyBox = Box.createHorizontalBox();
+		JLabel label = new JLabel("History: ");
+		historyBox.add(label);
+		JComboBox historyList = new JComboBox(history);
+		historyBox.add(historyList);
+		
+		inputVBox.add(historyBox);
+
+		query = new JTextArea(5, 60);
+		query.setEditable(true);
+		query.setLineWrap(true);
+		inputVBox.add(query);
+		vbox.add(inputVBox);
+
 		Box hbox = Box.createHorizontalBox();
 		Vector data = new Vector();
 		data.addElement("*");
 		try {
 			getCollections(collection, data);
 		} catch (XMLDBException e) {
-			ClientFrame.showErrorMessage("An error occurred while retrieving collections list", e);
+			ClientFrame.showErrorMessage(
+				"An error occurred while retrieving collections list",
+				e);
 		}
 		collections = new JComboBox(data);
 		hbox.add(collections);
 
-		query = new JComboBox();
-		query.setEditable(true);
-		query.setPreferredSize(new Dimension(350, 20));
-		hbox.add(query);
+		label = new JLabel("Show max. results: ");
+		hbox.add(label);
+
+		count = new SpinnerNumberModel(100, 1, 10000, 50);
+		JSpinner spinner = new JSpinner(count);
+		spinner.setMaximumSize(new Dimension(160, 25));
+		hbox.add(spinner);
 
 		URL url = getClass().getResource("icons/Find24.gif");
 		JButton button = new JButton("Submit", new ImageIcon(url));
@@ -120,25 +146,13 @@ public class QueryDialog extends JFrame {
 				doQuery();
 			}
 		});
-
-		vbox.add(hbox);
-
-		hbox = Box.createHorizontalBox();
-		
-		hbox.add(Box.createHorizontalGlue());
-		JLabel label = new JLabel("Show max. results: ");
-		hbox.add(label);
-
-		count = new SpinnerNumberModel(100, 1, 10000, 50);
-		JSpinner spinner = new JSpinner(count);
-		spinner.setMaximumSize(new Dimension(160, 25));
-
-		hbox.add(spinner);
 		vbox.add(hbox);
 		return vbox;
 	}
 
-	private Vector getCollections(Collection collection, Vector collectionsList)
+	private Vector getCollections(
+		Collection collection,
+		Vector collectionsList)
 		throws XMLDBException {
 		collectionsList.add(collection.getName());
 		String[] childCollections = collection.listChildCollections();
@@ -151,31 +165,25 @@ public class QueryDialog extends JFrame {
 	}
 
 	private void doQuery() {
-		String xpath = (String)query.getSelectedItem();
+		String xpath = (String) query.getText();
 		if (xpath.length() == 0)
 			return;
 		resultDisplay.setText("");
 		try {
 			XPathQueryServiceImpl service =
-				(XPathQueryServiceImpl) collection.getService("XPathQueryService", "1.0");
-			service.setProperty("pretty", properties.getProperty("indent"));
-			if (!(xpath.startsWith("document(")
-				|| xpath.startsWith("collection(")
-				|| xpath.startsWith("xcollection("))) {
-				String collname = (String) collections.getSelectedItem();
-				if (collname.equals("*"))
-					xpath = "document()" + xpath;
-				else
-					xpath = "collection(\"" + collname + "\")" + xpath;
-			}
+				(XPathQueryServiceImpl) collection.getService(
+					"XPathQueryService",
+					"1.0");
+			service.setProperty(OutputKeys.INDENT, properties.getProperty("indent"));
 			ResourceSet result = service.query(xpath);
 			model.setResourceSet(result);
 		} catch (XMLDBException e) {
 			ClientFrame.showErrorMessage(
-				"An exception occurred during query execution: " + e.getMessage(),
+				"An exception occurred during query execution: "
+					+ e.getMessage(),
 				e);
 		}
-		query.addItem(xpath);
+		history.addElement(xpath);
 	}
 
 	private void tableSelectAction(MouseEvent ev) {
@@ -185,7 +193,9 @@ public class QueryDialog extends JFrame {
 		XMLResource resource;
 		int howmany = count.getNumber().intValue();
 		int j = 0;
-		for (Iterator i = results.iterator(); i.hasNext() && j < howmany; j++) {
+		for (Iterator i = results.iterator();
+			i.hasNext() && j < howmany;
+			j++) {
 			resource = (XMLResource) i.next();
 			try {
 				resultDisplay.append((String) resource.getContent());
@@ -193,7 +203,8 @@ public class QueryDialog extends JFrame {
 				resultDisplay.setCaretPosition(0);
 			} catch (XMLDBException e) {
 				ClientFrame.showErrorMessage(
-					"An error occurred while retrieving results: " + e.getMessage(),
+					"An error occurred while retrieving results: "
+						+ e.getMessage(),
 					e);
 			}
 		}
@@ -207,7 +218,9 @@ public class QueryDialog extends JFrame {
 			TreeMap docs = new TreeMap();
 			XMLResource current;
 			ArrayList hits;
-			for (ResourceIterator i = results.getIterator(); i.hasMoreResources();) {
+			for (ResourceIterator i = results.getIterator();
+				i.hasMoreResources();
+				) {
 				current = (XMLResource) i.nextResource();
 				hits = (ArrayList) docs.get(current.getDocumentId());
 				if (hits == null) {
@@ -246,7 +259,8 @@ public class QueryDialog extends JFrame {
 			switch (columnIndex) {
 				case 0 :
 					try {
-						return ((XMLResource) data[rowIndex].get(0)).getDocumentId();
+						return ((XMLResource) data[rowIndex].get(0))
+							.getDocumentId();
 					} catch (XMLDBException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

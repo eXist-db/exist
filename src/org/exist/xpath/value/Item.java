@@ -20,15 +20,56 @@
  */
 package org.exist.xpath.value;
 
+import org.exist.storage.DBBroker;
 import org.exist.xpath.XPathException;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
 
+/**
+ * This class represents an item in a sequence as defined by the XPath 2.0 specification.
+ * Every item is either an {@link org.exist.xpath.value.AtomicValue atomic value} or
+ * a {@link org.exist.dom.NodeProxy node}.
+ * 
+ * @author wolf
+ */
 public interface Item {
 
+	/**
+	 * Return the type of this item according to the type constants defined in class
+	 * {@link Type}.
+	 * 
+	 * @return
+	 */
 	public int getType();
 	
+	/**
+	 * Return the string value of this item (see the definition of string value in XPath).
+	 * 
+	 * @return
+	 */
 	public String getStringValue();
 	
+	/**
+	 * Convert this item into a sequence, containing only the item.
+	 *  
+	 * @return
+	 */
 	public Sequence toSequence();
 	
+	/**
+	 * Convert this item into an atomic value, whose type corresponds to
+	 * the specified target type. requiredType should be one of the type
+	 * constants defined in {@link Type}. An {@link XPathException} is thrown
+	 * if the conversion is impossible.
+	 * 
+	 * @param requiredType
+	 * @return
+	 * @throws XPathException
+	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException;
+	
+	public AtomicValue atomize() throws XPathException;
+	
+	public void toSAX(DBBroker broker, ContentHandler handler) throws SAXException;
+
 }

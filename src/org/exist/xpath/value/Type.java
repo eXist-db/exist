@@ -21,6 +21,7 @@
 package org.exist.xpath.value;
 
 import it.unimi.dsi.fastutil.Int2IntRBTreeMap;
+import it.unimi.dsi.fastutil.Int2ObjectRBTreeMap;
 
 public class Type {
 
@@ -47,13 +48,15 @@ public class Type {
 	
 	public final static int EMPTY = 10;
 	public final static int ITEM = 11;
-	public final static int ATOMIC = 12;
-	public final static int NUMBER = 13;
-	public final static int ANY_SIMPLE_TYPE = 14;
-	public final static int ANY_TYPE = 15;
+	public final static int ANY_TYPE = 12;
 	
-	public final static int STRING = 100;
-	public final static int BOOLEAN = 101;
+	public final static int ATOMIC = 20;
+	public final static int ANY_SIMPLE_TYPE = 21;
+	public final static int UNTYPED_ATOMIC = 22;
+	
+	public final static int NUMBER = 100;
+	public final static int STRING = 101;
+	public final static int BOOLEAN = 102;
 	public final static int DECIMAL = 200;
 	public final static int FLOAT = 201;
 	public final static int DOUBLE = 203;
@@ -74,6 +77,7 @@ public class Type {
 		defineSubType(ATOMIC, STRING);
 		defineSubType(ATOMIC, BOOLEAN);
 		defineSubType(ATOMIC, NUMBER);
+		defineSubType(ATOMIC, UNTYPED_ATOMIC);
 		
 		defineSubType(NUMBER, DECIMAL);
 		defineSubType(NUMBER, FLOAT);
@@ -82,12 +86,52 @@ public class Type {
 		defineSubType(DECIMAL, INTEGER);
 	}
 	
+	private final static Int2ObjectRBTreeMap typeNames = new Int2ObjectRBTreeMap();
+	
+	static {
+		defineTypeName(ELEMENT, "element");
+		defineTypeName(DOCUMENT, "document");
+		defineTypeName(ATTRIBUTE, "attribute");
+		defineTypeName(TEXT, "text");
+		defineTypeName(PROCESSING_INSTRUCTION, "processing-instruction");
+		defineTypeName(COMMENT, "comment");
+		defineTypeName(NAMESPACE, "namespace");
+		defineTypeName(NODE, "node");
+		defineTypeName(ITEM, "item");
+		defineTypeName(ANY_SIMPLE_TYPE, "xs:anySimpleType");
+		defineTypeName(ANY_TYPE, "xs:anyType");
+		defineTypeName(ATOMIC, "xs:anyAtomicType");
+		defineTypeName(UNTYPED_ATOMIC, "xs:untypedAtomic");
+		defineTypeName(BOOLEAN, "xs:boolean");
+		defineTypeName(NUMBER, "number");
+		defineTypeName(DECIMAL, "xs:decimal");
+		defineTypeName(FLOAT, "xs:float");
+		defineTypeName(DOUBLE, "xs:double");
+		defineTypeName(INTEGER, "xs:integer");
+		defineTypeName(STRING, "xs:string");
+	}
+	
+	public final static void defineTypeName(int type, String name) {
+		typeNames.put(type, name);
+	}
+	
+	public final static String getTypeName(int type) {
+		return (String)typeNames.get(type);
+	}
+	
 	public final static void defineSubType(int supertype, int subtype) {
 		typeHierarchy.put(subtype, supertype);
 	}
 	
+	public final static boolean isNode(int type) {
+		return type < 10;
+	}
+	
+	public final static boolean isAtomic(int type) {
+		return type >= 20;
+	}
+	
 	public final static boolean subTypeOf(int subtype, int supertype) {
-		
 		if(subtype == supertype)
 			return true;
 		if(supertype == ITEM)
@@ -97,5 +141,11 @@ public class Type {
 		if(!typeHierarchy.containsKey(subtype))
 			throw new IllegalArgumentException("type " + subtype + " is not a valid type");
 		return subTypeOf(typeHierarchy.get(subtype), supertype);
+	}
+	
+	public final static int getSuperType(int subtype) {
+		if(subtype == ITEM)
+			return ITEM;
+		return typeHierarchy.get(subtype);
 	}
 }

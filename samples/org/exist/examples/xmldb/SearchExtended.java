@@ -1,5 +1,7 @@
 package org.exist.examples.xmldb;
 
+import javax.xml.transform.OutputKeys;
+
 import org.w3c.dom.Element;
 import org.xmldb.api.*;
 import org.xmldb.api.base.*;
@@ -48,8 +50,8 @@ public class SearchExtended {
             XPathQueryService service =
                 (XPathQueryService) col.getService( "XPathQueryService", "1.0" );
             // set pretty-printing on
-            service.setProperty( "pretty", "true" );
-            service.setProperty( "encoding", "ISO-8859-1" );
+            service.setProperty( OutputKeys.INDENT, "yes" );
+            service.setProperty( OutputKeys.ENCODING, "ISO-8859-1" );
 
             long start = System.currentTimeMillis();
             // execute query and get results in ResourceSet

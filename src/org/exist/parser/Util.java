@@ -14,13 +14,14 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.xpath.Constants;
 import org.exist.xpath.Expression;
-import org.exist.xpath.ExtNear;
-import org.exist.xpath.Function;
+import org.exist.xpath.GeneralComparison;
 import org.exist.xpath.Literal;
-import org.exist.xpath.OpEquals;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.RootNode;
 import org.exist.xpath.StaticContext;
+//import org.exist.xpath.functions.ExtNear;
+import org.exist.xpath.functions.ExtNear;
+import org.exist.xpath.functions.Function;
 import org.exist.xpath.value.Type;
 
 public class Util {
@@ -104,11 +105,15 @@ public class Util {
 			if (p1.getLength() == 0)
 				throw new IllegalArgumentException("Second argument to near is empty");
 			Expression e1 = p1.getExpression(0);
-			if (!(e1 instanceof Literal))
-				throw new IllegalArgumentException("Second argument has to be a literal expression");
 			ExtNear near = new ExtNear();
-			near.addTerms(context, ((Literal) e1).getLiteral());
+			near.addTerm(e1);
 			near.setPath((PathExpr) params.elementAt(0));
+			if(params.size() > 2) {
+				p1 = (PathExpr) params.elementAt(2);
+				if(p1.getLength() == 0)
+					throw new IllegalArgumentException("Distance argument to near is empty");
+				near.setDistance(p1);
+			}
 			step = near;
 			parent.addPath(near);
 		}
@@ -126,7 +131,7 @@ public class Util {
 				&& p0.returnsType() == Type.NODE) {
 				Literal l = (Literal) e1;
 				l.setLiteral(l.getLiteral() + '%');
-				OpEquals op = new OpEquals(p0, e1, Constants.EQ);
+				GeneralComparison op = new GeneralComparison(p0, e1, Constants.EQ);
 				parent.addPath(op);
 				step = op;
 			}
@@ -145,7 +150,7 @@ public class Util {
 				&& p0.returnsType() == Type.NODE) {
 				Literal l = (Literal) e1;
 				l.setLiteral('%' + l.getLiteral());
-				OpEquals op = new OpEquals(p0, e1, Constants.EQ);
+				GeneralComparison op = new GeneralComparison(p0, e1, Constants.EQ);
 				parent.addPath(op);
 				step = op;
 			}
@@ -164,7 +169,7 @@ public class Util {
 				&& p0.returnsType() == Type.NODE) {
 				Literal l = (Literal) e1;
 				l.setLiteral('%' + l.getLiteral() + '%');
-				OpEquals op = new OpEquals(p0, e1, Constants.EQ);
+				GeneralComparison op = new GeneralComparison(p0, e1, Constants.EQ);
 				parent.addPath(op);
 				step = op;
 			}

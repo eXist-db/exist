@@ -49,13 +49,9 @@ public class RootNode extends Step {
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem) {
-		NodeSet result = new ExtArrayNodeSet(docs.getLength());
-		DocumentImpl doc;
-		NodeProxy n;
+		NodeSet result = new ExtArrayNodeSet(1);
 		for (Iterator i = docs.iterator(); i.hasNext();) {
-			doc = (DocumentImpl) i.next();
-			n = new NodeProxy(doc, -1);
-			result.add(n);
+			result.add(new NodeProxy((DocumentImpl) i.next(), -1));
 		}
 		return result;
 	}

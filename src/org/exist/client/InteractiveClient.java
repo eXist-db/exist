@@ -52,6 +52,8 @@ import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
+import javax.xml.transform.OutputKeys;
+
 import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
@@ -60,6 +62,7 @@ import org.apache.oro.io.GlobFilenameFilter;
 import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
 import org.exist.security.User;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.CollectionScanner;
 import org.exist.util.DirectoryScanner;
 import org.exist.util.Occurrences;
@@ -990,6 +993,8 @@ public class InteractiveClient {
 	}
 
 	private final ResourceSet find(String xpath) throws XMLDBException {
+		if(xpath.charAt(xpath.length() - 1) == '\n')
+			xpath = xpath.substring(0, xpath.length() - 1);
 		if (traceWriter != null)
 			try {
 				traceWriter.write("<query>");
@@ -1008,8 +1013,8 @@ public class InteractiveClient {
 		}
 		XPathQueryServiceImpl service =
 			(XPathQueryServiceImpl) current.getService("XPathQueryService", "1.0");
-		service.setProperty("pretty", properties.getProperty("indent"));
-		service.setProperty("encoding", properties.getProperty("encoding"));
+		service.setProperty(OutputKeys.INDENT, properties.getProperty("indent"));
+		service.setProperty(OutputKeys.ENCODING, properties.getProperty("encoding"));
 		Map.Entry mapping;
 		for(Iterator i = namespaceMappings.entrySet().iterator(); i.hasNext(); ) {
 			mapping = (Map.Entry)i.next();
@@ -1065,8 +1070,8 @@ public class InteractiveClient {
 						properties.getProperty("password"));
 				XPathQueryService service =
 					(XPathQueryService) current.getService("XPathQueryService", "1.0");
-				service.setProperty("pretty", "true");
-				service.setProperty("encoding", properties.getProperty("encoding"));
+				service.setProperty(OutputKeys.INDENT, "yes");
+				service.setProperty(OutputKeys.ENCODING, properties.getProperty("encoding"));
 				Random r = new Random(System.currentTimeMillis());
 				String query;
 				for (int i = 0; i < 10; i++) {
@@ -1087,9 +1092,9 @@ public class InteractiveClient {
 	}
 
 	protected final XMLResource retrieve(String resource, String indent) throws XMLDBException {
-		current.setProperty("pretty", indent);
-		current.setProperty("encoding", properties.getProperty("encoding"));
-		current.setProperty("expand-xincludes", properties.getProperty("expand-xincludes"));
+		current.setProperty(OutputKeys.INDENT, indent);
+		current.setProperty(OutputKeys.ENCODING, properties.getProperty("encoding"));
+		current.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, properties.getProperty("expand-xincludes"));
 		XMLResource res = (XMLResource) current.getResource(resource);
 		if (res == null) {
 			messageln("document not found.");

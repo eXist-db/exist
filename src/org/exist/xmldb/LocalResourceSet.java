@@ -3,22 +3,24 @@ package org.exist.xmldb;
 import java.io.StringWriter;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Vector;
 
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 import org.exist.EXistException;
 import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
 import org.exist.dom.SortedNodeSet;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
+import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.Type;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xmldb.api.base.ErrorCodes;
@@ -32,7 +34,7 @@ public class LocalResourceSet implements ResourceSet {
 	protected BrokerPool brokerPool;
 	protected LocalCollection collection;
 	protected Vector resources = new Vector();
-	protected Map properties;
+	protected Properties properties;
 	private User user;
 
 	public LocalResourceSet(User user, BrokerPool pool, LocalCollection col) {
@@ -46,7 +48,7 @@ public class LocalResourceSet implements ResourceSet {
 		BrokerPool pool,
 		LocalCollection col,
 		Sequence val,
-		Map properties,
+		Properties properties,
 		String sortExpr)
 		throws XMLDBException {
 		this.user = user;
@@ -55,31 +57,23 @@ public class LocalResourceSet implements ResourceSet {
 		this.collection = col;
 		if(val.getLength() == 0)
 			return;
-		switch (val.getItemType()) {
-			case Type.NODE :
-				NodeSet resultSet = (NodeSet) val;
-				if(resultSet == null)
-					return;
-				if (sortExpr != null) {
-					SortedNodeSet sorted = new SortedNodeSet(brokerPool, user, sortExpr);
-					sorted.addAll(resultSet);
-					resultSet = sorted;
-				}
-				NodeProxy p;
-				for (Iterator i = resultSet.iterator(); i.hasNext();) {
-					p = (NodeProxy) i.next();
-					if (p == null)
-						continue;
-					resources.add(p);
-				}
-				break;
-			default :
-				Item item;
-				for(SequenceIterator i = val.iterate(); i.hasNext(); ) {
-					item = i.nextItem();
-					resources.add(item.getStringValue());
-				}
-				break;
+		if(Type.subTypeOf(val.getItemType(), Type.NODE) && sortExpr != null) {
+			SortedNodeSet sorted = new SortedNodeSet(brokerPool, user, sortExpr);
+			try {
+				sorted.addAll(val);
+			} catch (XPathException e) {
+				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE,
+					e.getMessage(), e);
+			}
+			val = sorted;
+		}
+		Item item;
+		for(SequenceIterator i = val.iterate(); i.hasNext(); ) {
+			item = i.nextItem();
+			if(Type.subTypeOf(item.getType(), Type.NODE))
+				resources.add(item);
+			else
+				resources.add(item.getStringValue());
 		}
 	}
 
@@ -174,8 +168,11 @@ public class LocalResourceSet implements ResourceSet {
 				coll = new LocalCollection(user, brokerPool, null, p.doc.getCollection());
 			}
 			res = new LocalXMLResource(user, brokerPool, coll, p, properties);
+		} else if (r instanceof Node) {
+			res = new LocalXMLResource(user, brokerPool, collection, "", -1, properties);
+			res.setContentAsDOM((Node)r);
 		} else if (r instanceof String) {
-			res = new LocalXMLResource(user, brokerPool, collection, null, -1);
+			res = new LocalXMLResource(user, brokerPool, collection, "", -1, properties);
 			res.setContent(r);
 		} else if (r instanceof Resource)
 			return (Resource) r;
