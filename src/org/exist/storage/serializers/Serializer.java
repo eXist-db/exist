@@ -726,6 +726,14 @@ public class Serializer implements XMLReader {
 		}
 	}
 
+    	/** 
+    	 * Set stylesheet parameter
+    	 **/
+		public void setStylesheetParamameter(String valore, String valore1) {
+            		xslHandler.getTransformer().setParameter(valore, valore1);	
+			       }
+
+
 	/**  Sets the xSLHandler attribute of the Serializer object */
 	protected void setXSLHandler() {
 		if (templates == null)
