@@ -34,25 +34,27 @@ import org.xml.sax.SAXException;
  */
 public interface Receiver {
 	
-	public abstract void startDocument() throws SAXException;
+	public void startDocument() throws SAXException;
 
-	public abstract void endDocument() throws SAXException;
+	public void endDocument() throws SAXException;
 
 	public void startPrefixMapping(String prefix, String namespaceURI) throws SAXException;
 	
 	public void endPrefixMapping(String prefix) throws SAXException;
 	
-	public abstract void startElement(QName qname, AttrList attribs) throws SAXException;
+	public void startElement(QName qname, AttrList attribs) throws SAXException;
 
-	public abstract void endElement(QName qname) throws SAXException;
+	public void endElement(QName qname) throws SAXException;
 
-	public abstract void characters(CharSequence seq) throws SAXException;
+	public void characters(CharSequence seq) throws SAXException;
 
-	public abstract void attribute(QName qname, String value)
+	public void attribute(QName qname, String value)
 			throws SAXException;
 
-	public abstract void comment(char[] ch, int start, int length)
+	public void comment(char[] ch, int start, int length)
 			throws SAXException;
+    
+    public void cdataSection(char[] ch, int start, int len) throws SAXException;
 	
 	public void processingInstruction(String target, String data) throws SAXException;
 }

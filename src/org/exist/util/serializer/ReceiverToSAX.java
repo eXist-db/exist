@@ -154,4 +154,15 @@ public class ReceiverToSAX implements Receiver {
 		contentHandler.processingInstruction(target, data);
 	}
 
+    /* (non-Javadoc)
+     * @see org.exist.util.serializer.Receiver#cdataSection(char[], int, int)
+     */
+    public void cdataSection(char[] ch, int start, int len) throws SAXException {
+        if(lexicalHandler != null)
+            lexicalHandler.startCDATA();
+        contentHandler.characters(ch, start, len);
+        if(lexicalHandler != null)
+            lexicalHandler.endCDATA();
+    }
+
 }

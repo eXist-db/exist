@@ -1715,6 +1715,15 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
 	)
 	|
+	#(
+		cdataSect:XML_CDATA
+		{
+			CDATAConstructor cd = new CDATAConstructor(context, cdataSect.getText());
+			cd.setASTNode(cdataSect);
+			step= cd;
+		}
+	)
+	|
 	// enclosed expression within element content
 	#(
 		l:LCURLY { 

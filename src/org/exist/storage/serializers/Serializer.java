@@ -711,7 +711,6 @@ public abstract class Serializer implements XMLReader {
 	    serializeToReceiver(p, false);
 	}
 	
-	
 	protected abstract void serializeToReceiver(NodeProxy p, boolean generateDocEvent) throws SAXException;
 	
 	protected abstract void serializeToReceiver(DocumentImpl doc, boolean generateDocEvent)

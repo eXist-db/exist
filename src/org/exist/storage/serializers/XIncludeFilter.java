@@ -111,7 +111,7 @@ public class XIncludeFilter implements Receiver {
 		receiver.endDocument();
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see org.exist.util.serializer.Receiver#endElement(org.exist.dom.QName)
 	 */
 	public void endElement(QName qname) throws SAXException {
@@ -131,6 +131,13 @@ public class XIncludeFilter implements Receiver {
 		receiver.processingInstruction(target, data);
 	}
 
+    /**
+     * @see org.exist.util.serializer.Receiver#cdataSection(char[], int, int)
+     */
+    public void cdataSection(char[] ch, int start, int len) throws SAXException {
+        receiver.cdataSection(ch, start, len);
+    }
+    
 	/**
 	 * @see org.xml.sax.ContentHandler#startDocument()
 	 */
