@@ -112,8 +112,10 @@ public class ForExpr extends BindingExpression {
 		    context.proceed(this);
 			contextItem = i.nextItem();
 			context.setContextPosition(p);
-			atVal.setValue(p);
-
+			
+//			atVal.setValue(p); // seb: this does not create a new Value. the old Value is referenced from results 
+			at.setValue(new IntegerValue(p));
+			 
 			contextSequence = contextItem.toSequence();
 			if(sequenceType != null)
 				// check sequence type
