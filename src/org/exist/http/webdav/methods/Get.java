@@ -23,8 +23,6 @@
 package org.exist.http.webdav.methods;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -88,12 +86,7 @@ public class Get extends AbstractWebDAVMethod {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, READ_PERMISSION_DENIED);
 				return;
 			}
-			String contentType;
-			if(resource.getResourceType() == DocumentImpl.XML_FILE)
-				contentType = WebDAV.XML_CONTENT;
-			else
-				contentType = WebDAV.BINARY_CONTENT;
-			response.setContentType(contentType);
+			response.setContentType(resource.getMimeType());
 			response.addDateHeader("Last-Modified", resource.getLastModified());
 			
 			if(resource.getResourceType() == DocumentImpl.XML_FILE) {

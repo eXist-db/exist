@@ -6,7 +6,7 @@ import java.rmi.RemoteException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
@@ -32,7 +32,7 @@ import org.xml.sax.SAXException;
  */
 public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 
-	private static Category LOG = Category.getInstance(Admin.class.getName());
+	private static Logger LOG = Logger.getLogger(Admin.class.getName());
 
 	private BrokerPool pool;
 
@@ -168,7 +168,8 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 				collection.addDocument(
 						broker,
 						path,
-						new InputSource(new ByteArrayInputStream(data)));
+						new InputSource(new ByteArrayInputStream(data)),
+                        "text/xml");
 			LOG.debug(
 				"parsing "
 					+ path

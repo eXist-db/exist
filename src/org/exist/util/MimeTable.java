@@ -89,6 +89,10 @@ public class MimeTable {
         return ext == null ? null : (MimeType) extensions.get(ext);
     }
     
+    public MimeType getContentType(String mimeType) {
+        return (MimeType) mimeTypes.get(mimeType);
+    }
+    
     public boolean isXMLContent(String fileName) {
         String ext = getExtension(fileName);
         if (ext == null)

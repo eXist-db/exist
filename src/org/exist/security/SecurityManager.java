@@ -294,7 +294,7 @@ public class SecurityManager {
 			broker.setUser(getUser(DBA_USER));
 			Collection sysCollection = broker.getCollection(SYSTEM);
 			DocumentImpl doc =
-				sysCollection.addDocument(broker, ACL_FILE, buf.toString(), true);
+				sysCollection.addDocument(broker, ACL_FILE, buf.toString(), "text/xml", true);
 			doc.setPermissions(0770);
 			broker.saveCollection(doc.getCollection());
 		} catch (SAXException e) {

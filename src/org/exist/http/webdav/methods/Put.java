@@ -28,9 +28,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLConnection;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
@@ -47,6 +44,8 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
+import org.exist.util.MimeTable;
+import org.exist.util.MimeType;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -94,14 +93,21 @@ public class Put extends AbstractWebDAVMethod {
 				response.sendError(HttpServletResponse.SC_CONFLICT, "Cannot overwrite an existing collection with a resource");
 				return;
 			}
+            MimeType mime;
 			if(contentType == null) {
-				contentType = URLConnection.guessContentTypeFromName(path);
-			}
+				mime = MimeTable.getInstance().getContentTypeFor(path);
+                if (mime != null)
+                    contentType = mime.getName();
+			} else {
+			    mime = MimeTable.getInstance().getContentType(contentType);
+            }
+            if (mime == null)
+                mime = MimeType.BINARY_TYPE;
 			LOG.debug("storing document " + path + "; content-type = " + contentType);
-			if(contentType == null || contentType.equalsIgnoreCase("text/xml") ||
-					contentType.equals("application/xml")) {
+			if(mime.isXMLType()) {
 				InputSource is = new InputSource(url);
 				IndexInfo info = collection.validate(broker, path, is);
+                info.getDocument().setMimeType(contentType);
 				collection.release();
 				collectionLocked = false;
 				collection.store(broker, info, is, false);

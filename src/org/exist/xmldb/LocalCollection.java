@@ -593,6 +593,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			} finally {
 				collection.release();
 			}
+            info.getDocument().setMimeType(res.getMimeType());
 			if (uri != null) {
 				collection.store(broker, info, new InputSource(uri), false);
 			} else if (res.root != null) {

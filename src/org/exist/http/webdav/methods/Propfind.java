@@ -382,10 +382,7 @@ public class Propfind extends AbstractWebDAVMethod {
 		}
 		
 		if(shouldIncludeProperty(type, searchedProperties, CONTENT_TYPE_PROP)) {
-			if(resource.getResourceType() == DocumentImpl.XML_FILE)
-				writeSimpleElement(CONTENT_TYPE_PROP, WebDAV.XML_CONTENT, serializer);
-			else
-				writeSimpleElement(CONTENT_TYPE_PROP, WebDAV.BINARY_CONTENT, serializer);
+            writeSimpleElement(CONTENT_TYPE_PROP, resource.getMimeType(), serializer);
 		}
 		
 		if(shouldIncludeProperty(type, searchedProperties, SUPPORTED_LOCK_PROP)) {
