@@ -9,59 +9,53 @@
             <definitionlist>
                 <definition>
                     <term>
-                        <b>November 21, 2003</b>
+                        <b>February 2, 2004</b>
                     </term>
                     <def>
-                        <img src="resources/new.gif" border="0"/>XQuery support is progressing fast: I have put 
-					up a few <link href="examples.xml">XQuery 
-					examples</link>
-				to demonstrate some of the new features available in the 
-				current development version. XQuery support is still far from 
-				being complete, but you can already do a lot of fascinating 
-				things.</def>
-                </definition>
-                <definition>
-                    <term>
-                        <b>August 11, 2003</b>
-                    </term>
-                    <def>0.9.2 is out! This is the first official release with support for
-						XUpdate. Also, much effort has been invested to ensure
-						that East Asian character encodings are correctly processed by the database
-						as well as the query engine. Further changes include: important missing 
-						parts of the XPath spec have been implemented, more synchronization and
-						database corruption bugs have been fixed and interfaces improved.
-					</def>
+                        After a month of testing and many bug-fixes, the first beta
+                        of eXist 1.0 is finally available. Have a look at the
+                        <link href="examples.xml">examples page</link> to get
+                        an impression of eXist's new features.</def>
                 </definition>
             </definitionlist>
         </section>
         <section id="overview" title="Overview">
             
             <p>eXist is an Open Source native XML database featuring
-                efficient, index-based XQuery processing, extensions for full-text
-                search, XUpdate support and tight integration with existing
-                XML development tools. </p>
+                efficient, index-based 
+                <a href="http://www.w3.org/TR/xquery/">XQuery</a>
+                processing, automatic indexing,
+                extensions for full-text search, 
+                <a href="http://www.xmldb.org/xupdate/">XUpdate</a> support 
+                and tight integration with existing XML development 
+                tools. </p>
             
-            <p>The new XQuery support in eXist makes it possible to write entire
-            web applications with just XQuery and XSLT. XQuery files can be
+            <p>The new XQuery support in eXist makes it possible to write 
+            entire web applications with just XQuery and XSLT. XQuery files can be
             directly passed to the database, using either the XQueryServlet,
             the XQueryGenerator for Cocoon or the REST-style API.</p>
             
-            <p>The XQuery engine is a complete rewrite and replaces the old
-                XPath engine. It implements the current XQuery working draft as
-                of November, 2003 with the exception of the XML schema related
-                features. Extensions to XPath/XQuery are provided to efficiently
-                support document-centric queries, which overcome the inability
-                of the standard function library to produce satisfactory results
-                when querying larger sections of text.</p>
-                
+            <p>The database implements the current 
+            <a href="http://www.w3.org/TR/2003/WD-xquery-20031112/">XQuery 1.0 
+            working draft</a> as
+            of November, 2003, with the exception of the XML schema related
+            features.</p>
+            
+            <p>Implemented features include: user-defined functions and modules, 
+            static type checking, type casts, constructors, order by, ...</p>
+            
+            <p>Additional features: Java binding, fultext-search functions, 
+            extension modules for HTTP support, database manipulation and 
+            XSL transformations.</p>
+            
             <p>To avoid memory-intensive document tree
-                traversals during query processing, eXist uses an efficient
-                index structure which is based on a numerical indexing scheme
-                for identifying XML nodes in the index. The database is
-                lightweight, completely written in Java and may be easily
-                deployed in a number of ways, running either as a stand-alone
-                server process, inside a servlet-engine or directly embedded
-                into an application.</p>
+            traversals during query processing, eXist uses an efficient
+            index structure which is based on a numerical indexing scheme
+            for identifying XML nodes in the index. The database is
+            lightweight, completely written in Java and may be easily
+            deployed in a number of ways, running either as a stand-alone
+            server process, inside a servlet-engine or directly embedded
+            into an application.</p>
                 
                 
             <p>For a summary of eXist's features please have a look at

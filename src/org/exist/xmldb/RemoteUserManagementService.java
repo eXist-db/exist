@@ -153,6 +153,39 @@ public class RemoteUserManagementService implements UserManagementService {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.UserManagementService#lockResource(org.xmldb.api.base.Resource, org.exist.security.User)
+	 */
+	public void lockResource(Resource res, User u) throws XMLDBException {
+		String path = ((RemoteCollection) res.getParentCollection()).getPath() + '/' + res.getId();
+		try {
+			Vector params = new Vector();
+			params.addElement(path);
+			params.addElement(u.getName());
+			parent.getClient().execute("lockResource", params);
+		} catch (XmlRpcException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		} catch (IOException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.UserManagementService#unlockResource(org.xmldb.api.base.Resource)
+	 */
+	public void unlockResource(Resource res) throws XMLDBException {
+		String path = ((RemoteCollection) res.getParentCollection()).getPath() + '/' + res.getId();
+		try {
+			Vector params = new Vector();
+			params.addElement(path);
+			parent.getClient().execute("unlockResource", params);
+		} catch (XmlRpcException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		} catch (IOException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		}
+	}
+	
 	/**
 	 *  Change the owner of the current collection
 	 *

@@ -54,7 +54,7 @@
 				<para>If the provided scripts don't work for you, you may 
 					directly call the bootstrap loader with</para>
 				<synopsis>java -Xmx128M -Djava.endorsed.dirs=lib/endorsed -jar 
-					start.jar</synopsis>
+					start.jar jetty</synopsis>
 				<para>This will launch the included Jetty webserver and eXist. 
 					Now continue with <ulink url="#sect3">section 
 					3</ulink>.</para>
@@ -87,7 +87,7 @@
 				<para>If the provided scripts don't work for you, you may 
 					directly call the bootstrap loader with</para>
 				<synopsis>java -Xmx128M -Djava.endorsed.dirs=lib/endorsed -jar 
-					start.jar</synopsis>
+					start.jar jetty</synopsis>
 				<para>Now continue with <ulink url="#sect3">section 
 					3</ulink>.</para>
 			</section>
@@ -142,9 +142,9 @@ jar xfv ../exist.war]]></screen>
 				directory used by the engine and available database instances. 
 				If this worked, continue <ulink url="#sect4">to read 
 				below</ulink>.</para>
-			<para>If anything goes wrong, please make sure that the <command 
-				moreinfo="none">EXIST_HOME</command> environment variable 
-				points to the directory where the configuration file <filename 
+			<para>If anything goes wrong, you may try to set the <command 
+				moreinfo="none">EXIST_HOME</command> environment variable. It 
+				should point to the directory where the configuration file <filename 
 				moreinfo="none">conf.xml</filename> can be found. The server 
 				will try to read the file from <filename 
 				moreinfo="none">EXIST_HOME/conf.xml</filename>. For the source 
@@ -160,6 +160,34 @@ jar xfv ../exist.war]]></screen>
 				will find it in <filename 
 				moreinfo="none">webapps/WEB-INF/data</filename> or <filename 
 				moreinfo="none">WEB-INF/data</filename>.</para>
+                
+            <para>Another frequent problem is caused by conflicting versions of Xalan
+            (Apache's XSL processor): Java already contains an outdated version
+            of the Xalan library. However, Cocoon needs a newer version to function
+            properly.</para>
+            
+            <para>You have to overwrite Java's default settings to get the
+            correct versions of Xalan and Xerces. This can be done in two
+            ways:</para>
+            
+            <itemizedlist>
+                <listitem>
+                    <para>Set the system property
+                    <option>java.endorsed.dirs</option> to point to the supplied
+                    jar files in <filename>lib/endorsed</filename>, e.g.:</para>
+                    
+                    <synopsis>java -Xmx128M -Djava.endorsed.dirs=lib/endorsed -jar 
+					start.jar jetty</synopsis>
+                    
+                    <para>This is what the shell scripts do.</para>
+                </listitem>
+                <listitem>
+                    <para>Copy the jars in <filename>lib/endorsed</filename> to
+                    directory <filename>$JAVA_HOME/jre/lib/endorsed</filename>.
+                    $JAVA_HOME is where your JDK has been installed. The endorsed 
+                    subdirectory may not exist, so you have to create it first.</para>
+                </listitem>
+            </itemizedlist>
 		</section>
 		<section id="sect4">
 			<title>Installed Files</title>
@@ -222,7 +250,9 @@ jar xfv ../exist.war]]></screen>
 					<listitem>
 						<para>Same as</para>
 						<synopsis>java -jar start.jar client</synopsis>
-						<para>Launches the Java client.</para>
+						<para>Launches the Java client. This is also the default
+                        if no application is selected on the command line, i.e.</para>
+                        <synopsis>java -jar start.jar</synopsis>
 					</listitem>
 				</varlistentry>
 			</variablelist>
@@ -232,10 +262,7 @@ jar xfv ../exist.war]]></screen>
 			<para>There is no preferred way to work with eXist. The server 
 				offers quite a number of different interfaces, including 
 				XML-RPC, SOAP, REST-style HTTP or direct access via Cocoon 
-                and the XML:DB API. Alternatively, you may use the administration 
-                interface at <ulink 
-				url="http://localhost:8080/exist/xadmin.xsp">http://localhost:8080/exist/xadmin.xsp</ulink> 
-				to add files.</para>
+                and the XML:DB API.</para>
 			<para>This section explains how to add and query files using the 
 				admin client. The command-line client may either be controlled by 
 				parameters, or used interactively. If no action is specified on 
@@ -453,8 +480,8 @@ dav:/exist/webdav/shakespeare/>
 				moreinfo="none">webapp/WEB-INF/logs</filename>.
             </para>
 			<para>If you experience any problems with eXist, please have a look 
-				at the corresponding log-files. This is also recommended if 
-				Cocoon presents you an error-report. Cocoon log-files reside in 
+				at the corresponding log-files (exist.log). This is also recommended if 
+				Cocoon presents you an error-report. Cocoon log-files also reside in 
 				the <filename moreinfo="none">WEB-INF/logs</filename> 
 				directory. Usually, looking at these files helps to understand 
 				why an exception occurred.</para>

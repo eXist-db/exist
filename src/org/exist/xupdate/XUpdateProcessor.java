@@ -88,6 +88,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		builder = factory.newDocumentBuilder();
 		this.broker = broker;
 		this.documentSet = docs;
+		namespaces.put("xml", "http://www.w3.org/XML/1998/namespace");
 	}
 
 	/**
@@ -259,9 +260,10 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 							"illegal prefix in qname: " + name);
 					name = name.substring(p + 1);
 					namespace = (String) namespaces.get(prefix);
-					if (namespace == null)
+					if (namespace == null) {
 						throw new SAXException(
 							"no namespace defined for prefix " + prefix);
+					}
 				}
 				Element elem = doc.createElementNS(namespace, name);
 				elem.setPrefix(prefix);

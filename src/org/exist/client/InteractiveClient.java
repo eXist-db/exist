@@ -356,6 +356,13 @@ public class InteractiveClient {
 		return current;
 	}
 
+	protected void reloadCollection() throws XMLDBException {
+		current = DatabaseManager.getCollection(properties.getProperty("uri")
+			+ path, properties.getProperty("user"),
+			properties.getProperty("password"));
+		getResources();
+	}
+	
 	/**
 	 * Get list of resources contained in collection.
 	 * 
@@ -862,6 +869,22 @@ public class InteractiveClient {
 				}
 				System.err.println("Resource " + args[3] + " not found.");
 
+			} else if (args[0].equalsIgnoreCase("lock") || args[0].equalsIgnoreCase("unlock")) {
+				if(args.length < 2) {
+					messageln("Usage: lock resource");
+					return true;
+				}
+				Resource res = current.getResource(args[1]);
+				if (res != null) {
+					UserManagementService mgtService = (UserManagementService) 
+						current.getService("UserManagementService", "1.0");
+					User user = mgtService.getUser(properties.getProperty("user", "guest"));
+					if(args[0].equalsIgnoreCase("lock"))
+						mgtService.lockResource(res, user);
+					else
+						mgtService.unlockResource(res);
+				}
+				
 			} else if (args[0].equalsIgnoreCase("elements")) {
 				System.out.println("Element occurrences in collection "
 						+ current.getName());
@@ -1745,8 +1768,7 @@ public class InteractiveClient {
 				System.err.println("Connection to database failed; message: "
 						+ cnf.getMessage());
 			cnf.printStackTrace();
-			shutdown(false);
-			return;
+			System.exit(0);
 		}
 		if (current == null) {
 			if (startGUI && frame != null)
@@ -1919,10 +1941,9 @@ public class InteractiveClient {
 					ClientFrame.showErrorMessage(
 							"XMLDBException occurred while retrieving collection: "
 									+ getExceptionMessage(e), e);
-					frame.setVisible(false);
+					frame.dispose();
 				}
-				shutdown(false);
-				return;
+				System.exit(1);
 			}
 			messageln("\ntype help or ? for help.");
 			if (!startGUI)

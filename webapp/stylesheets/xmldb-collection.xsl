@@ -47,11 +47,11 @@
                 <form action="./" method="GET">
                     <table width="100%" align="center" border="0" bgcolor="#666699">
                         <tr>
-                            <th align="left">XPath Query</th>
+                            <th align="left">XQuery</th>
                         </tr>
                         <tr>
                             <td bgcolor="9999CC">
-                                <input type="text" name="xpath" size="45"/>
+                                <textarea name="xpath" cols="60" rows="5"/>
                                 <input type="submit"/>
                             </td>
                         </tr>

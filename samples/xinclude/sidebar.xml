@@ -1,52 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<s:sidebar title="Navigation" xmlns:s="http://exist-db.org/NS/sidebar">
-    <s:group href="http://exist-db.org/index.html" name="Home"/>
-    <s:group name="Documentation">
-        <s:item id="features">
-            <s:link href="http://exist-db.org/features.html">Features</s:link>
-        </s:item>
-        <s:item>
-            <s:link href="http://exist-db.org/quickstart.html">Quick Start</s:link>
-        </s:item>
-        <s:item>
-            <s:link href="http://exist-db.org/xpath.html">XPath HowTo</s:link>
-        </s:item>
-        <s:item>
-            <s:link href="http://exist-db.org/deployment.html">Deployment</s:link>
-        </s:item>
-        <s:item>
-            <s:link href="http://exist-db.org/security.html">Security</s:link>
-        </s:item>
-        <s:item>
-            <s:link href="http://exist-db.org/configuration.html">Server Configuration</s:link>
-        </s:item>
-        <s:item>
-            <s:link href="http://exist-db.org/devguide.html">Developer's Guide</s:link>
-        </s:item>
-        <s:item>
-            <s:link href="http://exist-db.org/howtos.html">How-Tos</s:link>
-        </s:item>
-        <s:item>
-            <s:link href="http://exist-db.org/changes.html">Changes</s:link>
-        </s:item>
-    </s:group>
-    <s:group name="Examples">
-        <s:item>
-            <s:link href="/exist/simple/xquery.xsp">Query interface</s:link>
-        </s:item>
-        <s:item>
-            <s:link href="/exist/library/biblio.xml">Library</s:link>
-        </s:item>
-        <s:item>
-            <s:link href="/exist/xmldb/db/">Cocoon + XML:DB</s:link>
-        </s:item>
-    </s:group>
-    <s:group name="Administration">
-        <s:item>
-            <s:link href="/exist/xadmin.xsp">Admin Interface</s:link>
-        </s:item>
-        <s:item>
-            <s:link href="/exist/admin">Server Status</s:link>
-        </s:item>
-    </s:group>
-</s:sidebar>
+<sidebar title="Navigation" xmlns="http://exist-db.org/NS/sidebar">
+    <group href="http://exist-db.org/index.html" name="Home"/>
+    <group name="Donations" href="http://exist-db.org/donations.html"/>
+    <group name="Documentation">
+        <item id="features">
+            <link href="http://exist-db.org/facts.html">Feature Sheet</link>
+        </item>
+        <item>
+            <link href="http://exist-db.org/quickstart.html">Quick Start</link>
+        </item>
+        <item>
+            <img src="http://exist-db.org/resources/new.gif" border="0"/><link
+                href="http://exist-db.org/xquery.html">XQuery Docs</link>
+        </item>
+        <item>
+            <link href="http://exist-db.org/devguide.html">Developer's Guide</link>
+        </item>
+        <item>
+            <link href="http://exist-db.org/client.html">Java Admin Client</link>
+        </item>
+        <item>
+            <link href="http://exist-db.org/deployment.html">Deployment</link>
+        </item>
+        <item>
+            <link href="http://exist-db.org/security.html">Security</link>
+        </item>
+		<item>
+            <link href="xinclude.xml">XInclude</link>
+		</item>
+        <item>
+            <link href="http://exist-db.org/configuration.html">Server Configuration</link>
+        </item>
+        <item>
+            <link href="http://exist-db.org/ant-tasks.html">Ant Tasks</link>
+        </item>
+        <item>
+            <link href="http://exist-db.org/index.html#articles">Articles</link>
+        </item>
+        <item>
+            <link href="http://exist-db.org/api/index.html">Javadocs</link>
+        </item>
+        <item>
+            <link href="http://exist-db.org/changes.html">Changes</link>
+        </item>
+    </group>
+    <group name="HowTo">
+        <item>
+            <link href="http://exist-db.org/performance.html">Performance Issues</link>
+        </item>
+        <item>
+            <link href="http://exist-db.org/howtos.html">Misc</link>
+        </item>
+	</group>
+    
+    <banner>
+        <item>
+            <link href="http://exist-db.org"><img alt="powered by eXist"
+                    border="0" src="/exist/resources/powered.gif"/></link>
+		</item>
+    </banner>
+    
+	<banner name="" empty="true">
+      <item><link href="http://sourceforge.net/projects/exist"><img src="http://sourceforge.net/sflogo.php?group_id=17691&amp;type=4" width="125" height="37" border="0" alt="SourceForge Logo"/></link></item>
+  </banner>
+</sidebar>

@@ -422,13 +422,6 @@
   <!-- main pipeline -->
 
         <map:pipeline>
-             <!-- jmv - WWBKB - "automount" setup
-               CAUTION: jmv: must be before other catch-all matches like **.xml ,
-               otherwise xse/foo.xml will not be passed to xse/ subsitemap.
-             -->
-            <map:match pattern="xse/**">
-                <map:mount check-reload="yes" src="xse/" uri-prefix="xse"/>
-            </map:match>
  
                <!-- This causes directories added under "mount"
                (even with Cocoon already running) to be activated automagically
@@ -442,6 +435,11 @@
 
         <map:pipeline>
             <!-- graphics etc. -->
+            <map:match pattern="xmldb/db/shakespeare/plays/**.css">
+                <map:read src="xmldb:exist:///db/shakespeare/plays/{1}.css"
+                    mime-type="text/css"/>
+            </map:match>
+
             <map:match pattern="**.css">
                 <map:read mime-type="text/css" src="{1}.css"/>
             </map:match>
@@ -470,8 +468,8 @@
                 <map:generate src="xmldb:exist:///db/xinclude/{1}.xml"/>
                 <map:transform src="stylesheets/db2html.xsl"/>
                 <map:serialize type="html"/>
-            </map:match>
-            
+            </map:match> 
+
             <!-- apply stylesheet shakes.xsl to all XML documents -->
             <!-- in xmldb-collection /db/shakespeare/plays -->
             <map:match pattern="xmldb/db/shakespeare/plays/**.xml">
@@ -503,8 +501,8 @@
                 <map:generate src="xmldb:exist:///db/shakespeare/plays/{1}.xml"/>
                 <map:transform src="xmldb:exist:///db/shakespeare/plays/shakes.xsl"/>
                 <map:serialize type="html"/>
-            </map:match>
-            
+            </map:match> 
+
             <!-- browse collections -->
             <map:match pattern="xmldb/**/">
                 <!-- check if an xpath query has been passed in the request -->

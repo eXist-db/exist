@@ -156,7 +156,7 @@
             
             <section title="Cocoon Examples">
             
-                <p>These are older examples based on different Cocoon features. Some
+                <p>These are <emphasis>older examples</emphasis> based on different Cocoon features. Some
                     of the examples have been rewritten in XQuery, so there are now
                     two versions of these. Nevertheless, the pages here are still valid
                     if you don't want to rely on the XQuery engine.</p>
@@ -200,7 +200,7 @@
                             Simple interface to send XPath queries to the server.
                         </td>
                     </tr>
-                    <tr>
+                    <!--tr>
                         <td width="30%" valign="top">
                             <link href="xse/squery.xsp">squery.xsp</link>
                         </td>
@@ -208,7 +208,7 @@
                             Adapted XML Search Engine where you don't have to type
                             XPath. Formatting is adapted for each collection.
                         </td>
-                    </tr>
+                    </tr-->
 
                     <tr>
                         <th align="left" colspan="2">

@@ -40,7 +40,9 @@ public class CollectionCache extends ClockCache {
 
 	protected Cacheable removeOne(Cacheable item) {
 		Cacheable old = super.removeOne(item);
-		names.remove(((Collection)old).getName());
+		if(old != null) {
+			names.remove(((Collection)old).getName());
+		}
 		return old;
 	}
 

@@ -56,6 +56,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
+import org.exist.util.LockException;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SAXSerializerPool;
 import org.exist.xquery.PathExpr;
@@ -100,6 +101,7 @@ public class RESTServer {
 		defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
 		defaultProperties.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES,
 				"elements");
+        defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
 	}
 
 	private final static DateFormat dateFormat = new SimpleDateFormat(
@@ -155,7 +157,8 @@ public class RESTServer {
 				outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, stylesheet);
 			else
 				outputProperties.setProperty(EXistOutputKeys.STYLESHEET, stylesheet);
-		}
+		} else
+            outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
 		String encoding;
 		if((encoding = (String) parameters.get("_encoding")) !=null)
 			outputProperties.setProperty(OutputKeys.ENCODING, encoding);
@@ -361,6 +364,8 @@ public class RESTServer {
 			throw new BadRequestException("Internal error: " + e.getMessage());
 		} catch (TriggerException e) {
 			throw new PermissionDeniedException(e.getMessage());
+		} catch (LockException e) {
+			throw new PermissionDeniedException(e.getMessage());
 		}
 		return response;
 	}
@@ -396,6 +401,8 @@ public class RESTServer {
 			}
 		} catch (TriggerException e) {
 			throw new PermissionDeniedException("Trigger failed: " + e.getMessage());
+		} catch (LockException e) {
+			throw new PermissionDeniedException("Could not acquire lock: " + e.getMessage());
 		}
 		return response;
 	}
@@ -568,7 +575,8 @@ public class RESTServer {
 				item = results.itemAt(i);
 				if (item == null)
 					continue;
-				if (Type.subTypeOf(item.getType(), Type.ELEMENT)) {
+				if (item.getType() == Type.ELEMENT || item.getType() == Type.COMMENT ||
+					item.getType() == Type.PROCESSING_INSTRUCTION) {
 					NodeValue node = (NodeValue) item;
 					serializer.toSAX(node);
 				} else {

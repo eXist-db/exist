@@ -88,7 +88,7 @@ public class ClockCache implements Cache {
 				if (old == null) {
 					bucket = i;
 				} else {
-					if (old.getReferenceCount() == 0) {
+					if (old.getReferenceCount() == 0 && old.allowUnload()) {
 						if (bucket < 0)
 							bucket = i;
 					} else

@@ -96,7 +96,6 @@ import org.w3c.dom.NodeList;
  * the database. Extends {@link DBBroker}.
  *
  *@author     Wolfgang Meier
- *@created    15. Mai 2002
  */
 public class NativeBroker extends DBBroker {
 
@@ -537,7 +536,7 @@ public class NativeBroker extends DBBroker {
 			if (collection != null) {
 				return collection;
 			}
-			collection = new Collection(name);
+			collection = new Collection(collectionsDb, name);
 			try {
 				if (addr < 0) {
 					dis = collectionsDb.getAsStream(key);
@@ -558,7 +557,7 @@ public class NativeBroker extends DBBroker {
 			}
 			collectionsDb.getCollectionCache().add(collection);
 		} catch (LockException e) {
-			LOG.warn("failed to acquire lock on collection store");
+			LOG.warn("failed to acquire lock on collections.dbx");
 			return null;
 		} finally {
 			lock.release();
@@ -1191,7 +1190,7 @@ public class NativeBroker extends DBBroker {
 			current = getCollection("/db");
 			if (current == null) {
 				LOG.debug("creating root collection /db");
-				current = new Collection("/db");
+				current = new Collection(collectionsDb, "/db");
 				current.getPermissions().setPermissions(0777);
 				current.getPermissions().setOwner(user);
 				current.getPermissions().setGroup(user.getPrimaryGroup());
@@ -1210,7 +1209,7 @@ public class NativeBroker extends DBBroker {
 						throw new PermissionDeniedException("not allowed to write to collection");
 					}
 					LOG.debug("creating collection " + path);
-					sub = new Collection(path);
+					sub = new Collection(collectionsDb, path);
 					sub.getPermissions().setOwner(user);
 					sub.getPermissions().setGroup(user.getPrimaryGroup());
 					sub.setId(getNextCollectionId());
@@ -1453,11 +1452,6 @@ public class NativeBroker extends DBBroker {
 				LOG.debug("document " + docName + " not found");
 				return;
 			}
-			if (!doc.getCollection().getPermissions().validate(user, Permission.WRITE))
-				throw new PermissionDeniedException(
-					"write access to collection denied; user=" + user.getName());
-			if (!doc.getPermissions().validate(user, Permission.WRITE))
-				throw new PermissionDeniedException("permission to remove document denied");
 			LOG.info("removing document " + doc.getDocId() + "...");
 
 			// drop element-index
@@ -1655,9 +1649,8 @@ public class NativeBroker extends DBBroker {
 
 	public void addDocument(Collection collection, DocumentImpl doc)
 		throws PermissionDeniedException {
-		Lock lock = null;
+		Lock lock = collectionsDb.getLock();
 		try {
-			lock = collectionsDb.getLock();
 			lock.acquire();
 
 			Value name;
@@ -1980,11 +1973,6 @@ public class NativeBroker extends DBBroker {
 		throws PermissionDeniedException {
 		if (readOnly)
 			throw new PermissionDeniedException("database is read-only");
-		if (!blob.getCollection().getPermissions().validate(user, Permission.WRITE))
-			throw new PermissionDeniedException(
-				"write access to collection denied; user=" + user.getName());
-		if (!blob.getPermissions().validate(user, Permission.WRITE))
-			throw new PermissionDeniedException("permission to remove document denied");
 		LOG.info("removing binary resource " + blob.getDocId() + "...");
 		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
 			public Object start() throws ReadOnlyException {

@@ -46,6 +46,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
+import org.exist.util.LockException;
 import org.exist.util.Occurrences;
 import org.exist.util.SyntaxException;
 import org.exist.util.serializer.DOMSerializer;
@@ -170,8 +171,16 @@ public class RpcConnection extends Thread {
 	protected Sequence doQuery(User user, DBBroker broker, String xpath,
 			DocumentSet docs, NodeSet contextSet, Hashtable parameters)
 			throws Exception {
-		if (docs == null)
-			docs = broker.getAllDocuments(new DocumentSet());
+		String baseURI = (String) parameters.get(RpcAPI.BASE_URI);
+		if(docs == null) {
+			if(baseURI == null)
+				docs = broker.getAllDocuments(new DocumentSet());
+			else {
+				docs = new DocumentSet();
+				Collection root = broker.getCollection(baseURI);
+				root.allDocs(broker, docs, true);
+			}
+		}
 		CachedQuery cached = getCachedQuery(xpath);
 		PathExpr expr = null;
 		if (cached == null) {
@@ -182,7 +191,6 @@ public class RpcConnection extends Thread {
 			LOG.debug("reusing compiled expression");
 			expr = cached.expression;
 		}
-		String baseURI = (String) parameters.get(RpcAPI.BASE_URI);
 		XQueryContext context = expr.getContext();
 		context.setBaseURI(baseURI);
 		context.setStaticallyKnownDocuments(docs);
@@ -190,6 +198,7 @@ public class RpcConnection extends Thread {
 		long start = System.currentTimeMillis();
 		Sequence result = expr.eval(contextSet, null);
 		LOG.info("query took " + (System.currentTimeMillis() - start) + "ms.");
+		expr.reset();
 		return result;
 	}
 
@@ -803,7 +812,7 @@ public class RpcConnection extends Thread {
 	 * @throws IOException
 	 */
 	public boolean parseLocal(User user, String localFile, String docName,
-			boolean replace) throws EXistException, PermissionDeniedException,
+			boolean replace) throws EXistException, PermissionDeniedException, LockException,
 			SAXException, TriggerException {
 		File file = new File(localFile);
 		if (!file.canRead())
@@ -837,7 +846,7 @@ public class RpcConnection extends Thread {
 	}
 
 	public boolean storeBinary(User user, byte[] data, String docName,
-			boolean replace) throws EXistException, PermissionDeniedException {
+		boolean replace) throws EXistException, PermissionDeniedException, LockException {
 		DBBroker broker = null;
 		DocumentImpl doc = null;
 		try {
@@ -1335,6 +1344,55 @@ public class RpcConnection extends Thread {
 		return true;
 	}
 
+	public boolean lockResource(User user, String path, String userName) throws Exception {
+		DBBroker broker = null;
+		try {
+			broker = brokerPool.get(user);
+			DocumentImpl doc = (DocumentImpl) broker.getDocument(path);
+				if (doc == null)
+					throw new EXistException("Resource "
+							+ path + " not found");
+			if (!doc.getPermissions().validate(user, Permission.UPDATE))
+				throw new PermissionDeniedException("User is not allowed to lock resource " + path);
+			org.exist.security.SecurityManager manager = brokerPool.getSecurityManager();
+			if (!(userName.equals(user.getName()) || manager.hasAdminPrivileges(user)))
+				throw new PermissionDeniedException("User " + user.getName() + " is not allowed " +
+						"to lock the resource for user " + userName);
+			User lockOwner = doc.getUserLock();
+			if(lockOwner != null && (!lockOwner.equals(user)) && (!manager.hasAdminPrivileges(user)))
+				throw new PermissionDeniedException("Resource is already locked by user " +
+						lockOwner.getName());
+			doc.setUserLock(user);
+			broker.saveCollection(doc.getCollection());
+			return true;
+		} finally {
+			brokerPool.release(broker);
+		}
+	}
+	
+	public boolean unlockResource(User user, String path) throws Exception {
+		DBBroker broker = null;
+		try {
+			broker = brokerPool.get(user);
+			DocumentImpl doc = (DocumentImpl) broker.getDocument(path);
+			if (doc == null)
+				throw new EXistException("Resource "
+						+ path + " not found");
+			if (!doc.getPermissions().validate(user, Permission.UPDATE))
+				throw new PermissionDeniedException("User is not allowed to lock resource " + path);
+			org.exist.security.SecurityManager manager = brokerPool.getSecurityManager();
+			User lockOwner = doc.getUserLock();
+			if(lockOwner != null && (!lockOwner.equals(user)) && (!manager.hasAdminPrivileges(user)))
+				throw new PermissionDeniedException("Resource is already locked by user " +
+						lockOwner.getName());
+			doc.setUserLock(null);
+			broker.saveCollection(doc.getCollection());
+			return true;
+		} finally {
+			brokerPool.release(broker);
+		}
+	}
+	
 	public Hashtable summary(User user, String xpath) throws Exception {
 		long startTime = System.currentTimeMillis();
 		DBBroker broker = null;

@@ -32,6 +32,7 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.util.LockException;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -296,11 +297,13 @@ public class SecurityManager {
 			doc.setPermissions(0770);
 			broker.saveCollection(doc.getCollection());
 		} catch (SAXException e) {
-			e.printStackTrace();
+			throw new EXistException(e.getMessage());
 		} catch (PermissionDeniedException e) {
-			e.printStackTrace();
+			throw new EXistException(e.getMessage());
 		} catch (TriggerException e) {
-			e.printStackTrace();
+			throw new EXistException(e.getMessage());
+		} catch (LockException e) {
+			throw new EXistException(e.getMessage());
 		}
 		broker.flush();
 		broker.sync();

@@ -39,11 +39,8 @@
                 <include name="conf.xml"/>
                 <include name="log4j.xml"/>
                 <include name="build.xml"/>
-            	<include name="*.css"/>
             	<include name="LICENSE"/>
             	<include name="README"/>
-            	<include name="*.jpg"/>
-            	<include name="*.html"/>
 				<include name="exist.jar"/>
 				<include name="exist-optional.jar"/>
             	<include name="start.jar"/>

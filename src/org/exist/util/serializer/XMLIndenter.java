@@ -103,6 +103,7 @@ public class XMLIndenter extends XMLWriter {
 				sameline = false;
 			}
 		}
+		afterTag = false;
 		super.characters(chars);
 	}
 	

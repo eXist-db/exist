@@ -49,7 +49,8 @@ public class PutExample {
 		String docName =file.getName();
 		
 		try {
-			URL url = new URL("http://admin:@localhost:8080/exist/servlet/db/test/" + docName);
+			URL url = new URL("http://admin:@localhost:8080/exist/servlet/db/test/" + 
+                docName);
 			HttpURLConnection connect =(HttpURLConnection)url.openConnection();
 			connect.setRequestMethod("PUT");
 			connect.setDoOutput(true);

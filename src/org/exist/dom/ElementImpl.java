@@ -401,11 +401,12 @@ public class ElementImpl extends NodeImpl implements Element {
 				return text;
 			case Node.ATTRIBUTE_NODE :
 				attr = (Attr) child;
+				ns= attr.getNamespaceURI();
+				prefix = (ns.equals("http://www.w3.org/XML/1998/namespace") ? "xml" : attr.getPrefix());
 				QName attrName =
 					new QName(
 						attr.getLocalName(),
-						attr.getNamespaceURI(),
-						attr.getPrefix());
+						ns, prefix);
 				final AttrImpl attrib = new AttrImpl(attrName, attr.getValue());
 				attrib.setGID(gid);
 				attrib.setOwnerDocument(ownerDocument);

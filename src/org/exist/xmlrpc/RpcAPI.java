@@ -157,50 +157,36 @@ public interface RpcAPI {
 	/**
 	 *  Describe a collection: returns a struct with the  following fields:
 	 *  
-	 * <table border="1">
-	 *	<tr>
-	 *		<td>name</td><td>The name of the collection</td>
-	 *	</tr>
-	 *	<tr>
-	 *		<td>owner</td><td>The name of the user owning the collection.</td>
-	 *	</tr>
-	 *	<tr>
-	 *		<td>group</td><td>The group owning the collection.</td>
-	 *	</tr>
-	 *	<tr>
-	 *		<td>permissions</td><td>The permissions that apply to this collection (int value)</td>
-	 *	</tr>
-	 *	<tr>
-	 *		<td>created</td><td>The creation date of this collection (long value)</td>
-	 *	</tr>
-	 *	<tr>
-	 *		<td>collections</td><td>An array containing the names of all subcollections.</td>
-	 *	</tr>
-	 *	<tr>
-	 *		<td>documents</td><td>An array containing a struct for each document in the collection.</td>
-	 *	</tr>
-	 *  </table>
+	 * <pre>
+	 *	name				The name of the collection
+	 *	
+	 *	owner				The name of the user owning the collection.
+	 *	
+	 *	group				The group owning the collection.
+	 *	
+	 *	permissions	The permissions that apply to this collection (int value)
+	 *	
+	 *	created			The creation date of this collection (long value)
+	 *	
+	 *	collections		An array containing the names of all subcollections.
+	 *	
+	 *	documents		An array containing a struct for each document in the collection.
+	 *	</pre>
 	 *
 	 *	Each of the elements in the "documents" array is another struct containing the properties
 	 *	of the document:
 	 *
-	 *	<table border="1">
-	 *	<tr>
-	 *		<td>name</td><td>The full path of the document.</td>
-	 *	</tr>
-	 *	<tr>
-	 *		<td>owner</td><td>The name of the user owning the document.</td>
-	 *	</tr>
-	 *	<tr>
-	 *		<td>group</td><td>The group owning the document.</td>
-	 *	</tr>
-	 *	<tr>
-	 *		<td>permissions</td><td>The permissions that apply to this document (int)</td>
-	 *	</tr>
-	 *	<tr>
-	 *		<td>type</td><td>Type of the resource: either "XMLResource" or "BinaryResource"</td>
-	 *	</tr>
-	 *</table>
+	 *	<pre>
+	 *	name				The full path of the document.
+	 *	
+	 *	owner				The name of the user owning the document.
+	 *	
+	 *	group				The group owning the document.
+	 *	
+	 *	permissions	The permissions that apply to this document (int)
+	 *	
+	 *	type					Type of the resource: either "XMLResource" or "BinaryResource"
+	 *	</pre>
 	 *
 	 *@param  rootCollection                 Description of the Parameter
 	 *@param  user                           Description of the Parameter
@@ -282,7 +268,7 @@ public interface RpcAPI {
 	 *  execute XPath query and return a summary of hits per document and hits
 	 *  per doctype. This method returns a struct with the following fields:
 	 *
-	 *  <tableborder="1">
+	 *  <table border="1">
 	 *
 	 *    <tr>
 	 *
@@ -631,6 +617,12 @@ public interface RpcAPI {
 		int permissions)
 		throws EXistException, PermissionDeniedException;
 
+	public boolean lockResource(User user, String path, String userName) 
+	throws EXistException, PermissionDeniedException;
+	
+	public boolean unlockResource(User user, String path) 
+	throws EXistException, PermissionDeniedException;
+	
 	Hashtable getUser(User user, String name) throws EXistException, PermissionDeniedException;
 
 	Vector getUsers(User user) throws EXistException, PermissionDeniedException;

@@ -12,7 +12,6 @@ import org.xmldb.api.base.XMLDBException;
  *  permissions.
  *
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    20. August 2002
  */
 public interface UserManagementService extends Service {
 
@@ -105,7 +104,35 @@ public interface UserManagementService extends Service {
     
     public void chmod( int mode ) throws XMLDBException;
     
+    /**
+     * Change permissions for the specified resource.
+     * 
+     */
     public void chmod( Resource resource, int mode ) throws XMLDBException;
+    
+    /**
+     * Lock the specified resource for the specified user.
+     * 
+     * A locked resource cannot be changed by other users (except
+     * users in group DBA) until the lock is released. Users with admin
+     * privileges can always change a resource.
+     * 
+     * @param res
+     * @param u
+     * @throws XMLDBException
+     */
+    public void lockResource(Resource res, User u) throws XMLDBException;
+    
+    /**
+     * Unlock the specified resource.
+     * 
+     * The current user has to be same who locked the resource.
+     * Exception: admin users can always unlock a resource.
+     * 
+     * @param res
+     * @throws XMLDBException
+     */
+    public void unlockResource(Resource res) throws XMLDBException;
     
     /**
      *  Add a new user to the database

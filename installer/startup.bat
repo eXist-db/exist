@@ -12,7 +12,7 @@ set JAVA_HOME=$JAVA_HOME
 set JAVA_CMD="%JAVA_HOME%\bin\java"
 
 set JAVA_ENDORSED_DIRS="%EXIST_HOME%"\lib\endorsed
-set JAVA_OPTS="-Xms64000k -Xmx256000k -Dfile.encoding=UTF-8 -Djava.endorsed.dirs=%JAVA_ENDORSED_DIRS%"
+set JAVA_OPTS="-Xms16000k -Xmx256000k -Dfile.encoding=UTF-8 -Djava.endorsed.dirs=%JAVA_ENDORSED_DIRS%"
 
 %JAVA_CMD% "%JAVA_OPTS%" -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" jetty %1
 

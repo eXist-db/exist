@@ -1,6 +1,7 @@
 package org.exist.xquery.functions;
 
 import java.util.Iterator;
+import java.util.StringTokenizer;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
@@ -9,6 +10,7 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.ElementValue;
+import org.exist.util.XMLChar;
 import org.exist.xquery.*;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Expression;
@@ -19,6 +21,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Node;
 
 public class FunId extends Function {
 
@@ -60,8 +63,22 @@ public class FunId extends Function {
 			docs = contextSequence.toNodeSet().getDocumentSet(); 
 		for(SequenceIterator i = idval.iterate(); i.hasNext(); ) {
 			nextId = i.nextItem().getStringValue();
-			QName id = new QName(nextId, "", null);
-			getId(result, docs, id);
+			if(nextId.indexOf(' ') > -1) {
+				// parse idrefs
+				StringTokenizer tok = new StringTokenizer(nextId, " ");
+				while(tok.hasMoreTokens()) {
+					nextId = tok.nextToken();
+					if(!XMLChar.isValidNCName(nextId))
+						throw new XPathException(nextId + " is not a valid NCName");
+					QName id = new QName(nextId, "", null);
+					getId(result, docs, id);
+				}
+			} else {
+				if(!XMLChar.isValidNCName(nextId))
+					throw new XPathException(nextId + " is not a valid NCName");
+				QName id = new QName(nextId, "", null);
+				getId(result, docs, id);
+			}
 		}
 		return result;
 	}
@@ -72,11 +89,10 @@ public class FunId extends Function {
 		QName id) {
 		NodeSet attribs =
 			(NodeSet) context.getBroker().findElementsByTagName(ElementValue.ATTRIBUTE_ID, docs, id);
-		LOG.debug("found " + attribs.getLength() + " attributes for id " + id);
 		NodeProxy n, p;
 		for (Iterator i = attribs.iterator(); i.hasNext();) {
 			n = (NodeProxy) i.next();
-			p = new NodeProxy(n.doc, XMLUtil.getParentId(n.doc, n.gid));
+			p = new NodeProxy(n.doc, XMLUtil.getParentId(n.doc, n.gid), Node.ELEMENT_NODE);
 			result.add(p);
 		}
 	}

@@ -132,7 +132,8 @@ public class Serializer implements XMLReader {
 		String option = (String) config.getProperty("serialization.enable-xsl");
 		if (option != null)
 			defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, option);
-		
+		else
+			defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
 		option = (String) config.getProperty("serialization.enable-xinclude");
 		if (option != null)
 			defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, option);

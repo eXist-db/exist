@@ -44,6 +44,7 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.LockException;
 import org.xml.sax.InputSource;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -72,6 +73,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		defaultProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
 		defaultProperties.setProperty(OutputKeys.INDENT, "yes");
 		defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
+		defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
 	}
 
 	protected BrokerPool brokerPool = null;
@@ -411,6 +413,9 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
 		} catch (TriggerException e) {
 			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
+		} catch (LockException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
+					"Failed to acquire lock on collections.dbx", e);
 		} finally {
 			brokerPool.release(broker);
 		}

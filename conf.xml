@@ -70,7 +70,7 @@
         of every element node; "element" displays the id only for the root nodes
         of the returned XML fragments.
     -->
-    <serializer enable-xinclude="yes" enable-xsl="yes"
+    <serializer enable-xinclude="yes" enable-xsl="no"
         indent="yes" add-exist-id="none" match-tagging-elements="yes"
         match-tagging-attributes="no"/>
   
@@ -146,12 +146,6 @@
 			<exclude path="//volume"/>
 			<exclude path="//cdrom"/>
 			<exclude path="//url"/>
-		</index>
-		<index attributes="false" doctype="species" default="all" 
-			alphanum="true"/>
-		<index attributes="true" doctype="sptr" default="all" alphanum="true">
-			<exclude path="//sequence"/>
-			<exclude path="//dbReference"/>
 		</index>
         
         <!-- Specify the location of one or more catalog files.

@@ -21,6 +21,7 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
+import org.exist.util.LockException;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -130,6 +131,8 @@ public class LexerTest extends TestCase {
 		} catch (SAXException e) {
 			e.printStackTrace();
 		} catch (TriggerException e) {
+			e.printStackTrace();
+		} catch (LockException e) {
 			e.printStackTrace();
 		} finally {
 			pool.release(broker);
