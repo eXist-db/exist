@@ -17,11 +17,12 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
+ *
  *  $Id$
  */
 package org.exist.memtree;
 
+import org.exist.dom.QName;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.ProcessingInstruction;
 
@@ -41,7 +42,8 @@ public class ProcessingInstructionImpl
 	 * @see org.w3c.dom.ProcessingInstruction#getTarget()
 	 */
 	public String getTarget() {
-		return document.nodeName[nodeNumber].getLocalName();
+		QName qn = (QName)document.namePool.get(document.nodeName[nodeNumber]);
+		return qn != null ? qn.getLocalName() : null;
 	}
 
 	/* (non-Javadoc)

@@ -508,15 +508,16 @@ nameTest
 	;
 
 wildcard
+{ String name= null; }
 :
 	// *:localname
 	( STAR COLON )
-	=> STAR! COLON! nc1:NCNAME
-	{ #wildcard= #(#[PREFIX_WILDCARD, "*"], #nc1); }
+	=> STAR! COLON! name=ncnameOrKeyword
+	{ #wildcard= #(#[PREFIX_WILDCARD, "*"], #[NCNAME, name]); }
 	// prefix:*
 	|
-	nc2:NCNAME COLON! STAR!
-	{ #wildcard= #(#nc2, #[WILDCARD, "*"]); }
+	name=ncnameOrKeyword COLON! STAR!
+	{ #wildcard= #(#[NCNAME, name], #[WILDCARD, "*"]); }
 	// *
 	|
 	STAR

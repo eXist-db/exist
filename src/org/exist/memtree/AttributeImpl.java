@@ -22,6 +22,7 @@
  */
 package org.exist.memtree;
 
+import org.exist.dom.QName;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
@@ -37,39 +38,43 @@ public class AttributeImpl extends NodeImpl implements Attr {
 		super(doc, nodeNumber);
 	}
 
+	public QName getQName() {
+		return (QName)document.namePool.get(document.attrName[nodeNumber]);
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Attr#getName()
 	 */
 	public String getName() {
-		return document.attrName[nodeNumber].toString();
+		return getQName().toString();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getNodeName()
 	 */
 	public String getNodeName() {
-		return document.attrName[nodeNumber].toString();
+		return getQName().toString();
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getLocalName()
 	 */
 	public String getLocalName() {
-		return document.attrName[nodeNumber].getLocalName();
+		return getQName().getLocalName();
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getNamespaceURI()
 	 */
 	public String getNamespaceURI() {
-		return document.attrName[nodeNumber].getNamespaceURI();
+		return getQName().getNamespaceURI();
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getPrefix()
 	 */
 	public String getPrefix() {
-		return document.attrName[nodeNumber].getPrefix();
+		return getQName().getPrefix();
 	}
 	
 	/* (non-Javadoc)

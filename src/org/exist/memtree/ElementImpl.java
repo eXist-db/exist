@@ -44,6 +44,10 @@ public class ElementImpl extends NodeImpl implements Element {
 		return getNodeName();
 	}
 
+	public QName getQName() {
+		return (QName)
+			document.namePool.get(document.nodeName[nodeNumber]);
+	}
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#hasChildNodes()
 	 */
@@ -68,21 +72,21 @@ public class ElementImpl extends NodeImpl implements Element {
 	 * @see org.w3c.dom.Node#getNamespaceURI()
 	 */
 	public String getNamespaceURI() {
-		return document.nodeName[nodeNumber].getNamespaceURI();
+		return getQName().getNamespaceURI();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getPrefix()
 	 */
 	public String getPrefix() {
-		return document.nodeName[nodeNumber].getPrefix();
+		return getQName().getPrefix();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getLocalName()
 	 */
 	public String getLocalName() {
-		return document.nodeName[nodeNumber].getLocalName();
+		return getQName().getLocalName();
 	}
 
 	/* (non-Javadoc)
@@ -101,7 +105,8 @@ public class ElementImpl extends NodeImpl implements Element {
 			return null;
 		while (attr < document.nextAttr
 			&& document.attrParent[attr] == nodeNumber) {
-			if (document.attrName[attr].getLocalName().equals(name))
+			QName attrQName = (QName)document.namePool.get(document.attrName[attr]);
+			if (attrQName.getLocalName().equals(name))
 				return document.attrValue[attr];
 			++attr;
 		}
@@ -149,7 +154,8 @@ public class ElementImpl extends NodeImpl implements Element {
 			return null;
 		while (attr < document.nextAttr
 			&& document.attrParent[attr] == nodeNumber) {
-			if (document.attrName[attr].getLocalName().equals(name))
+			QName attrQName = (QName)document.namePool.get(document.attrName[attr]);
+			if (attrQName.equals(name))
 				return new AttributeImpl(document, attr);
 			++attr;
 		}
@@ -190,7 +196,7 @@ public class ElementImpl extends NodeImpl implements Element {
 		QName name;
 		while (attr < document.nextAttr
 			&& document.attrParent[attr] == nodeNumber) {
-			name = document.attrName[attr];
+			name = (QName)document.namePool.get(document.attrName[attr]);
 			if (name.getLocalName().equals(localName)
 				&& name.getNamespaceURI().equals(namespaceURI))
 				return document.attrValue[attr];
@@ -227,7 +233,7 @@ public class ElementImpl extends NodeImpl implements Element {
 		QName name;
 		while (attr < document.nextAttr
 			&& document.attrParent[attr] == nodeNumber) {
-			name = document.attrName[attr];
+			name = (QName)document.namePool.get(document.attrName[attr]);
 			if (name.getLocalName().equals(localName)
 				&& name.getNamespaceURI().equals(namespaceURI))
 				return new AttributeImpl(document, attr);

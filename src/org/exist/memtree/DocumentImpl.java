@@ -25,6 +25,7 @@ package org.exist.memtree;
 import java.util.Arrays;
 
 import org.exist.dom.QName;
+import org.exist.util.hashtable.NamePool;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
@@ -42,17 +43,19 @@ import org.w3c.dom.Document;
 
 public class DocumentImpl extends NodeImpl implements Document {
 
+	protected NamePool namePool = new NamePool();
+	
 	protected short[] nodeKind;
 	protected short[] treeLevel;
 	protected int[] next;
-	protected QName[] nodeName;
+	protected int[] nodeName;
 	protected int[] alpha;
 	protected int[] alphaLen;
 
 	protected char[] characters;
 	protected int nextChar = 0;
 
-	protected QName[] attrName;
+	protected int[] attrName;
 	protected int[] attrParent;
 	protected String[] attrValue;
 	protected int nextAttr = 0;
@@ -66,13 +69,13 @@ public class DocumentImpl extends NodeImpl implements Document {
 		treeLevel = new short[nodeSize];
 		next = new int[nodeSize];
 		Arrays.fill(next, -1);
-		nodeName = new QName[nodeSize];
+		nodeName = new int[nodeSize];
 		alpha = new int[nodeSize];
 		alphaLen = new int[nodeSize];
 
 		characters = new char[charBufSize];
 
-		attrName = new QName[attrSize];
+		attrName = new int[attrSize];
 		attrParent = new int[attrSize];
 		attrValue = new String[attrSize];
 
@@ -86,7 +89,7 @@ public class DocumentImpl extends NodeImpl implements Document {
 			grow();
 		nodeKind[size] = kind;
 		treeLevel[size] = level;
-		nodeName[size] = qname;
+		nodeName[size] = (qname != null ? namePool.add(qname) : -1);
 		alpha[size] = -1; // undefined
 		next[size] = -1;
 		return size++;
@@ -128,7 +131,7 @@ public class DocumentImpl extends NodeImpl implements Document {
 		if (nextAttr == attrName.length)
 			growAttributes();
 		attrParent[nextAttr] = nodeNr;
-		attrName[nextAttr] = qname;
+		attrName[nextAttr] = namePool.add(qname);
 		attrValue[nextAttr] = value;
 		if (alpha[nodeNr] < 0)
 			alpha[nodeNr] = nextAttr;
@@ -155,7 +158,7 @@ public class DocumentImpl extends NodeImpl implements Document {
 		System.arraycopy(next, 0, newNext, 0, size);
 		next = newNext;
 
-		QName[] newNodeName = new QName[newSize];
+		int[] newNodeName = new int[newSize];
 		System.arraycopy(nodeName, 0, newNodeName, 0, size);
 		nodeName = newNodeName;
 
@@ -172,7 +175,7 @@ public class DocumentImpl extends NodeImpl implements Document {
 		int size = attrName.length;
 		int newSize = (size * 3) / 2;
 
-		QName[] newAttrName = new QName[newSize];
+		int[] newAttrName = new int[newSize];
 		System.arraycopy(attrName, 0, newAttrName, 0, size);
 		attrName = newAttrName;
 
