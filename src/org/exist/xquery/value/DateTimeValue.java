@@ -70,6 +70,15 @@ public class DateTimeValue extends AbstractDateTimeValue {
 		date = calendar.getTime();
 	}
 	
+	public DateTimeValue(long milliseconds) {
+		calendar = new GregorianCalendar();
+		tzOffset =
+			(calendar.get(Calendar.ZONE_OFFSET) + calendar.get(Calendar.DST_OFFSET))
+			/ 60000;
+		calendar.setTimeInMillis(milliseconds);
+		date = calendar.getTime();
+	}
+	
 	public DateTimeValue(String dateTime) throws XPathException {
 		Perl5Util util = new Perl5Util();
 		if (!util.match(regex, dateTime))
