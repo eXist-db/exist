@@ -35,6 +35,10 @@ public class IntegerValue extends NumericValue {
 
 	public final static IntegerValue ZERO = new IntegerValue(0);
 	private static final BigInteger ZERO_BIGINTEGER = new BigInteger("0");
+	private static final BigInteger ONE_BIGINTEGER = new BigInteger("1");
+	private static final BigInteger MINUS_ONE_BIGINTEGER = new BigInteger("1");
+	private static final BigInteger LARGEST_INT  = new BigInteger("4294967295L");
+	private static final BigInteger SMALLEST_INT  = LARGEST_INT.negate();
 	
 	private BigInteger value;
 	// 	private long value;
@@ -82,29 +86,62 @@ public class IntegerValue extends NumericValue {
 	}
 
 	/**
-	 * @param value2
+	 * @param value
 	 * @param requiredType
 	 */
-	public IntegerValue(BigInteger value2, int requiredType) {
-		
-		// TODO Auto-generated constructor stub
+	public IntegerValue(BigInteger value, int requiredType) {
+		this.value = value;
+		type = requiredType;
 	}
 
 	/**
 	 * @param integer
 	 */
 	public IntegerValue(BigInteger integer) {
-		
-		// TODO Auto-generated constructor stub
+		this.value = integer;
 	}
 
 	/**
 	 * @param value2
 	 * @param type2
+	 * @throws XPathException
 	 */
-	private void checkType(BigInteger value2, int type2) {
-		// TODO Auto-generated method stub
+	private boolean checkType(BigInteger value2, int type2) throws XPathException {
+		switch (type) {
+		case Type.LONG :
+			// jmv: add test LARGEST_LONG SMALLEST_LONG  ????
+		case Type.INTEGER :
+		case Type.DECIMAL :
+			return true;
 		
+		case Type.POSITIVE_INTEGER :
+			return value.compareTo(ZERO_BIGINTEGER) == 1; // >0
+		case Type.NON_NEGATIVE_INTEGER :
+			return value.compareTo(MINUS_ONE_BIGINTEGER) == 1; // > -1
+		
+		case Type.NEGATIVE_INTEGER :
+			return value.compareTo(ZERO_BIGINTEGER) == -1; // <0
+		case Type.NON_POSITIVE_INTEGER :
+			return value.compareTo(ONE_BIGINTEGER) == -1; // <1
+		
+		case Type.INT :
+			return value.compareTo(SMALLEST_INT) == 1 &&
+			value.compareTo(LARGEST_INT) == -1;
+			// >= -4294967295L && value <= 4294967295L;
+//		case Type.SHORT :
+//			return value >= -65535 && value <= 65535;
+//		case Type.BYTE :
+//			return value >= -255 && value <= 255;
+//		case Type.UNSIGNED_LONG :
+//			return value > -1;
+//		case Type.UNSIGNED_INT:
+//			return value > -1 && value <= 4294967295L;
+//		case Type.UNSIGNED_SHORT :
+//			return value > -1 && value <= 65535;
+//		case Type.UNSIGNED_BYTE :
+//			return value > -1 && value <= 255;
+	}
+	throw new XPathException("Unknown type: " + Type.getTypeName(type));
 	}
 
 	private final static boolean checkType(long value, int type) throws XPathException {
@@ -134,7 +171,7 @@ public class IntegerValue extends NumericValue {
 			case Type.UNSIGNED_BYTE :
 				return value > -1 && value <= 255;
 			case Type.POSITIVE_INTEGER :
-				return value >= 0;
+				return value > 0; // jmv >= 0;
 		}
 		throw new XPathException("Unknown type: " + Type.getTypeName(type));
 	}
