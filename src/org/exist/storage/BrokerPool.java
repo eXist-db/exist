@@ -20,7 +20,6 @@
  */
 package org.exist.storage;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -58,16 +57,16 @@ public class BrokerPool {
 	
 	private final static TreeMap instances = new TreeMap();
 	
-	private static long timeOut = 30000L;
-	
 	private static boolean registerShutdownHook = true;
 	
 	private final static ShutdownThread shutdownThread = new ShutdownThread();
 	
 	//	size of the internal buffer for collection objects
-	public static final int COLLECTION_BUFFER_SIZE = 128;
+	public final static int COLLECTION_BUFFER_SIZE = 128;
 	
 	public final static String DEFAULT_INSTANCE = "exist";
+	
+	public final static long MAX_SHUTDOWN_WAIT = 45000;
 
 	/**
 	 * Should a shutdown hook be registered with the JVM? If set to true, method
@@ -189,14 +188,19 @@ public class BrokerPool {
 	private int max = 15;
 	private int min = 1;
 	protected Configuration conf = null;
-	private ArrayList active = new ArrayList();
 	private int brokers = 0;
+	
 	private Stack pool = new Stack();
 	private Map threads = new HashMap();
 	private String instanceId;
 	private boolean syncRequired = false;
 	private int syncEvent = 0;
 	private boolean initializing = true;
+	
+	/**
+	 * During shutdown: max. time to wait (in ms.) for running jobs to return
+	 */
+	private long maxShutdownWait = MAX_SHUTDOWN_WAIT;
 	
 	/**
 	 * The security manager for this database instance.
@@ -213,10 +217,14 @@ public class BrokerPool {
 	 */
 	private ShutdownListener shutdownListener = null;
 	
+	// --------------- Global pools: --------------------------
+	
 	/**
 	 * The global pool for compiled XQuery expressions.
 	 */
 	private XQueryPool xqueryCache;
+	
+	private XQueryMonitor monitor;
 	
 	/**
 	 * The global collection cache.
@@ -241,8 +249,9 @@ public class BrokerPool {
 		min = minBrokers;
 		max = maxBrokers;
 		Integer minInt = (Integer) config.getProperty("db-connection.pool.min");
-		Integer maxInt = (Integer) config.getProperty("db-connection.pool.max");
+		Integer maxInt = (Integer) config.getProperty("db-connection.pool.max"); 
 		Long syncInt = (Long) config.getProperty("db-connection.pool.sync-period");
+		Long maxWaitInt = (Long) config.getProperty("db-connection.pool.shutdown-wait");
 		if (minInt != null)
 			min = minInt.intValue();
 		if (maxInt != null)
@@ -250,12 +259,17 @@ public class BrokerPool {
 		long syncPeriod = 120000;
 		if (syncInt != null)
 			syncPeriod = syncInt.longValue();
-		LOG.debug("min = " + min + "; max = " + max + "; sync = " + syncPeriod);
+		if (maxWaitInt != null) {
+			maxShutdownWait = maxWaitInt.longValue();
+			LOG.info("Max. wait during shutdown: " + maxShutdownWait);
+		}
+		LOG.info("Instances: min = " + min + "; max = " + max + "; sync = " + syncPeriod);
 		syncDaemon = new SyncDaemon();
 		if (syncPeriod > 0)
 			syncDaemon.executePeriodically(1000, new Sync(this, syncPeriod), false);
 		conf = config;
 		xqueryCache = new XQueryPool();
+		monitor = new XQueryMonitor();
 		collectionsCache = new CollectionCache(COLLECTION_BUFFER_SIZE);
 		xmlReaderPool = new XMLReaderPool(new XMLReaderObjectFactory(this), 5, 0);
 		initialize();
@@ -267,7 +281,7 @@ public class BrokerPool {
 	 *@return    Description of the Return Value
 	 */
 	public int active() {
-		return active.size();
+		return max - pool.size();
 	}
 
 	/**
@@ -305,7 +319,6 @@ public class BrokerPool {
 		LOG.debug(
 			"database " + instanceId + ": creating new instance of " + broker.getClass().getName());
 		pool.push(broker);
-		active.add(broker);
 		brokers++;
 		broker.setId(broker.getClass().getName() + '_' + brokers);
 		return broker;
@@ -447,13 +460,28 @@ public class BrokerPool {
 	/**  Shutdown all brokers. */
 	public synchronized void shutdown(boolean killed) {
 		syncDaemon.shutDown();
-		while (threads.size() > 0)
+		monitor.killAll(500);
+		long waitStart = System.currentTimeMillis();
+		while (threads.size() > 0) {
 			try {
-				this.wait(2000);
+				this.wait(1000);
 			} catch (InterruptedException e) {
 			}
+			if(System.currentTimeMillis() - waitStart > maxShutdownWait) {
+				LOG.debug("Not all threads returned. Forcing shutdown ...");
+				break;
+			}
+		}
 		LOG.debug("calling shutdown ...");
-		DBBroker broker = (DBBroker)pool.peek();
+		DBBroker broker = null;
+		if(pool.isEmpty())
+			try {
+				broker = createBroker();
+			} catch (EXistException e) {
+				LOG.warn("could not create instance for shutdown. Giving up.");
+			}
+		else
+			broker = (DBBroker)pool.peek();
 		broker.shutdown();
 		LOG.debug("shutdown!");
 		conf = null;
@@ -514,6 +542,10 @@ public class BrokerPool {
 	 */
 	public XQueryPool getXQueryPool() {
 	    return xqueryCache;
+	}
+	
+	public XQueryMonitor getXQueryMonitor() {
+		return monitor;
 	}
 	
 	/**

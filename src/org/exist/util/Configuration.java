@@ -353,6 +353,7 @@ public class Configuration implements ErrorHandler {
 					String min = pool.getAttribute("min");
 					String max = pool.getAttribute("max");
 					String sync = pool.getAttribute("sync-period");
+					String maxShutdownWait = pool.getAttribute("wait-before-shutdown");
 					if(min != null)
 						try {
 							config.put("db-connection.pool.min",
@@ -369,6 +370,12 @@ public class Configuration implements ErrorHandler {
 						try {
 							config.put("db-connection.pool.sync-period",
 								new Long(sync));
+						} catch(NumberFormatException e) {
+						}
+					if(maxShutdownWait != null)
+						try {
+							config.put("db-connection.pool.shutdown-wait",
+								new Long(maxShutdownWait));
 						} catch(NumberFormatException e) {
 						}
 				}
