@@ -335,33 +335,46 @@ public class NativeBroker extends DBBroker {
 	 */
 	public DocumentSet getAllDocuments(DocumentSet docs) {
 		long start = System.currentTimeMillis();
-		Collection root = getCollection(ROOT_COLLECTION);
-		root.allDocs(this, docs, true, false);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("getAllDocuments(DocumentSet) - end - "
-                + "loading "
-                + docs.getLength()
-                + " documents from "
-                + docs.getCollectionCount()
-                + "collections took "
-                + (System.currentTimeMillis() - start)
-                + "ms.");
-        }
-		return docs;
+		Collection root = null;
+		try {
+			root = openCollection(ROOT_COLLECTION, Lock.READ_LOCK);
+			root.allDocs(this, docs, true, false);
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("getAllDocuments(DocumentSet) - end - "
+						+ "loading "
+						+ docs.getLength()
+						+ " documents from "
+						+ docs.getCollectionCount()
+						+ "collections took "
+						+ (System.currentTimeMillis() - start)
+						+ "ms.");
+			}
+			return docs;
+		} finally {
+			root.release();
+		}
 	}
 
 	public Collection getCollection(String name) {
-		return getCollection(name, -1);
+		return openCollection(name, -1, Lock.NO_LOCK);
+	}
+	
+	public Collection getCollection(String name, long addr) {
+		return openCollection(name, addr, Lock.NO_LOCK);
+	}
+	
+	public Collection openCollection(String name, int lockMode) {
+		return openCollection(name, -1, lockMode);
 	}
 
 	/**
-	 *  get collection object. If the collection does not exist, null is
+	 *  Get collection object. If the collection does not exist, null is
 	 *  returned.
 	 *
 	 *@param  name  Description of the Parameter
 	 *@return       The collection value
 	 */
-	public Collection getCollection(String name, long addr) {
+	public Collection openCollection(String name, long addr, int lockMode) {
 		//	final long start = System.currentTimeMillis();
 		name = normalizeCollectionName(name);
 		if (name.length() > 0 && name.charAt(0) != '/')
@@ -372,55 +385,62 @@ public class NativeBroker extends DBBroker {
 
 		if (name.endsWith("/") && name.length() > 1)
 			name = name.substring(0, name.length() - 1);
-		Value key = null;
-		if (addr == -1)
-			try {
-				key = new Value(name.getBytes("UTF-8"));
-			} catch (UnsupportedEncodingException uee) {
-				key = new Value(name.getBytes());
-			}
-		Collection collection = null;
-		VariableByteInput is = null;
-		Lock lock = collectionsDb.getLock();
-		try {
-			lock.acquire(Lock.READ_LOCK);
-			collection = collectionsDb.getCollectionCache().get(name);
-			if (collection != null) {
-				return collection;
-			}
-			collection = new Collection(collectionsDb, name);
-			try {
-				if (addr < 0) {
-					is = collectionsDb.getAsStream(key);
-				} else {
-					is = collectionsDb.getAsStream(addr);
-				}
-			} catch (IOException ioe) {
-				LOG.warn(ioe.getMessage(), ioe);
-			}
-			if (is == null)
-				return null;
 
-			try {
-				collection.read(this, is);
-			} catch (IOException ioe) {
-				LOG.warn(ioe);
-				return null;
+		synchronized(collectionsCache) {
+			Collection collection = collectionsCache.get(name);
+			if(collection == null) {
+//				LOG.debug("loading collection " + name);
+				VariableByteInput is = null;
+				Lock lock = collectionsDb.getLock();
+				try {
+					lock.acquire(Lock.READ_LOCK);
+					
+					collection = new Collection(collectionsDb, name);
+					Value key = null;
+					if (addr == -1) {
+						try {
+							key = new Value(name.getBytes("UTF-8"));
+						} catch (UnsupportedEncodingException uee) {
+							key = new Value(name.getBytes());
+						}
+					}
+					try {
+						if (addr < 0) {
+							is = collectionsDb.getAsStream(key);
+						} else {
+							is = collectionsDb.getAsStream(addr);
+						}
+						if (is == null)
+							return null;
+						collection.read(this, is);
+					} catch (IOException ioe) {
+						LOG.warn(ioe.getMessage(), ioe);
+					}
+				} catch (LockException e) {
+					LOG.warn("failed to acquire lock on collections.dbx");
+					return null;
+				} finally {
+					lock.release();
+				}
 			}
-			collectionsDb.getCollectionCache().add(collection);
-		} catch (LockException e) {
-			LOG.warn("failed to acquire lock on collections.dbx");
-			return null;
-		} finally {
-			lock.release();
+			if(lockMode != Lock.NO_LOCK) {
+				try {
+					//			LOG.debug("acquiring lock on " + collection.getName());
+					collection.getLock().acquire(lockMode);
+					//			Thread.dumpStack();
+				} catch (LockException e1) {
+					LOG.warn("Could not acquire lock on collection " + name);
+				}
+			}
+			collectionsCache.add(collection);
+			//			LOG.debug(
+			//				"loading collection "
+			//					+ name
+			//					+ " took "
+			//					+ (System.currentTimeMillis() - start)
+			//					+ "ms.");
+			return collection;
 		}
-		//			LOG.debug(
-		//				"loading collection "
-		//					+ name
-		//					+ " took "
-		//					+ (System.currentTimeMillis() - start)
-		//					+ "ms.");
-		return collection;
 	}
 
 	public void reloadCollection(Collection collection) {
@@ -520,6 +540,42 @@ public class NativeBroker extends DBBroker {
 		return doc;
 	}
 
+	public Document openDocument(String docPath, int lockMode) throws PermissionDeniedException {
+		if (!docPath.startsWith("/"))
+			docPath = '/' + docPath;
+		if (!docPath.startsWith("/db"))
+		    docPath = "/db" + docPath;
+
+		int pos = docPath.lastIndexOf('/');
+		String collName = docPath.substring(0, pos);
+		String docName = docPath.substring(pos + 1);
+		
+		Collection collection = null;
+		try {
+			collection = openCollection(collName, lockMode);
+			if (collection == null) {
+				LOG.debug("collection " + collName + " not found!");
+				return null;
+			}
+			if (!collection.getPermissions().validate(user, Permission.READ)) {
+				throw new PermissionDeniedException("permission denied to read collection");
+			}
+			DocumentImpl doc = collection.getDocumentWithLock(this, docName, lockMode);
+			if (doc == null) {
+				LOG.debug("document " + docPath + " not found!");
+				return null;
+			}
+	//		if (!doc.getPermissions().validate(user, Permission.READ))
+	//			throw new PermissionDeniedException("not allowed to read document");
+			return doc;
+		} catch (LockException e) {
+			LOG.warn("Could not acquire lock on document " + docPath, e);
+		} finally {
+			collection.release();
+		}
+		return null;
+	}
+	
 	public DocumentSet getDocumentsByCollection(String collection, DocumentSet docs)
 		throws PermissionDeniedException {
 		return getDocumentsByCollection(collection, docs, true);
@@ -1482,57 +1538,51 @@ public class NativeBroker extends DBBroker {
 		if (name.endsWith("/") && name.length() > 1)
 			name = name.substring(0, name.length() - 1);
 
-		Collection current = null;
-		Lock lock = collectionsDb.getLock();
-		try {
-			lock.acquire();
-			StringTokenizer tok = new StringTokenizer(name, "/");
-			String temp = tok.nextToken();
-			String path = ROOT_COLLECTION;
-			Collection sub;
-			current = getCollection(ROOT_COLLECTION);
-			if (current == null) {
-				LOG.debug("creating root collection /db");
-				current = new Collection(collectionsDb, ROOT_COLLECTION);
-				current.getPermissions().setPermissions(0777);
-				current.getPermissions().setOwner(user);
-				current.getPermissions().setGroup(user.getPrimaryGroup());
-				current.setId(getNextCollectionId());
-				current.setCreationTime(System.currentTimeMillis());
-				saveCollection(current);
-			}
-			while (tok.hasMoreTokens()) {
-				temp = tok.nextToken();
-				path = path + "/" + temp;
-				if (current.hasSubcollection(temp)) {
-					current = getCollection(path);
-				} else {
-					if (!current.getPermissions().validate(user, Permission.WRITE)) {
-						LOG.debug("permission denied to create collection " + path);
-						throw new PermissionDeniedException("not allowed to write to collection");
-					}
-					LOG.debug("creating collection " + path);
-					sub = new Collection(collectionsDb, path);
-					sub.getPermissions().setOwner(user);
-					sub.getPermissions().setGroup(user.getPrimaryGroup());
-					sub.setId(getNextCollectionId());
-					sub.setCreationTime(System.currentTimeMillis());
-					current.addCollection(sub);
+		synchronized(collectionsCache) {
+			try {
+				StringTokenizer tok = new StringTokenizer(name, "/");
+				String temp = tok.nextToken();
+				String path = ROOT_COLLECTION;
+				Collection sub;
+				Collection current = getCollection(ROOT_COLLECTION);
+				if (current == null) {
+					LOG.debug("creating root collection /db");
+					current = new Collection(collectionsDb, ROOT_COLLECTION);
+					current.getPermissions().setPermissions(0777);
+					current.getPermissions().setOwner(user);
+					current.getPermissions().setGroup(user.getPrimaryGroup());
+					current.setId(getNextCollectionId());
+					current.setCreationTime(System.currentTimeMillis());
 					saveCollection(current);
-					current = sub;
 				}
+				while (tok.hasMoreTokens()) {
+					temp = tok.nextToken();
+					path = path + "/" + temp;
+					if (current.hasSubcollection(temp)) {
+						current = getCollection(path);
+					} else {
+						if (!current.getPermissions().validate(user, Permission.WRITE)) {
+							LOG.debug("permission denied to create collection " + path);
+							throw new PermissionDeniedException("not allowed to write to collection");
+						}
+						LOG.debug("creating collection " + path);
+						sub = new Collection(collectionsDb, path);
+						sub.getPermissions().setOwner(user);
+						sub.getPermissions().setGroup(user.getPrimaryGroup());
+						sub.setId(getNextCollectionId());
+						sub.setCreationTime(System.currentTimeMillis());
+						current.addCollection(sub);
+						saveCollection(current);
+						current = sub;
+					}
+				}
+				//			LOG.debug("getOrCreateCollection took " + 
+				//				(System.currentTimeMillis() - start) + "ms.");
+				return current;
+			} catch(ReadOnlyException e) {
+				throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
 			}
-		} catch (ReadOnlyException e) {
-			LOG.debug("database read-only");
-			return null;
-		} catch (LockException e) {
-			LOG.warn("failed to acquire lock on collections store");
-		} finally {
-			lock.release();
 		}
-		//			LOG.debug("getOrCreateCollection took " + 
-		//				(System.currentTimeMillis() - start) + "ms.");
-		return current;
 	}
 
 	/**
@@ -1690,144 +1740,143 @@ public class NativeBroker extends DBBroker {
 	    reindex(collection);
 	}
 	
-	public boolean removeCollection(String name) throws PermissionDeniedException {
+	public boolean removeCollection(Collection collection) throws PermissionDeniedException {
 	    if (readOnly)
 	        throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-	    if (!name.startsWith(ROOT_COLLECTION))
-	        name = ROOT_COLLECTION + name;
 	    
-	    Collection collection = getCollection(name);
-	    if (collection == null) {
-	        LOG.debug("collection " + name + " not found!");
-	        return false;
-	    }
 	    if (!collection.getPermissions().validate(user, Permission.WRITE))
-	        throw new PermissionDeniedException("not allowed to remove collection");
+	    	throw new PermissionDeniedException("not allowed to remove collection");
 	    
-	    String childCollection;
-	    LOG.debug("removing sub-collections");
-	    for (Iterator i = collection.collectionIterator(); i.hasNext();) {
-	        childCollection = (String) i.next();
-	        removeCollection(
-	                (name.equals("/")
-	                        ? "/" + childCollection
-	                                : name + "/" + childCollection));
-	    }
-	    Lock lock = collectionsDb.getLock();
-	    try {
-	        lock.acquire(Lock.WRITE_LOCK);
-	        
-	        // if this is not the root collection remove it completely
-	        if (name.equals(ROOT_COLLECTION))
-	            saveCollection(collection);
-	        else {
-	            Value key;
-	            try {
-	                key = new Value(name.getBytes("UTF-8"));
-	            } catch (UnsupportedEncodingException uee) {
-	                key = new Value(name.getBytes());
-	            }	
-	            collectionsDb.remove(key);
-	        }
-	        if (!name.equals(ROOT_COLLECTION))
-	            collectionsDb.getCollectionCache().remove(collection);
-	        Collection parent = collection.getParent(this);
-	        if (parent != null) {
-	            parent.removeCollection(name.substring(name.lastIndexOf("/") + 1));
-	            saveCollection(parent);
-	        }
-	    } catch (LockException e) {
-	        LOG.warn("Failed to acquire lock on collections.dbx");
-	    } catch (ReadOnlyException e) {
-            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-        } finally {
-	        lock.release();
-	    }
-	    freeCollection(collection.getId());
+	    synchronized(collectionsCache) {
+		    String name = collection.getName();
+		    // remove from parent collection
+		    Collection parent = openCollection(collection.getParentPath(), Lock.WRITE_LOCK);
+		    if (parent != null) {
+		    	try {
+		    		parent.removeCollection(name.substring(name.lastIndexOf("/") + 1));
+		    		saveCollection(parent);
+		    	} catch (LockException e) {
+		    		LOG.warn("LockException while removing collection " + name);
+		    	} finally {
+		    		parent.getLock().release();
+		    	}
+		    }
+		    
+		    // remove child collections
+		    String childName;
+		    Collection childCollection;
+		    LOG.debug("removing sub-collections");
+		    for (Iterator i = collection.collectionIterator(); i.hasNext();) {
+		    	childName = (String) i.next();
+		    	childCollection = openCollection(name + '/' + childName, Lock.WRITE_LOCK);
+		    	try {
+		    		removeCollection(childCollection);
+		    	} finally {
+		    		childCollection.getLock().release();
+		    	}
+		    }
+		    
+		    Lock lock = collectionsDb.getLock();
+		    try {
+		    	lock.acquire(Lock.WRITE_LOCK);
+		    	
+		    	// if this is not the root collection remove it completely
+		    	if (name.equals(ROOT_COLLECTION))
+		    		saveCollection(collection);
+		    	else {
+		    		Value key;
+		    		try {
+		    			key = new Value(name.getBytes("UTF-8"));
+		    		} catch (UnsupportedEncodingException uee) {
+		    			key = new Value(name.getBytes());
+		    		}	
+		    		collectionsDb.remove(key);
+		    	}
+		    	if (!name.equals(ROOT_COLLECTION))
+		    		collectionsCache.remove(collection);
+		    } catch (LockException e) {
+		    	LOG.warn("Failed to acquire lock on collections.dbx");
+		    } catch (ReadOnlyException e) {
+		    	throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+		    } finally {
+		    	lock.release();
+		    }
 	    
-	    textEngine.dropIndex(collection);
-	    elementIndex.dropIndex(collection);
+		    freeCollection(collection.getId());
 	    
-	    LOG.debug("removing dom nodes ...");
-	    for (Iterator i = collection.iterator(this); i.hasNext();) {
-	        final DocumentImpl doc = (DocumentImpl) i.next();
-	        LOG.debug("removing document " + doc.getFileName());
-	        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-	            public Object start() {
-	                if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-	                    domDb.remove(doc.getAddress());
-	                    domDb.removeOverflowValue(((BinaryDocument)doc).getPage());
-	                } else {
-	                    NodeImpl node = (NodeImpl)doc.getFirstChild();
-	                    domDb.removeAll(node.getInternalAddress());
-	                }
-	                return null;
-	            }
-	        }
-	        .run();
-	        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-	            public Object start() {
-	                try {
-	                    Value ref = new NodeRef(doc.getDocId());
-	                    IndexQuery query =
-	                        new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-	                    domDb.remove(query, null);
-	                    domDb.flush();
-	                } catch (BTreeException e) {
-	                    LOG.warn("btree error while removing document", e);
-	                } catch (DBException e) {
-	                    LOG.warn("db error while removing document", e);
-	                } catch (IOException e) {
-	                    LOG.warn("io error while removing document", e);
-	                } catch (TerminatedException e) {
-	                    LOG.warn("method terminated", e);
-	                }
-	                return null;
-	            }
-	        }
-	        .run();
-	        freeDocument(doc.getDocId());
+		    textEngine.dropIndex(collection);
+		    elementIndex.dropIndex(collection);
+		    
+		    LOG.debug("removing resources ...");
+		    for (Iterator i = collection.iterator(this); i.hasNext();) {
+		    	final DocumentImpl doc = (DocumentImpl) i.next();
+		    	LOG.debug("removing document " + doc.getFileName());
+		    	new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+		    		public Object start() {
+		    			if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+		    				domDb.remove(doc.getAddress());
+		    				domDb.removeOverflowValue(((BinaryDocument)doc).getPage());
+		    			} else {
+		    				NodeImpl node = (NodeImpl)doc.getFirstChild();
+		    				domDb.removeAll(node.getInternalAddress());
+		    			}
+		    			return null;
+		    		}
+		    	}
+		    	.run();
+		    	new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+		    		public Object start() {
+		    			try {
+		    				Value ref = new NodeRef(doc.getDocId());
+		    				IndexQuery query =
+		    					new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+		    				domDb.remove(query, null);
+		    				domDb.flush();
+		    			} catch (BTreeException e) {
+		    				LOG.warn("btree error while removing document", e);
+		    			} catch (DBException e) {
+		    				LOG.warn("db error while removing document", e);
+		    			} catch (IOException e) {
+		    				LOG.warn("io error while removing document", e);
+		    			} catch (TerminatedException e) {
+		    				LOG.warn("method terminated", e);
+		    			}
+		    			return null;
+		    		}
+		    	}
+		    	.run();
+		    	freeDocument(doc.getDocId());
+		    }
+		    return true;
 	    }
-	    return true;
 	}
 
-	public void removeDocument(String docName, boolean freeDocId) throws PermissionDeniedException {
+	public void removeDocument(final DocumentImpl document, boolean freeDocId) throws PermissionDeniedException {
 		if (readOnly)
 			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
 		try {
-			if (!docName.startsWith("/"))
-				docName = '/' + docName;
-			final DocumentImpl doc = (DocumentImpl) getDocument(docName);
-			if (doc == null) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("removeDocument(String) - end - document "
-                        + docName
-                        + " not found");
-                }
-				return;
-			}
             if (LOG.isInfoEnabled()) {
                 LOG.info("removeDocument() - "
                     + "removing document "
-                    + doc.getDocId()
+                    + document.getDocId()
                     + " ...");
             }
 
-			elementIndex.dropIndex(doc);
-			textEngine.dropIndex(doc);
+			elementIndex.dropIndex(document);
+			textEngine.dropIndex(document);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("removeDocument() - removing dom");
             }
 			new DOMTransaction(this, domDb) {
 				public Object start() {
-				    NodeImpl node = (NodeImpl)doc.getFirstChild();
+				    NodeImpl node = (NodeImpl)document.getFirstChild();
 					domDb.removeAll(node.getInternalAddress());
 					return null;
 				}
 			}
 			.run();
 			
-			NodeRef ref = new NodeRef(doc.getDocId());
+			NodeRef ref = new NodeRef(document.getDocId());
 			final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
 			new DOMTransaction(this, domDb) {
 				public Object start() {
@@ -1848,7 +1897,7 @@ public class NativeBroker extends DBBroker {
 			}
 			.run();
 			if(freeDocId)
-			    freeDocument(doc.getDocId());
+			    freeDocument(document.getDocId());
 		} catch (ReadOnlyException e) {
             LOG.warn("removeDocument(String) - " + DATABASE_IS_READ_ONLY);
 		}
@@ -1959,6 +2008,7 @@ public class NativeBroker extends DBBroker {
 	public void saveCollection(Collection collection) throws PermissionDeniedException {
 		if (readOnly)
 			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+		collectionsCache.add(collection);
 		Lock lock = null;
 		try {
 			lock = collectionsDb.getLock();
@@ -1984,7 +2034,6 @@ public class NativeBroker extends DBBroker {
 					return;
 				}
 				collection.setAddress(addr);
-				collectionsDb.getCollectionCache().add(collection);
 				ostream.close();
 			} catch (IOException ioe) {
 				LOG.debug(ioe);
@@ -2079,15 +2128,21 @@ public class NativeBroker extends DBBroker {
         }
 	    if(newName.indexOf('/') > -1)
 	        throw new PermissionDeniedException("New collection name is illegal (may not contain a '/')");
+	    //	check if another collection with the same name exists at the destination
+	    Collection old = openCollection(newName, Lock.WRITE_LOCK);
+	    if(old != null) {
+	    	try {
+	    		removeCollection(old);
+	    	} finally {
+	    		old.release();
+	    	}
+	    }
 	    Lock lock = null;
 	    try {
 	        lock = collectionsDb.getLock();
 	        lock.acquire(Lock.WRITE_LOCK);
 	        newName = destination.getName() + '/' + newName;
-	        // check if another collection with the same name exists at the destination
-		    Collection old = getCollection(newName);
-		    if(old != null)
-		        removeCollection(old.getName());
+	        
 		    Collection destCollection = getOrCreateCollection(newName);
 		    for(Iterator i = collection.iterator(this); i.hasNext(); ) {
 		    	DocumentImpl child = (DocumentImpl) i.next();
@@ -2125,53 +2180,68 @@ public class NativeBroker extends DBBroker {
         }
 	    if(newName.indexOf('/') > -1)
 	        throw new PermissionDeniedException("New collection name is illegal (may not contain a '/')");
-	    Lock lock = null;
-	    try {
-	        lock = collectionsDb.getLock();
-	        lock.acquire(Lock.WRITE_LOCK);
 	        // check if another collection with the same name exists at the destination
-		    Collection old = getCollection(destination.getName() + '/' + newName);
-		    if(old != null)
-		        removeCollection(old.getName());
-		    
-	        String name = collection.getName();
-	        Collection parent = collection.getParent(this);
-	        if(parent != null)
-	            parent.removeCollection(name.substring(name.lastIndexOf("/") + 1));
-		    
-	        collectionsDb.getCollectionCache().remove(collection);
-		    Value key;
-			try {
-				key = new Value(name.getBytes("UTF-8"));
-			} catch (UnsupportedEncodingException uee) {
-				key = new Value(name.getBytes());
-			}	
-			collectionsDb.remove(key);
-			
-		    collection.setName(destination.getName() + '/' + newName);
-		    collection.setCreationTime(System.currentTimeMillis());
-		    
-		    destination.addCollection(collection);
-		    if(parent != null)
-		        saveCollection(parent);
-		    if(parent != destination)
-		        saveCollection(destination);
-		    saveCollection(collection);
-		    
-		    String childName;
+	    Collection old = openCollection(destination.getName() + '/' + newName, Lock.WRITE_LOCK);
+	    if(old != null) {
+	    	try {
+	    		removeCollection(old);
+	    	} finally {
+	    		old.release();
+	    	}
+	    }
+	    String name = collection.getName();
+	    synchronized(collectionsCache) {
+		    Collection parent = openCollection(collection.getParentPath(), Lock.WRITE_LOCK);
+	        if(parent != null) {
+	        	try {
+	        		parent.removeCollection(name.substring(name.lastIndexOf("/") + 1));
+	        	} finally {
+	        		parent.release();
+	        	}
+	        }
+		    Lock lock = null;
+		    try {
+		    	lock = collectionsDb.getLock();
+		    	lock.acquire(Lock.WRITE_LOCK);
+			    
+		        collectionsCache.remove(collection);
+			    Value key;
+				try {
+					key = new Value(name.getBytes("UTF-8"));
+				} catch (UnsupportedEncodingException uee) {
+					key = new Value(name.getBytes());
+				}	
+				collectionsDb.remove(key);
+				
+			    collection.setName(destination.getName() + '/' + newName);
+			    collection.setCreationTime(System.currentTimeMillis());
+			    
+			    destination.addCollection(collection);
+			    if(parent != null)
+			        saveCollection(parent);
+			    if(parent != destination)
+			        saveCollection(destination);
+			    saveCollection(collection);
+		    } catch (ReadOnlyException e) {
+	            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+	        } finally {
+		        lock.release();
+		    }
+	        String childName;
 		    Collection child;
 		    for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
 		        childName = (String)i.next();
-		        child = getCollection(name + '/' + childName);
+		        child = openCollection(name + '/' + childName, Lock.WRITE_LOCK);
 		        if(child == null)
 		            LOG.warn("Child collection " + childName + " not found");
-		        else
-		            moveCollection(child, collection, childName);
+		        else {
+		            try {
+		            	moveCollection(child, collection, childName);
+		            } finally {
+		            	child.release();
+		            }
+		        }
 		    }
-	    } catch (ReadOnlyException e) {
-            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-        } finally {
-	        lock.release();
 	    }
 	}
 	
@@ -2384,7 +2454,7 @@ public class NativeBroker extends DBBroker {
 					domDb.remove(doc.getAddress());
 				}
 				doc.setAddress(domDb.add(data));
-//				LOG.debug("Document metadata stored to " + StorageAddress.toString(doc.getAddress()));
+				LOG.debug("Document metadata stored to " + StorageAddress.toString(doc.getAddress()));
 				return null;
 			}
 		}
@@ -2392,14 +2462,8 @@ public class NativeBroker extends DBBroker {
 	}
 
 	public void updateDocument(DocumentImpl doc) throws LockException, PermissionDeniedException {
-		Lock lock = collectionsDb.getLock();
-		try {
-			lock.acquire(Lock.WRITE_LOCK);
-			storeDocument(doc);
-			saveCollection(doc.getCollection());
-		} finally {
-			lock.release();
-		}
+		storeDocument(doc);
+		saveCollection(doc.getCollection());
 	}
 	
 	public void storeBinaryResource(final BinaryDocument blob, final byte[] data) {

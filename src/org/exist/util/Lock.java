@@ -26,9 +26,10 @@ public interface Lock {
 
 	public final static int READ_LOCK = 0;
 	public final static int WRITE_LOCK = 1;
+	public final static int NO_LOCK = -1;
 	
 	/**
-	 * Attempt to acquire a lock for read.
+	 * Acquire a lock for read.
 	 * 
 	 * @return
 	 * @throws LockException
@@ -36,7 +37,7 @@ public interface Lock {
     public boolean acquire( ) throws LockException;
     
     /**
-     * Attempt to acquire a lock for read or write.
+     * Acquire a lock for read or write.
      * mode is one of {@link #READ_LOCK} or
      * {@link #WRITE_LOCK}.
      * 
@@ -45,6 +46,16 @@ public interface Lock {
      * @throws LockException
      */
 	public boolean acquire( int mode ) throws LockException;
+	
+	/**
+	 * Attempt to acquire a lock for read or write. This method
+	 * will fail immediately if the lock cannot be acquired.
+	 *  
+	 * @param mode
+	 * @return
+	 * @throws LockException
+	 */
+	public boolean attempt( int mode );
 	
 	/**
 	 * Release a lock. This method assumes that the

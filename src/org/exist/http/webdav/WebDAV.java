@@ -42,6 +42,7 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.Lock;
 
 /**
  * The main class for processing WebDAV requests.
@@ -121,17 +122,17 @@ public class WebDAV {
 		try {
 			broker = pool.get(user);
 			
-			collection = broker.getCollection(path);
-			if(collection == null) {
-				resource = (DocumentImpl)broker.getDocument(path);
-				if(resource != null)
-					collection = resource.getCollection();
-			}
 			method = WebDAVMethodFactory.create(request.getMethod(), pool);
 			if(method == null) {
 				response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
 						"Method is not supported: " + request.getMethod());
 				return;
+			}
+			collection = broker.openCollection(path, Lock.READ_LOCK);
+			if(collection == null) {
+				resource = (DocumentImpl)broker.openDocument(path, Lock.READ_LOCK);
+				if(resource != null)
+					collection = resource.getCollection();
 			}
 		} catch (EXistException e) {
 			throw new ServletException("An error occurred while retrieving resource: " + e.getMessage(), e);
@@ -140,7 +141,14 @@ public class WebDAV {
 		} finally {
 			pool.release(broker);
 		}
-		method.process(user, request, response, collection, resource);
+		try {
+			method.process(user, request, response, collection, resource);
+		} finally {
+			if(collection != null)
+				collection.release();
+			if(resource != null)
+				resource.getUpdateLock().release();
+		}
 	}
 	
 	private User authenticate(HttpServletRequest request, HttpServletResponse response)

@@ -2,6 +2,7 @@ package org.exist.collections;
 
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRDCache;
+import org.exist.util.Lock;
 import org.exist.util.hashtable.Object2LongHashMap;
 
 /**
@@ -20,7 +21,7 @@ public class CollectionCache extends LRDCache {
 		super(blockBuffers);
 		names = new Object2LongHashMap(blockBuffers);
 	}
-
+	
 	public void add(Collection collection) {
 		add(collection, 1);
 	}
@@ -41,11 +42,46 @@ public class CollectionCache extends LRDCache {
 		return (Collection) get(key);
 	}
 
+	/**
+	 * Overwritten to lock collections before they are removed.
+	 */
 	protected Cacheable removeOne(Cacheable item) {
-		Cacheable old = super.removeOne(item);
-		if(old != null) {
-			names.remove(((Collection)old).getName());
+		Collection old;
+		Lock lock;
+		double rd = 0, minRd = -1;
+		int bucket = -1;
+		boolean unloadable;
+		for (int i = 0; i < items.length; i++) {
+			old = (Collection)items[i];
+			if (old == null) {
+				bucket = i;
+				break;
+			} else {
+				lock = old.getLock(); 
+					// calculate the reference density
+					rd =
+						old.getReferenceCount()
+							/ (double)(totalReferences - old.getTimestamp());
+					// attempt to acquire a read lock on the collection.
+					// the collection is not considered for removal if the lock 
+					// cannot be acquired immediately.
+					if(lock.attempt(Lock.READ_LOCK)) {
+						if ((minRd < 0 || rd < minRd) && old.allowUnload()) {
+							minRd = rd;
+							bucket = i;
+						}
+						lock.release();
+					}
+			}
 		}
+		old = (Collection)items[bucket];
+		if (old != null) {
+			map.remove(old.getKey());
+			names.remove(old.getName());
+			old.sync();
+		}
+		items[bucket] = item;
+		map.put(item.getKey(), item);
 		return old;
 	}
 

@@ -56,6 +56,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
 
 /**
@@ -79,6 +80,7 @@ public class Indexer
 	protected NodePath currentPath = new NodePath();
 	
 	protected DocumentImpl document = null;
+	protected XMLReader reader = null;
 	protected boolean insideDTD = false;
 	protected boolean validate = false;
 	protected int level = 0;
@@ -151,6 +153,14 @@ public class Indexer
 		this.validate = validate;
 	}
 
+	public void setReader(XMLReader reader) {
+		this.reader = reader;
+	}
+	
+	public XMLReader getReader() {
+		return this.reader;
+	}
+	
 	/**
 	 * Prepare the indexer for parsing a new document. This will
 	 * reset the internal state of the Indexer object.
@@ -177,6 +187,10 @@ public class Indexer
 	    document = doc;
 	}
 
+	public DocumentImpl getDocument() {
+		return document;
+	}
+	
 	public void characters(char[] ch, int start, int length) {
 		if (length <= 0)
 			return;

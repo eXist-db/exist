@@ -107,9 +107,10 @@ public class Copy implements WebDAVMethod {
         destination = destination.substring(0, p);
         boolean replaced = false;
         DBBroker broker = null;
+        Collection destCollection = null;
         try {
             broker = pool.get(user);
-            Collection destCollection = broker.getCollection(destination);
+            destCollection = broker.getCollection(destination);
             if(destCollection == null) {
                 response.sendError(HttpServletResponse.SC_CONFLICT,
                         "Destination collection not found");
@@ -137,6 +138,8 @@ public class Copy implements WebDAVMethod {
         } catch (LockException e) {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         } finally {
+        	if(destCollection != null)
+        		destCollection.release();
             pool.release(broker);
         }
     }

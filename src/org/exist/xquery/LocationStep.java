@@ -282,7 +282,6 @@ public class LocationStep extends Step {
 //			NodeSet result = context.getBroker().findElementsByTagName(
 //					ElementValue.ELEMENT, docs, test.getName(), selector
 //			);
-			LOG.debug("Found " + result.getLength() + " for " + pprint());
 			return result;
 		}
 	}

@@ -64,7 +64,7 @@ public class Delete implements WebDAVMethod {
 		try {
 			broker = pool.get(user);
 			if(resource == null) {
-				broker.removeCollection(collection.getName());
+				broker.removeCollection(collection);
 			} else {
 				if(resource.getResourceType() == DocumentImpl.BINARY_FILE)
 					resource.getCollection().removeBinaryResource(broker, resource.getFileName());

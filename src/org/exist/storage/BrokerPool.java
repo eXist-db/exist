@@ -249,13 +249,6 @@ public class BrokerPool {
 			return broker;
 		}
 		synchronized(this) {
-			// force the thread to wait until a pending sync has finished
-			while(syncRequired && threads.size() > 0) {
-				try {
-					this.wait();
-				} catch(InterruptedException e) {
-				}
-			}
 			if (pool.isEmpty()) {
 				if (brokers < max)
 					createBroker();
@@ -271,7 +264,7 @@ public class BrokerPool {
 			broker = (DBBroker) pool.pop();
 			threads.put(Thread.currentThread(), broker);
 			broker.incReferenceCount();
-//			this.notifyAll();
+			this.notifyAll();
 			return broker;
 		}
 	}

@@ -33,6 +33,7 @@ import java.util.Observable;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.CollectionCache;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -72,6 +73,12 @@ public abstract class DBBroker extends Observable {
 	public final static int POSTGRESQL = 2;
 	public final static int DBM = 3;
 
+	//	size of the internal buffer for collection objects
+	public static final int COLLECTION_BUFFER_SIZE = 128;
+	
+	protected static CollectionCache collectionsCache = 
+		new CollectionCache(COLLECTION_BUFFER_SIZE);
+	
 	protected final static Logger LOG = Logger.getLogger(DBBroker.class);
 	
 	protected boolean caseSensitive = true;
@@ -148,6 +155,10 @@ public abstract class DBBroker extends Observable {
 		return symbols;
 	}
 
+	public CollectionCache getCollectionsCache() {
+		return collectionsCache;
+	}
+	
 	public DBBroker(BrokerPool pool, Configuration config)
 		throws EXistException {
 		this.config = config;
@@ -234,6 +245,28 @@ public abstract class DBBroker extends Observable {
 	public abstract Collection getCollection(String name);
 
 	/**
+	 * Returns the database collection identified by the specified path.
+	 * The storage address is used to locate the collection without
+	 * looking up the path in the btree.
+	 * 
+	 * @return
+	 */
+	public abstract Collection getCollection(String name, long address);
+	
+	/**
+	 * Open a collection for reading or writing. The collection is identified by its
+	 * absolute path, e.g. /db/system. It will be loaded and locked according to the
+	 * lockMode argument. 
+	 * 
+	 * The caller should take care to release the collection lock properly.
+	 * 
+	 * @param name the collection path
+	 * @param lockMode one of the modes specified in class {@link org.exist.util.Lock}
+	 * @return collection or null if no collection matches the path
+	 */
+	public abstract Collection openCollection(String name, int lockMode);
+	
+	/**
 	 *  Returns the database collection identified by the specified path.
 	 * If the collection does not yet exist, it is created - including all
 	 * ancestors. The path should be absolute, e.g. /db/system.
@@ -244,15 +277,6 @@ public abstract class DBBroker extends Observable {
 		throws PermissionDeniedException {
 		return null;
 	}
-	
-	/**
-	 * Returns the database collection identified by the specified path.
-	 * The storage address is used to locate the collection without
-	 * looking up the path in the btree.
-	 * 
-	 * @return
-	 */
-	public abstract Collection getCollection(String name, long address);
 
 	public abstract void reloadCollection(Collection collection);
 	
@@ -304,6 +328,9 @@ public abstract class DBBroker extends Observable {
 	public abstract Document getDocument(String path)
 		throws PermissionDeniedException;
 
+	public abstract Document openDocument(String docPath, int lockMode) 
+		throws PermissionDeniedException;
+	
 	/**
 	 *  Returns a DocumentSet containing all the documents found in the
 	 * specified collection. The collection should be specified with its full path.
@@ -395,19 +422,19 @@ public abstract class DBBroker extends Observable {
 	 * the database.
 	 * 
 	 */
-	public abstract boolean removeCollection(String name)
+	public abstract boolean removeCollection(Collection collection)
 		throws PermissionDeniedException;
 
 	/**
 	 *  Remove a document from the database.
 	 *
 	 */
-	public void removeDocument(String docName)
+	public void removeDocument(DocumentImpl document)
 	throws PermissionDeniedException {
-	    removeDocument(docName, true);
+	    removeDocument(document, true);
 	}
 	
-	public abstract void removeDocument(String docName, boolean freeDocId)
+	public abstract void removeDocument(DocumentImpl document, boolean freeDocId)
 		throws PermissionDeniedException;
 
 	/**
