@@ -32,6 +32,7 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
+import org.xmldb.api.modules.XUpdateQueryService;
 
 import junit.framework.TestCase;
 
@@ -53,7 +54,7 @@ public class ValueIndexTest extends TestCase {
     	"		<create path=\"//item/name\" type=\"xs:string\"/>" + 
     	"		<create path=\"//item/stock\" type=\"xs:integer\"/>" + 
     	"		<create path=\"//item/price\" type=\"xs:double\"/>" + 
-    	"		<create path=\"//item/prices/@specialprice\" type=\"xs:boolean\"/>" + 
+    	"		<create path=\"//item/price/@specialprice\" type=\"xs:boolean\"/>" + 
     	"		<create path=\"//item/x:rating\" type=\"xs:double\"/>" + 
     	"	</index>" + 
     	"</collection>";
@@ -96,6 +97,34 @@ public class ValueIndexTest extends TestCase {
         queryResource(service, "items.xml", "declare namespace x=\"http://www.foo.com\"; //item[x:rating > 8.0]", 2);
         queryResource(service, "items.xml", "//item[name &= 'Racing Bicycle']", 1);
         queryResource(service, "items.xml", "//item[mixed = 'uneven']", 1);
+    }
+    
+    public void testUpdates() throws Exception {
+        String append =
+            "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
+            "<xu:append select=\"/items\">" +
+            "<item>" +
+            "<itemno>10</itemno>" +
+            "<name>New Item</name>" +
+            "<price>55.50</price>" +
+            "</item>" +
+            "</xu:append>" +
+            "</xu:modifications>";
+        String remove =
+            "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
+            "<xu:remove select=\"/items/item[itemno='10']\"/>" +
+            "</xu:modifications>";
+        
+        XPathQueryService query = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+        XUpdateQueryService update = (XUpdateQueryService) testCollection.getService("XUpdateQueryService", "1.0");
+        update.updateResource("items.xml", append);
+        queryResource(query, "items.xml", "//item[price = 55.50]", 1);
+        
+        update.updateResource("items.xml", remove);
+        queryResource(query, "items.xml", "//item[price = 55.50]", 0);
+        
+        update.updateResource("items.xml", append);
+        queryResource(query, "items.xml", "//item[price = 55.50]", 1);
     }
     
     private ResourceSet queryResource(XPathQueryService service,

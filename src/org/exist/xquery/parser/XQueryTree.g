@@ -962,6 +962,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		#( PREFIX_WILDCARD nc1:NCNAME )
 		{
 			QName qname= new QName(nc1.getText(), null, null);
+			qname.setNamespaceURI(null);
 			test= new NameTest(Type.ELEMENT, qname);
 		}
 		|

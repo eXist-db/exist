@@ -689,7 +689,7 @@ implements Comparable, EntityResolver, Cacheable {
 		try {
 			lock.acquire(Lock.READ_LOCK);
 			Trigger trigger = null;
-			if (!docname.equals(CollectionConfiguration.COLLECTION_CONFIG_FILE)) {
+			if (!docname.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX)) {
 				if (triggersEnabled) {
 					CollectionConfiguration config = getConfiguration(broker);
 					if (config != null)
@@ -1477,7 +1477,7 @@ implements Comparable, EntityResolver, Cacheable {
 	 */
 	private Trigger setupTriggers(DBBroker broker, String name, DocumentImpl oldDoc) {
 		Trigger trigger = null;
-		if (name.equals(CollectionConfiguration.COLLECTION_CONFIG_FILE)) {
+		if (name.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX)) {
 		    // we are updating collection.xconf. Notify configuration manager
 			CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
 			confMgr.invalidateAll(getName());
