@@ -37,6 +37,7 @@
                 <xsp:include>org.exist.xmldb.UserManagementService</xsp:include>
                 <xsp:include>org.exist.security.User</xsp:include>
                 <xsp:include>org.exist.storage.serializers.Serializer</xsp:include>
+                <xsp:include>org.apache.excalibur.xml.sax.SAXParser</xsp:include>
             </xsp:structure>
             <xsp:logic>
                 private String _errmsg = null;
@@ -120,11 +121,10 @@
                 String _password = <xsl:value-of select="$password"/>;
                 Collection collection = null;
                 // create a cocoon parser component for later use
-                org.apache.cocoon.components.parser.Parser
+                SAXParser
                     newParser = null;
                 try {
-                    newParser = (org.apache.cocoon.components.parser.Parser) 
-                        this.manager.lookup(org.apache.cocoon.components.parser.Parser.ROLE);
+                	newParser = (SAXParser) manager.lookup(SAXParser.ROLE);
                 } catch(Exception e) {
                 }
                 try {

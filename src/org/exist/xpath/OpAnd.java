@@ -23,57 +23,52 @@ package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
+import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
-import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.Type;
-import org.exist.xpath.value.ValueSequence;
 
-public class OpAnd extends BinaryOp {
+/**
+ * Boolean operator "and".
+ * 
+ * @author Wolfgang <wolfgang@exist-db.org>
+ */
+public class OpAnd extends LogicalOp {
 
 	public OpAnd(StaticContext context) {
 		super(context);
 	}
 
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
+	public Sequence eval(
+		DocumentSet docs,
+		Sequence contextSequence,
+		Item contextItem)
+		throws XPathException {
 		if (getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
-		
-		boolean nodeSetCompare = true;
-		for(int i = 0; i < getLength(); i++) {
-			if(!Type.subTypeOf(getExpression(i).returnsType(), Type.NODE))
-				nodeSetCompare = false;
-		}
-		
-		if(nodeSetCompare) {
-			NodeSet rr, rl = (NodeSet) getExpression(0).eval(docs, contextSequence, contextItem);
-			rl = rl.getContextNodes((NodeSet)contextSequence, inPredicate);
-			for (int i = 1; i < getLength(); i++) {
-				LOG.debug("processing " + getExpression(i).pprint());
-				rr = (NodeSet) getExpression(i).eval(docs, contextSequence, contextItem);
-				rl = rl.intersection(rr.getContextNodes((NodeSet)contextSequence, inPredicate));
-			}
+
+		if (contextItem != null)
+			contextSequence = contextItem.toSequence();
+		Expression left = getLeft();
+		Expression right = getRight();
+		if (Type.subTypeOf(left.returnsType(), Type.NODE)
+			&& Type.subTypeOf(right.returnsType(), Type.NODE)) {
+			NodeSet rl = left.eval(docs, contextSequence, null).toNodeSet();
+			rl = rl.getContextNodes((NodeSet) contextSequence, inPredicate);
+			NodeSet rr = right.eval(docs, contextSequence, null).toNodeSet();
+			rl =
+				rl.intersection(
+					rr.getContextNodes((NodeSet) contextSequence, inPredicate));
 			return rl;
 		} else {
-			Sequence result = new ValueSequence();
-			Item item;
-			boolean r;
-			for(SequenceIterator i = contextSequence.iterate(); i.hasNext(); ) {
-				item = i.nextItem();
-				r = true;
-				for(int j = 0; j < getLength(); j++) {
-					r = getExpression(j).
-						eval(docs, contextSequence, item).effectiveBooleanValue();
-					if(!r)
-						break;
-				}
-				if(r)
-					result.add(item);
-			}
-			return result;
+			boolean ls =
+				left.eval(docs, contextSequence).effectiveBooleanValue();
+			boolean rs =
+				right.eval(docs, contextSequence).effectiveBooleanValue();
+			return ls && rs ? BooleanValue.TRUE : BooleanValue.FALSE;
 		}
 	}
-
+	
 	public String pprint() {
 		if (getLength() == 0)
 			return "";
@@ -84,16 +79,6 @@ public class OpAnd extends BinaryOp {
 			buf.append(getExpression(i).pprint());
 		}
 		return buf.toString();
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#setInPredicate(boolean)
-	 */
-	public void setInPredicate(boolean inPredicate) {
-		super.setInPredicate(inPredicate);
-		for(int i = 0; i < getLength(); i++) {
-			getExpression(i).setInPredicate(inPredicate);
-		}
 	}
 
 }

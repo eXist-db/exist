@@ -22,7 +22,7 @@
  */
 package org.exist.storage.cache;
 
-import it.unimi.dsi.fastutil.Long2ObjectOpenHashMap;
+import org.exist.util.hashtable.Long2ObjectHashMap;
 
 /**
  * Cache implementation based on the GClock algorithm. 
@@ -44,13 +44,14 @@ public class GClockCache implements Cache {
 	protected Cacheable[] items;
 	protected int count = 0;
 	protected int size;
-	protected Long2ObjectOpenHashMap map;
+	protected Long2ObjectHashMap map;
 	protected int hits = 0, fails = 0;
 
 	public GClockCache(int size) {
 		this.size = size;
 		this.items = new Cacheable[size];
-		this.map = new Long2ObjectOpenHashMap(size);
+		this.map = new Long2ObjectHashMap(size);
+		//this.map = new Long2ObjectOpenHashMap(size);
 	}
 
 	public void add(Cacheable item) {

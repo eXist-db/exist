@@ -23,9 +23,6 @@
  */
 package org.exist.collections;
 
-import it.unimi.dsi.fastutil.Object2LongRBTreeMap;
-import it.unimi.dsi.fastutil.Object2ObjectRBTreeMap;
-
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.TreeSet;
+import java.util.TreeMap;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -48,7 +45,8 @@ import org.apache.log4j.Category;
 import org.apache.xml.resolver.tools.CatalogResolver;
 import org.exist.EXistException;
 import org.exist.Indexer;
-import org.exist.collections.triggers.*;
+import org.exist.collections.triggers.Trigger;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BLOBDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -58,11 +56,13 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
+import org.exist.storage.cache.Cacheable;
 import org.exist.util.Configuration;
 import org.exist.util.DOMStreamer;
 import org.exist.util.SyntaxException;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
+import org.exist.util.hashtable.Object2LongHashMap;
 import org.w3c.dom.Node;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -80,7 +80,7 @@ import org.xml.sax.XMLReader;
  */
 public class Collection
 	extends Observable
-	implements Comparable, EntityResolver {
+	implements Comparable, EntityResolver, Cacheable {
 
 	private final static Category LOG =
 		Category.getInstance(Collection.class.getName());
@@ -93,11 +93,10 @@ public class Collection
 
 	private int validation = VALIDATION_AUTO;
 
-	private int refCount = 0;
 	private short collectionId = -1;
 
 	// the documents contained in this collection
-	private Object2ObjectRBTreeMap documents = new Object2ObjectRBTreeMap();
+	private TreeMap documents = new TreeMap();
 
 	// the name of this collection
 	private String name;
@@ -106,7 +105,7 @@ public class Collection
 	private Permission permissions = new Permission(0755);
 
 	// stores child-collections with their storage address
-	private Object2LongRBTreeMap subcollections = new Object2LongRBTreeMap();
+	private Object2LongHashMap subcollections = new Object2LongHashMap(19);
 
 	// temporary field for the storage address
 	private long address = -1;
@@ -121,6 +120,9 @@ public class Collection
 	private CollectionConfiguration configuration = null;
 	private boolean triggersEnabled = true;
 
+	private int refCount = 0;
+	private int timestamp = 0;
+	
 	public Collection(String name) {
 		this.name = name;
 	}
@@ -179,7 +181,7 @@ public class Collection
 	 *@return    Description of the Return Value
 	 */
 	synchronized public Iterator collectionIterator() {
-		return new TreeSet(subcollections.keySet()).iterator();
+		return subcollections.stableIterator();
 	}
 
 	/**
@@ -192,7 +194,7 @@ public class Collection
 		final ArrayList cl = new ArrayList(subcollections.size());
 		Collection child;
 		String childName;
-		for (Iterator i = subcollections.keySet().iterator(); i.hasNext();) {
+		for (Iterator i = subcollections.iterator(); i.hasNext();) {
 			childName = (String) i.next();
 			child = broker.getCollection(name + '/' + childName);
 			if (permissions.validate(user, Permission.READ)) {
@@ -228,9 +230,9 @@ public class Collection
 		Collection child;
 		String childName;
 		long addr;
-		for (Iterator i = subcollections.keySet().iterator(); i.hasNext();) {
+		for (Iterator i = subcollections.iterator(); i.hasNext();) {
 			childName = (String) i.next();
-			addr = subcollections.getLong(childName);
+			addr = subcollections.get(childName);
 			if (addr < 0)
 				child = broker.getCollection(name + '/' + childName);
 			else
@@ -382,6 +384,7 @@ public class Collection
 		collectionId = istream.readShort();
 		final int collLen = istream.readInt();
 		String sub;
+		subcollections = new Object2LongHashMap(collLen);
 		for (int i = 0; i < collLen; i++)
 			subcollections.put(istream.readUTF(), istream.readLong());
 
@@ -1031,10 +1034,10 @@ public class Collection
 		ostream.writeShort(collectionId);
 		ostream.writeInt(subcollections.size());
 		String childColl;
-		for (Iterator i = subcollections.keySet().iterator(); i.hasNext();) {
+		for (Iterator i = subcollections.iterator(); i.hasNext();) {
 			childColl = (String) i.next();
 			ostream.writeUTF(childColl);
-			ostream.writeLong(subcollections.getLong(childColl));
+			ostream.writeLong(subcollections.get(childColl));
 		}
 		org.exist.security.SecurityManager secman =
 			broker.getBrokerPool().getSecurityManager();
@@ -1086,22 +1089,6 @@ public class Collection
 	 */
 	public void setAddress(long addr) {
 		this.address = addr;
-	}
-
-	public void incRefCount() {
-		--refCount;
-	}
-
-	public void decRefCount() {
-		--refCount;
-	}
-
-	public void setRefCount(int initialCount) {
-		refCount = initialCount;
-	}
-
-	public int getRefCount() {
-		return refCount;
 	}
 
 	public void setCreationTime(long ms) {
@@ -1215,5 +1202,60 @@ public class Collection
 			observers = new ArrayList(1);
 		if (!observers.contains(o))
 			observers.add(o);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.storage.cache.Cacheable#getKey()
+	 */
+	public long getKey() {
+		return collectionId;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.storage.cache.Cacheable#getReferenceCount()
+	 */
+	public int getReferenceCount() {
+		return refCount;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.storage.cache.Cacheable#incReferenceCount()
+	 */
+	public int incReferenceCount() {
+		return ++refCount;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.storage.cache.Cacheable#decReferenceCount()
+	 */
+	public int decReferenceCount() {
+		return refCount > 0 ? --refCount : 0;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.storage.cache.Cacheable#setReferenceCount(int)
+	 */
+	public void setReferenceCount(int count) {
+		refCount = count;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.storage.cache.Cacheable#setTimestamp(int)
+	 */
+	public void setTimestamp(int timestamp) {
+		this.timestamp = timestamp;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.storage.cache.Cacheable#getTimestamp()
+	 */
+	public int getTimestamp() {
+		return timestamp;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.storage.cache.Cacheable#release()
+	 */
+	public void release() {
 	}
 }

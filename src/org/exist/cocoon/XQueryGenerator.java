@@ -106,9 +106,10 @@ public class XQueryGenerator extends ServiceableGenerator {
 			if(mapRequestParams)
 				mapRequestParams(request, service);
 			ResourceSet result = service.query(xquery);
+            XMLResource resource;
 			this.contentHandler.startDocument();
 			for(long i = 0; i < result.getSize(); i++) {
-				XMLResource resource = (XMLResource) result.getResource(i);
+				resource = (XMLResource) result.getResource(i);
 				resource.getContentAsSAX(this.contentHandler);
 			}
 			this.contentHandler.endDocument();

@@ -22,7 +22,7 @@
  */
 package org.exist.storage.cache;
 
-import it.unimi.dsi.fastutil.Long2ObjectLinkedOpenHashMap;
+import org.exist.util.hashtable.Long2ObjectHashMap;
 
 /**
  * Simple clock implementation of a cache.
@@ -38,7 +38,7 @@ import it.unimi.dsi.fastutil.Long2ObjectLinkedOpenHashMap;
  */
 public class ClockCache implements Cache {
 
-	private Long2ObjectLinkedOpenHashMap map;
+	private Long2ObjectHashMap map;
 	private Cacheable[] items;
 	private int size;
 	private int count = 0;
@@ -47,7 +47,7 @@ public class ClockCache implements Cache {
 	public ClockCache(int size) {
 		this.size = size;
 		items = new Cacheable[size];
-		map = new Long2ObjectLinkedOpenHashMap(size);
+		map = new Long2ObjectHashMap(size);
 	}
 
 	/* (non-Javadoc)

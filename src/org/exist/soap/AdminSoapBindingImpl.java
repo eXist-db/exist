@@ -1,8 +1,3 @@
-/**
- *  AdminSoapBindingImpl.java This file was auto-generated from WSDL by the
- *  Apache Axis Wsdl2java emitter.
- */
-
 package org.exist.soap;
 import java.io.IOException;
 import java.io.StringReader;
@@ -30,10 +25,10 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
- *  Description of the Class
+ *  Provides the actual implementations for the methods defined in
+ * {@link org.exist.soap.Admin}.
  *
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
- *@created    August 2, 2002
  */
 public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 

@@ -51,7 +51,6 @@ import org.exist.util.LockException;
 import org.exist.util.OrderedLinkedList;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.ReentrantReadWriteLock;
-import org.exist.util.StorageAddress;
 
 /**
  *  Data store for variable size values.

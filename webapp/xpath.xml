@@ -1,106 +1,154 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet href="file://localhost/home/wolf/Java/Morphon_XML-Editor_3.1/Examples/docbook/docbook.css" type="text/css"?>
-<book
-  xmlns:ci="http://apache.org/cocoon/include/1.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:noNamespaceSchemaLocation='file://localhost/home/wolf/Java/Morphon_XML-Editor_3.1/Examples/docbook/xsd/docbook.xsd'>
-  <bookinfo>
-    <graphic fileref="logo.jpg"/>
+<book xmlns:ci="http://apache.org/cocoon/include/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="file://localhost/home/wolf/Java/Morphon_XML-Editor_3.1/Examples/docbook/xsd/docbook.xsd">
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
 
-    <title>Open Source XML Database</title>
-    <author>
-      <firstname>Wolfgang M.</firstname>
-      <surname>Meier</surname>
-      <affiliation>
-		  <address format="linespecific"> <email>wolfgang@exist-db.org</email> </address>
-      </affiliation>
-    </author>
-  </bookinfo>
-  <ci:include src="sidebar.xml"/>
-  <chapter>
-    <title>XPath HowTo</title>
-    <section>
-      <title>Current Status</title>
-      <para>With version 0.9.2, XPath support in eXist is nearly complete. Contrary to earlier releases, XPath axis specifiers are now implemented. However, some minor features are still missing and will be added for the 1.0 release. Since eXist's query processing differs a lot from standard implementations, we simply can't just plug in some other open source XPath engine. Instead, we put much work into the extensions eXist defines to standard XPath.</para>
-      <para>eXist currently supports the following functions from the XPath spec: contains, starts-with, ends-with, not, position, last, true, false, count, boolean, string, number, string-length, sum, floor, ceiling, round.</para>
-      <para>The following axis specifiers are recognized: child, descendant, descendant-or-self, parent, attribute, ancestor, ancestor-or-self, following-axis, preceding-axis.</para>
-      <para>The remaining sections have a quick look at the extensions eXist adds to XPath to enable you to efficiently use the database:</para>
-    </section>
-    <section>
-      <title>Specifying the Input Document Set</title>
-      <para>A database may contain an unlimited set of collections and documents. If you use the XML:DB API to query the db, only the documents in the current XML:DB collection are processed by default. However, there are two additional XPath functions to change this behavior: <command moreinfo="none">document()</command> and <command moreinfo="none">collection()</command>.</para>
-      <para><command moreinfo="none">document()</command> accepts a single document path, a list of document paths, or a wildcard as parameters. The wildcard (*) selects all documents currently stored in the database. Some examples:</para>
-      <synopsis format="linespecific">document()//SPEAKER</synopsis>
-      <synopsis format="linespecific">document('/db/test/abc.xml', '/db/test/def.xml')//title</synopsis>
-      <para>The <command moreinfo="none">collection()</command> function specifies the collection whose documents are to be included into query evaluation. By default, documents found in sub-collections of the specified collection are included. This means that for three collections, <filename moreinfo="none">/db/test</filename>, <filename moreinfo="none">/db/test/abc</filename> and <filename moreinfo="none">/db/test/def</filename>, <command moreinfo="none">collection('/db/test')</command> will include all resources found in <filename moreinfo="none">/db/test</filename>, <filename moreinfo="none">/db/test/abc</filename> and <filename moreinfo="none">/db/test/def</filename>. You may use the <command moreinfo="none">xcollection()</command> function to change this behavior, e.g.</para>
-      <synopsis format="linespecific">xcollection('/db/test')//title</synopsis>
-      <para>will only include resources found in <filename moreinfo="none">/db/test</filename>, but not in <filename moreinfo="none">/db/test/abc</filename> or <filename moreinfo="none">/db/test/def</filename>.</para>
-      <note>
-        <para>Currently, the document(), collection() and xcollection() are only allowed to occur at the beginning of an XPath expression.</para>
-      </note>
-    </section>
-    <section>
-      <title>Querying Text</title>
-      <para>Standard XPath defines only a few limited functions to search for a given string inside the character content of a node. This is a weak point if you have to search through documents containing larger sections of text. For many types of documents, the provided standard functions will not yield satisfying results. For example, you might remember to have read something about "XML" and "databases" in some chapter of a book, but you may not be sure where exactly it was. Using standard XPath, you could try a query like:</para>
-      <synopsis format="linespecific">//chapter[contains(., 'XML') and contains(., 'databases')]</synopsis>
-      <para>Query execution will probably be quite slow, because the XPath engine has to scan the entire character content of all chapters and their descendants. Still you can't be sure to find all matches - for example, "databases" might have been written with a capital letter at the start of the sentence.</para>
-      <para>eXist offers additional operators and extension functions for efficient, index-based access to the full-text content of nodes. With eXist, you could formulate your query as follows:</para>
-      <synopsis format="linespecific">//chapter[near(., 'XML database?', 50)]</synopsis>
-      <para>This query will return all chapters containing both keywords in the correct order and with less than 50 words between them. Additionally, the wildcard in "database?" will match singular as well as the plural form and the search is done case-insensitive.</para>
-      <para>Since the query is index-based, it will usually be a magnitude faster than the standard XPath query above. Let's walk through each of eXist's extensions:</para>
-      <section>
-        <title>Operators</title>
-        <para>In cases where the order and distance of search terms is not important, eXist offers two additional operators for simple keyword queries: <command moreinfo="none">&amp;=</command> and <command moreinfo="none">|=</command>. </para>
-        <variablelist>
-          <varlistentry>
-            <term>node-set &amp;= 'string of keywords'</term>
-            <listitem>
-              <para>selects context nodes containing all of the keywords in the right-hand argument in any order. The default tokenizer is used to split the right-hand argument into single tokens, i.e. any punctuation or white space is skipped. Wildcards are allowed. Keywords are compared case-insensitive.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>node-set |= 'string of keywords'</term>
-            <listitem>
-              <para>as above, but selects context nodes containing <emphasis>any</emphasis> of the keywords in the right-hand argument.</para>
-            </listitem>
-          </varlistentry>
-        </variablelist>
-        <para>Both operators accept simple wildcards in the keyword string. A <command moreinfo="none">?</command> matches zero or one character, <command moreinfo="none">*</command> matches zero or more characters. A character range <command moreinfo="none">[abc]</command> matches any of the characters in the range. You may use a backslash to escape wildcard characters.</para>
-        <para>To match more complex patterns, full regular expression syntax is supported through additional functions, which will be described below.</para>
-        <para>Please note that there is an important semantic difference between the two expressions:</para>
-        <synopsis format="linespecific">document()//SPEECH[LINE &amp;= "cursed spite"]</synopsis>
-        <para>and</para>
-        <synopsis format="linespecific">document()//SPEECH[LINE &amp;= "cursed" and LINE &amp;="spite"]</synopsis>
-        <para>The first expression selects all distinct LINE nodes that contain both terms. The second one selects all context nodes (SPEECH) that have line children containing either or both of the terms. The second expression is supposed to yield more results than the first one. To make both expressions select nearly the same nodes, you would have to change the first one into</para>
-        <synopsis format="linespecific">document()//SPEECH[. &amp;= "cursed spite"]</synopsis>
-        <para>(but this will also include, say SPEAKER or STAGEDIR children of the SPEECH parent)</para>
-      </section>
-      <section>
-        <title>near()</title>
-        <para>As shown above, the <command moreinfo="none">near()</command> function behaves quite similar to the <command moreinfo="none">&amp;=</command> operator, but it additionally pays attention to the order of search terms and their distance in the source document. The syntax is:</para>
-        <synopsis format="linespecific">near(node-list, 'string of keywords' [, max-distance])</synopsis>
-        <para>The functions measures the distance between two search terms by counting the words in between them. A maximum distance of 1 is assumed by default, which means that the search terms should occur next to each other. Other values may be specified in the optional third argument, e.g.:</para>
-        <synopsis format="linespecific">document()//SPEECH[near(., 'love marriage', 25)</synopsis>
-        <para>will return any SPEECH elements containing the words "love" and "marriage" and less than 25 words between them.</para>
-        <para>Like <command moreinfo="none">&amp;=</command>, <command moreinfo="none">near()</command> accepts wildcards in the keyword string. As well, punctuation and whitespace will be skipped according to the default tokenization rules.</para>
-      </section>
-      <section>
-        <title>match-all()/match-any()</title>
-        <para>These functions are variations of the <command moreinfo="none">&amp;=</command> and <command moreinfo="none">|=</command> operators which interpret their arguments as regular expressions. Both functions are also completely based on index lookups.</para>
-        <para>Since tokenization doesn't work correctly with regular expression patterns, each keyword has to be specified as a separate argument, so the syntax looks like:</para>
-        <synopsis format="linespecific">match-all(node-set, 'regexp' [, 'regexp' ...])</synopsis>
-        <para> <command moreinfo="none">match-all()</command> corresponds to <command moreinfo="none">&amp;=</command> in that it will select context nodes matching all of the specified regular expressions. <command moreinfo="none">match-any()</command> will select nodes matching <emphasis>any</emphasis> of the specified regexp.</para>
-        <para>Please note that the functions will try to match the regexp against the entire keyword. For example, the expression</para>
-        <synopsis format="linespecific">//SPEECH[match-all(LINE, 'li[vf]e')]</synopsis>
-        <para>will match 'live', 'life', but not 'lives'.</para>
-        <para>eXist uses <ulink url="http://jakarta.apache.org/oro/">Apache's ORO library </ulink> for regular expressions. A complete description of the supported regexp syntax can be found in the documentation of the library.</para>
-      </section>
-      <section>
-        <title>match()</title>
-        <para>The <command moreinfo="none">match()</command> function differs from all other functions presented here in that it does not use the fulltext index. Instead, <command moreinfo="none">match()</command> tries to match the regexp against the character content of a node and its child nodes. The syntax is:</para>
-        <synopsis format="linespecific">match(node-set, 'regexp')</synopsis>
-        <para> <command moreinfo="none">match()</command> thus works similar to <command moreinfo="none">contains()</command> and will usually be much slower than the index-based fulltext functions <command moreinfo="none">match-all()</command> or <command moreinfo="none">match-any()</command>.</para>
-      </section>
-    </section>
-  </chapter>
+        <title>Open Source XML Database</title>
+        <author>
+            <firstname>Wolfgang M.</firstname>
+            <surname>Meier</surname>
+            <affiliation>
+                <address format="linespecific">
+                    <email>wolfgang@exist-db.org</email>
+                </address>
+            </affiliation>
+        </author>
+    </bookinfo>
+    <ci:include src="sidebar.xml"/>
+    <chapter>
+        <title>XPath/XQuery HowTo</title>
+        <section>
+            <title>Current Status</title>
+            <para>eXist currently implements large parts of
+            the current XQuery working draft (as of November, 2003). The XQuery engine
+            is a complete rewrite and replaces the old XPath engine. Not every XQuery
+            feature is supported yet. However, the implemented parts of the language should
+            already cover most of the common use cases. Please have a look at the list of
+            missing features below. As usual, any help will be welcome to implement
+            the missing parts.</para>
+            <para>Older code based on XPath should be compatible with the XQuery engine,
+            though some aspects (e.g. the rules for automatic type conversions) have
+            changed. The query engine doesn't make a difference between XPath
+            and XQuery syntax internally. All interfaces should work as before, i.e. you can pass 
+            an XQuery expression wherever you used to pass an XPath query.</para>
+            <para>The remaining sections have a quick look at some extensions eXist adds 
+            to XPath/XQuery to enable you to efficiently use the database:</para>
+        </section>
+        <section>
+            <title>Specifying the Input Document Set</title>
+            <para>A database may contain an unlimited set of collections and documents.
+            If you use the XML:DB API to query the db, only the documents in the current 
+            XML:DB collection are processed by default. However, there are three additional 
+            functions to change this behavior: <command moreinfo="none">document()</command>, 
+            <command moreinfo="none">collection()</command> and <command>xcollection().</para>
+            
+            <para>The <command>collection()</command> function is a standard XQuery/XPath 
+            function. The <command>xcollection()</command> and <command>document()</command> 
+            functions represent eXist-specific extension. <command>xcollection()</command>
+            will be explained below. The <command>document()</command> function will probably
+            be replaced by the XQuery standard function <command>doc</command> in the near
+            future. However, there are some differences: while <command>doc</command> is restricted
+            to a single document-URI argument, <command>document</command> accepts multiple
+            document paths to be included into the input node set. Second, calling 
+            <command>document</command> without an argument includes <emphasis>every</emphasis>
+            document node in the current database instance.</para>
+            
+            <para>Another difference to the standard XQuery functions is that eXist interprets
+            all arguments to document or collection as relative paths into the database. eXist is
+            currently not able to read an external resource, e.g. from a file.</para>
+            
+            <para>
+                <command moreinfo="none">document()</command> accepts a single document path, 
+                a list of document paths, or a wildcard as parameters. The wildcard (*) selects 
+                all documents currently stored in the database. Some examples:
+            </para>
+            <synopsis format="linespecific">document()//SPEAKER</synopsis>
+            <synopsis format="linespecific">document('/db/test/abc.xml', '/db/test/def.xml')//title</synopsis>
+            
+            <para>The <command moreinfo="none">collection()</command> function specifies the 
+            collection whose documents are to be included into query evaluation. By default, 
+            documents found in sub-collections of the specified collection are included. This 
+            means that for three collections, <filename moreinfo="none">/db/test</filename>, 
+            <filename moreinfo="none">/db/test/abc</filename> and 
+            <filename moreinfo="none">/db/test/def</filename>, 
+            <command moreinfo="none">collection('/db/test')</command> will include all resources 
+            found in <filename moreinfo="none">/db/test</filename>, 
+            <filename moreinfo="none">/db/test/abc</filename> and 
+            <filename moreinfo="none">/db/test/def</filename>. You may use the 
+            <command moreinfo="none">xcollection()</command> function to change this behavior, 
+            e.g.</para>
+            <synopsis format="linespecific">xcollection('/db/test')//title</synopsis>
+            <para>will only include resources found in <filename moreinfo="none">/db/test</filename>, but not in <filename moreinfo="none">/db/test/abc</filename> or <filename moreinfo="none">/db/test/def</filename>.</para>
+            <note>
+                <para>Beginning with version 0.9.3, the collection and document functions are implemented
+                as ordinary functions. They may occur at any position where a function call is allowed.</para>
+            </note>
+        </section>
+        <section>
+            <title>Querying Text</title>
+            <para>Standard XPath defines only a few limited functions to search for a given string inside the character content of a node. This is a weak point if you have to search through documents containing larger sections of text. For many types of documents, the provided standard functions will not yield satisfying results. For example, you might remember to have read something about "XML" and "databases" in some chapter of a book, but you may not be sure where exactly it was. Using standard XPath, you could try a query like:</para>
+            <synopsis format="linespecific">//chapter[contains(., 'XML') and contains(., 'databases')]</synopsis>
+            <para>Query execution will probably be quite slow, because the XPath engine has to scan the entire character content of all chapters and their descendants. Still you can't be sure to find all matches - for example, "databases" might have been written with a capital letter at the start of the sentence.</para>
+            <para>eXist offers additional operators and extension functions for efficient, index-based access to the full-text content of nodes. With eXist, you could formulate your query as follows:</para>
+            <synopsis format="linespecific">//chapter[near(., 'XML database?', 50)]</synopsis>
+            <para>This query will return all chapters containing both keywords in the correct order and with less than 50 words between them. Additionally, the wildcard in "database?" will match singular as well as the plural form and the search is done case-insensitive.</para>
+            <para>Since the query is index-based, it will usually be a magnitude faster than the standard XPath query above. Let's walk through each of eXist's extensions:</para>
+            <section>
+                <title>Operators</title>
+                <para>In cases where the order and distance of search terms is not important, eXist offers two additional operators for simple keyword queries: <command moreinfo="none">&amp;=</command> and <command moreinfo="none">|=</command>. </para>
+                <variablelist>
+                    <varlistentry>
+                        <term>node-set &amp;= 'string of keywords'</term>
+                        <listitem>
+                            <para>selects context nodes containing all of the keywords in the right-hand argument in any order. The default tokenizer is used to split the right-hand argument into single tokens, i.e. any punctuation or white space is skipped. Wildcards are allowed. Keywords are compared case-insensitive.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>node-set |= 'string of keywords'</term>
+                        <listitem>
+                            <para>as above, but selects context nodes containing <emphasis>any</emphasis> of the keywords in the right-hand argument.</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+                <para>Both operators accept simple wildcards in the keyword string. A <command moreinfo="none">?</command> matches zero or one character, <command moreinfo="none">*</command> matches zero or more characters. A character range <command moreinfo="none">[abc]</command> matches any of the characters in the range. You may use a backslash to escape wildcard characters.</para>
+                <para>To match more complex patterns, full regular expression syntax is supported through additional functions, which will be described below.</para>
+                <para>Please note that there is an important semantic difference between the two expressions:</para>
+                <synopsis format="linespecific">document()//SPEECH[LINE &amp;= "cursed spite"]</synopsis>
+                <para>and</para>
+                <synopsis format="linespecific">document()//SPEECH[LINE &amp;= "cursed" and LINE &amp;="spite"]</synopsis>
+                <para>The first expression selects all distinct LINE nodes that contain both terms. The second one selects all context nodes (SPEECH) that have line children containing either or both of the terms. The second expression is supposed to yield more results than the first one. To make both expressions select nearly the same nodes, you would have to change the first one into</para>
+                <synopsis format="linespecific">document()//SPEECH[. &amp;= "cursed spite"]</synopsis>
+                <para>(but this will also include, say SPEAKER or STAGEDIR children of the SPEECH parent)</para>
+            </section>
+            <section>
+                <title>near()</title>
+                <para>As shown above, the <command moreinfo="none">near()</command> function behaves quite similar to the <command moreinfo="none">&amp;=</command> operator, but it additionally pays attention to the order of search terms and their distance in the source document. The syntax is:</para>
+                <synopsis format="linespecific">near(node-list, 'string of keywords' [, max-distance])</synopsis>
+                <para>The functions measures the distance between two search terms by counting the words in between them. A maximum distance of 1 is assumed by default, which means that the search terms should occur next to each other. Other values may be specified in the optional third argument, e.g.:</para>
+                <synopsis format="linespecific">document()//SPEECH[near(., 'love marriage', 25)</synopsis>
+                <para>will return any SPEECH elements containing the words "love" and "marriage" and less than 25 words between them.</para>
+                <para>Like <command moreinfo="none">&amp;=</command>, <command moreinfo="none">near()</command> accepts wildcards in the keyword string. As well, punctuation and whitespace will be skipped according to the default tokenization rules.</para>
+            </section>
+            <section>
+                <title>match-all()/match-any()</title>
+                <para>These functions are variations of the <command moreinfo="none">&amp;=</command> and <command moreinfo="none">|=</command> operators which interpret their arguments as regular expressions. Both functions are also completely based on index lookups.</para>
+                <para>Since tokenization doesn't work correctly with regular expression patterns, each keyword has to be specified as a separate argument, so the syntax looks like:</para>
+                <synopsis format="linespecific">match-all(node-set, 'regexp' [, 'regexp' ...])</synopsis>
+                <para>
+                    <command moreinfo="none">match-all()</command> corresponds to <command moreinfo="none">&amp;=</command> in that it will select context nodes matching all of the specified regular expressions. <command moreinfo="none">match-any()</command> will select nodes matching <emphasis>any</emphasis> of the specified regexp.</para>
+                <para>Please note that the functions will try to match the regexp against the entire keyword. For example, the expression</para>
+                <synopsis format="linespecific">//SPEECH[match-all(LINE, 'li[vf]e')]</synopsis>
+                <para>will match 'live', 'life', but not 'lives'.</para>
+                <para>eXist uses <ulink url="http://jakarta.apache.org/oro/">Apache's ORO library </ulink> for regular expressions. A complete description of the supported regexp syntax can be found in the documentation of the library.</para>
+            </section>
+            <section>
+                <title>match()</title>
+                <para>The <command moreinfo="none">match()</command> function differs from all other functions presented here in that it does not use the fulltext index. Instead, <command moreinfo="none">match()</command> tries to match the regexp against the character content of a node and its child nodes. The syntax is:</para>
+                <synopsis format="linespecific">match(node-set, 'regexp')</synopsis>
+                <para>
+                    <command moreinfo="none">match()</command> thus works similar to <command moreinfo="none">contains()</command> and will usually be much slower than the index-based fulltext functions <command moreinfo="none">match-all()</command> or <command moreinfo="none">match-any()</command>.</para>
+            </section>
+        </section>
+    </chapter>
 </book>

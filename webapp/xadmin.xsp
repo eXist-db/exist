@@ -4,7 +4,7 @@
 
 <xsp:page language="java"
 		xmlns:xsp="http://apache.org/xsp"
-    	xmlns:ci="http://apache.org/cocoon/include/1.0"
+    	xmlns:xi="http://www.w3.org/2001/XInclude"
     	xmlns:xmldb="http://exist-db.org/xmldb/1.0"
         xmlns:log="http://apache.org/xsp/log/2.0">
 	
@@ -44,10 +44,10 @@
 <document>
   
    <!-- include header -->
-   <ci:include src="header.xml"/>
+   <xi:include href="header.xml"/>
        
    <!-- include sidebar -->
-   <ci:include src="sidebar.xml"/>
+   <xi:include href="sidebar.xml"/>
 
    <body>
 

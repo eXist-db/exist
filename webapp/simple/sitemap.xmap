@@ -20,7 +20,7 @@
 	 	<map:pipeline>
 	 		<map:match pattern="**.xsp">
 		        <map:generate src="{1}.xsp" type="serverpages"/>
-		        <map:transform type="cinclude"/>
+		        <map:transform type="xinclude"/>
 		        <map:transform src="context://stylesheets/doc2html-2.xsl"/>
 				<map:serialize encoding="UTF-8" type="xhtml"/>
 	        </map:match>

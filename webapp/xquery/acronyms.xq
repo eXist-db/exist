@@ -37,7 +37,7 @@ declare function a:do-query() as element()
 
 <document xmlns:xi="http://www.w3.org/2001/XInclude">
 	
-	<xi:include href="cocoon://header.xml"/>
+	<xi:include href="context://header.xml"/>
 	<xi:include href="sidebar.xml"/>
 
 	<body>

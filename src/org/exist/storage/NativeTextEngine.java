@@ -22,8 +22,6 @@
  */
 package org.exist.storage;
 
-import it.unimi.dsi.fastutil.Object2ObjectAVLTreeMap;
-
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +33,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.log4j.Category;
 import org.apache.oro.text.GlobCompiler;
@@ -107,18 +106,21 @@ public class NativeTextEngine extends TextSearchEngine {
 	protected PatternMatcher matcher = new Perl5Matcher();
 	protected int trackMatches = Serializer.TAG_ELEMENT_MATCHES;
 
-	public NativeTextEngine(DBBroker broker, Configuration config) {
+	public NativeTextEngine(DBBroker broker, Configuration config, int buffers) {
 		super(broker, config);
 		String dataDir;
 		String temp;
-		int buffers;
 		boolean compress = false;
 		if ((dataDir = (String) config.getProperty("db-connection.data-dir"))
 			== null)
 			dataDir = "data";
-
-		if ((buffers = config.getInteger("db-connection.words.buffers")) < 0)
-			buffers = 128;
+		int indexBuffers, dataBuffers;
+		
+		if ((indexBuffers = config.getInteger("db-connection.words.buffers")) < 0) {
+			indexBuffers = buffers * 14;
+			dataBuffers = indexBuffers;
+		} else
+			dataBuffers = indexBuffers;
 
 		if ((temp = (String) config.getProperty("db-connection.compress"))
 			!= null)
@@ -144,8 +146,8 @@ public class NativeTextEngine extends TextSearchEngine {
 				dbWords =
 					new BFile(
 						new File(dataDir + pathSep + "words.dbx"),
-						buffers,
-						buffers);
+						indexBuffers,
+						dataBuffers);
 				if (!dbWords.exists())
 					dbWords.create();
 				else
@@ -499,7 +501,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		ArrayList values;
 		Value[] val;
 		String term;
-		Object2ObjectAVLTreeMap map = new Object2ObjectAVLTreeMap();
+		TreeMap map = new TreeMap();
 		Occurrences oc;
 		VariableByteInputStream is;
 		int docId;
@@ -796,7 +798,7 @@ public class NativeTextEngine extends TextSearchEngine {
 
 		private DocumentImpl doc = null;
 		private boolean flushed = false;
-		private Object2ObjectAVLTreeMap words = new Object2ObjectAVLTreeMap();
+		private TreeMap words = new TreeMap();
 		private VariableByteOutputStream os = new VariableByteOutputStream(7);
 
 		public InvertedIndex() {

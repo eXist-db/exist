@@ -3,10 +3,13 @@
  * 
  * @author wolf
  */
-package org.exist.util;
+package org.exist.storage.store;
 
 import java.io.EOFException;
 import java.io.IOException;
+
+import org.exist.util.VariableByteInputStream;
+import org.exist.util.VariableByteOutputStream;
 
 /**
  * @author wolf
@@ -58,14 +61,6 @@ public class StorageAddress {
 	public final static boolean equals(long p0, long p1) {
 		return ((p0 & 0xFFFFFFFF0000FFFFL) == (p1 & 0xFFFFFFFF0000FFFFL));
 	}
-
-//	public final static boolean equals(long p0, long p1) {
-//		if(pageFromPointer(p0) != pageFromPointer(p1))
-//			return false;
-//		if(tidFromPointer(p0) != tidFromPointer(p1))
-//			return false;
-//		return true;
-//	}
 	
 	public final static void write(long pointer, VariableByteOutputStream os) {
 		os.writeInt(StorageAddress.pageFromPointer(pointer));

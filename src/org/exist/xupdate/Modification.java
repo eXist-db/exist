@@ -15,7 +15,7 @@ import org.exist.parser.XPathParser2;
 import org.exist.parser.XPathTreeParser2;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.util.StorageAddress;
+import org.exist.storage.store.StorageAddress;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;

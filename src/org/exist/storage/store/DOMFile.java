@@ -20,7 +20,6 @@ package org.exist.storage.store;
  *
  *  $Id$
  */
-import it.unimi.dsi.fastutil.Object2LongOpenHashMap;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -48,15 +47,12 @@ import org.exist.storage.Signatures;
 import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.ClockCache;
-import org.exist.storage.cache.GClockCache;
-import org.exist.storage.cache.LRDCache;
-import org.exist.storage.cache.LRUCache;
 import org.exist.util.ByteConversion;
 import org.exist.util.Lock;
 import org.exist.util.Lockable;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.ReentrantReadWriteLock;
-import org.exist.util.StorageAddress;
+import org.exist.util.hashtable.Object2LongIdentityHashMap;
 import org.w3c.dom.Node;
 
 /**
@@ -89,7 +85,7 @@ public class DOMFile extends BTree implements Lockable {
 
 	private Lock lock = null;
 
-	private final Object2LongOpenHashMap pages = new Object2LongOpenHashMap();
+	private final Object2LongIdentityHashMap pages = new Object2LongIdentityHashMap(64);
 
 	public DOMFile(int buffers, int dataBuffers) {
 		super(buffers);
@@ -801,13 +797,14 @@ public class DOMFile extends BTree implements Lockable {
 	 *@return    The currentPage value
 	 */
 	private final DOMPage getCurrentPage() {
-		if (!pages.containsKey(owner)) {
+		long pnum = pages.get(owner);
+		if (pnum < 0) {
 			final DOMPage page = new DOMPage();
 			pages.put(owner, page.page.getPageNum());
 			dataCache.add(page);
 			return page;
 		} else
-			return getCurrentPage(pages.getLong(owner));
+			return getCurrentPage(pnum);
 	}
 
 	/**
@@ -958,7 +955,7 @@ public class DOMFile extends BTree implements Lockable {
 	 *@param  page  The new currentPage value
 	 */
 	private final void setCurrentPage(DOMPage page) {
-		final long pnum = pages.getLong(owner);
+		final long pnum = pages.get(owner);
 		if (pnum == page.page.getPageNum())
 			return;
 		//pages.remove(owner);

@@ -22,12 +22,11 @@
  */
 package org.exist.dom;
 
-import it.unimi.dsi.fastutil.Int2ObjectAVLTreeMap;
-
 import java.util.Iterator;
 
 import org.exist.util.FastQSort;
 import org.exist.util.Range;
+import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.SequenceIterator;
 import org.w3c.dom.Node;
@@ -53,7 +52,7 @@ import org.w3c.dom.Node;
  */
 public class ExtArrayNodeSet extends AbstractNodeSet {
 
-	private Int2ObjectAVLTreeMap map = new Int2ObjectAVLTreeMap();
+	private Int2ObjectHashMap map = new Int2ObjectHashMap(512);
 	private int initalSize = 128;
 	private int size = 0;
 	private boolean isSorted = false;
@@ -89,8 +88,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 	 * If the size hint is correct, no further reallocations will be required.
 	 */
 	public void add(NodeProxy proxy, int sizeHint) {
-		Part part =
-			getPart(
+		Part part = (proxy.doc.docId == lastDoc && lastPart != null) ? lastPart
+			: getPart(
 				proxy.doc.docId,
 				true,
 				sizeHint > 0 ? sizeHint : initalSize);
@@ -144,7 +143,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 	 * @see org.exist.dom.NodeSet#contains(org.exist.dom.DocumentImpl, long)
 	 */
 	public boolean contains(DocumentImpl doc, long nodeId) {
-		final Part part = getPart(doc.docId, false, 0);
+		final Part part = (doc.docId == lastDoc && lastPart != null) ? lastPart 
+			: getPart(doc.docId, false, 0);
 		return part == null ? false : part.contains(nodeId);
 	}
 
@@ -152,7 +152,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 	 * @see org.exist.dom.NodeSet#contains(org.exist.dom.NodeProxy)
 	 */
 	public boolean contains(NodeProxy proxy) {
-		final Part part = getPart(proxy.doc.docId, false, 0);
+		final Part part = (proxy.doc.docId == lastDoc && lastPart != null) ? lastPart 
+			: getPart(proxy.doc.docId, false, 0);
 		return part == null ? false : part.contains(proxy.gid);
 	}
 
@@ -186,7 +187,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 	public NodeProxy get(int pos) {
 		int count = 0;
 		Part part;
-		for (Iterator i = map.values().iterator(); i.hasNext();) {
+		for (Iterator i = map.valueIterator(); i.hasNext();) {
 			part = (Part) i.next();
 			if (count + part.length > pos)
 				return part.get(pos - count);
@@ -199,7 +200,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 	 * @see org.exist.dom.NodeSet#get(org.exist.dom.NodeProxy)
 	 */
 	public NodeProxy get(NodeProxy p) {
-		final Part part = getPart(p.doc.docId, false, 0);
+		final Part part = (p.doc.docId == lastDoc && lastPart != null) ? lastPart 
+			: getPart(p.doc.docId, false, 0);
 		return part == null ? null : part.get(p.gid);
 	}
 
@@ -207,7 +209,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 	 * @see org.exist.dom.NodeSet#get(org.exist.dom.DocumentImpl, long)
 	 */
 	public NodeProxy get(DocumentImpl doc, long nodeId) {
-		final Part part = getPart(doc.docId, false, 0);
+		final Part part = (doc.docId == lastDoc && lastPart != null) ? lastPart 
+			: getPart(doc.docId, false, 0);
 		return part == null ? null : part.get(nodeId);
 	}
 
@@ -250,7 +253,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 			return;
 		Part part;
 		size = 0;
-		for (Iterator i = map.values().iterator(); i.hasNext();) {
+		for (Iterator i = map.valueIterator(); i.hasNext();) {
 			part = (Part) i.next();
 			part.sort();
 			size += part.removeDuplicates();
@@ -459,7 +462,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 		NodeProxy next = null;
 
 		ExtArrayIterator() {
-			docsIterator = map.values().iterator();
+			docsIterator = map.valueIterator();
 			if (docsIterator.hasNext())
 				currentPart = (Part) docsIterator.next();
 			if (currentPart != null && currentPart.length > 0)

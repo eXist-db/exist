@@ -20,7 +20,7 @@
 	 	<map:pipeline>
 	 		<map:match pattern="biblio.xml">
 		        <map:generate src="biblio.xml"/>
-		        <map:transform type="cinclude"/>
+		        <map:transform type="xinclude"/>
 		        <map:transform src="context://stylesheets/doc2html-2.xsl"/>
 				<map:serialize encoding="UTF-8" type="html"/>
 	        </map:match>

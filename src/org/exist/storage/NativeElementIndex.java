@@ -43,7 +43,6 @@ import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.ReadOnlyException;
-import org.exist.util.StorageAddress;
 //import org.exist.util.StorageAddress;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;

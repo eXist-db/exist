@@ -31,7 +31,6 @@ import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.Type;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * Abstract base class for all node set implementations. A node set is a special type of sequence,

@@ -29,13 +29,12 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import it.unimi.dsi.fastutil.Object2ObjectRBTreeMap;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -174,7 +173,7 @@ public class Configuration implements ErrorHandler {
 
 				NodeList index = p.getElementsByTagName("index");
 
-				Map indexPathMap = new Object2ObjectRBTreeMap();
+				Map indexPathMap = new TreeMap();
 				config.put("indexer.map", indexPathMap);
 				for (int i = 0; i < index.getLength(); i++) {
 					Element idx = (Element) index.item(i);
@@ -268,7 +267,7 @@ public class Configuration implements ErrorHandler {
 
 			if (dbcon.getLength() > 0) {
 				Element con = (Element) dbcon.item(0);
-				String cacheSize = con.getAttribute("cacheSize");
+				String cacheMem = con.getAttribute("cacheSize");
 				String pageSize = con.getAttribute("pageSize");
 				String dataFiles = con.getAttribute("files");
 				String buffers = con.getAttribute("buffers");
@@ -280,13 +279,9 @@ public class Configuration implements ErrorHandler {
 				String url = con.getAttribute("url");
 				String user = con.getAttribute("user");
 				String pass = con.getAttribute("password");
-				String compress = con.getAttribute("compress");
 				String mysql = con.getAttribute("database");
 				String service = con.getAttribute("serviceName");
 				String encoding = con.getAttribute("encoding");
-
-				if (compress != null)
-					config.put("db-connection.compress", compress);
 
 				if (driver != null)
 					config.put("driver", driver);
@@ -325,13 +320,16 @@ public class Configuration implements ErrorHandler {
 					LOG.info("data directory = " + df.getAbsolutePath());
 				}
 
-				if (cacheSize != null)
+				if (cacheMem != null) {
+					if(cacheMem.endsWith("M") || cacheMem.endsWith("m"))
+						cacheMem = cacheMem.substring(0, cacheMem.length() - 1);
 					try {
 						config.put(
 							"db-connection.cache-size",
-							new Integer(cacheSize));
+							new Integer(cacheMem));
 					} catch (NumberFormatException nfe) {
 					}
+				}
 
 				if (buffers != null)
 					try {

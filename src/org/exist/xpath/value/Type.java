@@ -20,11 +20,9 @@
  */
 package org.exist.xpath.value;
 
-import it.unimi.dsi.fastutil.Int2IntRBTreeMap;
-import it.unimi.dsi.fastutil.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.Object2IntRBTreeMap;
-
 import org.exist.dom.QName;
+import org.exist.util.hashtable.Int2ObjectHashMap;
+import org.exist.util.hashtable.Object2IntHashMap;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 
@@ -70,8 +68,7 @@ public class Type {
 
 	public final static int JAVA_OBJECT = 100;
 
-	private final static Int2IntRBTreeMap typeHierarchy =
-		new Int2IntRBTreeMap();
+	private final static Int2ObjectHashMap typeHierarchy = new Int2ObjectHashMap();
 
 	static {
 		defineSubType(ITEM, NODE);
@@ -97,10 +94,8 @@ public class Type {
 		defineSubType(DECIMAL, INTEGER);
 	}
 
-	private final static Int2ObjectOpenHashMap typeNames =
-		new Int2ObjectOpenHashMap(100);
-	private final static Object2IntRBTreeMap typeCodes =
-		new Object2IntRBTreeMap();
+	private final static Int2ObjectHashMap typeNames = new Int2ObjectHashMap(100);
+	private final static Object2IntHashMap typeCodes = new Object2IntHashMap(100);
 
 	static {
 		defineBuiltInType(NODE, "node");
@@ -141,8 +136,10 @@ public class Type {
 	}
 
 	public final static int getType(String name) throws XPathException {
-		int code = typeCodes.getInt(name);
-		if (code == typeCodes.defaultReturnValue())
+		if (name.equals("node"))
+			return NODE;
+		int code = typeCodes.get(name);
+		if (code == -1)
 			throw new XPathException("Type: " + name + " is not defined");
 		return code;
 	}
@@ -158,7 +155,7 @@ public class Type {
 	}
 
 	public final static void defineSubType(int supertype, int subtype) {
-		typeHierarchy.put(subtype, supertype);
+		typeHierarchy.put(subtype, new Integer(supertype));
 	}
 
 	public final static boolean subTypeOf(int subtype, int supertype) {
@@ -171,12 +168,12 @@ public class Type {
 		if (!typeHierarchy.containsKey(subtype))
 			throw new IllegalArgumentException(
 				"type " + subtype + " is not a valid type");
-		return subTypeOf(typeHierarchy.get(subtype), supertype);
+		return subTypeOf(((Integer)typeHierarchy.get(subtype)).intValue(), supertype);
 	}
 
 	public final static int getSuperType(int subtype) {
 		if (subtype == ITEM)
 			return ITEM;
-		return typeHierarchy.get(subtype);
+		return ((Integer)typeHierarchy.get(subtype)).intValue();
 	}
 }
