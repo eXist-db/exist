@@ -108,6 +108,13 @@ public class DBUtils {
 		col.storeResource(res);
 	}
 	
+	public static void addXMLResource(Collection col, String resourceId, String contents) throws XMLDBException {
+		XMLResource res = (XMLResource)col.createResource(
+				resourceId, "XMLResource");
+		res.setContent(contents);
+		col.storeResource(res);
+	}
+	
 	public static ResourceSet query(Collection collection, String xpath)
 	throws XMLDBException
 	{

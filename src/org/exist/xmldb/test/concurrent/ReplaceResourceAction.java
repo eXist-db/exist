@@ -23,8 +23,11 @@ package org.exist.xmldb.test.concurrent;
 
 import java.io.File;
 
+import junit.framework.Assert;
+
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.ResourceSet;
 
 /**
  * Replace an existing resource.
@@ -33,16 +36,35 @@ import org.xmldb.api.base.Collection;
  */
 public class ReplaceResourceAction extends Action {
 
-	private String[] wordList;
+	protected final static String XML =
+		"<config>" +
+		"<user id=\"george\">" +
+		"<phone>+49 69 888478</phone>" +
+		"<email>george@email.com</email>" +
+		"<customer-id>64534233</customer-id>" +
+		"<bank-account>7466356</bank-account>" +
+		"</user>" +
+		"<user id=\"sam\">" +
+		"<phone>+49 69 774345</phone>" +
+		"<email>sam@email.com</email>" +
+		"<customer-id>993834</customer-id>" +
+		"<bank-account>364553</bank-account>" +
+		"</user>" +
+		"</config>";
+	
+	private final static String TEST_QUERY1 = "//user[@id = 'george']/phone[contains(., '69')]/text()";
+	private final static String TEST_QUERY2 = "//user[@id = 'sam']/customer-id[. = '993834']";
+	private final static String TEST_QUERY3 = "//user[email = 'sam@email.com']";
+	
 	private File tempFile;
+	private int count = 0;
 	
 	/**
 	 * @param collectionPath
 	 * @param resourceName
 	 */
-	public ReplaceResourceAction(String collectionPath, String resourceName, String[] wordList) {
+	public ReplaceResourceAction(String collectionPath, String resourceName) {
 		super(collectionPath, resourceName);
-		this.wordList = wordList;
 	}
 
 	/* (non-Javadoc)
@@ -50,13 +72,21 @@ public class ReplaceResourceAction extends Action {
 	 */
 	public boolean execute() throws Exception {
 		Collection col = DatabaseManager.getCollection(collectionPath);
-		tempFile = DBUtils.generateXMLFile(1000, 10, wordList);
-		try {
-			DBUtils.addXMLResource(col, "R1.xml", tempFile);
+		String xml =
+			"<data now=\"" + System.currentTimeMillis() + "\" count=\"" +
+			++count + "\">" + XML + "</data>";
+			
+		DBUtils.addXMLResource(col, "R1.xml", xml);
 		
-			return false;
-		} finally {
-			tempFile.delete();
-		}
+		ResourceSet result = DBUtils.query(col, TEST_QUERY1);
+		Assert.assertEquals(1, result.getSize());
+		Assert.assertEquals("+49 69 888478", result.getResource(0).getContent());
+		
+		result = DBUtils.query(col, TEST_QUERY2);
+		Assert.assertEquals(1, result.getSize());
+		
+		result = DBUtils.query(col, TEST_QUERY3);
+		Assert.assertEquals(1, result.getSize());
+		return false;
 	}
 }

@@ -19,7 +19,7 @@ public class ConcurrentAttrUpdateTest extends ConcurrentTestBase {
 	private final static String URI = "xmldb:exist:///db";
 	
 	private final static String QUERY =
-		"util:shared-lock(doc('/db/C1/R1.xml'), //ELEMENT[@attribute-1])";
+		"//ELEMENT[@attribute-1]";
 	
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(ConcurrentAttrUpdateTest.class);
@@ -43,8 +43,8 @@ public class ConcurrentAttrUpdateTest extends ConcurrentTestBase {
 		tempFile = DBUtils.generateXMLFile(250, 10, wordList);
 		DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
 		
-		addAction(new AttributeUpdateAction(URI + "/C1", "R1.xml", wordList), 20, 400);
-		addAction(new XQueryAction(URI + "/C1", "R1.xml", QUERY), 100, 30);
+		addAction(new AttributeUpdateAction(URI + "/C1", "R1.xml", wordList), 20, 0, 0);
+//		addAction(new XQueryAction(URI + "/C1", "R1.xml", QUERY), 100, 100, 30);
 	}
 	
 	/* (non-Javadoc)

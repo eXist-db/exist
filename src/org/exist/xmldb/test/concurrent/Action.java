@@ -20,6 +20,7 @@
  */
 package org.exist.xmldb.test.concurrent;
 
+
 /**
  * Abstract base class for an action to be tested.
  * 

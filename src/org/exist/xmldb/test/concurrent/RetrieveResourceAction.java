@@ -42,8 +42,9 @@ class RetrieveResourceAction extends Action {
 		Collection col = DatabaseManager.getCollection(collectionPath);
 		XMLResource res = (XMLResource)col.getResource(resourceName);
 		
-		DefaultHandler handler = new DefaultHandler();
-		res.getContentAsSAX(handler);
+		System.out.println(res.getContent());
+//		DefaultHandler handler = new DefaultHandler();
+//		res.getContentAsSAX(handler);
 		
 		System.out.println(Thread.currentThread()
 				+ " - Retrieved resource: " + resourceName);
