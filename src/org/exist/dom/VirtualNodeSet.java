@@ -304,8 +304,6 @@ public class VirtualNodeSet extends NodeSet {
 	private final void realize() {
 		if (realSet != null)
 			return;
-		System.out.println("realize");
-		Thread.dumpStack();
 		realSet = getNodes();
 	}
 

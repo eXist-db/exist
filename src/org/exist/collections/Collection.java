@@ -411,8 +411,12 @@ public class Collection
 					case DocumentImpl.BINARY_FILE :
 						doc = new BLOBDocument(broker, this);
 						break;
+					case -1:
+						return; // EOF found
 					default :
-						throw new IOException("unable to determine document type");
+						LOG.warn("unknown resource type: " + resourceType);
+						throw new IOException("unable to determine resource type while reading collection " +
+							getName());
 				}
 				doc.read(istream);
 				addDocument(broker, doc);
