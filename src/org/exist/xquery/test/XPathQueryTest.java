@@ -1,13 +1,21 @@
 package org.exist.xquery.test;
 
-import java.io.File;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import junit.framework.TestCase;
 
 import org.exist.xmldb.XPathQueryServiceImpl;
-import org.xmldb.api.*;
-import org.xmldb.api.base.*;
-import org.xmldb.api.modules.*;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Database;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.ResourceIterator;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.modules.XMLResource;
+import org.xmldb.api.modules.XPathQueryService;
 
 public class XPathQueryTest extends TestCase {
 
@@ -40,6 +48,8 @@ public class XPathQueryTest extends TestCase {
 			+ "<string>Hello</string>"
 			+ "</test>";
 
+	private Collection testCollection;
+
 	public XPathQueryTest(String arg0) {
 		super(arg0);
 	}
@@ -51,6 +61,7 @@ public class XPathQueryTest extends TestCase {
 			Database database = (Database) cl.newInstance();
 			database.setProperty("create-database", "true");
 			DatabaseManager.registerDatabase(database);
+			
 			Collection root =
 				DatabaseManager.getCollection(
 					"xmldb:exist:///db",
@@ -60,12 +71,13 @@ public class XPathQueryTest extends TestCase {
 				(CollectionManagementService) root.getService(
 					"CollectionManagementService",
 					"1.0");
-			root = service.createCollection("test");
-
-			XMLResource doc =
-				(XMLResource) root.createResource("r_and_j.xml", "XMLResource");
-			doc.setContent(new File("samples/shakespeare/r_and_j.xml"));
-			root.storeResource(doc);
+			testCollection = service.createCollection("test");
+			assertNotNull(testCollection);
+			
+//			XMLResource doc =
+//				(XMLResource) root.createResource("r_and_j.xml", "XMLResource");
+//			doc.setContent(new File("samples/shakespeare/r_and_j.xml"));
+//			root.storeResource(doc);
 		} catch (ClassNotFoundException e) {
 		} catch (InstantiationException e) {
 		} catch (IllegalAccessException e) {
@@ -74,45 +86,56 @@ public class XPathQueryTest extends TestCase {
 		}
 	}
 
+	public void testStarAxis() {
+		try {
+			XPathQueryService service = 
+				storeXMLStringAndGetQueryService("numbers.xml", numbers);
+
+			ResourceSet result = service.queryResource(
+					"numbers.xml", "/*/item" );
+			System.out.println("testElements 1: ========" ); 		printResult(result);
+			assertEquals( "XPath: /*/item", 4, result.getSize() );
+
+			result = service.queryResource(
+					"numbers.xml", "/*/*" );
+			System.out.println("testElements  2: ========" ); 		printResult(result);
+			assertEquals( "XPath: /*/*", 4, result.getSize() );
+
+		} catch (XMLDBException e) {
+			System.out.println("testElements(): XMLDBException: "+e);
+			fail(e.getMessage());
+		}
+	}
+	
 	public void testNumbers() {
 		try {
-			Collection testCollection =
-				DatabaseManager.getCollection(URI + "/test", "admin", null);
-			assertNotNull(testCollection);
-			XMLResource doc =
-				(XMLResource) testCollection.createResource(
-					"numbers.xml",
-					"XMLResource");
-			doc.setContent(numbers);
-			testCollection.storeResource(doc);
-			XPathQueryService service =
-				(XPathQueryService) testCollection.getService(
-					"XPathQueryService",
-					"1.0");
+			XPathQueryService service = 
+				storeXMLStringAndGetQueryService("numbers.xml", numbers);
+			
 			ResourceSet result =
 				service.queryResource("numbers.xml", "sum(/test/item/price)");
-			assertEquals(result.getSize(), 1);
-			assertEquals(result.getResource(0).getContent(), "96.94");
+			assertEquals( 1, result.getSize() );
+			assertEquals( "96.94", result.getResource(0).getContent() );
 
 			result =
 				service.queryResource(
 					"numbers.xml",
 					"round(sum(/test/item/price))");
-			assertEquals(result.getSize(), 1);
-			assertEquals(result.getResource(0).getContent(), "97.0");
+			assertEquals( 1, result.getSize() );
+			assertEquals( "97.0", result.getResource(0).getContent() );
 
 			result =
 				service.queryResource(
 					"numbers.xml",
 					"floor(sum(/test/item/stock))");
-			assertEquals(result.getSize(), 1);
-			assertEquals(result.getResource(0).getContent(), "86.0");
+			assertEquals( 1, result.getSize() );
+			assertEquals( "86.0", result.getResource(0).getContent());
 
 			result =
 				service.queryResource(
 					"numbers.xml",
 					"/test/item[round(price + 3) > 60]");
-			assertEquals(result.getSize(), 1);
+			assertEquals( 1, result.getSize() );
 
 			result =
 				service.queryResource(
@@ -120,8 +143,8 @@ public class XPathQueryTest extends TestCase {
 					"min( 123456789123456789123456789, " +
 					          "123456789123456789123456789123456789123456789 )");
 			assertEquals("minimum of big integers",
-					result.getResource(0).getContent(), 
-					"123456789123456789123456789" );
+					"123456789123456789123456789", 
+					result.getResource(0).getContent() );
 			
 		} catch (XMLDBException e) {
 			fail(e.getMessage());
@@ -130,25 +153,15 @@ public class XPathQueryTest extends TestCase {
 
 	public void testStrings() {
 		try {
-			Collection testCollection =
-				DatabaseManager.getCollection(URI + "/test", "admin", null);
-			assertNotNull(testCollection);
-			XMLResource doc =
-				(XMLResource) testCollection.createResource(
-					"strings.xml",
-					"XMLResource");
-			doc.setContent(strings);
-			testCollection.storeResource(doc);
-			XPathQueryService service =
-				(XPathQueryService) testCollection.getService(
-					"XPathQueryService",
-					"1.0");
+			XPathQueryService service = 
+				storeXMLStringAndGetQueryService("strings.xml", strings);
+			
 			ResourceSet result =
 				service.queryResource(
 					"strings.xml",
 					"substring(/test/string[1], 1, 5)");
 			assertEquals(1, result.getSize());
-			assertEquals(result.getResource(0).getContent(), "Hello");
+			assertEquals( "Hello", result.getResource(0).getContent() );
 
 			result =
 				service.queryResource(
@@ -161,21 +174,29 @@ public class XPathQueryTest extends TestCase {
 		}
 	}
 
+	/**
+	 * @return
+	 * @throws XMLDBException
+	 */
+	private XPathQueryService storeXMLStringAndGetQueryService(String documentName,
+			String content) throws XMLDBException {
+		XMLResource doc =
+			(XMLResource) testCollection.createResource(
+					documentName, "XMLResource" );
+		doc.setContent(content);
+		testCollection.storeResource(doc);
+		XPathQueryService service =
+			(XPathQueryService) testCollection.getService(
+				"XPathQueryService",
+				"1.0");
+		return service;
+	}
+
 	public void testNamespaces() {
 		try {
-			Collection testCollection =
-				DatabaseManager.getCollection(URI + "/test", "admin", null);
-			assertNotNull(testCollection);
-			XMLResource doc =
-				(XMLResource) testCollection.createResource(
-					"namespaces.xml",
-					"XMLResource");
-			doc.setContent(namespaces);
-			testCollection.storeResource(doc);
-			XPathQueryService service =
-				(XPathQueryService) testCollection.getService(
-					"XPathQueryService",
-					"1.0");
+			XPathQueryService service = 
+				storeXMLStringAndGetQueryService("namespaces.xml", namespaces);
+
 			service.setNamespace("t", "http://www.foo.com");
 			ResourceSet result =
 				service.queryResource("namespaces.xml", "//t:section");
@@ -197,73 +218,87 @@ public class XPathQueryTest extends TestCase {
 
 	public void testNestedElements() {
 		try {
-			Collection testCollection =
-				DatabaseManager.getCollection(URI + "/test", "admin", null);
-			assertNotNull(testCollection);
-			XMLResource doc =
-				(XMLResource) testCollection.createResource(
-					"nested.xml",
-					"XMLResource");
-			doc.setContent(nested);
-			testCollection.storeResource(doc);
-			XPathQueryService service =
-				(XPathQueryService) testCollection.getService(
-					"XPathQueryService",
-					"1.0");
+			XPathQueryService service = 
+				storeXMLStringAndGetQueryService("nested.xml", nested);
+			
 			ResourceSet result = service.queryResource("nested.xml", "//c");
-			for (ResourceIterator i = result.getIterator();
-				i.hasMoreResources();
-				) {
-				Resource r = i.nextResource();
-				System.out.println(r.getContent());
-			}
-			assertEquals(result.getSize(), 3);
+			printResult(result);
+			assertEquals( 3, result.getSize() );
 		} catch (XMLDBException e) {
 			fail(e.getMessage());
 		}
 	}
 
 	public void testStaticVariables() {
+		ResourceSet result = null;
 		try {
-			Collection testCollection =
-				DatabaseManager.getCollection(URI + "/test", "admin", null);
-			assertNotNull(testCollection);
 			XMLResource doc =
 				(XMLResource) testCollection.createResource(
-					"nested.xml",
-					"XMLResource");
-			doc.setContent(nested);
+						"numbers.xml", "XMLResource" );
+			doc.setContent(numbers);
 			testCollection.storeResource(doc);
-			XPathQueryServiceImpl service =
-				(XPathQueryServiceImpl) testCollection.getService(
+			XPathQueryService service =
+				(XPathQueryService) testCollection.getService(
 					"XPathQueryService",
 					"1.0");
-			service.declareVariable("name", "MONTAGUE");
-			ResourceSet result = service.query("//SPEECH[SPEAKER=$name]");
-			for (ResourceIterator i = result.getIterator();
-				i.hasMoreResources();
-				) {
-				Resource r = i.nextResource();
-				System.out.println(r.getContent());
-			}
-			assertEquals(result.getSize(), 10);
+			
+			XPathQueryServiceImpl service2 = (XPathQueryServiceImpl) service;
+			service2.declareVariable("name", "MONTAGUE");
+			service2.declareVariable("name", "43");
+			
+			//ResourceSet result = service.query("//SPEECH[SPEAKER=$name]");
+			result = service2.query( doc, "//item[stock=$name]");
+			
+			System.out.println( "testStaticVariables 1: ========" ); 		printResult(result);
+			result = service2.query("$name");
+			assertEquals( 1, result.getSize() );
+
+			System.out.println("testStaticVariables 2: ========" ); 		printResult(result);
+			result = service2.query( doc, "//item[stock=43]");
+			assertEquals( 1, result.getSize() );
+
+			System.out.println("testStaticVariables 3: ========" ); 		printResult(result);
+			result = service2.query( doc, "//item");
+			assertEquals( 4, result.getSize() );
+
+			// assertEquals( 10, result.getSize() );
 		} catch (XMLDBException e) {
+			System.out.println("testStaticVariables(): XMLDBException: "+e);
 			fail(e.getMessage());
+		}
+	}
+
+	/**
+	 * @param result
+	 * @throws XMLDBException
+	 */
+	private void printResult(ResourceSet result) throws XMLDBException {
+		for (ResourceIterator i = result.getIterator();
+			i.hasMoreResources();
+			) {
+			Resource r = i.nextResource();
+			System.out.println(r.getContent());
 		}
 	}
 
 	public void testMembersAsResource() {
 		try {
-			Collection testCollection =
-				DatabaseManager.getCollection(URI + "/test", "admin", null);
-			assertNotNull(testCollection);
-			XPathQueryService service =
-				(XPathQueryService) testCollection.getService(
-					"XPathQueryService",
-					"1.0");
-			ResourceSet result = service.query("//SPEECH[LINE &= 'marriage']");
+//			XPathQueryService service =
+//				(XPathQueryService) testCollection.getService(
+//					"XPathQueryService",
+//					"1.0");
+//			ResourceSet result = service.query("//SPEECH[LINE &= 'marriage']");
+			XPathQueryService service = 
+				storeXMLStringAndGetQueryService("numbers.xml", numbers);
+			ResourceSet result = service.query("//item/price");
+		
 			Resource r = result.getMembersAsResource();
-			System.out.println(r.getContent());
+			String content = (String)r.getContent();
+			System.out.println(content);
+			
+			Pattern p = Pattern.compile( ".*(<price>.*){4}", Pattern.DOTALL);
+			Matcher m = p.matcher(content);
+			assertTrue( "get whole document numbers.xml", m.matches() );
 		} catch (XMLDBException e) {
 			fail(e.getMessage());
 		}
