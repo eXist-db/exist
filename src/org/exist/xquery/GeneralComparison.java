@@ -315,7 +315,6 @@ public class GeneralComparison extends BinaryOp {
 		Collator collator = getCollator(contextSequence);
 		NodeSet result =
 			context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp, collator);
-		
 		// can this result be cached?
 		boolean canCache = 
 		    contextSequence instanceof NodeSet &&
