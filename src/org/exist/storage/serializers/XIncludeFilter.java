@@ -185,6 +185,7 @@ public class XIncludeFilter implements Receiver {
 			p = docName.lastIndexOf('/');
 			if (p < 0 && document != null)
 				docName = document.getCollection().getName() + '/' + docName;
+			LOG.debug("Document: " + document);
 			// retrieve the document
 			LOG.debug("loading " + docName);
 			DocumentImpl doc = null;
