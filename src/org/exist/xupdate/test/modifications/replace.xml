@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xu:modifications version="1.0" xmlns:xu="http://www.xmldb.org/xupdate">
+
+	<xu:replace select="//address[lname = 'Hyde']">
+		<address>
+			<fname>Boris</fname>
+			<lname>Becker</lname>
+			<company>BB-Inc.</company>
+			<city>Leimen</city>
+		</address>
+	</xu:replace>
+</xu:modifications>

@@ -51,8 +51,8 @@ public class Rename extends Modification {
      * @param selectStmt
      */
     public Rename(DBBroker broker, DocumentSet docs, String selectStmt,
-            Map namespaces) {
-        super(broker, docs, selectStmt, namespaces);
+            Map namespaces, Map variables) {
+        super(broker, docs, selectStmt, namespaces, variables);
     }
 
     /*

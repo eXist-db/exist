@@ -50,8 +50,8 @@ public class Append extends Modification {
 	 * @param selectStmt
 	 */
 	public Append(DBBroker broker, DocumentSet docs, String selectStmt, 
-	        String childAttr, Map namespaces) {
-		super(broker, docs, selectStmt, namespaces);
+	        String childAttr, Map namespaces, Map variables) {
+		super(broker, docs, selectStmt, namespaces, variables);
 		if(childAttr == null || childAttr.equals("last()"))
 		    child = -1;
 		else

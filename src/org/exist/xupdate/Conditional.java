@@ -54,8 +54,8 @@ public class Conditional extends Modification {
 	 * @param namespaces
 	 */
 	public Conditional(DBBroker broker, DocumentSet docs, String selectStmt,
-			Map namespaces) {
-		super(broker, docs, selectStmt, namespaces);
+			Map namespaces, Map variables) {
+		super(broker, docs, selectStmt, namespaces, variables);
 	}
 
 	public void addModification(Modification mod) {
@@ -81,6 +81,7 @@ public class Conditional extends Modification {
 		context.setBackwardsCompatibility(true);
 		context.setStaticallyKnownDocuments(docs);
 		declareNamespaces(context);
+		declareVariables(context);
 		if(compiled == null)
 			try {
 				compiled = xquery.compile(context, source);

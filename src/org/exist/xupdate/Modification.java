@@ -27,6 +27,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
@@ -65,17 +66,19 @@ public abstract class Modification {
 	protected DBBroker broker;
 	protected DocumentSet docs;
 	protected Map namespaces;
+	protected Map variables;
 	protected DocumentSet lockedDocuments = null;
 
 	/**
 	 * Constructor for Modification.
 	 */
 	public Modification(DBBroker broker, DocumentSet docs, String selectStmt,
-	        Map namespaces) {
+	        Map namespaces, Map variables) {
 		this.selectStmt = selectStmt;
 		this.broker = broker;
 		this.docs = docs;
 		this.namespaces = new HashMap(namespaces);
+		this.variables = new TreeMap(variables);
 	}
 
 	/**
@@ -121,7 +124,7 @@ public abstract class Modification {
 		context.setExclusiveMode(true);
 		context.setStaticallyKnownDocuments(docs);
 		declareNamespaces(context);
-		
+		declareVariables(context);
 		if(compiled == null)
 			try {
 				compiled = xquery.compile(context, source);
@@ -141,6 +144,17 @@ public abstract class Modification {
 			        Type.getTypeName(resultSeq.getItemType()));
 		LOG.debug("found " + resultSeq.getLength() + " for select: " + selectStmt);
 		return (NodeList)resultSeq.toNodeSet();
+	}
+
+	/**
+	 * @param context
+	 * @throws XPathException
+	 */
+	protected void declareVariables(XQueryContext context) throws XPathException {
+		for (Iterator i = variables.entrySet().iterator(); i.hasNext(); ) {
+			Map.Entry entry = (Map.Entry) i.next();
+			context.declareVariable(entry.getKey().toString(), entry.getValue());
+		}
 	}
 
 	/**
