@@ -576,7 +576,6 @@ public class NativeBroker extends DBBroker {
 			lock.acquire(Lock.READ_LOCK);
 			collection = collectionsDb.getCollectionCache().get(name);
 			if (collection != null) {
-			    LOG.debug("Collection " + name + " found in cache");
 				return collection;
 			}
 			collection = new Collection(collectionsDb, name);
