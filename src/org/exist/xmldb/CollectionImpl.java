@@ -152,7 +152,6 @@ public class CollectionImpl implements Collection {
 
 
     public Resource getResource( String id ) throws XMLDBException {
-        String n;
         for ( int i = 0; i < resources.size(); i++ )
             if ( ( (String) resources.get( i ) ).equals( id ) ) {
                 XMLResourceImpl r = new XMLResourceImpl( this,
@@ -236,10 +235,12 @@ public class CollectionImpl implements Collection {
                 params );
         } catch ( XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                xre.getMessage() );
+                xre.getMessage(),
+                xre );
         } catch ( IOException ioe ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                ioe.getMessage() );
+                ioe.getMessage(),
+                ioe );
         }
         Vector documents = (Vector) collection.get( "documents" );
         Vector collections = (Vector) collection.get( "collections" );
@@ -283,10 +284,10 @@ public class CollectionImpl implements Collection {
             rpcClient.execute( "remove", params );
         } catch ( XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.INVALID_RESOURCE,
-                xre.getMessage() );
+                xre.getMessage(), xre );
         } catch ( IOException ioe ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                ioe.getMessage() );
+                ioe.getMessage(), ioe );
         }
         resources.remove( res.getId() );
     }
@@ -321,10 +322,10 @@ public class CollectionImpl implements Collection {
             rpcClient.execute( "parse", params );
         } catch ( XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.INVALID_RESOURCE,
-                xre.getMessage() );
+                xre.getMessage(), xre );
         } catch ( IOException ioe ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                ioe.getMessage() );
+                ioe.getMessage(), ioe );
         }
         addResource( res.getId() );
     }

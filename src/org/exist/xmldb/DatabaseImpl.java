@@ -97,7 +97,7 @@ public class DatabaseImpl implements Database {
      *@exception  XMLDBException  Description of the Exception
      */
     private void configure() throws XMLDBException {
-        String pathSep = System.getProperty( "file.separator", "/" );
+        //String pathSep = System.getProperty( "file.separator", "/" );
         String home, file = "conf.xml";
         if(configuration == null) {
         	home = System.getProperty( "exist.home" );
@@ -113,7 +113,8 @@ public class DatabaseImpl implements Database {
             BrokerPool.configure( dbName, 1, 5, config );
         } catch ( Exception e ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                e.getMessage() );
+                e.getMessage(),
+                e );
         }
     }
 
@@ -140,7 +141,8 @@ public class DatabaseImpl implements Database {
                 pool = BrokerPool.getInstance( dbName );
             } catch ( EXistException e ) {
                 throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                    "db not correctly initialized" );
+                    "db not correctly initialized",
+                    e );
             }
             User u = null;
             if ( user == null ) {
@@ -194,7 +196,8 @@ public class DatabaseImpl implements Database {
                     rpcClient = new XmlRpcClient( address );
                 } catch ( MalformedURLException e ) {
                     throw new XMLDBException( ErrorCodes.INVALID_DATABASE,
-                        "malformed url: " + address );
+                        "malformed url: " + address,
+                        e );
                 }
             rpcClient.setBasicAuthentication( user, password );
             return readCollection( c, rpcClient, address );

@@ -80,11 +80,13 @@ public class XMLResourceImpl implements XMLResource {
 			} catch (XmlRpcException xre) {
 				throw new XMLDBException(
 					ErrorCodes.INVALID_RESOURCE,
-					xre.getMessage());
+					xre.getMessage(),
+					xre);
 			} catch (IOException ioe) {
 				throw new XMLDBException(
 					ErrorCodes.VENDOR_ERROR,
-					ioe.getMessage());
+					ioe.getMessage(),
+					ioe);
 			}
 		} else {
 			Vector params = new Vector();
@@ -97,11 +99,13 @@ public class XMLResourceImpl implements XMLResource {
 			} catch (XmlRpcException xre) {
 				throw new XMLDBException(
 					ErrorCodes.INVALID_RESOURCE,
-					xre.getMessage());
+					xre.getMessage(),
+					xre);
 			} catch (IOException ioe) {
 				throw new XMLDBException(
 					ErrorCodes.VENDOR_ERROR,
-					ioe.getMessage());
+					ioe.getMessage(),
+					ioe);
 			}
 		}
 		try {
@@ -128,11 +132,12 @@ public class XMLResourceImpl implements XMLResource {
 		} catch (SAXException saxe) {
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
-				saxe.getMessage());
+				saxe.getMessage(),
+				saxe);
 		} catch (ParserConfigurationException pce) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pce.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pce.getMessage(), pce);
 		} catch (IOException ioe) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 		}
 	}
 
@@ -151,15 +156,18 @@ public class XMLResourceImpl implements XMLResource {
 			} catch (SAXException saxe) {
 				throw new XMLDBException(
 					ErrorCodes.VENDOR_ERROR,
-					saxe.getMessage());
+					saxe.getMessage(),
+					saxe);
 			} catch (ParserConfigurationException pce) {
 				throw new XMLDBException(
 					ErrorCodes.VENDOR_ERROR,
-					pce.getMessage());
+					pce.getMessage(),
+					pce);
 			} catch (IOException ioe) {
 				throw new XMLDBException(
 					ErrorCodes.VENDOR_ERROR,
-					ioe.getMessage());
+					ioe.getMessage(),
+					ioe);
 			}
 		} else
 			try {
@@ -168,11 +176,13 @@ public class XMLResourceImpl implements XMLResource {
 			} catch (SAXException saxe) {
 				throw new XMLDBException(
 					ErrorCodes.VENDOR_ERROR,
-					saxe.getMessage());
+					saxe.getMessage(),
+					saxe);
 			} catch (IOException ioe) {
 				throw new XMLDBException(
 					ErrorCodes.VENDOR_ERROR,
-					ioe.getMessage());
+					ioe.getMessage(),
+					ioe);
 			}
 
 	}
@@ -209,7 +219,8 @@ public class XMLResourceImpl implements XMLResource {
 			} catch (IOException e) {
 				throw new XMLDBException(
 					ErrorCodes.VENDOR_ERROR,
-					"could not retrieve document contents: " + e.getMessage());
+					"could not retrieve document contents: " + e.getMessage(),
+					e);
 			}
 		} else
 			content = value.toString();
@@ -223,7 +234,7 @@ public class XMLResourceImpl implements XMLResource {
 			xmlout.serialize((Element) root);
 			content = sout.toString();
 		} catch (IOException ioe) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(),ioe);
 		}
 	}
 

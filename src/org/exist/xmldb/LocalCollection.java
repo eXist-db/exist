@@ -109,7 +109,8 @@ public class LocalCollection extends Observable implements Collection {
                     "collection not found" );
         } catch ( EXistException e ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                e.getMessage() );
+                e.getMessage(),
+                e );
         } finally {
             brokerPool.release( broker );
         }
@@ -362,10 +363,12 @@ public class LocalCollection extends Observable implements Collection {
             broker.removeDocument( user, name );
         } catch ( EXistException e ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                e.getMessage() );
+                e.getMessage(),
+                e );
         } catch ( PermissionDeniedException e ) {
             throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
-                e.getMessage() );
+                e.getMessage(),
+                e );
         } finally {
             brokerPool.release( broker );
         }
@@ -419,7 +422,8 @@ public class LocalCollection extends Observable implements Collection {
         } catch ( Exception e ) {
             e.printStackTrace();
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                e.getMessage() );
+                e.getMessage(),
+                e );
         } finally {
             brokerPool.release( broker );
         }
