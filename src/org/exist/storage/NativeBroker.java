@@ -1877,7 +1877,8 @@ public class NativeBroker extends DBBroker {
 	        lock.acquire(Lock.WRITE_LOCK);
 	        String name = collection.getName();
 	        Collection parent = collection.getParent(this);
-	        parent.removeCollection(name.substring(name.lastIndexOf("/") + 1));
+	        if(parent != null)
+	            parent.removeCollection(name.substring(name.lastIndexOf("/") + 1));
 		    
 	        collectionsDb.getCollectionCache().remove(collection);
 		    Value key;
@@ -1888,16 +1889,27 @@ public class NativeBroker extends DBBroker {
 			}	
 			collectionsDb.remove(key);
 			
-			name = destination.getName() + '/' + newName;
-		    collection.setName(name);
+		    collection.setName(destination.getName() + '/' + newName);
 		    collection.setCreationTime(System.currentTimeMillis());
 		    collection.correctResourcePaths();
 		    
 		    destination.addCollection(collection);
-		    saveCollection(parent);
+		    if(parent != null)
+		        saveCollection(parent);
 		    if(parent != destination)
 		        saveCollection(destination);
 		    saveCollection(collection);
+		    
+		    String childName;
+		    Collection child;
+		    for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
+		        childName = (String)i.next();
+		        child = getCollection(name + '/' + childName);
+		        if(child == null)
+		            LOG.warn("Child collection " + childName + " not found");
+		        else
+		            moveCollection(child, collection, childName);
+		    }
 	    } catch (ReadOnlyException e) {
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         } finally {
