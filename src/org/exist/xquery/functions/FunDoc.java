@@ -38,6 +38,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Node;
 
 /**
  * Implements the built-in fn:doc() function.
@@ -113,7 +114,7 @@ public class FunDoc extends Function {
 		    dlock = doc.getUpdateLock();
 		    dlock.acquire(Lock.READ_LOCK);
 			cachedPath = path;
-			cachedNode = new NodeProxy(doc, -1);
+			cachedNode = new NodeProxy(doc, -1, Node.DOCUMENT_NODE);
 			return cachedNode;
 		} catch (PermissionDeniedException e) {
 			throw new XPathException(

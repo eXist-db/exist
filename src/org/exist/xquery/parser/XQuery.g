@@ -93,7 +93,7 @@ imaginaryTokenDefinitions
 	PREFIX_WILDCARD FUNCTION UNARY_MINUS UNARY_PLUS XPOINTER XPOINTER_ID VARIABLE_REF 
 	VARIABLE_BINDING ELEMENT ATTRIBUTE TEXT VERSION_DECL NAMESPACE_DECL DEF_NAMESPACE_DECL 
 	DEF_FUNCTION_NS_DECL GLOBAL_VAR FUNCTION_DECL PROLOG ATOMIC_TYPE MODULE ORDER_BY 
-	POSITIONAL_VAR BEFORE AFTER MODULE_DECL
+	POSITIONAL_VAR BEFORE AFTER MODULE_DECL ATTRIBUTE_TEST
 	;
 
 xpointer
@@ -441,7 +441,7 @@ relativePathExpr
 
 stepExpr
 :
-	( ( "text" | "node" | "element" ) LPAREN )
+	( ( "text" | "node" | "element" | "attribute" | "comment" | "processing-instruction" | "document-node" ) LPAREN )
 	=> axisStep
 	|
 	( DOLLAR | ( qName LPAREN ) | SELF | LPAREN | literal | XML_COMMENT | LT |
@@ -605,7 +605,7 @@ anyKindTest : "node"^ LPAREN! RPAREN! ;
 
 elementTest : "element"^ LPAREN! RPAREN! ;
 
-attributeTest : "attribute"^ LPAREN! RPAREN! ;
+attributeTest : "attribute"^ LPAREN! RPAREN! { #attributeTest= #[ATTRIBUTE_TEST, "attribute()"]; };
 
 commentTest : "comment"^ LPAREN! RPAREN! ;
 
@@ -843,6 +843,8 @@ reservedKeywords returns [String name]
 	"comment" { name= "comment"; }
 	|
 	"document" { name= "document"; }
+	|
+	"document-node" { name= "document-node"; }
 	|
 	"collection" { name= "collection"; }
 	|
@@ -1780,6 +1782,18 @@ throws PermissionDeniedException, EXistException, XPathException
 		|
 		"text"
 		{ test= new TypeTest(Type.TEXT); }
+		|
+		"element"
+		{ test= new TypeTest(Type.ELEMENT); }
+		|
+		"comment"
+		{ test= new TypeTest(Type.COMMENT); }
+		|
+		ATTRIBUTE_TEST
+		{ test= new TypeTest(Type.ATTRIBUTE); }
+		|
+		"document-node"
+		{ test= new TypeTest(Type.DOCUMENT); }
 	)
 	{
 		step= new LocationStep(context, axis, test);

@@ -31,7 +31,6 @@ import java.util.Stack;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.log4j.Category;
 import org.apache.log4j.Logger;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.CommentImpl;

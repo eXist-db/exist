@@ -45,6 +45,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Node;
 
 /**
  * @author wolf
@@ -114,7 +115,7 @@ public class ExtCollection extends Function {
 		    dlock = doc.getUpdateLock();
 		    try {
 		        dlock.acquire(Lock.READ_LOCK);
-		        result.add(new NodeProxy(doc, -1));
+		        result.add(new NodeProxy(doc, -1, Node.DOCUMENT_NODE));
 		    } catch (LockException e) {
                 LOG.info("Could not acquire read lock on document " + doc.getFileName());
             } finally {
