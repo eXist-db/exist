@@ -8,8 +8,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -19,11 +17,13 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerException;
 
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;
+import org.exist.util.serializer.DOMSerializer;
+import org.exist.util.serializer.DOMSerializerPool;
+import org.exist.util.serializer.SAXSerializer;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -40,11 +40,15 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
 public class RemoteXMLResource implements XMLResource, EXistResource {
+	
+	private final static Properties emptyProperties = new Properties();
+	
 	/**
 	 *  if this class is used from Cocoon, use the Cocoon parser component
 	 *  instead of JAXP
 	 */
 	private org.apache.excalibur.xml.sax.SAXParser cocoonParser = null;
+	
 	protected String id, documentName, path = null;
 	protected int handle = -1;
 	protected int pos = -1;
@@ -52,8 +56,8 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	protected String content = null;
 	protected File file = null;
 	protected Permission permissions = null;
-	protected Map properties = new HashMap();
-
+	protected Properties outputProperties = null;
+	
 	public RemoteXMLResource(RemoteCollection parent, String docId, String id)
 		throws XMLDBException {
 		this(parent, -1, -1, docId, id);
@@ -234,8 +238,7 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 
 	public void setContentAsDOM(Node root) throws XMLDBException {
 		StringWriter sout = new StringWriter();
-		OutputFormat format = new OutputFormat("xml", "UTF-8", false);
-		XMLSerializer xmlout = new XMLSerializer(sout, format);
+		DOMSerializer xmlout = DOMSerializerPool.getInstance().borrowDOMSerializer();
 		try {
 			switch (root.getNodeType()) {
 				case Node.ELEMENT_NODE :
@@ -251,23 +254,25 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 					throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "invalid node type");
 			}
 			content = sout.toString();
-		} catch (IOException ioe) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
+		} catch (TransformerException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		} finally {
+			DOMSerializerPool.getInstance().returnDOMSerializer(xmlout);
 		}
 	}
 
 	public ContentHandler setContentAsSAX() throws XMLDBException {
-		OutputFormat format = new OutputFormat("xml", "UTF-8", false);
-		return new InternalXMLSerializer(format);
+		return new InternalXMLSerializer();
 	}
 
-	private class InternalXMLSerializer extends XMLSerializer {
+	private class InternalXMLSerializer extends SAXSerializer {
 
 		StringWriter writer = new StringWriter();
 
-		public InternalXMLSerializer(OutputFormat format) {
-			super(format);
-			setOutputCharStream(writer);
+		public InternalXMLSerializer() {
+			super();
+			setWriter(writer);
+			setOutputProperties(emptyProperties);
 		}
 
 		/**
@@ -341,5 +346,13 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 
 	public Permission getPermissions() {
 		return permissions;
+	}
+	
+	protected void setProperties(Properties properties) {
+		this.outputProperties = properties;
+	}
+	
+	private Properties getProperties() {
+		return outputProperties == null ? parent.properties : outputProperties;
 	}
 }

@@ -2,6 +2,7 @@
 package org.exist.xmldb;
 
 import java.io.IOException;
+import java.util.Properties;
 import java.util.Vector;
 
 import org.apache.xmlrpc.XmlRpcClient;
@@ -11,25 +12,21 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.XMLResource;
 
 public class RemoteResourceSet implements ResourceSet {
 
     protected RemoteCollection collection;
     protected int handle = -1;
     protected Vector resources;
-
+    protected Properties outputProperties;
+    
     protected XmlRpcClient rpcClient;
 
-    public RemoteResourceSet( RemoteCollection col ) {
-        this.collection = col;
-        resources = new Vector();
-    }
-
-    public RemoteResourceSet( RemoteCollection col, Vector resources, int handle ) {
+    public RemoteResourceSet( RemoteCollection col, Properties properties, Vector resources, int handle ) {
         this.handle = handle;
         this.resources = resources;
         this.collection = col;
+        this.outputProperties = properties;
     }
 
     public void addResource( Resource resource ) {
@@ -66,18 +63,20 @@ public class RemoteResourceSet implements ResourceSet {
 			String path = doc.substring(0, doc.lastIndexOf('/'));
 			RemoteCollection parent = 
 				new RemoteCollection(collection.getClient(), null, path);
-			parent.properties = collection.properties;
-            XMLResource res =
+			parent.properties = outputProperties;
+            RemoteXMLResource res =
                 new RemoteXMLResource( parent, handle,
                 	(int)pos, doc, s_id );
+            res.setProperties(outputProperties);
             return res;
         } else if ( resources.elementAt( (int) pos ) instanceof Resource )
             return (Resource) resources.elementAt( (int) pos );
         else {
             // value
-            XMLResource res = new RemoteXMLResource( collection, handle, (int)pos, 
+            RemoteXMLResource res = new RemoteXMLResource( collection, handle, (int)pos, 
             	Long.toString( pos ), null );
             res.setContent( resources.elementAt( (int) pos ) );
+            res.setProperties(outputProperties);
             return res;
         }
     }

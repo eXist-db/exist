@@ -147,7 +147,13 @@ public class RpcConnection extends Thread {
 		String baseURI = (String) parameters.get(RpcAPI.BASE_URI);
 		XQueryContext context = new XQueryContext(broker);
 		context.setBaseURI(baseURI);
-
+		Hashtable namespaces = (Hashtable)parameters.get(RpcAPI.NAMESPACES);
+		if(namespaces != null && namespaces.size() > 0) {
+			for(Iterator i = namespaces.entrySet().iterator(); i.hasNext(); ) {
+				Map.Entry entry = (Map.Entry)i.next();
+				context.declareNamespace((String)entry.getKey(), (String)entry.getValue());
+			}
+		}
 		LOG.debug("compiling " + xquery);
 		XQueryLexer lexer = new XQueryLexer(new StringReader(xquery));
 		XQueryParser parser = new XQueryParser(lexer, false);
@@ -1166,25 +1172,6 @@ public class RpcConnection extends Thread {
 		// broker.shutdown();
 	}
 
-	/**
-	 * Sets the permissions attribute of the RpcConnection object
-	 * 
-	 * @param user
-	 *                   The new permissions value
-	 * @param resource
-	 *                   The new permissions value
-	 * @param permissions
-	 *                   The new permissions value
-	 * @param owner
-	 *                   The new permissions value
-	 * @param ownerGroup
-	 *                   The new permissions value
-	 * @return Description of the Return Value
-	 * @exception EXistException
-	 *                         Description of the Exception
-	 * @exception PermissionDeniedException
-	 *                         Description of the Exception
-	 */
 	public boolean setPermissions(User user, String resource, String owner,
 			String ownerGroup, String permissions) throws EXistException,
 			PermissionDeniedException {

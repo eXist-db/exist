@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Date;
+import java.util.Properties;
 
 import javax.xml.transform.TransformerException;
 
@@ -50,6 +51,7 @@ public class LocalXMLResource implements XMLResource, EXistResource {
 	protected NodeProxy proxy = null;
 	protected long id = -1;
 	protected User user;
+	protected Properties outputProperties = null;
 
 	// those are the different types of content this resource
 	// may have to deal with
@@ -98,7 +100,7 @@ public class LocalXMLResource implements XMLResource, EXistResource {
 					.borrowDOMSerializer();
 			try {
 				StringWriter writer = new StringWriter();
-				serializer.setOutputProperties(parent.properties);
+				serializer.setOutputProperties(getProperties());
 				serializer.setWriter(writer);
 				serializer.serialize(root);
 				content = writer.toString();
@@ -136,7 +138,7 @@ public class LocalXMLResource implements XMLResource, EXistResource {
 				broker = brokerPool.get(user);
 				Serializer serializer = broker.getSerializer();
 				serializer.setUser(user);
-				serializer.setProperties(parent.properties);
+				serializer.setProperties(getProperties());
 				if (root != null)
 					content = serializer.serialize((NodeValue) root);
 				else {
@@ -236,7 +238,7 @@ public class LocalXMLResource implements XMLResource, EXistResource {
 				broker = brokerPool.get(user);
 				Serializer serializer = broker.getSerializer();
 				serializer.setUser(user);
-				serializer.setProperties(parent.properties);
+				serializer.setProperties(getProperties());
 				serializer.setContentHandler(handler);
 
 				if (root != null)
@@ -419,6 +421,14 @@ public class LocalXMLResource implements XMLResource, EXistResource {
 	 */
 	public Permission getPermissions() {
 		return document != null ? document.getPermissions() : null;
+	}
+	
+	protected void setProperties(Properties properties) {
+		this.outputProperties = properties;
+	}
+	
+	private Properties getProperties() {
+		return outputProperties == null ? parent.properties : outputProperties;
 	}
 
 }
