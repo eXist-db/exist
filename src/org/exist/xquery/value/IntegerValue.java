@@ -37,7 +37,7 @@ public class IntegerValue extends NumericValue {
 	private static final BigInteger ZERO_BIGINTEGER = new BigInteger("0");
 	private static final BigInteger ONE_BIGINTEGER = new BigInteger("1");
 	private static final BigInteger MINUS_ONE_BIGINTEGER = new BigInteger("1");
-	private static final BigInteger LARGEST_INT  = new BigInteger("4294967295L");
+	private static final BigInteger LARGEST_INT  = new BigInteger("4294967295");
 	private static final BigInteger SMALLEST_INT  = LARGEST_INT.negate();
 	
 	private BigInteger value;
