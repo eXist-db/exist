@@ -99,6 +99,12 @@ public class NativeTextEngine extends TextSearchEngine {
 
 	public final static byte ATTRIBUTE_SECTION = 1;
 	public final static byte TEXT_SECTION = 0;
+  
+  /**
+   * Limit the length of the words to be indexed.
+   * Default is 512 characters for words in attributes and elements. 
+   */
+  public final static int MAX_WORD_LENGTH = Integer.MAX_VALUE;
 	
 	protected BFile dbWords;
 	protected InvertedIndex invIdx;
@@ -626,7 +632,6 @@ public class NativeTextEngine extends TextSearchEngine {
 					lock.acquire(Lock.WRITE_LOCK);
 					is = dbWords.getAsStream(ref);
 					if (is == null) {
-						LOG.warn(word + " not found in the index. This should not happen!");
 						continue;
 					}
 					os = new VariableByteOutputStream();
@@ -705,7 +710,7 @@ public class NativeTextEngine extends TextSearchEngine {
 				continue;
 			}
 			word = token.getText().toLowerCase();
-			if (stoplist.contains(word) || word.length() > 512) {
+			if (stoplist.contains(word) || word.length() > MAX_WORD_LENGTH) {
 				continue;
 			}
 			invIdx.setDocument(doc);
@@ -734,19 +739,19 @@ public class NativeTextEngine extends TextSearchEngine {
 			String sal= text.getXMLString().transformToLower().toString() ;
 			invIdx.addText(sal, gid);			
 		} else {
-		while (null != (token = tokenizer.nextToken())) {
-			if (idx != null && idx.getIncludeAlphaNum() == false
-					&& token.isAlpha() == false) {
-				continue;
+			while (null != (token = tokenizer.nextToken())) {
+				if (idx != null && idx.getIncludeAlphaNum() == false
+						&& token.isAlpha() == false) {
+					continue;
+				}
+				word = token.getCharSequence();
+				//			word = token.getText();
+				if (stoplist.contains(word) || word.length() > MAX_WORD_LENGTH) {
+					continue;
+				}
+				invIdx.setDocument(doc);
+				invIdx.addText(word, gid);
 			}
-			word = token.getCharSequence();
-//			word = token.getText();
-			if (stoplist.contains(word) || word.length() > 1024) {
-				continue;
-			}
-			invIdx.setDocument(doc);
-			invIdx.addText(word, gid);
-		}
 		}
 	}
 

@@ -30,6 +30,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.storage.NativeTextEngine;
 import org.exist.storage.IndexPaths;
 import org.exist.storage.analysis.SimpleTokenizer;
 import org.exist.storage.analysis.TextToken;
@@ -236,11 +237,13 @@ public class GeneralComparison extends BinaryOp {
 			// fall back to nodeSetCompare
 			return nodeSetCompare(nodes, contextSequence);
 		Sequence rightSeq = getRight().eval(contextSequence);
-		if (rightSeq.getLength() > 1)
+		String cmp = rightSeq.getStringValue();
+		if (rightSeq.getLength() > 1 ||
+				cmp.length() > NativeTextEngine.MAX_WORD_LENGTH)
 			// fall back to nodeSetCompare
 			return nodeSetCompare(nodes, contextSequence);
+		LOG.debug("quick compare: " + cmp.length());
 		DocumentSet docs = nodes.getDocumentSet();
-		String cmp = rightSeq.getStringValue();
 		switch(truncation) {
 			case Constants.TRUNC_RIGHT:
 				cmp = cmp + '%';
