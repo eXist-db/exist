@@ -154,8 +154,8 @@ $Header$
                                                         <xsp:logic>
                                                             String collectionName = <xmldb:collection-name/>;
                                                             String docName = collectionName + '/' + <xmldb:document-name/>;
-                                                            String newQuery = docLink + "&amp;doc=" +
-                                                                docName;
+                                                            String newQuery = docLink + "&amp;doc=" + docName +
+                                                              "&amp;collection=" + URLEncoder.encode(cname);
                                                             <td width="5%"></td>
                                                             <td>
                                                                 <link>
@@ -191,20 +191,23 @@ $Header$
                                 String queryString = query; // jmv
                                 String prev = temp + "count=" +
                                     count + "&amp;start=" + (start - count) +
+                                    "&amp;collection=" +URLEncoder.encode(cname) +
                                     "&amp;squery=" + URLEncoder.encode(squery) +
                                     "&amp;query=" + URLEncoder.encode(queryString);
                                 String next = temp + "count=" +
                                     count + "&amp;start=" + (start + count) +
+                                    "&amp;collection=" +URLEncoder.encode(cname) +
                                     "&amp;squery=" + URLEncoder.encode(squery) +
                                     "&amp;query=" + URLEncoder.encode(queryString);
                                 String summary = request.getRequestURI() +
                                     "?query=" + URLEncoder.encode(queryString) +
                                     "&amp;squery=" + URLEncoder.encode(squery) +
+                                    "&amp;collection=" +URLEncoder.encode(cname) +
                                     "&amp;summarize=true";
-                                String newQuery = "squery.xsp?cname=" + URLEncoder.encode(cname);
+                                String newQuery = "squery.xsp?collection=" + URLEncoder.encode(cname);
                                 /*?query=" + URLEncoder.encode(queryString) +
                                 "&amp;squery=" + URLEncoder.encode(squery)*/
-                                
+
                                 <table width="100%" cellspacing="0" cellpadding="5" bgcolor="#0B88E8">
                     
                                     <!-- top link menu -->
@@ -340,8 +343,9 @@ $Header$
                     } else {
                         <p>Nothing found for your query.</p>
                         String newQuery =
-                            "squery.xsp?query=" + URLEncoder.encode(query) +
-                                 "&amp;squery=" + URLEncoder.encode(squery);
+                            "squery.xsp?query=" + URLEncoder.encode(query)  +
+                                 "&amp;squery=" + URLEncoder.encode(squery) +
+                                 "&amp;collection=" +URLEncoder.encode(cname);
                         <p>
                         <!-- jmv: <a href="squery.xsp">&lt;&lt; back</a> -->
                         <link style="font-weight: bold;">
