@@ -18,7 +18,7 @@ declare namespace util="http://exist-db.org/xquery/util";
 		<section title="Builtin Functions">
         
             <p>The following tables show all built-in functions available within
-            the current execution context. The information is automatically generated 
+            the current execution context (<b>eXist version: {util:system-property("product-version")}, build: {util:system-property("product-build")}</b>). The information is automatically generated 
             using the extension function <link href="#util:describe-function">
             util:describe-function</link>. Function descriptions are directly extracted
             from the function signature provided by each function implementation.</p>
