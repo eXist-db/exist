@@ -29,6 +29,7 @@ import org.exist.dom.AVLTreeNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.DoubleValue;
+import org.exist.xquery.value.FloatValue;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
@@ -50,15 +51,15 @@ public class XPathUtil {
 		else if (obj instanceof Boolean)
 			return new BooleanValue(((Boolean) obj).booleanValue());
 		else if (obj instanceof Float)
-			return new DoubleValue(((Float) obj).doubleValue());
+			return new FloatValue(((Float) obj).floatValue());
 		else if (obj instanceof Double)
 			return new DoubleValue(((Double) obj).doubleValue());
 		else if (obj instanceof Short)
-			return new IntegerValue(((Short) obj).longValue());
+			return new IntegerValue(((Short) obj).shortValue(), Type.SHORT);
 		else if (obj instanceof Integer)
-			return new IntegerValue(((Integer) obj).longValue());
+			return new IntegerValue(((Integer) obj).intValue(), Type.INT);
 		else if (obj instanceof Long)
-			return new IntegerValue(((Long) obj).longValue());
+			return new IntegerValue(((Long) obj).longValue(), Type.LONG);
 		else if (obj instanceof List) {
 			boolean createNodeSequence = true;
 			Object next;
