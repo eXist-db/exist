@@ -31,6 +31,7 @@ import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.storage.io.VariableByteArrayInput;
+import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 
 /**
@@ -95,7 +96,7 @@ public class BinaryDocument extends DocumentImpl {
 		ostream.writeByte((byte) permissions.getPermissions());
 	}
 
-	public void read(VariableByteArrayInput istream)
+	public void read(VariableByteInput istream)
 		throws IOException, EOFException {
 		docId = istream.readInt();
 		fileName = collection.getName() + '/' + istream.readUTF();
