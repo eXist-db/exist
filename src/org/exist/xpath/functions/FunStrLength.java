@@ -24,7 +24,7 @@ import org.exist.dom.QName;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.IntegerValue;
 import org.exist.xpath.value.Item;
@@ -46,7 +46,7 @@ public class FunStrLength extends Function {
 			new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE),
 			true);
 			
-	public FunStrLength(StaticContext context) {
+	public FunStrLength(XQueryContext context) {
 		super(context, signature);
 	}
 

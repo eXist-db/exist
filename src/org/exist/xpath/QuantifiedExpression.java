@@ -45,12 +45,12 @@ public class QuantifiedExpression extends BindingExpression {
 	/**
 	 * @param context
 	 */
-	public QuantifiedExpression(StaticContext context, int mode) {
+	public QuantifiedExpression(XQueryContext context, int mode) {
 		super(context);
 		this.mode = mode;
 	}
 
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem, Sequence resultSequence) throws XPathException {
 		context.pushLocalContext(false);
 		Variable var = new Variable(QName.parse(context, varName));
 		context.declareVariable(var);

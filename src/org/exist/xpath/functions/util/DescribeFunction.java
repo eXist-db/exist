@@ -28,9 +28,10 @@ import org.exist.memtree.MemTreeBuilder;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.Module;
+import org.exist.xpath.XQueryContext;
+import org.exist.xpath.UserDefinedFunction;
 import org.exist.xpath.XPathException;
-import org.exist.xpath.functions.UserDefinedFunction;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceType;
@@ -54,7 +55,7 @@ public class DescribeFunction extends Function {
 			},
 			new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE));
 			
-	public DescribeFunction(StaticContext context) {
+	public DescribeFunction(XQueryContext context) {
 		super(context, signature);
 	}
 	
@@ -69,14 +70,9 @@ public class DescribeFunction extends Function {
 		QName qname = QName.parseFunction(context, fname);
 		String uri = qname.getNamespaceURI();
 		FunctionSignature signature;
-		if(uri.equals(Function.BUILTIN_FUNCTION_NS) || uri.equals(Function.UTIL_FUNCTION_NS) |
-			uri.equals(Function.XMLDB_FUNCTION_NS) || uri.equals(Function.REQUEST_FUNCTION_NS)) {
-			Class clazz = context.getClassForFunction(qname);
-			if (clazz == null)
-				throw new XPathException("function " + qname.toString() + " ( namespace-uri = " + 
-			qname.getNamespaceURI() + ") is not defined");
-			Function func = Function.createFunction(context, clazz);
-			signature = func.getSignature();
+		Module module = context.getModule(uri);
+		if(module != null) {
+			signature = module.getSignatureForFunction(qname);
 		} else {
 			UserDefinedFunction func = context.resolveFunction(qname);
 			signature = func.getSignature();

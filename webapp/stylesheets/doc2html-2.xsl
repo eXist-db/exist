@@ -38,6 +38,9 @@
 		<xsl:if test="header/style">
         	<xsl:copy-of select="header/style"/>
         </xsl:if>
+        <xsl:if test="header/script">
+            <xsl:copy-of select="header/script"/>
+        </xsl:if>
       </head>
 
       <body bgcolor="#FFFFFF">
@@ -53,11 +56,11 @@
           <xsl:when test="sidebar:sidebar">
             <table border="0" width="100%" cellspacing="7">
               <tr>
-                <td valign="top" width="20%">
+                <td valign="top" width="150">
                     <xsl:apply-templates select="sidebar:sidebar"/>
                     <div class="authors"><xsl:apply-templates select="header/author"/></div>
                 </td>
-                <td valign="top" width="80%">
+                <td valign="top">
                   <xsl:apply-templates select="body"/>
                 </td>
               </tr>

@@ -51,7 +51,7 @@ public class IntegerValue extends NumericValue {
 //				value = (long) Double.parseDouble(stringValue);
 //			} catch (NumberFormatException e1) {
 				throw new XPathException(
-					"failed to convert '" + stringValue + "' to an integer: " + e.getMessage());
+					"failed to convert '" + stringValue + "' to an integer: " + e.getMessage(), e);
 //			}
 		}
 	}
@@ -82,23 +82,23 @@ public class IntegerValue extends NumericValue {
 			case Type.NEGATIVE_INTEGER :
 				return value < 0;
 			case Type.INT :
-				return value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE;
+				return value >= -4294967295L && value <= 4294967295L;
 			case Type.SHORT :
-				return value >= Short.MIN_VALUE && value <= Short.MAX_VALUE;
+				return value >= -65535 && value <= 65535;
 			case Type.BYTE :
-				return value >= Byte.MIN_VALUE && value <= Byte.MAX_VALUE;
+				return value >= -255 && value <= 255;
 			case Type.NON_NEGATIVE_INTEGER :
 				return value > -1;
 			case Type.UNSIGNED_LONG :
 				return value > -1;
-			case Type.UNSIGNED_INT :
-				return value > -1 && value <= Integer.MAX_VALUE;
+			case Type.UNSIGNED_INT:
+				return value > -1 && value <= 4294967295L;
 			case Type.UNSIGNED_SHORT :
-				return value > -1 && value <= Short.MAX_VALUE;
+				return value > -1 && value <= 65535;
 			case Type.UNSIGNED_BYTE :
-				return value > -1 && value <= Byte.MAX_VALUE;
+				return value > -1 && value <= 255;
 			case Type.POSITIVE_INTEGER :
-				return value > 0;
+				return value >= 0;
 		}
 		throw new XPathException("Unknown type: " + Type.getTypeName(type));
 	}
@@ -250,10 +250,11 @@ public class IntegerValue extends NumericValue {
 	 */
 	public ComputableValue div(ComputableValue other) throws XPathException {
 		if (other instanceof IntegerValue) {
-			long ov = ((IntegerValue) other).value;
-			if (ov == 0)
+			if(((IntegerValue) other).value == 0)
 				throw new XPathException("division by zero");
-			return new IntegerValue(value / ov, type);
+			double od = ((IntegerValue) other).value;
+			double d = value;
+			return new DecimalValue(d / od);
 		} else
 			return ((ComputableValue) convertTo(other.getType())).div(other);
 	}
@@ -276,6 +277,7 @@ public class IntegerValue extends NumericValue {
 			long ov = ((IntegerValue) other).value;
 			if (ov == 0)
 				throw new XPathException("division by zero");
+			System.out.println(value + " % " + ov);
 			return new IntegerValue(value % ov, type);
 		} else
 			return ((NumericValue) convertTo(other.getType())).mod(other);
@@ -285,7 +287,7 @@ public class IntegerValue extends NumericValue {
 	 * @see org.exist.xpath.value.NumericValue#unaryMinus()
 	 */
 	public NumericValue negate() throws XPathException {
-		return new IntegerValue((-value), type);
+		return new IntegerValue(-value);
 	}
 
 	/* (non-Javadoc)
@@ -312,5 +314,57 @@ public class IntegerValue extends NumericValue {
 		else
 			return new IntegerValue(
 				Math.min(value, ((IntegerValue) other.convertTo(type)).value), type);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#conversionPreference(java.lang.Class)
+	 */
+	public int conversionPreference(Class javaClass) {
+		if(javaClass.isAssignableFrom(IntegerValue.class)) return 0;
+		if(javaClass == Long.class || javaClass == long.class) return 1;
+		if(javaClass == Integer.class || javaClass == int.class) return 2;
+		if(javaClass == Short.class || javaClass == short.class) return 3;
+		if(javaClass == Byte.class || javaClass == byte.class) return 4;
+		if(javaClass == Double.class || javaClass == double.class) return 5;
+		if(javaClass == Float.class || javaClass == float.class) return 6;
+		if(javaClass == String.class) return 7;
+		if(javaClass == Boolean.class || javaClass == boolean.class) return 8;
+		if(javaClass == Object.class) return 20;
+		
+		return Integer.MAX_VALUE;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#toJavaObject(java.lang.Class)
+	 */
+	public Object toJavaObject(Class target) throws XPathException {
+		if(target.isAssignableFrom(IntegerValue.class)) 
+			return this;
+		else if(target == Long.class || target == long.class)
+			return new Long(value);
+		else if(target == Integer.class || target == int.class) {
+			IntegerValue v = (IntegerValue)convertTo(Type.INT);
+			return new Integer((int)v.value);
+		} else if(target == Short.class || target == short.class) {
+			IntegerValue v = (IntegerValue)convertTo(Type.SHORT);
+			return new Short((short)v.value);
+		} else if(target == Byte.class || target == byte.class) {
+			IntegerValue v = (IntegerValue)convertTo(Type.BYTE);
+			return new Byte((byte)v.value);
+		} else if(target == Double.class || target == double.class) {
+			DoubleValue v = (DoubleValue)convertTo(Type.DOUBLE);
+			return new Double(v.getValue());
+		} else if(target == Float.class || target == float.class) {
+			FloatValue v = (FloatValue)convertTo(Type.FLOAT);
+			return new Float(v.value);
+		} else if(target == Boolean.class || target == boolean.class)
+			return new BooleanValue(effectiveBooleanValue());
+		else if(target == String.class)
+			return Long.toString(value);
+		else if(target == Object.class)
+			return new Long(value);
+		
+		throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) +
+			" to Java object of type " + target.getName());
 	}
 }

@@ -1,0 +1,258 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-03 Wolfgang M. Meier
+ *  wolfgang@exist-db.org
+ *  http://exist.sourceforge.net
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
+ *  $Id$
+ */
+package org.exist.http.servlets;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.io.Reader;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.exist.xmldb.CompiledExpression;
+import org.exist.xmldb.XQueryService;
+import org.exist.xpath.XPathException;
+import org.exist.xpath.functions.request.RequestModule;
+import org.exist.xpath.value.Item;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Database;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.ResourceIterator;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
+
+/**
+ * Servlet to generate HTML output from an XQuery file.
+ * 
+ * The servlet responds to an URL pattern as specified in the
+ * WEB-INF/web.xml configuration file of the application. It will
+ * interpret the path with which it is called as leading to a valid
+ * XQuery file. The XQuery file is loaded, compiled and executed.
+ * Any output of the script is sent back to the client.
+ * 
+ * The servlet accepts the following initialization parameters in web.xml:
+ * 
+ * <table border="0">
+ * 	<tr><td>user</td><td>The user identity with which the script is executed.</td></tr>
+ * 	<tr><td>password</td><td>Password for the user.</td></tr>
+ * 	<tr><td>uri</td><td>A valid XML:DB URI leading to the root collection used to
+ * 	process the request.</td></tr>
+ * </table>
+ * 
+ * User identity and password may also be specified through the HTTP session attributes
+ * "user" and "password". These attributes will overwrite any other settings.
+ * 
+ * @author Wolfgang Meier (wolfgang@exist-db.org)
+ */
+public class XQueryServlet extends HttpServlet {
+
+	public final static String DEFAULT_USER = "guest";
+	public final static String DEFAULT_PASS = "guest";
+	public final static String DEFAULT_URI = "xmldb:exist:///db";
+
+	public final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
+		
+	private String user = null;
+	private String password = null;
+	private String collectionURI = null;
+	
+	private Map cache = new HashMap();
+	
+	/* (non-Javadoc)
+	 * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
+	 */
+	public void init(ServletConfig config) throws ServletException {
+		super.init(config);
+		user = config.getInitParameter("user");
+		if(user == null)
+			user = DEFAULT_USER;
+		password = config.getInitParameter("password");
+		if(password == null)
+			password = DEFAULT_PASS;
+		collectionURI = config.getInitParameter("uri");
+		if(collectionURI == null)
+			collectionURI = DEFAULT_URI;
+		try {
+			Class driver = Class.forName(DRIVER);
+			Database database = (Database)driver.newInstance();
+			database.setProperty("create-database", "true");
+			DatabaseManager.registerDatabase(database);
+		} catch(Exception e) {
+			throw new ServletException("Failed to initialize database driver: " + e.getMessage(), e);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+		throws ServletException, IOException {
+		PrintStream output = new PrintStream( response.getOutputStream() );
+		response.setContentType("text/html");
+		response.addHeader( "pragma", "no-cache" );
+		response.addHeader( "Cache-Control", "no-cache" );
+		
+		String path = request.getPathTranslated();
+		if(path == null) {
+			path = request.getRequestURI().substring(request.getContextPath().length());
+			int p = path.lastIndexOf(';');
+			if(p > -1)
+				path = path.substring(0, p);
+			path = getServletContext().getRealPath(path);
+		}
+		File f = new File(path);
+		if(!f.canRead()) {
+			sendError(output, "Cannot read source file", path);
+			return;
+		}
+		String baseURI = request.getRequestURI();
+		int p = baseURI.lastIndexOf('/');
+		if(p > -1)
+			baseURI = baseURI.substring(0, p);
+		baseURI = getServletContext().getRealPath(baseURI.substring(request.getContextPath().length()));
+		
+		String actualUser = null;
+		String actualPassword = null;
+		HttpSession session = request.getSession();
+		if(session != null && request.isRequestedSessionIdValid()) {
+			actualUser = getSessionAttribute(session, "user");
+			actualPassword = getSessionAttribute(session, "password");
+		}
+		if(actualUser == null) actualUser = user;
+		if(actualPassword == null) actualPassword = password;
+		
+		try {
+			Collection collection = DatabaseManager.getCollection(collectionURI, user, password);
+			
+			XQueryService service = (XQueryService)
+				collection.getService("XQueryService", "1.0");
+			service.setProperty("base-uri", baseURI);
+			String prefix = RequestModule.PREFIX;
+			service.setNamespace(prefix, RequestModule.NAMESPACE_URI);
+			service.declareVariable(prefix + ":request", new HttpRequestWrapper(request));
+			service.declareVariable(prefix + ":response", new HttpResponseWrapper(response));
+			service.declareVariable(prefix + ":session", new HttpSessionWrapper(session));
+						
+			CompiledExpression compiled;
+			CachedQuery cached = (CachedQuery)cache.get(path);
+			if(cached == null || (!cached.isValid())) {
+				String xquery = readQuery(f);
+				compiled = service.compile(xquery);
+				cached = new CachedQuery(f, compiled);
+				cache.put(path, cached);
+			} else
+				compiled = cached.getExpression();
+			ResourceSet result = service.execute(compiled);
+			for(ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
+				Resource res = i.nextResource();
+				output.println(res.getContent().toString());
+			}
+		} catch (XMLDBException e) {
+			sendError(output, e.getMessage(), e);
+		}
+	}
+	
+	private String getSessionAttribute(HttpSession session, String attribute) {
+		Object obj = session.getAttribute(attribute);
+		if(obj == null)
+			return null;
+		if(obj instanceof Item)
+			try {
+				return ((Item)obj).getStringValue();
+			} catch (XPathException e) {
+				return null;
+			}
+		return obj.toString();
+	}
+	
+	private void sendError(PrintStream out, String message, Exception e) {
+		out.print("<html><head>");
+		out.print("<title>XQueryServlet Error</title>");
+		out.print("<link rel=\"stylesheet\" type=\"text/css\" href=\"error.css\"></head>");
+		out.println("<body><h1>Error found</h1>");
+		out.print("<div class='message'><b>Message:</b>");
+		out.print(message);
+		out.print("</div>");
+		out.print("<h2>Exception Stacktrace:</h2>");
+		out.print("<div class='exception'>");
+		e.printStackTrace(out);
+		out.print("</div></body></html>");
+	}
+	
+	private void sendError(PrintStream out, String message, String description) {
+		out.print("<html><head>");
+		out.print("<title>XQueryServlet Error</title>");
+		out.print("<link rel=\"stylesheet\" type=\"text/css\" href=\"error.css\"></head>");
+		out.println("<body><h1>Error found</h1>");
+		out.print("<div class='message'><b>Message: </b>");
+		out.print(message);
+		out.print("</div><div class='description'>");
+		out.print(description);
+		out.print("</div></body></html>");
+	}
+	
+	private String readQuery(File source) throws IOException {
+		Reader reader = new InputStreamReader(new FileInputStream(source), "UTF-8");
+		char[] chars = new char[1024];
+		StringBuffer buf = new StringBuffer();
+		int read;
+		while((read = reader.read(chars)) > -1)
+			buf.append(chars, 0, read);
+		return buf.toString();
+	}
+	
+	private static final class CachedQuery {
+		
+		long lastModified;
+		String sourcePath;
+		CompiledExpression expression;
+		
+		public CachedQuery(File sourceFile, CompiledExpression expression) {
+			this.sourcePath = sourceFile.getAbsolutePath();
+			this.lastModified = sourceFile.lastModified();
+			this.expression = expression;
+		}
+		
+		public boolean isValid() {
+			File f = new File(sourcePath);
+			if(f.lastModified() > lastModified)
+				return false;
+			return true;
+		}
+		
+		public CompiledExpression getExpression() {
+			return expression;
+		}
+	}
+
+}

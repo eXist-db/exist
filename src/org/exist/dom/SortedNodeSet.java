@@ -13,7 +13,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.OrderedLinkedList;
 import org.exist.xpath.PathExpr;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
@@ -57,7 +57,7 @@ public class SortedNodeSet extends AbstractNodeSet {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			StaticContext context = new StaticContext(broker);
+			XQueryContext context = new XQueryContext(broker);
 			XPathLexer2 lexer = new XPathLexer2(new StringReader(sortExpr));
 			XPathParser2 parser = new XPathParser2(lexer);
 			XPathTreeParser2 treeParser = new XPathTreeParser2(context);
@@ -207,7 +207,7 @@ public class SortedNodeSet extends AbstractNodeSet {
 			NodeProxy proxy,
 			PathExpr expr,
 			DocumentSet ndocs,
-			StaticContext context) {
+			XQueryContext context) {
 			this.proxy = proxy;
 			try {
 				Sequence seq = expr.eval(proxy);

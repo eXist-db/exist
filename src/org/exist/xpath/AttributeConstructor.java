@@ -40,7 +40,7 @@ public class AttributeConstructor extends NodeConstructor {
 	List contents = new ArrayList();
 	boolean isNamespaceDecl = false;
 	
-	public AttributeConstructor(StaticContext context, String name) {
+	public AttributeConstructor(XQueryContext context, String name) {
 		super(context);
 		if(name.startsWith("xmlns"))
 			isNamespaceDecl = true;

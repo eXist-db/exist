@@ -151,6 +151,32 @@ public abstract class AtomicValue implements Item, Sequence {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#conversionPreference(java.lang.Class)
+	 */
+	public int conversionPreference(Class javaClass) {
+		return Integer.MAX_VALUE;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#toJavaObject(java.lang.Class)
+	 */
+	public Object toJavaObject(Class target) throws XPathException {
+		throw new XPathException(
+			"cannot convert value of type "
+				+ Type.getTypeName(getType())
+				+ " to Java object of type "
+				+ target.getName());
+	}
+
+	public String toString() {
+		try {
+			return getStringValue();
+		} catch (XPathException e) {
+			return super.toString();
+		}
+	}
+	
 	private final static class EmptyValue extends AtomicValue {
 
 		/* (non-Javadoc)
@@ -216,6 +242,24 @@ public abstract class AtomicValue implements Item, Sequence {
 		 */
 		public AtomicValue min(AtomicValue other) throws XPathException {
 			return this;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.exist.xpath.value.Item#conversionPreference(java.lang.Class)
+		 */
+		public int conversionPreference(Class javaClass) {
+			return Integer.MAX_VALUE;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.exist.xpath.value.Item#toJavaObject(java.lang.Class)
+		 */
+		public Object toJavaObject(Class target) throws XPathException {
+			throw new XPathException(
+				"cannot convert value of type "
+					+ Type.getTypeName(getType())
+					+ " to Java object of type "
+					+ target.getName());
 		}
 	}
 }

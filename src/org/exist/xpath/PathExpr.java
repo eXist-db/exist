@@ -36,6 +36,12 @@ import org.exist.xpath.value.Type;
 import org.exist.xpath.value.ValueSequence;
 import org.xmldb.api.base.XMLDBException;
 
+/**
+ * PathExpr is just a sequence of XQuery/XPath expressions, which will
+ * be called step by step.
+ * 
+ * @author Wolfgang Meier (wolfgang@exist-db.org)
+ */
 public class PathExpr extends AbstractExpression implements CompiledExpression {
 	
     protected static Logger LOG = Logger.getLogger( PathExpr.class );
@@ -44,7 +50,7 @@ public class PathExpr extends AbstractExpression implements CompiledExpression {
     protected LinkedList steps = new LinkedList();
 	protected boolean inPredicate = false;
 	
-    public PathExpr(StaticContext context) {
+    public PathExpr(XQueryContext context) {
     	super(context);
     }
 
@@ -115,7 +121,7 @@ public class PathExpr extends AbstractExpression implements CompiledExpression {
         return r;
     }
 
-	public StaticContext getContext() {
+	public XQueryContext getContext() {
 		return context;
 	}
 	

@@ -28,6 +28,9 @@ import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.Type;
 
 /**
+ * CastExpression represents cast expressions as well as all type 
+ * constructors.
+ * 
  * @author wolf
  */
 public class CastExpression extends AbstractExpression {
@@ -37,9 +40,12 @@ public class CastExpression extends AbstractExpression {
 	private int cardinality = Cardinality.EXACTLY_ONE;
 	
 	/**
+	 * Constructor. When calling {@link #eval(Sequence, Item)} 
+	 * the passed expression will be cast into the required type and cardinality.
+	 * 
 	 * @param context
 	 */
-	public CastExpression(StaticContext context, Expression expr, int requiredType, int cardinality) {
+	public CastExpression(XQueryContext context, Expression expr, int requiredType, int cardinality) {
 		super(context);
 		this.expression = expr;
 		this.requiredType = requiredType;

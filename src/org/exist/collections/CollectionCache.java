@@ -5,14 +5,14 @@
  */
 package org.exist.collections;
 
+import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.ClockCache;
 import org.exist.util.hashtable.Object2LongHashMap;
-
 
 public class CollectionCache extends ClockCache {
 
 	private Object2LongHashMap names;
-	
+
 	public CollectionCache(int blockBuffers) {
 		super(blockBuffers);
 		names = new Object2LongHashMap(blockBuffers);
@@ -28,18 +28,25 @@ public class CollectionCache extends ClockCache {
 	}
 
 	public Collection get(Collection collection) {
-		return (Collection)get(collection.getKey());
+		return (Collection) get(collection.getKey());
 	}
 
 	public Collection get(String name) {
 		long key = names.get(name);
-		if(key < 0)
+		if (key < 0)
 			return null;
-		return (Collection)get(key);
+		return (Collection) get(key);
 	}
-	
-	public void remove(Collection collection) {
-		super.remove(collection);
+
+	protected Cacheable removeOne(Cacheable item) {
+		Cacheable old = super.removeOne(item);
+		names.remove(((Collection)old).getName());
+		return old;
 	}
-	
+
+	public void remove(Cacheable item) {
+		super.remove(item);
+		names.remove(((Collection)item).getName());
+	}
+
 }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
     <classpathentry kind="src" path="src"/>
+    <classpathentry kind="src" path="samples"/>
     <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
     <classpathentry kind="lib" path="lib/core/antlr.jar"/>
     <classpathentry kind="lib" path="lib/core/excalibur-cli-1.0.jar"/>
@@ -59,6 +60,6 @@
     <classpathentry kind="lib" path="lib/endorsed/xercesImpl-2.5.0.jar"/>
     <classpathentry kind="lib" path="tools/lib/ant.jar"/>
     <classpathentry kind="lib" path="tools/lib/junit.jar"/>
-    <classpathentry kind="lib" path="Jetty-4.1.4/lib/javax.servlet.jar"/>
+    <classpathentry kind="lib" path="lib/core/javax.servlet.jar"/>
     <classpathentry kind="output" path="build/classes"/>
 </classpath>

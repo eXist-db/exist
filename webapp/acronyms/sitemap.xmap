@@ -23,7 +23,7 @@
 		        <map:transform src="stylesheets/acronyms.xsl"/>
 				<map:transform type="xinclude"/>
 		        <map:transform src="context://stylesheets/doc2html-2.xsl"/>
-				<map:serialize encoding="UTF-8" type="xhtml"/>
+				<map:serialize encoding="UTF-8" type="html"/>
 	        </map:match>
 		</map:pipeline>
 	</map:pipelines>

@@ -29,7 +29,7 @@ import org.exist.dom.QName;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
@@ -50,7 +50,7 @@ public class FunNormalizeSpace extends Function {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 				true);
 				
-	public FunNormalizeSpace(StaticContext context) {
+	public FunNormalizeSpace(XQueryContext context) {
 		super(context, signature);
 	}
 

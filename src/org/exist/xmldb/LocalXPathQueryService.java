@@ -18,7 +18,7 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.xpath.PathExpr;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Sequence;
 import org.xmldb.api.base.Collection;
@@ -60,9 +60,9 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	}
 
 	public String getNamespace(String prefix) throws XMLDBException {
-		throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED);
+		return (String)namespaceDecls.get(prefix);
 	}
-
+	
 	public String getProperty(String property) throws XMLDBException {
 		return collection.properties.getProperty(property);
 	}
@@ -128,7 +128,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 			brokerPool.release(broker);
 		}
 		expression.reset();
-		StaticContext context = ((PathExpr)expression).getContext();
+		XQueryContext context = ((PathExpr)expression).getContext();
 		context.setBackwardsCompatibility(xpathCompatible);
 		
 		Map.Entry entry;
@@ -154,7 +154,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			StaticContext context = new StaticContext(broker);
+			XQueryContext context = new XQueryContext(broker);
 			context.setBaseURI(collection.properties.getProperty("base-uri", collection.getPath()));
 
 			Map.Entry entry;

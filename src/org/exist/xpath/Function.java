@@ -35,11 +35,10 @@ import org.exist.xpath.value.Type;
  * Abstract base class for all built-in and user-defined functions.
  * 
  * Built-in functions just extend this class. A new function instance
- * will be created for each function call. In addition to the methods in this class, 
- * all built-in functions need to declare a public static field, called "signature", 
- * containing the signature of the function.
+ * will be created for each function call. Subclasses <b>have</b> to
+ * provide a function signature to the constructor.
  * 
- * User-defined functions extend class {@link org.exist.xpath.functions.UserDefinedFunction},
+ * User-defined functions extend class {@link org.exist.xpath.UserDefinedFunction},
  * which is again a subclass of Function. They will not be called directly, but through a
  * {@link org.exist.xpath.FunctionCall} object, which checks the type and cardinality of
  * all arguments and takes care that the current execution context is saved properly.
@@ -70,7 +69,7 @@ public abstract class Function extends PathExpr {
 		"http://exist-db.org/xquery/request";
 		
 	// The signature of the function.	
-	private FunctionSignature mySignature;
+	protected FunctionSignature mySignature;
 	
 	// The parent expression from which this function is called.
 	private Expression parent;
@@ -82,11 +81,15 @@ public abstract class Function extends PathExpr {
 	 * @param context
 	 * @param signature
 	 */
-	protected Function(StaticContext context, FunctionSignature signature) {
+	protected Function(XQueryContext context, FunctionSignature signature) {
 		super(context);
 		this.mySignature = signature;
 	}
 
+	protected Function(XQueryContext context) {
+		super(context);
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.PathExpr#returnsType()
 	 */
@@ -109,12 +112,12 @@ public abstract class Function extends PathExpr {
 	 * @return the created function or null if the class could not be initialized.
 	 */
 	public static Function createFunction(
-		StaticContext context,
+		XQueryContext context,
 		Class fclass) {
 		try {
 			if (fclass == null)
 				throw new RuntimeException("class for function is null");
-			Class constructorArgs[] = { StaticContext.class };
+			Class constructorArgs[] = { XQueryContext.class };
 			Constructor construct = fclass.getConstructor(constructorArgs);
 			if (construct == null)
 				throw new RuntimeException("constructor not found");
@@ -272,6 +275,17 @@ public abstract class Function extends PathExpr {
 		Item contextItem)
 		throws XPathException;
 
+	public Sequence[] getArguments(Sequence contextSequence, Item contextItem) throws XPathException {
+		if(contextItem != null)
+			contextSequence = contextItem.toSequence();
+		final int argCount = getArgumentCount();
+		Sequence[] args = new Sequence[argCount];
+		for(int i = 0; i < argCount; i++) {
+			args[i] = getArgument(i).eval(contextSequence, contextItem);
+		}
+		return args;
+	}
+	
 	/**
 	 * Get an argument expression by its position in the
 	 * argument list.

@@ -39,7 +39,7 @@ public abstract class CombiningExpression extends AbstractExpression {
 	/**
 	 * @param context
 	 */
-	public CombiningExpression(StaticContext context, PathExpr left, PathExpr right) {
+	public CombiningExpression(XQueryContext context, PathExpr left, PathExpr right) {
 		super(context);
 		this.left = left;
 		this.right = right;

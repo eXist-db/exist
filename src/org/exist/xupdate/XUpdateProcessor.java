@@ -25,7 +25,7 @@ import org.exist.parser.XPathTreeParser2;
 import org.exist.storage.DBBroker;
 import org.exist.util.FastStringBuffer;
 import org.exist.xpath.PathExpr;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.Type;
@@ -450,7 +450,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 
 	private List processQuery(String select) throws SAXException {
 		try {
-			StaticContext context = new StaticContext(broker);
+			XQueryContext context = new XQueryContext(broker);
 			context.setStaticallyKnownDocuments(documentSet);
 			Map.Entry entry;
 			for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {

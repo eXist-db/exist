@@ -34,7 +34,7 @@ import org.exist.xpath.value.Type;
  */
 public class OpAnd extends LogicalOp {
 
-	public OpAnd(StaticContext context) {
+	public OpAnd(XQueryContext context) {
 		super(context);
 	}
 
@@ -50,7 +50,9 @@ public class OpAnd extends LogicalOp {
 		Expression left = getLeft();
 		Expression right = getRight();
 		if (Type.subTypeOf(left.returnsType(), Type.NODE)
-			&& Type.subTypeOf(right.returnsType(), Type.NODE)) {
+			&& Type.subTypeOf(right.returnsType(), Type.NODE)
+			&& (left.getDependencies() & Dependency.CONTEXT_ITEM) == 0
+			&& (right.getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
 			NodeSet rl = left.eval(contextSequence, null).toNodeSet();
 			rl = rl.getContextNodes(inPredicate);
 			NodeSet rr = right.eval(contextSequence, null).toNodeSet();

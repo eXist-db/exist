@@ -42,10 +42,10 @@ header {
 	import org.exist.xpath.functions.*;
 }
 
-/* -----------------------------------------------------------------------------------------------------
- * The XPath parser: generates an AST which is then passed to the tree parser for analysis
+/**
+ * The XQuery parser: generates an AST which is then passed to the tree parser for analysis
  * and code generation.
- * ----------------------------------------------------------------------------------------------------- */
+ */
 class XPathParser2 extends Parser;
 
 options {
@@ -91,7 +91,7 @@ imaginaryTokenDefinitions
 	PREFIX_WILDCARD FUNCTION UNARY_MINUS UNARY_PLUS XPOINTER XPOINTER_ID VARIABLE_REF 
 	VARIABLE_BINDING ELEMENT ATTRIBUTE TEXT VERSION_DECL NAMESPACE_DECL DEF_NAMESPACE_DECL 
 	DEF_FUNCTION_NS_DECL GLOBAL_VAR FUNCTION_DECL PROLOG ATOMIC_TYPE MODULE ORDER_BY 
-	POSITIONAL_VAR BEFORE AFTER
+	POSITIONAL_VAR BEFORE AFTER MODULE_DECL
 	;
 
 xpointer
@@ -110,10 +110,19 @@ xpath
 	exception catch [RecognitionException e]
 	{ handleException(e); }
 
-module : mainModule ;
+module : ( "module" "namespace" ) => libraryModule | mainModule;
 
 mainModule : prolog queryBody ;
 
+libraryModule: moduleDecl prolog;
+
+moduleDecl: 
+	"module"! "namespace"! prefix:NCNAME EQ! uri:STRING_LITERAL SEMICOLON!
+	{
+		#moduleDecl = #(#[MODULE_DECL, prefix.getText()], uri);
+	}
+	;
+	
 prolog
 :
 	( ( XQUERY VERSION ) => v:version SEMICOLON! )?
@@ -130,6 +139,8 @@ prolog
 			|
 			( "declare" "variable" )
 			=> varDecl
+			|
+			moduleImport
 		)
 		SEMICOLON!
 	)*
@@ -166,6 +177,11 @@ varDecl
 	{ #varDecl= #(#[GLOBAL_VAR, varName], #varDecl); }
 	;
 
+moduleImport
+:
+	"import"^ "module"! ( "namespace"! NCNAME EQ! )? STRING_LITERAL ( "at"! STRING_LITERAL )?
+	;
+	
 functionDecl
 { String name= null; }
 :
@@ -593,10 +609,10 @@ constructor
 elementConstructor
 {
 	String name= null;
-	lexer.wsExplicit= true;
+	//lexer.wsExplicit= false;
 }
 :
-	( LT qName WS ) => elementWithAttributes | elementWithoutAttributes
+	( LT qName ~( GT | SLASH ) ) => elementWithAttributes | elementWithoutAttributes
 	;
 
 elementWithoutAttributes
@@ -607,7 +623,7 @@ elementWithoutAttributes
 		(
 			SLASH! GT!
 			{
-				lexer.wsExplicit= false;
+				//lexer.wsExplicit= false;
 				if (!elementStack.isEmpty())
 					lexer.inElementContent= true;
 				#elementWithoutAttributes= #[ELEMENT, name];
@@ -630,7 +646,7 @@ elementWithoutAttributes
 				#elementWithoutAttributes= #(#[ELEMENT, name], #content);
 				if (!elementStack.isEmpty()) {
 					lexer.inElementContent= true;
-					lexer.wsExplicit= false;
+					//lexer.wsExplicit= false;
 				}
 			}
 		)
@@ -647,7 +663,7 @@ elementWithAttributes
 			{
 				if (!elementStack.isEmpty())
 					lexer.inElementContent= true;
-				lexer.wsExplicit= false;
+				//lexer.wsExplicit= false;
 				#elementWithAttributes= #(#[ELEMENT, name], #attrs);
 			}
 		)
@@ -657,7 +673,7 @@ elementWithAttributes
 			{
 				elementStack.push(name);
 				lexer.inElementContent= true;
-				lexer.wsExplicit= false;
+				//lexer.wsExplicit= false;
 			}
 			content:mixedElementContent END_TAG_START! name=qName! GT!
 			{
@@ -669,7 +685,7 @@ elementWithAttributes
 				#elementWithAttributes= #(#[ELEMENT, name], #attrs);
 				if (!elementStack.isEmpty()) {
 					lexer.inElementContent= true;
-					lexer.wsExplicit= false;
+					//lexer.wsExplicit= false;
 				}
 			}
 		)
@@ -687,7 +703,7 @@ attributeDef
 	lexer.parseStringLiterals= false;
 }
 :
-	WS! name=qName! EQ! QUOT!
+	name=qName! EQ! QUOT!
 	{ lexer.inAttributeContent= true; }
 	value:attributeValue { lexer.inAttributeContent= false; }
 	QUOT! { lexer.parseStringLiterals= true; }
@@ -729,13 +745,13 @@ enclosedExpr
 		globalStack.push(elementStack);
 		elementStack= new Stack();
 		lexer.inElementContent= false;
-		lexer.wsExplicit= false;
+		//lexer.wsExplicit= false;
 	}
 	expr RCURLY!
 	{
 		elementStack= (Stack) globalStack.pop();
 		lexer.inElementContent= true;
-		lexer.wsExplicit= true;
+		//lexer.wsExplicit= true;
 	}
 	;
 
@@ -744,12 +760,12 @@ attributeEnclosedExpr
 	LCURLY^
 	{
 		lexer.inAttributeContent= false;
-		lexer.wsExplicit= false;
+		//lexer.wsExplicit= false;
 	}
 	expr RCURLY!
 	{
 		lexer.inAttributeContent= true;
-		lexer.wsExplicit= true;
+		//lexer.wsExplicit= true;
 	}
 	;
 
@@ -851,12 +867,18 @@ reservedKeywords returns [String name]
 	"is" { name = "is"; }
 	|
 	"isnot" { name = "isnot"; }
+	|
+	"module" { name = "module"; }
+	|
+	"import" { name = "import"; }
+	|
+	"at" { name = "at"; }
 	;
 
-/* -----------------------------------------------------------------------------------------------------
+/**
  * The tree parser: walks the AST created by the parser to generate
- * XPath objects.
- * ----------------------------------------------------------------------------------------------------- */
+ * XQuery expression objects.
+ */
 
 class XPathTreeParser2 extends TreeParser;
 
@@ -866,15 +888,20 @@ options {
 }
 
 {
-	private StaticContext context;
+	private XQueryContext context;
+	private ExternalModule myModule = null;
 	protected ArrayList exceptions= new ArrayList(2);
 	protected boolean foundError= false;
 
-	public XPathTreeParser2(StaticContext context) {
+	public XPathTreeParser2(XQueryContext context) {
 		this();
 		this.context= context;
 	}
 
+	public ExternalModule getModule() {
+		return myModule;
+	}
+	
 	public boolean foundErrors() {
 		return foundError;
 	}
@@ -941,6 +968,9 @@ xpointer [PathExpr path]
 xpath [PathExpr path]
 :
 	module [path]
+	{
+		context.resolveForwardReferences();
+	}
 	;
 	exception catch [RecognitionException e]
 	{ handleException(e); }
@@ -954,6 +984,15 @@ xpath [PathExpr path]
 module [PathExpr path]
 throws PermissionDeniedException, EXistException, XPathException
 { Expression step = null; }:
+	#(
+		m:MODULE_DECL uri:STRING_LITERAL
+		{
+			myModule = new ExternalModuleImpl(uri.getText(), m.getText());
+			context.declareNamespace(m.getText(), uri.getText());
+		}
+	)
+	prolog [path]
+	|
 	prolog [path] step=expr [path]
 	;
 
@@ -1003,10 +1042,28 @@ throws PermissionDeniedException, EXistException, XPathException
 				VariableDeclaration decl= new VariableDeclaration(context, qname.getText(), enclosed);
 				decl.setSequenceType(type);
 				path.add(decl);
+				if(myModule != null) {
+					QName qn = QName.parse(context, qname.getText());
+					myModule.declareVariable(qn, decl);
+				}
 			}
 		)
 		|
 		functionDecl [path]
+		|
+		#(
+			"import" 
+			{ 
+				String modulePrefix = null;
+				String location = null;
+			}
+			( pfx:NCNAME { modulePrefix = pfx.getText(); } )? 
+			moduleURI:STRING_LITERAL 
+			( at:STRING_LITERAL { location = at.getText(); } )?
+			{
+				context.importModule(moduleURI.getText(), modulePrefix, location);
+			}
+		)
 	)*
 	;
 
@@ -1032,6 +1089,8 @@ throws PermissionDeniedException, EXistException, XPathException
 			}
 			signature.setArgumentTypes(types);
 			context.declareFunction(func);
+			if(myModule != null)
+				myModule.declareFunction(func);
 		}
 		(
 			#(
@@ -2180,10 +2239,9 @@ throws PermissionDeniedException, EXistException, XPathException
 	)
 	;
 
-/* -----------------------------------------------------------------------------------------------------
- * The XPath lexer.
- * ----------------------------------------------------------------------------------------------------- */
-
+/**
+ * The XQuery/XPath lexical analyzer.
+ */
 class XPathLexer2 extends Lexer;
 
 options {
@@ -2347,7 +2405,7 @@ options {
 		|
 		'\u0021'
 		|
-		'\u0023'..'\u0025'
+		'\u0023'..'\u0026'
 		|
 		'\''..'\u003b'
 		|
@@ -2364,7 +2422,7 @@ options {
 	testLiterals=false;
 }
 :
-	( '\t' | '\r' | '\n' | '\u0020'..'\u0025' | '\''..'\u003b' | '\u003d'..'\u007a' | '\u007c' | '\u007e'..'\uFFFD' )+
+	( '\t' | '\r' | '\n' | '\u0020'..'\u0026' | '\''..'\u003b' | '\u003d'..'\u007a' | '\u007c' | '\u007e'..'\uFFFD' )+
 	;
 
 protected XML_COMMENT

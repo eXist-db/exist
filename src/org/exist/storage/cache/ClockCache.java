@@ -38,11 +38,11 @@ import org.exist.util.hashtable.Long2ObjectHashMap;
  */
 public class ClockCache implements Cache {
 
-	private Long2ObjectHashMap map;
-	private Cacheable[] items;
-	private int size;
-	private int count = 0;
-	private int hits = 0, fails = 0;
+	protected Long2ObjectHashMap map;
+	protected Cacheable[] items;
+	protected int size;
+	protected int count = 0;
+	protected int hits = 0, fails = 0;
 	
 	private long lastSync = System.currentTimeMillis();
 	private long syncPeriod = 15000;
@@ -79,7 +79,7 @@ public class ClockCache implements Cache {
 			flush();
 	}
 
-	private final void removeOne(Cacheable item) {
+	protected Cacheable removeOne(Cacheable item) {
 		int bucket = -1;
 		Cacheable old;
 		do {
@@ -104,6 +104,7 @@ public class ClockCache implements Cache {
 		}
 		items[bucket] = item;
 		map.put(item.getKey(), item);
+		return old;
 	}
 
 	/* (non-Javadoc)

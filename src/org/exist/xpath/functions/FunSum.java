@@ -24,7 +24,7 @@ import org.exist.dom.QName;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.AtomicValue;
 import org.exist.xpath.value.ComputableValue;
@@ -51,7 +51,7 @@ public class FunSum extends Function {
 				new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE),
 				true);
 				
-    public FunSum(StaticContext context) {
+    public FunSum(XQueryContext context) {
 		super(context, signature);
     }
 

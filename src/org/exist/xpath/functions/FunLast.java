@@ -26,7 +26,7 @@ import org.exist.xpath.Cardinality;
 import org.exist.xpath.Dependency;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.IntegerValue;
 import org.exist.xpath.value.Item;
@@ -47,7 +47,7 @@ public class FunLast extends Function {
 			null,
 			new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
 
-	public FunLast(StaticContext context) {
+	public FunLast(XQueryContext context) {
 		super(context, signature);
 	}
 

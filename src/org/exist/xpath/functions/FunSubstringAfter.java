@@ -28,7 +28,7 @@ import org.exist.xpath.Cardinality;
 import org.exist.xpath.Expression;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
@@ -51,7 +51,7 @@ public class FunSubstringAfter extends Function {
 					},
 					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
 					
-	public FunSubstringAfter(StaticContext context) {
+	public FunSubstringAfter(XQueryContext context) {
 		super(context, signature);
 	}
 

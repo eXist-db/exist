@@ -56,7 +56,7 @@ public abstract class BindingExpression extends AbstractExpression {
 	protected Expression whereExpr;
 	protected OrderSpec orderSpecs[] = null;
 
-	public BindingExpression(StaticContext context) {
+	public BindingExpression(XQueryContext context) {
 		super(context);
 	}
 

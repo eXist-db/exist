@@ -40,7 +40,7 @@ public class AtomicToString extends AbstractExpression {
 	/**
 	 * @param context
 	 */
-	public AtomicToString(StaticContext context, Expression expr) {
+	public AtomicToString(XQueryContext context, Expression expr) {
 		super(context);
 		this.expression = expr;
 	}

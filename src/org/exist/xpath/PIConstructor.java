@@ -38,7 +38,7 @@ public class PIConstructor extends NodeConstructor {
 	private String target;
 	private String data = null;
 	
-	public PIConstructor(StaticContext context, String pi) throws XPathException {
+	public PIConstructor(XQueryContext context, String pi) throws XPathException {
 		super(context);
 		int p = pi.indexOf(' ');
 		if(p < 0)

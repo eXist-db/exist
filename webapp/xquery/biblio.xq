@@ -95,7 +95,7 @@ as element()
         $hit := item-at($hits, $start)
     return
         <query-results hits="{$count}" start="{$start}" 
-            next="{$start + 1 cast as xs:int}">
+            next="{$start + 1}">
             {$hit}
         </query-results>
 };
@@ -109,7 +109,7 @@ as element()
         $end := if ($start + 9 < $count) then $start + 9 else $count
     return
         <query-results hits="{$count}" start="{$start}" 
-            next="{$end + 1 cast as xs:int}">
+            next="{$end + 1}">
             {
                 for $p in $start to $end
                 let $current := item-at($hits, $p)

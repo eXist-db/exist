@@ -40,7 +40,7 @@ import org.exist.storage.analysis.TextToken;
 import org.exist.storage.analysis.Tokenizer;
 import org.exist.xpath.Constants;
 import org.exist.xpath.Expression;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.IntegerValue;
 import org.exist.xpath.value.Sequence;
@@ -58,12 +58,12 @@ public class ExtNear extends ExtFulltext {
 	private PatternCompiler globCompiler = new GlobCompiler();
 	private Expression distance = null;
 
-	public ExtNear(StaticContext context) {
+	public ExtNear(XQueryContext context) {
 		super(context, Constants.FULLTEXT_AND);
 	}
 
 	public Sequence evalQuery(
-		StaticContext context,
+		XQueryContext context,
 		String searchArg,
 		NodeSet nodes)
 		throws XPathException {
@@ -89,7 +89,7 @@ public class ExtNear extends ExtFulltext {
 			: exactMatch(context, hits);
 	}
 
-	private Sequence exactMatch(StaticContext context, NodeSet result) {
+	private Sequence exactMatch(XQueryContext context, NodeSet result) {
 		// walk through hits and calculate term-distances
 		String value;
 		String term;
@@ -144,7 +144,7 @@ public class ExtNear extends ExtFulltext {
 		return r;
 	}
 
-	private Sequence patternMatch(StaticContext context, NodeSet result) {
+	private Sequence patternMatch(XQueryContext context, NodeSet result) {
 		// generate list of search term patterns
 		Pattern patterns[] = new Pattern[terms.length];
 		for (int i = 0; i < patterns.length; i++)

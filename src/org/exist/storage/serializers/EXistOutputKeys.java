@@ -24,14 +24,14 @@ package org.exist.storage.serializers;
 
 public class EXistOutputKeys {
 
-	public final static String EXPAND_XINCLUDES = "{http://exist-db.org/}expand-xincludes";
+	public final static String EXPAND_XINCLUDES = "expand-xincludes";
 	
-	public final static String HIGHLIGHT_MATCHES = "{http://exist-db.org/}highlight-matches";
+	public final static String HIGHLIGHT_MATCHES = "highlight-matches";
 	
-	public final static String INDENT_SPACES = "{http://exist-db.org/}indent-spaces";
+	public final static String INDENT_SPACES = "indent-spaces";
 	
-	public final static String STYLESHEET = "{http://exist-db.org/}stylesheet";
+	public final static String STYLESHEET = "stylesheet";
 	
-	public final static String STYLESHEET_PARAM = "{http://exist-db.org/}stylesheet-param";
+	public final static String STYLESHEET_PARAM = "stylesheet-param";
 	
 }

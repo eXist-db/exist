@@ -26,7 +26,7 @@ import org.exist.dom.QName;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.JavaObjectValue;
@@ -60,7 +60,7 @@ public class XMLDBCollection extends Function {
 	 * @param context
 	 * @param signature
 	 */
-	public XMLDBCollection(StaticContext context) {
+	public XMLDBCollection(XQueryContext context) {
 		super(context, signature);
 	}
 

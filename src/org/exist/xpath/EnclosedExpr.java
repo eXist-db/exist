@@ -42,7 +42,7 @@ public class EnclosedExpr extends PathExpr {
 	/**
 	 * 
 	 */
-	public EnclosedExpr(StaticContext context) {
+	public EnclosedExpr(XQueryContext context) {
 		super(context);
 	}
 

@@ -40,7 +40,7 @@ public class UntypedValueCheck extends AbstractExpression {
 	private Expression expression;
 	private int requiredType;
 	
-	public UntypedValueCheck(StaticContext context, int requiredType, Expression expression) {
+	public UntypedValueCheck(XQueryContext context, int requiredType, Expression expression) {
 		super(context);
 		this.requiredType = requiredType;
 		this.expression = expression;

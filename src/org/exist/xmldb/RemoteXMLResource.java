@@ -113,8 +113,6 @@ public class RemoteXMLResource implements XMLResourceImpl {
 		if (id == null) {
 			Vector params = new Vector();
 			params.addElement(path);
-            //params.addElement("UTF-8");
-            //params.addElement(new Integer(1));
 			params.addElement(properties);
 			try {
 				data = (byte[]) parent.getClient().execute("getDocument", params);
@@ -124,12 +122,11 @@ public class RemoteXMLResource implements XMLResourceImpl {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 			}
 		} else {
-			String indent = properties.getProperty(OutputKeys.INDENT, "yes");
+			System.out.println("indent = " + properties.getProperty("indent"));
 			Vector params = new Vector();
 			params.addElement(new Integer(handle));
 			params.addElement(new Integer(pos));
-			params.addElement(new Integer(indent.equals("no") ? 0 : 1));
-			params.addElement(properties.getProperty(OutputKeys.ENCODING, "UTF-8"));
+			params.addElement(properties);
 			try {
 				data = (byte[]) parent.getClient().execute("retrieve", params);
 			} catch (XmlRpcException xre) {

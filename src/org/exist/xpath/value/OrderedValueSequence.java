@@ -78,7 +78,6 @@ public class OrderedValueSequence extends AbstractSequence {
 	 * @see org.exist.xpath.value.AbstractSequence#addAll(org.exist.xpath.value.Sequence)
 	 */
 	public void addAll(Sequence other) throws XPathException {
-		System.out.println("adding " + other.getLength());
 		if(other.getLength() > 0) {
 			Item next;
 			for(SequenceIterator i = other.iterate(); i.hasNext(); ) {
@@ -124,7 +123,6 @@ public class OrderedValueSequence extends AbstractSequence {
 				values[i] = AtomicValue.EMPTY_VALUE;
 				if(seq.getLength() == 1) {
 					values[i] = seq.itemAt(0).atomize();
-					System.out.println("added " + values[i].getStringValue());
 				} else if(seq.getLength() > 1)
 					throw new XPathException("expected a single value for order expression " +
 						orderSpecs[i].getSortExpression().pprint() + " ; found: " + seq.getLength());

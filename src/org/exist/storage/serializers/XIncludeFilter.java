@@ -17,7 +17,7 @@ import org.exist.parser.XPathParser2;
 import org.exist.parser.XPathTreeParser2;
 import org.exist.security.PermissionDeniedException;
 import org.exist.xpath.PathExpr;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.Type;
@@ -207,7 +207,7 @@ public class XIncludeFilter implements ContentHandler {
 					} else {
 						docs.add(doc);
 					}
-					StaticContext context = new StaticContext(serializer.broker);
+					XQueryContext context = new XQueryContext(serializer.broker);
 					context.setStaticallyKnownDocuments(docs);
 					xpointer = checkNamespaces(context, xpointer);
 					Map.Entry entry;
@@ -289,7 +289,7 @@ public class XIncludeFilter implements ContentHandler {
 	 * @return
 	 * @throws XPathException
 	 */
-	private String checkNamespaces(StaticContext context, String xpointer) throws XPathException {
+	private String checkNamespaces(XQueryContext context, String xpointer) throws XPathException {
 		int p0 = -1;
 		while((p0 = xpointer.indexOf("xmlns(")) > -1) {
 			if(p0 < 0)

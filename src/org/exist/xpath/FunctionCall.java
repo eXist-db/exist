@@ -22,7 +22,9 @@
  */
 package org.exist.xpath;
 
-import org.exist.xpath.functions.UserDefinedFunction;
+import java.util.List;
+
+import org.exist.dom.QName;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceType;
@@ -42,9 +44,24 @@ public class FunctionCall extends Function {
 	private UserDefinedFunction functionDef;
 	private Expression expression;
 	
-	public FunctionCall(StaticContext context, UserDefinedFunction functionDef) {
-		super(context, functionDef.getSignature());
+	// the name of the function. Used for forward references.
+	private QName name = null;
+	private List arguments = null;
+	
+	public FunctionCall(XQueryContext context, QName name, List arguments) {
+		super(context);
+		this.name = name;
+		this.arguments = arguments;
+	}
+	
+	public FunctionCall(XQueryContext context, UserDefinedFunction functionDef) {
+		super(context);
+		setFunction(functionDef);
+	}
+	
+	public void setFunction(UserDefinedFunction functionDef) {
 		this.functionDef = functionDef;
+		this.mySignature = functionDef.getSignature();
 		this.expression = functionDef;
 		SequenceType returnType = functionDef.getSignature().getReturnType();
 		// add return type checks
@@ -56,6 +73,17 @@ public class FunctionCall extends Function {
 			expression = new UntypedValueCheck(context, returnType.getPrimaryType(), expression);
 		else if(returnType.getPrimaryType() != Type.ITEM)
 			expression = new DynamicTypeCheck(context, returnType.getPrimaryType(), expression);
+	}
+	
+	public void resolveForwardReference(UserDefinedFunction functionDef) throws XPathException {
+		setFunction(functionDef);
+		setArguments(arguments);
+		arguments = null;
+		name = null;
+	} 
+	
+	public QName getQName() {
+		return name;
 	}
 	
 	/** 

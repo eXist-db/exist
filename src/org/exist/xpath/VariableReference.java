@@ -36,7 +36,7 @@ public class VariableReference extends AbstractExpression {
 
 	private String qname;
 
-	public VariableReference(StaticContext context, String qname) {
+	public VariableReference(XQueryContext context, String qname) {
 		super(context);
 		this.qname = qname;
 	}

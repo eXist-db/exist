@@ -49,14 +49,24 @@ public class LocationStep extends Step {
 	
 	protected boolean keepVirtual = false;
 
-	public LocationStep(StaticContext context, int axis) {
+	public LocationStep(XQueryContext context, int axis) {
 		super(context, axis);
 	}
 
-	public LocationStep(StaticContext context, int axis, NodeTest test) {
+	public LocationStep(XQueryContext context, int axis, NodeTest test) {
 		super(context, axis, test);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.Step#returnsType()
+	 */
+//	public int returnsType() {
+//		if(axis == Constants.SELF_AXIS)
+//			return Type.ITEM;
+//		else
+//			return Type.NODE;
+//	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.AbstractExpression#getDependencies()
 	 */
@@ -149,7 +159,7 @@ public class LocationStep extends Step {
 	}
 
 	protected NodeSet getAttributes(
-		StaticContext context,
+		XQueryContext context,
 		NodeSet contextSet) {
 		NodeSet result;
 		if (test.isWildcardTest()) {
@@ -180,7 +190,7 @@ public class LocationStep extends Step {
 	}
 
 	protected NodeSet getChildren(
-		StaticContext context,
+		XQueryContext context,
 		NodeSet contextSet) {
 		if (test.isWildcardTest()) {
 			// test is one out of *, text(), node()
@@ -202,7 +212,7 @@ public class LocationStep extends Step {
 	}
 
 	protected NodeSet getDescendants(
-		StaticContext context,
+		XQueryContext context,
 		NodeSet contextSet) {
 		if (test.isWildcardTest()) {
 			// test is one out of *, text(), node()
@@ -227,7 +237,7 @@ public class LocationStep extends Step {
 	}
 
 	protected NodeSet getSiblings(
-		StaticContext context,
+		XQueryContext context,
 		NodeSet contextSet) {
 		if (!test.isWildcardTest()) {
 			DocumentSet docs = contextSet.getDocumentSet();
@@ -273,7 +283,7 @@ public class LocationStep extends Step {
 	}
 
 	protected NodeSet getAncestors(
-		StaticContext context,
+		XQueryContext context,
 		NodeSet contextSet) {
 		if (!test.isWildcardTest()) {
 			DocumentSet docs = contextSet.getDocumentSet();
@@ -310,7 +320,7 @@ public class LocationStep extends Step {
 	}
 
 	protected NodeSet getParents(
-		StaticContext context,
+		XQueryContext context,
 		NodeSet contextSet) {
 		return contextSet.getParents();
 	}

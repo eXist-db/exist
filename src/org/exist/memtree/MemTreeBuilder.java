@@ -25,7 +25,7 @@ package org.exist.memtree;
 import java.util.Arrays;
 
 import org.exist.dom.QName;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
@@ -40,13 +40,13 @@ public class MemTreeBuilder {
 	protected DocumentImpl doc;
 	protected short level = 1;
 	protected int[] prevNodeInLevel;
-	protected StaticContext context = null;
+	protected XQueryContext context = null;
 	
 	public MemTreeBuilder() {
 		this(null);
 	}
 	
-	public MemTreeBuilder(StaticContext context) {
+	public MemTreeBuilder(XQueryContext context) {
 		super();
 		this.context = context;
 		prevNodeInLevel = new int[15];

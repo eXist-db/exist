@@ -41,60 +41,81 @@ import org.w3c.dom.Node;
 public class XPathUtil {
 
 	public final static Sequence javaObjectToXPath(Object obj) throws XPathException {
-		if(obj == null)
+		if (obj == null)
 			return null;
-		if(obj instanceof Sequence)
-			return (Sequence)obj;
-		else if(obj instanceof String)
-			return new StringValue((String)obj);
-		else if(obj instanceof Boolean)
-			return new BooleanValue(((Boolean)obj).booleanValue());
-		else if(obj instanceof Float)
-			return new DoubleValue(((Float)obj).doubleValue());
-		else if(obj instanceof Double)
-			return new DoubleValue(((Double)obj).doubleValue());
-		else if(obj instanceof Short)
-			return new IntegerValue(((Short)obj).longValue());
-		else if(obj instanceof Integer)
-			return new IntegerValue(((Integer)obj).longValue());
-		else if(obj instanceof Long)
-			return new IntegerValue(((Long)obj).longValue());
-		else if(obj instanceof List) {
+		if (obj instanceof Sequence)
+			return (Sequence) obj;
+		else if (obj instanceof String)
+			return new StringValue((String) obj);
+		else if (obj instanceof Boolean)
+			return new BooleanValue(((Boolean) obj).booleanValue());
+		else if (obj instanceof Float)
+			return new DoubleValue(((Float) obj).doubleValue());
+		else if (obj instanceof Double)
+			return new DoubleValue(((Double) obj).doubleValue());
+		else if (obj instanceof Short)
+			return new IntegerValue(((Short) obj).longValue());
+		else if (obj instanceof Integer)
+			return new IntegerValue(((Integer) obj).longValue());
+		else if (obj instanceof Long)
+			return new IntegerValue(((Long) obj).longValue());
+		else if (obj instanceof List) {
 			boolean createNodeSequence = true;
 			Object next;
-			for(Iterator i = ((List)obj).iterator(); i.hasNext(); ) {
+			for (Iterator i = ((List) obj).iterator(); i.hasNext();) {
 				next = i.next();
-				if(!(next instanceof NodeProxy))
+				if (!(next instanceof NodeProxy))
 					createNodeSequence = false;
 			}
 			Sequence seq = null;
-			if(createNodeSequence)
+			if (createNodeSequence)
 				seq = new AVLTreeNodeSet();
 			else
 				seq = new ValueSequence();
-			for(Iterator i = ((List)obj).iterator(); i.hasNext(); ) {
-				seq.add((Item)javaObjectToXPath(i.next()));
+			for (Iterator i = ((List) obj).iterator(); i.hasNext();) {
+				seq.add((Item) javaObjectToXPath(i.next()));
+			}
+			return seq;
+		} else if (obj instanceof Object[]) {
+			boolean createNodeSequence = true;
+			Object[] array = (Object[])obj;
+			for(int i = 0; i < array.length; i++) {
+				if (!(array[i] instanceof NodeProxy))
+					createNodeSequence = false;
+			}
+			Sequence seq = null;
+			if (createNodeSequence)
+				seq = new AVLTreeNodeSet();
+			else
+				seq = new ValueSequence();
+			for (int i = 0; i < array.length; i++) {
+				seq.add((Item) javaObjectToXPath(array[i]));
 			}
 			return seq;
 		} else
 			return new JavaObjectValue(obj);
 	}
-	
+
 	public final static int javaClassToXPath(Class clazz) {
-		if(clazz == String.class)
+		if (clazz == String.class)
 			return Type.STRING;
-		else if(clazz == Boolean.class || clazz == boolean.class)
+		else if (clazz == Boolean.class || clazz == boolean.class)
 			return Type.BOOLEAN;
-		else if(clazz == Integer.class || clazz == int.class
-			|| clazz == Long.class || clazz == long.class
-			|| clazz == Short.class || clazz == short.class
-			|| clazz == Byte.class || clazz == byte.class)
+		else if (
+			clazz == Integer.class
+				|| clazz == int.class
+				|| clazz == Long.class
+				|| clazz == long.class
+				|| clazz == Short.class
+				|| clazz == short.class
+				|| clazz == Byte.class
+				|| clazz == byte.class)
 			return Type.INTEGER;
-		else if(clazz == Double.class || clazz == double.class)
+		else if (clazz == Double.class || clazz == double.class)
 			return Type.DOUBLE;
-		else if(clazz == Float.class || clazz == float.class)
+		else if (clazz == Float.class || clazz == float.class)
 			return Type.FLOAT;
-		else if(clazz.isAssignableFrom(Node.class))
+		else if (clazz.isAssignableFrom(Node.class))
 			return Type.NODE;
 		else
 			return Type.JAVA_OBJECT;

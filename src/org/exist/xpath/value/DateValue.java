@@ -23,6 +23,7 @@
 package org.exist.xpath.value;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.SimpleTimeZone;
 
@@ -51,9 +52,7 @@ public class DateValue extends AbstractDateTimeValue {
 		Perl5Util util = new Perl5Util();
 		if (!util.match(regex, dateString))
 			throw new XPathException(
-				"Type error: string "
-					+ dateString
-					+ " cannot be cast into an xs:date");
+				"Type error: string " + dateString + " cannot be cast into an xs:date");
 		String part = util.group(1);
 		int era = 1;
 		if (part != null && part.equals("-"))
@@ -93,7 +92,7 @@ public class DateValue extends AbstractDateTimeValue {
 		calendar.setLenient(false);
 		calendar.set(year, month - 1, day, 0, 0, 0);
 		calendar.set(Calendar.MILLISECOND, 0);
-		if(explicitTimeZone)
+		if (explicitTimeZone)
 			calendar.set(Calendar.ZONE_OFFSET, tzOffset * 60000);
 		try {
 			date = calendar.getTime();
@@ -101,7 +100,6 @@ public class DateValue extends AbstractDateTimeValue {
 			throw new XPathException(
 				"Type error: string " + dateString + " cannot be cast into an xs:date");
 		}
-		System.out.println(tzOffset);
 	}
 
 	public DateValue(Calendar cal, int timezone) {
@@ -110,11 +108,14 @@ public class DateValue extends AbstractDateTimeValue {
 		SimpleTimeZone zone = new SimpleTimeZone(tzOffset * 60000, "LLL");
 		calendar = new GregorianCalendar(zone);
 		calendar.setLenient(false);
-		calendar.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DATE));
+		calendar.set(
+			cal.get(Calendar.YEAR),
+			cal.get(Calendar.MONTH),
+			cal.get(Calendar.DATE));
 		calendar.set(Calendar.ZONE_OFFSET, tzOffset * 60000);
 		date = calendar.getTime();
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.AtomicValue#getType()
 	 */
@@ -181,7 +182,7 @@ public class DateValue extends AbstractDateTimeValue {
 	 */
 	public boolean compareTo(int operator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.DATE) {
-			int cmp = date.compareTo(((DateValue)other).date);
+			int cmp = date.compareTo(((DateValue) other).date);
 			switch (operator) {
 				case Constants.EQ :
 					return cmp == 0;
@@ -203,13 +204,13 @@ public class DateValue extends AbstractDateTimeValue {
 				"Type error: cannot compare xs:date to "
 					+ Type.getTypeName(other.getType()));
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.AtomicValue#compareTo(org.exist.xpath.value.AtomicValue)
 	 */
 	public int compareTo(AtomicValue other) throws XPathException {
 		if (other.getType() == Type.DATE) {
-			return date.compareTo(((DateValue)other).date);
+			return date.compareTo(((DateValue) other).date);
 		} else
 			throw new XPathException(
 				"Type error: cannot compare xs:date to "
@@ -245,24 +246,26 @@ public class DateValue extends AbstractDateTimeValue {
 	 */
 	public ComputableValue minus(ComputableValue other) throws XPathException {
 		Calendar ncal;
-		switch(other.getType()) {
-			case Type.YEAR_MONTH_DURATION:
-				YearMonthDurationValue value = (YearMonthDurationValue)other;
-				ncal = (Calendar)calendar.clone();
+		switch (other.getType()) {
+			case Type.YEAR_MONTH_DURATION :
+				YearMonthDurationValue value = (YearMonthDurationValue) other;
+				ncal = (Calendar) calendar.clone();
 				ncal.add(Calendar.YEAR, (value.negative ? value.year : -value.year));
 				ncal.add(Calendar.MONTH, (value.negative ? value.month : -value.month));
 				return new DateValue(ncal, tzOffset);
-			case Type.DAY_TIME_DURATION:
-				DayTimeDurationValue dtv = (DayTimeDurationValue)other;
-				ncal = (Calendar)calendar.clone();
+			case Type.DAY_TIME_DURATION :
+				DayTimeDurationValue dtv = (DayTimeDurationValue) other;
+				ncal = (Calendar) calendar.clone();
 				ncal.add(Calendar.DATE, dtv.day);
 				return new DateValue(ncal, tzOffset);
-			case Type.DATE:
-				return new DayTimeDurationValue(calendar.getTimeInMillis() - ((DateValue)other).calendar.getTimeInMillis()); 
-			default:
+			case Type.DATE :
+				return new DayTimeDurationValue(
+					calendar.getTimeInMillis()
+						- ((DateValue) other).calendar.getTimeInMillis());
+			default :
 				throw new XPathException(
 					"Operand to plus should be of type xdt:yearMonthDuration or xdt:dayTimeDuration; got: "
-					+ Type.getTypeName(other.getType()));
+						+ Type.getTypeName(other.getType()));
 		}
 	}
 
@@ -271,22 +274,22 @@ public class DateValue extends AbstractDateTimeValue {
 	 */
 	public ComputableValue plus(ComputableValue other) throws XPathException {
 		Calendar ncal;
-		switch(other.getType()) {
-			case Type.YEAR_MONTH_DURATION:
-				YearMonthDurationValue value = (YearMonthDurationValue)other;
-				ncal = (Calendar)calendar.clone();
+		switch (other.getType()) {
+			case Type.YEAR_MONTH_DURATION :
+				YearMonthDurationValue value = (YearMonthDurationValue) other;
+				ncal = (Calendar) calendar.clone();
 				ncal.add(Calendar.YEAR, (value.negative ? -value.year : value.year));
 				ncal.add(Calendar.MONTH, (value.negative ? -value.month : value.month));
 				return new DateValue(ncal, tzOffset);
-			case Type.DAY_TIME_DURATION:
-				DayTimeDurationValue dtv = (DayTimeDurationValue)other;
-				ncal = (Calendar)calendar.clone();
+			case Type.DAY_TIME_DURATION :
+				DayTimeDurationValue dtv = (DayTimeDurationValue) other;
+				ncal = (Calendar) calendar.clone();
 				ncal.add(Calendar.DATE, (dtv.negative ? -dtv.day : dtv.day));
 				return new DateValue(ncal, tzOffset);
-			default:
+			default :
 				throw new XPathException(
 					"Operand to plus should be of type xdt:yearMonthDuration or xdt:dayTimeDuration; got: "
-					+ Type.getTypeName(other.getType()));
+						+ Type.getTypeName(other.getType()));
 		}
 	}
 
@@ -304,6 +307,38 @@ public class DateValue extends AbstractDateTimeValue {
 	public ComputableValue div(ComputableValue other) throws XPathException {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#conversionPreference(java.lang.Class)
+	 */
+	public int conversionPreference(Class javaClass) {
+		if (javaClass.isAssignableFrom(DateValue.class))
+			return 0;
+		if (javaClass == Date.class)
+			return 1;
+		if (javaClass == Object.class)
+			return 20;
+
+		return Integer.MAX_VALUE;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#toJavaObject(java.lang.Class)
+	 */
+	public Object toJavaObject(Class target) throws XPathException {
+		if (target.isAssignableFrom(DateValue.class))
+			return this;
+		else if (target == Date.class)
+			return calendar.getTime();
+		else if (target == Object.class)
+			return this;
+
+		throw new XPathException(
+			"cannot convert value of type "
+				+ Type.getTypeName(getType())
+				+ " to Java object of type "
+				+ target.getName());
 	}
 
 }

@@ -1,0 +1,25 @@
+body {
+          font-family: Arial, Helvetica, sans-serif;
+          color: black;
+          background: white;
+          background-position: top left;
+          background-attachment: fixed;
+          background-repeat: no-repeat;
+          text-align: left;
+          alignment: left;
+          padding: 10px;
+          }
+          
+table.login {
+    border: 1px solid black;
+    padding: 5px;
+    text-align: center;
+    margin-top: 15px;
+    background-color: #D0DFEC;
+}
+
+tr.top {
+    background-color: #0000FF;
+    color: white;
+}
+

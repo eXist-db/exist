@@ -23,6 +23,7 @@
 package org.exist.xpath.value;
 
 import org.exist.xpath.XPathException;
+import org.w3c.dom.Node;
 
 /**
  * Represents a node value. May either be an in-memory node
@@ -30,7 +31,7 @@ import org.exist.xpath.XPathException;
  * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public interface NodeValue extends Item {
+public interface NodeValue extends Item, Sequence {
 	
 	/** Node is a constructed in-memory node */
 	public final static int IN_MEMORY_NODE = 0;
@@ -75,4 +76,6 @@ public interface NodeValue extends Item {
 	 * @return
 	 */
 	public int getImplementationType();
+	
+	public Node getNode();
 }

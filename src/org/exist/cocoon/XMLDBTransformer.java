@@ -86,6 +86,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 	private int mode = 0;
 	private XMLResource currentResource = null;
 	private HashMap namespaces = new HashMap(20);
+	private String prefix = null;
 	
 	/**
 	 * Setup the component. Accepts parameters "driver", "user" and
@@ -121,9 +122,11 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 				++nesting;
 			super.startElement(uri, localName, qname, attribs);
 		} else if (NAMESPACE.equals(uri)) {
-			if (COLLECTION_ELEMENT.equals(localName))
+			if (COLLECTION_ELEMENT.equals(localName)) {
+				prefix = ( qname.endsWith(localName) ? qname.substring(0, qname.length() - localName.length())
+					: PREFIX );
 				startCollection(attribs);
-			else if (FOR_EACH_ELEMENT.equals(localName))
+			} else if (FOR_EACH_ELEMENT.equals(localName))
 				startForEach(attribs);
 			else if (CURRENT_NODE_ELEMENT.equals(localName))
 				startCurrent(attribs);
@@ -136,13 +139,13 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 					a.addAttribute(
 						NAMESPACE,
 						"document-id",
-						PREFIX + "document-id",
+						prefix + "document-id",
 						"CDATA",
 						currentResource.getDocumentId());
 					a.addAttribute(
 						NAMESPACE,
 						"collection",
-						PREFIX + "collection",
+						prefix + "collection",
 						"CDATA",
 						currentResource.getParentCollection().getName());
 					super.startElement(uri, localName, qname, a);
@@ -350,7 +353,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 				super.startElement(
 					NAMESPACE,
 					RESULT_SET_ELEMENT,
-					PREFIX + RESULT_SET_ELEMENT,
+					prefix + RESULT_SET_ELEMENT,
 					atts);
 			}
 		} catch (XMLDBException e) {
@@ -447,7 +450,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 		}
 		commandStack.pop();
 		if (commandStack.isEmpty())
-			super.endElement(NAMESPACE, RESULT_SET_ELEMENT, PREFIX + RESULT_SET_ELEMENT);
+			super.endElement(NAMESPACE, RESULT_SET_ELEMENT, prefix + RESULT_SET_ELEMENT);
 	}
 
 	/* (non-Javadoc)

@@ -30,7 +30,7 @@ import org.exist.xpath.Cardinality;
 import org.exist.xpath.Dependency;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.AtomicValue;
 import org.exist.xpath.value.Item;
@@ -51,7 +51,7 @@ public class FunDistinctValues extends Function {
 			new SequenceType[] { new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)},
 			new SequenceType(Type.ATOMIC, Cardinality.ONE));
 
-	public FunDistinctValues(StaticContext context) {
+	public FunDistinctValues(XQueryContext context) {
 		super(context, signature);
 	}
 

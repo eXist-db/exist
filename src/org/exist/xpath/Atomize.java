@@ -35,7 +35,7 @@ public class Atomize extends AbstractExpression {
 
 	private Expression expression;
 	
-	public Atomize(StaticContext context, Expression expr) {
+	public Atomize(XQueryContext context, Expression expr) {
 		super(context);
 		this.expression = expr;
 	}

@@ -23,7 +23,7 @@ package org.exist.xpath.value;
 import org.exist.dom.QName;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.util.hashtable.Object2IntHashMap;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 
 /**
@@ -64,7 +64,8 @@ public class Type {
 	public final static int STRING = 22;
 	public final static int BOOLEAN = 23;
 	public final static int QNAME = 24;
-
+	public final static int ANY_URI = 25;
+	
 	public final static int NUMBER = 30;
 	public final static int INTEGER = 31;
 	public final static int DECIMAL = 32;
@@ -91,6 +92,16 @@ public class Type {
 	public final static int YEAR_MONTH_DURATION = 54;
 	public final static int DAY_TIME_DURATION = 55;
 	
+	public final static int TOKEN = 60;
+	public final static int NORMALIZED_STRING = 61;
+	public final static int LANGUAGE = 62;
+	public final static int NMTOKEN = 63;
+	public final static int NAME = 64;
+	public final static int NCNAME = 65;
+	public final static int ID = 66;
+	public final static int IDREF = 67;
+	public final static int ENTITY = 68;
+	
 	public final static int JAVA_OBJECT = 100;
 
 	private final static Int2ObjectHashMap typeHierarchy = new Int2ObjectHashMap();
@@ -109,6 +120,7 @@ public class Type {
 		defineSubType(ATOMIC, STRING);
 		defineSubType(ATOMIC, BOOLEAN);
 		defineSubType(ATOMIC, QNAME);
+		defineSubType(ATOMIC, ANY_URI);
 		defineSubType(ATOMIC, NUMBER);
 		defineSubType(ATOMIC, UNTYPED_ATOMIC);
 		defineSubType(ATOMIC, JAVA_OBJECT);
@@ -141,6 +153,16 @@ public class Type {
 		defineSubType(UNSIGNED_LONG, UNSIGNED_INT);
 		defineSubType(UNSIGNED_INT, UNSIGNED_SHORT);
 		defineSubType(UNSIGNED_SHORT, UNSIGNED_BYTE);
+		
+		defineSubType(STRING, NORMALIZED_STRING);
+		defineSubType(NORMALIZED_STRING, TOKEN);
+		defineSubType(TOKEN, LANGUAGE);
+		defineSubType(TOKEN, NMTOKEN);
+		defineSubType(TOKEN, NAME);
+		defineSubType(NAME, NCNAME);
+		defineSubType(NCNAME, ID);
+		defineSubType(NCNAME, IDREF);
+		defineSubType(NCNAME, ENTITY);
 	}
 
 	private final static Int2ObjectHashMap typeNames = new Int2ObjectHashMap(100);
@@ -187,6 +209,7 @@ public class Type {
 		
 		defineBuiltInType(STRING, "xs:string");
 		defineBuiltInType(QNAME, "xs:QName");
+		defineBuiltInType(ANY_URI, "xs:anyURI");
 		
 		defineBuiltInType(DATE_TIME, "xs:dateTime");
 		defineBuiltInType(DATE, "xs:date");
@@ -194,6 +217,16 @@ public class Type {
 		defineBuiltInType(DURATION, "xs:duration");
 		defineBuiltInType(YEAR_MONTH_DURATION, "xdt:yearMonthDuration");
 		defineBuiltInType(DAY_TIME_DURATION, "xdt:dayTimeDuration");
+		
+		defineBuiltInType(NORMALIZED_STRING, "xs:normalizedString");
+		defineBuiltInType(TOKEN, "xs:token");
+		defineBuiltInType(LANGUAGE, "xs:language");
+		defineBuiltInType(NMTOKEN, "xs:NMTOKEN");
+		defineBuiltInType(NAME, "xs:Name");
+		defineBuiltInType(NCNAME, "xs:NCName");
+		defineBuiltInType(ID, "xs:ID");
+		defineBuiltInType(IDREF, "xs:IDREF");
+		defineBuiltInType(ENTITY, "xs:ENTITY");
 	}
 
 	public final static void defineBuiltInType(int type, String name) {
@@ -236,9 +269,9 @@ public class Type {
 	 */
 	public final static int getType(QName qname) throws XPathException {
 		String uri = qname.getNamespaceURI();
-		if (uri.equals(StaticContext.SCHEMA_NS))
+		if (uri.equals(XQueryContext.SCHEMA_NS))
 			return getType("xs:" + qname.getLocalName());
-		else if (uri.equals(StaticContext.XPATH_DATATYPES_NS))
+		else if (uri.equals(XQueryContext.XPATH_DATATYPES_NS))
 			return getType("xdt:" + qname.getLocalName());
 		else
 			return getType(qname.getLocalName());

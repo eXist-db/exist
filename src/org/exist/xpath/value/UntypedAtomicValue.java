@@ -150,7 +150,8 @@ public class UntypedAtomicValue extends AtomicValue {
 		if (Type.subTypeOf(other.getType(), Type.STRING))
 			return value.compareTo(((StringValue) other).value) > 0 ? this : other;
 		else
-			return value.compareTo(((StringValue) other.convertTo(Type.STRING)).value) > 0
+			return value.compareTo(((StringValue) other.convertTo(Type.STRING)).value)
+				> 0
 				? this
 				: other;
 	}
@@ -162,9 +163,84 @@ public class UntypedAtomicValue extends AtomicValue {
 		if (Type.subTypeOf(other.getType(), Type.STRING))
 			return value.compareTo(((StringValue) other).value) < 0 ? this : other;
 		else
-			return value.compareTo(((StringValue) other.convertTo(Type.STRING)).value) < 0
+			return value.compareTo(((StringValue) other.convertTo(Type.STRING)).value)
+				< 0
 				? this
 				: other;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#conversionPreference(java.lang.Class)
+	 */
+	public int conversionPreference(Class javaClass) {
+		if (javaClass.isAssignableFrom(StringValue.class))
+			return 0;
+		if (javaClass == String.class || javaClass == CharSequence.class)
+			return 1;
+		if (javaClass == Character.class || javaClass == char.class)
+			return 2;
+		if (javaClass == Double.class || javaClass == double.class)
+			return 10;
+		if (javaClass == Float.class || javaClass == float.class)
+			return 11;
+		if (javaClass == Long.class || javaClass == long.class)
+			return 12;
+		if (javaClass == Integer.class || javaClass == int.class)
+			return 13;
+		if (javaClass == Short.class || javaClass == short.class)
+			return 14;
+		if (javaClass == Byte.class || javaClass == byte.class)
+			return 15;
+		if (javaClass == Boolean.class || javaClass == boolean.class)
+			return 16;
+		if (javaClass == Object.class)
+			return 20;
+
+		return Integer.MAX_VALUE;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#toJavaObject(java.lang.Class)
+	 */
+	public Object toJavaObject(Class target) throws XPathException {
+		if (target.isAssignableFrom(StringValue.class))
+			return this;
+		else if (
+			target == Object.class
+				|| target == String.class
+				|| target == CharSequence.class)
+			return value;
+		else if (target == double.class || target == Double.class) {
+			DoubleValue v = (DoubleValue) convertTo(Type.DOUBLE);
+			return new Double(v.getValue());
+		} else if (target == float.class || target == Float.class) {
+			FloatValue v = (FloatValue) convertTo(Type.FLOAT);
+			return new Float(v.value);
+		} else if (target == long.class || target == Long.class) {
+			IntegerValue v = (IntegerValue) convertTo(Type.LONG);
+			return new Long(v.getInt());
+		} else if (target == int.class || target == Integer.class) {
+			IntegerValue v = (IntegerValue) convertTo(Type.INT);
+			return new Integer(v.getInt());
+		} else if (target == short.class || target == Short.class) {
+			IntegerValue v = (IntegerValue) convertTo(Type.SHORT);
+			return new Short((short) v.getInt());
+		} else if (target == byte.class || target == Byte.class) {
+			IntegerValue v = (IntegerValue) convertTo(Type.BYTE);
+			return new Byte((byte) v.getInt());
+		} else if (target == boolean.class || target == Boolean.class) {
+			return new Boolean(effectiveBooleanValue());
+		} else if (target == char.class || target == Character.class) {
+			if (value.length() > 1 || value.length() == 0)
+				throw new XPathException("cannot convert string with length = 0 or length > 1 to Java character");
+			return new Character(value.charAt(0));
+		}
+
+		throw new XPathException(
+			"cannot convert value of type "
+				+ Type.getTypeName(getType())
+				+ " to Java object of type "
+				+ target.getName());
 	}
 
 }

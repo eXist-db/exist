@@ -42,7 +42,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-public class NodeImpl implements Node, NodeValue, Sequence {
+public class NodeImpl implements Node, NodeValue {
 
 	protected int nodeNumber;
 	protected DocumentImpl document;
@@ -63,6 +63,13 @@ public class NodeImpl implements Node, NodeValue, Sequence {
 		return NodeValue.IN_MEMORY_NODE;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NodeValue#getNode()
+	 */
+	public Node getNode() {
+		return this;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getNodeName()
 	 */
@@ -466,8 +473,56 @@ public class NodeImpl implements Node, NodeValue, Sequence {
 			throw new SAXException(e);
 		}
 	}
-	
+
 	public void copyTo(DBBroker broker, Receiver receiver) throws SAXException {
 		toSAX(broker, receiver);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#conversionPreference(java.lang.Class)
+	 */
+	public int conversionPreference(Class javaClass) {
+		if (javaClass.isAssignableFrom(NodeImpl.class))
+			return 0;
+		if (javaClass.isAssignableFrom(Node.class))
+			return 1;
+		if (javaClass == String.class || javaClass == CharSequence.class)
+			return 2;
+		if (javaClass == Character.class || javaClass == char.class)
+			return 2;
+		if (javaClass == Double.class || javaClass == double.class)
+			return 10;
+		if (javaClass == Float.class || javaClass == float.class)
+			return 11;
+		if (javaClass == Long.class || javaClass == long.class)
+			return 12;
+		if (javaClass == Integer.class || javaClass == int.class)
+			return 13;
+		if (javaClass == Short.class || javaClass == short.class)
+			return 14;
+		if (javaClass == Byte.class || javaClass == byte.class)
+			return 15;
+		if (javaClass == Boolean.class || javaClass == boolean.class)
+			return 16;
+		if (javaClass == Object.class)
+			return 20;
+
+		return Integer.MAX_VALUE;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#toJavaObject(java.lang.Class)
+	 */
+	public Object toJavaObject(Class target) throws XPathException {
+		if (target.isAssignableFrom(NodeImpl.class))
+			return this;
+		else if (target.isAssignableFrom(Node.class))
+			return this;
+		else if (target == Object.class)
+			return this;
+		else {
+			StringValue v = new StringValue(getStringValue());
+			return v.toJavaObject(target);
+		}
 	}
 }

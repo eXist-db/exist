@@ -36,7 +36,7 @@ import org.exist.xpath.Expression;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
 import org.exist.xpath.PathExpr;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
@@ -58,12 +58,12 @@ public class ExtFulltext extends Function {
 	protected String terms[] = null;
 	protected int type = Constants.FULLTEXT_AND;
 
-	public ExtFulltext(StaticContext context, int type) {
+	public ExtFulltext(XQueryContext context, int type) {
 		super(context, signature);
 		this.type = type;
 	}
 
-	public ExtFulltext(StaticContext context, PathExpr path) {
+	public ExtFulltext(XQueryContext context, PathExpr path) {
 		super(context, signature);
 		this.path = path;
 	}
@@ -76,7 +76,7 @@ public class ExtFulltext extends Function {
 		searchTerm = term;
 	}
 
-	protected void getSearchTerms(StaticContext context, String searchString)
+	protected void getSearchTerms(XQueryContext context, String searchString)
 		throws EXistException {
 		List tokens = new ArrayList();
 		Tokenizer tokenizer =
@@ -160,7 +160,7 @@ public class ExtFulltext extends Function {
 	}
 
 	public Sequence evalQuery(
-		StaticContext context,
+		XQueryContext context,
 		String searchArg,
 		NodeSet nodes)
 		throws XPathException {
@@ -200,7 +200,7 @@ public class ExtFulltext extends Function {
 	}
 
 	protected NodeSet processQuery(
-		StaticContext context,
+		XQueryContext context,
 		NodeSet contextSet) {
 		if (terms == null)
 			throw new RuntimeException("no search terms");

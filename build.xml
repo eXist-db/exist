@@ -41,6 +41,7 @@
 			<include name="*.jar"/>
 		</fileset>
         <pathelement path="exist.jar"/>
+		<pathelement path="exist-optional.jar"/>
         <pathelement path="${java.class.path}"/>
     </path>
 
@@ -56,6 +57,7 @@
 	<path id="classpath.axis">
 		<fileset dir="${lib.optional}">
 			<include name="axis-ant.jar"/>
+            <include name="axis-1.1.jar"/>
 		</fileset>
 	</path>
 	
@@ -70,9 +72,6 @@
 	<taskdef name="axis-admin" classname="org.apache.axis.tools.ant.axis.AdminClientTask">
 		<classpath refid="classpath.core"/>
 	</taskdef>
-
-	<!--taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
-		classname="com.izforge.izpack.ant.IzPackTask"/-->
     
     <!-- =================================================================== -->
     <!-- Prepare the build                                                   -->
@@ -83,17 +82,9 @@
 		<echo message="basedir=${basedir}"/>
         <mkdir dir="${build}"/>
         <mkdir dir="${build.classes}"/>
-        <uptodate property="parser_uptodate" targetfile="src/org/exist/parser/XPathParser.g">
-            <srcfiles dir="src/org/exist/parser" includes="*.java"/>
-        </uptodate>
-        <available classname="antlr.Tool" property="antlr.avail">
-            <classpath>
-                <path refid="classpath.core"/>
-            </classpath>
-        </available>
 		<mkdir dir="${jetty.dir}/logs"/>
     </target>
-    
+
     <!-- =================================================================== -->
     <!-- Compiles the source code                                            -->
     <!-- =================================================================== -->
@@ -107,81 +98,7 @@
                 <path refid="classpath.core"/>
 				<path refid="classpath.jetty"/>
             </classpath>
-            <exclude name="org/exist/start/**"/>
         </javac>
-    </target>
-    
-    <!-- ============================================================ -->
-    <!-- Axis SOAP                                                    -->
-    <!-- ============================================================ -->
-    <target depends="compile" name="wsdl2java">
-    	<mkdir dir="${build.soap}"/>
-        <wsdl2java url="${src}/org/exist/soap/query.wsdl"
-            output="${build.soap}"
-            deployscope="session"
-            serverSide="yes"
-            skeletonDeploy="yes"
-	    	verbose="no">
-            <mapping namespace="urn:exist" package="org.exist.soap"/>
-        </wsdl2java>
-		<copy todir="${src}/org/exist/soap">
-			<fileset dir="${build.soap}/org/exist/soap">
-				<include name="QueryService.java"/>
-				<include name="QueryServiceLocator.java"/>
-				<include name="QuerySoapBindingSkeleton.java"/>
-				<include name="QuerySoapBindingStub.java"/>
-			</fileset>
-		</copy>
-		<copy file="${build.soap}/org/exist/soap/deploy.wsdd" tofile="${src}/org/exist/soap/deployQuery.wsdd"/>
-		<copy file="${build.soap}/org/exist/soap/undeploy.wsdd" tofile="${src}/org/exist/soap/undeployQuery.wsdd"/>
-		<wsdl2java url="${src}/org/exist/soap/admin.wsdl"
-            output="${build.soap}"
-            deployscope="session"
-            serverSide="yes"
-            skeletonDeploy="yes"
-	    	verbose="no">
-            <mapping namespace="urn:exist" package="org.exist.soap"/>
-        </wsdl2java>
-        <copy todir="${src}/org/exist/soap">
-			<fileset dir="${build.soap}/org/exist/soap">
-				<include name="AdminService.java"/>
-				<include name="AdminServiceLocator.java"/>
-				<include name="AdminSoapBindingSkeleton.java"/>
-				<include name="AdminSoapBindingStub.java"/>
-			</fileset>
-		</copy>
-		<copy file="${build.soap}/org/exist/soap/deploy.wsdd" tofile="${src}/org/exist/soap/deployAdmin.wsdd"/>
-		<copy file="${build.soap}/org/exist/soap/undeploy.wsdd" tofile="${src}/org/exist/soap/undeployAdmin.wsdd"/>
-    </target>
-    
-    <target depends="jar" name="java2wsdl">
-        <java2wsdl classname="org.exist.soap.Query"
-            location="http://localhost:8080/exist/services/Query"
-            output="${src}/org/exist/soap/query.wsdl"
-	    	namespace="urn:exist">
-            <mapping namespace="urn:exist" package="org.exist.soap"/>
-        </java2wsdl>
-		<java2wsdl classname="org.exist.soap.Admin"
-            location="http://localhost:8080/exist/services/Admin"
-            output="${src}/org/exist/soap/admin.wsdl"
-	    	namespace="urn:exist">
-            <mapping namespace="urn:exist" package="org.exist.soap"/>
-        </java2wsdl>    
-    </target>
-
-    <target depends="compile" name="deploy">
-        <java classname="org.apache.axis.client.AdminClient" fork="false">
-            <arg value="-lhttp://localhost:8080/exist/services/QueryService"/>
-            <arg value="${src}/org/exist/soap/deploy.wsdd"/>
-        </java>
-    </target>
-    
-    <target depends="compile" name="undeploy">
-        <java classname="org.apache.axis.client.AdminClient" fork="false">
-            <arg value="-lhttp://localhost:8080/exist/services/QueryService"/>
-            <arg value="${src}/org/exist/soap/undeploy.wsdd"/>
-			<classpath refid="classpath.axis"/>
-        </java>
     </target>
     
     <!-- =================================================================== -->
@@ -211,8 +128,10 @@
     <target depends="prepare" name="samples">
 		<delete failonerror="false" dir="${build}/examples"/>
         <mkdir dir="${build}/examples"/>
-		<javac debug="${build.debug}" deprecation="${build.deprecation}" 
-			destdir="${build}/examples" srcdir="${samples}" encoding="UTF-8">
+		<javac debug="${build.debug}" 
+			deprecation="${build.deprecation}" 
+			destdir="${build}/examples" srcdir="${samples}" 
+			encoding="UTF-8">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
@@ -225,51 +144,59 @@
     <!-- =================================================================== -->
     <!-- Create jar file          										   -->
     <!-- =================================================================== -->
-    <target depends="compile" name="jar">
-        <copy file="${src}/org/exist/exist.xsl" todir="${build.classes}/org/exist"/>
-        <copy file="${src}/org/exist/xmldb.xsl" todir="${build.classes}/org/exist"/>
-        <copy file="${src}/org/exist/xmldb2.xsl" todir="${build.classes}/org/exist"/>
+    <target name="jar" depends="compile">
         <copy file="${src}/CatalogManager.properties" todir="${build.classes}"/>
-		<copy file="${src}/org/exist/ant/antlib.xml" todir="${build.classes}/org/exist/ant"/>
-	<copy todir="${build.classes}/org/exist/client">
-		<fileset dir="${src}/org/exist/client">
-			<include name="icons/**.png"/>
-			<include name="icons/**.gif"/>
-			<include name="*.xsl"/>
-		</fileset>
-	</copy>
-        <jar basedir="${build.classes}" compress="true" jarfile="exist.jar"
-        	excludes="org/exist/start/**"/>
-    </target>
-    
-    <!-- ================================================================== -->
-    <!-- Create start.jar													-->
-    <!-- ================================================================== -->
-    <target name="compile-start">
-    	<javac debug="${build.debug}" deprecation="${build.deprecation}" destdir="${build.classes}"
-			optimize="${build.optimize}" srcdir="${src}" target="1.4">
-            <classpath>
-                <path refid="classpath.core"/>
-				<path refid="classpath.jetty"/>
-            </classpath>
-            <include name="org/exist/start/**"/>
-        </javac>
-    </target>
-    
-    <target name="start" depends="compile-start">
-    	<copy file="${src}/org/exist/start/MANIFEST.MF" todir="${build.classes}/org/exist/start"/>
+	    <copy todir="${build.classes}/org/exist/client">
+		    <fileset dir="${src}/org/exist/client">
+			    <include name="icons/**.png"/>
+			    <include name="icons/**.gif"/>
+			    <include name="*.xsl"/>
+		    </fileset>
+	    </copy>
+        <copy file="${src}/org/exist/ant/antlib.xml" 
+			todir="${build.classes}/org/exist/ant"/>
+        <copy file="${src}/org/exist/exist.xsl" 
+			todir="${build.classes}/org/exist"/>
+        <copy file="${src}/org/exist/xmldb.xsl" 
+			todir="${build.classes}/org/exist"/>
+        <copy file="${src}/org/exist/xmldb2.xsl" 
+			todir="${build.classes}/org/exist"/>
+        <copy file="${src}/org/exist/start/MANIFEST.MF" todir="${build.classes}/org/exist/start"/>
         <copy file="${src}/org/exist/start/start.config" todir="${build.classes}/org/exist/start"/>
-		<jar basedir="${build.classes}" compress="true" jarfile="start.jar"
-    		manifest="${build.classes}/org/exist/start/MANIFEST.MF">
-    		<include name="org/exist/start/**"/>
-    	</jar>
+
+        <echo message="Creating exist.jar ..."/>
+        <jar basedir="${build.classes}" compress="true" jarfile="exist.jar">
+       		<exclude name="org/exist/start/**"/>
+            <exclude name="org/exist/soap/**"/>
+            <exclude name="org/exist/ant/**"/>
+            <exclude name="org/exist/http/servlets/**"/>
+            <exclude name="org/exist/xpath/functions/request/**"/>
+            <exclude name="org/exist/cocoon/**"/>
+            <exclude name="org/exist/*.xsl"/>
+		</jar>
+
+        <echo message="Creating start.jar ..."/>
+        <jar basedir="${build.classes}" compress="true" jarfile="start.jar"
+            manifest="${src}/org/exist/start/MANIFEST.MF">
+            <include name="org/exist/start/**"/>
+        </jar>
+
+        <echo message="Creating exist-optional.jar ..."/>
+        <jar basedir="${build.classes}" compress="true" jarfile="exist-optional.jar">
+            <include name="org/exist/soap/**"/>
+            <include name="org/exist/ant/**"/>
+            <include name="org/exist/http/servlets/**"/>
+            <include name="org/exist/xpath/functions/request/**"/>
+            <include name="org/exist/cocoon/**"/>
+            <include name="org/exist/*.xsl"/>
+        </jar>
     </target>
-    
+	
     <!-- ================================================================== -->
     <!-- Build all                                                                                                                                        -->
     <!-- ================================================================== -->
-    <target name="all" depends="jar,start"/>
-    
+    <target name="all" depends="jar"/>
+
     <!-- ================================================================== -->
     <!-- Run JUnit tests                                                    -->
     <!-- ================================================================== -->
@@ -331,9 +258,85 @@
     	<delete dir="samples/classes"/>
 		<delete file="examples.jar"/>
         <delete file="exist.jar"/>
+		<delete file="exist-optional.jar"/>
+		<delete file="start.jar"/>
         <delete dir="${dist}"/>
     </target>
+
+<!-- ============================================================ -->
+    <!-- Axis SOAP                                                    -->
+    <!-- ============================================================ -->
+    <target depends="compile" name="wsdl2java">
+    	<mkdir dir="${build.soap}"/>
+        <wsdl2java url="${src}/org/exist/soap/query.wsdl"
+            output="${build.soap}"
+            deployscope="session"
+            serverSide="yes"
+            skeletonDeploy="yes"
+	    	verbose="no">
+            <mapping namespace="urn:exist" package="org.exist.soap"/>
+        </wsdl2java>
+		<copy todir="${src}/org/exist/soap">
+			<fileset dir="${build.soap}/org/exist/soap">
+				<include name="QueryService.java"/>
+				<include name="QueryServiceLocator.java"/>
+				<include name="QuerySoapBindingSkeleton.java"/>
+				<include name="QuerySoapBindingStub.java"/>
+			</fileset>
+		</copy>
+		<copy file="${build.soap}/org/exist/soap/deploy.wsdd" tofile="${src}/org/exist/soap/deployQuery.wsdd"/>
+		<copy file="${build.soap}/org/exist/soap/undeploy.wsdd" tofile="${src}/org/exist/soap/undeployQuery.wsdd"/>
+		<wsdl2java url="${src}/org/exist/soap/admin.wsdl"
+            output="${build.soap}"
+            deployscope="session"
+            serverSide="yes"
+            skeletonDeploy="yes"
+	    	verbose="no">
+            <mapping namespace="urn:exist" package="org.exist.soap"/>
+        </wsdl2java>
+        <copy todir="${src}/org/exist/soap">
+			<fileset dir="${build.soap}/org/exist/soap">
+				<include name="AdminService.java"/>
+				<include name="AdminServiceLocator.java"/>
+				<include name="AdminSoapBindingSkeleton.java"/>
+				<include name="AdminSoapBindingStub.java"/>
+			</fileset>
+		</copy>
+		<copy file="${build.soap}/org/exist/soap/deploy.wsdd" tofile="${src}/org/exist/soap/deployAdmin.wsdd"/>
+		<copy file="${build.soap}/org/exist/soap/undeploy.wsdd" tofile="${src}/org/exist/soap/undeployAdmin.wsdd"/>
+    </target>
     
+    <target depends="jar" name="java2wsdl">
+        <java2wsdl classname="org.exist.soap.Query"
+            location="http://localhost:8080/exist/services/Query"
+            output="${src}/org/exist/soap/query.wsdl"
+	    	namespace="urn:exist">
+            <mapping namespace="urn:exist" package="org.exist.soap"/>
+        </java2wsdl>
+		<java2wsdl classname="org.exist.soap.Admin"
+            location="http://localhost:8080/exist/services/Admin"
+            output="${src}/org/exist/soap/admin.wsdl"
+	    	namespace="urn:exist">
+            <mapping namespace="urn:exist" package="org.exist.soap"/>
+        </java2wsdl>    
+    </target>
+
+    <target depends="compile" name="deploy">
+        <java classname="org.apache.axis.client.AdminClient" fork="false">
+            <arg value="-lhttp://localhost:8080/exist/services/QueryService"/>
+            <arg value="${src}/org/exist/soap/deployQuery.wsdd"/>
+            <classpath refid="classpath.core"/>
+        </java>
+    </target>
+    
+    <target depends="compile" name="undeploy">
+        <java classname="org.apache.axis.client.AdminClient" fork="false">
+            <arg value="-lhttp://localhost:8080/exist/services/QueryService"/>
+            <arg value="${src}/org/exist/soap/undeployQuery.wsdd"/>
+			<classpath refid="classpath.core"/>
+        </java>
+    </target>
+
     <!-- ================================================================== -->
     <!-- Prepare webapp                                                     -->
     <!-- ================================================================== -->
@@ -374,23 +377,13 @@
         <copy todir="${webapp.dir}/WEB-INF/lib">
             <fileset dir=".">
                 <include name="exist.jar"/>
+				<include name="exist-optional.jar"/>
             </fileset>
 	    	<fileset dir="${lib.core}">
-                <include name="antlr.jar"/>
-				<include name="excalibur-cli-1.0.jar"/>
-				<include name="jakarta-oro-2.0.6.jar"/>
-				<include name="resolver-20030708.jar"/>
-                <include name="log4j.jar"/>
-				<include name="fastutil-2.52.jar"/>
-                <include name="xmldb.jar"/>
-                <include name="xmlrpc-1.2.jar"/>
-                <include name="libreadline-java.jar"/>
-                <include name="libJavaReadline.so"/>
+				<include name="*"/>
 	    	</fileset>
 	    	<fileset dir="${lib.optional}">
 				<include name="*.jar"/>
-				<exclude name="ant-optional.jar"/>
-				<exclude name="axis-ant.jar"/>
         	</fileset>
 			<fileset dir="${lib.endorsed}">
 				<include name="*.jar"/>
@@ -443,6 +436,7 @@
 		<include name="conf.xml"/>
 		<include name="build.xml"/>
                 <include name="exist.jar"/>
+				<include name="exist-optional.jar"/>
 				<include name="examples.jar"/>
 				<include name="start.jar"/>
                 <include name="stopword"/>
@@ -555,13 +549,15 @@
 	<!-- ================================================================== -->
 	<!-- Build installer                                                    -->
 	<!-- ================================================================== -->
-	<!--target depends="all" name="installer">
+	<target depends="all" name="installer">
+        <taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
+		    classname="com.izforge.izpack.ant.IzPackTask"/>
 		<echo message="Calling IzPack to create installer ..."/>
 		<izpack input="installer/install.xml"
 			output="installer/${project.name}-${build.version}.jar"
 			basedir="." izPackDir="${izpack.dir}"
 			installerType="standard-kunststoff"/>
-	</target-->
+	</target>
 	
     <!-- ================================================================== -->
     <!-- Create HTML files for docs on http://exist-db.org                  -->

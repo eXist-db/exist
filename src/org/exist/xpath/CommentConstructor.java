@@ -32,7 +32,7 @@ public class CommentConstructor extends NodeConstructor {
 
 	private String data = null;
 	
-	public CommentConstructor(StaticContext context, String data) {
+	public CommentConstructor(XQueryContext context, String data) {
 		super(context);
 		this.data = data;
 	}

@@ -20,6 +20,9 @@
  */
 package org.exist.xpath.value;
 
+import org.apache.oro.text.perl.Perl5Util;
+import org.exist.dom.QName;
+import org.exist.util.XMLChar;
 import org.exist.xpath.Constants;
 import org.exist.xpath.XPathException;
 
@@ -27,12 +30,60 @@ public class StringValue extends AtomicValue {
 
 	public final static StringValue EMPTY_STRING = new StringValue("");
 
+	protected int type = Type.STRING;
+
 	protected String value;
+
+	public StringValue(String stringValue, int type) throws XPathException {
+		this.type = type;
+		if(type == Type.STRING)
+			this.value = stringValue;
+		else if(type == Type.NORMALIZED_STRING)
+			this.value = normalizeWhitespace(stringValue); 
+		else {
+			this.value = collapseWhitespace(stringValue);
+			checkType();
+		}
+	}
 
 	public StringValue(String stringValue) {
 		value = stringValue;
 	}
 
+	private void checkType() throws XPathException {
+		switch(type) {
+			case Type.NORMALIZED_STRING:
+			case Type.TOKEN:
+				return;
+			case Type.LANGUAGE:
+				Perl5Util util = new Perl5Util();
+				String regex =
+					"/(([a-z]|[A-Z])([a-z]|[A-Z])|" // ISO639Code
+					+ "([iI]-([a-z]|[A-Z])+)|"     // IanaCode
+					+ "([xX]-([a-z]|[A-Z])+))"     // UserCode
+					+ "(-([a-z]|[A-Z])+)*/";        // Subcode
+				if (!util.match(regex, value))
+					throw new XPathException(
+						"Type error: string "
+						+ value
+						+ " is not valid for type xs:language");
+				return;
+			case Type.NAME:
+				if(!QName.isQName(value))
+					throw new XPathException("Type error: string " + value + " is not a valid xs:Name");
+				return;
+			case Type.NCNAME:
+			case Type.ID:
+			case Type.IDREF:
+			case Type.ENTITY:
+				if(!XMLChar.isValidNCName(value))
+					throw new XPathException("Type error: string " + value + " is not a valid " + Type.getTypeName(type));
+			case Type.NMTOKEN:
+				if(!XMLChar.isValidNmtoken(value))
+					throw new XPathException("Type error: string " + value + " is not a valid xs:NMTOKEN");
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.AtomicValue#getType()
 	 */
@@ -60,6 +111,18 @@ public class StringValue extends AtomicValue {
 			case Type.ITEM :
 			case Type.STRING :
 				return this;
+			case Type.NORMALIZED_STRING:
+			case Type.TOKEN:
+			case Type.LANGUAGE:
+			case Type.NMTOKEN:
+			case Type.NAME:
+			case Type.NCNAME:
+			case Type.ID:
+			case Type.IDREF:
+			case Type.ENTITY:
+				return new StringValue(value, requiredType);
+			case Type.ANY_URI :
+				return new AnyURIValue(value);
 			case Type.BOOLEAN :
 				if (value.equals("0") || value.equals("false"))
 					return BooleanValue.FALSE;
@@ -77,7 +140,7 @@ public class StringValue extends AtomicValue {
 			case Type.INTEGER :
 			case Type.NON_POSITIVE_INTEGER :
 			case Type.NEGATIVE_INTEGER :
-			case Type.POSITIVE_INTEGER:
+			case Type.POSITIVE_INTEGER :
 			case Type.LONG :
 			case Type.INT :
 			case Type.SHORT :
@@ -109,6 +172,57 @@ public class StringValue extends AtomicValue {
 		}
 	}
 
+	public int conversionPreference(Class javaClass) {
+		if(javaClass.isAssignableFrom(StringValue.class)) return 0;
+		if(javaClass == String.class || javaClass == CharSequence.class) return 1;
+		if(javaClass == Character.class || javaClass == char.class) return 2;
+		if(javaClass == Double.class || javaClass == double.class) return 10;
+		if(javaClass == Float.class || javaClass == float.class) return 11;
+		if(javaClass == Long.class || javaClass == long.class) return 12;
+		if(javaClass == Integer.class || javaClass == int.class) return 13;
+		if(javaClass == Short.class || javaClass == short.class) return 14;
+		if(javaClass == Byte.class || javaClass == byte.class) return 15;
+		if(javaClass == Boolean.class || javaClass == boolean.class) return 16;
+		if(javaClass == Object.class) return 20;
+		
+		return Integer.MAX_VALUE;
+	}
+	
+	public Object toJavaObject(Class target) throws XPathException {
+		if(target.isAssignableFrom(StringValue.class))
+			return this;
+		else if(target == Object.class || target == String.class || target == CharSequence.class)
+			return value;
+		else if(target == double.class || target == Double.class) {
+			DoubleValue v = (DoubleValue)convertTo(Type.DOUBLE);
+			return new Double(v.getValue());
+		} else if(target == float.class || target == Float.class) {
+			FloatValue v = (FloatValue)convertTo(Type.FLOAT);
+			return new Float(v.value);
+		} else if(target == long.class || target == Long.class) {
+			IntegerValue v = (IntegerValue)convertTo(Type.LONG);
+			return new Long(v.getInt());
+		} else if(target == int.class || target == Integer.class) {
+			IntegerValue v = (IntegerValue)convertTo(Type.INT);
+			return new Integer(v.getInt());
+		} else if(target == short.class || target == Short.class) {
+			IntegerValue v = (IntegerValue)convertTo(Type.SHORT);
+			return new Short((short)v.getInt());
+		} else if(target == byte.class || target == Byte.class) {
+			IntegerValue v = (IntegerValue)convertTo(Type.BYTE);
+			return new Byte((byte)v.getInt());
+		} else if(target == boolean.class || target == Boolean.class) {
+			return new Boolean(effectiveBooleanValue());
+		} else if(target == char.class || target == Character.class) {
+			if(value.length() > 1 || value.length() == 0)
+				throw new XPathException("cannot convert string with length = 0 or length > 1 to Java character");
+			return new Character(value.charAt(0));
+		}
+		
+		throw new XPathException("cannot convert value of type " + Type.getTypeName(type) +
+			" to Java object of type " + target.getName());
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.AtomicValue#compareTo(int, org.exist.xpath.value.AtomicValue)
 	 */
@@ -122,21 +236,22 @@ public class StringValue extends AtomicValue {
 					otherVal = otherVal.substring(1);
 					truncation = Constants.TRUNC_LEFT;
 				}
-				if (otherVal.length() > 1 && otherVal.charAt(otherVal.length() - 1) == '%') {
+				if (otherVal.length() > 1
+					&& otherVal.charAt(otherVal.length() - 1) == '%') {
 					otherVal = otherVal.substring(0, otherVal.length() - 1);
 					truncation =
 						(truncation == Constants.TRUNC_LEFT)
 							? Constants.TRUNC_BOTH
 							: Constants.TRUNC_RIGHT;
 				}
-				switch(truncation) {
-					case Constants.TRUNC_BOTH:
+				switch (truncation) {
+					case Constants.TRUNC_BOTH :
 						return value.indexOf(otherVal) > -1;
-					case Constants.TRUNC_LEFT:
+					case Constants.TRUNC_LEFT :
 						return value.startsWith(otherVal);
-					case Constants.TRUNC_RIGHT:
+					case Constants.TRUNC_RIGHT :
 						return value.endsWith(otherVal);
-					case Constants.TRUNC_NONE:
+					case Constants.TRUNC_NONE :
 						return value.equals(otherVal);
 				}
 			}
@@ -182,6 +297,57 @@ public class StringValue extends AtomicValue {
 	 */
 	public String toString() {
 		return value;
+	}
+
+	public final static String normalizeWhitespace(CharSequence seq) {
+		StringBuffer copy = new StringBuffer(seq.length());
+		char ch;
+		for (int i = 0; i < seq.length(); i++) {
+			ch = seq.charAt(i);
+			switch (ch) {
+				case '\n' :
+				case '\r' :
+				case '\t' :
+					copy.append(' ');
+					break;
+				default :
+					copy.append(ch);
+			}
+		}
+		return copy.toString();
+	}
+
+	public static String collapseWhitespace(CharSequence in) {
+		if (in.length() == 0) {
+			return in.toString();
+		}
+		StringBuffer sb = new StringBuffer(in.length());
+		boolean inWhitespace = true;
+		int i = 0;
+		for (; i < in.length(); i++) {
+			char c = in.charAt(i);
+			switch (c) {
+				case '\n' :
+				case '\r' :
+				case '\t' :
+				case ' ' :
+					if (inWhitespace) {
+						// remove the whitespace
+					} else {
+						sb.append(' ');
+						inWhitespace = true;
+					}
+					break;
+				default :
+					sb.append(c);
+					inWhitespace = false;
+					break;
+			}
+		}
+		if (sb.charAt(sb.length() - 1) == ' ') {
+			sb.deleteCharAt(sb.length() - 1);
+		}
+		return sb.toString();
 	}
 
 	public final static String expand(CharSequence seq) throws XPathException {

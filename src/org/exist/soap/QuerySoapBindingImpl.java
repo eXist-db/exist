@@ -26,7 +26,7 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
 import org.exist.xpath.PathExpr;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.Type;
@@ -132,6 +132,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			if (document == null)
 				throw new RemoteException("resource " + name + " not found");
 			Serializer serializer = broker.getSerializer();
+			serializer.reset();
 			serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, xinclude ? "yes" : "no");
 			serializer.setProperty(OutputKeys.INDENT, indent ? "yes" : "no");
 			return serializer.serialize(document);
@@ -205,7 +206,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(session.getUser());
-			StaticContext context = new StaticContext(broker);
+			XQueryContext context = new XQueryContext(broker);
 			XPathLexer2 lexer = new XPathLexer2(new StringReader(query));
 			XPathParser2 parser = new XPathParser2(lexer);
 			XPathTreeParser2 treeParser = new XPathTreeParser2(context);
@@ -267,6 +268,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 					if (start + howmany >= resultSet.getLength())
 						howmany = resultSet.getLength() - start;
 					Serializer serializer = broker.getSerializer();
+					serializer.reset();
 					serializer.setProperty(OutputKeys.INDENT, indent ? "yes" : "no");
 					serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, xinclude ? "yes" : "no");
 					serializer.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, highlight);
@@ -336,6 +338,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 					if (start + howmany >= hitsByDoc.getLength())
 						howmany = hitsByDoc.getLength() - start;
 					Serializer serializer = broker.getSerializer();
+					serializer.reset();
 					serializer.setProperty(OutputKeys.INDENT, indent ? "yes" : "no");
 					serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, xinclude ? "yes" : "no");
 					serializer.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, highlight);

@@ -40,7 +40,7 @@ import org.exist.xpath.value.Type;
 public class RootNode extends Step {
 
 	/**  Constructor for the RootNode object */
-	public RootNode(StaticContext context) {
+	public RootNode(XQueryContext context) {
 		super(context, Constants.SELF_AXIS);
 	}
 

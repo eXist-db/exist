@@ -52,8 +52,8 @@ import org.exist.util.SyntaxException;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.DOMSerializerPool;
 import org.exist.xpath.PathExpr;
-import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.NodeValue;
 import org.exist.xpath.value.Sequence;
@@ -152,23 +152,14 @@ public class RpcConnection extends Thread {
 		String xpath,
 		DocumentSet docs,
 		NodeSet contextSet,
-		Hashtable namespaces,
 		String baseURI)
 		throws Exception {
 		if (docs == null)
 			docs = broker.getAllDocuments(new DocumentSet());
-		StaticContext context = new StaticContext(broker);
+		XQueryContext context = new XQueryContext(broker);
 		context.setBaseURI(baseURI);
 		context.setStaticallyKnownDocuments(docs);
-		if (namespaces != null) {
-			Map.Entry entry;
-			for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {
-				entry = (Map.Entry) i.next();
-				context.declareNamespace(
-					(String) entry.getKey(),
-					(String) entry.getValue());
-			}
-		}
+
 		LOG.debug("query = " + xpath);
 		XPathLexer2 lexer = new XPathLexer2(new StringReader(xpath));
 		XPathParser2 parser = new XPathParser2(lexer, false);
@@ -194,7 +185,7 @@ public class RpcConnection extends Thread {
 		return result;
 	}
 
-	public int executeQuery(User user, String xpath, Hashtable namespaces)
+	public int executeQuery(User user, String xpath)
 		throws Exception {
 		long startTime = System.currentTimeMillis();
 		LOG.debug("query: " + xpath);
@@ -202,7 +193,7 @@ public class RpcConnection extends Thread {
 		try {
 			broker = brokerPool.get(user);
 			Sequence resultValue =
-				doQuery(user, broker, xpath, null, null, namespaces, null);
+				doQuery(user, broker, xpath, null, null, null);
 			QueryResult qr =
 				new QueryResult(resultValue, (System.currentTimeMillis() - startTime));
 			connectionPool.resultSets.put(qr.hashCode(), qr);
@@ -854,6 +845,7 @@ public class RpcConnection extends Thread {
 		if (start < 1 || start > resultSet.getLength())
 			throw new EXistException("start parameter out of range");
 		Serializer serializer = broker.getSerializer();
+		serializer.reset();
 		serializer.setProperty(OutputKeys.INDENT, prettyPrint ? "yes" : "no");
 		return serializer.serialize((NodeSet) resultSet, start, howmany, queryTime);
 	}
@@ -935,10 +927,9 @@ public class RpcConnection extends Thread {
 		int howmany,
 		int start,
 		boolean prettyPrint,
-		boolean summary,
-		Hashtable namespaces)
+		boolean summary)
 		throws Exception {
-		return query(user, xpath, howmany, start, prettyPrint, summary, namespaces, null);
+		return query(user, xpath, howmany, start, prettyPrint, summary,null);
 	}
 
 	public String query(
@@ -948,7 +939,6 @@ public class RpcConnection extends Thread {
 		int start,
 		boolean prettyPrint,
 		boolean summary,
-		Hashtable namespaces,
 		String sortExpr)
 		throws Exception {
 		long startTime = System.currentTimeMillis();
@@ -957,7 +947,7 @@ public class RpcConnection extends Thread {
 		try {
 			broker = brokerPool.get(user);
 			Sequence resultSeq =
-				doQuery(user, broker, xpath, null, null, namespaces, null);
+				doQuery(user, broker, xpath, null, null, null);
 			if (resultSeq == null)
 				return "<?xml version=\"1.0\"?>\n"
 					+ "<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" "
@@ -1018,7 +1008,7 @@ public class RpcConnection extends Thread {
 				docs = new DocumentSet();
 				docs.add(node.doc);
 			}
-			Sequence resultSeq = doQuery(user, broker, xpath, docs, nodes, null, null);
+			Sequence resultSeq = doQuery(user, broker, xpath, docs, nodes, null);
 			if (resultSeq == null)
 				return result;
 			switch (resultSeq.getItemType()) {
@@ -1057,7 +1047,6 @@ public class RpcConnection extends Thread {
 		long startTime = System.currentTimeMillis();
 		String sortBy = (String) parameters.get(RpcAPI.SORT_EXPR);
 		String baseURI = (String) parameters.get(RpcAPI.BASE_URI);
-		Hashtable namespaces = (Hashtable) parameters.get(RpcAPI.NAMESPACES);
 
 		Hashtable ret = new Hashtable();
 		Vector result = new Vector();
@@ -1081,7 +1070,7 @@ public class RpcConnection extends Thread {
 				docs = new DocumentSet();
 				docs.add(node.doc);
 			}
-			resultSeq = doQuery(user, broker, xpath, docs, nodes, namespaces, baseURI);
+			resultSeq = doQuery(user, broker, xpath, docs, nodes, baseURI);
 			if (resultSeq == null)
 				return ret;
 			LOG.debug("found " + resultSeq.getLength());
@@ -1182,8 +1171,7 @@ public class RpcConnection extends Thread {
 		User user,
 		String docName,
 		String s_id,
-		boolean prettyPrint,
-		String encoding)
+		Hashtable parameters)
 		throws Exception {
 		DBBroker broker = brokerPool.get(user);
 		try {
@@ -1197,8 +1185,8 @@ public class RpcConnection extends Thread {
 
 			NodeProxy node = new NodeProxy(doc, id);
 			Serializer serializer = broker.getSerializer();
-			serializer.setProperty(OutputKeys.ENCODING, encoding);
-			serializer.setProperty(OutputKeys.INDENT, prettyPrint ? "yes" : "no");
+			serializer.reset();
+			serializer.setProperties(parameters);
 			return serializer.serialize(node);
 		} finally {
 			brokerPool.release(broker);
@@ -1209,8 +1197,7 @@ public class RpcConnection extends Thread {
 		User user,
 		int resultId,
 		int num,
-		boolean prettyPrint,
-		String encoding)
+		Hashtable parameters)
 		throws Exception {
 		DBBroker broker = brokerPool.get(user);
 		try {
@@ -1221,21 +1208,20 @@ public class RpcConnection extends Thread {
 			Item item = qr.result.itemAt(num);
 			if (item == null)
 				throw new EXistException("index out of range");
+			
 			if (item instanceof NodeProxy) {
 				NodeProxy proxy = (NodeProxy) item;
 				Serializer serializer = broker.getSerializer();
-				serializer.setProperty(OutputKeys.ENCODING, encoding);
-				serializer.setProperty(OutputKeys.INDENT, prettyPrint ? "yes" : "no");
+				serializer.reset();
+				serializer.setProperties(parameters);
 				return serializer.serialize(proxy);
 			} else if (item instanceof Node) {
 				StringWriter writer = new StringWriter();
-				Properties props = new Properties();
-				props.setProperty(OutputKeys.ENCODING, encoding);
-				props.setProperty(OutputKeys.INDENT, prettyPrint ? "yes" : "no");
+				Properties properties = getProperties(parameters);
 				DOMSerializer serializer =
 					DOMSerializerPool.getInstance().borrowDOMSerializer();
 				serializer.setWriter(writer);
-				serializer.setOutputProperties(props);
+				serializer.setOutputProperties(properties);
 				serializer.serialize((Node) item);
 				DOMSerializerPool.getInstance().returnDOMSerializer(serializer);
 				return writer.toString();
@@ -1427,20 +1413,12 @@ public class RpcConnection extends Thread {
 		return true;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  xpath          Description of the Parameter
-	 *@param  user           Description of the Parameter
-	 *@return                Description of the Return Value
-	 *@exception  Exception  Description of the Exception
-	 */
 	public Hashtable summary(User user, String xpath) throws Exception {
 		long startTime = System.currentTimeMillis();
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			Sequence resultSeq = doQuery(user, broker, xpath, null, null, null, null);
+			Sequence resultSeq = doQuery(user, broker, xpath, null, null, null);
 			if (resultSeq == null)
 				return new Hashtable();
 			NodeList resultSet = (NodeList) resultSeq;
@@ -1650,12 +1628,15 @@ public class RpcConnection extends Thread {
 		terminate = true;
 	}
 
-	/**
-	 *  Description of the Class
-	 *
-	 *@author     wolf
-	 *@created    28. Mai 2002
-	 */
+	private Properties getProperties(Hashtable parameters) {
+		Properties properties = new Properties();
+		for(Iterator i = parameters.entrySet().iterator(); i.hasNext(); ) {
+			Map.Entry entry = (Map.Entry) i.next();
+			properties.setProperty((String)entry.getKey(), (String)entry.getValue());
+		}
+		return properties;
+	}
+	
 	class DoctypeCount {
 		int count = 1;
 		DocumentType doctype;

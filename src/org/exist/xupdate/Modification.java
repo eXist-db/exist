@@ -17,7 +17,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.store.StorageAddress;
 import org.exist.xpath.PathExpr;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.Type;
@@ -62,7 +62,7 @@ public abstract class Modification {
 	protected NodeImpl[] select(DocumentSet docs)
 		throws PermissionDeniedException, EXistException, XPathException {
 		try {
-			StaticContext context = new StaticContext(broker);
+			XQueryContext context = new XQueryContext(broker);
 			context.setStaticallyKnownDocuments(docs);
 			XPathLexer2 lexer = new XPathLexer2(new StringReader(selectStmt));
 			XPathParser2 parser = new XPathParser2(lexer);

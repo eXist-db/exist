@@ -32,7 +32,7 @@ import org.exist.xpath.value.Type;
  */
 public class Except extends CombiningExpression {
 	
-	public Except(StaticContext context, PathExpr left, PathExpr right) {
+	public Except(XQueryContext context, PathExpr left, PathExpr right) {
 		super(context, left, right);
 	}
 

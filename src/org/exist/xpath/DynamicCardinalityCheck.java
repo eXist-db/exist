@@ -35,7 +35,7 @@ public class DynamicCardinalityCheck extends AbstractExpression {
 	private Expression expression;
 	private int requiredCardinality;
 	
-	public DynamicCardinalityCheck(StaticContext context, int requiredCardinality, Expression expr) {
+	public DynamicCardinalityCheck(XQueryContext context, int requiredCardinality, Expression expr) {
 		super(context);
 		this.requiredCardinality = requiredCardinality;
 		this.expression = expr;

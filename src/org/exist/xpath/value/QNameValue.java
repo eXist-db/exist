@@ -24,7 +24,7 @@ package org.exist.xpath.value;
 
 import org.exist.dom.QName;
 import org.exist.xpath.Constants;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 
 /**
@@ -32,10 +32,10 @@ import org.exist.xpath.XPathException;
  */
 public class QNameValue extends AtomicValue {
 
-	private StaticContext context;
+	private XQueryContext context;
 	private QName qname;
 
-	public QNameValue(StaticContext context, QName name) {
+	public QNameValue(XQueryContext context, QName name) {
 		this.context = context;
 		this.qname = name;
 	}
@@ -122,5 +122,37 @@ public class QNameValue extends AtomicValue {
 
 	public AtomicValue min(AtomicValue other) throws XPathException {
 		throw new XPathException("Invalid argument to aggregate function: QName");
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#conversionPreference(java.lang.Class)
+	 */
+	public int conversionPreference(Class javaClass) {
+		if (javaClass.isAssignableFrom(QNameValue.class))
+			return 0;
+		if (javaClass == String.class)
+			return 1;
+		if (javaClass == Object.class)
+			return 20;
+
+		return Integer.MAX_VALUE;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#toJavaObject(java.lang.Class)
+	 */
+	public Object toJavaObject(Class target) throws XPathException {
+		if (target.isAssignableFrom(QNameValue.class))
+			return this;
+		else if (target == String.class)
+			return getStringValue();
+		else if (target == Object.class)
+			return qname;
+
+		throw new XPathException(
+			"cannot convert value of type "
+				+ Type.getTypeName(getType())
+				+ " to Java object of type "
+				+ target.getName());
 	}
 }

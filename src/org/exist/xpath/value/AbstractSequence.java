@@ -20,6 +20,9 @@
  */
 package org.exist.xpath.value;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.exist.xpath.XPathException;
 
 /**
@@ -82,5 +85,41 @@ public abstract class AbstractSequence implements Sequence {
 			return ((BooleanValue)first.convertTo(Type.BOOLEAN)).getValue();
 		else
 			return true;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Sequence#conversionPreference(java.lang.Class)
+	 */
+	public int conversionPreference(Class javaClass) {
+		if(javaClass.isAssignableFrom(Sequence.class))
+			return 0;
+		else if(javaClass.isAssignableFrom(List.class))
+			return 1;
+		else if(javaClass == Object.class)
+			return 20;
+		
+		if(getLength() > 0)
+			return itemAt(0).conversionPreference(javaClass);
+			
+		return Integer.MAX_VALUE;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Sequence#toJavaObject(java.lang.Class)
+	 */
+	public Object toJavaObject(Class target) throws XPathException {
+		if(target.isAssignableFrom(Sequence.class))
+			return this;
+		else if(target.isAssignableFrom(List.class)) {
+			List l = new ArrayList(getLength());
+			for(SequenceIterator i = iterate(); i.hasNext(); ) {
+				l.add(i.nextItem());
+			}
+			return l;
+		}
+			
+		if(getLength() > 0)
+			return itemAt(0).toJavaObject(target);
+		return null;
 	}
 }

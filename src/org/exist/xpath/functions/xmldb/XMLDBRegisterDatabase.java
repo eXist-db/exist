@@ -26,7 +26,7 @@ import org.exist.dom.QName;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.Item;
@@ -58,7 +58,7 @@ public class XMLDBRegisterDatabase extends Function {
 	 * @param context
 	 * @param signature
 	 */
-	public XMLDBRegisterDatabase(StaticContext context) {
+	public XMLDBRegisterDatabase(XQueryContext context) {
 		super(context, signature);
 	}
 

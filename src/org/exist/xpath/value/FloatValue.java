@@ -139,7 +139,7 @@ public class FloatValue extends NumericValue {
 		if (Type.subTypeOf(other.getType(), Type.FLOAT))
 			return new FloatValue(value - ((FloatValue) other).value);
 		else
-			return minus((ComputableValue)other.convertTo(getType()));
+			return minus((ComputableValue) other.convertTo(getType()));
 	}
 
 	/* (non-Javadoc)
@@ -149,7 +149,7 @@ public class FloatValue extends NumericValue {
 		if (Type.subTypeOf(other.getType(), Type.FLOAT))
 			return new FloatValue(value + ((FloatValue) other).value);
 		else
-			return plus((ComputableValue)other.convertTo(getType()));
+			return plus((ComputableValue) other.convertTo(getType()));
 	}
 
 	/* (non-Javadoc)
@@ -159,7 +159,7 @@ public class FloatValue extends NumericValue {
 		if (Type.subTypeOf(other.getType(), Type.FLOAT))
 			return new FloatValue(value * ((FloatValue) other).value);
 		else
-			return mult((ComputableValue)other.convertTo(getType()));
+			return mult((ComputableValue) other.convertTo(getType()));
 	}
 
 	/* (non-Javadoc)
@@ -169,7 +169,7 @@ public class FloatValue extends NumericValue {
 		if (Type.subTypeOf(other.getType(), Type.FLOAT))
 			return new FloatValue(value / ((FloatValue) other).value);
 		else
-			return div((ComputableValue)other.convertTo(getType()));
+			return div((ComputableValue) other.convertTo(getType()));
 	}
 
 	/* (non-Javadoc)
@@ -179,7 +179,7 @@ public class FloatValue extends NumericValue {
 		if (Type.subTypeOf(other.getType(), Type.FLOAT))
 			return new FloatValue(value % ((FloatValue) other).value);
 		else
-			return mod((NumericValue)other.convertTo(getType()));
+			return mod((NumericValue) other.convertTo(getType()));
 	}
 
 	/* (non-Javadoc)
@@ -204,6 +204,67 @@ public class FloatValue extends NumericValue {
 			return new FloatValue(Math.min(value, ((FloatValue) other).value));
 		else
 			return ((FloatValue) convertTo(other.getType())).min(other);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#conversionPreference(java.lang.Class)
+	 */
+	public int conversionPreference(Class javaClass) {
+		if (javaClass.isAssignableFrom(FloatValue.class))
+			return 0;
+		if (javaClass == Long.class || javaClass == long.class)
+			return 3;
+		if (javaClass == Integer.class || javaClass == int.class)
+			return 4;
+		if (javaClass == Short.class || javaClass == short.class)
+			return 5;
+		if (javaClass == Byte.class || javaClass == byte.class)
+			return 6;
+		if (javaClass == Double.class || javaClass == double.class)
+			return 2;
+		if (javaClass == Float.class || javaClass == float.class)
+			return 1;
+		if (javaClass == String.class)
+			return 7;
+		if (javaClass == Boolean.class || javaClass == boolean.class)
+			return 8;
+		if (javaClass == Object.class)
+			return 20;
+
+		return Integer.MAX_VALUE;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#toJavaObject(java.lang.Class)
+	 */
+	public Object toJavaObject(Class target) throws XPathException {
+		if (target.isAssignableFrom(FloatValue.class))
+			return this;
+		else if (target == Double.class || target == double.class)
+			return new Double(value);
+		else if (target == Float.class || target == float.class)
+			return new Float(value);
+		else if (target == Integer.class || target == int.class) {
+			IntegerValue v = (IntegerValue) convertTo(Type.INT);
+			return new Integer((int) v.getValue());
+		} else if (target == Short.class || target == short.class) {
+			IntegerValue v = (IntegerValue) convertTo(Type.SHORT);
+			return new Short((short) v.getValue());
+		} else if (target == Byte.class || target == byte.class) {
+			IntegerValue v = (IntegerValue) convertTo(Type.BYTE);
+			return new Byte((byte) v.getValue());
+		} else if (target == String.class)
+			return getStringValue();
+		else if (target == Boolean.class)
+			return new Boolean(effectiveBooleanValue());
+		else if (target == Object.class)
+			return new Double(value);
+
+		throw new XPathException(
+			"cannot convert value of type "
+				+ Type.getTypeName(getType())
+				+ " to Java object of type "
+				+ target.getName());
 	}
 
 }

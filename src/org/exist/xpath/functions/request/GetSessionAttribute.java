@@ -22,17 +22,15 @@
  */
 package org.exist.xpath.functions.request;
 
-import javax.servlet.http.HttpSession;
-
-import org.apache.cocoon.environment.Session;
 import org.exist.dom.QName;
+import org.exist.http.servlets.SessionWrapper;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
 import org.exist.xpath.Variable;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.XPathUtil;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.JavaObjectValue;
 import org.exist.xpath.value.Sequence;
@@ -57,7 +55,7 @@ public class GetSessionAttribute extends Function {
 			},
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
 		
-	public GetSessionAttribute(StaticContext context) {
+	public GetSessionAttribute(XQueryContext context) {
 		super(context, signature);
 	}
 	
@@ -68,8 +66,10 @@ public class GetSessionAttribute extends Function {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		// request object is read from global variable $request
-		Variable var = context.resolveVariable("session");
+		RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
+		
+		// session object is read from global variable $session
+		Variable var = myModule.resolveVariable(RequestModule.SESSION_VAR);
 		if(var.getValue() == null)
 			throw new XPathException("Session not set");
 		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
@@ -79,25 +79,13 @@ public class GetSessionAttribute extends Function {
 		// get attribute name parameter
 		String attrib = getArgument(0).eval(contextSequence, contextItem).getStringValue();
 		
-		if(value.getObject() instanceof Session)
-			return cocoonSessionAttribute(attrib, (Session)value.getObject());
-		else if(value.getObject() instanceof HttpSession)
-			return httpSessionAttribute(attrib, (HttpSession)value.getObject());
-		else
+		if(value.getObject() instanceof SessionWrapper) {
+			SessionWrapper session = (SessionWrapper)value.getObject();
+			Object o = session.getAttribute(attrib);
+			if (o == null)
+				return Sequence.EMPTY_SEQUENCE;
+			return XPathUtil.javaObjectToXPath(o);
+		} else
 			throw new XPathException("Type error: variable $session is not bound to a session object");
-	}
-
-	private Sequence cocoonSessionAttribute(String attrib, Session session) throws XPathException {
-		Object value = session.getAttribute(attrib);
-		if(value == null)
-			return Sequence.EMPTY_SEQUENCE;
-		return XPathUtil.javaObjectToXPath(value);
-	}
-	
-	private Sequence httpSessionAttribute(String attrib, HttpSession session) throws XPathException {
-		Object value = session.getAttribute(attrib);
-		if(value == null)
-			return Sequence.EMPTY_SEQUENCE;
-		return XPathUtil.javaObjectToXPath(value);
 	}
 }

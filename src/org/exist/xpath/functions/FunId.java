@@ -12,7 +12,7 @@ import org.exist.storage.ElementValue;
 import org.exist.xpath.*;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Expression;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
@@ -32,7 +32,7 @@ public class FunId extends Function {
 	/**
 	 * Constructor for FunId.
 	 */
-	public FunId(StaticContext context) {
+	public FunId(XQueryContext context) {
 		super(context, signature);
 	}
 

@@ -44,7 +44,7 @@ public class SequenceConstructor extends AbstractExpression {
 	/**
 	 * @param context
 	 */
-	public SequenceConstructor(StaticContext context) {
+	public SequenceConstructor(XQueryContext context) {
 		super(context);
 	}
 

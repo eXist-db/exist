@@ -37,7 +37,7 @@ public class DynamicTypeCheck extends AbstractExpression {
 	private Expression expression;
 	private int requiredType;
 	
-	public DynamicTypeCheck(StaticContext context, int requiredType, Expression expr) {
+	public DynamicTypeCheck(XQueryContext context, int requiredType, Expression expr) {
 		super(context);
 		this.requiredType = requiredType;
 		this.expression = expr;

@@ -89,4 +89,30 @@ public class JavaObjectValue extends AtomicValue {
 	public AtomicValue min(AtomicValue other) throws XPathException {
 		throw new XPathException("Invalid argument to aggregate function: cannot compare Java objects");
 	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#conversionPreference(java.lang.Class)
+	 */
+	public int conversionPreference(Class javaClass) {
+		if (javaClass.isAssignableFrom(object.getClass()))
+			return 0;
+
+		return Integer.MAX_VALUE;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#toJavaObject(java.lang.Class)
+	 */
+	public Object toJavaObject(Class target) throws XPathException {
+		if (target.isAssignableFrom(object.getClass()))
+			return object;
+		else if (target == Object.class)
+			return object;
+
+		throw new XPathException(
+			"cannot convert value of type "
+				+ Type.getTypeName(getType())
+				+ " to Java object of type "
+				+ target.getName());
+	}
 }

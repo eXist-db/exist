@@ -23,7 +23,8 @@
 package org.exist.dom;
 
 import org.exist.storage.ElementValue;
-import org.exist.xpath.StaticContext;
+import org.exist.util.XMLChar;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 
 /**
@@ -41,7 +42,7 @@ public class QName implements Comparable {
 	private String namespaceURI_ = null;
 	private String prefix_ = null;
 	private byte nameType_ = ElementValue.ELEMENT;
-	
+
 	/**
 	 * Construct a QName. The prefix might be null for the default namespace or if no prefix 
 	 * has been defined for the QName. The namespace URI should be set to the empty 
@@ -56,7 +57,7 @@ public class QName implements Comparable {
 		namespaceURI_ = namespaceURI;
 		prefix_ = prefix;
 	}
-	
+
 	public QName(String localName, String namespaceURI) {
 		this(localName, namespaceURI, null);
 	}
@@ -97,11 +98,11 @@ public class QName implements Comparable {
 	public void setNameType(byte type) {
 		nameType_ = type;
 	}
-	
+
 	public byte getNameType() {
 		return nameType_;
 	}
-	
+
 	public String toString() {
 		if (prefix_ != null && prefix_.length() > 0)
 			return prefix_ + ':' + localName_;
@@ -167,15 +168,14 @@ public class QName implements Comparable {
 	 * @return
 	 * @exception IllegalArgumentException if no namespace URI is mapped to the prefix
 	 */
-	public static QName parse(StaticContext context, String qname) 
-	throws XPathException {
+	public static QName parse(XQueryContext context, String qname)
+		throws XPathException {
 		String prefix = extractPrefix(qname);
 		String namespaceURI;
 		if (prefix != null) {
 			namespaceURI = context.getURIForPrefix(prefix);
 			if (namespaceURI == null)
-				throw new XPathException(
-					"No namespace defined for prefix " + prefix);
+				throw new XPathException("No namespace defined for prefix " + prefix);
 		} else
 			namespaceURI = context.getURIForPrefix("");
 		if (namespaceURI == null)
@@ -183,34 +183,45 @@ public class QName implements Comparable {
 		return new QName(extractLocalName(qname), namespaceURI, prefix);
 	}
 
-	public static QName parseAttribute(StaticContext context, String qname) 
-	throws XPathException {
+	public static QName parseAttribute(XQueryContext context, String qname)
+		throws XPathException {
 		String prefix = extractPrefix(qname);
 		String namespaceURI = null;
 		if (prefix != null) {
 			namespaceURI = context.getURIForPrefix(prefix);
 			if (namespaceURI == null)
-				throw new XPathException(
-					"No namespace defined for prefix " + prefix);
+				throw new XPathException("No namespace defined for prefix " + prefix);
 		}
 		if (namespaceURI == null)
 			namespaceURI = "";
 		return new QName(extractLocalName(qname), namespaceURI, prefix);
 	}
-	
-	public static QName parseFunction(StaticContext context, String qname) 
-	throws XPathException {
-			String prefix = extractPrefix(qname);
-			String namespaceURI;
-			if (prefix != null) {
-				namespaceURI = context.getURIForPrefix(prefix);
-				if (namespaceURI == null)
-					throw new XPathException(
-						"No namespace defined for prefix " + prefix);
-			} else
-				namespaceURI = context.getDefaultFunctionNamespace();
+
+	public static QName parseFunction(XQueryContext context, String qname)
+		throws XPathException {
+		String prefix = extractPrefix(qname);
+		String namespaceURI;
+		if (prefix != null) {
+			namespaceURI = context.getURIForPrefix(prefix);
 			if (namespaceURI == null)
-				namespaceURI = "";
-			return new QName(extractLocalName(qname), namespaceURI, prefix);
-		}
+				throw new XPathException("No namespace defined for prefix " + prefix);
+		} else
+			namespaceURI = context.getDefaultFunctionNamespace();
+		if (namespaceURI == null)
+			namespaceURI = "";
+		return new QName(extractLocalName(qname), namespaceURI, prefix);
+	}
+
+	public final static boolean isQName(String name) {
+		int colon = name.indexOf(':');
+		if (colon < 0)
+			return XMLChar.isValidNCName(name);
+		if (colon == 0 || colon == name.length() - 1)
+			return false;
+		if (!XMLChar.isValidNCName(name.substring(0, colon)))
+			return false;
+		if (!XMLChar.isValidNCName(name.substring(colon + 1)))
+			return false;
+		return true;
+	}
 }

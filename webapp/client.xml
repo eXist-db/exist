@@ -164,9 +164,8 @@
       <synopsis>bin/client.sh -C /home/exist/test/conf.xml</synopsis>
       <para>This will temporarily launch a new database instance, whose configuration is read from the provided file. As is obvious, option <option>-C</option> implies option <option>-l</option>.</para>
     </section>
-  </chapter>
-  <chapter>
-    <title>Backup/Restore</title>
+<section>
+    <title>Backup/Restore on the Command-Line</title>
     <para>Release 0.9.1 contains a simple backup/restore client, launched through the <command moreinfo="none">bin/backup.sh</command> or <command moreinfo="none">bin\backup.bat</command> scripts. The client allows to backup any local or remote collection available through the XML:DB API. To backup a collection, use for example</para>
     <synopsis format="linespecific">bin/backup.sh -d backup -u admin -p somepass -b /db -ouri=xmldb:exist://</synopsis>
     <para>This will launch a database instance in local mode and backup the <filename moreinfo="none">/db</filename> root collection. A hierarchy of directories will be created below the <filename moreinfo="none">backup</filename> directory. The directories correspond to the hierarchy of collections found in the database.</para>
@@ -177,5 +176,6 @@
     <synopsis format="linespecific">bin/backup.sh -r backup/db/shakespeare/__contents__.xml -ouri=xmldb:exist://</synopsis>
     <para>restores only the <filename moreinfo="none">/db/shakespeare</filename> collection.</para>
     <para>Please note that users and groups are defined in the database collection <filename moreinfo="none">/db/system</filename>. This collection will thus be restored first.</para>
-  </chapter>
+</section>
+</chapter>
 </book>
