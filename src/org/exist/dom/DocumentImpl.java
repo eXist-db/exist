@@ -21,27 +21,41 @@
  *  $Id$
  */
 package org.exist.dom;
-import java.io.*;
+import java.io.EOFException;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
 import org.apache.log4j.Category;
 import org.exist.EXistException;
-import org.exist.collections.*;
+import org.exist.collections.Collection;
 import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
-
-import org.exist.storage.*;
+import org.exist.storage.DBBroker;
+import org.exist.storage.ElementValue;
+import org.exist.storage.io.VariableByteArrayInput;
+import org.exist.storage.io.VariableByteInput;
+import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.store.StorageAddress;
-import org.w3c.dom.*;
 import org.exist.util.SyntaxException;
-import org.exist.util.VariableByteInputStream;
-import org.exist.util.VariableByteOutputStream;
 import org.exist.xquery.DescendantSelector;
 import org.exist.xquery.NodeSelector;
+import org.w3c.dom.Attr;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Comment;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.Element;
+import org.w3c.dom.EntityReference;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.ProcessingInstruction;
+import org.w3c.dom.Text;
 
 /**
  *  Represents a persistent document object in the database.
@@ -486,7 +500,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return false;
 	}
 
-	public void read(VariableByteInputStream istream) throws IOException, EOFException {
+	public void read(VariableByteInput istream) throws IOException, EOFException {
 		docId = istream.readInt();
 		fileName = collection.getName() + '/' + istream.readUTF();
 		children = istream.readInt();
@@ -652,7 +666,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public void deserialize(byte[] data) {
-		VariableByteInputStream istream = new VariableByteInputStream(data);
+		VariableByteArrayInput istream = new VariableByteArrayInput(data);
 		try {
 			long address;
 			for (int i = 0; i < children; i++) {

@@ -80,6 +80,10 @@ public class SAXSerializer implements ContentHandler, LexicalHandler {
 		return receiver.writer;
 	}
 	
+	public void setReceiver(XMLWriter receiver) {
+	    this.receiver = receiver;
+	}
+	
 	public void reset() {
 		nsSupport.reset();
 		namespaceDecls.clear();

@@ -22,9 +22,9 @@ package org.exist.xquery;
 
 import java.util.Iterator;
 
+import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.xquery.value.Item;
@@ -50,7 +50,8 @@ public class RootNode extends Step {
 		DocumentSet ds = context.getStaticallyKnownDocuments();
 		if(ds == null || ds.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
-		NodeSet result = new ExtArrayNodeSet(ds.getLength(), 1);
+		//NodeSet result = new ExtArrayNodeSet(ds.getLength(), 1);
+		NodeSet result = new ArraySet(ds.getLength());
 		for (Iterator i = ds.iterator(); i.hasNext();) {
 			result.add(new NodeProxy((DocumentImpl) i.next(), -1));
 		}

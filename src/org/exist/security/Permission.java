@@ -6,9 +6,8 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
+
 import org.exist.util.SyntaxException;
-import org.exist.util.VariableByteInputStream;
-import org.exist.util.VariableByteOutputStream;
 
 /**
  *  Manages the permissions assigned to a ressource. This includes
@@ -158,12 +157,6 @@ public class Permission {
      *@exception  IOException  Description of the Exception
      */
     public void read( DataInput istream ) throws IOException {
-        owner = istream.readUTF();
-        ownerGroup = istream.readUTF();
-        permissions = istream.readByte();
-    }
-
-    public void read( VariableByteInputStream istream ) throws IOException {
         owner = istream.readUTF();
         ownerGroup = istream.readUTF();
         permissions = istream.readByte();
@@ -338,59 +331,24 @@ public class Permission {
         return validatePublic( perm );
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  perm  Description of the Parameter
-     *@return       Description of the Return Value
-     */
     private final boolean validateGroup( int perm ) {
         perm = perm << 3;
         return ( permissions & perm ) == perm;
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  perm  Description of the Parameter
-     *@return       Description of the Return Value
-     */
     private final boolean validatePublic( int perm ) {
         return ( permissions & perm ) == perm;
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  perm  Description of the Parameter
-     *@return       Description of the Return Value
-     */
     private final boolean validateUser( int perm ) {
         perm = perm << 6;
         return ( permissions & perm ) == perm;
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  ostream          Description of the Parameter
-     *@exception  IOException  Description of the Exception
-     */
     public void write( DataOutput ostream ) throws IOException {
         ostream.writeUTF( owner );
         ostream.writeUTF( ownerGroup );
         ostream.writeByte( permissions );
-    }
-    
-    public void write( VariableByteOutputStream ostream )
-    throws IOException {
-        ostream.writeUTF( owner );
-        ostream.writeUTF( ownerGroup );
-        ostream.writeByte( (byte)permissions );
     }
     
     public void store( String prefix, Properties props ) {

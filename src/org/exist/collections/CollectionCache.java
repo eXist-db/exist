@@ -1,15 +1,19 @@
-/*
- * CollectionCache.java - Mar 11, 2003
- * 
- * @author wolf
- */
 package org.exist.collections;
 
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.ClockCache;
+import org.exist.storage.cache.LRDCache;
 import org.exist.util.hashtable.Object2LongHashMap;
 
-public class CollectionCache extends ClockCache {
+/**
+ * Global cache for {@link org.exist.collections.Collection} objects. The
+ * cache is owned by {@link org.exist.storage.store.CollectionStore}. It is not
+ * synchronized. Thus a lock should be obtained on the collection store before
+ * accessing the cache.
+ * 
+ * @author wolf
+ */
+public class CollectionCache extends LRDCache {
 
 	private Object2LongHashMap names;
 
@@ -44,11 +48,6 @@ public class CollectionCache extends ClockCache {
 			names.remove(((Collection)old).getName());
 		}
 		return old;
-	}
-
-	public void remove(Cacheable item) {
-		super.remove(item);
-		names.remove(((Collection)item).getName());
 	}
 
 }

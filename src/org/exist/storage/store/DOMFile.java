@@ -682,27 +682,6 @@ public class DOMFile extends BTree implements Lockable {
     }
 
     /**
-     * Retrieve a range of nodes, starting at first and including last.
-     * 
-     * @param first
-     *                   the first node to retrieve
-     * @param last
-     *                   the last node to retrieve
-     * @return list of nodes
-     * @exception IOException
-     *                        Description of the Exception
-     * @exception BTreeException
-     *                        Description of the Exception
-     */
-    public ArrayList findRange(Value first, Value last) throws IOException,
-            BTreeException {
-        final IndexQuery query = new IndexQuery(IndexQuery.BW, first, last);
-        final RangeCallback cb = new RangeCallback();
-        query(query, cb);
-        return cb.getValues();
-    }
-
-    /**
      * Find a node by searching for a known ancestor in the index. If an
      * ancestor is found, it is traversed to locate the specified descendant
      * node.
@@ -1090,7 +1069,6 @@ public class DOMFile extends BTree implements Lockable {
     public void removePage(DOMPage page) {
         dataCache.remove(page);
         DOMFilePageHeader ph = page.getPageHeader();
-        LOG.debug("---------------------------\nFreeing page: " + page.getPageNum());
         if (ph.getNextDataPage() > -1) {
 			DOMPage next = getCurrentPage(ph.getNextDataPage());
 			next.getPageHeader().setPrevDataPage(ph.getPrevDataPage());
@@ -1116,6 +1094,20 @@ public class DOMFile extends BTree implements Lockable {
         }
     }
     
+    public void removeAll(long p) {
+        long pnum = StorageAddress.pageFromPointer(p);
+        while(-1 < pnum) {
+            DOMPage page = getCurrentPage(pnum);
+            pnum = page.getPageHeader().getNextDataPage();
+            dataCache.remove(page);
+            try {
+                unlinkPages(page.page);
+            } catch (IOException e) {
+                LOG.warn("Error while removing page: " + e.getMessage(), e);
+            }
+        }
+    }
+    
     /**
      * Set the last page in the sequence to which nodes are currently appended.
      * 
@@ -1136,16 +1128,6 @@ public class DOMFile extends BTree implements Lockable {
      */
     public final Lock getLock() {
         return lock;
-    }
-
-    /**
-     * Set the file location for this DOMFile.
-     * 
-     * @param location
-     *                   The new location value
-     */
-    public void setLocation(String location) {
-        setFile(new File(location + ".dbx"));
     }
 
     /**
@@ -1328,69 +1310,69 @@ public class DOMFile extends BTree implements Lockable {
         return findRecord(p, true);
     }
     
-    /**
-     * Find a record within the page or the pages linked to it.
-     * 
-     * @param p
-     * @return
-     */
-    protected RecordPos findRecord(long p, boolean skipLinks) {
-        long pageNr = StorageAddress.pageFromPointer(p);
-        short targetId = StorageAddress.tidFromPointer(p);
-        DOMPage page;
-        int pos;
-        short currentId, vlen;
-        int dlen;
-        outerLoop:
-        while (pageNr > -1) {
-            page = getCurrentPage(pageNr);
-            dataCache.add(page);
-            dlen = page.getPageHeader().getDataLength();
-            for (pos = 0; pos < dlen;) {
-                currentId = ByteConversion.byteToShort(page.data, pos);
-                if (ItemId.isLink(currentId)) {
-                    if (ItemId.getId(currentId) == targetId) {
-                        if(!skipLinks)
-                            return new RecordPos(pos + 2, page, currentId);
-                        long forwardLink = ByteConversion.byteToLong(page.data,
-                                pos + 2);
-                        // load the link page
-                        pageNr = StorageAddress.pageFromPointer(forwardLink);
-                        targetId = StorageAddress.tidFromPointer(forwardLink);
-//                        LOG.debug("following link. page = "
-//                                + pageNr
-//                                + "; tid="
-//                                + targetId);
-                        continue outerLoop;
-                    } else {
-                        pos += 10;
+        /**
+         * Find a record within the page or the pages linked to it.
+         * 
+         * @param p
+         * @return
+         */
+        protected RecordPos findRecord(long p, boolean skipLinks) {
+            long pageNr = StorageAddress.pageFromPointer(p);
+            short targetId = StorageAddress.tidFromPointer(p);
+            DOMPage page;
+            int pos;
+            short currentId, vlen;
+            int dlen;
+            outerLoop:
+            while (pageNr > -1) {
+                page = getCurrentPage(pageNr);
+                dataCache.add(page);
+                dlen = page.getPageHeader().getDataLength();
+                for (pos = 0; pos < dlen;) {
+                    currentId = ByteConversion.byteToShort(page.data, pos);
+                    if (ItemId.isLink(currentId)) {
+                        if (ItemId.getId(currentId) == targetId) {
+                            if(!skipLinks)
+                                return new RecordPos(pos + 2, page, currentId);
+                            long forwardLink = ByteConversion.byteToLong(page.data,
+                                    pos + 2);
+                            // load the link page
+                            pageNr = StorageAddress.pageFromPointer(forwardLink);
+                            targetId = StorageAddress.tidFromPointer(forwardLink);
+    //                        LOG.debug("following link. page = "
+    //                                + pageNr
+    //                                + "; tid="
+    //                                + targetId);
+                            continue outerLoop;
+                        } else {
+                            pos += 10;
+                        }
+                    } else if (ItemId.getId(currentId) == targetId)
+                        return new RecordPos(pos + 2, page, currentId);
+                    else {
+                        vlen = ByteConversion.byteToShort(page.data, pos + 2);
+                        if (ItemId.isRelocated(currentId)) {
+                            pos += vlen == OVERFLOW ? 20 : vlen + 12;
+                        } else
+                            pos += vlen == OVERFLOW ? 12 : vlen + 4;
                     }
-                } else if (ItemId.getId(currentId) == targetId)
-                    return new RecordPos(pos + 2, page, currentId);
-                else {
-                    vlen = ByteConversion.byteToShort(page.data, pos + 2);
-                    if (ItemId.isRelocated(currentId)) {
-                        pos += vlen == OVERFLOW ? 20 : vlen + 12;
-                    } else
-                        pos += vlen == OVERFLOW ? 12 : vlen + 4;
                 }
+                pageNr = page.getPageHeader().getNextDataPage();
+                if (pageNr == page.getPageNum()) {
+                    LOG.debug("illegal link to next page");
+                    return null;
+                }
+    //            			LOG.debug(
+    //            				owner.toString()
+    //            					+ ": tid "
+    //            					+ targetId
+    //            					+ " not found on "
+    //            					+ page.page.getPageInfo()
+    //            					+ ". Loading "
+    //            					+ pageNr);
             }
-            pageNr = page.getPageHeader().getNextDataPage();
-            if (pageNr == page.getPageNum()) {
-                LOG.debug("illegal link to next page");
-                return null;
-            }
-//            			LOG.debug(
-//            				owner.toString()
-//            					+ ": tid "
-//            					+ targetId
-//            					+ " not found on "
-//            					+ page.page.getPageInfo()
-//            					+ ". Loading "
-//            					+ pageNr);
+            return null;
         }
-        return null;
-    }
 
     private final class DOMFileHeader extends BTreeFileHeader {
 

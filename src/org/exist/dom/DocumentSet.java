@@ -107,6 +107,8 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 			doc = (DocumentImpl)i.next();
 			if((broker == null || doc.getPermissions().validate(broker.getUser(), Permission.READ)) && (!doc.isLockedForWrite()))
 				put(doc.getDocId(), doc);
+			else
+			    LOG.debug("document is locked");
 		}
 	}
 

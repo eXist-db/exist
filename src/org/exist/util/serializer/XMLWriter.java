@@ -21,6 +21,7 @@ package org.exist.util.serializer;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.Stack;
 
@@ -53,6 +54,28 @@ public class XMLWriter {
 	protected Properties outputProperties;
 
 	private char[] charref = new char[10];
+
+	private static boolean[] textSpecialChars;
+	private static boolean[] attrSpecialChars;
+	
+	static {
+		textSpecialChars = new boolean[127];
+		Arrays.fill(textSpecialChars, false);
+		textSpecialChars['<'] = true;
+		textSpecialChars['>'] = true;
+		textSpecialChars['\r'] = true;
+		textSpecialChars['&'] = true;
+		
+		attrSpecialChars = new boolean[127];
+		Arrays.fill(attrSpecialChars, false);
+		attrSpecialChars['<'] = true;
+		attrSpecialChars['>'] = true;
+		attrSpecialChars['\r'] = true;
+		attrSpecialChars['\n'] = true;
+		attrSpecialChars['\t'] = true;
+		attrSpecialChars['&'] = true;
+		attrSpecialChars['"'] = true;
+	}
 
 	public XMLWriter() {
 	}
@@ -146,7 +169,7 @@ public class XMLWriter {
 				writer.write(prefix);
 			}
 			writer.write("=\"");
-			writeChars(nsURI);
+			writeChars(nsURI, true);
 			writer.write('"');
 		} catch (IOException e) {
 			throw new TransformerException(e.getMessage(), e);
@@ -161,7 +184,7 @@ public class XMLWriter {
 			writer.write(' ');
 			writer.write(qname);
 			writer.write("=\"");
-			writeAttrChars(value);
+			writeChars(value, true);
 			writer.write('"');
 		} catch (IOException e) {
 			throw new TransformerException(e.getMessage(), e);
@@ -174,7 +197,7 @@ public class XMLWriter {
 		try {
 			if (tagIsOpen)
 				closeStartTag(false);
-			writeChars(chars);
+			writeChars(chars, false);
 		} catch (IOException e) {
 			throw new TransformerException(e.getMessage(), e);
 		}
@@ -200,7 +223,7 @@ public class XMLWriter {
 			writer.write(target);
 			if (data != null && data.length() > 0) {
 				writer.write(' ');
-				writeChars(data);
+				writeChars(data, false);
 			}
 			writer.write("?>");
 		} catch (IOException e) {
@@ -215,7 +238,7 @@ public class XMLWriter {
 			if (tagIsOpen)
 				closeStartTag(false);
 			writer.write("<!--");
-			writeChars(data);
+			writeChars(data, false);
 			writer.write("-->");
 		} catch (IOException e) {
 			throw new TransformerException(e.getMessage(), e);
@@ -268,38 +291,29 @@ public class XMLWriter {
 		}
 	}
 
-	private final void writeChars(CharSequence s) throws IOException {
-		char ch;
-		for (int i = 0; i < s.length(); i++) {
-			ch = s.charAt(i);
-			switch (ch) {
-				case '<' :
-					writer.write("&lt;");
-					break;
-				case '>' :
-					writer.write("&gt;");
-					break;
-				case '&' :
-					writer.write("&amp;");
-					break;
-				case '\r' :
-					writer.write("&#xD;");
-					break;
-				default :
-					if (charSet.inCharacterSet(ch))
-						writer.write(ch);
-					else
-						writeCharacterReference(ch);
-					break;
-			}
-		}
-	}
-
-	protected void writeAttrChars(CharSequence s) throws IOException {
-		char ch;
-		for (int i = 0; i < s.length(); i++) {
-			ch = s.charAt(i);
-			switch (ch) {
+	private final void writeChars(CharSequence s, boolean inAttribute) throws IOException {
+	    boolean[] specialChars = inAttribute ? attrSpecialChars : textSpecialChars;
+		char ch = 0;
+		final int len = s.length();
+		int pos = 0, i;
+		while(pos < len) {
+		    i = pos;
+		    while(i < len) {
+		        ch = s.charAt(i);
+		        if(ch < 128) {
+		            if(specialChars[ch])
+		                break;
+		            else
+		                i++;
+		        } else if(!charSet.inCharacterSet(ch))
+		            break;
+		        else
+		            i++;
+		    }
+		    writer.write(s.subSequence(pos, i).toString());
+		    if(i >= len)
+		        return;
+		    switch (ch) {
 				case '<' :
 					writer.write("&lt;");
 					break;
@@ -321,12 +335,10 @@ public class XMLWriter {
 				case '"' :
 					writer.write("&#34;");
 					break;
-				default :
-					if(charSet.inCharacterSet(ch))
-						writer.write(ch);
-					else
-						writeCharacterReference(ch);
-			}
+				default:
+				    writeCharacterReference(ch);
+		    }
+		    pos = ++i;
 		}
 	}
 

@@ -271,6 +271,13 @@ public class LocationStep extends Step {
 				NodeSet.DESCENDANT,
 				axis == Constants.DESCENDANT_SELF_AXIS,
 				inPredicate);
+//			DocumentSet docs = contextSet.getDocumentSet();
+//			NodeSelector selector = axis == Constants.DESCENDANT_SELF_AXIS ?
+//			        new DescendantOrSelfSelector(contextSet, inPredicate) :
+//			    new DescendantSelector(contextSet, inPredicate);
+//			NodeSet result = context.getBroker().findElementsByTagName(
+//					ElementValue.ELEMENT, docs, test.getName(), selector
+//			);
 			return result;
 		}
 	}

@@ -3,8 +3,8 @@ package org.exist.storage.store;
 import java.io.EOFException;
 import java.io.IOException;
 
-import org.exist.util.VariableByteInputStream;
-import org.exist.util.VariableByteOutputStream;
+import org.exist.storage.io.VariableByteInput;
+import org.exist.storage.io.VariableByteOutputStream;
 
 /**
  * Represents a (virtual) storage address in the paged file, consisting
@@ -61,8 +61,8 @@ public class StorageAddress {
 		os.writeShort(flagsFromPointer(pointer));
 	}
 	
-	public final static long read(VariableByteInputStream is) throws IOException, EOFException {
-		return createPointer(is.readInt(), is.readShort(), is.readShort());
+	public final static long read(VariableByteInput is) throws IOException, EOFException {
+	    return createPointer(is.readInt(), is.readShort(), is.readShort());
 	}
 	
 	public final static String toString(long pointer) {

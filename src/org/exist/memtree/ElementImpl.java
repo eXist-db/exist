@@ -48,6 +48,7 @@ public class ElementImpl extends NodeImpl implements Element {
 		return (QName)
 			document.namePool.get(document.nodeName[nodeNumber]);
 	}
+	
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#hasChildNodes()
 	 */

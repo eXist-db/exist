@@ -18,8 +18,8 @@
 
 package org.exist.dom;
 
-import org.exist.util.VariableByteInputStream;
-import org.exist.util.VariableByteOutputStream;
+import org.exist.storage.io.VariableByteArrayInput;
+import org.exist.storage.io.VariableByteOutputStream;
 import org.w3c.dom.*;
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -101,7 +101,7 @@ public class DocumentTypeImpl extends NodeImpl implements DocumentType {
             publicId = null;
     }
 
-    protected void read(VariableByteInputStream istream) throws IOException {
+    protected void read(VariableByteArrayInput istream) throws IOException {
         name = istream.readUTF();
         systemId = istream.readUTF();
         if (systemId.length() == 0)

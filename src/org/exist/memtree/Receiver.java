@@ -22,19 +22,21 @@
  */
 package org.exist.memtree;
 
+import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
+import org.xml.sax.ext.LexicalHandler;
 
 /**
  * Builds an in-memory DOM tree from SAX events.
  * 
  * @author Wolfgang <wolfgang@exist-db.org>
  */
-public class Receiver implements ContentHandler {
+public class Receiver implements ContentHandler, LexicalHandler {
 
 	private MemTreeBuilder builder = null;
 	
@@ -114,6 +116,10 @@ public class Receiver implements ContentHandler {
 	public void endElement(QName qname) throws SAXException {
 		builder.endElement();
 	}
+
+	public void addReferenceNode(NodeProxy proxy) throws SAXException {
+	    builder.addReferenceNode(proxy);
+	}
 	
 	public void characters(CharSequence seq) throws SAXException {
 		builder.characters(seq);
@@ -141,8 +147,9 @@ public class Receiver implements ContentHandler {
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#processingInstruction(java.lang.String, java.lang.String)
 	 */
-	public void processingInstruction(String arg0, String arg1)
+	public void processingInstruction(String target, String data)
 		throws SAXException {
+	    builder.processingInstruction(target, data);
 	}
 
 	/* (non-Javadoc)
@@ -151,4 +158,49 @@ public class Receiver implements ContentHandler {
 	public void skippedEntity(String arg0) throws SAXException {
 	}
 
+    /* (non-Javadoc)
+     * @see org.xml.sax.ext.LexicalHandler#endCDATA()
+     */
+    public void endCDATA() throws SAXException {
+        // TODO ignored
+        
+    }
+
+    /* (non-Javadoc)
+     * @see org.xml.sax.ext.LexicalHandler#endDTD()
+     */
+    public void endDTD() throws SAXException {
+    }
+
+    /* (non-Javadoc)
+     * @see org.xml.sax.ext.LexicalHandler#startCDATA()
+     */
+    public void startCDATA() throws SAXException {
+        // TODO Ignored
+    }
+
+    /* (non-Javadoc)
+     * @see org.xml.sax.ext.LexicalHandler#comment(char[], int, int)
+     */
+    public void comment(char[] ch, int start, int length) throws SAXException {
+        builder.comment(ch, start, length);
+    }
+
+    /* (non-Javadoc)
+     * @see org.xml.sax.ext.LexicalHandler#endEntity(java.lang.String)
+     */
+    public void endEntity(String name) throws SAXException {
+    }
+
+    /* (non-Javadoc)
+     * @see org.xml.sax.ext.LexicalHandler#startEntity(java.lang.String)
+     */
+    public void startEntity(String name) throws SAXException {
+    }
+
+    /* (non-Javadoc)
+     * @see org.xml.sax.ext.LexicalHandler#startDTD(java.lang.String, java.lang.String, java.lang.String)
+     */
+    public void startDTD(String name, String publicId, String systemId) throws SAXException {
+    }
 }

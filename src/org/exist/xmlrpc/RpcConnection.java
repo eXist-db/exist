@@ -1176,22 +1176,12 @@ public class RpcConnection extends Thread {
 			if (item == null)
 				throw new EXistException("index out of range");
 
-			if (item instanceof NodeProxy) {
-				NodeProxy proxy = (NodeProxy) item;
-				Serializer serializer = broker.getSerializer();
+			if(Type.subTypeOf(item.getType(), Type.NODE)) {
+			    NodeValue nodeValue = (NodeValue)item;
+			    Serializer serializer = broker.getSerializer();
 				serializer.reset();
 				serializer.setProperties(parameters);
-				return serializer.serialize(proxy);
-			} else if (item instanceof Node) {
-				StringWriter writer = new StringWriter();
-				Properties properties = getProperties(parameters);
-				DOMSerializer serializer = DOMSerializerPool.getInstance()
-						.borrowDOMSerializer();
-				serializer.setWriter(writer);
-				serializer.setOutputProperties(properties);
-				serializer.serialize((Node) item);
-				DOMSerializerPool.getInstance().returnDOMSerializer(serializer);
-				return writer.toString();
+				return serializer.serialize(nodeValue);
 			} else {
 				return item.getStringValue();
 			}

@@ -43,11 +43,12 @@ import org.exist.dom.QName;
 import org.exist.dom.SymbolTable;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.storage.io.VariableByteInput;
+import org.exist.storage.io.VariableByteOutputStream;
+import org.exist.storage.io.VariableByteInputStream;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
 import org.exist.util.Occurrences;
-import org.exist.util.VariableByteInputStream;
-import org.exist.util.VariableByteOutputStream;
 import org.exist.xquery.NodeSelector;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -107,7 +108,7 @@ public abstract class DBBroker extends Observable {
 	protected void loadSymbols() throws EXistException {
 		try {
 			FileInputStream fis = new FileInputStream(symbols.getFile());
-			VariableByteInputStream is = new VariableByteInputStream(fis);
+			VariableByteInput is = new VariableByteInputStream(fis);
 			symbols.read(is);
 			fis.close();
 		} catch (FileNotFoundException e) {
