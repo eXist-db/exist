@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-03 Wolfgang M. Meier
+ *  Copyright (C) 2001-04 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist-db.org
  *
@@ -276,6 +276,15 @@ public class EXistServlet extends HttpServlet {
 		}
 	}
 	
+	
+    /* (non-Javadoc)
+     * @see javax.servlet.GenericServlet#destroy()
+     */
+    public void destroy() {
+        super.destroy();
+        BrokerPool.stopAll(false);
+    }
+    
 	private User authenticate(HttpServletRequest request) {
 		String auth = request.getHeader("Authorization");
 		if(auth == null)
