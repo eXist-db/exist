@@ -1843,12 +1843,13 @@ implements Comparable, EntityResolver, Cacheable {
 			if (col == null)
 				test = false;
 			else {
-				collection = broker.openCollection(col, Lock.READ_LOCK);
+				collection = broker.getCollection(col);
+//				collection = broker.openCollection(col, Lock.READ_LOCK);
 				if (collection.hasDocument(document)) {
 					result = col;
 					test = false;
 				}
-				collection.release();
+//				collection.release();
 			}
 		}
 		return result;		
