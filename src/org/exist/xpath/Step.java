@@ -36,13 +36,13 @@ public abstract class Step extends AbstractExpression {
     protected NodeTest test;
 	protected boolean inPredicate = false;
 	
-    public Step( int axis ) {
-        super();
+    public Step( StaticContext context, int axis ) {
+        super(context);
         this.axis = axis;
     }
 
-    public Step( int axis, NodeTest test ) {
-        this( axis );
+    public Step( StaticContext context, int axis, NodeTest test ) {
+        this( context, axis );
         this.test = test;
     }
 
@@ -50,8 +50,7 @@ public abstract class Step extends AbstractExpression {
         predicates.add( expr );
     }
 
-    public abstract Sequence eval( StaticContext context, DocumentSet docs, Sequence contextSequence,
-    	Item contextItem ) throws XPathException;
+    public abstract Sequence eval( DocumentSet docs, Sequence contextSequence, Item contextItem ) throws XPathException;
 
     public int getAxis() {
         return axis;
@@ -76,11 +75,11 @@ public abstract class Step extends AbstractExpression {
         return buf.toString();
     }
 
-    public DocumentSet preselect( DocumentSet in_docs, StaticContext context ) throws XPathException {
+    public DocumentSet preselect( DocumentSet in_docs ) throws XPathException {
         DocumentSet out_docs = in_docs;
         if ( predicates.size() > 0 )
             for ( Iterator i = predicates.iterator(); i.hasNext();  )
-                out_docs = ( (Predicate) i.next() ).preselect( out_docs, context );
+                out_docs = ( (Predicate) i.next() ).preselect( out_docs );
 
         return out_docs;
     }

@@ -25,6 +25,8 @@ import org.exist.xpath.XPathException;
 
 public class StringValue extends AtomicValue {
 
+	public final static StringValue EMPTY_STRING = new StringValue("");
+	
 	private String value;
 	
 	public StringValue(String stringValue) {
@@ -59,7 +61,12 @@ public class StringValue extends AtomicValue {
 			case Type.STRING:
 				return this;
 			case Type.BOOLEAN:
-				return new BooleanValue(value);
+				if(value.equals("0") || value.equals("false"))
+					return BooleanValue.FALSE;
+				else if(value.equals("1") || value.equals("true"))
+					return BooleanValue.TRUE;
+				else
+					throw new XPathException("cannot convert string '" + value + "' to boolean");
 			case Type.FLOAT:
 			case Type.DOUBLE:
 			case Type.DECIMAL:

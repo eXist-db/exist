@@ -13,28 +13,19 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 
 /**
- *  Description of the Class
- *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    9. Juli 2002
+ * Persistent implementation of a DOM processing-instruction node.
+ * 
+ * @author wolf
  */
 public class ProcessingInstructionImpl extends NodeImpl implements ProcessingInstruction {
 
     protected String target;
     protected String data;
 
-
-    /**  Constructor for the ProcessingInstructionImpl object */
     public ProcessingInstructionImpl() {
         super();
     }
 
-
-    /**
-     *  Constructor for the ProcessingInstructionImpl object
-     *
-     *@param  gid  Description of the Parameter
-     */
     public ProcessingInstructionImpl( long gid ) {
         super( Node.PROCESSING_INSTRUCTION_NODE, gid );
     }

@@ -20,29 +20,41 @@
 
 package org.exist.xpath.functions;
 
-import org.exist.dom.AVLTreeNodeSet;
 import org.exist.dom.ContextItem;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.xpath.Cardinality;
 import org.exist.xpath.Dependency;
 import org.exist.xpath.Expression;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
+import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.Type;
 
 public class FunNot extends Function {
 
-	public FunNot() {
-		super("not");
+	public final static FunctionSignature signature =
+		new FunctionSignature(
+			new QName("not", BUILTIN_FUNCTION_NS),
+			new SequenceType[] {
+				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)},
+			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
+
+	public FunNot(StaticContext context) {
+		super(context, signature);
 	}
 
 	public int returnsType() {
-		return Type.NODE;
+		return Type.subTypeOf(getArgument(0).returnsType(), Type.NODE)
+			? Type.NODE
+			: Type.BOOLEAN;
 	}
 
 	/* (non-Javadoc)
@@ -51,54 +63,54 @@ public class FunNot extends Function {
 	public int getDependencies() {
 		return Dependency.CONTEXT_SET | getArgument(0).getDependencies();
 	}
-	
-	public DocumentSet preselect(DocumentSet in_docs, StaticContext context)
-		throws XPathException {
-		return getArgument(0).preselect(in_docs, context);
-	}
 
 	public Sequence eval(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		NodeSet result = new ExtArrayNodeSet();
-		Expression path = getArgument(0);
-		result.addAll(contextSequence);
-		NodeProxy current;
-		if (inPredicate)
-			for (SequenceIterator i = result.iterate(); i.hasNext();) {
-				current = (NodeProxy) i.nextItem();
-				current.addContextNode(current);
-			}
-		// evaluate argument expression
-		Sequence argSeq =
-			path.eval(context, docs, contextSequence, contextItem);
-		NodeProxy parent;
-		long pid;
-		ContextItem contextNode;
-		NodeProxy next;
-		Item item;
-		// iterate through nodes and remove hits from result
-		for (SequenceIterator i = argSeq.iterate(); i.hasNext();) {
-			item = (Item) i.nextItem();
-			current = (NodeProxy) item;
-			contextNode = current.getContext();
-			if (contextNode == null) {
-				LOG.warn("context node is missing!");
-				break;
-			}
+		Expression arg = getArgument(0);
+		if (Type.subTypeOf(arg.returnsType(), Type.NODE)) {
+			NodeSet result = new ExtArrayNodeSet();
+			result.addAll(contextSequence);
+			NodeProxy current;
+			if (inPredicate)
+				for (SequenceIterator i = result.iterate(); i.hasNext();) {
+					current = (NodeProxy) i.nextItem();
+					current.addContextNode(current);
+				}
+			// evaluate argument expression
+			Sequence argSeq =
+				arg.eval(docs, contextSequence, contextItem);
+			NodeProxy parent;
+			long pid;
+			ContextItem contextNode;
+			NodeProxy next;
+			Item item;
+			// iterate through nodes and remove hits from result
+			for (SequenceIterator i = argSeq.iterate(); i.hasNext();) {
+				item = (Item) i.nextItem();
+				current = (NodeProxy) item;
+				contextNode = current.getContext();
+				if (contextNode == null) {
+					LOG.warn("context node is missing!");
+					break;
+				}
 
-			while (contextNode != null) {
-				next = contextNode.getNode();
-				//if ((parent = result.get(next)) != null)
+				while (contextNode != null) {
+					next = contextNode.getNode();
+					//if ((parent = result.get(next)) != null)
 					result.remove(next);
-				contextNode = contextNode.getNextItem();
+					contextNode = contextNode.getNextItem();
+				}
 			}
+			LOG.debug("found " + result.getLength());
+			return result;
+		} else {
+			Sequence seq =
+				arg.eval(docs, contextSequence, contextItem);
+			return seq.effectiveBooleanValue() ? BooleanValue.TRUE : BooleanValue.FALSE;
 		}
-		LOG.debug("found " + result.getLength());
-		return result;
 	}
 
 	public String pprint() {

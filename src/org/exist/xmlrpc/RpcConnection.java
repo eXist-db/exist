@@ -209,7 +209,7 @@ public class RpcConnection extends Thread {
 		AST ast = parser.getAST();
 		LOG.debug("generated AST: " + ast.toStringTree());
 
-		PathExpr expr = new PathExpr();
+		PathExpr expr = new PathExpr(context);
 		treeParser.xpath(ast, expr);
 		if (treeParser.foundErrors()) {
 			throw new EXistException(treeParser.getErrorMessage());
@@ -219,10 +219,10 @@ public class RpcConnection extends Thread {
 		DocumentSet ndocs =
 			(docs == null
 				? expr.preselect(context)
-				: expr.preselect(docs, context));
+				: expr.preselect(docs));
 		LOG.info(
 			"pre-select took " + (System.currentTimeMillis() - start) + "ms.");
-		Sequence result = expr.eval(context, ndocs, contextSet, null);
+		Sequence result = expr.eval(ndocs, contextSet, null);
 		LOG.info("query took " + (System.currentTimeMillis() - start) + "ms.");
 		return result;
 	}

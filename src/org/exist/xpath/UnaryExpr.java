@@ -28,12 +28,17 @@ import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.Type;
 
+/**
+ * A unary minus or plus.
+ * 
+ * @author wolf
+ */
 public class UnaryExpr extends PathExpr {
 
 	private int mode;
 	
-	public UnaryExpr(int mode) {
-		super();
+	public UnaryExpr(StaticContext context, int mode) {
+		super(context);
 		this.mode = mode;
 	}
 
@@ -41,14 +46,14 @@ public class UnaryExpr extends PathExpr {
 		return Type.DECIMAL;
 	}
 	
-	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, Item contextItem) 
+	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) 
 	throws XPathException {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
 		if(getLength() == 0)
 			throw new XPathException("unary expression requires an operand");
 		DoubleValue value = (DoubleValue)
-			getExpression(0).eval(context, docs, contextSequence).convertTo(Type.DECIMAL);
+			getExpression(0).eval(docs, contextSequence).convertTo(Type.DECIMAL);
 		switch(mode) {
 			case Constants.MINUS :
 				value.setValue(-value.getDouble());

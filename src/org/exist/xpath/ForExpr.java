@@ -23,7 +23,6 @@
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.xpath.value.Item;
@@ -39,14 +38,14 @@ import org.exist.xpath.value.ValueSequence;
  */
 public class ForExpr extends BindingExpression {
 
-	public ForExpr() {
+	public ForExpr(StaticContext context) {
+		super(context);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
@@ -61,7 +60,7 @@ public class ForExpr extends BindingExpression {
 		Variable var = new Variable(QName.parse(context, varName));
 		context.declareVariable(var);
 		// evaluate the "in" expression
-		Sequence in = inputSequence.eval(context, docs, null, null);
+		Sequence in = inputSequence.eval(docs, null, null);
 		var.setValue(in);
 		if(whereExpr != null)
 			whereExpr.setInPredicate(true);
@@ -73,9 +72,12 @@ public class ForExpr extends BindingExpression {
 			whereExpr = null;
 		}
 		Sequence val = null;
+		int p = 0;
+		context.setContextPosition(0);
 		// loop through each variable binding
-		for (SequenceIterator i = in.iterate(); i.hasNext();) {
+		for (SequenceIterator i = in.iterate(); i.hasNext(); p++) {
 			contextItem = i.nextItem();
+			context.setContextPosition(p);
 			if(contextItem instanceof NodeProxy)
 				((NodeProxy)contextItem).addContextNode((NodeProxy)contextItem);
 			contextSequence = contextItem.toSequence();
@@ -86,7 +88,7 @@ public class ForExpr extends BindingExpression {
 					continue;
 			} else
 				val = contextItem.toSequence();
-			val = returnExpr.eval(context, docs, val);
+			val = returnExpr.eval(docs, val);
 			result.addAll(val);
 		}
 		return result;

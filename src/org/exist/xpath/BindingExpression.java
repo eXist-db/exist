@@ -34,6 +34,7 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.Type;
 
 /**
@@ -50,6 +51,10 @@ public abstract class BindingExpression extends AbstractExpression {
 	protected Expression inputSequence;
 	protected Expression returnExpr;
 	protected Expression whereExpr;
+
+	public BindingExpression(StaticContext context) {
+		super(context);
+	}
 
 	public void setVariable(String qname) {
 		varName = qname;
@@ -71,7 +76,6 @@ public abstract class BindingExpression extends AbstractExpression {
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public abstract Sequence eval(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
@@ -86,9 +90,8 @@ public abstract class BindingExpression extends AbstractExpression {
 		if (Type.subTypeOf(whereExpr.returnsType(), Type.NODE)) {
 			// if the where expression returns a node set, check the context
 			// node of each node in the set
-			NodeSet temp =
-				whereExpr.eval(context, docs, contextSequence).toNodeSet();
-			LOG.debug("found " + temp.getLength());
+			LOG.debug("calling single: " + whereExpr);
+			NodeSet temp = whereExpr.eval(docs, contextSequence).toNodeSet();
 			NodeProxy current;
 			ContextItem contextNode;
 			NodeProxy next;
@@ -116,19 +119,26 @@ public abstract class BindingExpression extends AbstractExpression {
 			return result;
 		} else {
 			// general where clause: just check the effective boolean value
-			Sequence r = whereExpr.eval(context, docs, contextSequence);
-			if (r.effectiveBooleanValue())
-				return r;
-			else
-				return Sequence.EMPTY_SEQUENCE;
+			NodeSet result = new ExtArrayNodeSet();
+			int p = 0;
+			context.setContextPosition(0);
+			for (SequenceIterator i = contextSequence.iterate();
+				i.hasNext();
+				p++) {
+				Item item = i.nextItem();
+				context.setContextPosition(p);
+				Sequence innerSeq = whereExpr.eval(docs, contextSequence, item);
+				if (innerSeq.effectiveBooleanValue())
+					result.add(item);
+			}
+			return result;
 		}
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#preselect(org.exist.dom.DocumentSet, org.exist.xpath.StaticContext)
 	 */
-	public DocumentSet preselect(DocumentSet in_docs, StaticContext context)
-		throws XPathException {
+	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
 		return in_docs;
 	}
 

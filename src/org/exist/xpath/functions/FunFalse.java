@@ -21,25 +21,44 @@
 package org.exist.xpath.functions;
 
 import org.exist.dom.DocumentSet;
+import org.exist.dom.QName;
+import org.exist.xpath.Cardinality;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.Type;
 
+/**
+ * Built-in function fn:false().
+ * 
+ * @author wolf
+ */
 public class FunFalse extends Function {
 
-	public FunFalse() {
-		super("false");
+	private final static FunctionSignature signature =
+		new FunctionSignature(
+			new QName("false", BUILTIN_FUNCTION_NS),
+			null,
+			new SequenceType(Type.BOOLEAN, Cardinality.ONE));
+
+	public FunFalse(StaticContext context) {
+		super(context, signature);
 	}
-	
+
 	public int returnsType() {
 		return Type.BOOLEAN;
 	}
-	
-	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSet,
+
+	/**
+	 * Always returns false.
+	 */
+	public Sequence eval(
+		DocumentSet docs,
+		Sequence contextSet,
 		Item contextNode) {
-		return new BooleanValue(false);
+		return BooleanValue.FALSE;
 	}
 
 	public String pprint() {

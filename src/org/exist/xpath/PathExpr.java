@@ -42,7 +42,8 @@ public class PathExpr extends AbstractExpression {
     protected LinkedList steps = new LinkedList();
 	protected boolean inPredicate = false;
 	
-    public PathExpr() {
+    public PathExpr(StaticContext context) {
+    	super(context);
     }
 
     public void add( Expression s ) {
@@ -71,8 +72,8 @@ public class PathExpr extends AbstractExpression {
             ( (Step) e ).addPredicate( pred );
     }
 
-    public Sequence eval( StaticContext context, DocumentSet docs, 
-    	Sequence contextSequence, Item contextItem) throws XPathException {
+    public Sequence eval( DocumentSet docs, Sequence contextSequence, 
+    	Item contextItem) throws XPathException {
         if ( docs.getLength() == 0 )
             return Sequence.EMPTY_SEQUENCE;
         Sequence r;
@@ -89,24 +90,29 @@ public class PathExpr extends AbstractExpression {
         Sequence values;
         for ( Iterator iter = steps.iterator(); iter.hasNext();  ) {
             expr = (Expression) iter.next();
-            if ( expr.returnsType() != Type.NODE ) {
+            //if ( expr.returnsType() != Type.NODE ) {
+            if ((expr.getDependencies() & Dependency.CONTEXT_ITEM) != 0) {
+            	//LOG.debug("single step mode: " + expr.pprint());
 				if(r.getLength() == 0)
-                    r = expr.eval( context, docs, null, null );
+                    r = expr.eval( docs, null, null );
                 else {
                 	values = null;
                 	if(r.getLength() > 1)
                 		values = new ValueSequence();
-                	for ( SequenceIterator iterInner = r.iterate(); iterInner.hasNext(); ) {
+                	int pos = 0;
+					context.setContextPosition(0);
+                	for ( SequenceIterator iterInner = r.iterate(); iterInner.hasNext(); pos++) {
+                		context.setContextPosition(pos);
                 		current = iterInner.nextItem();
                 		if(values == null)
-                			values = expr.eval(context, docs, r, current);
+                			values = expr.eval(docs, r, current);
                 		else
-                			values.addAll( expr.eval(context, docs, r, current) );
+                			values.addAll( expr.eval(docs, r, current) );
                 	}
 	                r = values;
             	}
             } else
-            	r = expr.eval( context, docs, r );
+            	r = expr.eval( docs, r );
         }
         return r;
     }
@@ -142,13 +148,13 @@ public class PathExpr extends AbstractExpression {
     }
 
     public DocumentSet preselect(StaticContext context) throws XPathException {
-        return preselect( docs, context );
+        return preselect( docs );
     }
 
-    public DocumentSet preselect( DocumentSet in_docs, StaticContext context) throws XPathException {
+    public DocumentSet preselect( DocumentSet in_docs) throws XPathException {
         DocumentSet docs = in_docs;
         for ( Iterator iter = steps.iterator(); iter.hasNext();  )
-            docs = ( (Expression) iter.next() ).preselect( docs, context );
+            docs = ( (Expression) iter.next() ).preselect( docs );
         return docs;
     }
 		
@@ -183,8 +189,8 @@ public class PathExpr extends AbstractExpression {
     	if(steps.size() == 0)
     		return "";
     	Expression next = (Expression)steps.get(0);
-    	if(next instanceof Literal)
-    		return ((Literal)next).getLiteral();
+    	if(next instanceof LiteralValue)
+    		return ((LiteralValue)next).getValue().getStringValue();
     	if(next instanceof PathExpr)
     		return ((PathExpr)next).getLiteralValue();
     	return "";

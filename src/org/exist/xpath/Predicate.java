@@ -29,7 +29,6 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.NumericValue;
 import org.exist.xpath.value.Sequence;
@@ -43,12 +42,21 @@ import org.exist.xpath.value.Type;
  */
 public class Predicate extends PathExpr {
 
-	public Predicate() {
-		super();
+	public Predicate(StaticContext context) {
+		super(context);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.PathExpr#getDependencies()
+	 */
+	public int getDependencies() {
+		if(getLength() == 1)
+			return getExpression(0).getDependencies();
+		else
+			return super.getDependencies();
+	}
+	
 	public Sequence eval(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
@@ -58,13 +66,16 @@ public class Predicate extends PathExpr {
 		Expression inner = getExpression(0);
 		if (inner == null)
 			return Sequence.EMPTY_SEQUENCE;
-		if (contextItem != null)
-			contextSequence = contextItem.toSequence();
 		int type = inner.returnsType();
+		//LOG.debug("inner expr " + inner.pprint() + " returns " + Type.getTypeName(type));
+		
+		// Case 1: predicate expression returns a node set. Check the returned node set
+		// against the context set and return all nodes from the context, for which the
+		// predicate expression returns a non-empty sequence.
 		if (Type.subTypeOf(type, Type.NODE)) {
 			ExtArrayNodeSet result = new ExtArrayNodeSet();
 			NodeSet nodes =
-				(NodeSet) super.eval(context, docs, contextSequence, null);
+				super.eval(docs, contextSequence, null).toNodeSet();
 			NodeProxy current;
 			ContextItem contextNode;
 			NodeProxy next;
@@ -78,7 +89,8 @@ public class Predicate extends PathExpr {
 				}
 				contextNode = current.getContext();
 				if (contextNode == null) {
-					throw new XPathException("Internal evaluation error: context node is missing!");
+					throw new XPathException("Internal evaluation error: context node is missing for node " +
+						current.gid + "!");
 				}
 				while (contextNode != null) {
 					next = contextNode.getNode();
@@ -89,84 +101,43 @@ public class Predicate extends PathExpr {
 				}
 			}
 			return result;
+		
+		// Case 2: predicate expression returns a boolean. Call the
+		// predicate expression for each item in the context. Add the item
+		// to the result if the predicate expression yields true.
 		} else if (
-			Type.subTypeOf(type, Type.BOOLEAN)
-				|| Type.subTypeOf(type, Type.STRING)) {
-			//string has no special meaning
+			Type.subTypeOf(type, Type.BOOLEAN)) {
 			NodeSet result = new ExtArrayNodeSet();
-			Item item;
-			Sequence v;
-			for (SequenceIterator i = contextSequence.iterate();
-				i.hasNext();
-				) {
-				item = i.nextItem();
-				v = inner.eval(context, docs, contextSequence, item);
-				if (((BooleanValue) v.convertTo(Type.BOOLEAN)).getValue())
+			int p = 0;
+			context.setContextPosition(0);
+			for(SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
+				Item item = i.nextItem();
+				context.setContextPosition(p);
+				Sequence innerSeq = inner.eval(docs, contextSequence, item);
+				if(innerSeq.effectiveBooleanValue())
 					result.add(item);
 			}
 			return result;
+			
+		// Case 3: predicate expression returns a number. Call the predicate
+		// expression once and select the item at the returned position.
 		} else if (Type.subTypeOf(type, Type.NUMBER)) {
-			NodeProxy p;
-			NodeProxy n;
-			NodeSet set;
-			int level;
-			int count;
-			int pos;
-			long pid;
-			long last_pid = 0;
-			long f_gid;
-			long e_gid;
-			DocumentImpl doc;
-			DocumentImpl last_doc = null;
-			NodeSet contextSet = (NodeSet) contextSequence;
-			NodeSet result = new ExtArrayNodeSet();
-			// evaluate predicate expression for each context node
-			for (Iterator i = contextSet.iterator(); i.hasNext();) {
-				p = (NodeProxy) i.next();
-				pos =
-					((NumericValue) inner
-						.eval(context, docs, contextSet, p)
-						.convertTo(Type.NUMBER))
-						.getInt();
-				doc = (DocumentImpl) p.getDoc();
-				level = doc.getTreeLevel(p.getGID());
-				pid =
-					(p.getGID() - doc.getLevelStartPoint(level))
-						/ doc.getTreeLevelOrder(level)
-						+ doc.getLevelStartPoint(level - 1);
-				if (pid == last_pid
-					&& last_doc != null
-					&& doc.getDocId() == last_doc.getDocId())
-					continue;
-				last_pid = pid;
-				last_doc = doc;
-				f_gid =
-					(pid - doc.getLevelStartPoint(level - 1))
-						* doc.getTreeLevelOrder(level)
-						+ doc.getLevelStartPoint(level);
-				e_gid = f_gid + doc.getTreeLevelOrder(level);
-
-				count = 1;
-				set = contextSet.getRange(doc, f_gid, e_gid);
-				for (Iterator j = set.iterator(); j.hasNext(); count++) {
-					n = (NodeProxy) j.next();
-					if (count == pos) {
-						result.add(n);
-						break;
-					}
-				}
-			}
-			return result;
+			Sequence innerSeq = inner.eval(docs, contextSequence);
+			NumericValue v = (NumericValue)innerSeq.convertTo(Type.NUMBER);
+			int pos = v.getInt() - 1;
+			if(pos > contextSequence.getLength() || pos < 0)
+				return Sequence.EMPTY_SEQUENCE;
+			return contextSequence.itemAt(pos).toSequence();
 		} else
 			LOG.debug("unable to determine return type of predicate expression");
 		return Sequence.EMPTY_SEQUENCE;
 	}
 
-	public DocumentSet preselect(DocumentSet in_docs, StaticContext context)
+	public DocumentSet preselect(DocumentSet in_docs)
 		throws XPathException {
 		DocumentSet docs = in_docs;
 		for (Iterator iter = steps.iterator(); iter.hasNext();)
-			docs = ((Expression) iter.next()).preselect(docs, context);
+			docs = ((Expression) iter.next()).preselect(docs);
 		return docs;
 	}
 

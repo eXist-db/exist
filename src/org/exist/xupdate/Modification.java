@@ -74,18 +74,18 @@ public abstract class Modification {
 			AST ast = parser.getAST();
 			LOG.debug("generated AST: " + ast.toStringTree());
 
-			PathExpr expr = new PathExpr();
+			PathExpr expr = new PathExpr(context);
 			treeParser.xpath(ast, expr);
 			if (treeParser.foundErrors()) {
 				throw new RuntimeException(treeParser.getErrorMessage());
 			}
 			LOG.info("modification select: " + expr.pprint());
 			long start = System.currentTimeMillis();
-			docs = expr.preselect(docs, context);
+			docs = expr.preselect(docs);
 			if (docs.getLength() == 0)
 				return null;
 
-			Sequence resultSeq = expr.eval(context, docs, null, null);
+			Sequence resultSeq = expr.eval(docs, null, null);
 			if (resultSeq.getItemType() != Type.NODE)
 				throw new EXistException("select expression should evaluate to a" + "node-set");
 			NodeList set = (NodeList)resultSeq;

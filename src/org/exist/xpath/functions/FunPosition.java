@@ -20,18 +20,16 @@
  */
 package org.exist.xpath.functions;
 
-import java.util.Iterator;
-
-import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.xpath.Cardinality;
+import org.exist.xpath.Dependency;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.IntegerValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
-import org.exist.xpath.value.SequenceIterator;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.Type;
 
 /**
@@ -40,43 +38,28 @@ import org.exist.xpath.value.Type;
  */
 public class FunPosition extends Function {
 
-    public FunPosition() {
-        super("position");
+	public final static FunctionSignature signature =
+		new FunctionSignature(
+			new QName("position", BUILTIN_FUNCTION_NS),
+			null,
+			new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
+	
+    public FunPosition(StaticContext context) {
+        super(context, signature);
     }
 
-    public int returnsType() {
-        return Type.INTEGER;
-    }
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.functions.Function#getDependencies()
+	 */
+	public int getDependencies() {
+		return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM +
+			Dependency.CONTEXT_POSITION;
+	}
 
-    public DocumentSet preselect(DocumentSet in_docs, StaticContext context) {
-        return in_docs;
-    }
-
-    public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, 
-    	Item contextItem) throws XPathException {
-    	int  count = 1;
-    	switch(contextSequence.getItemType()) {
-    		case Type.NODE:
-    			NodeProxy contextNode = (NodeProxy)contextItem;
-    			NodeSet contextSet = (NodeSet)contextSequence;	
-	        	DocumentImpl doc = contextNode.getDoc();
-		        NodeSet set = contextSet.getSiblings(doc, contextNode.getGID());
-		        // determine position of current node in the set
-		        NodeProxy p;
-		        for(Iterator i = set.iterator(); i.hasNext(); count++) {
-		            p = (NodeProxy)i.next();
-		            if(p.gid == contextNode.gid)
-		                return new IntegerValue(count);
-		        }
-		        break;
-		     default:
-		     	for(SequenceIterator i = contextSequence.iterate(); i.hasNext(); count++) {
-		     		if(i.nextItem() == contextItem)
-		     			return new IntegerValue(count);
-		     	}
-		     	break;
-    	}
-        return new IntegerValue(-1);
+    public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
+		if(contextSequence == null || contextSequence.getLength() == 0)
+			return Sequence.EMPTY_SEQUENCE;
+		return new IntegerValue(context.getContextPosition() + 1);
     }
 
     public String pprint() {

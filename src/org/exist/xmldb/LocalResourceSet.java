@@ -72,8 +72,9 @@ public class LocalResourceSet implements ResourceSet {
 			item = i.nextItem();
 			if(Type.subTypeOf(item.getType(), Type.NODE))
 				resources.add(item);
-			else
+			else {
 				resources.add(item.getStringValue());
+			}
 		}
 	}
 

@@ -144,7 +144,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 			AST ast = parser.getAST();
 			LOG.debug("generated AST: " + ast.toStringTree());
 			
-			PathExpr expr = new PathExpr();
+			PathExpr expr = new PathExpr(context);
 			treeParser.xpath(ast, expr);
 			if(treeParser.foundErrors()) {
 				throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR,
@@ -156,12 +156,12 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 			//if (parser.foundErrors())
 			//	throw new XMLDBException(ErrorCodes.VENDOR_ERROR, parser.getErrorMsg());
 			Sequence result = null;
-			docs = (docs == null ? expr.preselect(context) : expr.preselect(docs, context));
+			docs = (docs == null ? expr.preselect(context) : expr.preselect(docs));
 			if (docs.getLength() == 0) {
 				result = Sequence.EMPTY_SEQUENCE;
 				LOG.info("no documents!");
 			} else 
-				result = expr.eval(context, docs, contextSet, null);
+				result = expr.eval(docs, contextSet, null);
 			LOG.info(
 				expr.pprint()
 					+ " found: "

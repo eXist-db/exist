@@ -77,7 +77,7 @@ public class XPathQueryTest extends TestCase {
 	public void testNumbers() {
 		try {
 			Collection testCollection =
-				DatabaseManager.getCollection(URI + "/test");
+				DatabaseManager.getCollection(URI + "/test", "admin", null);
 			assertNotNull(testCollection);
 			XMLResource doc =
 				(XMLResource) testCollection.createResource(
@@ -121,7 +121,7 @@ public class XPathQueryTest extends TestCase {
 	public void testStrings() {
 		try {
 			Collection testCollection =
-				DatabaseManager.getCollection(URI + "/test");
+				DatabaseManager.getCollection(URI + "/test", "admin", null);
 			assertNotNull(testCollection);
 			XMLResource doc =
 				(XMLResource) testCollection.createResource(
@@ -153,7 +153,7 @@ public class XPathQueryTest extends TestCase {
 	public void testNamespaces() {
 		try {
 			Collection testCollection =
-				DatabaseManager.getCollection(URI + "/test");
+				DatabaseManager.getCollection(URI + "/test", "admin", null);
 			assertNotNull(testCollection);
 			XMLResource doc =
 				(XMLResource) testCollection.createResource(
@@ -187,7 +187,7 @@ public class XPathQueryTest extends TestCase {
 	public void testNestedElements() {
 		try {
 			Collection testCollection =
-				DatabaseManager.getCollection(URI + "/test");
+				DatabaseManager.getCollection(URI + "/test", "admin", null);
 			assertNotNull(testCollection);
 			XMLResource doc =
 				(XMLResource) testCollection.createResource(
@@ -215,7 +215,7 @@ public class XPathQueryTest extends TestCase {
 	public void testStaticVariables() {
 		try {
 			Collection testCollection =
-				DatabaseManager.getCollection(URI + "/test");
+				DatabaseManager.getCollection(URI + "/test", "admin", null);
 			assertNotNull(testCollection);
 			XMLResource doc =
 				(XMLResource) testCollection.createResource(
@@ -244,7 +244,7 @@ public class XPathQueryTest extends TestCase {
 	public void testMembersAsResource() {
 		try {
 			Collection testCollection =
-				DatabaseManager.getCollection(URI + "/test");
+				DatabaseManager.getCollection(URI + "/test", "admin", null);
 			assertNotNull(testCollection);
 			XPathQueryService service =
 				(XPathQueryService) testCollection.getService(

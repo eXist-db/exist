@@ -146,7 +146,7 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 		if (!Type.subTypeOf(other.getItemType(), Type.NODE))
 			throw new XPathException("sequence argument is not a node sequence");
 		for (SequenceIterator i = other.iterate(); i.hasNext();) {
-			add((NodeProxy) i.nextItem());
+			add(i.nextItem());
 		}
 	}
 
@@ -333,7 +333,7 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 	 * @return
 	 */
 	public NodeSet selectParentChild(NodeSet al, int mode, boolean rememberContext) {
-		if (al.getLength() == 1) {
+		if (!(al instanceof VirtualNodeSet) && al.getLength() == 1) {
 			return hasChildrenInSet(al.get(0), mode, rememberContext);
 		}
 		NodeProxy n, p;
@@ -458,7 +458,7 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 						lastDoc = n.doc;
 						sizeHint = getSizeHint(lastDoc);
 					}
-					if ((p = al.parentWithChild(n.doc, n.gid, false, false, -1))
+					if ((p = al.parentWithChild(n.doc, n.gid, false, includeSelf, -1))
 						!= null) {
 						if (rememberContext)
 							n.addContextNode(p);
@@ -476,7 +476,7 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 						lastDoc = n.doc;
 						sizeHint = al.getSizeHint(lastDoc);
 					}
-					p = al.parentWithChild(n.doc, n.gid, false);
+					p = al.parentWithChild(n.doc, n.gid, false, includeSelf, -1);
 					if (p != null) {
 						if (rememberContext)
 							p.addContextNode(n);

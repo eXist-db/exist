@@ -25,7 +25,9 @@ package org.exist.xpath.functions;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
+import org.exist.xpath.Cardinality;
 import org.exist.xpath.Constants;
 import org.exist.xpath.Dependency;
 import org.exist.xpath.Expression;
@@ -34,6 +36,7 @@ import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.Type;
 
 /**
@@ -41,17 +44,28 @@ import org.exist.xpath.value.Type;
  */
 public class ExtRegexp extends Function {
 
+	public final static FunctionSignature signature =
+		new FunctionSignature(
+			new QName("match-all", BUILTIN_FUNCTION_NS),
+			new SequenceType[] { 
+				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE) 
+			},
+			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+			true
+		);
+			
 	private int type = Constants.FULLTEXT_AND;
 
-	public ExtRegexp() {
-		super("match-all");
+	public ExtRegexp(StaticContext context) {
+		super(context, signature);
 	}
 	
 	/**
 	 * @param type
 	 */
-	public ExtRegexp(String name, int type) {
-		super(name);
+	public ExtRegexp(StaticContext context, int type) {
+		super(context, signature);
 		this.type = type;
 	}
 
@@ -65,15 +79,7 @@ public class ExtRegexp extends Function {
 		return deps;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xpath.PathExpr#returnsType()
-	 */
-	public int returnsType() {
-		return Type.NODE;
-	}
-	
 	public Sequence eval(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
@@ -88,7 +94,7 @@ public class ExtRegexp extends Function {
 			NodeSet nodes =
 				path == null
 					? contextSequence.toNodeSet()
-					: path.eval(context, docs, contextSequence).toNodeSet();
+					: path.eval(docs, contextSequence).toNodeSet();
 			String[] terms = getSearchTerms(context, docs, contextSequence);
 			return evalQuery(context, docs, nodes, terms);
 		} else {
@@ -107,7 +113,7 @@ public class ExtRegexp extends Function {
 					path == null
 						? contextSequence.toNodeSet()
 						: path
-							.eval(context, docs, current.toSequence())
+							.eval(docs, current.toSequence())
 							.toNodeSet();
 				temp = evalQuery(context, docs, nodes, terms);
 				result.addAll(temp);
@@ -154,7 +160,7 @@ public class ExtRegexp extends Function {
 		Expression next;
 		for(int i = 1; i < getLength(); i++) {
 			next = getArgument(i);
-			terms[i - 1] = next.eval(context, docs, contextSequence).getStringValue();
+			terms[i - 1] = next.eval(docs, contextSequence).getStringValue();
 		}
 		return terms;
 	}

@@ -37,36 +37,51 @@ import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.w3c.dom.Node;
 
+/**
+ * Processes all location path steps (like descendant::*, ancestor::XXX).
+ * 
+ * @author wolf
+ */
 public class LocationStep extends Step {
 
 	protected static Logger LOG = Logger.getLogger(LocationStep.class);
 	protected NodeSet buf = null;
 	protected boolean keepVirtual = false;
 
-	public LocationStep(int axis) {
-		super(axis);
+	public LocationStep(StaticContext context, int axis) {
+		super(context, axis);
 	}
 
-	public LocationStep(int axis, NodeTest test) {
-		super(axis, test);
+	public LocationStep(StaticContext context, int axis, NodeTest test) {
+		super(context, axis, test);
 	}
 
-	protected NodeSet applyPredicate(
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#getDependencies()
+	 */
+	public int getDependencies() {
+		int deps = Dependency.CONTEXT_SET;
+		for(Iterator i = predicates.iterator(); i.hasNext(); ) {
+			deps |= ((Predicate)i.next()).getDependencies();
+		}
+		return deps;
+	}
+	
+	protected Sequence applyPredicate(
 		StaticContext context,
 		DocumentSet documents,
 		NodeSet contextSet)
 		throws XPathException {
 		Predicate pred;
-		NodeSet result = contextSet;
+		Sequence result = contextSet;
 		for (Iterator i = predicates.iterator(); i.hasNext();) {
 			pred = (Predicate) i.next();
-			result = (NodeSet) pred.eval(context, documents, (Sequence) result);
+			result = pred.eval(documents, result);
 		}
 		return result;
 	}
 
 	public Sequence eval(
-		StaticContext context,
 		DocumentSet documents,
 		Sequence contextSequence,
 		Item contextItem)
@@ -128,11 +143,10 @@ public class LocationStep extends Step {
 			default :
 				throw new IllegalArgumentException("Unsupported axis specified");
 		}
-		temp =
+		return
 			(predicates.size() == 0)
 				? temp
 				: applyPredicate(context, documents, temp);
-		return temp;
 	}
 
 	protected NodeSet getAttributes(
@@ -314,9 +328,9 @@ public class LocationStep extends Step {
 		return contextSet.getParents();
 	}
 
-	public DocumentSet preselect(DocumentSet inDocs, StaticContext context)
+	public DocumentSet preselect(DocumentSet inDocs)
 		throws XPathException {
-		return super.preselect(inDocs, context);
+		return super.preselect(inDocs);
 	}
 
 	public void setKeepVirtual(boolean virtual) {

@@ -29,12 +29,18 @@ import org.exist.memtree.NodeImpl;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 
+/**
+ * Constructor for processing-instruction nodes.
+ * 
+ * @author wolf
+ */
 public class PIConstructor extends NodeConstructor {
 
 	private String target;
 	private String data = null;
 	
-	public PIConstructor(String pi) throws XPathException {
+	public PIConstructor(StaticContext context, String pi) throws XPathException {
+		super(context);
 		int p = pi.indexOf(' ');
 		if(p < 0)
 			throw new XPathException("Syntax error in processing instruction");
@@ -47,7 +53,6 @@ public class PIConstructor extends NodeConstructor {
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)

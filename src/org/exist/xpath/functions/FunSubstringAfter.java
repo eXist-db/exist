@@ -24,52 +24,63 @@
 package org.exist.xpath.functions;
 
 import org.exist.dom.DocumentSet;
+import org.exist.dom.QName;
+import org.exist.xpath.Cardinality;
 import org.exist.xpath.Expression;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.StringValue;
 import org.exist.xpath.value.Type;
 
 /**
- * xpath-library function: string(object)
+ * Built-in function fn:substring-after($operand1 as xs:string?, $operand2 as xs:string?) as xs:string?
  *
  */
 public class FunSubstringAfter extends Function {
 
-	public FunSubstringAfter() {
-		super("substring-after");
-	}
-
-	public int returnsType() {
-		return Type.STRING;
+	public final static FunctionSignature signature =
+				new FunctionSignature(
+					new QName("substring-after", BUILTIN_FUNCTION_NS),
+					new SequenceType[] {
+						 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+						 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+					},
+					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+					
+	public FunSubstringAfter(StaticContext context) {
+		super(context, signature);
 	}
 
 	public Sequence eval(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		if (getArgumentCount() < 2)
-			throw new XPathException("substring-after requires two arguments");
 		Expression arg0 = getArgument(0);
 		Expression arg1 = getArgument(1);
 
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-		String value =
-			arg0.eval(context, docs, contextSequence).getStringValue();
-		String cmp = arg1.eval(context, docs, contextSequence).getStringValue();
-
-		Sequence nodes = arg0.eval(context, docs, contextSequence);
-		String result = nodes.getStringValue();
+			
+		Sequence seq1 = arg0.eval(docs, contextSequence);
+		Sequence seq2 = arg0.eval(docs, contextSequence);
+		
+		if(seq1.getLength() == 0 || seq2.getLength() == 0)
+			return Sequence.EMPTY_SEQUENCE;
+			
+		String value = seq1.getStringValue();
+		String cmp = seq2.getStringValue();
+		if(cmp.length() == 0)
+			return StringValue.EMPTY_STRING;
 		int p = value.indexOf(cmp);
 		if (p > -1)
 			return new StringValue(
-				p + 1 < value.length() ? value.substring(p + 1) : "");
+				p + 1 < value.length() ? value.substring(p + 1) : ""
+			);
 		else
-			return new StringValue("");
+			return StringValue.EMPTY_STRING;
 	}
 }

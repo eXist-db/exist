@@ -68,4 +68,8 @@ public abstract class NumericValue extends AtomicValue {
 			throw new XPathException("cannot compare numeric value to non-numeric value");
 		}
 	}
+	
+	public abstract NumericValue ceiling();
+	public abstract NumericValue floor();
+	public abstract NumericValue round();
 }

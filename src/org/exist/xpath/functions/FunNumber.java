@@ -21,10 +21,14 @@
 package org.exist.xpath.functions;
 
 import org.exist.dom.DocumentSet;
+import org.exist.dom.QName;
+import org.exist.xpath.Cardinality;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
+import org.exist.xpath.value.DoubleValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.Type;
 
 /**
@@ -33,20 +37,34 @@ import org.exist.xpath.value.Type;
  */
 public class FunNumber extends Function {
 
-	public FunNumber() {
-		super("number");
+	public final static FunctionSignature signature =
+		new FunctionSignature(
+			new QName("number", BUILTIN_FUNCTION_NS),
+			new SequenceType[] {
+				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE)},
+			new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE),
+			true);
+
+	public FunNumber(StaticContext context) {
+		super(context, signature);
 	}
-	
-	public int returnsType() {
-		return Type.DECIMAL;
-	}
-	
-	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
-		Item contextItem) throws XPathException {
-		if(contextItem != null)
+
+	public Sequence eval(
+		DocumentSet docs,
+		Sequence contextSequence,
+		Item contextItem)
+		throws XPathException {
+		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-		Sequence arg = getArgument(0).eval(context, docs, contextSequence);
-		return arg.convertTo(Type.DECIMAL);
+		Sequence arg = null;
+		if(getArgumentCount() == 1)
+			arg = getArgument(0).eval(docs, contextSequence);
+		else
+			arg = contextSequence;
+		if(arg.getLength() == 0)
+			return DoubleValue.NaN;
+		else
+			return arg.convertTo(Type.DOUBLE);
 	}
 
 	public String pprint() {

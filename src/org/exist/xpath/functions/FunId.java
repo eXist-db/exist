@@ -2,7 +2,6 @@ package org.exist.xpath.functions;
 
 import java.util.Iterator;
 
-import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
@@ -10,29 +9,36 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.ElementValue;
+import org.exist.xpath.Cardinality;
 import org.exist.xpath.Expression;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceIterator;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.Type;
 
 public class FunId extends Function {
 
-	private final static Logger LOG = Logger.getLogger(Function.class);
-
+	public final static FunctionSignature signature =
+			new FunctionSignature(
+				new QName("id", BUILTIN_FUNCTION_NS),
+				new SequenceType[] {
+					 new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)},
+				new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE));
+				
 	/**
 	 * Constructor for FunId.
 	 */
-	public FunId() {
-		super("id");
+	public FunId(StaticContext context) {
+		super(context, signature);
 	}
 
 	/**
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.dom.NodeSet, org.exist.dom.NodeProxy)
 	 */
 	public Sequence eval(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
@@ -42,16 +48,14 @@ public class FunId extends Function {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
 		Expression arg = getArgument(0);
-		Sequence idval = arg.eval(context, docs, contextSequence);
+		Sequence idval = arg.eval(docs, contextSequence);
+		if(idval.getLength() == 0)
+			return Sequence.EMPTY_SEQUENCE;
 		NodeSet result = new ExtArrayNodeSet();
-		if (idval.getItemType() == Type.NODE) {
-			NodeSet set = (NodeSet) idval;
-			for (int i = 0; i < idval.getLength(); i++) {
-				QName id = new QName(set.get(i).getNodeValue(), "", null);
-				getId(context, result, docs, id);
-			}
-		} else {
-			QName id = new QName(idval.getStringValue(), "", null);
+		String nextId;
+		for(SequenceIterator i = idval.iterate(); i.hasNext(); ) {
+			nextId = i.nextItem().getStringValue();
+			QName id = new QName(nextId, "", null);
 			getId(context, result, docs, id);
 		}
 		return result;
@@ -72,12 +76,4 @@ public class FunId extends Function {
 			result.add(p);
 		}
 	}
-
-	/**
-	 * @see org.exist.xpath.Expression#returnsType()
-	 */
-	public int returnsType() {
-		return Type.NODE;
-	}
-
 }

@@ -21,34 +21,42 @@
 package org.exist.xpath.functions;
 
 import org.exist.dom.DocumentSet;
+import org.exist.dom.QName;
+import org.exist.xpath.Cardinality;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.IntegerValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.Type;
 
 public class FunCount extends Function {
 
-    public FunCount() {
-		super("count");
+	public final static FunctionSignature signature =
+		new FunctionSignature(
+			new QName("count", BUILTIN_FUNCTION_NS),
+			new SequenceType[] { new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE) },
+			new SequenceType(Type.INTEGER, Cardinality.ONE)
+		);
+			
+    public FunCount(StaticContext context) {
+		super(context, signature);
     }
 
     public int returnsType() {
 		return Type.INTEGER;
     }
 	
-    public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException {
-		return getArgument(0).preselect(in_docs, context);
+    public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
+		return getArgument(0).preselect(in_docs);
     }
 
-    public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
-    	Item contextItem) throws XPathException {
+    public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
     	if(getArgumentCount() == 0)
     		return IntegerValue.ZERO;
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
-		return new IntegerValue(getArgument(0).eval(context, docs, contextSequence).getLength());
+		return new IntegerValue(getArgument(0).eval(docs, contextSequence).getLength());
 	}
 }
-			  

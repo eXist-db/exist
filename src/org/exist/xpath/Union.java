@@ -30,8 +30,8 @@ public class Union extends PathExpr {
 
 	protected PathExpr left, right;
 
-    public Union(PathExpr left, PathExpr right) {
-        super();
+    public Union(StaticContext context, PathExpr left, PathExpr right) {
+        super(context);
 		this.left = left;
 		this.right = right;
     }
@@ -45,17 +45,16 @@ public class Union extends PathExpr {
 	 * we check which documents contain it at all. in other cases
 	 * do nothing.
 	 */
-	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException {
+	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
         //return in_docs;
-		DocumentSet left_docs = left.preselect(in_docs, context);
-		DocumentSet right_docs = right.preselect(in_docs, context);
+		DocumentSet left_docs = left.preselect(in_docs);
+		DocumentSet right_docs = right.preselect(in_docs);
 		return left_docs.union(right_docs);
 	}
 
-	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, 
-		Item contextItem) throws XPathException {
-		Sequence lval = left.eval(context, docs, contextSequence, contextItem);
-		Sequence rval = right.eval(context, docs, contextSequence, contextItem);
+	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
+		Sequence lval = left.eval(docs, contextSequence, contextItem);
+		Sequence rval = right.eval(docs, contextSequence, contextItem);
 		if(lval.getItemType() != Type.NODE || rval.getItemType() != Type.NODE)
 			throw new XPathException("union operand is not a node sequence");
         NodeSet result = ((NodeSet)lval).union((NodeSet)rval);

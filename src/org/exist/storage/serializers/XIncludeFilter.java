@@ -226,17 +226,17 @@ public class XIncludeFilter implements ContentHandler {
 					AST ast = parser.getAST();
 					LOG.debug("generated AST: " + ast.toStringTree());
 
-					PathExpr expr = new PathExpr();
+					PathExpr expr = new PathExpr(context);
 					treeParser.xpointer(ast, expr);
 					if (treeParser.foundErrors()) {
 						throw new SAXException(treeParser.getErrorMessage());
 					}
 					LOG.info("xpointer query: " + expr.pprint());
 					long start = System.currentTimeMillis();
-					docs = expr.preselect(docs, context);
+					docs = expr.preselect(docs);
 					if (docs.getLength() == 0)
 						return;
-					Sequence seq = expr.eval(context, docs, null, null);
+					Sequence seq = expr.eval(docs, null, null);
 					switch (seq.getItemType()) {
 						case Type.NODE :
 							NodeSet set = (NodeSet) seq;

@@ -25,15 +25,14 @@ package org.exist.xpath;
 import org.exist.dom.DocumentSet;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
-import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.Type;
 
 public class VariableReference extends AbstractExpression {
 
 	private String qname;
-	private StaticContext context = null;
 	
-	public VariableReference(String qname) {
+	public VariableReference(StaticContext context, String qname) {
+		super(context);
 		this.qname = qname;
 	}
 	
@@ -41,7 +40,6 @@ public class VariableReference extends AbstractExpression {
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
@@ -54,7 +52,7 @@ public class VariableReference extends AbstractExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#preselect(org.exist.dom.DocumentSet, org.exist.xpath.StaticContext)
 	 */
-	public DocumentSet preselect(DocumentSet in_docs, StaticContext context)
+	public DocumentSet preselect(DocumentSet in_docs)
 		throws XPathException {
 		//this.context = context;
 		return in_docs;

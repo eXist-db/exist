@@ -27,19 +27,28 @@ import org.exist.xpath.value.Sequence;
 
 public abstract class AbstractExpression implements Expression {
 
-	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence) 
-		throws XPathException {
-		return eval(context, docs, contextSequence, null); 
+	protected StaticContext context;
+	
+	public AbstractExpression(StaticContext context) {
+		this.context = context;
 	}
 	
-	public abstract Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
-		Item contextItem) throws XPathException;
+	public Sequence eval(DocumentSet docs, Sequence contextSequence) 
+		throws XPathException {
+		return eval(docs, contextSequence, null); 
+	}
+	
+	public abstract Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException;
 		
-	public abstract DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException;
+	public abstract DocumentSet preselect(DocumentSet in_docs) throws XPathException;
 	
 	public abstract String pprint();
 	
 	public abstract int returnsType();
+	
+	public int getCardinality() {
+		return Cardinality.EXACTLY_ONE;	// default cardinality
+	}
 	
 	public void setInPredicate(boolean inPredicate) {
 		// has no effect by default

@@ -21,37 +21,53 @@
 package org.exist.xpath.functions;
 
 import org.exist.dom.DocumentSet;
+import org.exist.dom.QName;
+import org.exist.xpath.Cardinality;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.DoubleValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.NumericValue;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.Type;
 
 public class FunRound extends Function {
 
-	public FunRound() {
-		super("round");
+	public final static FunctionSignature signature =
+			new FunctionSignature(
+				new QName("round", BUILTIN_FUNCTION_NS),
+				new SequenceType[] { new SequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE) },
+				new SequenceType(Type.NUMBER, Cardinality.EXACTLY_ONE)
+			);
+			
+	public FunRound(StaticContext context) {
+		super(context, signature);
 	}
 
 	public int returnsType() {
 		return Type.DOUBLE;
 	}
 
-	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException {
-		return getArgument(0).preselect(in_docs, context);
+	public DocumentSet preselect(DocumentSet in_docs)
+		throws XPathException {
+		return getArgument(0).preselect(in_docs);
 	}
 
-	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
-		Item contextItem) throws XPathException {
+	public Sequence eval(
+		DocumentSet docs,
+		Sequence contextSequence,
+		Item contextItem)
+		throws XPathException {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
+		Sequence seq =
+			getArgument(0).eval(docs, contextSequence, contextItem);
+		if (seq.getLength() == 0)
+			return Sequence.EMPTY_SEQUENCE;
 		NumericValue value =
-			(NumericValue) getArgument(0)
-				.eval(context, docs, contextSequence, contextItem)
-				.convertTo(Type.NUMBER);
-		return new DoubleValue(Math.round(value.getDouble()));
+			(NumericValue) seq.itemAt(0).convertTo(Type.NUMBER);
+		return value.round();
 	}
 
 	public String pprint() {

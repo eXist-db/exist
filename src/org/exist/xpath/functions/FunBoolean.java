@@ -21,10 +21,14 @@
 package org.exist.xpath.functions;
 
 import org.exist.dom.*;
+import org.exist.xpath.Cardinality;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
+import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceType;
+import org.exist.xpath.value.StringValue;
 import org.exist.xpath.value.Type;
 
 /**
@@ -33,20 +37,26 @@ import org.exist.xpath.value.Type;
  */
 public class FunBoolean extends Function {
 
-	public FunBoolean() {
-		super("boolean");
+	public final static FunctionSignature signature =
+		new FunctionSignature(
+			new QName("boolean", BUILTIN_FUNCTION_NS),
+			new SequenceType[] { new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE) },
+			new SequenceType(Type.BOOLEAN, Cardinality.ONE)
+		);
+		
+	public FunBoolean(StaticContext context) {
+		super(context, signature);
 	}
 	
 	public int returnsType() {
 		return Type.BOOLEAN;
 	}
 	
-	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
-		Item contextItem) throws XPathException {
+	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
-		return 
-			getArgument(0).eval(context, docs, contextSequence, null).convertTo(Type.BOOLEAN);
+		contextSequence = getArgument(0).eval(docs, contextSequence);
+		return contextSequence.effectiveBooleanValue() ? BooleanValue.TRUE : BooleanValue.FALSE;
 	}
 
 	public String pprint() {

@@ -33,7 +33,8 @@ public class CommentConstructor extends NodeConstructor {
 
 	private String data = null;
 	
-	public CommentConstructor(String data) {
+	public CommentConstructor(StaticContext context, String data) {
+		super(context);
 		this.data = data;
 	}
 	
@@ -41,7 +42,6 @@ public class CommentConstructor extends NodeConstructor {
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)

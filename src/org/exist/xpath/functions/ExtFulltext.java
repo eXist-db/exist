@@ -27,7 +27,9 @@ import org.exist.EXistException;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
 import org.exist.storage.analysis.Tokenizer;
+import org.exist.xpath.Cardinality;
 import org.exist.xpath.Constants;
 import org.exist.xpath.Dependency;
 import org.exist.xpath.Expression;
@@ -37,22 +39,30 @@ import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.Type;
 
 public class ExtFulltext extends Function {
 
+	public final static FunctionSignature signature =
+		new FunctionSignature(
+			new QName("contains", BUILTIN_FUNCTION_NS),
+			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE) },
+			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+		);
+			
 	protected PathExpr path;
 	protected Expression searchTerm = null;
 	protected String terms[] = null;
 	protected int type = Constants.FULLTEXT_AND;
 
-	public ExtFulltext(int type) {
-		super("contains");
+	public ExtFulltext(StaticContext context, int type) {
+		super(context, signature);
 		this.type = type;
 	}
 
-	public ExtFulltext(PathExpr path) {
-		super("contains");
+	public ExtFulltext(StaticContext context, PathExpr path) {
+		super(context, signature);
 		this.path = path;
 	}
 
@@ -85,7 +95,6 @@ public class ExtFulltext extends Function {
 	}
 
 	public Sequence eval(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
@@ -97,10 +106,10 @@ public class ExtFulltext extends Function {
 			NodeSet nodes =
 				path == null
 					? contextSequence.toNodeSet()
-					: path.eval(context, docs, contextSequence).toNodeSet();
+					: path.eval(docs, contextSequence).toNodeSet();
 			String arg =
 				searchTerm
-					.eval(context, docs, contextSequence)
+					.eval(docs, contextSequence)
 					.getStringValue();
 			return evalQuery(context, docs, arg, nodes);
 		} else {
@@ -115,7 +124,7 @@ public class ExtFulltext extends Function {
 				nodes =
 					path == null
 						? contextSequence.toNodeSet()
-						: path.eval(context, docs, contextSequence).toNodeSet();
+						: path.eval(docs, contextSequence).toNodeSet();
 				haveNodes = true;
 			}
 			for (SequenceIterator i = contextSequence.iterate();
@@ -124,7 +133,7 @@ public class ExtFulltext extends Function {
 				current = i.nextItem();
 				arg =
 					searchTerm
-						.eval(context, docs, current.toSequence())
+						.eval(docs, current.toSequence())
 						.getStringValue();
 				long start = System.currentTimeMillis();
 				if (!haveNodes) {
@@ -132,7 +141,7 @@ public class ExtFulltext extends Function {
 						path == null
 							? contextSequence.toNodeSet()
 							: path
-								.eval(context, docs, current.toSequence())
+								.eval(docs, current.toSequence())
 								.toNodeSet();
 				}
 				temp = evalQuery(context, docs, arg, nodes);
@@ -186,7 +195,7 @@ public class ExtFulltext extends Function {
 		return deps;
 	}
 
-	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) {
+	public DocumentSet preselect(DocumentSet in_docs) {
 		return in_docs;
 	}
 

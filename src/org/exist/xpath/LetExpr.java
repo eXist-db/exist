@@ -34,18 +34,21 @@ import org.exist.xpath.value.Sequence;
  */
 public class LetExpr extends BindingExpression {
 
+	public LetExpr(StaticContext context) {
+		super(context);
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		StaticContext context,
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
 		Variable var = new Variable(QName.parse(context, varName));
 		context.declareVariable(var);
-		Sequence val = inputSequence.eval(context, docs, null, null);
+		Sequence val = inputSequence.eval(docs, null, null);
 		var.setValue(val);
 		
 		Sequence filtered = null;
@@ -53,7 +56,7 @@ public class LetExpr extends BindingExpression {
 			filtered = applyWhereExpression(context, docs, null);
 		if(whereExpr != null && filtered.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE; 
-		return returnExpr.eval(context, docs, filtered, null);
+		return returnExpr.eval(docs, filtered, null);
 	}
 
 	/* (non-Javadoc)

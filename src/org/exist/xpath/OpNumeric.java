@@ -38,14 +38,14 @@ public class OpNumeric extends BinaryOp {
     protected NodeSet temp = null;
     protected DBBroker broker;
 
-    public OpNumeric(int operator) {
-        super();
+    public OpNumeric(StaticContext context, int operator) {
+        super(context);
         this.operator = operator;
     }
 
-    public OpNumeric(Expression left,
+    public OpNumeric(StaticContext context, Expression left,
                     Expression right, int operator) {
-		super();
+		super(context);
         this.operator = operator;
 		add(left);
 		add(right);
@@ -55,23 +55,23 @@ public class OpNumeric extends BinaryOp {
 		return Type.DECIMAL;
 	}
 
-    public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException {
+    public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
 		if(getLength() == 0)
 			return in_docs;
-		DocumentSet out_docs = getExpression(0).preselect(in_docs, context);
+		DocumentSet out_docs = getExpression(0).preselect(in_docs);
 		for(int i = 1; i < getLength(); i++)
-			out_docs = out_docs.union(getExpression(i).preselect(out_docs, context));
+			out_docs = out_docs.union(getExpression(i).preselect(out_docs));
 		return out_docs;
     }
 
-	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, Item contextItem) 
+	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) 
 	throws XPathException {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
 		double lvalue = 
-			((DoubleValue)getLeft().eval(context, docs, contextSequence).convertTo(Type.DECIMAL)).getDouble();
+			((DoubleValue)getLeft().eval(docs, contextSequence).convertTo(Type.DECIMAL)).getDouble();
 		double rvalue = 
-			((DoubleValue)getRight().eval(context, docs, contextSequence).convertTo(Type.DECIMAL)).getDouble();
+			((DoubleValue)getRight().eval(docs, contextSequence).convertTo(Type.DECIMAL)).getDouble();
 		double result = applyOperator(lvalue, rvalue);
 		return new DoubleValue(result);
 	}

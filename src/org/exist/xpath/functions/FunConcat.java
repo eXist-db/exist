@@ -23,11 +23,17 @@
 
 package org.exist.xpath.functions;
 
+import java.util.Iterator;
+import java.util.List;
+
 import org.exist.dom.DocumentSet;
+import org.exist.dom.QName;
+import org.exist.xpath.Cardinality;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.StringValue;
 import org.exist.xpath.value.Type;
 
@@ -37,23 +43,40 @@ import org.exist.xpath.value.Type;
  */
 public class FunConcat extends Function {
 	
-	public FunConcat() {
-		super("concat");
+	public final static FunctionSignature signature =
+			new FunctionSignature(
+				new QName("concat", BUILTIN_FUNCTION_NS),
+				null,
+				new SequenceType(Type.STRING, Cardinality.ONE)
+			);
+			
+	public FunConcat(StaticContext context) {
+		super(context, signature);
 	}
 
 	public int returnsType() {
 		return Type.STRING;
 	}
-		
-	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, 
-		Item contextItem) throws XPathException {
+	
+	/**
+	 * Overloaded function: no static type checking.
+	 * 
+	 * @see org.exist.xpath.functions.Function#setArguments(java.util.List)
+	 */
+	public void setArguments(List arguments) throws XPathException {
+		for(Iterator i = arguments.iterator(); i.hasNext(); ) {
+			steps.add(i.next());
+		}
+	}
+	
+	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
 		if(getArgumentCount() < 2)
 			throw new XPathException ("concat requires at least two arguments");
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
 		StringBuffer result = new StringBuffer();
 		for(int i = 0; i < getArgumentCount(); i++) {
-			result.append(getArgument(i).eval(context, docs, contextSequence).getStringValue());
+			result.append(getArgument(i).eval(docs, contextSequence).getStringValue());
 		}
 		return new StringValue(result.toString());
 	}

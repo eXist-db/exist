@@ -78,7 +78,7 @@ public class IntegerValue extends NumericValue {
 			case Type.STRING:
 				return new StringValue(getStringValue());
 			case Type.BOOLEAN:
-				return new BooleanValue(value != 0);
+				return (value == 0) ? BooleanValue.FALSE : BooleanValue.TRUE;
 			default:
 				throw new XPathException("cannot convert integer '" + value + "' to " + requiredType);
 		}
@@ -110,5 +110,26 @@ public class IntegerValue extends NumericValue {
 	 */
 	public boolean effectiveBooleanValue() throws XPathException {
 		return value != 0;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#ceiling()
+	 */
+	public NumericValue ceiling() {
+		return this;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#floor()
+	 */
+	public NumericValue floor() {
+		return this;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#round()
+	 */
+	public NumericValue round() {
+		return this;
 	}
 }
