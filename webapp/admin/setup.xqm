@@ -52,6 +52,8 @@ declare function setup:importLocal() as element()+ {
                 setup:store-files("/db/xinclude", $dir, 
                     ( "xinclude/*.xsl", "xinclude/*.xml"), "text/xml"),
                 setup:store-files("/db/xinclude", $dir,
+                    "xinclude/*.xq", "application/xquery"),
+                setup:store-files("/db/xinclude", $dir,
                     "xinclude/*.jpg", "image/jpeg"),
                 setup:store-files("/db/xinclude", $dir,
                     "xinclude/*.css", "text/css"),
