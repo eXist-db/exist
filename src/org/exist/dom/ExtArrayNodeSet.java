@@ -21,9 +21,11 @@
 package org.exist.dom;
 
 import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
+
 import org.exist.util.FastQSort;
 import org.exist.util.Range;
-import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.Node;
@@ -51,7 +53,7 @@ import org.w3c.dom.Node;
  */
 public final class ExtArrayNodeSet extends AbstractNodeSet {
 
-	private Int2ObjectHashMap map;
+	private TreeMap map;
 	private int initalSize = 128;
 	private int size = 0;
 	
@@ -66,7 +68,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	private DocumentSet cachedDocuments = null;
 	
 	public ExtArrayNodeSet() {
-		this.map = new Int2ObjectHashMap(17);
+		this.map = new TreeMap();
 	}
 
 	/**
@@ -83,7 +85,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	 */
 	public ExtArrayNodeSet(int initialDocsCount, int initialArraySize) {
 		this.initalSize = initialArraySize;
-		this.map = new Int2ObjectHashMap(initialDocsCount);
+		this.map = new TreeMap();
 	}
 
 	public ExtArrayNodeSet(int initialArraySize) {
@@ -127,10 +129,10 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	private Part getPart(DocumentImpl doc, boolean create, int sizeHint) {
 		if (doc.docId == lastDoc && lastPart != null)
 			return lastPart;
-		Part part = (Part) map.get(doc.docId);
+		Part part = (Part) map.get(doc);
 		if (part == null && create) {
 			part = new Part(sizeHint, doc);
-			map.put(doc.docId, part);
+			map.put(doc, part);
 		}
 		lastPart = part;
 		lastDoc = doc.docId;
@@ -173,7 +175,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	 * @see org.exist.dom.NodeSet#containsDoc(org.exist.dom.DocumentImpl)
 	 */
 	public boolean containsDoc(DocumentImpl doc) {
-		return map.containsKey(doc.docId);
+		return map.containsKey(doc);
 	}
 
 	/*
@@ -236,7 +238,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	public NodeProxy get(int pos) {
 		int count = 0;
 		Part part;
-		for (Iterator i = map.valueIterator(); i.hasNext();) {
+		for (Iterator i = map.values().iterator(); i.hasNext();) {
 			part = (Part) i.next();
 			if (count + part.length > pos)
 				return part.get(pos - count);
@@ -287,7 +289,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 			return;
 		part.remove(node);
 		if (part.length == 0)
-			map.remove(node.doc.getDocId());
+			map.remove(node.doc);
 		setHasChanged();
 	}
 
@@ -310,7 +312,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 			return;
 		Part part;
 		size = 0;
-		for (Iterator i = map.valueIterator(); i.hasNext();) {
+		for (Iterator i = map.values().iterator(); i.hasNext();) {
 			part = (Part) i.next();
 			part.sort();
 			size += part.removeDuplicates();
@@ -327,7 +329,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 			return;
 		Part part;
 		size = 0;
-		for (Iterator i = map.valueIterator(); i.hasNext();) {
+		for (Iterator i = map.values().iterator(); i.hasNext();) {
 			part = (Part) i.next();
 			part.sortInDocumentOrder();
 			size += part.removeDuplicates();
@@ -345,7 +347,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	 */
 	public void setSelfAsContext() {
 		Part part;
-		for (Iterator i = map.valueIterator(); i.hasNext();) {
+		for (Iterator i = map.values().iterator(); i.hasNext();) {
 			part = (Part) i.next();
 			part.setSelfAsContext();
 		}
@@ -400,7 +402,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	    cachedDocuments = new DocumentSet(map.size());
 	    sort();
 		Part part;
-		for (Iterator i = map.valueIterator(); i.hasNext();) {
+		for (Iterator i = map.values().iterator(); i.hasNext();) {
 			part = (Part) i.next();
 			cachedDocuments.add(part.doc, false);
 		}
@@ -657,8 +659,8 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 		int pos = 0;
 		NodeProxy next = null;
 
-		ExtArrayIterator(Int2ObjectHashMap map) {
-			docsIterator = map.valueIterator();
+		ExtArrayIterator(Map map) {
+			docsIterator = map.values().iterator();
 			if (docsIterator.hasNext())
 				currentPart = (Part) docsIterator.next();
 			if (currentPart != null && currentPart.length > 0)

@@ -288,6 +288,10 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 		return doc.getNode(gid).toString();
 	}
 
+	public String pprint() {
+	    return doc.getDocId() + ":" + gid; 
+	}
+	
 	public static class NodeProxyComparator implements Comparator {
 
 		public final static NodeProxyComparator instance = new NodeProxyComparator();

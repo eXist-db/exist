@@ -249,7 +249,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		}
 	}
 
-	public int compareTo(Object other) {
+	public final int compareTo(Object other) {
 		final long otherId = ((DocumentImpl)other).docId;
 		if (otherId == docId)
 			return 0;

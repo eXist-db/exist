@@ -66,7 +66,8 @@ public class Predicate extends PathExpr {
 	
 	public Sequence evalPredicate(
 		Sequence outerSequence,
-		Sequence contextSequence)
+		Sequence contextSequence,
+		int mode)
 		throws XPathException {
 		setInPredicate(true);
 		//long start = System.currentTimeMillis();
@@ -137,16 +138,39 @@ public class Predicate extends PathExpr {
 				Sequence result = new ArraySet(100);
 				NodeSet contextSet = contextSequence.toNodeSet();
 				for(SequenceIterator i = outerSequence.iterate(); i.hasNext(); ) {
-					Item item = i.nextItem();
-					NodeProxy p = (NodeProxy)item;
-					Sequence temp = contextSet.selectAncestorDescendant(p, NodeSet.DESCENDANT);
-					Sequence innerSeq = inner.eval(contextSequence);
-					for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {
-						NumericValue v = (NumericValue)j.nextItem().convertTo(Type.NUMBER);
-						int pos = v.getInt() - 1;
-						if(pos < temp.getLength() && pos > -1)
-							result.add(temp.itemAt(pos));
-					}
+				    Item item = i.nextItem();
+				    NodeProxy p = (NodeProxy)item;
+				    Sequence temp;
+				    switch(mode) {
+				    	case Constants.FOLLOWING_SIBLING_AXIS:
+				    	    temp = contextSet.selectSiblings(p, NodeSet.FOLLOWING);
+			    			break;
+				    	case Constants.PRECEDING_SIBLING_AXIS:
+				    	    temp = contextSet.selectSiblings(p, NodeSet.PRECEDING);
+				    		break;
+				    	case Constants.PARENT_AXIS:
+				    	    temp = p.getParents();
+				    		break;
+				    	case Constants.ANCESTOR_AXIS:
+				    	case Constants.ANCESTOR_SELF_AXIS:
+				    	    temp = contextSet.selectAncestors(p, false, false);
+				    		break;
+				    	case Constants.SELF_AXIS:
+				    	    temp = p;
+				    		break;
+				    	default:
+				    	    temp = contextSet.selectAncestorDescendant(p, NodeSet.DESCENDANT);
+				    		break;
+				    }
+				    boolean reverseAxis = isReverseAxis(mode);
+				    Sequence innerSeq = inner.eval(contextSequence);
+				    for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {
+				        Item next = j.nextItem();
+				        NumericValue v = (NumericValue)next.convertTo(Type.NUMBER);
+				        int pos = (reverseAxis ? temp.getLength() - v.getInt() : v.getInt() - 1);
+				        if(pos < temp.getLength() && pos > -1)
+				            result.add(temp.itemAt(pos));
+				    }
 				}
 				return result;
 			} else {
@@ -165,4 +189,7 @@ public class Predicate extends PathExpr {
 		return Sequence.EMPTY_SEQUENCE;
 	}
 
+	public final static boolean isReverseAxis(int axis) {
+	    return axis < Constants.CHILD_AXIS;
+	}
 }

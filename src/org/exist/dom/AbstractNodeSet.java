@@ -434,15 +434,15 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 *@return
 	 */
 	public NodeSet selectAncestors(
-		NodeSet al,
+		NodeSet dl,
 		boolean includeSelf,
 		boolean rememberContext) {
 		NodeProxy n, p, temp;
 		NodeSet result = new ExtArrayNodeSet();
 		NodeSet ancestors;
-		for (Iterator i = iterator(); i.hasNext();) {
+		for (Iterator i = dl.iterator(); i.hasNext();) {
 			n = (NodeProxy) i.next();
-			ancestors = al.ancestorsForChild(n.doc, n.gid, false, includeSelf, -1);
+			ancestors = ancestorsForChild(n.doc, n.gid, false, includeSelf, -1);
 			for(Iterator j = ancestors.iterator(); j.hasNext(); ) {
 			    p = (NodeProxy) j.next();
 				if (p != null) {
@@ -508,8 +508,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		if (siblings.getLength() == 0 || getLength() == 0)
 			return EMPTY_SET;
 		NodeSet result = new ExtArrayNodeSet();
-		Iterator ia = iterator();
-		Iterator ib = siblings.iterator();
+		Iterator ia = siblings.iterator();
+		Iterator ib = iterator();
 		NodeProxy na = (NodeProxy) ia.next(), nb = (NodeProxy) ib.next();
 		long pa, pb;
 		while (true) {
@@ -939,5 +939,19 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 */
 	public boolean hasChanged(int previousState) {
 		return false;
+	}
+	
+	public String pprint() {
+	    StringBuffer buf = new StringBuffer();
+	    buf.append('[');
+	    buf.append(getClass().getName());
+	    buf.append(' ');
+	    for(Iterator i = iterator(); i.hasNext(); ) {
+	        NodeProxy p = (NodeProxy) i.next();
+	        buf.append(p.pprint());
+	        buf.append(' ');
+	    }
+	    buf.append(']');
+	    return buf.toString();
 	}
 }
