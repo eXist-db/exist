@@ -355,14 +355,14 @@
 <![CDATA[
 xquery version "1.0";
 
-declare namespace xmldb="http://exist-db.org/xquery/xmldb";
+declare namespace  xdb="http://exist-db.org/xquery/xmldb";
 declare namespace util="http://exist-db.org/xquery/util";
 
-xmldb:register-database("org.exist.xmldb.DatabaseImpl", true()),
-let $root := xmldb:collection("xmldb:exist:///db", "admin", ""),
-    $out := xmldb:create-collection($root, "output")
+xdb:register-database("org.exist.xmldb.DatabaseImpl", true()),
+let $root := xdb:collection("xdb:exist:///db", "admin", ""),
+    $out := xdb:create-collection($root, "output")
 for $rec in /rdf:RDF/* return
-    xmldb:store($out, concat(util:md5($rec/@rdf:about), ".xml"),
+    xdb:store($out, concat(util:md5($rec/@rdf:about), ".xml"),
         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
             {$rec}
         </rdf:RDF>
@@ -372,16 +372,16 @@ for $rec in /rdf:RDF/* return
                 </example>
                 <para>The extension functions are based on the XML:DB API, so we
                 first have to register a database driver with
-                <command>xmldb:register-database</command>. Then we retrieve the
-                root collection with <command>xmldb:collection</command>. The
-                variable returned by <command>xmldb:collection</command> holds
+                <command>xdb:register-database</command>. Then we retrieve the
+                root collection with <command>xdb:collection</command>. The
+                variable returned by <command>xdb:collection</command> holds
                 the collection as a Java object. We can pass this variable to
-                <command>xmldb:create-collection</command> to create a new
+                <command>xdb:create-collection</command> to create a new
                 sub-collection, called "output".</para>
                 
                 <para>The <command>for</command> expression iterates through all
                 child elements of the top RDF element. In each iteration, we use
-                <command>xmldb:store</command> to write out the current child
+                <command>xdb:store</command> to write out the current child
                 node into a new document.</para>
                 
                 <para>Obviously, a unique document name is required for each

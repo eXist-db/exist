@@ -996,25 +996,25 @@ DatabaseManager.registerDatabase(database1);
             <example>
                 <title>XMLDBTransformer Example</title>
                 <screen format="linespecific"><![CDATA[
-<xmldb:collection xmlns:xmldb="http://exist-db/transformer/1.0"
-	uri="xmldb:exist:///db">
+<xdb:collection xmlns:xdb="http://exist-db/transformer/1.0"
+	uri="xdb:exist:///db">
 	<!-- iterate through all rdf:Description elements containing the
 	     term "computer" -->
-	<xmldb:for-each query="//rdf:Description[dc:title &amp;= 'computer']"
+	<xdb:for-each query="//rdf:Description[dc:title &amp;= 'computer']"
 		from="0" to="9" sort-by="/dc:title">
 		<!-- output a book element for each entry -->
 		<book>
 			<!-- extract the title. There's only one title, so we use
 			     select-node -->
-			<title><xmldb:select-node query="dc:title/text()"/></title>
+			<title><xdb:select-node query="dc:title/text()"/></title>
 			<!-- extract the creators. There's probably more than one,
 			     so we use a nested for-each -->
-			<xmldb:for-each query="dc:creator/text()">
-				<creator><xmldb:current-node/></creator>
-			</xmldb:for-each>
+			<xdb:for-each query="dc:creator/text()">
+				<creator><xdb:current-node/></creator>
+			</xdb:for-each>
 		</book>
-	</xmldb:for-each>
-</xmldb:collection>
+	</xdb:for-each>
+</xdb:collection>
 ]]></screen>
             </example>
             <para>You will find the complete example in directory <filename
@@ -1059,14 +1059,14 @@ DatabaseManager.registerDatabase(database1);
             <example>
                 <title>XMLDBTransformer Output</title>
                 <screen format="linespecific"><![CDATA[
-<xmldb:result-set count="72" xpath="//rdf:Description[dc:title &= 'computer']"
+<xdb:result-set count="72" xpath="//rdf:Description[dc:title &= 'computer']"
 	query-time="370" from="0" to="9">
-	<book xmldb:document-id="zit.rdf" xmldb:collection="/db/library"> 
+	<book xdb:document-id="zit.rdf" xdb:collection="/db/library"> 
 		<title> A Centennial History of the American Society of Mechanical Engineers 1880-1980 </title> 
-		<creator xmldb:document-id="zit.rdf" xmldb:collection="/db/library" > Sinclair, Bruce </creator>
+		<creator xdb:document-id="zit.rdf" xdb:collection="/db/library" > Sinclair, Bruce </creator>
 	</book>
 	<!-- more books here ... -->
-</xmldb:result-set>
+</xdb:result-set>
 ]]></screen>
             </example>
             <para>The result-set element describes the number of hits for the 
@@ -1100,7 +1100,7 @@ DatabaseManager.registerDatabase(database1);
                 <title>example1.xsp: Simple XSP Page</title>
                 <programlisting format="linespecific"><![CDATA[
 <xsp:page xmlns:xsp="http://apache.org/xsp"
-          xmlns:xmldb="http://exist-db.org/xmldb/1.0"
+          xmlns:xdb="http://exist-db.org/xmldb/1.0"
 >
 <document>
     <body>
@@ -1108,13 +1108,13 @@ DatabaseManager.registerDatabase(database1);
             
         <p>Retrieving document <xsp:expr>request.getParameter("doc")</xsp:expr></p>
         
-        <xmldb:collection uri="xmldb:exist:///db/shakespeare/plays">
+        <xdb:collection uri="xdb:exist:///db/shakespeare/plays">
             <xml-source>
-                <xmldb:get-document encoding="ISO-8859-1" as="xml">
-                     <xmldb:name>request.getParameter("doc")</xmldb:name>
-                </xmldb:get-document>
+                <xdb:get-document encoding="ISO-8859-1" as="xml">
+                     <xdb:name>request.getParameter("doc")</xdb:name>
+                </xdb:get-document>
             </xml-source>
-        </xmldb:collection>
+        </xdb:collection>
         </section>
     </body>
 </document>
@@ -1127,7 +1127,7 @@ DatabaseManager.registerDatabase(database1);
 				defined in <filename
                         moreinfo="none">src/org/exist/xmldb.xsl</filename>. To use the 
 				logicsheet from our page we just declare the xmldb-namespace 
-				(xmlns:xmldb="http://exist-db.org/xmldb/1.0").</para>
+				(xmlns:xdb="http://exist-db.org/xmldb/1.0").</para>
             <para>The sample code retrieves a document from the collection 
 				<filename moreinfo="none">/db/shakespeare/plays</filename>. The 
 				name of the document is passed in the HTTP request parameter 
@@ -1145,7 +1145,7 @@ DatabaseManager.registerDatabase(database1);
 				values should be set via an attribute. For example, the 
 				<parameter moreinfo="none">xpath</parameter> parameter is 
 				specified as a Java expression, it is thus embedded into a 
-				&lt;xmldb:xpath&gt; element.</para>
+				&lt;xdb:xpath&gt; element.</para>
             <para>Finally, to tell Cocoon how to process this page, we have to 
 				add a new pattern into the sitemap, e.g.:</para>
             <example>
@@ -1163,26 +1163,26 @@ DatabaseManager.registerDatabase(database1);
                 <title>example2.xsp: Querying the Database</title>
                 <programlisting format="linespecific"><![CDATA[
 <xsp:page xmlns:xsp="http://apache.org/xsp"
-          xmlns:xmldb="http://exist-db.org/xmldb/1.0"
+          xmlns:xdb="http://exist-db.org/xmldb/1.0"
 >
     <html>
         <body>
             <h1>Find books by title</h1>
-            <xmldb:collection uri="xmldb:exist:///db">
-                <xmldb:execute>
-                    <xmldb:xpath>
+            <xdb:collection uri="xdb:exist:///db">
+                <xdb:execute>
+                    <xdb:xpath>
                         "document()//rdf:Description[dc:title" +
                         "&amp;='" + request.getParameter("title") + "']"
-                    </xmldb:xpath>
-                    <p>Found <xmldb:get-hit-count/> hits.</p>
+                    </xdb:xpath>
+                    <p>Found <xdb:get-hit-count/> hits.</p>
                     
-                    <xmldb:results>
+                    <xdb:results>
                         <pre>
-                            <xmldb:get-xml as="string"/>
+                            <xdb:get-xml as="string"/>
                         </pre>
-                    </xmldb:results>
-                </xmldb:execute>
-            </xmldb:collection>
+                    </xdb:results>
+                </xdb:execute>
+            </xdb:collection>
         </body>
     </html>
 </xsp:page>
@@ -1193,14 +1193,14 @@ DatabaseManager.registerDatabase(database1);
 				&lt;rdf:Description&gt; elements having a &lt;dc:title&gt; 
 				containing the keywords entered by the user. As required by the 
 				XML:DB API, any action has to be enclosed in an 
-				&lt;xmldb:collection&gt; element. The query is specified in the 
-				&lt;xmldb:xpath&gt; tag using a Java expression, which inserts 
+				&lt;xdb:collection&gt; element. The query is specified in the 
+				&lt;xdb:xpath&gt; tag using a Java expression, which inserts 
 				the value of the request parameter "title" into the XPath query 
 				string.</para>
-            <para>The &lt;xmldb:results&gt; element will iterate through the 
+            <para>The &lt;xdb:results&gt; element will iterate through the 
 				generated result set, inserting each resource into the page by 
-				calling &lt;xmldb:get-xml&gt;. In this case, 
-				&lt;xmldb:get-xml&gt; inserts the resource contents as a 
+				calling &lt;xdb:get-xml&gt;. In this case, 
+				&lt;xdb:get-xml&gt; inserts the resource contents as a 
 				string, which means that all XML markup is escaped.</para>
         </section>
         
