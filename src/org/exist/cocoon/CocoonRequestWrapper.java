@@ -22,8 +22,11 @@
  */
 package org.exist.cocoon;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.util.Enumeration;
@@ -33,6 +36,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.cocoon.environment.Request;
+import org.apache.cocoon.servlet.multipart.Part;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.SessionWrapper;
 
@@ -361,6 +365,49 @@ public class CocoonRequestWrapper implements RequestWrapper {
 	 */
 	public void setCharacterEncoding(String arg0) throws UnsupportedEncodingException {
 		request.setCharacterEncoding(arg0);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.http.servlets.RequestWrapper#getFileUploadParam(java.lang.String)
+	 */
+	public File getFileUploadParam(String parameter) {
+		 Object param = request.get(parameter);
+		 if(param == null)
+		 	return null;
+		 if(param instanceof Part) {
+		 	Part part = (Part) param;
+		 	try {
+				File temp = File.createTempFile("exist", ".xml");
+				temp.deleteOnExit();
+				OutputStream os = new FileOutputStream(temp);
+				InputStream is = part.getInputStream();
+				byte[] data = new byte[1024];
+				int read = 0;
+				while((read = is.read(data)) > -1) {
+					os.write(data, 0, read);
+				}
+				is.close();
+				part.dispose();
+				return temp;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		 }
+		 return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.http.servlets.RequestWrapper#getUploadedFileName(java.lang.String)
+	 */
+	public String getUploadedFileName(String parameter) {
+		 Object param = request.get(parameter);
+		 if(param == null)
+		 	return null;
+		 if(param instanceof Part) {
+		 	Part part = (Part) param;
+		 	return new File(part.getUploadName()).getName();
+		 }
+		 return null;
 	}
 
 }
