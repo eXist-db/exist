@@ -127,8 +127,8 @@ public class XMLIndenter extends XMLWriter {
 	/* (non-Javadoc)
 	 * @see org.exist.util.serializer.XMLWriter#setOutputProperties(java.util.Properties)
 	 */
-	public void setOutputProperties(Properties outputProperties) {
-		super.setOutputProperties(outputProperties);
+	public void setOutputProperties(Properties properties) {
+		super.setOutputProperties(properties);
 		String option = outputProperties.getProperty(EXistOutputKeys.INDENT_SPACES, "4");
 		try {
 			indentAmount = Integer.parseInt(option);

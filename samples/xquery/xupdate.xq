@@ -6,7 +6,7 @@ declare variable $data {
     <todo-list>
         <todo>
             <description>Add support for binary objects</description>
-            <priority>6</priority>
+            <priority level="6"/>
 
             <date>2003-11-22</date>
             <status>finished</status>
@@ -21,12 +21,14 @@ declare variable $xupdate {
         </xu:rename>
         <xu:append select="/todo-list">
             <todo>
-                <description>Document supported XML schema types</description>
-                <priority>3</priority>
+                <description>Document supported XML schema types</description> 
                 <start-date>{current-date()}</start-date>
                 <status>open</status>
             </todo>
         </xu:append> 
+        <xu:append select="/todo-list/todo[status='open']">
+            <priority level="3"/>
+        </xu:append>
     </xu:modifications>
 };
 
@@ -37,5 +39,5 @@ let $root := xmldb:collection("xmldb:exist:///db", "admin", ""),
 return
     <result>
         <status>{$mods} modifications processed.</status>
-        {for $m in doc("/db/test/test.xml")//todo[status='open'] return $m}
+        {for $m in doc("/db/test/test.xml")//todo return $m}
     </result>

@@ -36,7 +36,7 @@ import org.w3c.dom.ProcessingInstruction;
 import org.xml.sax.helpers.NamespaceSupport;
 
 public class DOMSerializer {
-
+	
 	protected XMLWriter receiver;
 	protected NamespaceSupport nsSupport = new NamespaceSupport();
 	protected HashMap namespaceDecls = new HashMap();
@@ -146,13 +146,18 @@ public class DOMSerializer {
 				Map.Entry nsEntry;
 				for (Iterator i = namespaceDecls.entrySet().iterator(); i.hasNext();) {
 					nsEntry = (Map.Entry) i.next();
+					
 					receiver.namespace(
 						(String) nsEntry.getKey(),
 						(String) nsEntry.getValue());
 				}
 				// output attributes
+				String name;
 				for (int i = 0; i < attrs.getLength(); i++) {
 					nextAttr = (Attr) attrs.item(i);
+					name = nextAttr.getName();
+					if(name.startsWith("xmlns"))
+						continue;
 					receiver.attribute(nextAttr.getName(), nextAttr.getValue());
 				}
 				break;

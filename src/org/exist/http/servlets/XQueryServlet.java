@@ -156,7 +156,7 @@ public class XQueryServlet extends HttpServlet {
 		if(p > -1)
 			baseURI = baseURI.substring(0, p);
 		baseURI = getServletContext().getRealPath(baseURI.substring(request.getContextPath().length()));
-		
+
 		String actualUser = null;
 		String actualPassword = null;
 		HttpSession session = request.getSession();

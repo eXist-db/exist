@@ -149,10 +149,11 @@ public class RpcConnection extends Thread {
 		context.setBaseURI(baseURI);
 		Hashtable namespaces = (Hashtable)parameters.get(RpcAPI.NAMESPACES);
 		if(namespaces != null && namespaces.size() > 0) {
-			for(Iterator i = namespaces.entrySet().iterator(); i.hasNext(); ) {
-				Map.Entry entry = (Map.Entry)i.next();
-				context.declareNamespace((String)entry.getKey(), (String)entry.getValue());
-			}
+			context.declareNamespaces(namespaces);
+//			for(Iterator i = namespaces.entrySet().iterator(); i.hasNext(); ) {
+//				Map.Entry entry = (Map.Entry)i.next();
+//				context.declareNamespace((String)entry.getKey(), (String)entry.getValue());
+//			}
 		}
 		LOG.debug("compiling " + xquery);
 		XQueryLexer lexer = new XQueryLexer(new StringReader(xquery));

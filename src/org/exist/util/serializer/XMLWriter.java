@@ -38,6 +38,11 @@ import org.exist.util.serializer.encodings.CharacterSet;
  */
 public class XMLWriter {
 
+	protected final static Properties defaultProperties = new Properties();
+	static {
+		defaultProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+	}
+	
 	protected Writer writer = null;
 	protected CharacterSet charSet = null;
 	protected Stack elementStack = new Stack();
@@ -62,11 +67,13 @@ public class XMLWriter {
 	 * 
 	 * @param outputProperties
 	 */
-	public void setOutputProperties(Properties outputProperties) {
-		this.outputProperties = outputProperties;
-		
+	public void setOutputProperties(Properties properties) {
+		if(outputProperties == null)
+			this.outputProperties = defaultProperties;
+		else
+			this.outputProperties = properties;
 		String encoding =
-			outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
+			this.outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
 		charSet = CharacterSet.getCharacterSet(encoding);
 	}
 

@@ -402,7 +402,7 @@ public class ElementImpl extends NodeImpl implements Element {
 			case Node.ATTRIBUTE_NODE :
 				attr = (Attr) child;
 				ns= attr.getNamespaceURI();
-				prefix = (ns.equals("http://www.w3.org/XML/1998/namespace") ? "xml" : attr.getPrefix());
+				prefix = (ns != null && ns.equals("http://www.w3.org/XML/1998/namespace") ? "xml" : attr.getPrefix());
 				QName attrName =
 					new QName(
 						attr.getLocalName(),
