@@ -44,6 +44,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Node;
 
 /**
  * Implements eXist's document() function.
@@ -138,7 +139,7 @@ public class ExtDocument extends Function {
 			if(result == null) {
 			    result = new ExtArrayNodeSet(docs.getLength(), 1);
 				for (Iterator i = docs.iterator(); i.hasNext();) {
-					result.add(new NodeProxy((DocumentImpl) i.next(), -1));
+					result.add(new NodeProxy((DocumentImpl) i.next(), -1, Node.DOCUMENT_NODE));
 				}
 			}
 	    } catch (LockException e) {
