@@ -29,9 +29,20 @@ public class DOMStreamer {
 	private ContentHandler contentHandler = null;
 	private LexicalHandler lexicalHandler = null;
 	
+	public DOMStreamer() {
+	}
+	
 	public DOMStreamer(ContentHandler handler, LexicalHandler lexical) {
 		this.contentHandler = handler;
 		this.lexicalHandler = lexical;
+	}
+	
+	public void setContentHandler(ContentHandler handler) {
+		contentHandler = handler;
+	}
+	
+	public void setLexicalHandler(LexicalHandler handler) {
+		lexicalHandler = handler;
 	}
 	
 	public void stream(Node node) throws SAXException {

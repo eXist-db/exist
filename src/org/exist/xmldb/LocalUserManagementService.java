@@ -244,7 +244,8 @@ public class LocalUserManagementService implements UserManagementService {
 	public Permission getPermissions(Resource resource) throws XMLDBException {
 		if (resource instanceof LocalXMLResource)
 			return ((LocalXMLResource) resource).getDocument().getPermissions();
-		return null;
+		throw new XMLDBException(ErrorCodes.INVALID_RESOURCE,
+			"resource is not a local resource");
 	}
 
 	public Permission[] listResourcePermissions() throws XMLDBException {

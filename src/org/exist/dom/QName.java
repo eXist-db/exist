@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
- *  $Id:
+ *  $Id$
  */
 package org.exist.dom;
 
@@ -112,12 +112,15 @@ public class QName implements Comparable {
 	
 	public static QName parse(StaticContext context, String qname) {
 		String prefix = extractPrefix(qname);
-		String namespaceURI = "";
+		String namespaceURI;
 		if(prefix != null) {
 			namespaceURI = context.getURIForPrefix(prefix);
 			if(namespaceURI == null)
 				throw new IllegalArgumentException("No namespace defined for prefix " + prefix);
-		}
+		} else
+			namespaceURI = context.getURIForPrefix("");
+		if(namespaceURI == null)
+			namespaceURI = "";
 		return new QName(extractLocalName(qname), namespaceURI, prefix);
 	}
 }

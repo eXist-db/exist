@@ -59,7 +59,7 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 		try {
 			broker = pool.get();
 			if (resource == null) {
-				docs = parent.collection.allDocs(user, true);
+				docs = parent.collection.allDocs(broker, user, true);
 			} else {
 				docs = new DocumentSet();
 				String id = parent.getName() + '/' + resource;

@@ -198,7 +198,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 			Collection collection = broker.getCollection(collectionName);
 			if (collection == null)
 				throw new RemoteException("collection " + collectionName + " not found");
-			DocumentSet docs = collection.allDocs(session.getUser(), true);
+			DocumentSet docs = collection.allDocs(broker, session.getUser(), true);
 			XUpdateProcessor processor = new XUpdateProcessor(pool, session.getUser(), docs);
 			Modification modifications[] =
 				processor.parse(new InputSource(new StringReader(xupdate)));

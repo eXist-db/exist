@@ -1,7 +1,7 @@
 
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001 Wolfgang M. Meier
+ *  Copyright (C) 2001-03 Wolfgang M. Meier
  *  meier@ifs.tu-darmstadt.de
  *  http://exist.sourceforge.net
  *
@@ -19,19 +19,20 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
- *  $Id:
+ *  $Id$
  */
 package org.exist.xmldb;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Random;
-import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Random;
 import java.util.TreeMap;
-import java.io.File;
+
 import org.apache.log4j.Category;
 import org.exist.EXistException;
 import org.exist.Parser;
@@ -41,7 +42,12 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.xmldb.api.base.*;
+import org.xml.sax.InputSource;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.ErrorCodes;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.Service;
+import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
 /**
@@ -216,10 +222,19 @@ public class LocalCollection extends Observable implements CollectionImpl {
     public Collection getParentCollection() throws XMLDBException {
         if(getName().equals("/db"))
             return null;
-        if( parent == null && collection != null )
-            parent = new LocalCollection( user, brokerPool, null, collection.getParent() );
-//        if ( parent == null )
-//            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, "parent is null" );
+        if( parent == null && collection != null ) {
+        	DBBroker broker = null;
+        	try {
+        		broker = brokerPool.get();
+        		org.exist.collections.Collection c = collection.getParent(broker);
+				parent = new LocalCollection( user, brokerPool, null, c );
+        	} catch (EXistException e) {
+				throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR,
+					"error while retrieving parent collection: " + e.getMessage(), e);
+			} finally {
+        		brokerPool.release(broker);
+        	}
+        }
         return parent;
     }
 
@@ -382,8 +397,41 @@ public class LocalCollection extends Observable implements CollectionImpl {
         properties.put(property, value);
     }
 
-
-    public void storeResource( Resource resource ) throws XMLDBException {
+	public void storeResource( Resource resource ) throws XMLDBException {
+			if( !(resource instanceof LocalXMLResource) )
+				throw new XMLDBException( ErrorCodes.NOT_IMPLEMENTED );
+			final LocalXMLResource res = (LocalXMLResource)resource;
+			final String name = res.getDocumentId();
+			LOG.debug( "storing document " + name );
+			DBBroker broker = null;
+			try {
+				broker = brokerPool.get();
+				//broker.flush();
+				Observer observer;
+				for(Iterator i = observers.iterator(); i.hasNext(); ) {
+					observer = (Observer)i.next();
+					collection.addObserver( observer );
+				}
+				if(res.file != null)
+					collection.addDocument(broker, user, name, 
+						new InputSource(res.file.getAbsolutePath()));
+				else if(res.root != null)
+					collection.addDocument(broker, user, name, res.root);
+				else
+					collection.addDocument(broker, user, name, res.content);
+				//broker.flush();
+			} catch ( Exception e ) {
+				e.printStackTrace();
+				throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
+					e.getMessage(),
+					e );
+			} finally {
+				brokerPool.release( broker );
+			}
+			needsSync = true;
+		}
+		
+    public void storeResourceO( Resource resource ) throws XMLDBException {
         if( !(resource instanceof LocalXMLResource) )
             throw new XMLDBException( ErrorCodes.NOT_IMPLEMENTED );
 		final LocalXMLResource res = (LocalXMLResource)resource;

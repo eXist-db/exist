@@ -27,7 +27,6 @@
                 <xsp:include>java.util.TreeMap</xsp:include>
                 <xsp:include>java.util.Iterator</xsp:include>
                 <xsp:include>org.w3c.dom.*</xsp:include>
-                <xsp:include>org.apache.log4j.Category</xsp:include>
                 <xsp:include>org.xmldb.api.*</xsp:include>
                 <xsp:include>org.xmldb.api.base.*</xsp:include>
                 <xsp:include>org.xmldb.api.modules.*</xsp:include>
@@ -40,8 +39,6 @@
             <xsp:logic>
                 private String _errmsg = null;
                 private String _errdesc = null;
-                private final static Category LOG = 
-                    Category.getInstance("logicsheet");
                     
                 private  ArrayList getHitsByDocument(String _collectionName, 
                     String _documentName, TreeMap _collections) {
@@ -694,15 +691,12 @@
                 (XMLResource)collection.getResource(_docId);
             if(_resource != null) {
                 if(<xsl:value-of select="$overwrite"/>.equals("true")) {
-					LOG.debug("resource " + _resource.getDocumentId() + " exists. Overwrite");
                     collection.removeResource(_resource);
                     _resource = 
                         ( XMLResource ) collection.createResource( _docId, "XMLResource" );
 					_resource.setContent(<xsl:value-of select="$xml"/>);
-		    		LOG.debug("storing " + _resource.getDocumentId());
                     collection.storeResource(_resource);
                 } else {
-                    LOG.debug("resource " + _resource + " exists and overwrite is false");
                     _errmsg = "Resource " + _docId + " does already exist";
                     _errdesc = "Resource " + _docId + " does already exist";
                     <xsl:apply-templates select="ancestor::xmldb:collection//xmldb:error/node()"/>

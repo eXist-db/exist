@@ -300,7 +300,7 @@ public XPathParser2(ParserSharedInputState state) {
 		andExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop8:
+		_loop232:
 		do {
 			if ((LA(1)==LITERAL_or)) {
 				AST tmp62_AST = null;
@@ -311,7 +311,7 @@ public XPathParser2(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop8;
+				break _loop232;
 			}
 			
 		} while (true);
@@ -329,7 +329,7 @@ public XPathParser2(ParserSharedInputState state) {
 		comparisonExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop11:
+		_loop235:
 		do {
 			if ((LA(1)==LITERAL_and)) {
 				AST tmp63_AST = null;
@@ -340,7 +340,7 @@ public XPathParser2(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop11;
+				break _loop235;
 			}
 			
 		} while (true);
@@ -491,7 +491,7 @@ public XPathParser2(ParserSharedInputState state) {
 		multiplicativeExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop21:
+		_loop245:
 		do {
 			if ((LA(1)==PLUS||LA(1)==MINUS)) {
 				{
@@ -522,7 +522,7 @@ public XPathParser2(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop21;
+				break _loop245;
 			}
 			
 		} while (true);
@@ -540,7 +540,7 @@ public XPathParser2(ParserSharedInputState state) {
 		unaryExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop25:
+		_loop249:
 		do {
 			if (((LA(1) >= STAR && LA(1) <= LITERAL_mod))) {
 				{
@@ -579,7 +579,7 @@ public XPathParser2(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop25;
+				break _loop249;
 			}
 			
 		} while (true);
@@ -799,10 +799,10 @@ public XPathParser2(ParserSharedInputState state) {
 			break;
 		}
 		default:
-			boolean synPredMatched31 = false;
+			boolean synPredMatched255 = false;
 			if (((LA(1)==SLASH))) {
-				int _m31 = mark();
-				synPredMatched31 = true;
+				int _m255 = mark();
+				synPredMatched255 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -811,12 +811,12 @@ public XPathParser2(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched31 = false;
+					synPredMatched255 = false;
 				}
-				rewind(_m31);
+				rewind(_m255);
 				inputState.guessing--;
 			}
-			if ( synPredMatched31 ) {
+			if ( synPredMatched255 ) {
 				AST tmp82_AST = null;
 				tmp82_AST = astFactory.create(LT(1));
 				astFactory.addASTChild(currentAST, tmp82_AST);
@@ -869,7 +869,7 @@ public XPathParser2(ParserSharedInputState state) {
 		stepExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop35:
+		_loop259:
 		do {
 			if ((LA(1)==SLASH||LA(1)==DSLASH)) {
 				{
@@ -900,7 +900,7 @@ public XPathParser2(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop35;
+				break _loop259;
 			}
 			
 		} while (true);
@@ -915,10 +915,10 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST stepExpr_AST = null;
 		
-		boolean synPredMatched39 = false;
+		boolean synPredMatched263 = false;
 		if (((_tokenSet_0.member(LA(1))))) {
-			int _m39 = mark();
-			synPredMatched39 = true;
+			int _m263 = mark();
+			synPredMatched263 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -944,21 +944,21 @@ public XPathParser2(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched39 = false;
+				synPredMatched263 = false;
 			}
-			rewind(_m39);
+			rewind(_m263);
 			inputState.guessing--;
 		}
-		if ( synPredMatched39 ) {
+		if ( synPredMatched263 ) {
 			axisStep();
 			astFactory.addASTChild(currentAST, returnAST);
 			stepExpr_AST = (AST)currentAST.root;
 		}
 		else {
-			boolean synPredMatched42 = false;
+			boolean synPredMatched266 = false;
 			if (((_tokenSet_1.member(LA(1))))) {
-				int _m42 = mark();
-				synPredMatched42 = true;
+				int _m266 = mark();
+				synPredMatched266 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -1013,12 +1013,12 @@ public XPathParser2(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched42 = false;
+					synPredMatched266 = false;
 				}
-				rewind(_m42);
+				rewind(_m266);
 				inputState.guessing--;
 			}
-			if ( synPredMatched42 ) {
+			if ( synPredMatched266 ) {
 				filterStep();
 				astFactory.addASTChild(currentAST, returnAST);
 				stepExpr_AST = (AST)currentAST.root;
@@ -1172,10 +1172,10 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST forwardOrReverseStep_AST = null;
 		
-		boolean synPredMatched51 = false;
+		boolean synPredMatched275 = false;
 		if ((((LA(1) >= LITERAL_child && LA(1) <= 52)))) {
-			int _m51 = mark();
-			synPredMatched51 = true;
+			int _m275 = mark();
+			synPredMatched275 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -1184,12 +1184,12 @@ public XPathParser2(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched51 = false;
+				synPredMatched275 = false;
 			}
-			rewind(_m51);
+			rewind(_m275);
 			inputState.guessing--;
 		}
-		if ( synPredMatched51 ) {
+		if ( synPredMatched275 ) {
 			forwardAxis();
 			astFactory.addASTChild(currentAST, returnAST);
 			nodeTest();
@@ -1197,10 +1197,10 @@ public XPathParser2(ParserSharedInputState state) {
 			forwardOrReverseStep_AST = (AST)currentAST.root;
 		}
 		else {
-			boolean synPredMatched53 = false;
+			boolean synPredMatched277 = false;
 			if ((((LA(1) >= LITERAL_parent && LA(1) <= 56)))) {
-				int _m53 = mark();
-				synPredMatched53 = true;
+				int _m277 = mark();
+				synPredMatched277 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -1209,12 +1209,12 @@ public XPathParser2(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched53 = false;
+					synPredMatched277 = false;
 				}
-				rewind(_m53);
+				rewind(_m277);
 				inputState.guessing--;
 			}
-			if ( synPredMatched53 ) {
+			if ( synPredMatched277 ) {
 				reverseAxis();
 				astFactory.addASTChild(currentAST, returnAST);
 				nodeTest();
@@ -1240,14 +1240,14 @@ public XPathParser2(ParserSharedInputState state) {
 		AST predicates_AST = null;
 		
 		{
-		_loop47:
+		_loop271:
 		do {
 			if ((LA(1)==LPPAREN)) {
 				predicate();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop47;
+				break _loop271;
 			}
 			
 		} while (true);
@@ -1371,10 +1371,10 @@ public XPathParser2(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST nodeTest_AST = null;
 		
-		boolean synPredMatched63 = false;
+		boolean synPredMatched287 = false;
 		if (((LA(1)==LITERAL_text||LA(1)==LITERAL_node))) {
-			int _m63 = mark();
-			synPredMatched63 = true;
+			int _m287 = mark();
+			synPredMatched287 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -1400,12 +1400,12 @@ public XPathParser2(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched63 = false;
+				synPredMatched287 = false;
 			}
-			rewind(_m63);
+			rewind(_m287);
 			inputState.guessing--;
 		}
-		if ( synPredMatched63 ) {
+		if ( synPredMatched287 ) {
 			kindTest();
 			astFactory.addASTChild(currentAST, returnAST);
 			nodeTest_AST = (AST)currentAST.root;
@@ -1611,10 +1611,10 @@ public XPathParser2(ParserSharedInputState state) {
 			String name = null;
 		
 		
-		boolean synPredMatched67 = false;
+		boolean synPredMatched291 = false;
 		if (((LA(1)==NCNAME||LA(1)==STAR))) {
-			int _m67 = mark();
-			synPredMatched67 = true;
+			int _m291 = mark();
+			synPredMatched291 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -1641,12 +1641,12 @@ public XPathParser2(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched67 = false;
+				synPredMatched291 = false;
 			}
-			rewind(_m67);
+			rewind(_m291);
 			inputState.guessing--;
 		}
-		if ( synPredMatched67 ) {
+		if ( synPredMatched291 ) {
 			wildcard();
 			astFactory.addASTChild(currentAST, returnAST);
 			nameTest_AST = (AST)currentAST.root;
@@ -1683,10 +1683,10 @@ public XPathParser2(ParserSharedInputState state) {
 		Token  nc2 = null;
 		AST nc2_AST = null;
 		
-		boolean synPredMatched70 = false;
+		boolean synPredMatched294 = false;
 		if (((LA(1)==STAR))) {
-			int _m70 = mark();
-			synPredMatched70 = true;
+			int _m294 = mark();
+			synPredMatched294 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -1695,12 +1695,12 @@ public XPathParser2(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched70 = false;
+				synPredMatched294 = false;
 			}
-			rewind(_m70);
+			rewind(_m294);
 			inputState.guessing--;
 		}
-		if ( synPredMatched70 ) {
+		if ( synPredMatched294 ) {
 			match(STAR);
 			match(COLON);
 			nc1 = LT(1);
@@ -2002,7 +2002,7 @@ public XPathParser2(ParserSharedInputState state) {
 		expr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop80:
+		_loop304:
 		do {
 			if ((LA(1)==COMMA)) {
 				match(COMMA);
@@ -2010,7 +2010,7 @@ public XPathParser2(ParserSharedInputState state) {
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop80;
+				break _loop304;
 			}
 			
 		} while (true);

@@ -38,7 +38,6 @@ public class EXistException extends Exception {
         super();
     }
 
-
     /**
      *  Constructor for the EXistException object
      *

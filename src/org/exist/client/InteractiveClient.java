@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
- *  $Id:
+ *  $Id$
  */
 package org.exist.client;
 
@@ -410,6 +410,8 @@ public class InteractiveClient {
 		for (int j = 0; j < childResources.length; i++, j++) {
 			res = current.getResource(childResources[j]);
 			perm = mgtService.getPermissions(res);
+			if(perm == null)
+				System.out.println("null");
 			if (properties.getProperty("permissions").equals("true")) {
 				resources[i] =
 					'-'
@@ -923,15 +925,22 @@ public class InteractiveClient {
 					(XUpdateQueryService) current.getService("XUpdateQueryService", "1.0");
 				long mods = service.update(xupdate);
 				System.out.println(mods + " modifications processed.");
+				
 			} else if (args[0].equalsIgnoreCase("map")) {
 				StringTokenizer tok = new StringTokenizer(args[1], "= ");
-				if (tok.countTokens() < 2) {
-					messageln("please specify a namespace/prefix mapping as: prefix=namespaceURI");
-					return true;
+				String prefix;
+				if(args[1].startsWith("="))
+					prefix = "";
+				else {
+					if (tok.countTokens() < 2) {
+						messageln("please specify a namespace/prefix mapping as: prefix=namespaceURI");
+						return true;
+					}
+					prefix = tok.nextToken();
 				}
-				String prefix = tok.nextToken();
 				String uri = tok.nextToken();
 				namespaceMappings.put(prefix, uri);
+				
 			} else if (args[0].equalsIgnoreCase("set")) {
 				if (args.length == 1)
 					properties.list(System.out);

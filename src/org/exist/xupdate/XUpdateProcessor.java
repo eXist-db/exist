@@ -3,8 +3,10 @@ package org.exist.xupdate;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
 
@@ -74,9 +76,10 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	private BrokerPool pool;
 	private User user;
 	private DocumentSet documentSet;
-	private ArrayList modifications = new ArrayList();
+	private List modifications = new ArrayList();
 	private FastStringBuffer charBuf = new FastStringBuffer(6, 15, 5);
-	private TreeMap variables = new TreeMap();
+	private Map variables = new TreeMap();
+	private Map namespaces = new HashMap(10);
 
 	/**
 	 * Constructor for XUpdateProcessor.
@@ -109,7 +112,9 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		SAXParser sax = saxFactory.newSAXParser();
 		XMLReader reader = sax.getXMLReader();
 		reader.setContentHandler(this);
-		reader.setProperty("http://xml.org/sax/properties/lexical-handler", this);
+		reader.setProperty(
+			"http://xml.org/sax/properties/lexical-handler",
+			this);
 		reader.parse(is);
 		Modification mods[] = new Modification[modifications.size()];
 		return (Modification[]) modifications.toArray(mods);
@@ -136,23 +141,31 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	/**
 	 * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String, java.lang.String)
 	 */
-	public void startPrefixMapping(String prefix, String uri) throws SAXException {
+	public void startPrefixMapping(String prefix, String uri)
+		throws SAXException {
+		namespaces.put(prefix, uri);
 	}
 
 	/**
 	 * @see org.xml.sax.ContentHandler#endPrefixMapping(java.lang.String)
 	 */
 	public void endPrefixMapping(String prefix) throws SAXException {
+		namespaces.remove(prefix);
 	}
 
 	/**
 	 * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
 	 */
-	public void startElement(String namespaceURI, String localName, String qName, Attributes atts)
+	public void startElement(
+		String namespaceURI,
+		String localName,
+		String qName,
+		Attributes atts)
 		throws SAXException {
 		// save accumulated character content
 		if (inModification && charBuf.length() > 0) {
-			final String normalized = charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+			final String normalized =
+				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
 			if (normalized.length() > 0) {
 				Text text = doc.createTextNode(normalized);
 				if (stack.isEmpty()) {
@@ -170,10 +183,14 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				String version = atts.getValue("version");
 				if (version == null)
 					throw new SAXException(
-						"version attribute is required for " + "element modifications");
+						"version attribute is required for "
+							+ "element modifications");
 				if (!version.equals("1.0"))
 					throw new SAXException(
-						"Version " + version + " of XUpdate " + "not supported.");
+						"Version "
+							+ version
+							+ " of XUpdate "
+							+ "not supported.");
 				return;
 			}
 			String select = null;
@@ -200,7 +217,8 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					throw new SAXException("nested modifications are not allowed");
 				select = atts.getValue("select");
 				if (select == null)
-					throw new SAXException(localName + " requires a select attribute");
+					throw new SAXException(
+						localName + " requires a select attribute");
 				doc = builder.newDocument();
 				fragment = doc.createDocumentFragment();
 				inModification = true;
@@ -212,7 +230,8 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					|| localName.equals("comment"))
 					&& (!inModification))
 				throw new SAXException(
-					"creation elements are only allowed inside " + "a modification");
+					"creation elements are only allowed inside "
+						+ "a modification");
 
 			// start a new modification section
 			if (localName.equals("append"))
@@ -220,9 +239,21 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			else if (localName.equals("update"))
 				modification = new Update(pool, user, documentSet, select);
 			else if (localName.equals("insert-before"))
-				modification = new Insert(pool, user, documentSet, select, Insert.INSERT_BEFORE);
+				modification =
+					new Insert(
+						pool,
+						user,
+						documentSet,
+						select,
+						Insert.INSERT_BEFORE);
 			else if (localName.equals("insert-after"))
-				modification = new Insert(pool, user, documentSet, select, Insert.INSERT_AFTER);
+				modification =
+					new Insert(
+						pool,
+						user,
+						documentSet,
+						select,
+						Insert.INSERT_AFTER);
 			else if (localName.equals("remove"))
 				modification = new Remove(pool, user, documentSet, select);
 			else if (localName.equals("rename"))
@@ -233,7 +264,20 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				String name = atts.getValue("name");
 				if (name == null)
 					throw new SAXException("element requires a name attribute");
-				Element elem = doc.createElementNS("", name);
+				int p = name.indexOf(':');
+				String namespace = "";
+				if (p > -1) {
+					String prefix = name.substring(0, p);
+					if (name.length() == p + 1)
+						throw new SAXException(
+							"illegal prefix in qname: " + name);
+					name = name.substring(p + 1);
+					namespace = (String) namespaces.get(prefix);
+					if (namespace == null)
+						throw new SAXException(
+							"no namespace defined for prefix " + prefix);
+				}
+				Element elem = doc.createElementNS(namespace, name);
 				if (stack.isEmpty()) {
 					fragment.appendChild(elem);
 				} else {
@@ -245,7 +289,20 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				String name = atts.getValue("name");
 				if (name == null)
 					throw new SAXException("attribute requires a name attribute");
-				Attr attrib = doc.createAttributeNS("", name);
+				int p = name.indexOf(':');
+				String namespace = "";
+				if (p > -1) {
+					String prefix = name.substring(0, p);
+					if (name.length() == p + 1)
+						throw new SAXException(
+							"illegal prefix in qname: " + name);
+					name = name.substring(p + 1);
+					namespace = (String) namespaces.get(prefix);
+					if (namespace == null)
+						throw new SAXException(
+							"no namespace defined for prefix " + prefix);
+				}
+				Attr attrib = doc.createAttributeNS(namespace, name);
 				if (stack.isEmpty())
 					fragment.appendChild(attrib);
 				else {
@@ -264,7 +321,8 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				if (select.startsWith("$")) {
 					nodes = (List) variables.get(select);
 					if (nodes == null)
-						throw new SAXException("variable " + select + " not found");
+						throw new SAXException(
+							"variable " + select + " not found");
 				} else
 					nodes = processQuery(select);
 				LOG.debug("found " + nodes.size() + " nodes for value-of");
@@ -303,7 +361,8 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	public void endElement(String namespaceURI, String localName, String qName)
 		throws SAXException {
 		if (inModification && charBuf.length() > 0) {
-			final String normalized = charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+			final String normalized =
+				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
 			if (normalized.length() > 0) {
 				Text text = doc.createTextNode(normalized);
 				if (stack.isEmpty()) {
@@ -338,7 +397,8 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	/**
 	 * @see org.xml.sax.ContentHandler#characters(char, int, int)
 	 */
-	public void characters(char[] ch, int start, int length) throws SAXException {
+	public void characters(char[] ch, int start, int length)
+		throws SAXException {
 		if (inModification) {
 			if (inAttribute)
 				 ((Attr) currentNode).setValue(new String(ch, start, length));
@@ -351,15 +411,18 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	/**
 	 * @see org.xml.sax.ContentHandler#ignorableWhitespace(char, int, int)
 	 */
-	public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+	public void ignorableWhitespace(char[] ch, int start, int length)
+		throws SAXException {
 	}
 
 	/**
 	 * @see org.xml.sax.ContentHandler#processingInstruction(java.lang.String, java.lang.String)
 	 */
-	public void processingInstruction(String target, String data) throws SAXException {
+	public void processingInstruction(String target, String data)
+		throws SAXException {
 		if (inModification && charBuf.length() > 0) {
-			final String normalized = charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+			final String normalized =
+				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
 			if (normalized.length() > 0) {
 				Text text = doc.createTextNode(normalized);
 				if (stack.isEmpty()) {
@@ -373,7 +436,8 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			charBuf.setLength(0);
 		}
 		if (inModification) {
-			ProcessingInstruction pi = doc.createProcessingInstruction(target, data);
+			ProcessingInstruction pi =
+				doc.createProcessingInstruction(target, data);
 			if (stack.isEmpty()) {
 				fragment.appendChild(pi);
 			} else {
@@ -389,7 +453,8 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	public void skippedEntity(String name) throws SAXException {
 	}
 
-	private void createVariable(String name, String select) throws SAXException {
+	private void createVariable(String name, String select)
+		throws SAXException {
 		LOG.debug("creating variable " + name + " as " + select);
 		List result = processQuery(select);
 		LOG.debug("found " + result.size() + " for variable " + name);
@@ -399,6 +464,13 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	private List processQuery(String select) throws SAXException {
 		try {
 			StaticContext context = new StaticContext(user);
+			Map.Entry entry;
+			for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {
+				entry = (Map.Entry) i.next();
+				context.declareNamespace(
+					(String) entry.getKey(),
+					(String) entry.getValue());
+			}
 			XPathLexer2 lexer = new XPathLexer2(new StringReader(select));
 			XPathParser2 parser = new XPathParser2(lexer);
 			XPathTreeParser2 treeParser = new XPathTreeParser2(pool, context);
@@ -421,7 +493,8 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 
 			Value resultValue = expr.eval(context, documentSet, null, null);
 			if (!(resultValue.getType() == Value.isNodeList))
-				throw new SAXException("select expression should evaluate to a" + "node-set");
+				throw new SAXException(
+					"select expression should evaluate to a" + "node-set");
 			NodeList set = resultValue.getNodeList();
 			ArrayList out = new ArrayList(set.getLength());
 			for (int i = 0; i < set.getLength(); i++) {
@@ -444,7 +517,8 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	 */
 	public void comment(char[] ch, int start, int length) throws SAXException {
 		if (inModification && charBuf.length() > 0) {
-			final String normalized = charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+			final String normalized =
+				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
 			if (normalized.length() > 0) {
 				Text text = doc.createTextNode(normalized);
 				if (stack.isEmpty()) {
@@ -495,7 +569,8 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ext.LexicalHandler#startDTD(java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public void startDTD(String name, String publicId, String systemId) throws SAXException {
+	public void startDTD(String name, String publicId, String systemId)
+		throws SAXException {
 	}
 
 	/* (non-Javadoc)
