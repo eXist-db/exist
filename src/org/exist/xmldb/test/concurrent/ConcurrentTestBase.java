@@ -87,6 +87,7 @@ public abstract class ConcurrentTestBase extends TestCase {
 			}
 		} catch(Exception e) {
 			e.printStackTrace();
+			failed = true;
 		}
 		
 		assertFalse(failed);

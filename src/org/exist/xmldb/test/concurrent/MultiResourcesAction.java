@@ -25,37 +25,56 @@ import java.io.File;
 
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * @author wolf
  */
 public class MultiResourcesAction extends Action {
-
-    private final static String dirPath = "samples/mods";
+    
+    private String dirPath;
     
     /**
      * @param collectionPath
      * @param resourceName
      */
-    public MultiResourcesAction(String collectionPath) {
+    public MultiResourcesAction(String dirPath, String collectionPath) {
         super(collectionPath, "");
+        this.dirPath = dirPath;
     }
 
     /* (non-Javadoc)
      * @see org.exist.xmldb.test.concurrent.Action#execute()
      */
     public boolean execute() throws Exception {
-        File d = new File(dirPath);
+        Collection parent = DatabaseManager.getCollection(collectionPath, "admin", null);
+        Collection col = parent.getChildCollection("col1");
+        if(col != null) {
+        	System.out.println("Removing collection: " + collectionPath + "/col1");
+        	DBUtils.removeCollection(parent, "col1");
+        }
+        col = DBUtils.addCollection(parent, "col1");
+        addFiles(col);
+        return false;
+    }
+
+	/**
+	 * @param files
+	 * @param col
+	 * @throws XMLDBException
+	 */
+	private void addFiles(Collection col) throws XMLDBException {
+		File d = new File(dirPath);
         if(!(d.canRead() && d.isDirectory()))
             throw new RuntimeException("Cannot read directory: " + dirPath);
         File[] files = d.listFiles();
-        
-        Collection col = DatabaseManager.getCollection(collectionPath, "admin", null);
-        for(int i = 0; i < files.length; i++) {
-            if(files[i].isFile())
-                DBUtils.addXMLResource(col, files[i].getName(), files[i]);
+		for(int i = 0; i < files.length; i++) {
+            if(files[i].isFile()) {
+                System.out.println("Storing " + files[i].getName());
+            	DBUtils.addXMLResource(col, files[i].getName(), files[i]);
+            }
         }
-        return false;
-    }
+		System.out.println("All files stored.");
+	}
 
 }

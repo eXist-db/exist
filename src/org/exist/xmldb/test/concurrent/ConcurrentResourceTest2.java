@@ -32,7 +32,11 @@ public class ConcurrentResourceTest2 extends ConcurrentTestBase {
     
     private final static String QUERY0 =
         "declare default element namespace 'http://www.loc.gov/mods/v3';" +
-        "/mods/titleInfo[title &= 'germany']";
+        "collection(\"/db\")//mods[titleInfo/title &= 'germany']";
+    
+    private final static String QUERY1 =
+        "declare default element namespace 'http://www.loc.gov/mods/v3';" +
+        "<result>{for $t in distinct-values(collection('/db')//mods/subject/topic) order by $t return <topic>{$t}</topic>}</result>";
     
     public static void main(String[] args) {
         junit.textui.TestRunner.run(ConcurrentResourceTest2.class);
@@ -54,7 +58,10 @@ public class ConcurrentResourceTest2 extends ConcurrentTestBase {
         super.setUp();
         
         Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
-        addAction(new MultiResourcesAction(URI + "/C1/C1-C2"), 1000, 0, 500);
-        addAction(new XQueryAction(URI + "/C1", "R1.xml", QUERY0), 500, 1000, 500);
+        addAction(new MultiResourcesAction("samples/mods", URI + "/C1/C1-C2"), 200, 0, 300);
+        addAction(new XQueryAction(URI + "/C1/C1-C2", "R1.xml", QUERY0), 200, 200, 500);
+        addAction(new XQueryAction(URI + "/C1/C1-C2", "R1.xml", QUERY1), 200, 300, 500);
+        addAction(new XQueryAction(URI + "/C1/C1-C2", "R1.xml", QUERY0), 200, 400, 500);
+        addAction(new XQueryAction(URI + "/C1/C1-C2", "R1.xml", QUERY1), 200, 500, 500);
     }
 }
