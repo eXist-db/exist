@@ -26,15 +26,21 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Properties;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -47,8 +53,13 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.http.servlets.HttpRequestWrapper;
+import org.exist.http.servlets.HttpResponseWrapper;
+import org.exist.http.servlets.RequestWrapper;
+import org.exist.http.servlets.ResponseWrapper;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
@@ -66,6 +77,7 @@ import org.exist.xquery.Pragma;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.value.Sequence;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
@@ -105,13 +117,44 @@ public class RESTServer {
     private final static DateFormat dateFormat = new SimpleDateFormat(
             "MMM d, yyyy hh:mm:ss");
 
-    public RESTServer() {
+    private final static String QUERY_ERROR_HEAD =
+        "<html>" +
+        "<head>" +
+        "<title>Query Error</title>" +
+        "<style type=\"text/css\">" +
+        ".errmsg {" +
+        "  border: 1px solid black;" +
+        "  padding: 15px;" +
+        "  margin-left: 20px;" +
+        "  margin-right: 20px;" +
+        "}" +
+        "h1 { color: #C0C0C0; }" +
+        ".path {" +
+        "  padding-bottom: 10px;" +
+        "}" +
+        ".high { " +
+        "  color: #666699; " +
+        "  font-weight: bold;" +
+        "}" +
+        "</style>" +
+        "</head>" +
+        "<body>" +
+        "<h1>XQuery Error</h1>";
+    
+    private String formEncoding;
+	private String containerEncoding;
+	
+    public RESTServer(String formEncoding, String containerEncoding) {
+    	this.formEncoding = formEncoding;
+    	this.containerEncoding = containerEncoding;
     }
 
     /**
      * Handle GET request. In the simplest case just returns the document or
      * binary resource specified in the path. If the path leads to a collection,
-     * a listing of the collection contents is returned.
+     * a listing of the collection contents is returned. If it resolves to a binary
+     * resource with mime-type "application/xquery", this resource will be
+     * loaded and executed by the XQuery engine.
      * 
      * The method also recognizes a number of predefined parameters:
      * 
@@ -141,9 +184,9 @@ public class RESTServer {
      * @throws PermissionDeniedException
      * @throws NotFoundException
      */
-    public Response doGet(DBBroker broker, Map parameters, String path)
+    public void doGet(DBBroker broker, HttpServletRequest request, HttpServletResponse response, String path)
             throws BadRequestException, PermissionDeniedException,
-            NotFoundException {
+            NotFoundException, IOException {
 
         // Process special parameters
 
@@ -151,11 +194,11 @@ public class RESTServer {
         int start = 1;
         boolean wrap = true;
         Properties outputProperties = new Properties();
-        String query = (String) parameters.get("_xpath");
+        String query = request.getParameter("_xpath");
         if (query == null)
-            query = (String) parameters.get("_query");
+            query = request.getParameter("_query");
 
-        String p_howmany = (String) parameters.get("_howmany");
+        String p_howmany = request.getParameter("_howmany");
         if (p_howmany != null) {
             try {
                 howmany = Integer.parseInt(p_howmany);
@@ -164,7 +207,7 @@ public class RESTServer {
                         "Parameter _howmany should be an int");
             }
         }
-        String p_start = (String) parameters.get("_start");
+        String p_start = (String) request.getParameter("_start");
         if (p_start != null) {
             try {
                 start = Integer.parseInt(p_start);
@@ -174,12 +217,12 @@ public class RESTServer {
             }
         }
         String option;
-        if ((option = (String) parameters.get("_wrap")) != null)
+        if ((option = request.getParameter("_wrap")) != null)
             wrap = option.equals("yes");
-        if ((option = (String) parameters.get("_indent")) != null)
+        if ((option = request.getParameter("_indent")) != null)
             outputProperties.setProperty(OutputKeys.INDENT, option);
         String stylesheet;
-        if ((stylesheet = (String) parameters.get("_xsl")) != null) {
+        if ((stylesheet = request.getParameter("_xsl")) != null) {
             if (stylesheet.equals("no"))
                 outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI,
                         stylesheet);
@@ -191,34 +234,46 @@ public class RESTServer {
         LOG.debug("stylesheet = " + stylesheet);
         LOG.debug("query = " + query);
         String encoding;
-        if ((encoding = (String) parameters.get("_encoding")) != null)
+        if ((encoding = request.getParameter("_encoding")) != null)
             outputProperties.setProperty(OutputKeys.ENCODING, encoding);
         else
             encoding = "UTF-8";
-
+        
         // Process the request
-        Response response = new Response();
-
         DocumentImpl resource = null;
         try {
             // first, check if path leads to an XQuery resource
             resource = (DocumentImpl) broker.openDocument(path, Lock.READ_LOCK);
             if (resource != null) {
                 if (resource.getResourceType() == DocumentImpl.BINARY_FILE &&
-                        "application/xquery".equals(resource.getMimeType()))
-                    LOG.debug("XQUERY FOUND!!!!");
+                        "application/xquery".equals(resource.getMimeType())) {
+                    // found an XQuery resource
+                    try {
+                    	String result = executeXQuery(broker, resource, request, response, outputProperties);
+                    	encoding = outputProperties.getProperty(OutputKeys.ENCODING, encoding);
+                    	String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
+                        writeResponse(response, result, encoding);
+                        response.setContentType(mimeType);
+                    } catch (XPathException e) {
+                        writeResponse(response, formatXPathException(query, path, e), encoding);
+                        response.setContentType("text/html");
+                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    }
+                    return;
+                }
             }
             if (query != null) {
                 // query parameter specified
                 try {
-                    response.setContent(search(broker, query, path, howmany,
-                            start, outputProperties, wrap));
+                	String result = search(broker, query, path, howmany, start, outputProperties, wrap, request, response);
+                	encoding = outputProperties.getProperty(OutputKeys.ENCODING, encoding);
+                	String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
+                    writeResponse(response, result, encoding);
+                    response.setContentType(mimeType);
                 } catch (XPathException e) {
-                    response.setContent(formatXPathException(query, e));
+                    writeResponse(response, formatXPathException(query, path, e), encoding);
                     response.setContentType("text/html");
-                    response
-                            .setResponseCode(HttpServerConnection.HTTP_BAD_REQUEST);
-                    return response;
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 }
             } else {
                 // no query parameter: try to load a document from the specified
@@ -232,8 +287,7 @@ public class RESTServer {
                             throw new PermissionDeniedException(
                                     "Not allowed to read collection");
                         // return a listing of the collection contents
-                        response = new Response(printCollection(broker,
-                                collection));
+                        writeResponse(response, printCollection(broker, collection), encoding);
                     } else {
                         throw new NotFoundException("Document " + path
                                 + " not found");
@@ -247,9 +301,7 @@ public class RESTServer {
                     if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
                         // binary resource
                         response.setContentType(resource.getMimeType());
-                        response
-                                .setContent(broker
-                                        .getBinaryResourceData((BinaryDocument) resource));
+                        writeResponse(response, broker.getBinaryResourceData((BinaryDocument) resource));
                     } else {
                         // xml resource
                         Serializer serializer = broker.getSerializer();
@@ -261,7 +313,7 @@ public class RESTServer {
                         }
                         try {
                             serializer.setProperties(outputProperties);
-                            response.setContent(serializer.serialize(resource));
+                            writeResponse(response, serializer.serialize(resource), encoding);
                             if (serializer.isStylesheetApplied())
                                 response.setContentType("text/html");
                         } catch (SAXException saxe) {
@@ -277,39 +329,65 @@ public class RESTServer {
             if (resource != null)
                 resource.getUpdateLock().release(Lock.READ_LOCK);
         }
-        return response;
     }
 
     /**
-     * @param query
-     * @param e
+     * Handles POST requests. If the path leads to a binary resource with
+     * mime-type "application/xquery", that resource will be read and executed
+     * by the XQuery engine. Otherwise, the request content is loaded and parsed
+     * as XML. It may either contain an XUpdate or a query request.
+     * 
+     * @param broker
+     * @param request
+     * @param response
+     * @param path
+     * @return
+     * @throws BadRequestException
+     * @throws PermissionDeniedException
      */
-    private String formatXPathException(String query, XPathException e) {
-        StringWriter writer = new StringWriter();
-        writer.write("<html><head><title>XQuery Error</title></head>");
-        writer.write("<body><h1>XQuery Error</h1>");
-        writer.write("<p><b>Message</b>: ");
-        writer.write(e.getMessage());
-        writer.write("</p><p><b>Query</b>:</p><pre>");
-        writer.write(query);
-        writer.write("</pre>");
-        writer.write("</body></html>");
-        return writer.toString();
-    }
-
-    public Response doPost(DBBroker broker, String content, String path)
-            throws BadRequestException, PermissionDeniedException {
+    public void doPost(DBBroker broker, HttpServletRequest request, 
+            HttpServletResponse response, String path)
+            throws BadRequestException, PermissionDeniedException, IOException {
+        Properties outputProperties = new Properties(defaultProperties);
+        // first, check if path leads to an XQuery resource.
+        // if yes, the resource is loaded and the XQuery executed.
+        DocumentImpl resource = null;
+        try {
+            resource = (DocumentImpl) broker.openDocument(path, Lock.READ_LOCK);
+            if (resource != null) {
+                if (resource.getResourceType() == DocumentImpl.BINARY_FILE &&
+                        "application/xquery".equals(resource.getMimeType())) {
+                    // found an XQuery resource
+                    try {
+                    	String result = executeXQuery(broker, resource, request, response, outputProperties);
+                    	String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
+                    	String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
+                        writeResponse(response, result, encoding);
+                        response.setContentType(mimeType);
+                    } catch (XPathException e) {
+                        writeResponse(response, formatXPathException(null, path, e), "UTF-8");
+                        response.setContentType("text/html");
+                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    }
+                    return;
+                }
+            }
+        } finally {
+            if(resource != null)
+                resource.getUpdateLock().release(Lock.READ_LOCK);
+        }
+        
+        // normal POST: read the request content and check if
+        // it is an XUpdate or a query request.
         boolean indent = true;
         boolean summary = false;
         int howmany = 10;
         int start = 1;
         boolean enclose = true;
         String mime = "text/xml";
-        Properties outputProperties = new Properties(defaultProperties);
         String query = null;
-        Response response = null;
-        LOG.debug(content);
         try {
+            String content = getRequestContent(request);
             InputSource src = new InputSource(new StringReader(content));
             DocumentBuilderFactory docFactory = DocumentBuilderFactory
                     .newInstance();
@@ -394,10 +472,10 @@ public class RESTServer {
                 }
                 // execute query
                 if (query != null) {
-                    response = new Response();
                     response.setContentType(mime);
-                    response.setContent(search(broker, query, path, howmany,
-                            start, outputProperties, enclose));
+                    writeResponse(response, search(broker, query, path, howmany,
+                            start, outputProperties, enclose, request, response),
+                            outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8"));
                 } else
                     throw new BadRequestException("No query specified");
             } else if (rootNS != null && rootNS.equals(XUPDATE_NS)) {
@@ -427,10 +505,12 @@ public class RESTServer {
                     broker.flush();
                 }
                 // FD : Returns an XML doc
-                response = new Response("<?xml version='1.0'?>\n"
+                writeResponse(response,
+                        "<?xml version='1.0'?>\n"
                         + "<exist:modifications mlns:exist='" + NS
                         + "' count='" + mods + "'>" + mods
-                        + "modifications processed.</exist:modifications>");
+                        + "modifications processed.</exist:modifications>",
+                        "UTF-8");
                 // END FD
             } else
                 throw new BadRequestException("Unknown XML root element: "
@@ -458,15 +538,32 @@ public class RESTServer {
         } catch (LockException e) {
             throw new PermissionDeniedException(e.getMessage());
         }
-        return response;
     }
 
-    public Response doPut(DBBroker broker, File tempFile, String contentType,
-            String docPath) throws BadRequestException,
-            PermissionDeniedException {
+    /**
+     * Handles PUT requests. The request content is stored as a new resource at
+     * the specified location. If the resource already exists, it is overwritten if the
+     * user has write permissions.
+     * 
+     * The resource type depends on the content type specified in the HTTP header.
+     * The content type will be looked up in the global mime table. If the corresponding
+     * mime type is not a know XML mime type, the resource will be stored as a binary
+     * resource.
+     * 
+     * @param broker
+     * @param tempFile
+     * @param contentType
+     * @param docPath
+     * @return
+     * @throws BadRequestException
+     * @throws PermissionDeniedException
+     */
+    public void doPut(DBBroker broker, File tempFile, String docPath,
+            HttpServletRequest request, HttpServletResponse response) throws BadRequestException,
+            PermissionDeniedException, IOException {
         if (tempFile == null)
             throw new BadRequestException("No request content found for PUT");
-        Response response;
+        
         try {
             int p = docPath.lastIndexOf('/');
             if (p < 0 || p == docPath.length() - 1)
@@ -482,6 +579,7 @@ public class RESTServer {
                 }
                 String url = tempFile.toURI().toASCIIString();
                 MimeType mime;
+                String contentType = request.getContentType();
                 if (contentType != null)
                     mime = MimeTable.getInstance().getContentType(contentType);
                 else {
@@ -495,8 +593,7 @@ public class RESTServer {
                 if (mime.isXMLType()) {
                     DocumentImpl doc = collection.addDocument(broker, docPath,
                             new InputSource(url), contentType);
-                    response = new Response();
-                    response.setDescription("Document " + docPath + " stored.");
+                    response.sendError(HttpServletResponse.SC_OK, "Document " + docPath + " stored.");
                 } else {
                     byte[] chunk = new byte[4096];
                     ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -507,9 +604,7 @@ public class RESTServer {
                     }
                     collection.addBinaryResource(broker, docPath, os
                             .toByteArray(), contentType);
-                    response = new Response();
-                    response.setDescription("Document " + docPath
-                            + " stored as binary resource.");
+                    response.sendError(HttpServletResponse.SC_OK, "Document " + docPath + " stored as binary resource.");
                 }
             }
         } catch (SAXParseException e) {
@@ -524,27 +619,23 @@ public class RESTServer {
                     + o.getMessage());
         } catch (EXistException e) {
             throw new BadRequestException("Internal error: " + e.getMessage());
-        } catch (IOException e) {
-            throw new BadRequestException("Internal error: " + e.getMessage());
         } catch (TriggerException e) {
             throw new PermissionDeniedException(e.getMessage());
         } catch (LockException e) {
             throw new PermissionDeniedException(e.getMessage());
         }
-        return response;
+        return;
     }
 
-    public Response doDelete(DBBroker broker, String path)
-            throws PermissionDeniedException, NotFoundException {
-        Response response;
+    public void doDelete(DBBroker broker, String path, HttpServletResponse response)
+            throws PermissionDeniedException, NotFoundException, IOException {
         try {
             Collection collection = broker.getCollection(path);
             if (collection != null) {
                 // remove the collection
                 LOG.debug("removing collection " + path);
                 broker.removeCollection(collection);
-                response = new Response();
-                response.setDescription("Collection " + path + " removed.");
+                response.sendError(HttpServletResponse.SC_OK, "Collection " + path + " removed.");
             } else {
                 DocumentImpl doc = (DocumentImpl) broker.getDocument(path);
                 if (doc == null)
@@ -562,8 +653,7 @@ public class RESTServer {
                                 docName);
                     else
                         doc.getCollection().removeDocument(broker, docName);
-                    response = new Response();
-                    response.setDescription("Document " + path + " removed.");
+                    response.sendError(HttpServletResponse.SC_OK, "Document " + path + " removed.");
                 }
             }
         } catch (TriggerException e) {
@@ -573,16 +663,31 @@ public class RESTServer {
             throw new PermissionDeniedException("Could not acquire lock: "
                     + e.getMessage());
         }
-        return response;
     }
 
+    private String getRequestContent(HttpServletRequest request) throws IOException, UnsupportedEncodingException {
+        String encoding = request.getCharacterEncoding();
+        if(encoding == null)
+            encoding = "UTF-8";
+        InputStream is = request.getInputStream();
+        Reader  reader = new InputStreamReader(is, encoding);
+        StringWriter content = new StringWriter();
+        char ch[] = new char[4096];
+        int len = 0;
+        while((len = reader.read(ch)) > -1)
+            content.write(ch, 0, len);
+        String xml = content.toString();
+        return xml;
+    }
+    
     /**
      * TODO: pass request and response objects to XQuery.
      * 
      * @throws XPathException
      */
     protected String search(DBBroker broker, String query, String path,
-            int howmany, int start, Properties outputProperties, boolean wrap)
+            int howmany, int start, Properties outputProperties, boolean wrap,
+            HttpServletRequest request, HttpServletResponse response)
             throws BadRequestException, PermissionDeniedException,
             XPathException {
         String result = null;
@@ -590,14 +695,15 @@ public class RESTServer {
             Source source = new StringSource(query);
             XQuery xquery = broker.getXQueryService();
             XQueryPool pool = xquery.getXQueryPool();
-            CompiledXQuery compiled = pool.borrowCompiledXQuery(source);
+            CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
             XQueryContext context;
             if (compiled == null)
                 context = xquery.newContext();
             else
                 context = compiled.getContext();
             context.setStaticallyKnownDocuments(new String[] { path });
-
+            declareVariables(context, request, response);
+            
             if (compiled == null)
                 compiled = xquery.compile(context, source);
             checkPragmas(context, outputProperties);
@@ -615,6 +721,87 @@ public class RESTServer {
         } catch (IOException e) {
             throw new BadRequestException(e.getMessage(), e);
         }
+    }
+
+	/**
+	 * Pass the request, response and session objects to the XQuery
+	 * context.
+	 * 
+	 * @param context
+	 * @param request
+	 * @param response
+	 * @throws XPathException
+	 */
+	private void declareVariables(XQueryContext context, HttpServletRequest request, HttpServletResponse response) throws XPathException {
+		RequestWrapper reqw = new HttpRequestWrapper(request, formEncoding, containerEncoding);
+		ResponseWrapper respw = new HttpResponseWrapper(response);
+		context.declareNamespace(RequestModule.PREFIX, RequestModule.NAMESPACE_URI);
+		context.declareVariable(RequestModule.PREFIX + ":request", reqw);
+		context.declareVariable(RequestModule.PREFIX + ":response", respw);
+		context.declareVariable(RequestModule.PREFIX + ":session", reqw.getSession());
+	}
+
+    /**
+     * Directly execute an XQuery stored as a
+     * binary document in the database.
+     */
+    private String executeXQuery(DBBroker broker, DocumentImpl resource, 
+            HttpServletRequest request, HttpServletResponse response,
+            Properties outputProperties) throws XPathException, BadRequestException {
+        Source source = new DBSource(broker, (BinaryDocument)resource, true);
+        XQuery xquery = broker.getXQueryService();
+        XQueryPool pool = xquery.getXQueryPool();
+        XQueryContext context;
+        CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
+        if(compiled == null)
+            context = xquery.newContext();
+        else
+            context = compiled.getContext();
+        context.setModuleLoadPath("xmldb:exist://" + resource.getCollection().getName());
+        context.setStaticallyKnownDocuments(
+                new String[] { resource.getCollection().getName() }
+        );
+        declareVariables(context, request, response);
+        if(compiled == null) {
+            try {
+                compiled = xquery.compile(context, source);
+            } catch (IOException e) {
+                throw new BadRequestException("Failed to read query from " + resource.getName(), e);
+            }
+        }
+        checkPragmas(context, outputProperties);
+        try {
+            Sequence result = xquery.execute(compiled, null);
+            return printResults(broker, result, -1, 1, 0, outputProperties, false);
+        } finally {
+            pool.returnCompiledXQuery(source, compiled);
+        }
+    }
+
+    /**
+     * @param query
+     * @param e
+     */
+    private String formatXPathException(String query, String path, XPathException e) {
+        StringWriter writer = new StringWriter();
+        writer.write(QUERY_ERROR_HEAD);
+        writer.write("<p class=\"path\"><span class=\"high\">Path</span>: ");
+        writer.write("<a href=\"");
+        writer.write(path);
+        writer.write("\">");
+        writer.write(path);
+        writer.write("</a></p>");
+        
+        writer.write("<p class=\"errmsg\">");
+        writer.write(e.getMessage());
+        writer.write("</p>");
+        if(query != null) {
+            writer.write("<p><span class=\"high\">Query</span>:</p><pre>");
+            writer.write(query);
+            writer.write("</pre>");
+        }
+        writer.write("</body></html>");
+        return writer.toString();
     }
 
     /**
@@ -761,5 +948,18 @@ public class RESTServer {
             throw new BadRequestException("Error while serializing xml: "
                     + e.toString(), e);
         }
+    }
+    
+    private void writeResponse(HttpServletResponse response, byte[] data)
+    throws IOException {
+        OutputStream is = response.getOutputStream();
+        is.write(data);
+    }
+    
+    private void writeResponse(HttpServletResponse response, String data, String encoding)
+    throws IOException {
+        response.setCharacterEncoding(encoding);
+        OutputStream is = response.getOutputStream();
+        is.write(data.getBytes(encoding));
     }
 }

@@ -20,45 +20,39 @@
  *  
  *  $Id$
  */
-package org.exist.xquery.functions.xmldb;
+package org.exist.xquery.functions.request;
 
 import org.exist.dom.QName;
+import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.XMLDBException;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class XMLDBAuthenticate extends BasicFunction {
+public class RequestHostname extends BasicFunction {
 
 	public final static FunctionSignature signature =
-			new FunctionSignature(
-				new QName("authenticate", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-				"Check if a user is registered as database user. The function simply tries to " +
-				"read the database collection specified in the first parameter $a, using the " +
-				"supplied username in $b and password in $c. " +
-				"It returns true if the attempt succeeds, false otherwise.",
-				new SequenceType[] {
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
-				new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
-				
+		new FunctionSignature(
+			new QName("request-hostname", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+			"Returns the hostname of the current request.",
+			null,
+			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+
 	/**
 	 * @param context
 	 * @param signature
 	 */
-	public XMLDBAuthenticate(XQueryContext context) {
+	public RequestHostname(XQueryContext context) {
 		super(context, signature);
 	}
 
@@ -67,20 +61,21 @@ public class XMLDBAuthenticate extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		if(args[1].getLength() == 0)
-			return BooleanValue.FALSE;
-		String uri = args[0].getStringValue();
-		String user = args[1].getStringValue();
-		String password = args[2].getStringValue();
+		RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
 		
-		try {
-			Collection root = DatabaseManager.getCollection(uri, user, password);
-			return BooleanValue.TRUE;
-		} catch (XMLDBException e) {
-            if (LOG.isDebugEnabled())
-                LOG.debug("Failed to authenticate user '" + user + "' on " + uri, e);
-			return BooleanValue.FALSE;
-		}
-	}
+		// request object is read from global variable $request
+		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
+		if(var == null)
+			throw new XPathException("No request object found in the current XQuery context.");
+		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
+			throw new XPathException("Variable $request is not bound to an Java object.");
 
+		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
+		String uri;
+		if (value.getObject() instanceof RequestWrapper)
+			return new StringValue(((RequestWrapper) value.getObject()).getRemoteHost());
+		else
+			throw new XPathException("Variable $request is not bound to a Request object.");
+	}
+	
 }

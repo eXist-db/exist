@@ -133,5 +133,4 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	public void setLocale(Locale arg0) {
 		response.setLocale(arg0);
 	}
-
 }

@@ -54,7 +54,9 @@ public class RequestModule extends AbstractInternalModule {
 		new FunctionDef(EncodeURL.signature, EncodeURL.class),
 		new FunctionDef(GetUploadedFile.signature, GetUploadedFile.class),
 		new FunctionDef(GetUploadedFileName.signature, GetUploadedFileName.class),
-		new FunctionDef(SetCurrentUser.signature, SetCurrentUser.class)
+		new FunctionDef(SetCurrentUser.signature, SetCurrentUser.class),
+		new FunctionDef(RequestServername.signature, RequestServername.class),
+		new FunctionDef(RequestHostname.signature, RequestHostname.class)
 	};
 	
 	public RequestModule() throws XPathException {

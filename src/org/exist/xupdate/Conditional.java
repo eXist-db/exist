@@ -71,7 +71,7 @@ public class Conditional extends Modification {
 		XQuery xquery = broker.getXQueryService();
 		XQueryPool pool = xquery.getXQueryPool();
 		Source source = new StringSource(selectStmt);
-		CompiledXQuery compiled = pool.borrowCompiledXQuery(source);
+		CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
 		XQueryContext context;
 		if(compiled == null)
 		    context = xquery.newContext();

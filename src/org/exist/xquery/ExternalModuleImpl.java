@@ -159,7 +159,7 @@ public class ExternalModuleImpl implements ExternalModule {
 	 * @see org.exist.xquery.ExternalModule#moduleIsValid()
 	 */
 	public boolean moduleIsValid() {
-		if(mSource.isValid() != Source.VALID)
+		if(mSource.isValid(mContext.getBroker()) != Source.VALID)
 			return false;
 		// check other modules imported from here
 		return mContext.checkModulesValid();
