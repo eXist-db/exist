@@ -105,9 +105,12 @@ public class NativeElementIndex extends ElementIndex {
 				entry = (Map.Entry) i.next();
 				idList = (ArrayList) entry.getValue();
 				qname = (QName) entry.getKey();
-				sym = DBBroker.getSymbols().getSymbol(qname.getLocalName());
-				nsSym = DBBroker.getSymbols().getNSSymbol(qname.getNamespaceURI());
-				ref = new NativeBroker.ElementValue(collectionId, sym, nsSym);
+				if(qname.getNameType() != ElementValue.ATTRIBUTE_ID) {
+					sym = DBBroker.getSymbols().getSymbol(qname.getLocalName());
+					nsSym = DBBroker.getSymbols().getNSSymbol(qname.getNamespaceURI());
+					ref = new ElementValue(qname.getNameType(), collectionId, sym, nsSym);
+				} else
+					ref = new ElementValue(qname.getNameType(), collectionId, qname.getLocalName());
 				// try to retrieve old index entry for the element
 				try {
 					lock.acquire(Lock.READ_LOCK);
@@ -222,9 +225,13 @@ public class NativeElementIndex extends ElementIndex {
 				entry = (Map.Entry) i.next();
 				idList = (ArrayList) entry.getValue();
 				qname = (QName) entry.getKey();
-				sym = DBBroker.getSymbols().getSymbol(qname.getLocalName());
-				nsSym = DBBroker.getSymbols().getNSSymbol(qname.getNamespaceURI());
-				ref = new NativeBroker.ElementValue(collectionId, sym, nsSym);
+				if(qname.getNameType() != ElementValue.ATTRIBUTE_ID) {
+					sym = DBBroker.getSymbols().getSymbol(qname.getLocalName());
+					nsSym = DBBroker.getSymbols().getNSSymbol(qname.getNamespaceURI());
+					ref = new ElementValue(qname.getNameType(), collectionId, sym, nsSym);
+				} else {
+					ref = new ElementValue(qname.getNameType(), collectionId, qname.getLocalName());
+				}
 				// try to retrieve old index entry for the element
 				try {
 					lock.acquire(Lock.READ_LOCK);
@@ -323,7 +330,7 @@ public class NativeElementIndex extends ElementIndex {
 		int count = 1, len;
 		byte[] data;
 		String name;
-		NativeBroker.ElementValue ref;
+		ElementValue ref;
 		Map.Entry entry;
 		// get collection id for this collection
 		final String docName = doc.getFileName();
@@ -350,9 +357,13 @@ public class NativeElementIndex extends ElementIndex {
 					os.writeLong(cid);
 					StorageAddress.write(proxy.getInternalAddress(), os);
 				}
-				short sym = NativeBroker.getSymbols().getSymbol(qname.getLocalName());
-				short nsSym = NativeBroker.getSymbols().getNSSymbol(qname.getNamespaceURI());
-				ref = new NativeBroker.ElementValue(collectionId, sym, nsSym);
+				if(qname.getNameType() != ElementValue.ATTRIBUTE_ID) {
+					short sym = NativeBroker.getSymbols().getSymbol(qname.getLocalName());
+					short nsSym = NativeBroker.getSymbols().getNSSymbol(qname.getNamespaceURI());
+					ref = new ElementValue(qname.getNameType(), collectionId, sym, nsSym);
+				} else {
+					ref = new ElementValue(qname.getNameType(), collectionId, qname.getLocalName());
+				}
 				try {
 					lock.acquire(Lock.WRITE_LOCK);
 					if (dbElement.append(ref, os.data()) < 0) {

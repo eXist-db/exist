@@ -32,6 +32,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.VirtualNodeSet;
 import org.exist.dom.XMLUtil;
+import org.exist.storage.ElementValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.w3c.dom.Node;
@@ -193,6 +194,7 @@ public class LocationStep extends Step {
 			if (buf == null) {
 				buf =
 					(NodeSet) context.getBroker().findElementsByTagName(
+						ElementValue.ELEMENT,
 						documents,
 						test.getName());
 			}
@@ -213,7 +215,7 @@ public class LocationStep extends Step {
 			if (buf == null) {
 				buf =
 					(NodeSet) context.getBroker().findElementsByTagName(
-						documents,
+						ElementValue.ELEMENT, documents,
 						test.getName());
 			}
 			return buf.selectAncestorDescendant(
@@ -232,7 +234,7 @@ public class LocationStep extends Step {
 			if (buf == null) {
 				buf =
 					(NodeSet) context.getBroker().findElementsByTagName(
-						documents,
+						ElementValue.ELEMENT, documents,
 						test.getName());
 			}
 			return contextSet.selectSiblings(
@@ -277,7 +279,7 @@ public class LocationStep extends Step {
 			if (buf == null) {
 				buf =
 					(NodeSet) context.getBroker().findElementsByTagName(
-						documents,
+						ElementValue.ELEMENT, documents,
 						test.getName());
 			}
 			NodeSet r =

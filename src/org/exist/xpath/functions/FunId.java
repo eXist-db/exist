@@ -9,6 +9,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.XMLUtil;
+import org.exist.storage.ElementValue;
 import org.exist.xpath.Expression;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
@@ -46,11 +47,11 @@ public class FunId extends Function {
 		if (idval.getItemType() == Type.NODE) {
 			NodeSet set = (NodeSet) idval;
 			for (int i = 0; i < idval.getLength(); i++) {
-				QName id = new QName("&" + set.get(i).getNodeValue(), "", null);
+				QName id = new QName(set.get(i).getNodeValue(), "", null);
 				getId(context, result, docs, id);
 			}
 		} else {
-			QName id = new QName("&" + idval.getStringValue(), "", null);
+			QName id = new QName(idval.getStringValue(), "", null);
 			getId(context, result, docs, id);
 		}
 		return result;
@@ -62,7 +63,7 @@ public class FunId extends Function {
 		DocumentSet docs,
 		QName id) {
 		NodeSet attribs =
-			(NodeSet) context.getBroker().findElementsByTagName(docs, id);
+			(NodeSet) context.getBroker().findElementsByTagName(ElementValue.ATTRIBUTE_ID, docs, id);
 		LOG.debug("found " + attribs.getLength() + " attributes for id " + id);
 		NodeProxy n, p;
 		for (Iterator i = attribs.iterator(); i.hasNext();) {
