@@ -50,10 +50,10 @@ declare function a:do-query() as element()
 		<section title="XML Acronym Demystifier Example">
 
 		<p>A very simple example to search for XML acronyms. The required XML 
-		source document is available from 
-		<a href="http://www.xml-acronym-demystifier.org/">The XML Acronym 
-		Demystifier</a>. Just download the XML source and store it into an 
-		arbitrary database collection. Then reload this page and enjoy!</p>
+		source document is available from <a href="http://www.xml-acronym-demystifier.org/">The XML Acronym 
+		Demystifier</a>. There's an XQuery script to install all examples automatically. Just go to the 
+        <a href="../admin/admin.xql?user=admin&amp;password=&amp;panel=setup">Examples 
+        Setup</a> page.</p>
 
 		<form method="get" action="acronyms.xq">
 			<table bgcolor="#F3F3F3" width="100%" cellpadding="5"

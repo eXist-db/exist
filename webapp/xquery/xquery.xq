@@ -32,7 +32,10 @@ declare function f:get-examples() as element()
     return
         if (empty($queries)) then
             <p><small>No examples found. Please store document samples/examples.xml
-            into the database to get some examples.</small></p>
+            into the database to get some examples. There's an XQuery script to install all 
+            examples automatically. Just go to the 
+            <a href="../admin/admin.xql?user=admin&amp;password=&amp;panel=setup">Examples 
+            Setup</a> page.</small></p>
         else
             <form>
                 <select onchange="forms['xquery'].query.value=this.value">

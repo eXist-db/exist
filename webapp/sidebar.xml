@@ -13,11 +13,11 @@
         </item>
     </group>
     <group name="Documentation">
-        <item id="features">
-            <link href="facts.xml">Feature Sheet</link>
-        </item>
         <item>
             <link href="quickstart.xml">Quick Start</link>
+        </item>
+        <item>
+            <link href="xquery/functions.xq">Function Library</link>
         </item>
         <item>
             <link href="documentation.xml">Main Documentation</link>
@@ -37,6 +37,19 @@
             <link href="examples.xml">All Examples</link>
         </item>
     </group>
+    <group name="Community">
+        <item>
+            <link href="#mailing">Mailing List/IRC</link>
+        </item>
+        <item>
+            <link href="apps/applications.xml">Powered By eXist</link>
+        </item>
+        <item>
+            <link href="http://wiki.exist-db.org/space/ThirdPartyTools">
+                Third Party Tools
+            </link>
+        </item>
+    </group>
     <group name="Development">
         <item>
             <link href="http://wiki.exist-db.org/space/Roadmap">Roadmap</link>
@@ -49,13 +62,8 @@
                 Bug Tracker
             </link>
         </item>
-    </group>
-    <group name="Community">
         <item>
-            <link href="#mailing">Mailing List/IRC</link>
-        </item>
-        <item>
-            <link href="apps/applications.xml">Powered By eXist</link>
+            <link href="http://sourceforge.net/cvs/?group_id=17691">CVS</link>
         </item>
     </group>
     <group name="Administration">
