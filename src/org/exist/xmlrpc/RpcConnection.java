@@ -155,6 +155,15 @@ public class RpcConnection extends Thread {
 		if(namespaces != null && namespaces.size() > 0) {
 			context.declareNamespaces(namespaces);
 		}
+		//	declare static variables
+		Hashtable variableDecls = (Hashtable)parameters.get(RpcAPI.VARIABLES);
+		if(variableDecls != null) {
+			for (Iterator i = variableDecls.entrySet().iterator(); i.hasNext();) {
+				Map.Entry entry = (Map.Entry) i.next();
+				LOG.debug("declaring " + entry.getKey().toString() + " = " + entry.getValue());
+				context.declareVariable((String) entry.getKey(), entry.getValue());
+			}
+		}
 		LOG.debug("compiling " + xquery);
 		XQueryLexer lexer = new XQueryLexer(new StringReader(xquery));
 		XQueryParser parser = new XQueryParser(lexer);
@@ -205,6 +214,15 @@ public class RpcConnection extends Thread {
 		if(namespaces != null && namespaces.size() > 0) {
 			context.declareNamespaces(namespaces);
 		}
+		//	declare static variables
+		Hashtable variableDecls = (Hashtable)parameters.get(RpcAPI.VARIABLES);
+		if(variableDecls != null) {
+			for (Iterator i = variableDecls.entrySet().iterator(); i.hasNext();) {
+				Map.Entry entry = (Map.Entry) i.next();
+				LOG.debug("declaring " + entry.getKey().toString() + " = " + entry.getValue());
+				context.declareVariable((String) entry.getKey(), entry.getValue());
+			}
+		}
 		// set the current broker object when reusing a compiled query:
 		context.setBroker(broker);
 		long start = System.currentTimeMillis();
@@ -215,14 +233,14 @@ public class RpcConnection extends Thread {
 		return result;
 	}
 
-	public int executeQuery(User user, String xpath) throws Exception {
+	public int executeQuery(User user, String xpath, Hashtable parameters) throws Exception {
 		long startTime = System.currentTimeMillis();
 		LOG.debug("query: " + xpath);
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
 			Sequence resultValue = doQuery(user, broker, xpath, null, null,
-					new Hashtable());
+					parameters);
 			QueryResult qr = new QueryResult(resultValue, (System
 					.currentTimeMillis() - startTime));
 			connectionPool.resultSets.put(qr.hashCode(), qr);
@@ -1673,8 +1691,7 @@ public class RpcConnection extends Thread {
 		Properties properties = new Properties();
 		for (Iterator i = parameters.entrySet().iterator(); i.hasNext(); ) {
 			Map.Entry entry = (Map.Entry) i.next();
-			properties.setProperty((String) entry.getKey(), (String) entry
-					.getValue());
+			properties.setProperty((String) entry.getKey(), entry.getValue().toString());
 		}
 		return properties;
 	}

@@ -38,7 +38,8 @@ public class TextModule extends AbstractInternalModule {
 	public static final FunctionDef[] functions = {
 		new FunctionDef(FuzzyMatchAll.signature, FuzzyMatchAll.class),
 		new FunctionDef(FuzzyMatchAny.signature, FuzzyMatchAny.class),
-		new FunctionDef(FuzzyIndexTerms.signature, FuzzyIndexTerms.class)
+		new FunctionDef(FuzzyIndexTerms.signature, FuzzyIndexTerms.class),
+		new FunctionDef(TextRank.signature, TextRank.class)
 	};
 	
 	/**

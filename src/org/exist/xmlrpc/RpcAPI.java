@@ -39,6 +39,7 @@ public interface RpcAPI {
 
 	public final static String SORT_EXPR = "sort-expr";
 	public final static String NAMESPACES = "namespaces";
+	public final static String VARIABLES = "variables";
 	public final static String BASE_URI = "base-uri";
 	
 	/**
@@ -485,12 +486,12 @@ public interface RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	int executeQuery(User user, byte[] xpath, String encoding)
+	int executeQuery(User user, byte[] xpath, String encoding, Hashtable parameters)
 		throws EXistException, PermissionDeniedException;
 
-	int executeQuery(User user, byte[] xpath) throws EXistException, PermissionDeniedException;
+	int executeQuery(User user, byte[] xpath, Hashtable parameters) throws EXistException, PermissionDeniedException;
 
-	int executeQuery(User user, String xpath) throws EXistException, PermissionDeniedException;
+	int executeQuery(User user, String xpath, Hashtable parameters) throws EXistException, PermissionDeniedException;
 
 	/**
 	 *  Retrieve a summary of the result set identified by it's result-set-id.
