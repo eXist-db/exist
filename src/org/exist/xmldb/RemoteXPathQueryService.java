@@ -29,6 +29,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
                 query = "collection('" + collection.getPath() + "')" + query;
         }
         byte[] qdata = null;
+        System.out.println("query: " + query);
         try {
             qdata = query.getBytes( "UTF-8" );
         } catch ( UnsupportedEncodingException e ) {
@@ -38,6 +39,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
             Vector params = new Vector();
             params.addElement( qdata );
             Vector result = (Vector) collection.getClient().execute( "query", params );
+            System.out.println("query finished.");
             return new ResourceSetImpl( collection, result, indentXML, encoding );
         } catch ( XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre );
@@ -58,10 +60,9 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
         try {
             Vector params = new Vector();
             params.addElement( query );
-            params.addElement( resource.parent.getPath() + '/' + resource.docId );
+            params.addElement( resource.path );
             params.addElement( resource.id );
             Vector result = (Vector) collection.getClient().execute( "query", params );
-            System.out.println("found: " + result.size());
             return new ResourceSetImpl( collection, result, indentXML, encoding );
         } catch ( XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre );
