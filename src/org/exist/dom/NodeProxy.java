@@ -290,10 +290,6 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		return doc.getNode(gid).toString();
 	}
 
-	public String pprint() {
-	    return doc.getDocId() + ":" + gid; 
-	}
-
 	/**
 		 * Sets the nodeType.
 		 * @param nodeType The nodeType to set

@@ -41,6 +41,7 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
@@ -61,6 +62,15 @@ public class ExtNear extends ExtFulltext {
 		super(context, Constants.FULLTEXT_AND);
 	}
 
+	/* (non-Javadoc)
+     * @see org.exist.xquery.functions.ExtFulltext#analyze(org.exist.xquery.Expression)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+        super.analyze(parent, flags);
+        if(distance != null)
+            distance.analyze(this, flags);
+    }
+    
 	public Sequence evalQuery(
 		String searchArg,
 		NodeSet nodes)
@@ -212,16 +222,17 @@ public class ExtNear extends ExtFulltext {
 		return r;
 	}
 
-	public String pprint() {
-		StringBuffer buf = new StringBuffer();
-		buf.append("near(");
-		buf.append(path.pprint());
-		buf.append(", ");
-		buf.append(searchTerm.pprint());
-		buf.append(')');
-		return buf.toString();
-	}
-
+	/* (non-Javadoc)
+     * @see org.exist.xquery.functions.ExtFulltext#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        dumper.display("near(");
+        path.dump(dumper);
+        dumper.display(", ");
+        searchTerm.dump(dumper);
+        dumper.display(")");
+    }
+    
 	public void setDistance(Expression expr) {
 		distance = expr;
 	}

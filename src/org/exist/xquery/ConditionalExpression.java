@@ -23,6 +23,7 @@
 package org.exist.xquery;
 
 import org.exist.dom.DocumentSet;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
@@ -61,6 +62,15 @@ public class ConditionalExpression extends AbstractExpression {
 	}
 	
 	/* (non-Javadoc)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+        testExpr.analyze(this, flags);
+        thenExpr.analyze(this, flags);
+        elseExpr.analyze(this, flags);
+    }
+    
+	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(
@@ -83,19 +93,23 @@ public class ConditionalExpression extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#pprint()
-	 */
-	public String pprint() {
-		StringBuffer buf = new StringBuffer();
-		buf.append("if ");
-		buf.append(testExpr.pprint());
-		buf.append(" then ");
-		buf.append(thenExpr.pprint());
-		buf.append(" else ");
-		buf.append(elseExpr.pprint());
-		return buf.toString();
-	}
-
+     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        dumper.display("if (");
+        dumper.startIndent();
+        testExpr.dump(dumper);
+        dumper.endIndent();
+        dumper.nl().display(") then");
+        dumper.startIndent();
+        thenExpr.dump(dumper);
+        dumper.endIndent();
+        dumper.nl().display("else");
+        dumper.startIndent();
+        elseExpr.dump(dumper);
+        dumper.endIndent();
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */

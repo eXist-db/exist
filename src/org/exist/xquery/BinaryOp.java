@@ -25,27 +25,46 @@ import org.exist.xquery.value.Type;
 
 public abstract class BinaryOp extends PathExpr {
 
-  public BinaryOp(XQueryContext context) {
-    super(context);
-  }
+    public BinaryOp(XQueryContext context) {
+        super(context);
+    }
 
-  public int returnsType() {
-    return Type.NODE;
-  }
+    public int returnsType() {
+        return Type.NODE;
+    }
 
-  public Expression getLeft() { return getExpression(0); }
-  public Expression getRight() { return getExpression(1); }
-  
-  public void setLeft(Expression expr) {
-  	steps.add(0, expr);
-  	expr.setParent(this);
-  }
-  public void setRight(Expression expr) {
-  	steps.add(1, expr);
-  	expr.setParent(this);
-  }
-  
-  public abstract Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException;
+    public Expression getLeft() {
+        return getExpression(0);
+    }
 
-  public abstract String pprint();
+    public Expression getRight() {
+        return getExpression(1);
+    }
+
+    public void setLeft(Expression expr) {
+        steps.add(0, expr);
+    }
+
+    public void setRight(Expression expr) {
+        steps.add(1, expr);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.exist.xquery.PathExpr#analyze(org.exist.xquery.Expression)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+        getLeft().analyze(this, flags);
+        getRight().analyze(this, flags);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.exist.xquery.Expression#eval(org.exist.xquery.value.Sequence,
+     *          org.exist.xquery.value.Item)
+     */
+    public abstract Sequence eval(Sequence contextSequence, Item contextItem)
+            throws XPathException;
 }

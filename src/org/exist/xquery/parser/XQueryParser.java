@@ -47,7 +47,7 @@ import antlr.collections.impl.ASTArray;
  * in the first step, the XQueryParser generates an abstract syntax tree (AST),
  * which is - in the second step - passed to {@link XQueryTreeParser} for
  * analysis. XQueryTreeParser finally creates an internal representation of
- * the query.
+ * the query from the tree of AST nodes.
  */
 public class XQueryParser extends antlr.LLkParser       implements XQueryTokenTypes
  {

@@ -29,7 +29,6 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Observer;
 import java.util.StringTokenizer;
 
@@ -128,19 +127,21 @@ public class NativeBroker extends DBBroker {
 	protected final static int MEM_LIMIT_CHECK = 10000;
 
 	// the database files
-	protected CollectionStore collectionsDb = null;
-	protected DOMFile domDb = null;
-	protected NativeElementIndex elementIndex;
-	protected BFile elementsDb = null;
+	protected CollectionStore collectionsDb;
+	protected DOMFile domDb;
+	protected BFile elementsDb;
+	protected BFile valuesDb;
 	
 	protected NativeTextEngine textEngine;
+	protected NativeElementIndex elementIndex;
+	protected NativeValueIndex valueIndex;
 	protected Serializer xmlSerializer;
 	
 	protected PatternCompiler compiler = new Perl5Compiler();
 	protected PatternMatcher matcher = new Perl5Matcher();
 	
 	protected int defaultIndexDepth = 1;
-	protected Map idxPathMap;
+	protected IndexConfiguration idxConf;
 	
 	protected boolean readOnly = false;
 	
@@ -205,6 +206,27 @@ public class NativeBroker extends DBBroker {
 				readOnly = elementsDb.isReadOnly();
 			}
 
+			if ((valuesDb = (BFile) config.getProperty("db-connection.values"))
+			        == null) {
+			    indexBuffers = buffers * 4;
+			    dataBuffers = buffers * 10;
+			    
+			    LOG.debug(
+			            "values index buffer size: " + indexBuffers + "; " + dataBuffers);
+			    valuesDb =
+			        new BFile(new File(dataDir + pathSep + "values.dbx"),
+			                indexBuffers,
+			                dataBuffers);
+			    if (!valuesDb.exists()) {
+			        LOG.info("creating values.dbx");
+			        valuesDb.create();
+			    } else
+			        valuesDb.open();
+			    
+			    config.setProperty("db-connection.values", valuesDb);
+			    readOnly = valuesDb.isReadOnly();
+			}
+			
 			if ((domDb = (DOMFile) config.getProperty("db-connection.dom")) == null) {
 				if (config.hasProperty("db-connection.buffers")) {
 					indexBuffers = buffers;
@@ -261,10 +283,11 @@ public class NativeBroker extends DBBroker {
 			if (readOnly)
 				LOG.info("database runs in read-only mode");
 			
-			idxPathMap = (Map) config.getProperty("indexer.map");
+			idxConf = (IndexConfiguration) config.getProperty("indexer.map");
 			textEngine = new NativeTextEngine(this, config, buffers);
+			valueIndex = new NativeValueIndex(this, valuesDb);
 			xmlSerializer = new NativeSerializer(this, config);
-			elementIndex = new NativeElementIndex(this, config, elementsDb);
+			elementIndex = new NativeElementIndex(this, elementsDb);
 			user = new User("admin", null, "dba");
 			if(pool.isInitializing())
 				getOrCreateCollection(ROOT_COLLECTION);
@@ -323,6 +346,7 @@ public class NativeBroker extends DBBroker {
 	public void flush() {
 		textEngine.flush();
 		elementIndex.flush();
+		valueIndex.flush();
 		if (symbols != null && symbols.hasChanged())
 			try {
 				saveSymbols();
@@ -880,8 +904,8 @@ public class NativeBroker extends DBBroker {
 		final short nodeType = node.getNodeType();
 		final String nodeName = node.getNodeName();
 		final long address = node.getInternalAddress();
-		final IndexPaths idx =
-			(IndexPaths) idxPathMap.get(node.getOwnerDocument().getDoctype().getName());
+		final IndexSpec idxSpec = idxConf.getByDoctype(node.getOwnerDocument().getDoctype().getName());
+		final FulltextIndexSpec idx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null; 
 		if (address < 0)
 			LOG.debug("node " + gid + ": internal address missing");
 		final int depth = idx == null ? defaultIndexDepth : idx.getIndexDepth();
@@ -1049,8 +1073,8 @@ public class NativeBroker extends DBBroker {
 	private void reindex(final NodeImpl node, NodePath currentPath) {
 		if (node.getGID() < 0)
 			LOG.debug("illegal node: " + node.getGID() + "; " + node.getNodeName());
-		final IndexPaths idx =
-			(IndexPaths) idxPathMap.get(node.getOwnerDocument().getDoctype().getName());
+		final IndexSpec idxSpec = idxConf.getByDoctype(node.getOwnerDocument().getDoctype().getName());
+		final FulltextIndexSpec idx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
 		final short nodeType = node.getNodeType();
 		final long gid = node.getGID();
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
@@ -1927,8 +1951,8 @@ public class NativeBroker extends DBBroker {
 	}
 
 	public void removeNode(final NodeImpl node, NodePath currentPath) {
-		final IndexPaths idx =
-			(IndexPaths) idxPathMap.get(node.getOwnerDocument().getDoctype().getName());
+	    final IndexSpec idxSpec = idxConf.getByDoctype(node.getOwnerDocument().getDoctype().getName());
+	    final FulltextIndexSpec idx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 		final long gid = node.getGID();
 		final short nodeType = node.getNodeType();
@@ -2373,6 +2397,7 @@ public class NativeBroker extends DBBroker {
 			textEngine.close();
 			domDb.close();
 			elementsDb.close();
+			valuesDb.close();
 			collectionsDb.close();
 		} catch (Exception e) {
 			LOG.debug(e);
@@ -2405,7 +2430,8 @@ public class NativeBroker extends DBBroker {
 		}
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 		final boolean isTemp = TEMP_COLLECTION.equals(doc.getCollection().getName());
-		final IndexPaths idx = (IndexPaths) idxPathMap.get(doc.getDoctype().getName());
+		final IndexSpec idxSpec = idxConf.getByDoctype(node.getOwnerDocument().getDoctype().getName());
+		final FulltextIndexSpec idx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
 		final long gid = node.getGID();
 		if (gid < 0) {
 			LOG.debug("illegal node: " + gid + "; " + node.getNodeName());
@@ -2482,10 +2508,18 @@ public class NativeBroker extends DBBroker {
 			case Node.TEXT_NODE :
 				// check if this textual content should be fulltext-indexed
 				// by calling IndexPaths.match(path)
-				if (!isTemp) {
-					if (index && (idx == null || idx.match(currentPath))) {     
+				if (!isTemp && index) {
+					if (idx == null || idx.match(currentPath)) {     
 		                boolean valore = (idx == null ? false : idx.preserveContent(currentPath));
 						textEngine.storeText(idx, (TextImpl) node, valore);
+					}
+					if (idxSpec != null) {
+					    ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
+					    if(spec != null) {
+					        tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
+					        valueIndex.setDocument(doc);
+					        valueIndex.storeText(spec, (TextImpl) node, tempProxy);
+					    }
 					}
 				}
 				break;
@@ -2588,6 +2622,7 @@ public class NativeBroker extends DBBroker {
 			if(syncEvent == Sync.MAJOR_SYNC) {
 				elementIndex.sync();
 				textEngine.sync();
+				valueIndex.sync();
 				System.gc();
 				Runtime runtime = Runtime.getRuntime();
 				LOG.info("Memory: " + (runtime.totalMemory() / 1024) + "K total; " +
@@ -2597,6 +2632,7 @@ public class NativeBroker extends DBBroker {
 				// uncomment this to get statistics on page buffer usage
 				elementsDb.printStatistics();
 				collectionsDb.printStatistics();
+				valuesDb.printStatistics();
 				domDb.printStatistics();
 			}
 		} catch (DBException dbe) {

@@ -23,6 +23,7 @@
 package org.exist.xquery;
 
 import org.exist.dom.QName;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -59,6 +60,20 @@ public class VariableDeclaration extends AbstractExpression {
 	}
 	
 	/* (non-Javadoc)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+        QName qn = QName.parse(context, qname, null);
+		Module myModule = context.getModule(qn.getNamespaceURI());
+		if(myModule != null)
+			myModule.declareVariable(qn, null);
+		else {
+			Variable var = new Variable(qn);
+			context.declareGlobalVariable(var);
+		}
+    }
+    
+	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(
@@ -85,12 +100,20 @@ public class VariableDeclaration extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#pprint()
-	 */
-	public String pprint() {
-		return "";
-	}
-
+     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        dumper.nl().display("declare variable $").display(qname, getASTNode());
+        if(sequenceType != null) {
+            dumper.display(" as ").display(sequenceType.toString());
+        }
+        dumper.display('{');
+        dumper.startIndent();
+        expression.dump(dumper);
+        dumper.endIndent();
+        dumper.nl().display('}').nl();
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */

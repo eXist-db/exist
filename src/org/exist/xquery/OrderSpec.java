@@ -24,6 +24,8 @@ package org.exist.xquery;
 
 import java.text.Collator;
 
+import org.exist.xquery.util.ExpressionDumper;
+
 /**
  * An XQuery order specifier as specified in an "order by" clause.
  * 
@@ -50,6 +52,10 @@ public class OrderSpec {
 		this.context = context;
 	}
 
+	public void analyze(Expression parent, int flags) throws XPathException {
+	    expression.analyze(parent, flags);
+	}
+	
 	public void setModifiers(int modifiers) {
 		this.modifiers = modifiers;
 	}
@@ -72,7 +78,7 @@ public class OrderSpec {
 	
 	public String toString() {
 		StringBuffer buf = new StringBuffer();
-		buf.append(expression.pprint());
+		buf.append(ExpressionDumper.dump(expression));
 		buf.append(' ');
 		buf.append((modifiers & DESCENDING_ORDER) == 0 ? "ascending" : "descending");
 		return buf.toString();

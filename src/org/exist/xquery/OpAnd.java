@@ -22,6 +22,7 @@
 package org.exist.xquery;
 
 import org.exist.dom.NodeSet;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -68,17 +69,17 @@ public class OpAnd extends LogicalOp {
 			return ls && rs ? BooleanValue.TRUE : BooleanValue.FALSE;
 		}
 	}
-	
-	public String pprint() {
-		if (getLength() == 0)
-			return "";
-		StringBuffer buf = new StringBuffer();
-		buf.append(getExpression(0).pprint());
-		for (int i = 1; i < getLength(); i++) {
-			buf.append(" and ");
-			buf.append(getExpression(i).pprint());
-		}
-		return buf.toString();
-	}
 
+	/* (non-Javadoc)
+     * @see org.exist.xquery.PathExpr#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        if (getLength() == 0)
+            return;
+        getExpression(0).dump(dumper);
+        for (int i = 1; i < getLength(); i++) {
+            dumper.display(" and ");
+            getExpression(i).dump(dumper);
+        }
+    }
 }

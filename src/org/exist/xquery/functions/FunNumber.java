@@ -73,13 +73,4 @@ public class FunNumber extends Function {
 		else
 			return arg.convertTo(Type.DOUBLE);
 	}
-
-	public String pprint() {
-		StringBuffer buf = new StringBuffer();
-		buf.append("number(");
-		if(getSignature().getArgumentCount() == 1)
-			buf.append(getArgument(0).pprint());
-		buf.append(")");
-		return buf.toString();
-	}
 }

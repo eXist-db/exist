@@ -119,6 +119,7 @@ public class EvalFunction extends Function {
 						astParser.getErrorMessage(), astParser.getLastException());
 			}
 			long start = System.currentTimeMillis();
+			path.analyze(null, 0);
 			Sequence sequence = path.eval(null, null);
 			path.reset();
 			LOG.debug("Found " + sequence.getLength() + " for " + expr);

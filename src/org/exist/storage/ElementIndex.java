@@ -29,7 +29,6 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
-import org.exist.util.Configuration;
 import org.exist.util.Occurrences;
 import org.exist.xquery.NodeSelector;
 
@@ -40,11 +39,9 @@ public abstract class ElementIndex extends Observable {
     /** maps a qname to a List of  NodeProxy - should be renamed ? */
     protected TreeMap elementIds = new TreeMap();
     protected DocumentImpl doc;
-    protected Configuration config;
 
-    public ElementIndex(DBBroker broker, Configuration config) {
+    public ElementIndex(DBBroker broker) {
         this.broker = broker;
-		this.config = config;
     }
 
     public void setDocument(DocumentImpl doc) {

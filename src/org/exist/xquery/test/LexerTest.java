@@ -112,7 +112,7 @@ public class LexerTest extends TestCase {
 				System.err.println(treeParser.getErrorMessage());
 				return;
 			}
-
+			expr.analyze(null, 0);
 			// execute the query
 			Sequence result = expr.eval(null, null);
 

@@ -32,6 +32,7 @@ import org.exist.storage.XQueryPool;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Sequence;
 
 import antlr.RecognitionException;
@@ -91,7 +92,9 @@ public class XQuery {
             		treeParser.getErrorMessage(),
             		treeParser.getLastException());
             }
-            LOG.debug("Query:\n" + expr.pprint() + "\nCompilation took "  +  (System.currentTimeMillis() - start));
+            LOG.debug("Query diagnostics:\n" + ExpressionDumper.dump(expr));
+            expr.analyze(null, 0);
+            LOG.debug("Compilation took "  +  (System.currentTimeMillis() - start));
             return expr;
         } catch (RecognitionException e) {
             throw new XPathException(e.getMessage(), e.getLine(), e.getColumn());

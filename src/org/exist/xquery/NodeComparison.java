@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
@@ -112,13 +113,11 @@ public class NodeComparison extends BinaryOp {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#pprint()
-	 */
-	public String pprint() {
-		StringBuffer buf = new StringBuffer();
-		buf.append(getLeft().pprint()).append(' ').append(Constants.OPS[relation]);
-		buf.append(' ').append(getRight().pprint());
-		return buf.toString();
-	}
-
+     * @see org.exist.xquery.PathExpr#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        getLeft().dump(dumper);
+        dumper.display(' ').display(Constants.OPS[relation]).display(' ');
+        getRight().dump(dumper);
+    }
 }

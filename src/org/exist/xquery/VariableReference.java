@@ -23,6 +23,7 @@
 package org.exist.xquery;
 
 import org.exist.dom.DocumentSet;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
@@ -42,20 +43,31 @@ public class VariableReference extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+        getVariable();
+    }
+    
+	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
-		try {
-			Variable var = context.resolveVariable(qname);
-			Sequence seq = var.getValue();
-			return seq;
-		} catch (XPathException e) {
+		Variable var = getVariable();
+		Sequence seq = var.getValue();
+		return seq;
+	}
+
+	protected Variable getVariable() throws XPathException {
+	    try {
+            return context.resolveVariable(qname);
+        } catch (XPathException e) {
 			e.setASTNode(getASTNode());
 			throw e;
 		}
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#preselect(org.exist.dom.DocumentSet, org.exist.xquery.StaticContext)
 	 */
@@ -64,12 +76,12 @@ public class VariableReference extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#pprint()
-	 */
-	public String pprint() {
-		return "$" + qname;
-	}
-
+     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        dumper.display('$').display(qname);
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */
@@ -91,7 +103,7 @@ public class VariableReference extends AbstractExpression {
 	public int getDependencies() {
 		try {
 			Variable var = context.resolveVariable(qname);
-			if (var != null && var.getValue() != null) {
+			if (var != null) {
 				int deps = var.getDependencies(context);
 				return deps;
 			}
@@ -113,15 +125,6 @@ public class VariableReference extends AbstractExpression {
 		} catch (XPathException e) {
 		}
 		return Cardinality.ZERO_OR_MORE;		// unknown cardinality
-	}
-
-	public Variable getVariable() {
-	    try {
-			Variable var = context.resolveVariable(qname);
-			return var;
-		} catch (XPathException e) {
-		    return null;
-		}
 	}
 	
 	/* (non-Javadoc)

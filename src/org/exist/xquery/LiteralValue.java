@@ -22,9 +22,11 @@
  */
 package org.exist.xquery;
 
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
 
 /**
  * A literal value, i.e. a string, integer, decimal or double literal.
@@ -51,6 +53,12 @@ public class LiteralValue extends AbstractExpression {
 	}
 	
 	/* (non-Javadoc)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+    }
+    
+	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(
@@ -61,12 +69,17 @@ public class LiteralValue extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#pprint()
-	 */
-	public String pprint() {
-		return value.pprint();
-	}
-
+     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        if(Type.subTypeOf(value.getType(), Type.STRING)) {
+            dumper.display("\"");
+            value.dump(dumper);
+            dumper.display("\"");
+        } else
+            value.dump(dumper);
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */

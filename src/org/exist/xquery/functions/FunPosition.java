@@ -63,8 +63,4 @@ public class FunPosition extends Function {
 			return Sequence.EMPTY_SEQUENCE;
 		return new IntegerValue(context.getContextPosition() + 1);
     }
-
-    public String pprint() {
-        return "position()";
-    }
 }

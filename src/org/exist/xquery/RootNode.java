@@ -28,6 +28,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.util.LockException;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
@@ -74,10 +75,13 @@ public class RootNode extends Step {
         }
     }
 
-    public String pprint() {
-        return "ROOT";
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Step#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        dumper.display("/ROOT");
     }
-
+    
     /*
      * (non-Javadoc)
      * 

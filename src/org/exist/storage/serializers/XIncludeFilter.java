@@ -42,6 +42,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
@@ -232,8 +233,9 @@ public class XIncludeFilter implements Receiver {
 					if (treeParser.foundErrors()) {
 						throw new SAXException(treeParser.getErrorMessage());
 					}
-					LOG.info("xpointer query: " + expr.pprint());
+					LOG.info("xpointer query: " + ExpressionDumper.dump(expr));
 					long start = System.currentTimeMillis();
+					expr.analyze(null, 0);
 					Sequence seq = expr.eval(null, null);
 					switch (seq.getItemType()) {
 						case Type.NODE :

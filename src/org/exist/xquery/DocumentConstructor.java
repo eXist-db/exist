@@ -25,6 +25,7 @@ package org.exist.xquery;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.memtree.DocumentBuilderReceiver;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -51,11 +52,17 @@ public class DocumentConstructor extends NodeConstructor {
     }
 
     /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+        content.analyze(this, flags);
+    }
+    
+    /* (non-Javadoc)
      * @see org.exist.xquery.Expression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
     public Sequence eval(Sequence contextSequence, Item contextItem)
             throws XPathException {
-        System.out.println(content.pprint());
         Sequence contentSeq = content.eval(contextSequence, contextItem);
         context.pushDocumentContext();
         MemTreeBuilder builder = context.getDocumentBuilder();
@@ -99,20 +106,22 @@ public class DocumentConstructor extends NodeConstructor {
         } catch(SAXException e) {
 			throw new XPathException(getASTNode(),
 				"Encountered SAX exception while processing document constructor: "
-					+ pprint());
+					+ ExpressionDumper.dump(this));
         }
         NodeImpl node =  builder.getDocument();
         context.popDocumentContext();
         return node;
     }
-
+    
     /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#pprint()
+     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
-    public String pprint() {
-        StringBuffer buf = new StringBuffer();
-        buf.append("document { ").append(content.pprint()).append(" }");
-        return buf.toString();
+    public void dump(ExpressionDumper dumper) {
+        dumper.display("document {");
+        dumper.startIndent();
+        content.dump(dumper);
+        dumper.endIndent();
+        dumper.nl().display('}');
     }
 
 }

@@ -2,6 +2,7 @@
 package org.exist.xmldb;
 
 import java.io.IOException;
+import java.io.Writer;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Properties;
@@ -228,5 +229,29 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 	 */
 	public void setModuleLoadPath(String path) {		
 	}
+
+    /* (non-Javadoc)
+     * @see org.exist.xmldb.XQueryService#dump(org.exist.xmldb.CompiledExpression, java.io.Writer)
+     */
+    public void dump(CompiledExpression expression, Writer writer) throws XMLDBException {
+        String query = ((RemoteCompiledExpression)expression).getQuery();
+        Hashtable optParams = new Hashtable();
+    	if(namespaceMappings.size() > 0)
+        	optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
+        if(variableDecls.size() > 0)
+        	optParams.put(RpcAPI.VARIABLES, variableDecls);
+		optParams.put(RpcAPI.BASE_URI, collection.getPath());
+        Vector params = new Vector();
+        params.addElement(query);
+        params.addElement(optParams);
+        try {
+            String dump = (String)collection.getClient().execute("printDiagnostics", params);
+            writer.write(dump);
+        } catch (XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+        } catch (IOException e) {
+            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+        }
+    }
 }
 

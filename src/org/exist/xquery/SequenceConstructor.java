@@ -24,6 +24,7 @@ package org.exist.xquery;
 
 import java.util.Iterator;
 
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
@@ -62,20 +63,19 @@ public class SequenceConstructor extends PathExpr {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#pprint()
-	 */
-	public String pprint() {
-		StringBuffer buf = new StringBuffer();
-		buf.append("#[");
-		for(Iterator i = steps.iterator(); i.hasNext(); ) {
-			buf.append(((Expression)i.next()).pprint());
-			if(i.hasNext())
-				buf.append(", ");
-		}
-		buf.append("]");
-		return buf.toString();
-	}
-
+     * @see org.exist.xquery.PathExpr#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        dumper.display("(");
+        dumper.startIndent();
+        for(Iterator i = steps.iterator(); i.hasNext(); ) {
+            ((Expression) i.next()).dump(dumper);
+            dumper.display(", ");
+        }
+        dumper.endIndent();
+        dumper.nl().display(")");
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */

@@ -695,7 +695,7 @@ public class NativeTextEngine extends TextSearchEngine {
 	 * @param attr
 	 *                the attribute to be indexed
 	 */
-	public void storeAttribute(IndexPaths idx, AttrImpl attr) {
+	public void storeAttribute(FulltextIndexSpec idx, AttrImpl attr) {
 		final DocumentImpl doc = (DocumentImpl) attr.getOwnerDocument();
 		tokenizer.setText(attr.getValue());
 		String word;
@@ -725,7 +725,7 @@ public class NativeTextEngine extends TextSearchEngine {
 	 * @return boolean indicates if all of the text content has been added to
 	 *            the index
 	 */
-	public void storeText(IndexPaths idx, TextImpl text, boolean onetoken) {
+	public void storeText(FulltextIndexSpec idx, TextImpl text, boolean onetoken) {
 		final DocumentImpl doc = (DocumentImpl) text.getOwnerDocument();
 		tokenizer.setText(text.getXMLString().transformToLower());
 		TextToken token;

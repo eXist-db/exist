@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04,  Wolfgang Meier
+ *  Copyright (C) 2001-04,  The eXist Project
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -21,24 +21,26 @@
 package org.exist.storage;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
+
+import org.apache.log4j.Logger;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 
 /**
  * IndexPaths contains information about which parts of a document should be
  * fulltext-indexed for a specified doctype. It basically keeps a list of paths
- * to include and paths to exclude from indexing. Paths are specified using
+ * to include and exclude from indexing. Paths are specified using
  * simple XPath syntax, e.g. //SPEECH will select any SPEECH elements,
  * //title/@id will select all id attributes being children of title elements.
  *
  * @author Wolfgang Meier
  */
-public class IndexPaths {
+public class FulltextIndexSpec {
 	
-	private final static HashMap cache =
-		new HashMap();
-	
+    private final static Logger LOG = Logger.getLogger(FulltextIndexSpec.class);
+    
     protected ArrayList includePath;
     protected ArrayList excludePath;
     protected ArrayList preserveContent;
@@ -55,13 +57,56 @@ public class IndexPaths {
      * @param def if set to true, include everything by default. In this case
      * use exclude elements to specify the excluded parts.
      */
-    public IndexPaths( boolean def ) {
+    public FulltextIndexSpec( boolean def ) {
         includeByDefault = def;
         includePath = new ArrayList(  );
         excludePath = new ArrayList(  );
         preserveContent = new ArrayList(  );
     }
 
+    public FulltextIndexSpec(Element node) {
+        this(true);
+        String def = node.getAttribute("default");
+        if(def != null && def.length() > 0)
+            includeByDefault = def.equals("all");
+        String indexAttributes = node.getAttribute("attributes");
+		if (indexAttributes != null && indexAttributes.length() > 0)
+			setIncludeAttributes(indexAttributes.equals("true"));
+
+		String indexAlphaNum = node.getAttribute("alphanum");
+		if (indexAlphaNum != null && indexAlphaNum.length() > 0)
+			setIncludeAlphaNum(indexAlphaNum.equals("true"));
+
+		String indexDepth = node.getAttribute("index-depth");
+		if (indexDepth != null && indexDepth.length() > 0)
+			try {
+				int depth = Integer.parseInt(indexDepth);
+				setIndexDepth(depth);
+			} catch (NumberFormatException e) {
+			}
+
+		NodeList include = node.getElementsByTagName("include");
+		String ps;
+		for (int j = 0; j < include.getLength(); j++) {
+			ps = ((Element) include.item(j)).getAttribute("path");
+			addInclude(ps);
+		}
+		
+		NodeList exclude = node.getElementsByTagName("exclude");
+
+		for (int j = 0; j < exclude.getLength(); j++) {
+			ps = ((Element) exclude.item(j)).getAttribute("path");
+			addExclude(ps);
+		}
+
+		NodeList preserveContent = node.getElementsByTagName("preserveContent");
+
+		for (int j = 0; j < preserveContent.getLength(); j++) {
+			ps = ((Element) preserveContent.item(j)).getAttribute("path");
+			addpreserveContent(ps);
+		}
+    }
+    
     /**
      * Add a path to the list of includes
      *

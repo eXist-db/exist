@@ -64,12 +64,4 @@ public class FunRound extends Function {
 			(NumericValue) seq.itemAt(0).convertTo(Type.NUMBER);
 		return value.round();
 	}
-
-	public String pprint() {
-		StringBuffer buf = new StringBuffer();
-		buf.append("round(");
-		buf.append(getArgument(0).pprint());
-		buf.append(')');
-		return buf.toString();
-	}
 }

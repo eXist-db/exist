@@ -23,6 +23,7 @@
 package org.exist.xquery;
 
 import org.exist.dom.QName;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -50,8 +51,20 @@ public class QuantifiedExpression extends BindingExpression {
 		this.mode = mode;
 	}
 
+    /* (non-Javadoc)
+     * @see org.exist.xquery.BindingExpression#analyze(org.exist.xquery.Expression, int, org.exist.xquery.OrderSpec[])
+     */
+    public void analyze(Expression parent, int flags, OrderSpec orderBy[]) throws XPathException {
+        LocalVariable mark = context.markLocalVariables();
+		context.declareVariable(new LocalVariable(QName.parse(context, varName, null)));
+		
+		inputSequence.analyze(this, flags);
+		returnExpr.analyze(this, flags);
+		
+		context.popLocalVariables(mark);
+    }
+    
 	public Sequence eval(Sequence contextSequence, Item contextItem, Sequence resultSequence) throws XPathException {
-//		context.pushLocalContext(false);
 		LocalVariable mark = context.markLocalVariables();
 		LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
 		context.declareVariable(var);
@@ -73,25 +86,24 @@ public class QuantifiedExpression extends BindingExpression {
 			if((mode == SOME && found) || (mode == EVERY && !found))
 				break;
 		}
-//		context.popLocalContext();
 		context.popLocalVariables(mark);
 		return found ? BooleanValue.TRUE : BooleanValue.FALSE;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#pprint()
-	 */
-	public String pprint() {
-		StringBuffer buf = new StringBuffer();
-		buf.append("some $");
-		buf.append(varName);
-		buf.append(" in ");
-		buf.append(inputSequence.pprint());
-		buf.append(" satisfies ");
-		buf.append(returnExpr.pprint());
-		return buf.toString();
-	}
 
+	/* (non-Javadoc)
+     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        dumper.display("some $").display(varName).display("in");
+        dumper.startIndent();
+        inputSequence.dump(dumper);
+        dumper.endIndent().nl();
+        dumper.display("satisfies");
+        dumper.startIndent();
+        returnExpr.dump(dumper);
+        dumper.endIndent();
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */

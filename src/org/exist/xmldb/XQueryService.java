@@ -22,6 +22,8 @@
  */
 package org.exist.xmldb;
 
+import java.io.Writer;
+
 import org.exist.source.Source;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.Service;
@@ -180,4 +182,14 @@ public interface XQueryService extends Service {
 	public void setXPathCompatibility(boolean backwardsCompatible);
 	
 	public void setModuleLoadPath(String path);
+	
+	/**
+	 * Return a diagnostic dump of the query. The query should have been executed
+	 * before calling this function.
+	 * 
+	 * @param expression
+	 * @param writer
+	 * @throws XMLDBException
+	 */
+	public void dump(CompiledExpression expression, Writer writer) throws XMLDBException;
 }

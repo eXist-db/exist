@@ -24,6 +24,7 @@ package org.exist.xquery;
 
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -49,6 +50,13 @@ public class NamespaceConstructor extends NodeConstructor {
 
     public void setURIExpression(Expression uriExpr) {
         this.uri = new Atomize(context, uriExpr);
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+        uri.analyze(this, flags);
     }
     
     /* (non-Javadoc)
@@ -79,13 +87,12 @@ public class NamespaceConstructor extends NodeConstructor {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#pprint()
+     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
-    public String pprint() {
-        StringBuffer buf = new StringBuffer();
-        buf.append("namespace ").append(prefix);
-        buf.append("{ ").append(uri.pprint()).append(" }");
-        return buf.toString();
+    public void dump(ExpressionDumper dumper) {
+        dumper.display("namespace ").display(prefix);
+        dumper.display("{ ");
+        uri.dump(dumper);
+        dumper.display(" }");
     }
-
 }

@@ -150,7 +150,6 @@ public class FunctionFactory {
 			JavaCall call = new JavaCall(context, qname);
 			call.setASTNode(ast);
 			call.setArguments(params);
-			call.setParent(parent);
 			step = call;
 		}
 		
@@ -167,7 +166,6 @@ public class FunctionFactory {
 							qname.getNamespaceURI() + ") is not defined");
 					Function func = Function.createFunction(context, ast, def );
 					func.setArguments(params);
-					func.setParent(parent);
 					step = func;
 				} else {
 					UserDefinedFunction func = ((ExternalModule)module).getFunction(qname);

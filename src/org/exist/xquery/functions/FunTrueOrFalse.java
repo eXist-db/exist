@@ -60,11 +60,4 @@ public class FunTrueOrFalse extends BasicFunction {
 		else
 			return BooleanValue.FALSE;
 	}
-
-	public String pprint() {
-		if(isCalledAs("true"))
-			return "true()";
-		else
-			return "false()";
-	}
 }

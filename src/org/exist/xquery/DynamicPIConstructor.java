@@ -25,6 +25,7 @@ package org.exist.xquery;
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -54,6 +55,14 @@ public class DynamicPIConstructor extends NodeConstructor {
     
     public void setContentExpr(Expression contentExpr) {
         this.content = contentExpr;
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+        name.analyze(this, flags);
+        content.analyze(this, flags);
     }
     
     /* (non-Javadoc)
@@ -92,13 +101,14 @@ public class DynamicPIConstructor extends NodeConstructor {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#pprint()
+     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
-    public String pprint() {
-        StringBuffer buf = new StringBuffer();
-        buf.append("processing-instruction { ").append(name.pprint());
-        buf.append(" } { ").append(content.pprint()).append(" }");
-        return buf.toString();
+    public void dump(ExpressionDumper dumper) {
+        dumper.display("processing-instruction { ");
+        name.dump(dumper);
+        dumper.display(" } { ");
+        dumper.startIndent();
+        content.dump(dumper);
+        dumper.endIndent().nl().display("}");
     }
-
 }

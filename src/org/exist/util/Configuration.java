@@ -25,8 +25,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -34,7 +32,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Logger;
 import org.apache.xml.resolver.tools.CatalogResolver;
-import org.exist.storage.IndexPaths;
+import org.exist.storage.IndexConfiguration;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -100,6 +98,7 @@ public class Configuration implements ErrorHandler {
 			// initialize xml parser
 			DocumentBuilderFactory factory =
 				DocumentBuilderFactory.newInstance();
+			factory.setNamespaceAware(true);
 			builder = factory.newDocumentBuilder();
 			builder.setErrorHandler(this);
 			InputSource src = new InputSource(is);
@@ -157,57 +156,8 @@ public class Configuration implements ErrorHandler {
 						Boolean.valueOf(suppressWSmixed.equals("yes")));
 				
 				// index settings
-				NodeList index = p.getElementsByTagName("index");
-
-				Map indexPathMap = new TreeMap();
-				config.put("indexer.map", indexPathMap);
-				for (int i = 0; i < index.getLength(); i++) {
-					Element idx = (Element) index.item(i);
-					String doctype = idx.getAttribute("doctype");
-					String def = idx.getAttribute("default");
-					IndexPaths paths = new IndexPaths(def.equals("all"));
-					String indexAttributes = idx.getAttribute("attributes");
-					if (indexAttributes != null)
-						paths.setIncludeAttributes(
-							indexAttributes.equals("true"));
-
-					String indexAlphaNum = idx.getAttribute("alphanum");
-					if (indexAlphaNum != null)
-						paths.setIncludeAlphaNum(indexAlphaNum.equals("true"));
-
-					indexDepth = idx.getAttribute("index-depth");
-					if (indexDepth != null)
-						try {
-							int depth = Integer.parseInt(indexDepth);
-							paths.setIndexDepth(depth);
-						} catch (NumberFormatException e) {
-						}
-
-					NodeList include = idx.getElementsByTagName("include");
-					String ps;
-
-					for (int j = 0; j < include.getLength(); j++) {
-						ps = ((Element) include.item(j)).getAttribute("path");
-						paths.addInclude(ps);
-					}
-
-					indexPathMap.put(doctype, paths);
-					
-					NodeList exclude = idx.getElementsByTagName("exclude");
-
-					for (int j = 0; j < exclude.getLength(); j++) {
-						ps = ((Element) exclude.item(j)).getAttribute("path");
-						paths.addExclude(ps);
-					}
-
-					NodeList preserveContent = idx.getElementsByTagName("preserveContent");
-
-					for (int j = 0; j < preserveContent.getLength(); j++) {
-						ps = ((Element) preserveContent.item(j)).getAttribute("path");
-						paths.addpreserveContent(ps);
-					}
-
-				}
+				IndexConfiguration idxConf = new IndexConfiguration(p);
+				config.put("indexer.map", idxConf);
 
 				// stopwords
 				NodeList stopwords = p.getElementsByTagName("stopwords");

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -66,6 +67,17 @@ public class AttributeConstructor extends NodeConstructor {
 		return isNamespaceDecl;
 	}
 	
+	/* (non-Javadoc)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+        for(Iterator i = contents.iterator(); i.hasNext(); ) {
+			Object next = (Object)i.next();
+			if(next instanceof Expression)
+				((Expression)next).analyze(this, flags);
+		}
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
@@ -112,23 +124,24 @@ public class AttributeConstructor extends NodeConstructor {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#pprint()
-	 */
-	public String pprint() {
-		StringBuffer buf = new StringBuffer();
-		buf.append(qname).append("=\"");
-		Object next;
+     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        dumper.display("attribute { ").display(qname);
+        dumper.display(" } {");
+        dumper.startIndent();
+        Object next;
 		for(Iterator i = contents.iterator(); i.hasNext(); ) {
 			next = i.next();
 			if(next instanceof Expression)
-				buf.append(((Expression)next).pprint());
+				((Expression)next).dump(dumper);
 			else
-				buf.append(next);
+				dumper.display(next);
 		}
-		buf.append('"');
-		return buf.toString();
-	}
-
+        dumper.endIndent();
+        dumper.nl().display("}");
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.NodeConstructor#resetState()
 	 */

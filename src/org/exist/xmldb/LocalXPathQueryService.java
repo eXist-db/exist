@@ -24,6 +24,7 @@ package org.exist.xmldb;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.Writer;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -343,4 +344,11 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		moduleLoadPath = path;		
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.XQueryService#dump(org.exist.xmldb.CompiledExpression, java.io.Writer)
+	 */
+	public void dump(CompiledExpression expression, Writer writer) throws XMLDBException {
+	    CompiledXQuery expr = (CompiledXQuery)expression;
+	    expr.dump(writer);
+	}
 }

@@ -24,12 +24,15 @@ import java.text.Collator;
 
 import org.apache.oro.text.perl.Perl5Util;
 import org.exist.dom.QName;
+import org.exist.storage.Indexable;
+import org.exist.util.ByteConversion;
 import org.exist.util.Collations;
+import org.exist.util.UTF8;
 import org.exist.util.XMLChar;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
-public class StringValue extends AtomicValue {
+public class StringValue extends AtomicValue implements Indexable {
 
 	public final static StringValue EMPTY_STRING = new StringValue("");
 
@@ -468,4 +471,28 @@ public class StringValue extends AtomicValue {
 				? this
 				: other;
 	}
+
+    /* (non-Javadoc)
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    public int compareTo(Object o) {
+        AtomicValue other = (AtomicValue)o;
+        if(other.getType() == Type.STRING) {
+            return value.compareTo(((StringValue) other).value);
+        } else if(type < other.getType())
+            return -1;
+        else
+            return 1;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.storage.Indexable#serialize(short)
+     */
+    public byte[] serialize(short collectionId) {
+		byte[] data = new byte[UTF8.encoded(value) + 3];
+		ByteConversion.shortToByte(collectionId, data, 0);
+		data[2] = (byte) type;	// TODO: cast to byte is not safe
+		UTF8.encode(value, data, 3);
+		return data;
+    }
 }

@@ -23,6 +23,7 @@
 package org.exist.xquery;
 
 import org.exist.dom.QName;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.OrderedValueSequence;
 import org.exist.xquery.value.PreorderedValueSequence;
@@ -41,6 +42,33 @@ public class LetExpr extends BindingExpression {
 		super(context);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.BindingExpression#analyze(org.exist.xquery.Expression, int, org.exist.xquery.OrderSpec[])
+	 */
+	public void analyze(Expression parent, int flags, OrderSpec orderBy[]) throws XPathException {
+        // Save the local variable stack
+		LocalVariable mark = context.markLocalVariables();
+		
+		// Declare the iteration variable
+		context.declareVariable(new LocalVariable(QName.parse(context, varName, null)));
+		
+		inputSequence.analyze(this, flags);
+		if(whereExpr != null)
+		    whereExpr.analyze(this, flags);
+		if(returnExpr instanceof BindingExpression) {
+		    ((BindingExpression)returnExpr).analyze(this, flags, orderBy);
+		} else {
+			if(orderBy != null) {
+			    for(int i = 0; i < orderBy.length; i++)
+			        orderBy[i].analyze(this, flags);
+			}
+			returnExpr.analyze(this, flags);
+		}
+		
+		// restore the local variable stack
+		context.popLocalVariables(mark);
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
@@ -105,30 +133,30 @@ public class LetExpr extends BindingExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#pprint()
-	 */
-	public String pprint() {
-		StringBuffer buf = new StringBuffer();
-		buf.append("(let ");
-		buf.append(varName);
-		if (sequenceType != null) {
-			buf.append(" as ");
-			buf.append(sequenceType.toString());
-		}
-		buf.append(" := ");
-		buf.append(inputSequence.pprint());
-		if (whereExpr != null)
-			buf.append(" where ").append(whereExpr.pprint());
-		if (orderSpecs != null) {
-			buf.append(" order by ");
-			for (int i = 0; i < orderSpecs.length; i++) {
-				buf.append(orderSpecs[i].toString());
-			}
-		}
-		buf.append(" return ");
-		buf.append(returnExpr.pprint());
-		buf.append(')');
-		return buf.toString();
-	}
-
+     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        dumper.display("let ", getASTNode());
+        dumper.startIndent();
+        dumper.display("$").display(varName);
+        dumper.display(" := ");
+        inputSequence.dump(dumper);
+        dumper.endIndent();
+        if(whereExpr != null) {
+            dumper.nl().display("where ");
+            whereExpr.dump(dumper);
+        }
+        if(orderSpecs != null) {
+            dumper.nl().display("order by ");
+            for(int i = 0; i < orderSpecs.length; i++) {
+                if(i > 0)
+                    dumper.display(", ");
+                dumper.display(orderSpecs[i].toString());
+            }
+        }
+        dumper.nl().display("return ");
+        dumper.startIndent();
+        returnExpr.dump(dumper);
+        dumper.endIndent();
+    }
 }

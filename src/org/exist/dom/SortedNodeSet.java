@@ -71,6 +71,7 @@ public class SortedNodeSet extends AbstractNodeSet {
 			if (treeParser.foundErrors()) {
 				LOG.debug(treeParser.getErrorMessage());
 			}
+			expr.analyze(null, 0);
 			for (SequenceIterator i = other.iterate(); i.hasNext();) {
 				p = (NodeProxy) i.nextItem();
 				item = new IteratorItem(broker, p, expr, docs, context);

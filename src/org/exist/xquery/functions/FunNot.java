@@ -122,12 +122,4 @@ public class FunNot extends Function {
 			arg.eval(contextSequence, contextItem);
 		return seq.effectiveBooleanValue() ? BooleanValue.FALSE : BooleanValue.TRUE;
 	}
-
-	public String pprint() {
-		StringBuffer buf = new StringBuffer();
-		buf.append("not(");
-		buf.append(getArgument(0).pprint());
-		buf.append(')');
-		return buf.toString();
-	}
 }

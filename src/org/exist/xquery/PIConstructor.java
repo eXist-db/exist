@@ -25,6 +25,7 @@ package org.exist.xquery;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
@@ -49,6 +50,12 @@ public class PIConstructor extends NodeConstructor {
 	}
 	
 	/* (non-Javadoc)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+    }
+    
+	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(
@@ -61,17 +68,15 @@ public class PIConstructor extends NodeConstructor {
 		return node;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#pprint()
-	 */
-	public String pprint() {
-		StringBuffer buf = new StringBuffer();
-		buf.append("<?");
-		buf.append(target);
-		buf.append(' ');
-		buf.append(data);
-		buf.append("?>");
-		return buf.toString();
-	}
-
+	 /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        dumper.display("processing-instruction { ");
+        dumper.display(target);
+        dumper.display(" } { ");
+        dumper.startIndent();
+        dumper.display(data);
+        dumper.endIndent().nl().display("}");
+    }
 }

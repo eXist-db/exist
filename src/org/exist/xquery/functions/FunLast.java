@@ -90,8 +90,4 @@ public class FunLast extends Function {
 	   int len = set.getLength();
 	   return new IntegerValue(len);
 	}*/
-
-	public String pprint() {
-		return "last()";
-	}
 }

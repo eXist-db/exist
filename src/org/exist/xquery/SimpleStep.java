@@ -48,6 +48,14 @@ public class SimpleStep extends Step {
 	}
 
 	/* (non-Javadoc)
+     * @see org.exist.xquery.Step#analyze(org.exist.xquery.Expression)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+        expression.analyze(this, flags);
+        super.analyze(this, flags);
+    }
+    
+	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem)
@@ -69,13 +77,6 @@ public class SimpleStep extends Step {
 				throw new XPathException("Wrong axis specified");
 		}
 		return set;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Step#pprint()
-	 */
-	public String pprint() {
-		return "simple: " + (axis == Constants.DESCENDANT_SELF_AXIS ? "//" + expression.pprint() : '/' + expression.pprint());
 	}
 	
 	/* (non-Javadoc)

@@ -709,18 +709,4 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		}
 		return hasIndex == ALL_NODES_IN_INDEX;
 	}
-	
-	public String pprint() {
-	    StringBuffer buf = new StringBuffer();
-	    buf.append('[');
-	    buf.append(getClass().getName());
-	    buf.append(' ');
-	    for(Iterator i = iterator(); i.hasNext(); ) {
-	        NodeProxy p = (NodeProxy) i.next();
-	        buf.append(p.pprint());
-	        buf.append(' ');
-	    }
-	    buf.append(']');
-	    return buf.toString();
-	}
 }
