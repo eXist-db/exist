@@ -290,7 +290,11 @@ public class RESTServer {
 					mods += modifications[i].process();
 					broker.flush();
 				}
-				response = new Response(mods + " modifications processed.");
+				//	FD : Returns an XML doc
+				response = new Response("<?xml version='1.0'?>\n" +
+				"<exist:modifications mlns:exist='" + NS + "' count='" + mods + 
+				"'>" + mods + "modifications processed.</exist:modifications>");
+				// END FD
 			} else
 				throw new BadRequestException(
 						"Unknown XML root element: " + root.getNodeName());
@@ -544,8 +548,9 @@ public class RESTServer {
 		if (rlen > 0) {
 			if ((start < 1) || (start > rlen))
 				throw new BadRequestException("Start parameter out of range");
-			if ((howmany > rlen) || (howmany <= 0))
-				howmany = rlen - start;
+			// FD : correct bound evaluation
+			if (((howmany + start) > rlen) || (howmany <= 0))
+				howmany = rlen - start + 1;
 		} else
 			howmany = 0;
 		Serializer serializer = broker.getSerializer();
