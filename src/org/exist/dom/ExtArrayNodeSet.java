@@ -353,10 +353,10 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	}
 
 	public DocumentSet getDocumentSet() {
+	    DocumentSet ds = new DocumentSet();
 		if (!isSorted)
 			size = 0;
 		Part part;
-		DocumentSet ds = new DocumentSet();
 		DocumentImpl doc, last = null;
 		for (Iterator i = map.valueIterator(); i.hasNext();) {
 			part = (Part) i.next();

@@ -379,6 +379,16 @@ public class Configuration implements ErrorHandler {
                 if(tagAttributeMatches != null)
                 	config.put("serialization.match-tagging-attributes", tagAttributeMatches);
 			}
+			
+			NodeList xupdates = doc.getElementsByTagName("xupdate");
+			Element xupdate;
+			if(xupdates.getLength() > 0) {
+			    xupdate = (Element)xupdates.item(0);
+			    String growth = xupdate.getAttribute("growth-factor");
+			    if(growth != null) {
+			        config.put("xupdate.growth-factor", new Integer(growth));
+			    }
+			}
 		} catch (SAXException e) {
 			LOG.warn("error while reading config file: " + file, e);
 			throw new DatabaseConfigurationException(e.getMessage());

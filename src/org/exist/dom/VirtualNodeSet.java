@@ -90,7 +90,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	 * @see org.exist.dom.AbstractNodeSet#getDocumentSet()
 	 */
 	public DocumentSet getDocumentSet() {
-		return context.getDocumentSet();
+	    return context.getDocumentSet();
 	}
 
 	protected NodeProxy getFirstParent(NodeProxy node, long gid, boolean includeSelf) {

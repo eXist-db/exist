@@ -67,6 +67,8 @@ public class AttrImpl extends NodeImpl implements Attr {
 		short id = (short) Signatures.read( idSizeType, data, ++next );
 		next += Signatures.getLength(idSizeType);
         String name = doc.getSymbols().getName( id );
+        if(name == null)
+            throw new RuntimeException("no symbol for id " + id);
         short nsId = 0;
         String prefix = null;
 		if (hasNamespace) {
@@ -131,6 +133,8 @@ public class AttrImpl extends NodeImpl implements Attr {
     }
 
     public byte[] serialize() {
+        if(nodeName.getLocalName() == null)
+            throw new RuntimeException("Local name is null");
         final short id = ownerDocument.getSymbols().getSymbol( this );
         final byte idSizeType = Signatures.getSizeType( id );
 		int prefixLen = 0;

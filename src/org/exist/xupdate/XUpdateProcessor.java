@@ -91,6 +91,18 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		namespaces.put("xml", "http://www.w3.org/XML/1998/namespace");
 	}
 
+	public XUpdateProcessor() throws ParserConfigurationException {
+	    this(null, null);
+	}
+	
+	public void setBroker(DBBroker broker) {
+	    this.broker = broker;
+	}
+	
+	public void setDocumentSet(DocumentSet docs) {
+	    this.documentSet = docs;
+	}
+	
 	/**
 	 * Parse the input source into a set of modifications.
 	 * 
@@ -390,9 +402,15 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	public void characters(char[] ch, int start, int length)
 		throws SAXException {
 		if (inModification) {
-			if (inAttribute)
-				 ((Attr) currentNode).setValue(new String(ch, start, length));
-			else {
+			if (inAttribute) {
+			    Attr attr = (Attr)currentNode;
+			    String val = attr.getValue();
+			    if(val == null)
+			        val = new String(ch, start, length);
+			    else
+			        val += new String(ch, start, length);
+				attr.setValue(val);
+			} else {
 				charBuf.append(ch, start, length);
 			}
 		}
@@ -567,4 +585,20 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	public void startEntity(String name) throws SAXException {
 	}
 
+	public void reset() {
+	    inModification = false;
+		inAttribute = false;
+		modification = null;
+		doc = null;
+		fragment = null;
+		stack.clear();
+		currentNode = null;
+		broker = null;
+		documentSet = null;
+		modifications.clear();
+		charBuf.setLength(0);
+		variables.clear();
+		namespaces.clear();
+		namespaces.put("xml", "http://www.w3.org/XML/1998/namespace");
+	}
 }

@@ -137,4 +137,9 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
                 ;
         }
     }
+    
+    public void skipBytes(long count) throws IOException {
+        for(long i = 0; i < count && position < end; i++, position++)
+            ;
+    }
 }

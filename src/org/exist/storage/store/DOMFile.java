@@ -458,7 +458,6 @@ public class DOMFile extends BTree implements Lockable {
             } else
                 backLink = StorageAddress.createPointer(
                         (int) rec.page.getPageNum(), tid);
-//            LOG.debug("Writing " + ItemId.getId(currentId) + " to " + nextSplitPage.getPageNum());
             // set the relocated flag and save the item id
             ByteConversion.shortToByte(ItemId.setIsRelocated(currentId),
                     nextSplitPage.data, nextSplitPage.len);
@@ -518,27 +517,42 @@ public class DOMFile extends BTree implements Lockable {
                 rec.page.len += 8;
             }
         }
-        nextSplitPage.getPageHeader().setDataLength(nextSplitPage.len);
-        nextSplitPage.getPageHeader().setNextDataPage(
-                rec.page.getPageHeader().getNextDataPage());
-        nextSplitPage.getPageHeader().setRecordCount(splitRecordCount);
-        nextSplitPage.setDirty(true);
-        dataCache.add(nextSplitPage);
-        firstSplitPage.getPageHeader().setPrevDataPage(rec.page.getPageNum());
-        if(nextSplitPage != firstSplitPage) {
-            firstSplitPage.setDirty(true);
-            dataCache.add(firstSplitPage);
+        if(nextSplitPage.len == 0) {
+            // if nothing has been copied to the last split page,
+            // remove it
+            dataCache.remove(nextSplitPage);
+            if(nextSplitPage == firstSplitPage)
+                firstSplitPage = null;
+            try {
+                unlinkPages(nextSplitPage.page);
+            } catch (IOException e) {
+                LOG.warn("Failed to remove empty split page: " + e.getMessage(), e);
+            }
+            nextSplitPage = null;
+        } else {
+	        nextSplitPage.getPageHeader().setDataLength(nextSplitPage.len);
+	        nextSplitPage.getPageHeader().setNextDataPage(
+	                rec.page.getPageHeader().getNextDataPage());
+	        nextSplitPage.getPageHeader().setRecordCount(splitRecordCount);
+	        nextSplitPage.setDirty(true);
+	        dataCache.add(nextSplitPage);
+	        firstSplitPage.getPageHeader().setPrevDataPage(rec.page.getPageNum());
+	        if(nextSplitPage != firstSplitPage) {
+	            firstSplitPage.setDirty(true);
+	            dataCache.add(firstSplitPage);
+	        }
+	        long next = nextSplitPage.getPageHeader().getNextDataPage();
+	        if (-1 < next) {
+	            DOMPage nextPage = getCurrentPage(nextSplitPage.getPageHeader()
+	                    .getNextDataPage());
+	            nextPage.getPageHeader()
+	                    .setPrevDataPage(nextSplitPage.getPageNum());
+	            nextPage.setDirty(true);
+	            dataCache.add(nextPage);
+	        }
         }
-        long next = nextSplitPage.getPageHeader().getNextDataPage();
-        if (-1 < next) {
-            DOMPage nextPage = getCurrentPage(nextSplitPage.getPageHeader()
-                    .getNextDataPage());
-            nextPage.getPageHeader()
-                    .setPrevDataPage(nextSplitPage.getPageNum());
-            nextPage.setDirty(true);
-            dataCache.add(nextPage);
-        }
-        rec.page.getPageHeader().setNextDataPage(firstSplitPage.getPageNum());
+        if(firstSplitPage != null)
+            rec.page.getPageHeader().setNextDataPage(firstSplitPage.getPageNum());
         rec.page.getPageHeader().setDataLength(rec.page.len);
         rec.page.getPageHeader().setRecordCount(countRecordsInPage(rec.page));
         rec.offset = rec.page.len;
@@ -708,6 +722,7 @@ public class DOMFile extends BTree implements Lockable {
                 id = XMLUtil.getParentId(doc, id);
                 if (id < 1) {
                     LOG.warn(node.gid + " not found.");
+                    Thread.dumpStack();
                     throw new BTreeException("node " + node.gid + " not found.");
                 }
                 NativeBroker.NodeRef parentRef = new NativeBroker.NodeRef(doc

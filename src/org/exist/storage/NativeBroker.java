@@ -109,26 +109,35 @@ public class NativeBroker extends DBBroker {
 	private static final String DATABASE_IS_READ_ONLY = "database is read-only";
 	private static final String ROOT_COLLECTION = "/db";
 	private static final String EXCEPTION_DURING_REINDEX = "exception during reindex";
+	
 	/** default buffer size setting */
 	protected final static int BUFFERS = 256;
 
 	/** check available memory after storing MEM_LIMIT_CHECK nodes */
 	protected final static int MEM_LIMIT_CHECK = 10000;
 
+	// the database files
 	protected CollectionStore collectionsDb = null;
 	protected DOMFile domDb = null;
 	protected NativeElementIndex elementIndex;
-	protected ElementPool elementPool = new ElementPool(50);
 	protected BFile elementsDb = null;
+	
 	protected NativeTextEngine textEngine;
 	protected Serializer xmlSerializer;
+	
 	protected PatternCompiler compiler = new Perl5Compiler();
 	protected PatternMatcher matcher = new Perl5Matcher();
+	
 	protected int defaultIndexDepth = 1;
 	protected Map idxPathMap;
+	
 	protected boolean readOnly = false;
+	
 	protected int memMinFree;
+	
+	// used to count the nodes inserted after the last memory check
 	protected int nodesCount = 0;
+	
 	private final Runtime run = Runtime.getRuntime();
 
 	public NativeBroker(BrokerPool pool, Configuration config) throws EXistException {
@@ -153,6 +162,7 @@ public class NativeBroker extends DBBroker {
 			defaultIndexDepth = 1;
 		if ((memMinFree = config.getInteger("db-connection.min_free_memory")) < 0)
 			memMinFree = 5000000;
+		
 		Paged.setPageSize(pageSize);
 		String pathSep = System.getProperty("file.separator", "/");
 		int indexBuffers, dataBuffers;
@@ -241,6 +251,7 @@ public class NativeBroker extends DBBroker {
 
 			if (readOnly)
 				LOG.info("database runs in read-only mode");
+			
 			idxPathMap = (Map) config.getProperty("indexer.map");
 			textEngine = new NativeTextEngine(this, config, buffers);
 			xmlSerializer = new NativeSerializer(this, config);
@@ -382,7 +393,7 @@ public class NativeBroker extends DBBroker {
 	 */
 	public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname,
 		NodeSelector selector) {
-//		final long start = System.currentTimeMillis();
+		final long start = System.currentTimeMillis();
 		final ExtArrayNodeSet result = new ExtArrayNodeSet(docs.getLength(), 256);
 		DocumentImpl doc;
 		int docId;
@@ -613,7 +624,7 @@ public class NativeBroker extends DBBroker {
 	public Iterator getNodeIterator(NodeProxy proxy) {
 		domDb.setOwnerObject(this);
 		try {
-			return new NodeIterator(this, domDb, proxy, true);
+			return new NodeIterator(this, domDb, proxy, false);
 		} catch (BTreeException e) {
 			LOG.debug("failed to create node iterator", e);
 		} catch (IOException e) {
@@ -987,7 +998,7 @@ public class NativeBroker extends DBBroker {
 			long gid;
 			for (Iterator i = nodes.iterator(); i.hasNext();) {
 				ref = (Value) i.next();
-				gid = ByteConversion.byteToLong(ref.data(), 4);
+				gid = ByteConversion.byteToLong(ref.data(), ref.start() + 4);
 				if (oldDoc.getTreeLevel(gid) >= doc.reindexRequired()) {
 					if (node != null) {
 						if (XMLUtil.isDescendant(oldDoc, node.getGID(), gid)) {
@@ -1019,7 +1030,7 @@ public class NativeBroker extends DBBroker {
 					getNodeIterator(
 						new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
 				iterator.next();
-				scanNodes(iterator, n, new StringBuffer());
+				scanNodes(iterator, n, new NodePath());
 			}
 		} else {
 			iterator =
@@ -1041,16 +1052,14 @@ public class NativeBroker extends DBBroker {
 	 * @param node
 	 * @param currentPath
 	 */
-	private void reindex(final NodeImpl node, StringBuffer currentPath) {
+	private void reindex(final NodeImpl node, NodePath currentPath) {
 		if (node.getGID() < 0)
 			LOG.debug("illegal node: " + node.getGID() + "; " + node.getNodeName());
 		final IndexPaths idx =
 			(IndexPaths) idxPathMap.get(node.getOwnerDocument().getDoctype().getName());
 		final short nodeType = node.getNodeType();
 		final long gid = node.getGID();
-		final String nodeName = node.getNodeName();
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
-		final byte data[] = node.serialize();
 		final int depth = idx == null ? defaultIndexDepth : idx.getIndexDepth();
 		final int level = doc.getTreeLevel(gid);
 		if (level >= doc.reindexRequired()) {
@@ -1084,13 +1093,13 @@ public class NativeBroker extends DBBroker {
 					qname = node.getQName();
 					qname.setNameType(ElementValue.ELEMENT);
 					tempProxy.setHasIndex(
-						idx == null || idx.match(currentPath.toString()));
+						idx == null || idx.match(currentPath));
 					elementIndex.setDocument(doc);
 					elementIndex.addRow(qname, tempProxy);
 					break;
 				case Node.ATTRIBUTE_NODE :
 					tempProxy.setHasIndex(
-						idx == null || idx.match(currentPath.toString()));
+						idx == null || idx.match(currentPath));
 					elementIndex.setDocument(doc);
 					qname =
 						new QName(
@@ -1101,9 +1110,16 @@ public class NativeBroker extends DBBroker {
 					elementIndex.addRow(qname, tempProxy);
 					// check if attribute value should be fulltext-indexed
 					// by calling IndexPaths.match(path) 
-					if (idx == null
-						|| (idx.getIncludeAttributes()
-							&& idx.match(currentPath + "/@" + nodeName)))
+					boolean indexAttribs = true;
+					if(idx != null) {
+					    if(idx.getIncludeAttributes()) {
+						    currentPath.addComponent('@' + ((AttrImpl)node).getName());
+						    indexAttribs = idx.match(currentPath);
+						    currentPath.removeLastComponent();
+					    } else
+					        indexAttribs = false;
+					}
+					if (indexAttribs)
 						textEngine.storeAttribute(idx, (AttrImpl) node);
 					// if the attribute has type ID, store the ID-value
 					// to the element index as well
@@ -1116,7 +1132,7 @@ public class NativeBroker extends DBBroker {
 				case Node.TEXT_NODE :
 					// check if this textual content should be fulltext-indexed
 					// by calling IndexPaths.match(path)
-					if (idx == null || idx.match(currentPath.toString()))
+					if (idx == null || idx.match(currentPath))
 						textEngine.storeText(idx, (TextImpl) node);
 					break;
 			}
@@ -1131,9 +1147,9 @@ public class NativeBroker extends DBBroker {
 	 * @param node
 	 * @param currentPath
 	 */
-	private void scanNodes(Iterator iterator, NodeImpl node, StringBuffer currentPath) {
+	private void scanNodes(Iterator iterator, NodeImpl node, NodePath currentPath) {
 		if (node.getNodeType() == Node.ELEMENT_NODE)
-			currentPath.append('/').append(node.getNodeName());
+		    currentPath.addComponent(node.getNodeName());
 		reindex(node, currentPath);
 		if (node.hasChildNodes()) {
 			final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
@@ -1159,6 +1175,8 @@ public class NativeBroker extends DBBroker {
 				scanNodes(iterator, child, currentPath);
 			}
 		}
+		if(node.getNodeType() == Node.ELEMENT_NODE)
+		    currentPath.removeLastComponent();
 	}
 
 	public String getNodeValue(final NodeProxy proxy) {
@@ -1437,7 +1455,6 @@ public class NativeBroker extends DBBroker {
 			} finally {
 				lock.release();
 			}
-			elementPool.clear();
 
 			LOG.debug("removing dom nodes ...");
 			for (Iterator i = collection.iterator(); i.hasNext();) {
@@ -1596,7 +1613,6 @@ public class NativeBroker extends DBBroker {
 			} finally {
 				lock.release();
 			}
-			elementPool.clear();
 
 			((NativeTextEngine) textEngine).removeDocument(doc);
             if (LOG.isDebugEnabled()) {
@@ -1924,7 +1940,7 @@ public class NativeBroker extends DBBroker {
 	 *      the Broker to determine if a node's content should be
 	 *      fulltext-indexed).
 	 */
-	public void store(final NodeImpl node, CharSequence currentPath) {
+	public void store(final NodeImpl node, NodePath currentPath) {
 		// first, check available memory
 		if (nodesCount > MEM_LIMIT_CHECK) {
 			final int percent = (int) (run.freeMemory() / (run.totalMemory() / 100));
@@ -1992,9 +2008,16 @@ public class NativeBroker extends DBBroker {
 				elementIndex.addRow(qname, tempProxy);
 				// check if attribute value should be fulltext-indexed
 				// by calling IndexPaths.match(path) 
-				if (idx == null
-					|| (idx.getIncludeAttributes()
-						&& idx.match(currentPath + "/@" + nodeName)))
+				boolean indexAttribs = true;
+				if(idx != null) {
+				    if(idx.getIncludeAttributes()) {
+					    currentPath.addComponent('@' + nodeName);
+					    indexAttribs = idx.match(currentPath);
+					    currentPath.removeLastComponent();
+				    } else
+				        indexAttribs = false;
+				}
+				if(indexAttribs)
 					textEngine.storeAttribute(idx, (AttrImpl) node);
 				// if the attribute has type ID, store the ID-value
 				// to the element index as well

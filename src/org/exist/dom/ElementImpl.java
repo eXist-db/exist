@@ -69,7 +69,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	protected int children = 0;
 	protected long firstChild = -1;
 	protected Map namespaceMappings = null;
-
+	
 	public ElementImpl() {
 		super(Node.ELEMENT_NODE);
 	}
@@ -256,7 +256,8 @@ public class ElementImpl extends NodeImpl implements Element {
 		}
 		if (ownerDocument.getTreeLevelOrder(level + 1) < children + size) {
 			// recompute the order of the tree
-			ownerDocument.setTreeLevelOrder(level + 1, children + size);
+			ownerDocument.setTreeLevelOrder(level + 1, children + size + 
+			        ownerDocument.broker.getXUpdateGrowthFactor());
 			ownerDocument.calculateTreeLevelStartPoints(false);
 			if (ownerDocument.reindex < 0 || ownerDocument.reindex > level + 1) {
 				ownerDocument.reindex = level + 1;

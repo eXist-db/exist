@@ -580,7 +580,18 @@ public class FastByteBuffer implements ByteArray {
         	System.arraycopy( m_array[m_lastChunk], 0, newBuf, pos, m_firstFree );
         }
     }
-
+    
+    public void copyTo( ByteArray newBuf ) {
+        for ( int i = 0; i < m_lastChunk; i++ ) {
+            if ( i == 0 && m_innerFSB != null )
+                m_innerFSB.copyTo( newBuf );
+            else
+                newBuf.append(m_array[i]);
+        }
+        newBuf.append(m_array[m_lastChunk], 0, m_firstFree);
+        
+    }
+    
 	public void copyTo( int start, byte[] newBuf, int offset, int len ) {
 		int stop = start + len;
 		int startChunk = start >>> m_chunkBits;

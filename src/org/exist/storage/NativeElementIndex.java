@@ -27,7 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
 import org.dbxml.core.DBException;
 import org.dbxml.core.data.Value;
 import org.exist.dom.DocumentImpl;
@@ -46,14 +46,11 @@ import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.ReadOnlyException;
-//import org.exist.util.StorageAddress;
 
 public class NativeElementIndex extends ElementIndex {
 
-	private static Category LOG = Category.getInstance(NativeElementIndex.class
+	private static Logger LOG = Logger.getLogger(NativeElementIndex.class
 			.getName());
-
-	public final static int PARTITION_SIZE = 102400;
 
 	protected BFile dbElement;
 	private VariableByteOutputStream os = new VariableByteOutputStream();
@@ -360,7 +357,6 @@ public class NativeElementIndex extends ElementIndex {
 					cid = proxy.gid - prevId;
 					prevId = proxy.gid;
 					os.writeLong(cid);
-					//os.writeFixedLong(proxy.getInternalAddress());
 					StorageAddress.write(proxy.getInternalAddress(), os);
 				}
 				if (qname.getNameType() != ElementValue.ATTRIBUTE_ID) {

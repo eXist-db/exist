@@ -1073,7 +1073,7 @@ implements Comparable, EntityResolver, Cacheable {
 
 			// first pass: parse the document to determine tree structure
 			LOG.debug("validating document " + name);
-			streamer.serialize(node);
+			streamer.serialize(node, true);
 			document.setMaxDepth(document.getMaxDepth() + 1);
 			document.calculateTreeLevelStartPoints();
 			// new document is valid: remove old document 
@@ -1097,7 +1097,7 @@ implements Comparable, EntityResolver, Cacheable {
 		try {
 			// second pass: store the document
 			LOG.debug("storing document ...");
-			streamer.serialize(node);
+			streamer.serialize(node, true);
 	
 			try {
 				lock.acquire(Lock.WRITE_LOCK);
@@ -1270,7 +1270,7 @@ implements Comparable, EntityResolver, Cacheable {
 			try {
 				return new CollectionConfiguration(broker, this, doc);
 			} catch (CollectionConfigurationException e) {
-				LOG.warn(e.getMessage(), e);
+				LOG.warn("Failed to load collection configuration " + e.getMessage());
 			} finally {
 				triggersEnabled = true;
 			}

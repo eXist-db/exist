@@ -40,11 +40,11 @@ public class Append extends Modification {
 		NodeList children = content.getChildNodes();
 		if (qr == null || children.getLength() == 0)
 			return 0;
+
 		IndexListener listener = new IndexListener(qr);
 		NodeImpl node;
 		DocumentImpl doc = null;
 		Collection collection = null, prevCollection = null;
-		int len = children.getLength();
 		for(int i = 0; i < qr.length; i++) {
 			node = qr[i];
 			doc = (DocumentImpl) node.getOwnerDocument();

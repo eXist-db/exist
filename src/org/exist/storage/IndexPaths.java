@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001,  Wolfgang Meier
+ *  Copyright (C) 2001-04,  Wolfgang Meier
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -16,16 +16,13 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
- *  $Id:
+ *  $Id$
  */
 package org.exist.storage;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-
-import org.exist.util.FastStringBuffer;
-import org.exist.util.MutableStringTokenizer;
 
 
 /**
@@ -41,16 +38,15 @@ public class IndexPaths {
 	
 	private final static HashMap cache =
 		new HashMap();
-	private final static int MAX_CACHE_SIZE = 64;
 	
     protected ArrayList includePath;
     protected ArrayList excludePath;
+    
     protected boolean includeByDefault = true;
     protected boolean includeAttributes = true;
     protected boolean includeAlphaNum = true;
+    
 	protected int depth = 1;
-	protected MutableStringTokenizer tokenizer = new MutableStringTokenizer();
-	private FastStringBuffer token = new FastStringBuffer();
 	
     /**
      * Constructor for the IndexPaths object
@@ -70,10 +66,7 @@ public class IndexPaths {
      * @param path The feature to be added to the Include attribute
      */
     public void addInclude( String path ) {
-        ArrayList a = tokenize( path );
-        String arr[] = new String[a.size()];
-        arr = (String[])a.toArray(arr);
-        includePath.add( arr );
+        includePath.add( new NodePath(path) );
     }
 
     /**
@@ -82,10 +75,7 @@ public class IndexPaths {
      * @param path DOCUMENT ME!
      */
     public void addExclude( String path ) {
-		ArrayList a = tokenize( path );
-		String arr[] = new String[a.size()];
-		arr = (String[])a.toArray(arr);
-        excludePath.add( arr );
+        excludePath.add( new NodePath(path) );
     }
 
 	/**
@@ -152,79 +142,20 @@ public class IndexPaths {
      *
      * @return Description of the Return Value
      */
-    public boolean match( CharSequence path ) {
+    public boolean match( NodePath path ) {
         if ( includeByDefault ) {
             // check exclusions
             for ( Iterator i = excludePath.iterator(); i.hasNext(  ); )
-                if ( match( (String[]) i.next(  ), path ) )
+                if( ((NodePath)i.next()).match(path) )
                     return false;
-
+                
             return true;
         }
 
         for ( Iterator i = includePath.iterator(); i.hasNext(); )
-            if ( match( (String[]) i.next(), path ) )
+            if( ((NodePath)i.next()).match(path) )
                 return true;
 
         return false;
-    }
-
-	private final boolean match( String[] path, CharSequence other) {
-		int i = 0;
-		boolean skip = false;
-		tokenizer.set(other, "/");
-		CharSequence next;
-		while((next = tokenizer.nextToken()) != null) {
-			if(i == path.length)
-				return true;
-			if(path[i].equals("*")) {
-				++i;
-				skip = true;
-			}
-			if(next.equals(path[i])) {
-				++i;
-				skip = false;
-			} else if(skip) {
-				continue;
-			} else
-				return false;
-		}
-		return i == path.length;
-	}
-	
-    /**
-     * Description of the Method
-     *
-     * @param path Description of the Parameter
-     *
-     * @return Description of the Return Value
-     */
-    private final ArrayList tokenize( String path ) {
-    	ArrayList temp = new ArrayList();
-        String next;
-       	token.reset();
-        int pos = 0;
-		char ch = 0;
-		final int pathLen = path.length();
-        while ( pos < pathLen ) {
-			ch = path.charAt(pos);
-            switch ( ch ) {
-            case '/':
-                next = token.toString();
-                token.reset();
-                if ( next.length(  ) > 0 )
-                    temp.add( next );
-                if ( path.charAt( ++pos ) == '/' )
-                    temp.add( "*" );
-                break;
-
-            default:
-                token.append(ch);
-                pos++;
-            }
-        }
-        if ( token.length() > 0 )
-            temp.add( token.toString() );
-        return temp;
     }
 }
