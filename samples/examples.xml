@@ -91,6 +91,16 @@ return
 		<province>{$city/ancestor::province/name}</province>
 	</result>]]></code>
     </query>
+	<query>
+		<description>Show countries with decreasing population</description>
+		<code><![CDATA[for $c in //country[population_growth < 0]
+order by $c/name
+return
+<country>
+  {$c/name, $c/population_growth}
+</country>
+]]></code>
+	</query>
     <query>
     	<description>Find spanish provinces and their cities</description>
         <code><![CDATA[xquery version "1.0";

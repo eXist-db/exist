@@ -24,7 +24,7 @@ declare function admin:info-header($user as xs:string) as element() {
 };
 
 (: Select the page to show. Every page is defined in its own module :)
-declare function admin:panel($user as xs:string, $pass as xs:string) as element() {
+declare function admin:panel($user as xs:string, $pass as xs:string?) as element() {
     let $panel := request:request-parameter("panel", "status")
     return
         if($panel eq "browse") then
