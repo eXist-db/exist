@@ -26,6 +26,7 @@ package org.exist.storage.store;
  * Provides static methods to set or test the status bits of a record identifier
  * in the dom.dbx persistent DOM store.
  * 
+ * @see org.exist.storage.store.DOMFile
  * @author wolf
  */
 class ItemId {
@@ -37,6 +38,10 @@ class ItemId {
 	
 	public final static short getId(short id) {
 		return (short) (id & ID_MASK);
+	}
+	
+	public final static boolean matches(short id, short targetId) {
+		return ((short)(id & ID_MASK)) == targetId;
 	}
 	
 	public final static short setIsRelocated(short id) {

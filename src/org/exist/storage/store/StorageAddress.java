@@ -11,7 +11,7 @@ import org.exist.storage.io.VariableByteOutputStream;
  * of page number, offset (tuple id) and flags.
  */
 public class StorageAddress {
-
+	
 	/**
 	 *  Create virtual address from page number and offset (tid)
 	 *

@@ -63,8 +63,8 @@ public class OrderedLinkedList {
 		}
 	}
 	
-	private Node header = null;
-    private Node last = null;
+	protected Node header = null;
+    protected Node last = null;
     
 	private int size = 0;
 
