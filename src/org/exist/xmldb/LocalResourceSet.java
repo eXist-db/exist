@@ -138,7 +138,7 @@ public class LocalResourceSet implements ResourceSet {
 		} finally {
 			brokerPool.release(broker);
 		}
-		Resource res = new LocalXMLResource(user, brokerPool, collection, "", -1);
+		Resource res = new LocalXMLResource(user, brokerPool, collection, "");
 		res.setContent(writer.toString());
 		return res;
 	}
@@ -162,10 +162,10 @@ public class LocalResourceSet implements ResourceSet {
 			}
 			res = new LocalXMLResource(user, brokerPool, coll, p);
 		} else if (r instanceof Node) {
-			res = new LocalXMLResource(user, brokerPool, collection, "", -1);
+			res = new LocalXMLResource(user, brokerPool, collection, "");
 			res.setContentAsDOM((Node)r);
 		} else if (r instanceof AtomicValue) {
-			res = new LocalXMLResource(user, brokerPool, collection, "", -1);
+			res = new LocalXMLResource(user, brokerPool, collection, "");
 			res.setContent(r);
 		} else if (r instanceof Resource)
 			return (Resource) r;

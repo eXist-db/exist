@@ -212,9 +212,9 @@ implements Comparable, EntityResolver, Cacheable {
 	 */
 	public void addDocumentLink(DBBroker broker, DocumentImpl doc) {
 	    if (doc.getDocId() < 0)
-			doc.setDocId(broker.getNextDocId(this));
-		documents.put(doc.getFileName(), null);
-		reloadRequired = true;
+	        doc.setDocId(broker.getNextDocId(this));
+	    documents.put(doc.getFileName(), null);
+	    reloadRequired = true;
 	}
 	
 	/**
