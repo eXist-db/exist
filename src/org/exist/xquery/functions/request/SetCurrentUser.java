@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-03 Wolfgang M. Meier
+ *  Copyright (C) 2001-04 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -25,71 +25,77 @@ package org.exist.xquery.functions.request;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.SessionWrapper;
+import org.exist.security.SecurityManager;
+import org.exist.security.User;
+import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.XPathUtil;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Item;
+import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 /**
- * Returns an attribute stored in the current session or an empty sequence
- * if the attribute does not exist.
- * 
  * @author wolf
  */
-public class GetSessionAttribute extends Function {
+public class SetCurrentUser extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("get-session-attribute", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-			"Returns an attribute stored in the current session object or an empty sequence " +
-			"if the attribute cannot be found.",
+			new QName("set-current-user", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+			"Encodes the specified URL with the current HTTP session-id.",
 			new SequenceType[] {
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
-		
-	public GetSessionAttribute(XQueryContext context) {
+			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE));
+	
+	public SetCurrentUser(XQueryContext context) {
 		super(context, signature);
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
+	public Sequence eval(Sequence[] args, Sequence contextSequence)
+			throws XPathException {
 		RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
 		
-		// session object is read from global variable $session
-		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
-		if(var == null || var.getValue() == null)
-			throw new XPathException("Request object not found");
-		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
+		// request object is read from global variable $request
+		Variable var = 
+			myModule.resolveVariable(RequestModule.REQUEST_VAR);
+		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
 			throw new XPathException("Variable $request is not bound to an Java object.");
+
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-		
-		// get attribute name parameter
-		String attrib = getArgument(0).eval(contextSequence, contextItem).getStringValue();
-		
+		RequestWrapper request;
 		if(value.getObject() instanceof RequestWrapper) {
-			RequestWrapper request = (RequestWrapper)value.getObject();
-			SessionWrapper session = request.getSession(false);
-			if(session == null)
-				return Sequence.EMPTY_SEQUENCE;
-			Object o = session.getAttribute(attrib);
-			if (o == null)
-				return Sequence.EMPTY_SEQUENCE;
-			return XPathUtil.javaObjectToXPath(o);
+			request = (RequestWrapper)value.getObject();
 		} else
-			throw new XPathException("Type error: variable $request is not bound to a request object");
+			throw new XPathException("Variable $request is not bound to a Request object.");
+		
+		String userName = args[0].getStringValue();
+		String passwd = args[1].getStringValue();
+		
+		SecurityManager security = context.getBroker().getBrokerPool().getSecurityManager();
+		User user = security.getUser(userName);
+		if (user == null)
+			return Sequence.EMPTY_SEQUENCE;
+		if (user.validate(passwd)) {
+			context.getBroker().setUser(user);
+			SessionWrapper session = request.getSession(true);
+			session.setAttribute("user", userName);
+			session.setAttribute("password", new StringValue(passwd));
+			return BooleanValue.TRUE;
+		} else {
+			LOG.warn("Could not validate user " + userName);
+			return BooleanValue.FALSE;
+		}
 	}
+
 }

@@ -221,7 +221,7 @@ public class XQueryServlet extends HttpServlet {
 		if(actualPassword == null) actualPassword = password;
 		
 		try {
-			Collection collection = DatabaseManager.getCollection(collectionURI, user, password);
+			Collection collection = DatabaseManager.getCollection(collectionURI, actualUser, actualPassword);
 			
 			XQueryService service = (XQueryService)
 				collection.getService("XQueryService", "1.0");

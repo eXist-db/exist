@@ -187,7 +187,11 @@ public class Permission {
      *@param  user  The new owner value
      */
     public void setOwner( User user ) {
-        this.owner = user.getName();
+    	// FIXME: assume guest identity if user gets lost due to a database corruption
+    	if(user == null) {
+    		this.owner = SecurityManager.GUEST_USER;
+    	} else
+    		this.owner = user.getName();
         //this.ownerGroup = user.getPrimaryGroup();
     }
 

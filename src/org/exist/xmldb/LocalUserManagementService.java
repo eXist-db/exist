@@ -549,8 +549,7 @@ public class LocalUserManagementService implements UserManagementService {
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				" you are not allowed to change this user");
-		if(u.getName().equals(SecurityManager.GUEST_USER) &&
-			(!manager.hasAdminPrivileges(user)))
+		if(u.getName().equals(SecurityManager.GUEST_USER))
 			throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
 					"guest user cannot be modified");

@@ -136,6 +136,11 @@ public class User {
         groups.add( group );
     }
 
+    public final void setGroups(Iterator iter) {
+    	while(iter.hasNext()) {
+    		addGroup((String)iter.next());
+    	}
+    }
 
     /**
      *  Get all groups this user belongs to

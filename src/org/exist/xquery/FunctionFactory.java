@@ -54,7 +54,13 @@ public class FunctionFactory {
 		PathExpr parent,
 		List params)
 		throws XPathException {
-		QName qname = QName.parse(context, ast.getText(), context.getDefaultFunctionNamespace());
+		QName qname = null;
+		try {
+			qname = QName.parse(context, ast.getText(), context.getDefaultFunctionNamespace());
+		} catch(XPathException e) {
+			e.setASTNode(ast);
+			throw e;
+		}
 		String local = qname.getLocalName();
 		String uri = qname.getNamespaceURI();
 		Expression step = null;

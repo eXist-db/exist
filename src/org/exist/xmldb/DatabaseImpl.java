@@ -250,7 +250,7 @@ public class DatabaseImpl implements Database {
             }
             if ( !u.validate( password ) ) {
             	throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
-                    "invalid password" );
+                    "invalid password for user " + user);
             }
         }
         return u;

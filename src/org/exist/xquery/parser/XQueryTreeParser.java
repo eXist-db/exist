@@ -2826,12 +2826,12 @@ public XQueryTreeParser() {
 				}
 				}
 				
-				try {
-								    context.importModule(moduleURI.getText(), modulePrefix, location);
-				} catch(XPathException xpe) {
-				xpe.setASTNode(i);
-				throw xpe;
-				}
+						                try {
+									context.importModule(moduleURI.getText(), modulePrefix, location);
+						                } catch(XPathException xpe) {
+						                    xpe.prependMessage("error found while loading module " + modulePrefix + ": ");
+						                    throw xpe;
+						                }
 							
 				_t = __t20;
 				_t = _t.getNextSibling();
@@ -3106,7 +3106,14 @@ public XQueryTreeParser() {
 		_t = _t.getFirstChild();
 		PathExpr body= new PathExpr(context);
 		
-					QName qn= QName.parse(context, name.getText());
+					QName qn= null;
+					try {
+						qn = QName.parse(context, name.getText());
+					} catch(XPathException e) {
+						// throw exception with correct source location
+						e.setASTNode(name);
+						throw e;
+					}
 					FunctionSignature signature= new FunctionSignature(qn);
 					UserDefinedFunction func= new UserDefinedFunction(context, signature);
 					func.setASTNode(name);
