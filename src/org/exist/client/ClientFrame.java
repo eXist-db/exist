@@ -568,11 +568,12 @@ public class ClientFrame extends JFrame
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String[] loginData = getLoginData(properties
-						.getProperty("user"));
+						.getProperty("user"), properties.getProperty("uri"));
 				if (loginData == null)
 					return;
 				properties.setProperty("user", loginData[0]);
 				properties.setProperty("password", loginData[1]);
+				properties.setProperty("uri", loginData[2]);
 				try {
 					client.reloadCollection();
 				} catch (XMLDBException e1) {
@@ -1361,14 +1362,15 @@ public class ClientFrame extends JFrame
 		}
 	}
 
-	protected static String[] getLoginData(String defaultUser) {
-		LoginPanel login = new LoginPanel(defaultUser);
+	protected static String[] getLoginData(String defaultUser, String uri) {
+		LoginPanel login = new LoginPanel(defaultUser, uri);
 		if (JOptionPane.showOptionDialog(null, login, "eXist Database Login",
 				JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
 				null, null, null) == JOptionPane.OK_OPTION) {
-			String[] ret = new String[2];
+			String[] ret = new String[3];
 			ret[0] = login.getUsername();
 			ret[1] = login.getPassword();
+			ret[2] = login.getUri();
 			return ret;
 		}
 		return null;
@@ -1469,13 +1471,14 @@ public class ClientFrame extends JFrame
 
 		JTextField username;
 		JPasswordField password;
+		JTextField cur_url; 
 
-		public LoginPanel(String defaultUser) {
+		public LoginPanel(String defaultUser, String uri) {
 			super(false);
-			setupComponents(defaultUser);
+			setupComponents(defaultUser, uri);
 		}
 
-		private void setupComponents(String defaultUser) {
+		private void setupComponents(String defaultUser, String uri) {
 			GridBagLayout grid = new GridBagLayout();
 			setLayout(grid);
 			GridBagConstraints c = new GridBagConstraints();
@@ -1512,6 +1515,22 @@ public class ClientFrame extends JFrame
 			c.fill = GridBagConstraints.HORIZONTAL;
 			grid.setConstraints(password, c);
 			add(password);
+			
+			label = new JLabel("URL");
+			c.gridx = 0;
+			c.gridy = 2;
+			c.anchor = GridBagConstraints.WEST;
+			c.fill = GridBagConstraints.NONE;
+			grid.setConstraints(label, c);
+			add(label);
+
+			cur_url = new JTextField(uri, 20);
+			c.gridx = 1;
+			c.gridy = 2;
+			c.anchor = GridBagConstraints.EAST;
+			c.fill = GridBagConstraints.HORIZONTAL;
+			grid.setConstraints(cur_url, c);
+			add(cur_url);
 		}
 
 		public String getUsername() {
@@ -1520,6 +1539,10 @@ public class ClientFrame extends JFrame
 
 		public String getPassword() {
 			return new String(password.getPassword());
+		}
+		
+		public String getUri() {
+			return cur_url.getText();
 		}
 	}
 
