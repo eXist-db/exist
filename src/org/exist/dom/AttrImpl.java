@@ -25,6 +25,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 import org.exist.storage.Signatures;
+import org.exist.util.ByteArrayPool;
 import org.exist.util.StringUtil;
 import org.exist.util.XMLUtil;
 import org.w3c.dom.Attr;
@@ -170,9 +171,9 @@ public class AttrImpl extends NodeImpl implements Attr {
     public byte[] serialize() {
         final short id = ownerDocument.getSymbols().getSymbol( this );
         final byte idSizeType = Signatures.getSizeType( id );
-        final byte[] data = new byte[StringUtil.utflen(value) +
+        final byte[] data = ByteArrayPool.getByteArray(StringUtil.utflen(value) +
             Signatures.getLength( idSizeType ) +
-            1];
+            1);
         data[0] = (byte) ( Signatures.Attr << 0x5 );
         data[0] |= idSizeType;
         data[0] |= (byte) (attributeType << 0x2);

@@ -1863,7 +1863,7 @@ public class RelationalBroker extends DBBroker {
      *@param  node  Description of the Parameter
      *@param  path  Description of the Parameter
      */
-    public void store( NodeImpl node, String path ) {
+    public void store( NodeImpl node, CharSequence path ) {
         switch ( node.getNodeType() ) {
             case Node.ELEMENT_NODE:
             {

@@ -591,41 +591,22 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return treeLevelStartPoints[level];
 	}
 
-	/**
-	 *  Gets the maxDepth attribute of the DocumentImpl object
-	 *
-	 *@return    The maxDepth value
-	 */
 	public int getMaxDepth() {
 		return maxDepth;
 	}
 
-	/**
-	 *  Gets the node attribute of the DocumentImpl object
-	 *
-	 *@param  gid  Description of the Parameter
-	 *@return      The node value
-	 */
 	public Node getNode(long gid) {
 		return broker.objectWith(this, gid);
 	}
 
-	/**
-	 *  Gets the privileges attribute of the DocumentImpl object
-	 *
-	 *@return    The privileges value
-	 */
+	public Node getNode(NodeProxy p) {
+		return broker.objectWith(p);
+	}
+	
 	public Permission getPermissions() {
 		return permissions;
 	}
 
-	/**
-	 *  Gets the range attribute of the DocumentImpl object
-	 *
-	 *@param  first  Description of the Parameter
-	 *@param  last   Description of the Parameter
-	 *@return        The range value
-	 */
 	public NodeList getRange(long first, long last) {
 		return broker.getRange(this, first, last);
 	}
@@ -846,11 +827,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public void setVersion(String version) {
 	}
 
-	public void store(NodeImpl node, String path) {
-		node.setOwnerDocument(this);
-		broker.store(node, path);
-	}
-
 	public void write(DataOutput ostream) throws IOException {
 		ostream.writeUTF(fileName);
 		ostream.writeInt(docId);
@@ -901,16 +877,18 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public byte[] serialize() {
-		VariableByteOutputStream ostream = new VariableByteOutputStream();
+		final VariableByteOutputStream ostream = new VariableByteOutputStream(7);
 		try {
 			//ostream.writeUTF(fileName.substring(collection.getName().length() + 1));
 			ostream.writeLong(documentRootId);
 			((DocumentTypeImpl) docType).write(ostream);
+			final byte[] data = ostream.toByteArray();
+			ostream.close();
+			return data;
 		} catch (IOException e) {
 			LOG.warn("io error while writing document data", e);
 			return null;
 		}
-		return ostream.toByteArray();
 	}
 
 	public void deserialize(byte[] data) {

@@ -73,7 +73,7 @@ public class VirtualNodeSet extends NodeSet {
 
 	protected NodeProxy getFirstParent(NodeProxy node, NodeProxy first,
 		boolean includeSelf, int recursions) {
-		// if includeSelf is true set first to gid during the first recursion
+		// if includeSelf is true check node during first recursion
 		if (recursions == 0 && includeSelf && 
 			isOfType(node.doc, node.gid, node.nodeType, test))
 			return node;
@@ -81,7 +81,12 @@ public class VirtualNodeSet extends NodeSet {
 		if(first == null)
 			first = new NodeProxy(node.doc, pid, Node.ELEMENT_NODE);
 		// is pid member of the context set?
-		NodeProxy parent = context.get(node.doc, pid);
+		/*// commented out by Timo Boehme: next is wrong because we have
+		 * to test for current node set */
+		//NodeProxy parent = context.get(node.doc, pid);
+		// -- inserted by Timo Boehme --
+	 	// is pid member of the virutal set?
+	 	NodeProxy parent = get(node.doc, pid);
 		if (parent != null)
 			return first == null ? parent : first;
 		else if (pid < 0)
@@ -153,6 +158,7 @@ public class VirtualNodeSet extends NodeSet {
 	private void addInternal(NodeProxy p) {
 		if(realSet == null)
 			realSet = new ArraySet(100);
+
 		if(!realSet.contains(p))
 			realSet.add(p);
 	}
@@ -193,8 +199,16 @@ public class VirtualNodeSet extends NodeSet {
 		Iterator domIter;
 		for (Iterator i = context.iterator(); i.hasNext();) {
 			proxy = (NodeProxy) i.next();
-			if (proxy.gid < 0)
+			if (proxy.gid < 0) {
 				proxy.gid = proxy.doc.getDocumentElementId();
+            // -- inserted by Timo Boehme --
+            NodeProxy docElemProxy = new NodeProxy(proxy.getDoc(), proxy.doc.getDocumentElementId());
+            result.add(docElemProxy);
+            if (recursive)
+            	addChildren(result, docElemProxy.getNode(), recursive);
+            continue;
+                // -- end of insertion --
+            }
 			if (proxy.getBrokerType() == DBBroker.NATIVE) {
 				domIter = proxy.doc.getBroker().getNodeIterator(proxy);
 				NodeImpl node = (NodeImpl)domIter.next();
@@ -259,6 +273,7 @@ public class VirtualNodeSet extends NodeSet {
 	private final void realize() {
 		if (realSet != null)
 			return;
+		System.err.println("realizing nodes");
 		switch (axis) {
 			case Constants.ATTRIBUTE_AXIS :
 			case Constants.CHILD_AXIS :

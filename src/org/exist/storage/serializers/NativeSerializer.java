@@ -36,13 +36,13 @@ import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.ProcessingInstructionImpl;
+import org.exist.dom.TextImpl;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -323,13 +323,10 @@ public class NativeSerializer extends Serializer {
 				if (children > 0)
 					gid = XMLUtil.getFirstChildId(doc, gid);
 				while (count < children) {
-					//Value value = (Value) iter.next();
-					//child = NodeImpl.deserialize(value.data(), value.start(), value.length(), doc);
-					//child.setOwnerDocument(doc);
 					child = (NodeImpl)iter.next();
 					if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
 						if((highlightMatches & TAG_ATTRIBUTE_MATCHES) > 0)
-							cdata = processText(((AttrImpl) child).getValue(), gid, matches);
+							cdata = processAttribute(((AttrImpl) child).getValue(), gid, matches);
 						else
 							cdata = ((AttrImpl)child).getValue();
 						attributes.addAttribute(
@@ -387,9 +384,6 @@ public class NativeSerializer extends Serializer {
 						prefixes,
 						matches);
 					if (++count < children) {
-						//Value value = (Value) iter.next();
-						//child = NodeImpl.deserialize(value.data(), value.start(), value.length(), doc);
-						//child.setOwnerDocument(doc);
 						child = (NodeImpl)iter.next();
 					} else
 						break;
@@ -430,16 +424,11 @@ public class NativeSerializer extends Serializer {
 						"exist:text",
 						attribs);
 				}
-				if((highlightMatches & TAG_ELEMENT_MATCHES) == TAG_ELEMENT_MATCHES)
-					cdata = processText(((Text) node).getData(), gid, matches);
-				else
-					cdata = ((Text)node).getData();
-				if(cdata.indexOf('|') > -1)
+				if((highlightMatches & TAG_ELEMENT_MATCHES) == TAG_ELEMENT_MATCHES &&
+					(cdata = processText((TextImpl)node, gid, matches)) != null)
 					scanText(cdata);
 				else {
-					ch = new char[cdata.length()];
-					cdata.getChars(0, cdata.length(), ch, 0);
-					contentHandler.characters(ch, 0, ch.length);
+					((TextImpl)node).getXMLString().toSAX(contentHandler);
 				}
 				if (first && createContainerElements)
 					contentHandler.endElement(
@@ -464,7 +453,7 @@ public class NativeSerializer extends Serializer {
 						"CDATA",
 						doc.getFileName());
 					if((highlightMatches & TAG_ATTRIBUTE_MATCHES) > 0)
-						cdata = processText(((AttrImpl) node).getValue(), gid, matches);
+						cdata = processAttribute(((AttrImpl) node).getValue(), gid, matches);
 					else
 						cdata = ((AttrImpl)node).getValue();
 					attribs.addAttribute(
@@ -484,7 +473,7 @@ public class NativeSerializer extends Serializer {
 						"exist:attribute");
 				} else {
 					if((highlightMatches & TAG_ATTRIBUTE_MATCHES) == TAG_ATTRIBUTE_MATCHES)
-						cdata = processText(((AttrImpl) node).getValue(), gid, matches);
+						cdata = processAttribute(((AttrImpl) node).getValue(), gid, matches);
 					else
 						cdata = ((AttrImpl)node).getValue();
 					ch = new char[cdata.length()];
@@ -508,7 +497,7 @@ public class NativeSerializer extends Serializer {
 		}
 	}
 
-	private final String processText(String data, long gid, Match matches[]) {
+	private final String processAttribute(String data, long gid, Match matches[]) {
 		if(matches == null)
 			return data;
 		// sort to get longest string first
@@ -532,6 +521,30 @@ public class NativeSerializer extends Serializer {
 		return data;
 	}
 	
+	private final String processText(TextImpl text, long gid, Match matches[]) {
+			if(matches == null)
+				return null;
+			// sort to get longest string first
+			Arrays.sort(matches);
+			// prepare a regular expression to mark match-terms
+			StringBuffer expr = null;
+			for (int i = 0; i < matches.length; i++)
+				if (matches[i].getNodeId() == gid) {
+					if(expr == null) {
+						expr = new StringBuffer();
+						expr.append("s/\\b(");
+					}
+					if(expr.length() > 5)
+						expr.append('|');
+					expr.append(matches[i].getMatchingTerm());
+				}
+			if(expr != null) {
+				expr.append(")\\b/||$1||/gi");
+				return reutil.substitute(expr.toString(), text.getData());
+			} else
+				return null;
+		}
+		
 	private final void scanText(String data) throws SAXException {
 		AttributesImpl atts = new AttributesImpl();
 		int p0 = 0, p1;

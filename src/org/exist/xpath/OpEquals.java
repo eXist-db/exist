@@ -29,7 +29,6 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.IndexPaths;
 import org.exist.storage.analysis.SimpleTokenizer;
 import org.exist.storage.analysis.TextToken;
 

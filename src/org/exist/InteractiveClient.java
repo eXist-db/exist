@@ -1295,6 +1295,10 @@ public class InteractiveClient {
 		} catch (IOException ioe) {
 		}
 
+		// set default character encoding - doesn't work on all systems
+		String enc = properties.getProperty("encoding", ENCODING);
+		System.setProperty("file.encoding", enc);
+		
 		// parse command-line options
 		CLArgsParser optParser = new CLArgsParser(args, OPTIONS);
 

@@ -27,7 +27,6 @@ import it.unimi.dsi.fastutil.Object2ObjectAVLTreeMap;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -64,6 +63,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.analysis.TextToken;
+import org.exist.util.ByteArray;
 import org.exist.util.ByteConversion;
 import org.exist.util.Configuration;
 import org.exist.util.Lock;
@@ -73,6 +73,7 @@ import org.exist.util.Occurrences;
 import org.exist.util.OrderedLongLinkedList;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.ReadOnlyException;
+import org.exist.util.UTF8;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
 import org.exist.util.XMLUtil;
@@ -205,7 +206,7 @@ public class NativeTextEngine extends TextSearchEngine {
 				}
 				tokenizer.setText(s);
 				while (null != (token = tokenizer.nextToken())) {
-					word = token.getText();
+					word = token.getText().toString();
 					if (stoplist.contains(word))
 						continue;
 					words.add(word);
@@ -230,7 +231,7 @@ public class NativeTextEngine extends TextSearchEngine {
 				}
 				tokenizer.setText(val);
 				while (null != (token = tokenizer.nextToken())) {
-					word = token.getText();
+					word = token.getText().toString();
 					if (stoplist.contains(word))
 						continue;
 					words.add(word);
@@ -302,7 +303,6 @@ public class NativeTextEngine extends TextSearchEngine {
 		ArraySet[] result = new ArraySet[expr.length];
 		DocumentImpl doc;
 		Value ref;
-		Value value;
 		byte[] data;
 		long gid;
 		int docId;
@@ -330,11 +330,9 @@ public class NativeTextEngine extends TextSearchEngine {
 				ref = new WordRef(collectionId, term);
 				try {
 					lock.acquire();
-					//value = dbWords.get(ref);
 					dis = dbWords.getAsStream(ref);
 				} catch (LockException e) {
 					LOG.warn("could not acquire lock on words db", e);
-					//value = null;
 					dis = null;
 				} finally {
 					lock.release();
@@ -343,7 +341,6 @@ public class NativeTextEngine extends TextSearchEngine {
 					continue;
 				}
 
-				//data = value.getData();
 				is = new VariableByteInputStream(dis);
 				try {
 					while (is.available() > 0) {
@@ -434,7 +431,7 @@ public class NativeTextEngine extends TextSearchEngine {
 				else
 					ref = new WordRef(collectionId);
 
-				IndexQuery query = new IndexQuery(null, IndexQuery.TRUNC_RIGHT, ref);
+				IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
 				try {
 					lock.acquire();
 					try {
@@ -488,7 +485,6 @@ public class NativeTextEngine extends TextSearchEngine {
 			collectionId = current.getId();
 			query =
 				new IndexQuery(
-					null,
 					IndexQuery.BW,
 					new WordRef(collectionId, start),
 					new WordRef(collectionId, end));
@@ -547,7 +543,7 @@ public class NativeTextEngine extends TextSearchEngine {
 			}
 			LOG.debug("removing words ...");
 			WordRef ref = new WordRef(collection.getId());
-			IndexQuery query = new IndexQuery(null, IndexQuery.TRUNC_RIGHT, ref);
+			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
 
 			ArrayList entries = null;
 			try {
@@ -588,9 +584,8 @@ public class NativeTextEngine extends TextSearchEngine {
 			String word;
 			Value val;
 			WordRef ref;
-			byte[] data;
-			byte[] ndata;
 			VariableByteInputStream is;
+			InputStream dis;
 			VariableByteOutputStream os;
 			int len;
 			int docId;
@@ -603,17 +598,16 @@ public class NativeTextEngine extends TextSearchEngine {
 				ref = new WordRef(collectionId, word);
 				try {
 					lock.acquire(Lock.READ_LOCK);
-					val = dbWords.get(ref);
+					dis = dbWords.getAsStream(ref);
 				} catch (LockException e) {
 					LOG.warn("could not acquire lock on words db", e);
-					val = null;
+					dis = null;
 				} finally {
 					lock.release();
 				}
-				if (val == null)
+				if (dis == null)
 					continue;
-				data = val.getData();
-				is = new VariableByteInputStream(data);
+				is = new VariableByteInputStream(dis);
 				os = new VariableByteOutputStream();
 				changed = false;
 				try {
@@ -624,15 +618,11 @@ public class NativeTextEngine extends TextSearchEngine {
 							// copy data to new buffer
 							os.writeInt(docId);
 							os.writeInt(len);
-							for (int j = 0; j < len; j++) {
-								delta = is.readLong();
-								os.writeLong(delta);
-							}
+							is.copyTo(os, len);
 						} else {
 							changed = true;
 							// skip
-							for (int j = 0; j < len; j++)
-								delta = is.readLong();
+							is.skip(len);
 						}
 					}
 				} catch (EOFException e) {
@@ -641,11 +631,10 @@ public class NativeTextEngine extends TextSearchEngine {
 				if (changed) {
 					try {
 						lock.acquire(Lock.WRITE_LOCK);
-						ndata = os.toByteArray();
-						if (ndata.length == 0) {
+						if (os.data().size() == 0) {
 							dbWords.remove(ref);
 						} else {
-							if (dbWords.put(ref, ndata) < 0)
+							if (dbWords.put(ref, os.data()) < 0)
 								LOG.debug("could not remove index for " + word);
 						}
 					} catch (LockException e) {
@@ -675,11 +664,13 @@ public class NativeTextEngine extends TextSearchEngine {
 		while (null != (token = tokenizer.nextToken())) {
 			if (idx != null
 				&& idx.getIncludeAlphaNum() == false
-				&& token.getType() == TextToken.ALPHANUM)
+				&& token.getType() == TextToken.ALPHANUM) {
 				continue;
+			}
 			word = token.getText().toLowerCase();
-			if (stoplist.contains(word))
+			if (stoplist.contains(word)) {
 				continue;
+			}
 			invIdx.setDocument(doc);
 			invIdx.addRow(word, gid);
 		}
@@ -690,20 +681,23 @@ public class NativeTextEngine extends TextSearchEngine {
 	 *
 	 *@param idx IndexPaths object passed in by the broker
 	 *@param  text  the text node to be indexed
+	 *@return boolean indicates if all of the text content has been added
+	 *to the index
 	 */
 	public void storeText(IndexPaths idx, TextImpl text) {
 		final DocumentImpl doc = (DocumentImpl) text.getOwnerDocument();
-		tokenizer.setText(text.getData());
+		tokenizer.setText(text.getXMLString().transformToLower());
 		TextToken token;
 		String word;
 		final long gid = text.getGID();
 		while (null != (token = tokenizer.nextToken())) {
-			if (idx != null && idx.getIncludeAlphaNum() == false && token.isAlpha() == false)
+			if (idx != null && idx.getIncludeAlphaNum() == false && token.isAlpha() == false) {
 				continue;
-			word = token.getText().toLowerCase();
-			//System.out.println( "'" + word + "'");
-			if (stoplist.contains(word))
+			}
+			word = token.getText();
+			if (stoplist.contains(word)) {
 				continue;
+			}
 			invIdx.setDocument(doc);
 			invIdx.addRow(word, gid);
 		}
@@ -727,61 +721,19 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 	}
 
-	final static class WordRef extends Value {
-
-		public WordRef() {
-			this(512);
-		}
-
-		public WordRef(int size) {
-			data = new byte[size];
-		}
+	private final static class WordRef extends Value {
 
 		public WordRef(short collectionId) {
-			this();
-			set(collectionId);
+			data = new byte[2];
+			ByteConversion.shortToByte(collectionId, data, 0);
+			len = 2;
 		}
 
 		public WordRef(short collectionId, String word) {
-			this();
-			set(collectionId, word);
-		}
-
-		public final void set(short collectionId) {
+			data = new byte[UTF8.encoded(word) + 2];
 			ByteConversion.shortToByte(collectionId, data, 0);
-			len = 2;
-			pos = 0;
-		}
-
-		public final void set(short collectionId, String word) {
-			ByteConversion.shortToByte(collectionId, data, 0);
-			len = 2;
-			writeChars(word);
-			pos = 0;
-		}
-
-		private final void writeChars(String s) {
-			final int slen = s.length();
-			for (int i = 0; i < slen; i++) {
-				final int code = (int) s.charAt(i);
-				if (code >= 0x01 && code <= 0x7F)
-					data[len++] = (byte) code;
-				else if (((code >= 0x80) && (code <= 0x7FF)) || code == 0) {
-					data[len++] = (byte) (0xC0 | (code >> 6));
-					data[len++] = (byte) (0x80 | (code & 0x3F));
-				} else {
-					data[len++] = (byte) (0xE0 | (code >>> 12));
-					data[len++] = (byte) (0x80 | ((code >> 6) & 0x3F));
-					data[len++] = (byte) (0x80 | (code & 0x3F));
-				}
-			}
-		}
-
-		/**
-		 * @see org.dbxml.core.data.Value#streamTo(java.io.OutputStream)
-		 */
-		public void streamTo(OutputStream out) throws IOException {
-			super.streamTo(out);
+			UTF8.encode(word, data, 2);
+			len = data.length;
 		}
 
 		/**
@@ -801,16 +753,11 @@ public class NativeTextEngine extends TextSearchEngine {
 	 *@created    25. Mai 2002
 	 */
 	class InvertedIndex {
-		private final int MAX_BUF = 100;
 
-		protected DocumentImpl doc = null;
-		protected boolean flushed = false;
-		//protected TreeMap words = new TreeMap();
-		//private Object2ObjectRBTreeMap words = new Object2ObjectRBTreeMap();
+		private DocumentImpl doc = null;
+		private boolean flushed = false;
 		private Object2ObjectAVLTreeMap words = new Object2ObjectAVLTreeMap();
-		private VariableByteOutputStream os = new VariableByteOutputStream();
-		private WordRef reusableWordRef = new WordRef(512);
-		private long currentSize = 0;
+		private VariableByteOutputStream os = new VariableByteOutputStream(7);
 
 		public InvertedIndex() {
 		}
@@ -841,7 +788,6 @@ public class NativeTextEngine extends TextSearchEngine {
 			LongLinkedList newList;
 			Value val = null;
 			VariableByteInputStream is;
-			VariableByteOutputStream os = new VariableByteOutputStream();
 			Lock lock = dbWords.getLock();
 			for (Iterator i = words.entrySet().iterator(); i.hasNext();) {
 				entry = (Map.Entry) i.next();
@@ -907,14 +853,13 @@ public class NativeTextEngine extends TextSearchEngine {
 					os.writeLong(delta);
 					last = ids[j];
 				}
-				data = os.toByteArray();
 				try {
 					lock.acquire(Lock.WRITE_LOCK);
 					try {
 						if (val == null)
-							dbWords.put(ref, data);
+							dbWords.put(ref, os.data());
 						else
-							dbWords.update(val.getAddress(), ref, data);
+							dbWords.update(val.getAddress(), ref, os.data());
 					} catch (ReadOnlyException e) {
 					}
 				} catch (LockException e) {
@@ -933,13 +878,11 @@ public class NativeTextEngine extends TextSearchEngine {
 			String word;
 			LongLinkedList idList;
 			long[] ids;
-			byte[] data;
 			long last, gid;
 			long delta;
 			NodeProxy p;
 			WordRef ref;
 			VariableByteInputStream is = new VariableByteInputStream();
-			VariableByteOutputStream os = new VariableByteOutputStream();
 			InputStream dis = null;
 			Lock lock = dbWords.getLock();
 			for (Iterator i = words.entrySet().iterator(); i.hasNext();) {
@@ -994,7 +937,6 @@ public class NativeTextEngine extends TextSearchEngine {
 					}
 				}
 				ids = idList.getData();
-				i.remove();
 				Arrays.sort(ids);
 				len = ids.length;
 				os.writeInt(oldDoc.getDocId());
@@ -1009,14 +951,13 @@ public class NativeTextEngine extends TextSearchEngine {
 					os.writeLong(delta);
 					last = ids[j];
 				}
-				data = os.toByteArray();
 				try {
 					lock.acquire(Lock.WRITE_LOCK);
 					try {
 						if (dis == null)
-							dbWords.put(ref, data);
+							dbWords.put(ref, os.data());
 						else {
-							dbWords.update(((BFile.PageInputStream)dis).getAddress(), ref, data);
+							dbWords.update(((BFile.PageInputStream)dis).getAddress(), ref, os.data());
 						}
 					} catch (ReadOnlyException e) {
 					}
@@ -1030,9 +971,9 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 
 		public void flush() {
-			final ProgressIndicator progress = new ProgressIndicator(words.size());
-			if (doc == null)
+			if (doc == null || words.size() == 0)
 				return;
+			final ProgressIndicator progress = new ProgressIndicator(words.size(), 100);
 			final short collectionId = doc.getCollection().getId();
 			int count = 1, len;
 			Map.Entry entry;
@@ -1046,7 +987,7 @@ public class NativeTextEngine extends TextSearchEngine {
 				entry = (Map.Entry) i.next();
 				word = (String) entry.getKey();
 				idList = (LongLinkedList) entry.getValue();
-				i.remove();
+				os.clear();
 				len = idList.getSize();
 				os.writeInt(doc.getDocId());
 				os.writeInt(len);
@@ -1061,28 +1002,30 @@ public class NativeTextEngine extends TextSearchEngine {
 					os.writeLong(delta);
 					prevId = id;
 				}
-				data = os.toByteArray();
-				os.clear();
-				flushWord(collectionId, word, data);
+				flushWord(collectionId, word, os.data());
 				progress.setValue(count);
-				setChanged();
-				notifyObservers(progress);
+				if(progress.changed()) {
+					setChanged();
+					notifyObservers(progress);
+				}
 			}
 			words.clear();
+			progress.finish();
+			setChanged();
+			notifyObservers(progress);
 		}
 
-		private void flushWord(short collectionId, String word, byte[] data) {
-			if (data.length == 0)
+		private void flushWord(short collectionId, String word, ByteArray data) {
+			if (data.size() == 0)
 				return;
 			// if data has already been written to the table,
 			// we may need to do updates.
-			//final WordRef ref = new WordRef(collectionId, word);
-			reusableWordRef.set(collectionId, word);
+			final WordRef ref = new WordRef(collectionId, word);
 			Lock lock = dbWords.getLock();
 			try {
 				lock.acquire(Lock.WRITE_LOCK);
 				try {
-					dbWords.append(reusableWordRef, data);
+					dbWords.append(ref, data);
 				} catch (ReadOnlyException e) {
 				}
 			} catch (LockException e) {
@@ -1120,11 +1063,9 @@ public class NativeTextEngine extends TextSearchEngine {
 				word = new String(key.getData(), 2, key.getLength() - 2);
 			}
 			if (matcher.matches(word, regexp)) {
-				//Value value = dbWords.get(pointer);
 				InputStream dis = dbWords.getAsStream(pointer);
 				if (dis == null)
 					return true;
-				//byte[] data = value.getData();
 				int k = 0;
 				int docId;
 				int len;

@@ -26,8 +26,6 @@ import it.unimi.dsi.fastutil.Long2ObjectLinkedOpenHashMap;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,14 +39,16 @@ import org.dbxml.core.filer.BTree;
 import org.dbxml.core.filer.BTreeCallback;
 import org.dbxml.core.filer.BTreeException;
 import org.dbxml.core.indexer.IndexQuery;
+import org.exist.util.ByteArray;
 import org.exist.util.ByteConversion;
+import org.exist.util.FastByteBuffer;
+import org.exist.util.FixedByteArray;
 import org.exist.util.IndexCallback;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.OrderedLinkedList;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.ReentrantReadWriteLock;
-import org.exist.util.StorageAddress;
 
 /**
  *  Data store for variable size values.
@@ -166,7 +166,7 @@ public class BFile extends BTree {
 	public Lock getLock() {
 		return lock;
 	}
-	public long append(Value key, byte[] value) throws ReadOnlyException {
+	public long append(Value key, ByteArray value) throws ReadOnlyException {
 		if (key == null) {
 			LOG.debug("key is null");
 			return -1;
@@ -188,6 +188,7 @@ public class BFile extends BTree {
 				if (page instanceof OverflowPage)
 					 ((OverflowPage) page).append(value);
 				else {
+					final int valueLen = value.size();
 					final byte[] data = page.getData();
 					final int offset = findValuePosition(page, tid);
 					final int l = ByteConversion.byteToInt(data, offset);
@@ -213,10 +214,10 @@ public class BFile extends BTree {
 								+ (offset + 4 + l));
 						return -1;
 					}
-					final byte[] newData = new byte[l + value.length];
+					final byte[] newData = new byte[l + valueLen];
 					System.arraycopy(data, offset + 4, newData, 0, l);
-					System.arraycopy(value, 0, newData, l, value.length);
-					p = update(p, page, key, newData);
+					value.copyTo(newData, l);
+					p = update(p, page, key, new FixedByteArray(newData));
 				}
 				return p;
 			} catch (BTreeException bte) {
@@ -623,7 +624,7 @@ public class BFile extends BTree {
 	 *@exception  BTreeException  Description of the Exception
 	 */
 	public ArrayList getEntries() throws IOException, BTreeException {
-		IndexQuery query = new IndexQuery(null, IndexQuery.ANY, "");
+		IndexQuery query = new IndexQuery(IndexQuery.ANY, "");
 		FindCallback cb = new FindCallback(FindCallback.BOTH);
 		query(query, cb);
 		return cb.getValues();
@@ -637,7 +638,7 @@ public class BFile extends BTree {
 	 *@exception  BTreeException  Description of the Exception
 	 */
 	public ArrayList getKeys() throws IOException, BTreeException {
-		IndexQuery query = new IndexQuery(null, IndexQuery.ANY, "");
+		IndexQuery query = new IndexQuery(IndexQuery.ANY, "");
 		FindCallback cb = new FindCallback(FindCallback.KEYS);
 		query(query, cb);
 		return cb.getValues();
@@ -651,7 +652,7 @@ public class BFile extends BTree {
 	 *@exception  BTreeException  Description of the Exception
 	 */
 	public ArrayList getValues() throws IOException, BTreeException {
-		IndexQuery query = new IndexQuery(null, IndexQuery.ANY, "");
+		IndexQuery query = new IndexQuery(IndexQuery.ANY, "");
 		FindCallback cb = new FindCallback(FindCallback.VALUES);
 		query(query, cb);
 		return cb.getValues();
@@ -667,6 +668,12 @@ public class BFile extends BTree {
 		return super.open();
 	}
 
+	public long put(Value key, byte[] data, boolean overwrite) throws ReadOnlyException {
+		FastByteBuffer buf = new FastByteBuffer(5);
+		buf.append(data);
+		return put(key, buf, overwrite);
+	}
+
 	/**
 	 *  Description of the Method
 	 *
@@ -674,7 +681,7 @@ public class BFile extends BTree {
 	 *@param  value  Description of the Parameter
 	 *@return        Description of the Return Value
 	 */
-	public long put(Value key, byte[] value) throws ReadOnlyException {
+	public long put(Value key, ByteArray value) throws ReadOnlyException {
 		return put(key, value, true);
 	}
 
@@ -686,7 +693,7 @@ public class BFile extends BTree {
 	 *@param  overwrite  Description of the Parameter
 	 *@return            Description of the Return Value
 	 */
-	public long put(Value key, byte[] value, boolean overwrite) throws ReadOnlyException {
+	public long put(Value key, ByteArray value, boolean overwrite) throws ReadOnlyException {
 		if (key == null) {
 			LOG.debug("key is null");
 			return -1;
@@ -836,15 +843,17 @@ public class BFile extends BTree {
 		setFile(new File(location + ".dbx"));
 	}
 
-	private long storeValue(byte[] value) throws IOException, ReadOnlyException {
+	private long storeValue(ByteArray value) throws IOException, ReadOnlyException {
+		final int vlen = value.size();
 		// does value fit into a single page?
-		if (6 + value.length > fileHeader.getWorkSize()) {
+		if (6 + vlen > fileHeader.getWorkSize()) {
 			OverflowPage page = new OverflowPage();
-			byte[] data = new byte[value.length + 6];
-			page.getPageHeader().setDataLength(value.length + 6);
+			byte[] data = new byte[vlen + 6];
+			page.getPageHeader().setDataLength(vlen + 6);
 			ByteConversion.shortToByte((short) 1, data, 0);
-			ByteConversion.intToByte(value.length, data, 2);
-			System.arraycopy(value, 0, data, 6, value.length);
+			ByteConversion.intToByte(vlen, data, 2);
+			//System.arraycopy(value, 0, data, 6, vlen);
+			value.copyTo(data, 6);
 			page.setData(data);
 			page.getPageHeader().setDirty(true);
 			page.setDirty(true);
@@ -857,7 +866,7 @@ public class BFile extends BTree {
 		int realSpace = 0;
 		// check for available tid
 		while (tid < 0) {
-			free = fileHeader.findFreeSpace(value.length + 6);
+			free = fileHeader.findFreeSpace(vlen + 6);
 			if (free == null) {
 				page = createDataPage();
 				page.setData(new byte[fileHeader.getWorkSize()]);
@@ -869,7 +878,7 @@ public class BFile extends BTree {
 				page = getDataPage(free.getPage());
 				// check if the information about free space is really correct
 				realSpace = fileHeader.getWorkSize() - page.getPageHeader().getDataLength();
-				if (realSpace < 6 + value.length) {
+				if (realSpace < 6 + vlen) {
 					// not correct: adjust and continue
 					LOG.debug("wrong data length in list of free pages: adjusting to " + realSpace);
 					free.setFree(realSpace);
@@ -891,11 +900,12 @@ public class BFile extends BTree {
 		ByteConversion.shortToByte(tid, data, len);
 		len += 2;
 		// save data length
-		ByteConversion.intToByte(value.length, data, len);
+		ByteConversion.intToByte(vlen, data, len);
 		len += 4;
 		// save data
-		System.arraycopy(value, 0, data, len, value.length);
-		len += value.length;
+		value.copyTo(data, len);
+		//System.arraycopy(value, 0, data, len, vlen);
+		len += vlen;
 		page.getPageHeader().setDataLength(len);
 		page.getPageHeader().incRecordCount();
 		saveFreeSpace(free, page);
@@ -911,7 +921,7 @@ public class BFile extends BTree {
 	 *@param  value  Description of the Parameter
 	 *@return        Description of the Return Value
 	 */
-	public long update(Value key, byte[] value) throws ReadOnlyException {
+	public long update(Value key, ByteArray value) throws ReadOnlyException {
 		try {
 			long p = findValue(key);
 			if (p == KEY_NOT_FOUND)
@@ -933,7 +943,7 @@ public class BFile extends BTree {
 	 *@param  value  Description of the Parameter
 	 *@return        Description of the Return Value
 	 */
-	protected long update(long p, Value key, byte[] value) throws ReadOnlyException {
+	protected long update(long p, Value key, ByteArray value) throws ReadOnlyException {
 		try {
 			long pos = (long) pageFromPointer(p);
 			DataPage page = getDataPage(pos);
@@ -958,11 +968,12 @@ public class BFile extends BTree {
 	 *@exception  BTreeException  Description of the Exception
 	 *@exception  IOException     Description of the Exception
 	 */
-	protected long update(long p, DataPage page, Value key, byte[] value)
+	protected long update(long p, DataPage page, Value key, ByteArray value)
 		throws BTreeException, IOException, ReadOnlyException {
 		if (page.getPageHeader().getStatus() == MULTI_PAGE) {
+			final int valueLen = value.size();
 			// does value fit into a single page?
-			if (value.length + 6 < fileHeader.getWorkSize()) {
+			if (valueLen + 6 < fileHeader.getWorkSize()) {
 				// yes: remove the overflow page
 				remove(page, p);
 				long np = storeValue(value);
@@ -970,14 +981,15 @@ public class BFile extends BTree {
 				return np;
 			} else {
 				// this is an overflow page: simply replace the value
-				byte[] data = new byte[value.length + 6];
+				byte[] data = new byte[valueLen + 6];
 				// save tid
 				ByteConversion.shortToByte((short) 1, data, 0);
 
 				// save length
-				ByteConversion.intToByte(value.length, data, 2);
+				ByteConversion.intToByte(valueLen, data, 2);
 				// save data
-				System.arraycopy(value, 0, data, 6, value.length);
+				value.copyTo(data, 6);
+				//System.arraycopy(value, 0, data, 6, value.length);
 				page.setData(data);
 				return p;
 			}
@@ -1699,7 +1711,7 @@ public class BFile extends BTree {
 		 *
 		 *@param  chunk  chunk of data to append
 		 */
-		public void append(byte[] chunk) {
+		public void append(ByteArray chunk) {
 			SinglePage nextPage;
 			BFilePageHeader ph = firstPage.getPageHeader();
 			// get the last page and fill it
@@ -1711,14 +1723,16 @@ public class BFile extends BTree {
 				page = firstPage;
 			ph = page.getPageHeader();
 			int chunkSize = fileHeader.getWorkSize() - ph.getDataLength();
-			if (chunk.length < chunkSize)
-				chunkSize = chunk.length;
+			final int chunkLen = chunk.size();
+			if (chunkLen < chunkSize)
+				chunkSize = chunkLen;
 			// fill last page
-			System.arraycopy(chunk, 0, page.getData(), ph.getDataLength(), chunkSize);
+			chunk.copyTo(0, page.getData(), ph.getDataLength(), chunkSize);
+			//System.arraycopy(chunk, 0, page.getData(), ph.getDataLength(), chunkSize);
 			ph.setDataLength(ph.getDataLength() + chunkSize);
 			page.setDirty(true);
 			// write the remaining chunks to new pages
-			int remaining = chunk.length - chunkSize;
+			int remaining = chunkLen - chunkSize;
 			int current = chunkSize;
 			chunkSize = fileHeader.getWorkSize();
 			if (remaining > 0) {
@@ -1735,7 +1749,8 @@ public class BFile extends BTree {
 					if (remaining < chunkSize)
 						chunkSize = remaining;
 					// copy next chunk of data to the page
-					System.arraycopy(chunk, current, page.getData(), 0, chunkSize);
+					chunk.copyTo(current, page.getData(), 0, chunkSize);
+					//System.arraycopy(chunk, current, page.getData(), 0, chunkSize);
 					page.setDirty(true);
 					if (page != firstPage)
 						page.getPageHeader().setDataLength(chunkSize);
@@ -1748,7 +1763,7 @@ public class BFile extends BTree {
 				// add link to last page
 				pages.add(page, 2);
 				ph.setLastInChain(page.getPageNum());
-				ph.setDataLength(ph.getDataLength() + chunk.length);
+				ph.setDataLength(ph.getDataLength() + chunkLen);
 			} else
 				ph.setLastInChain(0L);
 			// adjust length field in first page
@@ -1947,22 +1962,23 @@ public class BFile extends BTree {
 
 		public long getAddress();
 	}
-	
-	private final class SimplePageInputStream extends ByteArrayInputStream 
-	implements PageInputStream {
-		
+
+	private final class SimplePageInputStream
+		extends ByteArrayInputStream
+		implements PageInputStream {
+
 		private long address_ = 0L;
-		
+
 		public SimplePageInputStream(byte[] data, int start, int len, long address) {
 			super(data, start, len);
 			address_ = address;
 		}
-		
+
 		public long getAddress() {
 			return address_;
 		}
 	}
-	
+
 	/**
 	 * An input stream for overflow pages.
 	 * 
@@ -1975,7 +1991,7 @@ public class BFile extends BTree {
 		private int pageLen_;
 		private int offset_ = 0;
 		private long address_ = 0L;
-		
+
 		public MultiPageInputStream(SinglePage first, long address) {
 			nextPage_ = first;
 			len_ = first.ph.getDataLength() - 6;
@@ -1988,7 +2004,7 @@ public class BFile extends BTree {
 		public final long getAddress() {
 			return address_;
 		}
-		
+
 		/* (non-Javadoc)
 		 * @see java.io.InputStream#read()
 		 */
@@ -2009,7 +2025,8 @@ public class BFile extends BTree {
 					offset_ = 0;
 					pages.add(nextPage_);
 				} catch (LockException e) {
-					throw new IOException("failed to acquire a read lock on " + getFile().getName());
+					throw new IOException(
+						"failed to acquire a read lock on " + getFile().getName());
 				} finally {
 					lock.release();
 				}
@@ -2030,7 +2047,7 @@ public class BFile extends BTree {
 		public int read(byte[] b, int off, int len) throws IOException {
 			if (pageLen_ < 0)
 				return -1;
-			for(int i = 0; i < len; i++) {
+			for (int i = 0; i < len; i++) {
 				if (offset_ == pageLen_) {
 					final long next = nextPage_.getPageHeader().getNextInChain();
 					if (next < 1) {
@@ -2043,9 +2060,9 @@ public class BFile extends BTree {
 					offset_ = 0;
 					pages.add(nextPage_);
 				}
-				b[off + i] = nextPage_.data[offset_++]; 
+				b[off + i] = nextPage_.data[offset_++];
 			}
-			return len; 
+			return len;
 		}
 
 		/* (non-Javadoc)

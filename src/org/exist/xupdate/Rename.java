@@ -5,11 +5,6 @@
  */
 package org.exist.xupdate;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
 import org.exist.EXistException;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.Collection;
@@ -60,6 +55,7 @@ public class Rename extends Modification {
 			if (!doc.getPermissions().validate(user, Permission.UPDATE))
 				throw new PermissionDeniedException("permission denied to update document");
 			doc.setIndexListener(listener);
+			System.out.println("renaming node " + node.getGID());
 			parent = (NodeImpl)node.getParentNode();
 			switch(node.getNodeType()) {
 				case Node.ELEMENT_NODE :

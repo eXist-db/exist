@@ -134,7 +134,7 @@ public class LocationStep extends Step {
 				broker = pool.get();
 				if (buf == null)
 					buf = (NodeSet) broker.findElementsByTagName(documents, test.getName());
-				if (context.getLength() == 1) {
+				/*if (context.getLength() == 1) {
 					NodeProxy n = context.get(0);
 					NodeProxy p = buf.parentWithChild(n, true, false);
 					if (p != null) {
@@ -142,7 +142,7 @@ public class LocationStep extends Step {
 						result.add(p);
 						return result;
 					}
-				}
+				}*/
 				return buf.getChildren(context, NodeSet.DESCENDANT);
 
 			} catch (EXistException e) {

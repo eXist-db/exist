@@ -40,7 +40,8 @@ import org.exist.util.*;
  *@created    27. Juni 2002
  */
 public class CharacterDataImpl extends NodeImpl implements CharacterData {
-    protected FastStringBuffer cdata = new FastStringBuffer();
+    
+    protected XMLString cdata = null;
 
 
     public CharacterDataImpl( short nodeType ) {
@@ -67,22 +68,8 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      */
     public CharacterDataImpl( short nodeType, long gid, String data ) {
         super( nodeType, "", gid );
-        cdata.append(data);
+        cdata = new XMLString(data.toCharArray());
     }
-
-
-    /**
-     *  Constructor for the CharacterDataImpl object
-     *
-     *@param  nodeType  Description of the Parameter
-     *@param  gid       Description of the Parameter
-     *@param  data      Description of the Parameter
-     */
-    public CharacterDataImpl( short nodeType, long gid, StringBuffer data ) {
-        super( nodeType, "", gid );
-        cdata.append(data);
-    }
-
 
     /**
      *  Constructor for the CharacterDataImpl object
@@ -92,19 +79,7 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      */
     public CharacterDataImpl( short nodeType, String data ) {
         super( nodeType, "" );
-        cdata.append(data);
-    }
-
-
-    /**
-     *  Constructor for the CharacterDataImpl object
-     *
-     *@param  nodeType  Description of the Parameter
-     *@param  data      Description of the Parameter
-     */
-    public CharacterDataImpl( short nodeType, StringBuffer data ) {
-        super( nodeType, "" );
-        cdata.append(data);
+		cdata = new XMLString(data.toCharArray());
     }
 
 
@@ -118,11 +93,11 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      */
     public CharacterDataImpl( short nodeType, char[] data, int start, int howmany ) {
         super( nodeType, "" );
-        cdata.append(data, start, howmany);
+        cdata = new XMLString(data, start, howmany);
     }
 
     public void clear() {
-        cdata.setLength(0);
+        cdata.reset();
     }
 
     /**
@@ -132,7 +107,10 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@exception  DOMException  Description of the Exception
      */
     public void appendData( String arg ) throws DOMException {
-        cdata.append(arg);
+    	if(cdata == null)
+    		cdata = new XMLString(arg.toCharArray());
+    	else
+        	cdata.append(arg);
     }
 
 
@@ -145,7 +123,10 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@exception  DOMException  Description of the Exception
      */
     public void appendData( char[] data, int start, int howmany ) throws DOMException {
-        cdata.append( data, start, howmany );
+    	if(cdata == null)
+    		cdata = new XMLString(data, start, howmany);
+    	else
+        	cdata.append( data, start, howmany );
     }
 
 
@@ -157,10 +138,8 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@exception  DOMException  Description of the Exception
      */
     public void deleteData( int offset, int count ) throws DOMException {
-        StringBuffer buf = cdata.getString();
-        buf.delete( offset, offset + count );
-        cdata.setLength(0);
-        cdata.append(buf);
+    	if(cdata != null)
+        	cdata.delete(offset, count);
     }
 
 
@@ -171,14 +150,21 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@exception  DOMException  Description of the Exception
      */
     public String getData() throws DOMException {
-        return cdata.toString();
+    	if(cdata == null)
+    		return null;
+    	else
+        	return cdata.toString();
+    }
+    
+    public XMLString getXMLString() {
+    	return cdata;
     }
 
     public String getLowerCaseData() throws DOMException {
-        StringBuffer buf = cdata.getString();
-        for(int i = 0; i < buf.length(); i++)
-            buf.setCharAt(i, Character.toLowerCase(buf.charAt(i)));
-        return buf.toString();
+    	if(cdata == null)
+    		return null;
+    	else
+        	return cdata.toString().toLowerCase();
     }
     
     /**
@@ -209,10 +195,10 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@exception  DOMException  Description of the Exception
      */
     public void insertData( int offset, String arg ) throws DOMException {
-        StringBuffer buf = cdata.getString();
-        buf.insert( offset, arg );
-        cdata.setLength(0);
-        cdata.append(buf);
+    	if(cdata == null)
+    		cdata = new XMLString(arg.toCharArray());
+    	else
+        	cdata.insert(offset, arg);
     }
 
 
@@ -225,14 +211,10 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@exception  DOMException  Description of the Exception
      */
     public void replaceData( int offset, int count, String arg ) throws DOMException {
-        /*
-         *  if(offset < 0 || offset + count > cdata.length())
-         *  throw new DOMException(DOMException.INDEX_SIZE_ERR, "");
-         */
-        StringBuffer buf = cdata.getString();
-        buf.replace( offset, offset + count, arg);
-        cdata.setLength(0);
-        cdata.append(buf);
+		if(cdata == null)
+			throw new DOMException(DOMException.DOMSTRING_SIZE_ERR, 
+				"string index out of bounds");
+        cdata.replace(offset, count, arg);
     }
 
 
@@ -243,10 +225,15 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@exception  DOMException  Description of the Exception
      */
     public void setData( String data ) throws DOMException {
-        cdata.setLength(0);
-        cdata.append(data);
+        if(cdata == null)
+        	cdata = new XMLString(data.toCharArray());
+        else
+        	cdata.setData(data.toCharArray(), 0, data.length());
     }
 
+	public void setData( XMLString data ) throws DOMException {
+		cdata = data;
+	}
 
     /**
      *  Sets the data attribute of the CharacterDataImpl object
@@ -257,8 +244,10 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@exception  DOMException  Description of the Exception
      */
     public void setData( char[] data, int start, int howmany ) throws DOMException {
-        cdata.setLength(0);
-        cdata.append( data, start, howmany );
+        if(cdata == null)
+        	cdata = new XMLString(data, start, howmany);
+        else
+        	cdata.setData(data, start, howmany);
     }
 
 
@@ -271,7 +260,10 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@exception  DOMException  Description of the Exception
      */
     public String substringData( int offset, int count ) throws DOMException {
-        return cdata.getString().substring( offset, offset + count );
+    	if(cdata == null)
+    		throw new DOMException(DOMException.DOMSTRING_SIZE_ERR, 
+    			"string index out of bounds");
+        return cdata.substring(offset, count);
     }
 
 
@@ -313,7 +305,10 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@return    Description of the Return Value
      */
     public String toString() {
-        return cdata.toString();
+    	if(cdata == null)
+    		return null;
+    	else
+        	return cdata.toString();
     }
 }
 

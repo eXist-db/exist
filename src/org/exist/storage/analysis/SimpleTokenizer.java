@@ -13,9 +13,8 @@ public class SimpleTokenizer implements Tokenizer {
 	private int pos = 0;
 	private int previous = 0;
 	private boolean stem = false;
-	private String text;
+	private CharSequence text;
 	private int len = 0;
-	private long elapsed = 0;
 	private final TextToken temp = new TextToken();
 	
 	public SimpleTokenizer() {
@@ -43,19 +42,16 @@ public class SimpleTokenizer implements Tokenizer {
 			token.setType(TextToken.ALPHA);
 		int oldPos = pos;
 		// consume letters
-		while (LA(1) != (char) - 1) {
-			if (Character.isLetter(LA(1))) {
+		char ch = LA(1);
+		while (ch != (char) - 1) {
+			if (Character.isLetter(ch) || (allowWildcards && isWildcard(ch))) {
 				token.consumeNext();
 				consume();
-				continue;
-			} else if (allowWildcards && isWildcard(LA(1))) {
-				token.consumeNext();
-				consume();
-				continue;
+				ch = LA(1);
 			} else
 				break;
 		}
-		if (Character.isDigit(LA(1))) {
+		if (Character.isDigit(ch)) {
 			// found non-letter character
 			// call alphanum()
 			//pos = oldPos;
@@ -103,23 +99,24 @@ public class SimpleTokenizer implements Tokenizer {
 	}
 
 	public String getText() {
-		return text;
+		return text.toString();
 	}
 
 	protected TextToken nextTerminalToken(boolean wildcards) {
 		TextToken token = null;
-		if (LA(1) == (char) - 1)
+		char ch = LA(1);
+		if (ch == (char) - 1)
 			return eof();
-		if (Character.isLetter(LA(1)) || (wildcards && isWildcard(LA(1))))
+		if (Character.isLetter(ch) || (wildcards && isWildcard(ch)))
 			token = alpha(null, wildcards);
 
 		if (token == null
-			&& (Character.isLetterOrDigit(LA(1))
-				|| (wildcards && isWildcard(LA(1)))))
+			&& (Character.isLetterOrDigit(ch)
+				|| (wildcards && isWildcard(ch))))
 			token = alphanum(null, wildcards);
 
 		if (token == null)
-			switch (LA(1)) {
+			switch (ch) {
 				case '*' :
 				case ',' :
 				case '-' :
@@ -148,13 +145,14 @@ public class SimpleTokenizer implements Tokenizer {
 			StringBuffer buf;
 			int oldPos = pos;
 			boolean found;
+			char LA1 = LA(1);
 			switch (token.getType()) {
 				case TextToken.EOF :
 					return null;
 				case TextToken.ALPHA :
 					found = false;
 					// text with apostrophe like Peter's
-					if (LA(1) == '\'') {
+					if (LA1 == '\'') {
 						consume();
 						buf = new StringBuffer(token.getText());
 						next = nextTerminalToken(wildcards);
@@ -170,7 +168,7 @@ public class SimpleTokenizer implements Tokenizer {
 					}
 					// text with some alphanumeric sequence attached 
 					// like Q/22/A4.5 or 12/09/1989
-					switch (LA(1)) {
+					switch (LA1) {
 						case '_' :
 						case ':' :
 						case '.' :
@@ -204,7 +202,7 @@ public class SimpleTokenizer implements Tokenizer {
 					}
 					return token;
 				case TextToken.ALPHANUM :
-					switch (LA(1)) {
+					switch (LA1) {
 						case '*' :
 						case ',' :
 						case '-' :
@@ -262,7 +260,7 @@ public class SimpleTokenizer implements Tokenizer {
 		return temp;
 	}
 
-	public void setText(String text) {
+	public void setText(CharSequence text) {
 		pos = 0;
 		len = text.length();
 		this.text = text;
@@ -271,20 +269,5 @@ public class SimpleTokenizer implements Tokenizer {
 	protected TextToken whitespace() {
 		consume();
 		return TextToken.WS_TOKEN;
-	}
-	
-	public long elapsed() {
-		return elapsed;
-	}
-
-	public static void main(String args[]) {
-		String test = "something \n'Light o' love.' " +
-			"10,022.435 5.66 17.2.1989";
-		SimpleTokenizer tokenizer = new SimpleTokenizer();
-		tokenizer.setText(test);
-		TextToken token;
-		while((token = tokenizer.nextToken()) != null) {
-			System.out.println(token.getText());
-		}
 	}
 }

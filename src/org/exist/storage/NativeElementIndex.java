@@ -34,6 +34,7 @@ import org.dbxml.core.data.Value;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
+import org.exist.util.ByteArrayPool;
 import org.exist.util.Configuration;
 import org.exist.util.FastQSort;
 import org.exist.util.Lock;
@@ -62,7 +63,8 @@ public class NativeElementIndex extends ElementIndex {
 	public final static int PARTITION_SIZE = 102400;
 
 	protected BFile dbElement;
-
+	private VariableByteOutputStream os = new VariableByteOutputStream();
+	
 	public NativeElementIndex(DBBroker broker, Configuration config, BFile dbElement) {
 		super(broker, config);
 		this.dbElement = dbElement;
@@ -87,7 +89,6 @@ public class NativeElementIndex extends ElementIndex {
 		String elementName;
 		List oldList = new ArrayList(), idList;
 		NodeProxy p;
-		VariableByteOutputStream os = new VariableByteOutputStream();
 		VariableByteInputStream is = new VariableByteInputStream();
 		InputStream dis = null;
 		int len, docId;
@@ -147,9 +148,7 @@ public class NativeElementIndex extends ElementIndex {
 										node != null
 											&& (!XMLUtil
 												.isDescendantOrSelf(oldDoc, node.getGID(), gid))) {
-										if (!containsNode(idList, gid)) {
 											oldList.add(new NodeProxy(oldDoc, gid, address));
-										}
 									}
 								}
 							}
@@ -174,14 +173,14 @@ public class NativeElementIndex extends ElementIndex {
 					os.writeLong(delta);
 					StorageAddress.write(p.internalAddress, os);
 				}
-				data = os.toByteArray();
+				//data = os.toByteArray();
 				try {
 					lock.acquire(Lock.WRITE_LOCK);
 					if (dis == null)
-						dbElement.put(ref, data);
+						dbElement.put(ref, os.data());
 					else {
 						address = ((BFile.PageInputStream)dis).getAddress();
-						dbElement.update(address, ref, data);
+						dbElement.update(address, ref, os.data());
 						//dbElement.update(val.getAddress(), ref, data);
 					}
 				} catch (LockException e) {
@@ -204,7 +203,6 @@ public class NativeElementIndex extends ElementIndex {
 		String elementName;
 		List newList = new ArrayList(), idList;
 		NodeProxy p;
-		VariableByteOutputStream os;
 		VariableByteInputStream is;
 		int len, docId;
 		byte[] data;
@@ -231,7 +229,7 @@ public class NativeElementIndex extends ElementIndex {
 				} finally {
 					lock.release();
 				}
-				os = new VariableByteOutputStream();
+				os.clear();
 				newList.clear();
 				if (val != null) {
 					// add old entries to the new list 
@@ -283,13 +281,12 @@ public class NativeElementIndex extends ElementIndex {
 					os.writeLong(delta);
 					StorageAddress.write(p.internalAddress, os);
 				}
-				data = os.toByteArray();
 				try {
 					lock.acquire(Lock.WRITE_LOCK);
 					if (val == null)
-						dbElement.put(ref, data);
+						dbElement.put(ref, os.data());
 					else
-						dbElement.update(val.getAddress(), ref, data);
+						dbElement.update(val.getAddress(), ref, os.data());
 				} catch (LockException e) {
 					LOG.error("could not acquire lock on elements", e);
 				} finally {
@@ -312,7 +309,7 @@ public class NativeElementIndex extends ElementIndex {
 	public void flush() {
 		if (elementIds.size() == 0)
 			return;
-		final ProgressIndicator progress = new ProgressIndicator(elementIds.size());
+		final ProgressIndicator progress = new ProgressIndicator(elementIds.size(), 5);
 
 		NodeProxy proxy;
 		String elementName;
@@ -320,9 +317,8 @@ public class NativeElementIndex extends ElementIndex {
 		int count = 1, len;
 		byte[] data;
 		String name;
-		Value ref;
+		NativeBroker.ElementValue ref;
 		Map.Entry entry;
-		VariableByteOutputStream os = new VariableByteOutputStream();
 		// get collection id for this collection
 		final String docName = doc.getFileName();
 		long prevId;
@@ -335,7 +331,7 @@ public class NativeElementIndex extends ElementIndex {
 				entry = (Map.Entry) i.next();
 				elementName = (String) entry.getKey();
 				idList = (ArrayList) entry.getValue();
-				i.remove();
+				os.clear();
 				FastQSort.sort(idList, 0, idList.size() - 1);
 				len = idList.size();
 				os.writeInt(doc.getDocId());
@@ -348,13 +344,11 @@ public class NativeElementIndex extends ElementIndex {
 					os.writeLong(cid);
 					StorageAddress.write(proxy.internalAddress, os);
 				}
-				data = os.toByteArray();
-				os.clear();
 				short sym = NativeBroker.getSymbols().getSymbol(elementName);
 				ref = new NativeBroker.ElementValue(collectionId, sym);
 				try {
 					lock.acquire(Lock.WRITE_LOCK);
-					if (dbElement.append(ref, data) < 0) {
+					if (dbElement.append(ref, os.data()) < 0) {
 						LOG.warn("could not save index for element " + elementName);
 						continue;
 					}
@@ -364,25 +358,23 @@ public class NativeElementIndex extends ElementIndex {
 					lock.release();
 				}
 				progress.setValue(count);
-				setChanged();
-				notifyObservers(progress);
+				if(progress.changed()) {
+					setChanged();
+					notifyObservers(progress);
+				}
 				count++;
 			}
 		} catch (ReadOnlyException e) {
 			LOG.warn("database is read-only");
 			return;
 		}
+		progress.finish();
+		setChanged();
+		notifyObservers(progress);
 		elementIds.clear();
 		//elementIds = new TreeMap();
 	}
 
-	private Value findPartition(short collectionId, short symbol, int len) {
-		NativeBroker.ElementValue ref =
-			new NativeBroker.ElementValue(collectionId, symbol, (short) 0);
-		return ref;
-	}
-
-	/**  Description of the Method */
 	public void sync() {
 		Lock lock = dbElement.getLock();
 		try {

@@ -3,14 +3,9 @@ package org.exist.xupdate;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.dom.ArraySet;
-import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeIndexListener;
@@ -84,11 +79,11 @@ public abstract class Modification {
                 throw new EXistException("select expression should evaluate to a" +
                     "node-set");
             NodeList set = resultValue.getNodeList();
+			LOG.info("found " + set.getLength() + " for select; retrieving nodes...");
             ArrayList out = new ArrayList(set.getLength());
             for(int i = 0; i < set.getLength(); i++) {
             	out.add(set.item(i));
             }
-            LOG.info("found " + out.size() + " for select");
             NodeImpl result[] = new NodeImpl[out.size()];
 			out.toArray(result);
             return result;
