@@ -290,6 +290,9 @@ public class GeneralComparison extends BinaryOp {
 		// evaluate right expression
 		Sequence rightSeq = getRight().eval(contextSequence);
 
+        if (rightSeq.getLength() == 0)
+            return Sequence.EMPTY_SEQUENCE;
+        
 		if (rightSeq.getLength() > 1)
 			// fall back to nodeSetCompare
 			return nodeSetCompare(nodes, contextSequence);
