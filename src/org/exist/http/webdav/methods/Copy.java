@@ -154,6 +154,56 @@ public class Copy implements WebDAVMethod {
         }
     }
     
+    private void copyCollection(User user, HttpServletRequest request, HttpServletResponse response, 
+    		Collection collection, String destination)
+    throws ServletException, IOException {
+        int p = destination.lastIndexOf('/');
+        if(p < 0) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                    "Bad destination: " + destination);
+            return;
+        }
+        String newCollectionName = destination.substring(p + 1);
+        destination = destination.substring(0, p);
+        boolean replaced = false;
+        DBBroker broker = null;
+        Collection destCollection = null;
+        try {
+            broker = pool.get(user);
+            destCollection = broker.openCollection(destination, Lock.WRITE_LOCK);
+            if(destCollection == null) {
+                response.sendError(HttpServletResponse.SC_CONFLICT,
+                        "Destination collection not found");
+                return;
+            }
+    		if(destCollection.hasChildCollection(newCollectionName)) {
+    			boolean overwrite = overwrite(request);
+    			if(!overwrite) {
+    				response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED,
+    						"Destination collection exists and overwrite is not allowed");
+    				return;
+    			}
+    			replaced = true;
+    		}
+            
+            broker.copyCollection(collection, destCollection, newCollectionName);
+            if(replaced)
+                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            else
+                response.setStatus(HttpServletResponse.SC_CREATED);
+        } catch (EXistException e) {
+            throw new ServletException(e.getMessage(), e);
+        } catch (PermissionDeniedException e) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+        } catch (LockException e) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+        } finally {
+        	if(destCollection != null)
+        		destCollection.release();
+            pool.release(broker);
+        }
+    }
+    
     private boolean overwrite(HttpServletRequest request) {
         String header = request.getHeader("Overwrite");
         if(header == null)

@@ -37,6 +37,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.util.Lock;
 import org.exist.util.LockException;
 
 /**
@@ -63,13 +64,14 @@ public class Delete implements WebDAVMethod {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
+			collection.getLock().acquire(Lock.WRITE_LOCK);
 			if(resource == null) {
 				broker.removeCollection(collection);
 			} else {
 				if(resource.getResourceType() == DocumentImpl.BINARY_FILE)
-					resource.getCollection().removeBinaryResource(broker, resource.getFileName());
+					collection.removeBinaryResource(broker, resource.getFileName());
 				else
-					resource.getCollection().removeDocument(broker, resource.getFileName());
+					collection.removeDocument(broker, resource.getFileName());
 			}
 		} catch (EXistException e) {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
@@ -80,6 +82,7 @@ public class Delete implements WebDAVMethod {
 		} catch (TriggerException e) {
 			response.sendError(HttpServletResponse.SC_CONFLICT, e.getMessage());
 		} finally {
+			collection.release();
 			pool.release(broker);
 		}
 		response.setStatus(HttpServletResponse.SC_NO_CONTENT);
