@@ -85,7 +85,6 @@ public class ExtNear extends ExtFulltext {
 		NodeSet hits = processQuery(nodes);
 		if (hits == null)
 			return Sequence.EMPTY_SEQUENCE;
-		//LOG.debug("scanning " + hits.getLength() + " matches ...");
 				
 		boolean hasWildcards = false;
 		for(int i = 0; i < terms.length; i++) {
@@ -149,7 +148,7 @@ public class ExtNear extends ExtFulltext {
 
 			}
 		}
-		//LOG.debug("found " + r.getLength());
+//		LOG.debug("found " + r.getLength());
 		return r;
 	}
 
@@ -181,7 +180,7 @@ public class ExtNear extends ExtFulltext {
 		int distance;
 		for (Iterator i = result.iterator(); i.hasNext();) {
 			current = (NodeProxy) i.next();
-			value = current.getNodeValue();
+			value = current.getNodeValueSeparated();
 			tok.setText(value);
 			j = 0;
 			if (j < patterns.length)
