@@ -268,7 +268,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		return doc;
 	}
 	
-	public DocumentImpl getDocument()  {
+	public final DocumentImpl getDocument()  {
 		return doc;
 	}
 	
