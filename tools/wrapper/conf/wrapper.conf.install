@@ -25,6 +25,9 @@ wrapper.java.additional.2=-Dfile.encoding=UTF-8
 wrapper.java.additional.3=-Dexist.home=../../..
 wrapper.java.additional.4=-Djetty.home=../../../tools/jetty
 
+# log4j configuration is read from exist.home
+wrapper.java.additional.5=-Dlog4j.configuration=file:../conf/log4j.xml
+
 # Initial Java Heap Size (in MB)
 wrapper.java.initmemory=16
 

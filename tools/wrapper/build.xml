@@ -63,4 +63,11 @@
             </classpath>
         </javac>
     </target>
+	
+	<target name="clean">
+		<delete dir="${classes}"/>
+		<delete file="${conf}/wrapper.conf.installl"/>
+		<delete file="${conf}/wrapper.conf"/>
+		<delete file="${bin}/exist.sh"/>
+	</target>
 </project>
