@@ -50,7 +50,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 	public String DEFAULT_USER = "guest";
 	public String DEFAULT_PASSWORD = "guest";
 
-	public static final String NAMESPACE = "http://exist-db/transformer/1.0";
+	public static final String NAMESPACE = "http://exist-db.org/transformer/1.0";
 	public static final String COLLECTION_ELEMENT = "collection";
 	public static final String FOR_EACH_ELEMENT = "for-each";
 	public static final String CURRENT_NODE_ELEMENT = "current-node";
