@@ -580,6 +580,14 @@ public interface RpcAPI {
 	int executeQuery(User user, String xpath, Hashtable parameters) throws EXistException, PermissionDeniedException;
 
 	/**
+	 *  Execute XPath/Xquery from path file (stored inside eXist)
+	 *  returned reference may be used later to get a summary of results or
+	 *  retrieve the actual hits.
+	 */
+	Hashtable execute(User user,String path, Hashtable parameters)
+	throws EXistException, PermissionDeniedException;
+	
+	/**
 	 *  Retrieve a summary of the result set identified by it's result-set-id.
 	 *  This method returns a struct with the following fields:
 	 *

@@ -1387,6 +1387,83 @@ public class RpcConnection extends Thread {
 		return ret;
 	}
 
+public Hashtable execute(User user, String xpath, Hashtable parameters) throws Exception {
+		long startTime = System.currentTimeMillis();
+		String sortBy = (String) parameters.get(RpcAPI.SORT_EXPR);
+
+		Hashtable ret = new Hashtable();
+		Vector result = new Vector();
+		NodeSet nodes = null;
+		QueryResult queryResult;
+		Sequence resultSeq = null;
+		DBBroker broker = null;
+		try {
+			broker = brokerPool.get(user);
+		
+			queryResult = doQuery(user, broker, xpath, nodes, parameters);
+			if (queryResult == null)
+				return ret;
+			if (queryResult.hasErrors()) {
+				// return an error description
+				XPathException e = queryResult.getException();
+				ret.put(RpcAPI.ERROR, e.getMessage());
+				if(e.getLine() != 0) {
+					ret.put(RpcAPI.LINE, new Integer(e.getLine()));
+					ret.put(RpcAPI.COLUMN, new Integer(e.getColumn()));
+				}
+				return ret;
+			}
+			resultSeq = queryResult.result;
+			LOG.debug("found " + resultSeq.getLength());
+			
+			if (sortBy != null) {
+				SortedNodeSet sorted = new SortedNodeSet(brokerPool, user,
+						sortBy);
+				sorted.addAll(resultSeq);
+				resultSeq = sorted;
+			}
+			NodeProxy p;
+			Vector entry;
+			if (resultSeq != null) {
+				SequenceIterator i = resultSeq.iterate();
+				if (i != null) {
+					Item next;
+					while (i.hasNext()) {
+						next = i.nextItem();
+						if (Type.subTypeOf(next.getType(), Type.NODE)) {
+							entry = new Vector();
+							if (((NodeValue) next).getImplementationType() == NodeValue.PERSISTENT_NODE) {
+								p = (NodeProxy) next;
+								entry.addElement(p.getDocument().getCollection().getName() + '/' + 
+								        p.getDocument().getFileName());
+								entry.addElement(Long.toString(p.getGID()));
+							} else {
+								entry.addElement("temp_xquery/"
+										+ next.hashCode());
+								entry.addElement(String
+										.valueOf(((NodeImpl) next)
+												.getNodeNumber()));
+							}
+							result.addElement(entry);
+						} else
+							result.addElement(next.getStringValue());
+					}
+				} else {
+					LOG.debug("sequence iterator is null. Should not");
+				}
+			} else
+				LOG.debug("result sequence is null. Skipping it...");
+		} finally {
+			brokerPool.release(broker);
+		}
+		queryResult.result = resultSeq;
+		queryResult.queryTime = (System.currentTimeMillis() - startTime);
+		connectionPool.resultSets.put(queryResult.hashCode(), queryResult);
+		ret.put("id", new Integer(queryResult.hashCode()));
+		ret.put("results", result);
+		return ret;
+	}
+
 	public void releaseQueryResult(int handle) {
 		connectionPool.resultSets.remove(handle);
 		documentCache.clear();
