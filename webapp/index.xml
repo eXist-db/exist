@@ -52,8 +52,13 @@
                     <td width="40%">
                         <link href="xquery.xsp">xquery.xsp</link>
                     </td>
-                    <td width="60%">Simple query interface to send XPath queries
-                        to the server.</td>
+                    <td width="60%">Simple query interface to send XPath queries to the server.</td>
+                </tr>
+                <tr>
+                    <td width="40%">
+                        <link href="xse/squery.xsp?cname=%2Fdb%2Fshakespeare%2Fplays">xse/squery.xsp</link>
+                    </td>
+                    <td width="60%"> XML search engine, where you don't have to type XPath, with formatting adapted for each collection, highlight of terms of the query, history .</td>
                 </tr>
                 <tr>
                     <td width="40%">

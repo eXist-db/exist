@@ -49,6 +49,9 @@
             <link href="xquery.xsp">Query interface</link>
         </item>
         <item>
+            <link href="xse/squery.xsp?cname=%2Fdb%2Fshakespeare%2Fplays">XML search engine</link>
+        </item>
+        <item>
             <link href="library/biblio.xml">Library</link>
         </item>
         <item>
