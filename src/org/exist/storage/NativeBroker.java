@@ -429,9 +429,9 @@ public class NativeBroker extends DBBroker {
 			}
 			if(lockMode != Lock.NO_LOCK) {
 				try {
-					LOG.debug("acquiring lock on " + collection.getName());
+//					LOG.debug("acquiring lock on " + collection.getName());
 					collection.getLock().acquire(lockMode);
-					LOG.debug("lock acquired");
+//					LOG.debug("lock acquired");
 				} catch (LockException e1) {
 					LOG.warn("Could not acquire lock on collection " + name);
 				}
