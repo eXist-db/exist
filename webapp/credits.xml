@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!--<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "docbookx.dtd">-->
+
+<book xmlns:ci="http://apache.org/cocoon/include/1.0">
+    
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+		<title>Open Source XML Database</title>
+        <author> 
+          <firstname>Wolfgang M.</firstname>
+          <surname>Meier</surname>
+          <affiliation>
+            <address format="linespecific">
+				<email>wolfgang@exist-db.org</email>
+            </address>
+          </affiliation>
+        </author>
+    </bookinfo>
+
+    <ci:include src="sidebar.xml"/>
+      
+    <chapter>
+		<title>Credits</title>
+        
+        <section>
+            <title>Credits</title>
+            
+			<para>eXist version 1.0, Copyright (C) 2004 Wolfgang Meier</para>
+<para>eXist comes with ABSOLUTELY NO WARRANTY.</para>
+<para>This is free software, and you are welcome to redistribute it under certain conditions; for details read the license file.</para>
+		</section>
+
+    </chapter>
+</book>
+        
