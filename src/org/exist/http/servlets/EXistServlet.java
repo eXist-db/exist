@@ -60,6 +60,13 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
 
+/**
+ * Implements the REST-style interface if eXist is running within
+ * a servlet engine. The real work is done by class 
+ * {@link org.exist.http.RESTServer}.
+ * 
+ * @author wolf
+ */
 public class EXistServlet extends HttpServlet {
 
 	private BrokerPool pool = null;
@@ -113,7 +120,7 @@ public class EXistServlet extends HttpServlet {
 		User user = authenticate(request);
 		if (user == null) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN,
-					"Permission denied: unknown user " + "or password");
+					"Permission denied: unknown user or password");
 			return;
 		}
 		

@@ -1158,7 +1158,7 @@ public class RpcConnection extends Thread {
 		return doc != null;
 	}
 
-	public boolean storeBinary(User user, byte[] data, String docName,
+	public boolean storeBinary(User user, byte[] data, String docName, String mimeType,
 		boolean replace) throws EXistException, PermissionDeniedException, LockException {
 		DBBroker broker = null;
 		DocumentImpl doc = null;
@@ -1181,7 +1181,7 @@ public class RpcConnection extends Thread {
 							"Old document exists and overwrite is not allowed");
 			}
 			LOG.debug("Storing binary resource to collection " + collection.getName());
-			doc = collection.addBinaryResource(broker, docName, data);
+			doc = collection.addBinaryResource(broker, docName, data, mimeType);
 		} finally {
 			if(collection != null)
 				collection.release();

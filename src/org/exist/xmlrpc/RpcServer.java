@@ -763,11 +763,11 @@ public class RpcServer implements RpcAPI {
         return parse(user, xml, docName, 0);
     }
 
-    public boolean storeBinary(User user, byte[] data, String docName,
+    public boolean storeBinary(User user, byte[] data, String docName, String mimeType,
             boolean replace) throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
-            return con.storeBinary(user, data, docName, replace);
+            return con.storeBinary(user, data, docName, mimeType, replace);
         } catch (Exception e) {
             handleException(e);
             return false;

@@ -550,7 +550,8 @@ public class LocalCollection extends Observable implements CollectionImpl {
 				collection.addBinaryResource(
 					broker,
 					res.getId(),
-					(byte[]) res.getContent());
+					(byte[]) res.getContent(),
+                    res.getMimeType());
 		} catch (Exception e) {
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,

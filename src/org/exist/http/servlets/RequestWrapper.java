@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.util.Enumeration;
-import java.util.Locale;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -45,17 +44,11 @@ public interface RequestWrapper {
 	
 	public String getContextPath();
 	
-	public long getDateHeader(String arg0);
-	
 	public String getHeader(String arg0);
 	
 	public Enumeration getHeaderNames();
 	
 	public Enumeration getHeaders(String arg0);
-	
-	public Locale getLocale();
-	
-	public Enumeration getLocales();
 	
 	public String getMethod();
 	

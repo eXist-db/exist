@@ -396,4 +396,17 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	private Properties getProperties() {
 		return outputProperties == null ? parent.properties : outputProperties;
 	}
+
+    /* (non-Javadoc)
+     * @see org.exist.xmldb.EXistResource#setMimeType(java.lang.String)
+     */
+    public void setMimeType(String mime) {
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xmldb.EXistResource#getMimeType()
+     */
+    public String getMimeType() {
+        return "text/xml";
+    }
 }

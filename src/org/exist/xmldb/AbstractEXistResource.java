@@ -43,14 +43,16 @@ public abstract class AbstractEXistResource implements EXistResource {
 	protected BrokerPool pool;
 	protected LocalCollection parent;
 	protected String docId = null;
-	
-	public AbstractEXistResource(User user, BrokerPool pool, LocalCollection parent, String docId) {
+	protected String mimeType = null;
+    
+	public AbstractEXistResource(User user, BrokerPool pool, LocalCollection parent, String docId, String mimeType) {
 		this.user = user;
 		this.pool = pool;
 		this.parent = parent;
 		if (docId.indexOf('/') > -1)
 			docId = docId.substring(docId.lastIndexOf('/') + 1);
 		this.docId = docId;
+        this.mimeType = mimeType;
 	}
 	
 	/* (non-Javadoc)
@@ -74,6 +76,14 @@ public abstract class AbstractEXistResource implements EXistResource {
 	public void setLexicalHandler(LexicalHandler handler) {
 	}
 	
+    public void setMimeType(String mime) {
+        this.mimeType = mime;
+    }
+    
+    public String getMimeType() {
+        return mimeType;
+    }
+    
 	protected DocumentImpl openDocument(DBBroker broker, int lockMode) throws XMLDBException {
 	    DocumentImpl document = null;
 	    org.exist.collections.Collection parentCollection = null;

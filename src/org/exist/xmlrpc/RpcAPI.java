@@ -506,7 +506,7 @@ public interface RpcAPI {
 	 * @throws EXistException
 	 * @throws PermissionDeniedException
 	 */
-	public boolean storeBinary(User user, byte[] data, String docName, boolean replace)
+	public boolean storeBinary(User user, byte[] data, String docName, String mimeType, boolean replace)
 	throws EXistException, PermissionDeniedException;
 	
 	/**

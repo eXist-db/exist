@@ -117,7 +117,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	protected transient long treeLevelStartPoints[] = new long[15];
 
 	// has document-metadata been loaded?
-	private transient boolean complete = true;
+	protected transient boolean complete = true;
 	
 	//private transient User lockOwner = null;
 	private transient int lockOwnerId = 0;
@@ -206,6 +206,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return XML_FILE;
 	}
 	
+    public String getMimeType() {
+        return "text/xml";
+    }
+    
 	/**
 	 * Returns true if the document is currently locked for
 	 * write.
@@ -468,7 +472,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return collection.getName() + '/' + fileName;
 	}
 	
-	private void checkAvail() {
+	protected void checkAvail() {
 		if (!complete)
 			broker.readDocumentMetadata(this);
 		complete = true;

@@ -58,7 +58,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 
 	public LocalXMLResource(User user, BrokerPool pool, LocalCollection parent,
 			String did) throws XMLDBException {
-		super(user, pool, parent, did);
+		super(user, pool, parent, did, "text/xml");
 	}
 
 	public LocalXMLResource(User user, BrokerPool pool, LocalCollection parent,

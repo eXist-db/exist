@@ -46,5 +46,8 @@ public interface EXistResource {
 	int getContentLength() throws XMLDBException;
 	
 	void setLexicalHandler(LexicalHandler handler);
+    
+    void setMimeType(String mime);
 
+    String getMimeType();
 }

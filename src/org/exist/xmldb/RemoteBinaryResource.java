@@ -47,6 +47,7 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
 
 	private String documentName;
 	private String path;
+    private String mimeType = "application/octet-stream";
 	private RemoteCollection parent;
 	private byte[] data = null;
 	
@@ -192,4 +193,18 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
 	 */
 	public void setLexicalHandler(LexicalHandler handler) {
 	}
+
+    /* (non-Javadoc)
+     * @see org.exist.xmldb.EXistResource#setMimeType(java.lang.String)
+     */
+    public void setMimeType(String mime) {
+        this.mimeType = mime;
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xmldb.EXistResource#getMimeType()
+     */
+    public String getMimeType() {
+        return mimeType;
+    }
 }

@@ -132,7 +132,6 @@ public class CocoonSource extends AbstractSource {
             String checkedEnc = guessXQueryEncoding(inputSource.getInputStream());
             if (checkedEnc != null)
                 encoding = checkedEnc;
-            System.out.println("ENCODING = " + encoding);
         }
     }
 }
