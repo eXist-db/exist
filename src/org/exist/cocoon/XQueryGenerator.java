@@ -147,7 +147,6 @@ public class XQueryGenerator extends ServiceableGenerator {
 		try {
 			Class driver = Class.forName(DRIVER);
 			Database database = (Database)driver.newInstance();
-			database.setProperty("create-database", "true");
 			DatabaseManager.registerDatabase(database);
 		} catch(Exception e) {
 			throw new ProcessingException("Failed to initialize database driver: " + e.getMessage(), e);
