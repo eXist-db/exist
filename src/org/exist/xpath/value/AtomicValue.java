@@ -61,6 +61,26 @@ public abstract class AtomicValue implements Item, Sequence {
 		return getType();
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Sequence#itemAt(int)
+	 */
+	public Item itemAt(int pos) {
+		return pos > 0 ? null : this;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#toSequence()
+	 */
+	public Sequence toSequence() {
+		return this;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Sequence#add(org.exist.xpath.value.Item)
+	 */
+	public void add(Item item) throws XPathException {
+	}
+	
 	private final static class EmptyValue extends AtomicValue {
 		
 		/* (non-Javadoc)
@@ -75,6 +95,26 @@ public abstract class AtomicValue implements Item, Sequence {
 		 */
 		public AtomicValue convertTo(int requiredType) throws XPathException {
 			throw new XPathException("cannot convert empty value to " + requiredType);
+		}
+		
+		/* (non-Javadoc)
+		 * @see org.exist.xpath.value.AtomicValue#itemAt(int)
+		 */
+		public Item itemAt(int pos) {
+			return null;
+		}
+		
+		/* (non-Javadoc)
+		 * @see org.exist.xpath.value.Item#toSequence()
+		 */
+		public Sequence toSequence() {
+			return this;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.exist.xpath.value.Sequence#add(org.exist.xpath.value.Item)
+		 */
+		public void add(Item item) throws XPathException {
 		}
 	}
 }

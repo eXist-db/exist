@@ -20,11 +20,11 @@
 
 package org.exist.xpath;
 
+import org.exist.dom.AVLTreeNodeSet;
 import org.exist.dom.ContextItem;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.TreeNodeSet;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
@@ -51,7 +51,7 @@ public class FunNot extends Function {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		NodeSet result = new TreeNodeSet();
+		NodeSet result = new AVLTreeNodeSet();
 		Expression path = getArgument(0);
 		result.addAll(contextSequence);
 		NodeProxy current;

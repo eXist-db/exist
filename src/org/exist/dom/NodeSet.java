@@ -506,7 +506,7 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 	
 	public NodeSet intersection(NodeSet other) {
 		long start = System.currentTimeMillis();
-		TreeNodeSet r = new TreeNodeSet();
+		AVLTreeNodeSet r = new AVLTreeNodeSet();
 		NodeProxy l, p;
 		for (Iterator i = iterator(); i.hasNext();) {
 			l = (NodeProxy) i.next();
