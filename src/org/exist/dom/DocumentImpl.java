@@ -183,6 +183,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	    treeLevelOrder = other.treeLevelOrder;
 	    treeLevelStartPoints = other.treeLevelStartPoints;
 	    internalAddress = -1;
+	    lastModified = other.lastModified;
 	}
 	
 	public void copyChildren(DocumentImpl other) {
