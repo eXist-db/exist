@@ -340,13 +340,14 @@ public class EXistServlet extends HttpServlet {
 	
 	private void writeResponse(Response internal, HttpServletResponse response)
 			throws IOException {
-		if (internal.getResponseCode() != HttpServletResponse.SC_OK) {
+		if (internal.getResponseCode() != HttpServletResponse.SC_OK && internal.getContent() == null) {
 			response.sendError(internal.getResponseCode(), internal
 					.getDescription());
 		} else {
 			String contentType = internal.getContentType() + "; charset="
 					+ internal.getEncoding();
 			response.setContentType(contentType);
+			response.setStatus(internal.getResponseCode());
 			if(internal.getContent() == null) {
 				if(internal.getDescription() != null)
 					internal.setContent(internal.getDescription());

@@ -144,54 +144,79 @@ public class RESTServer {
 		} else
             outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
 		LOG.debug("stylesheet = " + stylesheet);
+		LOG.debug("query = " + query);
 		String encoding;
 		if((encoding = (String) parameters.get("_encoding")) !=null)
 			outputProperties.setProperty(OutputKeys.ENCODING, encoding);
 		else
 			encoding = "UTF-8";
 		Response response = new Response();
-			if (query != null) {
-				response.setContent(search(broker, query, path, howmany, start, outputProperties, wrap));
-			} else {
-				DocumentImpl d = (DocumentImpl) broker.getDocument(path);
-				if (d == null) {
-					Collection collection = broker.getCollection(path);
-					if(collection != null) {
-						if(!collection.getPermissions().validate(broker.getUser(), Permission.READ))
-							throw new PermissionDeniedException("Not allowed to read collection");
-						response = new Response(printCollection(broker, collection));
-					} else {
-						throw new NotFoundException("Document " + path + " not found");
-					}
-				} else {
-				    if(!d.getPermissions().validate(broker.getUser(), Permission.READ))
-						throw new PermissionDeniedException("Not allowed to read resource");
-					if(d.getResourceType() == DocumentImpl.BINARY_FILE) {
-						response.setContent(broker.getBinaryResourceData((BinaryDocument)d));
-					} else {
-						Serializer serializer = broker.getSerializer();
-						serializer.reset();
-						
-						if (stylesheet != null) {
-							serializer.setStylesheet(d, stylesheet);
-							response.setContentType("text/html");
-						}
-						try {
-							serializer.setProperties(outputProperties);
-							response.setContent(serializer.serialize(d));
-							if(serializer.isStylesheetApplied())
-								response.setContentType("text/html");
-						} catch (SAXException saxe) {
-							LOG.warn(saxe);
-							throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
-						}
-					}
-				}
-			}
-			return response;
+		if (query != null) {
+		    try {
+                response.setContent(search(broker, query, path, howmany, start, outputProperties, wrap));
+            } catch (XPathException e) {
+                response.setContent(formatXPathException(query, e));
+                response.setContentType("text/html");
+                response.setResponseCode(HttpServerConnection.HTTP_BAD_REQUEST);
+                return response;
+            }
+		} else {
+		    DocumentImpl d = (DocumentImpl) broker.getDocument(path);
+		    if (d == null) {
+		        Collection collection = broker.getCollection(path);
+		        if(collection != null) {
+		            if(!collection.getPermissions().validate(broker.getUser(), Permission.READ))
+		                throw new PermissionDeniedException("Not allowed to read collection");
+		            response = new Response(printCollection(broker, collection));
+		        } else {
+		            throw new NotFoundException("Document " + path + " not found");
+		        }
+		    } else {
+		        if(!d.getPermissions().validate(broker.getUser(), Permission.READ))
+		            throw new PermissionDeniedException("Not allowed to read resource");
+		        if(d.getResourceType() == DocumentImpl.BINARY_FILE) {
+		            response.setContent(broker.getBinaryResourceData((BinaryDocument)d));
+		        } else {
+		            Serializer serializer = broker.getSerializer();
+		            serializer.reset();
+		            
+		            if (stylesheet != null) {
+		                serializer.setStylesheet(d, stylesheet);
+		                response.setContentType("text/html");
+		            }
+		            try {
+		                serializer.setProperties(outputProperties);
+		                response.setContent(serializer.serialize(d));
+		                if(serializer.isStylesheetApplied())
+		                    response.setContentType("text/html");
+		            } catch (SAXException saxe) {
+		                LOG.warn(saxe);
+		                throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
+		            }
+		        }
+		    }
+		}
+		return response;
 	}
 	
-	public Response doPost(DBBroker broker, String content, String path) 
+	/**
+     * @param query
+     * @param e
+     */
+    private String formatXPathException(String query, XPathException e) {
+        StringWriter writer = new StringWriter();
+        writer.write("<html><head><title>XQuery Error</title></head>");
+        writer.write("<body><h1>XQuery Error</h1>");
+        writer.write("<p><b>Message</b>: ");
+        writer.write(e.getMessage());
+        writer.write("</p><p><b>Query</b>:</p><pre>");
+        writer.write(query);
+        writer.write("</pre>");
+        writer.write("</body></html>");
+        return writer.toString();
+    }
+
+    public Response doPost(DBBroker broker, String content, String path) 
 	throws BadRequestException, PermissionDeniedException {
 		boolean indent = true;
 		boolean summary = false;
@@ -436,10 +461,11 @@ public class RESTServer {
 	
 	/**
 	 * TODO: pass request and response objects to XQuery.
+	 * @throws XPathException
 	 */
 	protected String search(DBBroker broker, String query, String path,
 			int howmany, int start, Properties outputProperties, boolean wrap)
-	throws BadRequestException, PermissionDeniedException {
+	throws BadRequestException, PermissionDeniedException, XPathException {
 		String result = null;
 		try {
 			Source source = new StringSource(query);
@@ -466,8 +492,6 @@ public class RESTServer {
 			} finally {
 			    pool.returnCompiledXQuery(source, compiled);
 			}
-		} catch (XPathException e) {
-			throw new BadRequestException(e.getMessage(), e);
 		} catch (IOException e) {
 		    throw new BadRequestException(e.getMessage(), e);
         }

@@ -120,10 +120,9 @@ public class GeneralComparison extends BinaryOp {
 		int rightDeps = getRight().getDependencies();
 		// left expression returns node set
 		if (Type.subTypeOf(getLeft().returnsType(), Type.NODE)
-//			&& (leftDeps & Dependency.LOCAL_VARS) == 0
 			//	and does not depend on the context item
-			&& (leftDeps & Dependency.CONTEXT_ITEM) == 0
-			&& (rightDeps & Dependency.LOCAL_VARS) == 0)
+			&& (leftDeps & Dependency.CONTEXT_ITEM) == 0)
+//			&& (rightDeps & Dependency.LOCAL_VARS) == 0)
 		{
 			return Dependency.CONTEXT_SET;
 		} else {
@@ -316,7 +315,13 @@ public class GeneralComparison extends BinaryOp {
 		Collator collator = getCollator(contextSequence);
 		NodeSet result =
 			context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp, collator);
-		if(contextSequence instanceof NodeSet)
+		
+		// can this result be cached?
+		boolean canCache = 
+		    contextSequence instanceof NodeSet &&
+	        (getRight().getDependencies() & Dependency.LOCAL_VARS) == 0 &&
+	        (getLeft().getDependencies() & Dependency.LOCAL_VARS) == 0;
+		if(canCache)
 			cached = new CachedResult((NodeSet)contextSequence, result);
 		return result;
 	}

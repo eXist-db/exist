@@ -964,7 +964,8 @@ public class NativeBroker extends DBBroker {
 				if(idx != null && currentPath != null)
 				    indexText = idx.match(currentPath);	                	                
                 boolean valore = (idx == null || currentPath == null ? false : idx.preserveContent(currentPath));
-				textEngine.storeText(idx, (TextImpl) node, valore);
+                if(indexText)
+                    textEngine.storeText(idx, (TextImpl) node, valore);
 				break;
 		}
 		if (nodeType == Node.ELEMENT_NODE && level <= depth) {
