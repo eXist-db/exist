@@ -350,7 +350,9 @@ public class DoubleValue extends NumericValue {
 			return new Double(value);
 		else if (target == Float.class || target == float.class)
 			return new Float(value);
-		else if (target == Integer.class || target == int.class) {
+		else if (target == Long.class || target == long.class) {
+			return new Long( ((IntegerValue) convertTo(Type.LONG)).getValue() );
+		} else if (target == Integer.class || target == int.class) {
 			IntegerValue v = (IntegerValue) convertTo(Type.INT);
 			return new Integer((int) v.getValue());
 		} else if (target == Short.class || target == short.class) {
