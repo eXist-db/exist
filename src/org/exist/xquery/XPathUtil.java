@@ -27,6 +27,11 @@ import java.util.List;
 
 import org.exist.dom.AVLTreeNodeSet;
 import org.exist.dom.NodeProxy;
+import org.exist.memtree.MemTreeBuilder;
+import org.exist.memtree.NodeImpl;
+import org.exist.memtree.Receiver;
+import org.exist.util.serializer.DOMStreamer;
+import org.exist.util.serializer.DOMStreamerPool;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.FloatValue;
@@ -38,9 +43,20 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 public class XPathUtil {
 
+    /**
+     * Convert Java object to an XQuery sequence. Objects of type Sequence
+     * are directly returned, other objects are converted into the corresponding
+     * internal types.
+     * 
+     * @param obj
+     * @return
+     * @throws XPathException
+     */
 	public final static Sequence javaObjectToXPath(Object obj) throws XPathException {
 		if (obj == null)
 			return null;
@@ -77,6 +93,43 @@ public class XPathUtil {
 				seq.add((Item) javaObjectToXPath(i.next()));
 			}
 			return seq;
+		} else if (obj instanceof NodeList) {
+		    DOMStreamer streamer = DOMStreamerPool.getInstance().borrowDOMStreamer();
+		    try {
+		        MemTreeBuilder builder = new MemTreeBuilder();
+				builder.startDocument();
+                Receiver receiver = new Receiver(builder);
+                streamer.setContentHandler(receiver);
+                ValueSequence seq = new ValueSequence();
+                NodeList nl = (NodeList)obj;
+                int last = builder.getDocument().getLastNode();
+                for(int i = 0; i < nl.getLength(); i++) {
+                    Node n = nl.item(i);
+                    streamer.serialize(n, false);
+                    NodeImpl created = builder.getDocument().getNode(last + 1);
+                    seq.add(created);
+                    last = builder.getDocument().getLastNode();
+                }
+                return seq;
+            } catch (SAXException e) {
+                throw new XPathException("Failed to transform node into internal model: " + e.getMessage());
+            } finally {
+                DOMStreamerPool.getInstance().returnDOMStreamer(streamer);
+            }
+		} else if (obj instanceof Node) {
+		    DOMStreamer streamer = DOMStreamerPool.getInstance().borrowDOMStreamer();
+		    try {
+		        MemTreeBuilder builder = new MemTreeBuilder();
+				builder.startDocument();
+                Receiver receiver = new Receiver(builder);
+                streamer.setContentHandler(receiver);
+                streamer.serialize((Node)obj, false);
+                return builder.getDocument().getNode(1);
+            } catch (SAXException e) {
+                throw new XPathException("Failed to transform node into internal model: " + e.getMessage());
+            } finally {
+                DOMStreamerPool.getInstance().returnDOMStreamer(streamer);
+            }
 		} else if (obj instanceof Object[]) {
 			boolean createNodeSequence = true;
 			Object[] array = (Object[])obj;

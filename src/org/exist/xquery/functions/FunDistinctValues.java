@@ -93,11 +93,11 @@ public class FunDistinctValues extends Function {
 				result.add(value);
 			}
 		}
-		LOG.debug(
-			"distinct-values found "
-				+ result.getLength()
-				+ " in "
-				+ (System.currentTimeMillis() - start));
+//		LOG.debug(
+//			"distinct-values found "
+//				+ result.getLength()
+//				+ " in "
+//				+ (System.currentTimeMillis() - start));
 		return result;
 	}
 

@@ -42,11 +42,10 @@ import org.apache.cocoon.environment.SourceResolver;
 import org.apache.cocoon.environment.http.HttpEnvironment;
 import org.apache.cocoon.generation.ServiceableGenerator;
 import org.apache.excalibur.source.Source;
-import org.apache.excalibur.source.SourceValidity;
+import org.exist.source.CocoonSource;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xmldb.CollectionImpl;
-import org.exist.xmldb.CompiledExpression;
 import org.exist.xmldb.XQueryService;
 import org.exist.xquery.functions.request.RequestModule;
 import org.xml.sax.SAXException;
@@ -89,27 +88,6 @@ public class XQueryGenerator extends ServiceableGenerator {
 	private String defaultUser = null;
 	private String defaultPassword = null;
 	private Map optionalParameters;
-	
-	private ThreadLocal cache = new ThreadLocal() {
-		
-		/* (non-Javadoc)
-		 * @see java.lang.ThreadLocal#initialValue()
-		 */
-		protected Object initialValue() {
-			return new HashMap();
-		}
-	};
-	
-	private class CachedExpression {
-
-		SourceValidity validity;
-		CompiledExpression expr;
-
-		public CachedExpression(SourceValidity validity, CompiledExpression expr) {
-			this.validity = validity;
-			this.expr = expr;
-		}
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -229,30 +207,7 @@ public class XQueryGenerator extends ServiceableGenerator {
 			declareParameters(service);
 			
 			String uri = inputSource.getURI();
-			CompiledExpression expr;
-			CachedExpression cached;
-				cached = (CachedExpression) ((Map)cache.get()).get(uri);
-				if (cached != null) {
-					// check if source is valid or should be reloaded
-					int valid = cached.validity.isValid();
-					if (valid == SourceValidity.UNKNOWN)
-						valid = cached.validity.isValid(inputSource
-								.getValidity());
-					if (valid != SourceValidity.VALID) {
-						((Map)cache.get()).remove(uri);
-						cached = null;
-					}
-				}
-				if (cached == null) {
-					String xquery = readQuery();
-					expr = service.compile(xquery);
-					cached = new CachedExpression(inputSource.getValidity(),
-							expr);
-					((Map)cache.get()).put(uri, cached);
-				} else {
-					expr = cached.expr;
-				}
-			ResourceSet result = service.execute(expr);
+			ResourceSet result = service.execute(new CocoonSource(inputSource));
 			XMLResource resource;
 			this.contentHandler.startDocument();
 			for (long i = 0; i < result.getSize(); i++) {
@@ -264,18 +219,6 @@ public class XQueryGenerator extends ServiceableGenerator {
 			throw new ProcessingException("XMLDBException occurred: "
 					+ e.getMessage(), e);
 		}
-	}
-
-	private String readQuery() throws IOException {
-		ByteArrayOutputStream os = new ByteArrayOutputStream((int) inputSource
-				.getContentLength());
-		byte[] t = new byte[512];
-		InputStream is = inputSource.getInputStream();
-		int count = 0;
-		while ((count = is.read(t)) != -1) {
-			os.write(t, 0, count);
-		}
-		return os.toString("UTF-8");
 	}
 	
 	private void declareParameters(XQueryService service) throws XMLDBException {

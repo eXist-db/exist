@@ -354,6 +354,24 @@ public class Configuration implements ErrorHandler {
 						} catch(NumberFormatException e) {
 						}
 				}
+				NodeList watchConf = con.getElementsByTagName("watchdog");
+				if(watchConf.getLength() > 0) {
+				    Element watchDog = (Element)watchConf.item(0);
+				    String timeout = watchDog.getAttribute("query-timeout");
+				    String maxOutput = watchDog.getAttribute("output-size-limit");
+				    if(timeout != null) {
+				        try {
+				            config.put("db-connection.watchdog.query-timeout", new Long(timeout));
+				        } catch(NumberFormatException e) {
+				        }
+				    }
+				    if(maxOutput != null) {
+				        try {
+				            config.put("db-connection.watchdog.output-size-limit", new Integer(maxOutput));
+				        } catch(NumberFormatException e) {
+				        }
+				    }
+				}
 			}
 
 			NodeList serializers = doc.getElementsByTagName("serializer");

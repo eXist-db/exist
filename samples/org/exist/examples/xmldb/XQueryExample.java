@@ -3,6 +3,8 @@ package org.exist.examples.xmldb;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
 
@@ -12,6 +14,8 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.modules.XMLResource;
 
+import org.exist.util.serializer.SAXSerializer;
+import org.exist.util.serializer.SAXSerializerPool;
 import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.CompiledExpression;
 
@@ -27,7 +31,7 @@ import org.exist.xmldb.CompiledExpression;
  */
 public class XQueryExample {
 
-    protected static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
+    protected static String URI = "xmldb:exist://";
 
     protected static String driver = "org.exist.xmldb.DatabaseImpl";
 
@@ -76,12 +80,17 @@ public class XQueryExample {
 
             long qtime = System.currentTimeMillis() - start;
             start = System.currentTimeMillis();
-
-            System.out.println(result.getMembersAsResource().getContent());
-//            for ( int i = 0; i < (int) result.getSize(); i++ ) {
-//                XMLResource resource = (XMLResource) result.getResource( (long) i ); 
-//                System.out.println( resource.getContent().toString() );
-//            }
+            
+            Properties outputProperties = new Properties();
+            outputProperties.setProperty(OutputKeys.INDENT, "yes");
+            SAXSerializer serializer = SAXSerializerPool.getInstance().borrowSAXSerializer();
+            serializer.setOutputProperties(outputProperties);
+            serializer.setWriter(new OutputStreamWriter(System.out));
+            
+            for ( int i = 0; i < (int) result.getSize(); i++ ) {
+                XMLResource resource = (XMLResource) result.getResource( (long) i ); 
+                resource.getContentAsSAX(serializer);
+            }
             long rtime = System.currentTimeMillis() - start;
 			System.out.println("hits:          " + result.getSize());
             System.out.println("query time:    " + qtime);

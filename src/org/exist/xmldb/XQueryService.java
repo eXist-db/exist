@@ -22,6 +22,7 @@
  */
 package org.exist.xmldb;
 
+import org.exist.source.Source;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.Service;
 import org.xmldb.api.base.XMLDBException;
@@ -68,6 +69,8 @@ public interface XQueryService extends Service {
 	 * @throws XMLDBException
 	 */
 	public CompiledExpression compile(String query) throws XMLDBException;
+	
+	public ResourceSet execute(Source source) throws XMLDBException;
 	
 	/**
 	 * Execute a compiled XQuery.

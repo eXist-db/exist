@@ -439,7 +439,8 @@ stepExpr
 	( ( "text" | "node" | "element" ) LPAREN )
 	=> axisStep
 	|
-	( DOLLAR | ( qName LPAREN ) | SELF | LPAREN | literal | XML_COMMENT | LT )
+	( DOLLAR | ( qName LPAREN ) | SELF | LPAREN | literal | XML_COMMENT | LT |
+	  XML_PI )
 	=> filterStep
 	|
 	axisStep
@@ -2458,15 +2459,17 @@ options {
 protected INTEGER_LITERAL : 
 	{ !(inElementContent || inAttributeContent) }? DIGITS ;
 
-protected DECIMAL_LITERAL
-:
-	{ !(inElementContent || inAttributeContent) }? ( '.' DIGITS ) | ( DIGITS '.' ) => DIGITS '.' ( DIGITS )?
-	;
-
 protected DOUBLE_LITERAL
 :
 	{ !(inElementContent || inAttributeContent) }?
-	( ( '.' DIGITS ) | ( DIGITS ( '.' ( DIGIT )* )? ) ) ( 'e' | 'E' ) ( '+' | '-' )? DIGITS
+	( ( '.' DIGITS ) | ( DIGITS '.' ( DIGITS )? ) ) ( 'e' | 'E' ) ( '+' | '-' )? DIGITS
+	;
+
+protected DECIMAL_LITERAL
+:
+	{ !(inElementContent || inAttributeContent) }? 
+	( '.' DIGITS ) | ( DIGITS '.' ) => 
+	( '.' DIGITS ) | ( DIGITS '.' ( DIGITS )? )
 	;
 
 protected PREDEFINED_ENTITY_REF

@@ -8,6 +8,7 @@ import java.util.Properties;
 import java.util.Vector;
 
 import org.apache.xmlrpc.XmlRpcException;
+import org.exist.source.Source;
 import org.exist.xmlrpc.RpcAPI;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -58,6 +59,18 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.exist.xmldb.XQueryService#execute(org.exist.source.Source)
+     */
+    public ResourceSet execute(Source source) throws XMLDBException {
+        try {
+            String xq = source.getContent();
+            return query(xq, null);
+        } catch (IOException e) {
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, e.getMessage(), e );
+        }
+    }
+    
 	public ResourceSet query( XMLResource res, String query )
 		throws XMLDBException {
 			return query(res, query, null);
@@ -152,7 +165,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 	public CompiledExpression compile(String query) throws XMLDBException {
 		return new RemoteCompiledExpression(query);
 	}
-
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.XQueryService#execute(org.exist.xmldb.CompiledExpression)
 	 */

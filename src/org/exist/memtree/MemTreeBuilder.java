@@ -60,15 +60,19 @@ public class MemTreeBuilder {
 	 * 
 	 * @return
 	 */
-	public Document getDocument() {
+	public DocumentImpl getDocument() {
 		return doc;
 	}
 
+	public int getSize() {
+	    return doc.getSize();
+	}
+	
 	/**
 	 * Start building the document.
 	 */
 	public void startDocument() {
-		this.doc = new DocumentImpl(500, 50, 1000, 50);
+		this.doc = new DocumentImpl();
 	}
 
 	/**

@@ -80,6 +80,7 @@ public class LocalXMLResource implements XMLResource, EXistResource {
 		this.id = id;
 		this.document = doc;
 		this.docId = doc.getFileName();
+		System.out.println(docId);
 		if (docId.indexOf('/') > -1)
 			docId = docId.substring(docId.lastIndexOf('/') + 1);
 	}

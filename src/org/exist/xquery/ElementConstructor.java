@@ -22,10 +22,6 @@
 
 package org.exist.xquery;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
@@ -43,7 +39,7 @@ public class ElementConstructor extends NodeConstructor {
 
 	private String qname;
 	private PathExpr content = null;
-	private List attributes = null;
+	private AttributeConstructor attributes[] = null;
 	
 	public ElementConstructor(XQueryContext context, String qname) {
 		super(context);
@@ -55,9 +51,15 @@ public class ElementConstructor extends NodeConstructor {
 	}
 	
 	public void addAttribute(AttributeConstructor attr) {
-		if(attributes == null)
-			attributes = new ArrayList();
-		attributes.add(attr);
+		if(attributes == null) {
+			attributes = new AttributeConstructor[1];
+			attributes[0] = attr;
+		} else {
+		    AttributeConstructor natts[] = new AttributeConstructor[attributes.length + 1];
+		    System.arraycopy(attributes, 0, natts, 0, attributes.length);
+		    natts[attributes.length] = attr;
+		    attributes = natts;
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -76,8 +78,8 @@ public class ElementConstructor extends NodeConstructor {
 			Sequence attrValues;
 			QName attrQName;
 			// first, search for xmlns attributes and declare in-scope namespaces
-			for(Iterator i = attributes.iterator(); i.hasNext(); ) {
-				constructor = (AttributeConstructor)i.next();
+			for(int i = 0; i < attributes.length; i++) {
+				constructor = (AttributeConstructor)attributes[i];
 				if(constructor.isNamespaceDeclaration()) {
 					int p = constructor.getQName().indexOf(':');
 					if(p < 0)
@@ -89,8 +91,9 @@ public class ElementConstructor extends NodeConstructor {
 				}
 			}
 			// process the remaining attributesCharArr
-			for(Iterator i = attributes.iterator(); i.hasNext(); ) {
-				constructor = (AttributeConstructor)i.next();
+			for(int i = 0; i < attributes.length; i++) {
+			    context.proceed(this, builder);
+				constructor = (AttributeConstructor)attributes[i];
 				if(!constructor.isNamespaceDeclaration()) {
 					attrValues = constructor.eval(contextSequence, contextItem);
 					attrQName = QName.parse(context, constructor.getQName());
@@ -99,6 +102,8 @@ public class ElementConstructor extends NodeConstructor {
 				}
 			}
 		}
+		context.proceed(this, builder);
+		
 		// create the element
 		QName qn = QName.parse(context, qname);
 		int nodeNr = builder.startElement(qn, attrs);
@@ -120,8 +125,8 @@ public class ElementConstructor extends NodeConstructor {
 		buf.append('<').append(qname);
 		if(attributes != null) {
 			AttributeConstructor attr;
-			for(Iterator i = attributes.iterator(); i.hasNext(); ) {
-				attr = (AttributeConstructor)i.next();
+			for(int i = 0; i < attributes.length; i++) {
+				attr = (AttributeConstructor)attributes[i];
 				buf.append(' ').append(attr.pprint());
 			}
 		}
@@ -150,8 +155,8 @@ public class ElementConstructor extends NodeConstructor {
 		if(content != null)
 			content.resetState();
 		if(attributes != null)
-			for(Iterator i = attributes.iterator(); i.hasNext(); ) {
-				Expression next = (Expression)i.next();
+		    for(int i = 0; i < attributes.length; i++) {
+				Expression next = (Expression)attributes[i];
 				next.resetState();
 			}
 	}

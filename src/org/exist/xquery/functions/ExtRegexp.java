@@ -153,6 +153,7 @@ public class ExtRegexp extends Function {
 		for (int k = 0; k < terms.size(); k++) {
 			hits[k] =
 				context.getBroker().getTextEngine().getNodesContaining(
+				    context,
 					nodes.getDocumentSet(),
 					nodes,
 					(String)terms.get(k), DBBroker.MATCH_REGEXP);

@@ -406,6 +406,7 @@ public class LocationStep extends Step {
 	 */
 	public void resetState() {
 		super.resetState();
+//		System.out.println(pprint() + ": reset!!!!");
 		currentSet = null;
 		currentDocs = null;
 		cachedContext = null;

@@ -136,6 +136,49 @@ declare function f:add-to-history($query as xs:string) as empty()
                                        f:string-list-union($history, $query) )
 };
 
+declare function f:handleException() as element()+
+{
+	<img src="watchdog.gif" border="0"/>,
+	<h2>Defined server limits exceeded!</h2>,
+	(
+		if($util:exception eq
+			"org.exist.xquery.TerminatedException$TimeoutException") then
+			<p>The execution time of your query exceeded the predefined limits. 
+			It has been forced to terminate.</p>
+		else
+			<p>The query exceeded the predefined size limits for 
+			temporary document fragments and has been forced to 
+			terminate.</p>
+	),
+	<p><b>Limits can be configured</b>! Please have a look at the
+	"watchdog" section in the configuration file (conf.xml).</p>
+};
+
+declare function f:eval($query as xs:string) as element()+
+{
+	let $startTime := current-time(),
+		$collection := request:request-parameter("collection", ())
+	return
+		util:catch("org.exist.xquery.TerminatedException",
+			let	$result := util:eval($query, $collection),
+				$count := count($result),
+				$queryTime := current-time() - $startTime
+			return (
+				<p>Found {$count} hits in
+				{get-seconds-from-dayTimeDuration($queryTime)} seconds.
+				{if($count gt 100) then "Max. 100 will be shown." else ()}
+				</p>,
+				request:set-session-attribute(
+					"results", 
+					subsequence($result, 1, 100)
+				),
+				f:add-to-history($query),
+				f:display($result, $count)
+			),
+			f:handleException()
+		)
+};
+
 (:  The main function. If a query has been passed in parameter
     "query", execute the query and store the results into the
     session. If "query" is empty, try to retrieve the previous
@@ -144,21 +187,10 @@ declare function f:add-to-history($query as xs:string) as empty()
 declare function f:main() as element()+
 {
     let $query := request:request-parameter("query", ()),
-        $previous := request:get-session-attribute("results"),
-        $collection := request:request-parameter("collection", ())
+        $previous := request:get-session-attribute("results") 
     return
         if ($query) then
-            let $startTime := current-time(),
-                $result := util:eval($query, $collection),
-                $count := count($result),
-                $queryTime := current-time() - $startTime
-            return (
-                <p>Found {$count} hits in
-                {get-seconds-from-dayTimeDuration($queryTime)} seconds.</p>,
-                request:set-session-attribute("results", $result),
-                f:add-to-history($query),
-                f:display($result, $count)
-            )
+           f:eval($query)
         else if ($previous) then
             f:display($previous, count($previous))
         else

@@ -81,6 +81,7 @@ public class FuzzyMatchAll extends AbstractMatchFunction {
 				matcher = new FuzzyMatcher(terms[k], threshold);
 				hits[k] =
 					context.getBroker().getTextEngine().getNodes(
+					    context,
 						nodes.getDocumentSet(),
 						nodes,
 						matcher, terms[k].substring(0, 1));

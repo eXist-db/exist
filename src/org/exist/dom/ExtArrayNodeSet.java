@@ -61,7 +61,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	private int state = 0;
 
 	public ExtArrayNodeSet() {
-		this.map = new Int2ObjectHashMap(512);
+		this.map = new Int2ObjectHashMap(17);
 	}
 
 	/**

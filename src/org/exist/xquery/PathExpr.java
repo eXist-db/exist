@@ -41,13 +41,15 @@ import org.exist.xquery.value.ValueSequence;
  * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class PathExpr extends AbstractExpression implements CompiledExpression {
+public class PathExpr extends AbstractExpression implements CompiledXQuery, CompiledExpression {
 	
     protected static Logger LOG = Logger.getLogger( PathExpr.class );
 
     protected boolean keepVirtual = false;
     protected LinkedList steps = new LinkedList();
 	protected boolean inPredicate = false;
+	
+	private long creationTime = 0;
 	
     public PathExpr(XQueryContext context) {
     	super(context);
@@ -274,4 +276,20 @@ public class PathExpr extends AbstractExpression implements CompiledExpression {
 	public void reset() {
 		resetState();
 	}
+	
+	
+    /* (non-Javadoc)
+     * @see org.exist.xquery.CompiledXQuery#setCreationTime(long)
+     */
+    public void setCreationTime(long created) {
+        creationTime = created;
+    }
+    
+    
+    /* (non-Javadoc)
+     * @see org.exist.xquery.CompiledXQuery#getCreationTime()
+     */
+    public long getCreationTime() {
+        return creationTime;
+    }
 }

@@ -376,7 +376,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		Collection collection = getCollection();
 		String name = res.getId();
 		LOG.debug("removing " + name);
-		String path = getPath() + '/' + name;
+		String path = collection.getName() + '/' + name;
 		DocumentImpl doc = collection.getDocument(path);
 		if (doc == null)
 			throw new XMLDBException(

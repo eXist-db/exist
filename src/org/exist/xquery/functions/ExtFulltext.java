@@ -201,13 +201,14 @@ public class ExtFulltext extends Function {
 
 	protected NodeSet processQuery(
 		XQueryContext context,
-		NodeSet contextSet) {
+		NodeSet contextSet) throws XPathException {
 		if (terms == null)
 			throw new RuntimeException("no search terms");
 			NodeSet hits[] = new NodeSet[terms.length];
 			for (int k = 0; k < terms.length; k++) {
 				hits[k] =
 					context.getBroker().getTextEngine().getNodesContaining(
+					    context,
 						contextSet.getDocumentSet(),
 						contextSet,
 						terms[k]);

@@ -51,7 +51,7 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 	private TreeSet collections = new TreeSet();
 
 	public DocumentSet() {
-		super();
+		super(29);
 	}
 
 	public void clear() {

@@ -29,8 +29,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -40,6 +38,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.exist.source.FileSource;
+import org.exist.source.Source;
 import org.exist.xmldb.CompiledExpression;
 import org.exist.xmldb.XQueryService;
 import org.exist.xquery.XPathException;
@@ -97,16 +97,6 @@ public class XQueryServlet extends HttpServlet {
 	private String containerEncoding = null;
 	private String formEncoding = null;
 	private String encoding = null;
-	
-	private ThreadLocal cache = new ThreadLocal() {
-		
-		/* (non-Javadoc)
-		 * @see java.lang.ThreadLocal#initialValue()
-		 */
-		protected Object initialValue() {
-			return new HashMap();
-		}
-	};
 	
 	/* (non-Javadoc)
 	 * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
@@ -216,17 +206,8 @@ public class XQueryServlet extends HttpServlet {
 			service.declareVariable(prefix + ":response", new HttpResponseWrapper(response));
 			service.declareVariable(prefix + ":session", new HttpSessionWrapper(session));
 						
-			CompiledExpression compiled;
-			CachedQuery cached = (CachedQuery)((Map)cache.get()).get(path);
-			if(cached == null || (!cached.isValid())) {
-				String xquery = readQuery(f);
-				compiled = service.compile(xquery);
-				cached = new CachedQuery(f, compiled);
-				((Map)cache.get()).put(path, cached);
-			} else {
-				compiled = cached.getExpression();
-			}
-			ResourceSet result = service.execute(compiled);
+			Source source = new FileSource(f, encoding);
+			ResourceSet result = service.execute(source);
 			for(ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
 				Resource res = i.nextResource();
 				output.println(res.getContent().toString());

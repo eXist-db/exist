@@ -34,12 +34,6 @@ import java.util.Locale;
  */
 public interface RequestWrapper {
 	
-	public Object getAttribute(String arg0);
-	
-	public Enumeration getAttributeNames();
-	
-	public String getAuthType();
-	
 	public String getCharacterEncoding();
 	
 	public int getContentLength();
