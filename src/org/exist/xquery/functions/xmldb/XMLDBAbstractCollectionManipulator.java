@@ -25,13 +25,12 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.XMLDBException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 import org.exist.dom.NodeProxy;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -39,11 +38,9 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.exist.xquery.value.StringValue;
-
-import java.util.Iterator;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.XMLDBException;
 
 public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 
@@ -87,7 +84,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
             String collectionURI = args[0].getStringValue();
             if (null != collectionURI) {
                 try {
-                    java.net.URI uri = new java.net.URI(collectionURI);
+                    java.net.URI uri = new java.net.URI(URLEncoder.encode(collectionURI, "UTF-8"));
                     if (null == uri.getScheme()) {
                         // Must be a LOCAL collection
                         collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), collectionURI);
@@ -100,7 +97,8 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
                     throw new XPathException(getASTNode(), "Could not parse URI: "+collectionURI, use);
                 } catch (XMLDBException xe) {
                     throw new XPathException(getASTNode(), "Could not locate collection: "+collectionURI, xe);
-                }
+                } catch (UnsupportedEncodingException e) {
+				}
             }
             if (null == collection) {
                 throw new XPathException(getASTNode(), "Unable to find collection: "+collectionURI);
