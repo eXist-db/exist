@@ -34,7 +34,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -59,10 +58,9 @@ public class MimeTable {
     
     private static final String FILE_LOAD_FAILED_ERR = "Failed to load mime-type table from ";
     private static final String LOAD_FAILED_ERR = "Failed to load mime-type table from class loader";
+    
     private static final String MIME_TYPES_XML_DEFAULT = "org/exist/util/mime-types.xml";
     private static final String MIME_TYPES_XML = "mime-types.xml";
-    
-    private final static Logger LOG = Logger.getLogger(MimeTable.class);
     
     private static MimeTable instance = null;
     
@@ -119,35 +117,34 @@ public class MimeTable {
             File f = new File(home + File.separatorChar + MIME_TYPES_XML);
             if (f.canRead()) {
                 try {
-                    LOG.debug("Loading mime table from file " + f.getAbsolutePath());
+                    System.err.println("Loading mime table from file " + f.getAbsolutePath());
                     loadMimeTypes(new FileInputStream(f));
                     loaded = true;
                 } catch (FileNotFoundException e) {
-                    LOG.warn(FILE_LOAD_FAILED_ERR + f.getAbsolutePath(), e);
+                    System.err.println(FILE_LOAD_FAILED_ERR + f.getAbsolutePath());
                 } catch (ParserConfigurationException e) {
-                    LOG.warn(FILE_LOAD_FAILED_ERR + f.getAbsolutePath(), e);
+                    System.err.println(FILE_LOAD_FAILED_ERR + f.getAbsolutePath());
                 } catch (SAXException e) {
-                    LOG.warn(FILE_LOAD_FAILED_ERR + f.getAbsolutePath(), e);
+                    System.err.println(FILE_LOAD_FAILED_ERR + f.getAbsolutePath());
                 } catch (IOException e) {
-                    LOG.warn(FILE_LOAD_FAILED_ERR + f.getAbsolutePath(), e);
+                    System.err.println(FILE_LOAD_FAILED_ERR + f.getAbsolutePath());
                 }
             }
         }
         if (!loaded) {
-            LOG.debug("Loading mime table");
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
             InputStream is = cl.getResourceAsStream(MIME_TYPES_XML_DEFAULT);
             if (is == null) {
-                LOG.warn(LOAD_FAILED_ERR);
+                System.err.println(LOAD_FAILED_ERR);
             }
             try {
                 loadMimeTypes(is);
             } catch (ParserConfigurationException e) {
-                LOG.warn(LOAD_FAILED_ERR, e);
+                System.err.println(LOAD_FAILED_ERR);
             } catch (SAXException e) {
-                LOG.warn(LOAD_FAILED_ERR, e);
+                System.err.println(LOAD_FAILED_ERR);
             } catch (IOException e) {
-                LOG.warn(LOAD_FAILED_ERR, e);
+                System.err.println(LOAD_FAILED_ERR);
             }
         }
     }
@@ -186,7 +183,7 @@ public class MimeTable {
             if (MIME_TYPE.equals(qName)) {
                 String name = attributes.getValue("name");
                 if (name == null || name.length() == 0) {
-                    LOG.warn("No name specified for mime-type");
+                    System.err.println("No name specified for mime-type");
                     return;
                 }
                 int type = MimeType.BINARY;

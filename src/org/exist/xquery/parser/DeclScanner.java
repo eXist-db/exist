@@ -90,7 +90,7 @@ public DeclScanner(ParserSharedInputState state) {
 		}
 		}
 		
-				throw new XPathException();
+				throw new XPathException("Processing stopped");
 			
 	}
 	

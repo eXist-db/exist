@@ -92,9 +92,18 @@ public class FunDoc extends Function {
 		String path = arg.itemAt(0).getStringValue();
 		if (path.length() == 0)
 			throw new XPathException(getASTNode(), "Invalid argument to fn:doc function: empty string is not allowed here.");
+        
+        // if the path is an absolute URL that starts with the current base URI,
+        // we remove the base URI
+        if (path.startsWith(context.getBaseURI()))
+            path = path.substring(context.getBaseURI().length());
+        
+        // relative URL: add the current base collection
 		if (path.charAt(0) != '/')
-			path = context.getBaseURI() + '/' + path;
+			path = context.getBaseCollection() + '/' + path;
 
+        LOG.debug("Loading document: " + path);
+        
 		// check if the loaded documents should remain locked
         boolean lockOnLoad = context.lockDocumentsOnLoad();
         Lock dlock = null;

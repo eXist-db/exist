@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.xquery.util.Error;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
@@ -44,8 +45,10 @@ public class NodeComparison extends BinaryOp {
 	public NodeComparison(XQueryContext context, Expression left, Expression right, int relation) {
 		super(context);
 		this.relation = relation;
-		add(new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, left));
-		add(new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, right));
+		add(new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, left, 
+                new Error(Error.NODE_COMP_TYPE_MISMATCH)));
+		add(new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, right,
+                new Error(Error.NODE_COMP_TYPE_MISMATCH)));
 		//add(left);
 		//add(right);
 	}

@@ -120,14 +120,15 @@ public class UserDefinedFunction extends Function {
      */
     public void dump(ExpressionDumper dumper) {
         FunctionSignature signature = getSignature();
-        dumper.display("declare function ").display(signature.getName());
+        dumper.display(signature.getName());
         dumper.display('(');
         for(int i = 0; i < signature.getArgumentTypes().length; i++) {
 			if(i > 0)
 				dumper.display(", ");
 			dumper.display(signature.getArgumentTypes()[i]);
 		}
-		dumper.display(')');
+		dumper.display(") ");
+        dumper.display(signature.getReturnType().toString());
     }
     
     /* (non-Javadoc)

@@ -25,6 +25,7 @@ package org.exist.xquery;
 import java.util.List;
 
 import org.exist.dom.QName;
+import org.exist.xquery.util.Error;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -66,11 +67,13 @@ public class FunctionCall extends Function {
 		SequenceType returnType = functionDef.getSignature().getReturnType();
 		// add return type checks
 		if(returnType.getCardinality() != Cardinality.ZERO_OR_MORE)
-			expression = new DynamicCardinalityCheck(context, returnType.getCardinality(), expression);
+			expression = new DynamicCardinalityCheck(context, returnType.getCardinality(), expression,
+                    new Error(Error.FUNC_RETURN_CARDINALITY));
 		if(Type.subTypeOf(returnType.getPrimaryType(), Type.ATOMIC))
 			expression = new Atomize(context, expression);
 		if(Type.subTypeOf(returnType.getPrimaryType(), Type.NUMBER))
-			expression = new UntypedValueCheck(context, returnType.getPrimaryType(), expression);
+			expression = new UntypedValueCheck(context, returnType.getPrimaryType(), expression, 
+                    new Error(Error.FUNC_RETURN_TYPE));
 		else if(returnType.getPrimaryType() != Type.ITEM)
 			expression = new DynamicTypeCheck(context, returnType.getPrimaryType(), expression);
 	}
@@ -116,8 +119,16 @@ public class FunctionCall extends Function {
 		throws XPathException {
 		Sequence[] seq = new Sequence[getArgumentCount()];
 		for(int i = 0; i < getArgumentCount(); i++) {
-			seq[i] = getArgument(i).eval(contextSequence, contextItem);
+			try {
+                seq[i] = getArgument(i).eval(contextSequence, contextItem);
 //			System.out.println("found " + seq[i].getLength() + " for " + getArgument(i).pprint());
+            } catch (XPathException e) {
+                if(e.getLine() == 0)
+                    e.setASTNode(getASTNode());
+                // append location of the function call to the exception message:
+                e.addFunctionCall(functionDef, getASTNode());
+                throw e;
+            }
 		}
 		return evalFunction(contextSequence, contextItem, seq);
 	}
@@ -139,9 +150,7 @@ public class FunctionCall extends Function {
 			if(e.getLine() == 0)
 				e.setASTNode(getASTNode());
 			// append location of the function call to the exception message:
-			e.prependMessage("in call to function " + functionDef.toString() +
-					" [" + getASTNode().getLine() + ", " + getASTNode().getColumn() +
-					"]");
+			e.addFunctionCall(functionDef, getASTNode());
 			throw e;
 		} finally {
 			context.popLocalVariables(mark);

@@ -45,7 +45,10 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
             	optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
             if(variableDecls.size() > 0)
             	optParams.put(RpcAPI.VARIABLES, variableDecls);
-            optParams.put(RpcAPI.BASE_URI, collection.getPath());
+            optParams.put(RpcAPI.BASE_URI, 
+                    outputProperties.getProperty("base-uri", collection.getPath()));
+            optParams.put(RpcAPI.BASE_COLLECTION,
+                    outputProperties.getProperty("base-uri", collection.getPath()));
 			Vector params = new Vector();
 			params.addElement(query.getBytes("UTF-8"));
 			params.addElement(optParams);
@@ -107,7 +110,10 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
             	optParams.put(RpcAPI.VARIABLES, variableDecls);
         	if(sortExpr != null)
         		optParams.put(RpcAPI.SORT_EXPR, sortExpr);
-			optParams.put(RpcAPI.BASE_URI, collection.getPath());
+			optParams.put(RpcAPI.BASE_URI, 
+                    outputProperties.getProperty("base-uri", collection.getPath()));
+            optParams.put(RpcAPI.BASE_COLLECTION,
+                    outputProperties.getProperty("base-uri", collection.getPath()));
             Vector params = new Vector();
             params.addElement( query.getBytes("UTF-8") );
             params.addElement( resource.path );
@@ -240,7 +246,10 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
         	optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
         if(variableDecls.size() > 0)
         	optParams.put(RpcAPI.VARIABLES, variableDecls);
-		optParams.put(RpcAPI.BASE_URI, collection.getPath());
+        optParams.put(RpcAPI.BASE_URI, 
+                outputProperties.getProperty("base-uri", collection.getPath()));
+        optParams.put(RpcAPI.BASE_COLLECTION,
+                outputProperties.getProperty("base-uri", collection.getPath()));
         Vector params = new Vector();
         params.addElement(query);
         params.addElement(optParams);

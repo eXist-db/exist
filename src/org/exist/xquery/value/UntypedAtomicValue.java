@@ -63,6 +63,8 @@ public class UntypedAtomicValue extends AtomicValue {
 				return this;
 			case Type.STRING :
 				return new StringValue(value);
+            case Type.ANY_URI :
+                return new AnyURIValue(value);
 			case Type.BOOLEAN :
 				if (value.equals("0") || value.equals("false"))
 					return BooleanValue.FALSE;
