@@ -45,7 +45,7 @@ public class XMLDBGetResourceCollections extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("get-resource-collections", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+			new QName("get-child-resources", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns the resource of collection",
 			new SequenceType[] {
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
