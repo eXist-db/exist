@@ -29,10 +29,14 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import it.unimi.dsi.fastutil.Object2ObjectRBTreeMap;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -170,19 +174,19 @@ public class Configuration implements ErrorHandler {
 
 				NodeList index = p.getElementsByTagName("index");
 
+				Map indexPathMap = new Object2ObjectRBTreeMap();
+				config.put("indexer.map", indexPathMap);
 				for (int i = 0; i < index.getLength(); i++) {
 					Element idx = (Element) index.item(i);
 					String doctype = idx.getAttribute("doctype");
 					String def = idx.getAttribute("default");
 					IndexPaths paths = new IndexPaths(def.equals("all"));
 					String indexAttributes = idx.getAttribute("attributes");
-
 					if (indexAttributes != null)
 						paths.setIncludeAttributes(
 							indexAttributes.equals("true"));
 
 					String indexAlphaNum = idx.getAttribute("alphanum");
-
 					if (indexAlphaNum != null)
 						paths.setIncludeAlphaNum(indexAlphaNum.equals("true"));
 
@@ -202,8 +206,8 @@ public class Configuration implements ErrorHandler {
 						paths.addInclude(ps);
 					}
 
-					config.put("indexScheme." + doctype, paths);
-
+					indexPathMap.put(doctype, paths);
+					
 					NodeList exclude = idx.getElementsByTagName("exclude");
 
 					for (int j = 0; j < exclude.getLength(); j++) {

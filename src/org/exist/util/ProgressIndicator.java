@@ -2,7 +2,7 @@
 package org.exist.util;
 
 /*
- *  eXist xml document repository and xpath implementation
+ *  eXist Native XML Database
  *  Copyright (C) 2001,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
  *
  *  This program is free software; you can redistribute it and/or
@@ -19,25 +19,26 @@ package org.exist.util;
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+
 /**
- *  Description of the Class
- *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    27. Juni 2002
+ * This class is used to report information about the parsing progress
+ * to registered observers.
+ *  
+ * @author wolf
  */
 public class ProgressIndicator {
 
-    protected double mMax = 1;
-    protected double mValue = 0;
+    protected float max_ = 1;
+    protected float value_ = 0;
+	protected int step_ = 1;
 
-
-    /**
-     *  Constructor for the ProgressIndicator object
-     *
-     *@param  max  Description of the Parameter
-     */
-    public ProgressIndicator( double max ) {
-        mMax = max;
+	public ProgressIndicator( float max, int step) {
+		max_ = max;
+		step_ = step;
+	}
+	
+    public ProgressIndicator( float max ) {
+        max_ = max;
     }
 
 
@@ -46,28 +47,36 @@ public class ProgressIndicator {
      *
      *@param  value  The new value value
      */
-    public void setValue( double value ) {
-        mValue = value;
+    public void setValue( float value ) {
+        value_ = value;
     }
 
-
+	public void finish() {
+		value_ = max_;
+	}
+	
     /**
      *  Gets the percentage attribute of the ProgressIndicator object
      *
      *@return    The percentage value
      */
     public int getPercentage() {
-        return (int) ( ( mValue / mMax ) * 100 );
+        return (int) ( ( value_ / max_ ) * 100 );
     }
 
-
+	public boolean changed() {
+		if(value_ % step_ == 0)
+			return true;
+		return false;
+	}
+	
     /**
      *  Gets the max attribute of the ProgressIndicator object
      *
      *@return    The max value
      */
     public double getMax() {
-        return mMax;
+        return max_;
     }
 
 
@@ -77,7 +86,7 @@ public class ProgressIndicator {
      *@return    The value value
      */
     public double getValue() {
-        return mValue;
+        return value_;
     }
 }
 

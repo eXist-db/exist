@@ -6,16 +6,16 @@ import java.io.UnsupportedEncodingException;
 
 public class VariableByteOutputStream extends OutputStream {
 
-    protected FastByteBuffer buf;
+    protected ByteArray buf;
 
     public VariableByteOutputStream() {
         super();
-		buf = new FastByteBuffer( 6, 10, 3 );
+		buf = new FastByteBuffer( 9 );
     }
 
 	public VariableByteOutputStream(int size) {
 		super();
-		buf = new FastByteBuffer(size, 10, 3);
+		buf = new FastByteBuffer(size);
 	}
 	
     public void clear() {
@@ -23,14 +23,7 @@ public class VariableByteOutputStream extends OutputStream {
     }
 
     public void close() throws IOException {
-    }
-
-    public void copyTo( byte[] b ) {
-        buf.copyTo( b, 0 );
-    }
-
-    public void copyTo( byte[] b, int off ) {
-        buf.copyTo( b, off );
+    	buf = null;
     }
 
     public void flush() throws IOException {
@@ -42,7 +35,10 @@ public class VariableByteOutputStream extends OutputStream {
         return b;
     }
 
-
+	public ByteArray data() {
+		return buf;
+	}
+	
     public void write( int b ) throws IOException {
         buf.append( (byte) b );
     }
@@ -84,9 +80,6 @@ public class VariableByteOutputStream extends OutputStream {
         }
         writeInt( data.length );
         write( data, 0, data.length );
-    }
-    
-    protected void finalize() {
     }
 }
 

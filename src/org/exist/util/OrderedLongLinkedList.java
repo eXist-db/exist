@@ -7,7 +7,7 @@ import java.util.Iterator;
  * 
  * @author Wolfgang Meier
  */
-public class OrderedLongLinkedList extends LongLinkedList {
+public final class OrderedLongLinkedList extends LongLinkedList {
 
     
 	/**

@@ -22,8 +22,6 @@ public class LongLinkedList {
 		 * @see java.lang.Comparable#compareTo(java.lang.Object)
 		 */
 		public int compareTo(Object o) {
-			if(!(o instanceof ListItem))
-                throw new IllegalArgumentException();
             final long ol = ((ListItem)o).l;
             if(ol == l)
                 return 0;
