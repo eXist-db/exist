@@ -44,7 +44,12 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 	 * @see org.exist.dom.NodeSet#item(int)
 	 */
 	public org.w3c.dom.Node item(int pos) {
-		// TODO Auto-generated method stub
+	    int i = 0;
+		for(Iterator it = iterator(); it.hasNext(); i++) {
+		    NodeProxy p = (NodeProxy) it.next();
+		    if(i == pos)
+		        return p.getNode();
+		}
 		return null;
 	}
 
@@ -52,8 +57,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 	 * @see org.exist.dom.NodeSet#get(int)
 	 */
 	public NodeProxy get(int pos) {
-		// TODO Auto-generated method stub
-		return null;
+		return (NodeProxy)itemAt(pos);
 	}
 
 	/* (non-Javadoc)
@@ -68,7 +72,13 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 	 * @see org.exist.xquery.value.Sequence#itemAt(int)
 	 */
 	public Item itemAt(int pos) {
-		throw new RuntimeException("unsupported method: itemAt");
+	    int i = 0;
+		for(Iterator it = iterator(); it.hasNext(); i++) {
+		    NodeProxy p = (NodeProxy) it.next();
+		    if(i == pos)
+		        return p;
+		}
+		return null;
 	}
 
 	public final void add(NodeProxy proxy) {
