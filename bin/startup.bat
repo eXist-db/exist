@@ -21,9 +21,10 @@ goto :eof
 
 :gotExistHome
 if not "%JAVA_OPTS%" == "" goto gotJavaOpts
-set JAVA_OPTS=-Xms32000k -Xmx256000k
+set JAVA_ENDORSED_DIRS="%EXIST_HOME%"\lib\endorsed
+set JAVA_OPTS=-Xms32000k -Xmx256000k -Djava.endorsed.dirs="%JAVA_ENDORSED_DIRS"
 
 :gotJavaOpts
-%JAVA_HOME%\bin\java -Xms32000k -Xmx128000k -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" jetty %1
+%JAVA_HOME%\bin\java "%JAVA_OPTS%"  -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" jetty %1
 :eof
 

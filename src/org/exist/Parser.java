@@ -113,6 +113,7 @@ public class Parser
 	protected Stack stack = new Stack();
 	protected User user;
 	protected boolean privileged = false;
+	protected String ignorePrefix = null;
 
 	// reusable fields
 	private TextImpl text = new TextImpl();
@@ -313,7 +314,11 @@ public class Parser
 	}
 
 	public void endPrefixMapping(String prefix) {
-		prefix = (String) prefixes.pop();
+		if(ignorePrefix != null && prefix.equals(ignorePrefix)) {
+			ignorePrefix = null;
+		} else {
+			prefix = (String) prefixes.pop();
+		}
 	}
 
 	public void error(SAXParseException e) throws SAXException {
@@ -815,8 +820,8 @@ public class Parser
 		for (int i = 0; i < attrLength; i++) {
 			attrNS = attributes.getURI(i);
 			attrQName = attributes.getQName(i);
-			// skip xmlns-attributes
-			if (attrQName.startsWith("xmlns"))
+			// skip xmlns-attributes and attributes in eXist's namespace
+			if (attrQName.startsWith("xmlns") || attrNS.equals("http://exist.sourceforge.net/NS/exist"))
 				--attrLength;
 			else {
 				final AttrImpl attr = new AttrImpl(attrQName, attributes.getValue(i));
@@ -846,6 +851,12 @@ public class Parser
 	}
 
 	public void startPrefixMapping(String prefix, String uri) {
+		// skip the eXist namespace
+		if(uri.equals("http://exist.sourceforge.net/NS/exist")) {
+			ignorePrefix = prefix;
+			return;
+		}
+
 		// get the prefix for this namespace if one has been stored
 		// before
 		String oldPrefix = broker.getNamespacePrefix(uri);

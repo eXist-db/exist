@@ -44,6 +44,9 @@ if [ -z "$JAVA_OPTIONS" ]; then
     export JAVA_OPTIONS="-Xms128000k -Xmx256000k -Djavax.xml.parsers.SAXParserFactory=$SAXFACTORY -Dfile.encoding=ISO8859-1"
 fi
 
+JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
+JAVA_OPTIONS="$JAVA_OPTIONS -Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS"
+
 # save LD_LIBRARY_PATH
 if [ -n "$LD_LIBRARY_PATH" ]; then
 	OLD_LIBRARY_PATH="$LD_LIBRARY_PATH"

@@ -31,4 +31,9 @@ if [ -z "$JAVA_OPTS" ]; then
     JAVA_OPTS="-Xms64000k -Xmx128000k"
 fi
 
-$JAVA_HOME/bin/java $PROF $JAVA_OPTS -Djavax.xml.parsers.SAXParserFactory=$SAXFACTORY -Dexist.home=$EXIST_HOME -classpath $LOCALCLASSPATH $*
+JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
+
+$JAVA_HOME/bin/java $PROF $JAVA_OPTS \
+	-Djavax.xml.parsers.SAXParserFactory=$SAXFACTORY \
+	-Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS \
+	-Dexist.home=$EXIST_HOME -classpath $LOCALCLASSPATH $*
