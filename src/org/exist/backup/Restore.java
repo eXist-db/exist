@@ -27,11 +27,9 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.CollectionManagementService;
 import org.exist.xmldb.CollectionManagementServiceImpl;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
-import java.text.ParseException;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.DateTimeValue;
 
 /**
  * Restore.java
@@ -158,17 +156,15 @@ public class Restore extends DefaultHandler {
 						dialog.displayMessage("creating collection " + name);
 					
 					
-					SimpleDateFormat formatter
-				     = new SimpleDateFormat ("EEE MMM dd HH:mm:ss 'CET' yyyy", Locale.US);
 					
 					Date date_created = null;
 					
-					if (created != null) {
+					if (created != null)
 						try {
-						date_created = formatter.parse( created);
-						} catch (ParseException e) {							
-						}
-					}
+							date_created = (Date)(new DateTimeValue(created)).getDate();
+						} catch (XPathException e2) {
+						} 
+
 					 
 					
 					current = mkcol(name, date_created);
@@ -200,6 +196,7 @@ public class Restore extends DefaultHandler {
 				else
 					System.err.println(f.getAbsolutePath() + " does not exist or is not readable.");
 			} else if (localName.equals("resource")) {
+
 				String type = atts.getValue("type");
 				if(type == null)
 					type ="XMLResource";
@@ -208,12 +205,12 @@ public class Restore extends DefaultHandler {
 				final String group = atts.getValue("group");
 				final String perms = atts.getValue("mode");
 				
-				
-				
 				String filename = atts.getValue("filename");
 				final String mimetype = atts.getValue("mimetype");
 				final String created = atts.getValue("created");
 				final String modified = atts.getValue("modified");
+				
+				
 				
 				if (filename == null) filename = name;
 
@@ -237,27 +234,20 @@ public class Restore extends DefaultHandler {
 					if(dialog == null)
 						System.out.println("restoring " + name);
 					
-					SimpleDateFormat formatter
-				     = new SimpleDateFormat ("EEE MMM dd HH:mm:ss 'CET' yyyy", Locale.US);
-					
 					Date date_created = null;
 					Date date_modified = null;
 					
+					if (created != null)
+						try {
+							date_created = (Date)(new DateTimeValue(created)).getDate();
+						} catch (XPathException e2) {
+						} 
 					
-					if (created != null) {
+					if (modified != null)
 						try {
-						date_created = formatter.parse( created);
-						} catch (ParseException e) {							
-						}
-					}
-					 
-					if (modified != null){
-						try {
-						date_modified = formatter.parse( modified);
-						} catch (ParseException e) {							
-						}
-					}
-			
+							date_modified = (Date)(new DateTimeValue(modified)).getDate();
+						} catch (XPathException e2) {
+						} 
 					
 					current.storeResource(res, date_created, date_modified);
 					UserManagementService service =

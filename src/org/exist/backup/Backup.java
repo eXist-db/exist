@@ -48,6 +48,7 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
+import org.exist.xquery.value.DateTimeValue;
 
 public class Backup {
 
@@ -230,7 +231,7 @@ public class Backup {
 				"created",
 				"created",
 				"CDATA",
-				cur.getCreationTime().toString());
+				""+new DateTimeValue(cur.getCreationTime().getTime()));
 		serializer.startElement(NS, "collection", "collection", attr);
 
 		// scan through resources
@@ -293,13 +294,13 @@ public class Backup {
 					"created",
 					"created",
 					"CDATA",
-					ris.getCreationTime().toString());
+					""+new DateTimeValue(ris.getCreationTime().getTime()));
 			attr.addAttribute(
 					NS,
 					"modified",
 					"modified",
 					"CDATA",
-					ris.getLastModificationTime().toString());
+					""+new DateTimeValue(ris.getLastModificationTime().getTime()));
 
 			attr.addAttribute(
 					NS,
