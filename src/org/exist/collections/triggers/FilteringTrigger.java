@@ -64,6 +64,11 @@ public abstract class FilteringTrigger implements Trigger {
     }
 	
 	public abstract void prepare(int event, DBBroker broker, String documentName, Document existingDocument) throws TriggerException;
+	
+	public void finish(int event, DBBroker broker, String documentName, Document existingDocument) {
+		return;
+	}
+
 
 	public void setValidating(boolean validating) {
 		this.validating = validating;
