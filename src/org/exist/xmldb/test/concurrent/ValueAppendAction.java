@@ -86,7 +86,7 @@ public class ValueAppendAction extends Action {
     private void query(XPathQueryService service) throws Exception {
         ResourceSet result = service.queryResource(resourceName, "/items/item[value = 44.53]");
         Assert.assertEquals(1, result.getSize());
-        result = service.queryResource(resourceName, "/items/item[@id='1']/name[.='abcdefg']/text()");
+        result = service.queryResource(resourceName, "/items/item[@id=1]/name[.='abcdefg']/text()");
         Assert.assertEquals(1, result.getSize());
         Assert.assertEquals("abcdefg", result.getResource(0).getContent().toString());
         
