@@ -43,7 +43,7 @@ import org.w3c.dom.Node;
 public abstract class AbstractNodeSet extends AbstractSequence implements NodeSet {
 
 	protected final static Logger LOG = Logger.getLogger(AbstractNodeSet.class);
-
+	
 	protected AbstractNodeSet() {
 	}
 	
@@ -198,14 +198,12 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	public abstract NodeProxy get(DocumentImpl doc, long nodeId);
 
 	public DocumentSet getDocumentSet() {
-		//long start = System.currentTimeMillis();
 		DocumentSet ds = new DocumentSet();
 		NodeProxy p;
 		for(Iterator i = iterator(); i.hasNext(); ) {
 			p = (NodeProxy)i.next();
 			ds.add(p.doc);
 		}
-		//LOG.debug("getDocumentSet took " + (System.currentTimeMillis() - start));
 		return ds;
 	}
 	

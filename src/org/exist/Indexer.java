@@ -42,6 +42,7 @@ import org.exist.dom.ProcessingInstructionImpl;
 import org.exist.dom.QName;
 import org.exist.dom.TextImpl;
 import org.exist.storage.DBBroker;
+import org.exist.storage.NodePath;
 import org.exist.util.Configuration;
 import org.exist.util.FastStringBuffer;
 import org.exist.util.ProgressIndicator;
@@ -74,7 +75,9 @@ public class Indexer
 	protected DBBroker broker = null;
 	protected XMLString charBuf = new XMLString();
 	protected int currentLine = 0;
-	protected StringBuffer currentPath = new StringBuffer();
+//	protected StringBuffer currentPath = new StringBuffer();
+	protected NodePath currentPath = new NodePath();
+	
 	protected DocumentImpl document = null;
 	protected boolean insideDTD = false;
 	protected boolean validate = false;
@@ -146,7 +149,7 @@ public class Indexer
 		document = doc;
 		// reset internal fields
 		level = 0;
-		currentPath.setLength(0);
+		currentPath.reset();
 		stack = new Stack();
 		nsMappings.clear();
 		rootNode = null;
@@ -169,7 +172,7 @@ public class Indexer
 		comment.setOwnerDocument(document);
 		if (stack.empty()) {
 			if (!validate)
-				broker.store(comment, currentPath.toString());
+				broker.store(comment, currentPath);
 			document.appendChild(comment);
 		} else {
 			ElementImpl last = (ElementImpl) stack.peek();
@@ -182,13 +185,13 @@ public class Indexer
 					text.setOwnerDocument(document);
 					last.appendChildInternal(text);
 					if (!validate)
-						broker.store(text, currentPath.toString());
+						broker.store(text, currentPath);
 				}
 				charBuf.reset();
 			}
 			last.appendChildInternal(comment);
 			if (!validate)
-				broker.store(comment, currentPath.toString());
+				broker.store(comment, currentPath);
 		}
 	}
 
@@ -231,7 +234,8 @@ public class Indexer
 			}
 			stack.pop();
 			
-			currentPath = removeLastPathComponent(currentPath);
+//			currentPath = removeLastPathComponent(currentPath);
+			currentPath.removeLastComponent();
 //			currentPath.delete(
 //				currentPath.lastIndexOf("/"),
 //				currentPath.length());
@@ -247,7 +251,7 @@ public class Indexer
 					if (last.getChildCount() > 0)
 						broker.update(last);
 				} else
-					broker.store(last, currentPath.toString());
+					broker.store(last, currentPath);
 			}
 			level--;
 			if (last != rootNode) {
@@ -437,7 +441,8 @@ public class Indexer
 			}
 
 			stack.push(node);
-			currentPath.append('/').append(qname);
+			currentPath.addComponent(qname);
+//			currentPath.append('/').append(qname);
 			if (!validate) {
 				broker.store(node, currentPath);
 			}
@@ -455,7 +460,8 @@ public class Indexer
 			}
 
 			stack.push(node);
-			currentPath.append('/').append(qname);
+			currentPath.addComponent(qname);
+//			currentPath.append('/').append(qname);
 			if (!validate) {
 				broker.store(node, currentPath);
 			}

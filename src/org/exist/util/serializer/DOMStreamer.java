@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
 
+import org.exist.dom.QName;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Comment;
@@ -172,16 +173,26 @@ public class DOMStreamer {
                 stack.push(info);
 				// output attributes
 				AttributesImpl saxAttrs = new AttributesImpl();
+				String attrNS, attrLocalName;
 				for (int i = 0; i < attrs.getLength(); i++) {
 					nextAttr = (Attr) attrs.item(i);
+					attrNS = nextAttr.getNamespaceURI();
+					if(attrNS == null)
+					    attrNS = "";
+					attrLocalName = nextAttr.getLocalName();
+					if(attrLocalName == null)
+					    attrLocalName = QName.extractLocalName(nextAttr.getNodeName());
 					saxAttrs.addAttribute(
-						nextAttr.getNamespaceURI(),
-						nextAttr.getLocalName(),
+						attrNS,
+						attrLocalName,
 						nextAttr.getNodeName(),
 						"CDATA",
 						nextAttr.getValue());
 				}
-				contentHandler.startElement(node.getNamespaceURI(), node.getLocalName(), 
+				String localName = node.getLocalName();
+				if(localName == null)
+				    localName = QName.extractLocalName(node.getNodeName());
+				contentHandler.startElement(node.getNamespaceURI(), localName, 
 					node.getNodeName(), saxAttrs);
 				break;
 			case Node.TEXT_NODE :

@@ -11,6 +11,7 @@ public interface ByteArray {
 	void copyTo(byte[] b, int offset, int length);
 	void copyTo(byte[] b, int offset);
 	void copyTo(int start, byte[] newBuf, int offset, int len);
+	void copyTo(ByteArray other);
 	void append(byte b);
 	void append(byte[] b);
 	void append(byte[] b, int offset, int length);

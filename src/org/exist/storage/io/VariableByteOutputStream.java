@@ -51,7 +51,7 @@ public class VariableByteOutputStream extends OutputStream {
 		buf.append((byte) b);
 	}
 
-	public void write(byte[] b) throws IOException {
+	public void write(byte[] b) {
 		buf.append(b);
 	}
 
@@ -59,6 +59,10 @@ public class VariableByteOutputStream extends OutputStream {
 		buf.append(b, off, len);
 	}
 
+	public void write(ByteArray b) {
+	    b.copyTo(buf);
+	}
+	
 	public void writeByte(byte b) {
 		buf.append(b);
 	}

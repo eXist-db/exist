@@ -80,6 +80,10 @@ public class Update extends Modification {
 					break;
 				case Node.ATTRIBUTE_NODE :
 					parent = (ElementImpl)node.getParentNode();
+					if(parent == null) {
+					    LOG.warn("parent node not found for " + node.getGID());
+					    break;
+					}
 					AttrImpl attr = (AttrImpl)node;
 					if (children.getLength() != 0) {
 						temp = children.item(0);

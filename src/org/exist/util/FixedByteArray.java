@@ -41,6 +41,10 @@ public class FixedByteArray implements ByteArray {
 		System.arraycopy(data, start, newBuf, offset, len);
 	}
 
+	public void copyTo(ByteArray other) {
+	    other.append(data, 0, data.length);
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.util.ByteArray#append(byte)
 	 */

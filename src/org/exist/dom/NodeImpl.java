@@ -27,6 +27,7 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.exist.storage.DBBroker;
+import org.exist.storage.NodePath;
 import org.exist.storage.Signatures;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -328,11 +329,11 @@ public class NodeImpl implements Node {
 		return pid < 0 ? ownerDocument : ownerDocument.getNode(pid);
 	}
 
-	public StringBuffer getPath() {
-		StringBuffer path = new StringBuffer();
+	public NodePath getPath() {
+		NodePath path = new NodePath();
 		Node parent = getParentNode();
 		while (parent.getNodeType() != Node.DOCUMENT_NODE) {
-			path.append('/').append(parent.getNodeName());
+		    path.addComponent(parent.getNodeName());
 			parent = parent.getParentNode();
 		}
 		return path;

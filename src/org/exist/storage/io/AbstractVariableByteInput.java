@@ -94,6 +94,11 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
         }
     }
 
+    public void skipBytes(long count) throws IOException {
+        for(long i = 0; i < count; i++)
+            readByte();
+    }
+    
     public int read(byte[] data) throws IOException {
         return read(data, 0, data.length);
     }

@@ -59,7 +59,6 @@ import org.w3c.dom.NodeList;
  * on the methods defined here.
  *
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
- *@created    20. Mai 2002
  */
 public abstract class DBBroker extends Observable {
 
@@ -79,13 +78,18 @@ public abstract class DBBroker extends Observable {
 	protected boolean caseSensitive = true;
 
 	protected Configuration config;
+	
 	protected BrokerPool pool;
+	
 	protected File symbolsFile;
 	protected SymbolTable symbols = null;
+	
 	protected User user = null;
 	
 	private int referenceCount = 0;
 
+	protected int xupdateGrowthFactor = 1;
+	
 	protected void saveSymbols() throws EXistException {
 		synchronized (symbols) {
 			try {
@@ -147,6 +151,8 @@ public abstract class DBBroker extends Observable {
 				loadSymbols();
 			config.setProperty("db-connection.symbol-table", symbols);
 		}
+		if ((xupdateGrowthFactor = config.getInteger("xupdate.growth-factor")) < 0)
+		    xupdateGrowthFactor = 1;
 		this.pool = pool;
 	}
 
@@ -478,7 +484,7 @@ public abstract class DBBroker extends Observable {
 	 *      the Broker to determine if a node's content should be
 	 *      fulltext-indexed).
 	 */
-	public abstract void store(NodeImpl node, CharSequence currentPath);
+	public abstract void store(NodeImpl node, NodePath currentPath);
 
 	/**
 	 *  Store a document into the database.
@@ -573,5 +579,9 @@ public abstract class DBBroker extends Observable {
 	
 	public void decReferenceCount() {
 		--referenceCount;
+	}
+	
+	public int getXUpdateGrowthFactor() {
+	    return xupdateGrowthFactor;
 	}
 }

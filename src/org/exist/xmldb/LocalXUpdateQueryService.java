@@ -35,7 +35,7 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 	private BrokerPool pool;
 	private User user;
 	private LocalCollection parent;
-
+	
 	/**
 	 * Constructor for LocalXUpdateQueryService.
 	 */

@@ -111,6 +111,7 @@ public final class NodeIterator implements Iterator {
 				return null;
 			}
 			if(gotoNextPosition()) {
+			    boolean skipped = false;
 			    do {
 					DOMFile.DOMFilePageHeader ph = p.getPageHeader();
 					// next value larger than length of the current page?
@@ -135,8 +136,9 @@ public final class NodeIterator implements Iterator {
 						// skip this
 						long link = ByteConversion.byteToLong(p.data, offset);
 						offset += 8;
-						//System.out.println("skipping link on p " + page + " -> " + 
-						//		StorageAddress.pageFromPointer(link));
+//						System.out.println("skipping link on p " + page + " -> " + 
+//								StorageAddress.pageFromPointer(link));
+						skipped = true;
 						continue;
 					}
 					// read data length
@@ -148,6 +150,8 @@ public final class NodeIterator implements Iterator {
 					}
 					//	overflow page? load the overflow value
 					if(l == DOMFile.OVERFLOW) {
+					    LOG.warn("unexpected overflow page at " + p.getPageNum() + "; tid = " + 
+					            ItemId.getId(lastTID) + "; offset = " + offset + "; skipped = " + skipped);
 						l = 8;
 						final long overflow = ByteConversion.byteToLong(p.data, offset);
 						offset += 8;

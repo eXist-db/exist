@@ -656,7 +656,8 @@ public class BFile extends BTree {
                     free.setFree(newFree);
                     fileHeader.removeFreeSpace(free);
                 }
-                fileHeader.addFreeSpace(free);
+                if(page.getPageHeader().getCurrentTID() > -1)
+                    fileHeader.addFreeSpace(free);
             }
             dataCache.add(page, 2);
         }
@@ -711,7 +712,6 @@ public class BFile extends BTree {
                 if (page.getPageHeader().getStatus() != BFile.RECORD) {
                     LOG.warn("page " + page.getPageNum()
                             + " is not a data page; removing it");
-                    fileHeader.printFreeSpace();
                     fileHeader.removeFreeSpace(free);
                     continue;
                 }
@@ -890,7 +890,7 @@ public class BFile extends BTree {
         }
 
         public String toString() {
-            return Integer.toString(free);
+            return "page: " + page + ": " + free;
         }
     }
 
@@ -1050,6 +1050,13 @@ public class BFile extends BTree {
             return ++nextTID;
         }
 
+        public short getCurrentTID() {
+            if(nextTID == Short.MAX_VALUE) {
+                return -1;
+            }
+            return nextTID;
+        }
+        
         public short getRecordCount() {
             return records;
         }
@@ -1680,15 +1687,19 @@ public class BFile extends BTree {
         }
 
         public final void skip(int count) throws IOException {
-            byte b;
             for (int i = 0; i < count; i++) {
                 do {
                     if (offset == pageLen) advance();
-                    b = nextPage.data[offset++];
-                } while ((b & 0200) > 0);
+                } while ((nextPage.data[offset++] & 0200) > 0);
             }
         }
 
+        public final void skipBytes(long count) throws IOException {
+            for(long i = 0; i < count; i++) {
+                if(offset++ == pageLen) advance();
+            }
+        }
+        
         private final void advance() throws IOException {
             long next = nextPage.getPageHeader().getNextInChain();
             if (next < 1) {

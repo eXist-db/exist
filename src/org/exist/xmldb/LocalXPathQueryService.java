@@ -160,7 +160,6 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 			context.setBroker(broker);
 			context.setBackwardsCompatibility(xpathCompatible);
 			context.setStaticallyKnownDocuments(docs);
-			LOG.debug("docs: " + docs.getLength());
 			Map.Entry entry;
 			// declare namespace/prefix mappings
 			for (Iterator i = namespaceDecls.entrySet().iterator(); i.hasNext();) {

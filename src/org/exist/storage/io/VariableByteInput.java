@@ -108,6 +108,8 @@ public interface VariableByteInput {
      */
     public void skip(int count) throws IOException;
 
+    public void skipBytes(long count) throws IOException;
+    
     /**
      * Copy the next numeric value from the input to the
      * specified output stream.

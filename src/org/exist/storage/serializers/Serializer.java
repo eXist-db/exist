@@ -24,6 +24,7 @@ package org.exist.storage.serializers;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -168,9 +169,13 @@ public abstract class Serializer implements XMLReader {
 		throws SAXNotRecognizedException, SAXNotSupportedException {
 		if (properties == null)
 			return;
-		for (Iterator i = properties.entrySet().iterator(); i.hasNext(); ) {
-			Map.Entry entry = (Map.Entry) i.next();
-			setProperty((String)entry.getKey(), entry.getValue().toString());
+		String key;
+		for(Enumeration e = properties.propertyNames(); e.hasMoreElements(); ) {
+		    key = (String)e.nextElement();
+		    if(key.equals("http://xml.org/sax/properties/lexical-handler"))
+		        lexicalHandler = (LexicalHandler)properties.get(key);
+		    else
+		        setProperty(key, properties.getProperty(key));
 		}
 	}
 

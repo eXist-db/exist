@@ -68,7 +68,6 @@ import org.apache.oro.io.GlobFilenameFilter;
 import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
 import org.exist.security.User;
-import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.CollectionScanner;
 import org.exist.util.DirectoryScanner;
 import org.exist.util.Occurrences;
@@ -366,6 +365,14 @@ public class InteractiveClient {
 		getResources();
 	}
 	
+	protected void setProperties() throws XMLDBException {
+	    String key;
+	    for(Iterator i = properties.keySet().iterator(); i.hasNext(); ) {
+	        key = (String)i.next();
+	        current.setProperty(key, properties.getProperty(key));
+	    }
+	}
+	
 	/**
 	 * Get list of resources contained in collection.
 	 * 
@@ -375,6 +382,7 @@ public class InteractiveClient {
 	protected void getResources() throws XMLDBException {
 		if (current == null)
 			return;
+		setProperties();
 		UserManagementService mgtService = (UserManagementService) current
 				.getService("UserManagementService", "1.0");
 		String childCollections[] = current.listChildCollections();
@@ -1005,6 +1013,7 @@ public class InteractiveClient {
 						String val = tok.nextToken();
 						System.out.println(key + " = " + val);
 						properties.setProperty(key, val);
+						current.setProperty(key, val);
 						getResources();
 					} catch (Exception e) {
 						System.err.println("Exception: " + e.getMessage());
@@ -1144,11 +1153,6 @@ public class InteractiveClient {
 
 	protected final Resource retrieve(String resource, String indent)
 			throws XMLDBException {
-		current.setProperty(OutputKeys.INDENT, indent);
-		current.setProperty(OutputKeys.ENCODING, properties
-				.getProperty("encoding"));
-		current.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, properties
-				.getProperty("expand-xincludes"));
 		Resource res = current.getResource(resource);
 		if (res == null) {
 			messageln("document not found.");

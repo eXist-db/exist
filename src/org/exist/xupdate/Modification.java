@@ -85,7 +85,7 @@ public abstract class Modification {
 			if (resultSeq.getItemType() != Type.NODE)
 				throw new EXistException("select expression should evaluate to a" + "node-set");
 			NodeList set = (NodeList)resultSeq;
-			LOG.info("found " + set.getLength() + " for select; retrieving nodes...");
+			LOG.info("found " + set.getLength() + " for select: " + selectStmt + "; retrieving nodes...");
 			ArrayList out = new ArrayList(set.getLength());
 			for (int i = 0; i < set.getLength(); i++) {
 				out.add(set.item(i));
