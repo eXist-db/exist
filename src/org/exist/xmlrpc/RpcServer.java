@@ -719,6 +719,27 @@ public class RpcServer implements RpcAPI {
         }
     }
 
+    public boolean parse(User user, byte[] xmlData, String docName,
+            int overwrite, Date created, Date modified) throws EXistException, PermissionDeniedException {
+        // some clients (Perl) encode strings with a \0 at the end.
+        // remove it ...
+        if (xmlData[xmlData.length - 1] == 0) {
+            byte[] temp = new byte[xmlData.length - 1];
+            System.arraycopy(xmlData, 0, temp, 0, xmlData.length - 1);
+            xmlData = temp;
+        }
+        RpcConnection con = pool.get();
+        try {
+            return con.parse(user, xmlData, docName, (overwrite != 0), created, modified);
+        } catch (Exception e) {
+            handleException(e);
+            return false;
+        } finally {
+            con.synchronize();
+            pool.release(con);
+        }
+    }
+    
     public boolean parse(User user, String xml, String docName, int overwrite)
             throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
@@ -747,9 +768,15 @@ public class RpcServer implements RpcAPI {
     public boolean parseLocal(User user, String localFile, String docName,
             boolean replace) throws EXistException, PermissionDeniedException,
             SAXException {
+        return parseLocal (user, localFile, docName, replace, null, null);
+    }
+
+    public boolean parseLocal(User user, String localFile, String docName,
+            boolean replace, Date created, Date modified) throws EXistException, PermissionDeniedException,
+            SAXException {
         RpcConnection con = pool.get();
         try {
-            return con.parseLocal(user, localFile, docName, replace);
+            return con.parseLocal(user, localFile, docName, replace, created , modified);
         } catch (Exception e) {
             handleException(e);
             return false;
@@ -759,6 +786,8 @@ public class RpcServer implements RpcAPI {
         }
     }
 
+    
+    
     public String uploadCompressed(User user, byte[] data, int length)
     	throws EXistException, PermissionDeniedException {
         return uploadCompressed(user, null, data, length);
@@ -806,9 +835,15 @@ public class RpcServer implements RpcAPI {
 
     public boolean storeBinary(User user, byte[] data, String docName, String mimeType,
             boolean replace) throws EXistException, PermissionDeniedException {
+            return storeBinary(user, data, docName, mimeType, replace, null, null);
+    }
+
+    
+    public boolean storeBinary(User user, byte[] data, String docName, String mimeType,
+            boolean replace, Date created, Date modified) throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
-            return con.storeBinary(user, data, docName, mimeType, replace);
+            return con.storeBinary(user, data, docName, mimeType, replace, created, modified);
         } catch (Exception e) {
             handleException(e);
             return false;
@@ -818,6 +853,8 @@ public class RpcServer implements RpcAPI {
         }
     }
 
+    
+    
     /*
      * (non-Javadoc)
      * 

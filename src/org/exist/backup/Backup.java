@@ -293,13 +293,13 @@ public class Backup {
 					"created",
 					"created",
 					"CDATA",
-					ris.getCreationTime().toString() );
+					ris.getCreationTime().toString());
 			attr.addAttribute(
 					NS,
 					"modified",
 					"modified",
 					"CDATA",
-					ris.getLastModificationTime().toString() );
+					ris.getLastModificationTime().toString());
 
 			attr.addAttribute(
 					NS,

@@ -64,6 +64,9 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	protected Properties outputProperties = null;
 	protected LexicalHandler lexicalHandler = null;
 	
+	protected Date datecreated= null;
+	protected Date datemodified= null;
+	
 	public RemoteXMLResource(RemoteCollection parent, String docId, String id)
 		throws XMLDBException {
 		this(parent, -1, -1, docId, id);

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Observable;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import java.util.Date; 
 
 import javax.swing.JFrame;
 import javax.xml.parsers.ParserConfigurationException;
@@ -27,6 +28,9 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+import java.text.ParseException;
 
 /**
  * Restore.java
@@ -186,8 +190,12 @@ public class Restore extends DefaultHandler {
 				final String perms = atts.getValue("mode");
 				
 				
+				
 				String filename = atts.getValue("filename");
 				final String mimetype = atts.getValue("mimetype");
+				final String created = atts.getValue("created");
+				final String modified = atts.getValue("modified");
+				
 				if (filename == null) filename = name;
 
 				if (name == null)
@@ -209,7 +217,30 @@ public class Restore extends DefaultHandler {
 					res.setContent(f);
 					if(dialog == null)
 						System.out.println("restoring " + name);
-					current.storeResource(res);
+					
+					SimpleDateFormat formatter
+				     = new SimpleDateFormat ("EEE MMM dd HH:mm:ss 'CET' yyyy", Locale.US);
+					
+					Date date_created = null;
+					Date date_modified = null;
+					
+					
+					if (created != null) {
+						try {
+						date_created = formatter.parse( created);
+						} catch (ParseException e) {							
+						}
+					}
+					 
+					if (modified != null){
+						try {
+						date_modified = formatter.parse( modified);
+						} catch (ParseException e) {							
+						}
+					}
+			
+					
+					current.storeResource(res, date_created, date_modified);
 					UserManagementService service =
 						(UserManagementService) current.getService("UserManagementService", "1.0");
 					User u = new User(owner, null, group);

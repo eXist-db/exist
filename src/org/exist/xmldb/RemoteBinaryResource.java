@@ -54,6 +54,10 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
 	private Permission permissions = null;
 	private int contentLen = 0;
 	
+	protected Date datecreated= null;
+	protected Date datemodified= null;
+
+	
 	public RemoteBinaryResource(RemoteCollection parent, String documentName) throws XMLDBException {
 		this.parent = parent;
 		int p;
