@@ -155,24 +155,7 @@ public abstract class AbstractSequence implements Sequence {
 			for(SequenceIterator i = iterate(); i.hasNext(); index++) {
 				Item item = i.nextItem();
 				Object obj = item.toJavaObject(componentType);
-				if(target == double.class)
-					Array.setDouble(array, index, ((Double)obj).doubleValue());
-				else if(target == float.class)
-					Array.setFloat(array, index, ((Float)obj).intValue());
-				else if(target == long.class)
-					Array.setLong(array, index, ((Long)obj).intValue());
-				else if(target == int.class)
-					Array.setInt(array, index, ((Integer)obj).intValue());
-				else if(target == short.class)
-					Array.setShort(array, index, ((Short)obj).shortValue());
-				else if(target == byte.class)
-					Array.setByte(array, index, ((Byte)obj).byteValue());
-				else if(target == boolean.class)
-					Array.setBoolean(array, index, ((Boolean)obj).booleanValue());
-				else if(target == char.class)
-					Array.setChar(array, index, ((Character)obj).charValue());
-				else
-					Array.set(array, index, obj);
+				Array.set(array, index, obj);
 			}
 			return array;
 		} else if(target.isAssignableFrom(List.class)) {
