@@ -1127,7 +1127,6 @@ public class DOMFile extends BTree implements Lockable {
         while(-1 < pnum) {
             DOMPage page = getCurrentPage(pnum);
             pnum = page.getPageHeader().getNextDataPage();
-            LOG.debug("REMOVING PAGE " + page.getPageNum() + ": " + page.page.hashCode());
             dataCache.remove(page);
             try {
                 unlinkPages(page.page);

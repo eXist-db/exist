@@ -542,7 +542,7 @@ implements Comparable, EntityResolver, Cacheable {
 	/**
 	 *  Remove the specified document from the collection.
 	 *
-	 *@param  name  Description of the Parameter
+	 *@param  name
 	 */
 	public void removeDocument(DBBroker broker, String docname)
 			throws PermissionDeniedException, TriggerException, LockException {
@@ -1122,7 +1122,7 @@ implements Comparable, EntityResolver, Cacheable {
 		return document;
 	}
 
-	public synchronized BinaryDocument addBinaryResource(DBBroker broker,
+	public BinaryDocument addBinaryResource(DBBroker broker,
 			String name, byte[] data) throws EXistException,
 			PermissionDeniedException, LockException {
 		if (broker.isReadOnly())

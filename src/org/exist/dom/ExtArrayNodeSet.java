@@ -299,7 +299,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	}
 
 	public void sort() {
-		//		long start = System.currentTimeMillis();
+//				long start = System.currentTimeMillis();
 		if (isSorted)
 			return;
 		Part part;
@@ -311,8 +311,8 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 		}
 		isSorted = true;
 		isInDocumentOrder = false;
-		//		System.out.println("sort took " + (System.currentTimeMillis() -
-		// start) + "ms.");
+//				System.out.println("sort took " + (System.currentTimeMillis() -
+//		 start) + "ms.");
 	}
 
 	public final void sortInDocumentOrder() {
@@ -345,9 +345,45 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 		}
 	}
 
+	public NodeSet selectParentChild(NodeSet al, int mode, boolean rememberContext) {
+	    sort();
+	    return super.selectParentChild(al, mode, rememberContext);
+	}
+	
+	
+    /* (non-Javadoc)
+     * @see org.exist.dom.AbstractNodeSet#selectAncestorDescendant(org.exist.dom.NodeSet, int, boolean, boolean)
+     */
+    public NodeSet selectAncestorDescendant(NodeSet al, int mode,
+            boolean includeSelf, boolean rememberContext) {
+        sort();
+        return super.selectAncestorDescendant(al, mode, includeSelf,
+                rememberContext);
+    }
+    
+    
+    /* (non-Javadoc)
+     * @see org.exist.dom.AbstractNodeSet#selectSiblings(org.exist.dom.NodeSet, int)
+     */
+    public NodeSet selectSiblings(NodeSet siblings, int mode) {
+        sort();
+        return super.selectSiblings(siblings, mode);
+    }
+    
+    
+    /* (non-Javadoc)
+     * @see org.exist.dom.AbstractNodeSet#selectAncestors(org.exist.dom.NodeSet, boolean, boolean)
+     */
+    public NodeSet selectAncestors(NodeSet al, boolean includeSelf,
+            boolean rememberContext) {
+        sort();
+        return super.selectAncestors(al, includeSelf, rememberContext);
+    }
+    
 	public NodeProxy parentWithChild(DocumentImpl doc, long gid,
 										boolean directParent,
 										boolean includeSelf, int level) {
+	    sort();
 		Part part = getPart(doc, false, -1);
 		return part == null ? null : part.parentWithChild(gid, directParent, includeSelf, level);
 	}

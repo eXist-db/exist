@@ -471,7 +471,7 @@ public class NativeBroker extends DBBroker {
                     e);
 			}
 		}
-		result.sort();
+//		result.sort();
 //				LOG.debug(
 //					"found "
 //						+ qname
