@@ -90,6 +90,7 @@ public class Indexer
 	protected boolean privileged = false;
 	protected String ignorePrefix = null;
 	protected ProgressIndicator progress;
+	protected boolean suppressWSmixed =false;
 
 	// reusable fields
 	private TextImpl text = new TextImpl();
@@ -135,6 +136,11 @@ public class Indexer
 			else if (suppressWS.equals("none"))
 				normalize = 0;
 		}
+		
+		Boolean temp;
+		if ((temp = (Boolean) config.getProperty("indexer.suppress-whitespace-mixed-content"))
+			!= null)
+			suppressWSmixed = temp.booleanValue();
 	}
 
 	public void setBroker(DBBroker broker) {
@@ -418,14 +424,17 @@ public class Indexer
 			last = (ElementImpl) stack.peek();
 			if (charBuf != null) {
 				if(charBuf.isWhitespaceOnly()) {
-//					if(charBuf.length() > 0 && last.getChildCount() > 0) {
-//						text.setData(charBuf);
-//						text.setOwnerDocument(document);
-//						last.appendChildInternal(text);
-//						if (!validate)
-//							broker.store(text, currentPath);
-//						text.clear();
-//					}
+					if (suppressWSmixed) {
+						if(charBuf.length() > 0 && last.getChildCount() > 0) {
+						text.setData(charBuf);
+						text.setOwnerDocument(document);
+						last.appendChildInternal(text);
+						if (!validate)
+							broker.store(text, currentPath);
+						text.clear();
+					   }
+					}
+					
 				} else if(charBuf.length() > 0) {
 					// mixed element content: don't normalize the text node, just check
 					// if there is any text at all

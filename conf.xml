@@ -126,10 +126,12 @@
             not be indexed in the DOM file. This has only an effect when 
             retrieving query results or for some types of XPath subexpressions, like
             equality comparisons.
+        - suppress-whitespace-mixed-content
+            preserve the white space inside a mixed content node
     -->
     <indexer stemming="no" caseSensitive="no" suppress-whitespace="both" 
 	index-depth="1" tokenizer="org.exist.storage.analysis.SimpleTokenizer"
-	track-term-freq="yes" validation="no">
+	track-term-freq="yes" validation="no" suppress-whitespace-mixed-content="no">
         
 		<!-- where's the file containing a list of stopwords to be ignored
          by the parser. -->
