@@ -49,6 +49,9 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 
 	protected byte[] rawData = null;
 	
+	protected Date datecreated= null;
+	protected Date datemodified= null;
+	
 	/**
 	 * 
 	 */

@@ -527,11 +527,19 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	}
 
 	public void storeResource(Resource resource) throws XMLDBException {
+		storeResource(resource, null, null);
+	}
+	
+	public void storeResource(Resource resource, Date a, Date b) throws XMLDBException {
 		if (resource.getResourceType().equals("XMLResource")) {
 			LOG.debug("storing document " + resource.getId());
+			((LocalXMLResource)resource).datecreated =a;
+			((LocalXMLResource)resource).datemodified =b;
 			storeXMLResource((LocalXMLResource) resource);
 		} else if (resource.getResourceType().equals("BinaryResource")) {
 			LOG.debug("storing binary resource " + resource.getId());
+			((LocalBinaryResource)resource).datecreated =a;
+	        ((LocalBinaryResource)resource).datemodified =b;
 			storeBinaryResource((LocalBinaryResource) resource);
 		} else
 			throw new XMLDBException(
@@ -539,10 +547,6 @@ public class LocalCollection extends Observable implements CollectionImpl {
 				"unknown resource type: " + resource.getResourceType());
         ((AbstractEXistResource)resource).isNewResource = false;
 		needsSync = true;
-	}
-	
-	public void storeResource(Resource res, Date a, Date b) throws XMLDBException {
-	
 	}
 
 	private void storeBinaryResource(LocalBinaryResource res) throws XMLDBException {
@@ -599,6 +603,13 @@ public class LocalCollection extends Observable implements CollectionImpl {
 				collection.release();
 			}
             info.getDocument().setMimeType(res.getMimeType());
+            
+            if (res.datecreated  != null) 
+				info.getDocument().setCreated( res.datecreated.getTime());
+			
+            if (res.datemodified != null)
+				info.getDocument().setLastModified( res.datemodified.getTime());
+			
 			if (uri != null) {
 				collection.store(broker, info, new InputSource(uri), false);
 			} else if (res.root != null) {
