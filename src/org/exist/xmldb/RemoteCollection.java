@@ -430,8 +430,13 @@ public class RemoteCollection implements CollectionImpl {
 		try {
 			rpcClient.execute("storeBinary", params);
 		} catch (XmlRpcException xre) {
+		    /* the error code previously was INVALID_RESOURCE, but this was also thrown
+		     * in case of insufficient persmissions. As you cannot tell here any more what the 
+		     * error really was, use UNKNOWN_ERROR. The reason is in XmlRpcResponseProcessor#processException
+		     * which will only pass on the error message.
+		     */
 			throw new XMLDBException(
-					ErrorCodes.INVALID_RESOURCE,
+					ErrorCodes.UNKNOWN_ERROR,
 					xre == null ? "unknown error" : xre.getMessage(),
 					xre);
 		} catch (IOException ioe) {

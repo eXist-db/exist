@@ -7,32 +7,22 @@ package org.exist.xmldb.test;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import junit.framework.TestCase;
-import org.exist.Server;
 import org.exist.schema.RemoteSchemaService;
-import org.exist.xmldb.RemoteCollection;
 import org.exist.xmldb.RemoteCollectionManagementService;
 import org.exist.xmldb.RemoteDatabaseInstanceManager;
 import org.exist.xmldb.RemoteIndexQueryService;
 import org.exist.xmldb.RemoteUserManagementService;
 import org.exist.xmldb.RemoteXPathQueryService;
 import org.exist.xmldb.RemoteXUpdateQueryService;
-import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.Service;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.CollectionManagementService;
 
 /** WORK IN PROGRESS !!!
  * @author jmv
  */
-public class RemoteCollectionTest extends TestCase {
-    protected final static String URI = "xmldb:exist://localhost:8081/exist/xmlrpc";
-    private final static String COLLECTION_NAME = "unit-testing-collection";
-    private final static String DB_DRIVER = "org.exist.xmldb.DatabaseImpl";
-    private RemoteCollection collection = null;
+public class RemoteCollectionTest extends RemoteDBTest {
 
 	/**
 	 * @param name
@@ -41,44 +31,21 @@ public class RemoteCollectionTest extends TestCase {
 		super(name);
 	}
 	
-	/** ? @see junit.framework.TestCase#setUp()
-	 */
 	protected void setUp() throws Exception {
-		String[] args = {"standalone"};
-		//Server.main(args);
-		// Thread ??
-		Server.main(new String[] { } );
-
-        Class cl = Class.forName(DB_DRIVER);
-        Database database = (Database) cl.newInstance();
-        DatabaseManager.registerDatabase(database);
-        
-        Collection rootCollection = DatabaseManager.getCollection(URI + "/db", "admin", null);
-        
-        Collection childCollection = rootCollection.getChildCollection(COLLECTION_NAME);
-        if (childCollection == null) {        
-	        CollectionManagementService cms = (CollectionManagementService) rootCollection.getService("CollectionManagementService", "1.0");
-	        collection = (RemoteCollection) cms.createCollection(COLLECTION_NAME);
-        } else {
-            throw new Exception("Cannot run test because the collection /db/" + COLLECTION_NAME + " already " +
-                "exists. If it is a left-over of a previous test run, please remove it manually.");
-        }
-
+		setUpRemoteDatabase();
 	}
-	/** ? @see junit.framework.TestCase#tearDown()
-	 */
-	protected void tearDown() throws Exception {
-	    Collection rootCollection = DatabaseManager.getCollection(URI + "/db", "admin", null);
-		CollectionManagementService cms = (CollectionManagementService) rootCollection.getService("CollectionManagementService", "1.0");
-		cms.removeCollection(COLLECTION_NAME);
-		Server.main(new String[] { "shutdown" } );
+
+  	protected void tearDown() throws Exception {
+	    removeCollection();
 	}
-	public void testIndexQueryService() {
+
+
+    public void testIndexQueryService() {
 		// TODO .............
 	}
 
 	public void testGetServices() throws XMLDBException {
-	    Service[] services = collection.getServices();
+	    Service[] services = getCollection().getServices();
 	    assertEquals(7, services.length);
 	    assertEquals(RemoteXPathQueryService.class, services[0].getClass());
 	    assertEquals(RemoteCollectionManagementService.class, services[1].getClass());
@@ -90,14 +57,15 @@ public class RemoteCollectionTest extends TestCase {
 	}
 	
 	public void testIsRemoteCollection() throws XMLDBException {
-	    assertTrue(collection.isRemoteCollection());
+	    assertTrue(getCollection().isRemoteCollection());
 	}
 	
 	public void testGetPath() throws XMLDBException {
-	    assertEquals("/db/" + COLLECTION_NAME, collection.getPath());
+	    assertEquals("/db/" + getTestCollectionName(), getCollection().getPath());
 	}
 	
 	public void testCreateResource() throws XMLDBException {
+	    Collection collection = getCollection();
 	    { // XML resource:
 	        Resource resource = collection.createResource("testresource", "XMLResource");
 		    assertNotNull(resource);
@@ -126,7 +94,7 @@ public class RemoteCollectionTest extends TestCase {
 	    binaryNames.add("b2");
 	    createResources(binaryNames, "BinaryResource");
 
-	    String[] actualContents = collection.listResources();
+	    String[] actualContents = getCollection().listResources();
 	    System.out.println(actualContents);
 	    for (int i = 0; i < actualContents.length; i++) {
 	        xmlNames.remove(actualContents[i]);
@@ -143,7 +111,7 @@ public class RemoteCollectionTest extends TestCase {
      */
     private void createResources(ArrayList names, String type) throws XMLDBException {
         for (Iterator i = names.iterator(); i.hasNext(); )
-            collection.createResource((String) i.next(), type);        
+            getCollection().createResource((String) i.next(), type);        
     }
 
 }
