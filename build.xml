@@ -228,6 +228,7 @@
                     <exclude name="**/xmldb/test/*.java"/>
 					<exclude name="**/xupdate/test/*.java"/>
 					<exclude name="**/xquery/test/*.java"/>
+					<exclude name="org/exist/test/ServerTest.java"/>
                 </fileset>
             </batchtest>
         </junit>

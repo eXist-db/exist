@@ -66,10 +66,11 @@ import org.exist.util.ReentrantReadWriteLock;
  * Data pages are buffered.
  *
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
- *@created    25. Mai 2002
  */
 public class BFile extends BTree {
 
+	public final static short FILE_FORMAT_VERSION_ID = 2;
+	
 	// minimum free space a page should have to be
 	// considered for reusing
 	public final static int PAGE_MIN_FREE = 64;
@@ -121,6 +122,13 @@ public class BFile extends BTree {
 		lock = new ReentrantReadWriteLock(file.getName());
 	}
 
+	/**
+	 * @return
+	 */
+	public short getFileVersion() {
+		return FILE_FORMAT_VERSION_ID;
+	}
+	
 	/**
 	 * Returns the Lock object responsible for this BFile.
 	 * 
@@ -389,6 +397,10 @@ public class BFile extends BTree {
 		dataCache.add(page.getFirstPage(), 2);
 		final short tid = (short) StorageAddress.tidFromPointer(pointer);
 		final int offset = findValuePosition(page, tid);
+		if(offset < 0) {
+			System.out.println("no data found at tid " + tid + "; page " + page.getPageNum());
+			throw new IOException("no data found at tid " + tid + "; page " + page.getPageNum());
+		}
 		final byte[] data = page.getData();
 		final int l = ByteConversion.byteToInt(data, offset);
 		return new SimplePageInputStream(data, offset + 4, l, pointer);
@@ -490,7 +502,7 @@ public class BFile extends BTree {
 	}
 
 	public boolean open() throws DBException {
-		return super.open();
+		return super.open(FILE_FORMAT_VERSION_ID);
 	}
 
 	public long put(Value key, byte[] data, boolean overwrite) throws ReadOnlyException {
@@ -833,6 +845,7 @@ public class BFile extends BTree {
 	}
 
 	private final class BFileHeader extends BTreeFileHeader {
+		
 		private OrderedLinkedList freeList = new OrderedLinkedList();
 		private long freeSpacePage = -1;
 		private long lastDataPage = -1;

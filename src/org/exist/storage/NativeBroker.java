@@ -242,9 +242,12 @@ public class NativeBroker extends DBBroker {
 			elementIndex = new NativeElementIndex(this, config, elementsDb);
 			user = new User("admin", null, "dba");
 			getOrCreateCollection(ROOT_COLLECTION);
-		} catch (Exception e) {
-			LOG.debug(e);
-			e.printStackTrace();
+		} catch (DBException e) {
+			LOG.debug("failed to initialize database: " + e.getMessage(), e);
+			throw new EXistException(e);
+		} catch (PermissionDeniedException e) {
+			LOG.debug("failed to initialize database: " + e.getMessage(), e);
+			throw new EXistException(e);
 		}
 	}
 
@@ -1678,11 +1681,11 @@ public class NativeBroker extends DBBroker {
 				return;
 			}
 			collection.setAddress(address);
-			if (!name.equals(ROOT_COLLECTION)) {
-				Collection parent = collection.getParent(this);
-				parent.update(collection);
-				saveCollection(parent);
-			}
+//			if (!name.equals(ROOT_COLLECTION)) {
+//				Collection parent = collection.getParent(this);
+//				parent.update(collection);
+//				saveCollection(parent);
+//			}
 			ostream.close();
 		} catch (IOException ioe) {
 			LOG.debug(ioe);
@@ -1723,11 +1726,11 @@ public class NativeBroker extends DBBroker {
 					return;
 				}
 				collection.setAddress(addr);
-				if (!name.equals(ROOT_COLLECTION)) {
-					Collection parent = collection.getParent(this);
-					parent.update(collection);
-					saveCollection(parent);
-				}
+//				if (!name.equals(ROOT_COLLECTION)) {
+//					Collection parent = collection.getParent(this);
+//					parent.update(collection);
+//					saveCollection(parent);
+//				}
 				collectionsDb.getCollectionCache().add(collection);
 				ostream.close();
 			} catch (IOException ioe) {
