@@ -216,7 +216,6 @@ public class XIncludeFilter implements Receiver {
 				// process the xpointer
 				try {
 					XQueryContext context = new XQueryContext(serializer.broker);
-                    LOG.debug(docName);
 					if(doc != null)
 						context.setStaticallyKnownDocuments(new String[] { doc.getName() } );
 					else
