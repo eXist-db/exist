@@ -31,6 +31,7 @@ public class XQueryTest extends TestCase {
 
 	private Collection testCollection;
 	private static String attributeXML;
+	private static int stringSize;
 
 	public XQueryTest(String arg0) {
 		super(arg0);
@@ -72,29 +73,29 @@ public class XQueryTest extends TestCase {
 			XPathQueryService service = 
 				storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
 
+			System.out.println("testFor 1: ========" );
 			query = "for $f in /*/item return $f";
 			result = service.queryResource(NUMBERS_XML, query );
-			System.out.println("testFor 1: ========" );
 			printResult(result);
 			assertEquals( "XQuery: " + query, 4, result.getSize() );
 
+			System.out.println("testFor 2: ========" );
 			query = "for $f in /*/item  order by $f ascending  return $f";
 			result = service.queryResource(NUMBERS_XML, query );
-			System.out.println("testFor 2: ========" );
 			printResult(result);
 			resu = (XMLResource) result.getResource(0);
 			assertEquals( "XQuery: " + query, "3", ((Element)resu.getContentAsDOM()).getAttribute("id") );
 
+			System.out.println("testFor 3: ========" );
 			query = "for $f in /*/item  order by $f descending  return $f";
 			result = service.queryResource(NUMBERS_XML, query );
-			System.out.println("testFor 3: ========" );
 			printResult(result);
 			resu = (XMLResource) result.getResource(0);
 			assertEquals( "XQuery: " + query, "2", ((Element)resu.getContentAsDOM()).getAttribute("id") );
 
+			System.out.println("testFor 4: ========" );
 			query = "for $f in /*/item  order by xs:double($f/price) descending  return $f";
 			result = service.queryResource(NUMBERS_XML, query );
-			System.out.println("testFor 4: ========" );
 			printResult(result);
 			resu = (XMLResource) result.getResource(0);
 			assertEquals( "XQuery: " + query, "4", ((Element)resu.getContentAsDOM()).getAttribute("id") );
@@ -119,9 +120,11 @@ public class XQueryTest extends TestCase {
 		XMLResource resu;
 		try {
 			System.out.println("testLargeAttributeSimple 1: ========" );
-			String large = makeString(592);
-			String xml = "<details format='xml'><metadata docid='" + large +
-			"'></metadata></details>";
+			String large = makeString(stringSize);
+			String head = "<details format='xml'>";
+			String elem = "<metadata docid='" + large + "'></metadata>";
+			String tail = "</details>";
+			String xml = head + elem + elem + tail;
 			final String FILE_NAME = "detail_xml.xml";
 		XPathQueryService service = 
 			storeXMLStringAndGetQueryService(FILE_NAME, xml);
@@ -129,7 +132,7 @@ public class XQueryTest extends TestCase {
 		query = "doc('"+ FILE_NAME+"') / details/metadata[@docid= '" + large + "' ]";
 		result = service.queryResource(FILE_NAME, query );
 		printResult(result);
-		assertEquals( "XQuery: " + query, 1, result.getSize() );
+		assertEquals( "XQuery: " + query, 2, result.getSize() );
 	} catch (XMLDBException e) {
 		System.out.println("testLargeAttributeSimple(): XMLDBException: "+e);
 		fail(e.getMessage());
@@ -216,6 +219,11 @@ public class XQueryTest extends TestCase {
 		if ( args.length > 0) {
 			attributeXML = args[0];
 		}
+		stringSize = 513;
+		if ( args.length > 1) {
+			stringSize = Integer.parseInt( args[1] );
+		}
+		
 		junit.textui.TestRunner.run(XQueryTest.class);
 	}
 }
