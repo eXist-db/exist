@@ -293,7 +293,7 @@ public class LocalCollection extends Observable implements Collection {
         services[3] = new LocalDatabaseInstanceManager( user, brokerPool );
         services[4] = new LocalXUpdateQueryService( user, brokerPool, this );
         services[5] = new LocalIndexQueryService( user, brokerPool, this );
-        return null;
+        return services; // jmv null;
     }
 
 
@@ -396,6 +396,7 @@ public class LocalCollection extends Observable implements Collection {
         this.user = user;
     }
 
+
     public void storeResource( Resource resource ) throws XMLDBException {
         if( !(resource instanceof LocalXMLResource) )
             throw new XMLDBException( ErrorCodes.NOT_IMPLEMENTED );
@@ -421,6 +422,7 @@ public class LocalCollection extends Observable implements Collection {
 				res.document = parser.parse( collection, res.content, name);
             broker.flush();
         } catch ( Exception e ) {
+            e.printStackTrace();
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
                 e.getMessage(),
                 e );
