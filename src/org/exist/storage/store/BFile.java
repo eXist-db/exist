@@ -528,6 +528,16 @@ public class BFile extends BTree {
         return super.open(FILE_FORMAT_VERSION_ID, lock);
     }
 
+    /**
+     * Put data under given key.
+     * 
+     * @see {@link BFile#put(Value, ByteArray, boolean)}
+     * @param with which the data is updated
+     * @param data the data (value) to update
+     * @param overwrite overwrite if set to true, value will be overwritten if it already exists
+     * @return on success the address of the stored value, else -1
+     * @throws ReadOnlyException
+     */
     public long put(Value key, byte[] data, boolean overwrite)
             throws ReadOnlyException {
         FastByteBuffer buf = new FastByteBuffer(5);
@@ -535,10 +545,29 @@ public class BFile extends BTree {
         return put(key, buf, overwrite);
     }
 
+    /**
+     * Convinience method for {@link BFile#put(Value, byte[], true)}.
+     * 
+     * @param key with which the data is updated
+     * @param value value to update
+     * @return on success the address of the stored value, else -1
+     * @throws ReadOnlyException
+     */
     public long put(Value key, ByteArray value) throws ReadOnlyException {
         return put(key, value, true);
     }
 
+    /**
+     * Put a value under given key. The difference of this
+     * method and {@link BFile#append(Value, ByteArray)} is,
+     * that the value gets updated and not stored.
+     * 
+     * @param key with which the data is updated
+     * @param value value to update
+     * @param overwrite if set to true, value will be overwritten if it already exists
+     * @return on success the address of the stored value, else -1
+     * @throws ReadOnlyException
+     */
     public long put(Value key, ByteArray value, boolean overwrite)
             throws ReadOnlyException {
         if (key == null) {
