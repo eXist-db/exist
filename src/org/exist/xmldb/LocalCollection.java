@@ -262,7 +262,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			if(collection.hasChildCollection(name))
 				childName = getPath() + '/' + name;
 		} finally {
-			collection.getLock().release(Lock.READ_LOCK);
+			collection.release();
 		}
 		if(childName != null)
 			return new LocalCollection(user, brokerPool, this, childName);
@@ -287,7 +287,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		try {
 			return collection.getName();
 		} finally {
-			collection.getLock().release(Lock.READ_LOCK);
+			collection.release();
 		}
 	}
 

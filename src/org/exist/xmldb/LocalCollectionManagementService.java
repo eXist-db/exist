@@ -57,17 +57,11 @@ public class LocalCollectionManagementService implements CollectionManagementSer
     public Collection createCollection( String collName ) throws XMLDBException {
         collName = parent.getPath() + '/' + collName;
         DBBroker broker = null;
-        org.exist.collections.Collection parentColl = null;
         try {
             broker = brokerPool.get(user);
-            parentColl = broker.openCollection(parent.getPath(), Lock.WRITE_LOCK);
-            if(parentColl == null)
-            	throw new XMLDBException(ErrorCodes.INVALID_COLLECTION,
-            			"Collection " + parent.getPath() + " not found");
             org.exist.collections.Collection coll =
                 broker.getOrCreateCollection( collName );
             broker.saveCollection( coll );
-            broker.flush();
         } catch ( EXistException e ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
                 "failed to create collection " + collName, e);
@@ -75,8 +69,6 @@ public class LocalCollectionManagementService implements CollectionManagementSer
             throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
                 "not allowed to create collection", e );
         } finally {
-        	if(parentColl != null)
-        		parentColl.release();
             brokerPool.release( broker );
         }
         return new LocalCollection( user, brokerPool, parent, collName );

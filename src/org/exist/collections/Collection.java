@@ -176,7 +176,7 @@ implements Comparable, EntityResolver, Cacheable {
 	 * the current thread. This is a shortcut for getLock().release().
 	 */
 	public void release() {
-//		LOG.debug("releasing lock on " + name);
+		LOG.debug("releasing lock on " + name);
 		lock.release();
 	}
 	
@@ -291,7 +291,7 @@ implements Comparable, EntityResolver, Cacheable {
 	public DocumentSet allDocs(DBBroker broker, DocumentSet docs,
 			boolean recursive, boolean checkPermissions) {
 		if (permissions.validate(broker.getUser(), Permission.READ)) {
-			CollectionCache cache = broker.getCollectionsCache();
+			CollectionCache cache = broker.getBrokerPool().getCollectionsCache();
 			synchronized (cache) {
 				getDocuments(broker, docs, checkPermissions);
 				if (recursive)
