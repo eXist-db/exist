@@ -62,7 +62,10 @@ function liveSearchHide() {
 
 function liveSearchKeyPress(event) {
 	
-	if (event.keyCode == 40 )
+	if (event.keyCode == 10) {
+	    return;
+	}
+	else if (event.keyCode == 40 )
 	//KEY DOWN
 	{
 		highlight = document.getElementById("LSHighlight");
@@ -164,3 +167,9 @@ function liveSearchSubmit() {
 	}
 }
 
+function termSelected(term) {
+    var q = document.forms.searchform.query;
+    q.value = term;
+    liveSearchHide();
+    q.focus();
+}

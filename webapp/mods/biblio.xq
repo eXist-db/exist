@@ -2,7 +2,7 @@ xquery version "1.0";
 
 (::pragma exist:output-size-limit -1::)
 
-declare namespace m="http://www.loc.gov/mods/v3";
+declare namespace mods="http://www.loc.gov/mods/v3";
 declare namespace bib="http://exist-db.org/bibliography";
 
 (: Load library modules :)
@@ -25,34 +25,49 @@ declare variable $bib:sort-import {
 (: Removes a document :)
 declare function bib:remove($user, $pass) as element()
 {
-	let $doc := request:request-parameter("doc", ()),
-		$path := request:request-parameter("collection", ())
-	return
-		if(empty($doc) or empty($path)) then
-			<p>Required parameter "doc" or "collection" is missing!</p>
-		else (
-			<p>Removing document {$doc} from collection {$path}.</p>,
-			let $collection :=
-					xdb:collection(concat("xmldb:exist://", $path), $user,
-                    $pass)
-			return
-				xdb:remove($collection, $doc)
-		)
+    <ul>
+    {
+    	let $resources := request:request-parameter("r", ())
+    	return
+    		if(empty($resources)) then
+    			<li>No resource selected!</li>
+    		else
+    		    for $r as xs:integer in $resources
+    		    let $cached := request:get-session-attribute("cache"),
+    		        $rec := $cached[$r]
+    		    return (
+    			    xdb:remove(util:collection-name($rec), util:document-name($rec)),
+    			    request:set-session-attribute("cache", remove($cached, $r)),
+    			    <li>Removed: {util:document-name($rec)}</li>
+    			)
+    }
+    </ul>
+};
+
+declare function bib:folders($root as xs:string) as element() {
+    <ul>
+        <li><a href="?collection={$root}">{$root}</a></li>
+        {
+            for $child in xdb:get-child-collections($root)
+            order by $child return
+                <li><a href="?collection={$child}">{$child}</a></li>
+        }
+    </ul>
 };
 
 (: Get the XPath expression for the specified field :)
 declare function bib:queryField($field as xs:string) as xs:string
 {
 	if($field eq "au") then
-		"m:name"
+		"mods:name"
 	else if($field eq "ti") then
-		"m:titleInfo"
+		"mods:titleInfo"
 	else if($field eq "ab") then
-		"m:abstract"
+		"mods:abstract"
 	else if($field eq "su") then
-		"m:subject"
+		"mods:subject"
 	else if($field eq "ye") then
-		"m:originInfo/m:dateIssued"
+		"mods:originInfo/mods:dateIssued"
 	else
 		"."
 };
@@ -76,9 +91,9 @@ as xs:string
     let $field1 := request:request-parameter("field1", "any"),
         $queryPart :=
             if($term1) then
-                concat("collection('", $collection, "')//m:mods[", bib:operand(bib:queryField($field1), $term1))
+                concat("collection('", $collection, "')//mods:mods[", bib:operand(bib:queryField($field1), $term1))
             else
-                concat("collection('", $collection, "')//m:mods"),
+                concat("collection('", $collection, "')//mods:mods"),
         $l := util:log("debug", ("Part: ", $term1)),
         $term2 := request:request-parameter("term2", ())
     return
@@ -205,7 +220,7 @@ as element()+
     let $action := request:request-parameter("action", "")
     return (
         util:log("debug", "checking action"),
-        if($action eq "remove") then
+        if($action eq "Remove") then
             bib:remove($user, $pass)
         else
             util:log("debug", "no action"),
@@ -254,15 +269,40 @@ return
                 <h1>MODS Example</h1>
                 <ul id="menu">
                     <li><a href="../index.xml">Home</a></li>
-                    <li><a href="../index.xml#download">Download</a></li>
-                    <li><a href="http://wiki.exist-db.org">Wiki</a></li>
-                    <li><a href="../examples.xml">Demo</a></li>
+                    <li><a href="{$url}?action=logout">Logout</a></li>
                 </ul>
             </div>
         </div>
 
         <!-- include the sidebar -->
-        { conf:sidebar($url, $user, $collection) }
+        <div id="sidebar">
+            <div class="block">
+                <h3>Search</h3>
+                <form name="searchform" action="{$url}" method="GET">
+                    <div id="livesearch">
+                        <input name="query" type="text" autocomplete="off" 
+                            onkeypress="liveSearchStart()" />
+                    </div>
+                    <div id="LSResult" style="display: none;"><div id="LSShadow"></div></div>
+                    <input type="submit"/>
+                </form>
+                <ul>
+                    <li><a href="{$url}?show-form=true">Advanced Query</a></li>
+                </ul>
+            </div>
+        
+            <div class="block">
+                <h3>Folders</h3>
+                <ul>
+                    <li>{bib:folders($collection)}</li>
+                </ul>
+            </div>
+            
+            <div class="userinfo">
+                Logged in as: {$user}<br/>
+                Collection: {$collection}
+            </div>
+        </div>
         
         <div id="content2col">
             <!-- call the main function to process the query -->

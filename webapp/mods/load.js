@@ -34,12 +34,12 @@ function processReqChange() {
 function loadDetails(pos) {
     var full = document.getElementById("f_" + pos);
     if (full) {
-        full.setAttribute("class", " ");
+        full.setAttribute("class", "visible");
     } else {
         var rec = document.getElementById("r_" + pos);
         var tr = document.createElement("tr");
         tr.setAttribute("id", "f_" + pos);
-        
+        tr.setAttribute("class", "visible");
         details = document.createElement("td");
         details.setAttribute("colspan", "5");
         tr.appendChild(details);
@@ -85,9 +85,8 @@ function collapseAll(start, end) {
 }
 
 function toggleCheckboxes() {
-    c = document.mainForm.markAll.checked;
     a = document.mainForm.elements;
     l = a.length;
     for (var i = 0; i < l; i++)
-    if (a[i].type == "checkbox") a[i].checked = 1;
+    if (a[i].type == "checkbox") a[i].checked = true;
 }

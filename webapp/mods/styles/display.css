@@ -6,7 +6,7 @@
         font-size: 13px;
         line-height: 1.4;
         padding: 0 5% 0 5%;
-        overflow: scroll;
+        overflow: auto;
     }
     
     p, ul, ol {
@@ -31,6 +31,7 @@
 #navigation {
     background: #fff;
     border: 1px solid #999;
+    padding-bottom: 20px;
 }
 
 #navigation h3 {
@@ -43,8 +44,6 @@
 }
 
 #navigation ul {
-    padding: 5px;
-    margin: 0;
 }
 
 #navigation li {
@@ -55,16 +54,30 @@
     border-right: 1px solid #999;
 }
 
-#navigation #link-next {
-    float: right;
+#navigation label {
+    padding: 0 5px;
+    font-weight: bolder;
+}
+
+#navigation input {
+    border: solid 1px #f66;
+    font-size: 8pt;
+    cursor: pointer;
+}
+
+#link-next, #link-prev {
+    display: block;
     font-size: 8pt;
 }
 
-#navigation #link-prev {
-    float: left;
-    font-size: 8pt;
+#link-next {
+    float: right;
 }
-    
+
+#link-prev {
+    float: left;
+}
+
 #navigation select {
     font-size: 8pt;
 }
@@ -240,12 +253,17 @@
     display: none;
 }
 
+.visible {
+    display: table-row;
+}
+
 // Styles for the livesearch box:
 #livesearch {
     display: block;
+    min-width: 80px;
 }
 
-#LSResult {    
+#LSResult {
     position: absolute;
     background-color: #aaa; 
     min-width: 160px; 
@@ -254,7 +272,6 @@
 }
       
 #LSShadow {
-    position: relative;
     right: 1px;
     margin: 0px;
     padding: 0px;

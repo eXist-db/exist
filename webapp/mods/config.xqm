@@ -19,44 +19,6 @@ as element()+
     $record/mods:location
 };
 
-declare function conf:sidebar($url as xs:string, $user as xs:string, $collection as xs:string)
-as element()
-{
-    <div id="sidebar">
-        <div class="block">
-            <h3>Menu</h3>
-            <ul>
-                <li>
-                    <a href=".." id="current">Home</a>
-                </li>
-                <li>
-                    <a href="{$url}" id="current">MODS Example</a>
-                </li>
-                <li>
-                    <a href="{$url}?action=logout">Logout</a>
-                </li>
-            </ul>
-        </div>
-        
-        <div class="block">
-            <h3>Search</h3>
-            <form name="searchform" action="{$url}" method="GET">
-                <input id="livesearch" name="query" type="text" 
-                    onkeypress="liveSearchStart()"/>
-                <div id="LSResult" style="display: none;"><div id="LSShadow"></div></div>
-            </form>
-            <ul>
-                <li><a href="{$url}?show-form=true">Advanced Query</a></li>
-            </ul>
-        </div>
-        
-        <div class="userinfo">
-            Logged in as: {$user}<br/>
-            Collection: {$collection}
-        </div>
-    </div> 
-};
-
 declare function conf:query-form($url as xs:string, $collection as xs:string) as element() {
     <form action="{$url}" method="GET">
         <table id="query" cellpadding="5" cellspacing="0" border="0">
