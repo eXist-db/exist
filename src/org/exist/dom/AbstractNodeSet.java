@@ -42,7 +42,7 @@ import org.w3c.dom.Node;
  */
 public abstract class AbstractNodeSet extends AbstractSequence implements NodeSet {
 
-	private final static Logger LOG = Logger.getLogger(AbstractNodeSet.class);
+	protected final static Logger LOG = Logger.getLogger(AbstractNodeSet.class);
 
 	/**
 	 * Return an iterator on the nodes in this list. The iterator returns nodes

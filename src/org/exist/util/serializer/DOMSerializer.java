@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 
 import org.w3c.dom.Attr;
@@ -43,22 +42,33 @@ public class DOMSerializer {
 	protected HashMap namespaceDecls = new HashMap();
 	protected Properties outputProperties;
 
+	public DOMSerializer() {
+		super();
+		this.receiver = new XMLIndenter();
+	}
+
 	public DOMSerializer(Writer writer, Properties outputProperties) {
 		super();
 		this.outputProperties = outputProperties;
 		if (outputProperties == null) {
 			outputProperties = new Properties();
 		}
-		String prop = outputProperties.getProperty(OutputKeys.INDENT, "no");
-		this.receiver =
-			prop.equals("yes")
-				? new XMLIndenter(writer)
-				: new XMLWriter(writer);
+		this.receiver = new XMLIndenter(writer);
 		this.receiver.setOutputProperties(outputProperties);
 	}
 
-	public void setProperty(String key, String value) {
-		outputProperties.setProperty(key, value);
+	public void setOutputProperties(Properties outputProperties) {
+		this.outputProperties = outputProperties;
+		receiver.setOutputProperties(outputProperties);
+	}
+
+	public void setWriter(Writer writer) {
+		receiver.setWriter(writer);
+	}
+	
+	public void reset() {
+		nsSupport.reset();
+		namespaceDecls.clear();
 	}
 	
 	public void serialize(Node node) throws TransformerException {
@@ -134,9 +144,7 @@ public class DOMSerializer {
 				}
 				// output all namespace declarations
 				Map.Entry nsEntry;
-				for (Iterator i = namespaceDecls.entrySet().iterator();
-					i.hasNext();
-					) {
+				for (Iterator i = namespaceDecls.entrySet().iterator(); i.hasNext();) {
 					nsEntry = (Map.Entry) i.next();
 					receiver.namespace(
 						(String) nsEntry.getKey(),
@@ -168,7 +176,7 @@ public class DOMSerializer {
 	}
 
 	protected void endNode(Node node) throws TransformerException {
-		if(node == null)
+		if (node == null)
 			return;
 		if (node.getNodeType() == Node.ELEMENT_NODE) {
 			nsSupport.popContext();

@@ -79,6 +79,10 @@ public class BooleanValue extends AtomicValue {
 					return value == otherVal;
 				case Constants.NEQ :
 					return value != otherVal;
+				case Constants.LT:
+					return (!value) && otherVal;
+				case Constants.GT:
+					return value && (!otherVal);
 				default :
 					throw new XPathException("Type error: cannot apply this operator to a boolean value");
 			}

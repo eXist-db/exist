@@ -88,11 +88,10 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 	 * If the size hint is correct, no further reallocations will be required.
 	 */
 	public void add(NodeProxy proxy, int sizeHint) {
-		Part part = (proxy.doc.docId == lastDoc && lastPart != null) ? lastPart
-			: getPart(
-				proxy.doc.docId,
-				true,
-				sizeHint > 0 ? sizeHint : initalSize);
+		Part part =
+			(proxy.doc.docId == lastDoc && lastPart != null)
+				? lastPart
+				: getPart(proxy.doc.docId, true, sizeHint > 0 ? sizeHint : initalSize);
 		part.add(proxy);
 		++size;
 		isSorted = false;
@@ -128,7 +127,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 	 * @see org.exist.xpath.value.Sequence#iterate()
 	 */
 	public SequenceIterator iterate() {
-		sort();
+		sortInDocumentOrder();
 		return new ExtArrayIterator();
 	}
 
@@ -143,8 +142,10 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 	 * @see org.exist.dom.NodeSet#contains(org.exist.dom.DocumentImpl, long)
 	 */
 	public boolean contains(DocumentImpl doc, long nodeId) {
-		final Part part = (doc.docId == lastDoc && lastPart != null) ? lastPart 
-			: getPart(doc.docId, false, 0);
+		final Part part =
+			(doc.docId == lastDoc && lastPart != null)
+				? lastPart
+				: getPart(doc.docId, false, 0);
 		return part == null ? false : part.contains(nodeId);
 	}
 
@@ -152,8 +153,10 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 	 * @see org.exist.dom.NodeSet#contains(org.exist.dom.NodeProxy)
 	 */
 	public boolean contains(NodeProxy proxy) {
-		final Part part = (proxy.doc.docId == lastDoc && lastPart != null) ? lastPart 
-			: getPart(proxy.doc.docId, false, 0);
+		final Part part =
+			(proxy.doc.docId == lastDoc && lastPart != null)
+				? lastPart
+				: getPart(proxy.doc.docId, false, 0);
 		return part == null ? false : part.contains(proxy.gid);
 	}
 
@@ -200,8 +203,10 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 	 * @see org.exist.dom.NodeSet#get(org.exist.dom.NodeProxy)
 	 */
 	public NodeProxy get(NodeProxy p) {
-		final Part part = (p.doc.docId == lastDoc && lastPart != null) ? lastPart 
-			: getPart(p.doc.docId, false, 0);
+		final Part part =
+			(p.doc.docId == lastDoc && lastPart != null)
+				? lastPart
+				: getPart(p.doc.docId, false, 0);
 		return part == null ? null : part.get(p.gid);
 	}
 
@@ -209,8 +214,10 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 	 * @see org.exist.dom.NodeSet#get(org.exist.dom.DocumentImpl, long)
 	 */
 	public NodeProxy get(DocumentImpl doc, long nodeId) {
-		final Part part = (doc.docId == lastDoc && lastPart != null) ? lastPart 
-			: getPart(doc.docId, false, 0);
+		final Part part =
+			(doc.docId == lastDoc && lastPart != null)
+				? lastPart
+				: getPart(doc.docId, false, 0);
 		return part == null ? null : part.get(nodeId);
 	}
 
@@ -226,13 +233,13 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 	 */
 	public void remove(NodeProxy node) {
 		final Part part = getPart(node.doc.getDocId(), false, 0);
-		if(part == null)
+		if (part == null)
 			return;
 		part.remove(node);
-		if(part.length == 0)
+		if (part.length == 0)
 			map.remove(node.doc.getDocId());
 	}
-	
+
 	public NodeSet getRange(DocumentImpl doc, long lower, long upper) {
 		final Part part = getPart(doc.docId, false, 0);
 		return part.getRange(lower, upper);
@@ -243,12 +250,13 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 		int mode,
 		boolean rememberContext) {
 		final Part part = getPart(parent.doc.docId, false, 0);
-		if(part == null)
+		if (part == null)
 			return new ArraySet(1);
 		return part.getChildrenInSet(parent, mode, rememberContext);
 	}
 
 	public void sort() {
+//		long start = System.currentTimeMillis();
 		if (isSorted)
 			return;
 		Part part;
@@ -259,27 +267,45 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 			size += part.removeDuplicates();
 		}
 		isSorted = true;
+//		System.out.println("sort took " + (System.currentTimeMillis() - start) + "ms.");
+	}
+
+	public void sortInDocumentOrder() {
+//		long start = System.currentTimeMillis();
+		Part part;
+		size = 0;
+		for (Iterator i = map.valueIterator(); i.hasNext();) {
+			part = (Part) i.next();
+			part.sortInDocumentOrder();
+			size += part.removeDuplicates();
+		}
+		isSorted = false;
+//		System.out.println("in-document-order sort took " + (System.currentTimeMillis() - start) + "ms.");
 	}
 
 	public DocumentSet getDocumentSet() {
-		if(!isSorted)
+		if (!isSorted)
 			size = 0;
 		Part part;
 		DocumentSet ds = new DocumentSet();
+		DocumentImpl doc, last = null;
 		for (Iterator i = map.valueIterator(); i.hasNext();) {
 			part = (Part) i.next();
-			if(!isSorted) {
+			if (!isSorted) {
 				part.sort();
 				size += part.removeDuplicates();
 			}
-			for(int j = 0; j < part.length; j++) {
-				ds.add(part.array[j].doc);
+			for (int j = 0; j < part.length; j++) {
+				doc = part.array[j].doc;
+				if(last == null || last.docId != doc.docId)
+					ds.add(part.array[j].doc);
+				last = doc;
 			}
 		}
 		isSorted = true;
 		return ds;
 	}
-	
+
 	private final static class Part {
 
 		NodeProxy array[];
@@ -321,6 +347,10 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 
 		void sort() {
 			FastQSort.sortByNodeId(array, 0, length - 1);
+		}
+
+		void sortInDocumentOrder() {
+			FastQSort.sort(array, new DocumentOrderComparator(), 0, length - 1);
 		}
 
 		final NodeProxy search(long gid) {
@@ -380,9 +410,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 				--mid;
 
 			// walk through the range of child nodes we found
-			for (int i = mid;
-				i < length && array[i].gid <= range.getEnd();
-				i++) {
+			for (int i = mid; i < length && array[i].gid <= range.getEnd(); i++) {
 				switch (mode) {
 					case NodeSet.DESCENDANT :
 						if (rememberContext)
@@ -447,13 +475,13 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 				else
 					low = mid + 1;
 			}
-			if(low > high)
-				return;	// not found
-			if(mid < length - 1)
+			if (low > high)
+				return; // not found
+			if (mid < length - 1)
 				System.arraycopy(array, mid + 1, array, mid, length - mid - 1);
 			--length;
 		}
-		
+
 		/**
 		 * Remove all duplicate nodes from this part.
 		 * 

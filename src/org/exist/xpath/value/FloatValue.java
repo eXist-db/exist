@@ -139,7 +139,7 @@ public class FloatValue extends NumericValue {
 		if (Type.subTypeOf(other.getType(), Type.FLOAT))
 			return new FloatValue(value - ((FloatValue) other).value);
 		else
-			return ((ComputableValue) convertTo(other.getType())).minus(other);
+			return minus((ComputableValue)other.convertTo(getType()));
 	}
 
 	/* (non-Javadoc)
@@ -149,7 +149,7 @@ public class FloatValue extends NumericValue {
 		if (Type.subTypeOf(other.getType(), Type.FLOAT))
 			return new FloatValue(value + ((FloatValue) other).value);
 		else
-			return ((ComputableValue) convertTo(other.getType())).plus(other);
+			return plus((ComputableValue)other.convertTo(getType()));
 	}
 
 	/* (non-Javadoc)
@@ -159,7 +159,7 @@ public class FloatValue extends NumericValue {
 		if (Type.subTypeOf(other.getType(), Type.FLOAT))
 			return new FloatValue(value * ((FloatValue) other).value);
 		else
-			return ((ComputableValue) convertTo(other.getType())).mult(other);
+			return mult((ComputableValue)other.convertTo(getType()));
 	}
 
 	/* (non-Javadoc)
@@ -169,7 +169,7 @@ public class FloatValue extends NumericValue {
 		if (Type.subTypeOf(other.getType(), Type.FLOAT))
 			return new FloatValue(value / ((FloatValue) other).value);
 		else
-			return ((ComputableValue) convertTo(other.getType())).div(other);
+			return div((ComputableValue)other.convertTo(getType()));
 	}
 
 	/* (non-Javadoc)
@@ -179,7 +179,7 @@ public class FloatValue extends NumericValue {
 		if (Type.subTypeOf(other.getType(), Type.FLOAT))
 			return new FloatValue(value % ((FloatValue) other).value);
 		else
-			return ((NumericValue) convertTo(other.getType())).mod(other);
+			return mod((NumericValue)other.convertTo(getType()));
 	}
 
 	/* (non-Javadoc)

@@ -36,9 +36,6 @@ import org.xml.sax.SAXException;
  * {@link org.exist.xpath.AttributeConstructor}.
  *  
  * @author Wolfgang Meier <wolfgang@exist-db.org>
- * 
- * TODO: if the enclosed expression evaluates to an attribute node, 
- * it should be added to the outer element.
  */
 public class EnclosedExpr extends PathExpr {
 
@@ -79,7 +76,7 @@ public class EnclosedExpr extends PathExpr {
 						receiver.characters(buf);
 						buf.setLength(0);
 					}
-					next.toSAX(context.getBroker(), receiver);
+					next.copyTo(context.getBroker(), receiver);
 					next = i.nextItem();
 				}
 			}

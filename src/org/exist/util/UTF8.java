@@ -59,7 +59,7 @@ public class UTF8 {
 		if (null == code || 0 >= code.length)
 			return null;
 
-		XMLString xs = new XMLString(code.length);
+		XMLString xs = new XMLString(many);
 
 		char ch;
 

@@ -476,6 +476,15 @@ public interface NodeSet extends Sequence, NodeList {
 	public NodeSet union(NodeSet other);
 	
 	/**
+	 * Return a new node set containing all nodes from this node set
+	 * except those nodes which are also contained in the argument node set.
+	 * 
+	 * @param other
+	 * @return
+	 */
+	public NodeSet except(NodeSet other);
+	
+	/**
 	 * Return a new node set containing all the context nodes associated
 	 * with the nodes in this set.
 	 * 

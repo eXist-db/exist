@@ -28,24 +28,32 @@ import org.apache.commons.pool.impl.StackObjectPool;
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class DOMStreamerPool extends StackObjectPool {
+public class SAXSerializerPool extends StackObjectPool {
 
-	private final static DOMStreamerPool instance =
-		new DOMStreamerPool(new DOMStreamerObjectFactory(), 10, 2);
-	
-	public final static DOMStreamerPool getInstance() {
+	private final static SAXSerializerPool instance =
+		new SAXSerializerPool(new SAXSerializerObjectFactory(), 10, 1);
+
+	public final static SAXSerializerPool getInstance() {
 		return instance;
 	}
 	
-	protected DOMStreamerPool(PoolableObjectFactory factory, int maxIdle, int initIdleCapacity) {
+	public SAXSerializerPool(PoolableObjectFactory factory, int maxIdle, int initIdleCapacity) {
 		super(factory, maxIdle, initIdleCapacity);
 	}
-
-	public DOMStreamer borrowDOMStreamer() throws Exception {
-		return (DOMStreamer)borrowObject();
+	
+	public SAXSerializer borrowSAXSerializer() {
+		try {
+			return (SAXSerializer)borrowObject();
+		} catch (Exception e) {
+			throw new IllegalStateException("error while creating SAXSerializer");
+		}
 	}
 	
-	public void returnDOMStreamer(DOMStreamer streamer) throws Exception {
-		returnObject(streamer);
+	public void returnSAXSerializer(SAXSerializer serializer) {
+		try {
+			returnObject(serializer);
+		} catch (Exception e) {
+			throw new IllegalStateException("error while releasing SAXSerializer");
+		}
 	}
 }

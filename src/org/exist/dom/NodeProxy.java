@@ -23,6 +23,7 @@ package org.exist.dom;
 import java.util.Comparator;
 import java.util.Iterator;
 
+import org.exist.memtree.Receiver;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xpath.XPathException;
@@ -189,12 +190,13 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 		NodeProxy node = (NodeProxy) other;
 		if (doc.docId != node.doc.docId)
 			return false;
+//		System.out.println(gid + " << " + node.gid);
 		int la = doc.getTreeLevel(gid);
 		int lb = doc.getTreeLevel(node.gid);
 		long pa = gid, pb = node.gid;
 		if (la > lb) {
 			while (la > lb) {
-				pa = XMLUtil.getParentId(doc, gid, la);
+				pa = XMLUtil.getParentId(doc, pa, la);
 				--la;
 			}
 			if (pa == pb)
@@ -220,12 +222,13 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 		NodeProxy node = (NodeProxy) other;
 		if (doc.docId != node.doc.docId)
 			return false;
+//		System.out.println(gid + " >> " + node.gid);
 		int la = doc.getTreeLevel(gid);
 		int lb = doc.getTreeLevel(node.gid);
 		long pa = gid, pb = node.gid;
 		if (la > lb) {
 			while (la > lb) {
-				pa = XMLUtil.getParentId(doc, gid, la);
+				pa = XMLUtil.getParentId(doc, pa, la);
 				--la;
 			}
 			if (pa == pb)
@@ -608,6 +611,14 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 		serializer.toSAX(this);
 	}
 
+	public void copyTo(DBBroker broker, Receiver receiver) throws SAXException {
+		if(nodeType == Node.ATTRIBUTE_NODE) {
+			AttrImpl attr = (AttrImpl)getNode();
+			receiver.attribute(attr.getQName(), attr.getValue());
+		} else
+			toSAX(broker, receiver);
+	}
+	
 	private final static class SingleNodeIterator implements Iterator, SequenceIterator {
 
 		private boolean hasNext = true;

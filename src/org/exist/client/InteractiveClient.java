@@ -75,6 +75,7 @@ import org.exist.util.ProgressBar;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.XMLFilenameFilter;
 import org.exist.util.serializer.SAXSerializer;
+import org.exist.util.serializer.SAXSerializerPool;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.UserManagementService;
@@ -521,6 +522,7 @@ public class InteractiveClient {
 			args[1]= line.substring(5);
 		} else {
 			StreamTokenizer tok = new StreamTokenizer(new StringReader(line));
+			tok.resetSyntax();
 			tok.wordChars(0x21, 0x7FFF);
 			tok.quoteChar('"');
 			tok.whitespaceChars(0x20, 0x20);
@@ -2148,7 +2150,9 @@ public class InteractiveClient {
 		try {
 			BufferedWriter writer=
 				new BufferedWriter(new FileWriter(queryHistoryFile));
-			SAXSerializer serializer = new SAXSerializer(writer, null);
+			SAXSerializer serializer = SAXSerializerPool.getInstance().borrowSAXSerializer();
+			serializer.setWriter(writer);
+			serializer.setOutputProperties(null);
 			int p= 0;
 			if (queryHistory.size() > 20)
 				p= queryHistory.size() - 20;
@@ -2164,6 +2168,7 @@ public class InteractiveClient {
 			serializer.endElement("", "history", "history");
 			serializer.endDocument();
 			writer.close();
+			SAXSerializerPool.getInstance().returnSAXSerializer(serializer);
 		} catch (IOException e) {
 			System.err.println("IO error while writing query history.");
 		} catch (SAXException e) {

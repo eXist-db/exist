@@ -38,7 +38,7 @@ import org.exist.util.serializer.encodings.CharacterSet;
  */
 public class XMLWriter {
 
-	protected Writer writer;
+	protected Writer writer = null;
 	protected CharacterSet charSet = null;
 	protected Stack elementStack = new Stack();
 	protected boolean tagIsOpen = false;
@@ -49,6 +49,9 @@ public class XMLWriter {
 
 	private char[] charref = new char[10];
 
+	public XMLWriter() {
+	}
+	
 	public XMLWriter(Writer writer) {
 		super();
 		this.writer = writer;
@@ -61,6 +64,7 @@ public class XMLWriter {
 	 */
 	public void setOutputProperties(Properties outputProperties) {
 		this.outputProperties = outputProperties;
+		
 		String encoding =
 			outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
 		charSet = CharacterSet.getCharacterSet(encoding);
@@ -247,7 +251,7 @@ public class XMLWriter {
 		}
 	}
 
-	protected void writeChars(CharSequence s) throws IOException {
+	private final void writeChars(CharSequence s) throws IOException {
 		char ch;
 		for (int i = 0; i < s.length(); i++) {
 			ch = s.charAt(i);

@@ -41,7 +41,14 @@ public class TimeValue extends AbstractDateTimeValue {
 	private static final String tzre = "/(\\+|-)?([0-1]\\d):(\\d{2})/";
 
 	public TimeValue() {
-		super();
+		calendar = new GregorianCalendar();
+		tzOffset =
+			(calendar.get(Calendar.ZONE_OFFSET) + calendar.get(Calendar.DST_OFFSET))
+			/ 60000;
+		calendar.set(Calendar.YEAR, 2000);
+		calendar.set(Calendar.MONTH, 0);
+		calendar.set(Calendar.DATE, 1);
+		date = calendar.getTime();
 	}
 
 	public TimeValue(Calendar cal, int timezone) {
@@ -50,6 +57,9 @@ public class TimeValue extends AbstractDateTimeValue {
 		SimpleTimeZone zone = new SimpleTimeZone(tzOffset * 60000, "LLL");
 		calendar = new GregorianCalendar(zone);
 		calendar.setLenient(false);
+		calendar.set(Calendar.YEAR, 2000);
+		calendar.set(Calendar.MONTH, 0);
+		calendar.set(Calendar.DATE, 1);
 		calendar.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY));
 		calendar.set(Calendar.MINUTE, cal.get(Calendar.MINUTE));
 		calendar.set(Calendar.SECOND, cal.get(Calendar.SECOND));
@@ -106,6 +116,7 @@ public class TimeValue extends AbstractDateTimeValue {
 			if (part.equals("-"))
 				tzOffset *= -1;
 		}
+			
 		SimpleTimeZone zone = new SimpleTimeZone(tzOffset * 60000, "LLL");
 		if (explicitTimeZone)
 			calendar = new GregorianCalendar(zone);
@@ -116,9 +127,7 @@ public class TimeValue extends AbstractDateTimeValue {
 					/ 60000;
 		}
 		calendar.setLenient(false);
-		calendar.set(Calendar.HOUR_OF_DAY, hour);
-		calendar.set(Calendar.MINUTE, minutes);
-		calendar.set(Calendar.SECOND, seconds);
+		calendar.set(2000, 0, hour == 0 ? 2 : 1, hour, minutes, seconds);
 		calendar.set(Calendar.MILLISECOND, millis);
 		if (explicitTimeZone)
 			calendar.set(Calendar.ZONE_OFFSET, tzOffset * 60000);
@@ -198,6 +207,7 @@ public class TimeValue extends AbstractDateTimeValue {
 	 */
 	public boolean compareTo(int operator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.TIME) {
+			System.out.println(date.getTime() + " eq " + ((TimeValue)other).date.getTime());
 			int cmp = date.compareTo(((TimeValue) other).date);
 			switch (operator) {
 				case Constants.EQ :
@@ -225,9 +235,9 @@ public class TimeValue extends AbstractDateTimeValue {
 	 * @see org.exist.xpath.value.AtomicValue#compareTo(org.exist.xpath.value.AtomicValue)
 	 */
 	public int compareTo(AtomicValue other) throws XPathException {
-		if (other.getType() == Type.TIME)
+		if (other.getType() == Type.TIME) {
 			return date.compareTo(((TimeValue) other).date);
-		else
+		} else
 			throw new XPathException(
 				"Type error: cannot compare xs:time to "
 					+ Type.getTypeName(other.getType()));

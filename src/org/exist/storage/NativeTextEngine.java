@@ -29,7 +29,6 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +36,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.apache.log4j.Category;
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.apache.oro.text.regex.Pattern;
@@ -330,7 +328,6 @@ public class NativeTextEngine extends TextSearchEngine {
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
 			collection = (Collection) iter.next();
 			collectionId = collection.getId();
-
 			ref = new WordRef(collectionId, term);
 			Lock lock = dbWords.getLock();
 			try {

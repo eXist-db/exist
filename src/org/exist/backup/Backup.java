@@ -36,6 +36,7 @@ import javax.xml.transform.OutputKeys;
 import org.exist.security.Permission;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.SAXSerializer;
+import org.exist.util.serializer.SAXSerializerPool;
 import org.exist.xmldb.UserManagementService;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -130,7 +131,10 @@ public class Backup {
 					new FileOutputStream(path + '/' + "__contents__.xml"),
 					"UTF-8"));
 		// serializer writes to __contents__.xml
-		SAXSerializer serializer = new SAXSerializer(contents, null);
+		SAXSerializer serializer = SAXSerializerPool.getInstance().borrowSAXSerializer();
+		serializer.setWriter(contents);
+		serializer.setOutputProperties(defaultOutputProperties);
+		
 		serializer.startDocument();
 		serializer.startPrefixMapping("", NS);
 		// write <collection> element
@@ -168,10 +172,13 @@ public class Backup {
 						new FileOutputStream(path + '/' + resources[i]),
 						"UTF-8"));
 			// write resource to contentSerializer
-			contentSerializer = new SAXSerializer(writer, defaultOutputProperties);
+			contentSerializer = SAXSerializerPool.getInstance().borrowSAXSerializer();
+			contentSerializer.setWriter(writer);
+			contentSerializer.setOutputProperties(defaultOutputProperties);
 			resource.getContentAsSAX(contentSerializer);
             //writer.write((String)resource.getContent());
 			writer.close();
+			SAXSerializerPool.getInstance().returnSAXSerializer(contentSerializer);
 			// store permissions
 			attr.clear();
 			attr.addAttribute(NS, "name", "name", "CDATA", resources[i]);
@@ -201,6 +208,7 @@ public class Backup {
 		serializer.endPrefixMapping("");
 		serializer.endDocument();
 		contents.close();
+		SAXSerializerPool.getInstance().returnSAXSerializer(serializer);
 		// descend into subcollections
 		Collection child;
 		for (int i = 0; i < collections.length; i++) {

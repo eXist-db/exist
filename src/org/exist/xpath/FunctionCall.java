@@ -73,6 +73,7 @@ public class FunctionCall extends Function {
 		Sequence[] seq = new Sequence[getArgumentCount()];
 		for(int i = 0; i < getArgumentCount(); i++) {
 			seq[i] = getArgument(i).eval(contextSequence, contextItem);
+//			System.out.println("found " + seq[i].getLength() + " for " + getArgument(i).pprint());
 		}
 		functionDef.setArguments(seq);
 		

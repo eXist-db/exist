@@ -46,9 +46,9 @@ public class Intersection extends CombiningExpression {
 		throws XPathException {
 			Sequence lval = left.eval(contextSequence, contextItem);
 			Sequence rval = right.eval(contextSequence, contextItem);
-			if(lval.getItemType() != Type.NODE || rval.getItemType() != Type.NODE)
+			if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
 				throw new XPathException("intersect operand is not a node sequence");
-			NodeSet result = ((NodeSet)lval).intersection((NodeSet)rval);
+			NodeSet result = lval.toNodeSet().intersection(rval.toNodeSet());
 			return result;
 	}
 

@@ -38,27 +38,52 @@ import org.xml.sax.helpers.NamespaceSupport;
 
 public class SAXSerializer implements ContentHandler, LexicalHandler {
 
+	private final static Properties defaultProperties = new Properties();
+	
+	static {
+		defaultProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+		defaultProperties.setProperty(OutputKeys.INDENT, "false");
+	}
+	
 	protected XMLWriter receiver;
 	protected Properties outputProperties;
 	protected NamespaceSupport nsSupport = new NamespaceSupport();
 	protected HashMap namespaceDecls = new HashMap();
 	protected HashMap optionalNamespaceDecls = new HashMap();
 
+	public SAXSerializer() {
+		super();
+		this.receiver = new XMLIndenter();
+	}
+	
 	public SAXSerializer(Writer writer, Properties outputProperties) {
 		super();
 		this.outputProperties = outputProperties;
 		if(outputProperties == null)
-			outputProperties = new Properties();
-		String prop = outputProperties.getProperty(OutputKeys.INDENT, "no");
-		this.receiver =
-			prop.equals("yes")
-				? new XMLIndenter(writer)
-				: new XMLWriter(writer);
+			outputProperties = defaultProperties;
+		this.receiver = new XMLIndenter(writer);
 		this.receiver.setOutputProperties(outputProperties);
 	}
 
+	public void setOutputProperties(Properties outputProperties) {
+		if(outputProperties == null)
+			outputProperties = defaultProperties;
+		this.outputProperties = outputProperties;
+		receiver.setOutputProperties(outputProperties);
+	}
+	
+	public void setWriter(Writer writer) {
+		receiver.setWriter(writer);
+	}
+	
 	public Writer getWriter() {
 		return receiver.writer;
+	}
+	
+	public void reset() {
+		nsSupport.reset();
+		namespaceDecls.clear();
+		optionalNamespaceDecls.clear();
 	}
 	
 	/* (non-Javadoc)

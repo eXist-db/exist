@@ -59,8 +59,8 @@ public class XQueryGenerator extends ServiceableGenerator {
 	private boolean createSession = false;
 	
 	private String collectionURI = null;
-	private String user = null;
-	private String password = null;
+	private String defaultUser = null;
+	private String defaultPassword = null;
 	
 	private Map cache = new HashMap();
 	
@@ -87,8 +87,8 @@ public class XQueryGenerator extends ServiceableGenerator {
 		this.objectModel = objectModel;
 		this.inputSource = resolver.resolveURI(source);
 		this.collectionURI = parameters.getParameter("collection", "xmldb:exist:///db");
-		this.user = parameters.getParameter("user", "guest");
-		this.password = parameters.getParameter("password", "guest");
+		this.defaultUser = parameters.getParameter("user", "guest");
+		this.defaultPassword = parameters.getParameter("password", "guest");
 		this.mapRequestParams = parameters.getParameterAsBoolean("use-request-parameters", false);
 		this.createSession = parameters.getParameterAsBoolean("create-session", true);
 	}
@@ -112,7 +112,18 @@ public class XQueryGenerator extends ServiceableGenerator {
 			throw new ProcessingException("No input source");
 		Request request = ObjectModelHelper.getRequest(objectModel);
 		Session session = request.getSession(createSession);
-		
+		String user = null;
+        String password = null;
+        // check if user and password can be read from the session
+        if(session != null && request.isRequestedSessionIdValid()) {
+            user = (String)session.getAttribute("user");
+            password = (String)session.getAttribute("password");
+        }
+        if(user == null)
+            user = defaultUser;
+        if(password == null)
+            password = defaultPassword;
+        System.out.println("user = " + user + "; password = " + password);
 		try {
 			Collection collection = DatabaseManager.getCollection(collectionURI, user, password);
 			if(collection == null) {

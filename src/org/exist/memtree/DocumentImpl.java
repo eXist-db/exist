@@ -124,7 +124,7 @@ public class DocumentImpl extends NodeImpl implements Document {
 		}
 	}
 
-	public int addAttribute(int nodeNr, QName qname, String value) {
+	public int addAttribute(int nodeNr, QName qname, String value) throws DOMException {
 		if (nextAttr == attrName.length)
 			growAttributes();
 		attrParent[nextAttr] = nodeNr;
@@ -133,6 +133,10 @@ public class DocumentImpl extends NodeImpl implements Document {
 		if (alpha[nodeNr] < 0)
 			alpha[nodeNr] = nextAttr;
 		return nextAttr++;
+	}
+	
+	public int getLastNode() {
+		return size - 1;
 	}
 	
 	private void grow() {

@@ -54,10 +54,67 @@ public class DoubleValue extends NumericValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Item#getStringValue()
 	 */
-	public String getStringValue() throws XPathException {
-		return Double.toString(value);
+//	public String getStringValue() throws XPathException {
+//		return Double.toString(value);
+//	}
+
+	public String getStringValue() {
+		if (!Double.isInfinite(value)
+			&& (value >= (double) (1L << 53) || -value >= (double) (1L << 53))) {
+			return new java.math.BigDecimal(value).toString();
+		}
+		String s = Double.toString(value);
+		int len = s.length();
+		if (s.charAt(len - 2) == '.' && s.charAt(len - 1) == '0') {
+			if (s.equals("-0.0"))
+				return "0";
+			return s;
+		}
+		int e = s.indexOf('E');
+		if (e < 0) {
+			if (s.equals("Infinity")) {
+				return "INF";
+			} else if (s.equals("-Infinity")) {
+				return "-INF";
+			}
+			// For some reason, Double.toString() in Java can return strings such as "0.0040"
+			// so we remove any trailing zeros
+			while (s.charAt(len - 1) == '0' && s.charAt(len - 2) != '.') {
+				s = s.substring(0, --len);
+			}
+			return s;
+		}
+		int exp = Integer.parseInt(s.substring(e + 1));
+		String sign;
+		if (s.charAt(0) == '-') {
+			sign = "-";
+			s = s.substring(1);
+			--e;
+		} else
+			sign = "";
+		int nDigits = e - 2;
+		if (exp >= nDigits) {
+			return sign + s.substring(0, 1) + s.substring(2, e) + zeros(exp - nDigits);
+		} else if (exp > 0) {
+			return sign
+				+ s.substring(0, 1)
+				+ s.substring(2, 2 + exp)
+				+ "."
+				+ s.substring(2 + exp, e);
+		} else {
+			while (s.charAt(e - 1) == '0')
+				e--;
+			return sign + "0." + zeros(-1 - exp) + s.substring(0, 1) + s.substring(2, e);
+		}
 	}
 
+	static private String zeros(int n) {
+		char[] buf = new char[n];
+		for (int i = 0; i < n; i++)
+			buf[i] = '0';
+		return new String(buf);
+	}
+		
 	public double getValue() {
 		return value;
 	}
@@ -178,7 +235,7 @@ public class DoubleValue extends NumericValue {
 		if (Type.subTypeOf(other.getType(), Type.DOUBLE))
 			return new DoubleValue(value - ((DoubleValue) other).value);
 		else
-			return ((ComputableValue) convertTo(other.getType())).minus(other);
+			return minus((ComputableValue) other.convertTo(getType()));
 	}
 
 	/* (non-Javadoc)
@@ -188,7 +245,7 @@ public class DoubleValue extends NumericValue {
 		if (Type.subTypeOf(other.getType(), Type.DOUBLE))
 			return new DoubleValue(value + ((DoubleValue) other).value);
 		else
-			return ((ComputableValue) convertTo(other.getType())).plus(other);
+			return plus((ComputableValue) other.convertTo(getType()));
 	}
 
 	/* (non-Javadoc)
@@ -208,7 +265,7 @@ public class DoubleValue extends NumericValue {
 		if (Type.subTypeOf(other.getType(), Type.DOUBLE))
 			return new DoubleValue(value / ((DoubleValue) other).value);
 		else
-			return ((ComputableValue) convertTo(other.getType())).div(other);
+			return div((ComputableValue) other.convertTo(getType()));
 	}
 
 	/* (non-Javadoc)
@@ -218,7 +275,7 @@ public class DoubleValue extends NumericValue {
 		if (Type.subTypeOf(other.getType(), Type.DOUBLE))
 			return new DoubleValue(value % ((DoubleValue) other).value);
 		else
-			return ((NumericValue) convertTo(other.getType())).mod(other);
+			return mod((NumericValue) other.convertTo(getType()));
 	}
 
 	/* (non-Javadoc)

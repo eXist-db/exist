@@ -77,6 +77,7 @@ public class StringValue extends AtomicValue {
 			case Type.INTEGER :
 			case Type.NON_POSITIVE_INTEGER :
 			case Type.NEGATIVE_INTEGER :
+			case Type.POSITIVE_INTEGER:
 			case Type.LONG :
 			case Type.INT :
 			case Type.SHORT :
@@ -87,17 +88,17 @@ public class StringValue extends AtomicValue {
 			case Type.UNSIGNED_SHORT :
 			case Type.UNSIGNED_BYTE :
 				return new IntegerValue(value, requiredType);
-			case Type.DATE_TIME:
+			case Type.DATE_TIME :
 				return new DateTimeValue(value);
-			case Type.TIME:
+			case Type.TIME :
 				return new TimeValue(value);
-			case Type.DATE:
+			case Type.DATE :
 				return new DateValue(value);
-			case Type.DURATION:
+			case Type.DURATION :
 				return new DurationValue(value);
-			case Type.YEAR_MONTH_DURATION:
+			case Type.YEAR_MONTH_DURATION :
 				return new YearMonthDurationValue(value);
-			case Type.DAY_TIME_DURATION:
+			case Type.DAY_TIME_DURATION :
 				return new DayTimeDurationValue(value);
 			default :
 				throw new XPathException(
@@ -113,6 +114,32 @@ public class StringValue extends AtomicValue {
 	 */
 	public boolean compareTo(int operator, AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.STRING)) {
+			boolean substringCompare = false;
+			if (operator == Constants.EQ) {
+				String otherVal = other.getStringValue();
+				int truncation = Constants.TRUNC_NONE;
+				if (otherVal.length() > 0 && otherVal.charAt(0) == '%') {
+					otherVal = otherVal.substring(1);
+					truncation = Constants.TRUNC_LEFT;
+				}
+				if (otherVal.length() > 1 && otherVal.charAt(otherVal.length() - 1) == '%') {
+					otherVal = otherVal.substring(0, otherVal.length() - 1);
+					truncation =
+						(truncation == Constants.TRUNC_LEFT)
+							? Constants.TRUNC_BOTH
+							: Constants.TRUNC_RIGHT;
+				}
+				switch(truncation) {
+					case Constants.TRUNC_BOTH:
+						return value.indexOf(otherVal) > -1;
+					case Constants.TRUNC_LEFT:
+						return value.startsWith(otherVal);
+					case Constants.TRUNC_RIGHT:
+						return value.endsWith(otherVal);
+					case Constants.TRUNC_NONE:
+						return value.equals(otherVal);
+				}
+			}
 			int cmp = value.compareTo(other.getStringValue());
 			switch (operator) {
 				case Constants.EQ :
@@ -131,7 +158,9 @@ public class StringValue extends AtomicValue {
 					throw new XPathException("Type error: cannot apply operand to string value");
 			}
 		}
-		throw new XPathException("Type error: operands are not comparable; expected xs:string; got " + Type.getTypeName(other.getType()));
+		throw new XPathException(
+			"Type error: operands are not comparable; expected xs:string; got "
+				+ Type.getTypeName(other.getType()));
 	}
 
 	/* (non-Javadoc)

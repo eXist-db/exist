@@ -54,9 +54,9 @@ public class ForExpr extends BindingExpression {
 	 */
 	public Sequence eval(
 		Sequence contextSequence,
-		Item contextItem)
+		Item contextItem,
+		Sequence resultSequence)
 		throws XPathException {
-		Sequence result = null;
 		context.pushLocalContext(false);
 		// declare the variable
 		Variable var = new Variable(QName.parse(context, varName));
@@ -84,14 +84,15 @@ public class ForExpr extends BindingExpression {
 		if(fastExec) {
 			LOG.debug("fast evaluation mode");
 			in = applyWhereExpression(in);
-			LOG.debug("where found " + in.getLength());
 		}
 		
-		if(orderSpecs != null)
-			result = 
-				new OrderedValueSequence(orderSpecs, in.getLength());
-		else
-			result = new ValueSequence();
+		if(resultSequence == null) {
+			if(orderSpecs != null)
+				resultSequence = 
+					new OrderedValueSequence(orderSpecs, in.getLength());
+			else
+				resultSequence = new ValueSequence();
+		}
 			
 		Sequence val = null;
 		int p = 1;
@@ -115,36 +116,46 @@ public class ForExpr extends BindingExpression {
 			if (whereExpr != null && (!fastExec)) {
 				if(contextItem instanceof NodeProxy)
 					((NodeProxy)contextItem).addContextNode((NodeProxy)contextItem);
-				Sequence bool = applyWhereExpression(contextSequence);
+				Sequence bool = applyWhereExpression(null);
+				// if where returned false, continue
 				if(!bool.effectiveBooleanValue())
 					continue;
 			} else
 				val = contextItem.toSequence();
 			
-			// if there is no "order by" clause, immediately call
-			// the return clause
-			if(orderSpecs == null)
-				val = returnExpr.eval(val);
-			result.addAll(val);
-		}
-		if(orderSpecs != null) {
-			// sort the result and call return for every item
-			((OrderedValueSequence)result).sort();
-			Sequence orderedResult = new ValueSequence();
-			p = 1;
-			for(SequenceIterator i = result.iterate(); i.hasNext(); p++) {
-				contextItem = i.nextItem();
-				contextSequence = contextItem.toSequence();
-				// set variable value to current item
-				var.setValue(contextSequence);
-				context.setContextPosition(p);
-				val = returnExpr.eval(contextSequence);
-				orderedResult.addAll(val);
+			/* if the returnExpr is another BindingExpression, call it
+			 * with the result sequence.
+			 */
+			if(returnExpr instanceof BindingExpression)
+				((BindingExpression)returnExpr).eval(null, null, resultSequence);
+			
+			// otherwise call the return expression and add results to resultSequence
+			else {
+				val = returnExpr.eval(null);
+				resultSequence.addAll(val);
 			}
-			result = orderedResult;
 		}
+//		if(orderSpecs != null) {
+//			// sort the result and call return for every item
+//			((OrderedValueSequence)result).sort();
+//			Sequence orderedResult = new ValueSequence();
+//			LOG.debug("ordered: " + result.getLength());
+//			p = 1;
+//			for(SequenceIterator i = result.iterate(); i.hasNext(); p++) {
+//				contextItem = i.nextItem();
+//				contextSequence = contextItem.toSequence();
+//				// set variable value to current item
+//				var.setValue(contextSequence);
+//				context.setContextPosition(p);
+//				val = returnExpr.eval(contextSequence);
+//				orderedResult.addAll(val);
+//			}
+//			result = orderedResult;
+//		}
+		if(orderSpecs != null)
+			((OrderedValueSequence)resultSequence).sort();
 		context.popLocalContext();
-		return result;
+		return resultSequence;
 	}
 
 	/* (non-Javadoc)
@@ -152,7 +163,7 @@ public class ForExpr extends BindingExpression {
 	 */
 	public String pprint() {
 		StringBuffer buf = new StringBuffer();
-		buf.append("for ");
+		buf.append("(for ");
 		buf.append(varName);
 		if(sequenceType != null) {
 			buf.append(" as ");
@@ -170,6 +181,7 @@ public class ForExpr extends BindingExpression {
 		}
 		buf.append(" return ");
 		buf.append(returnExpr.pprint());
+		buf.append(')');
 		return buf.toString();
 	}
 

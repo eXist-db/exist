@@ -64,42 +64,44 @@ public class DateValue extends AbstractDateTimeValue {
 		int month = Integer.parseInt(part);
 		part = util.group(4);
 		int day = Integer.parseInt(part);
-		int tz = 0;
-		part = util.group(10);
+		tzOffset = 0;
+		part = util.group(5);
 		if (part != null && part.length() > 0 && (!part.equals("Z"))) {
 			if (!util.match(tzre, part))
 				throw new XPathException("Type error: error in  timezone: " + part);
+			explicitTimeZone = true;
 			part = util.group(2);
-			tz = Integer.parseInt(part) * 60;
+			tzOffset = Integer.parseInt(part) * 60;
 			part = util.group(3);
 			if (part != null) {
 				int tzminute = Integer.parseInt(part);
-				tz += tzminute;
+				tzOffset += tzminute;
 			}
 			part = util.group(1);
 			if (part.equals("-"))
-				tz *= -1;
+				tzOffset *= -1;
 		}
 		SimpleTimeZone zone = new SimpleTimeZone(tzOffset * 60000, "LLL");
-		if (explicitTimeZone)
+		if (explicitTimeZone) {
 			calendar = new GregorianCalendar(zone);
-		else {
+		} else {
 			calendar = new GregorianCalendar();
 			tzOffset =
 				(calendar.get(Calendar.ZONE_OFFSET) + calendar.get(Calendar.DST_OFFSET))
 					/ 60000;
 		}
 		calendar.setLenient(false);
-		calendar.set(year, month - 1, day);
-		if (explicitTimeZone)
+		calendar.set(year, month - 1, day, 0, 0, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
+		if(explicitTimeZone)
 			calendar.set(Calendar.ZONE_OFFSET, tzOffset * 60000);
-		System.out.println(calendar.getTimeZone().getDisplayName());
 		try {
 			date = calendar.getTime();
 		} catch (Exception e) {
 			throw new XPathException(
 				"Type error: string " + dateString + " cannot be cast into an xs:date");
 		}
+		System.out.println(tzOffset);
 	}
 
 	public DateValue(Calendar cal, int timezone) {
@@ -179,7 +181,7 @@ public class DateValue extends AbstractDateTimeValue {
 	 */
 	public boolean compareTo(int operator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.DATE) {
-			int cmp = date.compareTo(((DateValue) other).date);
+			int cmp = date.compareTo(((DateValue)other).date);
 			switch (operator) {
 				case Constants.EQ :
 					return cmp == 0;
@@ -201,14 +203,14 @@ public class DateValue extends AbstractDateTimeValue {
 				"Type error: cannot compare xs:date to "
 					+ Type.getTypeName(other.getType()));
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.AtomicValue#compareTo(org.exist.xpath.value.AtomicValue)
 	 */
 	public int compareTo(AtomicValue other) throws XPathException {
-		if (other.getType() == Type.DATE)
-			return date.compareTo(((DateValue) other).date);
-		else
+		if (other.getType() == Type.DATE) {
+			return date.compareTo(((DateValue)other).date);
+		} else
 			throw new XPathException(
 				"Type error: cannot compare xs:date to "
 					+ Type.getTypeName(other.getType()));

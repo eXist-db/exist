@@ -40,9 +40,11 @@ public class XMLString implements CharSequence, Comparable {
 	private int length_ = 0;
 
 	public XMLString() {
+		value_ = CharArrayPool.getCharArray(DEFAULT_CAPACITY);
 	}
 
 	public XMLString(int capacity) {
+		value_ = CharArrayPool.getCharArray(capacity);
 	}
 
 	public XMLString(char[] ch) {
@@ -57,36 +59,37 @@ public class XMLString implements CharSequence, Comparable {
 			length_ = length;
 	}
 
-	public XMLString append(String str) {
+	public final XMLString append(String str) {
 		append(str.toCharArray());
 		return this;
 	}
 
-	public XMLString append(char[] ch) {
+	public final XMLString append(char[] ch) {
 		append(ch, 0, ch.length);
 		return this;
 	}
 
-	public XMLString append(char[] ch, int offset, int len) {
+	public final XMLString append(char[] ch, int offset, int len) {
 		ensureCapacity(length_ + len);
 		System.arraycopy(ch, offset, value_, length_, len);
 		length_ += len;
 		return this;
 	}
 
-	public XMLString append(char ch) {
-		ensureCapacity(length_ + 1);
-		value_[length_] = ch;
-		++length_;
+	public final XMLString append(char ch) {
+		if(value_.length < length_ + 2)
+			ensureCapacity(length_ + 1);
+		value_[length_++] = ch;
 		return this;
 	}
-	public void setData(char[] ch, int offset, int len) {
+	
+	public final void setData(char[] ch, int offset, int len) {
 		length_ = 0;
 		start_ = 0;
 		append(ch, offset, len);
 	}
 
-	public XMLString normalize(int mode) {
+	public final XMLString normalize(int mode) {
 		if(length_ == 0)
 			return this;
 		if ((mode & SUPPRESS_LEADING_WS) != 0) {
@@ -104,30 +107,30 @@ public class XMLString implements CharSequence, Comparable {
 		return this;
 	}
 
-	public String toString() {
+	public final String toString() {
 		if (value_ == null)
 			return "null";
 		return new String(value_, start_, length_);
 	}
 
-	public int length() {
+	public final int length() {
 		return length_;
 	}
 
-	public String substring(int start, int count) {
+	public final String substring(int start, int count) {
 		if (start < 0 || count < 0 || start >= length_ || start + count > length_)
 			throw new StringIndexOutOfBoundsException();
 		return new String(value_, start_ + start, count);
 	}
 
-	public XMLString delete(int start, int count) {
+	public final XMLString delete(int start, int count) {
 		System.arraycopy(value_, start + count + start_, value_, start, length_ - (start + count));
 		start_ = 0;
 		length_ = length_ - count;
 		return this;
 	}
 
-	public XMLString insert(int offset, String data) {
+	public final XMLString insert(int offset, String data) {
 		ensureCapacity(length_ + data.length());
 		System.arraycopy(value_, offset, value_, offset + data.length(), length_ - offset);
 		System.arraycopy(data.toCharArray(), 0, value_, offset, data.length());
@@ -135,27 +138,25 @@ public class XMLString implements CharSequence, Comparable {
 		return this;
 	}
 
-	public XMLString replace(int offset, int count, String data) {
+	public final XMLString replace(int offset, int count, String data) {
 		if (offset < 0 || count < 0 || offset >= length_ || offset + count > length_)
 			throw new StringIndexOutOfBoundsException();
 		System.arraycopy(data.toCharArray(), 0, value_, start_ + offset, count);
 		return this;
 	}
 
-	public char charAt(int pos) {
-		if (pos >= length_)
-			throw new StringIndexOutOfBoundsException(String.valueOf(pos));
+	public final char charAt(int pos) {
 		return value_[start_ + pos];
 	}
 
-	public void reset() {
+	public final void reset() {
 		CharArrayPool.releaseCharArray(value_);
 		value_ = null;
 		start_ = 0;
 		length_ = 0;
 	}
 
-	private void ensureCapacity(int capacity) {
+	private final void ensureCapacity(int capacity) {
 		if (value_ == null)
 			//value_ = new char[capacity];
 			value_ = CharArrayPool.getCharArray(capacity);
@@ -163,6 +164,7 @@ public class XMLString implements CharSequence, Comparable {
 			int newCapacity = (length_ + 1) * 2;
 			if (newCapacity < capacity)
 				newCapacity = capacity;
+			System.out.println("growing " + length_ + " to " + capacity);
 			char[] temp = CharArrayPool.getCharArray(newCapacity);
 			System.arraycopy(value_, start_, temp, 0, length_);
 			CharArrayPool.releaseCharArray(value_);
@@ -186,11 +188,11 @@ public class XMLString implements CharSequence, Comparable {
 	/* (non-Javadoc)
 	 * @see java.lang.CharSequence#subSequence(int, int)
 	 */
-	public CharSequence subSequence(int start, int end) {
+	public final CharSequence subSequence(int start, int end) {
 		return new String(value_, start_ + start, end - start);
 	}
 
-	public XMLString transformToLower() {
+	public final XMLString transformToLower() {
 		final int end = start_ + length_;
 		for (int i = start_; i < end; i++) {
 			value_[i] = Character.toLowerCase(value_[i]);
@@ -198,22 +200,22 @@ public class XMLString implements CharSequence, Comparable {
 		return this;
 	}
 	
-	public int UTF8Size() {
+	public final int UTF8Size() {
 		return UTF8.encoded(value_, start_, length_);
 	}
 	
-	public byte[] UTF8Encode(byte[] b, int offset) {
+	public final byte[] UTF8Encode(byte[] b, int offset) {
 		return UTF8.encode(value_, start_, length_, b, offset);
 	}
 	
-	public void toSAX(ContentHandler ch) throws SAXException {
+	public final void toSAX(ContentHandler ch) throws SAXException {
 		ch.characters(value_, start_, length_);
 	}
 	
 	/* (non-Javadoc)
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
-	public int compareTo(Object o) {
+	public final int compareTo(Object o) {
 		CharSequence cs = (CharSequence)o;
 		for(int i = 0; i < length_ && i < cs.length(); i++) {
 			if(value_[start_ + i] < cs.charAt(i))

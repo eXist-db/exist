@@ -29,9 +29,6 @@ import org.apache.commons.pool.BasePoolableObjectFactory;
  */
 public class DOMStreamerObjectFactory extends BasePoolableObjectFactory {
 
-	/**
-	 * 
-	 */
 	public DOMStreamerObjectFactory() {
 		super();
 	}

@@ -388,16 +388,20 @@ public class NativeBroker extends DBBroker {
 		InputStream dis;
 		short sym, nsSym;
 		Collection collection;
+		final short nodeType = (type == ElementValue.ATTRIBUTE ? 
+			Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
 		final Lock lock = elementsDb.getLock();
 		for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
 			collection = (Collection) i.next();
 			collectionId = collection.getId();
-			if (type != ElementValue.ATTRIBUTE_ID) {
+			if (type == ElementValue.ATTRIBUTE_ID) {
+				ref = new ElementValue((byte) type, collectionId, qname.getLocalName());
+			} else {
 				sym = NativeBroker.getSymbols().getSymbol(qname.getLocalName());
 				nsSym = NativeBroker.getSymbols().getNSSymbol(qname.getNamespaceURI());
 				ref = new ElementValue((byte) type, collectionId, sym, nsSym);
-			} else
-				ref = new ElementValue((byte) type, collectionId, qname.getLocalName());
+			}
+				
 			try {
 				lock.acquire(Lock.READ_LOCK);
 				dis = elementsDb.getAsStream(ref);
@@ -424,10 +428,8 @@ public class NativeBroker extends DBBroker {
 					gid = 0;
 					for (int k = 0; k < len; k++) {
 						gid = gid + is.readLong();
-						//address = is.readFixedLong();
-						result.add(new NodeProxy(doc, gid, Node.ELEMENT_NODE,
-						//		address),
-						StorageAddress.read(is)), len);
+						result.add(new NodeProxy(doc, gid, nodeType,
+							StorageAddress.read(is)), len);
 					}
 				}
 			} catch (EOFException e) {

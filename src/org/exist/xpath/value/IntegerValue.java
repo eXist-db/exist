@@ -47,12 +47,12 @@ public class IntegerValue extends NumericValue {
 		try {
 			value = Long.parseLong(stringValue);
 		} catch (NumberFormatException e) {
-			try {
-				value = (long) Double.parseDouble(stringValue);
-			} catch (NumberFormatException e1) {
+//			try {
+//				value = (long) Double.parseDouble(stringValue);
+//			} catch (NumberFormatException e1) {
 				throw new XPathException(
-					"failed to convert '" + stringValue + "' to an integer");
-			}
+					"failed to convert '" + stringValue + "' to an integer: " + e.getMessage());
+//			}
 		}
 	}
 
@@ -61,12 +61,12 @@ public class IntegerValue extends NumericValue {
 		try {
 			value = Long.parseLong(stringValue);
 		} catch (NumberFormatException e) {
-			try {
-				value = (long) Double.parseDouble(stringValue);
-			} catch (NumberFormatException e1) {
+//			try {
+//				value = (long) Double.parseDouble(stringValue);
+//			} catch (NumberFormatException e1) {
 				throw new XPathException(
-					"failed to convert '" + stringValue + "' to an integer");
-			}
+					"failed to convert '" + stringValue + "' to an integer: " + e.getMessage());
+//			}
 		}
 		checkType(value, type);
 	}
@@ -220,7 +220,7 @@ public class IntegerValue extends NumericValue {
 	 */
 	public ComputableValue minus(ComputableValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.INTEGER))
-			return new IntegerValue(value - ((IntegerValue) other).value);
+			return new IntegerValue(value - ((IntegerValue) other).value, type);
 		else
 			return ((ComputableValue) convertTo(other.getType())).minus(other);
 	}
@@ -230,7 +230,7 @@ public class IntegerValue extends NumericValue {
 	 */
 	public ComputableValue plus(ComputableValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.INTEGER))
-			return new IntegerValue(value + ((IntegerValue) other).value);
+			return new IntegerValue(value + ((IntegerValue) other).value, type);
 		else
 			return ((ComputableValue) convertTo(other.getType())).plus(other);
 	}
@@ -240,7 +240,7 @@ public class IntegerValue extends NumericValue {
 	 */
 	public ComputableValue mult(ComputableValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.INTEGER))
-			return new IntegerValue(value * ((IntegerValue) other).value);
+			return new IntegerValue(value * ((IntegerValue) other).value, type);
 		else
 			return ((ComputableValue) convertTo(other.getType())).mult(other);
 	}
@@ -253,7 +253,7 @@ public class IntegerValue extends NumericValue {
 			long ov = ((IntegerValue) other).value;
 			if (ov == 0)
 				throw new XPathException("division by zero");
-			return new DoubleValue(value / ov);
+			return new IntegerValue(value / ov, type);
 		} else
 			return ((ComputableValue) convertTo(other.getType())).div(other);
 	}
@@ -263,7 +263,7 @@ public class IntegerValue extends NumericValue {
 			long ov = ((IntegerValue) other).value;
 			if (ov == 0)
 				throw new XPathException("division by zero");
-			return new DoubleValue(value / ov);
+			return new IntegerValue(value / ov, type);
 		} else
 			return ((IntegerValue) convertTo(Type.INTEGER)).idiv(other);
 	}
@@ -276,7 +276,7 @@ public class IntegerValue extends NumericValue {
 			long ov = ((IntegerValue) other).value;
 			if (ov == 0)
 				throw new XPathException("division by zero");
-			return new DoubleValue(value % ov);
+			return new IntegerValue(value % ov, type);
 		} else
 			return ((NumericValue) convertTo(other.getType())).mod(other);
 	}
@@ -285,14 +285,14 @@ public class IntegerValue extends NumericValue {
 	 * @see org.exist.xpath.value.NumericValue#unaryMinus()
 	 */
 	public NumericValue negate() throws XPathException {
-		return new IntegerValue(-value);
+		return new IntegerValue((-value), type);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.NumericValue#abs()
 	 */
 	public NumericValue abs() throws XPathException {
-		return new IntegerValue(Math.abs(value));
+		return new IntegerValue(Math.abs(value), type);
 	}
 
 	/* (non-Javadoc)
@@ -303,7 +303,7 @@ public class IntegerValue extends NumericValue {
 			return new IntegerValue(Math.max(value, ((IntegerValue) other).value));
 		else
 			return new IntegerValue(
-				Math.max(value, ((IntegerValue) other.convertTo(type)).value));
+				Math.max(value, ((IntegerValue) other.convertTo(type)).value), type);
 	}
 
 	public AtomicValue min(AtomicValue other) throws XPathException {
@@ -311,6 +311,6 @@ public class IntegerValue extends NumericValue {
 			return new IntegerValue(Math.min(value, ((IntegerValue) other).value));
 		else
 			return new IntegerValue(
-				Math.min(value, ((IntegerValue) other.convertTo(type)).value));
+				Math.min(value, ((IntegerValue) other.convertTo(type)).value), type);
 	}
 }

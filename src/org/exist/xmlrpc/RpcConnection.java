@@ -50,6 +50,7 @@ import org.exist.util.Configuration;
 import org.exist.util.Occurrences;
 import org.exist.util.SyntaxException;
 import org.exist.util.serializer.DOMSerializer;
+import org.exist.util.serializer.DOMSerializerPool;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
@@ -341,27 +342,27 @@ public class RpcConnection extends Thread {
 			serializer.setProperty(OutputKeys.ENCODING, encoding);
 			serializer.setProperty(OutputKeys.INDENT, prettyPrint);
 			if (stylesheet != null) {
-				
-			if (stylesheet.indexOf(":") < 0) {
-				if (!stylesheet.startsWith("/")) {
-					// make path relative to current collection
-					String collection;
-					if (doc.getCollection() != null)
-						collection = doc.getCollection().getName();
-					else {
-						int cp = doc.getFileName().lastIndexOf("/");
-						collection = (cp > 0) ? doc.getFileName().substring(0, cp) : "/";
+				if (stylesheet.indexOf(":") < 0) {
+					if (!stylesheet.startsWith("/")) {
+						// make path relative to current collection
+						String collection;
+						if (doc.getCollection() != null)
+							collection = doc.getCollection().getName();
+						else {
+							int cp = doc.getFileName().lastIndexOf("/");
+							collection =
+								(cp > 0) ? doc.getFileName().substring(0, cp) : "/";
+						}
+						stylesheet =
+							(collection.equals("/")
+								? '/' + stylesheet
+								: collection + '/' + stylesheet);
 					}
-					stylesheet =
-						(collection.equals("/")
-							? '/' + stylesheet
-							: collection + '/' + stylesheet);
+
 				}
-				
-			}
 				serializer.setStylesheet(stylesheet);
 
-				// set stylesheet param if presents
+				// set stylesheet param if present
 				if (styleparam != null) {
 					for (Enumeration en1 = styleparam.keys(); en1.hasMoreElements();) {
 						String param1 = (String) en1.nextElement();
@@ -370,7 +371,6 @@ public class RpcConnection extends Thread {
 						serializer.setStylesheetParamameter(param1, paramvalue1);
 					}
 				}
-
 			}
 			String xml = serializer.serialize(doc);
 
@@ -804,10 +804,7 @@ public class RpcConnection extends Thread {
 			if (collection == null)
 				throw new EXistException("Collection " + collectionName + " not found");
 			String uri = file.toURI().toASCIIString();
-			collection.addDocument(
-				broker,
-				docName,
-				new InputSource(uri));
+			collection.addDocument(broker, docName, new InputSource(uri));
 		} finally {
 			brokerPool.release(broker);
 		}
@@ -917,12 +914,17 @@ public class RpcConnection extends Thread {
 		Properties props = new Properties();
 		props.setProperty(OutputKeys.INDENT, prettyPrint ? "yes" : "no");
 		props.setProperty(OutputKeys.ENCODING, "UTF-8");
-		DOMSerializer serializer = new DOMSerializer(sout, props);
+		//DOMSerializer serializer = new DOMSerializer(sout, props);
+		DOMSerializer serializer = DOMSerializerPool.getInstance().borrowDOMSerializer();
+		serializer.setWriter(sout);
+		serializer.setOutputProperties(props);
 		try {
 			serializer.serialize(dest);
 		} catch (TransformerException ioe) {
 			LOG.warn(ioe);
 			throw ioe;
+		} finally {
+			DOMSerializerPool.getInstance().returnDOMSerializer(serializer);
 		}
 		return sout.toString();
 	}
@@ -1098,7 +1100,8 @@ public class RpcConnection extends Thread {
 						next = i.nextItem();
 						if (Type.subTypeOf(next.getType(), Type.NODE)) {
 							entry = new Vector();
-							if (((NodeValue)next).getImplementationType() == NodeValue.PERSISTENT_NODE) {
+							if (((NodeValue) next).getImplementationType()
+								== NodeValue.PERSISTENT_NODE) {
 								p = (NodeProxy) next;
 								entry.addElement(p.doc.getFileName());
 								entry.addElement(Long.toString(p.getGID()));
@@ -1229,8 +1232,12 @@ public class RpcConnection extends Thread {
 				Properties props = new Properties();
 				props.setProperty(OutputKeys.ENCODING, encoding);
 				props.setProperty(OutputKeys.INDENT, prettyPrint ? "yes" : "no");
-				DOMSerializer serializer = new DOMSerializer(writer, props);
+				DOMSerializer serializer =
+					DOMSerializerPool.getInstance().borrowDOMSerializer();
+				serializer.setWriter(writer);
+				serializer.setOutputProperties(props);
 				serializer.serialize((Node) item);
+				DOMSerializerPool.getInstance().returnDOMSerializer(serializer);
 				return writer.toString();
 			} else {
 				return item.getStringValue();

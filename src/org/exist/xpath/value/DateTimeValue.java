@@ -45,7 +45,11 @@ public class DateTimeValue extends AbstractDateTimeValue {
 	private static final String tzre = "/(\\+|-)?([0-1]\\d):(\\d{2})/";
 
 	public DateTimeValue() {
-		super();
+		calendar = new GregorianCalendar();
+		tzOffset =
+			(calendar.get(Calendar.ZONE_OFFSET) + calendar.get(Calendar.DST_OFFSET))
+			/ 60000;
+		date = calendar.getTime();
 	}
 	
 	public DateTimeValue(GregorianCalendar cal, int timezone) {
