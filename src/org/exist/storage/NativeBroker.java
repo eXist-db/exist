@@ -86,6 +86,7 @@ import org.exist.util.Occurrences;
 import org.exist.util.ReadOnlyException;
 import org.exist.xquery.Constants;
 import org.exist.xquery.NodeSelector;
+import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
@@ -374,7 +375,9 @@ public class NativeBroker extends DBBroker {
 				LOG.warn("exception while reading element index", e);
 			} catch (LockException e) {
 				LOG.warn("failed to acquire lock", e);
-			} finally {
+			} catch (TerminatedException e) {
+                LOG.warn("Method terminated", e);
+            } finally {
 				lock.release();
 			}
 		}
@@ -1497,7 +1500,9 @@ public class NativeBroker extends DBBroker {
 							LOG.warn("db error while removing document", e);
 						} catch (IOException e) {
 							LOG.warn("io error while removing document", e);
-						}
+						} catch (TerminatedException e) {
+                            LOG.warn("method terminated", e);
+                        }
 						return null;
 					}
 				}
@@ -1610,7 +1615,9 @@ public class NativeBroker extends DBBroker {
 			} catch (LockException e) {
                 LOG.warn("removeDocument(String) - "
                     + "could not acquire lock on elements", e);
-			} finally {
+			} catch (TerminatedException e) {
+                LOG.warn("method terminated", e);
+            } finally {
 				lock.release();
 			}
 
@@ -1653,7 +1660,9 @@ public class NativeBroker extends DBBroker {
                         LOG.warn("start() - " + "error while removing doc", e);
 					} catch (IOException e) {
                         LOG.warn("start() - " + "error while removing doc", e);
-					}
+					} catch (TerminatedException e) {
+                        LOG.warn("method terminated", e);
+                    }
 					return null;
 				}
 			}

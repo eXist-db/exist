@@ -20,6 +20,8 @@
  */
 package org.exist.storage.store;
 
+import org.apache.log4j.Logger;
+
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
@@ -51,6 +53,7 @@ import org.exist.util.LockException;
 import org.exist.util.OrderedLinkedList;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.ReentrantReadWriteLock;
+import org.exist.xquery.TerminatedException;
 
 /**
  * Data store for variable size values.
@@ -69,6 +72,10 @@ import org.exist.util.ReentrantReadWriteLock;
  * @author Wolfgang Meier <wolfgang@exist-db.org>
  */
 public class BFile extends BTree {
+    /**
+     * Log4J Logger for this class
+     */
+    private static final Logger LOG = Logger.getLogger(BFile.class);
 
     public final static short FILE_FORMAT_VERSION_ID = 3;
 
@@ -269,12 +276,6 @@ public class BFile extends BTree {
         return new BFilePageHeader();
     }
 
-    public void filter(IndexQuery query, BFileCallback callback)
-            throws IOException, BTreeException {
-        FilterCallback cb = new FilterCallback(callback);
-        query(query, cb);
-    }
-
     /**
      * Remove all entries matching the given query.
      * 
@@ -283,36 +284,45 @@ public class BFile extends BTree {
      * @throws BTreeException
      */
     public void removeAll(IndexQuery query) throws IOException, BTreeException {
-        remove(query, new BTreeCallback() {
+        try {
+            remove(query, new BTreeCallback() {
 
-            public boolean indexInfo(Value value, long pointer) {
-                try {
-                    remove(pointer);
-                    return true;
-                } catch (ReadOnlyException e) {
-                    LOG.debug("file is read-only");
-                    return false;
+                public boolean indexInfo(Value value, long pointer) throws TerminatedException {
+                    try {
+                        remove(pointer);
+                        return true;
+                    } catch (ReadOnlyException e) {
+                        LOG.debug("file is read-only");
+                        return false;
+                    }
                 }
+            });
+        } catch (TerminatedException e) {
+            // Should never happen during remove
+
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("removeAll() - method has been terminated.");
             }
-        });
+        }
     }
 
     public ArrayList findEntries(IndexQuery query) throws IOException,
-            BTreeException {
+            BTreeException, TerminatedException {
         FindCallback cb = new FindCallback(FindCallback.BOTH);
         query(query, cb);
         return cb.getValues();
     }
 
     public ArrayList findKeys(IndexQuery query) throws IOException,
-            BTreeException {
+            BTreeException, TerminatedException {
         FindCallback cb = new FindCallback(FindCallback.KEYS);
         query(query, cb);
         return cb.getValues();
     }
 
     public void find(IndexQuery query, IndexCallback callback)
-            throws IOException, BTreeException {
+            throws IOException, BTreeException,
+            TerminatedException {
         FindCallback cb = new FindCallback(callback);
         query(query, cb);
     }
@@ -329,13 +339,6 @@ public class BFile extends BTree {
         LOG.warn("tid " + tid + " not found. " + page.getPageInfo() + "; pos: "
                 + pos);
         return -1;
-    }
-
-    public ArrayList findValues(IndexQuery query) throws IOException,
-            BTreeException {
-        FindCallback cb = new FindCallback(FindCallback.VALUES);
-        query(query, cb);
-        return cb.getValues();
     }
 
     public boolean flush() throws DBException {
@@ -509,21 +512,24 @@ public class BFile extends BTree {
             return wp;
     }
 
-    public ArrayList getEntries() throws IOException, BTreeException {
+    public ArrayList getEntries() throws IOException, BTreeException,
+    TerminatedException {
         IndexQuery query = new IndexQuery(IndexQuery.ANY, "");
         FindCallback cb = new FindCallback(FindCallback.BOTH);
         query(query, cb);
         return cb.getValues();
     }
 
-    public ArrayList getKeys() throws IOException, BTreeException {
+    public ArrayList getKeys() throws IOException, BTreeException,
+    TerminatedException {
         IndexQuery query = new IndexQuery(IndexQuery.ANY, "");
         FindCallback cb = new FindCallback(FindCallback.KEYS);
         query(query, cb);
         return cb.getValues();
     }
 
-    public ArrayList getValues() throws IOException, BTreeException {
+    public ArrayList getValues() 
+    throws IOException, BTreeException, TerminatedException {
         IndexQuery query = new IndexQuery(IndexQuery.ANY, "");
         FindCallback cb = new FindCallback(FindCallback.VALUES);
         query(query, cb);
@@ -857,6 +863,10 @@ public class BFile extends BTree {
     }
 
     private final static class FreeSpace implements Comparable {
+        /**
+         * Log4J Logger for this class
+         */
+        private static final Logger LOG = Logger.getLogger(FreeSpace.class);
 
         private int free = 0;
 
@@ -1224,7 +1234,7 @@ public class BFile extends BTree {
             this.callback = callback;
         }
 
-        public boolean indexInfo(Value value, long pointer) {
+        public boolean indexInfo(Value value, long pointer) throws TerminatedException{
             try {
                 long pos;
                 short tid;
@@ -1276,7 +1286,7 @@ public class BFile extends BTree {
             return values;
         }
 
-        public boolean indexInfo(Value value, long pointer) {
+        public boolean indexInfo(Value value, long pointer) throws TerminatedException {
             long pos;
             short tid;
             DataPage page;
@@ -1335,7 +1345,7 @@ public class BFile extends BTree {
     }
 
     private final class OverflowPage extends DataPage {
-
+        
         byte[] data = null;
 
         SinglePage firstPage;
@@ -1570,7 +1580,6 @@ public class BFile extends BTree {
     }
 
     public interface PageInputStream {
-
         public long getAddress();
     }
 
