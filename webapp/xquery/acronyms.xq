@@ -74,7 +74,7 @@ declare function a:do-query() as element()
 				</tr>
 			</table>
 		</form>
-
+		{ a:do-query() }
 		<p>
 			<small>View <a href="source/acronyms.xq">source code</a>
 			</small>

@@ -34,7 +34,7 @@
 	        		<map:parameter name="user" value="guest"/>
 	        		<map:parameter name="password" value="guest"/>
 	        	</map:transform>
-	            <map:transform type="cinclude"/>
+				<map:transform type="xinclude"/>
 				<map:transform src="stylesheets/biblio_rdf.xsl"/>
 				<map:serialize encoding="UTF-8" type="html"/>
 	        </map:match>

@@ -7,13 +7,14 @@
 -->
 
 <document 
-	xmlns:xmldb="http://exist-db.org/transformer/1.0">
+	xmlns:xmldb="http://exist-db.org/transformer/1.0"
+	xmlns:xi="http://www.w3.org/2001/XInclude">
 
 	<!-- include header -->
-    <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="context://header.xml"/>
+	<xi:include href="context://header.xml"/>
        
     <!-- include sidebar -->
-    <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
+	<xi:include href="sidebar.xml"/>
    
   	<body>
   

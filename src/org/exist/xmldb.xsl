@@ -182,6 +182,7 @@
                         ( XPathQueryService ) collection.getService( "XPathQueryService", "1.0" );
                     _service.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
                     _service.setProperty(OutputKeys.INDENT, "no");
+                    _service.setProperty("sax-document-events", "false");
                     <xsl:for-each select="./xmldb:namespace">
                     	<xsp:logic>
                     		_service.setNamespace("<xsl:value-of select="@prefix"/>", "<xsl:value-of select="."/>");
@@ -426,9 +427,6 @@
 	        if(<xsl:value-of select="$as"/>.equals("xml")) {
                 if(_resource instanceof org.exist.xmldb.RemoteXMLResource)
                     ((org.exist.xmldb.RemoteXMLResource)_resource).setCocoonParser( newParser );
-                //String _content = (String)_resource.getContent();
-                //XSPUtil.include(new InputSource(new StringReader(_content)),
-                //    this.contentHandler, newParser);
                 IncludeXMLFilter _consumer = 
                     new IncludeXMLFilter(this.contentHandler);
                 _resource.getContentAsSAX(_consumer);
