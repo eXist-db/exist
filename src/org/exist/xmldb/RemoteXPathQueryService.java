@@ -10,6 +10,7 @@ import java.util.Vector;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.source.Source;
 import org.exist.xmlrpc.RpcAPI;
+import org.exist.xquery.XPathException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.ResourceSet;
@@ -47,6 +48,10 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 			params.addElement(query.getBytes("UTF-8"));
 			params.addElement(optParams);
             Hashtable result = (Hashtable) collection.getClient().execute( "queryP", params );
+            
+            if(result.get(RpcAPI.ERROR) != null)
+            	throwException(result);
+            
             Vector resources = (Vector)result.get("results");
             int handle = -1;
             if(resources != null && resources.size() > 0)
@@ -59,7 +64,20 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
         }
     }
 
-    /* (non-Javadoc)
+    /**
+	 * @param result
+	 */
+	private void throwException(Hashtable result) throws XMLDBException {
+		String message = (String)result.get(RpcAPI.ERROR);
+		Integer lineInt = (Integer)result.get(RpcAPI.LINE);
+		Integer columnInt = (Integer)result.get(RpcAPI.COLUMN);
+		int line = lineInt == null ? 0 : lineInt.intValue();
+		int column = columnInt == null ? 0 : columnInt.intValue();
+		XPathException cause = new XPathException(message, line, column);
+		throw new XMLDBException(ErrorCodes.VENDOR_ERROR, message, cause);
+	}
+
+	/* (non-Javadoc)
      * @see org.exist.xmldb.XQueryService#execute(org.exist.source.Source)
      */
     public ResourceSet execute(Source source) throws XMLDBException {
@@ -97,6 +115,10 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
             	params.addElement( resource.id );
             params.addElement( optParams );
 			Hashtable result = (Hashtable) collection.getClient().execute( "queryP", params );
+			
+			if(result.get(RpcAPI.ERROR) != null)
+            	throwException(result);
+			
 			Vector resources = (Vector)result.get("results");
 			int handle = -1;
 			if(resources != null && resources.size() > 0)
