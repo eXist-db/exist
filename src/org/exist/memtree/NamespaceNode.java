@@ -62,8 +62,7 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable {
     }
     
     public String getPrefix() {
-        QName qn = getQName();
-		return qn != null ? qn.getLocalName() : null;
+    	return "xmlns";
     }
 
 	public boolean getSpecified() {
@@ -72,6 +71,20 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable {
 
 	public QName getQName() {
 		return (QName)document.namePool.get(document.namespaceCode[nodeNumber]);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.w3c.dom.Node#getLocalName()
+	 */
+	public String getLocalName() {
+		return getQName().getLocalName();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.w3c.dom.Node#getNodeName()
+	 */
+	public String getNodeName() {
+		return getQName().toString();
 	}
 	
 	public String getName() {

@@ -27,11 +27,13 @@ import java.io.InputStream;
 import java.util.HashMap;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
 import org.apache.xml.resolver.tools.CatalogResolver;
+import org.exist.memtree.SAXAdapter;
 import org.exist.storage.IndexSpec;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -40,6 +42,7 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
 
 public class Configuration implements ErrorHandler {
 	
@@ -96,13 +99,26 @@ public class Configuration implements ErrorHandler {
 			}
 			
 			// initialize xml parser
-			DocumentBuilderFactory factory =
-				DocumentBuilderFactory.newInstance();
+			// we use eXist's in-memory DOM implementation to work
+			// around a bug in Xerces
+			SAXParserFactory factory = SAXParserFactory.newInstance();
 			factory.setNamespaceAware(true);
-			builder = factory.newDocumentBuilder();
-			builder.setErrorHandler(this);
 			InputSource src = new InputSource(is);
-			Document doc = builder.parse(src);
+			SAXParser parser = factory.newSAXParser();
+			XMLReader reader = parser.getXMLReader();
+			SAXAdapter adapter = new SAXAdapter();
+			reader.setContentHandler(adapter);
+			reader.parse(src);
+			Document doc = adapter.getDocument();
+			
+//			DocumentBuilderFactory factory =
+//				DocumentBuilderFactory.newInstance();
+//			factory.setNamespaceAware(true);
+//
+//			builder = factory.newDocumentBuilder();
+//			builder.setErrorHandler(this);
+//			InputSource src = new InputSource(is);
+//			Document doc = builder.parse(src);
 			Element root = doc.getDocumentElement();
 			
 			// indexer settings

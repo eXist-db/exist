@@ -23,6 +23,7 @@
 package org.exist.memtree;
 
 import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeListImpl;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.QNameable;
@@ -218,8 +219,7 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * @see org.w3c.dom.Node#getChildNodes()
 	 */
 	public NodeList getChildNodes() {
-		// TODO Auto-generated method stub
-		return null;
+		return new NodeListImpl();
 	}
 
 	/* (non-Javadoc)

@@ -22,6 +22,7 @@ package org.exist.memtree;
 
 import java.util.Arrays;
 
+import org.exist.dom.NodeListImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
@@ -483,9 +484,17 @@ public class DocumentImpl extends NodeImpl implements Document {
      * 
      * @see org.w3c.dom.Document#getElementsByTagName(java.lang.String)
      */
-    public NodeList getElementsByTagName(String arg0) {
-        // TODO Auto-generated method stub
-        return null;
+    public NodeList getElementsByTagName(String name) {
+    	NodeListImpl nl = new NodeListImpl();
+    	int nodeNr = 1;
+    	for(int i = 1; i < size; i++) {
+    		if (nodeKind[i] == Node.ELEMENT_NODE) {
+    			QName qn = (QName) namePool.get(nodeName[i]);
+    			if(qn.toString().equals(name))
+    				nl.add(getNode(i));
+    		}
+    	}
+        return nl;
     }
 
     /*
