@@ -3,6 +3,8 @@ xquery version "1.0";
 declare namespace util="http://exist-db.org/xquery/util";
 declare namespace dc="http://purl.org/dc/elements/1.1/";
 declare namespace fn="http://exist-db.org/local-functions";
+declare namespace rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+declare namespace x="http://exist.sourceforge.net/dc-ext";
 
 (: Map query field parameter to xpath selection :)
 declare function fn:query-field($field as xs:string) as xs:string
