@@ -319,7 +319,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					contents.add(attrib);
 				} else {
 					Element last = (Element) stack.peek();
-					if(last.getAttributeNS(namespace, name) != null)
+					if(last.hasAttributeNS(namespace, name))
 						throw new SAXException("The attribute " + attrib.getNodeName() + " cannot be specified " +
 								"twice on the same element");
 					last.setAttributeNode(attrib);
