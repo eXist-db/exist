@@ -407,6 +407,9 @@ public class RESTServer {
 		return response;
 	}
 	
+	/**
+	 * TODO: pass request and response objects to XQuery.
+	 */
 	protected String search(DBBroker broker, String query, String path,
 			int howmany, int start, Properties outputProperties)
 	throws BadRequestException, PermissionDeniedException {
