@@ -996,6 +996,8 @@ public class XQueryContext {
     }
     
     public void setBaseCollection(String collection) {
+		if (collection == null)
+			baseCollection = "";
         this.baseCollection = collection;
     }
     
