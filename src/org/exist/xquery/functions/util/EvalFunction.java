@@ -102,7 +102,7 @@ public class EvalFunction extends Function {
 		// shares the context of the outer expression
 		XQueryTreeParser astParser = new XQueryTreeParser(context);
 		try {
-			parser.xpath();
+		    parser.xpath();
 			if(parser.foundErrors()) {
 				LOG.debug(parser.getErrorMessage());
 				throw new XPathException("error found while executing expression: " +
@@ -110,22 +110,20 @@ public class EvalFunction extends Function {
 			}
 			AST ast = parser.getAST();
 			
-			PathExpr path = new PathExpr(context);
-			astParser.xpath(ast, path);
-			if(astParser.foundErrors()) {
-				throw new XPathException("error found while executing expression: " +
-					astParser.getErrorMessage(), astParser.getLastException());
-			}
-			Sequence sequence = path.eval(null, null);
-			LOG.debug("found " + sequence.getLength());
-			return sequence;
+				PathExpr path = new PathExpr(context);
+				astParser.xpath(ast, path);
+				if(astParser.foundErrors()) {
+					throw new XPathException("error found while executing expression: " +
+						astParser.getErrorMessage(), astParser.getLastException());
+				}
+			    Sequence sequence = path.eval(null, null);
+			    path.reset();
+			    LOG.debug("found " + sequence.getLength() + " for " + expr);
+			    return sequence;
 		} catch (RecognitionException e) {
 			throw new XPathException("error found while executing expression: " +
 				e.getMessage(), e);
 		} catch (TokenStreamException e) {
-			throw new XPathException("error found while executing expression: " +
-				e.getMessage(), e);
-		} catch (XPathException e) {
 			throw new XPathException("error found while executing expression: " +
 				e.getMessage(), e);
 		} finally {
