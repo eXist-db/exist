@@ -732,7 +732,7 @@ implements Comparable, EntityResolver, Cacheable {
 				if (!oldDoc.getPermissions().validate(broker.getUser(),
 						Permission.UPDATE))
 					throw new PermissionDeniedException(
-							"Document exists and update is not allowed");
+							"Document \""+name+"\" exists and update is not allowed");
 				if (!(getPermissions().validate(broker.getUser(), Permission.UPDATE) ||
 				        getPermissions().validate(broker.getUser(), Permission.WRITE)))
 					throw new PermissionDeniedException(
@@ -742,20 +742,10 @@ implements Comparable, EntityResolver, Cacheable {
 					Permission.WRITE))
 				throw new PermissionDeniedException(
 						"Not allowed to write to collection " + getName());
-			// if an old document exists, save the new document with a temporary
-			// document name
-			if (oldDoc != null) {
-				document = new DocumentImpl(broker, name,	this);
-				document.setCreated(oldDoc.getCreated());
-				document.setLastModified(System.currentTimeMillis());
-				document.setPermissions(oldDoc.getPermissions());
-			} else {
-				document = new DocumentImpl(broker, name,	this);
-				document.setCreated(System.currentTimeMillis());
-				document.getPermissions().setOwner(broker.getUser());
-				document.getPermissions().setGroup(
-						broker.getUser().getPrimaryGroup());
-			}
+			
+			document = new DocumentImpl(broker, name,	this);
+			manageDocumentInformation(broker, name, oldDoc, document );
+			
 			// setup triggers
 			Trigger trigger = null;
 			if (triggersEnabled && !name.equals(COLLECTION_CONFIG_FILE)) {
@@ -889,6 +879,26 @@ implements Comparable, EntityResolver, Cacheable {
 		return document;
 	}
 
+	/** If an old document exists, keep information  about  the document
+	 * @param broker
+	 * @param name
+	 * @param oldDoc
+	 * @param document
+	 */
+	private void manageDocumentInformation(DBBroker broker, String name, DocumentImpl oldDoc,
+			DocumentImpl document ) {
+		if (oldDoc != null) {
+			document.setCreated(oldDoc.getCreated());
+			document.setLastModified(System.currentTimeMillis());
+			document.setPermissions(oldDoc.getPermissions());
+		} else {
+			document.setCreated(System.currentTimeMillis());
+			document.getPermissions().setOwner(broker.getUser());
+			document.getPermissions().setGroup(
+					broker.getUser().getPrimaryGroup());
+		}
+	}
+
 	public DocumentImpl addDocument(DBBroker broker, String name,
 			InputSource source) throws EXistException, LockException,
 			PermissionDeniedException, TriggerException, SAXException {
@@ -931,20 +941,9 @@ implements Comparable, EntityResolver, Cacheable {
 				throw new PermissionDeniedException(
 						"Not allowed to write to collection " + getName());
 			
-			// if an old document exists, save the new document with a temporary
-			// document name
-			if (oldDoc != null) {
-				document = new DocumentImpl(broker, name, this);
-				document.setCreated(oldDoc.getCreated());
-				document.setLastModified(System.currentTimeMillis());
-				document.setPermissions(oldDoc.getPermissions());
-			} else {
-				document = new DocumentImpl(broker, name,	this);
-				document.setCreated(System.currentTimeMillis());
-				document.getPermissions().setOwner(broker.getUser());
-				document.getPermissions().setGroup(
-						broker.getUser().getPrimaryGroup());
-			}
+			document = new DocumentImpl(broker, name,	this);
+			manageDocumentInformation(broker, name, oldDoc, document );
+
 			// setup triggers
 			Trigger trigger = null;
 			if (triggersEnabled && !name.equals(COLLECTION_CONFIG_FILE)) {
@@ -1128,22 +1127,10 @@ implements Comparable, EntityResolver, Cacheable {
 					Permission.WRITE))
 				throw new PermissionDeniedException(
 						"not allowed to write to collection " + getName());
-			// if an old document exists, save the new document with a temporary
-			// document name
-			if (oldDoc != null) {
-				document = new DocumentImpl(broker, name,
-						this);
-				document.setCreated(oldDoc.getCreated());
-				document.setLastModified(System.currentTimeMillis());
-				document.setPermissions(oldDoc.getPermissions());
-			} else {
-				document = new DocumentImpl(broker, name,
-						this);
-				document.setCreated(System.currentTimeMillis());
-				document.getPermissions().setOwner(broker.getUser());
-				document.getPermissions().setGroup(
-						broker.getUser().getPrimaryGroup());
-			}
+			
+			document = new DocumentImpl(broker, name,	this);
+			manageDocumentInformation(broker, name, oldDoc, document );
+			
 			// setup triggers
 			Trigger trigger = null;
 			if (triggersEnabled && !name.equals(COLLECTION_CONFIG_FILE)) {
@@ -1284,22 +1271,33 @@ implements Comparable, EntityResolver, Cacheable {
 						"not allowed to write to collection " + getName());
 
 			blob = new BinaryDocument(broker, name, this);
-			if (oldDoc != null) {
-				blob.setCreated(oldDoc.getCreated());
-				blob.setLastModified(System.currentTimeMillis());
-				blob.setPermissions(oldDoc.getPermissions());
+//			if (oldDoc != null) {
+//				blob.setCreated(oldDoc.getCreated());
+//				blob.setLastModified(System.currentTimeMillis());
+//				blob.setPermissions(oldDoc.getPermissions());
+//
+//				LOG.debug("removing old document " + oldDoc.getFileName());
+//				if (oldDoc instanceof BinaryDocument)
+//					broker.removeBinaryResource((BinaryDocument) oldDoc);
+//				else
+//					broker.removeDocument(getName() + '/' + oldDoc.getFileName());
+//			} else {
+//				blob.setCreated(System.currentTimeMillis());
+//				blob.getPermissions().setOwner(broker.getUser());
+//				blob.getPermissions().setGroup(
+//						broker.getUser().getPrimaryGroup());
+//			}
 
-				LOG.debug("removing old document " + oldDoc.getFileName());
-				if (oldDoc instanceof BinaryDocument)
-					broker.removeBinaryResource((BinaryDocument) oldDoc);
-				else
-					broker.removeDocument(getName() + '/' + oldDoc.getFileName());
-			} else {
-				blob.setCreated(System.currentTimeMillis());
-				blob.getPermissions().setOwner(broker.getUser());
-				blob.getPermissions().setGroup(
-						broker.getUser().getPrimaryGroup());
+			manageDocumentInformation(broker, name, oldDoc, blob );
+			
+			if (oldDoc != null) {
+			LOG.debug("removing old document " + oldDoc.getFileName());
+			if (oldDoc instanceof BinaryDocument)
+				broker.removeBinaryResource((BinaryDocument) oldDoc);
+			else
+				broker.removeDocument(getName() + '/' + oldDoc.getFileName());
 			}
+
 			broker.storeBinaryResource(blob, data);
 			addDocument(broker, blob);
 			broker.addDocument(this, blob);
