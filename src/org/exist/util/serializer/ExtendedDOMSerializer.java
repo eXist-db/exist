@@ -71,7 +71,7 @@ public class ExtendedDOMSerializer extends DOMSerializer {
             SAXSerializer handler = SAXSerializerPool.getInstance().borrowSAXSerializer();
             handler.setReceiver(receiver);
             Serializer serializer = broker.getSerializer();
-            serializer.setContentHandler(handler);
+            serializer.setSAXHandlers(handler, handler);
             try {
                 serializer.setProperties(outputProperties);
             } catch (SAXNotRecognizedException e) {

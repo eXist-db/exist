@@ -30,6 +30,7 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.LockException;
+import org.xml.sax.ext.LexicalHandler;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
@@ -66,6 +67,12 @@ public abstract class AbstractEXistResource implements EXistResource {
 	 * @see org.exist.xmldb.EXistResource#getPermissions()
 	 */
 	public abstract Permission getPermissions() throws XMLDBException;
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.EXistResource#setLexicalHandler(org.xml.sax.ext.LexicalHandler)
+	 */
+	public void setLexicalHandler(LexicalHandler handler) {
+	}
 	
 	protected DocumentImpl openDocument(DBBroker broker, int lockMode) throws XMLDBException {
 	    DocumentImpl document = null;

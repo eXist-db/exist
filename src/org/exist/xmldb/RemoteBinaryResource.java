@@ -32,6 +32,7 @@ import java.util.Vector;
 
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;
+import org.xml.sax.ext.LexicalHandler;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
@@ -184,5 +185,11 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
 	
 	public int getContentLength() throws XMLDBException {
 		return contentLen;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.EXistResource#setLexicalHandler(org.xml.sax.ext.LexicalHandler)
+	 */
+	public void setLexicalHandler(LexicalHandler handler) {
 	}
 }

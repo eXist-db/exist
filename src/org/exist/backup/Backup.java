@@ -193,6 +193,7 @@ public class Backup {
 					contentSerializer = SAXSerializerPool.getInstance().borrowSAXSerializer();
 					contentSerializer.setWriter(writer);
 					contentSerializer.setOutputProperties(defaultOutputProperties);
+					((EXistResource)resource).setLexicalHandler(contentSerializer);
 					((XMLResource)resource).getContentAsSAX(contentSerializer);
 					SAXSerializerPool.getInstance().returnSAXSerializer(contentSerializer);
 					writer.close();

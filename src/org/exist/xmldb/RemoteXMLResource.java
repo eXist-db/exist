@@ -34,6 +34,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
+import org.xml.sax.ext.LexicalHandler;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
@@ -62,6 +63,7 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	protected int contentLen = 0;
 	
 	protected Properties outputProperties = null;
+	protected LexicalHandler lexicalHandler = null;
 	
 	public RemoteXMLResource(RemoteCollection parent, String docId, String id)
 		throws XMLDBException {
@@ -190,6 +192,8 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 				SAXParser sax = saxFactory.newSAXParser();
 				XMLReader reader = sax.getXMLReader();
 				reader.setContentHandler(handler);
+				if(lexicalHandler != null)
+					reader.setProperty("http://xml.org/sax/properties/lexical-handler", lexicalHandler);
 				reader.parse(new InputSource(new StringReader(content)));
 			} catch (SAXException saxe) {
 				saxe.printStackTrace();
@@ -201,7 +205,7 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 			}
 		} else
 			try {
-				cocoonParser.parse(new InputSource(new StringReader(content)), handler);
+				cocoonParser.parse(new InputSource(new StringReader(content)), handler, lexicalHandler);
 			} catch (SAXException saxe) {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
 			} catch (IOException ioe) {
@@ -364,6 +368,10 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 
 	public Permission getPermissions() {
 		return permissions;
+	}
+	
+	public void setLexicalHandler(LexicalHandler handler) {
+		lexicalHandler = handler;
 	}
 	
 	protected void setProperties(Properties properties) {
