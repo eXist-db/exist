@@ -37,8 +37,14 @@ public class IntegerValue extends NumericValue {
 	private static final BigInteger ZERO_BIGINTEGER = new BigInteger("0");
 	private static final BigInteger ONE_BIGINTEGER = new BigInteger("1");
 	private static final BigInteger MINUS_ONE_BIGINTEGER = new BigInteger("1");
-	private static final BigInteger LARGEST_INT  = new BigInteger("4294967295");
+	private static final BigInteger LARGEST_LONG  = new BigInteger("9223372036854775808" );
+	private static final BigInteger SMALLEST_LONG  = LARGEST_LONG.negate();
+	private static final BigInteger LARGEST_INT  = new BigInteger("4294967296");
 	private static final BigInteger SMALLEST_INT  = LARGEST_INT.negate();
+	private static final BigInteger LARGEST_SHORT = new BigInteger("65536");
+	private static final BigInteger SMALLEST_SHORT = LARGEST_SHORT.negate();
+	private static final BigInteger LARGEST_BYTE = new BigInteger("256");
+	private static final BigInteger SMALLEST_BYTE = LARGEST_BYTE.negate();
 	
 	private BigInteger value;
 	// 	private long value;
@@ -61,9 +67,6 @@ public class IntegerValue extends NumericValue {
 		try {
 			value = new BigInteger(stringValue); // Long.parseLong(stringValue);
 		} catch (NumberFormatException e) {
-//			try {
-//				value = (long) Double.parseDouble(stringValue);
-//			} catch (NumberFormatException e1) {
 				throw new XPathException(
 					"failed to convert '" + stringValue + "' to an integer: " + e.getMessage(), e);
 //			}
@@ -75,9 +78,6 @@ public class IntegerValue extends NumericValue {
 		try {
 			value =  new BigInteger(stringValue); // Long.parseLong(stringValue);
 		} catch (NumberFormatException e) {
-//			try {
-//				value = (long) Double.parseDouble(stringValue);
-//			} catch (NumberFormatException e1) {
 				throw new XPathException(
 					"failed to convert '" + stringValue + "' to an integer: " + e.getMessage());
 //			}
@@ -109,7 +109,9 @@ public class IntegerValue extends NumericValue {
 	private boolean checkType(BigInteger value2, int type2) throws XPathException {
 		switch (type) {
 		case Type.LONG :
-			// jmv: add test LARGEST_LONG SMALLEST_LONG  ????
+			// jmv: add test since now long is not the default implementation anymore:
+			return value.compareTo(SMALLEST_LONG) == 1 &&
+				value.compareTo(LARGEST_LONG ) == -1;
 		case Type.INTEGER :
 		case Type.DECIMAL :
 			return true;
@@ -126,20 +128,26 @@ public class IntegerValue extends NumericValue {
 		
 		case Type.INT :
 			return value.compareTo(SMALLEST_INT) == 1 &&
-			value.compareTo(LARGEST_INT) == -1;
-			// >= -4294967295L && value <= 4294967295L;
-//		case Type.SHORT :
-//			return value >= -65535 && value <= 65535;
-//		case Type.BYTE :
-//			return value >= -255 && value <= 255;
-//		case Type.UNSIGNED_LONG :
-//			return value > -1;
-//		case Type.UNSIGNED_INT:
-//			return value > -1 && value <= 4294967295L;
-//		case Type.UNSIGNED_SHORT :
-//			return value > -1 && value <= 65535;
-//		case Type.UNSIGNED_BYTE :
-//			return value > -1 && value <= 255;
+				value.compareTo(LARGEST_INT) == -1;
+		case Type.SHORT :
+			return value.compareTo(SMALLEST_SHORT) == 1 &&
+				value.compareTo(LARGEST_SHORT) == -1;
+		case Type.BYTE :
+			return value.compareTo(SMALLEST_BYTE) == 1 &&
+					value.compareTo(LARGEST_BYTE) == -1;
+		
+		case Type.UNSIGNED_LONG :
+			return value.compareTo(MINUS_ONE_BIGINTEGER) == 1 &&
+				value.compareTo(LARGEST_LONG ) == -1;
+		case Type.UNSIGNED_INT:
+			return value.compareTo(MINUS_ONE_BIGINTEGER) == 1 &&
+				value.compareTo(LARGEST_INT) == -1;
+		case Type.UNSIGNED_SHORT :
+			return value.compareTo(MINUS_ONE_BIGINTEGER) == 1 &&
+				value.compareTo(LARGEST_SHORT) == -1;
+		case Type.UNSIGNED_BYTE :
+			return value.compareTo(MINUS_ONE_BIGINTEGER) == 1 &&
+				value.compareTo(LARGEST_BYTE) == -1;
 	}
 	throw new XPathException("Unknown type: " + Type.getTypeName(type));
 	}
