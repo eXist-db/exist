@@ -183,7 +183,7 @@ public class NativeBroker extends DBBroker {
 				LOG.debug(
 					"elements index buffer size: " + indexBuffers + "; " + dataBuffers);
 				elementsDb =
-					new BFile(
+					new BFile(pool,
 						new File(dataDir + pathSep + "elements.dbx"),
 						indexBuffers,
 						dataBuffers);
@@ -207,10 +207,8 @@ public class NativeBroker extends DBBroker {
 				}
 				LOG.debug("page buffer size = " + indexBuffers + "; " + dataBuffers);
 				domDb =
-					new DOMFile(
-						new File(dataDir + pathSep + "dom.dbx"),
-						indexBuffers,
-						dataBuffers);
+					new DOMFile(pool, new File(dataDir + pathSep + "dom.dbx"),
+						indexBuffers, dataBuffers);
 				if (!domDb.exists()) {
 					LOG.info("creating dom.dbx");
 					domDb.create();
@@ -238,7 +236,7 @@ public class NativeBroker extends DBBroker {
 						+ "; "
 						+ dataBuffers);
 				collectionsDb =
-					new CollectionStore(
+					new CollectionStore(pool,
 						new File(dataDir + pathSep + "collections.dbx"),
 						indexBuffers,
 						dataBuffers);

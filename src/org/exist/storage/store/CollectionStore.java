@@ -8,6 +8,7 @@ package org.exist.storage.store;
 import java.io.File;
 
 import org.exist.collections.CollectionCache;
+import org.exist.storage.BrokerPool;
 
 public class CollectionStore extends BFile {
 
@@ -15,39 +16,33 @@ public class CollectionStore extends BFile {
 	public static final int COLLECTION_BUFFER_SIZE = 128;
 	
 	private CollectionCache collectionsCache = new CollectionCache(COLLECTION_BUFFER_SIZE);
-	
-	/**
-	 * 
-	 */
-	public CollectionStore() {
-		super();
-	}
-
-	/**
-	 * @param file
-	 */
-	public CollectionStore(File file) {
-		super(file);
-	}
-
-	/**
-	 * @param file
-	 * @param buffers
-	 */
-	public CollectionStore(File file, int buffers) {
-		super(file, buffers);
-	}
 
 	/**
 	 * @param file
 	 * @param btreeBuffers
 	 * @param dataBuffers
 	 */
-	public CollectionStore(File file, int btreeBuffers, int dataBuffers) {
-		super(file, btreeBuffers, dataBuffers);
+	public CollectionStore(BrokerPool pool, File file, int btreeBuffers, int dataBuffers) {
+		super(pool, file, btreeBuffers, dataBuffers);
 	}
 
 	public CollectionCache getCollectionCache() {
 		return collectionsCache;
 	}
+	
+	
+    /* (non-Javadoc)
+     * @see org.dbxml.core.filer.BTree#getBTreeSyncPeriod()
+     */
+    protected long getBTreeSyncPeriod() {
+        return 1000;
+    }
+    
+    
+    /* (non-Javadoc)
+     * @see org.exist.storage.store.BFile#getDataSyncPeriod()
+     */
+    protected long getDataSyncPeriod() {
+        return 1000;
+    }
 }

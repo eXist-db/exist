@@ -36,6 +36,7 @@ import org.dbxml.core.filer.BTree;
 import org.dbxml.core.filer.BTreeCallback;
 import org.dbxml.core.filer.BTreeException;
 import org.dbxml.core.indexer.IndexQuery;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
 import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
@@ -79,6 +80,8 @@ public class BFile extends BTree {
 
     public final static short FILE_FORMAT_VERSION_ID = 3;
 
+    public final static long DATA_SYNC_PERIOD = 15000;
+    
     // minimum free space a page should have to be
     // considered for reusing
     public final static int PAGE_MIN_FREE = 64;
@@ -102,37 +105,28 @@ public class BFile extends BTree {
 
     public int fixedKeyLen = -1;
 
-    public BFile() {
-        super();
-        fileHeader = (BFileHeader) getFileHeader();
-        minFree = PAGE_MIN_FREE;
-    }
-
-    public BFile(File file) {
-        super(file);
-        fileHeader = (BFileHeader) getFileHeader();
-        dataCache = new LRDCache(256);
-        dataCache.setFileName(getFile().getName());
-        minFree = PAGE_MIN_FREE;
-        lock = new ReentrantReadWriteLock(file.getName());
-    }
-
-    public BFile(File file, int buffers) {
-        super(file, buffers);
-        fileHeader = (BFileHeader) getFileHeader();
-        dataCache = new LRDCache(buffers);
-        dataCache.setFileName(getFile().getName());
-        minFree = PAGE_MIN_FREE;
-        lock = new ReentrantReadWriteLock(file.getName());
-    }
-
-    public BFile(File file, int btreeBuffers, int dataBuffers) {
-        super(file, btreeBuffers);
+    public BFile(BrokerPool pool, File file, int btreeBuffers, int dataBuffers) {
+        super(pool, file, btreeBuffers);
         fileHeader = (BFileHeader) getFileHeader();
         dataCache = new LRDCache(dataBuffers);
         dataCache.setFileName(getFile().getName());
         minFree = PAGE_MIN_FREE;
         lock = new ReentrantReadWriteLock(file.getName());
+        
+        Runnable syncAction = new Runnable() {
+            public void run() {
+                try {
+//                    LOG.debug("Triggering cache sync for " + getFile().getName());
+                    lock.acquire(Lock.WRITE_LOCK);
+                    dataCache.flush();
+                } catch (LockException e) {
+                    LOG.warn("Failed to acquire lock on dom.dbx");
+                } finally {
+                    lock.release();
+                }
+            }
+        };
+        pool.getSyncDaemon().executePeriodically(getDataSyncPeriod(), syncAction, false);
     }
 
     /**
@@ -151,6 +145,10 @@ public class BFile extends BTree {
         return lock;
     }
 
+    protected long getDataSyncPeriod() {
+        return DATA_SYNC_PERIOD;
+    }
+    
     /**
      * Append the given data fragment to the value associated
      * with the key. A new entry is created if the key does not
@@ -238,7 +236,7 @@ public class BFile extends BTree {
     }
 
     public boolean create() throws DBException {
-        if (super.create((short) fixedKeyLen)) {
+        if (super.create((short) fixedKeyLen, lock)) {
             fileHeader.setLastDataPage(-1);
             return true;
         } else
@@ -539,7 +537,7 @@ public class BFile extends BTree {
     }
 
     public boolean open() throws DBException {
-        return super.open(FILE_FORMAT_VERSION_ID);
+        return super.open(FILE_FORMAT_VERSION_ID, lock);
     }
 
     public long put(Value key, byte[] data, boolean overwrite)
@@ -1188,15 +1186,17 @@ public class BFile extends BTree {
          * 
          * @see org.exist.storage.cache.Cacheable#release()
          */
-        public void sync() {
+        public boolean sync() {
             if (isDirty()) {
                 try {
                     write();
+                    return true;
                 } catch (IOException e) {
                     LOG.error("IO exception occurred while saving page "
                             + getPageNum());
                 }
             }
+            return false;
         }
 
         public boolean isDirty() {

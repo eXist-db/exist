@@ -245,7 +245,7 @@ public class SyncDaemon {
 		boolean startNow) {
 		if (period <= 0)
 			return null;
-		LOG.debug("adding command for periodic execution");
+//		LOG.debug("adding command for periodic execution");
 		long firstTime = System.currentTimeMillis();
 		if (!startNow)
 			firstTime += period;

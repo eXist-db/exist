@@ -40,6 +40,7 @@ import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeIndexListener;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.XMLUtil;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.Signatures;
@@ -48,6 +49,7 @@ import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.ClockCache;
 import org.exist.util.ByteConversion;
 import org.exist.util.Lock;
+import org.exist.util.LockException;
 import org.exist.util.Lockable;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.ReentrantReadWriteLock;
@@ -100,11 +102,11 @@ public class DOMFile extends BTree implements Lockable {
 
     // page types
     public final static byte LOB = 21;
-
     public final static byte RECORD = 20;
+    public final static short OVERFLOW = 0;
 
-    protected final static short OVERFLOW = 0;
-
+    public final static long DATA_SYNC_PERIOD = 1000;
+    
     private final Cache dataCache;
 
     private DOMFileHeader fileHeader;
@@ -118,28 +120,33 @@ public class DOMFile extends BTree implements Lockable {
 
     private DocumentImpl currentDocument = null;
     
-    public DOMFile(int buffers, int dataBuffers) {
-        super(buffers);
+    public DOMFile(BrokerPool pool, int buffers, int dataBuffers) {
+        super(pool, buffers);
         lock = new ReentrantReadWriteLock("dom.dbx");
         fileHeader = (DOMFileHeader) getFileHeader();
         fileHeader.setPageCount(0);
         fileHeader.setTotalCount(0);
         dataCache = new ClockCache(dataBuffers);
         dataCache.setFileName("dom.dbx");
+        
+        Runnable syncAction = new Runnable() {
+            public void run() {
+                try {
+//                    LOG.debug("Triggering cache sync");
+                    lock.acquire(Lock.WRITE_LOCK);
+                    dataCache.flush();
+                } catch (LockException e) {
+                    LOG.warn("Failed to acquire lock on dom.dbx");
+                } finally {
+                    lock.release();
+                }
+            }
+        };
+        pool.getSyncDaemon().executePeriodically(DATA_SYNC_PERIOD, syncAction, false);
     }
 
-    public DOMFile(File file) {
-        this(256, 256);
-        setFile(file);
-    }
-
-    public DOMFile(File file, int buffers) {
-        this(buffers, 256);
-        setFile(file);
-    }
-
-    public DOMFile(File file, int buffers, int dataBuffers) {
-        this(buffers, dataBuffers);
+    public DOMFile(BrokerPool pool, File file, int buffers, int dataBuffers) {
+        this(pool, buffers, dataBuffers);
         setFile(file);
     }
 
@@ -623,7 +630,7 @@ public class DOMFile extends BTree implements Lockable {
     }
 
     public boolean create() throws DBException {
-        if (super.create((short) 12))
+        if (super.create((short) 12, lock))
             return true;
         else
             return false;
@@ -957,7 +964,7 @@ public class DOMFile extends BTree implements Lockable {
      *                        Description of the Exception
      */
     public boolean open() throws DBException {
-        if (super.open(FILE_FORMAT_VERSION_ID))
+        if (super.open(FILE_FORMAT_VERSION_ID, lock))
             return true;
         else
             return false;
@@ -1704,13 +1711,12 @@ public class DOMFile extends BTree implements Lockable {
             }
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.exist.storage.cache.Cacheable#release()
-         */
-        public void sync() {
-            if (isDirty()) write();
+        public boolean sync() {
+            if (isDirty()) {
+                write();
+                return true;
+            }
+            return false;
         }
 
         /*
