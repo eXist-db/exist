@@ -45,7 +45,7 @@ public class ClockCache implements Cache {
 	private int hits = 0, fails = 0;
 	
 	private long lastSync = System.currentTimeMillis();
-	private long syncPeriod = 150000;
+	private long syncPeriod = 15000;
 	
 	public ClockCache(int size) {
 		this.size = size;
