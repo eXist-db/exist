@@ -32,6 +32,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.avalon.framework.configuration.Configurable;
 import org.apache.avalon.framework.configuration.Configuration;
 import org.apache.avalon.framework.configuration.ConfigurationException;
+import org.apache.avalon.framework.parameters.ParameterException;
+import org.apache.avalon.framework.parameters.Parameterizable;
 import org.apache.avalon.framework.parameters.Parameters;
 import org.apache.cocoon.ProcessingException;
 import org.apache.cocoon.environment.Context;
@@ -61,7 +63,7 @@ import org.xmldb.api.modules.XMLResource;
  * A generator for Cocoon which reads an XQuery script, executes it and passes
  * the results into the Cocoon pipeline.
  * 
- * The following optional attributes are accepted on the component declaration as default settings:
+ * The following optional attributes are accepted on the component declaration as default eXist settings:
  * <li><tt>collection</tt>: identifies the XML:DB root collection used to process
  * the request</li>
  * <li><tt>user</tt></li>
@@ -70,7 +72,8 @@ import org.xmldb.api.modules.XMLResource;
  * HTTP session should be created upon the first invocation.</li>
  * <li><tt>expand-xincludes</tt></li>
  * 
- * See below an example declaration of the XQueryGenerator component with default values:
+ * The component also accept default parameters that will be declared as implicit variables in the XQuery.
+ * See below an example declaration of the XQueryGenerator component with default eXist settings, and an extra user-defined parameter:
  * 
  * <map:generator logger="xmldb" name="xquery"
  * 		collection="xmldb:exist:///db/"
@@ -78,9 +81,11 @@ import org.xmldb.api.modules.XMLResource;
  * 		password="guest"
  *		create-session="false"
  * 		expand-xincludes="false"
- *		src="org.exist.cocoon.XQueryGenerator"/>
+ *		src="org.exist.cocoon.XQueryGenerator">
+ *   <parameter name="myProjectURI" value="/db/myproject"/>
+ * </map:generator>
  * 
- * These settings can be overriden on a per-pipeline basis with sitemap parameters, see below with default values:
+ * These settings and parameters can be overriden on a per-pipeline basis with sitemap parameters, see below with default values and the extra user-defined parameter:
  * 
  * <pre>
  *  &lt;map:parameter name=&quot;collection&quot; value=&quot;xmldb:exist:///db&quot;/&gt;
@@ -88,11 +93,15 @@ import org.xmldb.api.modules.XMLResource;
  *  &lt;map:parameter name=&quot;password&quot; value=&quot;guest&quot;/&gt;
  *  &lt;map:parameter name=&quot;create-session&quot; value=&quot;false&quot;/&gt;
  *  &lt;map:parameter name=&quot;expand-xincludes&quot; value=&quot;false&quot;/&gt;
+ *  &lt;map:parameter name=&quot;myProjectURI&quot; value=&quot;/db/myproject&quot;/&gt;
  * </pre>
  * 
+ * The last sitemap parameter overrides the value of the XQuery variable defined in the component parameters,
+ * whereas others override the default eXist settings defined on the component attributes.
+ *
  * @author wolf
  */
-public class XQueryGenerator extends ServiceableGenerator implements Configurable {
+public class XQueryGenerator extends ServiceableGenerator implements Configurable, Parameterizable {
 	public final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 
 	private Source inputSource = null;
@@ -141,7 +150,6 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 				this.defaultCreateSession);
 		this.expandXIncludes = parameters.getParameterAsBoolean(
 				EXPAND_XINCLUDES, this.defaultExpandXIncludes);
-		this.optionalParameters = new HashMap();
 		String paramNames[] = parameters.getNames();
 		for (int i = 0; i < paramNames.length; i++) {
 			String param = paramNames[i];
@@ -271,5 +279,17 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 		this.defaultExpandXIncludes = config.getAttributeAsBoolean(EXPAND_XINCLUDES, this.defaultExpandXIncludes);
 		this.defaultPassword = config.getAttribute(PASSWORD, this.defaultPassword);
 		this.defaultUser = config.getAttribute(USER, this.defaultUser);
+	}
+
+	/**
+	 * @see org.apache.avalon.framework.parameters.Parameterizable#parameterize(org.apache.avalon.framework.parameters.Parameters)
+	 */
+	public void parameterize(Parameters params) throws ParameterException {
+		this.optionalParameters = new HashMap();
+		String paramNames[] = params.getNames();
+		for (int i = 0; i < paramNames.length; i++) {
+			String param = paramNames[i];
+			optionalParameters.put(param, params.getParameter(param));
+		}
 	}
 }
