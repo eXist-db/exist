@@ -48,11 +48,21 @@ public class ForExpr extends BindingExpression {
 		super(context);
 	}
 
+	/**
+	 * A "for" expression may have an optional positional variable whose
+	 * QName can be set via this method.
+	 * 
+	 * @param var
+	 */
 	public void setPositionalVariable(String var) {
 		positionalVariable = var;
 	}
 	
-	/* (non-Javadoc)
+	/**
+	 * This implementation tries to process the "where" clause in advance, i.e. in one single
+	 * step. This is possible if the input sequence is a node set and the where expression
+	 * has no dependencies on other variables than those declared in this "for" statement.
+	 * 
 	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(
@@ -109,7 +119,7 @@ public class ForExpr extends BindingExpression {
 		
 		// If possible, apply the where expression ahead of the iteration
 		if(fastExec) {
-//			LOG.debug("fast evaluation mode");
+			LOG.debug("fast evaluation mode");
 			in = applyWhereExpression(in);
 		}
 		

@@ -54,6 +54,8 @@ public class LocationStep extends Step {
 	// Fields for caching the last result
 	protected CachedResult cached = null;
 	
+	protected int parentDeps = -1;
+	
 	public LocationStep(XQueryContext context, int axis) {
 		super(context, axis);
 	}
@@ -71,6 +73,30 @@ public class LocationStep extends Step {
 			deps |= ((Predicate)i.next()).getDependencies();
 		}
 		return deps;
+	}
+	
+	/**
+	 * If the current path expression depends on local variables
+	 * from a for expression, we can optimize by preloading 
+	 * entire element or attribute sets.
+	 *  
+	 * @return
+	 */
+	protected boolean preloadNodeSets() {
+		return (getParentDependencies() & Dependency.LOCAL_VARS) 
+			== Dependency.LOCAL_VARS;
+	}
+	
+	protected int getParentDependencies() {
+		if(parentDeps < 0) {
+			if(getParent() != null)
+				parentDeps = getParent().getDependencies();
+			else {
+				LOG.warn("Parent for expression " + pprint() + " unknown");
+				parentDeps = Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+			}
+		}
+		return parentDeps;
 	}
 	
 	protected Sequence applyPredicate(
@@ -224,14 +250,24 @@ public class LocationStep extends Step {
 			VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextSet);
 			vset.setInPredicate(inPredicate);
 			return vset;
+		} else if(preloadNodeSets()) {
+			DocumentSet docs = getDocumentSet(contextSet);
+			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
+                currentDocs = docs;
+                    currentSet =
+                        (NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
+                            ElementValue.ELEMENT,
+                            currentDocs,
+                            test.getName(), null);
+                LOG.debug("Retrieved elements for " + pprint());
+            }
+            return currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);
 		} else {
-		    NodeSet result = null;
 		    DocumentSet docs = getDocumentSet(contextSet);
 		    NodeSelector selector = new ChildSelector(contextSet, inPredicate);
-		    result = context.getBroker().getElementIndex().findElementsByTagName(
+		    return context.getBroker().getElementIndex().findElementsByTagName(
 		    		ElementValue.ELEMENT, docs, test.getName(), selector
 		    );
-			return result;
 		}
 	}
 
@@ -403,9 +439,8 @@ public class LocationStep extends Step {
 	 */
 	public void resetState() {
 		super.resetState();
-//		System.out.println(pprint() + ": reset!!!!");
 		currentSet = null;
 		currentDocs = null;
 		cached = null;
-	}
+	} 
 }

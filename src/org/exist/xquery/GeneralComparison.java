@@ -114,12 +114,14 @@ public class GeneralComparison extends BinaryOp {
 	 */
 	public int getDependencies() {
 		int leftDeps = getLeft().getDependencies();
+		int rightDeps = getRight().getDependencies();
 		// left expression returns node set
 		if (Type.subTypeOf(getLeft().returnsType(), Type.NODE)
 			//	and has no dependency on global vars
-			&& (leftDeps & Dependency.GLOBAL_VARS) == 0
+			&& (leftDeps & Dependency.LOCAL_VARS) == 0
 			//	and does not depend on the context item
-			&& (leftDeps & Dependency.CONTEXT_ITEM) == 0)
+			&& (leftDeps & Dependency.CONTEXT_ITEM) == 0
+			&& (rightDeps & Dependency.LOCAL_VARS) == 0)
 		{
 			return Dependency.CONTEXT_SET;
 		} else {
