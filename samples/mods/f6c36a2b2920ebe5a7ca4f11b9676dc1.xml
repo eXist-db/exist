@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3">
+    <titleInfo>
+        <title>The Project on Comparative European Electoral History: 1830-1995. A computerised data handbook</title>
+    </titleInfo>
+    <abstract>This project is aimed at collecting electoral data for all European countries both in a historical and a regional perspective. Data were made machine readable from the beginning of national elections in the 19th century until the present in a disaggregated form down to the level of electoral districts. The data will we published as an electronic data handbook, comprising full documentation and introductory chapters.</abstract>
+    <name>
+        <namePart>Caramani, Daniele</namePart>
+    </name>
+    <location>
+        <url>http://www.mzes.uni-mannheim.de/eurodata/newsletter/no4/feature.html</url>
+    </location>
+    <originInfo>
+        <publisher>EURODATA Research Archive. Mannheim Centre for European Social Research (MZES)</publisher>
+        <dateCreated encoding="w3cdtf">1996</dateCreated>
+    </originInfo>
+    <physicalDescription>
+        <internetMediaType>text/html</internetMediaType>
+    </physicalDescription>
+    <relatedItem type="otherFormat">
+        <titleInfo>
+            <title>EURODATA Newsletter No.4</title>
+        </titleInfo>
+    </relatedItem>
+    <classification authority="IZSOZ">10504</classification>
+    <subject authority="IZSOZ">
+        <topic>Datenaufbereitung</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Datenbank</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Europa</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Wahlergebnis</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>politische Geschichte</topic>
+    </subject>
+</mods>

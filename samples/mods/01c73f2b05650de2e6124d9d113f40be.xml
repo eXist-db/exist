@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3">
+    <titleInfo>
+        <title>Who is Self-Employed in France, the United Kingdom and
+            West Germany?</title>
+        <title type="alternative">Patterns of Non-Agricultural Self-Employment</title>
+    </titleInfo>
+    <abstract>This paper investigates the patterns of male
+            non-agricultural self-employment and how they have changed
+            over time in France, Germany and the UK. It is arguedthatthe
+            development of self-employment in the three
+            countries is based on specific institutional frameworks
+            resulting in different opportunities for the
+            self-employed.Thus, weexpect that the dynamics of growth,
+            the sectors of             activity and the
+            socio-demographic characteristics of the
+            self-employed differ between the countries.
+            Theempiricalanalyses are based on the national Labour Force
+            Surveys of 1984 and 1994 (Germany 1982 and 1995). Our
+            findings indicate that educational requirements
+            differfundamentally betweenthe three countries and along
+            industrial branches. Further, we could observe some
+            country-specific developments in some sectors of activitybut
+            also a remarkable number of commongeneral patterns in
+            the development of self-employment.</abstract>
+    <name>
+        <namePart>Lohmann, Henning</namePart>
+    </name>
+    <name>
+        <namePart>Luber, Silvia</namePart>
+    </name>
+    <name>
+        <namePart>Müller, Walter</namePart>
+    </name>
+    <location>
+        <url>http://www.mzes.uni-mannheim.de/publications/wp/wp-11.pdf</url>
+    </location>
+    <originInfo>
+        <publisher>Mannheimer Zentrum für Europäische Sozialforschung (MZES)</publisher>
+        <dateCreated encoding="w3cdtf">1999</dateCreated>
+        <dateModified encoding="w3cdtf">2003-06-13</dateModified>
+    </originInfo>
+    <physicalDescription>
+        <internetMediaType>application/pdf</internetMediaType>
+    </physicalDescription>
+    <relatedItem type="otherFormat">
+        <titleInfo>
+            <title>Arbeitspapiere / Mannheimer Zentrum für
+            Europäische Sozialforschung, Nr. 11, ISSN 1437-8574</title>
+        </titleInfo>
+    </relatedItem>
+    <classification authority="IZSOZ">20101</classification>
+    <classification authority="IZSOZ">20102</classification>
+    <classification authority="IZSOZ">10205</classification>
+    <subject authority="IZSOZ">
+        <topic>Arbeitsmarkt</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Bundesrepublik Deutschland</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Frankreich</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Großbritannien</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Selbständiger</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>berufliche Selbständigkeit</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>freier Beruf</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>institutionelle Faktoren</topic>
+    </subject>
+</mods>

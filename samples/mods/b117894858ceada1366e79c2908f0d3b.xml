@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3">
+    <titleInfo>
+        <title>Comparative Electoral Systems: The German Experience</title>
+        <title type="alternative">Constitution of Kenya Review Commission: Seminar on Electoral Systems and Political Parties. March 19-20, 2002, Serena Hotel Nairobi</title>
+    </titleInfo>
+    <abstract>The mixed-member proportional system (MMPS), first introduced in the Federal Republic of Germany in 1949, is currently receiving increasing attention in countries in which electoral reforms are being considered. Are electoral experts and politicians, especially in Southern countries, right to consider the MMPS a model for electoral reform? And if so, which lessons can be drawn from the German experience for transferring the MMPS to other countries? In this paper, these questions are being addressed at both a theoretical and at an emprical level. At first, the MMPS will be situated within a broader typology of electoral systems. How the MMPS has worked in the context of German politics is discussed in a second section; the conclusion contains some recommendations for reform debates, especially the Kenyan context.</abstract>
+    <name>
+        <namePart>Hartmann, Christof</namePart>
+    </name>
+    <location>
+        <url>http://homepage.ruhr-uni-bochum.de/christof.hartmann/downloads/2002-Kenia-Wahlen.PDF</url>
+    </location>
+    <originInfo>
+        <dateCreated encoding="w3cdtf">2002-03-19</dateCreated>
+    </originInfo>
+    <physicalDescription>
+        <internetMediaType>application/pdf</internetMediaType>
+    </physicalDescription>
+    <classification authority="IZSOZ">10503</classification>
+    <classification authority="IZSOZ">10505</classification>
+    <classification authority="IZSOZ">10504</classification>
+    <subject authority="IZSOZ">
+        <topic>Bundesrepublik Deutschland</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Kenia</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Systemvergleich</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Wahlsystem</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>politische Reform</topic>
+    </subject>
+</mods>

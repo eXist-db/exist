@@ -50,6 +50,8 @@ declare function setup:importLocal() as element()+ {
                     ( "xinclude/*.xsl", "xinclude/*.xml"), "text/xml"),
                 setup:create-collection("/db", "library"),
                 setup:store-files("/db/library", $home, "*.rdf", "text/xml"),
+                setup:create-collection("/db", "mods"),
+                setup:store-files("/db/mods", $home, "mods/*.xml", "text/xml"),
                 setup:store-files("/db", $home, "*.xml", "text/xml")
             }
             </ul>
@@ -134,6 +136,6 @@ declare function setup:page2() as element() {
 };
 
 declare function setup:page3() as element() {
-    <p>Files have been loaded. You can now go back to the
+    <p>Files have been loaded. You can now go to the
     <a href="../examples.xml">examples page</a>.</p>
 };

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3">
+    <titleInfo>
+        <title>The strengths and weaknesses of existing electoral models as instruments for managing ethnic conflict</title>
+        <title type="alternative">Paper for the Centre of Conflict Resolution Seminar "Constitutionalism as a Primary Tool for Managing Ethnic Conflict in Africa", Cape Town, 24-26 May 2000</title>
+    </titleInfo>
+    <abstract>The paper argues that the choice of electoral systems has an impact on the change or the stability of inter-ethnic relations, and that electoral models may actually become an instrument for managing ethnic conflict. Cleverly designed electoral systems are, however, not considered being the only or most  powerful of such instruments. For example, the decision for a more centralized or a more federal state or the  introduction of some meaningful local government may be of more relevance to ethnic conflict management.  The paper is divided in five main parts: Key terms and elements of electoral systems are introduced, followed by a typology of the most important parliamentary electoral systems. This general overview will cover a range of states with most empirical examples drawn from African contexts. The third part will briefly discuss the multiple criteria that might be used to evaluate electoral systems, followed by an assessment of the various electoral systems and their relationsship to conflict management. The last section deals with the generally neglected topic of different presidential electoral formulas and its impact on ethnic relationships.</abstract>
+    <name>
+        <namePart>Hartmann, Christof</namePart>
+    </name>
+    <location>
+        <url>http://homepage.ruhr-uni-bochum.de/christof.hartmann/downloads/2000-Kapstadt.PDF</url>
+    </location>
+    <originInfo>
+        <dateCreated encoding="w3cdtf">2000-05-24</dateCreated>
+    </originInfo>
+    <physicalDescription>
+        <internetMediaType>application/pdf</internetMediaType>
+    </physicalDescription>
+    <classification authority="IZSOZ">10507</classification>
+    <classification authority="IZSOZ">10503</classification>
+    <classification authority="IZSOZ">10504</classification>
+    <subject authority="IZSOZ">
+        <topic>Afrika südlich der Sahara</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Konfliktlösung</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Systemvergleich</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Wahlsystem</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>ethnischer Konflikt</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>politisches System</topic>
+    </subject>
+</mods>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3">
+    <titleInfo>
+        <title>Renaissance of the German Carmakers during the 1990s:
+            Successful Japanization or the Development of a Genuine
+            Business Model?</title>
+    </titleInfo>
+    <abstract>This chapter aims at explaining the renaissance of
+            the three German carmakers within the context of the
+            international automobile industry. The main argument is that
+            this revival can only be understood by referring to some
+            common elements of the business models in place at all three
+            companies. These business models include four basic pillars,
+            each of which answers a basic question at the core of the
+            firms  activities: (1) the corporate structure and profit
+            strategies, (2) product structure and market strategies, (3)
+            the production system and (4) the labour relations regime.
+            A business model could thus be understood as the specific
+            configuration of structures and strategies in these four
+            activity fields and transformation spaces. This
+            configuration does not represent a deterministic and fixed
+            system but a sort of loosely coupled 'regime of affinity'.</abstract>
+    <name>
+        <namePart>Pries, Ludger</namePart>
+    </name>
+    <location>
+        <url>http://www.ruhr-uni-bochum.de/soaps/download/publ-2003_lp_renaissancegercarmakers.pdf</url>
+    </location>
+    <originInfo>
+        <dateCreated encoding="w3cdtf">2003</dateCreated>
+    </originInfo>
+    <physicalDescription>
+        <internetMediaType>application/pdf</internetMediaType>
+    </physicalDescription>
+    <relatedItem type="otherFormat">
+        <titleInfo>
+            <title>Faust, Michael; Voskamp, Ulrich; Wittke, Volker
+            (eds.): European Industrial Restructuring in a Global
+            Economy: Fragmentation and Relocation of Value Chains. SOFI
+            Berichte, Göttingen: SOFI</title>
+        </titleInfo>
+    </relatedItem>
+    <subject>
+        <topic>Geschäftsmodell</topic>
+    </subject>
+    <subject>
+        <topic>Volkswagen</topic>
+    </subject>
+    <classification authority="IZSOZ">10204</classification>
+    <classification authority="IZSOZ">10207</classification>
+    <subject authority="IZSOZ">
+        <topic>Kraftfahrzeugindustrie</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Unternehmenspolitik</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>internationaler Vergleich</topic>
+    </subject>
+</mods>

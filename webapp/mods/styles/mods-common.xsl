@@ -7,7 +7,7 @@
     
     <xsl:template match="m:titleInfo">
         <p class="citation">
-            <xsl:apply-templates select="m:title"/>
+            <xsl:apply-templates select="m:title|m:subTitle"/>
         </p>
     </xsl:template>
     
@@ -18,6 +18,13 @@
     </xsl:template>
     
     <xsl:template match="m:title[@type='alternative']">
+        <br/>
+        <span class="alternative">
+            <xsl:value-of select="."/>
+        </span>
+    </xsl:template>
+    
+    <xsl:template match="m:subTitle">
         <br/>
         <span class="alternative">
             <xsl:value-of select="."/>
@@ -39,7 +46,7 @@
         </xsl:if>
         <xsl:choose>
             <xsl:when test="m:namePart[not(@type)]">
-                <a href="?field=au&amp;query={java:java.net.URLEncoder.encode(m:namePart[not(@type)], 'UTF-8')}&amp;mode1=near&amp;max={ancestor::items/@max}">
+                <a href="?field1=au&amp;term1={java:java.net.URLEncoder.encode(m:namePart[not(@type)], 'UTF-8')}&amp;mode1=near&amp;max={ancestor::items/@max}">
                     <xsl:apply-templates select="m:namePart[not(@type)]"/>
                 </a>
             </xsl:when>
@@ -47,7 +54,7 @@
                 <xsl:variable name="name">
                     <xsl:value-of select="m:namePart[@type='family']"/>, <xsl:value-of select="m:namePart[@type='given']"/>
                 </xsl:variable>
-                <a href="?field=au&amp;query={java:java.net.URLEncoder.encode($name, 'UTF-8')}&amp;mode1=near&amp;max={ancestor::items/@max}">
+                <a href="?field1=au&amp;term1={java:java.net.URLEncoder.encode($name, 'UTF-8')}&amp;mode1=near&amp;max={ancestor::items/@max}">
                     <xsl:apply-templates select="m:namePart[@type='family']"/>
                     <xsl:text>, </xsl:text>
                     <xsl:apply-templates select="m:namePart[@type='given']"/>
@@ -67,7 +74,7 @@
         <xsl:if test="position() != 1">
             <xsl:text>; </xsl:text>
         </xsl:if>
-        <a href="?field=su&amp;query={java:java.net.URLEncoder.encode(text(), 'UTF-8')}&amp;max={ancestor::items/@max}">
+        <a href="?field1=su&amp;term1={java:java.net.URLEncoder.encode(text(), 'UTF-8')}&amp;max={ancestor::items/@max}">
             <xsl:value-of select="."/>
         </a>
     </xsl:template>
@@ -85,6 +92,13 @@
     <xsl:template match="m:dateCreated">
         <p class="keywords">
             <span class="heading">Created: </span>
+            <xsl:value-of select="text()"/>
+        </p>
+    </xsl:template>
+    
+    <xsl:template match="m:dateModified">
+        <p class="keywords">
+            <span class="heading">Last modified: </span>
             <xsl:value-of select="text()"/>
         </p>
     </xsl:template>
