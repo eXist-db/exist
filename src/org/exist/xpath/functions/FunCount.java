@@ -37,7 +37,8 @@ public class FunCount extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("count", BUILTIN_FUNCTION_NS),
-			new SequenceType[] { new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE) },
+			"Returns the number of items in the argument sequence.",
+			new SequenceType[] { new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE) },
 			new SequenceType(Type.INTEGER, Cardinality.ONE)
 		);
 			
