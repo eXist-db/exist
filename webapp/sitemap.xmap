@@ -36,7 +36,7 @@
             <map:transformer name="xinclude" src="org.apache.cocoon.transformation.XIncludeTransformer"/>
             <map:transformer name="cinclude" src="org.apache.cocoon.transformation.CIncludeTransformer"/>
             <map:transformer name="encodeURL" src="org.apache.cocoon.transformation.EncodeURLTransformer"/>
-            <map:transformer name="xmldb" src="org.exist.cocoon.XMLDBTransformer"/>
+   	  		<map:transformer name="xmldb" src="org.exist.cocoon.XMLDBTransformer"/>
         </map:transformers>
         <map:readers default="resource">
             <map:reader name="resource" src="org.apache.cocoon.reading.ResourceReader"/>
@@ -272,21 +272,6 @@
                 <map:serialize type="html"/>
             </map:match>
             
-            <map:match pattern="test.xml">
-            	<map:generate src="test.xml"/>
-            	<map:transform label="xmldb" type="xmldb">
-            		<map:parameter name="driver" value="org.exist.xmldb.DatabaseImpl"/>
-            		<map:parameter name="user" value="admin"/>
-            	</map:transform>
-            	<map:serialize type="html"/>
-            </map:match>
-            
-            <map:match pattern="example1.xsp">
-                <map:generate src="example1.xsp" type="serverpages"/>
-                <map:transform src="stylesheets/doc2html-2.xsl"/>
-                <map:serialize type="xhtml"/>
-            </map:match>
-            
 			<map:match pattern="">
 				<map:redirect-to uri="/exist/index.xml"/>
 			</map:match>
@@ -298,34 +283,21 @@
                 <map:serialize type="html"/>
             </map:match>
             
-            <map:match pattern="xquery.xml">
-                <map:generate src="xquery.xml"/>
-                <map:transform type="cinclude"/>
-                <map:transform src="stylesheets/doc2html-2.xsl"/>
-                <map:serialize encoding="ISO-8859-1" type="xhtml"/>
-            </map:match>
-            
-            <map:match pattern="biblio.xml">
-                <map:generate src="biblio.xml"/>
-                <map:transform type="cinclude"/>
-                <map:transform src="stylesheets/doc2html-2.xsl"/>
-                <map:serialize encoding="ISO-8859-1" type="xhtml"/>
-            </map:match>
-            
-            <map:match pattern="rdf_pbib.xsp">
-                <map:generate src="rdf_pbib.xsp" type="serverpages"/>
-                <map:transform type="cinclude"/>
-                <map:transform src="stylesheets/biblio_rdf.xsl"/>
-                <map:serialize encoding="ISO-8859-1" type="xhtml"/>
-            </map:match>
-            
-            <map:match pattern="xprocess.xsp">
-                <map:generate src="xprocess.xsp" type="serverpages"/>
-                <map:transform type="cinclude"/>
-                <map:transform src="stylesheets/doc2html-2.xsl"/>
-                <map:serialize encoding="ISO-8859-1" type="xhtml"/>
-            </map:match>
-            
+            <map:match pattern="library/**">
+            	<map:mount check-reload="yes" src="library/sitemap.xmap" 
+    				uri-prefix="library"/>
+    		</map:match>
+           
+           	<map:match pattern="simple/**">
+           		<map:mount check-reload="yes" src="simple/sitemap.xmap"
+           			uri-prefix="simple"/>
+           	</map:match>
+           	
+           	<map:match pattern="examples/**">
+           		<map:mount check-reload="yes" src="examples/sitemap.xmap"
+           			uri-prefix="examples"/>
+           	</map:match>
+           	
             <map:match pattern="changes.xml">
                 <map:generate src="changes.xml"/>
                 <map:transform src="stylesheets/changes.xsl"/>

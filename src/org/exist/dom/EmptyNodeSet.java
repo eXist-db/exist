@@ -1,5 +1,5 @@
 
-/* eXist xml document repository and xpath implementation
+/* eXist Open Source Native XML Database
  * Copyright (C) 2000-01,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
@@ -18,7 +18,6 @@
  */
 package org.exist.dom;
 
-import org.exist.*;
 import java.util.Iterator;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;

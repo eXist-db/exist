@@ -10,15 +10,13 @@
      is pretty printed.
 -->
 <xsl:template match="xml-source">
-  <dl style="font-family=Courier,monospace">
+  <div style="font-family=Courier,monospace">
     <xsl:apply-templates mode="xmlsrc"/>
-  </dl>
+  </div>
 </xsl:template>
 
 <xsl:template match="text()" mode="xmlsrc">
-  <xsl:if test="normalize-space(.)!=''">
-      <xsl:value-of select="."/>
-  </xsl:if>
+  <xsl:value-of select="."/>
 </xsl:template>
 
 <xsl:template match="processing-instruction()" mode="xmlsrc">
@@ -34,8 +32,7 @@
 </xsl:template>
 
 <xsl:template match="@*" mode="xmlsrc">
-  <xsl:text>
-  </xsl:text>
+  <xsl:text> </xsl:text>
   <xsl:choose>
     <xsl:when test="not(namespace-uri(.)='')">
 	  <font color="purple">
@@ -60,7 +57,7 @@
 </xsl:template>
 
 <xsl:template match="*" mode="xmlsrc">
-  <dd>
+  <div style="margin-left: 20px">
     <font color="navy">
       <xsl:text>&lt;</xsl:text>
     </font>
@@ -82,7 +79,7 @@
         <font color="navy">
           &gt;
         </font>
-        	<xsl:apply-templates mode="xmlsrc"/>
+        <xsl:apply-templates mode="xmlsrc"/>
         <font color="navy">
           &lt;/
           <xsl:value-of select="name()"/>
@@ -104,9 +101,9 @@
         <font color="navy">
           &gt;
         </font>
-        <dl>
+        <div>
           <xsl:apply-templates select="node()" mode="xmlsrc"/>
-        </dl>
+        </div>
         <font color="navy">
           &lt;/
         </font>
@@ -132,7 +129,7 @@
         </font>
       </xsl:otherwise>
     </xsl:choose>
-  </dd>
+  </div>
 </xsl:template>
 
 <xsl:template name="highlight">

@@ -9,43 +9,59 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Map;
+import java.util.Stack;
 
 import org.apache.avalon.excalibur.pool.Poolable;
+import org.apache.avalon.framework.configuration.Configuration;
+import org.apache.avalon.framework.configuration.ConfigurationException;
 import org.apache.avalon.framework.parameters.Parameters;
 import org.apache.cocoon.ProcessingException;
+import org.apache.cocoon.environment.ObjectModelHelper;
+import org.apache.cocoon.environment.Request;
+import org.apache.cocoon.environment.Session;
 import org.apache.cocoon.environment.SourceResolver;
 import org.apache.cocoon.transformation.AbstractSAXTransformer;
+import org.apache.cocoon.xml.dom.DOMStreamer;
+import org.exist.xmldb.XPathQueryServiceImpl;
+import org.w3c.dom.DocumentFragment;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
-import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
-import org.xmldb.api.modules.XPathQueryService;
 
 /**
+ * Transformer component for querying an XML database using the
+ * XMLDB API.
+ * 
+ * This component provides a limited set of tags to query collections
+ * in the database.
+ * 
  * @author wolf
  *
  */
-public class XMLDBTransformer
-	extends AbstractSAXTransformer
-	implements Poolable {
+public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable {
 
-	public static final String DEFAULT_DRIVER = "org.exist.xmldb.DatabaseImpl";
-	public static final String DEFAULT_USER = "guest";
+	public String DEFAULT_DRIVER = "org.exist.xmldb.DatabaseImpl";
+	public String DEFAULT_USER = "guest";
+	public String DEFAULT_PASSWORD = "guest";
 
 	public static final String NAMESPACE = "http://exist-db/transformer/1.0";
 	public static final String COLLECTION_ELEMENT = "collection";
-	public static final String EXEC_QUERY_ELEMENT = "execute-query";
-	public static final String QUERY_ELEMENT = "query";
-	public static final String RESULT_ELEMENT = "result-set";
+	public static final String FOR_EACH_ELEMENT = "for-each";
+	public static final String CURRENT_NODE_ELEMENT = "current-node";
+	public static final String GET_NODE_VALUE = "select-node";
+	public static final String RESULT_SET_ELEMENT = "result-set";
+
 	public static final String ERROR_ELEMENT = "error";
 	public static final String ERRMSG_ELEMENT = "message";
 	public static final String STACKTRACE_ELEMENT = "stacktrace";
+
+	public static final String PREFIX = "xmldb:";
 
 	public static final String FATAL_ERROR = "fatal";
 	public static final String WARNING = "warn";
@@ -57,56 +73,89 @@ public class XMLDBTransformer
 	private String user = null;
 	private String password = null;
 	private String xpath = null;
-	private StringBuffer buffer = new StringBuffer();
 	private Collection collection = null;
+	private Stack commandStack = new Stack();
+	private Request request;
+	private boolean isRecording = false;
+	private int nesting = 0;
 	private int mode = 0;
-	private boolean inElement = false;
+	private XMLResource currentResource = null;
 
-	/* (non-Javadoc)
+
+	/**
+	 * Setup the component. Accepts parameters "driver", "user" and
+	 * "password". If specified, those parameters override the default-
+	 * settings or the settings specified during component setup.
+	 * 
+	 * Example:
+	 * 
+	 * &lt;map:transform type="xmldb"&gt;
+	 *     &lt;map:parameter name="driver" value="org.exist.xmldb.DatabaseImpl"/&gt;
+	 *     &lt;map:parameter name="user" value="guest"/&gt;
+	 *     &lt;map:parameter name="password" value="guest"/&gt;
+	 * &lt;/map:transform&gt;
+	 * 
 	 * @see org.apache.cocoon.sitemap.SitemapModelComponent#setup(org.apache.cocoon.environment.SourceResolver, java.util.Map, java.lang.String, org.apache.avalon.framework.parameters.Parameters)
 	 */
-	public void setup(
-		SourceResolver resolver,
-		Map map,
-		String src,
-		Parameters parameters)
+	public void setup(SourceResolver resolver, Map map, String src, Parameters parameters)
 		throws ProcessingException, SAXException, IOException {
 		driver = parameters.getParameter("driver", DEFAULT_DRIVER);
 		user = parameters.getParameter("user", DEFAULT_USER);
 		password = parameters.getParameter("password", DEFAULT_USER);
+		request = ObjectModelHelper.getRequest(map);
+		if (request == null) {
+			throw new ProcessingException("no request object found");
+		}
 		setupDatabase();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
-	 */
-	public void startElement(
-		String uri,
-		String localName,
-		String qname,
-		Attributes attribs)
+	public void startElement(String uri, String localName, String qname, Attributes attribs)
 		throws SAXException {
-		if (NAMESPACE.equals(uri)) {
+		if (isRecording) {
+			if (NAMESPACE.equals(uri) && FOR_EACH_ELEMENT.equals(localName))
+				++nesting;
+			super.startElement(uri, localName, qname, attribs);
+		} else if (NAMESPACE.equals(uri)) {
 			if (COLLECTION_ELEMENT.equals(localName))
 				startCollection(attribs);
-			else if (EXEC_QUERY_ELEMENT.equals(localName))
-				startQuery(attribs);
-			else if (QUERY_ELEMENT.equals(localName))
-				inElement = true;
-		} else
-			super.startElement(uri, localName, qname, attribs);
+			else if (FOR_EACH_ELEMENT.equals(localName))
+				startForEach(attribs);
+			else if (CURRENT_NODE_ELEMENT.equals(localName))
+				startCurrent(attribs);
+			else if (GET_NODE_VALUE.equals(localName))
+				startGetValue(attribs);
+		} else {
+			if(currentResource != null) {
+				try {
+					AttributesImpl a = new AttributesImpl(attribs);
+					a.addAttribute(NAMESPACE, "document-id", PREFIX + "document-id", "CDATA",
+						currentResource.getDocumentId());
+					a.addAttribute(NAMESPACE, "collection", PREFIX + "collection", 
+						"CDATA", currentResource.getParentCollection().getName());
+					super.startElement(uri, localName, qname, a);
+					currentResource = null;
+				} catch (XMLDBException e) {
+				}
+			} else
+				super.startElement(uri, localName, qname, attribs);
+		}
 	}
 
 	protected void startCollection(Attributes attribs) throws SAXException {
 		String uri = attribs.getValue("uri");
 		if (uri == null) {
-			reportError(
-				FATAL_ERROR,
-				"element collection requires an uri-attribute");
+			reportError(FATAL_ERROR, "element collection requires an uri-attribute");
 			return;
 		}
+		String pUser = attribs.getValue("user");
+		String pPassword = attribs.getValue("password");
+		// use default user and password if not specified
+		if(pUser == null)
+			pUser = user;
+		if(pPassword == null)
+			pPassword = password;
 		try {
-			collection = DatabaseManager.getCollection(uri, user, password);
+			collection = DatabaseManager.getCollection(uri, pUser, pPassword);
 			if (collection == null) {
 				reportError(WARNING, "collection " + uri + " not found");
 				return;
@@ -117,11 +166,152 @@ public class XMLDBTransformer
 		mode = IN_COLLECTION;
 	}
 
-	protected void startQuery(Attributes attribs) throws SAXException {
-		if (mode != IN_COLLECTION)
+	protected void startCurrent(Attributes attribs) throws SAXException {
+		if(commandStack.isEmpty())
 			return;
+		ForEach each = (ForEach) commandStack.peek();
+		try {
+			each.currentResource.getContentAsSAX(this);
+		} catch (XMLDBException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	protected void startGetValue(Attributes attribs) throws SAXException {
+		if(collection == null) {
+			reportError(FATAL_ERROR, "no collection selected");
+			return;
+		}
+		XMLResource resource = null;
+		if (!commandStack.isEmpty()) {
+			ForEach last = (ForEach) commandStack.peek();
+			resource = last.currentResource;
+		}
 		xpath = attribs.getValue("query");
-		mode = IN_QUERY;
+		if (xpath == null) {
+			reportError(FATAL_ERROR, "attribute 'query' is missing");
+			return;
+		}
+		final long start = System.currentTimeMillis();
+		try {
+			XPathQueryServiceImpl service =
+				(XPathQueryServiceImpl) collection.getService("XPathQueryService", "1.0");
+			service.setProperty("sax-document-events", "false");
+			service.setProperty("create-container-elements", "false");
+			ResourceSet queryResult =
+				(resource == null) ? service.query(xpath) : service.query(resource, xpath);
+			if (queryResult == null) {
+				reportError(WARNING, "query returned null");
+				return;
+			}
+			if (queryResult.getSize() > 0) {
+				XMLResource res = (XMLResource) queryResult.getResource(0);
+				res.getContentAsSAX(this);
+			}
+		} catch (XMLDBException e) {
+			reportError(WARNING, "error during query-execution", e);
+		}
+	}
+
+	protected void startForEach(Attributes attribs) throws SAXException {
+		if(collection == null) {
+			reportError(FATAL_ERROR, "no collection selected");
+			return;
+		}
+		ForEach each = new ForEach();
+		nesting++;
+		XMLResource resource = null;
+		boolean nested = !commandStack.isEmpty();
+		if (nested) {
+			ForEach last = (ForEach) commandStack.peek();
+			resource = last.currentResource;
+		}
+		commandStack.push(each);
+
+		// process attributes
+		xpath = attribs.getValue("query");
+		if (xpath == null) {
+			reportError(FATAL_ERROR, "attribute 'query' is missing");
+			return;
+		}
+		each.query = xpath;
+		String pFrom = attribs.getValue("from");
+		if (pFrom != null)
+			try {
+				each.from = Integer.parseInt(pFrom);
+			} catch (NumberFormatException e) {
+				reportError(WARNING, "attribute 'from' requires numeric value");
+			}
+		String pTo = attribs.getValue("to");
+		if (pTo != null)
+			try {
+				each.to = Integer.parseInt(pTo);
+			} catch (NumberFormatException e) {
+				reportError(WARNING, "attribute 'to' requires numeric value");
+			}
+		String pSession = attribs.getValue("use-session");
+		boolean createSession = false;
+		if (pSession != null)
+			createSession = pSession.equals("true");
+		Session session = null;
+		if (createSession)
+			session = request.getSession(true);
+		final long start = System.currentTimeMillis();
+		try {
+			ResourceSet queryResult = null;
+			XPathQueryServiceImpl service =
+				(XPathQueryServiceImpl) collection.getService("XPathQueryService", "1.0");
+			service.setProperty("sax-document-events", "false");
+			service.setProperty("create-container-elements", "false");
+
+			// check if query result is already stored in the session
+			if (createSession && resource == null)
+				queryResult = (ResourceSet) session.getAttribute(xpath);
+			if (queryResult == null) {
+				queryResult =
+					(resource == null) ? service.query(xpath) : service.query(resource, xpath);
+				if (createSession)
+					session.setAttribute(xpath, queryResult);
+			}
+			if (queryResult == null)
+				reportError(WARNING, "query returned null");
+
+			each.queryResult = queryResult;
+			int size = (int) each.queryResult.getSize();
+			if (each.from < 0)
+				each.from = 0;
+			if (each.to < 0 || each.to > size)
+				each.to = size;
+			if (!nested) {
+				AttributesImpl atts = new AttributesImpl();
+				atts.addAttribute(
+					"",
+					"count",
+					"count",
+					"CDATA",
+					queryResult == null ? "0" : Long.toString(queryResult.getSize()));
+				atts.addAttribute("", "xpath", "xpath", "CDATA", xpath);
+				atts.addAttribute(
+					"",
+					"query-time",
+					"query-time",
+					"CDATA",
+					Long.toString((System.currentTimeMillis() - start)));
+				atts.addAttribute("", "from", "from", "CDATA", Integer.toString(each.from));
+				atts.addAttribute("", "to", "to", "CDATA", Integer.toString(each.to));
+				super.startElement(
+					NAMESPACE,
+					RESULT_SET_ELEMENT,
+					PREFIX + RESULT_SET_ELEMENT,
+					atts);
+			}
+		} catch (XMLDBException e) {
+			reportError(FATAL_ERROR, e.getMessage(), e);
+			return;
+		}
+		isRecording = true;
+		startRecording();
 	}
 
 	protected void setupDatabase() throws ProcessingException {
@@ -135,23 +325,21 @@ public class XMLDBTransformer
 		}
 	}
 
-	protected void reportError(String type, String message)
-		throws SAXException {
+	protected void reportError(String type, String message) throws SAXException {
 		reportError(type, message, null);
 	}
 
-	protected void reportError(String type, String message, Exception cause)
-		throws SAXException {
+	protected void reportError(String type, String message, Exception cause) throws SAXException {
 		AttributesImpl attribs = new AttributesImpl();
 		attribs.addAttribute("", "type", "type", "CDATA", type);
-		super.startElement(NAMESPACE, ERROR_ELEMENT, ERROR_ELEMENT, attribs);
+		super.startElement(NAMESPACE, ERROR_ELEMENT, PREFIX + ERROR_ELEMENT, attribs);
 		super.startElement(
 			NAMESPACE,
 			ERRMSG_ELEMENT,
-			ERRMSG_ELEMENT,
+			PREFIX + ERRMSG_ELEMENT,
 			new AttributesImpl());
 		super.characters(message.toCharArray(), 0, message.length());
-		super.endElement(NAMESPACE, ERRMSG_ELEMENT, ERRMSG_ELEMENT);
+		super.endElement(NAMESPACE, ERRMSG_ELEMENT, PREFIX + ERRMSG_ELEMENT);
 		if (cause != null) {
 			PrintWriter writer = new PrintWriter(new StringWriter());
 			cause.printStackTrace(writer);
@@ -159,66 +347,58 @@ public class XMLDBTransformer
 			super.startElement(
 				NAMESPACE,
 				STACKTRACE_ELEMENT,
-				STACKTRACE_ELEMENT,
+				PREFIX + STACKTRACE_ELEMENT,
 				new AttributesImpl());
 			super.characters(trace.toCharArray(), 0, trace.length());
-			super.endElement(NAMESPACE, STACKTRACE_ELEMENT, STACKTRACE_ELEMENT);
+			super.endElement(NAMESPACE, STACKTRACE_ELEMENT, PREFIX + STACKTRACE_ELEMENT);
 		}
-		super.endElement(NAMESPACE, ERROR_ELEMENT, ERROR_ELEMENT);
+		super.endElement(NAMESPACE, ERROR_ELEMENT, PREFIX + ERROR_ELEMENT);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public void endElement(String uri, String loc, String raw)
-		throws SAXException {
-		if (NAMESPACE.equals(uri)) {
+	public void endElement(String uri, String loc, String raw) throws SAXException {
+		if (isRecording) {
+			if (NAMESPACE.equals(uri) && FOR_EACH_ELEMENT.equals(loc) && --nesting == 0)
+				endForEach();
+			else
+				super.endElement(uri, loc, raw);
+		} else if (NAMESPACE.equals(uri)) {
 			if (COLLECTION_ELEMENT.equals(loc)) {
 				collection = null;
 				mode = 0;
-			} else if (EXEC_QUERY_ELEMENT.equals(loc)) {
-				try {
-					XPathQueryService service =
-						(XPathQueryService) collection.getService(
-							"XPathQueryService",
-							"1.0");
-					service.setProperty("sax-document-events", "false");
-					System.out.println("Query: " + xpath);
-					ResourceSet result = service.query(xpath);
-					if (result == null) {
-						reportError(WARNING, "query returned null as result");
-						return;
-					}
-					AttributesImpl at = new AttributesImpl();
-					at.addAttribute(
-						"",
-						"count",
-						"count",
-						"CDATA",
-						Long.toString(result.getSize()));
-					at.addAttribute("", "xpath", "xpath", "CDATA", xpath);
-					super.startElement(
-						NAMESPACE,
-						RESULT_ELEMENT,
-						RESULT_ELEMENT,
-						at);
-					XMLResource resource;
-					for(ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
-						resource = (XMLResource)i.nextResource();
-						resource.getContentAsSAX(this);
-					}
-					super.endElement(NAMESPACE, RESULT_ELEMENT, RESULT_ELEMENT);
-					mode = IN_COLLECTION;
-				} catch (XMLDBException e) {
-					reportError(WARNING, "database error", e);
-				}
-			} else if (QUERY_ELEMENT.equals(loc)) {
-				xpath = buffer.toString();
-				inElement = false;
+			} else if (FOR_EACH_ELEMENT.equals(loc)) {
+				endForEach();
 			}
 			return;
 		} else
 			super.endElement(uri, loc, raw);
+	}
+
+	protected void endForEach() throws SAXException {
+		isRecording = false;
+		if (commandStack.isEmpty())
+			return;
+		ForEach each = (ForEach) commandStack.peek();
+		DocumentFragment fragment = endRecording();
+		if (each.queryResult == null)
+			return;
+		DOMStreamer streamer = new DOMStreamer(this);
+		for (each.current = each.from; each.current < each.to; ++each.current) {
+			try {
+				each.currentResource = (XMLResource)
+					each.queryResult.getResource(each.current);
+				currentResource = each.currentResource;
+				streamer.stream(fragment);
+			} catch (XMLDBException e) {
+				reportError(WARNING, "error while retrieving resource " +
+					each.current, e);
+			}
+		}
+		commandStack.pop();
+		if (commandStack.isEmpty())
+			super.endElement(NAMESPACE, RESULT_SET_ELEMENT, PREFIX + RESULT_SET_ELEMENT);
 	}
 
 	/* (non-Javadoc)
@@ -227,15 +407,54 @@ public class XMLDBTransformer
 	public void recycle() {
 		collection = null;
 		mode = 0;
-		inElement = false;
 		xpath = null;
+		commandStack.clear();
+		nesting = 0;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ContentHandler#characters(char[], int, int)
-	 */
 	public void characters(char[] p0, int p1, int p2) throws SAXException {
 		super.characters(p0, p1, p2);
+	}
+
+	protected class ForEach {
+		ResourceSet queryResult = null;
+		String query = null;
+		int from = -1;
+		int to = -1;
+		XMLResource currentResource = null;
+		long current = 0;
+
+		public ForEach() {
+		}
+	}
+	
+	/**
+	 * Try to read configuration parameters from the component setup.
+	 * 
+	 * Example:
+	 * 
+	 * &lt;map:transformer name="xmldb" src="org.exist.cocoon.XMLDBTransformer"&gt;
+	 * 	   &lt;driver&gt;org.exist.xmldb.DatabaseImpl&lt;/driver&gt;
+	 *     &lt;user&gt;guest&lt;/user&gt;
+	 *     &lt;password&gt;guest&lt;/password&gt;
+	 * &lt;/map:transformer&gt;
+	 * 
+	 * will set the default driver, user and password. Note that these
+	 * values may also be set as parameters in the pipeline.
+	 * 
+	 * @see org.apache.avalon.framework.configuration.Configurable#configure(org.apache.avalon.framework.configuration.Configuration)
+	 */
+	public void configure(Configuration configuration) throws ConfigurationException {
+		super.configure(configuration);
+		Configuration child = configuration.getChild("user", false);
+		if(child != null)
+			DEFAULT_USER = child.getValue();
+		child = configuration.getChild("password", false);
+		if(child != null)
+			DEFAULT_PASSWORD = child.getValue();
+		child = configuration.getChild("driver", false);
+		if(child != null)
+			DEFAULT_DRIVER = child.getValue();
 	}
 
 }

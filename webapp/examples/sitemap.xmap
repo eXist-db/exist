@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<map:sitemap xmlns:map="http://apache.org/cocoon/sitemap/1.0">
+ 
+	<map:pipelines>
+	 	<map:pipeline>
+	 		<map:match pattern="test.xml">
+		        <map:generate src="test.xml"/>
+		        <map:transform type="xmldb"/>
+		        <map:transform type="cinclude"/>
+		        <map:transform src="context://stylesheets/doc2html-2.xsl"/>
+		        <map:serialize encoding="ISO-8859-1" type="xhtml"/>
+	        </map:match>
+		</map:pipeline>
+		
+		<map:pipeline>
+			<map:match pattern="shakespeare.xml">
+				<map:generate src="shakespeare.xml"/>
+				<map:transform type="cinclude"/>
+				<map:transform src="context://stylesheets/doc2html-2.xsl"/>
+				<map:serialize encoding="UTF-8" type="xhtml"/>
+			</map:match>
+		</map:pipeline>
+		
+		<map:pipeline>
+			<map:match pattern="process.xml">
+				<map:generate src="process.xml"/>
+				<map:transform src="process.xsl">
+					<map:parameter name="use-request-parameters" value="true"/>
+				</map:transform>
+				<map:transform type="xmldb"/>
+				<map:transform src="display.xsl"/>
+				<map:transform type="cinclude"/>
+				<map:transform src="context://stylesheets/doc2html-2.xsl"/>
+				<map:serialize encoding="UTF-8" type="xhtml"/>
+			</map:match>
+		</map:pipeline>
+	</map:pipelines>
+
+</map:sitemap>

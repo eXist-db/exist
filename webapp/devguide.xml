@@ -317,6 +317,9 @@ DatabaseManager.registerDatabase(database1);
                 <filename>samples/xmldb/NestedQuery.java</filename> provides an example.</para>
         </section>
         <section>
+        	<title>XMLDBTransformer for Cocoon</title>
+        	
+        <section>
             <title>XML:DB Logicsheet for Cocoon</title>
             <para>Cocoon offers a powerfull mechanism called XSP to write
                 XML-based dynamic web pages. Similar to JSP, XSP embeds Java

@@ -21,6 +21,7 @@ package org.exist.storage;
  *  $Id$
  */
 import it.unimi.dsi.fastUtil.Long2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastUtil.Object2LongAVLTreeMap;
 import it.unimi.dsi.fastUtil.Object2LongOpenHashMap;
 
 import java.io.DataInputStream;
@@ -658,7 +659,7 @@ public class DOMFile extends BTree implements Lockable {
 			LOG.debug(
 				"tid "
 					+ tid
-					+ " not found on page "
+					+ " not found on "
 					+ page.page.getPageInfo()
 					+ ". Loading "
 					+ pageNr);

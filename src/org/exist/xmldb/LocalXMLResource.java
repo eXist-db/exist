@@ -209,6 +209,7 @@ public class LocalXMLResource implements XMLResource {
 			serializer.setUser(user);
 			serializer.setProcessXInclude(processXInclude);
 			serializer.setContentHandler(handler);
+			serializer.setCreateContainerElements(createContainerElements);
 			String xml;
 			try {
 				if (id < 0)

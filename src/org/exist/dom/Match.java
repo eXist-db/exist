@@ -22,5 +22,11 @@ public class Match {
 	public long getNodeId() {
 		return nodeId;
 	}
-	 
+	
+	public boolean equals(Object other) {
+		if(!(other instanceof Match))
+			return false;
+		return ((Match)other).matchTerm.equals(matchTerm) &&
+			((Match)other).nodeId == nodeId;
+	}
 }

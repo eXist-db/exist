@@ -29,7 +29,8 @@
     <classpathentry kind="lib" path="lib/core/fastUtil-2.50.jar"/>
     <classpathentry kind="lib" path="lib/optional/ant-optional.jar"/>
     <classpathentry kind="lib" path="lib/optional/avalon-excalibur-vm12-20020705.jar"/>
-    <classpathentry kind="lib" path="lib/optional/avalon-framework-20020627.jar"/>
+    <classpathentry kind="lib"
+        path="lib/optional/avalon-framework-20020627.jar" sourcepath="/home/wolf/Java/Avalon-4.1.3/src/java"/>
     <classpathentry kind="lib" path="lib/optional/axis.jar"/>
     <classpathentry kind="lib" path="lib/optional/axis-ant.jar"/>
     <classpathentry kind="lib" path="lib/optional/bsf-2.2.jar"/>
