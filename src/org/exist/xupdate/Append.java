@@ -18,12 +18,18 @@ import org.w3c.dom.NodeList;
  */
 public class Append extends Modification {
 
+    private int child;
+    
 	/**
 	 * Constructor for Append.
 	 * @param selectStmt
 	 */
-	public Append(DBBroker broker, DocumentSet docs, String selectStmt) {
+	public Append(DBBroker broker, DocumentSet docs, String selectStmt, String childAttr) {
 		super(broker, docs, selectStmt);
+		if(childAttr == null || childAttr.equals("last()"))
+		    child = -1;
+		else
+		    child = Integer.parseInt(childAttr);
 	}
 	
 	/**
@@ -48,7 +54,7 @@ public class Append extends Modification {
 				doc.getBroker().saveCollection(prevCollection);
 			if (!doc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
 				throw new PermissionDeniedException("permission to update document denied");
-			node.appendChildren(children);
+			node.appendChildren(children, child);
 			doc.clearIndexListener();
 			doc.setLastModified(System.currentTimeMillis());
 			prevCollection = collection;
