@@ -45,7 +45,7 @@ public class Options implements WebDAVMethod {
 			HttpServletResponse response, Collection collection,
 			DocumentImpl resource) throws ServletException, IOException {
 		response.addHeader("DAV", "1");
-		response.addHeader("Allow", "OPTIONS, GET, HEAD, PUT, PROPFIND");
+		response.addHeader("Allow", "OPTIONS, GET, HEAD, PUT, PROPFIND,MKCOL");
 		
 		// MS specific
 		response.addHeader("MS-Author-Via", "DAV");
