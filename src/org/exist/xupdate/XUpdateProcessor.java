@@ -236,8 +236,9 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		throws SAXException {
 		// save accumulated character content
 		if (inModification && charBuf.length() > 0) {
-			final String normalized = preserveWhitespace ? charBuf.toString() :
-				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+            String normalized = charBuf.toString();
+//			final String normalized = preserveWhitespace ? charBuf.toString() :
+//				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
 
 			if (normalized.length() > 0) {
 				Text text = doc.createTextNode(normalized);
