@@ -44,6 +44,7 @@ public class DOMTest {
 				(CollectionManagementService) rootColl.getService(
 					"CollectionManagementService",
 					"1.0");
+			cms.createCollection("A"); // jmv
 			cms.removeCollection("A");
 			cms.createCollection("A");
 			Collection coll = rootColl.getChildCollection("A");
@@ -82,7 +83,7 @@ public class DOMTest {
 			dim.shutdown();
 			System.out.println("test 1: PASSED");
 		} catch (Exception e) {
-			System.out.println("test 1: FAILED");
+			System.err.println("test 1: FAILED");
 			e.printStackTrace();
 		}
 	}
