@@ -344,7 +344,10 @@ public class ArraySet extends NodeSet {
 		NodeProxy p;
 		Range range;
 		ArraySet result = new ArraySet(50);
-		for (Iterator i = ancestors.iterator(); i.hasNext();) {
+		Iterator i = ancestors.iterator();
+		if(i == null)
+			return result;
+		while (i.hasNext()) {
 			p = (NodeProxy) i.next();
 			range = XMLUtil.getChildRange(p.doc, p.gid);
 			getChildrenTopDown(
