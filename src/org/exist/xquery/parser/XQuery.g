@@ -258,7 +258,14 @@ varDecl throws XPathException
 	
 moduleImport
 :
-	"import"^ "module"! ( "namespace"! NCNAME EQ! )? STRING_LITERAL ( "at"! STRING_LITERAL )?
+	"import"^ "module"! ( moduleNamespace )? STRING_LITERAL ( "at"! STRING_LITERAL )?
+	;
+
+moduleNamespace
+{ String prefix = null; }
+:
+	"namespace"! prefix=ncnameOrKeyword EQ!
+	{ #moduleNamespace = #[NCNAME, prefix]; }
 	;
 	
 functionDecl throws XPathException
