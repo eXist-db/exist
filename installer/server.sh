@@ -43,6 +43,8 @@ if [ -z "$JAVA_OPTIONS" ]; then
     export JAVA_OPTIONS="-Xms16000k -Xmx256000k -Dfile.encoding=UTF-8"
 fi
 
+cd $EXIST_HOME
+
 $JAVA_CMD $JAVA_OPTIONS $OPTIONS \
     -Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS \
     -jar "$EXIST_HOME/start.jar" standalone $*
