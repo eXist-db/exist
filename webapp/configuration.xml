@@ -504,7 +504,7 @@ in xmldb-collection /db/shakespeare/plays -->
 </map:match>
 ]]></screen>
 			</example>
-			<para>The <ulink url="../sitemap.xmap">sitemap</ulink> delivered 
+			<para>The <ulink url="sitemap.xmap">sitemap</ulink> delivered 
 				with eXist contains some more complex examples.</para>
 		</section>
 	</chapter>
