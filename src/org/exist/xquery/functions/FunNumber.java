@@ -39,15 +39,21 @@ import org.exist.xquery.value.Type;
  */
 public class FunNumber extends Function {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
+		new FunctionSignature(
+				new QName("number", Module.BUILTIN_FUNCTION_NS),
+				new SequenceType[0],
+				new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)
+		),
 		new FunctionSignature(
 			new QName("number", Module.BUILTIN_FUNCTION_NS),
 			new SequenceType[] {
-				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE)},
-			new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE),
-			true);
+				 new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE)},
+			new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)
+		)
+	};
 
-	public FunNumber(XQueryContext context) {
+	public FunNumber(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -58,7 +64,7 @@ public class FunNumber extends Function {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
 		Sequence arg = null;
-		if(getArgumentCount() == 1)
+		if(getSignature().getArgumentCount() == 1)
 			arg = getArgument(0).eval(contextSequence);
 		else
 			arg = contextSequence;
@@ -71,7 +77,8 @@ public class FunNumber extends Function {
 	public String pprint() {
 		StringBuffer buf = new StringBuffer();
 		buf.append("number(");
-		buf.append(getArgument(0).pprint());
+		if(getSignature().getArgumentCount() == 1)
+			buf.append(getArgument(0).pprint());
 		buf.append(")");
 		return buf.toString();
 	}

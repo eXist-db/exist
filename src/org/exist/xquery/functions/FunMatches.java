@@ -48,7 +48,7 @@ import org.exist.xquery.value.Type;
  */
 public class FunMatches extends Function {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("matches", Module.BUILTIN_FUNCTION_NS),
 			"Returns true if the first argument string matches the regular expression specified " +
@@ -57,8 +57,20 @@ public class FunMatches extends Function {
 				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
 				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
-			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE),
-			true);
+			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE)
+		),
+		new FunctionSignature(
+			new QName("matches", Module.BUILTIN_FUNCTION_NS),
+			"Returns true if the first argument string matches the regular expression specified " +
+			"by the second argument.",
+			new SequenceType[] {
+				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			},
+			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE)
+		)
+	};
 	
 	protected Perl5Compiler compiler = new Perl5Compiler();
 	protected Perl5Matcher matcher = new Perl5Matcher();
@@ -69,11 +81,7 @@ public class FunMatches extends Function {
 	/**
 	 * @param context
 	 */
-	public FunMatches(XQueryContext context) {
-		super(context, signature);
-	}
-
-	protected FunMatches(XQueryContext context, FunctionSignature signature) {
+	public FunMatches(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 	
@@ -90,7 +98,7 @@ public class FunMatches extends Function {
 		String string = stringArg.getStringValue();
 		String pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
 		int flags = 0;
-		if(getArgumentCount() == 3)
+		if(getSignature().getArgumentCount() == 3)
 			flags = parseFlags(getArgument(2).eval(contextSequence, contextItem).getStringValue());
 		try {
 			if(prevPattern == null || (!pattern.equals(prevPattern)) || flags != prevFlags)

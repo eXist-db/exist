@@ -40,15 +40,21 @@ import org.exist.xquery.value.Type;
  */
 public class FunString extends Function {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
+		new FunctionSignature(
+			new QName("string", Module.BUILTIN_FUNCTION_NS),
+			new SequenceType[0],
+			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+		),
 		new FunctionSignature(
 			new QName("string", Module.BUILTIN_FUNCTION_NS),
 			new SequenceType[] {
 				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE)},
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-			true);
+			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+		)
+	};
 
-	public FunString(XQueryContext context) {
+	public FunString(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 

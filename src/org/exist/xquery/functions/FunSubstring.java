@@ -45,7 +45,7 @@ import org.exist.xquery.value.Type;
  */
 public class FunSubstring extends Function {
 	
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
 			new FunctionSignature(
 				new QName("substring", Module.BUILTIN_FUNCTION_NS),
 				new SequenceType[] {
@@ -53,9 +53,19 @@ public class FunSubstring extends Function {
 					 new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)
 				},
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
-				,true);
+			),
+			new FunctionSignature(
+				new QName("substring", Module.BUILTIN_FUNCTION_NS),
+				new SequenceType[] {
+					 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+					 new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE),
+					 new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)
+				},
+				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+			)
+	};
 				
-	public FunSubstring(XQueryContext context) {
+	public FunSubstring(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 

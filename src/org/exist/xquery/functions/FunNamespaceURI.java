@@ -41,14 +41,20 @@ import org.w3c.dom.Node;
  */
 public class FunNamespaceURI extends Function {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
+		new FunctionSignature(
+				new QName("namespace-uri", Module.BUILTIN_FUNCTION_NS),
+				new SequenceType[0],
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				true),
 		new FunctionSignature(
 			new QName("namespace-uri", Module.BUILTIN_FUNCTION_NS),
 			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
 			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-			true);
+			true)
+	};
 
-	public FunNamespaceURI(XQueryContext context) {
+	public FunNamespaceURI(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 

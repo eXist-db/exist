@@ -42,7 +42,7 @@ import org.exist.xquery.value.Type;
  */
 public class FunReplace extends FunMatches {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("replace", Module.BUILTIN_FUNCTION_NS),
 			"The function returns the xs:string that is obtained by replacing all non-overlapping "
@@ -50,14 +50,28 @@ public class FunReplace extends FunMatches {
 			new SequenceType[] {
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-			true);
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			},
+			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+		),
+		new FunctionSignature(
+			new QName("replace", Module.BUILTIN_FUNCTION_NS),
+			"The function returns the xs:string that is obtained by replacing all non-overlapping "
+				+ "substrings of $a that match the given pattern $b with an occurrence of the $c replacement string.",
+			new SequenceType[] {
+				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			},
+			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+		)
+	};
 
 	/**
 	 * @param context
 	 */
-	public FunReplace(XQueryContext context) {
+	public FunReplace(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -75,7 +89,7 @@ public class FunReplace extends FunMatches {
 		String replace =
 			getArgument(2).eval(contextSequence, contextItem).getStringValue();
 		int flags = 0;
-		if (getArgumentCount() == 4)
+		if (getSignature().getArgumentCount() == 4)
 			flags =
 				parseFlags(
 					getArgument(3)

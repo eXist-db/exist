@@ -42,20 +42,28 @@ import org.w3c.dom.Node;
  */
 public class FunRoot extends Function {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
+		new FunctionSignature(
+			new QName("root", Module.BUILTIN_FUNCTION_NS),
+			"Returns the root of the tree to which the context node belongs. This will usually, "
+				+ "but not necessarily, be a document node.",
+			new SequenceType[0],
+			new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+		),
 		new FunctionSignature(
 			new QName("root", Module.BUILTIN_FUNCTION_NS),
 			"Returns the root of the tree to which $arg belongs. This will usually, "
 				+ "but not necessarily, be a document node.",
 			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)},
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-			true);
+			new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+		)
+	};
 
 	/**
 	 * @param context
 	 * @param signature
 	 */
-	public FunRoot(XQueryContext context) {
+	public FunRoot(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -65,7 +73,7 @@ public class FunRoot extends Function {
 	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
 		Item item = contextItem;
-		if (getArgumentCount() > 0) {
+		if (getSignature().getArgumentCount() > 0) {
 			Sequence seq = getArgument(0).eval(contextSequence, contextItem);
 			if (seq.getLength() == 0)
 				return Sequence.EMPTY_SEQUENCE;

@@ -42,16 +42,24 @@ import org.w3c.dom.ProcessingInstruction;
  */
 public class FunName extends Function {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
+		new FunctionSignature(
+			new QName("name", Module.BUILTIN_FUNCTION_NS),
+			"Returns the name of a node, as an xs:string that is " +
+			"either the zero-length string, or has the lexical form of an xs:QName",
+			new SequenceType[0],
+			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+		),
 		new FunctionSignature(
 			new QName("name", Module.BUILTIN_FUNCTION_NS),
 			"Returns the name of a node, as an xs:string that is " +
 			"either the zero-length string, or has the lexical form of an xs:QName",
 			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-			true);
+			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+		)
+	};
 
-	public FunName(XQueryContext context) {
+	public FunName(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 	

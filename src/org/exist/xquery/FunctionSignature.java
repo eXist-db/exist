@@ -85,6 +85,8 @@ public class FunctionSignature {
 	}
 	
 	public int getArgumentCount() {
+		if(isOverloaded)
+			return -1;
 		return arguments != null ? arguments.length : 0;
 	}
 	

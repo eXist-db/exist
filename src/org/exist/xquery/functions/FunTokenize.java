@@ -45,7 +45,7 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class FunTokenize extends FunMatches {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("tokenize", Module.BUILTIN_FUNCTION_NS),
 			"This function breaks the input string $a into a sequence of strings, "
@@ -54,13 +54,25 @@ public class FunTokenize extends FunMatches {
 			new SequenceType[] {
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
-			new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE),
-			true);
+			new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)
+		),
+		new FunctionSignature(
+			new QName("tokenize", Module.BUILTIN_FUNCTION_NS),
+			"This function breaks the input string $a into a sequence of strings, "
+				+ "treating any substring that matches pattern $b as a separator. The "
+				+ "separators themselves are not returned.",
+			new SequenceType[] {
+				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
+			new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)
+		)
+	};
 
 	/**
 	 * @param context
 	 */
-	public FunTokenize(XQueryContext context) {
+	public FunTokenize(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -76,7 +88,7 @@ public class FunTokenize extends FunMatches {
 		String pattern =
 			getArgument(1).eval(contextSequence, contextItem).getStringValue();
 		int flags = 0;
-		if (getArgumentCount() == 3)
+		if (getSignature().getArgumentCount() == 3)
 			flags =
 				parseFlags(
 					getArgument(2)
