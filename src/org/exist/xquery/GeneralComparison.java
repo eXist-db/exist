@@ -134,6 +134,8 @@ public class GeneralComparison extends BinaryOp {
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
+//        long start = System.currentTimeMillis();
+        Sequence result = null;
 		/* 
 		 * If we are inside a predicate and one of the arguments is a node set, 
 		 * we try to speed up the query by returning nodes from the context set.
@@ -148,14 +150,17 @@ public class GeneralComparison extends BinaryOp {
 						|| rtype == Type.ATOMIC)
 					&& (getRight().getCardinality() & Cardinality.MANY) == 0) {
 					// lookup search terms in the fulltext index
-					return quickNodeSetCompare(contextSequence);
+					result = quickNodeSetCompare(contextSequence);
 				} else {
-					return nodeSetCompare(contextSequence);
+					result = nodeSetCompare(contextSequence);
 				}
 			}
 		}
-		// Fall back to the generic compare process
-		return genericCompare(contextSequence, contextItem);
+        if(result == null)
+            // Fall back to the generic compare process
+            result = genericCompare(contextSequence, contextItem);
+//        LOG.debug("comparison took " + (System.currentTimeMillis() - start));
+        return result;
 	}
 
 	protected Sequence genericCompare(
@@ -242,7 +247,7 @@ public class GeneralComparison extends BinaryOp {
 				cmp.length() > NativeTextEngine.MAX_WORD_LENGTH)
 			// fall back to nodeSetCompare
 			return nodeSetCompare(nodes, contextSequence);
-		LOG.debug("quick compare: " + cmp.length());
+//		LOG.debug("quick compare: " + cmp.length());
 		DocumentSet docs = nodes.getDocumentSet();
 		switch(truncation) {
 			case Constants.TRUNC_RIGHT:

@@ -45,7 +45,7 @@ public class Union extends CombiningExpression {
 		if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
 			throw new XPathException("union operand is not a node sequence");
         NodeSet result = lval.toNodeSet().union(rval.toNodeSet());
-        LOG.debug("Union took " + (System.currentTimeMillis() - start));
+//        LOG.debug("Union took " + (System.currentTimeMillis() - start));
 		return result;
 	}
 

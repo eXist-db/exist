@@ -104,7 +104,7 @@ public class NativeTextEngine extends TextSearchEngine {
    * Limit the length of the words to be indexed.
    * Default is 512 characters for words in attributes and elements. 
    */
-  public final static int MAX_WORD_LENGTH = Integer.MAX_VALUE;
+  public final static int MAX_WORD_LENGTH = 2048;
 	
 	protected BFile dbWords;
 	protected InvertedIndex invIdx;

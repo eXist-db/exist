@@ -564,7 +564,7 @@ public class NativeBroker extends DBBroker {
 			}
 			DocumentImpl doc = collection.getDocumentWithLock(this, docName, lockMode);
 			if (doc == null) {
-				LOG.debug("document " + docPath + " not found!");
+//				LOG.debug("document " + docPath + " not found!");
 				return null;
 			}
 	//		if (!doc.getPermissions().validate(user, Permission.READ))

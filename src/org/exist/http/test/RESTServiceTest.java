@@ -43,7 +43,7 @@ public class RESTServiceTest extends TestCase {
 
 	private final static String SERVER_URI = "http://localhost:8088";
 	
-	private final static String RESOURCE_URI =SERVER_URI + "/db/test/test.xml";
+	private final static String RESOURCE_URI = SERVER_URI + "/db/test/test.xml";
 	private final static String COLLECTION_URI = SERVER_URI + "/db/test";
 	
 	private final static String XML_DATA =
@@ -113,7 +113,7 @@ public class RESTServiceTest extends TestCase {
 	}
 	
 	public void testQueryGet() throws IOException {
-		String uri = COLLECTION_URI + "?_query=" + URLEncoder.encode("//para[. = 'ääüüööÄÄÖÖÜÜ']/text()");
+		String uri = COLLECTION_URI + "?_query=" + URLEncoder.encode("doc('/db/test/test.xml')//para[. = 'ääüüööÄÄÖÖÜÜ']/text()");
 		HttpURLConnection connect = getConnection(uri);
 		connect.setRequestMethod("GET");
 		connect.connect();

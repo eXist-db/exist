@@ -102,7 +102,7 @@ public class LocationStep extends Step {
 			cachedContext == contextSequence &&
 			Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {
 			if(!((NodeSet)contextSequence).hasChanged(timestamp)) {
-//				LOG.debug("returning cached result");
+				LOG.debug("returning cached result");
 				cachedResult.setIsCached(true);
 				return 
 					(predicates.size() == 0)
@@ -110,7 +110,6 @@ public class LocationStep extends Step {
 					 applyPredicate(contextSequence, cachedResult);
 			}
 		}
-//		LOG.debug("processing " + pprint());
 		Sequence temp;
 		switch (axis) {
 			case Constants.DESCENDANT_AXIS :
