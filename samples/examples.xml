@@ -33,10 +33,10 @@ let $scene := $speech/ancestor::SCENE,
         <description>Group hits by play</description>
         <code><![CDATA[let $speech := //SPEECH[LINE &= "passion*"]
 let $plays := (for $s in $speech return root($s))
-for $play in $plays
+for $play in $plays/PLAY
 let $hits := $play//$speech
 return
-	<play title="{$play/PLAY/TITLE}" hits="{count($hits)}">
+	<play title="{$play/TITLE}" hits="{count($hits)}">
 		{$hits}
 	</play>]]></code>
     </query>
@@ -54,7 +54,7 @@ return
                         {$scene/TITLE}
                         <actors>
                         {
-                            for $speaker in distinct-values($act//SPEAKER)
+                            for $speaker in distinct-values($scene//SPEAKER)
                             order by $speaker return
                                 <actor>{$speaker}</actor>
                         }
@@ -247,7 +247,7 @@ declare namespace request="http://exist-db.org/xquery/request";
 <system>
     <version>{util:system-property("product-version")}</version>
     <build>{util:system-property("product-build")}</build>
-    <jvm>{util:system-property("java.vendor") util:system-property("java.version")}</jvm>
+    <jvm>{util:system-property("java.vendor"), util:system-property("java.version")}</jvm>
 </system>]]>
         </code>
     </query>
