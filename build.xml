@@ -788,7 +788,7 @@ Running tests on remote database
             <replacefilter token="xquery/xquery.xq" value="${demo.host}/xquery/xquery.xq"/>
             <replacefilter token='url="xmldb/db/' value='url="${demo.host}/xmldb/db/'/>
             <replacefilter token='href="xmldb/db/' value='href="${demo.host}/xmldb/db/'/>
-            <replacefilter token="xadmin.xsp" value="${demo.host}/xadmin.xsp"/>
+            <replacefilter token="admin/admin.xql" value="${demo.host}/admin/admin.xql"/>
             <replacefilter token='href="status"' value='href="${demo.host}/status"'/>
             <replacefilter token="xquery/functions.xq" value="${demo.host}/xquery/functions.xq"/>
             <replacefilter token='url="xquery/guess.xql' value='url="${demo.host}/xquery/guess.xql'/>
