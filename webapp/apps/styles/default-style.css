@@ -32,7 +32,6 @@ table p {
     padding-top: 4px;
     padding-bottom: 4px;
     margin-top: 5px;
-    margin-right: 0px;
     border-top: solid 1px #DEDEDE;
     border-bottom: solid 1px #DEDEDE;
 }
@@ -58,14 +57,14 @@ table p {
 #sidebar {
     position: absolute;
     margin-top: 15px;
-    width: 20%;
+    width: 16%;
     display: block;
     overflow: hidden;
 }
 
 #content2col {
     position: absolute;
-    left: 22%;
+    left: 18%;
     width: 81%;
     margin-top: 15px;
     display: block;
@@ -75,8 +74,8 @@ table p {
 
 #content {
     position: absolute;
-    left: 22%;
-    width: 78%;
+    left: 18%;
+    width: 62%;
     margin-top: 15px;
     display: block;
     background-color: white;
@@ -90,6 +89,14 @@ table p {
     margin-top: 15px;
     display: block;
     overflow: hidden;
+}
+
+#version-info {
+    color: #666666;
+    text-align: right;
+    margin-top: 3px;
+    font-size: 8pt;
+    margin-bottom: 5px;
 }
 
 .toc {
@@ -143,6 +150,31 @@ h3 {
 h4 {
     font-weight: bold;
     padding-left: 15px;
+}
+
+.record {
+    margin: 10px;
+    padding: 10px;
+    width: 457px;
+    border: solid 1px #DEDEDE;
+}
+			
+.citation {
+    
+}
+			
+.heading {
+    font-weight: bold;
+}
+			
+.title {
+    font-weight: bold;
+    font-size: 12px;
+}
+			
+.citekey {
+    color: #50497A;
+    margin-left: 20px;
 }
 			
 .note {
@@ -371,6 +403,15 @@ div.example_title {
 }
 
 .variablelist {
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+#login {
+    padding: 10px;
+    display: block;
+    border: 1px solid #999;
+    background: #fafafa;
     margin-left: 15px;
     margin-right: 15px;
 }

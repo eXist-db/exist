@@ -108,7 +108,7 @@
                 </tr>
             </table>
         </section>
-        <section title="Mailing list">
+        <section title="Mailing list" id="mailing">
             <p>There's a <link href="http://sourceforge.net/mail/?group_id=17691">mailing
                 list</link> on sourceforge. If you are interested in using or
 			contributing to eXist, you are encouraged to join the list.</p>

@@ -3,10 +3,6 @@ module namespace c="http://exist-db.org/modules/mods-config";
 declare namespace mods="http://www.loc.gov/mods/v3";
 declare namespace util="http://exist-db.org/xquery/util";
 
-(: the xsl stylesheet to use for display :)
-declare variable $c:overviewXsl { "styles/overview.xsl" };
-declare variable $c:detailsXsl { "styles/mods-detailed.xsl" };
-
 declare variable $c:css { "styles/display.css" };
 
 (:  called to select elements from a record for display :)
@@ -91,11 +87,8 @@ declare function c:query-form($url as xs:string, $collection as xs:string) as el
                 <th width="20%">
                     Search in
                 </th>
-                <th width="40%">
+                <th width="60%">
                     Search what
-                </th>
-                <th width="20%">
-                    Interpret as
                 </th>
                 <th width="20%">
                 </th>
@@ -107,18 +100,11 @@ declare function c:query-form($url as xs:string, $collection as xs:string) as el
                         <option value="au">Creator,Editor</option>
                         <option value="ti">Title</option>
                         <option value="ab">Description</option>
-                        <option value="su">Subject</option>
+                        <option value="su">Topic</option>
                     </select>
                  </td>
-                 <td width="40%">
+                 <td width="60%">
                    <input type="text" name="term1" size="30" />
-                 </td>
-                 <td width="20%">
-                   <select name="mode1" size="1">
-                     <option value="near">near</option>
-                     <option value="exact">exact match</option>
-                     <option value="contains" selected="true">word list</option>
-                   </select>
                  </td>
                  <td width="20%">
                    <select name="op" size="1">
@@ -134,23 +120,24 @@ declare function c:query-form($url as xs:string, $collection as xs:string) as el
                         <option value="au">Creator,Editor</option>
                         <option value="ti">Title</option>
                         <option value="ab">Description</option>
-                        <option value="su">Subject</option>
+                        <option value="su">Topic</option>
                     </select>
                  </td>
-                 <td width="40%">
+                 <td width="60%">
                    <input type="text" name="term2" size="30" />
-                 </td>
-                 <td width="20%">
-                   <select name="mode2" size="1">
-                     <option value="near">near</option>
-                     <option value="exact">exact match</option>
-                     <option value="contains" selected="true">word list</option>
-                   </select>
                  </td>
                  <td width="20%"/>
             </tr>
             <tr>
-                <td colspan="4">
+                <td colspan="3">
+                    Match:
+                    <input name="mode" value="all" type="radio" checked="true"/>All terms
+                    <input name="mode" value="any" type="radio"/>Any term
+                    <input name="mode" value="near" type="radio"/>All terms near
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3">
                     <input type="submit" value="Submit"/>
                 </td>
             </tr>

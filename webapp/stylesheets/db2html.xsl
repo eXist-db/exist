@@ -10,13 +10,16 @@
         <html>
             <head>
                 <xsl:choose>
-                    <xsl:when test="bookinfo/style">
+                    <xsl:when test="bookinfo/style/@href">
                         <link rel="stylesheet" type="text/css" href="{bookinfo/style/@href}"/>
                     </xsl:when>
                     <xsl:otherwise>
                         <link rel="stylesheet" type="text/css" href="styles/default-style.css"/>
                     </xsl:otherwise>
                 </xsl:choose>
+                <xsl:if test="bookinfo/style[not(@href)]">
+                        <xsl:copy-of select="bookinfo/style[not(@href)]"/>
+                </xsl:if>
                 <title><xsl:value-of select="bookinfo/title/text()"/></title>
             </head>
     
@@ -218,7 +221,7 @@
     </xsl:template>
     
     <xsl:template match="ulink|sidebar:link">
-        <a href="{@href|@url}"><xsl:apply-templates/></a>
+        <a href="{@href|@url}"><xsl:value-of select="."/></a>
     </xsl:template>
     
     <xsl:template match="variablelist">

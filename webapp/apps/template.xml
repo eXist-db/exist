@@ -1,0 +1,31 @@
+<applications
+    xmlns="http://exist-db.org/"
+    using="http://exist-db.org/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+>
+    <application>
+         <dc:creator>Jean-Marc Vanel</dc:creator>
+         <creator-site>http://jmvanel.free.fr/</creator-site>
+         <dc:identifier>http://wwbota.free.fr/</dc:identifier>
+         <dc:rights>GPL</dc:rights>
+         <dc:title>Botanical Database</dc:title>
+         <dc:subject>biology</dc:subject>
+         <dc:subject>taxonomy</dc:subject>
+         <dc:subject>botany</dc:subject>
+         <dc:description> Search engine for Flora of China descriptions.
+              Aims at being a computer-aided identification tool for specimens.
+         </dc:description>
+         <dc:publisher> Worldwide Botanical Knowledge </dc:publisher>
+         <dc:format>eXist distribution add-on: Cocoon sub-sitemap</dc:format>
+        
+        <dev-site>http://wwbota.free.fr/</dev-site>
+        <production-site>http://jmvanel.free.fr/protea.html</production-site>
+        <status>production</status>
+        <feature-used>XQuery</feature-used>
+        <feature-used>Cocoon</feature-used>
+        <database size="30Mb" documents="1" updates="rare" security='read for all' />
+        <dev-notes> XSP pages, XSLT styles, java classes interpreting user input and generating XQuery </dev-notes>
+        <submitter />
+    </application>
+</applications>
