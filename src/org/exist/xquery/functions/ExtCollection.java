@@ -95,9 +95,15 @@ public class ExtCollection extends Function {
 		boolean cacheIsValid = false;
 		if(cachedArgs != null)
 		    cacheIsValid = compareArguments(cachedArgs, args);
-		if(cacheIsValid)
+		if(cacheIsValid) {
+		    // if the expression occurs in a nested context, we might have cached the
+            // document set
 		    return cached;
-		
+        }
+		// check if the loaded documents should remain locked
+        boolean lockOnLoad = context.lockDocumentsOnLoad();
+        
+        // build the document set
 		DocumentSet docs = new DocumentSet();
 		for (int i = 0; i < args.size(); i++) {
 			String next = (String)args.get(i);
@@ -105,6 +111,8 @@ public class ExtCollection extends Function {
 		    if(coll != null)
 		    	coll.allDocs(context.getBroker(), docs, includeSubCollections, true);
 		}
+        
+        // iterate through all docs and create the node set
 		NodeSet result = new ExtArrayNodeSet(docs.getLength(), 1);
 		Lock dlock;
 		DocumentImpl doc;
@@ -114,10 +122,15 @@ public class ExtCollection extends Function {
 		    try {
 		        dlock.acquire(Lock.READ_LOCK);
 		        result.add(new NodeProxy(doc, -1, Node.DOCUMENT_NODE));
+                if(lockOnLoad) {
+                    LOG.debug("Locking document: " + doc.getName());
+                    context.getLockedDocuments().add(doc);
+                }
 		    } catch (LockException e) {
                 LOG.info("Could not acquire read lock on document " + doc.getFileName());
             } finally {
-		        dlock.release(Lock.READ_LOCK);
+                if(!lockOnLoad)
+                    dlock.release(Lock.READ_LOCK);
 		    }
 		}
 		cached = result;

@@ -27,6 +27,9 @@ import java.text.Collator;
 import org.exist.xquery.XPathException;
 
 /**
+ * Represents a reference to an arbitrary Java object which is treated as an
+ * atomic value.
+ * 
  * @author wolf
  */
 public class JavaObjectValue extends AtomicValue {

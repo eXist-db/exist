@@ -226,10 +226,6 @@ public class NativeValueIndex {
         try {
             lock.acquire(Lock.WRITE_LOCK);
             ArrayList elements = db.findKeys(query);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("removeDocument() - " + "found " + elements.size()
-                        + " elements.");
-            }
 
             Value key;
             Value value;
