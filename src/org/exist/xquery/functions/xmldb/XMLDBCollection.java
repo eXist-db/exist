@@ -22,7 +22,9 @@
  */
 package org.exist.xquery.functions.xmldb;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 
 import org.exist.dom.QName;
 import org.exist.security.SecurityManager;
@@ -81,7 +83,7 @@ public class XMLDBCollection extends BasicFunction {
 		
 		Collection collection = null;
 		try {
-			java.net.URI uri = new java.net.URI(collectionURI);
+			java.net.URI uri = new java.net.URI(URLEncoder.encode(collectionURI, "UTF-8"));
 			if(null == uri.getScheme()) {
 				User localUser = context.getUser();
 				// Must be a LOCAL collection
@@ -96,6 +98,7 @@ public class XMLDBCollection extends BasicFunction {
 				"exception while retrieving collection: " + e.getMessage(), e);
 		} catch (URISyntaxException e) {
 			throw new XPathException(getASTNode(), "Could not parse URI: "+collectionURI, e);
+		} catch (UnsupportedEncodingException e) {
 		}
 		return collection == null ? Sequence.EMPTY_SEQUENCE : new JavaObjectValue(collection);
 	}
