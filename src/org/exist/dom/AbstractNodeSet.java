@@ -374,7 +374,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		boolean includeSelf,
 		boolean rememberContext) {
 	    if(!(al instanceof VirtualNodeSet))
-	        return quickSelectAncestorDescendant(al, mode, rememberContext);
+	        return quickSelectAncestorDescendant(al, mode, includeSelf, rememberContext);
 		NodeProxy n, p;
 		//		long start = System.currentTimeMillis();
 		DocumentImpl lastDoc = null;
@@ -437,12 +437,16 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @param rememberContext
 	 * @return
 	 */
-	private NodeSet quickSelectAncestorDescendant(NodeSet al, int mode, boolean rememberContext) {
+	private NodeSet quickSelectAncestorDescendant(NodeSet al, int mode, boolean includeSelf, boolean rememberContext) {
 	    final NodeSet result = new ExtArrayNodeSet();
 		final Iterator ia = al.iterator();
 		final Iterator ib = iterator();
 		final long start = System.currentTimeMillis();
 		NodeProxy na = (NodeProxy) ia.next(), nb = (NodeProxy) ib.next();
+		// check if one of the node sets is empty
+		if(na == null || nb == null)
+		    return result;
+		
 		long pa, pb;
 		while (true) {
 			// first, try to find nodes belonging to the same doc
@@ -462,6 +466,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 			    pb = nb.gid;
 			    int la = na.doc.getTreeLevel(pa);
 				int lb = nb.doc.getTreeLevel(pb);
+				boolean foundSelf = la == lb;
 				while (la < lb) {
 					pb = XMLUtil.getParentId(nb.doc, pb, lb);
 					--lb;
@@ -477,18 +482,20 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 					else
 						break;
 				} else {
-				    if(mode == NodeSet.DESCENDANT) {
-				        if (rememberContext)
-				            nb.addContextNode(na);
-				        else
-				            nb.copyContext(na);
-				        result.add(nb);
-				    } else {
-				        if (rememberContext)
-				            na.addContextNode(nb);
-				        else
-				            na.copyContext(nb);
-				        result.add(na);
+				    if(!foundSelf || includeSelf) {
+				        if(mode == NodeSet.DESCENDANT) {
+				            if (rememberContext)
+				                nb.addContextNode(na);
+				            else
+				                nb.copyContext(na);
+				            result.add(nb);
+				        } else {
+				            if (rememberContext)
+				                na.addContextNode(nb);
+				            else
+				                na.copyContext(nb);
+				            result.add(na);
+				        }
 				    }
 				    if (ib.hasNext())
 						nb = (NodeProxy) ib.next();
@@ -507,6 +514,10 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		final Iterator ib = iterator();
 		final long start = System.currentTimeMillis();
 		NodeProxy na = (NodeProxy) ia.next(), nb = (NodeProxy) ib.next();
+		
+		// check if one of the node sets is empty
+		if(na == null || nb == null)
+		    return result;
 		long pa, pb;
 		while (true) {
 			// first, try to find nodes belonging to the same doc
