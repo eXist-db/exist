@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!--
 	Search through a set of RDF references. This stylesheet does the actual
@@ -6,8 +6,8 @@
 	query.
 -->
 <xsl:stylesheet 
-  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:xmldb="http://exist-db.org/transformer/1.0"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   version="1.0">
   
   	<xsl:param name="query"/>
@@ -114,7 +114,10 @@
 		</xmldb:for-each>
   	</xsl:template>
   	
-  	<xsl:template match="@*|node()" priority="-1">
-		<xsl:copy><xsl:apply-templates select="@*|node()"/></xsl:copy>
+  	<xsl:template match="node()|@*" priority="-1">
+		<xsl:copy>
+			<xsl:apply-templates select="node()|@*"/>
+		</xsl:copy>
 	</xsl:template>
+	
 </xsl:stylesheet>

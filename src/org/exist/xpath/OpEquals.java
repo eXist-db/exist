@@ -239,20 +239,25 @@ public class OpEquals extends BinaryOp {
 		NodeSet context,
 		NodeProxy node) {
 		NodeSet result = new ArraySet(100);
-		if (right.returnsType() == Constants.TYPE_STRING) {
+		if (right.returnsType() == Constants.TYPE_STRING ||
+			right.returnsType() == Constants.TYPE_NODELIST) {
 			// evaluate left expression
 			NodeSet nodes = (NodeSet) left.eval(docs, context, null).getNodeList();
-			String cmp = right.eval(docs, context, null).getStringValue().replace('%', '*');
+			String cmp = right.eval(docs, context, null).getStringValue();
 			if (getLeft().returnsType() == Constants.TYPE_NODELIST && relation == Constants.EQ &&
-				nodes.hasIndex()) {
+				nodes.hasIndex() && cmp.length() > 0) {
+				// try to use a fulltext search expression to reduce the number
+				// of potential nodes to scan through
 				SimpleTokenizer tokenizer = new SimpleTokenizer();
 				tokenizer.setText(cmp);
 				TextToken token;
 				String term;
 				boolean foundNumeric = false;
+				cmp = cmp.replace('%', '*');
 				// setup up an &= expression using the fulltext index
 				containsExpr = new FunContains(pool, Constants.FULLTEXT_AND);
 				for (int i = 0; i < 5 && (token = tokenizer.nextToken(true)) != null; i++) {
+					// remember if we find an alphanumeric token
 					if(token.getType() == TextToken.ALPHANUM)
 						foundNumeric = true;
 					containsExpr.addTerm(token.getText());
@@ -262,15 +267,17 @@ public class OpEquals extends BinaryOp {
 				if(foundNumeric)
 					foundNumeric = checkArgumentTypes(docs);
 				if(!foundNumeric) {
+					// all elements are indexed: use the fulltext index
 					Value temp = containsExpr.eval(docs, nodes, null);
 					nodes = (NodeSet) temp.getNodeList();
 				}
+				cmp = cmp.replace('*', '%');
 			}
-			// get a list of all nodes equal to ...
+			// now compare the input node set to the search expression
 			DBBroker broker = null;
 			try {
 				broker = pool.get();
-				result = broker.getNodesEqualTo(nodes, docs, relation, cmp.replace('*', '%'));
+				result = broker.getNodesEqualTo(nodes, docs, relation, cmp);
 			} catch (EXistException e) {
 				e.printStackTrace();
 			} finally {
@@ -375,8 +382,11 @@ public class OpEquals extends BinaryOp {
 			n = (NodeProxy) i.next();
 			rvalue = right.eval(docs, context, n).getNumericValue();
 			lvalue = left.eval(docs, context, n).getNumericValue();
-			if (cmpNumbers(lvalue, rvalue))
+			if (cmpNumbers(lvalue, rvalue)) {
 				result.add(n);
+				n.addContextNode(n);
+			}
+			
 		}
 		return new ValueNodeSet(result);
 	}
@@ -395,9 +405,7 @@ public class OpEquals extends BinaryOp {
 	}
 
 	/**
-	 *  check relevant documents. if right operand is a string literal and right
-	 *  returns a node set, we check which documents contain it at all. in other
-	 *  cases do nothing.
+	 *  check relevant documents. Does nothing here.
 	 *
 	 *@param  in_docs  Description of the Parameter
 	 *@return          Description of the Return Value
@@ -415,16 +423,6 @@ public class OpEquals extends BinaryOp {
 		return Constants.TYPE_NODELIST;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  left     Description of the Parameter
-	 *@param  right    Description of the Parameter
-	 *@param  docs     Description of the Parameter
-	 *@param  context  Description of the Parameter
-	 *@param  node     Description of the Parameter
-	 *@return          Description of the Return Value
-	 */
 	protected Value stringCompare(
 		Expression left,
 		Expression right,
@@ -446,7 +444,6 @@ public class OpEquals extends BinaryOp {
 		return new ValueNodeSet(result);
 	}
 
-	/**  Description of the Method */
 	protected void switchOperands() {
 		switch (relation) {
 			case Constants.GT :

@@ -26,6 +26,7 @@ import org.exist.dom.NodeIDSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.storage.BrokerPool;
+import org.exist.util.LongLinkedList;
 
 public class FunNot extends Function {
 
@@ -47,16 +48,31 @@ public class FunNot extends Function {
         NodeSet result = new NodeIDSet();
         Expression path = getArgument(0);
         result.addAll(context);
+        NodeProxy current;
+        if(inPredicate)
+        	for(Iterator i = result.iterator(); i.hasNext(); ) {
+        		current = (NodeProxy)i.next();
+        		current.addContextNode(current);
+        	}
         // evaluate argument expression
         NodeSet nodes = (NodeSet)path.eval(docs, context, null).getNodeList();
-        NodeProxy n, parent;
+        NodeProxy parent;
         long pid;
+        LongLinkedList contextNodes;
+        LongLinkedList.ListItem next;
         // iterate through nodes and remove hits from result
         for(Iterator i = nodes.iterator(); i.hasNext(); ) {
-            n = (NodeProxy)i.next();
-            parent = result.parentWithChild(n.doc, n.gid, true, true);
-            if(parent != null)
+            current = (NodeProxy)i.next();
+			contextNodes = current.getContext();
+			if(contextNodes == null) {
+				LOG.warn("context node is missing!");
+				break;
+			}
+			for(Iterator j = contextNodes.iterator(); j.hasNext(); ) {
+				next = (LongLinkedList.ListItem)j.next();
+				if((parent = result.get(current.doc, next.l)) != null)
                 result.remove(parent);
+        	}
         }
         return new ValueNodeSet(result);
     }

@@ -37,7 +37,7 @@ public class Main {
 	private File _home_dir = null;
 	private String _mode = "jetty";
 	private Classpath _classpath = new Classpath();
-	private boolean _debug = Boolean.getBoolean("org.exist.start.debug");
+	private boolean _debug = Boolean.getBoolean("exist.start.debug");
 
 	public static void main(String[] args) {
 		try {
@@ -246,7 +246,7 @@ public class Main {
 		if (args.length > 0) {
 			if (args[0].equals("client")) {
 				//_classname = "org.exist.client.InteractiveClient";
-				_classname= "org.exist.client.InteractiveClient";
+				_classname = "org.exist.client.InteractiveClient";
 				_mode = "client";
 			} else if (args[0].equals("standalone")) {
 				_classname = "org.exist.Server";
@@ -269,34 +269,16 @@ public class Main {
 			_classname = "org.mortbay.jetty.Server";
 			_mode = "jetty";
 		}
+
 		//--------------------
 		// detect exist.home:
 		//--------------------
 		_home_dir = getDirectory(System.getProperty("exist.home"));
 		if (_home_dir == null) {
-			// test for [CD]
-			File jar = new File("exist.jar");
-			if (jar.canRead()) {
-				try {
-					_home_dir = new File(".").getCanonicalFile();
-				} catch (IOException e) {
-				}
-			}
-		}
-
-		if (_home_dir == null) {
-			if (_debug)
-				System.err.println("trying ../exist.jar");
-			File jar = new File(".." + File.separatorChar + "exist.jar");
-			if (jar.exists())
-				try {
-					_home_dir = new File("..").getCanonicalFile();
-				} catch (IOException e) {
-				}
-		}
-
-		if (_home_dir == null) {
+			// if eXist is deployed as web application, try to find WEB-INF first
 			File webinf = new File("WEB-INF");
+			if (_debug)
+				System.err.println("trying " + webinf.getAbsolutePath());
 			if (webinf.exists()) {
 				File jar =
 					new File(
@@ -313,11 +295,11 @@ public class Main {
 			}
 		}
 
-		// searching exist.jar failed, try conf.xml to have the configuration
-		// at least
 		if (_home_dir == null) {
-			// test for [CD]
-			File jar = new File("conf.xml");
+			// failed: try exist.jar in current directory
+			File jar = new File("exist.jar");
+			if (_debug)
+				System.err.println("trying " + jar.getAbsolutePath());
 			if (jar.canRead()) {
 				try {
 					_home_dir = new File(".").getCanonicalFile();
@@ -327,7 +309,10 @@ public class Main {
 		}
 
 		if (_home_dir == null) {
-			File jar = new File(".." + File.separatorChar + "conf.xml");
+			// failed: try ../exist.jar
+			File jar = new File(".." + File.separatorChar + "exist.jar");
+			if (_debug)
+				System.err.println("trying " + jar.getAbsolutePath());
 			if (jar.exists())
 				try {
 					_home_dir = new File("..").getCanonicalFile();
@@ -335,22 +320,39 @@ public class Main {
 				}
 		}
 
+		// searching exist.jar failed, try conf.xml to have the configuration
+		// at least
 		if (_home_dir == null) {
-			File webinf = new File("WEB-INF");
-			if (webinf.exists()) {
-				File jar = new File(webinf.getPath() + File.separatorChar + "conf.xml");
-				if (jar.exists())
-					try {
-						_home_dir = webinf.getCanonicalFile();
-					} catch (IOException e) {
-					}
+			// try conf.xml in current dir
+			File jar = new File("conf.xml");
+			if (_debug)
+				System.err.println("trying " + jar.getAbsolutePath());
+			if (jar.canRead()) {
+				try {
+					_home_dir = new File(".").getCanonicalFile();
+				} catch (IOException e) {
+				}
 			}
+		}
+
+		if (_home_dir == null) {
+			// try ../conf.xml
+			File jar = new File(".." + File.separatorChar + "conf.xml");
+			if (_debug)
+				System.err.println("trying " + jar.getAbsolutePath());
+			if (jar.exists())
+				try {
+					_home_dir = new File("..").getCanonicalFile();
+				} catch (IOException e) {
+				}
 		}
 
 		//TODO: more attempts here...
 
 		if (_home_dir != null) {
 			// if we managed to detect exist.home, store it in system property
+			if (_debug)
+				System.err.println("EXIST_HOME=" + System.getProperty("exist.home"));
 			System.setProperty("exist.home", _home_dir.getPath());
 			System.setProperty("user.dir", _home_dir.getPath());
 			if (_mode.equals("jetty")) {
@@ -381,9 +383,8 @@ public class Main {
 			// set up classpath:
 
 			// prefill existing paths in classpath_dirs...
-			if(_debug)
-				System.out.println("existing classpath = " +
-					System.getProperty("java.class.path"));
+			if (_debug)
+				System.out.println("existing classpath = " + System.getProperty("java.class.path"));
 			_classpath.addClasspath(System.getProperty("java.class.path"));
 
 			// add JARs from ext and lib
@@ -405,8 +406,8 @@ public class Main {
 						getClass().getClassLoader().getResourceAsStream(
 							"org/exist/start/start.config");
 				} else {
-					if (_debug)
-						System.err.println("Configuring classpath from etc/start.config");
+					System.err.println("start.config not found. Bailing out.");
+					return;
 				}
 				configureClasspath(_home_dir.getPath(), _classpath, cpcfg, args, _mode);
 				cpcfg.close();
@@ -436,7 +437,7 @@ public class Main {
 						// add it in
 						_classpath.addComponent(tools_jar_file);
 						if (_debug)
-							System.err.println("JAVAC=" + tools_jar_file);
+							System.err.println("JAVAC = " + tools_jar_file);
 					}
 				}
 			}
@@ -454,8 +455,6 @@ public class Main {
 			} catch (IOException e) {
 			}
 
-			if (_debug)
-				System.err.println("EXIST_HOME=" + System.getProperty("exist.home"));
 			if (_debug)
 				System.err.println("TEMPDIR=" + System.getProperty("java.io.tmpdir"));
 			if (_debug)

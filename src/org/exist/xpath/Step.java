@@ -1,7 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
  * 
- *  Copyright (C) 2000,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ *  Copyright (C) 2001,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -27,80 +27,35 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.storage.BrokerPool;
 
-/**
- *  Description of the Class
- *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    7. Oktober 2002
- */
 public abstract class Step implements Expression {
 
     protected int axis = -1;
     protected BrokerPool pool = null;
     protected ArrayList predicates = new ArrayList();
     protected NodeTest test;
-
-
-    /**
-     *  Constructor for the Step object
-     *
-     *@param  axis  Description of the Parameter
-     */
+	protected boolean inPredicate = false;
+	
     public Step( BrokerPool pool, int axis ) {
         super();
         this.axis = axis;
         this.pool = pool;
     }
 
-
-    /**
-     *  Constructor for the Step object
-     *
-     *@param  axis  Description of the Parameter
-     *@param  test  Description of the Parameter
-     */
     public Step( BrokerPool pool, int axis, NodeTest test ) {
         this( pool, axis );
         this.test = test;
     }
 
-
-    /**
-     *  Adds a feature to the Predicate attribute of the Step object
-     *
-     *@param  expr  The feature to be added to the Predicate attribute
-     */
     public void addPredicate( Expression expr ) {
         predicates.add( expr );
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  docs     Description of the Parameter
-     *@param  context  Description of the Parameter
-     *@param  node     Description of the Parameter
-     *@return          Description of the Return Value
-     */
     public abstract Value eval( DocumentSet docs, NodeSet context, NodeProxy node );
 
-
-    /**
-     *  Gets the axis attribute of the Step object
-     *
-     *@return    The axis value
-     */
     public int getAxis() {
         return axis;
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@return    Description of the Return Value
-     */
     public String pprint() {
         StringBuffer buf = new StringBuffer();
         if ( axis > 0 )
@@ -120,13 +75,6 @@ public abstract class Step implements Expression {
         return buf.toString();
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  in_docs  Description of the Parameter
-     *@return          Description of the Return Value
-     */
     public DocumentSet preselect( DocumentSet in_docs ) {
         DocumentSet out_docs = in_docs;
         if ( predicates.size() > 0 )
@@ -136,88 +84,21 @@ public abstract class Step implements Expression {
         return out_docs;
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@return    Description of the Return Value
-     */
     public int returnsType() {
         return Constants.TYPE_NODELIST;
     }
 
-
-    /**
-     *  Sets the axis attribute of the Step object
-     *
-     *@param  axis  The new axis value
-     */
     public void setAxis( int axis ) {
         this.axis = axis;
     }
 
-
-    /**
-     *  Sets the test attribute of the Step object
-     *
-     *@param  test  The new test value
-     */
     public void setTest( NodeTest test ) {
         this.test = test;
     }
 
-    /*
-     *  protected final static boolean nodeHasParent(DocumentImpl doc, long gid,
-     *  exist.NodeSet parents,
-     *  boolean directParent) {
-     *  return nodeHasParent(doc, gid, parents, directParent, false);
-     *  }
-     *  protected final static boolean nodeHasParent(DocumentImpl doc, long gid,
-     *  exist.NodeSet parents,
-     *  boolean directParent,
-     *  boolean includeSelf) {
-     *  if(gid < 2)
-     *  return false;
-     *  if(includeSelf && parents.contains(doc, gid))
-     *  return true;
-     *  int level = doc.getTreeLevel(gid);
-     *  / calculate parent's gid
-     *  long pid = (gid - doc.getLevelStartPoint(level)) /
-     *  doc.getTreeLevelOrder(level)
-     *  + doc.getLevelStartPoint(level - 1);
-     *  /long pid = (gid - 2) / ((DocumentImpl)doc).getOrder() + 1;
-     *  if(parents.contains(doc, pid))
-     *  return true;
-     *  else if(directParent)
-     *  return false;
-     *  else
-     *  return nodeHasParent(doc, pid, parents, directParent);
-     *  }
-     *  protected final static
-     *  long parentWithChild(DocumentImpl doc, long gid, exist.NodeSet parents,
-     *  boolean directParent) {
-     *  return parentWithChild(doc, gid, parents, directParent, false);
-     *  }
-     *  protected final static
-     *  long parentWithChild(DocumentImpl doc, long gid, exist.NodeSet parents,
-     *  boolean directParent, boolean includeSelf) {
-     *  if(gid < 2)
-     *  return -1;
-     *  if(includeSelf && parents.contains(doc, gid))
-     *  return gid;
-     *  int level = doc.getTreeLevel(gid);
-     *  / calculate parent's gid
-     *  long pid = (gid - doc.getLevelStartPoint(level)) /
-     *  doc.getTreeLevelOrder(level)
-     *  + doc.getLevelStartPoint(level - 1);
-     *  /long pid = (gid - 2) / ((DocumentImpl)doc).getOrder() + 1;
-     *  if(parents.contains(doc, pid))
-     *  return pid;
-     *  else if(directParent)
-     *  return -1;
-     *  else
-     *  return parentWithChild(doc, pid, parents, directParent);
-     *  }
-     */
+	public void setInPredicate(boolean inPredicate) {
+		this.inPredicate = inPredicate;
+	}
+
 }
 

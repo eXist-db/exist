@@ -20,6 +20,7 @@
  */
 package org.exist.dom;
 
+import org.exist.util.LongLinkedList;
 import org.exist.util.XMLUtil;
 import java.util.Iterator;
 import org.w3c.dom.NodeList;
@@ -85,25 +86,15 @@ public abstract class NodeSet implements NodeList {
 	public abstract NodeProxy get(NodeProxy p);
 	public abstract NodeProxy get(DocumentImpl doc, long nodeId);
 
-	//public abstract int getLast();
-
-	/**
-	 * Check if node has a parent contained in this node set.
-	 * If directParent is true, only direct ancestors are considered.
-	 */
-	public boolean nodeHasParent(DocumentImpl doc, long gid, boolean directParent) {
-		return nodeHasParent(doc, gid, directParent, false, -1);
-	}
-
-	public boolean nodeHasParent(NodeProxy p, boolean directParent) {
+	public NodeProxy nodeHasParent(NodeProxy p, boolean directParent) {
 		return nodeHasParent(p.doc, p.gid, directParent, false);
 	}
 
-	public boolean nodeHasParent(NodeProxy p, boolean directParent, boolean includeSelf) {
+	public NodeProxy nodeHasParent(NodeProxy p, boolean directParent, boolean includeSelf) {
 		return nodeHasParent(p.doc, p.gid, directParent, includeSelf);
 	}
 
-	public boolean nodeHasParent(
+	public NodeProxy nodeHasParent(
 		DocumentImpl doc,
 		long gid,
 		boolean directParent,
@@ -121,30 +112,35 @@ public abstract class NodeSet implements NodeList {
 	 * If includeSelf is true, the method returns also true if
 	 * the node itself is contained in the node set.
 	 */
-	public boolean nodeHasParent(
+	public NodeProxy nodeHasParent(
 		DocumentImpl doc,
 		long gid,
 		boolean directParent,
 		boolean includeSelf,
 		int level) {
 		if (gid < 1)
-			return false;
-		if (includeSelf && contains(doc, gid))
-			return true;
+			return null;
+		NodeProxy parent;
+		if (includeSelf && (parent = get(doc, gid)) != null)
+			return parent;
 		if (level < 0)
 			level = doc.getTreeLevel(gid);
 		// calculate parent's gid
 		long pid = XMLUtil.getParentId(doc, gid);
 		includeSelf = false;
-		if (contains(doc, pid))
-			return true;
+		if ((parent = get(doc, pid)) != null)
+			return parent;
 		else if (directParent)
-			return false;
+			return null;
 		else
 			return nodeHasParent(doc, pid, directParent, includeSelf, level - 1);
 	}
 
 	public ArraySet getChildren(NodeSet al, int mode) {
+		return getChildren(al, mode, false);
+	}
+
+	public ArraySet getChildren(NodeSet al, int mode, boolean rememberContext) {
 		NodeProxy n, p;
 		long start = System.currentTimeMillis();
 		ArraySet result = new ArraySet(getLength());
@@ -152,28 +148,46 @@ public abstract class NodeSet implements NodeList {
 			case DESCENDANT :
 				for (Iterator i = iterator(); i.hasNext();) {
 					n = (NodeProxy) i.next();
-					if (al.nodeHasParent(n, true, false))
+					if ((p = al.nodeHasParent(n, true, false)) != null) {
+						if (rememberContext)
+							n.addContextNode(p);
+						else
+							n.copyContext(p);
 						result.add(n);
+					}
 				}
 				break;
 			case ANCESTOR :
 				for (Iterator i = iterator(); i.hasNext();) {
 					n = (NodeProxy) i.next();
 					p = al.parentWithChild(n, true, false);
-					if (p != null)
+					if (p != null) {
+						if (rememberContext)
+							p.addContextNode(n);
+						else
+							p.copyContext(n);
 						result.add(p);
+					}
 				}
 				break;
 		}
-		System.out.println("getChildren found " + result.getLength() + " in " + 
-			(System.currentTimeMillis() - start) + "ms.");
+		System.out.println(
+			"getChildren found "
+				+ result.getLength()
+				+ " in "
+				+ (System.currentTimeMillis() - start)
+				+ "ms.");
 		return result;
 	}
 
 	public NodeSet getDescendants(NodeSet al, int mode) {
 		return getDescendants(al, mode, false);
 	}
-	
+
+	public NodeSet getDescendants(NodeSet al, int mode, boolean includeSelf) {
+		return getDescendants(al, mode, includeSelf, false);
+	}
+
 	/**
 	 *  For a given set of potential ancestor nodes, get the
 	 * descendants in this node set
@@ -183,25 +197,68 @@ public abstract class NodeSet implements NodeList {
 	 * nodes should be returned. Possible values are ANCESTOR or DESCENDANT.
 	 *@return
 	 */
-	public NodeSet getDescendants(NodeSet al, int mode, boolean includeSelf) {
+	public NodeSet getDescendants(
+		NodeSet al,
+		int mode,
+		boolean includeSelf,
+		boolean rememberContext) {
 		NodeProxy n, p;
 		ArraySet result = new ArraySet(getLength());
 		switch (mode) {
 			case DESCENDANT :
 				for (Iterator i = iterator(); i.hasNext();) {
 					n = (NodeProxy) i.next();
-					if (al.nodeHasParent(n, false, false))
+					if ((p = al.nodeHasParent(n, false, false)) != null) {
+						if (rememberContext)
+							n.addContextNode(p);
+						else
+							n.copyContext(p);
 						result.add(n);
+					}
 				}
 				break;
 			case ANCESTOR :
 				for (Iterator i = iterator(); i.hasNext();) {
 					n = (NodeProxy) i.next();
 					p = al.parentWithChild(n.doc, n.gid, false);
-					if (p != null)
+					if (p != null) {
+						if (rememberContext)
+							p.addContextNode(n);
+						else
+							p.copyContext(n);
 						result.add(p);
+					}
 				}
 				break;
+		}
+		return result;
+	}
+
+	/**
+		 *  For a given set of potential ancestor nodes, get the
+		 * descendants in this node set
+		 *
+		 *@param  al    node set containing potential ancestors
+		 *@param  mode  determines if either the ancestor or the descendant
+		 * nodes should be returned. Possible values are ANCESTOR or DESCENDANT.
+		 *@return
+		 */
+	public NodeSet getAncestors(NodeSet al, boolean includeSelf, boolean rememberContext) {
+		NodeProxy n, p, temp;
+		ArraySet result = new ArraySet(al.getLength());
+		for (Iterator i = iterator(); i.hasNext();) {
+			n = (NodeProxy) i.next();
+			p = al.parentWithChild(n.doc, n.gid, false);
+			if (p != null) { 
+				if((temp = result.get(p)) == null) {
+					if (rememberContext)
+						p.addContextNode(n);
+					else
+						p.copyContext(n);
+					result.add(p);
+				} else if(rememberContext)
+					temp.addContextNode(n);
+			}
 		}
 		return result;
 	}
@@ -216,60 +273,61 @@ public abstract class NodeSet implements NodeList {
 	 * @return
 	 */
 	public NodeSet getSiblings(NodeSet siblings, int mode) {
-		if(siblings.getLength() == 0 || getLength() == 0)
+		if (siblings.getLength() == 0 || getLength() == 0)
 			return NodeSet.EMPTY_SET;
 		ArraySet result = new ArraySet(getLength());
 		Iterator ia = iterator();
 		Iterator ib = siblings.iterator();
-		NodeProxy na = (NodeProxy)ia.next(), nb = (NodeProxy)ib.next();
+		NodeProxy na = (NodeProxy) ia.next(), nb = (NodeProxy) ib.next();
 		long pa, pb;
-		while(true) {
+		while (true) {
 			// first, try to find nodes belonging to the same doc
-			if(na.doc.getDocId() < nb.doc.getDocId()) {
-				if(ia.hasNext())
-					na = (NodeProxy)ia.next();
+			if (na.doc.getDocId() < nb.doc.getDocId()) {
+				if (ia.hasNext())
+					na = (NodeProxy) ia.next();
 				else
 					break;
-			} else if(na.doc.getDocId() > nb.doc.getDocId()) {
-				if(ib.hasNext())
-					nb = (NodeProxy)ib.next();
-				else break;
+			} else if (na.doc.getDocId() > nb.doc.getDocId()) {
+				if (ib.hasNext())
+					nb = (NodeProxy) ib.next();
+				else
+					break;
 			} else {
 				// same document: check if the nodes have the same parent
 				pa = XMLUtil.getParentId(na.doc, na.gid);
 				pb = XMLUtil.getParentId(nb.doc, nb.gid);
-				
-				if(pa < pb) {
+
+				if (pa < pb) {
 					// wrong parent: proceed
-					if(ia.hasNext()) 
-						na = (NodeProxy)ia.next();
+					if (ia.hasNext())
+						na = (NodeProxy) ia.next();
 					else
 						break;
-				} else if(pa > pb) {
+				} else if (pa > pb) {
 					// wrong parent: proceed
-					if(ib.hasNext())
-						nb = (NodeProxy)ib.next();
+					if (ib.hasNext())
+						nb = (NodeProxy) ib.next();
 					else
 						break;
 				} else {
 					// found two nodes with the same parent
 					// now, compare the ids: a node is a following sibling
 					// if its id is greater than the id of the other node
-					if(nb.gid < na.gid) {
+					if (nb.gid < na.gid) {
 						// found a preceding sibling
-						if(mode == PRECEDING)
+						if (mode == PRECEDING)
 							result.add(nb);
-						if(ib.hasNext())
-							nb = (NodeProxy)ib.next();
-					} else if(nb.gid > na.gid) {
+						if (ib.hasNext())
+							nb = (NodeProxy) ib.next();
+					} else if (nb.gid > na.gid) {
 						// found a following sibling
-						if(mode == FOLLOWING)
+						if (mode == FOLLOWING)
 							result.add(nb);
-						if(ib.hasNext())
-							nb = (NodeProxy)ib.next();
-					// equal nodes: proceed with next node
-					} else if(ib.hasNext()) 
-						nb = (NodeProxy)ib.next();
+						if (ib.hasNext())
+							nb = (NodeProxy) ib.next();
+						// equal nodes: proceed with next node
+					} else if (ib.hasNext())
+						nb = (NodeProxy) ib.next();
 					else
 						break;
 				}
@@ -277,7 +335,7 @@ public abstract class NodeSet implements NodeList {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Search for a node contained in this node set, which is an
 	 * ancestor of the argument node.
@@ -344,26 +402,24 @@ public abstract class NodeSet implements NodeList {
 	}
 
 	public boolean hasIndex() {
-		for(Iterator i = iterator(); i.hasNext(); ) {
-			if(!((NodeProxy)i.next()).hasIndex())
+		for (Iterator i = iterator(); i.hasNext();) {
+			if (!((NodeProxy) i.next()).hasIndex())
 				return false;
 		}
 		return true;
 	}
-	
+
 	public NodeSet getRange(DocumentImpl doc, long lower, long upper) {
 		NodeProxy p;
 		ArraySet result = new ArraySet(5);
-		for (Iterator i = iterator(); i.hasNext(); ) {
+		for (Iterator i = iterator(); i.hasNext();) {
 			p = (NodeProxy) i.next();
-			if (p.doc.docId == doc.docId &&
-				p.gid >= lower &&
-				p.gid <= upper)
+			if (p.doc.docId == doc.docId && p.gid >= lower && p.gid <= upper)
 				result.add(p);
 		}
 		return result;
 	}
-	
+
 	public NodeSet intersection(NodeSet other) {
 		long start = System.currentTimeMillis();
 		NodeIDSet r = new NodeIDSet();
@@ -377,7 +433,7 @@ public abstract class NodeSet implements NodeList {
 		for (Iterator i = other.iterator(); i.hasNext();) {
 			l = (NodeProxy) i.next();
 			if (contains(l)) {
-				if((p = r.get(l)) != null) {
+				if ((p = r.get(l)) != null) {
 					p.addMatches(l.matches);
 				} else
 					r.add(l);
@@ -388,7 +444,7 @@ public abstract class NodeSet implements NodeList {
 
 	public NodeSet union(NodeSet other) {
 		long start = System.currentTimeMillis();
-		NodeIDSet result = new NodeIDSet();
+		ArraySet result = new ArraySet(getLength() + other.getLength());
 		result.addAll(other);
 		NodeProxy p, c;
 		for (Iterator i = iterator(); i.hasNext();) {
@@ -402,14 +458,27 @@ public abstract class NodeSet implements NodeList {
 		return result;
 	}
 
-	public NodeSet subtract(NodeSet other) {
-		long start = System.currentTimeMillis();
-		NodeIDSet result = new NodeIDSet();
-		NodeProxy p;
-		for (Iterator i = iterator(); i.hasNext();) {
-			p = (NodeProxy) i.next();
-			if (!other.contains(p))
-				result.add(p);
+	public NodeSet getContextNodes(NodeSet contextNodes, boolean rememberContext) {
+		NodeSet result = new ArraySet(getLength());
+		NodeProxy current, context;
+		LongLinkedList contextList;
+		LongLinkedList.ListItem item;
+		for(Iterator i = iterator(); i.hasNext(); ) {
+			current = (NodeProxy)i.next();
+			contextList = current.getContext();
+			for(Iterator j = contextList.iterator(); j.hasNext(); ) {
+				item = (LongLinkedList.ListItem)j.next();
+				context = contextNodes.get(current.doc, item.l);
+				if(context != null) {
+					if(!result.contains(context)) {
+						if(rememberContext) {
+							context.addContextNode(context);
+						}
+						result.add(context);
+					}
+					context.addMatches(current.matches);
+				}
+			}
 		}
 		return result;
 	}

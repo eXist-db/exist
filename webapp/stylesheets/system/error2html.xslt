@@ -17,14 +17,14 @@
    <title>
     <xsl:value-of select="$pageTitle"/>
    </title>
-   <link href="{$contextPath}/styles/main.css" type="text/css" rel="stylesheet"/>
+   <link href="{$contextPath}/stylesheets/system/main.css" type="text/css" rel="stylesheet"/>
    <style>
 		h1 { color: #336699; text-align: left; margin: 0px 0px 30px 0px; padding: 0px; border-width: 0px 0px 1px 0px; border-style: solid; border-color: #336699;}
 		p.message { padding: 10px 30px 10px 30px; font-weight: bold; font-size: 130%; border-width: 1px; border-style: dashed; border-color: #336699; }
 		p.description { padding: 10px 30px 20px 30px; border-width: 0px 0px 1px 0px; border-style: solid; border-color: #336699;}
 		p.topped { padding-top: 10px; border-width: 1px 0px 0px 0px; border-style: solid; border-color: #336699; }
    </style>
-   <script src="{$contextPath}/scripts/main.js" type="text/javascript"/>
+   <script src="{$contextPath}/stylesheets/system/scripts/main.js" type="text/javascript"/>
   </head>
   <body>
    <h1><xsl:value-of select="$pageTitle"/></h1>

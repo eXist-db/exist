@@ -1049,7 +1049,6 @@ public class RpcConnection extends Thread {
 	 */
 	public String retrieve(User user, int resultId, int num, boolean prettyPrint, String encoding)
 		throws Exception {
-		System.out.println("pretty-print = " + prettyPrint);
 		DBBroker broker = brokerPool.get();
 		try {
 			QueryResult qr = (QueryResult) connectionPool.resultSets.get(resultId);
@@ -1065,6 +1064,7 @@ public class RpcConnection extends Thread {
 					Map properties = new TreeMap();
 					properties.put(Serializer.ENCODING, encoding);
 					properties.put(Serializer.PRETTY_PRINT, Boolean.toString(prettyPrint));
+					serializer.setProperties(properties);
 					return serializer.serialize(proxy);
 				default :
 					ValueSet valueSet = qr.result.getValueSet();

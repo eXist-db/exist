@@ -22,6 +22,7 @@ import org.apache.cocoon.environment.Session;
 import org.apache.cocoon.environment.SourceResolver;
 import org.apache.cocoon.transformation.AbstractSAXTransformer;
 import org.apache.cocoon.xml.dom.DOMStreamer;
+import org.exist.storage.serializers.Serializer;
 import org.exist.xmldb.XPathQueryServiceImpl;
 import org.w3c.dom.DocumentFragment;
 import org.xml.sax.Attributes;
@@ -211,14 +212,15 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 		try {
 			XPathQueryServiceImpl service =
 				(XPathQueryServiceImpl) collection.getService("XPathQueryService", "1.0");
-			service.setProperty("sax-document-events", "false");
-			service.setProperty("create-container-elements", "false");
-			service.setProperty(
-				"match-tagging-elements",
-				Boolean.toString(highlightElementMatches));
-			service.setProperty(
-				"match-tagging-attributes",
-				Boolean.toString(highlightAttributeMatches));
+			service.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
+			String highlighting = "none";
+			if (highlightElementMatches && highlightAttributeMatches)
+				highlighting = "both";
+			else if (highlightElementMatches)
+				highlighting = "elements";
+			else if (highlightAttributeMatches)
+				highlighting = "attributes";
+			service.setProperty(Serializer.HIGHLIGHT_MATCHES, highlighting);
 			ResourceSet queryResult =
 				(resource == null) ? service.query(xpath) : service.query(resource, xpath);
 			if (queryResult == null) {
@@ -226,7 +228,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 				return;
 			}
 			long len = queryResult.getSize();
-			for(long i = 0; i < len; i++) {
+			for (long i = 0; i < len; i++) {
 				XMLResource res = (XMLResource) queryResult.getResource(i);
 				res.getContentAsSAX(this);
 			}
@@ -292,14 +294,15 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 			ResourceSet queryResult = null;
 			XPathQueryServiceImpl service =
 				(XPathQueryServiceImpl) collection.getService("XPathQueryService", "1.0");
-			service.setProperty("sax-document-events", "false");
-			service.setProperty("create-container-elements", "false");
-			service.setProperty(
-				"match-tagging-elements",
-				Boolean.toString(highlightElementMatches));
-			service.setProperty(
-				"match-tagging-attributes",
-				Boolean.toString(highlightAttributeMatches));
+			service.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
+			String highlighting = "none";
+			if (highlightElementMatches && highlightAttributeMatches)
+				highlighting = "both";
+			else if (highlightElementMatches)
+				highlighting = "elements";
+			else if (highlightAttributeMatches)
+				highlighting = "attributes";
+			service.setProperty(Serializer.HIGHLIGHT_MATCHES, highlighting);
 			// check if query result is already stored in the session
 			if (createSession && resource == null)
 				queryResult = (ResourceSet) session.getAttribute(xpath);

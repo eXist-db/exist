@@ -3,8 +3,6 @@
     <classpathentry kind="src" path="src"/>
     <classpathentry kind="src" path="samples"/>
     <classpathentry kind="src" path="src14"/>
-    <classpathentry exported="true" kind="var" path="JRE_LIB" sourcepath="JRE_SRC"/>
-    <classpathentry kind="var" path="JRE_SRC"/>
     <classpathentry kind="lib" path="lib/core/ant.jar"/>
     <classpathentry kind="lib" path="lib/core/antlr.jar"/>
     <classpathentry kind="lib" path="lib/core/getopt.jar"/>
@@ -28,9 +26,42 @@
     <classpathentry kind="lib" path="lib/core/fastutil-2.52.jar"/>
     <classpathentry kind="lib" path="lib/core/resolver-20021114.jar"/>
     <classpathentry kind="lib" path="lib/optional/avalon-framework-4.1.4.jar"/>
-    <classpathentry kind="lib" path="lib/optional/cocoon-2.1m2.jar"/>
-    <classpathentry kind="lib" path="lib/endorsed/xalan-2.3.1.jar"/>
-    <classpathentry kind="lib" path="lib/endorsed/xercesImpl.jar"/>
     <classpathentry kind="lib" path="lib/endorsed/xml-apis.jar"/>
+    <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+    <classpathentry kind="lib" path="lib/endorsed/xalan-2.4.0.jar"/>
+    <classpathentry kind="lib" path="lib/endorsed/xercesImpl-2.4.0.jar"/>
+    <classpathentry kind="lib" path="lib/optional/cocoon.jar"/>
+    <classpathentry kind="lib" path="lib/optional/cocoon-deprecated.jar"/>
+    <classpathentry kind="lib" path="lib/optional/commons-collections-2.1.jar"/>
+    <classpathentry kind="lib" path="lib/optional/commons-discovery.jar"/>
+    <classpathentry kind="lib" path="lib/optional/commons-httpclient-20030210.jar"/>
+    <classpathentry kind="lib" path="lib/optional/commons-jxpath-1.1.jar"/>
+    <classpathentry kind="lib" path="lib/optional/commons-lang-1.0.1.jar"/>
+    <classpathentry kind="lib" path="lib/optional/commons-logging-1.0.3.jar"/>
+    <classpathentry kind="lib" path="lib/optional/databases-block.jar"/>
+    <classpathentry kind="lib" path="lib/optional/excalibur-collections-20020820.jar"/>
+    <classpathentry kind="lib" path="lib/optional/excalibur-component-1.1.jar"/>
+    <classpathentry kind="lib" path="lib/optional/excalibur-concurrent-20020820.jar"/>
+    <classpathentry kind="lib" path="lib/optional/excalibur-datasource-vm14-20021121.jar"/>
+    <classpathentry kind="lib" path="lib/optional/excalibur-event-1.0.3.jar"/>
+    <classpathentry kind="lib" path="lib/optional/excalibur-i18n-1.0.jar"/>
+    <classpathentry kind="lib" path="lib/optional/excalibur-instrument-1.0.jar"/>
+    <classpathentry kind="lib" path="lib/optional/excalibur-instrument-manager-1.0.jar"/>
+    <classpathentry kind="lib" path="lib/optional/excalibur-instrument-manager-interfaces-1.0.jar"/>
+    <classpathentry kind="lib" path="lib/optional/excalibur-io-1.1.jar"/>
+    <classpathentry kind="lib" path="lib/optional/excalibur-logger-1.0.1.jar"/>
+    <classpathentry kind="lib" path="lib/optional/excalibur-monitor-1.0.2.jar"/>
+    <classpathentry kind="lib" path="lib/optional/excalibur-naming-1.0.jar"/>
+    <classpathentry kind="lib" path="lib/optional/excalibur-pool-1.2.jar"/>
+    <classpathentry kind="lib" path="lib/optional/excalibur-sourceresolve-20030630.jar"/>
+    <classpathentry kind="lib" path="lib/optional/excalibur-store-20030317.jar"/>
+    <classpathentry kind="lib" path="lib/optional/excalibur-xmlutil-20030520.jar"/>
+    <classpathentry kind="lib" path="lib/optional/jisp-2.0.1.jar"/>
+    <classpathentry kind="lib" path="lib/optional/logkit-1.2.jar"/>
+    <classpathentry kind="lib" path="lib/optional/pizza-1.1.jar"/>
+    <classpathentry kind="lib" path="lib/optional/taglib-block.jar"/>
+    <classpathentry kind="lib" path="lib/optional/util.concurrent-1.3.1.jar"/>
+    <classpathentry kind="lib" path="lib/optional/xmldb-block.jar"/>
+    <classpathentry kind="lib" path="lib/optional/xmlform-block.jar"/>
     <classpathentry kind="output" path="classes"/>
 </classpath>

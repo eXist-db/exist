@@ -38,6 +38,9 @@
         <fileset dir="${lib.optional}">
             <include name="*.jar"/>
         </fileset>
+		<fileset dir="${lib.endorsed}">
+			<include name="*.jar"/>
+		</fileset>
         <pathelement path="exist.jar"/>
         <pathelement path="${java.class.path}"/>
     </path>
@@ -258,15 +261,18 @@
     <!-- ================================================================== -->
     <!-- Run JUnit tests                                                    -->
     <!-- ================================================================== -->
-    <target name="test">
+    <target name="test" depends="jar">
         <delete failonerror="false">
 		<fileset dir="data" includes="*.dbx"/>
 		<fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
         </delete>
         <junit haltonfailure="yes" printsummary="yes" 
         	showoutput="${junit.output}">
+        	<classpath refid="classpath.core"/>
             <formatter type="plain"/>
-            <test fork="yes" name="org.exist.xmldb.test.AllTests" todir="${junit.reports}"/>
+            <test fork="yes" name="org.exist.xmldb.test.AllTests" 
+				todir="${junit.reports}">
+			</test>
 			<test fork="yes" name="org.exist.xupdate.test.AllTests" todir="${junit.reports}"/>
             <batchtest fork="yes" todir="${junit.reports}">
                 <fileset dir="${src}">
@@ -275,7 +281,6 @@
 					<exclude name="**/xupdate/test/*.java"/>
                 </fileset>
             </batchtest>
-            <classpath refid="classpath.core"/>
         </junit>
     </target>
     

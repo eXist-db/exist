@@ -7,17 +7,17 @@
 	 "summarize" is set, a short summary of the query execution
 	 is shown first.
 -->
-<xsp:page language="java"
-  xmlns:xsp="http://apache.org/xsp"
-  xmlns:ci="http://apache.org/cocoon/include/1.0"
+<xsp:page
   xmlns:xmldb="http://exist-db.org/xmldb/1.0"
->
+  xmlns:xsp="http://apache.org/xsp"
+  >
+
     <document>
         <!-- include header -->
-        <ci:include src="context://header.xml"/>
+        <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="context://header.xml"/>
        
         <!-- include sidebar -->
-        <ci:include src="sidebar.xml"/>
+        <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
        
         <body>
             <section title="Query results">
@@ -61,7 +61,7 @@
         <!--<xmldb:driver class="org.exist.xmldb.DatabaseImpl"/>-->
 
         <xmldb:collection uri="xmldb:exist:///db" user="guest" password="guest">
-            <xmldb:execute encoding="ISO-8859-1">
+            <xmldb:execute>
                 <xmldb:xpath>query</xmldb:xpath>
                 
                     <xsp:logic>

@@ -19,7 +19,7 @@ if [ -z "$EXIST_HOME" ]; then
     fi
 fi
 
-LOCALCLASSPATH=$CLASSPATH:$JAVA_HOME/lib/tools.jar:$EXIST_HOME/lib/core/ant.jar:$EXIST_HOME/lib/optional/ant-optional.jar:$EXIST_HOME/lib/core/junit.jar:$EXIST_HOME/lib/core/jakarta-oro-2.0.6.jar
+LOCALCLASSPATH=$CLASSPATH:$JAVA_HOME/lib/tools.jar:$EXIST_HOME/lib/core/ant.jar:$EXIST_HOME/lib/optional/ant-optional.jar:$EXIST_HOME/lib/core/junit.jar:$EXIST_HOME/lib/core/jakarta-oro-2.0.6.jar:$EXIST_HOME/lib/endorsed/xercesImpl-2.4.0.jar:$EXIST_HOME/lib/endorsed/xml-apis.jar
 
 JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
 

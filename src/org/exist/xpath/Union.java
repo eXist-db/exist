@@ -59,7 +59,7 @@ public class Union extends PathExpr {
 		LOG.debug("right " + right.pprint() + " returned: " + rval.getLength());
 		long start = System.currentTimeMillis();
         NodeSet result = lval.union(rval);
-		LOG.debug("union took " + (System.currentTimeMillis() - start));
+		LOG.debug("union found " + result.getLength() + " in "+ (System.currentTimeMillis() - start));
 		return new ValueNodeSet(result);
 	}
 
@@ -70,4 +70,14 @@ public class Union extends PathExpr {
 		buf.append(right.pprint());
 		return buf.toString();
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.Expression#setInPredicate(boolean)
+	 */
+	public void setInPredicate(boolean inPredicate) {
+		super.setInPredicate(inPredicate);
+		left.setInPredicate(inPredicate);
+		right.setInPredicate(inPredicate);
+	}
+
 }

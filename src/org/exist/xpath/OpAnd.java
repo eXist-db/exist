@@ -1,6 +1,6 @@
 
 /* eXist Open Source Native XML Database
- * Copyright (C) 2000,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2001,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -30,62 +30,55 @@ import org.exist.storage.BrokerPool;
 
 public class OpAnd extends BinaryOp {
 
-  private static Category LOG = Category.getInstance(OpAnd.class.getName());
+	private static Category LOG = Category.getInstance(OpAnd.class.getName());
 
-  public OpAnd(BrokerPool pool) {
-    super(pool);
-  }
+	public OpAnd(BrokerPool pool) {
+		super(pool);
+	}
 
-  public DocumentSet preselect(DocumentSet in_docs) {
-	  if(getLength() == 0)
-		  return in_docs;
-	  DocumentSet out_docs = getExpression(0).preselect(in_docs);
-	  for(int i = 1; i < getLength(); i++)
-		  out_docs = out_docs.intersection(getExpression(i).preselect(out_docs));
-	  return out_docs;
-  }
+	public DocumentSet preselect(DocumentSet in_docs) {
+		if (getLength() == 0)
+			return in_docs;
+		DocumentSet out_docs = getExpression(0).preselect(in_docs);
+		for (int i = 1; i < getLength(); i++)
+			out_docs = out_docs.intersection(getExpression(i).preselect(out_docs));
+		return out_docs;
+	}
 
-   public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
-	   if(getLength() == 0)
-		   return new ValueNodeSet(context);
-	   NodeSet rr, rl = (NodeSet)getExpression(0).eval(docs, context, null).getNodeList();
-	   if(context != null)
-		   rl = getParents(rl, context);
-	   for(int i = 1; i < getLength(); i++) {
-		   rr = (NodeSet)getExpression(i).eval(docs, context, null).getNodeList();
-		   if(context != null)
-			   rr = getParents(rr, context);
-		   rl = rl.intersection(rr);
-	   }
-	   return new ValueNodeSet(rl);
-   }
+	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
+		if (getLength() == 0)
+			return new ValueNodeSet(context);
+		LOG.debug("processing " + getExpression(0).pprint());
+		NodeSet rr, rl = (NodeSet) getExpression(0).eval(docs, context, null).getNodeList();
+		rl = rl.getContextNodes(context, inPredicate);
+		for (int i = 1; i < getLength(); i++) {
+			LOG.debug("processing " + getExpression(i).pprint());
+			rr = (NodeSet) getExpression(i).eval(docs, context, null).getNodeList();
+			rl = rl.intersection(rr.getContextNodes(context, inPredicate));
+		}
+		return new ValueNodeSet(rl);
+	}
 
-  public String pprint() {
-	  if(getLength() == 0)
-		  return "";
-	  StringBuffer buf = new StringBuffer();
-	  buf.append(getExpression(0).pprint());
-	  for(int i = 1; i < getLength(); i++) {
-		  buf.append(" and ");
-		  buf.append(getExpression(i).pprint());
-	  }
-	  return buf.toString();
-  }
+	public String pprint() {
+		if (getLength() == 0)
+			return "";
+		StringBuffer buf = new StringBuffer();
+		buf.append(getExpression(0).pprint());
+		for (int i = 1; i < getLength(); i++) {
+			buf.append(" and ");
+			buf.append(getExpression(i).pprint());
+		}
+		return buf.toString();
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.Expression#setInPredicate(boolean)
+	 */
+	public void setInPredicate(boolean inPredicate) {
+		super.setInPredicate(inPredicate);
+		for(int i = 0; i < getLength(); i++) {
+			getExpression(i).setInPredicate(inPredicate);
+		}
+	}
 
-   protected static final NodeIDSet getParents(NodeSet child,
-					       NodeSet parents) {
-	   NodeIDSet result = new NodeIDSet();
-	   long pid;
-	   NodeProxy l, parent;
-	   for(Iterator i = child.iterator(); i.hasNext(); ) {
-		   l = (NodeProxy)i.next();
-		   parent =
-			   parents.parentWithChild(l.doc, l.getGID(), false, true);
-		   if(parent != null) { 
-		   		parent.addMatches(l.matches);
-		   		result.add(parent);
-		   }
-	   }
-	   return result;
-   }
 }

@@ -216,4 +216,12 @@ public class FunContains extends Function {
 	public void setPath(PathExpr path) {
 		this.path = path;
 	}
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.Expression#setInPredicate(boolean)
+	 */
+	public void setInPredicate(boolean inPredicate) {
+		if(path != null)
+			path.setInPredicate(inPredicate);
+	}
+
 }

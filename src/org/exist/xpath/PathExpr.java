@@ -1,7 +1,7 @@
 
 /*
  *  eXist Native XML Database
- *  Copyright (C) 2000,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ *  Copyright (C) 2001,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -36,60 +36,29 @@ public class PathExpr implements Expression {
     protected boolean keepVirtual = false;
     protected BrokerPool pool = null;
     protected LinkedList steps = new LinkedList();
-
-
-    /**  Constructor for the PathExpr object */
+	protected boolean inPredicate = false;
+	
     public PathExpr(BrokerPool pool) {
 		this.pool = pool;
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  s  Description of the Parameter
-     */
     public void add( Expression s ) {
         steps.add( s );
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  path  Description of the Parameter
-     */
     public void add( PathExpr path ) {
         for ( Iterator i = path.steps.iterator(); i.hasNext();  )
             add( (Expression) i.next() );
     }
 
-
-    /**
-     *  Adds a feature to the Document attribute of the PathExpr object
-     *
-     *@param  doc  The feature to be added to the Document attribute
-     */
     public void addDocument( DocumentImpl doc ) {
         docs.add( doc );
     }
 
-
-    /**
-     *  Adds a feature to the Path attribute of the PathExpr object
-     *
-     *@param  path  The feature to be added to the Path attribute
-     */
     public void addPath( PathExpr path ) {
         steps.add( path );
     }
 
-
-    /**
-     *  Adds a feature to the Predicate attribute of the PathExpr object
-     *
-     *@param  pred  The feature to be added to the Predicate attribute
-     */
     public void addPredicate( Predicate pred ) {
         Expression e = (Expression) steps.getLast();
         if ( e instanceof Step )
@@ -98,15 +67,6 @@ public class PathExpr implements Expression {
             System.out.println( "not a Step" );
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  docs     Description of the Parameter
-     *@param  context  Description of the Parameter
-     *@param  node     Description of the Parameter
-     *@return          Description of the Return Value
-     */
     public Value eval( DocumentSet docs, NodeSet context, NodeProxy node ) {
         if ( docs.getLength() == 0 )
             return new ValueNodeSet( new ArraySet( 1 ) );
@@ -120,6 +80,7 @@ public class PathExpr implements Expression {
         for ( Iterator iter = steps.iterator(); iter.hasNext();  ) {
             set = (NodeSet) r.getNodeList();
             expr = (Expression) iter.next();
+//            LOG.debug("processing " + expr.pprint());
             if ( expr.returnsType() != Constants.TYPE_NODELIST ) {
                 if ( expr instanceof Literal || expr instanceof IntNumber )
                     return expr.eval( docs, set, null );
@@ -133,43 +94,18 @@ public class PathExpr implements Expression {
         return r;
     }
 
-
-    /**
-     *  Gets the documentSet attribute of the PathExpr object
-     *
-     *@return    The documentSet value
-     */
     public DocumentSet getDocumentSet() {
         return docs;
     }
 
-
-    /**
-     *  Gets the expression attribute of the PathExpr object
-     *
-     *@param  pos  Description of the Parameter
-     *@return      The expression value
-     */
     public Expression getExpression( int pos ) {
         return (Expression) steps.get( pos );
     }
 
-
-    /**
-     *  Gets the length attribute of the PathExpr object
-     *
-     *@return    The length value
-     */
     public int getLength() {
         return steps.size();
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@return    Description of the Return Value
-     */
     public String pprint() {
         StringBuffer buf = new StringBuffer();
         buf.append( '(' );
@@ -182,23 +118,10 @@ public class PathExpr implements Expression {
         return buf.toString();
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@return    Description of the Return Value
-     */
     public DocumentSet preselect() {
         return preselect( docs );
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  in_docs  Description of the Parameter
-     *@return          Description of the Return Value
-     */
     public DocumentSet preselect( DocumentSet in_docs ) {
         DocumentSet docs = in_docs;
         if ( docs.getLength() == 0 )
@@ -208,35 +131,26 @@ public class PathExpr implements Expression {
         return docs;
     }
 		
-    /**
-     *  Description of the Method
-     *
-     *@return    Description of the Return Value
-     */
     public int returnsType() {
         if ( steps.get( 0 ) != null )
             return ( (Expression) steps.get( 0 ) ).returnsType();
         return Constants.TYPE_NODELIST;
     }
 
-
-    /**
-     *  Sets the documentSet attribute of the PathExpr object
-     *
-     *@param  docs  The new documentSet value
-     */
     public void setDocumentSet( DocumentSet docs ) {
         this.docs = docs;
     }
 
-
-    /**
-     *  Sets the firstExpression attribute of the PathExpr object
-     *
-     *@param  s  The new firstExpression value
-     */
     public void setFirstExpression( Expression s ) {
         steps.addFirst( s );
     }
-}
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.Expression#setInPredicate(boolean)
+	 */
+	public void setInPredicate(boolean inPredicate) {
+		this.inPredicate = inPredicate;
+		if(steps.size() > 0)
+			((Expression)steps.get(0)).setInPredicate(inPredicate);
+	}
 
+}

@@ -1,4 +1,4 @@
-// $ANTLR 2.7.2rc2 (20030105): "XPathParser.g" -> "XPathLexer.java"$
+// $ANTLR : "XPathParser.g" -> "XPathLexer.java"$
 
 	package org.exist.parser;
 	

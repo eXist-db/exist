@@ -19,7 +19,6 @@
 
 package org.exist.xpath;
 
-import org.exist.*;
 import org.exist.dom.*;
 
 /**
@@ -63,6 +62,14 @@ public interface Expression {
 	 * TYPE_NODELIST, TYPE_STRING, TYPE_NUM, TYPE_BOOL.
 	 */
 	public int returnsType();
+	
+	/**
+	 * This method is called to inform the expression object that
+	 * it is executed inside an XPath predicate.
+	 * 
+	 * @param inPredicate
+	 */
+	public void setInPredicate(boolean inPredicate);
 
 	/**
 	 * Return a readable representation of this expression.
