@@ -49,17 +49,23 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
+import org.exist.dom.QName;
 import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
+import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
 import org.exist.util.serializer.ReceiverToSAX;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SAXSerializerPool;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -107,6 +113,13 @@ public abstract class Serializer implements XMLReader {
 	public final static String GENERATE_DOC_EVENTS = "sax-document-events";
 	public final static String ENCODING = "encoding";
 
+	protected final static QName ATTR_HITS_QNAME = new QName("hits", EXIST_NS, "exist");
+	protected final static QName ATTR_START_QNAME = new QName("start", EXIST_NS, "exist");
+	protected final static QName ATTR_COUNT_QNAME = new QName("count", EXIST_NS, "exist");
+	protected final static QName ELEM_RESULT_QNAME = new QName("result", EXIST_NS, "exist");
+	protected final static QName ATTR_TYPE_QNAME = new QName("type", EXIST_NS, "exist");
+	protected final static QName ELEM_VALUE_QNAME = new QName("value", EXIST_NS, "exist");
+	
 	protected DBBroker broker;
 	protected String encoding = "UTF-8";
 	private EntityResolver entityResolver = null;
@@ -633,6 +646,63 @@ public abstract class Serializer implements XMLReader {
 			serializeToReceiver(p, getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
 	}
 
+	/**
+	 * Serialize the items in the given sequence to SAX, starting with item start. If parameter
+	 * wrap is set to true, output a wrapper element to enclose the serialized items. The
+	 * wrapper element will be in namespace {@link #EXIST_NS} and has the following form:
+	 * 
+	 * &lt;exist:result hits="sequence length" start="value of start" count="value of count">
+	 * 
+	 * @param seq
+	 * @param start
+	 * @param count
+	 * @param wrap
+	 * @throws SAXException
+	 */
+	public void toSAX(Sequence seq, int start, int count, boolean wrap) throws SAXException {
+		setStylesheetFromProperties(null);
+		setXSLHandler();
+		AttrList attrs = new AttrList();
+		attrs.addAttribute(ATTR_HITS_QNAME, Integer.toString(seq.getLength()));
+		attrs.addAttribute(ATTR_START_QNAME, Integer.toString(start));
+		attrs.addAttribute(ATTR_COUNT_QNAME, Integer.toString(count));
+		
+		receiver.startDocument();
+		if(wrap) {
+			receiver.startPrefixMapping("exist", EXIST_NS);
+			receiver.startElement(ELEM_RESULT_QNAME, attrs);
+		}
+		
+		Item item;
+		for(int i = --start; i < start + count; i++) {
+			item = seq.itemAt(i);
+			if (item == null) {
+				LOG.debug("item " + i + " not found");
+				continue;
+			}
+			if (Type.subTypeOf(item.getType(), Type.NODE)) {
+				NodeValue node = (NodeValue) item;
+				serializeToReceiver(node, false);
+			} else {
+				attrs = new AttrList();
+				attrs.addAttribute(ATTR_TYPE_QNAME, Type.getTypeName(item.getType()));
+				receiver.startElement(ELEM_VALUE_QNAME, attrs);
+				try {
+					receiver.characters(item.getStringValue());
+				} catch (XPathException e) {
+					throw new SAXException(e.getMessage(), e);
+				}
+				receiver.endElement(ELEM_VALUE_QNAME);
+			}
+		}
+		
+		if(wrap) {
+			receiver.endElement(ELEM_RESULT_QNAME);
+			receiver.endPrefixMapping("exist");
+		}
+		receiver.endDocument();
+	}
+	
 	public void toReceiver(NodeProxy p) throws SAXException {
 	    serializeToReceiver(p, false);
 	}

@@ -63,10 +63,7 @@ import org.exist.xquery.Pragma;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.w3c.dom.Document;
@@ -109,10 +106,9 @@ public class RESTServer {
 	
 	public Response doGet(DBBroker broker, Map parameters, String path) 
 	throws BadRequestException, PermissionDeniedException, NotFoundException {
-		LOG.debug("user = " + broker.getUser().getName());
 		int howmany = 10;
 		int start = 1;
-		boolean summary = false;
+		boolean wrap = true;
 		Properties outputProperties = new Properties();
 		String query = (String) parameters.get("_xpath");
 		if(query == null)
@@ -135,8 +131,8 @@ public class RESTServer {
 			}
 		}
 		String option;
-		if ((option = (String) parameters.get("_summarize")) != null)
-			summary = option.equals("yes");
+		if ((option = (String) parameters.get("_wrap")) != null)
+			wrap = option.equals("yes");
 		if ((option = (String) parameters.get("_indent")) != null)
 			outputProperties.setProperty(OutputKeys.INDENT, option);
 		String stylesheet;
@@ -155,7 +151,7 @@ public class RESTServer {
 			encoding = "UTF-8";
 		Response response = new Response();
 			if (query != null) {
-				response.setContent(search(broker, query, path, howmany, start, outputProperties, 1));
+				response.setContent(search(broker, query, path, howmany, start, outputProperties, wrap));
 			} else {
 				DocumentImpl d = (DocumentImpl) broker.getDocument(path);
 				if (d == null) {
@@ -201,7 +197,7 @@ public class RESTServer {
 		boolean summary = false;
 		int howmany = 10;
 		int start = 1;
-		int enclose = 1;
+		boolean enclose = true;
 		String mime ="text/xml";
 		Properties outputProperties = new Properties(defaultProperties);
 		String query = null;
@@ -238,10 +234,9 @@ public class RESTServer {
 							}
 							
 						option = root.getAttribute("enclose");
-						enclose = 1;
 						if(option != null) {
 						  if (option.equals( "no"))
-						      enclose = 0;	
+						      enclose = false;
 						}
 						   
 						option = root.getAttribute("mime");
@@ -443,7 +438,7 @@ public class RESTServer {
 	 * TODO: pass request and response objects to XQuery.
 	 */
 	protected String search(DBBroker broker, String query, String path,
-			int howmany, int start, Properties outputProperties, int enclose)
+			int howmany, int start, Properties outputProperties, boolean wrap)
 	throws BadRequestException, PermissionDeniedException {
 		String result = null;
 		try {
@@ -467,7 +462,7 @@ public class RESTServer {
 			    long queryTime = System.currentTimeMillis() - startTime;
 				LOG.debug("Found " + resultSequence.getLength() + " in " + queryTime + "ms.");
 				return printResults(broker, resultSequence, howmany, start,
-						queryTime, outputProperties, enclose);
+						queryTime, outputProperties, wrap);
 			} finally {
 			    pool.returnCompiledXQuery(source, compiled);
 			}
@@ -581,7 +576,7 @@ public class RESTServer {
 	}
 
 	protected String printResults(DBBroker broker, Sequence results,
-			int howmany, int start, long queryTime, Properties outputProperties, int enclose)
+			int howmany, int start, long queryTime, Properties outputProperties, boolean wrap)
 			throws BadRequestException {
 		int rlen = results.getLength();
 		if (rlen > 0) {
@@ -594,6 +589,7 @@ public class RESTServer {
 			howmany = 0;
 		Serializer serializer = broker.getSerializer();
 		serializer.reset();
+		outputProperties.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
 		SAXSerializer sax = null;
 		try {
 			StringWriter writer = new StringWriter();
@@ -602,44 +598,42 @@ public class RESTServer {
 			sax.setOutputProperties(outputProperties);
 			serializer.setProperties(outputProperties);
 			serializer.setSAXHandlers(sax, sax);
-			LOG.debug(outputProperties.getProperty(EXistOutputKeys.STYLESHEET));
 			
-			AttributesImpl attrs = new AttributesImpl();
-			attrs.addAttribute("", "hits", "hits", "CDATA", Integer.toString(rlen));
-			attrs.addAttribute("", "start", "start", "CDATA", Integer.toString(start));
-			attrs.addAttribute("", "count", "count", "CDATA", Integer.toString(howmany));
+			serializer.toSAX(results, start, howmany, wrap);
 			
-			sax.startDocument();
-			
-			if (enclose == 1) {
-			sax.startPrefixMapping("exist", NS);
-			sax.startElement(NS, "result", "exist:result", attrs);
-	    	} 
-			
-			Item item;
-			for (int i = --start; i < start + howmany; i++) {
-				item = results.itemAt(i);
-				if (item == null) {
-					LOG.debug("item " + i + " not found");
-					continue;
-				}
-				if (Type.subTypeOf(item.getType(), Type.NODE)) {
-					NodeValue node = (NodeValue) item;
-					serializer.toSAX(node);
-				} else {
-					attrs.clear();
-					attrs.addAttribute("", "type", "type", "CDATA", Type.getTypeName(item.getType()));
-					sax.startElement(NS, "value", "exist:value", attrs);
-					item.toSAX(broker, sax);
-					sax.endElement(NS, "value", "exist:value");
-				}
-			}
-			
-			if (enclose == 1) {
-			sax.endElement(NS, "result", "exist:result");
-			sax.endPrefixMapping("exist");
-            }
-			sax.endDocument();
+//			AttributesImpl attrs = new AttributesImpl();
+//			attrs.addAttribute("", "hits", "hits", "CDATA", Integer.toString(rlen));
+//			attrs.addAttribute("", "start", "start", "CDATA", Integer.toString(start));
+//			attrs.addAttribute("", "count", "count", "CDATA", Integer.toString(howmany));
+//			if (enclose == 1) {
+//				sax.startPrefixMapping("exist", NS);
+//				sax.startElement(NS, "result", "exist:result", attrs);
+//	    	} 
+//			
+//			Item item;
+//			for (int i = --start; i < start + howmany; i++) {
+//				item = results.itemAt(i);
+//				if (item == null) {
+//					LOG.debug("item " + i + " not found");
+//					continue;
+//				}
+//				if (Type.subTypeOf(item.getType(), Type.NODE)) {
+//					NodeValue node = (NodeValue) item;
+//					serializer.toSAX(node);
+//				} else {
+//					attrs.clear();
+//					attrs.addAttribute("", "type", "type", "CDATA", Type.getTypeName(item.getType()));
+//					sax.startElement(NS, "value", "exist:value", attrs);
+//					item.toSAX(broker, sax);
+//					sax.endElement(NS, "value", "exist:value");
+//				}
+//			}
+//			
+//			if (enclose == 1) {
+//				sax.endElement(NS, "result", "exist:result");
+//				sax.endPrefixMapping("exist");
+//            }
+//			sax.endDocument();
 			
 			return writer.toString();
 		} catch (SAXException e) {
