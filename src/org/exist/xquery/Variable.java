@@ -128,8 +128,8 @@ public class Variable {
             return;
         type.checkCardinality(value);
         
-//        if (value.getLength() == 0)
-//            return;
+        if (value.getLength() == 0)
+            return;
         
         int requiredType = type.getPrimaryType();
         if(Type.subTypeOf(requiredType, Type.ATOMIC)) {
