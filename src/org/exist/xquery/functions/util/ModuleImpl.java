@@ -43,7 +43,9 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(DocumentId.signature, DocumentId.class),
 		new FunctionDef(CollectionName.signature, CollectionName.class),
 		new FunctionDef(LogFunction.signature, LogFunction.class),
-		new FunctionDef(CatchFunction.signature, CatchFunction.class)
+		new FunctionDef(CatchFunction.signature, CatchFunction.class),
+		new FunctionDef(ExclusiveLockFunction.signature, ExclusiveLockFunction.class),
+		new FunctionDef(SharedLockFunction.signature, SharedLockFunction.class)
 	};
 	
 	public ModuleImpl() {
