@@ -41,7 +41,6 @@ class RegexMatcher implements TermMatcher {
 	private Pattern regexp;
 
 	public RegexMatcher(String expr, int type) throws EXistException {
-        System.out.println(expr);
 		try {
 			regexp = (type == DBBroker.MATCH_REGEXP
 					? regexCompiler.compile(expr,
