@@ -411,7 +411,7 @@ public class ElementImpl
                 ch.addAll(child.getChildNodes());
                 elem.setChildCount(ch.getLength());
                 elem.setAttributes((short) (elem.getAttributesCount() + attribs.getLength()));
-                lastPath.addComponent(elem.getNodeName());
+                lastPath.addComponent(elem.getQName());
                 // insert the node
                 ownerDocument.broker.insertAfter(last, elem);
                 // index now?
@@ -1224,7 +1224,7 @@ public class ElementImpl
                 break;
             }
             if (child.getNodeType() == Node.ELEMENT_NODE)
-                path.addComponent(child.getNodeName());
+                path.addComponent(child.getQName());
             removeAll(child, path);
             if (child.getNodeType() == Node.ELEMENT_NODE)
                 path.removeLastComponent();
@@ -1264,7 +1264,7 @@ public class ElementImpl
         ownerDocument.broker.endRemove();
         newNode.gid = old.gid;
         ownerDocument.broker.insertAfter(previous, newNode);
-        ownerDocument.broker.index(newNode);
+        ownerDocument.broker.index(newNode, newNode.getPath());
         ownerDocument.broker.flush();
     }
 
@@ -1302,7 +1302,7 @@ public class ElementImpl
                 for (int i = children.getLength() - 1; i > -1; i--) {
                     child = (NodeImpl) children.item(i);
                     if (child.nodeType == Node.ELEMENT_NODE) {
-                        currentPath.addComponent(((ElementImpl) child).getNodeName());
+                        currentPath.addComponent(((ElementImpl) child).getQName());
                         removeAll(child, currentPath);
                         currentPath.removeLastComponent();
                     }

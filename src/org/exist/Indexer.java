@@ -467,7 +467,7 @@ public class Indexer
 			}
 
 			stack.push(node);
-			currentPath.addComponent(qname);
+			currentPath.addComponent(qn);
 //			currentPath.append('/').append(qname);
 			if (!validate) {
 				broker.store(node, currentPath);
@@ -486,7 +486,7 @@ public class Indexer
 			}
 
 			stack.push(node);
-			currentPath.addComponent(qname);
+			currentPath.addComponent(qn);
 //			currentPath.append('/').append(qname);
 			if (!validate) {
 				broker.store(node, currentPath);

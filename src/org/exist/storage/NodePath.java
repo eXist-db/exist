@@ -22,8 +22,11 @@
  */
 package org.exist.storage;
 
+import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.apache.log4j.Logger;
+import org.exist.dom.QName;
 import org.exist.util.FastStringBuffer;
 
 
@@ -32,24 +35,35 @@ import org.exist.util.FastStringBuffer;
  */
 public class NodePath {
 
-    public final static String WILDCARD = "*";
+    private final static Logger LOG = Logger.getLogger(NodePath.class);
     
-    private String[] components = new String[5];
+    /**
+     * (Illegal) QName used as a marker for arbitrary path steps.
+     */
+    public final static QName WILDCARD = new QName("*", "");
+    
+    private QName[] components = new QName[5];
     private int pos = 0;
+    private boolean includeDescendants = true;
     
-    public NodePath() {  
+    public NodePath() {
     }
         
     /**
      * 
      */
-    public NodePath(String path) {
-        init(path);
+    public NodePath(Map namespaces, String path) {
+        init(namespaces, path);
     }
 
-    public void addComponent(String component) {
+    public NodePath(Map namespaces, String path, boolean includeDescendants) {
+        this.includeDescendants = includeDescendants;
+        init(namespaces, path);
+    }
+    
+    public void addComponent(QName component) {
         if(pos == components.length) {
-            String[] t = new String[pos + 1];
+            QName[] t = new QName[pos + 1];
             System.arraycopy(components, 0, t, 0, pos);
             components = t;
         }
@@ -62,15 +76,18 @@ public class NodePath {
     
     public final boolean match(NodePath other) {
         boolean skip = false;
-        int i = 0;
-        for(int j = 0; j < other.pos; j++) {
-            if(i == pos)
-                return true;
-            if(components[i].equals(WILDCARD)) {
+        int i = 0, j = 0;
+        for( ; j < other.pos; j++) {
+            if(i == pos) {
+                if(includeDescendants)
+                    return true;
+                return j == other.pos ? true : false;
+            }
+            if(components[i] == WILDCARD) {
                 ++i;
                 skip = true;
             }
-            if(other.components[j].equals(components[i])) {
+            if(other.components[j].compareTo(components[i]) == 0) {
                 ++i;
                 skip = false;
             } else if(skip) {
@@ -78,7 +95,12 @@ public class NodePath {
             } else
                 return false;
         }
-        return i == pos;
+        if(i == pos) {
+            if(includeDescendants)
+                return true;
+            return j == other.pos ? true : false;
+        }
+        return false;
     }
     
     public void reset() {
@@ -96,7 +118,22 @@ public class NodePath {
         return buf.toString();
     }
     
-    private void init( String path ) {
+    private void addComponent(Map namespaces, String component) {
+        String prefix = QName.extractPrefix(component);
+        if(prefix == null) {
+            addComponent(new QName(component, ""));
+            return;
+        }
+        String namespaceURI = (String) namespaces.get(prefix);
+        String localName = QName.extractLocalName(component);
+        if(namespaceURI == null) {
+            LOG.error("No namespace URI defined for prefix: " + prefix);
+            addComponent(new QName(localName, ""));
+        }
+        addComponent(new QName(localName, namespaceURI, prefix));
+    }
+    
+    private void init( Map namespaces, String path ) {
         StringTokenizer tokenizer = new StringTokenizer(path, "/");
         FastStringBuffer token = new FastStringBuffer();
         String next;
@@ -110,7 +147,7 @@ public class NodePath {
                 next = token.toString();
                 token.reset();
                 if ( next.length(  ) > 0 )
-                    addComponent( next );
+                    addComponent( namespaces, next );
                 if ( path.charAt( ++pos ) == '/' )
                     addComponent( WILDCARD );
                 break;
@@ -121,6 +158,6 @@ public class NodePath {
             }
         }
         if ( token.length() > 0 )
-            addComponent( token.toString() );
+            addComponent( namespaces, token.toString() );
     }
 }

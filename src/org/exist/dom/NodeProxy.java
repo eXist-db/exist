@@ -24,6 +24,9 @@ import java.util.Iterator;
 
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.storage.DBBroker;
+import org.exist.storage.IndexSpec;
+import org.exist.storage.Indexable;
+import org.exist.storage.ValueIndexSpec;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.store.StorageAddress;
 import org.exist.xquery.Cardinality;
@@ -321,11 +324,15 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	}
 
 	public int getIndexType() {
-	    return StorageAddress.indexTypeFromPointer(internalAddress);
+	    return ValueIndexSpec.indexTypeToXPath(
+	            StorageAddress.indexTypeFromPointer(internalAddress)
+	    );
 	}
 	
-	public boolean hasIndex() {
-		return (internalAddress & 0x10000L) > 0;
+	public boolean hasTextIndex() {
+		return ValueIndexSpec.hasFulltextIndex(
+		        StorageAddress.indexTypeFromPointer(internalAddress)
+		);
 	}
 
 	public Match getMatches() {

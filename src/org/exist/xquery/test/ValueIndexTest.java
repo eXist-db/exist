@@ -68,9 +68,9 @@ public class ValueIndexTest extends TestCase {
         XPathQueryService service = storeXMLFileAndGetQueryService("items.xml", "src/org/exist/xquery/test/items.xml");
         
         queryResource(service, "items.xml", "//item[name = 'Racing Bicycle']", 1);
-        queryResource(service, "items.xml", "//item[name > 'Racing Bicycle']", 3);
+        queryResource(service, "items.xml", "//item[name > 'Racing Bicycle']", 4);
         queryResource(service, "items.xml", "//item[itemno = 3]", 1);
-        queryResource(service, "items.xml", "//item[stock <= 10]", 3);
+        queryResource(service, "items.xml", "//item[stock <= 10]", 5);
         queryResource(service, "items.xml", "//item[stock > 20]", 1);
     }
     

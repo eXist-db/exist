@@ -22,6 +22,7 @@ package org.exist.storage;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
@@ -64,7 +65,7 @@ public class FulltextIndexSpec {
         preserveContent = new ArrayList(  );
     }
 
-    public FulltextIndexSpec(Element node) {
+    public FulltextIndexSpec(Map namespaces, Element node) {
         this(true);
         String def = node.getAttribute("default");
         if(def != null && def.length() > 0)
@@ -89,21 +90,21 @@ public class FulltextIndexSpec {
 		String ps;
 		for (int j = 0; j < include.getLength(); j++) {
 			ps = ((Element) include.item(j)).getAttribute("path");
-			addInclude(ps);
+			addInclude(namespaces, ps);
 		}
 		
 		NodeList exclude = node.getElementsByTagName("exclude");
 
 		for (int j = 0; j < exclude.getLength(); j++) {
 			ps = ((Element) exclude.item(j)).getAttribute("path");
-			addExclude(ps);
+			addExclude(namespaces, ps);
 		}
 
 		NodeList preserveContent = node.getElementsByTagName("preserveContent");
 
 		for (int j = 0; j < preserveContent.getLength(); j++) {
 			ps = ((Element) preserveContent.item(j)).getAttribute("path");
-			addpreserveContent(ps);
+			addpreserveContent(namespaces, ps);
 		}
     }
     
@@ -112,8 +113,8 @@ public class FulltextIndexSpec {
      *
      * @param path The feature to be added to the Include attribute
      */
-    public void addInclude( String path ) {
-        includePath.add( new NodePath(path) );
+    private void addInclude( Map namespaces, String path ) {
+        includePath.add( new NodePath(namespaces, path) );
     }
 
     /**
@@ -121,8 +122,8 @@ public class FulltextIndexSpec {
      *
      * @param path DOCUMENT ME!
      */
-    public void addExclude( String path ) {
-        excludePath.add( new NodePath(path) );
+    public void addExclude( Map namespaces, String path ) {
+        excludePath.add( new NodePath(namespaces, path) );
     }
 
 	/**
@@ -211,8 +212,8 @@ public class FulltextIndexSpec {
      *
      * @param path DOCUMENT ME!
      */
-    public void addpreserveContent( String path ) {
-    	preserveContent.add( new NodePath(path) );
+    public void addpreserveContent( Map namespaces, String path ) {
+    	preserveContent.add( new NodePath(namespaces, path) );
     }
     
     

@@ -53,6 +53,13 @@ public class FloatValue extends NumericValue implements Indexable {
 	}
 
 	/* (non-Javadoc)
+     * @see org.exist.xquery.value.AtomicValue#getType()
+     */
+    public int getType() {
+        return Type.FLOAT;
+    }
+    
+	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#getStringValue()
 	 */
 	public String getStringValue() throws XPathException {
@@ -285,7 +292,7 @@ public class FloatValue extends NumericValue implements Indexable {
         final byte[] data = new byte[7];
         ByteConversion.shortToByte(collectionId, data, 0);
         data[2] = (byte) Type.FLOAT;
-        final int bits = Float.floatToRawIntBits(value);
+        final int bits = (int)(Float.floatToIntBits(value) ^ 0x80000000);
         ByteConversion.intToByte(bits, data, 3);
         return data;
     }

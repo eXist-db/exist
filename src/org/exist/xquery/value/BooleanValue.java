@@ -186,7 +186,7 @@ public class BooleanValue extends AtomicValue implements Indexable {
         ByteConversion.shortToByte(collectionId, data, 0);
         data[2] = Type.BOOLEAN;
         data[3] = (byte)(value ? 1 : 0);
-        return null;
+        return data;
     }
 
     /* (non-Javadoc)

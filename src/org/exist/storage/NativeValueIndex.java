@@ -25,6 +25,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -38,8 +39,10 @@ import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.XMLUtil;
 import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
@@ -135,12 +138,6 @@ public class NativeValueIndex {
                 entry = (Map.Entry) i.next();
                 indexable = (Indexable) entry.getKey();
                 idList = (ArrayList) entry.getValue();
-                try {
-                    LOG.debug("Writing " + ((AtomicValue)indexable).getStringValue() + ": " + idList.size());
-                } catch (XPathException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
-                }
                 os.clear();
                 FastQSort.sort(idList, 0, idList.size() - 1);
                 len = idList.size();
@@ -267,7 +264,6 @@ public class NativeValueIndex {
                             }
                         } else {
                             changed = true;
-                            LOG.debug("Skipping " + len);
                             // skip
                             is.skip(len);
                         }
@@ -280,11 +276,15 @@ public class NativeValueIndex {
                     LOG.warn("removeDocument(String) " + e.getMessage(), e);
                 }
                 if (changed) {
-                    if (db.put(key, os.data()) < 0)
+                    if (os.data().size() == 0) {
+                        db.remove(key);
+                    } else {
+                        if (db.put(key, os.data()) < 0)
                             if (LOG.isDebugEnabled()) {
                                 LOG.debug("removeDocument() - "
                                         + "could not save value index");
                             }
+                    }
                 }
             }
         } catch (LockException e) {
@@ -301,9 +301,208 @@ public class NativeValueIndex {
         }
     }
     
+    public void reindex(DocumentImpl oldDoc, NodeImpl node) {
+        if (pending.size() == 0) return;
+        Lock lock = db.getLock();
+        Map.Entry entry;
+        Indexable indexable;
+        List oldList = new ArrayList(), idList;
+        NodeProxy p;
+        VariableByteInput is = null;
+        int len, docId;
+        byte[] data;
+        Value ref;
+        Value val;
+        short sym, nsSym;
+        short collectionId = oldDoc.getCollection().getId();
+        long gid, prevId, cid, address;
+        try {
+            // iterate through elements
+            for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
+                entry = (Map.Entry) i.next();
+                indexable = (Indexable) entry.getKey();
+                idList = (ArrayList) entry.getValue();
+                ref = new Value(indexable.serialize(collectionId));
+                
+                // try to retrieve old index entry for the element
+                try {
+                    lock.acquire(Lock.WRITE_LOCK);
+                    is = db.getAsStream(ref);
+                    os.clear();
+                    oldList.clear();
+                    if (is != null) {
+                        // add old entries to the new list
+                        try {
+                            while (is.available() > 0) {
+                                docId = is.readInt();
+                                len = is.readInt();
+                                if (docId != oldDoc.getDocId()) {
+                                    // section belongs to another document:
+                                    // copy data to new buffer
+                                    os.writeInt(docId);
+                                    os.writeInt(len);
+                                    is.copyTo(os, len);
+                                } else {
+                                    // copy nodes to new list
+                                    gid = 0;
+                                    for (int j = 0; j < len; j++) {
+                                        gid += is.readLong();
+                                        if (node == null
+                                                && oldDoc.getTreeLevel(gid) < oldDoc
+                                                .reindexRequired()) {
+                                            idList.add(new NodeProxy(oldDoc, gid));
+                                        } else if (node != null
+                                                && (!XMLUtil.isDescendant(oldDoc,
+                                                        node.getGID(), gid))) {
+                                            oldList.add(new NodeProxy(oldDoc, gid));
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (EOFException e) {
+                        } catch (IOException e) {
+                            LOG.error("io-error while updating index for value", e);
+                        }
+                    }
+                    if (node != null) idList.addAll(oldList);
+                    // write out the updated list
+                    FastQSort.sort(idList, 0, idList.size() - 1);
+                    len = idList.size();
+                    os.writeInt(doc.getDocId());
+                    os.writeInt(len);
+                    prevId = 0;
+                    for (int j = 0; j < len; j++) {
+                        p = (NodeProxy) idList.get(j);
+                        cid = p.gid - prevId;
+                        prevId = p.gid;
+                        os.writeLong(cid);
+                    }
+                    if (is == null)
+                        db.put(ref, os.data());
+                    else {
+                        address = ((BFile.PageInputStream) is).getAddress();
+                        db.update(address, ref, os.data());
+                    }
+                } catch (LockException e) {
+                    LOG.error("could not acquire lock for value index", e);
+                    return;
+                } catch (IOException e) {
+                    LOG.error("io error while reindexing", e);
+                    is = null;
+                } finally {
+                    lock.release(Lock.WRITE_LOCK);
+                }
+            }
+        } catch (ReadOnlyException e) {
+            LOG.warn("database is read only");
+        }
+        pending.clear();
+    }
+    
+    public void remove() {
+        if (pending.size() == 0) return;
+        Lock lock = db.getLock();
+        Map.Entry entry;
+        Indexable indexable;
+        List newList = new ArrayList(), idList;
+        NodeProxy p;
+        VariableByteArrayInput is;
+        int len, docId;
+        byte[] data;
+        Value ref;
+        Value val;
+        short sym, nsSym;
+        short collectionId = doc.getCollection().getId();
+        long delta, last, gid;
+        try {
+            // iterate through elements
+            for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
+                try {
+                    lock.acquire(Lock.WRITE_LOCK);
+                    entry = (Map.Entry) i.next();
+                    indexable = (Indexable) entry.getKey();
+                    idList = (ArrayList) entry.getValue();
+                    ref = new Value(indexable.serialize(collectionId));
+                    
+                    val = db.get(ref);
+                    os.clear();
+                    newList.clear();
+                    if (val != null) {
+                        // add old entries to the new list
+                        data = val.getData();
+                        is = new VariableByteArrayInput(data);
+                        try {
+                            while (is.available() > 0) {
+                                docId = is.readInt();
+                                len = is.readInt();
+                                if (docId != doc.getDocId()) {
+                                    // section belongs to another document:
+                                    // copy data to new buffer
+                                    os.writeInt(docId);
+                                    os.writeInt(len);
+                                    try {
+                                        is.copyTo(os, len);
+                                    } catch(EOFException e) {
+                                        LOG.error("EOF while copying: expected: " + len);
+                                    }
+                                } else {
+                                    // copy nodes to new list
+                                    last = 0;
+                                    for (int j = 0; j < len; j++) {
+                                        delta = is.readLong();
+                                        gid = last + delta;
+                                        last = gid;
+                                        if (!containsNode(idList, gid)) {
+                                            newList.add(new NodeProxy(doc, gid));
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (EOFException e) {
+                            LOG
+                            .error("end-of-file while updating value index", e);
+                        } catch (IOException e) {
+                            LOG.error("io-error while updating value index", e);
+                        }
+                    }
+                    // write out the updated list
+                    FastQSort.sort(newList, 0, newList.size() - 1);
+                    len = newList.size();
+                    os.writeInt(doc.getDocId());
+                    os.writeInt(len);
+                    last = 0;
+                    for (int j = 0; j < len; j++) {
+                        p = (NodeProxy) newList.get(j);
+                        delta = p.gid - last;
+                        last = p.gid;
+                        os.writeLong(delta);
+                    }
+                    if (val == null) {
+                    	db.put(ref, os.data());
+                    } else {
+                    	db.update(val.getAddress(), ref, os.data());
+                    }
+                } catch (LockException e) {
+                    LOG.error("could not acquire lock on elements", e);
+                } finally {
+                    lock.release();
+                }
+            }
+        } catch (ReadOnlyException e) {
+            LOG.warn("database is read only");
+        }
+        pending.clear();
+    }
+    
+    private final static boolean containsNode(List list, long gid) {
+        for (int i = 0; i < list.size(); i++)
+            if (((NodeProxy) list.get(i)).gid == gid) return true;
+        return false;
+    }
+    
     public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, Indexable value) 
     throws TerminatedException {
-        int idxOp = checkRelationOp(relation);        
+        int idxOp =  checkRelationOp(relation);
         NodeSet result = new ExtArrayNodeSet();
         SearchCallback callback = new SearchCallback(docs, contextSet, result);
         Lock lock = db.getLock();
