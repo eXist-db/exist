@@ -22,12 +22,22 @@
  */
 package org.exist.xquery.functions;
 
+import java.util.Iterator;
+
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.Perl5Compiler;
 import org.apache.oro.text.regex.Perl5Matcher;
+import org.exist.EXistException;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
+import org.exist.storage.DBBroker;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
+import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
@@ -54,21 +64,21 @@ public class FunMatches extends Function {
 			"Returns true if the first argument string matches the regular expression specified " +
 			"by the second argument.",
 			new SequenceType[] {
-				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
+				 new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)
 			},
-			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE)
+			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
 		),
 		new FunctionSignature(
 			new QName("matches", Module.BUILTIN_FUNCTION_NS),
 			"Returns true if the first argument string matches the regular expression specified " +
 			"by the second argument.",
 			new SequenceType[] {
-				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
+				 new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE),
 				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
-			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE)
+			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
 		)
 	};
 	
@@ -86,35 +96,134 @@ public class FunMatches extends Function {
 	}
 	
 	/* (non-Javadoc)
+     * @see org.exist.xquery.Function#getDependencies()
+     */
+    public int getDependencies() {
+        final Expression stringArg = getArgument(0);
+        final Expression patternArg = getArgument(1);
+        if(Type.subTypeOf(stringArg.returnsType(), Type.NODE) &&
+            (stringArg.getDependencies() & Dependency.CONTEXT_ITEM) == 0 &&
+            (patternArg.getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
+            LOG.debug("context set");
+            return Dependency.CONTEXT_SET;
+        } else {
+            LOG.debug("context item");
+            return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Function#returnsType()
+     */
+    public int returnsType() {
+        if (inPredicate && (getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
+			/* If one argument is a node set we directly
+			 * return the matching nodes from the context set. This works
+			 * only inside predicates.
+			 */
+			return Type.NODE;
+		}
+		// In all other cases, we return boolean
+		return Type.BOOLEAN;
+    }
+    
+	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		Sequence stringArg = getArgument(0).eval(contextSequence, contextItem);
-		if(stringArg.getLength() == 0)
+	    if(contextItem != null)
+			contextSequence = contextItem.toSequence();
+	    
+		Sequence input = getArgument(0).eval(contextSequence, contextItem);
+		if(input.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
-		String string = stringArg.getStringValue();
+		
+		if(inPredicate && (getDependencies() & Dependency.CONTEXT_ITEM) == 0)
+		    return evalWithIndex(contextSequence, contextItem, input);
+		else
+		    return evalGeneric(contextSequence, contextItem, input);
+		
+	}
+
+	/**
+     * @param contextSequence
+     * @param contextItem
+     * @param stringArg
+     * @return
+	 * @throws XPathException
+     */
+    private Sequence evalWithIndex(Sequence contextSequence, Item contextItem, Sequence input) throws XPathException {
+        String pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
+        
+        int flags = 0;
+		if(getSignature().getArgumentCount() == 3)
+			flags = parseFlags(getArgument(2).eval(contextSequence, contextItem).getStringValue());
+		
+        NodeSet nodes = input.toNodeSet();
+        
+        // get the type of a possible index
+		int indexType = nodes.getIndexType();
+		if(Type.subTypeOf(indexType, Type.STRING)) {
+		    DocumentSet docs = nodes.getDocumentSet();
+		    try {
+				return context.getBroker().getValueIndex().match(docs, nodes, pattern, 
+						DBBroker.MATCH_REGEXP);
+			} catch (EXistException e) {
+				throw new XPathException(getASTNode(), e.getMessage(), e);
+			}
+		} else {
+		    ExtArrayNodeSet result = new ExtArrayNodeSet();
+		    for(Iterator i = nodes.iterator(); i.hasNext(); ) {
+		        NodeProxy node = (NodeProxy) i.next();
+		        if(match(node.getStringValue(), pattern, flags))
+		            result.add(node);
+		    }
+		    return result;
+		}
+    }
+
+    /**
+     * @param contextSequence
+     * @param contextItem
+     * @param stringArg
+     * @return
+     * @throws XPathException
+     */
+    private Sequence evalGeneric(Sequence contextSequence, Item contextItem, Sequence stringArg) throws XPathException {
+        String string = stringArg.getStringValue();
 		String pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
 		int flags = 0;
 		if(getSignature().getArgumentCount() == 3)
 			flags = parseFlags(getArgument(2).eval(contextSequence, contextItem).getStringValue());
-		try {
+		return BooleanValue.valueOf(match(string, pattern, flags));
+    }
+
+    /**
+     * @param string
+     * @param pattern
+     * @param flags
+     * @return
+     * @throws XPathException
+     */
+    private boolean match(String string, String pattern, int flags) throws XPathException {
+        try {
 			if(prevPattern == null || (!pattern.equals(prevPattern)) || flags != prevFlags)
 				pat = compiler.compile(pattern, flags);
 			prevPattern = pattern;
 			prevFlags = flags;
 			if(matcher.matches(string, pat))
-				return BooleanValue.TRUE;
+				return true;
 			else
-				return BooleanValue.FALSE;
+				return false;
 		} catch (MalformedPatternException e) {
 			throw new XPathException("Invalid regular expression: " + e.getMessage(), e);
 		}
-	}
+    }
 
-	protected final static int parseFlags(String s) throws XPathException {
+    protected final static int parseFlags(String s) throws XPathException {
 		int flags = 0;
 		for(int i = 0; i < s.length(); i++) {
 			char ch = s.charAt(i);

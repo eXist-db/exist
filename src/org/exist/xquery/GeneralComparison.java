@@ -118,7 +118,7 @@ public class GeneralComparison extends BinaryOp {
 	 */
 	public int getDependencies() {
 		int leftDeps = getLeft().getDependencies();
-		int rightDeps = getRight().getDependencies();
+//		int rightDeps = getRight().getDependencies();
 		// left expression returns node set
 		if (Type.subTypeOf(getLeft().returnsType(), Type.NODE)
 			//	and does not depend on the context item
