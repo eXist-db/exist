@@ -83,7 +83,6 @@ import org.exist.util.MimeType;
 import org.exist.util.Occurrences;
 import org.exist.util.ProgressBar;
 import org.exist.util.ProgressIndicator;
-import org.exist.util.XMLFilenameFilter;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SAXSerializerPool;
 import org.exist.xmldb.CollectionManagementServiceImpl;
@@ -276,9 +275,6 @@ public class InteractiveClient {
 	protected int maxResults = 10;
 	protected String path = "/db";
 	protected Properties properties;
-	
-	protected String[] xmlSuffixes;
-	protected String[] binarySuffixes;
 	
 	protected String[] resources = null;
 	protected ResourceSet result = null;
@@ -1743,8 +1739,6 @@ public class InteractiveClient {
 
 		} catch (IOException ioe) {
 		}
-		xmlSuffixes = splitProperty("suffixes.xml");
-		binarySuffixes = splitProperty("suffixes.binary");
 		
 		// parse command-line options
 		CLArgsParser optParser = new CLArgsParser(args, OPTIONS);
@@ -2365,19 +2359,6 @@ public class InteractiveClient {
 		}
 		messageln("Locating resource " + resourceName + " in collection " + collection.getName());
 		return collection.getResource(resourceName);
-	}
-	
-	private String[] splitProperty(String key) {
-		String value = properties.getProperty(key);
-		if(value == null)
-			return new String[0];
-		StringTokenizer tok = new StringTokenizer(value, ", ");
-		String values[] = new String[tok.countTokens()];
-		for(int i = 0; tok.hasMoreTokens(); i++) {
-			values[i] = tok.nextToken();
-		}
-		Arrays.sort(values);
-		return values;
 	}
 	
 	private class CollectionCompleter implements ReadlineCompleter {
