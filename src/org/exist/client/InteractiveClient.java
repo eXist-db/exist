@@ -1871,12 +1871,13 @@ public class InteractiveClient {
 		// prompt for password if needed
 		if (interactive && startGUI) {
 			String[] loginData = ClientFrame.getLoginData(properties
-					.getProperty("user"));
+					.getProperty("user"), properties.getProperty("uri"));
 			if (loginData == null) {
 				System.exit(0);
 			}
 			properties.setProperty("user", loginData[0]);
 			properties.setProperty("password", loginData[1]);
+			properties.setProperty("uri", loginData[2]);
 		} else if (needPasswd) {
 			try {
 				properties.setProperty("password", Readline
