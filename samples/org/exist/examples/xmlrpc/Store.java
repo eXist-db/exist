@@ -38,7 +38,7 @@ public class Store {
 		Vector params = new Vector();
 		params.addElement(xml.toString());
 		params.addElement(args[1]);
-		params.addElement(new Integer(1));
+		params.addElement(new Integer(0));
 
 		// execute the call
 		Boolean result = (Boolean)xmlrpc.execute("parse", params);

@@ -41,8 +41,11 @@ import org.exist.memtree.NodeImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.source.Source;
+import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.XQueryPool;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
@@ -53,8 +56,10 @@ import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.DOMSerializerPool;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SAXSerializerPool;
+import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
@@ -199,17 +204,15 @@ public class RpcConnection extends Thread {
 				root.allDocs(broker, docs, true);
 			}
 		}
-		CachedQuery cached = getCachedQuery(xpath);
-		PathExpr expr = null;
-		if (cached == null) {
-			expr = compile(user, broker, xpath, parameters);
-			cached = new CachedQuery(expr, xpath);
-			cachedExpressions.add(cached);
-		} else {
-			LOG.debug("reusing compiled expression");
-			expr = cached.expression;
-		}
-		XQueryContext context = expr.getContext();
+		Source source = new StringSource(xpath);
+		XQuery xquery = broker.getXQueryService();
+		XQueryPool pool = xquery.getXQueryPool();
+		CompiledXQuery compiled = pool.borrowCompiledXQuery(source);
+		XQueryContext context;
+		if(compiled == null)
+		    context = xquery.newContext();
+		else
+		    context = compiled.getContext();
 		context.setBaseURI(baseURI);
 		context.setStaticallyKnownDocuments(docs);
 		Hashtable namespaces = (Hashtable)parameters.get(RpcAPI.NAMESPACES);
@@ -225,14 +228,16 @@ public class RpcConnection extends Thread {
 				context.declareVariable((String) entry.getKey(), entry.getValue());
 			}
 		}
-		// set the current broker object when reusing a compiled query:
-		context.setBroker(broker);
-		long start = System.currentTimeMillis();
-		Sequence result = expr.eval(contextSet, null);
-		LOG.info("query took " + (System.currentTimeMillis() - start) + "ms.");
-		expr.reset();
-		context.reset();
-		return result;
+		if(compiled == null)
+		    compiled = xquery.compile(context, source);
+		try {
+		    long start = System.currentTimeMillis();
+		    Sequence result = xquery.execute(compiled, null);
+		    LOG.info("query took " + (System.currentTimeMillis() - start) + "ms.");
+		    return result;
+		} finally {
+		    pool.returnCompiledXQuery(source, compiled);
+		}
 	}
 
 	public int executeQuery(User user, String xpath, Hashtable parameters) throws Exception {

@@ -390,26 +390,26 @@ public XQueryParser(ParserSharedInputState state) {
 			case LITERAL_node:
 			case SELF:
 			case XML_COMMENT:
+			case XML_PI:
 			case AT:
 			case PARENT:
 			case LITERAL_child:
 			case LITERAL_self:
 			case LITERAL_attribute:
 			case LITERAL_descendant:
-			case 123:
 			case 124:
+			case 125:
 			case LITERAL_following:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 128:
 			case 129:
+			case 130:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
 			case INTEGER_LITERAL:
 			case LITERAL_comment:
-			case 134:
 			case 135:
-			case XML_PI:
+			case 136:
 			case LITERAL_document:
 			case LITERAL_collection:
 			case LITERAL_preceding:
@@ -1442,14 +1442,14 @@ public XQueryParser(ParserSharedInputState state) {
 			kindTest_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
-		case 134:
+		case 135:
 		{
 			piTest();
 			astFactory.addASTChild(currentAST, returnAST);
 			kindTest_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
-		case 135:
+		case 136:
 		{
 			documentTest();
 			astFactory.addASTChild(currentAST, returnAST);
@@ -2891,26 +2891,26 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_node:
 		case SELF:
 		case XML_COMMENT:
+		case XML_PI:
 		case AT:
 		case PARENT:
 		case LITERAL_child:
 		case LITERAL_self:
 		case LITERAL_attribute:
 		case LITERAL_descendant:
-		case 123:
 		case 124:
+		case 125:
 		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 128:
 		case 129:
+		case 130:
 		case DOUBLE_LITERAL:
 		case DECIMAL_LITERAL:
 		case INTEGER_LITERAL:
 		case LITERAL_comment:
-		case 134:
 		case 135:
-		case XML_PI:
+		case 136:
 		case LITERAL_document:
 		case LITERAL_collection:
 		case LITERAL_preceding:
@@ -3129,26 +3129,26 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_node:
 		case SELF:
 		case XML_COMMENT:
+		case XML_PI:
 		case AT:
 		case PARENT:
 		case LITERAL_child:
 		case LITERAL_self:
 		case LITERAL_attribute:
 		case LITERAL_descendant:
-		case 123:
 		case 124:
+		case 125:
 		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 128:
 		case 129:
+		case 130:
 		case DOUBLE_LITERAL:
 		case DECIMAL_LITERAL:
 		case INTEGER_LITERAL:
 		case LITERAL_comment:
-		case 134:
 		case 135:
-		case XML_PI:
+		case 136:
 		case LITERAL_document:
 		case LITERAL_collection:
 		case LITERAL_preceding:
@@ -3390,13 +3390,13 @@ public XQueryParser(ParserSharedInputState state) {
 					case LITERAL_self:
 					case LITERAL_attribute:
 					case LITERAL_descendant:
-					case 123:
 					case 124:
+					case 125:
 					case LITERAL_following:
 					case LITERAL_parent:
 					case LITERAL_ancestor:
-					case 128:
 					case 129:
+					case 130:
 					case LITERAL_comment:
 					case LITERAL_document:
 					case LITERAL_collection:
@@ -3434,6 +3434,11 @@ public XQueryParser(ParserSharedInputState state) {
 					case LT:
 					{
 						match(LT);
+						break;
+					}
+					case XML_PI:
+					{
+						match(XML_PI);
 						break;
 					}
 					default:
@@ -3561,7 +3566,7 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		else {
 			boolean synPredMatched169 = false;
-			if ((((LA(1) >= LITERAL_parent && LA(1) <= 129)))) {
+			if ((((LA(1) >= LITERAL_parent && LA(1) <= 130)))) {
 				int _m169 = mark();
 				synPredMatched169 = true;
 				inputState.guessing++;
@@ -3686,21 +3691,21 @@ public XQueryParser(ParserSharedInputState state) {
 			forwardAxisSpecifier_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
-		case 123:
+		case 124:
 		{
 			org.exist.xquery.parser.XQueryAST tmp245_AST = null;
 			tmp245_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 			astFactory.addASTChild(currentAST, tmp245_AST);
-			match(123);
+			match(124);
 			forwardAxisSpecifier_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
-		case 124:
+		case 125:
 		{
 			org.exist.xquery.parser.XQueryAST tmp246_AST = null;
 			tmp246_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 			astFactory.addASTChild(currentAST, tmp246_AST);
-			match(124);
+			match(125);
 			forwardAxisSpecifier_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
@@ -3800,21 +3805,21 @@ public XQueryParser(ParserSharedInputState state) {
 			reverseAxisSpecifier_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
-		case 128:
+		case 129:
 		{
 			org.exist.xquery.parser.XQueryAST tmp252_AST = null;
 			tmp252_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 			astFactory.addASTChild(currentAST, tmp252_AST);
-			match(128);
+			match(129);
 			reverseAxisSpecifier_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
-		case 129:
+		case 130:
 		{
 			org.exist.xquery.parser.XQueryAST tmp253_AST = null;
 			tmp253_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 			astFactory.addASTChild(currentAST, tmp253_AST);
-			match(129);
+			match(130);
 			reverseAxisSpecifier_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
@@ -3890,16 +3895,16 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_self:
 		case LITERAL_attribute:
 		case LITERAL_descendant:
-		case 123:
 		case 124:
+		case 125:
 		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 128:
 		case 129:
+		case 130:
 		case LITERAL_comment:
-		case 134:
 		case 135:
+		case 136:
 		case LITERAL_document:
 		case LITERAL_collection:
 		case LITERAL_preceding:
@@ -3956,16 +3961,16 @@ public XQueryParser(ParserSharedInputState state) {
 			case LITERAL_self:
 			case LITERAL_attribute:
 			case LITERAL_descendant:
-			case 123:
 			case 124:
+			case 125:
 			case LITERAL_following:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 128:
 			case 129:
+			case 130:
 			case LITERAL_comment:
-			case 134:
 			case 135:
+			case 136:
 			case LITERAL_document:
 			case LITERAL_collection:
 			case LITERAL_preceding:
@@ -4209,13 +4214,13 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_self:
 		case LITERAL_attribute:
 		case LITERAL_descendant:
-		case 123:
 		case 124:
+		case 125:
 		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 128:
 		case 129:
+		case 130:
 		case LITERAL_comment:
 		case LITERAL_document:
 		case LITERAL_collection:
@@ -4285,13 +4290,13 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_self:
 		case LITERAL_attribute:
 		case LITERAL_descendant:
-		case 123:
 		case 124:
+		case 125:
 		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 128:
 		case 129:
+		case 130:
 		case LITERAL_comment:
 		case LITERAL_document:
 		case LITERAL_collection:
@@ -4438,26 +4443,26 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_node:
 		case SELF:
 		case XML_COMMENT:
+		case XML_PI:
 		case AT:
 		case PARENT:
 		case LITERAL_child:
 		case LITERAL_self:
 		case LITERAL_attribute:
 		case LITERAL_descendant:
-		case 123:
 		case 124:
+		case 125:
 		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 128:
 		case 129:
+		case 130:
 		case DOUBLE_LITERAL:
 		case DECIMAL_LITERAL:
 		case INTEGER_LITERAL:
 		case LITERAL_comment:
-		case 134:
 		case 135:
-		case XML_PI:
+		case 136:
 		case LITERAL_document:
 		case LITERAL_collection:
 		case LITERAL_preceding:
@@ -4566,26 +4571,26 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_node:
 		case SELF:
 		case XML_COMMENT:
+		case XML_PI:
 		case AT:
 		case PARENT:
 		case LITERAL_child:
 		case LITERAL_self:
 		case LITERAL_attribute:
 		case LITERAL_descendant:
-		case 123:
 		case 124:
+		case 125:
 		case LITERAL_following:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 128:
 		case 129:
+		case 130:
 		case DOUBLE_LITERAL:
 		case DECIMAL_LITERAL:
 		case INTEGER_LITERAL:
 		case LITERAL_comment:
-		case 134:
 		case 135:
-		case XML_PI:
+		case 136:
 		case LITERAL_document:
 		case LITERAL_collection:
 		case LITERAL_preceding:
@@ -4811,7 +4816,7 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST tmp287_AST = null;
 		tmp287_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 		astFactory.makeASTRoot(currentAST, tmp287_AST);
-		match(134);
+		match(135);
 		match(LPAREN);
 		match(RPAREN);
 		piTest_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -4827,7 +4832,7 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST tmp290_AST = null;
 		tmp290_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 		astFactory.makeASTRoot(currentAST, tmp290_AST);
-		match(135);
+		match(136);
 		match(LPAREN);
 		match(RPAREN);
 		documentTest_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -5562,48 +5567,48 @@ public XQueryParser(ParserSharedInputState state) {
 			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
-		case 123:
+		case 124:
 		{
 			org.exist.xquery.parser.XQueryAST tmp334_AST = null;
 			tmp334_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 			astFactory.addASTChild(currentAST, tmp334_AST);
-			match(123);
+			match(124);
 			if ( inputState.guessing==0 ) {
 				name= "descendant-or-self";
 			}
 			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
-		case 128:
+		case 129:
 		{
 			org.exist.xquery.parser.XQueryAST tmp335_AST = null;
 			tmp335_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 			astFactory.addASTChild(currentAST, tmp335_AST);
-			match(128);
+			match(129);
 			if ( inputState.guessing==0 ) {
 				name= "ancestor-or-self";
 			}
 			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
-		case 129:
+		case 130:
 		{
 			org.exist.xquery.parser.XQueryAST tmp336_AST = null;
 			tmp336_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 			astFactory.addASTChild(currentAST, tmp336_AST);
-			match(129);
+			match(130);
 			if ( inputState.guessing==0 ) {
 				name= "preceding-sibling";
 			}
 			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
-		case 124:
+		case 125:
 		{
 			org.exist.xquery.parser.XQueryAST tmp337_AST = null;
 			tmp337_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 			astFactory.addASTChild(currentAST, tmp337_AST);
-			match(124);
+			match(125);
 			if ( inputState.guessing==0 ) {
 				name= "following-sibling";
 			}
@@ -6096,6 +6101,7 @@ public XQueryParser(ParserSharedInputState state) {
 		"\"node\"",
 		"SELF",
 		"XML_COMMENT",
+		"XML_PI",
 		"LPPAREN",
 		"RPPAREN",
 		"AT",
@@ -6122,7 +6128,6 @@ public XQueryParser(ParserSharedInputState state) {
 		"ATTRIBUTE_CONTENT",
 		"ELEMENT_CONTENT",
 		"XML_COMMENT_END",
-		"XML_PI",
 		"XML_PI_END",
 		"\"document\"",
 		"\"collection\"",
@@ -6151,32 +6156,32 @@ public XQueryParser(ParserSharedInputState state) {
 	};
 	
 	private static final long[] mk_tokenSet_0() {
-		long[] data = { -1468195881072197632L, -6760403073825185L, 237823L, 0L, 0L, 0L};
+		long[] data = { -1468195881072197632L, -13515802514880929L, 229887L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
 	private static final long[] mk_tokenSet_1() {
-		long[] data = { -1468195881072197630L, -6760403073825185L, 237823L, 0L, 0L, 0L};
+		long[] data = { -1468195881072197630L, -13515802514880929L, 229887L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
 	private static final long[] mk_tokenSet_2() {
-		long[] data = { -8390378179360980992L, -35576541255629217L, 229411L, 0L, 0L, 0L};
+		long[] data = { -8390378179360980992L, -71605338274593185L, 229447L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
 	private static final long[] mk_tokenSet_3() {
-		long[] data = { -8390378179360980992L, -35576541255629217L, 229603L, 0L, 0L, 0L};
+		long[] data = { -8390378179360980992L, -71605338274593185L, 229831L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_3 = new BitSet(mk_tokenSet_3());
 	private static final long[] mk_tokenSet_4() {
-		long[] data = { 2251799813685248L, 144537400540921856L, 224L, 0L, 0L, 0L};
+		long[] data = { 2251799813685248L, 288652588616777728L, 448L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_4 = new BitSet(mk_tokenSet_4());
 	private static final long[] mk_tokenSet_5() {
-		long[] data = { -1468336618560552960L, -6760403073825185L, 237823L, 0L, 0L, 0L};
+		long[] data = { -1468336618560552960L, -13515802514880929L, 229887L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_5 = new BitSet(mk_tokenSet_5());
@@ -6191,17 +6196,17 @@ public XQueryParser(ParserSharedInputState state) {
 	}
 	public static final BitSet _tokenSet_7 = new BitSet(mk_tokenSet_7());
 	private static final long[] mk_tokenSet_8() {
-		long[] data = { -6084535170147287040L, -8554943491406241L, 229603L, 0L, 0L, 0L};
+		long[] data = { -6084535170147287040L, -17562142746147233L, 229831L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_8 = new BitSet(mk_tokenSet_8());
 	private static final long[] mk_tokenSet_9() {
-		long[] data = { -8385865646201634816L, -33887691393268129L, 237631L, 0L, 0L, 0L};
+		long[] data = { -8385865646201634816L, -67664688598546849L, 229503L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_9 = new BitSet(mk_tokenSet_9());
 	private static final long[] mk_tokenSet_10() {
-		long[] data = { -6084535170147287040L, -35576541255629217L, 229411L, 0L, 0L, 0L};
+		long[] data = { -6084535170147287040L, -71605338274593185L, 229447L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_10 = new BitSet(mk_tokenSet_10());
@@ -6214,7 +6219,7 @@ public XQueryParser(ParserSharedInputState state) {
 	}
 	public static final BitSet _tokenSet_11 = new BitSet(mk_tokenSet_11());
 	private static final long[] mk_tokenSet_12() {
-		long[] data = { 9007199254740992L, 1125899908939776L, 10240L, 0L, 0L, 0L};
+		long[] data = { 9007199254740992L, 3377699722625024L, 4096L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_12 = new BitSet(mk_tokenSet_12());

@@ -170,7 +170,7 @@ public class AttrImpl extends NodeImpl implements Attr {
 
 
     public void setValue( String value ) throws DOMException {
-        this.value = XMLUtil.encodeAttrMarkup( value );
+        this.value = value;
     }
 
     public void toSAX( ContentHandler contentHandler,

@@ -146,7 +146,9 @@ as element()
 					$query, "] order by $r/", fn:order-expr($orderby),
 					" return $r"),
 		$hits := util:eval($expr),
-		$s := request:set-session-attribute("results", $hits)
+		$s := request:set-session-attribute(
+			"results", subsequence($hits, 1, 100)
+		)
 	return
 		if (empty($hits)) then
 			<p>Nothing found!</p>

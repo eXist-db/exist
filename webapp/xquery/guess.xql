@@ -37,8 +37,12 @@ declare function local:main() as node()?
     let $rand := request:get-session-attribute("random"),
         $guess := request:request-parameter("guess", ())
     return
-        if ($rand) then local:guess($guess, $rand)
-        else local:random(100)
+		if ($rand) then 
+			if ($guess) then
+				local:guess($guess, $rand)
+			else
+				<p>No input!</p>
+		else local:random(100)
 };
 
 <html>

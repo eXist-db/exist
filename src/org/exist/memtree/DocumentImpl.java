@@ -56,7 +56,7 @@ public class DocumentImpl extends NodeImpl implements Document {
 
     protected NamePool namePool = new NamePool();
 
-    protected short[] nodeKind;
+    protected short[] nodeKind = null;
 
     protected short[] treeLevel;
 
@@ -88,30 +88,50 @@ public class DocumentImpl extends NodeImpl implements Document {
 
     protected int nextRef = 0;
 
-    public DocumentImpl(int nodeSize, int attrSize, int charBufSize, int refSize) {
+    private final static int NODE_SIZE = 128;
+    private final static int ATTR_SIZE = 64;
+    private final static int CHAR_BUF_SIZE = 1024;
+    private final static int REF_SIZE = 128;
+    
+    public DocumentImpl() {
         super(null, 0);
-        nodeKind = new short[nodeSize];
-        treeLevel = new short[nodeSize];
-        next = new int[nodeSize];
+    }
+    
+    private void init() {
+        nodeKind = new short[NODE_SIZE];
+        treeLevel = new short[NODE_SIZE];
+        next = new int[NODE_SIZE];
         Arrays.fill(next, -1);
-        nodeName = new int[nodeSize];
-        alpha = new int[nodeSize];
-        alphaLen = new int[nodeSize];
+        nodeName = new int[NODE_SIZE];
+        alpha = new int[NODE_SIZE];
+        alphaLen = new int[NODE_SIZE];
 
-        characters = new char[charBufSize];
+        characters = new char[CHAR_BUF_SIZE];
 
-        attrName = new int[attrSize];
-        attrParent = new int[attrSize];
-        attrValue = new String[attrSize];
+        attrName = new int[ATTR_SIZE];
+        attrParent = new int[ATTR_SIZE];
+        attrValue = new String[ATTR_SIZE];
 
-        references = new NodeProxy[refSize];
+        references = new NodeProxy[REF_SIZE];
 
         treeLevel[0] = 0;
         nodeKind[0] = Node.DOCUMENT_NODE;
         document = this;
     }
 
+    public void reset() {
+        size = 0;
+        nextChar = 0;
+        nextAttr = 0;
+        nextRef = 0;
+    }
+    
+    public int getSize() {
+        return size;
+    }
+    
     public int addNode(short kind, short level, QName qname) {
+        if (nodeKind == null) init();
         if (size == nodeKind.length) grow();
         nodeKind[size] = kind;
         treeLevel[size] = level;
@@ -122,6 +142,7 @@ public class DocumentImpl extends NodeImpl implements Document {
     }
 
     public void addChars(int nodeNr, char[] ch, int start, int len) {
+        if (nodeKind == null) init();
         if (nextChar + len >= characters.length) {
             int newLen = (characters.length * 3) / 2;
             if (newLen < nextChar + len) newLen = nextChar + len;
@@ -136,6 +157,7 @@ public class DocumentImpl extends NodeImpl implements Document {
     }
 
     public void addChars(int nodeNr, CharSequence s) {
+        if (nodeKind == null) init();
         int len = s.length();
         if (nextChar + len >= characters.length) {
             int newLen = (characters.length * 3) / 2;
@@ -152,6 +174,7 @@ public class DocumentImpl extends NodeImpl implements Document {
     }
 
     public void addReferenceNode(int nodeNr, NodeProxy proxy) {
+        if (nodeKind == null) init();
         if (nextRef == references.length) growReferences();
         references[nextRef] = proxy;
         alpha[nodeNr] = nextRef++;
@@ -159,6 +182,7 @@ public class DocumentImpl extends NodeImpl implements Document {
 
     public int addAttribute(int nodeNr, QName qname, String value)
             throws DOMException {
+        if (nodeKind == null) init();
         if (nextAttr == attrName.length) growAttributes();
         attrParent[nextAttr] = nodeNr;
         attrName[nextAttr] = namePool.add(qname);

@@ -11,7 +11,7 @@ declare function local:login($user as xs:string) as element()?
     let $pass := request:request-parameter("pass", ""),
         $login := xdb:authenticate($database-uri, $user, $pass)
     return
-        if ($login) then ( 
+        if ($login) then (
             request:set-session-attribute("user", $user),
             request:set-session-attribute("password", $pass),
             request:redirect-to(request:encode-url($redirect-uri))
@@ -28,6 +28,7 @@ declare function local:do-login() as element()?
         else ()
 };
 
+request:invalidate-session(),
 request:create-session(),
 <html>
     <head>

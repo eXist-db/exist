@@ -59,6 +59,7 @@ public class TextConstructor extends NodeConstructor {
 		if(isWhitespaceOnly && context.stripWhitespace())
 			return Sequence.EMPTY_SEQUENCE;
 		MemTreeBuilder builder = context.getDocumentBuilder();
+		context.proceed(this, builder);
 		int nodeNr = builder.characters(text);
 		NodeImpl node = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
 		return node;

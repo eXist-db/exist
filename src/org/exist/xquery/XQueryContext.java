@@ -40,13 +40,13 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.dom.SymbolTable;
 import org.exist.memtree.MemTreeBuilder;
-import org.exist.xquery.parser.XQueryLexer;
-import org.exist.xquery.parser.XQueryParser;
-import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.functions.text.TextModule;
 import org.exist.xquery.functions.transform.ModuleImpl;
+import org.exist.xquery.parser.XQueryLexer;
+import org.exist.xquery.parser.XQueryParser;
+import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.value.Sequence;
 
 import antlr.RecognitionException;
@@ -89,6 +89,8 @@ public class XQueryContext {
 	private Stack variableStack = new Stack();
 
 	private Stack forwardReferences = new Stack();
+	
+	private XQueryWatchDog watchdog;
 	
 	/**
 	 * Loaded modules.
@@ -134,9 +136,12 @@ public class XQueryContext {
 	
 	public XQueryContext(DBBroker broker) {
 		this.broker = broker;
+		this.watchdog = new XQueryWatchDog(this);
 		loadDefaults();
+		builder = new MemTreeBuilder(this);
+		builder.startDocument();
 	}
-
+	
 	public void setRootExpression(Expression expr) {
 		this.rootExpression = expr;
 	}
@@ -307,10 +312,12 @@ public class XQueryContext {
 	}
 	
 	public void reset() {
-		builder = null;
+		builder = new MemTreeBuilder(this);
+		builder.startDocument();
 		staticDocuments = null;
 		variableStack.clear();
-		fragmentStack.clear();
+		fragmentStack = new Stack();
+		watchdog.reset();
 	}
 	
 	/**
@@ -573,13 +580,39 @@ public class XQueryContext {
 		return builder;
 	}
 
+	/* Methods delegated to the watchdog */
+	
+	public void proceed() throws TerminatedException {
+	    proceed(null);
+	}
+	
+	public void proceed(Expression expr) throws TerminatedException {
+	    watchdog.proceed(expr);
+	}
+	
+	public void proceed(Expression expr, MemTreeBuilder builder) throws TerminatedException {
+	    watchdog.proceed(expr, builder);
+	}
+	
+	public void recover() {
+	    watchdog.reset();
+	    builder = null;
+	}
+	
+	public XQueryWatchDog getWatchDog() {
+	    return watchdog;
+	}
+	
+	protected void setWatchDog(XQueryWatchDog watchdog) {
+	    this.watchdog = watchdog;
+	}
+	
 	/**
 	 * Push any document fragment created within the current
 	 * execution context on the stack.
 	 */
 	public void pushDocumentContext() {
-		if (builder != null)
-			fragmentStack.push(builder);
+	    fragmentStack.push(builder);
 		builder = null;
 	}
 
@@ -730,6 +763,7 @@ public class XQueryContext {
 		XQueryContext context = new XQueryContext(broker);
 		context.setStaticallyKnownDocuments(getStaticallyKnownDocuments());
 		context.setBaseURI(baseURI);
+		context.setWatchDog(watchdog);
 		XQueryLexer lexer = new XQueryLexer(reader);
 		XQueryParser parser = new XQueryParser(lexer);
 		XQueryTreeParser astParser = new XQueryTreeParser(context);

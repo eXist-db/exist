@@ -70,6 +70,14 @@ public abstract class AbstractSequence implements Sequence {
 		return first.getStringValue();
 	}
 	
+	public String toString() {
+	    try {
+            return getStringValue();
+        } catch (XPathException e) {
+            return super.toString();
+        }
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Sequence#add(org.exist.xpath.value.Item)
 	 */

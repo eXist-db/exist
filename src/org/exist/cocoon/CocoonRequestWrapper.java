@@ -75,28 +75,6 @@ public class CocoonRequestWrapper implements RequestWrapper {
 	}
 
 	/**
-	 * @param arg0
-	 * @return
-	 */
-	public Object getAttribute(String arg0) {
-		return request.getAttribute(arg0);
-	}
-
-	/**
-	 * @return
-	 */
-	public Enumeration getAttributeNames() {
-		return request.getAttributeNames();
-	}
-
-	/**
-	 * @return
-	 */
-	public String getAuthType() {
-		return request.getAuthType();
-	}
-
-	/**
 	 * @return
 	 */
 	public String getCharacterEncoding() {

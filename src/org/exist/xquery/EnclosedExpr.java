@@ -66,6 +66,7 @@ public class EnclosedExpr extends PathExpr {
 			boolean readNext = true;
 			StringBuffer buf = null;
 			while (next != null) {
+			    context.proceed(this, builder);
 				// if item is an atomic value, collect the string values of all
 				// following atomic values and seperate them by a space. 
 				if (Type.subTypeOf(next.getType(), Type.ATOMIC)) {

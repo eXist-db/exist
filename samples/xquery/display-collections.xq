@@ -47,6 +47,6 @@ as element()
 xmldb:register-database("org.exist.xmldb.DatabaseImpl", true()),
 let
 	$rootColl :=
-	    xmldb:collection("xmldb:exist:///db", "admin", "")
+	    xmldb:collection("xmldb:exist:///db/", "admin", "")
 return
 	local:display-collection($rootColl)
