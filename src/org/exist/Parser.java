@@ -52,11 +52,13 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
 
+
 /**
- *  Description of the Class
+ * Parser parses a given input document via SAX and stores it to
+ * the database. It automatically handles index-creation.
+ * 
+ * @author wolf
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    20. Mai 2002
  */
 public class Parser
 	extends Observable
@@ -73,7 +75,7 @@ public class Parser
 	protected Collection collection = null;
 	protected boolean validate;
 	protected int currentLine = 0, maxLine;
-	protected String currentPath;
+	protected StringBuffer currentPath = new StringBuffer();
 	protected DocumentImpl document = null;
 	protected String fileName;
 	protected boolean insideDTD = false;
@@ -96,12 +98,13 @@ public class Parser
 	private FastStringBuffer temp = new FastStringBuffer();
 
 	/**
-	 *  Constructor for the Parser object
+	 *  Create a new parser using the given database broker and
+	 * user to store the document.
 	 *
-	 *@param  broker              Description of the Parameter
-	 *@param  user                Description of the Parameter
-	 *@param  replace             Description of the Parameter
-	 *@exception  EXistException  Description of the Exception
+	 *@param  broker              
+	 *@param  user                user identity
+	 *@param  replace             replace existing documents?
+	 *@exception  EXistException  
 	 */
 	public Parser(DBBroker broker, User user, boolean replace)
 		throws EXistException {
@@ -164,13 +167,6 @@ public class Parser
 		this.user = user;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  ch      Description of the Parameter
-	 *@param  start   Description of the Parameter
-	 *@param  length  Description of the Parameter
-	 */
 	public void characters(char[] ch, int start, int length) {
 		if (length <= 0)
 			return;
@@ -192,7 +188,7 @@ public class Parser
 				//charBuf = new FastStringBuffer( 6, 6, 3 );
 				last.appendChildInternal(text);
 				if (!validate)
-					broker.store(text, currentPath);
+					broker.store(text, currentPath.toString());
 			}
 		}
 		// if length > MAX_STR_LEN split the string into
@@ -206,7 +202,7 @@ public class Parser
 				text.setOwnerDocument(document);
 				last.appendChildInternal(text);
 				if (!validate)
-					broker.store(text, currentPath);
+					broker.store(text, currentPath.toString());
 				text.clear();
 				start = start + len;
 				length = length - len;
@@ -220,13 +216,6 @@ public class Parser
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  ch      Description of the Parameter
-	 *@param  start   Description of the Parameter
-	 *@param  length  Description of the Parameter
-	 */
 	public void comment(char[] ch, int start, int length) {
 		if (insideDTD)
 			return;
@@ -248,36 +237,26 @@ public class Parser
 					charBuf.setLength(0);
 					//charBuf = new FastStringBuffer();
 					if (!validate)
-						broker.store(text, currentPath);
+						broker.store(text, currentPath.toString());
 				}
 			}
 			last.appendChildInternal(comment);
 		}
 		if (!validate)
-			broker.store(comment, currentPath);
+			broker.store(comment, currentPath.toString());
 
 	}
-
-	/**  Description of the Method */
+	
 	public void endCDATA() {
 	}
 
-	/**  Description of the Method */
 	public void endDTD() {
 		insideDTD = false;
 	}
 
-	/**  Description of the Method */
 	public void endDocument() {
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  namespace  Description of the Parameter
-	 *@param  name       Description of the Parameter
-	 *@param  qname      Description of the Parameter
-	 */
 	public void endElement(String namespace, String name, String qname) {
 		//		if(namespace != null && namespace.length() > 0 &&
 		//			qname.indexOf(':') < 0)
@@ -296,12 +275,14 @@ public class Parser
 					//charBuf = new FastStringBuffer( 6, 6, 3 );
 					last.appendChildInternal(text);
 					if (!validate)
-						broker.store(text, currentPath);
+						broker.store(text, currentPath.toString());
 					text.clear();
 				}
 			}
 			stack.pop();
-			currentPath = getCurrentPath();
+			currentPath.delete(currentPath.lastIndexOf("/"), 
+				currentPath.length());
+//				currentPath.substring(0, currentPath.lastIndexOf('/'));
 			if (validate) {
 				if (document.getTreeLevelOrder(level) < last.getChildCount())
 					document.setTreeLevelOrder(level, last.getChildCount());
@@ -312,7 +293,7 @@ public class Parser
 					if (last.getChildCount() > 0)
 						broker.update(last);
 				} else
-					broker.store(last, currentPath);
+					broker.store(last, currentPath.toString());
 			}
 			level--;
 			if (last != rootNode) {
@@ -323,54 +304,25 @@ public class Parser
 		previousPath = null;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  name  Description of the Parameter
-	 */
 	public void endEntity(String name) {
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  prefix  Description of the Parameter
-	 */
 	public void endPrefixMapping(String prefix) {
 		prefix = (String) prefixes.pop();
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  e                 Description of the Parameter
-	 *@exception  SAXException  Description of the Exception
-	 */
 	public void error(SAXParseException e) throws SAXException {
 		LOG.warn(e);
 		System.out.println("parse error at line " + e.getLineNumber());
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  e                 Description of the Parameter
-	 *@exception  SAXException  Description of the Exception
-	 */
 	public void fatalError(SAXParseException e) throws SAXException {
 		LOG.debug("fatal error at line " + e.getLineNumber());
 		LOG.error(e);
 		throw new SAXException(e);
 	}
 
-	/**
-	 *  Gets the currentPath attribute of the Parser object
-	 *
-	 *@return    The currentPath value
-	 */
 	private final String getCurrentPath() {
-		if (previousPath != null)
-			return previousPath;
 		//final StringBuffer buf = new StringBuffer();
 		temp.setLength(0);
 		ElementImpl current;
@@ -383,30 +335,34 @@ public class Parser
 		return previousPath;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  ch      Description of the Parameter
-	 *@param  start   Description of the Parameter
-	 *@param  length  Description of the Parameter
-	 */
 	public void ignorableWhitespace(char[] ch, int start, int length) {
 	}
 
 	/**
-	 *  Description of the Method
-	 *
-	 *@param  src                            Description of the Parameter
-	 *@return                                Description of the Return Value
-	 *@exception  SAXException               Description of the Exception
-	 *@exception  IOException                Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
+	 * Parse and store a document using the given input source.
+	 * 
+	 * @param src
+	 * @return DocumentImpl
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws PermissionDeniedException
 	 */
 	public DocumentImpl parse(InputSource src)
 		throws SAXException, IOException, PermissionDeniedException {
 		return parse(null, src, null);
 	}
 
+	/**
+	 * Parse and store a document using the given input source and collection.
+	 * 
+	 * @param coll
+	 * @param is
+	 * @param fileName
+	 * @return DocumentImpl
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws PermissionDeniedException
+	 */
 	public DocumentImpl parse(Collection coll, InputSource is, String fileName)
 		throws SAXException, IOException, PermissionDeniedException {
 		this.collection = coll;
@@ -420,20 +376,31 @@ public class Parser
 		}
 	}
 
+	/**
+	 * Parse and store a document using the given file.
+	 * 
+	 * @param file
+	 * @param xmlFileName
+	 * @return DocumentImpl
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws PermissionDeniedException
+	 */
 	public DocumentImpl parse(File file, String xmlFileName)
 		throws SAXException, IOException, PermissionDeniedException {
 		return parse(null, file, xmlFileName);
 	}
 
 	/**
-	 *  Description of the Method
-	 *
-	 *@param  file                           Description of the Parameter
-	 *@param  xmlFileName                    Description of the Parameter
-	 *@return                                Description of the Return Value
-	 *@exception  SAXException               Description of the Exception
-	 *@exception  IOException                Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
+	 * Parse and store a document, using the given file and collection.
+	 * 
+	 * @param collection
+	 * @param file
+	 * @param xmlFileName
+	 * @return DocumentImpl
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws PermissionDeniedException
 	 */
 	public DocumentImpl parse(
 		Collection collection,
@@ -451,20 +418,31 @@ public class Parser
 		}
 	}
 
+	/**
+	 * Parse and store a document from the given string.
+	 * 
+	 * @param str
+	 * @param xmlFileName
+	 * @return DocumentImpl
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws PermissionDeniedException
+	 */
 	public DocumentImpl parse(String str, String xmlFileName)
 		throws SAXException, IOException, PermissionDeniedException {
 		return parse(collection, str, xmlFileName);
 	}
 
 	/**
-	 *  Description of the Method
-	 *
-	 *@param  str                            Description of the Parameter
-	 *@param  xmlFileName                    Description of the Parameter
-	 *@return                                Description of the Return Value
-	 *@exception  SAXException               Description of the Exception
-	 *@exception  IOException                Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
+	 * Parse and store a document from the given string and collection.
+	 * 
+	 * @param coll
+	 * @param str
+	 * @param xmlFileName
+	 * @return DocumentImpl
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws PermissionDeniedException
 	 */
 	public DocumentImpl parse(Collection coll, String str, String xmlFileName)
 		throws SAXException, IOException, PermissionDeniedException {
@@ -479,12 +457,6 @@ public class Parser
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  target  Description of the Parameter
-	 *@param  data    Description of the Parameter
-	 */
 	public void processingInstruction(String target, String data) {
 		ProcessingInstructionImpl pi =
 			new ProcessingInstructionImpl(0, target, data);
@@ -505,25 +477,28 @@ public class Parser
 					//charBuf.setLength( 0 );
 					last.appendChildInternal(text);
 					if (!validate)
-						broker.store(text, currentPath);
+						broker.store(text, currentPath.toString());
 					text.clear();
 				}
 			}
 			last.appendChildInternal(pi);
 		}
 		if (!validate)
-			broker.store(pi, currentPath);
+			broker.store(pi, currentPath.toString());
 
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Prepare for storing the document.
+	 * 
+	 * The document is parsed for validation. If a document with the same 
+	 * name exists and updates are allowed, the old document is removed.
 	 *
-	 *@param  inStream                       Description of the Parameter
-	 *@param  xmlFileName                    Description of the Parameter
-	 *@exception  SAXException               Description of the Exception
-	 *@exception  IOException                Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
+	 *@param  inStream                       InputStream
+	 *@param  xmlFileName                    the name of the document
+	 *@exception  SAXException               
+	 *@exception  IOException                
+	 *@exception  PermissionDeniedException
 	 */
 	public void scan(InputStream inStream, String xmlFileName)
 		throws SAXException, IOException, PermissionDeniedException {
@@ -531,7 +506,11 @@ public class Parser
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Prepare for storing the document.
+	 * 
+	 * The document is parsed for validation. If a document with the same 
+	 * name exists and updates are allowed, the old document is removed.
+	 * The name of the document is determined from the InputSource. 
 	 *
 	 *@param  src                            Description of the Parameter
 	 *@exception  SAXException               Description of the Exception
@@ -544,13 +523,16 @@ public class Parser
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Prepare for storing the document. 
+	 * 
+	 * The document is parsed for validation. If a document with the same 
+	 * name exists and updates are allowed, the old document is removed. 
 	 *
-	 *@param  src                            Description of the Parameter
-	 *@param  xmlFileName                    Description of the Parameter
-	 *@exception  SAXException               Description of the Exception
-	 *@exception  IOException                Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
+	 *@param  src                            InputSource
+	 *@param  xmlFileName                    name of the document
+	 *@exception  SAXException               
+	 *@exception  IOException                
+	 *@exception  PermissionDeniedException  
 	 */
 	public void scan(InputSource src, String xmlFileName)
 		throws SAXException, IOException, PermissionDeniedException {
@@ -582,32 +564,41 @@ public class Parser
 			fileName = fileName.substring(pos + 1);
 
 		if (collection == null || (!collection.getName().equals(collName))) {
-			LOG.info("loading collection " + collName);
 			collection = broker.getOrCreateCollection(user, collName);
 			broker.saveCollection(collection);
 		}
 		DocumentImpl oldDoc = null;
+		// does a document with the same name exist?
 		if ((oldDoc = collection.getDocument(collName + '/' + fileName))
 			!= null) {
+			// do we have permissions for update?
 			if (!oldDoc.getPermissions().validate(user, Permission.UPDATE))
 				throw new PermissionDeniedException(
 					"document exists and update " + "is not allowed");
+		// no: do we have write permissions?
 		} else if (
 			!collection.getPermissions().validate(user, Permission.WRITE))
 			throw new PermissionDeniedException(
 				"not allowed to write to collection " + collection.getName());
-		document =
-			new DocumentImpl(broker, collName + '/' + fileName, collection);
+		// if an old document exists, save the new document with a temporary
+		// document name
+		if(oldDoc != null)
+			document =
+				new DocumentImpl(broker, collName + "/__" + fileName, collection);
+		else
+			document =
+				new DocumentImpl(broker, collName + '/' + fileName, collection);
 		collection.addDocument(document);
 		if (oldDoc == null) {
 			document.getPermissions().setOwner(user);
 			document.getPermissions().setGroup(user.getPrimaryGroup());
 		} else
 			document.setPermissions(oldDoc.getPermissions());
+			
 		// reset internal variables
 		maxLevel = 0;
 		level = 0;
-		currentPath = null;
+		currentPath.setLength(0);
 		stack = new Stack();
 		prefixes = new Stack();
 		previousPath = null;
@@ -622,15 +613,14 @@ public class Parser
 			throw e;
 		}
         // new document is valid: remove old document
-        if(oldDoc != null)
-            broker.removeDocument(collName + '/' + fileName);
+        if(oldDoc != null) {
+            broker.removeDocument(oldDoc.getFileName());
+			collection.renameDocument(document.getFileName(),
+				oldDoc.getFileName());
+        }
+        
 	}
 
-	/**
-	 *  Sets the documentLocator attribute of the Parser object
-	 *
-	 *@param  locator  The new documentLocator value
-	 */
 	public void setDocumentLocator(Locator locator) {
 		this.locator = locator;
 	}
@@ -639,9 +629,9 @@ public class Parser
 	 *  set SAX parser feature. This method will catch (and ignore) exceptions
 	 *  if the used parser does not support a feature.
 	 *
-	 *@param  factory  The new feature value
-	 *@param  feature  The new feature value
-	 *@param  value    The new feature value
+	 *@param  factory  
+	 *@param  feature  
+	 *@param  value    
 	 */
 	private void setFeature(
 		SAXParserFactory factory,
@@ -658,28 +648,15 @@ public class Parser
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  name  Description of the Parameter
-	 */
 	public void skippedEntity(String name) {
 	}
 
-	/**  Description of the Method */
 	public void startCDATA() {
 	}
 
 	// Methods of interface LexicalHandler
 	// used to determine Doctype
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  name      Description of the Parameter
-	 *@param  publicId  Description of the Parameter
-	 *@param  systemId  Description of the Parameter
-	 */
 	public void startDTD(String name, String publicId, String systemId) {
 		DocumentTypeImpl docType =
 			new DocumentTypeImpl(name, publicId, systemId);
@@ -687,18 +664,9 @@ public class Parser
 		insideDTD = true;
 	}
 
-	/**  Description of the Method */
 	public void startDocument() {
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  namespace   Description of the Parameter
-	 *@param  name        Description of the Parameter
-	 *@param  qname       Description of the Parameter
-	 *@param  attributes  Description of the Parameter
-	 */
 	public void startElement(
 		String namespace,
 		String name,
@@ -706,10 +674,6 @@ public class Parser
 		Attributes attributes) {
 		ElementImpl last = null;
 		ElementImpl node = null;
-		// check for default namespaces
-		//		if(namespace != null && namespace.length() > 0 &&
-		//			qname.indexOf(':') < 0)
-		//			qname = '#' + namespace + ':' + qname;
 
 		if (!stack.empty()) {
 			last = (ElementImpl) stack.peek();
@@ -723,7 +687,7 @@ public class Parser
 					last.appendChildInternal(text);
 
 					if (!validate)
-						broker.store(text, currentPath);
+						broker.store(text, currentPath.toString());
 					text.clear();
 				}
 			}
@@ -749,11 +713,11 @@ public class Parser
 			node.setPrefixes(prefixes);
 
 		stack.push(node);
-		currentPath = previousPath + '/' + qname;
+		currentPath.append('/').append(qname);
 		if (!validate
 			&& (broker.getDatabaseType() == DBBroker.DBM
 				|| broker.getDatabaseType() == DBBroker.NATIVE))
-			broker.store(node, currentPath);
+			broker.store(node, currentPath.toString());
 
 		level++;
 		if (document.getMaxDepth() < level)
@@ -782,7 +746,7 @@ public class Parser
 					attr.setType(AttrImpl.ID);
 				node.appendChildInternal(attr);
 				if (!validate)
-					broker.store(attr, currentPath);
+					broker.store(attr, currentPath.toString());
 
 			}
 		}
@@ -795,23 +759,12 @@ public class Parser
 			setChanged();
 			notifyObservers(progress);
 		}
-		previousPath = currentPath;
+//		previousPath = currentPath;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  name  Description of the Parameter
-	 */
 	public void startEntity(String name) {
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  prefix  Description of the Parameter
-	 *@param  uri     Description of the Parameter
-	 */
 	public void startPrefixMapping(String prefix, String uri) {
 		// get the prefix for this namespace if one has been stored
 		// before
@@ -829,7 +782,9 @@ public class Parser
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Actually store the document to the database.
+	 * 
+	 * scan() should have been called before. 
 	 *
 	 *@return                   Description of the Return Value
 	 *@exception  SAXException  Description of the Exception
@@ -867,14 +822,12 @@ public class Parser
 			if (broker.getDatabaseType() != DBBroker.NATIVE) {
 				broker.storeDocument(document);
 				broker.saveCollection(collection);
+			} else {
+				broker.addDocument(collection, document);
 			}
 			document.setChildCount(0);
 			parser.parse(src);
 			broker.flush();
-			if (broker.getDatabaseType() == DBBroker.DBM
-				|| broker.getDatabaseType() == DBBroker.NATIVE) {
-				broker.addDocument(collection, document);
-			}
 			return document;
 		} catch (NullPointerException npe) {
 			LOG.debug("null pointer", npe);
@@ -886,12 +839,6 @@ public class Parser
 
 	// Methods of interface ErrorHandler
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  e                 Description of the Parameter
-	 *@exception  SAXException  Description of the Exception
-	 */
 	public void warning(SAXParseException e) throws SAXException {
 		LOG.warn(e);
 		System.out.println("parser warning at line " + e.getLineNumber());

@@ -676,5 +676,8 @@ public abstract class DBBroker extends Observable {
 		boolean inclusive) throws PermissionDeniedException {
 		throw new RuntimeException( "not implemented" );
 	}
+	
+	public void readDocumentMetadata(final DocumentImpl doc) {
+	}
 }
 

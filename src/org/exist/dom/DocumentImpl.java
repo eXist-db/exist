@@ -25,7 +25,10 @@ import java.io.*;
 import java.util.Iterator;
 
 import org.apache.log4j.Category;
+import org.exist.security.Group;
 import org.exist.security.Permission;
+import org.exist.security.SecurityManager;
+import org.exist.security.User;
 
 import org.exist.storage.*;
 import org.w3c.dom.*;
@@ -75,14 +78,17 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	protected Permission permissions = new Permission(0754);
 
-	// subtree in the DOM file for this document starts with page:
-	protected long rootPage = -1;
+	// storage address for the document metadata
+	protected long address = -1;
 
 	// arity of the tree at every level
 	protected int treeLevelOrder[] = new int[25];
 
 	protected long treeLevelStartPoints[] = new long[25];
 
+	// has document-metadata been loaded?
+	private boolean complete = true;
+	
 	/**
 	 *  Constructor for the DocumentImpl object
 	 *
@@ -148,7 +154,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		this.documentRootId = old.documentRootId;
 		this.docType = old.docType;
 		this.permissions = old.permissions;
-		this.rootPage = old.rootPage;
 		treeLevelOrder = new int[old.treeLevelOrder.length];
 		for (int i = 0; i < treeLevelOrder.length; i++)
 			treeLevelOrder[i] = old.treeLevelOrder[i];
@@ -463,6 +468,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 *@return    The doctype value
 	 */
 	public DocumentType getDoctype() {
+		checkAvail();
 		return docType;
 	}
 
@@ -475,6 +481,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 *@return    The documentElement value
 	 */
 	public Element getDocumentElement() {
+		checkAvail();
 		if (-1 < documentRootId)
 			return (Element) getNode(documentRootId);
 		else {
@@ -495,6 +502,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 *@return    The documentElementId value
 	 */
 	public long getDocumentElementId() {
+		checkAvail();
 		if (documentRootId < 0)
 			return ((ElementImpl) getDocumentElement()).getGID();
 		return documentRootId;
@@ -550,9 +558,16 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 *@return    The fileName value
 	 */
 	public String getFileName() {
+		checkAvail();
 		return fileName;
 	}
 
+	private void checkAvail() {
+		if(!complete)
+			broker.readDocumentMetadata(this);
+		complete = true;
+	}
+	
 	/**
 	 *  Gets the implementation attribute of the DocumentImpl object
 	 *
@@ -613,49 +628,19 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return broker.getRange(this, first, last);
 	}
 
-	/**
-	 *  Gets the rootPage attribute of the DocumentImpl object
-	 *
-	 *@return    The rootPage value
-	 */
-	public long getRootPage() {
-		return rootPage;
-	}
-
-	/**
-	 *  Gets the standalone attribute of the DocumentImpl object
-	 *
-	 *@return    The standalone value
-	 */
 	public boolean getStandalone() {
 		return true;
 	}
 
-	/**
-	 *  Gets the strictErrorChecking attribute of the DocumentImpl object
-	 *
-	 *@return    The strictErrorChecking value
-	 */
 	public boolean getStrictErrorChecking() {
 		return false;
 	}
 
-	/**
-	 *  Gets the symbols attribute of the DocumentImpl object
-	 *
-	 *@return    The symbols value
-	 */
 	public SymbolTable getSymbols() {
 		//return collection.getSymbols();
 		return NativeBroker.getSymbols();
 	}
 
-	/**
-	 *  Gets the treeLevel attribute of the DocumentImpl object
-	 *
-	 *@param  gid  Description of the Parameter
-	 *@return      The treeLevel value
-	 */
 	public int getTreeLevel(long gid) {
 		for (int i = 0; i < maxDepth; i++) {
 			if ((gid >= treeLevelStartPoints[i])
@@ -752,31 +737,33 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 		docType = new DocumentTypeImpl();
 		((DocumentTypeImpl) docType).read(istream);
-		rootPage = istream.readLong();
 		documentRootId = istream.readLong();
 		permissions.read(istream);
 	}
 
 	public void read(VariableByteInputStream istream)
 		throws IOException, EOFException {
-		fileName = collection.getName() + '/' + istream.readUTF();
 		docId = istream.readInt();
 		children = istream.readInt();
+		address = DOMFile.createPointer(istream.readInt(), istream.readInt());
 		maxDepth = istream.readInt();
 		treeLevelOrder = new int[maxDepth];
 		for (int i = 0; i < maxDepth; i++)
 			treeLevelOrder[i] = istream.readInt();
-
-		//treeLevelStartPoints = new long[maxDepth];
-		//for (int i = 0; i < maxDepth; i++)
-		//	treeLevelStartPoints[i] = istream.readLong();
-		//
-		docType = new DocumentTypeImpl();
-		((DocumentTypeImpl) docType).read(istream);
-		//rootPage = istream.readLong();
-		documentRootId = istream.readLong();
-		permissions.read(istream);
+		final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
+		final int uid = istream.readInt();
+		final int gid = istream.readInt();
+		final int perm = istream.readByte();
+		if(secman == null) {
+			permissions.setOwner(SecurityManager.DBA_USER);
+			permissions.setGroup(SecurityManager.DBA_GROUP);
+		} else {
+			permissions.setOwner(secman.getUser(uid));
+			permissions.setGroup(secman.getGroup(gid).getName());
+		}
+		permissions.setPermissions(perm);
 		calculateTreeLevelStartPoints();
+		complete = false;
 	}
 
 	/**
@@ -797,55 +784,25 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		children = count;
 	}
 
-	/**
-	 *  Sets the docId attribute of the DocumentImpl object
-	 *
-	 *@param  docId  The new docId value
-	 */
 	public void setDocId(int docId) {
 		this.docId = docId;
 	}
 
-	/**
-	 *  Sets the documentElement attribute of the DocumentImpl object
-	 *
-	 *@param  gid  The new documentElement value
-	 */
 	public void setDocumentElement(long gid) {
 		documentRootId = gid;
 	}
 
-	/**
-	 *  Sets the documentType attribute of the DocumentImpl object
-	 *
-	 *@param  docType  The new documentType value
-	 */
 	public void setDocumentType(DocumentType docType) {
 		this.docType = docType;
 	}
 
-	/**
-	 *  Sets the encoding attribute of the DocumentImpl object
-	 *
-	 *@param  enc  The new encoding value
-	 */
 	public void setEncoding(String enc) {
 	}
 
-	/**
-	 *  Sets the fileName attribute of the DocumentImpl object
-	 *
-	 *@param  fileName  The new fileName value
-	 */
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}
 
-	/**
-	 *  Sets the maxDepth attribute of the DocumentImpl object
-	 *
-	 *@param  depth  The new maxDepth value
-	 */
 	public void setMaxDepth(int depth) {
 		maxDepth = depth;
 	}
@@ -860,21 +817,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		}
 	}
 
-	/**
-	 *  Sets the permissions attribute of the DocumentImpl object
-	 *
-	 *@param  mode  The new permissions value
-	 */
 	public void setPermissions(int mode) {
 		permissions.setPermissions(mode);
 	}
 
-	/**
-	 *  Sets the permissions attribute of the DocumentImpl object
-	 *
-	 *@param  mode                 The new permissions value
-	 *@exception  SyntaxException  Description of the Exception
-	 */
 	public void setPermissions(String mode) throws SyntaxException {
 		permissions.setPermissions(mode);
 	}
@@ -883,66 +829,24 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		permissions = perm;
 	}
 
-	/**
-	 *  Sets the rootPage attribute of the DocumentImpl object
-	 *
-	 *@param  root  The new rootPage value
-	 */
-	public void setRootPage(long root) {
-		rootPage = root;
-	}
-
-	/**
-	 *  Sets the standalone attribute of the DocumentImpl object
-	 *
-	 *@param  alone  The new standalone value
-	 */
 	public void setStandalone(boolean alone) {
 	}
 
-	/**
-	 *  Sets the strictErrorChecking attribute of the DocumentImpl object
-	 *
-	 *@param  strict  The new strictErrorChecking value
-	 */
 	public void setStrictErrorChecking(boolean strict) {
 	}
 
-	/**
-	 *  Sets the treeLevelOrder attribute of the DocumentImpl object
-	 *
-	 *@param  level  The new treeLevelOrder value
-	 *@param  order  The new treeLevelOrder value
-	 */
 	public void setTreeLevelOrder(int level, int order) {
 		treeLevelOrder[level] = order;
 	}
 
-	/**
-	 *  Sets the version attribute of the DocumentImpl object
-	 *
-	 *@param  version  The new version value
-	 */
 	public void setVersion(String version) {
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  node  Description of the Parameter
-	 *@param  path  Description of the Parameter
-	 */
 	public void store(NodeImpl node, String path) {
 		node.setOwnerDocument(this);
 		broker.store(node, path);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  ostream          Description of the Parameter
-	 *@exception  IOException  Description of the Exception
-	 */
 	public void write(DataOutput ostream) throws IOException {
 		ostream.writeUTF(fileName);
 		ostream.writeInt(docId);
@@ -957,35 +861,63 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			ostream.writeLong(treeLevelStartPoints[i]);
 
 		((DocumentTypeImpl) docType).write(ostream);
-		ostream.writeLong(rootPage);
 		ostream.writeLong(documentRootId);
 		permissions.write(ostream);
 		//symbols.write(ostream);
 	}
 
 	public void write(VariableByteOutputStream ostream) throws IOException {
-		ostream.writeUTF(fileName.substring(collection.getName().length() + 1));
 		ostream.writeInt(docId);
 		ostream.writeInt(children);
+		ostream.writeInt(DOMFile.pageFromPointer(address));
+		ostream.writeInt(DOMFile.tidFromPointer(address));
+		//System.out.println("doc = " + docId + "address = " + DOMFile.tidFromPointer(address));
+		//Thread.dumpStack();
 		ostream.writeInt(maxDepth);
-		//LOG.debug("maxDepth = " + maxDepth);
-		//ostream.writeShort( treeLevelOrder.length );
 		for (int i = 0; i < maxDepth; i++)
 			ostream.writeInt(treeLevelOrder[i]);
-
-		//ostream.writeShort( treeLevelStartPoints.length );
-		//for (int i = 0; i < maxDepth; i++)
-		//	ostream.writeLong(treeLevelStartPoints[i]);
-
-		 ((DocumentTypeImpl) docType).write(ostream);
-		//ostream.writeLong(rootPage);
-		ostream.writeLong(documentRootId);
-		permissions.write(ostream);
-		//symbols.write( ostream );
+		SecurityManager secman = broker.getBrokerPool().getSecurityManager();
+		if(secman == null) {
+			ostream.writeInt(1);
+			ostream.writeInt(1);
+		} else {
+			User user = secman.getUser(permissions.getOwner());
+			Group group = secman.getGroup(permissions.getOwnerGroup());
+			ostream.writeInt(user.getUID());
+			ostream.writeInt(group.getId());
+		}
+		ostream.writeByte((byte)permissions.getPermissions());
 	}
 
 	public int reindexRequired() {
 		return reindex;
+	}
+	
+	public byte[] serialize() {
+		VariableByteOutputStream ostream = new VariableByteOutputStream();
+		try {
+			ostream.writeUTF(fileName.substring(collection.getName().length() + 1));
+			//ostream.writeInt(children);
+			ostream.writeLong(documentRootId);
+			((DocumentTypeImpl) docType).write(ostream);
+		} catch(IOException e) {
+			LOG.warn("io error while writing document data", e);
+			return null;
+		}
+		return ostream.toByteArray();
+	}
+	
+	public void deserialize(byte[] data) {
+		VariableByteInputStream istream = new VariableByteInputStream(data);
+		try {
+			fileName = collection.getName() + '/' + istream.readUTF();
+			//children = istream.readInt();
+			documentRootId = istream.readLong();
+			docType = new DocumentTypeImpl();
+			((DocumentTypeImpl) docType).read(istream);
+		} catch(IOException e) {
+			LOG.warn("io error while writing document data", e);
+		}
 	}
 	
 	public void setReindexRequired(int level) {
@@ -1002,5 +934,13 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	
 	public void clearIndexListener() {
 		listener = null;
+	}
+	
+	public void setAddress(long address) {
+		this.address = address;
+	}
+	
+	public long getAddress() {
+		return address;
 	}
 }

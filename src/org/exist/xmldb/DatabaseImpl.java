@@ -113,8 +113,7 @@ public class DatabaseImpl implements Database {
             BrokerPool.configure( dbName, 1, 5, config );
         } catch ( Exception e ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                e.getMessage(),
-                e );
+                "configuration error", e );
         }
     }
 

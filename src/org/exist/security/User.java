@@ -17,21 +17,22 @@ import org.w3c.dom.NodeList;
  */
 public class User {
 
-    /**  Description of the Field */
     public final static User DEFAULT =
         new User( "guest", null, "guest" );
+        
     private final static String GROUP = "group";
-
     private final static String NAME = "name";
     private final static String PASS = "password";
+    private final static String USER_ID = "uid";
+    
     private ArrayList groups = new ArrayList( 2 );
     private String password = null;
-
     private String user;
+    private int uid = -1;
 
 
     /**
-     *  Constructor for the User object
+     *  Create a new user with name and password
      *
      *@param  user      Description of the Parameter
      *@param  password  Description of the Parameter
@@ -44,7 +45,7 @@ public class User {
 
 
     /**
-     *  Constructor for the User object
+     *  Create a new user with name
      *
      *@param  user  Description of the Parameter
      */
@@ -54,7 +55,7 @@ public class User {
 
 
     /**
-     *  Constructor for the User object
+     *  Create a new user with name, password and primary group
      *
      *@param  user          Description of the Parameter
      *@param  password      Description of the Parameter
@@ -67,7 +68,7 @@ public class User {
 
 
     /**
-     *  Constructor for the User object
+     *  Read a new user from the given DOM node
      *
      *@param  node                                Description of the Parameter
      *@exception  DatabaseConfigurationException  Description of the Exception
@@ -77,19 +78,26 @@ public class User {
         if ( user == null )
             throw new DatabaseConfigurationException( "user needs a name" );
         this.password = node.getAttribute( PASS );
-
+		String userId = node.getAttribute( USER_ID );
+		if(userId == null)
+			throw new DatabaseConfigurationException("attribute id missing");
+		try {
+			uid = Integer.parseInt(userId);
+		} catch(NumberFormatException e) {
+			throw new DatabaseConfigurationException("illegal user id: " + 
+				userId + " for user " + user);
+		}
         NodeList gl = node.getElementsByTagName( GROUP );
         Element group;
         for ( int i = 0; i < gl.getLength(); i++ ) {
             group = (Element) gl.item( i );
             groups.add( group.getFirstChild().getNodeValue() );
         }
-
     }
 
 
     /**
-     *  Adds a feature to the Group attribute of the User object
+     *  Add the user to a group
      *
      *@param  group  The feature to be added to the Group attribute
      */
@@ -99,7 +107,7 @@ public class User {
 
 
     /**
-     *  Gets the groups attribute of the User object
+     *  Get all groups this user belongs to
      *
      *@return    The groups value
      */
@@ -109,7 +117,7 @@ public class User {
 
 
     /**
-     *  Gets the user attribute of the User object
+     *  Get the user name
      *
      *@return    The user value
      */
@@ -117,9 +125,12 @@ public class User {
         return user;
     }
 
+	public final int getUID() {
+		return uid;
+	}
 
     /**
-     *  Description of the Method
+     *  Get the user's password
      *
      *@return    Description of the Return Value
      */
@@ -129,7 +140,7 @@ public class User {
 
 
     /**
-     *  Gets the primaryGroup attribute of the User object
+     *  Get the primary group this user belongs to
      *
      *@return    The primaryGroup value
      */
@@ -141,7 +152,7 @@ public class User {
 
 
     /**
-     *  Description of the Method
+     *  Is the user a member of group?
      *
      *@param  group  Description of the Parameter
      *@return        Description of the Return Value
@@ -186,6 +197,9 @@ public class User {
         StringBuffer buf = new StringBuffer();
         buf.append( "<user name=\"" );
         buf.append( user );
+        buf.append( "\" " );
+        buf.append( "uid=\"");
+        buf.append( Integer.toString(uid) );
         buf.append( "\"" );
         if ( password != null ) {
             buf.append( " password=\"" );
@@ -219,6 +233,10 @@ public class User {
         if ( passwd == null )
             return false;
         return MD5.md( passwd ).equals( password );
+    }
+    
+    protected void setUID(int uid) {
+    	this.uid = uid;
     }
 }
 

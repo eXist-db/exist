@@ -40,6 +40,7 @@ import org.dbxml.core.filer.BTreeCallback;
 import org.dbxml.core.filer.BTreeException;
 import org.dbxml.core.indexer.IndexQuery;
 import org.exist.util.ByteConversion;
+import org.exist.util.IndexCallback;
 import org.exist.util.Lock;
 import org.exist.util.OrderedLinkedList;
 import org.exist.util.ReadOnlyException;
@@ -371,6 +372,12 @@ public class BFile extends BTree {
 		return cb.getValues();
 	}
 
+	public void find(IndexQuery query, IndexCallback callback)
+		throws IOException, BTreeException {
+		FindCallback cb = new FindCallback(callback);
+		query(query, cb);
+	}
+	
 	private final int findValuePosition(DataPage page, short tid) {
 		int pos = 0;
 		int l;
@@ -1474,6 +1481,7 @@ public class BFile extends BTree {
 	 *@created    28. Mai 2002
 	 */
 	private final class FindCallback implements BTreeCallback {
+		
 		/**  Description of the Field */
 		public final static int BOTH = 2;
 		/**  Description of the Field */
@@ -1481,9 +1489,10 @@ public class BFile extends BTree {
 
 		/**  Description of the Field */
 		public final static int VALUES = 0;
-		int mode = VALUES;
-
-		private ArrayList values = new ArrayList();
+		
+		private int mode = VALUES;
+		private IndexCallback callback = null;
+		private ArrayList values = null;
 
 		/**
 		 *  Constructor for the FindCallback object
@@ -1492,8 +1501,14 @@ public class BFile extends BTree {
 		 */
 		public FindCallback(int mode) {
 			this.mode = mode;
+			values = new ArrayList();
 		}
 
+		public FindCallback(IndexCallback callback) {
+			this.mode = BOTH;
+			this.callback = callback;
+		}
+		
 		/**
 		 *  Gets the values attribute of the FindCallback object
 		 *
@@ -1529,11 +1544,17 @@ public class BFile extends BTree {
 					l = ByteConversion.byteToInt(data, offset);
 					v = new Value(data, offset + 4, l);
 					v.setAddress(pointer);
-					values.add(v);
+					if(callback == null)
+						values.add(v);
+					else
+						return callback.indexInfo(value, v);
 					return true;
 				case KEYS :
 					value.setAddress(pointer);
-					values.add(value);
+					if(callback == null)
+						values.add(value);
+					else
+						return callback.indexInfo(value, null);
 					return true;
 				case BOTH :
 					Value[] entry = new Value[2];
@@ -1548,7 +1569,10 @@ public class BFile extends BTree {
 					v = new Value(data, offset + 4, l);
 					v.setAddress(pointer);
 					entry[1] = v;
-					values.add(entry);
+					if(callback == null)
+						values.add(entry);
+					else
+						return callback.indexInfo(value, v);
 					return true;
 			}
 			return false;

@@ -20,21 +20,14 @@ import org.exist.util.VariableByteOutputStream;
  */
 public class Permission {
 
-    /**  Description of the Field */
     public final static int DEFAULT_PERM = 0755;
-    /**  Description of the Field */
     public final static String DEFAULT_STRING = "other";
-    /**  Description of the Field */
     public final static String GROUP_STRING = "group";
 
-    /**  Description of the Field */
     public final static int READ = 4;
-    /**  Description of the Field */
     public final static int UPDATE = 1;
 
-    /**  Description of the Field */
     public final static String USER_STRING = "user";
-    /**  Description of the Field */
     public final static int WRITE = 2;
 
     private String owner = SecurityManager.DBA_USER;
@@ -54,7 +47,6 @@ public class Permission {
     public Permission( int perm ) {
         this.permissions = perm;
     }
-
 
     /**
      *  Construct a Permission with given user and group
@@ -174,7 +166,7 @@ public class Permission {
     public void read( VariableByteInputStream istream ) throws IOException {
         owner = istream.readUTF();
         ownerGroup = istream.readUTF();
-        permissions = istream.readInt();
+        permissions = istream.readByte();
     }
     
     /**
@@ -185,7 +177,6 @@ public class Permission {
     public void setGroup( String group ) {
         this.ownerGroup = group;
     }
-
 
     /**
      *  Sets permissions for group
@@ -216,7 +207,6 @@ public class Permission {
     public void setOwner( String user ) {
         this.owner = user;
     }
-
 
     /**
      *  Set permissions using a string. The string has the
@@ -359,7 +349,7 @@ public class Permission {
      *@param  perm  Description of the Parameter
      *@return       Description of the Return Value
      */
-    public boolean validateGroup( int perm ) {
+    private final boolean validateGroup( int perm ) {
         perm = perm << 3;
         return ( permissions & perm ) == perm;
     }
@@ -371,7 +361,7 @@ public class Permission {
      *@param  perm  Description of the Parameter
      *@return       Description of the Return Value
      */
-    public boolean validatePublic( int perm ) {
+    private final boolean validatePublic( int perm ) {
         return ( permissions & perm ) == perm;
     }
 
@@ -382,7 +372,7 @@ public class Permission {
      *@param  perm  Description of the Parameter
      *@return       Description of the Return Value
      */
-    public boolean validateUser( int perm ) {
+    private final boolean validateUser( int perm ) {
         perm = perm << 6;
         return ( permissions & perm ) == perm;
     }
@@ -404,7 +394,7 @@ public class Permission {
     throws IOException {
         ostream.writeUTF( owner );
         ostream.writeUTF( ownerGroup );
-        ostream.writeInt( permissions );
+        ostream.writeByte( (byte)permissions );
     }
     
     public void store( String prefix, Properties props ) {
