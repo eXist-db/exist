@@ -36,6 +36,7 @@
             <map:transformer name="xinclude" src="org.apache.cocoon.transformation.XIncludeTransformer"/>
             <map:transformer name="cinclude" src="org.apache.cocoon.transformation.CIncludeTransformer"/>
             <map:transformer name="encodeURL" src="org.apache.cocoon.transformation.EncodeURLTransformer"/>
+            <map:transformer name="xmldb" src="org.exist.cocoon.XMLDBTransformer"/>
         </map:transformers>
         <map:readers default="resource">
             <map:reader name="resource" src="org.apache.cocoon.reading.ResourceReader"/>
@@ -122,6 +123,10 @@
         </map:view>
         <map:view from-position="last" name="links">
             <map:serialize type="links"/>
+        </map:view>
+        <map:view from-label="xmldb" name="pretty">
+        	<map:transform src="stylesheets/simple-xml2html.xsl"/>
+        	<map:serialize type="html"/>
         </map:view>
     </map:views>
     
@@ -265,6 +270,15 @@
                 <map:generate src="{1}.xmap"/>
                 <map:transform src="stylesheets/sitemap/simple-sitemap2html.xsl"/>
                 <map:serialize type="html"/>
+            </map:match>
+            
+            <map:match pattern="test.xml">
+            	<map:generate src="test.xml"/>
+            	<map:transform label="xmldb" type="xmldb">
+            		<map:parameter name="driver" value="org.exist.xmldb.DatabaseImpl"/>
+            		<map:parameter name="user" value="admin"/>
+            	</map:transform>
+            	<map:serialize type="html"/>
             </map:match>
             
             <map:match pattern="example1.xsp">

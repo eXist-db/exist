@@ -41,6 +41,8 @@ import org.exist.util.VariableByteOutputStream;
  */
 public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
+	private NodeIndexListener listener = null;
+
 	private static Category LOG =
 		Category.getInstance(DocumentImpl.class.getName());
 
@@ -242,11 +244,12 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		// and the start point of the first non-root node (2)
 		treeLevelStartPoints[0] = 1;
 		treeLevelStartPoints[1] = children + 1;
-		for (int i = 1; i < maxDepth - 1; i++)
+		for (int i = 1; i < maxDepth - 1; i++) {
 			treeLevelStartPoints[i + 1] =
 				(treeLevelStartPoints[i] - treeLevelStartPoints[i - 1])
 					* treeLevelOrder[i]
 					+ treeLevelStartPoints[i];
+		}
 	}
 
 	/**
@@ -670,7 +673,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 */
 	public int getTreeLevelOrder(int level) {
 		if (level >= treeLevelOrder.length) {
-            LOG.fatal("tree level " + level + " does not exist");
+			LOG.fatal("tree level " + level + " does not exist");
 			return -1;
 		}
 		return treeLevelOrder[level];
@@ -853,7 +856,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			int temp[] = new int[maxDepth];
 			System.arraycopy(treeLevelOrder, 0, temp, 0, maxDepth - 1);
 			treeLevelOrder = temp;
-            treeLevelOrder[maxDepth - 1] = 0;
+			treeLevelOrder[maxDepth - 1] = 0;
 		}
 	}
 
@@ -965,7 +968,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		ostream.writeInt(docId);
 		ostream.writeInt(children);
 		ostream.writeInt(maxDepth);
-        //LOG.debug("maxDepth = " + maxDepth);
+		//LOG.debug("maxDepth = " + maxDepth);
 		//ostream.writeShort( treeLevelOrder.length );
 		for (int i = 0; i < maxDepth; i++)
 			ostream.writeInt(treeLevelOrder[i]);
@@ -974,7 +977,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		//for (int i = 0; i < maxDepth; i++)
 		//	ostream.writeLong(treeLevelStartPoints[i]);
 
-		((DocumentTypeImpl) docType).write(ostream);
+		 ((DocumentTypeImpl) docType).write(ostream);
 		//ostream.writeLong(rootPage);
 		ostream.writeLong(documentRootId);
 		permissions.write(ostream);
@@ -983,5 +986,21 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	public int reindexRequired() {
 		return reindex;
+	}
+	
+	public void setReindexRequired(int level) {
+		reindex = level;
+	}
+	
+	public void setIndexListener(NodeIndexListener listener) {
+		this.listener = listener;
+	}
+	
+	public NodeIndexListener getIndexListener() {
+		return listener;
+	}
+	
+	public void clearIndexListener() {
+		listener = null;
 	}
 }

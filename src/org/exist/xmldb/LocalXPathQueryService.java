@@ -2,21 +2,25 @@
 package org.exist.xmldb;
 
 import java.io.StringReader;
+
 import org.apache.log4j.Category;
 import org.exist.EXistException;
 import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.parser.*;
-import org.exist.parser.*;
+import org.exist.parser.XPathLexer;
+import org.exist.parser.XPathParser;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
-import org.exist.xpath.*;
-
-import org.xmldb.api.base.*;
-import org.xmldb.api.modules.*;
+import org.exist.xpath.PathExpr;
+import org.exist.xpath.Value;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.ErrorCodes;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.XMLResource;
 
 
 public class LocalXPathQueryService implements XPathQueryServiceImpl {

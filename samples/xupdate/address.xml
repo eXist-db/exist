@@ -4,13 +4,10 @@
 		<fname>John</fname>
 		<lname>Jekyll</lname>
 		<city>Boston</city>
-		<email type="work">jekyll@hyde.com</email>
-		<email type="home">jekyll@home.com</email>
 	</address>
 	<address>
 		<fname>George</fname>
 		<lname>Hyde</lname>
 		<city>London</city>
-		<email type="work">hyde@hyde.com</email>
 	</address>
 </addressbook>

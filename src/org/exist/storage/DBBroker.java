@@ -36,6 +36,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
+import org.exist.util.Occurrences;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -107,7 +108,9 @@ public abstract class DBBroker extends Observable {
      *@param  element  Description of the Parameter
      *@return          Description of the Return Value
      */
-    public abstract boolean elementWith( ElementImpl element );
+    public boolean elementWith( ElementImpl element ) {
+    	return true;
+    }
 
 
     /**
@@ -668,5 +671,10 @@ public abstract class DBBroker extends Observable {
     public void removeNode(final NodeImpl node) {
         throw new RuntimeException( "not implemented" );
     }
+    
+	public Occurrences[] scanIndexedElements(User user, Collection collection, 
+		boolean inclusive) throws PermissionDeniedException {
+		throw new RuntimeException( "not implemented" );
+	}
 }
 

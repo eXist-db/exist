@@ -278,8 +278,8 @@
         </xsl:variable>
         <xsl:variable name="count">
             <xsl:call-template name="get-parameter">
-		    <xsl:with-param name="name">count</xsl:with-param>
-                <xsl:with-param name="default">10</xsl:with-param>
+		    	<xsl:with-param name="name">count</xsl:with-param>
+                <xsl:with-param name="default">-1</xsl:with-param>
             </xsl:call-template>
         </xsl:variable>
         <xsl:variable name="helper">
@@ -302,6 +302,9 @@
             	Integer.parseInt(<xsl:value-of select="$pos"/>) - 1;
         	int <xsl:value-of select="$c"/> =
         		Integer.parseInt(<xsl:value-of select="$count"/>);
+        	if(<xsl:value-of select="$c"/> &lt; 0)
+        		<xsl:value-of select="$c"/> =
+        			<xsl:value-of select="$helper"/>.getHits();
         	if(<xsl:value-of select="$p"/> &lt; 0 
         		|| <xsl:value-of select="$p"/> &gt; 
         		<xsl:value-of select="$helper"/>.getHits()) {
@@ -309,7 +312,7 @@
             	<xsl:apply-templates select="ancestor::xmldb:execute//xmldb:error/node()"/>
         	} else {
             	if(<xsl:value-of select="$p"/> + 
-            		<xsl:value-of select="$c"/> &gt;= 
+            		<xsl:value-of select="$c"/> &gt;
             		<xsl:value-of select="$helper"/>.getHits()) 
                 	<xsl:value-of select="$c"/> = 
                 		<xsl:value-of select="$helper"/>.getHits() - 

@@ -23,6 +23,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
@@ -361,4 +363,19 @@ public class LocalXMLResource implements XMLResource {
 			content = writer.toString();
 		}
 	}
+	/* (non-Javadoc)
+	 * @see org.xmldb.api.modules.XMLResource#getSAXFeature(java.lang.String)
+	 */
+	public boolean getSAXFeature(String arg0)
+		throws SAXNotRecognizedException, SAXNotSupportedException {
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.xmldb.api.modules.XMLResource#setSAXFeature(java.lang.String, boolean)
+	 */
+	public void setSAXFeature(String arg0, boolean arg1)
+		throws SAXNotRecognizedException, SAXNotSupportedException {
+	}
+
 }

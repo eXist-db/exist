@@ -23,7 +23,6 @@
 package org.exist.storage;
 
 import it.unimi.dsi.fastUtil.Long2ObjectLinkedOpenHashMap;
-import it.unimi.dsi.fastUtil.Long2ObjectOpenHashMap;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -32,7 +31,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 
 import org.apache.log4j.Category;
 import org.dbxml.core.DBException;
