@@ -1092,8 +1092,10 @@ public class InteractiveClient {
 		} catch (Throwable e) {
 			if (startGUI)
 				ClientFrame.showErrorMessage(getExceptionMessage(e), e);
-			else
-				System.err.println(getExceptionMessage(e));
+			else {
+				messageln(getExceptionMessage(e));
+				e.printStackTrace();
+			}
 			return true;
 		}
 	}
