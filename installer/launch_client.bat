@@ -15,7 +15,7 @@ if not "%JAVA_OPTS%" == "" goto gotJavaOpts
 set JAVA_OPTS=-Xms32000k -Xmx256000k
 
 :gotJavaOpts
-cd "%EXIST_HOME"
+cd "%EXIST_HOME%"
 %JAVA_CMD% "%JAVA_OPTS%" -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" client %1 %2 %3 %4 %5 %6 %7 %8 %9
 
 :eof

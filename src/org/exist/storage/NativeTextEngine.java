@@ -695,7 +695,7 @@ public class NativeTextEngine extends TextSearchEngine {
 						if (ndata.length == 0) {
 							dbWords.remove(ref);
 						} else {
-							if (!dbWords.put(ref, ndata))
+							if (dbWords.put(ref, ndata) < 0)
 								LOG.debug("could not remove index for " + word);
 						}
 					} catch (LockException e) {

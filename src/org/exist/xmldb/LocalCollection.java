@@ -74,7 +74,6 @@ public class LocalCollection extends Observable implements Collection {
         this( user, brokerPool, null, collection );
     }
 
-
     public LocalCollection( User user, BrokerPool brokerPool,
                             LocalCollection parent, org.exist.dom.Collection collection ) {
         this.user = user;

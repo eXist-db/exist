@@ -73,7 +73,7 @@
 			<parsable targetfile="$INSTALL_PATH/bin/client.bat"/>
 			<parsable targetfile="$INSTALL_PATH/bin/startup.bat"/>
 			<parsable targetfile="$INSTALL_PATH/bin/server.bat"/>
-			<parsable targetfile="$INSTALL_PATH/bin/launch_client.bat/>
+			<parsable targetfile="$INSTALL_PATH/bin/launch_client.bat"/>
 			<executable targetfile="$INSTALL_PATH/bin/backup.sh"
 				stage="never" os="unix"/>
 			<executable targetfile="$INSTALL_PATH/bin/client.sh"

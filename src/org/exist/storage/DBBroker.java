@@ -173,7 +173,10 @@ public abstract class DBBroker extends Observable {
      */
     public abstract Collection getCollection( String name );
 
-
+	public Collection getCollection( String name, long address ) {
+		return null;
+	}
+	
     /**
      *  get the configuration.
      *

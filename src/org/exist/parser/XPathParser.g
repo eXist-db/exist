@@ -422,7 +422,7 @@ document_function [PathExpr expr]
       	try {
       		broker = pool.get();
         	temp = broker.getDocumentsByCollection(user, arg6.getText(), true);
-        	includeDocs.addAll(temp);
+        	includeDocs = temp;
         } catch(EXistException e) {
         } finally {
         	pool.release(broker);

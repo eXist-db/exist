@@ -160,15 +160,15 @@ public class BFile extends BTree {
 	public Lock getLock() {
 		return lock;
 	}
-	public boolean append(Value key, byte[] value) throws ReadOnlyException {
+	public long append(Value key, byte[] value) throws ReadOnlyException {
 		if (key == null) {
 			LOG.debug("key is null");
-			return false;
+			return -1;
 		}
 		try {
 			try {
 				// check if key exists already
-				final long p = findValue(key);
+				long p = findValue(key);
 				// key exists: get old data
 				final long pnum = (long) pageFromPointer(p);
 				final short tid = (short) offsetFromPointer(p);
@@ -188,7 +188,7 @@ public class BFile extends BTree {
 								+ getFile().getName()
 								+ "; offset = "
 								+ offset);
-						return false;
+						return -1;
 					}
 					if (offset + 4 + l > data.length) {
 						LOG.error(
@@ -199,31 +199,30 @@ public class BFile extends BTree {
 								+ data.length
 								+ "; required="
 								+ (offset + 4 + l));
-						return false;
+						return -1;
 					}
 					final byte[] newData = new byte[l + value.length];
 					System.arraycopy(data, offset + 4, newData, 0, l);
 					System.arraycopy(value, 0, newData, l, value.length);
-					update(p, page, key, newData);
+					p = update(p, page, key, newData);
 				}
-				return true;
+				return p;
 			} catch (BTreeException bte) {
 				// key does not exist:
 				long p = storeValue(value);
 				addValue(key, p);
+				return p;
 			} catch (IOException ioe) {
 				ioe.printStackTrace();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 			LOG.warn(e);
-			return false;
 		} catch (BTreeException bte) {
 			bte.printStackTrace();
 			LOG.warn(bte);
-			return false;
 		}
-		return true;
+		return -1;
 	}
 
 	/**
@@ -606,7 +605,7 @@ public class BFile extends BTree {
 	 *@param  value  Description of the Parameter
 	 *@return        Description of the Return Value
 	 */
-	public boolean put(Value key, byte[] value) throws ReadOnlyException {
+	public long put(Value key, byte[] value) throws ReadOnlyException {
 		return put(key, value, true);
 	}
 
@@ -618,11 +617,11 @@ public class BFile extends BTree {
 	 *@param  overwrite  Description of the Parameter
 	 *@return            Description of the Return Value
 	 */
-	public boolean put(Value key, byte[] value, boolean overwrite)
+	public long put(Value key, byte[] value, boolean overwrite)
 		throws ReadOnlyException {
 		if (key == null) {
 			LOG.debug("key is null");
-			return false;
+			return -1;
 		}
 		try {
 			try {
@@ -632,24 +631,25 @@ public class BFile extends BTree {
 				if (overwrite) {
 					return update(p, key, value);
 				} else
-					return false;
+					return -1;
 			} catch (BTreeException bte) {
 				// key does not exist:
 				long p = storeValue(value);
 				addValue(key, p);
+				return p;
 			} catch (IOException ioe) {
 				ioe.printStackTrace();
+				return -1;
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 			LOG.warn(e);
-			return false;
+			return -1;
 		} catch (BTreeException bte) {
 			bte.printStackTrace();
 			LOG.warn(bte);
-			return false;
+			return -1;
 		}
-		return true;
 	}
 
 	/**
@@ -845,7 +845,7 @@ public class BFile extends BTree {
 	 *@param  value  Description of the Parameter
 	 *@return        Description of the Return Value
 	 */
-	public boolean update(Value key, byte[] value) throws ReadOnlyException {
+	public long update(Value key, byte[] value) throws ReadOnlyException {
 		try {
 			long p = findValue(key);
 			return update(p, key, value);
@@ -854,7 +854,7 @@ public class BFile extends BTree {
 		} catch (IOException ioe) {
 			LOG.debug(ioe);
 		}
-		return false;
+		return -1;
 	}
 
 	/**
@@ -865,19 +865,18 @@ public class BFile extends BTree {
 	 *@param  value  Description of the Parameter
 	 *@return        Description of the Return Value
 	 */
-	protected boolean update(long p, Value key, byte[] value)
+	protected long update(long p, Value key, byte[] value)
 		throws ReadOnlyException {
 		try {
 			long pos = (long) pageFromPointer(p);
 			DataPage page = getDataPage(pos);
-			update(p, page, key, value);
-			return true;
+			return update(p, page, key, value);
 		} catch (BTreeException bte) {
 			LOG.debug(bte);
-			return false;
+			return -1;
 		} catch (IOException ioe) {
 			LOG.debug(ioe);
-			return false;
+			return -1;
 		}
 	}
 
@@ -892,7 +891,7 @@ public class BFile extends BTree {
 	 *@exception  BTreeException  Description of the Exception
 	 *@exception  IOException     Description of the Exception
 	 */
-	protected void update(long p, DataPage page, Value key, byte[] value)
+	protected long update(long p, DataPage page, Value key, byte[] value)
 		throws BTreeException, IOException, ReadOnlyException {
 		if (page.getPageHeader().getStatus() == MULTI_PAGE) {
 			// does value fit into a single page?
@@ -901,6 +900,7 @@ public class BFile extends BTree {
 				remove(page, p);
 				long np = storeValue(value);
 				addValue(key, np);
+				return np;
 			} else {
 				// this is an overflow page: simply replace the value
 				byte[] data = new byte[value.length + 6];
@@ -912,11 +912,13 @@ public class BFile extends BTree {
 				// save data
 				System.arraycopy(value, 0, data, 6, value.length);
 				page.setData(data);
+				return p;
 			}
 		} else {
 			remove(page, p);
 			long np = storeValue(value);
 			addValue(key, np);
+			return np;
 		}
 	}
 

@@ -131,7 +131,7 @@ public class NativeElementIndex extends ElementIndex {
 				try {
 					lock.acquire(this, Lock.WRITE_LOCK);
 					lock.enter(this);
-					if (!dbElement.put(ref, data))
+					if (dbElement.put(ref, data) < 0)
 						LOG.warn(
 							"could not save index for element " + elementName);
 						continue;
@@ -200,7 +200,7 @@ public class NativeElementIndex extends ElementIndex {
 				try {
 					lock.acquire(this, Lock.WRITE_LOCK);
 					lock.enter(this);
-					if (!dbElement.append(ref, data)) {
+					if (dbElement.append(ref, data) < 0) {
 						LOG.warn(
 							"could not save index for element " + elementName);
 						continue;

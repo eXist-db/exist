@@ -315,7 +315,7 @@ public XPathParser(ParserSharedInputState state) {
 					try {
 						broker = pool.get();
 					temp = broker.getDocumentsByCollection(user, arg6.getText(), true);
-					includeDocs.addAll(temp);
+					includeDocs = temp;
 				} catch(EXistException e) {
 				} finally {
 					pool.release(broker);

@@ -83,6 +83,27 @@ public class DocumentSet extends Int2ObjectAVLTreeMap implements NodeList {
 			add(other.item(i));
 	}
 	
+	/**
+	 * Fast method to add a bunch of documents from a
+	 * Java collection.
+	 * 
+	 * The method assumes that no duplicate entries are
+	 * in the input collection.
+	 * 
+	 * @param docs
+	 */
+	public void addAll(java.util.Collection docs) {
+		DocumentImpl doc;
+		for(Iterator i = docs.iterator(); i.hasNext(); ) {
+			doc = (DocumentImpl)i.next();
+			put(doc.getDocId(), doc);
+		}
+	}
+
+	public void addCollection(Collection collection) {
+		collections.add(collection);
+	}
+
 	public Iterator iterator() {
 		return values().iterator();
 	}
