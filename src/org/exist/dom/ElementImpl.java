@@ -1260,6 +1260,44 @@ public class ElementImpl
                 break;
         }
     }
+	
+	public void removeAppendAttributes(NodeList removeList, NodeList appendList) {
+		final int level = ownerDocument.getTreeLevel(gid);
+		final DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
+		final long lastChild = lastChildID();
+		
+		try {
+			try {
+				for (int i=0; i<removeList.getLength(); i++) {
+					Node oldChild = removeList.item(i);
+					if (!(oldChild instanceof NodeImpl))
+						throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
+					NodeImpl old = (NodeImpl) oldChild;
+					if (old.getParentGID() != gid)
+						throw new DOMException(DOMException.NOT_FOUND_ERR, "node is not a child of this element");
+					ownerDocument.broker.removeNode(old, old.getPath());
+					if(old.gid < lastChild) ownerDocument.reindex = level + 1;
+					children--;
+				}
+			} finally {
+				ownerDocument.broker.endRemove();
+			}
+			
+			if (children == 0) {
+			   appendChildren(firstChildID(), this, getPath(), appendList, true);
+			} else {
+			    NodeImpl lastAttrib = getLastAttribute();
+			    if (lastAttrib != null && lastAttrib.gid == lastChildID())
+			        appendChildren(lastChildID() + 1, lastAttrib, getPath(), appendList, true);
+			    else
+			        appendChildren(firstChildID() + 1, this, getPath(), appendList, true);
+			}
+			
+		} finally {
+			ownerDocument.broker.update(this);
+			ownerDocument.broker.reindex(prevDoc, ownerDocument, null);
+		}
+	}
 
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#replaceChild(org.w3c.dom.Node, org.w3c.dom.Node)
