@@ -78,6 +78,7 @@ public class Remove extends Modification {
                 doc.setIndexListener(listener);
                 parent = node.getParentNode();
                 if (parent.getNodeType() != Node.ELEMENT_NODE) {
+                    LOG.debug("parent = " + parent.getNodeType() + "; " + parent.getNodeName());
                     throw new EXistException(
                             "you cannot remove the document element. Use update "
                                     + "instead");

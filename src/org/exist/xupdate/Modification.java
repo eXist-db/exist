@@ -142,10 +142,11 @@ public abstract class Modification {
 			long start = System.currentTimeMillis();
 
 			Sequence resultSeq = expr.eval(null, null);
-			if (resultSeq.getItemType() != Type.NODE)
-				throw new EXistException("select expression should evaluate to a" + "node-set");
+			if (!Type.subTypeOf(resultSeq.getItemType(), Type.NODE))
+				throw new EXistException("select expression should evaluate to a node-set; got " +
+				        Type.getTypeName(resultSeq.getItemType()));
 			LOG.debug("found " + resultSeq.getLength() + " for select: " + selectStmt);
-			return (NodeList)resultSeq;
+			return (NodeList)resultSeq.toNodeSet();
 		} catch (RecognitionException e) {
 			LOG.warn("error while parsing select expression", e);
 			throw new EXistException(e);
@@ -195,6 +196,8 @@ public abstract class Modification {
 	 * Release all acquired document locks.
 	 */
 	protected void unlockDocuments() {
+	    if(lockedDocuments == null)
+	        return;
 	    lockedDocuments.unlock(true);
 	}
 	
