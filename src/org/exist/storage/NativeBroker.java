@@ -74,6 +74,7 @@ import org.exist.storage.store.DOMFileIterator;
 import org.exist.storage.store.DOMTransaction;
 import org.exist.storage.store.NodeIterator;
 import org.exist.storage.store.StorageAddress;
+import org.exist.storage.sync.Sync;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.Configuration;
@@ -2335,7 +2336,7 @@ public class NativeBroker extends DBBroker {
 		super.shutdown();
 		try {
 			flush();
-			sync();
+			sync(Sync.MAJOR_SYNC);
 			textEngine.close();
 			domDb.close();
 			elementsDb.close();
@@ -2526,14 +2527,7 @@ public class NativeBroker extends DBBroker {
 
 	}
 
-	public void sync() {
-		Runtime runtime = Runtime.getRuntime();
-		LOG.debug("Memory: " + (runtime.totalMemory() / 1024) + "K total; " +
-				(runtime.freeMemory() / 1024) + "K free");
-		// uncomment this to get statistics on page buffer usage
-		elementsDb.printStatistics();
-		collectionsDb.printStatistics();
-		domDb.printStatistics();
+	public void sync(int syncEvent) {
 		try {
 			Lock lock = collectionsDb.getLock();
 			try {
@@ -2555,8 +2549,19 @@ public class NativeBroker extends DBBroker {
 				}
 			}
 			.run();
-			elementIndex.sync();
-			textEngine.sync();
+			if(syncEvent == Sync.MAJOR_SYNC) {
+				elementIndex.sync();
+				textEngine.sync();
+				
+				Runtime runtime = Runtime.getRuntime();
+				LOG.debug("Memory: " + (runtime.totalMemory() / 1024) + "K total; " +
+						(runtime.freeMemory() / 1024) + "K free");
+				
+				// uncomment this to get statistics on page buffer usage
+				elementsDb.printStatistics();
+				collectionsDb.printStatistics();
+				domDb.printStatistics();
+			}
 		} catch (DBException dbe) {
 			dbe.printStackTrace();
 			LOG.debug(dbe);

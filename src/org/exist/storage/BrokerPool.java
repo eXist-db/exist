@@ -174,6 +174,7 @@ public class BrokerPool {
 	private Map threads = new HashMap();
 	private String instanceId;
 	private boolean syncRequired = false;
+	private int syncEvent = 0;
 	private boolean initializing = true;
 	
 	/**
@@ -231,7 +232,7 @@ public class BrokerPool {
 		LOG.debug("min = " + min + "; max = " + max + "; sync = " + syncPeriod);
 		syncDaemon = new SyncDaemon();
 		if (syncPeriod > 0)
-			syncDaemon.executePeriodically(syncPeriod, new Sync(this), false);
+			syncDaemon.executePeriodically(2000, new Sync(this, syncPeriod), false);
 		conf = config;
 		xqueryCache = new XQueryPool();
 		collectionsCache = new CollectionCache(COLLECTION_BUFFER_SIZE);
@@ -400,7 +401,7 @@ public class BrokerPool {
 		    threads.remove(Thread.currentThread());
 			pool.push(broker);
 			if (syncRequired && threads.size() == 0) {
-				sync(broker);
+				sync(broker, syncEvent);
 				syncRequired = false;
 			}
 			this.notifyAll();
@@ -414,9 +415,8 @@ public class BrokerPool {
 	 * 
 	 * @param broker
 	 */
-	public void sync(DBBroker broker) {
-		LOG.debug("syncing buffers to disk");
-		broker.sync();
+	public void sync(DBBroker broker, int syncEvent) {
+		broker.sync(syncEvent);
 	}
 
 	public synchronized void shutdown() {
@@ -467,14 +467,18 @@ public class BrokerPool {
 		return conf != null;
 	}
 
-	public void triggerSync() {
+	public void triggerSync(int event) {
 		synchronized (this) {
+			if(pool.size() == 0)
+				return;
 			if (pool.size() == brokers) {
 				DBBroker broker = (DBBroker) pool.peek();
-				sync(broker);
+				sync(broker, syncEvent);
 				syncRequired = false;
-			} else
+			} else {
+				syncEvent = event;
 				syncRequired = true;
+			}
 		}
 	}
 

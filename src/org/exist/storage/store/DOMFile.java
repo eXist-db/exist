@@ -129,21 +129,21 @@ public class DOMFile extends BTree implements Lockable {
         dataCache = new LRUCache(dataBuffers);
         dataCache.setFileName("dom.dbx");
         
-        Runnable syncAction = new Runnable() {
-            public void run() {
-                if(dataCache.hasDirtyItems()) {
-	                try {
-	                    lock.acquire(Lock.WRITE_LOCK);
-	                    dataCache.flush();
-	                } catch (LockException e) {
-	                    LOG.warn("Failed to acquire lock on dom.dbx");
-	                } finally {
-	                    lock.release();
-	                }
-                }
-            }
-        };
-        pool.getSyncDaemon().executePeriodically(DATA_SYNC_PERIOD, syncAction, false);
+//        Runnable syncAction = new Runnable() {
+//            public void run() {
+//                if(dataCache.hasDirtyItems()) {
+//	                try {
+//	                    lock.acquire(Lock.WRITE_LOCK);
+//	                    dataCache.flush();
+//	                } catch (LockException e) {
+//	                    LOG.warn("Failed to acquire lock on dom.dbx");
+//	                } finally {
+//	                    lock.release();
+//	                }
+//                }
+//            }
+//        };
+//        pool.getSyncDaemon().executePeriodically(DATA_SYNC_PERIOD, syncAction, false);
     }
 
     public DOMFile(BrokerPool pool, File file, int buffers, int dataBuffers) {

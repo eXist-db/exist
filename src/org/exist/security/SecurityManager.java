@@ -32,6 +32,7 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.sync.Sync;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.w3c.dom.Document;
@@ -288,7 +289,7 @@ public class SecurityManager {
 		buf.append("</auth>");
 		// store users.xml
 		broker.flush();
-		broker.sync();
+		broker.sync(Sync.MAJOR_SYNC);
 		try {
 			broker.setUser(getUser(DBA_USER));
 			Collection sysCollection = broker.getCollection(SYSTEM);
@@ -306,7 +307,7 @@ public class SecurityManager {
 			throw new EXistException(e.getMessage());
 		}
 		broker.flush();
-		broker.sync();
+		broker.sync(Sync.MAJOR_SYNC);
 	}
 
 	public synchronized void setUser(User user) {
