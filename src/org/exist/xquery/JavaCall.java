@@ -59,7 +59,7 @@ public class JavaCall extends Function {
 		this.qname = qname;
 		String namespaceURI = context.getURIForPrefix(qname.getPrefix());
 		if (!namespaceURI.startsWith("java:"))
-			throw new XPathException(
+			throw new XPathException(getASTNode(),
 				"Internal error: prefix "
 					+ qname.getPrefix()
 					+ " does not "
@@ -70,7 +70,7 @@ public class JavaCall extends Function {
 			LOG.debug("Trying to find class " + namespaceURI);
 			myClass = Class.forName(namespaceURI);
 		} catch (ClassNotFoundException e) {
-			throw new XPathException("Class: " + namespaceURI + " not found");
+			throw new XPathException(getASTNode(), "Class: " + namespaceURI + " not found");
 		}
 
 		name = qname.getLocalName();
@@ -124,7 +124,7 @@ public class JavaCall extends Function {
 				}
 			}
 			if (candidateMethods.size() == 0)
-				throw new XPathException(
+				throw new XPathException(getASTNode(),
 					"no constructor found with " + argCount + " arguments");
 		} else {
 			Method[] methods = myClass.getMethods();
@@ -146,7 +146,7 @@ public class JavaCall extends Function {
 				}
 			}
 			if (candidateMethods.size() == 0)
-				throw new XPathException(
+				throw new XPathException(getASTNode(),
 					"no method matches " + name + " with " + argCount + " arguments");
 		}
 	}
@@ -197,7 +197,7 @@ public class JavaCall extends Function {
 				Object object = ((Constructor) bestMethod).newInstance(params);
 				return new JavaObjectValue(object);
 			} catch (IllegalArgumentException e) {
-				throw new XPathException(
+				throw new XPathException(getASTNode(),
 					"illegal argument to constructor "
 						+ bestMethod.toString()
 						+ ": "
@@ -207,7 +207,7 @@ public class JavaCall extends Function {
 				if (e instanceof XPathException)
 					throw (XPathException) e;
 				else
-					throw new XPathException(
+					throw new XPathException(getASTNode(),
 						"exception while calling constructor "
 							+ bestMethod.toString()
 							+ ": "
@@ -227,7 +227,7 @@ public class JavaCall extends Function {
 				}
 				return XPathUtil.javaObjectToXPath(result);
 			} catch (IllegalArgumentException e) {
-				throw new XPathException(
+				throw new XPathException(getASTNode(),
 					"illegal argument to method "
 						+ bestMethod.toString()
 						+ ": "
@@ -237,7 +237,7 @@ public class JavaCall extends Function {
 				if (e instanceof XPathException)
 					throw (XPathException) e;
 				else
-					throw new XPathException(
+					throw new XPathException(getASTNode(),
 						"exception while calling method "
 							+ bestMethod.toString()
 							+ ": "

@@ -493,7 +493,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 				// same document: check if the nodes have the same parent
 				pa = XMLUtil.getParentId(na.doc, na.gid);
 				pb = XMLUtil.getParentId(nb.doc, nb.gid);
-
 				if (pa < pb) {
 					// wrong parent: proceed
 					if (ia.hasNext())
@@ -516,12 +515,16 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 							result.add(nb);
 						if (ib.hasNext())
 							nb = (NodeProxy) ib.next();
+						else
+							break;
 					} else if (nb.gid > na.gid) {
 						// found a following sibling						
 						if (mode == FOLLOWING)
 							result.add(nb);
 						if (ib.hasNext())
 							nb = (NodeProxy) ib.next();
+						else
+							break;
 						// equal nodes: proceed with next node
 					} else if (ib.hasNext())
 						nb = (NodeProxy) ib.next();

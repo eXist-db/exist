@@ -98,9 +98,10 @@
             </map:match>
 
 			<map:match pattern="*.xq">
-				<map:generate src="{1}.xq" type="xquery">
-					<map:parameter name="use-request-parameters"
-						value="true"/>
+                <map:generate src="{1}.xq" type="xquery">
+                    <map:parameter name="file" value="{1}.xq"/>
+					<map:parameter name="sitemap"
+                        value="Hello World"/>
 				</map:generate>
 				<map:serialize encoding="UTF-8" type="html"/>
 	        </map:match>

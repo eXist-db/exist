@@ -62,18 +62,19 @@ public class FunctionFactory {
 			// near(node-set, string)
 			if (local.equals("near")) {
 				if (params.size() < 2)
-					throw new IllegalArgumentException("Function near requires two arguments");
+					throw new XPathException(ast, "Function near requires two arguments");
 				PathExpr p1 = (PathExpr) params.get(1);
 				if (p1.getLength() == 0)
-					throw new IllegalArgumentException("Second argument to near is empty");
+					throw new XPathException(ast, "Second argument to near is empty");
 				Expression e1 = p1.getExpression(0);
 				ExtNear near = new ExtNear(context);
+				near.setASTNode(ast);
 				near.addTerm(e1);
 				near.setPath((PathExpr) params.get(0));
 				if (params.size() > 2) {
 					p1 = (PathExpr) params.get(2);
 					if (p1.getLength() == 0)
-						throw new IllegalArgumentException("Distance argument to near is empty");
+						throw new XPathException(ast, "Distance argument to near is empty");
 					near.setDistance(p1);
 				}
 				step = near;
@@ -82,55 +83,60 @@ public class FunctionFactory {
 			// ends-with(node-set, string)
 			if (local.equals("starts-with")) {
 				if (params.size() < 2)
-					throw new IllegalArgumentException("Function starts-with requires two arguments");
+					throw new XPathException(ast, "Function starts-with requires two arguments");
 				PathExpr p0 = (PathExpr) params.get(0);
 				PathExpr p1 = (PathExpr) params.get(1);
 				if (p1.getLength() == 0)
-					throw new IllegalArgumentException("Second argument to starts-with is empty");
+					throw new XPathException(ast, "Second argument to starts-with is empty");
 				GeneralComparison op = 
 					new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_RIGHT);
+				op.setASTNode(ast);
 				step = op;
 			}
 	
 			// ends-with(node-set, string)
 			if (local.equals("ends-with")) {
 				if (params.size() < 2)
-					throw new IllegalArgumentException("Function ends-with requires two arguments");
+					throw new XPathException(ast, "Function ends-with requires two arguments");
 				PathExpr p0 = (PathExpr) params.get(0);
 				PathExpr p1 = (PathExpr) params.get(1);
 				if (p1.getLength() == 0)
-					throw new IllegalArgumentException("Second argument to ends-with is empty");
+					throw new XPathException(ast, "Second argument to ends-with is empty");
 				GeneralComparison op =
 					new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_LEFT);
+				op.setASTNode(ast);
 				step = op;
 			}
 	
 			// contains(node-set, string)
 			if (local.equals("contains")) {
 				if (params.size() < 2)
-					throw new IllegalArgumentException("Function contains requires two arguments");
+					throw new XPathException(ast, "Function contains requires two arguments");
 				PathExpr p0 = (PathExpr) params.get(0);
 				PathExpr p1 = (PathExpr) params.get(1);
 				if (p1.getLength() == 0)
-					throw new IllegalArgumentException("Second argument to contains is empty");
+					throw new XPathException(ast, "Second argument to contains is empty");
 				GeneralComparison op =
 					new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_BOTH);
+				op.setASTNode(ast);
 				step = op;
 			}
 		// Check if the namespace belongs to one of the schema namespaces.
 		// If yes, the function is a constructor function
 		} else if(uri.equals(XQueryContext.SCHEMA_NS) || uri.equals(XQueryContext.XPATH_DATATYPES_NS)) {
 			if(params.size() != 1)
-				throw new XPathException("Wrong number of arguments for constructor function");
+				throw new XPathException(ast, "Wrong number of arguments for constructor function");
 			PathExpr arg = (PathExpr)params.get(0);
 			int code= Type.getType(qname);
 			CastExpression castExpr = new CastExpression(context, arg, code, Cardinality.EXACTLY_ONE);
+			castExpr.setASTNode(ast);
 			step = castExpr;
 			
 		// Check if the namespace URI starts with "java:". If yes, treat the function call as a call to
 		// an arbitrary Java function.
 		} else if(uri.startsWith("java:")) {
 			JavaCall call = new JavaCall(context, qname);
+			call.setASTNode(ast);
 			call.setArguments(params);
 			call.setParent(parent);
 			step = call;
@@ -145,7 +151,7 @@ public class FunctionFactory {
 					// for internal modules: create a new function instance from the class
 					Class clazz = ((InternalModule)module).getClassForFunction(qname);
 					if (clazz == null)
-						throw new XPathException("function " + qname.toString() + " ( namespace-uri = " + 
+						throw new XPathException(ast, "function " + qname.toString() + " ( namespace-uri = " + 
 							qname.getNamespaceURI() + ") is not defined");
 					Function func = Function.createFunction(context, ast, clazz);
 					func.setArguments(params);
@@ -154,7 +160,7 @@ public class FunctionFactory {
 				} else {
 					UserDefinedFunction func = ((ExternalModule)module).getFunction(qname);
 					if(func == null)
-						throw new XPathException("function " + qname.toString() + " ( namespace-uri = " + 
+						throw new XPathException(ast, "function " + qname.toString() + " ( namespace-uri = " + 
 							qname.getNamespaceURI() + ") is not defined");
 					FunctionCall call = new FunctionCall(context, func);
 					call.setArguments(params);
