@@ -320,7 +320,6 @@ public class RpcConnection extends Thread {
 		long start = System.currentTimeMillis();
 		DBBroker broker = null;
 		
-		String prettyPrint = "no";
 		String stylesheet = null;
 		String encoding = "UTF-8";
 		Hashtable styleparam = null;
@@ -329,7 +328,7 @@ public class RpcConnection extends Thread {
 			broker = brokerPool.get(user);
 			Configuration config = broker.getConfiguration();
 			String option = (String) config.getProperty("serialization.enable-xinclude");
-			
+			String prettyPrint = (String) config.getProperty("serialization.indent");
 			
 			DocumentImpl doc = (DocumentImpl) broker.getDocument(name);
 			if (doc == null) {
@@ -351,7 +350,7 @@ public class RpcConnection extends Thread {
 			} 
 			
 		if (param.equals(OutputKeys.INDENT)){
-			prettyPrint= paramvalue;
+			prettyPrint = paramvalue;
 			}
 		
 		if (param.equals(OutputKeys.ENCODING)){
