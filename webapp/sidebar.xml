@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sidebar title="Navigation" xmlns="http://exist-db.org/NS/sidebar">
     <group href="index.xml" name="Home"/>
+    <group href="http://wiki.exist-db.org" name="News"/>
 	<group name="Donations" href="donations.xml"/>
     <group name="Documentation">
         <item id="features">
@@ -43,16 +44,22 @@
         <item>
             <link href="changes.xml">Changes</link>
         </item>
-        <!--item>
-            <link href="design.xml">Design</link>
-        </item-->
-    </group>
-    <group name="HowTo">
         <item>
             <link href="performance.xml">Performance Issues</link>
         </item>
         <item>
-            <link href="howtos.xml">Misc</link>
+            <link href="howtos.xml">Misc HowTos</link>
+        </item>
+        <!--item>
+            <link href="design.xml">Design</link>
+        </item-->
+    </group>
+    <group name="Community">
+        <item>
+        	<link href="#mailing">Mailing List / IRC</link>
+        </item>
+        <item>
+        	<link href="http://wiki.exist-db.org">Wiki</link>
         </item>
 	</group>
     <group name="Examples">
