@@ -83,7 +83,7 @@ public class XQuery {
             }
 
             AST ast = parser.getAST();
-            LOG.debug("Generated AST: " + ast.toStringTree());
+//            LOG.debug("Generated AST: " + ast.toStringTree());
             PathExpr expr = new PathExpr(context);
             treeParser.xpath(ast, expr);
             if (treeParser.foundErrors()) {

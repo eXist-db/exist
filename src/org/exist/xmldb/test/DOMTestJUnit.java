@@ -1,5 +1,5 @@
 /*
- * Created on 7 août 2004
+ * Created on 7 aoï¿½t 2004
 $Id$
  */
 package org.exist.xmldb.test;
@@ -15,6 +15,7 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
 import junit.framework.TestCase;
+import junit.textui.TestRunner;
 
 /**
  * @author jmv
@@ -97,5 +98,9 @@ public class DOMTestJUnit extends TestCase {
 		rootNode = index.getContentAsDOM();
 		Element rootElem = ((Element)rootNode);
 		assertEquals( "One more element after update", 2, rootElem.getChildNodes().getLength() );
+	}
+	
+	public static void main(String[] args) {
+		TestRunner.run(DOMTestJUnit.class);
 	}
 }

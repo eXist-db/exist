@@ -155,7 +155,6 @@ public class NodeImpl implements Node, NodeValue {
 		int next = document.next[nodeNumber];
 		while (next > nodeNumber) {
 			next = document.next[next];
-			System.out.println(next);
 		}
 		if (next < 0)
 			return document;
