@@ -60,7 +60,7 @@ public abstract class AbstractMatchFunction extends ExtRegexp {
 			return NodeSet.EMPTY_SET;
 	}
 	
-	protected String[] getSearchTerms(XQueryContext context,
+	protected List getSearchTerms(XQueryContext context,
 										Sequence contextSequence)
 			throws XPathException {
 		String searchString = getArgument(1).eval(contextSequence)
@@ -75,6 +75,6 @@ public abstract class AbstractMatchFunction extends ExtRegexp {
 			word = token.getText();
 			tokens.add(word);
 		}
-		return (String[]) tokens.toArray(new String[tokens.size()]);
+		return tokens;
 	}
 }
