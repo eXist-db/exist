@@ -12,17 +12,17 @@
   
     	<section title="Query results">
     	<xml-source>
-			<xmldb:collection 
-				xmlns:xmldb="http://exist-db/transformer/1.0"
+			<xdb:collection 
+				xmlns:xdb="http://exist-db/transformer/1.0"
 				uri="xmldb:exist:///db">
-				<xmldb:for-each query="//SPEECH[LINE &amp;= 'love']"
+				<xdb:for-each query="//SPEECH[LINE &amp;= 'love']"
 					from="0" to="9">
 					<section>
-						<title><xmldb:select-node query="../TITLE/text()"/></title>
+						<title><xdb:select-node query="../TITLE/text()"/></title>
 					</section>
-					<xmldb:current-node/>
-				</xmldb:for-each>
-			</xmldb:collection>
+					<xdb:current-node/>
+				</xdb:for-each>
+			</xdb:collection>
 		</xml-source>
 		</section>
 	</body>

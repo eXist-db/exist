@@ -21,12 +21,12 @@
   
     	<section title="Query results">
     	
-    	<xmldb:collection 
-			xmlns:xmldb="http://exist-db.org/transformer/1.0"
+    	<xdb:collection 
+			xmlns:xdb="http://exist-db.org/transformer/1.0"
 			uri="xmldb:exist:///db">
 				<!-- stylesheet inserts query below: -->
 				<create-query/>
-		</xmldb:collection>
+		</xdb:collection>
 		
 		</section>
 	</body>
