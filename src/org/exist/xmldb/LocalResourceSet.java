@@ -17,6 +17,7 @@ import org.exist.util.serializer.SAXSerializerPool;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
@@ -116,13 +117,13 @@ public class LocalResourceSet implements ResourceSet {
 						"result",
 						"exist:result",
 						attribs);
-			Object current;
+			Item current;
 			char[] value;
 			for(Iterator i = resources.iterator(); i.hasNext(); ) {
-				current = (Object)i.next();
-				if(current instanceof NodeProxy)
-					serializer.toSAX((NodeProxy)current);
-				else {
+				current = (Item)i.next();
+				if(Type.subTypeOf(current.getType(), Type.NODE)) {
+					((NodeValue)current).toSAX(broker, handler);
+				} else {
 					value = current.toString().toCharArray();
 					handler.characters(value, 0, value.length);
 				}

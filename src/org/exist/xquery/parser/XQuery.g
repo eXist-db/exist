@@ -907,6 +907,8 @@ reservedKeywords returns [String name]
 	"at" { name = "at"; }
     |
     "cast" { name = "cast"; }
+	|
+	"return" { name = "return"; }
 	;
 
 /**

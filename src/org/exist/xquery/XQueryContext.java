@@ -146,8 +146,10 @@ public class XQueryContext {
 	 * @param uri
 	 */
 	public void declareNamespace(String prefix, String uri) {
-		if (prefix == null || uri == null)
-			throw new IllegalArgumentException("null argument passed to declareNamespace");
+		if (prefix == null)
+			prefix = "";
+		if(uri == null)
+			uri = "";
 		namespaces.put(prefix, uri);
 		prefixes.put(uri, prefix);
 	}
@@ -155,9 +157,16 @@ public class XQueryContext {
 	public void declareNamespaces(Map namespaceMap) {
 		this.namespaces = namespaceMap;
 		Map.Entry entry;
+		String prefix, uri;
 		for(Iterator i = namespaceMap.entrySet().iterator(); i.hasNext(); ) {
 			entry = (Map.Entry)i.next();
-			prefixes.put(entry.getValue(), entry.getKey());
+			prefix = (String)entry.getKey();
+			uri = (String) entry.getValue();
+			if(prefix == null)
+				prefix = "";
+			if(uri == null)
+				uri = "";
+			prefixes.put(prefix, uri);
 		}
 	}
 	

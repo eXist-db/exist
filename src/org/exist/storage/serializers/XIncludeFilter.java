@@ -3,7 +3,6 @@ package org.exist.storage.serializers;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
@@ -12,13 +11,13 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.XMLUtil;
+import org.exist.security.PermissionDeniedException;
+import org.exist.xquery.PathExpr;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
-import org.exist.security.PermissionDeniedException;
-import org.exist.xquery.PathExpr;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.xml.sax.Attributes;
@@ -210,11 +209,8 @@ public class XIncludeFilter implements ContentHandler {
 					XQueryContext context = new XQueryContext(serializer.broker);
 					context.setStaticallyKnownDocuments(docs);
 					xpointer = checkNamespaces(context, xpointer);
-					Map.Entry entry;
-					for(Iterator i = namespaces.entrySet().iterator(); i.hasNext(); ) {
-						entry = (Map.Entry)i.next();
-						context.declareNamespace((String)entry.getKey(), (String)entry.getValue());
-					}
+					context.declareNamespaces(namespaces);
+					
 					XQueryLexer lexer = new XQueryLexer(new StringReader(xpointer));
 					XQueryParser parser = new XQueryParser(lexer);
 					XQueryTreeParser treeParser = new XQueryTreeParser(context);
@@ -304,8 +300,7 @@ public class XIncludeFilter implements ContentHandler {
 				throw new XPathException("expected prefix=namespace mapping in " + mapping);
 			String prefix = tok.nextToken();
 			String namespaceURI = tok.nextToken();
-			System.out.println(prefix + " == " + namespaceURI);
-			context.declareNamespace(prefix, namespaceURI);
+			namespaces.put(prefix, namespaceURI);
 		}
 		return xpointer;
 	}

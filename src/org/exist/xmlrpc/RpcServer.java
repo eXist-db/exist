@@ -957,6 +957,30 @@ public class RpcServer implements RpcAPI {
 			pool.release(con);
 		}
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xmlrpc.RpcAPI#retrieveAll(org.exist.security.User, int, java.util.Hashtable)
+	 */
+	public byte[] retrieveAll(User user, int resultId, Hashtable parameters) throws EXistException, PermissionDeniedException {
+		RpcConnection con = null;
+		try {
+			con = pool.get();
+			String xml = con.retrieveAll(user, resultId, parameters);
+			String encoding = (String)parameters.get(OutputKeys.ENCODING);
+			if(encoding == null)
+				encoding = "UTF-8";
+			try {
+				return xml.getBytes(encoding);
+			} catch (UnsupportedEncodingException uee) {
+				return xml.getBytes();
+			}
+		} catch (Exception e) {
+			handleException(e);
+			return null;
+		} finally {
+			pool.release(con);
+		}
+	}
 
 	/**
 	 *  Sets the permissions attribute of the RpcServer object

@@ -2,8 +2,11 @@
 package org.exist.xmldb;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 import java.util.Vector;
+
+import javax.xml.transform.OutputKeys;
 
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
@@ -47,8 +50,27 @@ public class RemoteResourceSet implements ResourceSet {
 
 
     public Resource getMembersAsResource() throws XMLDBException {
-    	// TODO: implement this
-        throw new XMLDBException( ErrorCodes.NOT_IMPLEMENTED );
+    	Vector params = new Vector();
+    	params.addElement(new Integer(handle));
+    	params.addElement(outputProperties);
+    	try {
+			byte[] data = (byte[]) collection.getClient().execute("retrieveAll", params);
+			String content;
+			try {
+				content = new String(data, outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8"));
+			} catch (UnsupportedEncodingException ue) {
+				content = new String(data);
+			}
+			RemoteXMLResource res = new RemoteXMLResource( collection, handle, 0, 
+	            	"", null );
+	        res.setContent( content );
+	        res.setProperties(outputProperties);
+	        return res;
+		} catch (XmlRpcException xre) {
+			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
+		} catch (IOException ioe) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
+		}
     }
 
     public Resource getResource( long pos ) throws XMLDBException {

@@ -77,10 +77,11 @@ public class XQueryExample {
             long qtime = System.currentTimeMillis() - start;
             start = System.currentTimeMillis();
 
-            for ( int i = 0; i < (int) result.getSize(); i++ ) {
-                XMLResource resource = (XMLResource) result.getResource( (long) i ); 
-                System.out.println( resource.getContent().toString() );
-            }
+            System.out.println(result.getMembersAsResource().getContent());
+//            for ( int i = 0; i < (int) result.getSize(); i++ ) {
+//                XMLResource resource = (XMLResource) result.getResource( (long) i ); 
+//                System.out.println( resource.getContent().toString() );
+//            }
             long rtime = System.currentTimeMillis() - start;
 			System.out.println("hits:          " + result.getSize());
             System.out.println("query time:    " + qtime);

@@ -366,6 +366,7 @@ public XQueryParser(ParserSharedInputState state) {
 			case LITERAL_some:
 			case LITERAL_every:
 			case LITERAL_if:
+			case LITERAL_return:
 			case LITERAL_order:
 			case LITERAL_by:
 			case LITERAL_then:
@@ -2867,6 +2868,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_some:
 		case LITERAL_every:
 		case LITERAL_if:
+		case LITERAL_return:
 		case LITERAL_order:
 		case LITERAL_by:
 		case LITERAL_then:
@@ -3106,6 +3108,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_some:
 		case LITERAL_every:
 		case LITERAL_if:
+		case LITERAL_return:
 		case LITERAL_order:
 		case LITERAL_by:
 		case LITERAL_then:
@@ -3364,6 +3367,7 @@ public XQueryParser(ParserSharedInputState state) {
 					case LITERAL_some:
 					case LITERAL_every:
 					case LITERAL_if:
+					case LITERAL_return:
 					case LITERAL_order:
 					case LITERAL_by:
 					case LITERAL_then:
@@ -3862,6 +3866,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_some:
 		case LITERAL_every:
 		case LITERAL_if:
+		case LITERAL_return:
 		case LITERAL_order:
 		case LITERAL_by:
 		case LITERAL_then:
@@ -3928,6 +3933,7 @@ public XQueryParser(ParserSharedInputState state) {
 			case LITERAL_some:
 			case LITERAL_every:
 			case LITERAL_if:
+			case LITERAL_return:
 			case LITERAL_order:
 			case LITERAL_by:
 			case LITERAL_then:
@@ -4179,6 +4185,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_some:
 		case LITERAL_every:
 		case LITERAL_if:
+		case LITERAL_return:
 		case LITERAL_order:
 		case LITERAL_by:
 		case LITERAL_then:
@@ -4253,6 +4260,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_some:
 		case LITERAL_every:
 		case LITERAL_if:
+		case LITERAL_return:
 		case LITERAL_order:
 		case LITERAL_by:
 		case LITERAL_then:
@@ -4403,6 +4411,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_some:
 		case LITERAL_every:
 		case LITERAL_if:
+		case LITERAL_return:
 		case LITERAL_order:
 		case LITERAL_by:
 		case LITERAL_then:
@@ -4530,6 +4539,7 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_some:
 		case LITERAL_every:
 		case LITERAL_if:
+		case LITERAL_return:
 		case LITERAL_order:
 		case LITERAL_by:
 		case LITERAL_then:
@@ -5933,6 +5943,18 @@ public XQueryParser(ParserSharedInputState state) {
 			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
+		case LITERAL_return:
+		{
+			org.exist.xquery.parser.XQueryAST tmp366_AST = null;
+			tmp366_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp366_AST);
+			match(LITERAL_return);
+			if ( inputState.guessing==0 ) {
+				name = "return";
+			}
+			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+			break;
+		}
 		default:
 		{
 			throw new NoViableAltException(LT(1), getFilename());
@@ -6114,22 +6136,22 @@ public XQueryParser(ParserSharedInputState state) {
 	};
 	
 	private static final long[] mk_tokenSet_0() {
-		long[] data = { -1468195881072197632L, -6760403073825249L, 237823L, 0L, 0L, 0L};
+		long[] data = { -1468195881072197632L, -6760403073825185L, 237823L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
 	private static final long[] mk_tokenSet_1() {
-		long[] data = { -1468195881072197630L, -6760403073825249L, 237823L, 0L, 0L, 0L};
+		long[] data = { -1468195881072197630L, -6760403073825185L, 237823L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
 	private static final long[] mk_tokenSet_2() {
-		long[] data = { -8392629979174666240L, -35576541255629281L, 229411L, 0L, 0L, 0L};
+		long[] data = { -8392629979174666240L, -35576541255629217L, 229411L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
 	private static final long[] mk_tokenSet_3() {
-		long[] data = { -8390378179360980992L, -35576541255629281L, 229603L, 0L, 0L, 0L};
+		long[] data = { -8390378179360980992L, -35576541255629217L, 229603L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_3 = new BitSet(mk_tokenSet_3());
@@ -6139,7 +6161,7 @@ public XQueryParser(ParserSharedInputState state) {
 	}
 	public static final BitSet _tokenSet_4 = new BitSet(mk_tokenSet_4());
 	private static final long[] mk_tokenSet_5() {
-		long[] data = { -1468336618560552960L, -6760403073825249L, 237823L, 0L, 0L, 0L};
+		long[] data = { -1468336618560552960L, -6760403073825185L, 237823L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_5 = new BitSet(mk_tokenSet_5());
@@ -6154,17 +6176,17 @@ public XQueryParser(ParserSharedInputState state) {
 	}
 	public static final BitSet _tokenSet_7 = new BitSet(mk_tokenSet_7());
 	private static final long[] mk_tokenSet_8() {
-		long[] data = { -6084535170147287040L, -8554943491406305L, 229603L, 0L, 0L, 0L};
+		long[] data = { -6084535170147287040L, -8554943491406241L, 229603L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_8 = new BitSet(mk_tokenSet_8());
 	private static final long[] mk_tokenSet_9() {
-		long[] data = { -8388117446015320064L, -33887691393268193L, 237631L, 0L, 0L, 0L};
+		long[] data = { -8388117446015320064L, -33887691393268129L, 237631L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_9 = new BitSet(mk_tokenSet_9());
 	private static final long[] mk_tokenSet_10() {
-		long[] data = { -6086786969960972288L, -35576541255629281L, 229411L, 0L, 0L, 0L};
+		long[] data = { -6086786969960972288L, -35576541255629217L, 229411L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_10 = new BitSet(mk_tokenSet_10());
