@@ -253,7 +253,8 @@ public class NewNativeBroker extends DBBroker {
 					readOnly = collectionsDb.isReadOnly();
 			}
 			// finally initialize NativeCollectionIndexer
-            collectionIndexer = new NativeCollectionIndexer(collectionsDb);
+            collectionIndexer = new NativeCollectionIndexer(pool, collectionsDb);
+            collectionIndexer.setReadOnly(readOnly);
             
 			if (readOnly)
 				LOG.info("database runs in read-only mode");
