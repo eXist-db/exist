@@ -279,7 +279,7 @@ public interface RpcAPI {
 	 *@depreceated                           use Vector query() or int
 	 *      executeQuery() instead
 	 */
-	String query(
+	byte[] query(
 		User user,
 		byte[] xquery,
 		int howmany,
