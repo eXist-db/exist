@@ -89,7 +89,7 @@ public class ValueSequence extends AbstractSequence {
 	 * @see org.exist.xquery.value.Sequence#iterate()
 	 */
 	public SequenceIterator iterate() {
-		removeDuplicates();
+//		removeDuplicates();
 		return new ValueSequenceIterator();
 	}
 
@@ -97,7 +97,7 @@ public class ValueSequence extends AbstractSequence {
 	 * @see org.exist.xquery.value.AbstractSequence#unorderedIterator()
 	 */
 	public SequenceIterator unorderedIterator() {
-		removeDuplicates();
+//		removeDuplicates();
 		return new ValueSequenceIterator();
 	}
 	
@@ -105,7 +105,7 @@ public class ValueSequence extends AbstractSequence {
 	 * @see org.exist.xquery.value.Sequence#getLength()
 	 */
 	public int getLength() {
-		removeDuplicates();
+//		removeDuplicates();
 		return size + 1;
 	}
 
@@ -147,7 +147,7 @@ public class ValueSequence extends AbstractSequence {
 		}
 	}
 	
-	private void removeDuplicates() {
+	public void removeDuplicates() {
 		if(noDuplicates)
 			return;
 		if(itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.ATOMIC))

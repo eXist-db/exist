@@ -167,6 +167,14 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 */
 	public abstract int getLength();
 
+	/* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#removeDuplicates()
+     */
+    public void removeDuplicates() {
+        // all instances of NodeSet will automatically remove duplicates
+        // upon a call to getLength() or iterate()
+    }
+    
 	public abstract Node item(int pos);
 
 	/**

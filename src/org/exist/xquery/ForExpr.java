@@ -163,7 +163,7 @@ public class ForExpr extends BindingExpression {
 			if(sequenceType != null)
 				// check sequence type
 				sequenceType.checkType(contextItem.getType());
-			
+
 			// set variable value to current item
 			var.setValue(contextSequence);
 			val = contextSequence;

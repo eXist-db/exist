@@ -65,7 +65,7 @@ public class QuantifiedExpression extends BindingExpression {
 				sequenceType.checkType(contextItem.getType());
 			var.setValue(contextItem.toSequence());
 			satisfiesSeq = returnExpr.eval(null);
-			LOG.debug("satisfies returned: " + satisfiesSeq.getLength());
+//			LOG.debug("satisfies returned: " + satisfiesSeq.getLength());
 			if(returnExpr.returnsType() == Type.BOOLEAN)
 				found = satisfiesSeq.effectiveBooleanValue();
 			else

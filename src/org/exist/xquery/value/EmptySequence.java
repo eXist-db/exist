@@ -79,4 +79,11 @@ public class EmptySequence extends AbstractSequence {
 	public NodeSet toNodeSet() throws XPathException {
 		return NodeSet.EMPTY_SET;
 	}
+	
+	/* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#removeDuplicates()
+     */
+    public void removeDuplicates() {
+        // nothing to do
+    }
 }

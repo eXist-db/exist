@@ -84,6 +84,10 @@ public abstract class AtomicValue implements Item, Sequence {
 		return Cardinality.EXACTLY_ONE;
 	}
 	
+    public void removeDuplicates() {
+        // this is a single value, so there are no duplicates to remove
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#iterate()
 	 */

@@ -629,7 +629,7 @@ public class ArraySet extends AbstractNodeSetBase {
 		if (this.sorted || counter < 2)
 			return;
 		FastQSort.sort(nodes, 0, counter - 1);
-		removeDuplicates();
+		removeDuplicateNodes();
 		this.sorted = true;
 	}
 
@@ -637,11 +637,11 @@ public class ArraySet extends AbstractNodeSetBase {
 		if (counter < 2)
 			return;
 		FastQSort.sort(nodes, docOrderComparator, 0, counter - 1);
-		removeDuplicates();
+		removeDuplicateNodes();
 		this.sorted = false;
 	}
 	
-	private final void removeDuplicates() {
+	private final void removeDuplicateNodes() {
 		int j = 0;
 		for (int i = 1; i < counter; i++) {
 			if (nodes[i].compareTo(nodes[j]) != 0) {
