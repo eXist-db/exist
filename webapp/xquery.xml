@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 
 <book xmlns:ci="http://apache.org/cocoon/include/1.0">
     <bookinfo>
@@ -45,8 +45,6 @@
                 <command>typeswitch</command>, <command>treat as</command>,
                 <command>castable as</command>.
                 </listitem>
-
-				<listitem>Item types
                 <listitem>Schema related features: <command>validate</command>,
                 <command>import schema</command>, <command>declare validation</command>.
                 </listitem>
