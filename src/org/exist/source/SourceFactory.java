@@ -47,7 +47,7 @@ public class SourceFactory {
      * @throws MalformedURLException
      * @throws IOException
      */
-    public static final Source getSource(String contextPath, String location) 
+    public static final Source getSource(String contextPath, String location, boolean checkXQEncoding) 
     throws MalformedURLException, IOException {
         Source source = null;
         if(location.indexOf(':') < 0) {
@@ -58,7 +58,7 @@ public class SourceFactory {
                     throw new FileNotFoundException("cannot read module source from file at " + f.getAbsolutePath());
             }
             location = f.toURI().toASCIIString();
-            source = new FileSource(f, "UTF-8");
+            source = new FileSource(f, "UTF-8", checkXQEncoding);
         } else {
             if(location.startsWith(ClassLoaderSource.PROTOCOL)) {
                 source = new ClassLoaderSource(location);

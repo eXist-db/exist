@@ -249,7 +249,7 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 			declareParameters(service);
 			
 			String uri = inputSource.getURI();
-			ResourceSet result = service.execute(new CocoonSource(inputSource));
+			ResourceSet result = service.execute(new CocoonSource(inputSource, true));
 			XMLResource resource;
 			this.contentHandler.startDocument();
 			for (long i = 0; i < result.getSize(); i++) {

@@ -65,13 +65,13 @@ options {
 	protected Stack globalStack= new Stack();
 	protected Stack elementStack= new Stack();
 	protected XQueryLexer lexer;
-
+	
 	public XQueryParser(XQueryLexer lexer) {
 		this((TokenStream)lexer);
 		this.lexer= lexer;
 		setASTNodeClass("org.exist.xquery.parser.XQueryAST");
 	}
-
+	
 	public boolean foundErrors() {
 		return foundError;
 	}
@@ -204,9 +204,12 @@ prolog throws XPathException
 	)*
 	;
 
-versionDecl
+versionDecl throws XPathException
 :
 	"xquery" "version" v:STRING_LITERAL { #versionDecl = #(#[VERSION_DECL, v.getText()]); }
+	( 
+		"encoding"! enc:STRING_LITERAL!
+	)?
 	;
 
 setter:
@@ -1199,6 +1202,8 @@ reservedKeywords returns [String name]
 	"unordered" { name = "unordered"; }
 	|
 	"typeswitch" { name = "typeswitch"; }
+	|
+	"encoding" { name = "encoding"; }
 	;
 
 /**
@@ -1221,7 +1226,7 @@ options {
 	protected boolean inAttributeContent= false;
 	protected boolean inComment= false;
 	
-	protected XQueryContext context;
+	protected XQueryContext context = null;
 	
 	public XQueryLexer(XQueryContext context, Reader in) {
 		this(in);
@@ -1332,10 +1337,12 @@ options {
 	WS qn:PRAGMA_QNAME WS 
 	( c:PRAGMA_CONTENT { content = c.getText(); } )? ':' ':' ')'
 	{
-		try {
-			context.addPragma(qn.getText(), content);
-		} catch(XPathException e) {
-			throw new RecognitionException(e.getMessage());
+		if (context != null) {
+			try {
+				context.addPragma(qn.getText(), content);
+			} catch(XPathException e) {
+				throw new RecognitionException(e.getMessage());
+			}
 		}
 	}
 	;

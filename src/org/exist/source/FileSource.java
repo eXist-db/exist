@@ -24,7 +24,6 @@ package org.exist.source;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -38,11 +37,13 @@ public class FileSource extends AbstractSource {
     private String filePath;
     private long lastModified;
     private String encoding;
+    private boolean checkEncoding = false;
     
-    public FileSource(File file, String encoding) {
+    public FileSource(File file, String encoding, boolean checkXQEncoding) {
         this.filePath = file.getAbsolutePath();
         this.lastModified = file.lastModified();
         this.encoding = encoding;
+        this.checkEncoding = checkXQEncoding;
     }
     
     /* (non-Javadoc)
@@ -74,7 +75,7 @@ public class FileSource extends AbstractSource {
      * @see org.exist.source.Source#getReader()
      */
     public Reader getReader() throws IOException {
-//        return new FileReader(new File(filePath));
+        checkEncoding();
         return new InputStreamReader(new FileInputStream(filePath), encoding);
     }
 
@@ -82,6 +83,7 @@ public class FileSource extends AbstractSource {
      * @see org.exist.source.Source#getContent()
      */
     public String getContent() throws IOException {
+        checkEncoding();
         FileInputStream is = new FileInputStream(new File(filePath));
 		try {
 			Reader reader = new InputStreamReader(is, encoding);
@@ -95,5 +97,13 @@ public class FileSource extends AbstractSource {
 			is.close();
 		}
     }
-
+    
+    private void checkEncoding() throws IOException {
+        if (checkEncoding) {
+            String checkedEnc = guessXQueryEncoding(new FileInputStream(filePath));
+            if (checkedEnc != null)
+                encoding = checkedEnc;
+            System.out.println("ENCODING = " + encoding);
+        }
+    }
 }

@@ -22,6 +22,16 @@
  */
 package org.exist.source;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
+import org.exist.xquery.XPathException;
+import org.exist.xquery.parser.DeclScanner;
+import org.exist.xquery.parser.XQueryLexer;
+
+import antlr.RecognitionException;
+import antlr.TokenStreamException;
+
 
 /**
  * @author wolf
@@ -58,5 +68,24 @@ public abstract class AbstractSource implements Source {
      */
     public void setCacheTimestamp(long timestamp) {
         cacheTime = timestamp;
+    }
+    
+    /**
+     * Check if the XQuery file declares a content encoding in the
+     * XQuery declaration.
+     * 
+     * @param is
+     * @return
+     */
+    protected final static String guessXQueryEncoding(InputStream is) {
+        XQueryLexer lexer = new XQueryLexer(null, new InputStreamReader(is));
+        DeclScanner scanner = new DeclScanner(lexer);
+        try {
+            scanner.versionDecl();
+        } catch (RecognitionException e) {
+        } catch (TokenStreamException e) {
+        } catch (XPathException e) {
+        }
+        return scanner.getEncoding();
     }
 }
