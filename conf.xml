@@ -88,8 +88,17 @@
 	inserted whenever the node id scheme is recomputed after an XUpdate.
 	Increase the setting to have less reindex runs. However, you have to
 	be aware that leaving spare ids also limits the maximum size of a 
-	document that can be indexed. -->
-	<xupdate growth-factor="20" allowed-fragmentation="20"/>
+	document that can be indexed. 
+
+	"enable-consistency-checks" is for debugging only. If the parameter
+	is set to "yes", a consistency check will be run on every modified 
+	document after every XUpdate request. It checks if the 
+	persistent DOM is complete and all pointers in the structural
+	index point to valid storage addresses containing valid nodes.
+	-->
+
+	<xupdate growth-factor="20" allowed-fragmentation="20"
+		enable-consistency-checks="yes"/>
 
     <!-- 
         Settings for the indexer:
