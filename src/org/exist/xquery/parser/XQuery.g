@@ -2462,14 +2462,13 @@ protected INTEGER_LITERAL :
 protected DOUBLE_LITERAL
 :
 	{ !(inElementContent || inAttributeContent) }?
-	( ( '.' DIGITS ) | ( DIGITS '.' ( DIGITS )? ) ) ( 'e' | 'E' ) ( '+' | '-' )? DIGITS
+	( ( '.' DIGITS ) | ( DIGITS ( '.' ( DIGIT )* )? ) ) ( 'e' | 'E' ) ( '+' | '-' )? DIGITS
 	;
 
 protected DECIMAL_LITERAL
 :
-	{ !(inElementContent || inAttributeContent) }? 
-	( '.' DIGITS ) | ( DIGITS '.' ) => 
-	( '.' DIGITS ) | ( DIGITS '.' ( DIGITS )? )
+	{ !(inElementContent || inAttributeContent) }?
+	( '.' DIGITS ) | ( DIGITS ( '.' ( DIGIT )* )? )
 	;
 
 protected PREDEFINED_ENTITY_REF
@@ -2609,13 +2608,16 @@ options {
 	( '.' '.' )
 	=> PARENT { $setType(PARENT); }
 	|
+    ( '.' INTEGER_LITERAL ( 'e' | 'E' ) )
+	=> DECIMAL_LITERAL { $setType(DECIMAL_LITERAL); }
+    |
 	( '.' INTEGER_LITERAL )
 	=> DECIMAL_LITERAL { $setType(DECIMAL_LITERAL); }
 	|
 	( '.' )
 	=> SELF { $setType(SELF); }
 	|
-	( DECIMAL_LITERAL ( 'e' | 'E' ) )
+	( INTEGER_LITERAL ( '.' ( INTEGER_LITERAL )? )? ( 'e' | 'E' ) )
 	=> DOUBLE_LITERAL
 	{ $setType(DOUBLE_LITERAL); }
 	|
