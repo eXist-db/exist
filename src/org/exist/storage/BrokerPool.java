@@ -232,7 +232,7 @@ public class BrokerPool {
 		LOG.debug("min = " + min + "; max = " + max + "; sync = " + syncPeriod);
 		syncDaemon = new SyncDaemon();
 		if (syncPeriod > 0)
-			syncDaemon.executePeriodically(2000, new Sync(this, syncPeriod), false);
+			syncDaemon.executePeriodically(1000, new Sync(this, syncPeriod), false);
 		conf = config;
 		xqueryCache = new XQueryPool();
 		collectionsCache = new CollectionCache(COLLECTION_BUFFER_SIZE);
