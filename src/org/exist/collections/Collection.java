@@ -85,9 +85,14 @@ import org.xml.sax.XMLReader;
  *  
  * @author wolf
  */
-public final class Collection extends Observable
+public  class Collection extends Observable
 
 implements Comparable, EntityResolver, Cacheable {
+
+
+    public Collection(){
+        
+    }
 
 	private final static Logger LOG = Logger.getLogger(Collection.class);
 
