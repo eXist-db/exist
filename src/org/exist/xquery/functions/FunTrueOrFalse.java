@@ -23,6 +23,7 @@ package org.exist.xquery.functions;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
@@ -37,14 +38,14 @@ public class FunTrueOrFalse extends BasicFunction {
 				new QName("true", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
                 "Always returns the boolean value true",
 				null,
-				new SequenceType(Type.BOOLEAN, Cardinality.ONE));
+				new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
 	
 	public final static FunctionSignature fnFalse =
 		new FunctionSignature(
 			new QName("false", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
             "Always returns the boolean value false",
 			null,
-			new SequenceType(Type.BOOLEAN, Cardinality.ONE));
+			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
 				
 	public FunTrueOrFalse(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
@@ -54,6 +55,20 @@ public class FunTrueOrFalse extends BasicFunction {
 		return Type.BOOLEAN;
 	}
 	
+	/* (non-Javadoc)
+     * @see org.exist.xquery.Function#getDependencies()
+     */
+    public int getDependencies() {
+        return Dependency.NO_DEPENDENCY;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Function#getCardinality()
+     */
+    public int getCardinality() {
+        return Cardinality.EXACTLY_ONE;
+    }
+    
 	public Sequence eval(Sequence args[], Sequence contextSequence) {
 		if(isCalledAs("true"))
 			return BooleanValue.TRUE;

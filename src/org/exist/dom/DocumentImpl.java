@@ -801,7 +801,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			broker.endRemove();
 			newNode.gid = old.gid;
 			broker.insertAfter(previous, newNode);
-			broker.index(newNode);
+			broker.index(newNode, newNode.getPath());
 			broker.flush();
 		} else {
 			broker.removeNode(old, old.getPath());

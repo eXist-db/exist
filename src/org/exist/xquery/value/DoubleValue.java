@@ -382,7 +382,7 @@ public class DoubleValue extends NumericValue implements Indexable {
         final byte[] data = new byte[11];
         ByteConversion.shortToByte(collectionId, data, 0);
         data[2] = (byte) Type.DOUBLE;
-        final long bits = Double.doubleToRawLongBits(value);
+        final long bits = Double.doubleToLongBits(value) ^ 0x8000000000000000L;
         ByteConversion.longToByte(bits, data, 3);
         return data;
     }
@@ -391,7 +391,7 @@ public class DoubleValue extends NumericValue implements Indexable {
      * @see org.exist.storage.Indexable#deserialize(byte[])
      */
     public void deserialize(byte[] data) {
-        final long bits = ByteConversion.byteToLong(data, 3);
+        final long bits = ByteConversion.byteToLong(data, 3) ^ 0x8000000000000000L;
         value = Double.longBitsToDouble(bits);
     }
 

@@ -44,9 +44,11 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	
     protected final static Logger LOG = Logger.getLogger(AbstractNodeSet.class);
 	
-	// indicates if the nodes in this set and their descendant nodes
-	// have been fulltext indexed
-	private int indexType = Type.ITEM;
+	// indicates the type of an optional value index that may have
+    // been defined on the nodes in this set.
+	private int indexType = Type.ANY_TYPE;
+	
+	private boolean hasTextIndex = false;
 	
 	private boolean isCached = false;
 	
@@ -692,13 +694,13 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @return
 	 */
 	public int getIndexType() {
-		if(indexType == Type.ITEM) {
+		if(indexType == Type.ANY_TYPE) {
 		    int type;
 		    NodeProxy p;
 			for (Iterator i = iterator(); i.hasNext();) {
 			    p = (NodeProxy) i.next();
 			    type = p.getIndexType();
-				if(indexType == Type.ITEM)
+				if(indexType == Type.ANY_TYPE)
 				    indexType = type;
 				else if(indexType != type) {
 				    indexType = Type.ITEM;
@@ -707,5 +709,19 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 			}
 		}
 		return indexType;
+	}
+	
+	public boolean hasTextIndex() {
+	    if(indexType == Type.ANY_TYPE) {
+		    int type;
+		    NodeProxy p;
+			for (Iterator i = iterator(); i.hasNext();) {
+			    p = (NodeProxy) i.next();
+			    hasTextIndex = p.hasTextIndex();
+			    if(!hasTextIndex)
+			        break;
+			}
+		}
+	    return hasTextIndex;
 	}
 }

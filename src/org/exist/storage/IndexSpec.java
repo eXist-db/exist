@@ -21,9 +21,14 @@
  */
 package org.exist.storage;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.exist.util.DatabaseConfigurationException;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -39,19 +44,19 @@ public class IndexSpec {
     
     public IndexSpec(Element index) throws DatabaseConfigurationException {
         NodeList cl = index.getChildNodes();
+        Map namespaces = getNamespaceMap(index);
         for(int i = 0; i < cl.getLength(); i++) {
             Node node = cl.item(i);
             if(node.getNodeType() == Node.ELEMENT_NODE) {
 	            if("fulltext".equals(node.getLocalName())) {
 	                if(ftSpec != null)
 	                    throw new DatabaseConfigurationException("Only one fulltext section is allowed per index");
-	                ftSpec = new FulltextIndexSpec((Element)node);
+	                ftSpec = new FulltextIndexSpec(namespaces, (Element)node);
 	            } else if("create".equals(node.getLocalName())) {
 	                Element elem = (Element) node;
 	                String path = elem.getAttribute("path");
 	                String type = elem.getAttribute("type");
-	                LOG.debug("creating value index for " + path + "; type: " + type);
-	                ValueIndexSpec valueIdx = new ValueIndexSpec(path, type);
+	                ValueIndexSpec valueIdx = new ValueIndexSpec(namespaces, path, type);
 	                addValueIndex(valueIdx);
 	            }
             }
@@ -85,5 +90,24 @@ public class IndexSpec {
             nspecs[specs.length] = valueIdx;
             specs = nspecs;
         }
+    }
+    
+    /**
+     * Returns a map containing all prefix/namespace mappings declared in
+     * the index element.
+     * 
+     * @param elem
+     * @return
+     */
+    private Map getNamespaceMap(Element elem) {
+        HashMap map = new HashMap();
+        NamedNodeMap attrs = elem.getAttributes();
+        for(int i = 0; i < attrs.getLength(); i++) {
+            Attr attr = (Attr) attrs.item(i);
+            if(attr.getPrefix() != null && attr.getPrefix().equals("xmlns")) {
+                map.put(attr.getLocalName(), attr.getValue());
+            }
+        }
+        return map;
     }
 }

@@ -22,22 +22,102 @@
  */
 package org.exist.storage;
 
+import java.util.Arrays;
+import java.util.Map;
+
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Type;
 
 /**
+ * Used to specify a range index on a node path. Contrary to the
+ * fulltext index, a range index indexes the value of nodes according
+ * to a predefined type.
+ * 
  * @author wolf
  */
 public class ValueIndexSpec {
 
+    /*
+     * Constants to define the type of the index.
+     */
+    
+    /** No index specified **/
+    public final static int NO_INDEX = 0;
+    
+    public final static int STRING = 1;
+    
+    public final static int INTEGER = 2;
+    
+    public final static int DOUBLE = 3;
+    
+    public final static int FLOAT = 4;
+    
+    public final static int BOOLEAN = 5;
+    
+    public final static int TEXT = 0x80;
+    
+    // Maps the type constants above to the corresponding
+    // XPath atomic types
+    private final static int[] xpathTypes = {
+            Type.ITEM,
+            Type.STRING,
+            Type.INTEGER,
+            Type.DOUBLE,
+            Type.FLOAT,
+            Type.BOOLEAN
+    };
+    
+    private final static int[] indexTypes = new int[64];
+    static {
+        Arrays.fill(indexTypes, NO_INDEX);
+        indexTypes[Type.STRING] = STRING;
+        indexTypes[Type.INTEGER] = INTEGER;
+        indexTypes[Type.DOUBLE] = DOUBLE;
+        indexTypes[Type.FLOAT] = FLOAT;
+        indexTypes[Type.BOOLEAN] = BOOLEAN;
+    }
+    
+    /**
+     * For a given index type specifier, return the corresponding
+     * atomic XPath type (as defined in {@link org.exist.xquery.value.Type}).
+     * 
+     * @param type
+     * @return
+     */
+    public final static int indexTypeToXPath(int type) {
+        return xpathTypes[type & 0x7F];
+    }
+    
+    /**
+     * Returns true if the index type specifier has the fulltext index flag
+     * set.
+     * 
+     * @param type
+     * @return
+     */
+    public final static boolean hasFulltextIndex(int type) {
+        return (type & TEXT) != 0;
+    }
+    
+    /**
+     * Returns the index type specifier corresponding to a given
+     * XPath type (as defined in {@link org.exist.xquery.value.Type}).
+     * 
+     * @param type
+     * @return
+     */
+    public final static int xpathTypeToIndex(int type) {
+        return indexTypes[type];
+    }
+    
     private NodePath path;
     private int type;
     
-    public ValueIndexSpec(String pathStr, String typeStr) throws DatabaseConfigurationException {
+    public ValueIndexSpec(Map namespaces, String pathStr, String typeStr) throws DatabaseConfigurationException {
         if(pathStr.length() == 0)
             throw new DatabaseConfigurationException("The path attribute is required in index.create");
-        path = new NodePath(pathStr);
+        path = new NodePath(namespaces, pathStr, false);
         try {
             type = Type.getType(typeStr);
         } catch (XPathException e) {
@@ -45,14 +125,42 @@ public class ValueIndexSpec {
         }
     }
     
+    /**
+     * Returns the path corresponding to this index.
+     * 
+     * @return
+     */
     public NodePath getPath() {
         return path;
     }
     
+    /**
+     * Returns the XPath type code for this index
+     * (as defined in {@link org.exist.xquery.value.Type}).
+     * 
+     * @return
+     */
     public int getType() {
         return type;
     }
     
+    /**
+     * Returns the index type for this index, corresponding
+     * to the constants defined in this class.
+     * 
+     * @return
+     */
+    public int getIndexType() {
+        return indexTypes[type];
+    }
+    
+    /**
+     * Check if the path argument matches the path
+     * of this index spec.
+     * 
+     * @param otherPath
+     * @return
+     */
     protected boolean matches(NodePath otherPath) {
         return path.match(otherPath);
     }

@@ -291,6 +291,8 @@ public interface NodeSet extends Sequence, NodeList {
 	 */
 	public int getIndexType();
 	
+	public boolean hasTextIndex();
+	
 	/**
 	 * Return a sub-range of this node set containing the range of nodes greater than or including
 	 * the lower node and smaller than or including the upper node.

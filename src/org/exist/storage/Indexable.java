@@ -29,7 +29,7 @@ package org.exist.storage;
  * @author wolf
  */
 public interface Indexable extends Comparable {
-
+    
     /**
      * Serialize the value to an array of bytes.
      * 

@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<items>
+<items xmlns:x="http://www.foo.com">
     <item>
         <itemno>1</itemno>
         <name>Red Bicycle</name>
-        <price>645.5</price>
+        <price specialprice="false">645.5</price>
         <stock>15</stock>
+		<x:rating>8.7</x:rating>
     </item>
     <item>
         <itemno>2</itemno>
         <name>Racing Bicycle</name>
-        <price>1024.99</price>
+        <price specialprice="true">1024.99</price>
         <stock>8</stock>
+		<x:rating>9.0</x:rating>
     </item>
     <item>
         <itemno>3</itemno>
@@ -21,8 +23,9 @@
     <item>
         <itemno>4</itemno>
         <name>Snowboard</name>
-        <price>230.10</price>
+        <price specialprice="false">230.10</price>
         <stock>5</stock>
+		<x:rating>2.3</x:rating>
     </item>
     <item>
         <itemno>5</itemno>
@@ -30,4 +33,16 @@
         <price>400.50</price>
         <stock>10</stock>
     </item>
+	<item>
+		<itemno>6</itemno>
+		<name>Black Horse</name>
+		<price>3000.50</price>
+		<stock>-5</stock>
+	</item>
+	<item>
+		<itemno>7</itemno>
+		<name>Wizard's Robe</name>
+		<price>-100.10</price>
+		<stock>-1</stock>
+	</item>
 </items>

@@ -166,6 +166,15 @@ public class GeneralComparison extends BinaryOp {
         return result;
 	}
 
+	/**
+	 * Generic, slow implementation. Applied if none of the possible 
+	 * optimizations can be used.
+	 * 
+	 * @param contextSequence
+	 * @param contextItem
+	 * @return
+	 * @throws XPathException
+	 */
 	protected Sequence genericCompare(
 		Sequence contextSequence,
 		Item contextItem)
@@ -237,9 +246,10 @@ public class GeneralComparison extends BinaryOp {
 	}
 
 	/**
-	 * Optimized implementation, which uses the fulltext index to look up
-	 * matching string sequences. Applies to comparisons where the left
-	 * operand returns a node set and the right operand is a string literal.
+	 * Optimized implementation: first checks if a range index is defined
+	 * on the nodes in the left argument. If that fails, check if we can use
+	 * the fulltext index to speed up the search. Otherwise, fall back to
+	 * {@link #nodeSetCompare(NodeSet, Sequence)}.
 	 */
 	protected Sequence quickNodeSetCompare(Sequence contextSequence)
 		throws XPathException {
@@ -250,8 +260,6 @@ public class GeneralComparison extends BinaryOp {
 		}
 		//	evaluate left expression
 		NodeSet nodes = (NodeSet) getLeft().eval(contextSequence);
-		// get the type of a possible index
-		int indexType = nodes.getIndexType();
 		
 		if(nodes.getLength() < 2)
 			// fall back to nodeSetCompare if we just have to check a single node
@@ -264,25 +272,32 @@ public class GeneralComparison extends BinaryOp {
 			// fall back to nodeSetCompare
 			return nodeSetCompare(nodes, contextSequence);
 		
+		// get the type of a possible index
+		int indexType = nodes.getIndexType();
+		
 		DocumentSet docs = nodes.getDocumentSet();
 		NodeSet result = null;
-	    if(indexType != Type.ITEM && indexType != Type.IDX_FULLTEXT) {
-	        Item key;
-	        if(Type.subTypeOf(rightSeq.getItemType(), Type.STRING))
-	            key = new StringValue(getComparisonString(rightSeq));
-	        else
-	            key = rightSeq.itemAt(0);
-	        if(key instanceof Indexable) {
+		
+	    if(indexType != Type.ITEM) {
+	        // we have a range index defined on the nodes in this sequence
+	        Item key = rightSeq.itemAt(0);
+	        if(key.getType() != indexType) {
+	            // index type doesn't match. If index and argument have a numeric type,
+	            // we convert to the type of the index
 	            if(Type.subTypeOf(indexType, Type.NUMBER) &&
 	                    Type.subTypeOf(key.getType(), Type.NUMBER))
 	                key = key.convertTo(indexType);
-	            if(!Type.subTypeOf(key.getType(), indexType))
-	                return nodeSetCompare(nodes, contextSequence);
-//	            LOG.debug("Using value index");
-	            result = context.getBroker().getValueIndex().find(relation, docs, nodes, (Indexable)key);
 	        }
+	        // if key does not implement Indexable, we can't use the index
+	        if(key instanceof Indexable && Type.subTypeOf(key.getType(), indexType)) {
+	            LOG.debug("Using value index for key: " + key.getStringValue());
+	            result = context.getBroker().getValueIndex().find(relation, docs, nodes, (Indexable)key);
+	        } else
+	            return nodeSetCompare(nodes, contextSequence);
+	        
 	    } else if (relation == Constants.EQ
-				&& indexType == Type.IDX_FULLTEXT) {
+				&& nodes.hasTextIndex()) {
+	        // we can use the fulltext index
 	        String cmp = getComparisonString(rightSeq);
 	        if(cmp.length() < NativeTextEngine.MAX_WORD_LENGTH)
 	            nodes = useFulltextIndex(cmp, nodes, docs);
@@ -290,6 +305,10 @@ public class GeneralComparison extends BinaryOp {
 			Collator collator = getCollator(contextSequence);
 			result =
 				context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp, collator);
+		} else {
+		    
+		    // no usable index found. Fall back to nodeSetCompare()
+		    return nodeSetCompare(nodes, contextSequence);
 		}
 		
 		// can this result be cached? Don't cache if the result depends on local variables.
