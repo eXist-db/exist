@@ -19,25 +19,19 @@ table p {
     margin: 0px;
 }
 
-#content {
-    margin-left: 190px;
-    background-color: white;
-}
-
 #notes {
     border-top: solid 1px #DEDEDE;
 }
 
 #top {
-    margin: 0;
+    margin-bottom: 5px;
 }
 
 #top #menubar {
     width: 100%;
-    padding-top: 3px;
-    padding-bottom: 3px;
+    padding-top: 4px;
+    padding-bottom: 4px;
     margin-top: 5px;
-    margin-bottom: 15px;
     border-top: solid 1px #DEDEDE;
     border-bottom: solid 1px #DEDEDE;
 }
@@ -61,10 +55,40 @@ table p {
 }
 
 #sidebar {
-    float: left;
-    width: 180px;
+    position: absolute;
+    margin-top: 15px;
+    width: 16%;
     display: block;
-    padding-top: 10px;
+    overflow: hidden;
+}
+
+#content2col {
+    position: absolute;
+    left: 18%;
+    width: 81%;
+    margin-top: 15px;
+    display: block;
+    background-color: white;
+    overflow: hidden;
+}
+
+#content {
+    position: absolute;
+    left: 18%;
+    width: 62%;
+    margin-top: 15px;
+    display: block;
+    background-color: white;
+    overflow: hidden;
+}
+
+#news {
+    position: absolute;
+    width: 18%;
+    left: 82%;
+    margin-top: 15px;
+    display: block;
+    overflow: hidden;
 }
 
 .toc {
@@ -82,11 +106,12 @@ table p {
 h1 { 
     font-size: 160%;
     font-weight: normal;
-    color: #fff;
-    background-color: #b0b0b0;
+    color: white;
+    background-color: #0990EE;
     border: 1px solid #999;
     margin-left: 0px;
     margin-bottom: 15px;
+    margin-top: 0px;
     padding-left: 5px;
     padding-right: 5px;
     padding-bottom: 5px;
@@ -195,15 +220,15 @@ select.choose {
 }
 
 .block {
-    margin:6px 6px 12px 6px;
+    margin:0px 6px 12px 6px;
 	padding: 4px;
 	background: #fff;
 	border: 1px solid #999; 
 }
 
 .block h3 {
-	background: #bbb;
-	color: #fff;
+	background: #ddd;
+	color: #000;
 	margin: -4px -4px 4px -4px;
 	padding: 4px;
 	border-bottom: 1px solid #999;
@@ -211,18 +236,29 @@ select.choose {
 }
 
 .block ul {
-    margin-left: 0;
-    padding-left: 0;
+    margin: 0;
+    padding: 0;
     list-style-type: none;
 }
 
 .block li {
 }
 
+.block .date {
+    text-align: right;
+    font-size: 9.5pt;
+    font-style: italic;
+    border-bottom: 1px solid #999;
+}
+
+.block .headline {
+    margin-bottom: 10px;
+}
+
 .block a {
     display: block;
     padding: 3px;
-    font-size: 11px;
+    font-size: small;
     color: #666666;
     font-weight: normal;
 }
@@ -250,19 +286,19 @@ select.choose {
 }
 
 .xmlsrc {
-margin-top: 20px;
-margin-bottom: 20px;
-padding-right: 10px;
-text-align: right;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding-right: 10px;
+    text-align: right;
 }
 
 .filename {
-font-family: Courier, monospace;
-font-size: 120%;
+    font-family: Courier, monospace;
+    font-size: 120%;
 }
 
 .option {
-font-family: Courier, monospace;
+    font-family: Courier, monospace;
 }
 
 .classname {
@@ -274,7 +310,7 @@ font-family: Courier, monospace;
 }
 
 .command {
-font-weight: bold;
+    font-weight: bold;
 }
 
 .variablelist {
@@ -282,7 +318,7 @@ font-weight: bold;
 }
 
 div.screen {
-font-family: Courier, monospace;
+    font-family: Courier, monospace;
 }
 
 div.synopsis {
@@ -290,7 +326,7 @@ div.synopsis {
     padding-left: 5px;
     font-family: Courier, monospace;
     text-align: left;
-    background: #AABBCC;
+    background: #ddd;
 }
 
 .note_title {
@@ -332,7 +368,7 @@ div.important {
     padding-top: 10px;
     padding-bottom: 10px;
     text-align: left;
-    background: #eee;
+    background: #fafafa;
     border: 1px solid #999;
 }
 

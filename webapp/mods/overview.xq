@@ -22,7 +22,7 @@ declare function b:remove($user, $pass) as element()
 			<p>Required parameter "doc" or "collection" is missing!</p>
 		else (
 			<p>Removing document {$doc} from collection {$path}.</p>,
-			let $collection := 
+			let $collection :=
 					xmldb:collection(concat("xmldb:exist://", $path), $user,
                     $pass)
 			return
@@ -45,17 +45,6 @@ declare function b:queryField($field as xs:string) as xs:string
 		"m:originInfo/m:dateIssued"
 	else
 		"."
-};
-
-(: Map order parameter to xpath for order by clause :)
-declare function b:orderExpr($field as xs:string) as xs:string
-{
-	if ($field = "creator") then
-		"$m/m:name[1]/m:namePart[@type='family'],$m/m:name[1]/m:namePart[@type='given']"
-	else if ($field = "title") then
-		"$m/m:titleInfo[1]/m:title"
-	else
-		"$m/m:originInfo/m:dateIssued[1] descending"
 };
 
 (: Create an XPath expression for the current field and search terms :)
@@ -120,9 +109,12 @@ declare function b:display($recs as item()*, $user) as element()
 
 declare function b:buildQuery($xpath as xs:string, $order as xs:string) as xs:string
 {
-    let $orderExpr := b:orderExpr($order)
+    let $orderExpr := c:orderExpr($order)
     return
-        concat("for $m in ", $xpath, " order by ", $orderExpr, " return $m")
+        concat(
+            "import module namespace c='http://exist-db.org/modules/mods-config'
+            at 'config.xqm';
+            for $m in ", $xpath, " order by ", $orderExpr, " return $m")
 };
 
 declare function b:reorder($order as xs:string, $user as xs:string) as element()+
