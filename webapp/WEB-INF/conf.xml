@@ -20,11 +20,17 @@
 	   - pageSize: disk page size - should be a multiple of the operating system's
 				  file system page size.
        -->
-       
-	   <db-connection database="native" files="data" 
-		   buffers="512" words_buffers="2048" collection_buffers="512" 
-		   elements_buffers="512" free_mem_min="10" 
-		   pageSize="4096">
+
+	   <!-- The settings below are very conservative to avoid out-of-memory
+	   exceptions on machines with limited memory (256MB). Increase the
+	   buffer settings for elements_buffers and words_buffers if you have
+	   some more memory to waste. -->
+	   <db-connection database="native" files="data"
+		   pageSize="4096" cacheSize="64M" free_mem_min="10">
+	   <!--db-connection database="native" files="webapp/WEB-INF/data" 
+		   buffers="1024" words_buffers="4096" collection_buffers="256" 
+		   elements_buffers="1024" free_mem_min="10" 
+		   pageSize="4096"-->
 
 		   <!-- Settings for the database connection pool
 
@@ -37,14 +43,16 @@
 				- max: maximum number of connections allowed.
 		   -->
 		   <pool min="1" max="30" sync-period="300000"/>
-   		</db-connection>
-  
-		<!--db-connection database="native" files="/var/xml/data" 
-			buffers="1024" words_buffers="32768" collection_buffers="2048" 
-			elements_buffers="8192" free_mem_min="10" 
+	   </db-connection>
+
+	   <!-- Settings for a machine with more memory.
+		<db-connection database="native" files="webapp/WEB-INF/data" 
+			buffers="1024" words_buffers="8192" collection_buffers="256" 
+			elements_buffers="2048" free_mem_min="10" 
 		   pageSize="4096">
 		   <pool min="1" max="15" sync-period="300000"/>
-	   </db-connection-->
+	   </db-connection>
+	   -->
 	   
   <!-- settings for the serializer
 
@@ -53,8 +61,8 @@
 	   if found in documents?
 	   - indent: should the serializer pretty-print (indent) xml?
   -->
-  <serializer enable-xinclude="true" enable-xsl="false"
-	  indent="false" add-exist-id="element" match-tagging-elements="false"
+  <serializer enable-xinclude="yes" enable-xsl="false"
+	  indent="yes" add-exist-id="no" match-tagging-elements="true"
 	  match-tagging-attributes="false"/>
   
   <!-- settings for the indexer
@@ -74,7 +82,7 @@
     		equality comparisons.
   -->
   <indexer stemming="false" caseSensitive="false"
-	  suppress-whitespace="none" index-depth="6"
+	  suppress-whitespace="both" index-depth="1"
 	  tokenizer="org.exist.storage.analysis.SimpleTokenizer"
 	  validation="false">
 
@@ -112,18 +120,15 @@
 	<index doctype="users" default="none" attributes="false">
 	</index>
 
-	<index attributes="true" doctype="dblp" default="all">
-		<exclude path="//ee"/>
-		<exclude path="//cdrom"/>
-		<exclude path="//url"/>
-		<exclude path="//volume"/>
-	</index>
-	
 	<index doctype="PLAY" default="all">
 	</index>
 
-	<index attributes="true" alphanum="true" doctype="movie" default="all">
-		<!--exclude path="//@id"/-->
+	<index doctype="dblp" attributes="true" alphanum="true" default="all">
+		<exclude path="//@mdate"/>
+		<exclude path="//ee"/>
+		<exclude path="//volume"/>
+		<exclude path="//cdrom"/>
+		<exclude path="//url"/>
 	</index>
 
 	<index attributes="false" doctype="species" default="all" alphanum="true"/>
@@ -134,7 +139,7 @@
 	</index>
 	
     <entity-resolver>
-		<catalog file="catalog"/>
+		<catalog file="webapp/WEB-INF/catalog"/>
     </entity-resolver>
   </indexer>
   
@@ -193,12 +198,7 @@
 		<appender-ref ref="console"/>
 		<priority value="debug"/>
     </category>
-
-	<category name="org.apache" additivity="false">
-		<appender-ref ref="console"/>
-		<priority value="info"/>
-	</category>
-
+    
     <!--
     <category name="exist.http">
       <appender-ref ref="A1"/>
