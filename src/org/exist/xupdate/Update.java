@@ -5,9 +5,6 @@
  */
 package org.exist.xupdate;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
 import org.exist.EXistException;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.Collection;
@@ -38,7 +35,7 @@ public class Update extends Modification {
 	 * @see org.exist.xupdate.Modification#process(org.exist.dom.DocumentSet)
 	 */
 	public long process() throws PermissionDeniedException, EXistException {
-		ArrayList qr = select(docs);
+		NodeImpl[] qr = select(docs);
 		NodeList children = content.getChildNodes();
 		if (qr == null || children.getLength() == 0)
 			return 0;
@@ -50,8 +47,8 @@ public class Update extends Modification {
 		ElementImpl parent;
 		DocumentImpl doc = null;
 		Collection collection = null, prevCollection = null;
-		for (Iterator i = qr.iterator(); i.hasNext();) {
-			node = (NodeImpl) i.next();
+		for (int i = 0; i < qr.length; i++) {
+			node = qr[i];
 			doc = (DocumentImpl) node.getOwnerDocument();
 			doc.setIndexListener(listener);
 			collection = doc.getCollection();

@@ -48,6 +48,7 @@ import org.exist.util.Lock;
 import org.exist.util.Lockable;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.ReentrantReadWriteLock;
+import org.exist.util.StorageAddress;
 import org.exist.util.XMLUtil;
 import org.w3c.dom.Node;
 
@@ -79,7 +80,7 @@ public class DOMFile extends BTree implements Lockable {
 	private DOMFileHeader fileHeader;
 	private Object owner = null;
 
-	private Lock lock = new ReentrantReadWriteLock();
+	private Lock lock = null;
 
 	private final Object2LongOpenHashMap pages = new Object2LongOpenHashMap();
 		
@@ -91,6 +92,7 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	public DOMFile(int buffers, int dataBuffers) {
 		super(buffers);
+		lock = new ReentrantReadWriteLock("dom.dbx");
 		fileHeader = (DOMFileHeader) getFileHeader();
 		fileHeader.setPageCount(0);
 		fileHeader.setTotalCount(0);
@@ -149,39 +151,6 @@ public class DOMFile extends BTree implements Lockable {
 	}
 	
 	/**
-	 *  Create virtual address from page number and offset (tid)
-	 *
-	 *@param  page    page number
-	 *@param  offset  offset (tid)
-	 *@return         new virtual address in a long
-	 */
-	public final static long createPointer(int page, int offset) {
-		long p = (page & 0xffff);
-		long o = (offset & 0xffff);
-		return page | (o << 32);
-	}
-
-	/**
-	 *  Get the tid from a virtual address
-	 *
-	 *@param  pointer  
-	 *@return          the tid encoded in this address
-	 */
-	public final static int tidFromPointer(long pointer) {
-		return (int) ((pointer >>> 32) & 0xffff);
-	}
-
-	/**
-	 *  Get the page from a virtual address
-	 *
-	 *@param  pointer  
-	 *@return          the page encoded in this address
-	 */
-	public final static int pageFromPointer(long pointer) {
-		return (int) pointer;
-	}
-
-	/**
 	 *  Append a value to the current page 
 	 *
 	 *@param  value  the value to append
@@ -222,7 +191,7 @@ public class DOMFile extends BTree implements Lockable {
 		page.setDirty(true);
 		buffer.add(page, 2);
 		// create pointer from pageNum and offset into page
-		final long p = createPointer((int) page.getPageNum(), tid);
+		final long p = StorageAddress.createPointer((int) page.getPageNum(), tid);
 		return p;
 	}
 
@@ -328,7 +297,7 @@ public class DOMFile extends BTree implements Lockable {
 		rec.page.getPageHeader().incRecordCount();
 		rec.page.setDirty(true);
 		buffer.add(rec.page);
-		return createPointer((int) rec.page.getPageNum(), tid);
+		return StorageAddress.createPointer((int) rec.page.getPageNum(), tid);
 	}
 
 	/**
@@ -998,8 +967,8 @@ public class DOMFile extends BTree implements Lockable {
 	}
 	
 	protected final RecordPos findValuePosition(long p) {
-			long pageNr = (long) pageFromPointer(p);
-			final short tid = (short) tidFromPointer(p);
+			long pageNr = (long) StorageAddress.pageFromPointer(p);
+			final short tid = (short) StorageAddress.tidFromPointer(p);
 			DOMPage page;
 			int pos;
 			while (pageNr > -1) {
@@ -1656,9 +1625,5 @@ public class DOMFile extends BTree implements Lockable {
 			values.add(new Value(rec.page.data, dataStart, l));
 			return true;
 		}
-	}
-	
-	public static final String printAddress(long p) {
-		return pageFromPointer(p) + ":" + tidFromPointer(p);
 	}
 }

@@ -2,6 +2,7 @@ package org.exist.xupdate;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
@@ -50,7 +51,7 @@ public class Insert extends Modification {
 	 */
 	public long process()
 		throws PermissionDeniedException, EXistException {
-		ArrayList qr = select(docs);
+		NodeImpl[] qr = select(docs);
 		NodeList children = content.getChildNodes();
 		if(qr == null || children.getLength() == 0)
 			return 0;
@@ -61,8 +62,8 @@ public class Insert extends Modification {
 		Collection collection = null, prevCollection = null;
 		int len = children.getLength();
 		LOG.debug("found " + len + " nodes to insert");
-		for (Iterator i = qr.iterator(); i.hasNext();) {
-			node = (NodeImpl) i.next();
+		for(int i = 0; i < qr.length; i++) {
+			node = qr[i];
 			doc = (DocumentImpl) node.getOwnerDocument();
 			doc.setIndexListener(listener);
 			collection = doc.getCollection();
@@ -71,6 +72,7 @@ public class Insert extends Modification {
 			if (!doc.getPermissions().validate(user, Permission.UPDATE))
 				throw new PermissionDeniedException("permission to remove document denied");
 			parent = (NodeImpl) node.getParentNode();
+			LOG.debug("processing " + parent.getGID());
 			switch (mode) {
 				case INSERT_BEFORE :
 					parent.insertBefore(children, node);
@@ -84,7 +86,7 @@ public class Insert extends Modification {
 		}
 		if(doc != null)
 			doc.getBroker().saveCollection(collection);
-		return qr.size();
+		return qr.length;
 	}
 
 	/**

@@ -251,13 +251,19 @@ public class ArraySet extends NodeSet {
 
 	}
 
+	public boolean hasIndex() {
+		for(int i = 0; i < counter; i++)
+			if(!nodes[i].hasIndex())
+				return false;
+		return true;
+	}
+	
 	/**  Description of the Method */
 	protected void checkSorted() {
 		if (counter > 1 && nodes[counter - 1].compareTo(nodes[counter - 2]) < 0)
 			sorted = false;
 		else
 			sorted = true;
-
 	}
 
 	/**  Description of the Method */

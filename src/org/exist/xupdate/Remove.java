@@ -2,6 +2,7 @@ package org.exist.xupdate;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
@@ -39,7 +40,7 @@ public class Remove extends Modification {
 	 */
 	public long process()
 		throws PermissionDeniedException, EXistException {
-		ArrayList qr = select(docs);
+		NodeImpl[] qr = select(docs);
 		if(qr == null)
 			return 0;
 		IndexListener listener = new IndexListener(qr);
@@ -47,8 +48,8 @@ public class Remove extends Modification {
 		Node parent;
 		DocumentImpl doc = null;
 		Collection collection = null, prevCollection = null;
-		for (Iterator i = qr.iterator(); i.hasNext();) {
-			node = (NodeImpl) i.next();
+		for(int i = 0; i < qr.length; i++) {
+			node = qr[i];
 			doc = (DocumentImpl) node.getOwnerDocument();
 			if (!doc.getPermissions().validate(user, Permission.UPDATE))
 				throw new PermissionDeniedException("permission to remove document denied");
@@ -66,7 +67,7 @@ public class Remove extends Modification {
 		}
 		if(doc != null)
 			doc.getBroker().saveCollection(collection);
-		return qr.size();
+		return qr.length;
 	}
 
 	/**

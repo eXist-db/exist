@@ -39,6 +39,7 @@ import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.ReadOnlyException;
+import org.exist.util.StorageAddress;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
 import org.exist.util.XMLUtil;
@@ -94,7 +95,6 @@ public class NativeElementIndex extends ElementIndex {
 		short sym;
 		short collectionId = oldDoc.getCollection().getId();
 		long delta, last, gid, address;
-		int page, tid;
 		try {
 			// iterate through elements
 			for (Iterator i = elementIds.entrySet().iterator(); i.hasNext();) {
@@ -128,14 +128,8 @@ public class NativeElementIndex extends ElementIndex {
 								// copy data to new buffer
 								os.writeInt(docId);
 								os.writeInt(len);
-								for (int j = 0; j < len * 3; j++) {
+								for (int j = 0; j < len * 4; j++) {
 									is.copyTo(os);
-//									delta = is.readLong();
-//									page = is.readInt();
-//									tid = is.readInt();
-//									os.writeLong(delta);
-//									os.writeInt(page);
-//									os.writeInt(tid);
 								}
 							} else {
 								// copy nodes to new list
@@ -144,18 +138,15 @@ public class NativeElementIndex extends ElementIndex {
 									delta = is.readLong();
 									gid = last + delta;
 									last = gid;
-									page = is.readInt();
-									tid = is.readInt();
+									address = StorageAddress.read(is);
 									if (node == null
 										&& oldDoc.getTreeLevel(gid) < oldDoc.reindexRequired()) {
-										address = DOMFile.createPointer(page, tid);
 										idList.add(new NodeProxy(oldDoc, gid, address));
 									} else if (
 										node != null
 											&& (!XMLUtil
 												.isDescendantOrSelf(oldDoc, node.getGID(), gid))) {
 										if (!containsNode(idList, gid)) {
-											address = DOMFile.createPointer(page, tid);
 											oldList.add(new NodeProxy(oldDoc, gid, address));
 										}
 									}
@@ -181,9 +172,7 @@ public class NativeElementIndex extends ElementIndex {
 					delta = p.gid - last;
 					last = p.gid;
 					os.writeLong(delta);
-					address = p.internalAddress;
-					os.writeInt(DOMFile.pageFromPointer(address));
-					os.writeInt(DOMFile.tidFromPointer(address));
+					StorageAddress.write(p.internalAddress, os);
 				}
 				data = os.toByteArray();
 				try {
@@ -221,7 +210,6 @@ public class NativeElementIndex extends ElementIndex {
 		short sym;
 		short collectionId = doc.getCollection().getId();
 		long delta, last, gid, address;
-		int page, tid;
 		try {
 			// iterate through elements
 			for (Iterator i = elementIds.entrySet().iterator(); i.hasNext();) {
@@ -255,14 +243,8 @@ public class NativeElementIndex extends ElementIndex {
 								// copy data to new buffer
 								os.writeInt(docId);
 								os.writeInt(len);
-								for (int j = 0; j < len * 3; j++) {
+								for (int j = 0; j < len * 4; j++) {
 									is.copyTo(os);
-//									delta = is.readLong();
-//									page = is.readInt();
-//									tid = is.readInt();
-//									os.writeLong(delta);
-//									os.writeInt(page);
-//									os.writeInt(tid);
 								}
 							} else {
 								// copy nodes to new list
@@ -271,10 +253,9 @@ public class NativeElementIndex extends ElementIndex {
 									delta = is.readLong();
 									gid = last + delta;
 									last = gid;
-									page = is.readInt();
-									tid = is.readInt();
+									address = StorageAddress.read(is);
 									if(!containsNode(idList, gid)) {
-										address = DOMFile.createPointer(page, tid);
+										//address = DOMFile.createPointer(page, tid);
 										newList.add(new NodeProxy(doc, gid, address));
 									}
 								}
@@ -297,9 +278,7 @@ public class NativeElementIndex extends ElementIndex {
 					delta = p.gid - last;
 					last = p.gid;
 					os.writeLong(delta);
-					address = p.internalAddress;
-					os.writeInt(DOMFile.pageFromPointer(address));
-					os.writeInt(DOMFile.tidFromPointer(address));
+					StorageAddress.write(p.internalAddress, os);
 				}
 				data = os.toByteArray();
 				try {
@@ -339,7 +318,6 @@ public class NativeElementIndex extends ElementIndex {
 		byte[] data;
 		String name;
 		Value ref;
-		Value val;
 		Map.Entry entry;
 		VariableByteOutputStream os = new VariableByteOutputStream();
 		// get collection id for this collection
@@ -365,9 +343,7 @@ public class NativeElementIndex extends ElementIndex {
 					cid = proxy.gid - prevId;
 					prevId = proxy.gid;
 					os.writeLong(cid);
-					addr = proxy.internalAddress;
-					os.writeInt(DOMFile.pageFromPointer(addr));
-					os.writeInt(DOMFile.tidFromPointer(addr));
+					StorageAddress.write(proxy.internalAddress, os);
 				}
 				data = os.toByteArray();
 				os.clear();
@@ -401,27 +377,6 @@ public class NativeElementIndex extends ElementIndex {
 		NativeBroker.ElementValue ref =
 			new NativeBroker.ElementValue(collectionId, symbol, (short) 0);
 		return ref;
-		//        IndexQuery query =
-		//                new IndexQuery(null, IndexQuery.TRUNC_RIGHT, ref);
-		//        synchronized (dbElement) {
-		//            try {
-		//                ArrayList partitions = dbElement.findKeys(query);
-		//                Value next;
-		//                int size;
-		//                for(Iterator i = partitions.iterator(); i.hasNext(); ) {
-		//                    next = (Value) i.next();
-		//                    size = dbElement.getValueSize( next );
-		//                    if( size + len < PARTITION_SIZE ) {
-		//                        return next;
-		//		    }
-		//                }
-		//            } catch(IOException e) {
-		//                LOG.warn(e);
-		//            } catch(BTreeException e) {
-		//                LOG.warn(e);
-		//            }
-		//            return null;
-		//        }
 	}
 
 	/**  Description of the Method */

@@ -71,6 +71,10 @@ public class VariableByteOutputStream extends OutputStream {
         VariableByteCoding.encode( buf, l );
     }
     
+    public void writeFixedLong( long l ) {
+    	VariableByteCoding.encodeFixed( buf, l );
+    }
+    
     public void writeUTF( String s ) throws IOException {
         byte[] data = null;
         try {

@@ -14,6 +14,7 @@ import org.exist.storage.DOMFile.DOMPage;
 import org.exist.util.ByteConversion;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
+import org.exist.util.StorageAddress;
 
 /**
  * Class NodeIterator is used to iterate over nodes in the DOM storage.
@@ -62,7 +63,7 @@ public final class NodeIterator implements Iterator {
 	 *@return    The currentAddress value
 	 */
 	public long currentAddress() {
-		return DOMFile.createPointer((int) page, lastTID);
+		return StorageAddress.createPointer((int) page, lastTID);
 	}
 
 	/**
@@ -131,7 +132,7 @@ public final class NodeIterator implements Iterator {
 				lastTID = ByteConversion.byteToShort(p.data, offset);
 				final short l = ByteConversion.byteToShort(p.data, offset + 2);
 				nextNode = NodeImpl.deserialize(p.data, offset + 4, l, doc);
-				nextNode.setInternalAddress(DOMFile.createPointer((int) page, lastTID));
+				nextNode.setInternalAddress(StorageAddress.createPointer((int) page, lastTID));
 				nextNode.setOwnerDocument(doc);
 				offset = offset + 4 + l;
 			}

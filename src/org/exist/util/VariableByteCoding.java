@@ -125,6 +125,28 @@ public class VariableByteCoding {
 		buf.append((byte) (l & 0177));
 	}
 
+	public final static void encodeFixed(FastByteBuffer buf, long l) {
+		buf.append((byte) ( ( l >>> 56 ) & 0xff ));
+		buf.append((byte) ( ( l >>> 48 ) & 0xff ));
+		buf.append((byte) ( ( l >>> 40 ) & 0xff ));
+		buf.append((byte) ( ( l >>> 32 ) & 0xff ));
+		buf.append((byte) ( ( l >>> 24 ) & 0xff ));
+		buf.append((byte) ( ( l >>> 16 ) & 0xff ));
+		buf.append((byte) ( ( l >>> 8 ) & 0xff ));
+		buf.append((byte) ( ( l >>> 0 ) & 0xff ));
+	}
+	
+	public final static long decodeFixed(InputStream is) throws IOException {
+		return ( ( ( (long) is.read() ) & 0xffL ) << 56 ) |
+		( ( ( (long) is.read() ) & 0xffL ) << 48 ) |
+		( ( ( (long) is.read() ) & 0xffL ) << 40 ) |
+		( ( ( (long) is.read() ) & 0xffL ) << 32 ) |
+		( ( ( (long) is.read() ) & 0xffL ) << 24 ) |
+		( ( ( (long) is.read() ) & 0xffL ) << 16 ) |
+		( ( ( (long) is.read() ) & 0xffL ) << 8 ) |
+		( ( (long) is.read() ) & 0xffL );
+	}
+	
 	/**
 	 *  Get the size of the variable-byte encoded sequence for a
 	 * given long.

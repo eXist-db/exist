@@ -94,6 +94,10 @@ public class VariableByteInputStream {
 		}
 	}
 
+	public long readFixedLong() throws IOException {
+		return VariableByteCoding.decodeFixed(is);
+	}
+	
 	public String readUTF() throws IOException, EOFException {
 		int len = readInt();
 		byte data[] = new byte[len];

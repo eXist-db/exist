@@ -24,7 +24,6 @@ package org.exist.storage;
 
 import it.unimi.dsi.fastutil.Int2ObjectAVLTreeMap;
 
-import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
@@ -64,8 +63,6 @@ import org.exist.dom.TextImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
-import org.exist.storage.analysis.SimpleTokenizer;
-import org.exist.storage.analysis.TextToken;
 import org.exist.storage.serializers.NativeSerializer;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.ByteConversion;
@@ -75,16 +72,15 @@ import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.Occurrences;
 import org.exist.util.ReadOnlyException;
+import org.exist.util.StorageAddress;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
 import org.exist.util.XMLUtil;
 import org.exist.xpath.Constants;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 /**
  *  NativeBroker.
@@ -390,11 +386,8 @@ public class NativeBroker extends DBBroker {
 		long address;
 		long delta;
 		long last = -1;
-		int tid;
-		int page;
 		VariableByteInputStream is;
 		ElementValue ref;
-		Value val;
 		byte[] data;
 		InputStream dis;
 		short sym;
@@ -418,15 +411,13 @@ public class NativeBroker extends DBBroker {
 			}
 			if (dis == null)
 				continue;
-			//data = val.getData();
-			//is = new VariableByteInputStream(data);
 			is = new VariableByteInputStream(dis);
 			try {
 				while (is.available() > 0) {
 					docId = is.readInt();
 					len = is.readInt();
 					if ((doc = docs.getDoc(docId)) == null) {
-						is.skip(len * 3);
+						is.skip(len * 4);
 						continue;
 					}
 					last = 0;
@@ -434,10 +425,9 @@ public class NativeBroker extends DBBroker {
 						delta = is.readLong();
 						gid = last + delta;
 						last = gid;
-						page = is.readInt();
-						tid = is.readInt();
-						address = DOMFile.createPointer(page, tid);
-						result.add(new NodeProxy(doc, gid, Node.ELEMENT_NODE, address));
+						address = StorageAddress.read(is);
+						NodeProxy proxy = new NodeProxy(doc, gid, Node.ELEMENT_NODE, address);
+						result.add(proxy);
 					}
 				}
 			} catch (EOFException e) {
@@ -1627,8 +1617,7 @@ public class NativeBroker extends DBBroker {
 				int len;
 				int docId;
 				long delta;
-				int page;
-				int tid;
+				long address;
 				boolean changed;
 				for (int i = 0; i < elements.size(); i++) {
 					key = (Value) elements.get(i);
@@ -1647,20 +1636,14 @@ public class NativeBroker extends DBBroker {
 								os.writeInt(len);
 								for (int j = 0; j < len; j++) {
 									delta = is.readLong();
-									page = is.readInt();
-									tid = is.readInt();
+									address = StorageAddress.read(is);
 									os.writeLong(delta);
-									os.writeInt(page);
-									os.writeInt(tid);
+									StorageAddress.write(address, os);
 								}
 							} else {
 								changed = true;
 								// skip
-								for (int j = 0; j < len; j++) {
-									is.readLong();
-									is.readInt();
-									is.readInt();
-								}
+								is.skip(len * 4);
 							}
 						}
 					} catch (EOFException e) {
@@ -1962,7 +1945,6 @@ public class NativeBroker extends DBBroker {
 				cmp = content.toLowerCase();
 				expr = expr.toLowerCase();
 			}
-			//System.out.println(content);
 			switch (truncation) {
 				case Constants.TRUNC_LEFT :
 					if (cmp.endsWith(expr))
@@ -2038,7 +2020,7 @@ public class NativeBroker extends DBBroker {
 			LOG.info("total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
 		}
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
-		final IndexPaths idx =
+		final IndexPaths idx = 
 			(IndexPaths) config.getProperty("indexScheme." + doc.getDoctype().getName());
 		final long gid = node.getGID();
 		if (gid < 0) {
@@ -2071,11 +2053,13 @@ public class NativeBroker extends DBBroker {
 		NodeProxy tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
 		switch (nodeType) {
 			case Node.ELEMENT_NODE :
+				tempProxy.setHasIndex(idx == null || idx.match(currentPath));
 				// save element by calling ElementIndex
 				elementIndex.setDocument(doc);
 				elementIndex.addRow(nodeName, tempProxy);
 				break;
 			case Node.ATTRIBUTE_NODE :
+				tempProxy.setHasIndex(idx == null || idx.match(currentPath));
 				elementIndex.setDocument(doc);
 				elementIndex.addRow("@" + nodeName, tempProxy);
 				// check if attribute value should be fulltext-indexed
@@ -2127,8 +2111,14 @@ public class NativeBroker extends DBBroker {
 		collectionsDb.printStatistics();
 		domDb.printStatistics();
 		try {
-			synchronized (collectionsDb) {
+			Lock lock = collectionsDb.getLock();
+			try {
+				lock.acquire(Lock.WRITE_LOCK);
 				collectionsDb.flush();
+			} catch(LockException e) {
+				LOG.warn("failed to acquire lock on collections store", e);
+			} finally {
+				lock.release();
 			}
 			new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
 				public Object start() {
@@ -2188,8 +2178,7 @@ public class NativeBroker extends DBBroker {
 					+ node.getNodeName()
 					+ "; gid = "
 					+ node.getGID()
-					+ "; address = "
-					+ DOMFile.printAddress(node.getInternalAddress()),
+					+ "; address = ",
 				e);
 		}
 	}
