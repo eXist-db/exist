@@ -57,6 +57,7 @@ public class Match implements Comparable {
 	public Match(Match match) {
 		this.matchTerm = match.matchTerm;
 		this.nodeId = match.nodeId;
+		this.frequency = match.frequency;
 	}
 	
 	public String getMatchingTerm() {
