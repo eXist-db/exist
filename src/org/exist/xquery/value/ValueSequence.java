@@ -29,6 +29,7 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.memtree.NodeImpl;
+import org.exist.util.FastQSort;
 import org.exist.xquery.XPathException;
 
 /**
@@ -135,7 +136,12 @@ public class ValueSequence extends AbstractSequence {
 				if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
 //					throw new XPathException("Cannot query constructed nodes.");
 					NodeSet p = ((NodeImpl)v).toNodeSet();
+                    if (p == null) {
+                        LOG.warn("Node " + ((NodeImpl)v).getQName() + " not found!");
+                        continue;
+                    }
 					set.addAll(p);
+                    LOG.debug("Added " + ((NodeImpl)v).getQName());
 				} else {
 					set.add((NodeProxy)v);
 				}
@@ -159,6 +165,11 @@ public class ValueSequence extends AbstractSequence {
             return true;
         }
         return false;
+    }
+    
+    public void sortInDocumentOrder() {
+        removeDuplicates();
+        FastQSort.sort(values, new MixedNodeValueComparator(), 0, size);
     }
     
 	private void ensureCapacity() {

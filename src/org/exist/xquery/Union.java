@@ -52,6 +52,7 @@ public class Union extends CombiningExpression {
             ValueSequence result = new ValueSequence();
             result.addAll(lval);
             result.addAll(rval);
+            result.sortInDocumentOrder();
             return result;
         }
 	}
