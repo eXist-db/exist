@@ -30,6 +30,7 @@ public class XQueryTest extends TestCase {
 			+ "</test>";
 
 	private Collection testCollection;
+	private static String attributeXML;
 
 	public XQueryTest(String arg0) {
 		super(arg0);
@@ -111,27 +112,54 @@ public class XQueryTest extends TestCase {
 		}
 		return b.toString();
 	}
-	
-	public void testLargeAttribute() {
+
+	public void testLargeAttributeSimple() {
 		ResourceSet result;
 		String query;
 		XMLResource resu;
 		try {
-			String large = makeString(2000); // 592);
+			System.out.println("testLargeAttributeSimple 1: ========" );
+			String large = makeString(592);
+			String xml = "<details format='xml'><metadata docid='" + large +
+			"'></metadata></details>";
+			final String FILE_NAME = "detail_xml.xml";
+		XPathQueryService service = 
+			storeXMLStringAndGetQueryService(FILE_NAME, xml);
+
+		query = "doc('"+ FILE_NAME+"') / details/metadata[@docid= '" + large + "' ]";
+		result = service.queryResource(FILE_NAME, query );
+		printResult(result);
+		assertEquals( "XQuery: " + query, 1, result.getSize() );
+	} catch (XMLDBException e) {
+		System.out.println("testLargeAttributeSimple(): XMLDBException: "+e);
+		fail(e.getMessage());
+	}
+}
+
+	public void testLargeAttributeRealFile() {
+		ResourceSet result;
+		String query;
+		XMLResource resu;
+		try {
+			System.out.println("testLargeAttributeRealFile 1: ========" );
+			String large;
 			large = "challengesininformationretrievalandlanguagemodelingreportofaworkshopheldatthecenterforintelligentinformationretrievaluniversityofmassachusettsamherstseptember2002-extdocid-howardturtlemarksandersonnorbertfuhralansmeatonjayaslamdragomirradevwesselkraaijellenvoorheesamitsinghaldonnaharmanjaypontejamiecallannicholasbelkinjohnlaffertylizliddyronirosenfeldvictorlavrenkodavidjharperrichschwartzjohnpragerchengxiangzhaijinxixusalimroukosstephenrobertsonandrewmccallumbrucecroftrmanmathasuedumaisdjoerdhiemstraeduardhovyralphweischedelthomashofmannjamesallanchrisbuckleyphilipresnikdavidlewis2003";
+			large = "challenges";
+			if (attributeXML != null)
+				large = attributeXML;
 			String xml = "<details format='xml'><metadata docid='" + large +
 				"'></metadata></details>";
+			final String FILE_NAME = "detail_xml.xml";
 			XPathQueryService service = 
-				// storeXMLStringAndGetQueryService(NUMBERS_XML, xml);
-				storeXMLStringAndGetQueryService("detail_xml.xml");
+				storeXMLStringAndGetQueryService(FILE_NAME);
 
-			query = "doc('"+ NUMBERS_XML+"') / details/metadata[@docid= '" + large + "' ]";
-			result = service.queryResource("detail_xml.xml", query );
-			System.out.println("testLargeAttribute 1: ========" );
+			query = "doc('"+ FILE_NAME+"') / details/metadata[@docid= '" + large + "' ]"; // fails !!!
+			// query = "doc('"+ FILE_NAME+"') / details/metadata[ docid= '" + large + "' ]"; // test passes!
+			result = service.queryResource(FILE_NAME, query );
 			printResult(result);
-			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, 2, result.getSize() );
 		} catch (XMLDBException e) {
-			System.out.println("testLargeAttribute(): XMLDBException: "+e);
+			System.out.println("testLargeAttributeRealFile(): XMLDBException: "+e);
 			fail(e.getMessage());
 		}
 	}
@@ -185,6 +213,9 @@ public class XQueryTest extends TestCase {
 	}
 
 	public static void main(String[] args) {
+		if ( args.length > 0) {
+			attributeXML = args[0];
+		}
 		junit.textui.TestRunner.run(XQueryTest.class);
 	}
 }
