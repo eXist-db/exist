@@ -76,7 +76,6 @@ import org.exist.storage.store.NodeIterator;
 import org.exist.storage.store.StorageAddress;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
-import org.exist.util.CollectionScanner;
 import org.exist.util.Configuration;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
@@ -544,7 +543,7 @@ public class NativeBroker extends DBBroker {
 		return doc;
 	}
 
-	public Document openDocument(String docPath, int lockMode) throws PermissionDeniedException {
+	public DocumentImpl openDocument(String docPath, int lockMode) throws PermissionDeniedException {
 		if (!docPath.startsWith("/"))
 			docPath = '/' + docPath;
 		if (!docPath.startsWith("/db"))
@@ -1751,20 +1750,25 @@ public class NativeBroker extends DBBroker {
 	    if (!collection.getPermissions().validate(user, Permission.WRITE))
 	    	throw new PermissionDeniedException("not allowed to remove collection");
 	    
+	    final boolean isRoot = collection.getParentPath() == null;
+	    
 	    final CollectionCache collectionsCache = pool.getCollectionsCache();
 	    synchronized(collectionsCache) {
 		    String name = collection.getName();
-		    // remove from parent collection
-		    Collection parent = openCollection(collection.getParentPath(), Lock.WRITE_LOCK);
-		    if (parent != null) {
-		    	try {
-		    		parent.removeCollection(name.substring(name.lastIndexOf("/") + 1));
-		    		saveCollection(parent);
-		    	} catch (LockException e) {
-		    		LOG.warn("LockException while removing collection " + name);
-		    	} finally {
-		    		parent.getLock().release();
-		    	}
+		    
+		    if (!isRoot) {
+			    // remove from parent collection
+			    Collection parent = openCollection(collection.getParentPath(), Lock.WRITE_LOCK);
+			    if (parent != null) {
+			    	try {
+			    		parent.removeCollection(name.substring(name.lastIndexOf("/") + 1));
+			    		saveCollection(parent);
+			    	} catch (LockException e) {
+			    		LOG.warn("LockException while removing collection " + name);
+			    	} finally {
+			    		parent.getLock().release();
+			    	}
+			    }
 		    }
 		    
 		    // remove child collections
@@ -1786,7 +1790,7 @@ public class NativeBroker extends DBBroker {
 		    	lock.acquire(Lock.WRITE_LOCK);
 		    	
 		    	// if this is not the root collection remove it completely
-		    	if (name.equals(ROOT_COLLECTION))
+		    	if (isRoot)
 		    		saveCollection(collection);
 		    	else {
 		    		Value key;
@@ -1796,9 +1800,10 @@ public class NativeBroker extends DBBroker {
 		    			key = new Value(name.getBytes());
 		    		}	
 		    		collectionsDb.remove(key);
-		    	}
-		    	if (!name.equals(ROOT_COLLECTION))
 		    		collectionsCache.remove(collection);
+				   freeCollection(collection.getId());
+		    	}
+
 		    } catch (LockException e) {
 		    	LOG.warn("Failed to acquire lock on collections.dbx");
 		    } catch (ReadOnlyException e) {
@@ -1806,8 +1811,6 @@ public class NativeBroker extends DBBroker {
 		    } finally {
 		    	lock.release();
 		    }
-	    
-		    freeCollection(collection.getId());
 	    
 		    textEngine.dropIndex(collection);
 		    elementIndex.dropIndex(collection);
