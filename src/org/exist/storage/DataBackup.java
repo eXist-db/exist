@@ -23,8 +23,14 @@
 
 package org.exist.storage;
 
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.util.Configuration;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Properties;
 import java.util.zip.ZipOutputStream;
 import java.util.zip.ZipEntry; 
 import java.io.File;
@@ -32,16 +38,45 @@ import java.io.*;
 
 public class DataBackup implements SystemTask {
 
-	String dest;
-    public DataBackup(String destination) {
-	    this.dest = destination; 
-		}
+    private final static Logger LOG = Logger.getLogger(DataBackup.class);
+    
+    private final static SimpleDateFormat creationDateFormat =
+        new SimpleDateFormat("yyMMdd-HHmmss", Locale.US);
+    
+	private String dest;
 	
+    public DataBackup() {
+    }
+    
+    public DataBackup(String destination) {
+        dest = destination;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.storage.SystemTask#configure(java.util.Properties)
+     */
+    public void configure(Configuration config, Properties properties) throws EXistException { 
+        dest = properties.getProperty("output-dir", "backup");
+        File f = new File(dest);
+        if (!f.isAbsolute()) {
+            dest = (String)config.getProperty("db-connection.data-dir") +
+                File.separatorChar + dest;
+            f = new File(dest);
+        }
+        if (f.exists() && !(f.canWrite() && f.isDirectory()))
+            throw new EXistException("Cannot write backup files to " + f.getAbsolutePath() +
+                    ". It should be a writable directory.");
+        else
+            f.mkdir();
+        dest = f.getAbsolutePath();
+        LOG.debug("Setting backup data directory: " + dest);
+    }
+    
 	public void execute(DBBroker broker) throws EXistException {
 		Configuration config = broker.getConfiguration();
 		
 		String dataDir = (String) config.getProperty("db-connection.data-dir");
-		System.out.println("Backup the data file into " + this.dest);
+		LOG.debug("Backing up data files ...");
 
 		String[] filenames = new String[]{dataDir + File.separatorChar + "dom.dbx",
 				dataDir + File.separatorChar +"symbols.dbx",
@@ -50,20 +85,23 @@ public class DataBackup implements SystemTask {
 				dataDir + File.separatorChar +"words.dbx"
 				};
 		try {
-			compressFiles(filenames, this.dest);
+			compressFiles(filenames);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	 void compressFiles(String[] filenames, String filename) throws IOException {
-	    
+	 void compressFiles(String[] filenames) throws IOException {
+	     String creationDate = creationDateFormat.format(new Date());
+         String outFilename = dest + File.separatorChar + creationDate + ".zip";
+         
 	    // Create a buffer for reading the files
 	    byte[] buf = new byte[1024];
 	    
 	    try {
 	        // Create the ZIP file
-	        String outFilename = filename;
+            LOG.debug("Archiving data files into: " + outFilename);
+            
 	        ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFilename));
 	    
 	        // Compress the files

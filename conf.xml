@@ -47,7 +47,7 @@ defines the user password used by the cluster for the replica.
     exceptions on machines with limited memory (256MB). Increase the
     buffer settings for elements_buffers and words_buffers if you have
     some more memory to waste. -->
-	<db-connection database="@database@" files="webapp/WEB-INF/data"
+	<db-connection database="native" files="webapp/WEB-INF/data"
 		pageSize="4096" cacheSize="48M" free_mem_min="5">
     
         <!-- Settings for the database connection pool:
@@ -65,6 +65,10 @@ defines the user password used by the cluster for the replica.
 		<pool min="1" max="20" sync-period="120000" wait-before-shutdown="120000"/>
 
 		<watchdog query-timeout="-1" output-size-limit="10000"/>
+		
+		<system-task class="org.exist.storage.DataBackup" period="120000">
+			<parameter name="output-dir" value="backup"/>
+		</system-task>
     </db-connection>
 	   
     <!-- Default settings for the serializer. Most of these can be changed

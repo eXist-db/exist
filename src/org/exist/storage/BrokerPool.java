@@ -148,6 +148,13 @@ public class BrokerPool {
 			throw new EXistException("instance with id " + id + " has not been configured yet");
 	}
 
+    /**
+     * Returns the default database instance, i.e. the instance configured for id
+     * {@link #DEFAULT_INSTANCE}.
+     * 
+     * @return
+     * @throws EXistException
+     */
 	public final static BrokerPool getInstance() throws EXistException {
 		return getInstance(DEFAULT_INSTANCE);
 	}
@@ -217,9 +224,9 @@ public class BrokerPool {
 	private SyncDaemon syncDaemon;
 	
 	/**
-	 * A task waiting to be processed.
+	 * Stack for pending system maintenance tasks.
 	 */
-	private SystemTask waitingTask = null;
+	private Stack waitingTasks = new Stack();
 	
 	/**
 	 * ShutdownListener will be notified when the database instance shuts down.
@@ -284,6 +291,10 @@ public class BrokerPool {
 		initialize();
 	}
 
+    public String getId() {
+    	return instanceId;
+    }
+
 	/**
 	 *  Number of database instances currently active, i.e. busy.
 	 *
@@ -321,6 +332,48 @@ public class BrokerPool {
 	public XMLReaderPool getParserPool() {
 		return xmlReaderPool;
 	}
+
+    /**
+     * Returns the global XQuery pool for this database instance.
+     * 
+     * @return
+     */
+    public XQueryPool getXQueryPool() {
+        return xqueryCache;
+    }
+
+    public XQueryMonitor getXQueryMonitor() {
+    	return monitor;
+    }
+
+    public CollectionConfigurationManager getConfigurationManager() {
+        return collectionConfig;
+    }
+
+    /**
+     * Returns the global update lock for this database instance.
+     * This lock is used by XUpdate operations to avoid that
+     * concurrent XUpdate requests modify the database until all
+     * document locks have been correctly set.
+     *  
+     * @return
+     */
+    public Lock getGlobalUpdateLock() {
+        return globalXUpdateLock;
+    }
+
+    /**
+     *  Returns the security manager responsible for this pool
+     *
+     *@return    The securityManager value
+     */
+    public org.exist.security.SecurityManager getSecurityManager() {
+    	return secManager;
+    }
+
+    public SyncDaemon getSyncDaemon() {
+        return syncDaemon;
+    }
 	
 	protected DBBroker createBroker() throws EXistException {
 		DBBroker broker = BrokerFactory.getInstance(this, conf);
@@ -380,15 +433,6 @@ public class BrokerPool {
 	}
 	
 	/**
-	 *  Returns the security manager responsible for this pool
-	 *
-	 *@return    The securityManager value
-	 */
-	public org.exist.security.SecurityManager getSecurityManager() {
-		return secManager;
-	}
-
-	/**
 	 * Reload the security manager. This method is called whenever the
 	 * users.xml file has been changed.
 	 * 
@@ -399,10 +443,6 @@ public class BrokerPool {
 		secManager = new org.exist.security.SecurityManager(this, broker);
 	}
 
-	public SyncDaemon getSyncDaemon() {
-	    return syncDaemon;
-	}
-	
 	/**
 	 *  Initialize the current instance.
 	 *
@@ -419,14 +459,15 @@ public class BrokerPool {
 		initializing = false;
 		
 		collectionConfig = new CollectionConfigurationManager(broker);
-		
+        
 		// now create remaining brokers
 		for (int i = 1; i < min; i++)
 			createBroker();
+        registerSystemTasks();
 		LOG.debug("database engine " + instanceId + " initialized.");
 	}
 
-	/**
+    /**
 	 * Returns true while the database is initializing
 	 * the database files and the security manager.
 	 * 
@@ -460,26 +501,11 @@ public class BrokerPool {
 					sync(broker, syncEvent);
 					syncRequired = false;
 				}
-				if (waitingTask != null) {
-					runSystemTask(broker);
-				}
+				
+                // process any waiting system tasks
+				processWaitingTasks(broker);
 			}
 			this.notifyAll();
-		}
-	}
-
-	/**
-	 * Executes a waiting maintenance task. The database will be stopped
-	 * during its execution.
-	 */
-	private void runSystemTask(DBBroker broker) {
-		try {
-			sync(broker, Sync.MAJOR_SYNC);
-			waitingTask.execute(broker);
-		} catch(EXistException e) {
-			LOG.warn("System maintenance task reported error: " + e.getMessage(), e);
-		} finally {
-			waitingTask = null;
 		}
 	}
 
@@ -546,10 +572,6 @@ public class BrokerPool {
 		return max;
 	}
 
-	public String getId() {
-		return instanceId;
-	}
-
 	/**
 	 *  Has this BrokerPool been configured?
 	 *
@@ -581,59 +603,92 @@ public class BrokerPool {
 		}
 	}
 
-	/**
-	 * Schedule a system maintenance task for execution.
-	 * The task will be executed immediately if the database
-	 * is currently idle. Otherwise, the task will be registered
-	 * and called by {@link #release(DBBroker)} once all running 
-	 * threads have returned.
-	 * 
-	 * @param task
-	 */
-	public void triggerSystemTask(SystemTask task) {
-		synchronized(this) {
-			if(pool.size() == 0)
-				return;
-			waitingTask = task;
-			if(pool.size() == brokers) {
-				DBBroker broker = (DBBroker) pool.peek();
-				runSystemTask(broker);
-			}
-		}
-	}
-	
 	public void registerShutdownListener(ShutdownListener listener) {
 		shutdownListener = listener;
 	}
 
 	/**
-	 * Returns the global XQuery pool for this database instance.
-	 * 
-	 * @return
-	 */
-	public XQueryPool getXQueryPool() {
-	    return xqueryCache;
-	}
-	
-	public XQueryMonitor getXQueryMonitor() {
-		return monitor;
-	}
-	
-	public CollectionConfigurationManager getConfigurationManager() {
-	    return collectionConfig;
-	}
-	
-	/**
-	 * Returns the global update lock for this database instance.
-	 * This lock is used by XUpdate operations to avoid that
-	 * concurrent XUpdate requests modify the database until all
-	 * document locks have been correctly set.
-	 *  
-	 * @return
-	 */
-	public Lock getGlobalUpdateLock() {
-	    return globalXUpdateLock;
-	}
+     * Schedule a system maintenance task for execution.
+     * The task will be executed immediately if the database
+     * is currently idle. Otherwise, the task will be registered
+     * and called by {@link #release(DBBroker)} once all running 
+     * threads have returned.
+     * 
+     * @param task
+     */
+    public void triggerSystemTask(SystemTask task) {
+    	synchronized(this) {
+    		if(pool.size() == 0)
+    			return;
+    		if(pool.size() == brokers) {
+                // pool is idle: execute the task immediately
+    			DBBroker broker = (DBBroker) pool.peek();
+    			runSystemTask(broker, task);
+    		} else
+                // put the task into the queue
+                waitingTasks.push(task);
+    	}
+    }
+
+    private void processWaitingTasks(DBBroker broker) {
+        while (!waitingTasks.isEmpty()) {
+            SystemTask task = (SystemTask) waitingTasks.pop();
+            runSystemTask(broker, task);
+        }
+    }
+    
+    /**
+     * Executes a waiting maintenance task. The database will be stopped
+     * during its execution.
+     */
+    private void runSystemTask(DBBroker broker, SystemTask task) {
+    	try {
+    		sync(broker, Sync.MAJOR_SYNC);
+            LOG.debug("Running system maintenance task: " + task.getClass().getName());
+    		task.execute(broker);
+    	} catch(EXistException e) {
+    		LOG.warn("System maintenance task reported error: " + e.getMessage(), e);
+    	}
+    }
+
+    private void registerSystemTasks() throws EXistException {
+        Configuration.SystemTaskConfig taskList[] = (Configuration.SystemTaskConfig[]) 
+            conf.getProperty("db-connection.system-task-config");
+        if (taskList == null)
+            return;
+        for (int i = 0; i < taskList.length; i++) {
+            initSystemTask(taskList[i]);
+        }
+    }
+
+    private void initSystemTask(Configuration.SystemTaskConfig taskConf) throws EXistException {
+        try {
+            Class clazz = Class.forName(taskConf.getClassName());
+            SystemTask task = (SystemTask) clazz.newInstance();
+            task.configure(conf, taskConf.getProperties());
+            LOG.debug("Scheduling system task: " + taskConf.getClassName() + "; period = " + taskConf.getPeriod());
+            syncDaemon.executePeriodically(taskConf.getPeriod(), new SystemTaskRunnable(this, task), false);
+        } catch (Exception e) {
+            throw new EXistException("Failed to register system task: " + e.getMessage());
+        }
+    }
+
+    private static class SystemTaskRunnable implements Runnable {
+        SystemTask task;
+        BrokerPool pool;
+        
+        public SystemTaskRunnable(BrokerPool pool, SystemTask task) {
+            this.pool = pool;
+            this.task = task;
+        }
+        
+        /* (non-Javadoc)
+         * @see java.lang.Runnable#run()
+         */
+        public void run() {
+            pool.triggerSystemTask(task);
+        }
+    }
 	
 	protected static class ShutdownThread extends Thread {
 
