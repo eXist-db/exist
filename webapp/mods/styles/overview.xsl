@@ -12,7 +12,7 @@
     <xsl:include href="mods-common.xsl"/>
     
     <xsl:template match="items">
-        <div id="biblio">
+        <div id="content">
             <xsl:apply-templates select="item"/>
         </div>
     </xsl:template>
@@ -46,4 +46,9 @@
     <xsl:template match="exist:match">
 	    <span class="hit"><xsl:apply-templates/></span>
     </xsl:template>
+    
+    <xsl:template match="@*|node()" priority="-1">
+        <xsl:copy><xsl:apply-templates select="@*|node()"/></xsl:copy>
+    </xsl:template>
+    
 </xsl:stylesheet>

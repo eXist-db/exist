@@ -25,13 +25,11 @@ as element()+
 declare function c:sidebar($url as xs:string)
 {
     <div id="sidebar">
-        <div id="navcontainer">
-            <ul id="navlist">
-                <li id="active">
-                    <a href="{$url}" id="current">Home</a>
-                </li>
+        <div class="block">
+            <h3>Menu</h3>
+            <ul>
                 <li>
-                    <a href="{$c:chiba}&amp;submitsave=store.xq">Add Record</a>
+                    <a href="{$url}" id="current">Home</a>
                 </li>
                 <li>
                     <a href="#">Detailed View</a>
@@ -40,6 +38,10 @@ declare function c:sidebar($url as xs:string)
                     <a href="#">Process Document</a>
                 </li>
             </ul>
+        </div>
+        
+        <div class="block">
+            <h3>Search</h3>
             <form action="{$url}" method="GET">
                 <input class="search-sidebar" name="query" type="text" />
         		<input type="submit" class="search-button" value="search"/>

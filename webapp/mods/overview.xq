@@ -113,9 +113,9 @@ declare function b:display($recs as item()*, $user) as element()
     let $display := request:request-parameter("display", "overview")
     return
         if($display eq "details") then
-            xsl:transform(b:displayDetails($recs, $user), $c:detailsXsl, ())
+            b:displayDetails($recs, $user)
         else
-            xsl:transform(b:displayOverview($recs, $user), $c:overviewXsl, ())
+            b:displayOverview($recs, $user)
 };
 
 declare function b:buildQuery($xpath as xs:string, $order as xs:string) as xs:string
@@ -173,10 +173,12 @@ declare function b:getUserHome($user as xs:string?) as xs:string?
             )
 };
 
-declare function b:main($user as xs:string, $pass as xs:string)
+declare function b:main()
 as element()+
 {
-    let $action := request:request-parameter("action", "")
+    let $action := request:request-parameter("action", ""),
+        $user := request:get-session-attribute("user"),
+        $pass := request:get-session-attribute("password")
     return
         (
         util:log("debug", "checking action"),
@@ -193,16 +195,22 @@ as element()+
         <link href="{$c:css}" type="text/css" rel="stylesheet"/>
     </head>
     <body>
-        <div id="top"><h1>Records Overview</h1></div>
+        <div id="top">
+            <img src="logo.jpg" title="eXist"/>
+            <table id="menubar">
+                <tr>
+                    <td id="header">Open Source XML Database</td>
+                    <td>
+                        <a href="http://wiki.exist-db.org">News/Wiki</a>
+                        <a href="index.xml#download">Download</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
 
         { c:sidebar(request:encode-url(request:request-uri())) }        
 
 		<!-- Process action if specified -->
-        {
-			let $user := request:get-session-attribute("user"),
-                $pass := request:get-session-attribute("password"),
-			return
-                b:main($user, $pass)
-		}
+        { b:main() }
     </body>
 </html>

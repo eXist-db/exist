@@ -8,7 +8,7 @@
 
     <xsl:template match="category">
         <table border="0" cellpadding="5" cellspacing="2">
-            <tr bgcolor="#0000FF">
+            <tr bgcolor="#999">
                 <th colspan="2" align="left" style="color: white">
                     <xsl:value-of select="@name"/>
                 </th>
@@ -20,10 +20,10 @@
 
     <xsl:template match="topic">
         <tr>
-            <td bgcolor="#BBDDFF" align="left" valign="top">
+            <td bgcolor="#CCCCCC" align="left" valign="top">
                 <b><xsl:value-of select="@name"/></b>
             </td>
-            <td bgcolor="#BBDDFF"><xsl:apply-templates/></td>
+            <td><xsl:apply-templates/></td>
         </tr>
     </xsl:template>
 
