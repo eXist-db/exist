@@ -227,6 +227,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	
 	protected void setupContext(XQueryContext context) throws XMLDBException, XPathException {
 	    context.setBaseURI(properties.getProperty("base-uri", collection.getPath()));
+        context.setBaseCollection(properties.getProperty("base-collection", collection.getPath()));
 		if(moduleLoadPath != null)
 			context.setModuleLoadPath(moduleLoadPath);
 		Map.Entry entry;

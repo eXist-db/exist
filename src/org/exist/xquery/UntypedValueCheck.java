@@ -24,7 +24,9 @@ package org.exist.xquery;
 
 import org.exist.dom.DocumentSet;
 import org.exist.xquery.parser.XQueryAST;
+import org.exist.xquery.util.Error;
 import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.util.Messages;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -41,11 +43,18 @@ public class UntypedValueCheck extends AbstractExpression {
 
 	private Expression expression;
 	private int requiredType;
-	
-	public UntypedValueCheck(XQueryContext context, int requiredType, Expression expression) {
+	private Error error;
+    
+    public UntypedValueCheck(XQueryContext context, int requiredType, Expression expression) {
+        this(context, requiredType, expression, new Error(Error.TYPE_MISMATCH));
+    }
+    
+	public UntypedValueCheck(XQueryContext context, int requiredType, Expression expression, 
+            Error error) {
 		super(context);
 		this.requiredType = requiredType;
 		this.expression = expression;
+        this.error = error;
 	}
 	
 	/* (non-Javadoc)
@@ -71,8 +80,9 @@ public class UntypedValueCheck extends AbstractExpression {
 			try {
 				result.add(item.convertTo(requiredType));
 			} catch (XPathException e) {
-				e.setASTNode(expression.getASTNode());
-				throw e;
+                error.addArgs(ExpressionDumper.dump(expression), Type.getTypeName(requiredType),
+                        Type.getTypeName(item.getType()));
+                throw new XPathException(expression.getASTNode(), error.toString());
 			}
 		}
 		return result;

@@ -213,7 +213,7 @@ public class XQueryServlet extends HttpServlet {
 		int p = baseURI.lastIndexOf('/');
 		if(p > -1)
 			baseURI = baseURI.substring(0, p);
-		baseURI = getServletContext().getRealPath(baseURI.substring(request.getContextPath().length()));
+		String moduleLoadPath = getServletContext().getRealPath(baseURI.substring(request.getContextPath().length()));
 		String actualUser = null;
 		String actualPassword = null;
 		HttpSession session = request.getSession();
@@ -230,7 +230,8 @@ public class XQueryServlet extends HttpServlet {
 			XQueryService service = (XQueryService)
 				collection.getService("XQueryService", "1.0");
 			service.setProperty("base-uri", baseURI);
-			service.setModuleLoadPath(baseURI);
+            service.setProperty("base-collection", collection.getName());
+			service.setModuleLoadPath(moduleLoadPath);
 			String prefix = RequestModule.PREFIX;
 			service.setNamespace(prefix, RequestModule.NAMESPACE_URI);
             if(!((CollectionImpl)collection).isRemoteCollection()) {
@@ -266,14 +267,19 @@ public class XQueryServlet extends HttpServlet {
 		return obj.toString();
 	}
 	
-	private void sendError(PrintWriter out, String message, Exception e) {
+	private void sendError(PrintWriter out, String message, XMLDBException e) {
 		out.print("<html><head>");
 		out.print("<title>XQueryServlet Error</title>");
 		out.print("<link rel=\"stylesheet\" type=\"text/css\" href=\"error.css\"></head>");
 		out.print("<body><h1>Error found</h1>");
-		out.print("<div class='message'><b>Message:</b>");
-		out.print(message);
-		out.print("</div>");
+        Throwable t = e.getCause();
+        if (t instanceof XPathException)
+            out.println(((XPathException)t).getMessageAsHTML());
+        else {
+            out.print("<div class='message'><h2>Message:");
+            out.print(message);
+            out.print("</h2></div>");
+        }
 		out.print("<h2>Exception Stacktrace:</h2>");
 		out.print("<div class='exception'>");
 		e.printStackTrace(out);

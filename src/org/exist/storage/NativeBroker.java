@@ -595,7 +595,7 @@ public class NativeBroker extends DBBroker {
 		
 		Collection collection = null;
 		try {
-			collection = openCollection(collName, lockMode);
+            collection = openCollection(collName, lockMode);
 			if (collection == null) {
 				LOG.debug("collection " + collName + " not found!");
 				return null;

@@ -37,6 +37,6 @@ versionDecl throws XPathException
 		}
 	)?
 	{
-		throw new XPathException();
+		throw new XPathException("Processing stopped");
 	}
 	;

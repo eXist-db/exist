@@ -27,7 +27,9 @@ import java.util.List;
 
 import org.exist.dom.QName;
 import org.exist.xquery.parser.XQueryAST;
+import org.exist.xquery.util.Error;
 import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.util.Messages;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -190,7 +192,7 @@ public abstract class Function extends PathExpr {
 		for (int i = 0; i < arguments.size(); i++) {
 			if (argumentTypes != null && i < argumentTypes.length)
 				argType = argumentTypes[i];
-			next = checkArgument((Expression) arguments.get(i), argType);
+			next = checkArgument((Expression) arguments.get(i), argType, i + 1);
 			steps.add(next);
 		}
 	}
@@ -204,7 +206,7 @@ public abstract class Function extends PathExpr {
 	 * @return
 	 * @throws XPathException
 	 */
-	protected Expression checkArgument(Expression expr, SequenceType type)
+	protected Expression checkArgument(Expression expr, SequenceType type, int argPosition)
 		throws XPathException {
 		if (type == null)
 			return expr;
@@ -218,16 +220,16 @@ public abstract class Function extends PathExpr {
 			if (!cardinalityMatches) {
 				if(expr.getCardinality() == Cardinality.ZERO
 				&& (type.getCardinality() & Cardinality.ZERO) == 0)
-				    throw new XPathException(astNode, "Argument " + 
-				            ExpressionDumper.dump(expr) + " is empty. An " +
-				    "empty argument is not allowed here.");
+				    throw new XPathException(getASTNode(), 
+				            Messages.getMessage(Error.FUNC_EMPTY_SEQ_DISALLOWED, 
+				                    new Integer(argPosition), ExpressionDumper.dump(expr)));
 			}
 		}
 		expr =
 			new DynamicCardinalityCheck(
 				context,
 				type.getCardinality(),
-				expr, getASTNode());
+				expr, new Error(Error.FUNC_PARAM_CARDINALITY, String.valueOf(argPosition), mySignature));
 
 		// check return type if both types are not Type.ITEM
 		int returnType = expr.returnsType();
@@ -257,7 +259,8 @@ public abstract class Function extends PathExpr {
 					returnType = Type.ATOMIC;
 				}
 				expr =
-					new UntypedValueCheck(context, type.getPrimaryType(), expr);
+					new UntypedValueCheck(context, type.getPrimaryType(), expr, 
+                            new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
 				returnType = type.getPrimaryType();
 			}
 		}
@@ -268,20 +271,17 @@ public abstract class Function extends PathExpr {
 				expr = new Atomize(context, expr);
 			if (!(type.getPrimaryType() == Type.ATOMIC))
 				expr =
-					new UntypedValueCheck(context, type.getPrimaryType(), expr);
+					new UntypedValueCheck(context, type.getPrimaryType(), expr, 
+                            new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
 			returnType = expr.returnsType();
 		}
 
 		if (!Type.subTypeOf(returnType, type.getPrimaryType())) {
 			if ((!Type.subTypeOf(type.getPrimaryType(), returnType)) && returnType != Type.ITEM)
-				throw new XPathException(
-					astNode,
-					"Supplied argument " + ExpressionDumper.dump(expr) + 
-					" doesn't match required type: required: "
-						+ type.toString()
-						+ "; got: "
-						+ Type.getTypeName(returnType)
-						+ Cardinality.display(expr.getCardinality()));
+                throw new XPathException(getASTNode(),
+                        Messages.getMessage(Error.FUNC_PARAM_TYPE_STATIC, 
+                                String.valueOf(argPosition), mySignature,
+                                type.toString(), Type.getTypeName(returnType)));
 		}
 		if (!typeMatches) {
 			if(type.getNodeName() != null)

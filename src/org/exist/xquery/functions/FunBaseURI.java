@@ -22,51 +22,66 @@
  */
 package org.exist.xquery.functions;
 
+import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Item;
+import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 /**
  * @author wolf
  */
-public class FunBaseURI extends Function {
+public class FunBaseURI extends BasicFunction {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
 			new FunctionSignature(
 				new QName("base-uri", Module.BUILTIN_FUNCTION_NS),
-                "Returns the value of the base-uri property for the argument. " +
-                "Document, element and processing-instruction nodes have a " +
-                "base-uri property. If that property is non-empty, its value " +
-                "is returned. The base-uri of all other node types is the empty " +
-                "sequence.",
+                "This version of the function returns the value of the base-uri property " +
+                "from the static context. If the base-uri property is undefined, the " +
+                "empty sequence is returned.",
 				null,
-				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
-			);
+				new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE)
+			),
+            new FunctionSignature(
+                new QName("base-uri", Module.BUILTIN_FUNCTION_NS),
+                "Returns the value of the base-uri property for $a. If $a is the empty " +
+                "sequence, the empty sequence is returned.",
+                new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
+                new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE)
+            )
+    };
 			
 	/**
 	 * @param name
 	 */
-	public FunBaseURI(XQueryContext context) {
+	public FunBaseURI(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
-		return new StringValue(context.getBaseURI());
-	}
-
+    /* (non-Javadoc)
+     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
+     */
+    public Sequence eval(Sequence[] args, Sequence contextSequence)
+            throws XPathException {
+        if (args.length == 0)
+            return new AnyURIValue(context.getBaseURI());
+        if (args[0].getLength() == 0)
+            return Sequence.EMPTY_SEQUENCE;
+        NodeValue node = (NodeValue) args[0].itemAt(0);
+        if (node.getImplementationType() == NodeValue.IN_MEMORY_NODE)
+            return new AnyURIValue(context.getBaseURI());
+        NodeProxy proxy = (NodeProxy) node;
+        String baseURI = context.getBaseURI();
+        if (baseURI.endsWith("/"))
+            baseURI = baseURI.substring(1);
+        return new AnyURIValue(baseURI + proxy.getDocument().getName());
+    }
 }

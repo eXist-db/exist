@@ -858,6 +858,7 @@ public class DOMFile extends BTree implements Lockable {
     public boolean flush() throws DBException {
         super.flush();
         dataCache.flush();
+//        closeDocument();
         try {
             if (fileHeader.isDirty()) fileHeader.write();
         } catch (IOException ioe) {

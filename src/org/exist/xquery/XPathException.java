@@ -1,5 +1,9 @@
 package org.exist.xquery;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import org.exist.xquery.parser.XQueryAST;
 
 public class XPathException extends Exception {
@@ -7,14 +11,8 @@ public class XPathException extends Exception {
 	private int line = 0;
 	private int column = 0;
 	private String message = null;
-	
-	/**
-	 * 
-	 */
-	public XPathException() {
-		super();
-	}
-
+	private List callStack = null;
+    
 	/**
 	 * @param message
 	 */
@@ -73,32 +71,72 @@ public class XPathException extends Exception {
 		}
 	}
 	
-	public void prependMessage(String msg) {
-		StringBuffer buf = new StringBuffer();
-		buf.append(msg);
-		if(message != null && message.length() > 0)
-			buf.append(": \n");
-		buf.append(message);
-		message = buf.toString();
-	}
+    public void addFunctionCall(UserDefinedFunction def, XQueryAST ast) {
+        if (callStack == null)
+            callStack = new ArrayList();
+        StringBuffer msg = new StringBuffer();
+        msg.append(def.toString());
+        msg.append(" [");
+        msg.append(ast.getLine());
+        msg.append(", ");
+        msg.append(ast.getColumn());
+        msg.append("]");
+        callStack.add(msg.toString());
+    }
 	
+    public void prependMessage(String msg) {
+        message = msg + message;
+    }
+    
 	/* (non-Javadoc)
 	 * @see java.lang.Throwable#getMessage()
 	 */
 	public String getMessage() {
+        StringBuffer buf = new StringBuffer();
 		if(message == null)
 			message = "";
-		if(line == 0)
-			return message;
-		else {
-			StringBuffer buf = new StringBuffer();
-			buf.append(message);
+		buf.append(message);
+        if (getLine() > 0) {
 			buf.append(" [at line ");
 			buf.append(getLine());
 			buf.append(", column ");
 			buf.append(getColumn());
 			buf.append("]");
-			return buf.toString();
 		}
+        if (callStack != null) {
+            buf.append("\nIn call to function:\n");
+            for (Iterator i = callStack.iterator(); i.hasNext(); ) {
+                buf.append('\t').append(i.next());
+                if (i.hasNext())
+                    buf.append('\n');
+            }
+        }
+        return buf.toString();
 	}
+    
+    public String getMessageAsHTML() {
+        StringBuffer buf = new StringBuffer();
+        if(message == null)
+            message = "";
+        buf.append("<div class=\"message\">");
+        buf.append("<h2>").append(message);
+        if (getLine() > 0) {
+            buf.append(" [at line ");
+            buf.append(getLine());
+            buf.append(", column ");
+            buf.append(getColumn());
+            buf.append("]");
+        }
+        buf.append("</h2>");
+        if (callStack != null) {
+            buf.append("<p>In call to function:</p>");
+            buf.append("<ul class=\"trace\">");
+            for (Iterator i = callStack.iterator(); i.hasNext(); ) {
+                buf.append("<li>").append(i.next()).append("</li>");
+            }
+            buf.append("</ul>");
+        }
+        buf.append("</div>");
+        return buf.toString();
+    }
 }

@@ -24,6 +24,8 @@ package org.exist.xquery;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
+import org.exist.xquery.util.Error;
+import org.exist.xquery.util.Messages;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -126,6 +128,9 @@ public class Variable {
             return;
         type.checkCardinality(value);
         
+//        if (value.getLength() == 0)
+//            return;
+        
         int requiredType = type.getPrimaryType();
         if(Type.subTypeOf(requiredType, Type.ATOMIC)) {
             if(!Type.subTypeOf(value.getItemType(), Type.ATOMIC))
@@ -134,8 +139,8 @@ public class Variable {
                 value = convert(value);
         }
         if(!Type.subTypeOf(value.getItemType(), requiredType))
-            throw new XPathException("The type of variable " + toString() +
-                    " does not match the declared type: " + type);
+            throw new XPathException(Messages.getMessage(Error.VAR_TYPE_MISMATCH,
+                    toString(), Type.getTypeName(type.getPrimaryType()), Type.getTypeName(requiredType)));
     }
     
     private Sequence convert(Sequence seq) throws XPathException {

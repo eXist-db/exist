@@ -156,6 +156,8 @@ public class XQueryContext {
 
 	protected String baseURI = "";
 
+    protected String baseCollection = "/db";
+    
 	protected String moduleLoadPath = ".";
 	
 	protected String defaultFunctionNamespace = Module.BUILTIN_FUNCTION_NS;
@@ -981,6 +983,20 @@ public class XQueryContext {
 		return baseURI;
 	}
 	
+    /**
+     * Returns the base collection for the current query.
+     * The value depends on how the XQuery was called.
+     * 
+     * @return
+     */
+    public String getBaseCollection() {
+        return baseCollection;
+    }
+    
+    public void setBaseCollection(String collection) {
+        this.baseCollection = collection;
+    }
+    
 	/**
 	 * Set the current context position, i.e. the position
 	 * of the currently processed item in the context sequence.
