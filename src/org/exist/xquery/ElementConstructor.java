@@ -43,6 +43,7 @@ public class ElementConstructor extends NodeConstructor {
 	private PathExpr content = null;
 	private AttributeConstructor attributes[] = null;
 	private QName namespaceDecls[] = null;
+	private boolean isDynamic = true;
 	
 	public ElementConstructor(XQueryContext context) {
 	    super(context);
@@ -51,6 +52,7 @@ public class ElementConstructor extends NodeConstructor {
 	public ElementConstructor(XQueryContext context, String qname) {
 		super(context);
 		this.qnameExpr = new LiteralValue(context, new StringValue(qname));
+		this.isDynamic = false;
 	}
 	
 	public void setContent(PathExpr path) {
@@ -163,6 +165,8 @@ public class ElementConstructor extends NodeConstructor {
 	 * @see org.exist.xquery.Expression#pprint()
 	 */
 	public String pprint() {
+		if(isDynamic)
+			return pprintDynamic();
 		StringBuffer buf = new StringBuffer();
 		buf.append('<').append(qnameExpr.pprint());
 		if(attributes != null) {
@@ -179,6 +183,17 @@ public class ElementConstructor extends NodeConstructor {
 			buf.append(content.pprint());
 			buf.append("</").append(qnameExpr.pprint()).append('>');
 		}
+		return buf.toString();
+	}
+	
+	public String pprintDynamic() {
+		StringBuffer buf = new StringBuffer();
+		buf.append("element { ");
+		buf.append(qnameExpr.pprint());
+		buf.append(" } { ");
+		if(content != null)
+			buf.append(content.pprint());
+		buf.append(" }");
 		return buf.toString();
 	}
 	

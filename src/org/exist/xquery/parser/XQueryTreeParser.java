@@ -247,9 +247,9 @@ public XQueryTreeParser() {
 			_t = _retTree;
 			
 						SequenceConstructor sc= new SequenceConstructor(context);
-						sc.addExpression(left);
-						sc.addExpression(right);
-						path.add(sc);
+						sc.addPath(left);
+						sc.addPath(right);
+						path.addPath(sc);
 						step = sc;
 					
 			_t = __t326;
@@ -4539,8 +4539,10 @@ public XQueryTreeParser() {
 						ElementConstructor c= new ElementConstructor(context);
 						c.setASTNode(qn);
 						step= c;
-						elementContent = new EnclosedExpr(context);
-						c.setContent(elementContent);
+						elementContent = new SequenceConstructor(context);
+						EnclosedExpr enclosed = new EnclosedExpr(context);
+						enclosed.addPath(elementContent);
+						c.setContent(enclosed);
 						PathExpr qnamePathExpr = new PathExpr(context);
 						c.setNameExpr(qnamePathExpr);
 					

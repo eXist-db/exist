@@ -22,9 +22,7 @@
  */
 package org.exist.xquery;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -37,19 +35,13 @@ import org.exist.xquery.value.ValueSequence;
  * 
  * @author wolf
  */
-public class SequenceConstructor extends AbstractExpression {
-
-	List expressions = new ArrayList(5);
+public class SequenceConstructor extends PathExpr {
 	
 	/**
 	 * @param context
 	 */
 	public SequenceConstructor(XQueryContext context) {
 		super(context);
-	}
-
-	public void addExpression(Expression expr) {
-		expressions.add(expr);
 	}
 	
 	/* (non-Javadoc)
@@ -61,7 +53,7 @@ public class SequenceConstructor extends AbstractExpression {
 		throws XPathException {
 		ValueSequence result = new ValueSequence();
 		Sequence temp;
-		for(Iterator i = expressions.iterator(); i.hasNext(); ) {
+		for(Iterator i = steps.iterator(); i.hasNext(); ) {
 			temp = ((Expression)i.next()).eval(contextSequence, contextItem);
 			result.addAll(temp);
 		}
@@ -73,7 +65,7 @@ public class SequenceConstructor extends AbstractExpression {
 	 */
 	public String pprint() {
 		StringBuffer buf = new StringBuffer();
-		for(Iterator i = expressions.iterator(); i.hasNext(); ) {
+		for(Iterator i = steps.iterator(); i.hasNext(); ) {
 			if(buf.length() > 0)
 				buf.append(", ");
 			buf.append(((Expression)i.next()).pprint());
@@ -99,7 +91,7 @@ public class SequenceConstructor extends AbstractExpression {
 	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
 	public void resetState() {
-		for (Iterator i = expressions.iterator(); i.hasNext();) {
+		for (Iterator i = steps.iterator(); i.hasNext();) {
 			((Expression) i.next()).resetState();
 		}
 	}
