@@ -26,16 +26,15 @@ import java.io.StringReader;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
-import org.exist.xquery.parser.XQueryLexer;
-import org.exist.xquery.parser.XQueryParser;
-import org.exist.xquery.parser.XQueryTreeParser;
-import org.exist.security.PermissionDeniedException;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.PathExpr;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.parser.XQueryLexer;
+import org.exist.xquery.parser.XQueryParser;
+import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.value.EmptySequence;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -112,18 +111,18 @@ public class EvalFunction extends Function {
 			}
 			AST ast = parser.getAST();
 			
-				PathExpr path = new PathExpr(context);
-				astParser.xpath(ast, path);
-				if(astParser.foundErrors()) {
-					throw new XPathException("error found while executing expression: " +
+			PathExpr path = new PathExpr(context);
+			astParser.xpath(ast, path);
+			if(astParser.foundErrors()) {
+				throw new XPathException("error found while executing expression: " +
 						astParser.getErrorMessage(), astParser.getLastException());
-				}
-				long start = System.currentTimeMillis();
-			    Sequence sequence = path.eval(null, null);
-			    path.reset();
-			    LOG.debug("Found " + sequence.getLength() + " for " + expr);
-			    LOG.debug("Query took " + (System.currentTimeMillis() - start));
-			    return sequence;
+			}
+			long start = System.currentTimeMillis();
+			Sequence sequence = path.eval(null, null);
+			path.reset();
+			LOG.debug("Found " + sequence.getLength() + " for " + expr);
+			LOG.debug("Query took " + (System.currentTimeMillis() - start));
+			return sequence;
 		} catch (RecognitionException e) {
 			throw new XPathException("error found while executing expression: " +
 				e.getMessage(), e);
@@ -136,16 +135,13 @@ public class EvalFunction extends Function {
 		}
 	}
 
-    private DocumentSet getCollectionContext(Sequence arg) throws XPathException {
-    	DocumentSet newDocs = new DocumentSet();
-        for(SequenceIterator i = arg.iterate(); i.hasNext(); ) {
+    private String[] getCollectionContext(Sequence arg) throws XPathException {
+    	String collections[] = new String[arg.getLength()];
+    	int j = 0;
+        for(SequenceIterator i = arg.iterate(); i.hasNext(); j++) {
         	String collection = i.nextItem().getStringValue();
-        	try {
-				context.getBroker().getDocumentsByCollection(collection, newDocs);
-			} catch (PermissionDeniedException e) {
-				LOG.debug("Permission denied to read collection contents for collection " + collection);
-			}
+        	collections[j] = collection;
         }
-        return newDocs;
+        return collections;
     }
 }

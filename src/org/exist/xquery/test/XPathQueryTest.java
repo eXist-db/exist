@@ -155,7 +155,6 @@ public class XPathQueryTest extends TestCase {
 			assertEquals("minimum of big integers",
 					"123456789123456789123456789", 
 					result.getResource(0).getContent() );
-			
 		} catch (XMLDBException e) {
 			fail(e.getMessage());
 		}
@@ -210,6 +209,19 @@ public class XPathQueryTest extends TestCase {
 			assertEquals(3, result.getSize());
 			r = result.getResource(0);
 			assertEquals("<string>Hello World!</string>", r.getContent().toString());
+			
+			result =
+				service.queryResource(
+					"strings.xml",
+					"sum(/test/item/price)");
+			assertEquals("Query should return an empty set (wrong document)", 0, result.getSize());
+			
+//			result =
+//				service.queryResource(
+//					"strings.xml",
+//					"document()/blah[not(blah)]");
+//			assertEquals(0, result.getSize());
+			
 		} catch (XMLDBException e) {
 			System.out.println("testStrings(): XMLDBException: "+e);
 			fail(e.getMessage());

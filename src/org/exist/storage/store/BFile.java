@@ -1833,6 +1833,14 @@ public class BFile extends BTree {
         	final int dlen = ph.getDataLength();
 		    for(short pos = 0; pos < dlen; ) {
 		    	short tid = ByteConversion.byteToShort(data, pos);
+		    	if(tid >= offsets.length) {
+		    		LOG.error("Problematic tid found: " + tid + "; trying to recover ...");
+		    		short[] t = new short[tid + 1];
+		    		Arrays.fill(t, (short)-1);
+		        	System.arraycopy(offsets, 0, t, 0, offsets.length);
+		        	offsets = t;
+		        	ph.nextTID = (short)(tid + 1);
+		    	}
 		    	offsets[tid] = (short)(pos + 2);
 		    	pos += ByteConversion.byteToInt(data, pos + 2) + 6;
 		    }

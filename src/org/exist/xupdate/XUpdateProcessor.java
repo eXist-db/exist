@@ -13,8 +13,6 @@ import java.util.TreeMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
@@ -101,12 +99,12 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	private DocumentSet documentSet;
 	
 	private List modifications = new ArrayList();
-	private Stack conditionals = new Stack();
 	
 	private FastStringBuffer charBuf = new FastStringBuffer(6, 15, 5);
 	
 	private Map variables = new TreeMap();
 	private Map namespaces = new HashMap(10);
+	private Stack conditionals = new Stack();
 
 	/**
 	 * Constructor for XUpdateProcessor.
@@ -116,7 +114,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setNamespaceAware(true);
 		factory.setValidating(false);
-		builder = factory.newDocumentBuilder();
+		this.builder = factory.newDocumentBuilder();
 		this.broker = broker;
 		this.documentSet = docs;
 		namespaces.put("xml", "http://www.w3.org/XML/1998/namespace");
@@ -145,19 +143,19 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	 */
 	public Modification[] parse(InputSource is)
 		throws ParserConfigurationException, IOException, SAXException {
-		SAXParserFactory saxFactory = SAXParserFactory.newInstance();
-		saxFactory.setNamespaceAware(true);
-		saxFactory.setValidating(false);
-		SAXParser sax = saxFactory.newSAXParser();
-		XMLReader reader = sax.getXMLReader();
-		reader.setProperty(
-				"http://xml.org/sax/properties/lexical-handler",
-				this);
-		reader.setContentHandler(this);
-		
-		reader.parse(is);
-		Modification mods[] = new Modification[modifications.size()];
-		return (Modification[]) modifications.toArray(mods);
+		XMLReader reader = broker.getBrokerPool().getParserPool().borrowXMLReader();
+		try {
+			reader.setProperty(
+					"http://xml.org/sax/properties/lexical-handler",
+					this);
+			reader.setContentHandler(this);
+			
+			reader.parse(is);
+			Modification mods[] = new Modification[modifications.size()];
+			return (Modification[]) modifications.toArray(mods);
+		} finally {
+			broker.getBrokerPool().getParserPool().returnXMLReader(reader);
+		}
 	}
 
 	/**
@@ -668,9 +666,10 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		broker = null;
 		documentSet = null;
 		modifications.clear();
-		charBuf.setLength(0);
+		charBuf = new FastStringBuffer(6, 15, 5);
 		variables.clear();
 		namespaces.clear();
+		conditionals.clear();
 		namespaces.put("xml", "http://www.w3.org/XML/1998/namespace");
 	}
 }

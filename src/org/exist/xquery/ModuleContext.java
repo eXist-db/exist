@@ -35,7 +35,7 @@ public class ModuleContext extends XQueryContext {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.XQueryContext#getStaticallyKnownDocuments()
 	 */
-	public DocumentSet getStaticallyKnownDocuments() {
+	public DocumentSet getStaticallyKnownDocuments() throws XPathException {
 		return parentContext.getStaticallyKnownDocuments();
 	}
 	

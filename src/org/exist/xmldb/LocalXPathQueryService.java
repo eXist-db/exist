@@ -104,19 +104,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	}
 
 	public ResourceSet query(String query, String sortBy) throws XMLDBException {
-		DocumentSet docs = null;
-		DBBroker broker = null;
-		try {
-			broker = brokerPool.get(user);
-			docs = collection.getCollection().allDocs(broker, new DocumentSet(), true, true);
-		} catch (EXistException e) {
-			throw new XMLDBException(
-				ErrorCodes.UNKNOWN_ERROR,
-				"error while loading documents: " + e.getMessage(),
-				e);
-		} finally {
-			brokerPool.release(broker);
-		}
+		String[] docs = new String[] { collection.getName() };
 		return doQuery(query, docs, null, sortBy);
 	}
 
@@ -125,23 +113,36 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		NodeProxy node = ((LocalXMLResource) res).getNode();
 		if (node == null) {
 			// resource is a document
-			if (!(query.startsWith("document(") || query.startsWith("collection(")))
-				query = "document('" + res.getDocumentId() + "')" + query;
-			return doQuery(query, null, null, sortBy);
+			String[] docs = new String[] { res.getParentCollection().getName() + '/' + res.getDocumentId() };
+			return doQuery(query, docs, null, sortBy);
 		} else {
 			NodeSet set = new ArraySet(1);
 			set.add(node);
-			DocumentSet docs = new DocumentSet();
-			docs.add(node.getDoc());
+			String[] docs = new String[] { node.getDoc().getName() };
 			return doQuery(query, docs, set, sortBy);
 		}
 	}
-
+	
 	public ResourceSet execute(CompiledExpression expression) throws XMLDBException {
 		return execute(null, null, expression, null);
 	}
 	
-	private ResourceSet execute(DocumentSet docs, 
+	public ResourceSet execute(XMLResource res, CompiledExpression expression)
+			throws XMLDBException {
+		NodeProxy node = ((LocalXMLResource) res).getNode();
+		if (node == null) {
+			// resource is a document
+			String[] docs = new String[] { res.getParentCollection().getName() + '/' + res.getDocumentId() };
+			return execute(docs, null, expression, null);
+		} else {
+			NodeSet set = new ArraySet(1);
+			set.add(node);
+			String[] docs = new String[] { node.getDoc().getName() };
+			return execute(docs, set, expression, null);
+		}
+	}
+	
+	private ResourceSet execute(String[] docs, 
 		NodeSet contextSet, CompiledExpression expression, String sortExpr) 
 	throws XMLDBException {
 		long start = System.currentTimeMillis();
@@ -150,10 +151,6 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		Sequence result;
 		try {
 			broker = brokerPool.get(user);
-			if(docs == null) {
-				docs = collection.getCollection().allDocs(broker, new DocumentSet(), true, true);
-			}
-
 			XQueryContext context = expr.getContext();
 			context.setBackwardsCompatibility(xpathCompatible);
 			context.setStaticallyKnownDocuments(docs);
@@ -286,7 +283,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	
 	protected ResourceSet doQuery(
 		String query,
-		DocumentSet docs,
+		String[] docs,
 		NodeSet contextSet,
 		String sortExpr)
 		throws XMLDBException {
@@ -296,21 +293,12 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 
 	public ResourceSet queryResource(String resource, String query)
 		throws XMLDBException {
-		DocumentSet docs = new DocumentSet();
 		LocalXMLResource res = (LocalXMLResource) collection.getResource(resource);
 		if (res == null)
 			throw new XMLDBException(
 				ErrorCodes.INVALID_RESOURCE,
 				"resource " + resource + " not found");
-		DBBroker broker = null;
-		try {
-		    broker = brokerPool.get(user);
-		    docs.add(res.getDocument(broker, false));
-		} catch (EXistException e) {
-            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
-        } finally {
-		    brokerPool.release(broker);
-		}
+        String[] docs = new String[] { res.getParentCollection().getName() + '/' + res.getDocumentId() };
 		return doQuery(query, docs, null, null);
 	}
 

@@ -273,22 +273,28 @@ public class ElementImpl
 
     public Node appendAttributes(NodeList attribs)
             throws DOMException {
-        DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
-        Node node = null;
-        NodeImpl lastAttrib = checkDupAttributes(attribs);
-        if (children == 0) {
-            // no children: append a new child
-            node = appendChildren(firstChildID(), this, getPath(), attribs, true);
-        }
-        else {
-            if (lastAttrib != null && lastAttrib.gid == lastChildID())
-                node = appendChildren(lastChildID() + 1, lastAttrib, getPath(), attribs, true);
-            else
-                node = appendChildren(firstChildID() + 1, this, getPath(), attribs, true);
-        }
-        ownerDocument.broker.update(this);
-        ownerDocument.broker.reindex(prevDoc, ownerDocument, null);
-        return node;
+    	NodeList duplicateAttrs = findDupAttributes(attribs);
+    	if(duplicateAttrs != null) {
+    		removeAppendAttributes(duplicateAttrs, attribs);
+    		return null;
+    	} else {
+	        DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
+	        Node node = null;
+	        NodeImpl lastAttrib = getLastAttribute();
+	        if (children == 0) {
+	            // no children: append a new child
+	            node = appendChildren(firstChildID(), this, getPath(), attribs, true);
+	        }
+	        else {
+	            if (lastAttrib != null && lastAttrib.gid == lastChildID())
+	                node = appendChildren(lastChildID() + 1, lastAttrib, getPath(), attribs, true);
+	            else
+	                node = appendChildren(firstChildID() + 1, this, getPath(), attribs, true);
+	        }
+	        ownerDocument.broker.update(this);
+	        ownerDocument.broker.reindex(prevDoc, ownerDocument, null);
+	        return node;
+    	}
     }
 
     private NodeList checkForAttributes(NodeList nodes)
@@ -574,12 +580,11 @@ public class ElementImpl
      * @return
      * @throws DOMException
      */
-    private AttrImpl checkDupAttributes(NodeList attrs) throws DOMException {
+    private AttrImpl getLastAttribute() throws DOMException {
         long start = firstChildID();
         AttrImpl attr = null;
         for (long i = start; i < start + children; i++) {
             Node child = ownerDocument.getNode(i);
-            checkAttribute(child, attrs);
             if (child != null) {
             	if(child.getNodeType() == Node.ATTRIBUTE_NODE)
             		attr = (AttrImpl) child;
@@ -589,20 +594,48 @@ public class ElementImpl
         return attr;
     }
 
-    private void checkAttribute(Node child, NodeList attrs) throws DOMException {
+    /**
+     * Returns a list of all attribute nodes in attrs that are already present
+     * in the current element.
+     * 
+     * @param attrs
+     * @return
+     * @throws DOMException
+     */
+    private NodeList findDupAttributes(NodeList attrs) throws DOMException {
+    	NodeListImpl dupList = null;
+    	long start = firstChildID();
+        for (long i = start; i < start + children; i++) {
+            Node child = ownerDocument.getNode(i);
+            if(child.getNodeType() != Node.ATTRIBUTE_NODE)
+            	break;
+            Node duplicate = findAttribute(child, attrs);
+            if(duplicate != null) {
+            	LOG.debug("Found a duplicate attribute: " + child.getLocalName());
+            	if(dupList == null)
+            		dupList = new NodeListImpl();
+            	dupList.add(child);
+            }
+        }
+        return dupList;
+    }
+    
+    private static Node findAttribute(Node child, NodeList attrs) throws DOMException {
     	String childNS = child.getNamespaceURI();
     	if(childNS == null)
     		childNS = "";
     	for(int i = 0; i < attrs.getLength(); i++) {
-    		Attr current = (Attr) attrs.item(i);
+    		Node current = (Node) attrs.item(i);
+    		if(current == null || current.getNodeType() != Node.ATTRIBUTE_NODE)
+    			continue;
     		String currentNS = current.getNamespaceURI();
     		if(currentNS == null)
     			currentNS = "";
     		if(child.getLocalName().equals(current.getLocalName()) &&
     				childNS.equals(currentNS))
-    			throw new DOMException(DOMException.INVALID_MODIFICATION_ERR,
-    					"Attribute " + child.getNodeName() + " is already present.");
+    			return current;
     	}
+    	return null;
     }
     
     /**
@@ -1309,7 +1342,7 @@ public class ElementImpl
 			if (children == 0) {
 			   appendChildren(firstChildID(), this, getPath(), appendList, true);
 			} else {
-			    NodeImpl lastAttrib = checkDupAttributes(appendList);
+			    NodeImpl lastAttrib = getLastAttribute();
 			    if (lastAttrib != null && lastAttrib.gid == lastChildID())
 			        appendChildren(lastChildID() + 1, lastAttrib, getPath(), appendList, true);
 			    else
