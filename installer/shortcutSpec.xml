@@ -5,7 +5,7 @@
 	<shortcut name="eXist Database Startup" target="$INSTALL_PATH/bin/startup.bat"
 		description="eXist Database Startup" programGroup="yes"
         desktop="yes" iconFile="$INSTALL_PATH/icon.bmp"/>
-	<shortcut name="eXist Documentation" target="$INSTALL_PATH/index.html"
+	<shortcut name="eXist Local Homepage" target="$INSTALL_PATH/index.html"
 		description="The local homepage of the server" programGroup="yes"
         desktop="yes"/>
 	<shortcut name="eXist Client Shell"
@@ -15,7 +15,7 @@
 	<shortcut name="Database Shutdown"
 		target="$INSTALL_PATH/bin/shutdown.bat"
         description="Cleanly shutdown a running database" 
-        programGroup="yes" desktop="yes"/>
+        programGroup="yes" desktop="no"/>
 	<shortcut name="Install eXist as Service" 
 		target="$INSTALL_PATH/tools/wrapper/bin/install.bat"
 		description="Install the eXist server as a service"
