@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addressbook>
+	<address>
+		<fname>John</fname>
+		<lname>Jekyll</lname>
+		<company>Johnny's Car Wash</company>
+		<city>Bloomington</city>
+		<email type="work">john@carwash.com</email>
+	</address>
+	<address>
+		<fname>Andrew</fname>
+		<lname>Hyde</lname>
+		<company>Null-Devices</company>
+		<city>Washington</city>
+	</address>
+</addressbook>

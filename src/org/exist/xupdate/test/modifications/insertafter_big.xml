@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xu:modifications version="1.0" xmlns:xu="http://www.xmldb.org/xupdate">
+    
+    <xu:insert-after select="//address[@id='2']/city">
+        
+        <zipcode>12345</zipcode>
+               
+    </xu:insert-after>
+    
+</xu:modifications>
