@@ -188,8 +188,10 @@ public class XQueryGenerator extends ServiceableGenerator {
 		String password = null;
 		// check if user and password can be read from the session
 		if (session != null && request.isRequestedSessionIdValid()) {
-			user = (String) session.getAttribute("user");
-			password = (String) session.getAttribute("password");
+		    Object userObj = session.getAttribute("user");
+		    Object passObj = session.getAttribute("password");
+			user = userObj == null ? null : String.valueOf(userObj);
+			password = passObj == null ? null : String.valueOf(passObj);
 		}
 		if (user == null)
 			user = defaultUser;
