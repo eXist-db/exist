@@ -29,6 +29,9 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.avalon.framework.configuration.Configurable;
+import org.apache.avalon.framework.configuration.Configuration;
+import org.apache.avalon.framework.configuration.ConfigurationException;
 import org.apache.avalon.framework.parameters.Parameters;
 import org.apache.cocoon.ProcessingException;
 import org.apache.cocoon.environment.Context;
@@ -58,7 +61,26 @@ import org.xmldb.api.modules.XMLResource;
  * A generator for Cocoon which reads an XQuery script, executes it and passes
  * the results into the Cocoon pipeline.
  * 
- * The following sitemap parameters (with default values) are accepted:
+ * The following optional attributes are accepted on the component declaration as default settings:
+ * <li><tt>collection</tt>: identifies the XML:DB root collection used to process
+ * the request</li>
+ * <li><tt>user</tt></li>
+ * <li><tt>password</tt></li>
+ * <li><tt>create-session</tt>: if set to "true", indicates that an
+ * HTTP session should be created upon the first invocation.</li>
+ * <li><tt>expand-xincludes</tt></li>
+ * 
+ * See below an example declaration of the XQueryGenerator component with default values:
+ * 
+ * <map:generator logger="xmldb" name="xquery"
+ * 		collection="xmldb:exist:///db/"
+ * 		user="guest"
+ * 		password="guest"
+ *		create-session="false"
+ * 		expand-xincludes="false"
+ *		src="org.exist.cocoon.XQueryGenerator"/>
+ * 
+ * These settings can be overriden on a per-pipeline basis with sitemap parameters, see below with default values:
  * 
  * <pre>
  *  &lt;map:parameter name=&quot;collection&quot; value=&quot;xmldb:exist:///db&quot;/&gt;
@@ -68,23 +90,34 @@ import org.xmldb.api.modules.XMLResource;
  *  &lt;map:parameter name=&quot;expand-xincludes&quot; value=&quot;false&quot;/&gt;
  * </pre>
  * 
- * Parameter collection identifies the XML:DB root collection used to process
- * the request. If set to "true", parameter create-session indicates that an
- * HTTP session should be created upon the first invocation.
- * 
  * @author wolf
  */
-public class XQueryGenerator extends ServiceableGenerator {
-
+public class XQueryGenerator extends ServiceableGenerator implements Configurable {
 	public final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
-	
+
 	private Source inputSource = null;
 	private Map objectModel = null;
-	private boolean createSession = false;
-	private boolean expandXIncludes = false;
-	private String collectionURI = null;
-	private String defaultUser = null;
-	private String defaultPassword = null;
+
+	private boolean createSession;
+	private boolean defaultCreateSession = false;
+	private final static String CREATE_SESSION = "create-session";
+
+	private boolean expandXIncludes;
+	private boolean defaultExpandXIncludes = false;
+	private final static String EXPAND_XINCLUDES = "expand-xincludes";
+
+	private String collectionURI;
+	private String defaultCollectionURI = "xmldb:exist:///db";
+	private final static String COLLECTION_URI = "collection";
+
+	private String user;
+	private String defaultUser = "guest";
+	private final static String USER = "user";
+
+	private String password;
+	private String defaultPassword = "guest";
+	private final static String PASSWORD = "password";
+
 	private Map optionalParameters;
 
 	/*
@@ -100,22 +133,22 @@ public class XQueryGenerator extends ServiceableGenerator {
 		super.setup(resolver, objectModel, source, parameters);
 		this.objectModel = objectModel;
 		this.inputSource = resolver.resolveURI(source);
-		this.collectionURI = parameters.getParameter("collection",
-				"xmldb:exist:///db");
-		this.defaultUser = parameters.getParameter("user", "guest");
-		this.defaultPassword = parameters.getParameter("password", "guest");
-		this.createSession = parameters.getParameterAsBoolean("create-session",
-				false);
+		this.collectionURI = parameters.getParameter(COLLECTION_URI,
+				this.defaultCollectionURI);
+		this.user = parameters.getParameter(USER, this.defaultUser);
+		this.password = parameters.getParameter(PASSWORD, this.defaultPassword);
+		this.createSession = parameters.getParameterAsBoolean(CREATE_SESSION,
+				this.defaultCreateSession);
 		this.expandXIncludes = parameters.getParameterAsBoolean(
-				"expand-xincludes", false);
+				EXPAND_XINCLUDES, this.defaultExpandXIncludes);
 		this.optionalParameters = new HashMap();
 		String paramNames[] = parameters.getNames();
 		for (int i = 0; i < paramNames.length; i++) {
 			String param = paramNames[i];
-			if (!(param.equals("collection") || param.equals("user")
-					|| param.equals("password")
-					|| param.equals("create-session") || param
-					.equals("expand-xincludes"))) {
+			if (!(param.equals(COLLECTION_URI) || param.equals(USER)
+					|| param.equals(PASSWORD)
+					|| param.equals(CREATE_SESSION) || param
+					.equals(EXPAND_XINCLUDES))) {
 				this.optionalParameters.put(param, parameters
 						.getParameter(param, ""));
 			}
@@ -221,11 +254,22 @@ public class XQueryGenerator extends ServiceableGenerator {
 					+ e.getMessage(), e);
 		}
 	}
-	
+
 	private void declareParameters(XQueryService service) throws XMLDBException {
 		for(Iterator i = optionalParameters.entrySet().iterator(); i.hasNext(); ) {
 			Map.Entry entry = (Map.Entry)i.next();
 			service.declareVariable((String)entry.getKey(), entry.getValue());
 		}
+	}
+
+	/**
+	 * @see org.apache.avalon.framework.configuration.Configurable#configure(org.apache.avalon.framework.configuration.Configuration)
+	 */
+	public void configure(Configuration config) throws ConfigurationException {
+		this.defaultCollectionURI = config.getAttribute(COLLECTION_URI, this.defaultCollectionURI);
+		this.defaultCreateSession = config.getAttributeAsBoolean(CREATE_SESSION, this.defaultCreateSession);
+		this.defaultExpandXIncludes = config.getAttributeAsBoolean(EXPAND_XINCLUDES, this.defaultExpandXIncludes);
+		this.defaultPassword = config.getAttribute(PASSWORD, this.defaultPassword);
+		this.defaultUser = config.getAttribute(USER, this.defaultUser);
 	}
 }
