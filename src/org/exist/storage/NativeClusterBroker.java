@@ -1,0 +1,61 @@
+//$Id$
+package org.exist.storage;
+
+import org.exist.EXistException;
+import org.exist.cluster.ClusterCollection;
+import org.exist.collections.Collection;
+import org.exist.security.PermissionDeniedException;
+import org.exist.util.Configuration;
+
+/**
+ * Created by Francesco Mondora.
+ *
+ * @author Francesco Mondora aka Makkina
+ * @author Michele Danieli aka mdanieli
+ *         Date: 13-dic-2004
+ *         Time: 17.12.51
+ *         Revision $Revision$
+ */
+public class NativeClusterBroker extends NativeBroker {
+    public NativeClusterBroker(BrokerPool pool, Configuration config) throws EXistException {
+        super(pool, config);
+    }
+
+
+    /**
+     * Get collection object. If the collection does not exist, null is
+     * returned.
+     *
+     * Wraps for cluster the resultant collection in a ClusterCollection
+     *
+     * @param name Description of the Parameter
+     * @return The collection value
+     */
+    public Collection openCollection(String name, long addr, int lockMode) {
+        Collection c= super.openCollection(name, addr, lockMode);
+
+        return c==null?null:new ClusterCollection(c);
+
+    }
+
+    public void saveCollection(Collection collection) throws PermissionDeniedException {
+        super.saveCollection( new ClusterCollection( collection ));
+    }
+
+    /**
+     * get collection object If the collection does not yet exists, it is
+     * created automatically.
+     *
+     * Wraps for cluster the resultant collection in a ClusterCollection
+     *
+     * @param name the collection's name
+     * @return The orCreateCollection value
+     * @throws org.exist.security.PermissionDeniedException
+     *          Description of the Exception
+     */
+    public Collection getOrCreateCollection(String name) throws PermissionDeniedException {
+        Collection c=   super.getOrCreateCollection(name);
+        return c==null?null:new ClusterCollection(c);
+
+    }
+}
