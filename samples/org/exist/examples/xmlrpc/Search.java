@@ -9,6 +9,12 @@ import java.util.Hashtable;
  */
 public class Search {
 
+	private final static Hashtable options = new Hashtable();
+	static {
+		options.put("encoding", "UTF-8");
+		options.put("indent", "yes");
+	}
+	
     public static void main(String args[]) throws Exception {
     	
     	String query = "document()//character[.//reading &= 'チョウ']";
@@ -31,6 +37,7 @@ public class Search {
 			params = new Vector();
 			params.addElement(current.elementAt(0));
 			params.addElement(current.elementAt(1));
+			params.addElement(options);
 			byte[] data = (byte[])xmlrpc.execute("retrieve", params);
 			System.out.println(new String(data, "UTF-8"));
 		}

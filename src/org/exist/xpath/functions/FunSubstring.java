@@ -28,7 +28,7 @@ import org.exist.xpath.Cardinality;
 import org.exist.xpath.Expression;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.DoubleValue;
 import org.exist.xpath.value.Item;
@@ -54,7 +54,7 @@ public class FunSubstring extends Function {
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
 				,true);
 				
-	public FunSubstring(StaticContext context) {
+	public FunSubstring(XQueryContext context) {
 		super(context, signature);
 	}
 
@@ -75,15 +75,18 @@ public class FunSubstring extends Function {
 		if(seq.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		int start = ((DoubleValue)arg1.eval(contextSequence).itemAt(0).convertTo(Type.DOUBLE)).getInt();
+		if(start <= 0)
+			start = 1;
 		int length = 0;
 		if(arg2 != null)
 			length = ((NumericValue)arg2.eval(contextSequence).
-				itemAt(0).convertTo(Type.DOUBLE)).getInt();
+				itemAt(0).convertTo(Type.DOUBLE)).getInt(); 
 		if(start <= 0 || length < 0)
 			throw new IllegalArgumentException("Illegal start or length argument");
-			 
 		String result = seq.getStringValue();
-		if(start < 0 || --start + length >= result.length())
+		if(length > result.length())
+			length = result.length() - start + 1;
+		if(start < 0 || --start + length > result.length())
 			return new StringValue("");
 		return new StringValue((length > 0) ? result.substring(start, start + length) : result.substring(start));
 	}

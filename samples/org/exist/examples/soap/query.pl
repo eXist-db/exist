@@ -5,7 +5,7 @@ use MIME::Base64;
 
 my $service = SOAP::Lite->service("http://localhost:8080/exist/services/Query?WSDL");
 
-my $query = "//SPEAKER";
+my $query = "document()//SPEECH[SPEAKER='HAMLET']";
 $query = $ARGV[0] unless @ARGV == 0;
 print "query: " . $query . "\n";
 
@@ -40,8 +40,7 @@ foreach $collection (@collections) {
 }
 print "found $hits hits in $queryTime ms.\n";
 
-# display hits 1 to 10
-
+# display hits 1 to 100
 my $r = $service->retrieve($session, 1, 100, "true", "true", "elements");
 foreach $result (@{$r}) {
 	print "$result" . "\n";

@@ -38,7 +38,7 @@ public class LiteralValue extends AbstractExpression {
 
 	private AtomicValue value;
 	
-	public LiteralValue(StaticContext context, AtomicValue value) {
+	public LiteralValue(XQueryContext context, AtomicValue value) {
 		super(context);
 		this.value = value;
 	}

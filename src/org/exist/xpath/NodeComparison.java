@@ -40,7 +40,7 @@ public class NodeComparison extends BinaryOp {
 	/**
 	 * @param context
 	 */
-	public NodeComparison(StaticContext context, Expression left, Expression right, int relation) {
+	public NodeComparison(XQueryContext context, Expression left, Expression right, int relation) {
 		super(context);
 		this.relation = relation;
 		add(new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, left));
@@ -108,7 +108,6 @@ public class NodeComparison extends BinaryOp {
 			default:
 				throw new XPathException("Illegal argument: unknown relation");
 		}
-		System.out.println("result: " + result.getStringValue());
 		return result;
 	}
 

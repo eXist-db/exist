@@ -1,9 +1,9 @@
 <installation version="1.0">
     <info>
         <appname>eXist</appname>
-		<appversion>0.9.2</appversion>
+		<appversion>1.0b1</appversion>
         <authors>
-			<author email="wolfgang_m@users.sourceforge.net" 
+			<author email="wolfgang@exist-db.org" 
 				name="Wolfgang Meier"/>
         </authors>
         <url>http://exist-db.org</url>
@@ -38,7 +38,8 @@
             	<include name="README"/>
             	<include name="*.jpg"/>
             	<include name="*.html"/>
-            	<include name="exist.jar"/>
+				<include name="exist.jar"/>
+				<include name="exist-optional.jar"/>
             	<include name="start.jar"/>
             	<include name="examples.jar"/>
 				<include name="docs/"/>
@@ -49,7 +50,7 @@
             	<exclude name="**/CVS/"/>
             	<exclude name="**/*~"/>
 				<exclude name="**/*.log*"/>
-				<exclude name=".*"/>
+				<exclude name="**/.*"/>
             </fileset>
             <fileset targetdir="$INSTALL_PATH/webapp" dir="webapp">
             	<exclude name="**/*.dbx"/>
@@ -58,7 +59,6 @@
 				<exclude name="bin/**"/>
 				<exclude name="**/CVS/"/>
 				<exclude name="**/*~"/>
-				<exclude name=".*"/>
             </fileset>
             <file src="installer/index.html" targetdir="$INSTALL_PATH"/>
             <fileset targetdir="$INSTALL_PATH/bin" dir="installer">

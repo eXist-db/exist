@@ -164,7 +164,6 @@ public class XMLString implements CharSequence, Comparable {
 			int newCapacity = (length_ + 1) * 2;
 			if (newCapacity < capacity)
 				newCapacity = capacity;
-			System.out.println("growing " + length_ + " to " + capacity);
 			char[] temp = CharArrayPool.getCharArray(newCapacity);
 			System.arraycopy(value_, start_, temp, 0, length_);
 			CharArrayPool.releaseCharArray(value_);

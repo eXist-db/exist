@@ -26,7 +26,7 @@ import org.exist.dom.QName;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
@@ -56,7 +56,7 @@ public class FunTranslate extends Function {
 	 * @param context
 	 * @param signature
 	 */
-	public FunTranslate(StaticContext context) {
+	public FunTranslate(XQueryContext context) {
 		super(context, signature);
 	}
 

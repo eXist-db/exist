@@ -73,7 +73,7 @@
                 <xsl:apply-templates select="creator"/>
             </td>
             <td class="overview">
-                <a href="biblio.xq?start={../@start + position() - 2}&amp;display=details">
+                <a href="biblio.xq?start={../@start + position() - 1}&amp;display=details">
                     <xsl:apply-templates select="dc:title"/>
                 </a>
             </td>

@@ -60,7 +60,7 @@ public class Variable {
 		return "$" + qname.toString();
 	}
 	
-	public int getDependencies(StaticContext context) {
+	public int getDependencies(XQueryContext context) {
 		if(context.getCurrentStackSize() > positionInStack)
 			return Dependency.CONTEXT_SET + Dependency.GLOBAL_VARS;
 		else

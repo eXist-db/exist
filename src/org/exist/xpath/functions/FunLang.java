@@ -34,7 +34,7 @@ import org.exist.xpath.Cardinality;
 import org.exist.xpath.Dependency;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
@@ -55,7 +55,7 @@ public class FunLang extends Function {
 				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE));
 
-	public FunLang(StaticContext context) {
+	public FunLang(XQueryContext context) {
 		super(context, signature);
 	}
 

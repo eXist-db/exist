@@ -38,7 +38,7 @@ public class ConditionalExpression extends AbstractExpression {
 	private Expression thenExpr;
 	private Expression elseExpr;
 	
-	public ConditionalExpression(StaticContext context, Expression testExpr, Expression thenExpr,
+	public ConditionalExpression(XQueryContext context, Expression testExpr, Expression thenExpr,
 		Expression elseExpr) {
 		super(context);
 		this.testExpr = testExpr;

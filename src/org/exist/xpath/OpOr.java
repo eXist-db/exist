@@ -33,7 +33,7 @@ import org.exist.xpath.value.Type;
  */
 public class OpOr extends LogicalOp {
 
-	public OpOr(StaticContext context) {
+	public OpOr(XQueryContext context) {
 		super(context);
 	}
 

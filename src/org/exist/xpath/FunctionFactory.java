@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.exist.dom.QName;
 import org.exist.xpath.functions.ExtNear;
-import org.exist.xpath.functions.UserDefinedFunction;
 import org.exist.xpath.value.AtomicValue;
 import org.exist.xpath.value.StringValue;
 import org.exist.xpath.value.Type;
@@ -33,7 +32,7 @@ public class FunctionFactory {
 	 * @throws PermissionDeniedException
 	 */
 	public static Expression createFunction(
-		StaticContext context,
+		XQueryContext context,
 		PathExpr parent,
 		String fnName,
 		List params)
@@ -124,31 +123,58 @@ public class FunctionFactory {
 			}
 		// Check if the namespace belongs to one of the schema namespaces.
 		// If yes, the function is a constructor function
-		} else if(uri.equals(StaticContext.SCHEMA_NS) || uri.equals(StaticContext.XPATH_DATATYPES_NS)) {
+		} else if(uri.equals(XQueryContext.SCHEMA_NS) || uri.equals(XQueryContext.XPATH_DATATYPES_NS)) {
 			if(params.size() != 1)
 				throw new XPathException("Wrong number of arguments for constructor function");
 			PathExpr arg = (PathExpr)params.get(0);
 			int code= Type.getType(qname);
 			CastExpression castExpr = new CastExpression(context, arg, code, Cardinality.EXACTLY_ONE);
 			step = castExpr;
+			
+		// Check if the namespace URI starts with "java:". If yes, treat the function call as a call to
+		// an arbitrary Java function.
+		} else if(uri.startsWith("java:")) {
+			JavaCall call = new JavaCall(context, qname);
+			call.setArguments(params);
+			call.setParent(parent);
+			step = call;
 		}
+		
 		// None of the above matched: function is either a builtin function or
 		// a user-defined function 
 		if (step == null) {
-			if(uri.equals(Function.BUILTIN_FUNCTION_NS) || uri.equals(Function.UTIL_FUNCTION_NS) |
-				uri.equals(Function.XMLDB_FUNCTION_NS) || uri.equals(Function.REQUEST_FUNCTION_NS)) {
-				Class clazz = context.getClassForFunction(qname);
-				if (clazz == null)
-					throw new XPathException("function " + qname.toString() + " ( namespace-uri = " + 
-						qname.getNamespaceURI() + ") is not defined");
-				Function func = Function.createFunction(context, clazz);
-				func.setArguments(params);
-				func.setParent(parent);
-				step = func;
+			Module module = context.getModule(uri);
+			if(module != null) {
+				if(module.isInternalModule()) {
+					// for internal modules: create a new function instance from the class
+					Class clazz = ((InternalModule)module).getClassForFunction(qname);
+					if (clazz == null)
+						throw new XPathException("function " + qname.toString() + " ( namespace-uri = " + 
+							qname.getNamespaceURI() + ") is not defined");
+					Function func = Function.createFunction(context, clazz);
+					func.setArguments(params);
+					func.setParent(parent);
+					step = func;
+				} else {
+					UserDefinedFunction func = ((ExternalModule)module).getFunction(qname);
+					if(func == null)
+						throw new XPathException("function " + qname.toString() + " ( namespace-uri = " + 
+							qname.getNamespaceURI() + ") is not defined");
+					FunctionCall call = new FunctionCall(context, func);
+					call.setArguments(params);
+					step = call;
+				}
 			} else {
 				UserDefinedFunction func = context.resolveFunction(qname);
-				FunctionCall call = new FunctionCall(context, func);
-				call.setArguments(params);
+				FunctionCall call;
+				if(func != null) {
+					call = new FunctionCall(context, func);
+					call.setArguments(params);
+				} else {
+					// create a forward reference which will be resolved later
+					call = new FunctionCall(context, qname, params);
+					context.addForwardReference(call);
+				}
 				step = call;
 			}
 		}

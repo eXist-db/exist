@@ -89,7 +89,7 @@ public class DatabaseImpl implements Database {
 
         Collection current =
             new RemoteCollection( rpcClient, null, address, temp );
-        while ( tok.hasMoreTokens() ) {
+        while ( current != null && tok.hasMoreTokens() ) {
             temp = tok.nextToken();
             current =
                 current.getChildCollection( ( (RemoteCollection) current ).getPath() + '/' + temp );

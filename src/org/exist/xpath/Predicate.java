@@ -44,7 +44,7 @@ import org.exist.xpath.value.ValueSequence;
  */
 public class Predicate extends PathExpr {
 
-	public Predicate(StaticContext context) {
+	public Predicate(XQueryContext context) {
 		super(context);
 	}
 

@@ -1,15 +1,10 @@
 body {
 color: black;
 background: white;
-background-position: top left;
-background-attachment: fixed;
-background-repeat: no-repeat;
-text-align: left;
-alignment: left;
+font-family: Arial, Helvetica, sans-serif;
 }
 
 p {
-text-align: left;
 padding-left: 15px;
 margin-top: 5px;
 margin-bottom: 5px;
@@ -239,9 +234,9 @@ em {
 }
 
 h1 { 
-font-size: 18pt;
-font-family: Arial, Helvetica, sans-serif;
+font-size: 160%;
 font-weight: normal;
+font-family: Arial, Helvetica, sans-serif;
 color: white;
 border: 1px solid black;
 background-color: #0b88e8;
@@ -255,10 +250,9 @@ padding-bottom: 5px;
 }
 
 h2 { 
-font-size: 14pt;
-font-family: Arial, Helvetica, sans-serif;
+font-size: 160%;
 font-weight: normal;
-color: black;
+font-family: Arial, Helvetica, sans-serif;
 margin-left: 0px;
 margin-top: 25px;
 margin-bottom: 5px;

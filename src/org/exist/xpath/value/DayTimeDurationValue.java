@@ -184,8 +184,8 @@ public class DayTimeDurationValue extends DurationValue {
 			minute = minute % 60;
 		}
 		if(hour > 24) {
-			day += (hour / 60);
-			hour = hour % 60;
+			day += (hour / 24);
+			hour = hour % 24;
 		}
 	}
 	
@@ -198,16 +198,13 @@ public class DayTimeDurationValue extends DurationValue {
 			buf.append('-');
 		buf.append('P');
 		if(day > 0) buf.append(day).append('D');
-		if(hour > 0 || minute > 0 || second > 0)
-			buf.append('T');
+		buf.append('T');
 		if(hour > 0) buf.append(hour).append('H');
 		if(minute > 0) buf.append(minute).append('M');
-		if(second > 0 || millisecond > 0) {
-			buf.append(second);
-			if(millisecond > 0)
-				buf.append('.').append(millisecond);
-			buf.append('S');
-		} 
+		buf.append(second);
+		if(millisecond > 0)
+			buf.append('.').append(millisecond);
+		buf.append('S'); 
 		return buf.toString();
 	}
 	
@@ -331,9 +328,9 @@ public class DayTimeDurationValue extends DurationValue {
 	 * @see org.exist.xpath.value.DurationValue#minus(org.exist.xpath.value.ComputableValue)
 	 */
 	public ComputableValue minus(ComputableValue other) throws XPathException {
-		if(other.getType() == Type.DAY_TIME_DURATION)
+		if(other.getType() == Type.DAY_TIME_DURATION) {
 			return new DayTimeDurationValue(getValueInMilliseconds() - ((DayTimeDurationValue)other).getValueInMilliseconds());
-		else
+		} else
 			throw new XPathException("Operand to minus should be of type xdt:dayTimeDuration; got: " +
 				Type.getTypeName(other.getType()));
 	}

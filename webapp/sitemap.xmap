@@ -615,6 +615,20 @@
                         uri-prefix="xquery"/>
             </map:match>
 
+            <map:match pattern="examples.xml">
+                <map:generate src="examples.xml"/>
+                <map:transform type="xinclude"/>
+                <map:transform src="stylesheets/doc2html-2.xsl"/>
+                <map:serialize type="html"/>
+            </map:match>
+
+            <map:match pattern="facts.xml">
+                <map:generate src="facts.xml"/>
+                <map:transform type="xinclude"/>
+                <map:transform src="stylesheets/facts.xsl"/>
+                <map:serialize type="html"/>
+            </map:match>
+
             <map:match pattern="status">
                 <map:generate type="exist-status"/>
                 <map:transform src="stylesheets/status.xsl">

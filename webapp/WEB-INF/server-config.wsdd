@@ -3,9 +3,9 @@
  <globalConfiguration>
   <parameter name="adminPassword" value="admin"/>
   <parameter name="attachments.Directory" value="/home/wolf/download/eclipse/workspace/eXist-0.8/webapp/WEB-INF/attachments"/>
-  <parameter name="attachments.implementation" value="org.apache.axis.attachments.AttachmentsImpl"/>
-  <parameter name="sendXsiTypes" value="true"/>
   <parameter name="sendMultiRefs" value="true"/>
+  <parameter name="sendXsiTypes" value="true"/>
+  <parameter name="attachments.implementation" value="org.apache.axis.attachments.AttachmentsImpl"/>
   <parameter name="sendXMLDeclaration" value="true"/>
   <parameter name="axis.sendMinimizedElements" value="true"/>
   <requestFlow>
@@ -31,13 +31,13 @@
   <parameter name="wsdlServicePort" value="Query"/>
   <parameter name="wsdlTargetNamespace" value="urn:exist"/>
   <parameter name="wsdlServiceElement" value="QueryService"/>
-  <typeMapping deserializer="org.apache.axis.encoding.ser.ArrayDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns1:ArrayOf_xsd_string" serializer="org.apache.axis.encoding.ser.ArraySerializerFactory" type="java:java.lang.String[]" xmlns:ns1="urn:exist"/>
-  <typeMapping deserializer="org.apache.axis.encoding.ser.ArrayDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns2:ArrayOfQueryResponseCollection" serializer="org.apache.axis.encoding.ser.ArraySerializerFactory" type="java:org.exist.soap.QueryResponseCollection[]" xmlns:ns2="urn:exist"/>
-  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns3:QueryResponse" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.QueryResponse" xmlns:ns3="urn:exist"/>
-  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns4:Collection" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.Collection" xmlns:ns4="urn:exist"/>
-  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns5:QueryResponseDocument" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.QueryResponseDocument" xmlns:ns5="urn:exist"/>
-  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns6:QueryResponseCollection" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.QueryResponseCollection" xmlns:ns6="urn:exist"/>
-  <typeMapping deserializer="org.apache.axis.encoding.ser.ArrayDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns7:ArrayOfQueryResponseDocument" serializer="org.apache.axis.encoding.ser.ArraySerializerFactory" type="java:org.exist.soap.QueryResponseDocument[]" xmlns:ns7="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.ArrayDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns1:ArrayOfQueryResponseCollection" serializer="org.apache.axis.encoding.ser.ArraySerializerFactory" type="java:org.exist.soap.QueryResponseCollection[]" xmlns:ns1="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns2:Collection" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.Collection" xmlns:ns2="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.ArrayDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns3:ArrayOfQueryResponseDocument" serializer="org.apache.axis.encoding.ser.ArraySerializerFactory" type="java:org.exist.soap.QueryResponseDocument[]" xmlns:ns3="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.ArrayDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns4:ArrayOf_xsd_string" serializer="org.apache.axis.encoding.ser.ArraySerializerFactory" type="java:java.lang.String[]" xmlns:ns4="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns5:QueryResponse" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.QueryResponse" xmlns:ns5="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns6:QueryResponseDocument" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.QueryResponseDocument" xmlns:ns6="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" qname="ns7:QueryResponseCollection" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.QueryResponseCollection" xmlns:ns7="urn:exist"/>
  </service>
  <service name="AdminService" provider="java:MSG">
   <parameter name="allowedMethods" value="AdminService"/>
@@ -52,9 +52,9 @@
  <service name="Admin" provider="java:RPC">
   <parameter name="allowedMethods" value="*"/>
   <parameter name="wsdlPortType" value="Admin"/>
-  <parameter name="scope" value="Session"/>
-  <parameter name="className" value="org.exist.soap.AdminSoapBindingSkeleton"/>
   <parameter name="wsdlServicePort" value="Admin"/>
+  <parameter name="className" value="org.exist.soap.AdminSoapBindingSkeleton"/>
+  <parameter name="scope" value="Session"/>
   <parameter name="wsdlTargetNamespace" value="urn:exist"/>
   <parameter name="wsdlServiceElement" value="AdminService"/>
  </service>

@@ -35,7 +35,7 @@ public class Intersection extends CombiningExpression {
 	/**
 	 * @param context
 	 */
-	public Intersection(StaticContext context, PathExpr left, PathExpr right) {
+	public Intersection(XQueryContext context, PathExpr left, PathExpr right) {
 		super(context, left, right);
 	}
 

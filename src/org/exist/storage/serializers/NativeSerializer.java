@@ -72,7 +72,7 @@ public class NativeSerializer extends Serializer {
 	protected void serializeToSAX(NodeSet set, int start, int howmany, long queryTime)
 		throws SAXException {
 		boolean generateDocEvents = 
-			outputProperties.getProperty(Serializer.GENERATE_DOC_EVENTS, "false").equals("true");
+			getProperty(Serializer.GENERATE_DOC_EVENTS, "false").equals("true");
 		Iterator iter = set.iterator();
 		for (int i = 0; i < start - 1; i++)
 			iter.next();

@@ -23,6 +23,7 @@
 package org.exist.xpath.value;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.SimpleTimeZone;
 
@@ -44,7 +45,7 @@ public class TimeValue extends AbstractDateTimeValue {
 		calendar = new GregorianCalendar();
 		tzOffset =
 			(calendar.get(Calendar.ZONE_OFFSET) + calendar.get(Calendar.DST_OFFSET))
-			/ 60000;
+				/ 60000;
 		calendar.set(Calendar.YEAR, 2000);
 		calendar.set(Calendar.MONTH, 0);
 		calendar.set(Calendar.DATE, 1);
@@ -68,7 +69,7 @@ public class TimeValue extends AbstractDateTimeValue {
 		calendar.set(Calendar.ZONE_OFFSET, tzOffset * 60000);
 		date = calendar.getTime();
 	}
-	
+
 	public TimeValue(long milliseconds, int timezone) {
 		tzOffset = timezone;
 		explicitTimeZone = true;
@@ -116,7 +117,7 @@ public class TimeValue extends AbstractDateTimeValue {
 			if (part.equals("-"))
 				tzOffset *= -1;
 		}
-			
+
 		SimpleTimeZone zone = new SimpleTimeZone(tzOffset * 60000, "LLL");
 		if (explicitTimeZone)
 			calendar = new GregorianCalendar(zone);
@@ -145,7 +146,7 @@ public class TimeValue extends AbstractDateTimeValue {
 	public int getType() {
 		return Type.TIME;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Sequence#getStringValue()
 	 */
@@ -207,7 +208,8 @@ public class TimeValue extends AbstractDateTimeValue {
 	 */
 	public boolean compareTo(int operator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.TIME) {
-			System.out.println(date.getTime() + " eq " + ((TimeValue)other).date.getTime());
+			System.out.println(
+				date.getTime() + " eq " + ((TimeValue) other).date.getTime());
 			int cmp = date.compareTo(((TimeValue) other).date);
 			switch (operator) {
 				case Constants.EQ :
@@ -273,9 +275,10 @@ public class TimeValue extends AbstractDateTimeValue {
 			long delta =
 				calendar.getTimeInMillis() - otherTime.calendar.getTimeInMillis();
 			return new DayTimeDurationValue(delta);
-		} else if(other.getType() == Type.DAY_TIME_DURATION) {
+		} else if (other.getType() == Type.DAY_TIME_DURATION) {
 			long newMillis =
-				calendar.getTimeInMillis() - ((DayTimeDurationValue)other).getValueInMilliseconds();
+				calendar.getTimeInMillis()
+					- ((DayTimeDurationValue) other).getValueInMilliseconds();
 			return new TimeValue(newMillis, tzOffset);
 		} else
 			throw new XPathException(
@@ -284,9 +287,10 @@ public class TimeValue extends AbstractDateTimeValue {
 	}
 
 	public ComputableValue plus(ComputableValue other) throws XPathException {
-		if(other.getType() == Type.DAY_TIME_DURATION) {
+		if (other.getType() == Type.DAY_TIME_DURATION) {
 			long newMillis =
-				calendar.getTimeInMillis() + ((DayTimeDurationValue)other).getValueInMilliseconds();
+				calendar.getTimeInMillis()
+					+ ((DayTimeDurationValue) other).getValueInMilliseconds();
 			return new TimeValue(newMillis, tzOffset);
 		} else
 			throw new XPathException(
@@ -306,5 +310,37 @@ public class TimeValue extends AbstractDateTimeValue {
 	 */
 	public ComputableValue div(ComputableValue other) throws XPathException {
 		throw new XPathException("Division is not defined for xs:time values");
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#conversionPreference(java.lang.Class)
+	 */
+	public int conversionPreference(Class javaClass) {
+		if (javaClass.isAssignableFrom(TimeValue.class))
+			return 0;
+		if (javaClass == Date.class)
+			return 1;
+		if (javaClass == Object.class)
+			return 20;
+
+		return Integer.MAX_VALUE;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#toJavaObject(java.lang.Class)
+	 */
+	public Object toJavaObject(Class target) throws XPathException {
+		if (target.isAssignableFrom(TimeValue.class))
+			return this;
+		else if (target == Date.class)
+			return calendar.getTime();
+		else if (target == Object.class)
+			return this;
+
+		throw new XPathException(
+			"cannot convert value of type "
+				+ Type.getTypeName(getType())
+				+ " to Java object of type "
+				+ target.getName());
 	}
 }

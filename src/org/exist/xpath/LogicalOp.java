@@ -36,7 +36,7 @@ public abstract class LogicalOp extends BinaryOp {
 	/**
 	 * @param context
 	 */
-	public LogicalOp(StaticContext context) {
+	public LogicalOp(XQueryContext context) {
 		super(context);
 	}
 
@@ -53,7 +53,9 @@ public abstract class LogicalOp extends BinaryOp {
 	 */
 	public int returnsType() {
 		if(Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
-			Type.subTypeOf(getRight().returnsType(), Type.NODE))
+			Type.subTypeOf(getRight().returnsType(), Type.NODE) &&
+			(getLeft().getDependencies() & Dependency.CONTEXT_ITEM) == 0 &&
+			(getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0)
 			return Type.NODE;
 		else
 			return Type.BOOLEAN;

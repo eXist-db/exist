@@ -22,16 +22,15 @@
  */
 package org.exist.xpath.functions.request;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.exist.dom.QName;
+import org.exist.http.servlets.RequestWrapper;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
 import org.exist.xpath.Variable;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.XPathUtil;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.JavaObjectValue;
 import org.exist.xpath.value.Sequence;
@@ -46,64 +45,47 @@ public class RequestParameter extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("request-parameter", REQUEST_FUNCTION_NS, "request"),
+			new QName(
+				"request-parameter",
+				RequestModule.NAMESPACE_URI,
+				RequestModule.PREFIX),
 			new SequenceType[] {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-			},
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
 			new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE));
-	
-	public RequestParameter(StaticContext context) {
+
+	public RequestParameter(XQueryContext context) {
 		super(context, signature);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Function#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
+	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
+		RequestModule myModule =
+			(RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
+
 		// request object is read from global variable $request
-		Variable var = context.resolveVariable("request");
-		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
+		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
+		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
 			throw new XPathException("Variable $request is not bound to an Java object.");
-		
+
 		// get parameters
 		String param = getArgument(0).eval(contextSequence, contextItem).getStringValue();
-		String defValue = getArgument(1).eval(contextSequence, contextItem).getStringValue();
-		
-		JavaObjectValue value = (JavaObjectValue)
-			var.getValue().itemAt(0);
-		if(value.getObject() instanceof org.apache.cocoon.environment.Request)
-			return cocoonRequestParam(
-				(org.apache.cocoon.environment.Request)value.getObject(), param, defValue
-			);
-		else if(value.getObject() instanceof HttpServletRequest)
-			return httpRequestParam((HttpServletRequest)value.getObject(), param, defValue);
-		else
+		String defValue =
+			getArgument(1).eval(contextSequence, contextItem).getStringValue();
+
+		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
+		if (value.getObject() instanceof RequestWrapper) {
+			String[] values = ((RequestWrapper)value.getObject()).getParameterValues(param);
+			if (values == null || values.length == 0)
+				return new StringValue(defValue);
+			if (values.length == 1)
+				return XPathUtil.javaObjectToXPath(values[0]);
+			else
+				return XPathUtil.javaObjectToXPath(values);
+		} else
 			throw new XPathException("Variable $request is not bound to a Request object.");
-	}
-	
-	public Sequence cocoonRequestParam(org.apache.cocoon.environment.Request request,
-		String param, String defValue) throws XPathException {
-		String[] values = request.getParameterValues(param);
-		if(values == null || values.length == 0)
-			return new StringValue(defValue);
-		if(values.length == 1)
-			return XPathUtil.javaObjectToXPath(values[0]);
-		else
-			return XPathUtil.javaObjectToXPath(values);
-	}
-	
-	public Sequence httpRequestParam(HttpServletRequest request, String param, String defValue)
-	throws XPathException {
-		String[] values = request.getParameterValues(param);
-		if(values == null || values.length == 0)
-			return new StringValue(defValue);
-		if(values.length == 1)
-			return XPathUtil.javaObjectToXPath(values[0]);
-		else
-			return XPathUtil.javaObjectToXPath(values);
 	}
 }

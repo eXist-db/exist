@@ -26,7 +26,7 @@ import org.exist.dom.QName;
 import org.exist.xpath.*;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Constants;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.Type;
 
@@ -38,6 +38,10 @@ public class ExtRegexpOr extends ExtRegexp {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("match-any", BUILTIN_FUNCTION_NS),
+				"eXist-specific extension function. Tries to match each of the regular expression " +
+				"strings passed in $b and all following parameters against the keywords contained in " +
+				"the fulltext index. The keywords found are then compared to the node set in $a. Every " +
+				"node containing any of the keywords is copied to the result sequence.",
 			new SequenceType[] {
 				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
@@ -47,7 +51,7 @@ public class ExtRegexpOr extends ExtRegexp {
 	/**
 	 * 
 	 */
-	public ExtRegexpOr(StaticContext context) {
+	public ExtRegexpOr(XQueryContext context) {
 		super(context, Constants.FULLTEXT_OR);
 	}
 

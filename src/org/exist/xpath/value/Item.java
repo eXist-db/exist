@@ -74,4 +74,8 @@ public interface Item {
 	public void toSAX(DBBroker broker, ContentHandler handler) throws SAXException;
 
 	public void copyTo(DBBroker broker, Receiver receiver) throws SAXException;
+	
+	public int conversionPreference(Class javaClass);
+	
+	public Object toJavaObject(Class target) throws XPathException;
 }

@@ -108,6 +108,9 @@ public interface RpcAPI {
 	String getDocumentAsString(User user, String name, int prettyPrint, String stylesheet)
 		throws EXistException, PermissionDeniedException;
 	
+	String getDocumentAsString(User user, String name, Hashtable parameters)
+		throws EXistException, PermissionDeniedException;
+	
 	/**
 	 *  Does the document identified by <code>name</code> exist in the
 	 *  repository?
@@ -217,21 +220,6 @@ public interface RpcAPI {
 		throws EXistException, PermissionDeniedException;
 
 	/**
-	 *  retrieve a single node from a document. The node is identified by it's
-	 *  internal id.
-	 *
-	 *@param  doc                            the document containing the node
-	 *@param  id                             the node's internal id
-	 *@param  prettyPrint                    result is pretty printed if >0
-	 *@param  user                           Description of the Parameter
-	 *@return                                Description of the Return Value
-	 *@exception  EXistException             Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
-	 */
-	byte[] retrieve(User user, String doc, String id, int prettyPrint)
-		throws EXistException, PermissionDeniedException;
-
-	/**
 	 *  Retrieve a single node from a document. The node is identified by it's
 	 *  internal id.
 	 *
@@ -244,10 +232,10 @@ public interface RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	byte[] retrieve(User user, String doc, String id, int prettyPrint, String encoding)
+	byte[] retrieve(User user, String doc, String id, Hashtable parameters)
 		throws EXistException, PermissionDeniedException;
 
-	String retrieveAsString(User user, String doc, String id, int prettyPrint)
+	String retrieveAsString(User user, String doc, String id, Hashtable parameters)
 		throws EXistException, PermissionDeniedException;
 
 	/**
@@ -332,7 +320,7 @@ public interface RpcAPI {
 	 *@depreceated                           use Vector query() or int
 	 *      executeQuery() instead
 	 */
-	String query(User user, String xpath, int howmany, int start, int prettyPrint, Hashtable namespaces)
+	String query(User user, String xpath, int howmany, int start, int prettyPrint)
 		throws EXistException, PermissionDeniedException;
 
 	/**
@@ -361,7 +349,6 @@ public interface RpcAPI {
 		int howmany,
 		int start,
 		int prettyPrint,
-		Hashtable namespaces,
 		String sortExpr)
 		throws EXistException, PermissionDeniedException;
 
@@ -571,12 +558,12 @@ public interface RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	int executeQuery(User user, byte[] xpath, String encoding, Hashtable namespaces)
+	int executeQuery(User user, byte[] xpath, String encoding)
 		throws EXistException, PermissionDeniedException;
 
-	int executeQuery(User user, byte[] xpath, Hashtable namespaces) throws EXistException, PermissionDeniedException;
+	int executeQuery(User user, byte[] xpath) throws EXistException, PermissionDeniedException;
 
-	int executeQuery(User user, String xpath, Hashtable namespaces) throws EXistException, PermissionDeniedException;
+	int executeQuery(User user, String xpath) throws EXistException, PermissionDeniedException;
 
 	/**
 	 *  Retrieve a summary of the result set identified by it's result-set-id.
@@ -675,7 +662,7 @@ public interface RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	byte[] retrieve(User user, int resultId, int num, int prettyPrint, String encoding)
+	byte[] retrieve(User user, int resultId, int num, Hashtable parameters)
 		throws EXistException, PermissionDeniedException;
 
 	boolean setUser(User user, String name, String passwd, Vector groups, String home)
@@ -725,7 +712,7 @@ public interface RpcAPI {
 		boolean inclusive)
 		throws PermissionDeniedException, EXistException;
 
-	void releaseQueryResult(int handle);
+	boolean releaseQueryResult(User user, int handle);
 
 	int xupdate(User user, String collectionName, byte[] xupdate)
 		throws PermissionDeniedException, EXistException, SAXException;

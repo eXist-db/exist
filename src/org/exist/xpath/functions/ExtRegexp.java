@@ -32,7 +32,7 @@ import org.exist.xpath.Dependency;
 import org.exist.xpath.Expression;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
@@ -48,6 +48,10 @@ public class ExtRegexp extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("match-all", BUILTIN_FUNCTION_NS),
+			"eXist-specific extension function. Tries to match each of the regular expression " +
+			"strings passed in $b and all following parameters against the keywords contained in " +
+			"the fulltext index. The keywords found are then compared to the node set in $a. Every " +
+			"node containing all of the keywords is copied to the result sequence.",
 			new SequenceType[] { 
 				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE) 
@@ -58,14 +62,14 @@ public class ExtRegexp extends Function {
 			
 	private int type = Constants.FULLTEXT_AND;
 
-	public ExtRegexp(StaticContext context) {
+	public ExtRegexp(XQueryContext context) {
 		super(context, signature);
 	}
 	
 	/**
 	 * @param type
 	 */
-	public ExtRegexp(StaticContext context, int type) {
+	public ExtRegexp(XQueryContext context, int type) {
 		super(context, signature);
 		this.type = type;
 	}
@@ -131,7 +135,7 @@ public class ExtRegexp extends Function {
 	 * @see org.exist.xpath.functions.ExtFulltext#evalQuery(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, java.lang.String, org.exist.dom.NodeSet)
 	 */
 	public Sequence evalQuery(
-		StaticContext context,
+		XQueryContext context,
 		NodeSet nodes,
 		String[] terms)
 		throws XPathException {
@@ -151,7 +155,7 @@ public class ExtRegexp extends Function {
 		return hits;
 	}
 	
-	protected String[] getSearchTerms(StaticContext context, Sequence contextSequence) throws XPathException {
+	protected String[] getSearchTerms(XQueryContext context, Sequence contextSequence) throws XPathException {
 		if(getArgumentCount() < 2)
 			throw new XPathException("function requires at least 2 arguments");
 		String[] terms = new String[getArgumentCount() - 1];

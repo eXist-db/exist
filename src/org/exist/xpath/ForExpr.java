@@ -41,7 +41,7 @@ public class ForExpr extends BindingExpression {
 
 	private String positionalVariable = null;
 	
-	public ForExpr(StaticContext context) {
+	public ForExpr(XQueryContext context) {
 		super(context);
 	}
 

@@ -22,7 +22,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.xpath.PathExpr;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Sequence;
 import org.xml.sax.SAXException;
@@ -92,7 +92,7 @@ public class LexerTest extends TestCase {
 			parser.parse(xml, "/db/test/test.xml");
 
 			// parse the query into the internal syntax tree
-			StaticContext context = new StaticContext(broker);
+			XQueryContext context = new XQueryContext(broker);
 			XPathLexer2 lexer = new XPathLexer2(new StringReader(query));
 			XPathParser2 xparser = new XPathParser2(lexer);
 			XPathTreeParser2 treeParser = new XPathTreeParser2(context);

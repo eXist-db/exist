@@ -43,7 +43,7 @@ public class VariableDeclaration extends AbstractExpression {
 	/**
 	 * @param context
 	 */
-	public VariableDeclaration(StaticContext context, String qname, Expression expr) {
+	public VariableDeclaration(XQueryContext context, String qname, Expression expr) {
 		super(context);
 		this.qname = qname;
 		this.expression = expr;
@@ -65,15 +65,22 @@ public class VariableDeclaration extends AbstractExpression {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
+		QName qn = QName.parse(context, qname);
+		Module myModule = context.getModule(qn.getNamespaceURI());
+		
 		// declare the variable
-		Variable var = new Variable(QName.parse(context, qname));
 		Sequence seq = expression.eval(contextSequence, contextItem);
 		if(sequenceType != null) {
 			sequenceType.checkType(seq.getItemType());
 			sequenceType.checkCardinality(seq);
 		}
-		var.setValue(seq);
-		context.declareVariable(var);
+		if(myModule != null)
+			myModule.declareVariable(qn, seq);
+		else {
+			Variable var = new Variable(qn);
+			var.setValue(seq);
+			context.declareGlobalVariable(var);
+		}
 		return Sequence.EMPTY_SEQUENCE;
 	}
 

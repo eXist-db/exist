@@ -50,6 +50,7 @@ public class ResourceSetImpl implements ResourceSet {
 
 
     public Resource getMembersAsResource() throws XMLDBException {
+    	// TODO: implement this
         throw new XMLDBException( ErrorCodes.NOT_IMPLEMENTED );
     }
 
@@ -65,7 +66,7 @@ public class ResourceSetImpl implements ResourceSet {
 			String path = doc.substring(0, doc.lastIndexOf('/'));
 			RemoteCollection parent = 
 				new RemoteCollection(collection.getClient(), null, path);
-			
+			parent.properties = collection.properties;
             XMLResource res =
                 new RemoteXMLResource( parent, handle,
                 	(int)pos, doc, s_id );

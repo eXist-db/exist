@@ -8,9 +8,11 @@ end
 
 doc = $*[0]
 puts "Retrieving document #{doc}"
+options = { "indent" => "yes", "encoding" => "ISO-8859-1",
+    "expand-xincludes" => "yes" }
 begin
   result = client.call("getDocument", 
-  	doc, "UTF-8", 1)
+  	doc, options)
 
   puts result
 

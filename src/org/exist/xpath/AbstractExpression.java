@@ -28,9 +28,9 @@ import org.exist.xpath.value.SequenceIterator;
 
 public abstract class AbstractExpression implements Expression {
 
-	protected StaticContext context;
+	protected XQueryContext context;
 
-	public AbstractExpression(StaticContext context) {
+	public AbstractExpression(XQueryContext context) {
 		this.context = context;
 	}
 

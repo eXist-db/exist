@@ -52,13 +52,13 @@ public class GeneralComparison extends BinaryOp {
 
 	protected int relation = Constants.EQ;
 
-	public GeneralComparison(StaticContext context, int relation) {
+	public GeneralComparison(XQueryContext context, int relation) {
 		super(context);
 		this.relation = relation;
 	}
 
 	public GeneralComparison(
-		StaticContext context,
+		XQueryContext context,
 		Expression left,
 		Expression right,
 		int relation) {
@@ -218,6 +218,9 @@ public class GeneralComparison extends BinaryOp {
 		throws XPathException {
 		//	evaluate left expression
 		NodeSet nodes = (NodeSet) getLeft().eval(contextSequence);
+		if(nodes.getLength() < 2)
+			// fall back to nodeSetCompare
+			return nodeSetCompare(nodes, contextSequence);
 		Sequence rightSeq = getRight().eval(contextSequence);
 		if (rightSeq.getLength() > 1)
 			// fall back to nodeSetCompare
@@ -301,7 +304,7 @@ public class GeneralComparison extends BinaryOp {
 		return lv.compareTo(relation, rv);
 	}
 
-	private boolean checkArgumentTypes(StaticContext context, DocumentSet docs)
+	private boolean checkArgumentTypes(XQueryContext context, DocumentSet docs)
 		throws XPathException {
 		Configuration config = context.getBroker().getConfiguration();
 		Map idxPathMap = (Map) config.getProperty("indexer.map");

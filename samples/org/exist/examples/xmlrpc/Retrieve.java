@@ -1,10 +1,10 @@
 package org.exist.examples.xmlrpc;
 
+import java.util.Hashtable;
 import java.util.Vector;
 
 import org.apache.xmlrpc.XmlRpc;
 import org.apache.xmlrpc.XmlRpcClient;
-import org.apache.xmlrpc.XmlRpcClientLite;
 
 /**
  *  Retrieve a document from the database using XMLRPC.
@@ -26,11 +26,17 @@ public class Retrieve {
             usage();
         }
         XmlRpc.setEncoding("UTF-8");
-        XmlRpcClient xmlrpc = new XmlRpcClientLite( uri );
+        XmlRpcClient xmlrpc = new XmlRpcClient( uri );
+        Hashtable options = new Hashtable();
+        options.put("indent", "yes");
+        options.put("encoding", "UTF-8");
+        options.put("expand-xincludes", "yes");
+        
         Vector params = new Vector();
-        params.addElement( args[0] );
-        params.addElement( new Integer( 1 ) );
-        String xml = (String) xmlrpc.execute( "getDocumentAsString", params );
+        params.addElement( args[0] ); 
+        params.addElement( options );
+        String xml = (String)
+            xmlrpc.execute( "getDocumentAsString", params );
         System.out.println( xml );
     }
 }

@@ -41,9 +41,14 @@ public class DecimalValue extends NumericValue {
 	public DecimalValue(String str) throws XPathException {
 		try {
 			value = new BigDecimal(str);
-		} catch(NumberFormatException e) {
-			throw new XPathException("Type error: " + str + " cannot be cast to a decimal");
+		} catch (NumberFormatException e) {
+			throw new XPathException(
+				"Type error: " + str + " cannot be cast to a decimal");
 		}
+	}
+
+	public DecimalValue(double val) {
+		value = new BigDecimal(val);
 	}
 
 	/* (non-Javadoc)
@@ -219,5 +224,70 @@ public class DecimalValue extends NumericValue {
 			return new DecimalValue(
 				value.min(((DecimalValue) other.convertTo(Type.DECIMAL)).value));
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#conversionPreference(java.lang.Class)
+	 */
+	public int conversionPreference(Class javaClass) {
+		if (javaClass.isAssignableFrom(DecimalValue.class))
+			return 0;
+		if (javaClass == BigDecimal.class)
+			return 1;
+		if (javaClass == Long.class || javaClass == long.class)
+			return 4;
+		if (javaClass == Integer.class || javaClass == int.class)
+			return 5;
+		if (javaClass == Short.class || javaClass == short.class)
+			return 6;
+		if (javaClass == Byte.class || javaClass == byte.class)
+			return 7;
+		if (javaClass == Double.class || javaClass == double.class)
+			return 2;
+		if (javaClass == Float.class || javaClass == float.class)
+			return 3;
+		if (javaClass == String.class)
+			return 8;
+		if (javaClass == Boolean.class || javaClass == boolean.class)
+			return 9;
+		if (javaClass == Object.class)
+			return 20;
+
+		return Integer.MAX_VALUE;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#toJavaObject(java.lang.Class)
+	 */
+	public Object toJavaObject(Class target) throws XPathException {
+		if (target.isAssignableFrom(DecimalValue.class))
+			return this;
+		else if(target == BigDecimal.class)
+			return value;
+		else if (target == Double.class || target == double.class)
+			return new Double(value.doubleValue());
+		else if (target == Float.class || target == float.class)
+			return new Float(value.floatValue());
+		else if (target == Integer.class || target == int.class) {
+			IntegerValue v = (IntegerValue) convertTo(Type.INT);
+			return new Integer((int) v.getValue());
+		} else if (target == Short.class || target == short.class) {
+			IntegerValue v = (IntegerValue) convertTo(Type.SHORT);
+			return new Short((short) v.getValue());
+		} else if (target == Byte.class || target == byte.class) {
+			IntegerValue v = (IntegerValue) convertTo(Type.BYTE);
+			return new Byte((byte) v.getValue());
+		} else if (target == String.class)
+			return getStringValue();
+		else if (target == Boolean.class)
+			return new Boolean(effectiveBooleanValue());
+		else if (target == Object.class)
+			return value;
+
+		throw new XPathException(
+			"cannot convert value of type "
+				+ Type.getTypeName(getType())
+				+ " to Java object of type "
+				+ target.getName());
 	}
 }

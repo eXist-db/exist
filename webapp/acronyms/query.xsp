@@ -6,13 +6,13 @@
     xmlns:xdb="http://exist-db.org/xmldb/1.0"
     xmlns:xsp="http://apache.org/xsp">
    
-	<document xmlns:xi="http://www.w3.org/2001/XInclude">
+	<document>
    	
     	<!-- include header -->
-		<xi:include href="context://header.xml"/>
+		<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="context://header.xml"/>
 
     	<!-- include sidebar -->
-		<xi:include href="sidebar.xml"/>
+		<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
   
 		<body>
 

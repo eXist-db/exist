@@ -18,7 +18,8 @@ foreach $r (@resources) {
   print "\t$r\n";
 }
 print "Retrieving document $doc ...\n";
-$resp = $service->getResource($session, $doc, "true", "true");
+$properties{"indent"} = "yes";
+$resp = $service->getResource($session, $doc, $properties);
 print $resp;
 
 $service->disconnect($session);

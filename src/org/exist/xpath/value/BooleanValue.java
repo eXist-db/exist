@@ -133,4 +133,33 @@ public class BooleanValue extends AtomicValue {
 				"Invalid argument to aggregate function: expected boolean, got: "
 					+ Type.getTypeName(other.getType()));
 	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#conversionPreference(java.lang.Class)
+	 */
+	public int conversionPreference(Class javaClass) {
+		if(javaClass.isAssignableFrom(BooleanValue.class)) return 0;
+		if(javaClass == Boolean.class || javaClass == boolean.class) return 1;
+		if(javaClass == Object.class) return 20;
+		if(javaClass == String.class || javaClass == CharSequence.class) return 2;
+		
+		return Integer.MAX_VALUE;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#toJavaObject(java.lang.Class)
+	 */
+	public Object toJavaObject(Class target) throws XPathException {
+		if(target.isAssignableFrom(BooleanValue.class))
+			return this;
+		else if(target == Boolean.class || target == boolean.class || target == Object.class)
+			return new Boolean(value);
+		else if(target == String.class || target == CharSequence.class) {
+			StringValue v = (StringValue)convertTo(Type.STRING);
+			return v.value;
+		}
+		
+		throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) +
+			" to Java object of type " + target.getName());
+	}
 }

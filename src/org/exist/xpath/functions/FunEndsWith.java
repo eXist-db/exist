@@ -24,7 +24,7 @@ import org.exist.dom.QName;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.Item;
@@ -42,7 +42,7 @@ public class FunEndsWith extends Function {
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
 			new SequenceType(Type.BOOLEAN, Cardinality.ONE));
 
-	public FunEndsWith(StaticContext context) {
+	public FunEndsWith(XQueryContext context) {
 		super(context, signature);
 	}
 

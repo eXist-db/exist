@@ -1,4 +1,4 @@
-package org.exist;
+package org.exist.http.servlets;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
@@ -111,6 +112,10 @@ public class DatabaseAdminServlet extends HttpServlet {
 	 */
     public void init( ServletConfig config ) throws ServletException {
         super.init( config );
+        if(BrokerPool.isConfigured()) {
+        	this.log("database already started. Giving up.");
+        	return;
+        }
         String pathSep = File.separator;
         try {
             confFile = config.getInitParameter( "configuration" );

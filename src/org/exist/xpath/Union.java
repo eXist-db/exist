@@ -27,7 +27,7 @@ import org.exist.xpath.value.Type;
 
 public class Union extends CombiningExpression {
 
-    public Union(StaticContext context, PathExpr left, PathExpr right) {
+    public Union(XQueryContext context, PathExpr left, PathExpr right) {
         super(context, left, right);
     }
 	

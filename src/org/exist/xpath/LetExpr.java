@@ -36,7 +36,7 @@ import org.exist.xpath.value.ValueSequence;
  */
 public class LetExpr extends BindingExpression {
 
-	public LetExpr(StaticContext context) {
+	public LetExpr(XQueryContext context) {
 		super(context);
 	}
 

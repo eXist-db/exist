@@ -25,7 +25,7 @@ package org.exist.xpath.functions;
 import org.exist.dom.QName;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.Type;
 
@@ -49,7 +49,7 @@ public class ExtXCollection extends ExtCollection {
 	/**
 	 * @param context
 	 */
-	public ExtXCollection(StaticContext context) {
+	public ExtXCollection(XQueryContext context) {
 		super(context, signature, false);
 	}
 

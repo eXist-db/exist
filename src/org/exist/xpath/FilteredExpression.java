@@ -44,7 +44,7 @@ public class FilteredExpression extends AbstractExpression {
 	/**
 	 * @param context
 	 */
-	public FilteredExpression(StaticContext context, Expression expr) {
+	public FilteredExpression(XQueryContext context, Expression expr) {
 		super(context);
 		this.expression = expr;
 	}

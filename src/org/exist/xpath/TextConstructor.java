@@ -27,6 +27,7 @@ import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.StringValue;
 
 /**
  * Constructor for text nodes.
@@ -38,9 +39,9 @@ public class TextConstructor extends NodeConstructor {
 	private String text = null;
 	private boolean isWhitespaceOnly = true;
 	
-	public TextConstructor(StaticContext context, String text) {
+	public TextConstructor(XQueryContext context, String text) throws XPathException {
 		super(context);
-		this.text = text;
+		this.text = StringValue.expand(text);
 		for(int i = 0; i < text.length(); i++)
 			if(!isWhiteSpace(text.charAt(i))) {
 				isWhitespaceOnly = false;

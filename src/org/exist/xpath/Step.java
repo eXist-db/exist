@@ -38,12 +38,12 @@ public abstract class Step extends AbstractExpression {
     protected NodeTest test;
 	protected boolean inPredicate = false;
 	
-    public Step( StaticContext context, int axis ) {
+    public Step( XQueryContext context, int axis ) {
         super(context);
         this.axis = axis;
     }
 
-    public Step( StaticContext context, int axis, NodeTest test ) {
+    public Step( XQueryContext context, int axis, NodeTest test ) {
         this( context, axis );
         this.test = test;
     }

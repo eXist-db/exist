@@ -25,7 +25,6 @@ package org.exist.cocoon;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +32,7 @@ import org.apache.avalon.framework.parameters.Parameters;
 import org.apache.cocoon.ProcessingException;
 import org.apache.cocoon.environment.ObjectModelHelper;
 import org.apache.cocoon.environment.Request;
+import org.apache.cocoon.environment.Response;
 import org.apache.cocoon.environment.Session;
 import org.apache.cocoon.environment.SourceResolver;
 import org.apache.cocoon.generation.ServiceableGenerator;
@@ -41,6 +41,7 @@ import org.apache.excalibur.source.SourceValidity;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xmldb.CompiledExpression;
 import org.exist.xmldb.XQueryService;
+import org.exist.xpath.functions.request.RequestModule;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -49,13 +50,29 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
 /**
+ * A generator for Cocoon which reads an XQuery script, executes it and 
+ * passes the results into the Cocoon pipeline.
+ * 
+ * The following sitemap parameters (with default values) are accepted:
+ * 
+ * <pre>
+ * &lt;map:parameter name="collection" value="xmldb:exist:///db"/&gt;
+ * &lt;map:parameter name="user" value="guest"/&gt;
+ * &lt;map:parameter name="password" value="guest"/&gt;
+ * &lt;map:parameter name="create-session" value="false"/&gt;
+ * </pre>
+ * 
+ * Parameter collection identifies the XML:DB root collection used to
+ * process the request. If set to "true", parameter create-session
+ * indicates that an HTTP session should be created upon the first
+ * invocation.
+ *  
  * @author wolf
  */
 public class XQueryGenerator extends ServiceableGenerator {
 
 	private Source inputSource = null;
 	private Map objectModel = null;
-	private boolean mapRequestParams = false;
 	private boolean createSession = false;
 	
 	private String collectionURI = null;
@@ -89,8 +106,7 @@ public class XQueryGenerator extends ServiceableGenerator {
 		this.collectionURI = parameters.getParameter("collection", "xmldb:exist:///db");
 		this.defaultUser = parameters.getParameter("user", "guest");
 		this.defaultPassword = parameters.getParameter("password", "guest");
-		this.mapRequestParams = parameters.getParameterAsBoolean("use-request-parameters", false);
-		this.createSession = parameters.getParameterAsBoolean("create-session", true);
+		this.createSession = parameters.getParameterAsBoolean("create-session", false);
 	}
 
 	/* (non-Javadoc)
@@ -111,6 +127,8 @@ public class XQueryGenerator extends ServiceableGenerator {
 		if (inputSource == null)
 			throw new ProcessingException("No input source");
 		Request request = ObjectModelHelper.getRequest(objectModel);
+		Response response = ObjectModelHelper.getResponse(objectModel);
+		
 		Session session = request.getSession(createSession);
 		String user = null;
         String password = null;
@@ -134,9 +152,11 @@ public class XQueryGenerator extends ServiceableGenerator {
 			XQueryService service = (XQueryService)
 				collection.getService("XQueryService", "1.0");
 			service.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
-			
-			service.declareVariable("request", request);
-			service.declareVariable("session", session);
+			String prefix = RequestModule.PREFIX;
+			service.setNamespace(prefix, RequestModule.NAMESPACE_URI);
+			service.declareVariable(prefix + ":request", new CocoonRequestWrapper(request));
+			service.declareVariable(prefix + ":response", new CocoonResponseWrapper(response));
+			service.declareVariable(prefix + ":session", new CocoonSessionWrapper(session));
 			
 			String uri = inputSource.getURI();
 			CompiledExpression expr;
@@ -161,8 +181,6 @@ public class XQueryGenerator extends ServiceableGenerator {
 				} else
 					expr = cached.expr;
 			}
-			if(mapRequestParams)
-				mapRequestParams(request, service);
 			ResourceSet result = service.execute(expr);
 			
             XMLResource resource;
@@ -174,21 +192,6 @@ public class XQueryGenerator extends ServiceableGenerator {
 			this.contentHandler.endDocument();
 		} catch (XMLDBException e) {
 			throw new ProcessingException("XMLDBException occurred: " + e.getMessage(), e);
-		}
-	}
-	
-	
-
-	private void mapRequestParams(Request request, XQueryService service) throws XMLDBException {
-		String param;
-		String values[];
-		for(Enumeration enum = request.getParameterNames(); enum.hasMoreElements(); ) {
-			param = (String) enum.nextElement();
-			values = request.getParameterValues(param);
-			if(values.length == 1)
-				service.declareVariable(param, values[0]);
-			else
-				service.declareVariable(param, values);
 		}
 	}
 	

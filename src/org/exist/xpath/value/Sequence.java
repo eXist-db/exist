@@ -128,4 +128,8 @@ public interface Sequence {
 	 * @throws XPathException if the sequence contains items which are not nodes.
 	 */
 	public NodeSet toNodeSet() throws XPathException;
+	
+	public int conversionPreference(Class javaClass);
+	
+	public Object toJavaObject(Class target) throws XPathException;
 }

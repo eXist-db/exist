@@ -30,7 +30,7 @@ import org.exist.dom.QName;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.Item;
@@ -68,11 +68,11 @@ public class FunMatches extends Function {
 	/**
 	 * @param context
 	 */
-	public FunMatches(StaticContext context) {
+	public FunMatches(XQueryContext context) {
 		super(context, signature);
 	}
 
-	protected FunMatches(StaticContext context, FunctionSignature signature) {
+	protected FunMatches(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 	

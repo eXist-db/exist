@@ -9,16 +9,17 @@ end
 query = $*[0]
 puts "Query: #{query}"
 
+outputOptions = { "encoding" => "UTF-8", "indent" => "yes" }
+
 begin
   handle = client.call("executeQuery", query)
   hits = client.call("getHits", handle)
   puts "Found #{hits} hits"
 
   for i in 1..10
-	result = client.call("retrieve", handle, i, 1, "UTF-8")
-	print result
+	result = client.call("retrieve", handle, i, outputOptions)
+	print "#{result}\n"
   end
-	
 rescue XMLRPC::FaultException => e
   puts "An error occurred:"
   puts e.faultCode

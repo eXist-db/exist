@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet href="file://localhost/home/wolf/Java/Morphon_XML-Editor_3.1/Examples/docbook/docbook.css" type="text/css"?>
 <book
-  xmlns:ci="http://apache.org/cocoon/include/1.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:noNamespaceSchemaLocation='file://localhost/home/wolf/Java/Morphon_XML-Editor_3.1/Examples/docbook/xsd/docbook.xsd'>
+  xmlns:ci="http://apache.org/cocoon/include/1.0">
   <bookinfo>
     <graphic fileref="logo.jpg"/>
 
@@ -57,42 +54,36 @@
       <example>
         <title>&lt;db-connection&gt; entry</title>
         <programlisting format="linespecific"><![CDATA[
-<db-connection database="native" files="data" 
-  buffers="256" words_buffers="8192" collection_buffers="512"
-  elements_buffers="64" free_mem_min="5" 
-  grow="32" compress="true" pageSize="4096">
+<db-connection database="native" files="data" cacheSize="48M" free_mem_min="5" 
+  pageSize="4096">
   <pool min="1" max="15" sync-period="240000"/>
 </db-connection>
 ]]></programlisting>
       </example>
+
       <section>
         <title>database</title>
         <para>The <option>database</option>-attribute determines which database-backend is being used. Since the relational backends are no longer supported, "native" is currently the only backend.</para>
-      </section>
+    </section>
+
       <section>
         <title>files</title>
         <para>The <option>files</option> attribute specifies the directory where the native backend will keep its database files. The directory should exist. If the specified path is relative, it will be relative to the directory defined by the <option>exist.home</option> system property.</para>
         <para>If the data directory is not writable, eXist will internally switch to <emphasis>read-only mode</emphasis>, which means that any attempt to change the database will throw an exception.</para>
-      </section>
+    </section>
+
+    <section>
+        <title>cacheSize</title>
+
+        <para>This setting controls the maximum amount of main memory
+            consumed by all page buffers, i.e. the amount of memory used if all
+            page buffers were completely full. The database uses this parameter
+            to calculate the maximum size of each of the internal caches.
+            Increase this parameter if you have enough main memory available.</para>
+    </section>
       <section>
         <title>pageSize</title>
         <para>Specifies the number of bytes used for internal data and btree pages. This should be equal to or a multiple of the page size used by the filesystem (usually a multiple of 4096).</para>
-      </section>
-      <section>
-        <title>buffers</title>
-        <para>The size of the page buffer for the persistent DOM file. This should be rather small (32 to 512).</para>
-      </section>
-      <section>
-        <title>words_buffers</title>
-        <para>The size of the page buffer for the inverted index (<filename moreinfo="none">words.dbx</filename>), where keywords are mapped to text nodes. If your collections are large, it is very likely that the inverted index becomes a bottleneck. If you experience a considerable performance decrease during indexing, you should try to increase the <option>words_buffers</option> setting or exclude some parts of your documents from fulltext-indexing (see indexer settings below).</para>
-      </section>
-      <section>
-        <title>collection_buffers</title>
-        <para>The size of the page buffer for the collection store. The <filename moreinfo="none">collections.dbx</filename> file stores meta-information about collections and the documents contained therein. Usually, a page buffer size of 256 to 512 should be sufficient even for large collections. However, if you have thousands of rather small documents in your collections, you may try to increase this setting.</para>
-      </section>
-      <section>
-        <title>elements_buffers</title>
-        <para>Page buffer size for the elements index. This index maps element names to element node identifiers. The file is usually rather small, so the default setting of 512 should be ok in most cases.</para>
       </section>
       <section>
         <title>free_mem_min</title>

@@ -10,6 +10,6 @@
 	policy endorsed by this organization.</p>
 
 	<comment xmlns="http://test.org">
-		This comment uses a different namespace
+		This comment uses a different default namespace.
 	</comment>
 </disclaimer>

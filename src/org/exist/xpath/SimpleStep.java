@@ -37,7 +37,7 @@ public class SimpleStep extends Step {
 	 * @param context
 	 * @param axis
 	 */
-	public SimpleStep(StaticContext context, int axis, Expression expression) {
+	public SimpleStep(XQueryContext context, int axis, Expression expression) {
 		super(context, axis);
 		this.expression = expression;
 		this.expression.setPrimaryAxis(axis);

@@ -43,7 +43,7 @@ public class ValueComparison extends GeneralComparison {
 	 * @param context
 	 * @param relation
 	 */
-	public ValueComparison(StaticContext context, int relation) {
+	public ValueComparison(XQueryContext context, int relation) {
 		super(context, relation);
 	}
 
@@ -54,7 +54,7 @@ public class ValueComparison extends GeneralComparison {
 	 * @param relation
 	 */
 	public ValueComparison(
-		StaticContext context,
+		XQueryContext context,
 		Expression left,
 		Expression right,
 		int relation) {

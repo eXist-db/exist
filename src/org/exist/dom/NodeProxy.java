@@ -190,7 +190,7 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 		NodeProxy node = (NodeProxy) other;
 		if (doc.docId != node.doc.docId)
 			return false;
-//		System.out.println(gid + " << " + node.gid);
+		//		System.out.println(gid + " << " + node.gid);
 		int la = doc.getTreeLevel(gid);
 		int lb = doc.getTreeLevel(node.gid);
 		long pa = gid, pb = node.gid;
@@ -222,7 +222,7 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 		NodeProxy node = (NodeProxy) other;
 		if (doc.docId != node.doc.docId)
 			return false;
-//		System.out.println(gid + " >> " + node.gid);
+		//		System.out.println(gid + " >> " + node.gid);
 		int la = doc.getTreeLevel(gid);
 		int lb = doc.getTreeLevel(node.gid);
 		long pa = gid, pb = node.gid;
@@ -259,7 +259,7 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 	public Node getNode() {
 		return doc.getNode(this);
 	}
-
+	
 	public short getNodeType() {
 		return nodeType;
 	}
@@ -606,19 +606,68 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 
 	public void toSAX(DBBroker broker, ContentHandler handler) throws SAXException {
 		Serializer serializer = broker.getSerializer();
+		serializer.reset();
 		serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
 		serializer.setContentHandler(handler);
 		serializer.toSAX(this);
 	}
 
 	public void copyTo(DBBroker broker, Receiver receiver) throws SAXException {
-		if(nodeType == Node.ATTRIBUTE_NODE) {
-			AttrImpl attr = (AttrImpl)getNode();
+		if (nodeType == Node.ATTRIBUTE_NODE) {
+			AttrImpl attr = (AttrImpl) getNode();
 			receiver.attribute(attr.getQName(), attr.getValue());
 		} else
 			toSAX(broker, receiver);
 	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#conversionPreference(java.lang.Class)
+	 */
+	public int conversionPreference(Class javaClass) {
+		if (javaClass.isAssignableFrom(NodeProxy.class))
+			return 0;
+		if (javaClass.isAssignableFrom(Node.class))
+			return 1;
+		if (javaClass == String.class || javaClass == CharSequence.class)
+			return 2;
+		if (javaClass == Character.class || javaClass == char.class)
+			return 2;
+		if (javaClass == Double.class || javaClass == double.class)
+			return 10;
+		if (javaClass == Float.class || javaClass == float.class)
+			return 11;
+		if (javaClass == Long.class || javaClass == long.class)
+			return 12;
+		if (javaClass == Integer.class || javaClass == int.class)
+			return 13;
+		if (javaClass == Short.class || javaClass == short.class)
+			return 14;
+		if (javaClass == Byte.class || javaClass == byte.class)
+			return 15;
+		if (javaClass == Boolean.class || javaClass == boolean.class)
+			return 16;
+		if (javaClass == Object.class)
+			return 20;
+
+		return Integer.MAX_VALUE;
+	}
 	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#toJavaObject(java.lang.Class)
+	 */
+	public Object toJavaObject(Class target) throws XPathException {
+		if (target.isAssignableFrom(NodeProxy.class))
+			return this;
+		else if (target.isAssignableFrom(Node.class))
+			return getNode();
+		else if (target == Object.class)
+			return getNode();
+		else {
+			StringValue v = new StringValue(getStringValue());
+			return v.toJavaObject(target);
+		}
+	}
+
 	private final static class SingleNodeIterator implements Iterator, SequenceIterator {
 
 		private boolean hasNext = true;

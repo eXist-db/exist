@@ -24,7 +24,9 @@ package org.exist.storage.serializers;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
@@ -111,7 +113,7 @@ public class Serializer implements XMLReader {
 	protected boolean processXSL = false;
 
 	protected Properties defaultProperties = new Properties();
-	protected Properties outputProperties = new Properties();
+	protected Properties outputProperties;
 
 	protected Templates templates = null;
 	protected TransformerHandler xslHandler = null;
@@ -156,18 +158,30 @@ public class Serializer implements XMLReader {
 		else
 			option = "none";
 		defaultProperties.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, option);
+		defaultProperties.setProperty(GENERATE_DOC_EVENTS, "true");
+		outputProperties = new Properties(defaultProperties);
 	}
 
 	public void setProperties(Properties properties)
 		throws SAXNotRecognizedException, SAXNotSupportedException {
 		if (properties == null)
 			return;
-		for (Enumeration e = properties.propertyNames(); e.hasMoreElements();) {
-			String key = (String) e.nextElement();
-			setProperty(key, properties.getProperty(key));
+		for (Iterator i = properties.entrySet().iterator(); i.hasNext(); ) {
+			Map.Entry entry = (Map.Entry) i.next();
+			setProperty((String)entry.getKey(), (String)entry.getValue());
 		}
 	}
 
+	public void setProperties(Hashtable table) 
+		throws SAXNotRecognizedException, SAXNotSupportedException {
+		if(table == null)
+			return;
+		for(Iterator i = table.entrySet().iterator(); i.hasNext(); ) {
+			Map.Entry entry = (Map.Entry) i.next();
+			setProperty((String)entry.getKey(), (String)entry.getValue());
+		}
+	}
+	
 	public void setProperty(String prop, Object value)
 		throws SAXNotRecognizedException, SAXNotSupportedException {
 		if (prop.equals("http://xml.org/sax/properties/lexical-handler")) {
@@ -179,10 +193,9 @@ public class Serializer implements XMLReader {
 
 	public String getProperty(String key, String defaultValue) {
 		String value = outputProperties.getProperty(key);
-		if(value == null)
-			value = defaultProperties.getProperty(key, defaultValue);
 		return value;
 	}
+	
 	protected int getHighlightingMode() {
 		String option =
 			getProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
@@ -348,6 +361,7 @@ public class Serializer implements XMLReader {
 		xinclude.setContentHandler(null);
 		xslHandler = null;
 		templates = null;
+		outputProperties.clear();
 	}
 
 	/**

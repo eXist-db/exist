@@ -66,7 +66,7 @@ public class RemoteCollection implements CollectionImpl {
 	protected RemoteCollection parent = null;
 	protected List resources = null;
 	protected XmlRpcClient rpcClient = null;
-	protected Properties properties = new Properties();
+	protected Properties properties = null;
 
 	public RemoteCollection(XmlRpcClient client, String host, String collection)
 		throws XMLDBException {
@@ -167,10 +167,13 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public String getProperty(String property) throws XMLDBException {
+		if(properties == null) return null;
 		return (String)properties.get(property);
 	}
 
 	public Properties getProperties() {
+		if(properties == null)
+			properties = new Properties();
 		return properties;
 	}
 	
@@ -199,6 +202,8 @@ public class RemoteCollection implements CollectionImpl {
 	public Service getService(String name, String version) throws XMLDBException {
 		if (name.equals("XPathQueryService"))
 			return new RemoteXPathQueryService(this);
+        if (name.equals("XQueryService"))
+            return new RemoteXPathQueryService(this);
 		if (name.equals("CollectionManagementService") || name.equals("CollectionManager"))
 			return new CollectionManagementServiceImpl(this, rpcClient);
 		if (name.equals("UserManagementService"))
@@ -368,7 +373,9 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public void setProperty(String property, String value) throws XMLDBException {
-		properties.put(property, value);
+		if(properties == null)
+			properties = new Properties();
+		properties.setProperty(property, value);
 	}
 
 	public void storeResource(Resource res) throws XMLDBException {

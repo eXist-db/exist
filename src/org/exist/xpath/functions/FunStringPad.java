@@ -26,7 +26,7 @@ import org.exist.dom.QName;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.IntegerValue;
 import org.exist.xpath.value.Item;
@@ -55,7 +55,7 @@ public class FunStringPad extends Function {
 	/**
 	 * @param context
 	 */
-	public FunStringPad(StaticContext context) {
+	public FunStringPad(XQueryContext context) {
 		super(context, signature);
 	}
 

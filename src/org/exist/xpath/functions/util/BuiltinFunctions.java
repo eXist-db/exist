@@ -22,15 +22,15 @@
  */
 package org.exist.xpath.functions.util;
 
-import java.lang.reflect.Field;
 import java.util.Iterator;
 
 import org.exist.dom.QName;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.Module;
 import org.exist.xpath.XPathException;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.QNameValue;
 import org.exist.xpath.value.Sequence;
@@ -54,7 +54,7 @@ public class BuiltinFunctions extends Function {
 			null,
 			new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE));
 
-	public BuiltinFunctions(StaticContext context) {
+	public BuiltinFunctions(XQueryContext context) {
 		super(context, signature);
 	}
 
@@ -66,16 +66,13 @@ public class BuiltinFunctions extends Function {
 		Item contextItem)
 		throws XPathException {
 		ValueSequence resultSeq = new ValueSequence();
-		for(Iterator i = context.getBuiltinFunctions(); i.hasNext(); ) {
-			Class fclass = (Class)i.next();
-			try {
-				Field field = fclass.getDeclaredField("signature");
-				FunctionSignature signature = (FunctionSignature)field.get(null);
-				QName qname = signature.getName();
+		for(Iterator i = context.getModules(); i.hasNext(); ) {
+			Module module = (Module)i.next();
+			FunctionSignature signatures[] = module.listFunctions();
+			for(int j = 0; j < signatures.length; j++) {
+				QName qname = signatures[j].getName();
 				QNameValue value = new QNameValue(context, qname);
 				resultSeq.add(value);
-			} catch (Exception e) {
-				LOG.warn(e.getMessage(), e);
 			}
 		}
 		return resultSeq;

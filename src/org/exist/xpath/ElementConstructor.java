@@ -45,7 +45,7 @@ public class ElementConstructor extends NodeConstructor {
 	private PathExpr content = null;
 	private List attributes = null;
 	
-	public ElementConstructor(StaticContext context, String qname) {
+	public ElementConstructor(XQueryContext context, String qname) {
 		super(context);
 		this.qname = qname;
 	}

@@ -30,7 +30,7 @@ import org.exist.xpath.Dependency;
 import org.exist.xpath.Expression;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.Item;
@@ -48,7 +48,7 @@ public class FunNot extends Function {
 				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)},
 			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
 
-	public FunNot(StaticContext context) {
+	public FunNot(XQueryContext context) {
 		super(context, signature);
 	}
 

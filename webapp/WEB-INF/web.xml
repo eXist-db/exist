@@ -20,11 +20,11 @@
     </servlet>
   
     <!-- DatabaseAdminServlet: this servlet can be used to ensure that
-     eXist is running in the background. Just set the start-parameter to true and
-     load-on-startup to greater -->
+	eXist is running in the background. Just set the start-parameter 
+	to true and load-on-startup to 1 -->
     <servlet>
-        <servlet-name>org.exist.DatabaseAdminServlet</servlet-name>
-        <servlet-class>org.exist.DatabaseAdminServlet</servlet-class>
+        <servlet-name>DatabaseAdminServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.DatabaseAdminServlet</servlet-class>
     
         <!-- where to find eXist's configuration file
              relative to the basedir of the web-application.
@@ -51,8 +51,19 @@
 		<load-on-startup>1</load-on-startup>
 
     </servlet>
-  
-  <!-- configure the Axis servlet. Axis provides eXist's
+
+    <!-- XQueryServlet generates HTML from an XQuery file. -->
+	<servlet>
+		<servlet-name>XQueryServlet</servlet-name>
+		<servlet-class>org.exist.http.servlets.XQueryServlet</servlet-class>
+
+		<init-param>
+			<param-name>url</param-name>
+			<param-value>xmldb:exist:///db</param-value>
+		</init-param>
+	</servlet>
+	
+  <!-- configure the Axis servlets. Axis provides eXist's
   web-services via SOAP -->
   <servlet>
         <servlet-name>AxisServlet</servlet-name>
@@ -89,11 +100,6 @@
 
 		<load-on-startup>2</load-on-startup>
     </servlet>
-	
-	<servlet>
-		<servlet-name>dumper</servlet-name>
-		<servlet-class>org.exist.cocoon.RequestDumper</servlet-class>
-	</servlet>
 	
   <!-- Cocoon2 Configuration starts here ================================ -->
 
@@ -407,13 +413,14 @@
   
   <!-- eXist's DatabaseAdminServlet -->
   <servlet-mapping>
-    <servlet-name>org.exist.DatabaseAdminServlet</servlet-name>
+    <servlet-name>DatabaseAdminServlet</servlet-name>
     <url-pattern>/admin</url-pattern>
   </servlet-mapping>
-  
+
+  <!-- XQueryServlet -->
   <servlet-mapping>
-  	<servlet-name>dumper</servlet-name>
-  	<url-pattern>/dump</url-pattern>
+	  <servlet-name>XQueryServlet</servlet-name>
+	  <url-pattern>*.xql</url-pattern>
   </servlet-mapping>
   
   <!-- Define where Xincon listens for WebDAV requests -->

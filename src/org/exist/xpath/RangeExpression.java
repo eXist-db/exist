@@ -49,7 +49,7 @@ public class RangeExpression extends Function {
 	/**
 	 * @param context
 	 */
-	public RangeExpression(StaticContext context) {
+	public RangeExpression(XQueryContext context) {
 		super(context, signature);
 	}
 

@@ -22,16 +22,14 @@
  */
 package org.exist.xpath.functions.request;
 
-import javax.servlet.http.HttpSession;
-
-import org.apache.cocoon.environment.Session;
 import org.exist.dom.QName;
+import org.exist.http.servlets.SessionWrapper;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
 import org.exist.xpath.Variable;
 import org.exist.xpath.XPathException;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.JavaObjectValue;
 import org.exist.xpath.value.Sequence;
@@ -53,7 +51,7 @@ public class SetSessionAttribute extends Function {
 			},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY));
 
-	public SetSessionAttribute(StaticContext context) {
+	public SetSessionAttribute(XQueryContext context) {
 		super(context, signature);
 	}
 	
@@ -64,21 +62,21 @@ public class SetSessionAttribute extends Function {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
+		RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
+
 		// session object is read from global variable $session
-		Variable var = context.resolveVariable("session");
+		Variable var = myModule.resolveVariable(RequestModule.SESSION_VAR);
 		if(var.getValue() == null)
 			throw new XPathException("Session not set");
 		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException("Variable $session is not bound to an Java object.");
+			throw new XPathException("Variable $session is not bound to a Java object.");
 		JavaObjectValue session = (JavaObjectValue) var.getValue().itemAt(0);
 		
 		// get attribute name parameter
 		String attrib = getArgument(0).eval(contextSequence, contextItem).getStringValue();
 		Sequence value = getArgument(1).eval(contextSequence, contextItem);
-		if(session.getObject() instanceof Session)
-			((Session)session.getObject()).setAttribute(attrib, value);
-		else if(session.getObject() instanceof HttpSession)
-			((HttpSession)session.getObject()).setAttribute(attrib, value);
+		if(session.getObject() instanceof SessionWrapper)
+			((SessionWrapper)session.getObject()).setAttribute(attrib, value);
 		else
 			throw new XPathException("Type error: variable $session is not bound to a session object");
 		return Sequence.EMPTY_SEQUENCE;

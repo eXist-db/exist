@@ -34,7 +34,7 @@ public abstract class NodeConstructor extends AbstractExpression {
 
 	protected MemTreeBuilder builder = null;
 	
-	public NodeConstructor(StaticContext context) {
+	public NodeConstructor(XQueryContext context) {
 		super(context);
 	}
 	

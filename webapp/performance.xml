@@ -89,11 +89,14 @@
                 <title>Page Buffer Sizes and Memory Usage</title>
                 <para> Native backend page buffer sizes may sometimes get too
                     small, which may cause a lot of page-in/page-out operations.</para>
+                
                 <para>The database writes some information about page buffer usage
                     to the log files whenever it is stopped or flushes pages to disk. 
                     There should be several lines in the log looking like this:</para>
+                
                 <synopsis>2003-01-13 21:22:38,096 [Thread-1] INFO  (BTree.java [printStatistics]:1188) - elements.dbx INDEX 1024 / 1 / 3/ 1</synopsis>
                 <synopsis>2003-01-13 21:22:38,097 [Thread-1] INFO  (BFile.java [printStatistics]:421) - elements.dbx DATA 256 / 256 / 984 / 2</synopsis>
+                
                 <para>The log shows two entries for each index file: INDEX and DATA.
                     These correspond to the two page buffers used by each index file.
                     The INDEX buffer contains B+-tree pages, the DATA buffer caches 
@@ -103,23 +106,20 @@
                     They tell us the number of page hits and number of page misses. The number
                     of page fails should always be rather low - much lower or equal to the 
                     number of hits. Otherwise a lot of disk io is generated.</para>
-                <para>If you observe a large number of fails for one index file, you should increase the
-                    buffer size for that index.</para>
+
                 <para>If you use Cocoon, you can also get buffer usage information from eXist's
                 status generator. By default, you can find the status page at
-                <ulink url="http://localhost:8080/exist/status">http://localhost:8080/exist/status</ulink>.
+                <ulink       url="http://localhost:8080/exist/status">http://localhost:8080/exist/status</ulink>.
                 Choose "buffers" from the drop down list at top left.</para>
-                <para>
-                    Page buffer sizes are specified in the configuration file as
-                    described in the <ulink
-                        href="configuration.xml">configuration docs</ulink>. The
-                    default buffer sizes for most indexes should be sufficiently
-                    large for most applications. However, the fulltext index
-                    could very likely become a bottleneck when indexing a larger
-                    amount of data. If you experience a considerable performance
-                    decrease during indexing, try to increase this buffer. It is
-                    defined through attribute <option>words_buffers</option> in
-                    the <sgmltag>db-connection</sgmltag> section. </para>
+
+                <para>If you observe a large number of fails for an index file,
+                    you should increase the amount of memory available for page
+                    buffers. Beginning with version 1.0, the configuration file
+                    has a global setting (attribute <option>cacheSize</option>
+                    in element <option>db-connection</option>) for all page
+                    buffers. Increase this to give more memory to each of the
+                    buffers.</para>
+
                 <para>If you run into OutOfMemoryExceptions after changing the
                     buffer size settings, you might have to increase the 
                     <option>-Xmx</option> setting for the Java virtual machine
@@ -160,7 +160,7 @@
                 <synopsis>/PLAY//SPEECH</synopsis>
                 <para>will evaluate as fast or even faster than the equivalent expression:</para>
 				<synopsis>/PLAY/ACT/SCENE/SPEECH</synopsis>
-			</section>
+            </section>
             <section>
                 <title>Use Fulltext-Extensions</title>
                 <para>eXist offers a number of extensions to query the text 
@@ -203,6 +203,72 @@
                 <para>Which will produce the same results for our type of document, but performs
                     a magnitude faster.</para>
             </section>
+
+            <section>
+                <title>For-Expressions and Where Clauses</title>
+                
+                <para>Avoid nested for-expressions to iterate through large
+                    sequences: eXist tries to evaluate expressions in one,
+                    single step whenever possible. For example, the query</para>
+
+                <synopsis>/PLAY//SPEECH[LINE &amp;= 'love']</synopsis>
+                
+                <para>is processed in a single step. Basically, the query engine
+                    just retrieves the node sequences for all PLAY and SPEECH
+                    elements from the index and applies an ancestor-descendant
+                    join. Next, it loads all LINE elements, passes them to the
+                    fulltext engine to get a filtered set, and does a
+                    parent-child join using the SPEECH elements. All those
+                    operations are just called once for the whole input
+                    sequence.</para>
+
+                <para>However, a nested for-expression forces the query
+                    engine to split the processed sequences. For example,
+                    consider the following query on the Shakespeare
+                    plays:</para>
+
+                <example>
+                    <title>Nested For</title>
+                    <programlisting><![CDATA[
+for $play in /PLAY,
+    $speech in $play//SPEECH[LINE &= 'love']
+return
+    <play title="{$play/TITLE}">
+        {$speech}
+    </play>
+]]></programlisting>
+                </example>
+
+                <para>Internally, the query is translated as follows:</para>
+                
+                <example>
+                    <title>Internal Representation of the Query</title>
+                    <programlisting><![CDATA[
+for $play in //PLAY
+return
+    for $speech in $play//SPEECH[LINE &= 'love']
+    return
+        <play title="{$play/TITLE}">
+            {$speech}
+        </play>
+]]></programlisting>
+                </example>
+                
+                <para>If you look at the internal representation, it becomes
+                    clear that the subexpression $play//SPEECH[LINE &amp;=
+                    'love'] is evaluated once for each invocation of the outer
+                    return clause, i.e. 27 times
+                    for the Shakespeare plays. This is not a problem for such
+                    a small collection, but it makes a difference if you had,
+                    let's say, 10000 plays instead of 27.</para>
+
+                <para>Conclusion: while nested for-expressions are a powerful
+                    feature in XQuery, you have to keep in mind that they might
+                    be a performance killer if applied to a large
+                    sequence of items.</para>
+
+            </section>
+
             <section>
                 <title>Increase index-depth</title>
                 <para>If you are connected to a remote server via XMLRPC and retrieving results

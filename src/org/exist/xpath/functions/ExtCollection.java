@@ -34,7 +34,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Function;
 import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
+import org.exist.xpath.XQueryContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
@@ -66,11 +66,11 @@ public class ExtCollection extends Function {
 	 * @param context
 	 * @param signature
 	 */
-	public ExtCollection(StaticContext context) {
+	public ExtCollection(XQueryContext context) {
 		this(context, signature, true);
 	}
 
-	public ExtCollection(StaticContext context, FunctionSignature signature, boolean inclusive) {
+	public ExtCollection(XQueryContext context, FunctionSignature signature, boolean inclusive) {
 		super(context, signature);
 		includeSubCollections = inclusive;
 	}

@@ -98,6 +98,7 @@ public class LocalResourceSet implements ResourceSet {
 			broker = brokerPool.get(user);
 			// configure the serializer
 			Serializer serializer = broker.getSerializer();
+			serializer.reset();
 			collection.properties.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
 			serializer.setProperties(collection.properties);
 			serializer.setUser(user);

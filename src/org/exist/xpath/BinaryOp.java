@@ -25,7 +25,7 @@ import org.exist.xpath.value.Type;
 
 public abstract class BinaryOp extends PathExpr {
 
-  public BinaryOp(StaticContext context) {
+  public BinaryOp(XQueryContext context) {
     super(context);
   }
 

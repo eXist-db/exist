@@ -36,7 +36,7 @@ public class UnaryExpr extends PathExpr {
 
 	private int mode;
 	
-	public UnaryExpr(StaticContext context, int mode) {
+	public UnaryExpr(XQueryContext context, int mode) {
 		super(context);
 		this.mode = mode;
 	}

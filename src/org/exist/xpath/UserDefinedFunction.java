@@ -20,20 +20,13 @@
  *  
  *  $Id$
  */
-package org.exist.xpath.functions;
+package org.exist.xpath;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import org.exist.dom.QName;
-import org.exist.xpath.Dependency;
-import org.exist.xpath.Expression;
-import org.exist.xpath.Function;
-import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.StaticContext;
-import org.exist.xpath.Variable;
-import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 
@@ -48,7 +41,7 @@ public class UserDefinedFunction extends Function {
 	
 	private Sequence[] currentArguments = null;
 	
-	public UserDefinedFunction(StaticContext context, FunctionSignature signature) {
+	public UserDefinedFunction(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 	

@@ -260,59 +260,12 @@ jar xfv ../exist.war]]></screen>
         </section>
         <section>
             <title>Sample pages</title>
-            <para>Now that we have added some files to the database, you may have a look at the example pages available through the web interface:</para>
-            <variablelist>
-                <varlistentry>
-                    <term>
-                        <ulink url="xadmin.xsp">xadmin.xsp</ulink>
-                    </term>
-                    <listitem>
-                        <para>A simple administration interface to eXist. You may browse through collections or add, view and remove files. This example uses eXist's XML:DB logicsheet to access the database engine.</para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
-                        <ulink url="xquery/">XQuery examples</ulink>
-                    </term>
-                    <listitem>
-                        <para>A number of examples to demonstrate the XQuery
-                        capabilities of eXist.</para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
-                        <ulink url="simple/xquery.xsp">xquery.xsp</ulink>
-                    </term>
-                    <listitem>
-                        <para>Generic query interface to send XPath queries to the server. Also based on the XML:DB logicsheet.</para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
-                        <ulink url="xmldb/db/">Cocoon based browser</ulink>
-                    </term>
-                    <listitem>
-                        <para>A database browser which uses Cocoon's xmldb:// pseudo-protocol and XSL stylesheets. eXist's database contents are mapped to the URL space starting at <command moreinfo="none">xmldb/</command>.</para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
-                        <ulink url="library/biblio.xml">Bibliography</ulink>
-                    </term>
-                    <listitem>
-                        <para>This example demonstrates using a customized query interface to query the bibliography file <filename moreinfo="none">biblio.rdf</filename> found in the <filename moreinfo="none">samples</filename>-directory.</para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
-                        <ulink url="xse/squery.xsp?cname=/db/foc">Flora of China and Extended Shakespeare</ulink>
-                    </term>
-                    <listitem>
-                        <para>Another, extended search engine interface. It uses a simplified query language which is transformed to XPath, has a query history, and applies different formatting stylesheets for every collection.</para>
-                    </listitem>
-                </varlistentry>
-            </variablelist>
+            <para>Now that we have added some files to the database, you may
+                have a look at the <ulink url="examples.xml">example
+                    pages</ulink> available through the web
+                interface.</para>
         </section>
+
         <section>
             <title>Shutting down the database</title>
             <para>It is always recommended to cleanly shut down the database
@@ -386,7 +339,8 @@ dav:/exist/webdav/shakespeare/>
         </section>
         <section>
             <title>What Next?</title>
-            <para>To use all the power of eXist you should read the <ulink url="xpath.xml">XPath HowTo</ulink>. eXist provides a number of extensions to standard XPath and you can make your queries a lot faster by using these extensions, so don't miss them.</para>
+            <para>To use all the power of eXist you should read the <ulink
+                    url="xquery.xml">XQuery docs</ulink>. eXist provides a number of extensions and you can make your queries a lot faster by using these extensions, so don't miss them.</para>
             <para>If you would like to know more about the different deployment options, read the document about <ulink url="deployment.xml">Server Deployment</ulink>. Security related issues are covered by <ulink url="security.xml">security.xml</ulink>.</para>
             <para>Finally, developers should have a look at the <ulink url="devguide.xml">Developer's Guide</ulink>.</para>
         </section>

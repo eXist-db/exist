@@ -388,8 +388,8 @@ public class NativeBroker extends DBBroker {
 		InputStream dis;
 		short sym, nsSym;
 		Collection collection;
-		final short nodeType = (type == ElementValue.ATTRIBUTE ? 
-			Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
+		final short nodeType =
+			(type == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
 		final Lock lock = elementsDb.getLock();
 		for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
 			collection = (Collection) i.next();
@@ -401,7 +401,7 @@ public class NativeBroker extends DBBroker {
 				nsSym = NativeBroker.getSymbols().getNSSymbol(qname.getNamespaceURI());
 				ref = new ElementValue((byte) type, collectionId, sym, nsSym);
 			}
-				
+
 			try {
 				lock.acquire(Lock.READ_LOCK);
 				dis = elementsDb.getAsStream(ref);
@@ -428,8 +428,9 @@ public class NativeBroker extends DBBroker {
 					gid = 0;
 					for (int k = 0; k < len; k++) {
 						gid = gid + is.readLong();
-						result.add(new NodeProxy(doc, gid, nodeType,
-							StorageAddress.read(is)), len);
+						result.add(
+							new NodeProxy(doc, gid, nodeType, StorageAddress.read(is)),
+							len);
 					}
 				}
 			} catch (EOFException e) {
@@ -438,14 +439,14 @@ public class NativeBroker extends DBBroker {
 			}
 		}
 		result.sort();
-//		LOG.debug(
-//			"found "
-//				+ qname
-//				+ ": "
-//				+ result.getLength()
-//				+ " in "
-//				+ (System.currentTimeMillis() - start)
-//				+ "ms.");
+		//		LOG.debug(
+		//			"found "
+		//				+ qname
+		//				+ ": "
+		//				+ result.getLength()
+		//				+ " in "
+		//				+ (System.currentTimeMillis() - start)
+		//				+ "ms.");
 		return result;
 	}
 
@@ -498,9 +499,7 @@ public class NativeBroker extends DBBroker {
 	 */
 	public NodeSet getAttributesByName(DocumentSet docs, QName qname) {
 		qname.setLocalName(qname.getLocalName());
-		LOG.debug("searching attrib " + qname.getLocalName());
 		NodeSet result = findElementsByTagName(ElementValue.ATTRIBUTE, docs, qname);
-		LOG.debug("found " + result.getLength() + " matching attributes");
 		return result;
 	}
 
@@ -1045,12 +1044,12 @@ public class NativeBroker extends DBBroker {
 		if (!isCaseSensitive())
 			expr = expr.toLowerCase();
 		NodeSet result = scanSequential(context, docs, relation, truncation, expr);
-//				LOG.debug(
-//					"searching "
-//						+ result.getLength()
-//						+ " nodes took "
-//						+ (System.currentTimeMillis() - start)
-//						+ "ms.");
+		//				LOG.debug(
+		//					"searching "
+		//						+ result.getLength()
+		//						+ " nodes took "
+		//						+ (System.currentTimeMillis() - start)
+		//						+ "ms.");
 		return result;
 	}
 
@@ -1099,11 +1098,13 @@ public class NativeBroker extends DBBroker {
 			while (tok.hasMoreTokens()) {
 				temp = tok.nextToken();
 				path = path + "/" + temp;
-				if (current.hasSubcollection(temp))
+				if (current.hasSubcollection(temp)) {
 					current = getCollection(path);
-				else {
-					if (!current.getPermissions().validate(user, Permission.WRITE))
+				} else {
+					if (!current.getPermissions().validate(user, Permission.WRITE)) {
+						LOG.debug("permission denied to create collection " + path);
 						throw new PermissionDeniedException("not allowed to write to collection");
+					}
 					LOG.debug("creating collection " + path);
 					sub = new Collection(path);
 					sub.getPermissions().setOwner(user);
@@ -1553,49 +1554,51 @@ public class NativeBroker extends DBBroker {
 
 	public void addDocument(Collection collection, DocumentImpl doc)
 		throws PermissionDeniedException {
-		Value name;
+		Lock lock = null;
 		try {
-			name = new Value(collection.getName().getBytes("UTF-8"));
-		} catch (UnsupportedEncodingException uee) {
-			LOG.debug(uee);
-			name = new Value(collection.getName().getBytes());
-		}
-		try {
+			lock = collectionsDb.getLock();
+			lock.acquire();
+
+			Value name;
+			try {
+				name = new Value(collection.getName().getBytes("UTF-8"));
+			} catch (UnsupportedEncodingException uee) {
+				LOG.debug(uee);
+				name = new Value(collection.getName().getBytes());
+			}
 			storeDocument(doc);
 			VariableByteOutputStream ostream = new VariableByteOutputStream(6);
 			doc.write(ostream);
-			Lock lock = collectionsDb.getLock();
-			try {
-				lock.acquire();
-				long address = collectionsDb.append(name, ostream.data());
-				if (address < 0) {
-					LOG.debug(
-						"could not store collection data for " + collection.getName());
-					return;
-				}
-				collection.setAddress(address);
-				if (!name.equals("/db")) {
-					Collection parent = collection.getParent(this);
-					parent.update(collection);
-					saveCollection(parent);
-				}
-			} catch (LockException e) {
-				LOG.warn("failed to lock collections store", e);
-			} finally {
-				lock.release();
+			long address = collectionsDb.append(name, ostream.data());
+			if (address < 0) {
+				LOG.debug("could not store collection data for " + collection.getName());
+				return;
+			}
+			collection.setAddress(address);
+			if (!name.equals("/db")) {
+				Collection parent = collection.getParent(this);
+				parent.update(collection);
+				saveCollection(parent);
 			}
 			ostream.close();
 		} catch (IOException ioe) {
 			LOG.debug(ioe);
 		} catch (ReadOnlyException e) {
 			LOG.warn("database is read-only");
+		} catch (LockException e) {
+			LOG.warn("failed to acquire lock on collections.dbx");
+		} finally {
+			lock.release();
 		}
 	}
 
 	public void saveCollection(Collection collection) throws PermissionDeniedException {
 		if (readOnly)
 			throw new PermissionDeniedException("database is read-only");
+		Lock lock = null;
 		try {
+			lock = collectionsDb.getLock();
+			lock.acquire(Lock.WRITE_LOCK);
 
 			if (collection.getId() < 0)
 				collection.setId(getNextCollectionId());
@@ -1610,34 +1613,29 @@ public class NativeBroker extends DBBroker {
 			try {
 				final VariableByteOutputStream ostream = new VariableByteOutputStream(8);
 				collection.write(this, ostream);
-				Lock lock = collectionsDb.getLock();
-				try {
-					lock.acquire(Lock.WRITE_LOCK);
-					final long addr = collectionsDb.put(name, ostream.data());
-					if (addr < 0) {
-						LOG.debug(
-							"could not store collection data for "
-								+ collection.getName());
-						return;
-					}
-					collection.setAddress(addr);
-					if (!name.equals("/db")) {
-						Collection parent = collection.getParent(this);
-						parent.update(collection);
-						saveCollection(parent);
-					}
-					collectionsDb.getCollectionCache().add(collection);
-				} catch (LockException e) {
-					LOG.warn("could not acquire lock for collections store", e);
-				} finally {
-					lock.release();
+				final long addr = collectionsDb.put(name, ostream.data());
+				if (addr < 0) {
+					LOG.debug(
+						"could not store collection data for " + collection.getName());
+					return;
 				}
+				collection.setAddress(addr);
+				if (!name.equals("/db")) {
+					Collection parent = collection.getParent(this);
+					parent.update(collection);
+					saveCollection(parent);
+				}
+				collectionsDb.getCollectionCache().add(collection);
 				ostream.close();
 			} catch (IOException ioe) {
 				LOG.debug(ioe);
 			}
 		} catch (ReadOnlyException e) {
 			LOG.warn("database is read-only");
+		} catch (LockException e) {
+			LOG.warn("could not acquire lock for collections store", e);
+		} finally {
+			lock.release();
 		}
 	}
 
