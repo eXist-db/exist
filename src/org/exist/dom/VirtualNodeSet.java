@@ -28,6 +28,7 @@ import org.exist.xpath.Constants;
 import org.exist.xpath.NodeTest;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.SequenceIterator;
+import org.exist.xpath.value.Type;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -55,6 +56,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	protected NodeSet realSet = null;
 	protected boolean inPredicate = false;
 	protected boolean useSelfAsContext = false;
+	
+	private int lastDocAdded = -1;
+	private int sizeHint = -1;
 
 	public VirtualNodeSet(int axis, NodeTest test, NodeSet context) {
 		this.axis = axis;
@@ -101,6 +105,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		boolean directParent,
 		int recursions) {
 		long pid = XMLUtil.getParentId(node.doc, node.gid);
+		System.out.println(node.gid + " --> " + pid);
 		NodeProxy parent;
 		// check if the start-node should be included, e.g. to process an
 		// expression like *[. = 'xxx'] 
@@ -111,7 +116,6 @@ public class VirtualNodeSet extends AbstractNodeSet {
 				if ((parent = context.get(new NodeProxy(node.doc, pid))) != null) {
 					if (useSelfAsContext && inPredicate) {
 						node.addContextNode(node);
-						System.out.println("self: " + node.gid);
 					} else if (inPredicate)
 						node.addContextNode(parent);
 					else
@@ -188,9 +192,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 
 	private void addInternal(NodeProxy p) {
 		if (realSet == null)
-			realSet = new ExtArrayNodeSet(100);
-
-		//if (!realSet.contains(p))
+			realSet = new ExtArrayNodeSet(256);
 		realSet.add(p);
 	}
 
@@ -228,7 +230,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 								proxy.gid = proxy.doc.getDocumentElementId();
 				*/
 				// -- inserted by Timo Boehme --
-				NodeProxy docElemProxy = new NodeProxy(proxy.getDoc(), 1);
+				NodeProxy docElemProxy = new NodeProxy(proxy.getDoc(), 1, Node.ELEMENT_NODE);
 				if(test.matches(docElemProxy))
 					result.add(docElemProxy);
 				if (axis == Constants.DESCENDANT_AXIS || axis == Constants.DESCENDANT_SELF_AXIS) {
@@ -302,6 +304,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	}
 
 	private final void realize() {
+		System.out.println("realizing ...");
 		if (realSet != null)
 			return;
 		realSet = getNodes();
