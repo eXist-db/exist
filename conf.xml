@@ -8,26 +8,38 @@
 -->
 <exist>
 
+
+    <!-- Configurs the cluster configuration
+- protocol:
+defines a protocol stack. Refers the jgroups protocol stack.
+- dbaUser:
+defines the user used by the cluster for the replica.
+- dbaPassword:
+defines the user password used by the cluster for the replica.
+
+   -->
+    <cluster protocol="UDP:PING" dbaUser="admin" dbaPassword=""/>
+
     <!-- Configures the database backend:
-        - database: 
-            selects a database backend. Currently, "native" is the
-            only valid setting.
+        - database:
+            selects a database backend. Currently, "native" and "native_cluster"
+            are the only valid setting.
         - files:
             path to the directory where database files are
             stored.
         - cacheSize:
             the maximum amount of memory to use for database page buffers.
             Each database file has an associated page buffer for B+-tree and
-            data pages. However, the memory specified via cacheSize is shared 
+            data pages. However, the memory specified via cacheSize is shared
             between all page buffers. It represents an absolute maximum, which
             would be occupied if all page buffers were completely full.
         - free_mem_min:
             minimum amount of free memory in percent during indexing. The
             database will start to flush its internal buffers whenever
             free memory drops below the specified limit.
-        - pageSize: 
-            the size of one page on the disk. This is the smallest unit 
-            transferred from and to the database files. Should be a multiple of 
+        - pageSize:
+            the size of one page on the disk. This is the smallest unit
+            transferred from and to the database files. Should be a multiple of
             the operating system's file system page size (usually 4096).
     -->
 
@@ -35,7 +47,7 @@
     exceptions on machines with limited memory (256MB). Increase the
     buffer settings for elements_buffers and words_buffers if you have
     some more memory to waste. -->
-	<db-connection database="native" files="webapp/WEB-INF/data"
+	<db-connection database="@database@" files="webapp/WEB-INF/data"
 		pageSize="4096" cacheSize="48M" free_mem_min="5">
     
         <!-- Settings for the database connection pool:
