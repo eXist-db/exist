@@ -230,9 +230,10 @@ setter:
 	;
 	
 namespaceDecl
+{ String prefix = null; }
 :
-	"declare" "namespace" prefix:NCNAME EQ! uri:STRING_LITERAL
-	{ #namespaceDecl= #(#[NAMESPACE_DECL, prefix.getText()], uri); }
+	"declare" "namespace" prefix=ncnameOrKeyword EQ! uri:STRING_LITERAL
+	{ #namespaceDecl= #(#[NAMESPACE_DECL, prefix], uri); }
 	;
 
 varDecl throws XPathException
@@ -587,7 +588,7 @@ nodeTest throws XPathException
 nameTest throws XPathException
 { String name= null; }
 :
-	( ( NCNAME COLON STAR ) | STAR )
+	( ( ncnameOrKeyword COLON STAR ) | STAR )
 	=> wildcard
 	|
 	name=qName

@@ -236,6 +236,7 @@ public class XIncludeFilter implements Receiver {
 					LOG.info("xpointer query: " + ExpressionDumper.dump(expr));
 					long start = System.currentTimeMillis();
 					expr.analyze(null, 0);
+					expr.reset();
 					Sequence seq = expr.eval(null, null);
 					switch (seq.getItemType()) {
 						case Type.NODE :
