@@ -84,6 +84,8 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(FunAdjustDateTimeToTimezone.fnAdjustDateTimeToTimezone[0], FunAdjustDateTimeToTimezone.class),
 		new FunctionDef(FunAdjustDateTimeToTimezone.fnAdjustDateTimeToTimezone[1], FunAdjustDateTimeToTimezone.class),
 		new FunctionDef(FunId.signature, FunId.class),
+		new FunctionDef(FunIndexOf.fnIndexOf[0], FunIndexOf.class),
+		new FunctionDef(FunIndexOf.fnIndexOf[1], FunIndexOf.class),
 		new FunctionDef(FunItemAt.signature, FunItemAt.class),
 		new FunctionDef(FunLang.signature, FunLang.class),
 		new FunctionDef(FunLast.signature, FunLast.class),

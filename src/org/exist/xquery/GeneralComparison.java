@@ -319,53 +319,60 @@ public class GeneralComparison extends BinaryOp {
 		AtomicValue lv,
 		AtomicValue rv)
 		throws XPathException {
-		int ltype = lv.getType();
-		int rtype = rv.getType();
 		try {
-			if (ltype == Type.ITEM || ltype == Type.ATOMIC) {
-				if (Type.subTypeOf(rtype, Type.NUMBER)) {
-					lv = lv.convertTo(Type.DOUBLE);
-				} else if (rtype == Type.ITEM || rtype == Type.ATOMIC) {
-					lv = lv.convertTo(Type.STRING);
-					rv = rv.convertTo(Type.STRING);
-				} else
-					lv = lv.convertTo(rv.getType());
-			} else if (rtype == Type.ITEM || rtype == Type.ATOMIC) {
-				if (Type.subTypeOf(ltype, Type.NUMBER)) {
-					rv = rv.convertTo(Type.DOUBLE);
-				} else if (rtype == Type.ITEM || rtype == Type.ATOMIC) {
-					lv = lv.convertTo(Type.STRING);
-					rv = rv.convertTo(Type.STRING);
-				} else
-					rv = rv.convertTo(lv.getType());
-			}
-			if (context.isBackwardsCompatible()) {
-				// in XPath 1.0 compatible mode, if one of the operands is a number, cast
-				// both operands to xs:double
-				if (Type.subTypeOf(ltype, Type.NUMBER)
-					|| Type.subTypeOf(rtype, Type.NUMBER)) {
-					lv = lv.convertTo(Type.DOUBLE);
-					rv = rv.convertTo(Type.DOUBLE);
-				}
-			}
-//				System.out.println(
-//					lv.getStringValue() + Constants.OPS[relation] + rv.getStringValue());
-			switch(truncation) {
-				case Constants.TRUNC_RIGHT:
-					return lv.startsWith(collator, rv);
-				case Constants.TRUNC_LEFT:
-					return lv.endsWith(collator, rv);
-				case Constants.TRUNC_BOTH:
-					return lv.contains(collator, rv);
-				default:
-					return lv.compareTo(collator, relation, rv);
-			}
+			return compareAtomic(collator, lv, rv, context.isBackwardsCompatible(), truncation, relation);
 		} catch (XPathException e) {
 			e.setASTNode(getASTNode());
 			throw e;
 		}
 	}
 
+	public static boolean compareAtomic(Collator collator, AtomicValue lv,
+			AtomicValue rv, boolean backwardsCompatible, int truncation,
+			int relation) 
+	throws XPathException{
+		int ltype = lv.getType();
+		int rtype = rv.getType();
+		if (ltype == Type.ITEM || ltype == Type.ATOMIC) {
+			if (Type.subTypeOf(rtype, Type.NUMBER)) {
+				lv = lv.convertTo(Type.DOUBLE);
+			} else if (rtype == Type.ITEM || rtype == Type.ATOMIC) {
+				lv = lv.convertTo(Type.STRING);
+				rv = rv.convertTo(Type.STRING);
+			} else
+				lv = lv.convertTo(rv.getType());
+		} else if (rtype == Type.ITEM || rtype == Type.ATOMIC) {
+			if (Type.subTypeOf(ltype, Type.NUMBER)) {
+				rv = rv.convertTo(Type.DOUBLE);
+			} else if (rtype == Type.ITEM || rtype == Type.ATOMIC) {
+				lv = lv.convertTo(Type.STRING);
+				rv = rv.convertTo(Type.STRING);
+			} else
+				rv = rv.convertTo(lv.getType());
+		}
+		if (backwardsCompatible) {
+			// in XPath 1.0 compatible mode, if one of the operands is a number, cast
+			// both operands to xs:double
+			if (Type.subTypeOf(ltype, Type.NUMBER)
+				|| Type.subTypeOf(rtype, Type.NUMBER)) {
+				lv = lv.convertTo(Type.DOUBLE);
+				rv = rv.convertTo(Type.DOUBLE);
+			}
+		}
+//			System.out.println(
+//				lv.getStringValue() + Constants.OPS[relation] + rv.getStringValue());
+		switch(truncation) {
+			case Constants.TRUNC_RIGHT:
+				return lv.startsWith(collator, rv);
+			case Constants.TRUNC_LEFT:
+				return lv.endsWith(collator, rv);
+			case Constants.TRUNC_BOTH:
+				return lv.contains(collator, rv);
+			default:
+				return lv.compareTo(collator, relation, rv);
+		}
+	}
+	
 	private boolean checkArgumentTypes(XQueryContext context, DocumentSet docs)
 		throws XPathException {
 		Configuration config = context.getBroker().getConfiguration();

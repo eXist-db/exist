@@ -68,7 +68,7 @@ public class DynamicTypeCheck extends AbstractExpression {
 	 * @see org.exist.xquery.Expression#pprint()
 	 */
 	public String pprint() {
-		return expression.pprint() + " treat as " + Type.getTypeName(requiredType);
+		return expression.pprint();
 	}
 
 	/* (non-Javadoc)

@@ -74,7 +74,12 @@ public class XPathException extends Exception {
 	}
 	
 	public void prependMessage(String msg) {
-		message = msg + message;
+		StringBuffer buf = new StringBuffer();
+		buf.append(msg);
+		if(message != null && message.length() > 0)
+			buf.append(": ");
+		buf.append(message);
+		message = buf.toString();
 	}
 	
 	/* (non-Javadoc)
