@@ -698,4 +698,9 @@ public interface RpcAPI {
 	
 	byte[] getDocumentChunk(User user, String name, int start, int stop)
 	throws EXistException, PermissionDeniedException, IOException;
+	
+	boolean reindexCollection(User user, String name)
+	throws EXistException, PermissionDeniedException;
+
+
 }

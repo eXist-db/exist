@@ -1893,4 +1893,19 @@ public class RpcConnection extends Thread {
 		os.close();
 		return buffer;
 	}
+	
+	public void reindexCollection(User user, String name) throws Exception,
+			PermissionDeniedException {
+		DBBroker broker = null;
+		try {
+			broker = brokerPool.get(user);
+			broker.reindex(name);
+			LOG.debug("collection " + name + " and sub collection reindexed");
+		} catch (Exception e) {
+			LOG.debug(e);
+			throw e;
+		} finally {
+			brokerPool.release(broker);
+		}
+	}
 }
