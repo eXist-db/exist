@@ -4001,7 +4001,7 @@ public XQueryParser(ParserSharedInputState state) {
 		String name= null;
 		
 		boolean synPredMatched182 = false;
-		if (((LA(1)==NCNAME||LA(1)==STAR))) {
+		if (((_tokenSet_10.member(LA(1))))) {
 			int _m182 = mark();
 			synPredMatched182 = true;
 			inputState.guessing++;
@@ -4065,10 +4065,7 @@ public XQueryParser(ParserSharedInputState state) {
 		returnAST = null;
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST wildcard_AST = null;
-		Token  nc1 = null;
-		org.exist.xquery.parser.XQueryAST nc1_AST = null;
-		Token  nc2 = null;
-		org.exist.xquery.parser.XQueryAST nc2_AST = null;
+		String name= null;
 		
 		boolean synPredMatched185 = false;
 		if (((LA(1)==STAR))) {
@@ -4090,13 +4087,11 @@ public XQueryParser(ParserSharedInputState state) {
 		if ( synPredMatched185 ) {
 			match(STAR);
 			match(COLON);
-			nc1 = LT(1);
-			nc1_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(nc1);
-			astFactory.addASTChild(currentAST, nc1_AST);
-			match(NCNAME);
+			name=ncnameOrKeyword();
+			astFactory.addASTChild(currentAST, returnAST);
 			if ( inputState.guessing==0 ) {
 				wildcard_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-				wildcard_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(PREFIX_WILDCARD,"*")).add(nc1_AST));
+				wildcard_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(PREFIX_WILDCARD,"*")).add((org.exist.xquery.parser.XQueryAST)astFactory.create(NCNAME,name)));
 				currentAST.root = wildcard_AST;
 				currentAST.child = wildcard_AST!=null &&wildcard_AST.getFirstChild()!=null ?
 					wildcard_AST.getFirstChild() : wildcard_AST;
@@ -4104,16 +4099,14 @@ public XQueryParser(ParserSharedInputState state) {
 			}
 			wildcard_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 		}
-		else if ((LA(1)==NCNAME)) {
-			nc2 = LT(1);
-			nc2_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(nc2);
-			astFactory.addASTChild(currentAST, nc2_AST);
-			match(NCNAME);
+		else if ((_tokenSet_2.member(LA(1)))) {
+			name=ncnameOrKeyword();
+			astFactory.addASTChild(currentAST, returnAST);
 			match(COLON);
 			match(STAR);
 			if ( inputState.guessing==0 ) {
 				wildcard_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-				wildcard_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add(nc2_AST).add((org.exist.xquery.parser.XQueryAST)astFactory.create(WILDCARD,"*")));
+				wildcard_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(NCNAME,name)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(WILDCARD,"*")));
 				currentAST.root = wildcard_AST;
 				currentAST.child = wildcard_AST!=null &&wildcard_AST.getFirstChild()!=null ?
 					wildcard_AST.getFirstChild() : wildcard_AST;
@@ -4144,6 +4137,93 @@ public XQueryParser(ParserSharedInputState state) {
 		}
 		
 		returnAST = wildcard_AST;
+	}
+	
+	public final String  ncnameOrKeyword() throws RecognitionException, TokenStreamException {
+		String name;
+		
+		returnAST = null;
+		ASTPair currentAST = new ASTPair();
+		org.exist.xquery.parser.XQueryAST ncnameOrKeyword_AST = null;
+		Token  n1 = null;
+		org.exist.xquery.parser.XQueryAST n1_AST = null;
+		name= null;
+		
+		switch ( LA(1)) {
+		case NCNAME:
+		{
+			n1 = LT(1);
+			n1_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(n1);
+			astFactory.addASTChild(currentAST, n1_AST);
+			match(NCNAME);
+			if ( inputState.guessing==0 ) {
+				name= n1.getText();
+			}
+			ncnameOrKeyword_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+			break;
+		}
+		case LITERAL_module:
+		case LITERAL_namespace:
+		case XQUERY:
+		case VERSION:
+		case LITERAL_default:
+		case LITERAL_function:
+		case LITERAL_variable:
+		case LITERAL_import:
+		case LITERAL_at:
+		case LITERAL_as:
+		case LITERAL_empty:
+		case LITERAL_item:
+		case LITERAL_for:
+		case LITERAL_let:
+		case LITERAL_some:
+		case LITERAL_every:
+		case LITERAL_if:
+		case LITERAL_order:
+		case LITERAL_by:
+		case LITERAL_then:
+		case LITERAL_else:
+		case LITERAL_or:
+		case LITERAL_and:
+		case LITERAL_cast:
+		case LITERAL_is:
+		case LITERAL_isnot:
+		case LITERAL_to:
+		case LITERAL_div:
+		case LITERAL_mod:
+		case LITERAL_union:
+		case LITERAL_intersect:
+		case LITERAL_except:
+		case LITERAL_text:
+		case LITERAL_node:
+		case LITERAL_child:
+		case LITERAL_self:
+		case LITERAL_attribute:
+		case LITERAL_descendant:
+		case 123:
+		case 124:
+		case LITERAL_following:
+		case LITERAL_parent:
+		case LITERAL_ancestor:
+		case 128:
+		case 129:
+		case LITERAL_comment:
+		case LITERAL_document:
+		case LITERAL_collection:
+		case LITERAL_preceding:
+		{
+			name=reservedKeywords();
+			astFactory.addASTChild(currentAST, returnAST);
+			ncnameOrKeyword_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltException(LT(1), getFilename());
+		}
+		}
+		returnAST = ncnameOrKeyword_AST;
+		return name;
 	}
 	
 	public final void primaryExpr() throws RecognitionException, TokenStreamException {
@@ -4739,93 +4819,6 @@ public XQueryParser(ParserSharedInputState state) {
 		match(RPAREN);
 		documentTest_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 		returnAST = documentTest_AST;
-	}
-	
-	public final String  ncnameOrKeyword() throws RecognitionException, TokenStreamException {
-		String name;
-		
-		returnAST = null;
-		ASTPair currentAST = new ASTPair();
-		org.exist.xquery.parser.XQueryAST ncnameOrKeyword_AST = null;
-		Token  n1 = null;
-		org.exist.xquery.parser.XQueryAST n1_AST = null;
-		name= null;
-		
-		switch ( LA(1)) {
-		case NCNAME:
-		{
-			n1 = LT(1);
-			n1_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(n1);
-			astFactory.addASTChild(currentAST, n1_AST);
-			match(NCNAME);
-			if ( inputState.guessing==0 ) {
-				name= n1.getText();
-			}
-			ncnameOrKeyword_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-			break;
-		}
-		case LITERAL_module:
-		case LITERAL_namespace:
-		case XQUERY:
-		case VERSION:
-		case LITERAL_default:
-		case LITERAL_function:
-		case LITERAL_variable:
-		case LITERAL_import:
-		case LITERAL_at:
-		case LITERAL_as:
-		case LITERAL_empty:
-		case LITERAL_item:
-		case LITERAL_for:
-		case LITERAL_let:
-		case LITERAL_some:
-		case LITERAL_every:
-		case LITERAL_if:
-		case LITERAL_order:
-		case LITERAL_by:
-		case LITERAL_then:
-		case LITERAL_else:
-		case LITERAL_or:
-		case LITERAL_and:
-		case LITERAL_cast:
-		case LITERAL_is:
-		case LITERAL_isnot:
-		case LITERAL_to:
-		case LITERAL_div:
-		case LITERAL_mod:
-		case LITERAL_union:
-		case LITERAL_intersect:
-		case LITERAL_except:
-		case LITERAL_text:
-		case LITERAL_node:
-		case LITERAL_child:
-		case LITERAL_self:
-		case LITERAL_attribute:
-		case LITERAL_descendant:
-		case 123:
-		case 124:
-		case LITERAL_following:
-		case LITERAL_parent:
-		case LITERAL_ancestor:
-		case 128:
-		case 129:
-		case LITERAL_comment:
-		case LITERAL_document:
-		case LITERAL_collection:
-		case LITERAL_preceding:
-		{
-			name=reservedKeywords();
-			astFactory.addASTChild(currentAST, returnAST);
-			ncnameOrKeyword_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-			break;
-		}
-		default:
-		{
-			throw new NoViableAltException(LT(1), getFilename());
-		}
-		}
-		returnAST = ncnameOrKeyword_AST;
-		return name;
 	}
 	
 	public final void elementConstructor() throws RecognitionException, TokenStreamException {

@@ -5,4 +5,7 @@ OVERRIDE YES
 SYSTEM "play.dtd" "entities/play.dtd"
 
 OVERRIDE YES
+SYSTEM "mondial.dtd" "entities/mondial.dtd"
+
+OVERRIDE YES
 SYSTEM "teixlite.dtd" "entities/teixlite.dtd"

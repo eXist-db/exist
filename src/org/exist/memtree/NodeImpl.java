@@ -23,6 +23,7 @@
 package org.exist.memtree;
 
 import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.util.serializer.DOMStreamerPool;
@@ -81,7 +82,9 @@ public class NodeImpl implements Node, NodeValue {
 			case Node.ATTRIBUTE_NODE :
 			case Node.ELEMENT_NODE :
 			case Node.PROCESSING_INSTRUCTION_NODE :
-				return document.nodeName[nodeNumber].toString();
+				QName qn = (QName)
+					document.namePool.get(document.nodeName[nodeNumber]);
+				return qn.toString();
 			case Node.TEXT_NODE :
 				return "#text";
 			default :

@@ -128,6 +128,36 @@ public class QName implements Comparable {
 		return c == 0 ? localName_.compareTo(other.localName_) : c;
 	}
 
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	public boolean equals(Object obj) {
+		int cmp = compareTo(obj);
+		if(cmp != 0)
+			return false;
+		QName other = (QName) obj;
+		if(prefix_ == null)
+			return other.prefix_ == null ? true : false;
+		else if(other.prefix_ == null)
+			return false;
+		else
+			return prefix_.equals(other.prefix_);
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	public int hashCode() {
+		int hash = 31 + localName_.hashCode();
+		if(namespaceURI_ != null)
+			hash += 31*hash + namespaceURI_.hashCode();
+		if(prefix_ != null)
+			hash += 31*hash + prefix_.hashCode();
+		return hash;
+	}
+	
 	/**
 	 * Extract the prefix from a QName string.
 	 *  
