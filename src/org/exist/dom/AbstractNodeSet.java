@@ -443,7 +443,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		NodeSet result = new ExtArrayNodeSet();
 		for (Iterator i = iterator(); i.hasNext();) {
 			n = (NodeProxy) i.next();
-			p = al.parentWithChild(n.doc, n.gid, false, includeSelf);
+			p = al.parentWithChild(n.doc, n.gid, false, includeSelf, -1);
 			if (p != null) {
 				if ((temp = result.get(p)) == null) {
 					if (rememberContext)

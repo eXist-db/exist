@@ -48,6 +48,7 @@ import org.exist.util.Configuration;
 import org.exist.util.Occurrences;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
+import org.exist.xquery.NodeSelector;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -168,7 +169,8 @@ public abstract class DBBroker extends Observable {
 	public abstract NodeSet findElementsByTagName(
 		byte type,
 		DocumentSet docs,
-		QName qname);
+		QName qname,
+		NodeSelector selector);
 
 	/**  flush all data that has not been written before. */
 	public void flush() {

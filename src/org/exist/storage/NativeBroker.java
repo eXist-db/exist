@@ -84,6 +84,7 @@ import org.exist.util.ReadOnlyException;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
 import org.exist.xquery.Constants;
+import org.exist.xquery.NodeSelector;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
@@ -369,22 +370,23 @@ public class NativeBroker extends DBBroker {
 	 *
 	 *@param  docs     Description of the Parameter
 	 *@param  tagName  Description of the Parameter
-	 *@return          Description of the Return Value
+	 *@return
 	 */
-	public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname) {
+	public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname,
+		NodeSelector selector) {
 //		final long start = System.currentTimeMillis();
 		final ExtArrayNodeSet result = new ExtArrayNodeSet(docs.getLength(), 256);
 		DocumentImpl doc;
 		int docId;
 		int len;
 		short collectionId;
-		long gid; // , address;
+		long gid;
 		VariableByteInputStream is;
 		ElementValue ref;
-		// byte[] data;
 		InputStream dis = null;
 		short sym, nsSym;
 		Collection collection;
+		NodeProxy p;
 		final short nodeType =
 			(type == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
 		final Lock lock = elementsDb.getLock();
@@ -429,9 +431,9 @@ public class NativeBroker extends DBBroker {
 					gid = 0;
 					for (int k = 0; k < len; k++) {
 						gid = gid + is.readLong();
-						result.add(
-							new NodeProxy(doc, gid, nodeType, StorageAddress.read(is)),
-							len);
+						p = new NodeProxy(doc, gid, nodeType, StorageAddress.read(is));
+						if(selector == null || selector.match(p))
+							result.add(p, len);
 					}
 				}
 			} catch (EOFException e) {
@@ -439,7 +441,7 @@ public class NativeBroker extends DBBroker {
 				LOG.warn("unexpected io error", e);
 			}
 		}
-		result.sort();
+//		result.sort();
 //				LOG.debug(
 //					"found "
 //						+ qname
@@ -500,7 +502,7 @@ public class NativeBroker extends DBBroker {
 	 */
 	public NodeSet getAttributesByName(DocumentSet docs, QName qname) {
 		qname.setLocalName(qname.getLocalName());
-		NodeSet result = findElementsByTagName(ElementValue.ATTRIBUTE, docs, qname);
+		NodeSet result = findElementsByTagName(ElementValue.ATTRIBUTE, docs, qname, null);
 		return result;
 	}
 

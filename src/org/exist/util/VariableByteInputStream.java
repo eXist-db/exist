@@ -16,7 +16,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
- *  $Id:
+ *  $Id$
  */
 package org.exist.util;
 
@@ -96,11 +96,6 @@ public class VariableByteInputStream {
 		return i;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@return    Description of the Return Value
-	 */
 	public long readLong() throws EOFException, IOException {
 		byte b = (byte) is_.read();
 		long i = b & 0177;
