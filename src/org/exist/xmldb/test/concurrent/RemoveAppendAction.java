@@ -26,8 +26,8 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XUpdateQueryService;
 
 /**
- * Removes the last element from the resource and inserts a 
- * new element at the top.
+ * Removes the 10 last elements from the resource and inserts 10 
+ * new elements at the top.
  * 
  * @author wolf
  */
@@ -59,16 +59,22 @@ class RemoveAppendAction extends Action {
 	}
 	
 	private void remove(XUpdateQueryService service) throws XMLDBException {
-		service.update(REMOVE);
+		System.out.println(Thread.currentThread().getName() + ": removing elements ...");
+		for(int i = 0; i < 10; i++)
+			service.update(REMOVE);
 	}
 	
 	private void append(XUpdateQueryService service) throws Exception {
-		String update =
+		final String updateOpen =
 			"<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
-			"<xu:append select=\"/ROOT-ELEMENT\" child=\"1\">" +
-			gen.generateElement() +
+			"<xu:append select=\"/ROOT-ELEMENT\" child=\"1\">";
+		final String updateClose =
 			"</xu:append>" +
 			"</xu:modifications>";
-		service.update(update);
+		System.out.println(Thread.currentThread().getName() + ": inserting elements ...");
+		for (int i = 0; i < 10; i++) {
+			String update = updateOpen + gen.generateElement() + updateClose;
+			service.update(update);
+		}
 	}
 }
