@@ -83,7 +83,7 @@ public class FunDistinctValues extends Function {
 		throws XPathException {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-		long start = System.currentTimeMillis();
+//		long start = System.currentTimeMillis();
 		Sequence values = getArgument(0).eval(contextSequence);
 		TreeSet set = new TreeSet(new ValueComparator(context.getCollator(null)));
 		ValueSequence result = new ValueSequence();

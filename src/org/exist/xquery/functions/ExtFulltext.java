@@ -137,7 +137,7 @@ public class ExtFulltext extends Function {
 					searchTerm
 						.eval(current.toSequence())
 						.getStringValue();
-				long start = System.currentTimeMillis();
+//				long start = System.currentTimeMillis();
 				if (!haveNodes) {
 					nodes =
 						path == null
@@ -148,13 +148,13 @@ public class ExtFulltext extends Function {
 				}
 				temp = evalQuery(context, arg, nodes);
 				result.addAll(temp);
-				LOG.debug(
-					"found "
-						+ temp.getLength()
-						+ " for "
-						+ arg
-						+ " in "
-						+ (System.currentTimeMillis() - start));
+//				LOG.debug(
+//					"found "
+//						+ temp.getLength()
+//						+ " for "
+//						+ arg
+//						+ " in "
+//						+ (System.currentTimeMillis() - start));
 			}
 			return result;
 		}
@@ -219,7 +219,7 @@ public class ExtFulltext extends Function {
 		NodeSet result = hits[0];
 		if(result != null) {
 			for(int k = 1; k < hits.length; k++) {
-				LOG.debug("hits: " + terms[k] + ": " + hits[k].getLength());
+//				LOG.debug("hits: " + terms[k] + ": " + hits[k].getLength());
 				if(hits[k] != null)
 					result = (type == Constants.FULLTEXT_AND ? 
 							result.deepIntersection(hits[k]) : result.union(hits[k]));
