@@ -401,10 +401,11 @@ public class XQueryContext {
 	 * @param namespaceURI
 	 * @param moduleClass
 	 */
-	public void loadBuiltInModule(String namespaceURI, String moduleClass) {
-		if (modules.containsKey(namespaceURI)) {
+	public Module loadBuiltInModule(String namespaceURI, String moduleClass) {
+		Module module = (Module)modules.get(namespaceURI);
+		if (module != null) {
 			LOG.debug("module " + namespaceURI + " is already present");
-			return;
+			return module;
 		}
 		try {
 			Class mClass = Class.forName(moduleClass);
@@ -413,12 +414,12 @@ public class XQueryContext {
 					"failed to load module. "
 						+ moduleClass
 						+ " is not an instance of org.exist.xquery.Module.");
-				return;
+				return null;
 			}
-			Module module = (Module) mClass.newInstance();
+			module = (Module) mClass.newInstance();
 			if (!module.getNamespaceURI().equals(namespaceURI)) {
 				LOG.warn("the module declares a different namespace URI. Skipping...");
-				return;
+				return null;
 			}
 			if (getPrefixForURI(module.getNamespaceURI()) == null
 				&& module.getDefaultPrefix().length() > 0)
@@ -433,6 +434,7 @@ public class XQueryContext {
 		} catch (IllegalAccessException e) {
 			LOG.warn("error while instantiating module class " + moduleClass, e);
 		}
+		return module;
 	}
 
 	/**
@@ -767,82 +769,85 @@ public class XQueryContext {
 	 */
 	public void importModule(String namespaceURI, String prefix, String location)
 		throws XPathException {
-		if(location == null)
-			location = namespaceURI;
-		if(location.startsWith("java:")) {
-			location = location.substring("java:".length());
-			loadBuiltInModule(namespaceURI, location);
-			if(prefix != null)
-				declareNamespace(prefix, namespaceURI);
-			return;
-		}
-		if(location.indexOf(':') < 0) {
-			File f = new File(moduleLoadPath + File.separatorChar + location);
-			if(!f.canRead()) {
-				f = new File(location);
-				if(!f.canRead())
-					throw new XPathException("cannot read module source from file at " + f.getAbsolutePath());
+		Module module = (Module)modules.get(namespaceURI);
+		if(module != null) {
+			LOG.debug("Module " + namespaceURI + " already present.");
+		} else {
+			if(location == null)
+				location = namespaceURI;
+			// is it a Java module?
+			if(location.startsWith("java:")) {
+				location = location.substring("java:".length());
+				module = loadBuiltInModule(namespaceURI, location);
+			} else {
+				if(location.indexOf(':') < 0) {
+					File f = new File(moduleLoadPath + File.separatorChar + location);
+					if(!f.canRead()) {
+						f = new File(location);
+						if(!f.canRead())
+							throw new XPathException("cannot read module source from file at " + f.getAbsolutePath());
+					}
+					try {
+						location = new URI(f.toURL().toString()).toASCIIString();
+					} catch (Exception e1) {
+					}
+				}
+				LOG.debug("Loading module from " + location);
+				InputStreamReader reader;
+				try {
+					URL url = new URL(location);
+					reader = new InputStreamReader(url.openStream(), "UTF-8");
+				} catch (MalformedURLException e) {
+					throw new XPathException("source location for module " + namespaceURI + " should be a valid URL");
+				} catch (UnsupportedEncodingException e) {
+					throw new XPathException("unsupported source encoding");
+				} catch (IOException e) {
+					throw new XPathException("IO exception while loading module " + namespaceURI, e);
+				}
+				XQueryContext context = new ModuleContext(this);
+				XQueryLexer lexer = new XQueryLexer(reader);
+				XQueryParser parser = new XQueryParser(lexer);
+				XQueryTreeParser astParser = new XQueryTreeParser(context);
+				try {
+					parser.xpath();
+					if (parser.foundErrors()) {
+						LOG.debug(parser.getErrorMessage());
+						throw new XPathException(
+							"error found while loading module from " + location + ": "
+								+ parser.getErrorMessage());
+					}
+					AST ast = parser.getAST();
+		
+					PathExpr path = new PathExpr(context);
+					astParser.xpath(ast, path);
+					if (astParser.foundErrors()) {
+						throw new XPathException(
+							"error found while loading module from " + location + ": "
+								+ astParser.getErrorMessage(),
+							astParser.getLastException());
+					}
+					
+					module = astParser.getModule();
+					if(module == null)
+						throw new XPathException("source at " + location + " is not a valid module");
+					if(!module.getNamespaceURI().equals(namespaceURI))
+						throw new XPathException("namespace URI declared by module (" + module.getNamespaceURI() + 
+							") does not match namespace URI in import statement, which was: " + namespaceURI);
+					modules.put(module.getNamespaceURI(), module);
+				} catch (RecognitionException e) {
+					throw new XPathException(
+						"error found while loading module from " + location + ": " + e.getMessage(),
+						e);
+				} catch (TokenStreamException e) {
+					throw new XPathException(
+						"error found while loading module from " + location + ": " + e.getMessage(),
+						e);
+				}
 			}
-			try {
-				location = new URI(f.toURL().toString()).toASCIIString();
-			} catch (Exception e1) {
-			}
 		}
-		LOG.debug("Loading module from " + location);
-		InputStreamReader reader;
-		try {
-			URL url = new URL(location);
-			reader = new InputStreamReader(url.openStream(), "UTF-8");
-		} catch (MalformedURLException e) {
-			throw new XPathException("source location for module " + namespaceURI + " should be a valid URL");
-		} catch (UnsupportedEncodingException e) {
-			throw new XPathException("unsupported source encoding");
-		} catch (IOException e) {
-			throw new XPathException("IO exception while loading module " + namespaceURI, e);
-		}
-		XQueryContext context = new ModuleContext(this);
-		XQueryLexer lexer = new XQueryLexer(reader);
-		XQueryParser parser = new XQueryParser(lexer);
-		XQueryTreeParser astParser = new XQueryTreeParser(context);
-		try {
-			parser.xpath();
-			if (parser.foundErrors()) {
-				LOG.debug(parser.getErrorMessage());
-				throw new XPathException(
-					"error found while loading module from " + location + ": "
-						+ parser.getErrorMessage());
-			}
-			AST ast = parser.getAST();
-
-			PathExpr path = new PathExpr(context);
-			astParser.xpath(ast, path);
-			if (astParser.foundErrors()) {
-				throw new XPathException(
-					"error found while loading module from " + location + ": "
-						+ astParser.getErrorMessage(),
-					astParser.getLastException());
-			}
-			
-			ExternalModule module = astParser.getModule();
-			if(module == null)
-				throw new XPathException("source at " + location + " is not a valid module");
-			if(!module.getNamespaceURI().equals(namespaceURI))
-				throw new XPathException("namespace URI declared by module (" + module.getNamespaceURI() + 
-					") does not match namespace URI in import statement, which was: " + namespaceURI);
-			if(prefix == null)
-				prefix = module.getDefaultPrefix();
-			declareNamespace(prefix, namespaceURI);
-			modules.put(module.getNamespaceURI(), module);
-			context.modules.put(module.getNamespaceURI(), module);
-		} catch (RecognitionException e) {
-			throw new XPathException(
-				"error found while loading module from " + location + ": " + e.getMessage(),
-				e);
-		} catch (TokenStreamException e) {
-			throw new XPathException(
-				"error found while loading module from " + location + ": " + e.getMessage(),
-				e);
-		}
+		if(prefix == null)
+			prefix = module.getDefaultPrefix();
+		declareNamespace(prefix, namespaceURI);
 	}
 
 	/**
