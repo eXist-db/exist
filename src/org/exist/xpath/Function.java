@@ -269,7 +269,6 @@ public abstract class Function extends PathExpr {
 	}
 
 	public abstract Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException;

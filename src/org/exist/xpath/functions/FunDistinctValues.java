@@ -26,11 +26,11 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
-import org.exist.xpath.*;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Dependency;
+import org.exist.xpath.Function;
+import org.exist.xpath.FunctionSignature;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.AtomicValue;
@@ -78,14 +78,13 @@ public class FunDistinctValues extends Function {
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
 		long start = System.currentTimeMillis();
-		Sequence values = getArgument(0).eval(docs, contextSequence);
+		Sequence values = getArgument(0).eval(contextSequence);
 		TreeSet set = new TreeSet(new Comparator() {
 			public int compare(Object o1, Object o2) {
 				try {

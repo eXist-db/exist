@@ -5,10 +5,10 @@
  */
 package org.exist.xpath.functions;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
-import org.exist.xpath.*;
 import org.exist.xpath.Cardinality;
+import org.exist.xpath.Function;
+import org.exist.xpath.FunctionSignature;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.BooleanValue;
@@ -37,7 +37,6 @@ public class FunContains extends Function {
 	}
 
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
@@ -45,11 +44,11 @@ public class FunContains extends Function {
 			contextSequence = contextItem.toSequence();
 		String s1 =
 			getArgument(0)
-				.eval(docs, contextSequence)
+				.eval(contextSequence)
 				.getStringValue();
 		String s2 =
 			getArgument(1)
-				.eval(docs, contextSequence)
+				.eval(contextSequence)
 				.getStringValue();
 		if (s1.indexOf(s2) > -1)
 			return BooleanValue.TRUE;

@@ -20,7 +20,6 @@
 
 package org.exist.xpath.functions;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xpath.Cardinality;
@@ -52,12 +51,12 @@ public class FunLocalName extends Function {
         super(context, signature);
     }
 	
-    public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         Node n = null;
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
         if(getArgumentCount() > 0) {
-            NodeSet result = getArgument(0).eval(docs, contextSequence).toNodeSet();
+            NodeSet result = getArgument(0).eval(contextSequence).toNodeSet();
             if(result.getLength() > 0)
             	n = result.item(0);
         } else {

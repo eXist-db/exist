@@ -62,11 +62,10 @@ public class FunExactlyOne extends Function {
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		Sequence seq = getArgument(0).eval(docs, contextSequence, contextItem);
+		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
 		if(seq.getLength() != 1)
 			throw new XPathException("fn:exactly-one called with a sequence containing zero or more than one item");
 		return seq;

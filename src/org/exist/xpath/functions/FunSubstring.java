@@ -23,11 +23,11 @@
 
 package org.exist.xpath.functions;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
-import org.exist.xpath.*;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Expression;
+import org.exist.xpath.Function;
+import org.exist.xpath.FunctionSignature;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.DoubleValue;
@@ -62,7 +62,7 @@ public class FunSubstring extends Function {
 		return Type.STRING;
 	}
 		
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 		Expression arg0 = getArgument(0);
 		Expression arg1 = getArgument(1);
 		Expression arg2 = null;
@@ -71,13 +71,13 @@ public class FunSubstring extends Function {
 
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
-		Sequence seq = arg0.eval(docs, contextSequence);
+		Sequence seq = arg0.eval(contextSequence);
 		if(seq.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
-		int start = ((DoubleValue)arg1.eval(docs, contextSequence).itemAt(0).convertTo(Type.DOUBLE)).getInt();
+		int start = ((DoubleValue)arg1.eval(contextSequence).itemAt(0).convertTo(Type.DOUBLE)).getInt();
 		int length = 0;
 		if(arg2 != null)
-			length = ((NumericValue)arg2.eval(docs, contextSequence).
+			length = ((NumericValue)arg2.eval(contextSequence).
 				itemAt(0).convertTo(Type.DOUBLE)).getInt();
 		if(start <= 0 || length < 0)
 			throw new IllegalArgumentException("Illegal start or length argument");

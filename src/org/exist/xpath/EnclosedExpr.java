@@ -50,11 +50,11 @@ public class EnclosedExpr extends PathExpr {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.AbstractExpression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence)
 	 */
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem)
+	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
 		long start = System.currentTimeMillis();
 		context.pushDocumentContext();
-		Sequence result = super.eval(docs, contextSequence, contextItem);
+		Sequence result = super.eval(contextSequence, contextItem);
 		context.popDocumentContext();
 		MemTreeBuilder builder = context.getDocumentBuilder();
 		Receiver receiver = new Receiver(builder);

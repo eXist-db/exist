@@ -65,7 +65,6 @@ public class ElementConstructor extends NodeConstructor {
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
@@ -94,7 +93,7 @@ public class ElementConstructor extends NodeConstructor {
 			for(Iterator i = attributes.iterator(); i.hasNext(); ) {
 				constructor = (AttributeConstructor)i.next();
 				if(!constructor.isNamespaceDeclaration()) {
-					attrValues = constructor.eval(docs, contextSequence, contextItem);
+					attrValues = constructor.eval(contextSequence, contextItem);
 					attrQName = QName.parse(context, constructor.getQName());
 					attrs.addAttribute(attrQName.getNamespaceURI(), attrQName.getLocalName(),
 						attrQName.toString(), "CDATA", attrValues.getStringValue());
@@ -106,7 +105,7 @@ public class ElementConstructor extends NodeConstructor {
 		int nodeNr = builder.startElement(qn, attrs);
 		// process element contents
 		if(content != null) {
-			content.eval(docs, contextSequence, contextItem);
+			content.eval(contextSequence, contextItem);
 		}
 		builder.endElement();
 		NodeImpl node = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);

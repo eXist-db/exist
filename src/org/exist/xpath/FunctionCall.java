@@ -68,18 +68,17 @@ public class FunctionCall extends Function {
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
 		Sequence[] seq = new Sequence[getArgumentCount()];
 		for(int i = 0; i < getArgumentCount(); i++) {
-			seq[i] = getArgument(i).eval(docs, contextSequence, contextItem);
+			seq[i] = getArgument(i).eval(contextSequence, contextItem);
 		}
 		functionDef.setArguments(seq);
 		
 		context.pushLocalContext(true);
-		Sequence returnSeq = expression.eval(docs, contextSequence, contextItem);
+		Sequence returnSeq = expression.eval(contextSequence, contextItem);
 		context.popLocalContext();
 		return returnSeq;
 	}

@@ -25,10 +25,10 @@ package org.exist.xpath.functions;
 
 import java.util.StringTokenizer;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
-import org.exist.xpath.*;
 import org.exist.xpath.Cardinality;
+import org.exist.xpath.Function;
+import org.exist.xpath.FunctionSignature;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
@@ -58,14 +58,14 @@ public class FunNormalizeSpace extends Function {
 		return Type.STRING;
 	}
 		
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
 		String value;
 		if(getArgumentCount() == 0)
 			value = contextSequence.getLength() > 0 ? contextSequence.itemAt(0).getStringValue() : "";
 		else {
-			Sequence seq = getArgument(0).eval(docs, contextSequence);
+			Sequence seq = getArgument(0).eval(contextSequence);
 			if(seq.getLength() == 0)
 				return Sequence.EMPTY_SEQUENCE;
 			value = seq.getStringValue();

@@ -57,7 +57,7 @@ public class FunPosition extends Function {
 			Dependency.CONTEXT_POSITION;
 	}
 
-    public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 		if(contextSequence == null || contextSequence.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		return new IntegerValue(context.getContextPosition() + 1);

@@ -118,7 +118,7 @@ public class GeneralComparison extends BinaryOp {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem)
+	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
 		/* 
 		 * If we are inside a predicate and one of the arguments is a node set, 
@@ -133,24 +133,23 @@ public class GeneralComparison extends BinaryOp {
 						|| Type.subTypeOf(getRight().returnsType(), Type.NODE))
 					&& (getRight().getCardinality() & Cardinality.MANY) == 0) {
 					// lookup search terms in the fulltext index
-					return quickNodeSetCompare(docs, contextSequence);
+					return quickNodeSetCompare(contextSequence);
 				} else {
-					return nodeSetCompare(docs, contextSequence);
+					return nodeSetCompare(contextSequence);
 				}
 			}
 		}
 		// Fall back to the generic compare process
-		return genericCompare(context, docs, contextSequence, contextItem);
+		return genericCompare(context, contextSequence, contextItem);
 	}
 
 	protected BooleanValue genericCompare(
 		StaticContext context,
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		Sequence ls = getLeft().eval(docs, contextSequence, contextItem);
-		Sequence rs = getRight().eval(docs, contextSequence, contextItem);
+		Sequence ls = getLeft().eval(contextSequence, contextItem);
+		Sequence rs = getRight().eval(contextSequence, contextItem);
 		AtomicValue lv, rv;
 		if (ls.getLength() == 1 && rs.getLength() == 1) {
 			lv = ls.itemAt(0).atomize();
@@ -179,16 +178,15 @@ public class GeneralComparison extends BinaryOp {
 	 * returns a node set. In this case, the left expression is executed first.
 	 * All matching context nodes are then passed to the right expression.
 	 */
-	protected Sequence nodeSetCompare(DocumentSet docs, Sequence contextSequence)
+	protected Sequence nodeSetCompare(Sequence contextSequence)
 		throws XPathException {
 		// evaluate left expression (returning node set)
-		NodeSet nodes = (NodeSet) getLeft().eval(docs, contextSequence);
-		return nodeSetCompare(nodes, docs, contextSequence);
+		NodeSet nodes = (NodeSet) getLeft().eval(contextSequence);
+		return nodeSetCompare(nodes, contextSequence);
 	}
 
 	protected Sequence nodeSetCompare(
 		NodeSet nodes,
-		DocumentSet docs,
 		Sequence contextSequence)
 		throws XPathException {
 		NodeSet result = new ExtArrayNodeSet();
@@ -201,7 +199,7 @@ public class GeneralComparison extends BinaryOp {
 			c = current.getContext();
 			do {
 				lv = current.atomize();
-				rs = getRight().eval(docs, c.getNode().toSequence());
+				rs = getRight().eval(c.getNode().toSequence());
 				for (SequenceIterator si = rs.iterate(); si.hasNext();) {
 					if (compareValues(context, lv, si.nextItem().atomize())) {
 						result.add(current);
@@ -217,15 +215,15 @@ public class GeneralComparison extends BinaryOp {
 	 * matching string sequences. Applies to comparisons where the left
 	 * operand returns a node set and the right operand is a string literal.
 	 */
-	protected Sequence quickNodeSetCompare(DocumentSet docs, Sequence contextSequence)
+	protected Sequence quickNodeSetCompare(Sequence contextSequence)
 		throws XPathException {
 		//	evaluate left expression
-		NodeSet nodes = (NodeSet) getLeft().eval(docs, contextSequence);
-		Sequence rightSeq = getRight().eval(docs, contextSequence);
+		NodeSet nodes = (NodeSet) getLeft().eval(contextSequence);
+		Sequence rightSeq = getRight().eval(contextSequence);
 		if (rightSeq.getLength() > 1)
 			// fall back to nodeSetCompare
-			return nodeSetCompare(nodes, docs, contextSequence);
-
+			return nodeSetCompare(nodes, contextSequence);
+		DocumentSet docs = nodes.getDocumentSet();
 		String cmp = rightSeq.getStringValue();
 		if (getLeft().returnsType() == Type.NODE
 			&& relation == Constants.EQ
@@ -256,7 +254,7 @@ public class GeneralComparison extends BinaryOp {
 				// all elements are indexed: use the fulltext index
 				containsExpr.addTerm(new LiteralValue(context, new StringValue(cmp)));
 				//LOG.debug("using shortcut: " + cmp);
-				nodes = (NodeSet) containsExpr.eval(docs, nodes, null);
+				nodes = (NodeSet) containsExpr.eval(nodes, null);
 			}
 			cmp = cmpCopy;
 		}

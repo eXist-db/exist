@@ -24,7 +24,6 @@ import java.util.Iterator;
 
 import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
@@ -67,7 +66,6 @@ public class LocationStep extends Step {
 	
 	protected Sequence applyPredicate(
 		StaticContext context,
-		DocumentSet documents,
 		NodeSet contextSet)
 		throws XPathException {
 		if(contextSet == null)
@@ -76,13 +74,12 @@ public class LocationStep extends Step {
 		Sequence result = contextSet;
 		for (Iterator i = predicates.iterator(); i.hasNext();) {
 			pred = (Predicate) i.next();
-			result = pred.eval(documents, result);
+			result = pred.eval(result);
 		}
 		return result;
 	}
 
 	public Sequence eval(
-		DocumentSet documents,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
@@ -95,17 +92,16 @@ public class LocationStep extends Step {
 				temp =
 					getDescendants(
 						context,
-						documents,
 						contextSequence.toNodeSet());
 				break;
 			case Constants.CHILD_AXIS :
 				temp =
-					getChildren(context, documents, contextSequence.toNodeSet());
+					getChildren(context, contextSequence.toNodeSet());
 				break;
 			case Constants.ANCESTOR_AXIS :
 			case Constants.ANCESTOR_SELF_AXIS :
 				temp =
-					getAncestors(context, documents, contextSequence.toNodeSet());
+					getAncestors(context, contextSequence.toNodeSet());
 				break;
 			case Constants.SELF_AXIS :
 				temp = contextSequence.toNodeSet();
@@ -124,7 +120,7 @@ public class LocationStep extends Step {
 				break;
 			case Constants.PARENT_AXIS :
 				temp =
-					getParents(context, documents, contextSequence.toNodeSet());
+					getParents(context, contextSequence.toNodeSet());
 				break;
 			case Constants.ATTRIBUTE_AXIS :
 				// combines /descendant-or-self::node()/attribute:*
@@ -132,13 +128,12 @@ public class LocationStep extends Step {
 				temp =
 					getAttributes(
 						context,
-						documents,
 						contextSequence.toNodeSet());
 				break;
 			case Constants.PRECEDING_SIBLING_AXIS :
 			case Constants.FOLLOWING_SIBLING_AXIS :
 				temp =
-					getSiblings(context, documents, contextSequence.toNodeSet());
+					getSiblings(context, contextSequence.toNodeSet());
 				break;
 			default :
 				throw new IllegalArgumentException("Unsupported axis specified");
@@ -146,12 +141,11 @@ public class LocationStep extends Step {
 		return
 			(predicates.size() == 0)
 				? temp
-				: applyPredicate(context, documents, temp);
+				: applyPredicate(context, temp);
 	}
 
 	protected NodeSet getAttributes(
 		StaticContext context,
-		DocumentSet documents,
 		NodeSet contextSet) {
 		NodeSet result;
 		if (test.isWildcardTest()) {
@@ -161,7 +155,7 @@ public class LocationStep extends Step {
 			if (buf == null) {
 				buf =
 					(NodeSet) context.getBroker().getAttributesByName(
-						documents,
+						contextSet.getDocumentSet(),
 						test.getName());
 			}
 			if (axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)
@@ -182,7 +176,6 @@ public class LocationStep extends Step {
 
 	protected NodeSet getChildren(
 		StaticContext context,
-		DocumentSet documents,
 		NodeSet contextSet) {
 		if (test.isWildcardTest()) {
 			// test is one out of *, text(), node()
@@ -194,7 +187,7 @@ public class LocationStep extends Step {
 				buf =
 					(NodeSet) context.getBroker().findElementsByTagName(
 						ElementValue.ELEMENT,
-						documents,
+						contextSet.getDocumentSet(),
 						test.getName());
 			}
 			return buf.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);
@@ -203,7 +196,6 @@ public class LocationStep extends Step {
 
 	protected NodeSet getDescendants(
 		StaticContext context,
-		DocumentSet documents,
 		NodeSet contextSet) {
 		if (test.isWildcardTest()) {
 			// test is one out of *, text(), node()
@@ -214,7 +206,7 @@ public class LocationStep extends Step {
 			if (buf == null) {
 				buf =
 					(NodeSet) context.getBroker().findElementsByTagName(
-						ElementValue.ELEMENT, documents,
+						ElementValue.ELEMENT, contextSet.getDocumentSet(),
 						test.getName());
 			}
 			return buf.selectAncestorDescendant(
@@ -227,13 +219,12 @@ public class LocationStep extends Step {
 
 	protected NodeSet getSiblings(
 		StaticContext context,
-		DocumentSet documents,
 		NodeSet contextSet) {
 		if (!test.isWildcardTest()) {
 			if (buf == null) {
 				buf =
 					(NodeSet) context.getBroker().findElementsByTagName(
-						ElementValue.ELEMENT, documents,
+						ElementValue.ELEMENT, contextSet.getDocumentSet(),
 						test.getName());
 			}
 			return contextSet.selectSiblings(
@@ -272,13 +263,12 @@ public class LocationStep extends Step {
 
 	protected NodeSet getAncestors(
 		StaticContext context,
-		DocumentSet documents,
 		NodeSet contextSet) {
 		if (!test.isWildcardTest()) {
 			if (buf == null) {
 				buf =
 					(NodeSet) context.getBroker().findElementsByTagName(
-						ElementValue.ELEMENT, documents,
+						ElementValue.ELEMENT, contextSet.getDocumentSet(),
 						test.getName());
 			}
 			NodeSet r =
@@ -308,7 +298,6 @@ public class LocationStep extends Step {
 
 	protected NodeSet getParents(
 		StaticContext context,
-		DocumentSet documents,
 		NodeSet contextSet) {
 		return contextSet.getParents();
 	}

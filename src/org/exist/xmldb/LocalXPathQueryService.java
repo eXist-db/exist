@@ -228,8 +228,9 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		throws XMLDBException {
 		long start = System.currentTimeMillis();
 		PathExpr expr = ((PathExpr) compiled);
+		expr.getContext().setStaticallyKnownDocuments(docs);
 		try {
-			Sequence result = expr.eval(docs, contextSet, null);
+			Sequence result = expr.eval(contextSet, null);
 			LOG.info(
 				expr.pprint()
 					+ " found: "

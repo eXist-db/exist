@@ -22,7 +22,6 @@
  */
 package org.exist.xpath;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.OrderedValueSequence;
@@ -43,12 +42,12 @@ public class LetExpr extends BindingExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem)
+	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
 		context.pushLocalContext(false);
 		Variable var = new Variable(QName.parse(context, varName));
 		context.declareVariable(var);
-		Sequence val = inputSequence.eval(docs, null, null);
+		Sequence val = inputSequence.eval(null, null);
 		if(sequenceType != null) {
 			sequenceType.checkType(val.getItemType());
 			sequenceType.checkCardinality(val);
@@ -57,7 +56,7 @@ public class LetExpr extends BindingExpression {
 
 		Sequence filtered = null;
 		if (whereExpr != null) {
-			filtered = applyWhereExpression(context, docs, null);
+			filtered = applyWhereExpression(context, null);
 			if(whereExpr.returnsType() == Type.BOOLEAN) {
 				if(!filtered.effectiveBooleanValue())
 					return Sequence.EMPTY_SEQUENCE;
@@ -66,14 +65,14 @@ public class LetExpr extends BindingExpression {
 		}
 		Sequence returnSeq = null;
 		if (orderSpecs == null)
-			returnSeq = returnExpr.eval(docs, filtered, null);
+			returnSeq = returnExpr.eval(filtered, null);
 		else {
 			if (filtered != null)
 				val = filtered;
 			OrderedValueSequence ordered =
-				new OrderedValueSequence(docs, orderSpecs, val.getLength());
+				new OrderedValueSequence(orderSpecs, val.getLength());
 			ordered.addAll(val);
-			returnSeq = returnExpr.eval(docs, ordered, null);
+			returnSeq = returnExpr.eval(ordered, null);
 		}
 		context.popLocalContext();
 		return returnSeq;

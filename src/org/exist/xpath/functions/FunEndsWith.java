@@ -20,10 +20,10 @@
 
 package org.exist.xpath.functions;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
-import org.exist.xpath.*;
 import org.exist.xpath.Cardinality;
+import org.exist.xpath.Function;
+import org.exist.xpath.FunctionSignature;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.BooleanValue;
@@ -51,15 +51,14 @@ public class FunEndsWith extends Function {
 	}
 
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
 
-		Sequence s1 = getArgument(0).eval(docs, contextSequence);
-		Sequence s2 = getArgument(1).eval(docs, contextSequence);
+		Sequence s1 = getArgument(0).eval(contextSequence);
+		Sequence s2 = getArgument(1).eval(contextSequence);
 		if (s1.getLength() == 0 || s2.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		if (s1.getStringValue().endsWith(s2.getStringValue()))

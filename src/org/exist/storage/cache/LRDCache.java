@@ -109,7 +109,7 @@ public class LRDCache extends GClockCache {
 		old = items[bucket];
 		if (old != null) {
 			map.remove(old.getKey());
-			old.release();
+			old.sync();
 		}
 		items[bucket] = item;
 		map.put(item.getKey(), item);
@@ -127,9 +127,9 @@ public class LRDCache extends GClockCache {
 			item = items[i];
 			if(item != null) {
 				refCount = item.getReferenceCount();
-				if(refCount > limit)
+				if(refCount > limit) {
 					item.setReferenceCount(refCount - limit);
-				else
+				} else
 					item.setReferenceCount(1);
 			}
 		}
@@ -140,7 +140,6 @@ public class LRDCache extends GClockCache {
 	 * Periodically reset all reference counts to 1.
 	 */
 	protected void cleanup() {
-		LOG.debug("------------------------------ adjusting references");
 		Cacheable item;
 		totalReferences = 0;
 		for(int i = 0; i < count; i++) {

@@ -53,7 +53,7 @@ public abstract class Step extends AbstractExpression {
         predicates.add( expr );
     }
 
-    public abstract Sequence eval( DocumentSet docs, Sequence contextSequence, Item contextItem ) throws XPathException;
+    public abstract Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException;
 
     public int getAxis() {
         return axis;

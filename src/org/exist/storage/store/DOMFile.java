@@ -1525,7 +1525,7 @@ public class DOMFile extends BTree implements Lockable {
 		/* (non-Javadoc)
 		 * @see org.exist.storage.cache.Cacheable#release()
 		 */
-		public void release() {
+		public void sync() {
 			if (isDirty())
 				write();
 		}

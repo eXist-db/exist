@@ -63,11 +63,10 @@ public class DescribeFunction extends Function {
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		String fname = getArgument(0).eval(docs, contextSequence, contextItem).getStringValue();
+		String fname = getArgument(0).eval(contextSequence, contextItem).getStringValue();
 		QName qname = QName.parseFunction(context, fname);
 		String uri = qname.getNamespaceURI();
 		FunctionSignature signature;

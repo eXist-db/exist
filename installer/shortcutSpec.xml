@@ -12,9 +12,9 @@
 		target="$INSTALL_PATH/bin/client.bat"
 		description="Start the command-line client" programGroup="yes"
 		desktop="yes"/>
-	<shortcut name="Shutdown Database"
+	<shortcut name="Database Shutdown"
 		target="$INSTALL_PATH/bin/shutdown.bat"
-		description="Shutdown a running database" programGroup="yes"/>
+		description="Cleanly shutdown a running database" programGroup="yes"/>
 	<shortcut name="QuickStart Guide"
 		target="$INSTALL_PATH/Quickstart.html" programGroup="yes"
 		description="Open the QuickStart Guide"/>

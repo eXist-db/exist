@@ -20,16 +20,16 @@
 
 package org.exist.xpath.functions;
 
-import org.exist.dom.*;
-import org.exist.xpath.*;
+import org.exist.dom.QName;
 import org.exist.xpath.Cardinality;
+import org.exist.xpath.Function;
+import org.exist.xpath.FunctionSignature;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceType;
-import org.exist.xpath.value.StringValue;
 import org.exist.xpath.value.Type;
 
 /**
@@ -54,10 +54,10 @@ public class FunBoolean extends Function {
 		return Type.BOOLEAN;
 	}
 	
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
-		contextSequence = getArgument(0).eval(docs, contextSequence);
+		contextSequence = getArgument(0).eval(contextSequence);
 		return contextSequence.effectiveBooleanValue() ? BooleanValue.TRUE : BooleanValue.FALSE;
 	}
 

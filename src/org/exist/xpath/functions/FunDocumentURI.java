@@ -60,12 +60,11 @@ public class FunDocumentURI extends Function {
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
 		Expression arg = getArgument(0);
-		Sequence s = arg.eval(docs, contextSequence, contextItem);
+		Sequence s = arg.eval(contextSequence, contextItem);
 		NodeProxy node = (NodeProxy) s.itemAt(0);
 		return new StringValue(node.doc.getFileName());
 	}

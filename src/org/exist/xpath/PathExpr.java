@@ -74,10 +74,7 @@ public class PathExpr extends AbstractExpression implements CompiledExpression {
             ( (Step) e ).addPredicate( pred );
     }
 
-    public Sequence eval( DocumentSet docs, Sequence contextSequence, 
-    	Item contextItem) throws XPathException {
-    	if(docs == null)
-    		docs = inputDocumentSet == null ? new DocumentSet() : inputDocumentSet;
+    public Sequence eval( Sequence contextSequence, Item contextItem) throws XPathException {
         if ( steps.size() == 0 )
             return Sequence.EMPTY_SEQUENCE;
         Sequence r;
@@ -95,7 +92,7 @@ public class PathExpr extends AbstractExpression implements CompiledExpression {
             if ((expr.getDependencies() & Dependency.CONTEXT_ITEM) != 0) {
             	//LOG.debug("single step mode: " + expr.pprint());
 				if(r.getLength() == 0)
-                    r = expr.eval( docs, null, null );
+                    r = expr.eval( null, null );
                 else {
                 	values = null;
                 	if(r.getLength() > 1)
@@ -106,14 +103,14 @@ public class PathExpr extends AbstractExpression implements CompiledExpression {
                 		context.setContextPosition(pos);
                 		current = iterInner.nextItem();
                 		if(values == null)
-                			values = expr.eval(docs, r, current);
+                			values = expr.eval(r, current);
                 		else
-                			values.addAll( expr.eval(docs, r, current) );
+                			values.addAll( expr.eval(r, current) );
                 	}
 	                r = values;
             	}
             } else
-            	r = expr.eval( docs, r );
+            	r = expr.eval( r );
         }
         return r;
     }

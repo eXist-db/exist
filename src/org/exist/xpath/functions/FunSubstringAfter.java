@@ -23,11 +23,11 @@
 
 package org.exist.xpath.functions;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
-import org.exist.xpath.*;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Expression;
+import org.exist.xpath.Function;
+import org.exist.xpath.FunctionSignature;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
@@ -56,7 +56,6 @@ public class FunSubstringAfter extends Function {
 	}
 
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
@@ -66,8 +65,8 @@ public class FunSubstringAfter extends Function {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
 			
-		Sequence seq1 = arg0.eval(docs, contextSequence);
-		Sequence seq2 = arg0.eval(docs, contextSequence);
+		Sequence seq1 = arg0.eval(contextSequence);
+		Sequence seq2 = arg0.eval(contextSequence);
 		
 		if(seq1.getLength() == 0 || seq2.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;

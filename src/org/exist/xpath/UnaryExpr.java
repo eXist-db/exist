@@ -22,9 +22,6 @@
  */
 package org.exist.xpath;
 
-import org.exist.dom.DocumentSet;
-import org.exist.xpath.value.DoubleValue;
-import org.exist.xpath.value.IntegerValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.NumericValue;
 import org.exist.xpath.value.Sequence;
@@ -48,14 +45,14 @@ public class UnaryExpr extends PathExpr {
 		return Type.DECIMAL;
 	}
 	
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) 
+	public Sequence eval(Sequence contextSequence, Item contextItem) 
 	throws XPathException {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
 		if(getLength() == 0)
 			throw new XPathException("unary expression requires an operand");
 		NumericValue value = (NumericValue)
-			getExpression(0).eval(docs, contextSequence).convertTo(Type.NUMBER);
+			getExpression(0).eval(contextSequence).convertTo(Type.NUMBER);
 		if(mode == Constants.MINUS)
 			return value.negate();
 		else

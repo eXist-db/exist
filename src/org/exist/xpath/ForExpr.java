@@ -22,7 +22,6 @@
  */
 package org.exist.xpath;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.xpath.value.IntegerValue;
@@ -54,7 +53,6 @@ public class ForExpr extends BindingExpression {
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
@@ -72,7 +70,7 @@ public class ForExpr extends BindingExpression {
 		}
 		
 		// evaluate the "in" expression
-		Sequence in = inputSequence.eval(docs, null, null);
+		Sequence in = inputSequence.eval(null, null);
 		var.setValue(in);
 		if(whereExpr != null) {
 			whereExpr.setInPredicate(true);
@@ -83,12 +81,12 @@ public class ForExpr extends BindingExpression {
 			at == null;
 		if(fastExec) {
 			LOG.debug("fast evaluation mode");
-			in = applyWhereExpression(context, docs, null);
+			in = applyWhereExpression(context, null);
 		}
 		
 		if(orderSpecs != null)
 			result = 
-				new OrderedValueSequence(docs, orderSpecs, in.getLength());
+				new OrderedValueSequence(orderSpecs, in.getLength());
 		else
 			result = new ValueSequence();
 			
@@ -113,7 +111,7 @@ public class ForExpr extends BindingExpression {
 			if (whereExpr != null && (!fastExec)) {
 				if(contextItem instanceof NodeProxy)
 					((NodeProxy)contextItem).addContextNode((NodeProxy)contextItem);
-				val = applyWhereExpression(context, docs, contextSequence);
+				val = applyWhereExpression(context, contextSequence);
 				if(!val.effectiveBooleanValue())
 					continue;
 			} else
@@ -122,7 +120,7 @@ public class ForExpr extends BindingExpression {
 			// if there is no "order by" clause, immediately call
 			// the return clause
 			if(orderSpecs == null)
-				val = returnExpr.eval(docs, val);
+				val = returnExpr.eval( val);
 			result.addAll(val);
 		}
 		if(orderSpecs != null) {
@@ -136,7 +134,7 @@ public class ForExpr extends BindingExpression {
 				// set variable value to current item
 				var.setValue(contextSequence);
 				context.setContextPosition(p);
-				val = returnExpr.eval(docs, contextSequence);
+				val = returnExpr.eval(contextSequence);
 				orderedResult.addAll(val);
 			}
 			result = orderedResult;

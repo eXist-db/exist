@@ -58,13 +58,12 @@ public class RangeExpression extends Function {
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		long start = ((IntegerValue)getArgument(0).eval(docs, contextSequence, contextItem).
+		long start = ((IntegerValue)getArgument(0).eval(contextSequence, contextItem).
 			convertTo(Type.INTEGER)).getLong();
-		long end = ((IntegerValue)getArgument(1).eval(docs, contextSequence, contextItem).
+		long end = ((IntegerValue)getArgument(1).eval(contextSequence, contextItem).
 			convertTo(Type.INTEGER)).getLong();
 		ValueSequence result = new ValueSequence();
 		for(long i = start; i <= end; i++) {

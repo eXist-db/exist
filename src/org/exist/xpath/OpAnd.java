@@ -21,7 +21,6 @@
 
 package org.exist.xpath;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.Item;
@@ -40,7 +39,6 @@ public class OpAnd extends LogicalOp {
 	}
 
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
@@ -53,18 +51,18 @@ public class OpAnd extends LogicalOp {
 		Expression right = getRight();
 		if (Type.subTypeOf(left.returnsType(), Type.NODE)
 			&& Type.subTypeOf(right.returnsType(), Type.NODE)) {
-			NodeSet rl = left.eval(docs, contextSequence, null).toNodeSet();
+			NodeSet rl = left.eval(contextSequence, null).toNodeSet();
 			rl = rl.getContextNodes(inPredicate);
-			NodeSet rr = right.eval(docs, contextSequence, null).toNodeSet();
+			NodeSet rr = right.eval(contextSequence, null).toNodeSet();
 			rr = rr.getContextNodes(inPredicate);
 			rl =
 				rl.intersection(rr);
 			return rl;
 		} else {
 			boolean ls =
-				left.eval(docs, contextSequence).effectiveBooleanValue();
+				left.eval(contextSequence).effectiveBooleanValue();
 			boolean rs =
-				right.eval(docs, contextSequence).effectiveBooleanValue();
+				right.eval(contextSequence).effectiveBooleanValue();
 			return ls && rs ? BooleanValue.TRUE : BooleanValue.FALSE;
 		}
 	}

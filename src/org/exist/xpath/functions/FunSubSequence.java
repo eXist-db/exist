@@ -71,15 +71,14 @@ public class FunSubSequence extends Function {
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		Sequence seq = getArgument(0).eval(docs, contextSequence, contextItem);
+		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
 		if(seq.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		int start = 
-			((DoubleValue)getArgument(1).eval(docs, contextSequence, contextItem).convertTo(Type.DOUBLE)).getInt();
+			((DoubleValue)getArgument(1).eval(contextSequence, contextItem).convertTo(Type.DOUBLE)).getInt();
 		if(start < 0)
 			start = 0;
 		else
@@ -89,7 +88,7 @@ public class FunSubSequence extends Function {
 		int length = -1;
 		if(getArgumentCount() == 3)
 			length =
-				((DoubleValue)getArgument(2).eval(docs, contextSequence, contextItem).convertTo(Type.DOUBLE)).getInt();
+				((DoubleValue)getArgument(2).eval(contextSequence, contextItem).convertTo(Type.DOUBLE)).getInt();
 		 if(length < 0 || length > seq.getLength() - start)
 		 	length = seq.getLength() - start;
 		 Sequence result;

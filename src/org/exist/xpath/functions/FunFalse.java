@@ -56,7 +56,6 @@ public class FunFalse extends Function {
 	 * Always returns false.
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSet,
 		Item contextNode) {
 		return BooleanValue.FALSE;

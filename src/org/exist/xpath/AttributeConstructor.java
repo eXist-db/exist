@@ -71,7 +71,6 @@ public class AttributeConstructor extends NodeConstructor {
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
@@ -80,7 +79,7 @@ public class AttributeConstructor extends NodeConstructor {
 		for(Iterator i = contents.iterator(); i.hasNext(); ) {
 			next = i.next();
 			if(next instanceof Expression)
-				evalEnclosedExpr(((Expression)next).eval(docs, contextSequence, contextItem), buf);
+				evalEnclosedExpr(((Expression)next).eval(contextSequence, contextItem), buf);
 			else
 				buf.append(next);
 		}

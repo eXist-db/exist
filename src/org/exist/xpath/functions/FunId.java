@@ -40,7 +40,6 @@ public class FunId extends Function {
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.dom.NodeSet, org.exist.dom.NodeProxy)
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
@@ -49,21 +48,25 @@ public class FunId extends Function {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
 		Expression arg = getArgument(0);
-		Sequence idval = arg.eval(docs, contextSequence);
+		Sequence idval = arg.eval(contextSequence);
 		if(idval.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		NodeSet result = new ExtArrayNodeSet();
 		String nextId;
+		DocumentSet docs;
+		if(contextSequence == null || !(contextSequence instanceof NodeSet))
+			docs = context.getStaticallyKnownDocuments();
+		else
+			docs = contextSequence.toNodeSet().getDocumentSet(); 
 		for(SequenceIterator i = idval.iterate(); i.hasNext(); ) {
 			nextId = i.nextItem().getStringValue();
 			QName id = new QName(nextId, "", null);
-			getId(context, result, docs, id);
+			getId(result, docs, id);
 		}
 		return result;
 	}
 
 	private void getId(
-		StaticContext context,
 		NodeSet result,
 		DocumentSet docs,
 		QName id) {

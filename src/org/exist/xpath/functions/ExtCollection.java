@@ -79,16 +79,15 @@ public class ExtCollection extends Function {
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
 		//docs.clear();
-		docs = new DocumentSet();
+		DocumentSet docs = new DocumentSet();
 		getParent().resetState();
 		for (int i = 0; i < getArgumentCount(); i++) {
 			Sequence seq =
-				getArgument(i).eval(docs, contextSequence, contextItem);
+				getArgument(i).eval(contextSequence, contextItem);
 			for (SequenceIterator j = seq.iterate(); j.hasNext();) {
 				String next = j.nextItem().getStringValue();
 				try {

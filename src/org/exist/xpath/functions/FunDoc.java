@@ -76,12 +76,12 @@ public class FunDoc extends Function {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem)
+	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
-		docs = new DocumentSet();
+		DocumentSet docs = new DocumentSet();
 		getParent().resetState();
 		Sequence arg =
-			getArgument(0).eval(docs, contextSequence, contextItem);
+			getArgument(0).eval(contextSequence, contextItem);
 		if(arg.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		String path = arg.itemAt(0).getStringValue();

@@ -71,20 +71,19 @@ public class XMLDBStore extends Function {
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
 		JavaObjectValue obj =
 			(JavaObjectValue) getArgument(0)
-				.eval(docs, contextSequence, contextItem)
+				.eval(contextSequence, contextItem)
 				.itemAt(0);
 		String docName =
 			getArgument(1)
-				.eval(docs, contextSequence, contextItem)
+				.eval(contextSequence, contextItem)
 				.getStringValue();
 		Item item =
-			getArgument(2).eval(docs, contextSequence, contextItem).itemAt(0);
+			getArgument(2).eval(contextSequence, contextItem).itemAt(0);
 
 		if (!(obj.getObject() instanceof Collection))
 			throw new XPathException("Argument 3 should be an instance of org.xmldb.api.base.Collection");

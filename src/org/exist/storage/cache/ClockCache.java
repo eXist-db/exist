@@ -95,7 +95,7 @@ public class ClockCache implements Cache {
 		old = items[bucket];
 		if (old != null) {
 			map.remove(old.getKey());
-			old.release();
+			old.sync();
 		}
 		items[bucket] = item;
 		map.put(item.getKey(), item);
@@ -143,7 +143,7 @@ public class ClockCache implements Cache {
 	public void flush() {
 		for(int i = 0; i < count; i++)
 			if(items[i] != null)
-				items[i].release();
+				items[i].sync();
 	}
 
 	/* (non-Javadoc)

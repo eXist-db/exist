@@ -92,21 +92,19 @@ public abstract class BindingExpression extends AbstractExpression {
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public abstract Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException;
 
 	protected Sequence applyWhereExpression(
 		StaticContext context,
-		DocumentSet docs,
 		Sequence contextSequence)
 		throws XPathException {
 		whereExpr.setInPredicate(true);
 		if (Type.subTypeOf(whereExpr.returnsType(), Type.NODE)) {
 			// if the where expression returns a node set, check the context
 			// node of each node in the set
-			NodeSet temp = whereExpr.eval(docs, contextSequence).toNodeSet();
+			NodeSet temp = whereExpr.eval(contextSequence).toNodeSet();
 			NodeProxy current;
 			ContextItem contextNode;
 			NodeProxy next;
@@ -133,7 +131,7 @@ public abstract class BindingExpression extends AbstractExpression {
 			}
 			return result;
 		} else if (contextSequence == null) {
-			Sequence innerSeq = whereExpr.eval(docs, null);
+			Sequence innerSeq = whereExpr.eval(null);
 			return innerSeq.effectiveBooleanValue() ? BooleanValue.TRUE : BooleanValue.FALSE;
 		} else {
 			// general where clause: just check the effective boolean value
@@ -145,7 +143,7 @@ public abstract class BindingExpression extends AbstractExpression {
 				p++) {
 				Item item = i.nextItem();
 				context.setContextPosition(p);
-				Sequence innerSeq = whereExpr.eval(docs, contextSequence, item);
+				Sequence innerSeq = whereExpr.eval(contextSequence, item);
 				if (innerSeq.effectiveBooleanValue())
 					result.add(item);
 			}

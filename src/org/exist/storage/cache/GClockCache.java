@@ -102,7 +102,7 @@ public class GClockCache implements Cache {
 	public void flush() {
 		for (int i = 0; i < count; i++) {
 			if (items[i] != null)
-				items[i].release();
+				items[i].sync();
 		}
 	}
 
@@ -127,7 +127,7 @@ public class GClockCache implements Cache {
 				if (old != null) {
 					//LOG.debug(fileName + " replacing " + old.getKey() + " for " + item.getKey());
 					map.remove(old.getKey());
-					old.release();
+					old.sync();
 				}
 				items[bucket] = item;
 				map.put(item.getKey(), item);

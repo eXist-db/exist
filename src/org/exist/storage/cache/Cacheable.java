@@ -95,5 +95,5 @@ public interface Cacheable {
 	 * collected. All unwritten data should be flushed
 	 * to disk.
 	 */
-	public void release();
+	public void sync();
 }

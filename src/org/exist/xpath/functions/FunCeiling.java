@@ -51,10 +51,10 @@ public class FunCeiling extends Function {
 		return Type.NUMBER;
     }
 
-    public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
     	if(contextItem != null)
     		contextSequence = contextItem.toSequence();
-    	Sequence seq = getArgument(0).eval(docs, contextSequence, contextItem);
+    	Sequence seq = getArgument(0).eval(contextSequence, contextItem);
     	if(seq.getLength() == 0)
     		return Sequence.EMPTY_SEQUENCE; 
 		NumericValue value = (NumericValue)

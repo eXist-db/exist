@@ -46,7 +46,7 @@ public abstract class CombiningExpression extends AbstractExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
-	public abstract Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem)
+	public abstract Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException;
 
 	/* (non-Javadoc)

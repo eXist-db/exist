@@ -45,11 +45,13 @@ public class RootNode extends Step {
 	}
 
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem) {
+		DocumentSet ds = context.getStaticallyKnownDocuments();
+		if(ds == null || ds.getLength() == 0)
+			return Sequence.EMPTY_SEQUENCE;
 		NodeSet result = new ExtArrayNodeSet(1);
-		for (Iterator i = docs.iterator(); i.hasNext();) {
+		for (Iterator i = ds.iterator(); i.hasNext();) {
 			result.add(new NodeProxy((DocumentImpl) i.next(), -1));
 		}
 		return result;

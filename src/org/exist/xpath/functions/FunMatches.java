@@ -81,18 +81,17 @@ public class FunMatches extends Function {
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		Sequence stringArg = getArgument(0).eval(docs, contextSequence, contextItem);
+		Sequence stringArg = getArgument(0).eval(contextSequence, contextItem);
 		if(stringArg.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		String string = stringArg.getStringValue();
-		String pattern = getArgument(1).eval(docs, contextSequence, contextItem).getStringValue();
+		String pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
 		int flags = 0;
 		if(getArgumentCount() == 3)
-			flags = parseFlags(getArgument(2).eval(docs, contextSequence, contextItem).getStringValue());
+			flags = parseFlags(getArgument(2).eval(contextSequence, contextItem).getStringValue());
 		try {
 			if(prevPattern == null || (!pattern.equals(prevPattern)) || flags != prevFlags)
 				pat = compiler.compile(pattern, flags);
