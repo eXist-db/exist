@@ -1110,6 +1110,7 @@ public class RpcConnection extends Thread {
 			resultSeq = doQuery(user, broker, xpath, docs, nodes, namespaces);
 			if (resultSeq == null)
 				return ret;
+			LOG.debug("found " + resultSeq.getLength());
 			if (sortBy != null) {
 				SortedNodeSet sorted =
 					new SortedNodeSet(brokerPool, user, sortBy);
@@ -1128,7 +1129,6 @@ public class RpcConnection extends Thread {
 							entry = new Vector();
 							if (next instanceof NodeProxy) {
 								p = (NodeProxy) next;
-								System.out.println(p.gid);
 								entry.addElement(p.doc.getFileName());
 								entry.addElement(Long.toString(p.getGID()));
 							} else {
