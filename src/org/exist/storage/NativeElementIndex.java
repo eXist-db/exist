@@ -43,6 +43,7 @@ import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.ReadOnlyException;
+import org.exist.util.StorageAddress;
 //import org.exist.util.StorageAddress;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
@@ -138,8 +139,8 @@ public class NativeElementIndex extends ElementIndex {
 									delta = is.readLong();
 									gid = last + delta;
 									last = gid;
-									address = is.readFixedLong();
-									//address = StorageAddress.read(is);
+									//address = is.readFixedLong();
+									address = StorageAddress.read(is);
 									if (node == null
 										&& oldDoc.getTreeLevel(gid) < oldDoc.reindexRequired()) {
 										idList.add(new NodeProxy(oldDoc, gid, address));
@@ -170,8 +171,8 @@ public class NativeElementIndex extends ElementIndex {
 					delta = p.gid - last;
 					last = p.gid;
 					os.writeLong(delta);
-					//StorageAddress.write(p.getInternalAddress(), os);
-					os.writeFixedLong(p.getInternalAddress());
+					StorageAddress.write(p.getInternalAddress(), os);
+					//os.writeFixedLong(p.getInternalAddress());
 				}
 				//data = os.toByteArray();
 				try {
@@ -259,8 +260,8 @@ public class NativeElementIndex extends ElementIndex {
 									delta = is.readLong();
 									gid = last + delta;
 									last = gid;
-									//address = StorageAddress.read(is);
-									address = is.readFixedLong();
+									address = StorageAddress.read(is);
+									//address = is.readFixedLong();
 									if(!containsNode(idList, gid)) {
 										newList.add(new NodeProxy(doc, gid, address));
 									}
@@ -284,8 +285,8 @@ public class NativeElementIndex extends ElementIndex {
 					delta = p.gid - last;
 					last = p.gid;
 					os.writeLong(delta);
-					//StorageAddress.write(p.getInternalAddress(), os);
-					os.writeFixedLong(p.getInternalAddress());
+					StorageAddress.write(p.getInternalAddress(), os);
+					//os.writeFixedLong(p.getInternalAddress());
 				}
 				try {
 					lock.acquire(Lock.WRITE_LOCK);
@@ -348,8 +349,8 @@ public class NativeElementIndex extends ElementIndex {
 					cid = proxy.gid - prevId;
 					prevId = proxy.gid;
 					os.writeLong(cid);
-					os.writeFixedLong(proxy.getInternalAddress());
-					//StorageAddress.write(proxy.getInternalAddress(), os);
+					//os.writeFixedLong(proxy.getInternalAddress());
+					StorageAddress.write(proxy.getInternalAddress(), os);
 				}
 				if(qname.getNameType() != ElementValue.ATTRIBUTE_ID) {
 					short sym = NativeBroker.getSymbols().getSymbol(qname.getLocalName());

@@ -423,14 +423,14 @@ public class NativeBroker extends DBBroker {
 					gid = 0;
 					for (int k = 0; k < len; k++) {
 						gid = gid + is.readLong();
-						address = is.readFixedLong();
+						//address = is.readFixedLong();
 						result.add(
 							new NodeProxy(
 								doc,
 								gid,
 								Node.ELEMENT_NODE,
-								address),
-								//StorageAddress.read(is)),
+						//		address),
+								StorageAddress.read(is)),
 							len);
 					}
 				}
