@@ -683,7 +683,7 @@ public class DOMFile extends BTree implements Lockable {
     }
 
     public boolean create() throws DBException {
-        if (super.create((short) 12, lock))
+        if (super.create((short) 12))
             return true;
         else
             return false;
@@ -1019,10 +1019,7 @@ public class DOMFile extends BTree implements Lockable {
      *                        Description of the Exception
      */
     public boolean open() throws DBException {
-        if (super.open(FILE_FORMAT_VERSION_ID, lock))
-            return true;
-        else
-            return false;
+        return super.open(FILE_FORMAT_VERSION_ID);
     }
 
     /**

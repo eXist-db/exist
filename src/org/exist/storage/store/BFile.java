@@ -230,7 +230,7 @@ public class BFile extends BTree {
     }
 
     public boolean create() throws DBException {
-        if (super.create((short) fixedKeyLen, lock)) {
+        if (super.create((short) fixedKeyLen)) {
             fileHeader.setLastDataPage(-1);
             return true;
         } else
@@ -520,7 +520,7 @@ public class BFile extends BTree {
     }
 
     public boolean open() throws DBException {
-        return super.open(FILE_FORMAT_VERSION_ID, lock);
+        return super.open(FILE_FORMAT_VERSION_ID);
     }
 
     /**
