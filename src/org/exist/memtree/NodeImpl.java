@@ -49,6 +49,7 @@ import org.xml.sax.SAXException;
 public class NodeImpl implements Node, NodeValue {
 
     public final static short REFERENCE_NODE = 100;
+    public final static short NAMESPACE_NODE = 101;
     
 	protected int nodeNumber;
 	protected DocumentImpl document;

@@ -51,10 +51,12 @@ public class QNameValue extends AtomicValue {
 	 * @see org.exist.xquery.value.Sequence#getStringValue()
 	 */
 	public String getStringValue() throws XPathException {
-		String prefix = context.getPrefixForURI(qname.getNamespaceURI());
-		if (prefix == null)
-			throw new XPathException(
-				"namespace " + qname.getNamespaceURI() + " is not defined");
+	    if(qname.needsNamespaceDecl()) {
+			String prefix = context.getPrefixForURI(qname.getNamespaceURI());
+			if (prefix == null)
+				throw new XPathException(
+					"namespace " + qname.getNamespaceURI() + " is not defined");
+	    }
 		return qname.toString();
 	}
 

@@ -24,6 +24,7 @@ package org.exist.memtree;
 
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -51,6 +52,10 @@ public class Receiver implements ContentHandler, LexicalHandler {
 	
 	public Document getDocument() {
 		return builder.getDocument();
+	}
+	
+	public XQueryContext getContext() {
+	    return builder.getContext();
 	}
 	
 	/* (non-Javadoc)
