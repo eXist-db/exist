@@ -107,6 +107,8 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.modules.XMLResource;
+import org.xmldb.api.base.ErrorCodes;
 
 public class ClientFrame extends JFrame
 		implements
@@ -346,6 +348,33 @@ public class ClientFrame extends JFrame
 		});
 		fileMenu.add(item);
 
+		item = new JMenuItem("Create blank document", KeyEvent.VK_N);
+		item.setAccelerator(KeyStroke.getKeyStroke("control B"));
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+                //FIXME: Prevent owerwrite. Security?
+				Collection collection = client.current;
+				XMLResource result = null;
+				String nameres = JOptionPane.showInputDialog(null,
+				"Name of the XML resource (extension incluse)");
+				if (nameres != null) {
+					try {
+						result = (XMLResource) collection.createResource(
+								nameres, XMLResource.RESOURCE_TYPE);
+						result.setContent("<template></template>");
+						collection.storeResource(result);
+						collection.close();
+						client.reloadCollection();
+					} catch (XMLDBException ev) {
+						showErrorMessage(ev.getMessage(), ev);
+					}
+
+				}
+			}
+		});
+		fileMenu.add(item);
+		fileMenu.addSeparator();
+
 		item = new JMenuItem("Remove");
 		item.setAccelerator(KeyStroke.getKeyStroke("control D"));
 		item.addActionListener(new ActionListener() {
@@ -372,6 +401,7 @@ public class ClientFrame extends JFrame
 			}
 		});
 		fileMenu.add(item);
+		fileMenu.addSeparator();
 		
 		item = new JMenuItem("Reindex collection", KeyEvent.VK_R);
 		item.setAccelerator(KeyStroke.getKeyStroke("control R"));
