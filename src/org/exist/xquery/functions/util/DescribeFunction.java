@@ -47,7 +47,7 @@ public class DescribeFunction extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("describe-function", UTIL_FUNCTION_NS, "util"),
+			new QName("describe-function", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Describes a built-in function. Returns an element describing the " +
 			"function signature.",
 			new SequenceType[] {

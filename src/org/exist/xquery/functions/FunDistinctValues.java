@@ -30,6 +30,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
@@ -49,7 +50,7 @@ public class FunDistinctValues extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("distinct-values", BUILTIN_FUNCTION_NS),
+			new QName("distinct-values", Module.BUILTIN_FUNCTION_NS),
 			new SequenceType[] { new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)},
 			new SequenceType(Type.ATOMIC, Cardinality.ONE));
 

@@ -29,7 +29,7 @@ import org.exist.dom.AVLTreeNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
-import org.exist.memtree.Receiver;
+import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.util.serializer.DOMStreamerPool;
 import org.exist.xquery.value.BooleanValue;
@@ -65,7 +65,7 @@ public class XPathUtil {
 		else if (obj instanceof String)
 			return new StringValue((String) obj);
 		else if (obj instanceof Boolean)
-			return new BooleanValue(((Boolean) obj).booleanValue());
+			return BooleanValue.valueOf(((Boolean) obj).booleanValue());
 		else if (obj instanceof Float)
 			return new FloatValue(((Float) obj).floatValue());
 		else if (obj instanceof Double)
@@ -98,7 +98,7 @@ public class XPathUtil {
 		    try {
 		        MemTreeBuilder builder = new MemTreeBuilder();
 				builder.startDocument();
-                Receiver receiver = new Receiver(builder);
+                DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
                 streamer.setContentHandler(receiver);
                 ValueSequence seq = new ValueSequence();
                 NodeList nl = (NodeList)obj;
@@ -121,7 +121,7 @@ public class XPathUtil {
 		    try {
 		        MemTreeBuilder builder = new MemTreeBuilder();
 				builder.startDocument();
-                Receiver receiver = new Receiver(builder);
+                DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
                 streamer.setContentHandler(receiver);
                 streamer.serialize((Node)obj, false);
                 return builder.getDocument().getNode(1);

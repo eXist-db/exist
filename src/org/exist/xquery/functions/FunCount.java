@@ -24,6 +24,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.IntegerValue;
@@ -36,7 +37,7 @@ public class FunCount extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("count", BUILTIN_FUNCTION_NS),
+			new QName("count", Module.BUILTIN_FUNCTION_NS),
 			"Returns the number of items in the argument sequence.",
 			new SequenceType[] { new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE) },
 			new SequenceType(Type.INTEGER, Cardinality.ONE)

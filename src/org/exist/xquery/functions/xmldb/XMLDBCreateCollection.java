@@ -42,8 +42,8 @@ import org.xmldb.api.modules.CollectionManagementService;
 public class XMLDBCreateCollection extends BasicFunction {
 
 	public final static FunctionSignature signature = new FunctionSignature(
-			new QName("create-collection", ModuleImpl.NAMESPACE_URI,
-					ModuleImpl.PREFIX),
+			new QName("create-collection", XMLDBModule.NAMESPACE_URI,
+					XMLDBModule.PREFIX),
 			"Create a new collection as a child of the collection object passed as "
 					+ "first argument. The second argument specifies the name of the new "
 					+ "collection.",

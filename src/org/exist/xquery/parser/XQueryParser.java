@@ -7035,6 +7035,9 @@ public XQueryParser(ParserSharedInputState state) {
 		"NMCHAR",
 		"WS",
 		"EXPR_COMMENT",
+		"PRAGMA",
+		"PRAGMA_CONTENT",
+		"PRAGMA_QNAME",
 		"PREDEFINED_ENTITY_REF",
 		"CHAR_REF",
 		"NEXT_TOKEN",
@@ -7114,7 +7117,7 @@ public XQueryParser(ParserSharedInputState state) {
 		long[] data = new long[8];
 		data[0]=-16L;
 		data[1]=-18014400656965633L;
-		data[2]=70368744177663L;
+		data[2]=562949953421311L;
 		return data;
 	}
 	public static final BitSet _tokenSet_12 = new BitSet(mk_tokenSet_12());

@@ -24,7 +24,10 @@ import java.util.Arrays;
 
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.storage.serializers.Serializer;
 import org.exist.util.hashtable.NamePool;
+import org.exist.util.serializer.AttrList;
+import org.exist.util.serializer.Receiver;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
@@ -102,7 +105,7 @@ public class DocumentImpl extends NodeImpl implements Document {
     protected NodeProxy references[];
 
     protected int nextRef = 0;
-    
+     
     private final static int NODE_SIZE = 128;
     private final static int ATTR_SIZE = 64;
     private final static int CHAR_BUF_SIZE = 1024;
@@ -546,19 +549,19 @@ public class DocumentImpl extends NodeImpl implements Document {
      * @param node
      * @param receiver
      */
-    public void copyTo(NodeImpl node, Receiver receiver) throws SAXException {
+    public void copyTo(NodeImpl node, DocumentBuilderReceiver receiver) throws SAXException {
         NodeImpl top = node;
         while (node != null) {
-            startNode(node, receiver);
+            copyStartNode(node, receiver);
             NodeImpl nextNode = (NodeImpl) node.getFirstChild();
             while (nextNode == null) {
-                endNode(node, receiver);
+                copyEndNode(node, receiver);
                 if (top != null && top.nodeNumber == node.nodeNumber) break;
                 nextNode = (NodeImpl) node.getNextSibling();
                 if (nextNode == null) {
                     node = (NodeImpl) node.getParentNode();
                     if (node == null || (top != null && top.nodeNumber == node.nodeNumber)) {
-                        endNode(node, receiver);
+                        copyEndNode(node, receiver);
                         nextNode = null;
                         break;
                     }
@@ -568,14 +571,14 @@ public class DocumentImpl extends NodeImpl implements Document {
         }
     }
  
-    private void startNode(NodeImpl node, Receiver receiver)
+    private void copyStartNode(NodeImpl node, DocumentBuilderReceiver receiver)
             throws SAXException {
         int nr = node.nodeNumber;
         switch (node.getNodeType()) {
             case Node.ELEMENT_NODE:
                 QName nodeName = (QName) document.namePool
                         .get(document.nodeName[nr]);
-                receiver.startElement(nodeName);
+                receiver.startElement(nodeName, null);
                 int attr = document.alpha[nr];
                 if (-1 < attr) {
                     while (attr < document.nextAttr
@@ -625,8 +628,80 @@ public class DocumentImpl extends NodeImpl implements Document {
         }
     }
     
-    private void endNode(NodeImpl node, Receiver receiver) throws SAXException {
+    private void copyEndNode(NodeImpl node, DocumentBuilderReceiver receiver) throws SAXException {
         if(node.getNodeType() == Node.ELEMENT_NODE)
             receiver.endElement(node.getQName());
+    }
+    
+    public void streamTo(Serializer serializer, NodeImpl node, Receiver receiver) throws SAXException {
+        NodeImpl top = node;
+        while (node != null) {
+            startNode(serializer, node, receiver);
+            NodeImpl nextNode = (NodeImpl) node.getFirstChild();
+            while (nextNode == null) {
+                endNode(node, receiver);
+                if (top != null && top.nodeNumber == node.nodeNumber) break;
+                nextNode = (NodeImpl) node.getNextSibling();
+                if (nextNode == null) {
+                    node = (NodeImpl) node.getParentNode();
+                    if (node == null || (top != null && top.nodeNumber == node.nodeNumber)) {
+                        endNode(node, receiver);
+                        nextNode = null;
+                        break;
+                    }
+                }
+            }
+            node = nextNode;
+        }
+    }
+    
+    private void startNode(Serializer serializer, NodeImpl node, Receiver receiver)
+    throws SAXException {
+    	int nr = node.nodeNumber;
+    	switch (node.getNodeType()) {
+    	case Node.ELEMENT_NODE:
+    		QName nodeName = (QName) document.namePool
+			.get(document.nodeName[nr]);
+    	AttrList attribs = null;
+    	int attr = document.alpha[nr];
+    	if (-1 < attr) {
+    		attribs = new AttrList();
+    		while (attr < document.nextAttr
+    				&& document.attrParent[attr] == nr) {
+    			QName attrQName = (QName) document.namePool
+				.get(document.attrName[attr]);
+    			attribs.addAttribute(attrQName, attrValue[attr]);
+    			++attr;
+    		}
+    	}
+    	receiver.startElement(nodeName, attribs);
+    	break;
+    	case Node.TEXT_NODE:
+    		receiver.characters(new String(document.characters, document.alpha[nr],
+    				document.alphaLen[nr]));
+    	break;
+    	case Node.ATTRIBUTE_NODE:
+    		QName attrQName = (QName) document.namePool.get(document.attrName[nr]);
+    	receiver.attribute(attrQName, attrValue[nr]);
+    	break;
+    	case Node.COMMENT_NODE:
+    		receiver.comment(document.characters, document.alpha[nr],
+    				document.alphaLen[nr]);
+    	break;
+    	case Node.PROCESSING_INSTRUCTION_NODE:
+    		QName qn = (QName) document.namePool.get(document.nodeName[nr]);
+    	String data = new String(document.characters,
+    			document.alpha[nr], document.alphaLen[nr]);
+    	receiver.processingInstruction(qn.getLocalName(), data);
+    	break;
+    	case NodeImpl.REFERENCE_NODE:
+    		serializer.toReceiver(document.references[document.alpha[nr]]);
+    	break;
+    	}
+    }
+    
+    private void endNode(NodeImpl node, Receiver receiver) throws SAXException {
+    	if(node.getNodeType() == Node.ELEMENT_NODE)
+    		receiver.endElement(node.getQName());
     }
 }

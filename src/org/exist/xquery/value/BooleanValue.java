@@ -30,6 +30,17 @@ public class BooleanValue extends AtomicValue {
 
 	private boolean value;
 
+	/**
+	 * Returns one of the static fields TRUE or FALSE depending on
+	 * the value of the parameter.
+	 * 
+	 * @param bool
+	 * @return
+	 */
+	public final static BooleanValue valueOf(boolean bool) {
+		return bool ? TRUE : FALSE;
+	}
+	
 	public BooleanValue(boolean bool) {
 		value = bool;
 	}

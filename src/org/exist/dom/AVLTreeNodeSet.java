@@ -6,7 +6,7 @@ import java.util.Stack;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 
-public class AVLTreeNodeSet extends AbstractNodeSet {
+public class AVLTreeNodeSet extends AbstractNodeSetBase {
 
 	private Node root;
 	private int size = 0;
@@ -285,14 +285,14 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 			return null;
 		Node tempNode = root;
 		while (tempNode != null) {
-			if (tempNode.data.doc.docId == doc.docId) {
+			if (tempNode.data.getDocument().docId == doc.docId) {
 				if (tempNode.data.gid == nodeId)
 					return tempNode.data;
 				else if (tempNode.data.gid < nodeId)
 					tempNode = tempNode.rightChild;
 				else
 					tempNode = tempNode.leftChild;
-			} else if (tempNode.data.doc.docId < doc.docId)
+			} else if (tempNode.data.getDocument().docId < doc.docId)
 				tempNode = tempNode.rightChild;
 			else
 				tempNode = tempNode.leftChild;
@@ -305,9 +305,9 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 			return false;
 		Node tempNode = root;
 		while (tempNode != null) {
-			if (tempNode.data.doc.docId == doc.docId) {
+			if (tempNode.data.getDocument().docId == doc.docId) {
 				return true;
-			} else if (tempNode.data.doc.docId < doc.docId)
+			} else if (tempNode.data.getDocument().docId < doc.docId)
 				tempNode = tempNode.rightChild;
 			else
 				tempNode = tempNode.leftChild;

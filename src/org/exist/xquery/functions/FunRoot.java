@@ -28,6 +28,7 @@ import org.exist.memtree.NodeImpl;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
@@ -43,7 +44,7 @@ public class FunRoot extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("root", BUILTIN_FUNCTION_NS),
+			new QName("root", Module.BUILTIN_FUNCTION_NS),
 			"Returns the root of the tree to which $arg belongs. This will usually, "
 				+ "but not necessarily, be a document node.",
 			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)},
@@ -73,7 +74,7 @@ public class FunRoot extends Function {
 		if (!Type.subTypeOf(item.getType(), Type.NODE))
 			throw new XPathException("Context item is not a node; got " + Type.getTypeName(item.getType()));
 		if (item instanceof NodeProxy) {
-		    return new NodeProxy(((NodeProxy) item).doc, 1, Node.ELEMENT_NODE);
+		    return new NodeProxy(((NodeProxy) item).getDocument(), 1, Node.ELEMENT_NODE);
 		} else
 			return (NodeImpl) ((NodeImpl) item).getOwnerDocument().getDocumentElement();
 	}

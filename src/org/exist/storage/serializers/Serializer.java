@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001 Wolfgang M. Meier
+ *  Copyright (C) 2001-04 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist-db.org
  *
@@ -47,18 +47,15 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
 import org.exist.dom.XMLUtil;
-import org.exist.memtree.Receiver;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
-import org.exist.util.serializer.DOMStreamer;
-import org.exist.util.serializer.DOMStreamerPool;
+import org.exist.util.serializer.Receiver;
+import org.exist.util.serializer.ReceiverToSAX;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SAXSerializerPool;
 import org.exist.xquery.value.NodeValue;
@@ -76,17 +73,18 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
- *  Serializer base class, used to serialize a document or document fragment back to XML.
- *  A serializer may be obtained by calling DBBroker.getSerializer().
+ * Serializer base class, used to serialize a document or document fragment 
+ * back to XML. A serializer may be obtained by calling DBBroker.getSerializer().
  *
  *  The class basically offers two overloaded methods: serialize()
  *  and toSAX(). serialize() returns the XML as a string, while
  *  toSAX() generates a stream of SAX events. The stream of SAX
  *  events is passed to the ContentHandler set by setContentHandler().
- *  serialize() internally calls toSAX().
+ *  
+ * Internally, both types of methods pass events to a {@link org.exist.util.serializer.Receiver}.
+ * Subclasses thus have to implement the various serializeToReceiver() methods.
  *
  *  Output can be configured through properties. Property keys are defined in classes
  * {@link javax.xml.transform.OutputKeys} and {@link org.exist.storage.serializers.EXistOutputKeys}
@@ -122,9 +120,8 @@ public abstract class Serializer implements XMLReader {
 	protected Templates templates = null;
 	protected TransformerHandler xslHandler = null;
 	protected XIncludeFilter xinclude;
+	protected Receiver receiver = null;
 	protected SAXSerializer xmlout = null;
-	protected ContentHandler contentHandler;
-	protected DTDHandler dtdHandler = null;
 	protected LexicalHandler lexicalHandler = null;
 	protected User user = null;
 
@@ -132,15 +129,16 @@ public abstract class Serializer implements XMLReader {
 		this.broker = broker;
 		factory = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
 		xinclude = new XIncludeFilter(this);
-		contentHandler = xinclude;
+		receiver = xinclude;
 		String option = (String) config.getProperty("serialization.enable-xsl");
 		if (option != null)
 			defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, option);
 		else
 			defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
 		option = (String) config.getProperty("serialization.enable-xinclude");
-		if (option != null)
+		if (option != null) {
 			defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, option);
+		}
 		option = (String) config.getProperty("serialization.indent");
 		if (option != null)
 			defaultProperties.setProperty(OutputKeys.INDENT, option);
@@ -234,19 +232,11 @@ public abstract class Serializer implements XMLReader {
 		xslHandler.setResult(result);
 		if (getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes")
 			.equals("yes")) {
-			xinclude.setContentHandler(xslHandler);
+			xinclude.setReceiver(new ReceiverToSAX(xslHandler));
+			receiver = xinclude;
 		} else
-			contentHandler = xslHandler;
-		lexicalHandler = null;
+			receiver = new ReceiverToSAX(xslHandler);
 		return sout;
-	}
-
-	public ContentHandler getContentHandler() {
-		return contentHandler;
-	}
-
-	public DTDHandler getDTDHandler() {
-		return dtdHandler;
 	}
 
 	/**
@@ -305,8 +295,6 @@ public abstract class Serializer implements XMLReader {
 	}
 
 	public void parse(String systemId) throws IOException, SAXException {
-		if (contentHandler == null)
-			throw new SAXException("no content handler");
 		try {
 			// try to load document from eXist
 			DocumentImpl doc = (DocumentImpl) broker.getDocument(systemId);
@@ -316,7 +304,7 @@ public abstract class Serializer implements XMLReader {
 				LOG.debug("serializing " + doc.getFileName());
 			if(!doc.getPermissions().validate(broker.getUser(), Permission.READ))
 				throw new PermissionDeniedException("Not allowed to read resource");
-			serializeToSAX(doc, true);
+			toSAX(doc);
 		} catch (PermissionDeniedException e) {
 			throw new SAXException("permission denied");
 		}
@@ -326,47 +314,11 @@ public abstract class Serializer implements XMLReader {
 	 * Reset the class to its initial state.
 	 */
 	public void reset() {
-		contentHandler = xinclude;
-		xinclude.setContentHandler(null);
+		receiver = xinclude;
+		xinclude.setReceiver(null);
 		xslHandler = null;
 		templates = null;
 		outputProperties.clear();
-	}
-
-	/**
-	 *  Serialize a set of nodes
-	 *
-	 *@param  set               Description of the Parameter
-	 *@param  start             Description of the Parameter
-	 *@param  howmany           Description of the Parameter
-	 *@return                   Description of the Return Value
-	 *@exception  SAXException  Description of the Exception
-	 */
-	public String serialize(NodeSet set, int start, int howmany) throws SAXException {
-		return serialize(set, start, howmany, 0);
-	}
-
-	/**
-	 *  Serialize a set of nodes
-	 *
-	 *@param  set               Description of the Parameter
-	 *@param  start             Description of the Parameter
-	 *@param  howmany           Description of the Parameter
-	 *@param  queryTime         Description of the Parameter
-	 *@return                   Description of the Return Value
-	 *@exception  SAXException  Description of the Exception
-	 */
-	public String serialize(NodeSet set, int start, int howmany, long queryTime)
-		throws SAXException {
-		StringWriter out;
-		if (templates != null)
-			out = applyXSLHandler();
-		else
-			out = setPrettyPrinter(false);
-
-		serializeToSAX(set, start, howmany, queryTime);
-		releasePrettyPrinter();
-		return out.toString();
 	}
 
 	/**
@@ -387,27 +339,8 @@ public abstract class Serializer implements XMLReader {
 			out = applyXSLHandler();
 		else
 			out = setPrettyPrinter(true);
-
-		serializeToSAX(doc, true);
-		releasePrettyPrinter();
-		return out.toString();
-	}
-
-	/**
-	 *  Serialize a single node.
-	 *
-	 *@param  n                 Description of the Parameter
-	 *@return                   Description of the Return Value
-	 *@exception  SAXException  Description of the Exception
-	 */
-	public String serialize(NodeImpl n) throws SAXException {
-		StringWriter out;
-		if (templates != null)
-			out = applyXSLHandler();
-		else
-			out = setPrettyPrinter(false);
-
-		serializeToSAX(n, true);
+		
+		serializeToReceiver(doc, true);
 		releasePrettyPrinter();
 		return out.toString();
 	}
@@ -419,7 +352,7 @@ public abstract class Serializer implements XMLReader {
 			out = applyXSLHandler();
 		else
 			out = setPrettyPrinter(false);
-		serializeToSAX(n, true);
+		serializeToReceiver(n, true);
 		releasePrettyPrinter();
 		return out.toString();
 	}
@@ -437,150 +370,9 @@ public abstract class Serializer implements XMLReader {
 			out = applyXSLHandler();
 		else
 			out = setPrettyPrinter(false);
-		serializeToSAX(p, true);
+		serializeToReceiver(p, false);
 		releasePrettyPrinter();
 		return out.toString();
-	}
-
-	/**
-	 *  Serialize a document to a SAX stream
-	 *
-	 *@param  doc               Description of the Parameter
-	 *@param  generateDocEvent  Description of the Parameter
-	 *@exception  SAXException  Description of the Exception
-	 */
-	protected void serializeToSAX(DocumentImpl doc, boolean generateDocEvent)
-		throws SAXException {
-		long startTime = System.currentTimeMillis();
-		setDocument((DocumentImpl) doc);
-		NodeList children = doc.getChildNodes();
-		if (generateDocEvent)
-			contentHandler.startDocument();
-
-		contentHandler.startPrefixMapping("exist", EXIST_NS);
-		for (int i = 0; i < children.getLength(); i++)
-			 ((NodeImpl) children.item(i)).toSAX(contentHandler, lexicalHandler, false);
-
-		contentHandler.endPrefixMapping("exist");
-		if (generateDocEvent)
-			contentHandler.endDocument();
-
-		LOG.debug(
-			"serializing document took " + (System.currentTimeMillis() - startTime));
-	}
-
-	/**
-	 *  Serialize a NodeSet to the SAX stream
-	 *
-	 *@param  set               Description of the Parameter
-	 *@param  start             Description of the Parameter
-	 *@param  howmany           Description of the Parameter
-	 *@param  queryTime         Description of the Parameter
-	 *@exception  SAXException  Description of the Exception
-	 */
-	protected void serializeToSAX(NodeSet set, int start, int howmany, long queryTime)
-		throws SAXException {
-		NodeImpl n;
-		long startTime = System.currentTimeMillis();
-		contentHandler.startDocument();
-		contentHandler.startPrefixMapping("exist", EXIST_NS);
-		AttributesImpl attribs = new AttributesImpl();
-		attribs.addAttribute(
-			"",
-			"hitCount",
-			"hitCount",
-			"CDATA",
-			Integer.toString(set.getLength()));
-		if (queryTime >= 0)
-			attribs.addAttribute(
-				"",
-				"queryTime",
-				"queryTime",
-				"CDATA",
-				Long.toString(queryTime));
-
-		contentHandler.startElement(EXIST_NS, "result", "exist:result", attribs);
-		for (int i = start - 1; i < start + howmany - 1 && i < set.getLength(); i++) {
-			n = (NodeImpl) set.item(i);
-			setDocument((DocumentImpl) n.getOwnerDocument());
-			if (n != null)
-				n.toSAX(contentHandler, lexicalHandler, true);
-
-		}
-		contentHandler.endElement(EXIST_NS, "result", "exist:result");
-		contentHandler.endPrefixMapping("exist");
-		contentHandler.endDocument();
-	}
-
-	protected void serializeToSAX(NodeValue v, boolean generateDocEvents)
-		throws SAXException {
-		if(v.getImplementationType() == NodeValue.PERSISTENT_NODE)
-			serializeToSAX((NodeProxy)v, generateDocEvents);
-		else
-			serializeToSAX((org.exist.memtree.NodeImpl)v, generateDocEvents);
-	}
-	
-	/**
-	 *  Serialize a single Node to the SAX stream
-	 *
-	 *@param  n                  Description of the Parameter
-	 *@param  generateDocEvents  Description of the Parameter
-	 *@exception  SAXException   Description of the Exception
-	 */
-	protected void serializeToSAX(NodeImpl n, boolean generateDocEvents)
-		throws SAXException {
-		if (generateDocEvents)
-			contentHandler.startDocument();
-
-		contentHandler.startPrefixMapping("exist", EXIST_NS);
-		setDocument((DocumentImpl) n.getOwnerDocument());
-		n.toSAX(contentHandler, lexicalHandler, true);
-		contentHandler.endPrefixMapping("exist");
-		if (generateDocEvents)
-			contentHandler.endDocument();
-	}
-
-	protected void serializeToSAX(org.exist.memtree.NodeImpl n, boolean generateDocEvents)
-		throws SAXException {
-		if (generateDocEvents)
-			contentHandler.startDocument();
-
-		//contentHandler.startPrefixMapping("exist", EXIST_NS);
-		
-		DOMStreamer streamer = null;
-		try {
-			streamer = DOMStreamerPool.getInstance().borrowDOMStreamer(this);
-			streamer.setContentHandler(contentHandler);
-			streamer.setLexicalHandler(lexicalHandler);
-			streamer.serialize(n, generateDocEvents);
-			//contentHandler.endPrefixMapping("exist");
-		} catch(Exception e) {
-			e.printStackTrace();
-			throw new SAXException(e.getMessage(), e);
-		} finally {
-			DOMStreamerPool.getInstance().returnDOMStreamer(streamer);
-		}
-		
-		if (generateDocEvents)
-			contentHandler.endDocument();
-	}
-	
-	/**
-	 *  Serialize a single NodeProxy to the SAX stream
-	 *
-	 *@param  p                  Description of the Parameter
-	 *@param  generateDocEvents  Description of the Parameter
-	 *@exception  SAXException   Description of the Exception
-	 */
-	protected void serializeToSAX(NodeProxy p, boolean generateDocEvents)
-		throws SAXException {
-		NodeImpl n;
-		if(p.gid < 0)
-			n = (NodeImpl)p.doc.getDocumentElement();
-		else
-			n = (NodeImpl)p.getNode();
-		if (n != null)
-			serializeToSAX(n, generateDocEvents);
 	}
 
 	/**
@@ -589,23 +381,25 @@ public abstract class Serializer implements XMLReader {
 	 *@param  contentHandler  The new contentHandler value
 	 */
 	public void setContentHandler(ContentHandler handler) {
+		ReceiverToSAX toSAX = new ReceiverToSAX(handler);
+		toSAX.setLexicalHandler(lexicalHandler);
 		if (getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes")
 			.equals("yes")) {
-			xinclude.setContentHandler(handler);
-			contentHandler = xinclude;
+			xinclude.setReceiver(toSAX);
+			receiver = xinclude;
 		} else
-			contentHandler = handler;
+			receiver = toSAX;
 	}
 
 	/**
-	 *  Set the DTDHandler to be used during serialization.
-	 *
-	 *@param  handler  The new dTDHandler value
+	 * Required by interface XMLReader. Always returns null.
+	 * 
+	 * @see org.xml.sax.XMLReader#getContentHandler()
 	 */
-	public void setDTDHandler(DTDHandler handler) {
-		dtdHandler = handler;
+	public ContentHandler getContentHandler() {
+		return null;
 	}
-
+	
 	/**
 	 *  Sets the entityResolver attribute of the Serializer object
 	 *
@@ -657,8 +451,12 @@ public abstract class Serializer implements XMLReader {
 		xmlout = SAXSerializerPool.getInstance().borrowSAXSerializer();
 		xmlout.setWriter(sout);
 		xmlout.setOutputProperties(outputProperties);
-		setContentHandler(xmlout);
-		setLexicalHandler(xmlout);
+		if (getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes")
+				.equals("yes")) {
+			xinclude.setReceiver(xmlout);
+			receiver = xinclude;
+		} else
+			receiver = xmlout;
 		return sout;
 	}
 
@@ -725,12 +523,11 @@ public abstract class Serializer implements XMLReader {
 				}
 				
 				// save handlers
-				ContentHandler oldHandler = contentHandler;
-				LexicalHandler oldLexical = lexicalHandler;
+				Receiver oldReceiver = receiver;
 				
 				// compile stylesheet
 				TemplatesHandler handler = factory.newTemplatesHandler();
-				contentHandler = handler;
+				receiver = new ReceiverToSAX(handler);
 				try {
 					this.toSAX(xsl);
 				} catch (SAXException e) {
@@ -739,8 +536,7 @@ public abstract class Serializer implements XMLReader {
 				templates = handler.getTemplates();
 				
 				// restore handlers
-				contentHandler = oldHandler;
-				lexicalHandler = oldLexical;
+				receiver = oldReceiver;
 				factory.setURIResolver(null);
             }
 			LOG.debug(
@@ -761,39 +557,27 @@ public abstract class Serializer implements XMLReader {
 			xslHandler.getTransformer().setParameter(valore, valore1);
 	}
 
-	/**  Sets the xSLHandler attribute of the Serializer object */
 	protected void setXSLHandler() {
 		if (templates == null)
 			return;
 		if (xslHandler != null) {
 			SAXResult result = new SAXResult();
-			result.setLexicalHandler(lexicalHandler);
 			boolean processXInclude =
 				getProperty(
 					EXistOutputKeys.EXPAND_XINCLUDES,
 					"yes").equals(
 					"yes");
 			if (processXInclude)
-				result.setHandler(xinclude.getContentHandler());
+				result.setHandler((ContentHandler)xinclude.getReceiver());
 			else
-				result.setHandler(contentHandler);
+				result.setHandler((ContentHandler)receiver);
 			xslHandler.setResult(result);
 			if (processXInclude) {
-				xinclude.setContentHandler(xslHandler);
-				contentHandler = xinclude;
+				xinclude.setReceiver(new ReceiverToSAX(xslHandler));
+				receiver = xinclude;
 			} else
-				contentHandler = xslHandler;
+				receiver = new ReceiverToSAX(xslHandler);
 		}
-	}
-
-	public void toSAX(NodeSet set, int start, int howmany) throws SAXException {
-		toSAX(set, start, howmany, 0);
-	}
-
-	public void toSAX(NodeSet set, int start, int howmany, long queryTime)
-		throws SAXException {
-		setXSLHandler();
-		serializeToSAX(set, start, howmany, queryTime);
 	}
 
 	public void toSAX(DocumentImpl doc) throws SAXException {
@@ -803,21 +587,14 @@ public abstract class Serializer implements XMLReader {
 				setStylesheet((DocumentImpl) doc, stylesheet);
 		}
 		setXSLHandler();
-		serializeToSAX(
+		serializeToReceiver(
 			doc,
-			getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
-	}
-
-	public void toSAX(NodeImpl n) throws SAXException {
-		setXSLHandler();
-		serializeToSAX(
-			n,
 			getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
 	}
 
 	public void toSAX(NodeValue n) throws SAXException {
 		setXSLHandler();
-		serializeToSAX(
+		serializeToReceiver(
 				n,
 				getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
 	}
@@ -825,16 +602,54 @@ public abstract class Serializer implements XMLReader {
 	public void toSAX(NodeProxy p) throws SAXException {
 		setXSLHandler();
 		if(p.gid < 0)
-			serializeToSAX(p.doc, getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
+			serializeToReceiver(p.getDocument(), getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
 		else
-			serializeToSAX(p, getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
+			serializeToReceiver(p, getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
 	}
 
-	public void toReceiver(NodeProxy p, Receiver receiver) throws SAXException {
-	    serializeToReceiver(p, receiver);
+	public void toReceiver(NodeProxy p) throws SAXException {
+	    serializeToReceiver(p, false);
 	}
 	
-	protected abstract void serializeToReceiver(NodeProxy p, Receiver receiver) throws SAXException;
+	
+	protected abstract void serializeToReceiver(NodeProxy p, boolean generateDocEvent) throws SAXException;
+	
+	protected abstract void serializeToReceiver(DocumentImpl doc, boolean generateDocEvent)
+    throws SAXException;
+	
+	protected void serializeToReceiver(NodeValue v, boolean generateDocEvents)
+	throws SAXException {
+		if(v.getImplementationType() == NodeValue.PERSISTENT_NODE)
+			serializeToReceiver((NodeProxy)v, generateDocEvents);
+		else
+			serializeToReceiver((org.exist.memtree.NodeImpl)v, generateDocEvents);
+	}
+	
+	protected void serializeToReceiver(org.exist.memtree.NodeImpl n, boolean generateDocEvents)
+	throws SAXException {
+		if (generateDocEvents)
+			receiver.startDocument();	
+		n.streamTo(this, receiver);
+		if (generateDocEvents)
+			receiver.endDocument();
+	}
+	
+	/**
+	 * Inherited from XMLReader. Ignored.
+	 * 
+	 * @see org.xml.sax.XMLReader#setDTDHandler(org.xml.sax.DTDHandler)
+	 */
+	public void setDTDHandler(DTDHandler handler) {
+	}
+	
+	/**
+	 * Inherited from XMLReader. Ignored. Returns always null.
+	 * 
+	 * @see org.xml.sax.XMLReader#getDTDHandler()
+	 */
+	public DTDHandler getDTDHandler() {
+		return null;
+	}
 	
 	private String hasXSLPi(Document doc) {
 		NodeList docChildren = doc.getChildNodes();

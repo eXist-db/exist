@@ -23,7 +23,7 @@
 package org.exist.xquery;
 
 import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.Receiver;
+import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -58,7 +58,7 @@ public class EnclosedExpr extends PathExpr {
 		context.popDocumentContext();
 		// create the output
 		MemTreeBuilder builder = context.getDocumentBuilder();
-		Receiver receiver = new Receiver(builder);
+		DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
 		start = System.currentTimeMillis();
 		try {
 			SequenceIterator i = result.iterate();

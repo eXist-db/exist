@@ -27,7 +27,7 @@ public class FunId extends Function {
 
 	public final static FunctionSignature signature =
 			new FunctionSignature(
-				new QName("id", BUILTIN_FUNCTION_NS),
+				new QName("id", Module.BUILTIN_FUNCTION_NS),
 				new SequenceType[] {
 					 new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)},
 				new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE));
@@ -92,7 +92,7 @@ public class FunId extends Function {
 		NodeProxy n, p;
 		for (Iterator i = attribs.iterator(); i.hasNext();) {
 			n = (NodeProxy) i.next();
-			p = new NodeProxy(n.doc, XMLUtil.getParentId(n.doc, n.gid), Node.ELEMENT_NODE);
+			p = new NodeProxy(n.getDocument(), XMLUtil.getParentId(n.getDocument(), n.gid), Node.ELEMENT_NODE);
 			result.add(p);
 		}
 	}

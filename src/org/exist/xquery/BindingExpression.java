@@ -128,8 +128,8 @@ public abstract class BindingExpression extends AbstractExpression {
 			NodeSet result = new ExtArrayNodeSet();
 			for (Iterator i = nodes.iterator(); i.hasNext(); count++) {
 				current = (NodeProxy) i.next();
-				if(lastDoc == null || current.doc != lastDoc) {
-					lastDoc = current.doc;
+				if(lastDoc == null || current.getDocument() != lastDoc) {
+					lastDoc = current.getDocument();
 					sizeHint = nodes.getSizeHint(lastDoc);
 				}
 				contextNode = current.getContext();
@@ -169,6 +169,27 @@ public abstract class BindingExpression extends AbstractExpression {
 		}
 	}
 
+	/**
+	 * Check all order specs to see if we can process them in
+	 * one single step. In general, this is possible if all order 
+	 * expressions return nodes.
+	 * 
+	 * @return
+	 */
+	protected boolean checkOrderSpecs(Sequence in) {
+		if(orderSpecs == null)
+			return false;
+		if(!Type.subTypeOf(in.getItemType(), Type.NODE))
+			return false;
+		for(int i = 0; i < orderSpecs.length; i++) {
+			Expression expr = orderSpecs[i].getSortExpression();
+			if(!Type.subTypeOf(expr.returnsType(), Type.NODE) ||
+					(expr.getDependencies() & Dependency.CONTEXT_ITEM ) != 0)
+				return false;
+		}
+		return true;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#preselect(org.exist.dom.DocumentSet, org.exist.xquery.StaticContext)
 	 */

@@ -246,13 +246,13 @@ public class HttpServerConnection extends RESTServer implements Runnable {
 		DoctypeCount doctypeCounter;
 		for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext(); ) {
 			p = (NodeProxy) i.next();
-			docName = p.doc.getFileName();
-			doctype = p.doc.getDoctype();
+			docName = p.getDocument().getFileName();
+			doctype = p.getDocument().getDoctype();
 			if (map.containsKey(docName)) {
 				counter = (NodeCount) map.get(docName);
 				counter.inc();
 			} else {
-				counter = new NodeCount(p.doc);
+				counter = new NodeCount(p.getDocument());
 				map.put(docName, counter);
 			}
 			if (doctype == null)

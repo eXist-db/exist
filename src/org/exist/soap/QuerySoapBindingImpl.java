@@ -260,7 +260,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			DocumentSet docs = broker.getAllDocuments(new DocumentSet());
 			context.setStaticallyKnownDocuments(docs);
 			
-			XQueryLexer lexer = new XQueryLexer(new StringReader(query));
+			XQueryLexer lexer = new XQueryLexer(context, new StringReader(query));
 			XQueryParser parser = new XQueryParser(lexer);
 			XQueryTreeParser treeParser = new XQueryTreeParser(context);
 			parser.xpath();
@@ -393,7 +393,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 					String path;
 					for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext();) {
 						p = (NodeProxy) i.next();
-						path = p.doc.getCollection().getName() + '/' + p.doc.getFileName();
+						path = p.getDocument().getCollection().getName() + '/' + p.getDocument().getFileName();
 						if (path.equals(docPath))
 							hitsByDoc.add(p);
 					}
@@ -440,14 +440,14 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 				NodeValue node = (NodeValue)item;
 				if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 					NodeProxy p = (NodeProxy)node;
-					if ((documents = (TreeMap) collections.get(p.doc.getCollection().getName())) == null) {
+					if ((documents = (TreeMap) collections.get(p.getDocument().getCollection().getName())) == null) {
 						documents = new TreeMap();
-						collections.put(p.doc.getCollection().getName(), documents);
+						collections.put(p.getDocument().getCollection().getName(), documents);
 					}
-					if ((hits = (Integer) documents.get(p.doc.getFileName())) == null)
-						documents.put(p.doc.getFileName(), new Integer(1));
+					if ((hits = (Integer) documents.get(p.getDocument().getFileName())) == null)
+						documents.put(p.getDocument().getFileName(), new Integer(1));
 					else
-						documents.put(p.doc.getFileName(), new Integer(hits.intValue() + 1));
+						documents.put(p.getDocument().getFileName(), new Integer(hits.intValue() + 1));
 				}
 			}
 		}

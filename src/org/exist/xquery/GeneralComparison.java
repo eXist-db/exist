@@ -77,14 +77,14 @@ public class GeneralComparison extends BinaryOp {
 		this.relation = relation;
 		this.truncation = truncation;
 		// simplify arguments
-		if (left instanceof PathExpr && ((PathExpr) left).getLength() == 1)
-			add(((PathExpr) left).getExpression(0));
-		else
-			add(left);
-		if (right instanceof PathExpr && ((PathExpr) right).getLength() == 1)
-			add(((PathExpr) right).getExpression(0));
-		else
-			add(right);
+		if (left instanceof PathExpr && ((PathExpr) left).getLength() == 1) {
+			left = ((PathExpr) left).getExpression(0);
+		}
+		add(left);
+		if (right instanceof PathExpr && ((PathExpr) right).getLength() == 1) {
+			right = ((PathExpr) right).getExpression(0);
+		}
+		add(right);
 	}
 
 	/* (non-Javadoc)
@@ -167,7 +167,7 @@ public class GeneralComparison extends BinaryOp {
 		if (ls.getLength() == 1 && rs.getLength() == 1) {
 			lv = ls.itemAt(0).atomize();
 			rv = rs.itemAt(0).atomize();
-			return new BooleanValue(compareValues(lv, rv));
+			return BooleanValue.valueOf(compareValues(lv, rv));
 		} else {
 			for (SequenceIterator i1 = ls.iterate(); i1.hasNext();) {
 				lv = i1.nextItem().atomize();

@@ -26,6 +26,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
@@ -44,7 +45,7 @@ public class FunStringJoin extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-				new QName("string-join", BUILTIN_FUNCTION_NS),
+				new QName("string-join", Module.BUILTIN_FUNCTION_NS),
 				"Returns a xs:string created by concatenating the members of the " +
 				"$a sequence using $b as a separator. If the value of $b is the zero-length " +
 				"string, then the members of $a are concatenated without a separator.",

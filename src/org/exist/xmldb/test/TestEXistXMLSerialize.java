@@ -5,26 +5,29 @@
  */
 package org.exist.xmldb.test;
 
-import org.xml.sax.InputSource;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.modules.*;
-import org.xmldb.api.base.*;
-
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
-import org.exist.util.serializer.DOMSerializer;
-import org.w3c.dom.*;
-
-import javax.xml.transform.*;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.StringWriter;
 import java.util.Properties;
 
-import junit.framework.*;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import junit.framework.TestCase;
+
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
+import org.exist.util.serializer.DOMSerializer;
+import org.exist.util.serializer.SAXSerializer;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Database;
+import org.xmldb.api.modules.XMLResource;
 
 /**
  *
@@ -132,6 +135,29 @@ public class TestEXistXMLSerialize extends TestCase{
     	serializer.serialize(node);
     	
     	System.out.println("Using org.exist.util.serializer.DOMSerializer");
+    	System.out.println("---------------------");
+    	System.out.println(writer.toString());
+    	System.out.println("---------------------");
+    }
+    
+    public void testSerialize4( ) throws Exception{
+    	System.out.println("Xerces version: "+org.apache.xerces.impl.Version.getVersion( ));
+    	Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).newDocumentBuilder().parse(testFile);
+    	XMLResource resource = (XMLResource) c.createResource(null, "XMLResource");
+    	resource.setContentAsDOM(doc);
+    	System.out.println("Storing resource: "+resource.getId( ));
+    	c.storeResource(resource);
+
+    	resource = (XMLResource)c.getResource(resource.getId());
+    	Node node = resource.getContentAsDOM();
+    	System.out.println("Attempting serialization using eXist's SAX serializer");
+    	StringWriter writer = new StringWriter();
+    	Properties outputProperties = new Properties();
+    	outputProperties.setProperty("indent", "yes");
+    	SAXSerializer serializer = new SAXSerializer(writer, outputProperties);
+    	resource.getContentAsSAX(serializer);
+    	
+    	System.out.println("Using org.exist.util.serializer.SAXSerializer");
     	System.out.println("---------------------");
     	System.out.println(writer.toString());
     	System.out.println("---------------------");

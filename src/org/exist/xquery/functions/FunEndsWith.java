@@ -24,6 +24,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.BooleanValue;
@@ -36,7 +37,7 @@ public class FunEndsWith extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("ends-with", BUILTIN_FUNCTION_NS),
+			new QName("ends-with", Module.BUILTIN_FUNCTION_NS),
 			new SequenceType[] {
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},

@@ -28,6 +28,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
@@ -43,7 +44,7 @@ public class FunDocumentURI extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("document-uri", BUILTIN_FUNCTION_NS),
+			new QName("document-uri", Module.BUILTIN_FUNCTION_NS),
 			new SequenceType[] {
 				 new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
 			},
@@ -66,7 +67,7 @@ public class FunDocumentURI extends Function {
 		Expression arg = getArgument(0);
 		Sequence s = arg.eval(contextSequence, contextItem);
 		NodeProxy node = (NodeProxy) s.itemAt(0);
-		String path = node.doc.getCollection().getName() + '/' +node.doc.getFileName(); 
+		String path = node.getDocument().getCollection().getName() + '/' +node.getDocument().getFileName(); 
 		return new StringValue(path);
 	}
 

@@ -33,6 +33,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
@@ -52,7 +53,7 @@ public class FunDoc extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("doc", BUILTIN_FUNCTION_NS),
+			new QName("doc", Module.BUILTIN_FUNCTION_NS),
 			"Includes one or more documents "
 				+ "into the input sequence. Currently, "
 				+ "eXist interprets each argument as a path pointing to a "
@@ -95,7 +96,7 @@ public class FunDoc extends Function {
 			path = context.getBaseURI() + '/' + path;
 		Lock dlock = null;
 		if(path.equals(cachedPath) && cachedNode != null) {
-		    dlock = cachedNode.doc.getUpdateLock();
+		    dlock = cachedNode.getDocument().getUpdateLock();
 		    try {
 		        // wait for pending updates
 		        dlock.acquire(Lock.READ_LOCK);

@@ -187,13 +187,16 @@ public interface XQueryParserTokenTypes {
 	int NMCHAR = 162;
 	int WS = 163;
 	int EXPR_COMMENT = 164;
-	int PREDEFINED_ENTITY_REF = 165;
-	int CHAR_REF = 166;
-	int NEXT_TOKEN = 167;
-	int CHAR = 168;
-	int BASECHAR = 169;
-	int IDEOGRAPHIC = 170;
-	int COMBINING_CHAR = 171;
-	int DIGIT = 172;
-	int EXTENDER = 173;
+	int PRAGMA = 165;
+	int PRAGMA_CONTENT = 166;
+	int PRAGMA_QNAME = 167;
+	int PREDEFINED_ENTITY_REF = 168;
+	int CHAR_REF = 169;
+	int NEXT_TOKEN = 170;
+	int CHAR = 171;
+	int BASECHAR = 172;
+	int IDEOGRAPHIC = 173;
+	int COMBINING_CHAR = 174;
+	int DIGIT = 175;
+	int EXTENDER = 176;
 }

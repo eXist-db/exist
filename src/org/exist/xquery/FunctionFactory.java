@@ -58,7 +58,7 @@ public class FunctionFactory {
 		String local = qname.getLocalName();
 		String uri = qname.getNamespaceURI();
 		Expression step = null;
-		if(uri.equals(Function.BUILTIN_FUNCTION_NS)) {
+		if(uri.equals(Module.BUILTIN_FUNCTION_NS)) {
 			// near(node-set, string)
 			if (local.equals("near")) {
 				if (params.size() < 2)

@@ -30,6 +30,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
@@ -46,7 +47,7 @@ public class FunConcat extends Function {
 	
 	public final static FunctionSignature signature =
 			new FunctionSignature(
-				new QName("concat", BUILTIN_FUNCTION_NS),
+				new QName("concat", Module.BUILTIN_FUNCTION_NS),
 				null,
 				new SequenceType(Type.STRING, Cardinality.ONE)
 			);

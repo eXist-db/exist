@@ -95,8 +95,8 @@ public class RemoteCollectionTest extends RemoteDBTest {
 	    createResources(binaryNames, "BinaryResource");
 
 	    String[] actualContents = getCollection().listResources();
-	    System.out.println(actualContents);
 	    for (int i = 0; i < actualContents.length; i++) {
+	    	System.out.println("---------------------->" + actualContents[i]);
 	        xmlNames.remove(actualContents[i]);
 	        binaryNames.remove(actualContents[i]);
 	    }

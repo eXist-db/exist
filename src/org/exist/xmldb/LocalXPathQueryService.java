@@ -41,6 +41,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.Pragma;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
@@ -258,6 +259,28 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 			context.declareVariable((String) entry.getKey(), entry.getValue());
 		}
 		context.setBackwardsCompatibility(xpathCompatible);
+		checkPragmas(context);
+	}
+	
+	/**
+	 * Check if the XQuery contains pragmas that define serialization settings.
+	 * If yes, copy the corresponding settings to the current set of output properties.
+	 * 
+	 * @param context
+	 */
+	protected void checkPragmas(XQueryContext context) throws XPathException {
+		Pragma pragma = context.getPragma(Pragma.SERIALIZE_QNAME);
+		if(pragma == null)
+			return;
+		String[] contents = pragma.tokenizeContents();
+		for(int i = 0; i < contents.length; i++) {
+			String[] pair = Pragma.parseKeyValuePair(contents[i]);
+			if(pair == null)
+				throw new XPathException("Unknown parameter found in " + pragma.getQName().toString() +
+						": '" + contents[i] + "'");
+			LOG.debug("Setting serialization property from pragma: " + pair[0] + " = " + pair[1]);
+			properties.setProperty(pair[0], pair[1]);
+		}
 	}
 	
 	protected ResourceSet doQuery(

@@ -45,7 +45,7 @@ public class XMLDBCreated extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("created", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+			new QName("created", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns the creation date",
 			new SequenceType[] {
 					new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
@@ -64,7 +64,7 @@ public class XMLDBCreated extends BasicFunction {
 		NodeValue node = (NodeValue)args[0].itemAt(0);
 		if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			NodeProxy proxy = (NodeProxy)node;
-     		return new DateTimeValue(proxy.doc.getCreated());
+     		return new DateTimeValue(proxy.getDocument().getCreated());
 		}
 		return Sequence.EMPTY_SEQUENCE;
 	}

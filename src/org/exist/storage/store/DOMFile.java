@@ -791,7 +791,7 @@ public class DOMFile extends BTree implements Lockable {
             } while (parentPointer == KEY_NOT_FOUND);
             	
             final long firstChildId = XMLUtil.getFirstChildId(doc, id);
-            final Iterator iter = new NodeIterator(lock, this, node.doc,
+            final Iterator iter = new NodeIterator(lock, this, node.getDocument(),
                     parentPointer);
             final NodeImpl n = (NodeImpl) iter.next();
             n.setGID(id);
@@ -1678,7 +1678,8 @@ public class DOMFile extends BTree implements Lockable {
         	RecordPos rec = null;
         	byte flags;
             for (int pos = 0; pos < dlen;) {
-                currentId = ByteConversion.byteToShort(data, pos);
+            	currentId = (short) ( ( data[pos] & 0xff ) + ( ( data[pos + 1] & 0xff ) << 8 ) );
+//                currentId = ByteConversion.byteToShort(data, pos);
                 flags = ItemId.getFlags(currentId);
                 if (ItemId.matches(currentId, targetId)) {
                 	if ((flags & ItemId.LINK_FLAG) != 0) {
@@ -1691,7 +1692,8 @@ public class DOMFile extends BTree implements Lockable {
                 } else if ((flags & ItemId.LINK_FLAG) != 0){
                 	pos += 10;
                 } else {
-                    vlen = ByteConversion.byteToShort(data, pos + 2);
+                	vlen = (short) ( ( data[pos + 2] & 0xff ) + ( ( data[pos + 3] & 0xff ) << 8 ) );
+//                    vlen = ByteConversion.byteToShort(data, pos + 2);
                     if ((flags & ItemId.RELOCATED_FLAG) != 0) {
                     	pos += vlen + 12;
                     } else {

@@ -186,7 +186,7 @@ public class DOMSerializer {
 			return;
 		if (node.getNodeType() == Node.ELEMENT_NODE) {
 			nsSupport.popContext();
-			receiver.endElement();
+			receiver.endElement(node.getNodeName());
 		}
 	}
 }

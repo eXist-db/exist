@@ -23,6 +23,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
@@ -35,7 +36,7 @@ public class FunCeiling extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("ceiling", BUILTIN_FUNCTION_NS),
+			new QName("ceiling", Module.BUILTIN_FUNCTION_NS),
             "Returns a value of the same type as the argument. Specifically, " +
             "returns the smallest (closest to negative infinity) number " +
             "with no fractional part that is not less than the value of the argument.",

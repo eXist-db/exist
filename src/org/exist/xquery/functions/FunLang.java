@@ -34,6 +34,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
@@ -50,7 +51,7 @@ public class FunLang extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("lang", BUILTIN_FUNCTION_NS),
+			new QName("lang", Module.BUILTIN_FUNCTION_NS),
 			new SequenceType[] {
 				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE));
@@ -91,7 +92,7 @@ public class FunLang extends Function {
 				}
 			}
 			if (include) {
-				p.gid = XMLUtil.getParentId(p.doc, p.gid);
+				p.gid = XMLUtil.getParentId(p.getDocument(), p.gid);
 				if (p.gid > -1) {
 					p.setNodeType(Node.ELEMENT_NODE);
 					temp.add(p);

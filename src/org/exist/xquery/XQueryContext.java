@@ -29,8 +29,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
@@ -42,8 +44,6 @@ import org.exist.dom.SymbolTable;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
-import org.exist.xquery.functions.text.TextModule;
-import org.exist.xquery.functions.transform.ModuleImpl;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
@@ -71,7 +71,9 @@ public class XQueryContext {
 		"http://www.w3.org/2003/05/xpath-datatypes";
 	public final static String XQUERY_LOCAL_NS =
 		"http://www.w3.org/2003/08/xquery-local-functions";
-
+	public final static String EXIST_NS =
+		"http://exist.sourceforge.net/NS/exist";
+	
 	private final static Logger LOG = Logger.getLogger(XQueryContext.class);
 
 	// Static namespace/prefix mappings
@@ -92,17 +94,19 @@ public class XQueryContext {
 	// Known user defined functions in the local module
 	private TreeMap declaredFunctions = new TreeMap();
 
-	// Globally declare variables
+	// Globally declared variables
 	private TreeMap globalVariables = new TreeMap();
-	
-	// Local in-scope variables in the current context
-	private TreeMap variables = new TreeMap();
-	
-	// Local in-scope variable stack
-	private Stack variableStack = new Stack();
 
+	// The last element in the linked list of local in-scope variables
+	private LocalVariable lastVar = null;
+	
+	// The current size of the variable stack
+	private int variableStackSize = 0;
+	
 	// Unresolved references to user defined functions
 	private Stack forwardReferences = new Stack();
+	
+	private List pragmas = null;
 	
 	private XQueryWatchDog watchdog;
 	
@@ -122,7 +126,7 @@ public class XQueryContext {
 
 	private String moduleLoadPath = ".";
 	
-	private String defaultFunctionNamespace = Function.BUILTIN_FUNCTION_NS;
+	private String defaultFunctionNamespace = Module.BUILTIN_FUNCTION_NS;
 
 	/**
 	 * Set to true to enable XPath 1.0
@@ -358,7 +362,7 @@ public class XQueryContext {
 		builder = new MemTreeBuilder(this);
 		builder.startDocument();
 		staticDocuments = null;
-		variableStack.clear();
+		lastVar = null;
 		fragmentStack = new Stack();
 		watchdog.reset();
 	}
@@ -465,16 +469,23 @@ public class XQueryContext {
 	}
 
 	/**
-	 * Declare a variable. This is called by variable binding expressions like
+	 * Declare a local variable. This is called by variable binding expressions like
 	 * "let" and "for".
 	 * 
 	 * @param var
 	 * @return
 	 * @throws XPathException
 	 */
-	public Variable declareVariable(Variable var) throws XPathException {
-		variables.put(var.getQName(), var);
-		var.setStackPosition(variableStack.size());
+	public LocalVariable declareVariable(LocalVariable var) throws XPathException {
+//		variables.put(var.getQName(), var);
+		if(lastVar == null)
+			lastVar = var;
+		else {
+			lastVar.addAfter(var);
+			lastVar = var;
+		}
+//		var.setStackPosition(variableStack.size());
+		var.setStackPosition(variableStackSize);
 		return var;
 	}
 
@@ -488,7 +499,7 @@ public class XQueryContext {
 	 */
 	public Variable declareGlobalVariable(Variable var) throws XPathException {
 		globalVariables.put(var.getQName(), var);
-		var.setStackPosition(variableStack.size());
+		var.setStackPosition(variableStackSize);
 		return var;
 	}
 	
@@ -506,7 +517,7 @@ public class XQueryContext {
 	 * or the variable QName references an unknown namespace-prefix. 
 	 */
 	public Variable declareVariable(String qname, Object value) throws XPathException {
-		QName qn = QName.parse(this, qname);
+		QName qn = QName.parse(this, qname, null);
 		Variable var;
 		Module module = getModule(qn.getNamespaceURI());
 		if(module != null) {
@@ -551,7 +562,8 @@ public class XQueryContext {
 			if(var != null)
 				return var;
 		}
-		var = (Variable) variables.get(qname);
+		var = resolveLocalVariable(qname);
+//		var = (Variable) variables.get(qname);
 		if (var == null) {
 			var = (Variable) globalVariables.get(qname);
 		}
@@ -560,6 +572,14 @@ public class XQueryContext {
 		return var;
 	}
 
+	private Variable resolveLocalVariable(QName qname) throws XPathException {
+		for(LocalVariable var = lastVar; var != null; var = var.before) {
+			if(qname.equals(var.getQName()))
+				return var;
+		}
+		return null;
+	}
+	
 	/**
 	 * Turn on/off XPath 1.0 backwards compatibility.
 	 * 
@@ -729,25 +749,28 @@ public class XQueryContext {
 	}
 
 	/**
-	 * Save the current context on top of a stack. 
+	 * Returns the last variable on the local variable stack.
+	 * The current variable context can be restored by passing
+	 * the return value to {@link #popLocalVariables(LocalVariable)}.
 	 * 
-	 * Use {@link popContext()} to restore the current state.
-	 * This method saves the current in-scope variable
-	 * definitions.
+	 * @return
 	 */
-	public void pushLocalContext(boolean emptyContext) {
-		variableStack.push(variables);
-		if (emptyContext)
-			variables = new TreeMap();
-		else
-			variables = new TreeMap(variables);
+	public LocalVariable markLocalVariables() {
+		variableStackSize++;
+		return lastVar;
 	}
-
+	
 	/**
-	 * Restore previous state.
+	 * Restore the local variable stack to the position marked
+	 * by variable var.
+	 * 
+	 * @param var
 	 */
-	public void popLocalContext() {
-		variables = (TreeMap) variableStack.pop();
+	public void popLocalVariables(LocalVariable var) {
+		if(var != null)
+			var.after = null;
+		lastVar = var;
+		variableStackSize--;
 	}
 
 	/**
@@ -757,7 +780,7 @@ public class XQueryContext {
 	 * @return
 	 */
 	public int getCurrentStackSize() {
-		return variableStack.size();
+		return variableStackSize;
 	}
 
 	/**
@@ -809,7 +832,7 @@ public class XQueryContext {
 					throw new XPathException("IO exception while loading module " + namespaceURI, e);
 				}
 				XQueryContext context = new ModuleContext(this);
-				XQueryLexer lexer = new XQueryLexer(reader);
+				XQueryLexer lexer = new XQueryLexer(context, reader);
 				XQueryParser parser = new XQueryParser(lexer);
 				XQueryTreeParser astParser = new XQueryTreeParser(context);
 				try {
@@ -880,12 +903,51 @@ public class XQueryContext {
 		}
 	}
 	
+	/**
+	 * Called by XUpdate to tell the query engine that it is running in
+	 * exclusive mode, i.e. no other query is executed at the same time.
+	 * 
+	 * @param exclusive
+	 */
 	public void setExclusiveMode(boolean exclusive) {
 	    this.exclusive = exclusive;
 	}
 	
 	public boolean inExclusiveMode() {
 	    return exclusive;
+	}
+	
+	public void addPragma(String qnameString, String contents) throws XPathException {
+		QName qn;
+		try {
+			qn = QName.parse(this, qnameString, defaultFunctionNamespace);
+		} catch (XPathException e) {
+			// unknown pragma: just ignore it
+			LOG.debug("Ignoring unknown pragma: " + qnameString);
+			return;
+		}
+		Pragma pragma = new Pragma(qn, contents);
+		if(pragmas == null)
+			pragmas = new ArrayList();
+		pragmas.add(pragma);
+		
+		// check predefined pragmas
+		if(Pragma.TIMEOUT_QNAME.compareTo(qn) == 0)
+			watchdog.setTimeoutFromPragma(pragma);
+		if(Pragma.OUTPUT_SIZE_QNAME.compareTo(qn) == 0)
+			watchdog.setMaxNodesFromPragma(pragma);
+	}
+	
+	public Pragma getPragma(QName qname) {
+		if(pragmas != null) {
+			Pragma pragma;
+			for(int i = 0; i < pragmas.size(); i++) {
+				pragma = (Pragma)pragmas.get(i);
+				if(qname.compareTo(pragma.getQName()) == 0)
+					return pragma;
+			}
+		}
+		return null;
 	}
 	
 	/**
@@ -909,25 +971,29 @@ public class XQueryContext {
 		declareNamespace("xs", SCHEMA_NS);
 		declareNamespace("xdt", XPATH_DATATYPES_NS);
 		declareNamespace("local", XQUERY_LOCAL_NS);
-		declareNamespace("fn", Function.BUILTIN_FUNCTION_NS);
+		declareNamespace("fn", Module.BUILTIN_FUNCTION_NS);
+		declareNamespace("exist", EXIST_NS);
 
 		// load built-in modules
+		
+		// these modules are loaded dynamically. It is not an error if the
+		// specified module class cannot be found in the classpath.
 		loadBuiltInModule(
-			Function.BUILTIN_FUNCTION_NS,
+			Module.BUILTIN_FUNCTION_NS,
 			"org.exist.xquery.functions.ModuleImpl");
 		loadBuiltInModule(
-			Function.UTIL_FUNCTION_NS,
-			"org.exist.xquery.functions.util.ModuleImpl");
-		loadBuiltInModule(ModuleImpl.NAMESPACE_URI,
-			"org.exist.xquery.functions.transform.ModuleImpl");
+			Module.UTIL_FUNCTION_NS,
+			"org.exist.xquery.functions.util.UtilModule");
+		loadBuiltInModule(Module.TRANSFORM_FUNCTION_NS,
+			"org.exist.xquery.functions.transform.TransformModule");
 		loadBuiltInModule(
-			Function.XMLDB_FUNCTION_NS,
-			"org.exist.xquery.functions.xmldb.ModuleImpl");
+			Module.XMLDB_FUNCTION_NS,
+			"org.exist.xquery.functions.xmldb.XMLDBModule");
 		loadBuiltInModule(
-			Function.REQUEST_FUNCTION_NS,
+			Module.REQUEST_FUNCTION_NS,
 			"org.exist.xquery.functions.request.RequestModule");
 		loadBuiltInModule(
-			TextModule.NAMESPACE_URI,
+			Module.TEXT_FUNCTION_NS,
 			"org.exist.xquery.functions.text.TextModule");
 	}
 }

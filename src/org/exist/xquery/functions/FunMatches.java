@@ -30,6 +30,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
@@ -49,7 +50,7 @@ public class FunMatches extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("matches", BUILTIN_FUNCTION_NS),
+			new QName("matches", Module.BUILTIN_FUNCTION_NS),
 			"Returns true if the first argument string matches the regular expression specified " +
 			"by the second argument.",
 			new SequenceType[] {

@@ -26,6 +26,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
@@ -45,7 +46,7 @@ public class FunAvg extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("avg", BUILTIN_FUNCTION_NS),
+			new QName("avg", Module.BUILTIN_FUNCTION_NS),
 			"Returns the average of the values in the input sequence $a, that is, the "
 				+ "sum of the values divided by the number of values.",
 			new SequenceType[] { new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)},

@@ -42,6 +42,36 @@ import org.exist.dom.QName;
  */
 public interface Module {
 
+	/** 
+	 * XQuery/XPath 2.0 function namespace.
+	 */
+	public final static String BUILTIN_FUNCTION_NS =
+		"http://www.w3.org/2003/05/xpath-functions";
+	
+	/**
+	 * Namespace for the built-in xmldb module.
+	 */
+	public final static String XMLDB_FUNCTION_NS =
+		"http://exist-db.org/xquery/xmldb";
+
+	/**
+	 * Namespace for the built-in utility module.
+	 */
+	public final static String UTIL_FUNCTION_NS =
+		"http://exist-db.org/xquery/util";
+	
+	/**
+	 * Namespace for the built-in request module.
+	 */
+	public final static String REQUEST_FUNCTION_NS =
+		"http://exist-db.org/xquery/request";
+	
+	public final static String TRANSFORM_FUNCTION_NS =
+		"http://exist-db.org/xquery/transform";
+	
+	public final static String TEXT_FUNCTION_NS =
+		"http://exist-db.org/xquery/text";
+	
 	/**
 	 * Returns the namespace URI that uniquely identifies this module.
 	 * 

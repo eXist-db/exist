@@ -37,7 +37,7 @@ public class ExtRegexpOr extends ExtRegexp {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("match-any", BUILTIN_FUNCTION_NS),
+			new QName("match-any", Module.BUILTIN_FUNCTION_NS),
 				"eXist-specific extension function. Tries to match each of the regular expression " +
 				"strings passed in $b and all following parameters against the keywords contained in " +
 				"the fulltext index. The keywords found are then compared to the node set in $a. Every " +

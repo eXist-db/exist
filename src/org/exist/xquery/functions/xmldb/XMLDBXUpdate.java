@@ -54,7 +54,7 @@ import org.xmldb.api.modules.XUpdateQueryService;
 public class XMLDBXUpdate extends BasicFunction {
 
 	public final static FunctionSignature signature = new FunctionSignature(
-			new QName("update", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+			new QName("update", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Process an XUpdate request on the current collection. The first "
 					+ "argument specifies the collection object as returned by the collection or "
 					+ "create-collection functions. The second argument specifies the XUpdate "

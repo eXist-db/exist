@@ -49,11 +49,11 @@ public class XQueryWatchDog {
      */
     public XQueryWatchDog(XQueryContext context) {
         this.context = context;
-        configure();
+        configureDefaults();
         startTime = System.currentTimeMillis();
     }
     
-    private void configure() {
+    private void configureDefaults() {
         try {
             Configuration conf = BrokerPool.getInstance().getConfiguration();
             Object option = conf.getProperty("db-connection.watchdog.query-timeout");
@@ -67,6 +67,30 @@ public class XQueryWatchDog {
         } catch (EXistException e) {
             LOG.warn("configure() - Watchdog configuration failed");
         }
+    }
+    
+    public void setTimeoutFromPragma(Pragma pragma) throws XPathException {
+    	String[] contents = pragma.tokenizeContents();
+    	if(contents.length != 1)
+    		throw new XPathException("Pragma 'timeout' should have exactly one parameter: the timeout value.");
+		try {
+			timeout = Long.parseLong(contents[0]);
+		} catch (NumberFormatException e) {
+			throw new XPathException("Error parsing timeout value in pragma " + pragma.getQName().toString());
+		}
+		LOG.debug("timeout set from pragma: " + timeout + "ms.");
+    }
+    
+    public void setMaxNodesFromPragma(Pragma pragma) throws XPathException {
+    	String[] contents = pragma.tokenizeContents();
+    	if(contents.length != 1)
+    		throw new XPathException("Pragma 'output-size-limit' should have exactly one parameter: the timeout value.");
+		try {
+			maxNodesLimit = Integer.parseInt(contents[0]);
+		} catch (NumberFormatException e) {
+			throw new XPathException("Error parsing size-limit value in pragma " + pragma.getQName().toString());
+		}
+		LOG.debug("output-size-limit set from pragma: " + maxNodesLimit);
     }
     
     public void proceed(Expression expr) throws TerminatedException {

@@ -3,18 +3,17 @@ package org.exist.dom;
 import java.io.StringReader;
 import java.util.Iterator;
 
-import org.apache.log4j.Category;
 import org.exist.EXistException;
-import org.exist.xquery.parser.XQueryLexer;
-import org.exist.xquery.parser.XQueryParser;
-import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.OrderedLinkedList;
 import org.exist.xquery.PathExpr;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.parser.XQueryLexer;
+import org.exist.xquery.parser.XQueryParser;
+import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -23,9 +22,7 @@ import org.w3c.dom.NodeList;
 
 import antlr.collections.AST;
 
-public class SortedNodeSet extends AbstractNodeSet {
-
-	private static Category LOG = Category.getInstance(SortedNodeSet.class.getName());
+public class SortedNodeSet extends AbstractNodeSetBase {
 
 	private PathExpr expr;
 	private OrderedLinkedList list = new OrderedLinkedList();
@@ -52,13 +49,13 @@ public class SortedNodeSet extends AbstractNodeSet {
 		DocumentSet docs = new DocumentSet();
 		for (Iterator i = other.iterator(); i.hasNext();) {
 			p = (NodeProxy)i.next();
-			docs.add(p.doc);
+			docs.add(p.getDocument());
 		}
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
 			XQueryContext context = new XQueryContext(broker);
-			XQueryLexer lexer = new XQueryLexer(new StringReader(sortExpr));
+			XQueryLexer lexer = new XQueryLexer(context, new StringReader(sortExpr));
 			XQueryParser parser = new XQueryParser(lexer);
 			XQueryTreeParser treeParser = new XQueryTreeParser(context);
 			parser.xpath();
@@ -148,7 +145,7 @@ public class SortedNodeSet extends AbstractNodeSet {
 
 	public Node item(int pos) {
 		NodeProxy p = ((IteratorItem) list.get(pos)).proxy;
-		return p == null ? null : p.doc.getNode(p);
+		return p == null ? null : p.getDocument().getNode(p);
 	}
 
 	public Item itemAt(int pos) {

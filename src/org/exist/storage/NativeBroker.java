@@ -1646,26 +1646,26 @@ public class NativeBroker extends DBBroker {
 
 	public Node objectWith(final NodeProxy p) {
 		if (p.getInternalAddress() < 0)
-			return objectWith(p.doc, p.gid);
+			return objectWith(p.getDocument(), p.gid);
 		return (Node) new DOMTransaction(this, domDb) {
 			public Object start() {
 				Value val = domDb.get(p.getInternalAddress());
 				if (val == null) {
-					LOG.debug("Node " + p.gid + " not found in document " + p.doc.getName() +
-							"; docId = " + p.doc.getDocId());
+					LOG.debug("Node " + p.gid + " not found in document " + p.getDocument().getName() +
+							"; docId = " + p.getDocument().getDocId());
 //					LOG.debug(domDb.debugPages(p.doc));
 					Thread.dumpStack();
 //					return null;
-					return objectWith(p.doc, p.gid); // retry?
+					return objectWith(p.getDocument(), p.gid); // retry?
 				}
 				NodeImpl node =
 					NodeImpl.deserialize(
 						val.getData(),
 						0,
 						val.getLength(),
-						(DocumentImpl) p.doc);
+						(DocumentImpl) p.getDocument());
 				node.setGID(p.gid);
-				node.setOwnerDocument(p.doc);
+				node.setOwnerDocument(p.getDocument());
 				node.setInternalAddress(p.getInternalAddress());
 				return node;
 			}

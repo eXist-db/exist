@@ -63,16 +63,6 @@ public class LocationStep extends Step {
 	public LocationStep(XQueryContext context, int axis, NodeTest test) {
 		super(context, axis, test);
 	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Step#returnsType()
-	 */
-//	public int returnsType() {
-//		if(axis == Constants.SELF_AXIS)
-//			return Type.ITEM;
-//		else
-//			return Type.NODE;
-//	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#getDependencies()
@@ -113,6 +103,7 @@ public class LocationStep extends Step {
 			Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {
 			if(!((NodeSet)contextSequence).hasChanged(timestamp)) {
 //				LOG.debug("returning cached result");
+				cachedResult.setIsCached(true);
 				return 
 					(predicates.size() == 0)
 					? cachedResult :
@@ -379,11 +370,11 @@ public class LocationStep extends Step {
 				p = (NodeProxy) i.next();
 				if (axis == Constants.ANCESTOR_SELF_AXIS && test.matches(p))
 					result.add(
-						new NodeProxy(p.doc, p.gid, p.getInternalAddress()));
-				while ((p.gid = XMLUtil.getParentId(p.doc, p.gid)) > 0) {
+						new NodeProxy(p.getDocument(), p.gid, p.getInternalAddress()));
+				while ((p.gid = XMLUtil.getParentId(p.getDocument(), p.gid)) > 0) {
 					p.nodeType = Node.ELEMENT_NODE;
 					if (test.matches(p))
-						result.add(new NodeProxy(p.doc, p.gid));
+						result.add(new NodeProxy(p.getDocument(), p.gid));
 				}
 			}
 		}

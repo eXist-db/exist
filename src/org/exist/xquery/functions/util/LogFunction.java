@@ -41,7 +41,7 @@ public class LogFunction extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("log", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+			new QName("log", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Logs the message specified in $b to the current logger. $a indicates " +
 			"the log priority, e.g. 'debug' or 'warn'.",
 			new SequenceType[] {

@@ -67,7 +67,7 @@ public class TextRank extends BasicFunction {
 		NodeProxy proxy = (NodeProxy)val;	// this is a persistent node, so casting is safe
 
 		int freq = 0;
-		Match nextMatch = proxy.match;
+		Match nextMatch = proxy.getMatches();
 		// we just count the number of distinct terms matched
 		while(nextMatch != null) {
 			freq += nextMatch.getFrequency();

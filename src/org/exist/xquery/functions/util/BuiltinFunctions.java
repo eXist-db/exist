@@ -48,7 +48,7 @@ public class BuiltinFunctions extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("builtin-functions", UTIL_FUNCTION_NS, "util"),
+			new QName("builtin-functions", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns a sequence containing the QNames of all built-in functions " +
 			"currently known to the system.",
 			null,

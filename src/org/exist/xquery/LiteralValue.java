@@ -22,7 +22,6 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.DocumentSet;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -59,14 +58,6 @@ public class LiteralValue extends AbstractExpression {
 		Item contextItem)
 		throws XPathException {
 		return value;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#preselect(org.exist.dom.DocumentSet, org.exist.xquery.StaticContext)
-	 */
-	public DocumentSet preselect(DocumentSet in_docs)
-		throws XPathException {
-		return in_docs;
 	}
 
 	/* (non-Javadoc)

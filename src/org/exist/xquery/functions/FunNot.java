@@ -29,6 +29,7 @@ import org.exist.xquery.Dependency;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
@@ -42,7 +43,7 @@ public class FunNot extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("not", BUILTIN_FUNCTION_NS),
+			new QName("not", Module.BUILTIN_FUNCTION_NS),
 			new SequenceType[] {
 				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)},
 			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));

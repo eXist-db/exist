@@ -93,8 +93,8 @@ public class Predicate extends PathExpr {
 			int count = 0, sizeHint = -1;
 			for (Iterator i = nodes.iterator(); i.hasNext(); count++) {
 				current = (NodeProxy) i.next();
-				if(lastDoc == null || current.doc != lastDoc) {
-					lastDoc = current.doc;
+				if(lastDoc == null || current.getDocument() != lastDoc) {
+					lastDoc = current.getDocument();
 					sizeHint = nodes.getSizeHint(lastDoc);
 				}
 				contextNode = current.getContext();

@@ -39,7 +39,7 @@ public final class NodeIterator implements Iterator {
 	public NodeIterator(Object lock, DOMFile db, NodeProxy node, boolean poolable)
 		throws BTreeException, IOException {
 		this.db = db;
-		this.doc = node.doc;
+		this.doc = node.getDocument();
 		this.useNodePool = poolable;
 		if (-1 < node.getInternalAddress())
 			startAddress = node.getInternalAddress();

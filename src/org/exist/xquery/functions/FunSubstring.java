@@ -28,6 +28,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.DoubleValue;
@@ -46,7 +47,7 @@ public class FunSubstring extends Function {
 	
 	public final static FunctionSignature signature =
 			new FunctionSignature(
-				new QName("substring", BUILTIN_FUNCTION_NS),
+				new QName("substring", Module.BUILTIN_FUNCTION_NS),
 				new SequenceType[] {
 					 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
 					 new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)

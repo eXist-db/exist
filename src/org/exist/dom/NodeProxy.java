@@ -23,7 +23,7 @@ package org.exist.dom;
 import java.util.Comparator;
 import java.util.Iterator;
 
-import org.exist.memtree.Receiver;
+import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xquery.XPathException;
@@ -57,8 +57,8 @@ import org.xml.sax.SAXException;
  *
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
  */
-public final class NodeProxy extends AbstractNodeSet implements NodeValue, Comparable {
-
+public class NodeProxy extends AbstractNodeSet implements NodeValue, Comparable {
+	
 	/**
 	 * The owner document of this node.
 	 */
@@ -86,7 +86,7 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 	private ContextItem context = null;
 	
 	private long internalAddress = -1;
-
+	
 	public NodeProxy() {
 	}
 
@@ -264,6 +264,14 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 		return doc;
 	}
 
+	public DocumentImpl getDocument()  {
+		return doc;
+	}
+	
+	public void setDocument(DocumentImpl doc) {
+		this.doc = doc;
+	}
+	
 	public long getGID() {
 		return gid;
 	}
@@ -333,7 +341,7 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 	public void setNodeType(short nodeType) {
 		this.nodeType = nodeType;
 	}
-
+ 
 	/**
 	 * Returns the storage address of this node in dom.dbx.
 	 * @return long
@@ -360,6 +368,14 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 		return (internalAddress & 0x10000L) > 0;
 	}
 
+	public Match getMatches() {
+		return match;
+	}
+	
+	public void setMatches(Match match) {
+		this.match = match;
+	}
+	
 	public boolean hasMatch(Match m) {
 		if (m == null || match == null)
 			return false;
@@ -406,7 +422,7 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 	public void addMatches(NodeProxy p) {
 		if(p == this)
 			return;
-		Match m = p.match;
+		Match m = p.getMatches();
 		while (m != null) {
 			addMatch(new Match(m));
 			m = m.nextMatch;
@@ -447,7 +463,6 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 	public void addContextNode(NodeProxy node) {
 		if (context == null) {
 			context = new ContextItem(node);
-			//			Thread.dumpStack();
 			return;
 		}
 		ContextItem next = context;
@@ -460,16 +475,11 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 			}
 			next = next.getNextItem();
 		}
-		//		Thread.dumpStack();
-	}
-
-	public void clearContext() {
-		context = null;
 	}
 
 	public void printContext() {
 		ContextItem next = context;
-		System.out.print(hashCode() + " " + gid + ": ");
+		System.out.print(gid + ": ");
 		while (next != null) {
 			System.out.print(next.getNode().gid);
 			System.out.print(' ');
@@ -477,6 +487,7 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 		}
 		System.out.println();
 	}
+	
 	public void copyContext(NodeProxy node) {
 		context = node.getContext();
 	}
@@ -638,7 +649,7 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 		serializer.toSAX(this);
 	}
 
-	public void copyTo(DBBroker broker, Receiver receiver) throws SAXException {
+	public void copyTo(DBBroker broker, DocumentBuilderReceiver receiver) throws SAXException {
 	    if(nodeType == Node.ATTRIBUTE_NODE) {
 	        AttrImpl attr = (AttrImpl) getNode();
 	        receiver.attribute(attr.getQName(), attr.getValue());

@@ -45,7 +45,7 @@ public class XMLDBGetChildCollections extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("get-child-collections", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+			new QName("get-child-collections", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns the subcolls of collection",
 			new SequenceType[] {
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)

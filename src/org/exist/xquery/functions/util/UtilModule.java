@@ -28,7 +28,7 @@ import org.exist.xquery.FunctionDef;
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class ModuleImpl extends AbstractInternalModule {
+public class UtilModule extends AbstractInternalModule {
 
 	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/util";
 	
@@ -48,7 +48,7 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(SharedLockFunction.signature, SharedLockFunction.class)
 	};
 	
-	public ModuleImpl() {
+	public UtilModule() {
 		super(functions);
 	}
 

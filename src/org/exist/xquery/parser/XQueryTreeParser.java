@@ -5000,7 +5000,9 @@ public XQueryTreeParser() {
 			match(_t,STRING_LITERAL);
 			_t = _t.getNextSibling();
 			
-			step= new LiteralValue(context, new StringValue(c.getText()));
+					StringValue val = new StringValue(c.getText());
+					val.expand();
+			step= new LiteralValue(context, val);
 			step.setASTNode(c);
 			
 			break;
@@ -5401,6 +5403,9 @@ public XQueryTreeParser() {
 		"NMCHAR",
 		"WS",
 		"EXPR_COMMENT",
+		"PRAGMA",
+		"PRAGMA_CONTENT",
+		"PRAGMA_QNAME",
 		"PREDEFINED_ENTITY_REF",
 		"CHAR_REF",
 		"NEXT_TOKEN",

@@ -47,7 +47,7 @@ import org.w3c.dom.NodeList;
  * @author Wolfgang Meier
  * @author Timo Boehme
  */
-public class VirtualNodeSet extends AbstractNodeSet {
+public class VirtualNodeSet extends AbstractNodeSetBase {
 
 	protected int axis = -1;
 	protected NodeTest test;
@@ -79,7 +79,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		//return (first != null);
 		return (
 			(first != null)
-				|| (context.get(p.doc, XMLUtil.getParentId(p.doc, p.gid)) != null));
+				|| (context.get(p.getDocument(), XMLUtil.getParentId(p.getDocument(), p.gid)) != null));
 	}
 
 	public void setInPredicate(boolean predicate) {
@@ -111,7 +111,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		boolean includeSelf,
 		boolean directParent,
 		int recursions) {
-		long pid = XMLUtil.getParentId(node.doc, node.gid);
+		long pid = XMLUtil.getParentId(node.getDocument(), node.gid);
 		NodeProxy parent;
 		// check if the start-node should be included, e.g. to process an
 		// expression like *[. = 'xxx'] 
@@ -119,7 +119,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 			if (axis == Constants.CHILD_AXIS) {
 				// if we're on the child axis, test if
 				// the node is a direct child of the context node
-				if ((parent = context.get(new NodeProxy(node.doc, pid))) != null) {
+				if ((parent = context.get(new NodeProxy(node.getDocument(), pid))) != null) {
 					node.copyContext(parent);
 					if (useSelfAsContext && inPredicate) {
 						node.addContextNode(node);
@@ -138,13 +138,13 @@ public class VirtualNodeSet extends AbstractNodeSet {
 				// given node was already document element -> no parent				
 				return null;
 			}
-			first = new NodeProxy(node.doc, pid, Node.ELEMENT_NODE);
+			first = new NodeProxy(node.getDocument(), pid, Node.ELEMENT_NODE);
 			// Timo Boehme: we need a real parent (child from context)
 			return getFirstParent(first, first, false, directParent, recursions + 1);
 		}
 
 		// is pid member of the context set?
-		parent = context.get(node.doc, pid);
+		parent = context.get(node.getDocument(), pid);
 
 		if (parent != null && test.matches(first)) {
 			if (axis != Constants.CHILD_AXIS) {
@@ -170,7 +170,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 			return null;
 		} else {
 			// continue for expressions like //*/n or /*//n
-			parent = new NodeProxy(node.doc, pid, Node.ELEMENT_NODE);
+			parent = new NodeProxy(node.getDocument(), pid, Node.ELEMENT_NODE);
 			return getFirstParent(parent, first, false, directParent, recursions + 1);
 		}
 	}
@@ -250,19 +250,19 @@ public class VirtualNodeSet extends AbstractNodeSet {
 				if (axis == Constants.DESCENDANT_AXIS
 					|| axis == Constants.DESCENDANT_SELF_AXIS
 					|| axis == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
-					domIter = docElemProxy.doc.getBroker().getNodeIterator(docElemProxy);
+					domIter = docElemProxy.getDocument().getBroker().getNodeIterator(docElemProxy);
 					NodeImpl node = (NodeImpl) domIter.next();
-					node.setOwnerDocument(docElemProxy.doc);
+					node.setOwnerDocument(docElemProxy.getDocument());
 					node.setGID(docElemProxy.gid);
-					docElemProxy.match = proxy.match;
+					docElemProxy.setMatches(proxy.getMatches());
 					addChildren(docElemProxy, result, node, domIter, 0);
 				}
 				continue;
 				// -- end of insertion --
 			} else {
-				domIter = proxy.doc.getBroker().getNodeIterator(proxy);
+				domIter = proxy.getDocument().getBroker().getNodeIterator(proxy);
 				NodeImpl node = (NodeImpl) domIter.next();
-				node.setOwnerDocument(proxy.doc);
+				node.setOwnerDocument(proxy.getDocument());
 				node.setGID(proxy.gid);
 				addChildren(proxy, result, node, domIter, 0);
 			}
@@ -286,7 +286,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 				child.setGID(node.firstChildID() + i);
 				p = new NodeProxy(child.ownerDocument, child.gid, child.getNodeType());
 				p.setInternalAddress(child.internalAddress);
-				p.match = contextNode.match;
+				p.setMatches(contextNode.getMatches());
 				if (test.matches(child)) {
 					if (((axis == Constants.CHILD_AXIS
 						|| axis == Constants.ATTRIBUTE_AXIS)
@@ -310,7 +310,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 				return;
 			NodeProxy p = new NodeProxy(node.ownerDocument, node.gid, node.getNodeType());
 			p.setInternalAddress(node.internalAddress);
-			p.match = contextNode.match;
+			p.setMatches(contextNode.getMatches());
 			result.add(p);
 			p.copyContext(contextNode);
 			if (useSelfAsContext && inPredicate) {

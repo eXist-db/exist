@@ -159,6 +159,8 @@ public class NativeElementIndex extends ElementIndex {
             		}
             		gid = 0;
             		for (int k = 0; k < len; k++) {
+//            			if(result.getLength() > 1000)
+//            				continue;
             			gid = gid + is.readLong();
             			if(selector == null)
             				p = new NodeProxy(doc, gid, nodeType, StorageAddress.read(is));

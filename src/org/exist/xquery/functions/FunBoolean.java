@@ -24,6 +24,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.BooleanValue;
@@ -40,7 +41,7 @@ public class FunBoolean extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("boolean", BUILTIN_FUNCTION_NS),
+			new QName("boolean", Module.BUILTIN_FUNCTION_NS),
             "Computes the xs:boolean value of the sequence argument.",
 			new SequenceType[] { new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE) },
 			new SequenceType(Type.BOOLEAN, Cardinality.ONE)

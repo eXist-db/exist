@@ -122,7 +122,7 @@ public abstract class Modification {
 					(String) entry.getKey(),
 					(String) entry.getValue());
 			}
-			XQueryLexer lexer = new XQueryLexer(new StringReader(selectStmt));
+			XQueryLexer lexer = new XQueryLexer(context, new StringReader(selectStmt));
 			XQueryParser parser = new XQueryParser(lexer);
 			XQueryTreeParser treeParser = new XQueryTreeParser(context);
 			parser.xpath();

@@ -25,6 +25,7 @@ package org.exist.xquery.functions;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -36,7 +37,7 @@ public class ExtXCollection extends ExtCollection {
 
 	public final static FunctionSignature signature =
         new FunctionSignature(
-            new QName("xcollection", BUILTIN_FUNCTION_NS),
+            new QName("xcollection", Module.BUILTIN_FUNCTION_NS),
             "Works like fn:collection, but does not include documents " +
             "found in subcollections of the specified collections. This " +
             "function is specific to eXist and will be moved into a seperate " +

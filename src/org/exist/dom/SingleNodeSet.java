@@ -46,14 +46,14 @@ public class SingleNodeSet extends ArraySet {
 	 * @see org.exist.dom.NodeSet#contains(org.exist.dom.DocumentImpl, long)
 	 */
 	public boolean contains(DocumentImpl doc, long nodeId) {
-		return nodes[0].doc.getDocId() == doc.getDocId() && nodes[0].gid == nodeId;
+		return nodes[0].getDocument().getDocId() == doc.getDocId() && nodes[0].gid == nodeId;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.dom.NodeSet#contains(org.exist.dom.NodeProxy)
 	 */
 	public boolean contains(NodeProxy proxy) {
-		return nodes[0].doc.getDocId() == proxy.doc.getDocId() && nodes[0].gid == proxy.gid;
+		return nodes[0].getDocument().getDocId() == proxy.getDocument().getDocId() && nodes[0].gid == proxy.gid;
 	}
 
 	/* (non-Javadoc)

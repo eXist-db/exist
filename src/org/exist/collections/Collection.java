@@ -1174,10 +1174,10 @@ implements Comparable, EntityResolver, Cacheable {
 		reader.setEntityResolver(this);
 
 		if (trigger != null && triggersEnabled) {
-			reader.setContentHandler(trigger.getInputHandler());
 			reader.setProperty(
 					"http://xml.org/sax/properties/lexical-handler",
 					trigger.getLexicalInputHandler());
+			reader.setContentHandler(trigger.getInputHandler());
 			trigger.setOutputHandler(indexer);
 			trigger.setLexicalOutputHandler(indexer);
 			trigger.setValidating(true);
@@ -1186,11 +1186,11 @@ implements Comparable, EntityResolver, Cacheable {
 					? Trigger.STORE_DOCUMENT_EVENT
 					: Trigger.UPDATE_DOCUMENT_EVENT, broker, name, oldDoc);
 		} else {
-			reader.setContentHandler(indexer);
 			reader
-					.setProperty(
-							"http://xml.org/sax/properties/lexical-handler",
-							indexer);
+			.setProperty(
+					"http://xml.org/sax/properties/lexical-handler",
+					indexer);
+			reader.setContentHandler(indexer);
 		}
 		reader.setErrorHandler(indexer);
 		info.setReader(reader);
@@ -1245,8 +1245,7 @@ implements Comparable, EntityResolver, Cacheable {
 	private void checkPermissions(DBBroker broker, String name, DocumentImpl oldDoc) throws LockException, PermissionDeniedException {
 		if (oldDoc != null) {
 
-			LOG.debug("Found old doc " + oldDoc.getDocId() + "; identity = " + oldDoc.hashCode() +
-					"; collection = " + hashCode());
+			LOG.debug("Found old doc " + oldDoc.getDocId());
 			// check if the document is locked by another user
 			User lockUser = oldDoc.getUserLock();
 			if(lockUser != null && !lockUser.equals(broker.getUser()))

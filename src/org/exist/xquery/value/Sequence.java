@@ -163,5 +163,21 @@ public interface Sequence {
 	 */
 	public Object toJavaObject(Class target) throws XPathException;
 	
+	/**
+	 * Returns true if the sequence is the result of a previous operation
+	 * and has been cached.
+	 * 
+	 * @return
+	 */
+	public boolean isCached();
+	
+	/**
+	 * Indicates that the sequence  is the result of a previous operation
+	 * and has not been recomputed.
+	 *  
+	 * @param cached
+	 */
+	public void setIsCached(boolean cached);
+	
 	public void setSelfAsContext();
 }

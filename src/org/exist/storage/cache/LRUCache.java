@@ -25,6 +25,12 @@ package org.exist.storage.cache;
 import org.exist.util.hashtable.SequencedLongHashMap;
 
 /**
+ * A simple cache implementing a Last Recently Used policy. This
+ * cache implementation is based on a 
+ * {@link org.exist.util.hashtable.SequencedLongHashMap}. Contrary
+ * to the other {@link org.exist.storage.cache.Cache} implementations,
+ * LRUCache ignores reference counts or timestamps.
+ * 
  * @author wolf
  */
 public class LRUCache implements Cache {

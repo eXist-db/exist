@@ -20,8 +20,7 @@
  *  
  *  $Id$
  */
- 
-package org.exist.xquery.functions.xmldb;
+package org.exist.xquery.functions.transform;
 
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
@@ -29,30 +28,17 @@ import org.exist.xquery.FunctionDef;
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class ModuleImpl extends AbstractInternalModule {
+public class TransformModule extends AbstractInternalModule {
 
-	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/xmldb";
+	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/transform";
 	
-	public final static String PREFIX = "xmldb";
+	public final static String PREFIX = "transform";
 	
-	public final static FunctionDef[] functions = {
-		new FunctionDef(XMLDBCollection.signature, XMLDBCollection.class),
-		new FunctionDef(XMLDBCreateCollection.signature, XMLDBCreateCollection.class),
-		new FunctionDef(XMLDBRegisterDatabase.signature, XMLDBRegisterDatabase.class),
-		new FunctionDef(XMLDBStore.signature, XMLDBStore.class),
-		new FunctionDef(XMLDBAuthenticate.signature, XMLDBAuthenticate.class),
-		new FunctionDef(XMLDBXUpdate.signature, XMLDBXUpdate.class),
-		new FunctionDef(XMLDBRemove.signature, XMLDBRemove.class),
-		new FunctionDef(XMLDBHasLock.signature, XMLDBHasLock.class),
-		new FunctionDef(XMLDBCreated.signature, XMLDBCreated.class),
-		new FunctionDef(XMLDBLastModified.signature, XMLDBLastModified.class),
-		new FunctionDef(XMLDBPermissions.signature, XMLDBPermissions.class),
-		new FunctionDef(XMLDBGroup.signature, XMLDBGroup.class),
-		new FunctionDef(XMLDBOwner.signature, XMLDBOwner.class),
-		new FunctionDef(XMLDBGetChildCollections.signature, XMLDBGetChildCollections.class)
+	private final static FunctionDef functions[] = {
+		new FunctionDef(Transform.signature, Transform.class)
 	};
 	
-	public ModuleImpl() {
+	public TransformModule() {
 		super(functions);
 	}
 
@@ -69,5 +55,4 @@ public class ModuleImpl extends AbstractInternalModule {
 	public String getDefaultPrefix() {
 		return PREFIX;
 	}
-
 }

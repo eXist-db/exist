@@ -30,6 +30,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.util.serializer.DOMStreamerPool;
+import org.exist.util.serializer.Receiver;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
@@ -540,11 +541,14 @@ public class NodeImpl implements Node, NodeValue, QNameable {
 		}
 	}
 
-	public void copyTo(DBBroker broker, Receiver receiver) throws SAXException {
-//		toSAX(broker, receiver);
+	public void copyTo(DBBroker broker, DocumentBuilderReceiver receiver) throws SAXException {
 	    document.copyTo(this, receiver);
 	}
 
+	public void streamTo(Serializer serializer, Receiver receiver) throws SAXException {
+		document.streamTo(serializer, this, receiver);
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
 	 */
@@ -597,5 +601,20 @@ public class NodeImpl implements Node, NodeValue, QNameable {
 	 * @see org.exist.xquery.value.Sequence#setSelfAsContext()
 	 */
 	public void setSelfAsContext() {
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.Sequence#isCached()
+	 */
+	public boolean isCached() {
+		// always return false
+		return false;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.Sequence#setIsCached(boolean)
+	 */
+	public void setIsCached(boolean cached) {
+		// ignore
 	}
 }

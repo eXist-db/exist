@@ -20,20 +20,19 @@ import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.XMLUtil;
-import org.exist.xquery.parser.XQueryLexer;
-import org.exist.xquery.parser.XQueryParser;
-import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.storage.DBBroker;
 import org.exist.util.FastStringBuffer;
 import org.exist.xquery.PathExpr;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.parser.XQueryLexer;
+import org.exist.xquery.parser.XQueryParser;
+import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -121,10 +120,11 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		saxFactory.setValidating(false);
 		SAXParser sax = saxFactory.newSAXParser();
 		XMLReader reader = sax.getXMLReader();
-		reader.setContentHandler(this);
 		reader.setProperty(
-			"http://xml.org/sax/properties/lexical-handler",
-			this);
+				"http://xml.org/sax/properties/lexical-handler",
+				this);
+		reader.setContentHandler(this);
+		
 		reader.parse(is);
 		Modification mods[] = new Modification[modifications.size()];
 		return (Modification[]) modifications.toArray(mods);
@@ -482,7 +482,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					(String) entry.getKey(),
 					(String) entry.getValue());
 			}
-			XQueryLexer lexer = new XQueryLexer(new StringReader(select));
+			XQueryLexer lexer = new XQueryLexer(context, new StringReader(select));
 			XQueryParser parser = new XQueryParser(lexer);
 			XQueryTreeParser treeParser = new XQueryTreeParser(context);
 			parser.xpath();

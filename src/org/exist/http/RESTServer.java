@@ -580,8 +580,8 @@ public class RESTServer {
 			sax.setWriter(writer);
 			sax.setOutputProperties(outputProperties);
 			serializer.setProperties(outputProperties);
-			serializer.setContentHandler(sax);
 			serializer.setLexicalHandler(sax);
+			serializer.setContentHandler(sax);
 			
 			AttributesImpl attrs = new AttributesImpl();
 			attrs.addAttribute("", "hits", "hits", "CDATA", Integer.toString(rlen));
