@@ -159,7 +159,9 @@ public class Restore extends DefaultHandler {
 				if(dialog != null)
 					dialog.setCollection(name);
 			} else if (localName.equals("subcollection")) {
-				final String name = atts.getValue("name");
+				
+				final String name = atts.getValue("filename");
+				
 				final String fname =
 					contents.getParentFile().getAbsolutePath()
 						+ File.separatorChar
@@ -179,11 +181,14 @@ public class Restore extends DefaultHandler {
 				final String owner = atts.getValue("owner");
 				final String group = atts.getValue("group");
 				final String perms = atts.getValue("mode");
+				
+				final String filename = atts.getValue("filename");
+				
 				if (name == null)
 					throw new SAXException("collection requires a name attribute");
 				final File f =
 					new File(
-						contents.getParentFile().getAbsolutePath() + File.separatorChar + name);
+						contents.getParentFile().getAbsolutePath() + File.separatorChar + filename);
 				try {
 					if (dialog != null && current instanceof Observable) {
 						((Observable) current).addObserver(dialog.getObserver());
