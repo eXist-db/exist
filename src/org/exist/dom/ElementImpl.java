@@ -1229,6 +1229,7 @@ public class ElementImpl extends NamedNode implements Element {
 			ownerDocument.reindex = level + 1;
 			ownerDocument.broker.reindex(prevDoc, ownerDocument, this);
 		}
+//		ownerDocument.broker.checkTree(ownerDocument);
 		return old;
 	}
 

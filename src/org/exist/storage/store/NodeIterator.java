@@ -78,6 +78,7 @@ public final class NodeIterator implements Iterator {
 			} catch (LockException e) {
 				return false;
 			}
+			db.setOwnerObject(lockKey);
 			if(gotoNextPosition()) {
 				db.getPageBuffer().add(p);
 				final DOMFile.DOMFilePageHeader ph = p.getPageHeader();
@@ -110,6 +111,7 @@ public final class NodeIterator implements Iterator {
 			} catch (LockException e) {
 				return null;
 			}
+			db.setOwnerObject(lockKey);
 			if(gotoNextPosition()) {
 			    boolean skipped = false;
 			    do {
@@ -131,6 +133,7 @@ public final class NodeIterator implements Iterator {
 					}
 					// extract the tid
 					lastTID = ByteConversion.byteToShort(p.data, offset);
+					
 					offset += 2;
 					//	check if this is just a link to a relocated node
 					if(ItemId.isLink(lastTID)) {
@@ -156,8 +159,13 @@ public final class NodeIterator implements Iterator {
 						l = 8;
 						final long overflow = ByteConversion.byteToLong(p.data, offset);
 						offset += 8;
-						final byte[] odata = db.getOverflowValue(overflow);
-						nextNode = NodeImpl.deserialize(odata, 0, odata.length, doc, useNodePool);
+						try {
+							final byte[] odata = db.getOverflowValue(overflow);
+							nextNode = NodeImpl.deserialize(odata, 0, odata.length, doc, useNodePool);
+						} catch(Exception e) {
+							LOG.warn("Exception while loading overflow value: " + e.getMessage() +
+									"; originating page: " + p.page.getPageInfo());
+						}
 					// normal node
 					} else {
 						nextNode = NodeImpl.deserialize(p.data, offset, l, doc, useNodePool);
@@ -169,6 +177,8 @@ public final class NodeIterator implements Iterator {
 					            p.getPageHeader().getPrevDataPage() + "; offset = " + (offset - l) +
 					            "; len = " + p.getPageHeader().getDataLength());
 					    LOG.debug(db.debugPageContents(p));
+					    LOG.debug(p.dumpPage());
+					    Thread.dumpStack();
 					    return null;
 					}
 					nextNode.setInternalAddress(
@@ -192,7 +202,6 @@ public final class NodeIterator implements Iterator {
 	private boolean gotoNextPosition() throws BTreeException, IOException {
 		//	position the iterator at the start of the first value
 		if (node != null) {
-			db.setOwnerObject(lockKey);
 			final long addr = db.findValue(lockKey, node);
 			if (addr == BTree.KEY_NOT_FOUND)
 				return false;

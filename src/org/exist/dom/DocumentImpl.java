@@ -353,6 +353,12 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return broker.objectWith(new NodeProxy(this, 1, address));
 	}
 	
+	public long getFirstChildAddress() {
+		if(children == 0)
+			return -1;
+		return childList[0];
+	}
+	
 	public NodeList getChildNodes() {
 		checkAvail();
 		NodeListImpl list = new NodeListImpl();

@@ -25,10 +25,10 @@ import java.math.BigInteger;
 
 import org.exist.xquery.XPathException;
 
-/** [Definition:]   integer is ·derived· from decimal by fixing the value of ·fractionDigits· to be 0. 
+/** [Definition:]   integer is ï¿½derivedï¿½ from decimal by fixing the value of ï¿½fractionDigitsï¿½ to be 0. 
  * This results in the standard mathematical concept of the integer numbers. 
- * The ·value space· of integer is the infinite set {...,-2,-1,0,1,2,...}. 
- * The ·base type· of integer is decimal.
+ * The ï¿½value spaceï¿½ of integer is the infinite set {...,-2,-1,0,1,2,...}. 
+ * The ï¿½base typeï¿½ of integer is decimal.
  * cf http://www.w3.org/TR/xmlschema-2/#integer 
  */
 public class IntegerValue extends NumericValue {

@@ -895,7 +895,8 @@ public class NativeBroker extends DBBroker {
 	 * descendant nodes of the passed node, or all nodes below some level of
 	 * the document if node is null.
 	 */
-	public void reindex(DocumentImpl oldDoc, DocumentImpl doc, NodeImpl node) {
+	public void reindex(final DocumentImpl oldDoc, final DocumentImpl doc, 
+			final NodeImpl node) {
 		int idxLevel = doc.reindexRequired();
 		if (idxLevel < 0) {
 			flush();
@@ -904,40 +905,37 @@ public class NativeBroker extends DBBroker {
 		oldDoc.setReindexRequired(idxLevel);
 		if (node == null)
 			LOG.debug("reindexing level " + idxLevel + " of document " + doc.getDocId());
+//		checkTree(doc);
+		
 		final long start = System.currentTimeMillis();
-		// remove all old index keys from the btree
-		Value ref = new NodeRef(doc.getDocId());
-		final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-		final Lock lock = domDb.getLock();
-		// try to acquire a lock on the file
-		try {
-			lock.acquire(Lock.WRITE_LOCK);
-			domDb.setOwnerObject(this);
-			final ArrayList nodes = domDb.findKeys(query);
-			long gid;
-			for (Iterator i = nodes.iterator(); i.hasNext();) {
-				ref = (Value) i.next();
-				gid = ByteConversion.byteToLong(ref.data(), ref.start() + 4);
-				if (oldDoc.getTreeLevel(gid) >= doc.reindexRequired()) {
-					if (node != null) {
-						if (XMLUtil.isDescendant(oldDoc, node.getGID(), gid)) {
-							domDb.removeValue(ref);
+		// remove all old index keys from the btree 
+		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+			public Object start() throws ReadOnlyException {
+				try {
+					Value ref = new NodeRef(doc.getDocId());
+					IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+					final ArrayList nodes = domDb.findKeys(query);
+					long gid;
+					for (Iterator i = nodes.iterator(); i.hasNext();) {
+						ref = (Value) i.next();
+						gid = ByteConversion.byteToLong(ref.data(), ref.start() + 4);
+						if (oldDoc.getTreeLevel(gid) >= doc.reindexRequired()) {
+							if (node != null) {
+								if (XMLUtil.isDescendant(oldDoc, node.getGID(), gid)) {
+									domDb.removeValue(ref);
+								}
+							} else
+								domDb.removeValue(ref);
 						}
-					} else
-						domDb.removeValue(ref);
+					}
+				} catch (BTreeException e) {
+					LOG.debug("Exception while reindexing document: " + e.getMessage(), e);
+				} catch (IOException e) {
+					LOG.debug("Exception while reindexing document: " + e.getMessage(), e);
 				}
+				return null;
 			}
-		} catch (DBException e) {
-			LOG.warn("db error during reindex", e);
-		} catch (IOException e) {
-			LOG.warn("io error during reindex", e);
-		} catch (LockException e) {
-			// timed out
-			LOG.warn("lock timed out during reindex", e);
-			return;
-		} finally {
-			lock.release();
-		}
+		}.run();
 		try {
 			// now reindex the nodes
 			Iterator iterator;
@@ -961,11 +959,11 @@ public class NativeBroker extends DBBroker {
 			}
 		} catch(Exception e) {
 			LOG.error("Error occured while reindexing document: " + e.getMessage(), e);
-			LOG.debug(domDb.debugPages(doc));
 		}
 		elementIndex.reindex(oldDoc, node);
 		textEngine.reindex(oldDoc, node);
 		doc.setReindexRequired(-1);
+//		checkTree(doc);
 		LOG.debug("reindex took " + (System.currentTimeMillis() - start) + "ms.");
 	}
 
@@ -1208,8 +1206,9 @@ public class NativeBroker extends DBBroker {
 		final long start = System.currentTimeMillis();
 		try {
 //			checkTree(doc);
-		    final NodeImpl firstChild = (NodeImpl)doc.getFirstChild();
-//		    LOG.debug(domDb.debugPages(doc));
+			
+			// remember this for later remove
+		    final long firstChild = doc.getFirstChildAddress();
 		    	
 			// dropping old structure index
 			elementIndex.dropIndex(doc);
@@ -1221,13 +1220,16 @@ public class NativeBroker extends DBBroker {
 				public Object start() {
 					try {
 						domDb.remove(idx, null);
+						domDb.flush();
 					} catch (BTreeException e) {
 			            LOG.warn("start() - " + "error while removing doc", e);
 					} catch (IOException e) {
 			            LOG.warn("start() - " + "error while removing doc", e);
 					} catch (TerminatedException e) {
 			            LOG.warn("method terminated", e);
-			        }
+			        } catch (DBException e) {
+			        	LOG.warn("start() - " + "error while removing doc", e);
+					}
 					return null;
 				}
 			}
@@ -1252,16 +1254,23 @@ public class NativeBroker extends DBBroker {
 			}
 			flush();
 			
+//			checkTree(tempDoc);
+			
 			// remove the old nodes
 			new DOMTransaction(this, domDb) {
 				public Object start() {
-					domDb.removeAll(firstChild.getInternalAddress());
+					domDb.removeAll(firstChild);
+					try {
+						domDb.flush();
+					} catch (DBException e) {
+						LOG.warn("start() - " + "error while removing doc", e);
+					}
 					return null;
 				}
 			}
 			.run();
 			
-//			LOG.debug(domDb.debugPages(tempDoc));
+//			checkTree(tempDoc);
 			
 			doc.copyChildren(tempDoc);
 			doc.setSplitCount(0);
@@ -1271,7 +1280,12 @@ public class NativeBroker extends DBBroker {
 			storeDocument(doc);
 			LOG.debug("new doc address = " + StorageAddress.toString(doc.getAddress()));
 			closeDocument();
-			
+//			new DOMTransaction(this, domDb, Lock.READ_LOCK) {
+//				public Object start() throws ReadOnlyException {
+//					LOG.debug("Pages used: " + domDb.debugPages(doc));
+//					return null;
+//				}
+//			}.run();
 			saveCollection(doc.getCollection());
 			LOG.debug("Defragmentation took " + (System.currentTimeMillis() - start) + "ms.");
 		} catch (ReadOnlyException e) {
@@ -1320,8 +1334,15 @@ public class NativeBroker extends DBBroker {
 		    currentPath.removeLastComponent();
 	}
 	
-	public void checkTree(DocumentImpl doc) {
+	public void checkTree(final DocumentImpl doc) {
 		LOG.debug("Checking DOM tree for document " + doc.getFileName());
+		new DOMTransaction(this, domDb, Lock.READ_LOCK) {
+			public Object start() throws ReadOnlyException {
+				LOG.debug("Pages used: " + domDb.debugPages(doc));
+				return null;
+			}
+		}.run();
+		
 		NodeList nodes = doc.getChildNodes();
 		NodeImpl n;
 		for (int i = 0; i < nodes.getLength(); i++) {
@@ -1332,6 +1353,21 @@ public class NativeBroker extends DBBroker {
 		    iterator.next();
 		    checkTree(iterator, n);
 		}
+		NodeRef ref = new NodeRef(doc.getDocId());
+		final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+		new DOMTransaction(this, domDb) {
+			public Object start() {
+				try {
+					domDb.findKeys(idx);
+				} catch (BTreeException e) {
+		            LOG.warn("start() - " + "error while removing doc", e);
+				} catch (IOException e) {
+		            LOG.warn("start() - " + "error while removing doc", e);
+				}
+				return null;
+			}
+		}
+		.run();
 	}
 	
 	private void checkTree(Iterator iterator, NodeImpl node) {
@@ -1522,9 +1558,10 @@ public class NativeBroker extends DBBroker {
 			public Object start() {
 				Value val = domDb.get(new NodeProxy((DocumentImpl) doc, gid));
 				if (val == null) {
-				    if(LOG.isDebugEnabled())
+				    if(LOG.isDebugEnabled()) {
 				        LOG.debug("node " + gid + " not found in document " + ((DocumentImpl)doc).getDocId());
-					//throw new RuntimeException("node " + gid + " not found");
+				        Thread.dumpStack();
+				    }
 					return null;
 				}
 				NodeImpl node =
@@ -1549,10 +1586,11 @@ public class NativeBroker extends DBBroker {
 			public Object start() {
 				Value val = domDb.get(p.getInternalAddress());
 				if (val == null) {
-					LOG.debug("node " + p.gid + " not found in document " +
+					LOG.debug("Node " + p.gid + " not found in document " +
 					        p.doc.getCollection().getName() + '/' + p.doc.getFileName());
+					LOG.debug(domDb.debugPages(p.doc));
 					Thread.dumpStack();
-					return null;
+					return objectWith(p.doc, p.gid);
 				}
 				NodeImpl node =
 					NodeImpl.deserialize(
@@ -2159,8 +2197,8 @@ public class NativeBroker extends DBBroker {
 		for (Iterator i = context.iterator(); i.hasNext();) {
 			p = (NodeProxy) i.next();
 			try {
-				domDb.setOwnerObject(this);
 				domDb.getLock().acquire(Lock.READ_LOCK);
+				domDb.setOwnerObject(this);
 				content = domDb.getNodeValue(p);
 			} catch (LockException e) {
 				LOG.warn("failed to acquire read lock on dom.dbx");

@@ -128,6 +128,7 @@ public final class DOMFileIterator implements Iterator {
 							page = nextPage;
 							p = db.getCurrentPage(nextPage);
 							offset = 0;
+							db.addToBuffer(p);
 						}
 						lastOffset = offset;
 						
@@ -255,6 +256,7 @@ public final class DOMFileIterator implements Iterator {
 			} else if (page == -1)
 			    return false;
 			p = db.getCurrentPage(page);
+			db.addToBuffer(p);
 			return true;
 		}
 		
