@@ -4,11 +4,12 @@ import java.util.Iterator;
 
 public class LongLinkedList {
 
-	public final static class ListItem {
+	public final static class ListItem implements Comparable {
 		
-		long l;
+		public long l;
 		ListItem next = null;
-		
+		ListItem prev = null;
+        
 		public ListItem( long l ) {
 			this.l = l;
 		}
@@ -16,11 +17,27 @@ public class LongLinkedList {
         public long getValue() {
             return l;
         }
+        
+		/**
+		 * @see java.lang.Comparable#compareTo(java.lang.Object)
+		 */
+		public int compareTo(Object o) {
+			if(!(o instanceof ListItem))
+                throw new IllegalArgumentException();
+            final long ol = ((ListItem)o).l;
+            if(ol == l)
+                return 0;
+            else if(l > ol)
+                return 1;
+            else
+                return -1;
+		}
+
 	}
 	
-	private ListItem first = null;
-	private ListItem last = null;
-	private int count = 0;
+	protected ListItem first = null;
+	protected ListItem last = null;
+	protected int count = 0;
 	
 	public LongLinkedList() {
 	}
@@ -32,6 +49,7 @@ public class LongLinkedList {
 		} else {
 			ListItem next = new ListItem( l );
 			last.next = next;
+            next.prev = last;
 			last = next;
 		}
 		++count;

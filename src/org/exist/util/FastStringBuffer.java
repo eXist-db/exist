@@ -87,10 +87,10 @@ package org.exist.util;
  *
  *
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ *
  *@created    27. Juni 2002
  */
-public class FastStringBuffer {
+public class FastStringBuffer implements CharSequence {
     // If nonzero, forces the inial chunk size.
     /*
      *
@@ -218,7 +218,8 @@ public class FastStringBuffer {
      */
     FastStringBuffer m_innerFSB = null;
 
-
+    private StringBuffer tempBuf = new StringBuffer();
+    
     /**
      *  Construct a FastStringBuffer, with allocation policy as per parameters.
      *  <p>
@@ -444,8 +445,8 @@ public class FastStringBuffer {
     public final String toString() {
 
         int length = ( m_lastChunk << m_chunkBits ) + m_firstFree;
-
-        return getString( new StringBuffer( length ), 0, 0, length ).toString();
+        tempBuf.setLength(0);
+        return getString( tempBuf, 0, 0, length ).toString();
     }
 
 
@@ -896,10 +897,10 @@ public class FastStringBuffer {
      *      of characters.
      */
     public String getString( int start, int length ) {
-        return getString( new StringBuffer( length ), start >>> m_chunkBits,
+        tempBuf.setLength(0);
+        return getString( tempBuf, start >>> m_chunkBits,
                 start & m_chunkMask, length ).toString();
     }
-
 
     /**
      *  Gets the string attribute of the FastStringBuffer object
@@ -913,8 +914,8 @@ public class FastStringBuffer {
      *  }
      */
     public StringBuffer getString() {
-        StringBuffer buf = new StringBuffer();
-        return getString( buf );
+        tempBuf.setLength(0);
+        return getString( tempBuf );
     }
 
 
@@ -984,8 +985,9 @@ public class FastStringBuffer {
      *@return       The normalizedString value
      */
     public String getNormalizedString( int mode ) {
-        StringBuffer buf = new StringBuffer();
-        return getNormalizedString( buf, mode ).toString();
+        //StringBuffer buf = new StringBuffer();
+        tempBuf.setLength(0);
+        return getNormalizedString( tempBuf, mode ).toString();
     }
 
 
@@ -1158,5 +1160,12 @@ public class FastStringBuffer {
         source.m_chunkSize = 1 << ( source.m_chunkBits );
         source.m_chunkMask = source.m_chunkSize - 1;
     }
+	/**
+	 * @see java.lang.CharSequence#subSequence(int, int)
+	 */
+	public CharSequence subSequence(int start, int end) {
+		return getString(start, end - start);
+	}
+
 }
 
