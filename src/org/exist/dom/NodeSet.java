@@ -41,6 +41,8 @@ public abstract class NodeSet implements NodeList {
 
 	public final static int ANCESTOR = 0;
 	public final static int DESCENDANT = 1;
+	public final static int PRECEDING = 2;
+	public final static int FOLLOWING = 3;
 
 	public static NodeSet EMPTY_SET = new EmptyNodeSet();
 
@@ -168,7 +170,7 @@ public abstract class NodeSet implements NodeList {
 		return result;
 	}
 
-	public ArraySet getDescendants(NodeSet al, int mode) {
+	public NodeSet getDescendants(NodeSet al, int mode) {
 		return getDescendants(al, mode, false);
 	}
 	
@@ -176,11 +178,12 @@ public abstract class NodeSet implements NodeList {
 	 *  For a given set of potential ancestor nodes, get the
 	 * descendants in this node set
 	 *
-	 *@param  al    Description of the Parameter
-	 *@param  mode  Description of the Parameter
-	 *@return       The descendants value
+	 *@param  al    node set containing potential ancestors
+	 *@param  mode  determines if either the ancestor or the descendant
+	 * nodes should be returned. Possible values are ANCESTOR or DESCENDANT.
+	 *@return
 	 */
-	public ArraySet getDescendants(NodeSet al, int mode, boolean includeSelf) {
+	public NodeSet getDescendants(NodeSet al, int mode, boolean includeSelf) {
 		NodeProxy n, p;
 		ArraySet result = new ArraySet(getLength());
 		switch (mode) {
@@ -203,6 +206,78 @@ public abstract class NodeSet implements NodeList {
 		return result;
 	}
 
+	/**
+	 * Select all nodes from the passed node set, which
+	 * are preceding or following siblings of the nodes in
+	 * this set.
+	 * 
+	 * @param siblings a node set containing potential siblings
+	 * @param mode either FOLLOWING or PRECEDING
+	 * @return
+	 */
+	public NodeSet getSiblings(NodeSet siblings, int mode) {
+		if(siblings.getLength() == 0 || getLength() == 0)
+			return NodeSet.EMPTY_SET;
+		ArraySet result = new ArraySet(getLength());
+		Iterator ia = iterator();
+		Iterator ib = siblings.iterator();
+		NodeProxy na = (NodeProxy)ia.next(), nb = (NodeProxy)ib.next();
+		long pa, pb;
+		while(true) {
+			// first, try to find nodes belonging to the same doc
+			if(na.doc.getDocId() < nb.doc.getDocId()) {
+				if(ia.hasNext())
+					na = (NodeProxy)ia.next();
+				else
+					break;
+			} else if(na.doc.getDocId() > nb.doc.getDocId()) {
+				if(ib.hasNext())
+					nb = (NodeProxy)ib.next();
+				else break;
+			} else {
+				// same document: check if the nodes have the same parent
+				pa = XMLUtil.getParentId(na.doc, na.gid);
+				pb = XMLUtil.getParentId(nb.doc, nb.gid);
+				
+				if(pa < pb) {
+					// wrong parent: proceed
+					if(ia.hasNext()) 
+						na = (NodeProxy)ia.next();
+					else
+						break;
+				} else if(pa > pb) {
+					// wrong parent: proceed
+					if(ib.hasNext())
+						nb = (NodeProxy)ib.next();
+					else
+						break;
+				} else {
+					// found two nodes with the same parent
+					// now, compare the ids: a node is a following sibling
+					// if its id is greater than the id of the other node
+					if(nb.gid < na.gid) {
+						// found a preceding sibling
+						if(mode == PRECEDING)
+							result.add(nb);
+						if(ib.hasNext())
+							nb = (NodeProxy)ib.next();
+					} else if(nb.gid > na.gid) {
+						// found a following sibling
+						if(mode == FOLLOWING)
+							result.add(nb);
+						if(ib.hasNext())
+							nb = (NodeProxy)ib.next();
+					// equal nodes: proceed with next node
+					} else if(ib.hasNext()) 
+						nb = (NodeProxy)ib.next();
+					else
+						break;
+				}
+			}
+		}
+		return result;
+	}
+	
 	/**
 	 * Search for a node contained in this node set, which is an
 	 * ancestor of the argument node.

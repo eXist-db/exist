@@ -178,6 +178,7 @@ public class Parser
 			saxFactory.setValidating(true);
 		else
 			saxFactory.setValidating(false);
+		LOG.debug("validating = " + saxFactory.isValidating());
 		saxFactory.setNamespaceAware(true);
 		try {
 			setFeature(saxFactory, "http://xml.org/sax/features/namespace-prefixes", true);
@@ -820,7 +821,7 @@ public class Parser
 		String attrQName;
 		String attrPrefix;
 		String attrNS;
-		for (int i = 0; i < attrLength; i++) {
+		for (int i = 0; i < attributes.getLength(); i++) {
 			attrNS = attributes.getURI(i);
 			attrQName = attributes.getQName(i);
 			// skip xmlns-attributes and attributes in eXist's namespace
@@ -834,7 +835,6 @@ public class Parser
 				node.appendChildInternal(attr);
 				if (!validate)
 					broker.store(attr, currentPath);
-
 			}
 		}
 		if (attrLength > 0)

@@ -591,6 +591,7 @@ public class InteractiveClient {
 					System.err.println("missing argument.");
 					return true;
 				}
+				recurseDirs = true;
 				boolean r = parse(args[1]);
 				getResources();
 				return r;

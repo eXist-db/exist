@@ -94,7 +94,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	// has document-metadata been loaded?
 	private boolean complete = true;
-	
+
 	/**
 	 *  Constructor for the DocumentImpl object
 	 *
@@ -346,6 +346,17 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return null;
 	}
 
+	protected Node getFollowingSibling(NodeImpl node) {
+		NodeList cl = getChildNodes();
+		NodeImpl next;
+		for (int i = 0; i < cl.getLength(); i++) {
+			next = (NodeImpl) cl.item(i);
+			if (StorageAddress.equals(node.internalAddress, next.internalAddress))
+				return i == children - 1 ? null : cl.item(i + 1);
+		}
+		return null;
+	}
+
 	public Collection getCollection() {
 		return collection;
 	}
@@ -416,7 +427,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public Node getNode(long gid) {
-		if(gid == 1)
+		if (gid == 1)
 			return getDocumentElement();
 		return broker.objectWith(this, gid);
 	}
@@ -795,7 +806,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		broker.storeDocument(this);
 		return prev;
 	}
-	
+
 	private Node appendChild(NodeImpl last, Node child) throws DOMException {
 		String ns, prefix;
 		Attr attr;

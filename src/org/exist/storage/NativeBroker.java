@@ -1162,7 +1162,6 @@ public class NativeBroker extends DBBroker {
 				Value val = domDb.get(new NodeProxy((DocumentImpl) doc, gid));
 				if (val == null) {
 					LOG.debug("node " + gid + " not found!");
-					Thread.dumpStack();
 					return null;
 				}
 				NodeImpl node =

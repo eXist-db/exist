@@ -66,13 +66,15 @@ public interface XPathParserTokenTypes {
 	int LITERAL_attribute = 47;
 	int LITERAL_ancestor = 48;
 	// "ancestor-or-self" = 49
-	int LPPAREN = 50;
-	int RPPAREN = 51;
-	int WS = 52;
-	int BASECHAR = 53;
-	int IDEOGRAPHIC = 54;
-	int DIGIT = 55;
-	int NMSTART = 56;
-	int NMCHAR = 57;
-	int VARIABLE = 58;
+	// "following-sibling" = 50
+	// "preceding-sibling" = 51
+	int LPPAREN = 52;
+	int RPPAREN = 53;
+	int WS = 54;
+	int BASECHAR = 55;
+	int IDEOGRAPHIC = 56;
+	int DIGIT = 57;
+	int NMSTART = 58;
+	int NMCHAR = 59;
+	int VARIABLE = 60;
 }

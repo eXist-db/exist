@@ -736,6 +736,12 @@ returns [int axis]
 	| "ancestor-or-self" COLON COLON {
 		axis = Constants.ANCESTOR_SELF_AXIS;
 	}
+	| "following-sibling" COLON COLON {
+		axis = Constants.FOLLOWING_SIBLING_AXIS;
+	}
+	| "preceding-sibling" COLON COLON {
+		axis = Constants.PRECEDING_SIBLING_AXIS;
+	}
 	;
 	
 predicate [PathExpr expr]

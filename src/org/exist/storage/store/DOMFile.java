@@ -538,10 +538,6 @@ public class DOMFile extends BTree implements Lockable {
 			final NodeImpl n = (NodeImpl) iter.next();
 			n.setGID(id);
 			final long address = findNode(n, node.gid, iter);
-			if (address == 0) {
-				Thread.dumpStack();
-				LOG.debug("node " + node.gid + " not found");
-			}
 			return address == 0 ? -1 : address;
 		} else
 			return p;
