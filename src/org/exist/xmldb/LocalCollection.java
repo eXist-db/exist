@@ -241,7 +241,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 
 		Resource r = null;
 		if (type.equals("XMLResource"))
-			r = new LocalXMLResource(user, brokerPool, this, id, -1);
+			r = new LocalXMLResource(user, brokerPool, this, id);
 		else if (type.equals("BinaryResource"))
 			r = new LocalBinaryResource(user, brokerPool, this, id);
 		else
@@ -345,7 +345,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			}
 			Resource r;
 			if (document.getResourceType() == DocumentImpl.XML_FILE)
-				r = new LocalXMLResource(user, brokerPool, this, id, -1);
+				r = new LocalXMLResource(user, brokerPool, this, id);
 			else if (document.getResourceType() == DocumentImpl.BINARY_FILE)
 				r = new LocalBinaryResource(user, brokerPool, this, id);
 			else

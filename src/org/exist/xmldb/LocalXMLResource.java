@@ -45,7 +45,6 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 
 	//protected DocumentImpl document = null;
 	protected NodeProxy proxy = null;
-	protected long id = -1;
 	
 	protected Properties outputProperties = null;
 	protected LexicalHandler lexicalHandler = null;
@@ -58,14 +57,13 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	protected AtomicValue value = null;
 
 	public LocalXMLResource(User user, BrokerPool pool, LocalCollection parent,
-			String did, long id) throws XMLDBException {
+			String did) throws XMLDBException {
 		super(user, pool, parent, did);
-		this.id = id;
 	}
 
 	public LocalXMLResource(User user, BrokerPool pool, LocalCollection parent,
 			NodeProxy p) throws XMLDBException {
-		this(user, pool, parent, p.getDocument().getFileName(), p.gid);
+		this(user, pool, parent, p.getDocument().getFileName());
 		this.proxy = p;
 	}
 
@@ -119,22 +117,20 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 				Serializer serializer = broker.getSerializer();
 				serializer.setUser(user);
 				serializer.setProperties(getProperties());
-				if (root != null)
+				if (root != null) {
 					content = serializer.serialize((NodeValue) root);
-				else {
+                    
+                } else if (proxy != null) {
+                    content = serializer.serialize(proxy);
+                    
+                } else {
 				    document = openDocument(broker, Lock.READ_LOCK);
 					if (!document.getPermissions().validate(user,
 							Permission.READ))
 						throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 								"permission denied to read resource");
-					if (id < 0)
-						content = serializer.serialize(document);
-					else {
-						if (proxy == null)
-							proxy = new NodeProxy(document, id);
-						content = serializer.serialize(proxy);
-					}
-				}
+					content = serializer.serialize(document);
+                }
 				return content;
 			} catch (SAXException saxe) {
 				saxe.printStackTrace();
@@ -169,12 +165,10 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 				if (!document.getPermissions().validate(user, Permission.READ))
 					throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 							"permission denied to read resource");
-				if (id < 0)
-					return document.getDocumentElement();
-				else if (proxy != null)
+				if (proxy != null)
 					return document.getNode(proxy);
 				else
-					return document.getNode(id);
+                    return document.getDocumentElement();
 			} catch (EXistException e) {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e
 						.getMessage(), e);
@@ -226,9 +220,13 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 				serializer.setUser(user);
 				serializer.setProperties(getProperties());
 				serializer.setSAXHandlers(handler, lexicalHandler);
-				if (root != null)
+				if (root != null) {
 					serializer.toSAX((NodeValue) root);
-				else {
+                    
+                } else if (proxy != null) {
+                    serializer.toSAX(proxy);
+                    
+                } else {
 					DocumentImpl document = null;
 					try {
 						document = openDocument(broker, Lock.READ_LOCK);
@@ -236,15 +234,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 								Permission.READ))
 							throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 							"permission denied to read resource");
-						String xml;
-						if (id < 0)
-							serializer.toSAX(document);
-						else {
-							if (proxy == null)
-								proxy = new NodeProxy(document, id);
-							
-							serializer.toSAX(proxy);
-						}
+						serializer.toSAX(document);
 					} finally {
 					    closeDocument(document, Lock.READ_LOCK);
 					}
@@ -266,7 +256,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	}
 
 	public String getId() throws XMLDBException {
-		return id < 2 ? docId : Long.toString(id);
+		return docId;
 	}
 
 	public Collection getParentCollection() throws XMLDBException {
@@ -450,10 +440,8 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	    try {
 	        broker = pool.get(user);
 	        DocumentImpl document = getDocument(broker, false);
-			if (id < 0)
-				// this XMLResource represents a document
-				return new NodeProxy(document, 1);
-			return new NodeProxy(document, id);
+	        // this XMLResource represents a document
+			return new NodeProxy(document, 1);
 	    } catch (EXistException e) {
             throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
         } finally {
