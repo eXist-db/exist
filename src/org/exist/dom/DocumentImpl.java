@@ -65,6 +65,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public final static byte XML_FILE = 0;
 	public final static byte BINARY_FILE = 1;
 	
+	public final static byte DOCUMENT_NODE_SIGNATURE = 0x0F;
+	
 	private transient NodeIndexListener listener = NullNodeIndexListener.INSTANCE;
 
 	protected transient DBBroker broker = null;
@@ -670,6 +672,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public byte[] serialize() {
 		final VariableByteOutputStream ostream = new VariableByteOutputStream(7);
 		try {
+		    ostream.writeByte(DOCUMENT_NODE_SIGNATURE);
 			if(children > 0) {
 			    for(int i = 0; i < children; i++) {
 					ostream.writeInt(StorageAddress.pageFromPointer(childList[i]));
@@ -692,6 +695,12 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public void deserialize(byte[] data) {
 		VariableByteArrayInput istream = new VariableByteArrayInput(data);
 		try {
+		    byte signature = istream.readByte();
+		    if(signature != DOCUMENT_NODE_SIGNATURE) {
+		        LOG.error("Could not read document metadata for document " + fileName +
+		                " ( " + docId + "): not a metadata node.");
+		        return;
+		    }
 			childList = new long[children];
 			for (int i = 0; i < children; i++) { 
 				childList[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
@@ -703,7 +712,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			if(istream.available() > 0)
 			    pageCount = istream.readInt();
 		} catch (IOException e) {
-			LOG.warn("io error while reading document data", e);
+			LOG.warn("io error while reading document data for document " + fileName, e);
 		}
 	}
 

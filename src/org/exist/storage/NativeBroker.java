@@ -1189,15 +1189,20 @@ public class NativeBroker extends DBBroker {
 		    copyNodes(iterator, n, new NodePath(), newDoc, true);
 		}
 		flush();
+		closeDocument();
 		LOG.debug("Copy took " + (System.currentTimeMillis() - start) + "ms.");
 	}
 	
 	public void defrag(final DocumentImpl doc) {
-		LOG.debug("--------------------> Defragmenting document " + doc.getFileName());
+		LOG.debug("============> Defragmenting document " + 
+		        doc.getCollection().getName() + '/' + doc.getFileName());
 		final long start = System.currentTimeMillis();
 		try {
-			// dropping old index
+		    final NodeImpl firstChild = (NodeImpl)doc.getFirstChild();
+		    
+			// dropping old structure index
 			elementIndex.dropIndex(doc);
+			
 			// dropping dom index
 			NodeRef ref = new NodeRef(doc.getDocId());
 			final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
@@ -1220,10 +1225,12 @@ public class NativeBroker extends DBBroker {
 			}
 			.run();
 			
+			// create a copy of the old doc to copy the nodes into it
 			DocumentImpl tempDoc = new DocumentImpl(this, doc.getFileName(), doc.getCollection());
 			tempDoc.copyOf(doc);
 			tempDoc.setDocId(doc.getDocId());
 			
+			// copy the nodes
 			Iterator iterator;
 			NodeList nodes = doc.getChildNodes();
 			NodeImpl n;
@@ -1237,10 +1244,11 @@ public class NativeBroker extends DBBroker {
 			}
 			flush();
 			
+			// remove the old nodes
 			new DOMTransaction(this, domDb) {
 				public Object start() {
-				    NodeImpl node = (NodeImpl)doc.getFirstChild();
-					domDb.removeAll(node.getInternalAddress());
+				    domDb.remove(doc.getAddress());
+					domDb.removeAll(firstChild.getInternalAddress());
 					return null;
 				}
 			}
@@ -1250,8 +1258,8 @@ public class NativeBroker extends DBBroker {
 			doc.setSplitCount(0);
 			doc.setAddress(-1);
 			doc.setPageCount(tempDoc.getPageCount());
-			LOG.debug("New doc size: " + doc.getContentLength());
 			storeDocument(doc);
+			closeDocument();
 			
 			saveCollection(doc.getCollection());
 			LOG.debug("Defragmentation took " + (System.currentTimeMillis() - start) + "ms.");
@@ -1489,7 +1497,8 @@ public class NativeBroker extends DBBroker {
 			public Object start() {
 				Value val = domDb.get(p.getInternalAddress());
 				if (val == null) {
-					LOG.debug("node " + p.gid + " not found!");
+					LOG.debug("node " + p.gid + " not found in document " +
+					        p.doc.getCollection().getName() + '/' + p.doc.getFileName());
 					Thread.dumpStack();
 					return null;
 				}
