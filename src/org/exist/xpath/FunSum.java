@@ -43,12 +43,10 @@ public class FunSum extends Function {
 		// does argument return a node list?
 		if(getArgument(0).returnsType() == Constants.TYPE_NODELIST) {
 			NodeSet args = (NodeSet) getArgument(0).eval(context, docs, contextSet, contextNode).getNodeList();
-			LOG.debug("found " + args.getLength() + " nodes for sum");
 			String nval;
 			for(int i = 0; i < args.getLength(); i++) {
 				try {
 					nval = args.get(i).getNodeValue();
-					System.out.println(nval);
 					val = Double.parseDouble(nval);
 					if(val != Double.NaN)
 						sum += val;

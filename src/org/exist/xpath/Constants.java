@@ -4,7 +4,8 @@ package org.exist.xpath;
 
 public interface Constants {
 
-    public final static String[] AXISSPECIFIERS = {"ancestor",
+    public final static String[] AXISSPECIFIERS = {
+						"ancestor",
 					    "ancestor-or-self",
 					    "attribute",
 					    "child",
@@ -17,6 +18,7 @@ public interface Constants {
 					    "preceding",
 					    "preceding-sibling",
 					    "self"};
+					    
     public final static int ANCESTOR_AXIS = 0;
     public final static int ANCESTOR_SELF_AXIS = 1;
     public final static int ATTRIBUTE_AXIS = 2;
@@ -73,10 +75,11 @@ public interface Constants {
 	public final static int MINUS = 9;
 	public final static int MULT = 10;
 	public final static int DIV = 11;
+	public final static int MOD = 12;
 
 	public final static String[] OPS = 
 	{ "<", ">", ">=", "<=", "=", "!=", "IN" , "=~", "+", 
-	  "-", "*", "div" };
+	  "-", "*", "div", "mod" };
 
     public final static int KEEP_UNION = 0;
     public final static int KEEP_INTER = 1;

@@ -234,10 +234,10 @@ public class LocalXMLResource implements XMLResourceImpl {
 	}
 
 	protected NodeProxy getNode() {
+		getDocument();
 		if (id < 0)
 			// this XMLResource represents a document
-			return null;
-		getDocument();
+			return new NodeProxy(document, 1);
 		return proxy == null ? new NodeProxy(document, id) : proxy;
 	}
 

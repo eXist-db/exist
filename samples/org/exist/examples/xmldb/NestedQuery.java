@@ -19,8 +19,8 @@ public class NestedQuery {
 
     protected static String driver = "org.exist.xmldb.DatabaseImpl";
 
-    protected static String query1 = "document(*)//SPEECH[LINE &= 'corrupt*']";
-    protected static String query2 = "/ancestor::SCENE/TITLE";
+    protected static String query1 = "document()//SPEECH[LINE &= 'corrupt*']";
+    protected static String query2 = "ancestor::SCENE/TITLE";
     
     public static void main( String args[] ) {
         try {
@@ -50,7 +50,8 @@ public class NestedQuery {
             
             // iterate through the results and execute the second query
             // using the current result node as context
-            for ( int i = 0; i < (int) result.getSize(); i++ ) {
+            for (int i = 0; i < 2; i++) {
+            //for ( int i = 0; i < (int) result.getSize(); i++ ) {
                 resource = (XMLResource) result.getResource( (long) i );
                 result2 = ((org.exist.xmldb.XPathQueryServiceImpl)service)
                     .query( resource, query2 );

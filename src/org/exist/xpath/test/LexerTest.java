@@ -12,8 +12,9 @@ import org.exist.EXistException;
 import org.exist.Parser;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
-import org.exist.parser.XPathLexer;
-import org.exist.parser.XPathParser;
+import org.exist.parser.XPathLexer2;
+import org.exist.parser.XPathParser2;
+import org.exist.parser.XPathTreeParser2;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
@@ -26,6 +27,7 @@ import org.xml.sax.SAXException;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
+import antlr.collections.AST;
 
 import junit.framework.TestCase;
 
@@ -89,14 +91,29 @@ public class LexerTest extends TestCase {
 			parser.parse(xml, "/db/test/test.xml");
 			
 			// parse the query into the internal syntax tree
-			XPathLexer lexer = new XPathLexer(new StringReader(query));
-			XPathParser xparser = new XPathParser(pool, user, lexer);
-			PathExpr expr = new PathExpr(pool);
-			xparser.expr(expr);
+			StaticContext context = new StaticContext(user);
+						XPathLexer2 lexer = new XPathLexer2(new StringReader(query));
+						XPathParser2 xparser = new XPathParser2(lexer);
+						XPathTreeParser2 treeParser = new XPathTreeParser2(pool, context);
+						xparser.xpath();
+						if (xparser.foundErrors()) {
+							System.err.println(xparser.getErrorMessage());
+							return;
+						}
+
+						AST ast = xparser.getAST();
+						System.out.println("generated AST: " + ast.toStringTree());
+
+						PathExpr expr = new PathExpr(pool);
+						treeParser.xpath(ast, expr);
+						if (treeParser.foundErrors()) {
+							System.err.println(treeParser.getErrorMessage());
+							return;
+						}
 			
 			// execute the query
 			DocumentSet docs = expr.preselect();
-			Value resultValue = expr.eval(new StaticContext(), docs, null, null);
+			Value resultValue = expr.eval(context, docs, null, null);
 			
 			// check results
 			NodeSet resultSet = (NodeSet)resultValue.getNodeList();

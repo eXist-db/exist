@@ -106,14 +106,14 @@ public class XMLUtil {
 		Node new_node;
 		switch (node.getNodeType()) {
 			case Node.ELEMENT_NODE :
-				new_node = new_doc.createElement(node.getNodeName());
+				new_node = new_doc.createElementNS(node.getNamespaceURI(), node.getNodeName());
 				copyChildren(new_doc, node, new_node);
 				return new_node;
 			case Node.TEXT_NODE :
 				new_node = new_doc.createTextNode(((Text) node).getData());
 				return new_node;
 			case Node.ATTRIBUTE_NODE :
-				new_node = new_doc.createAttribute(node.getNodeName());
+				new_node = new_doc.createAttributeNS(node.getNamespaceURI(), node.getNodeName());
 				((Attr) new_node).setValue(((Attr) node).getValue());
 				return new_node;
 			default :

@@ -51,7 +51,7 @@ public class OpEquals extends BinaryOp {
 	protected NodeSet temp = null;
 
 	// in some cases, we use a fulltext expression to preselect nodes
-	protected FunContains containsExpr = null;
+	protected ExtFulltext containsExpr = null;
 
 	/**
 	 *  Constructor for the OpEquals object
@@ -256,7 +256,7 @@ public class OpEquals extends BinaryOp {
 				String term;
 				boolean foundNumeric = false;
 				// setup up an &= expression using the fulltext index
-				containsExpr = new FunContains(pool, Constants.FULLTEXT_AND);
+				containsExpr = new ExtFulltext(pool, Constants.FULLTEXT_AND);
 				for (int i = 0; i < 5 && (token = tokenizer.nextToken(true)) != null; i++) {
 					// remember if we find an alphanumeric token
 					if(token.getType() == TextToken.ALPHANUM)
@@ -431,6 +431,7 @@ public class OpEquals extends BinaryOp {
 		StaticContext context,
 		DocumentSet docs,
 		NodeSet contextSet) {
+		LOG.debug("comparing " + docs.getLength());
 		ArraySet result = new ArraySet(100);
 		NodeProxy n;
 		String lvalue;

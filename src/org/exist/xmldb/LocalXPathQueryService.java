@@ -10,8 +10,9 @@ import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.parser.XPathLexer;
-import org.exist.parser.XPathParser;
+import org.exist.parser.XPathLexer2;
+import org.exist.parser.XPathParser2;
+import org.exist.parser.XPathTreeParser2;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
@@ -25,6 +26,8 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
+import antlr.collections.AST;
+
 public class LocalXPathQueryService implements XPathQueryServiceImpl {
 
 	private final static Logger LOG = 
@@ -34,12 +37,13 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	protected BrokerPool brokerPool;
 	protected LocalCollection collection;
 	protected User user;
-	protected StaticContext context = new StaticContext();
+	protected StaticContext context = null;
 	
 	public LocalXPathQueryService(User user, BrokerPool pool, LocalCollection collection) {
 		this.user = user;
 		this.collection = collection;
 		this.brokerPool = pool;
+		context = new StaticContext(user);
 	}
 
 	public void clearNamespaces() throws XMLDBException {
@@ -72,14 +76,12 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	}
 	
 	public ResourceSet query(String query, String sortBy) throws XMLDBException {
+		DocumentSet docs = null;
 		if (!(query.startsWith("document(") || query.startsWith("collection(") ||
 			query.startsWith("xcollection("))) {
-			if (collection.getName().equals("/db") || collection.getName().equals("/"))
-				query = "document(*)" + query;
-			else
-				query = "collection('" + collection.getPath() + "')" + query;
+			docs = collection.collection.allDocs(user, true);
 		}
-		return doQuery(query, null, null, sortBy);
+		return doQuery(query, docs, null, sortBy);
 	}
 
 	public ResourceSet query(XMLResource res, String query, String sortBy) throws XMLDBException {
@@ -100,14 +102,30 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 		NodeSet contextSet, String sortExpr)
 		throws XMLDBException {
 		try {
-			XPathLexer lexer = new XPathLexer(new StringReader(query));
-			XPathParser parser = new XPathParser(brokerPool, user, lexer);
+			XPathLexer2 lexer = new XPathLexer2(new StringReader(query));
+			XPathParser2 parser = new XPathParser2(lexer);
+			XPathTreeParser2 treeParser = new XPathTreeParser2(brokerPool, context);
+			
+			parser.xpath();
+			if(parser.foundErrors()) {
+				throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR,
+					parser.getErrorMessage());
+			}
+
+			AST ast = parser.getAST();
+			LOG.debug("generated AST: " + ast.toStringTree());
+			
 			PathExpr expr = new PathExpr(brokerPool);
-			parser.expr(expr);
+			treeParser.xpath(ast, expr);
+			if(treeParser.foundErrors()) {
+				throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR,
+					treeParser.getErrorMessage());
+			}
+						
 			LOG.info("query: " + expr.pprint());
 			long start = System.currentTimeMillis();
-			if (parser.foundErrors())
-				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, parser.getErrorMsg());
+			//if (parser.foundErrors())
+			//	throw new XMLDBException(ErrorCodes.VENDOR_ERROR, parser.getErrorMsg());
 			Value resultValue = null;
 			docs = (docs == null ? expr.preselect() : expr.preselect(docs));
 			if (docs.getLength() == 0)
@@ -134,9 +152,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, re.getMessage(), re);
 		} catch (antlr.TokenStreamException te) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, te.getMessage(), te);
-		} catch (PermissionDeniedException e) {
-			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
-		} catch (EXistException e) {
+		} catch (IllegalArgumentException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
 	}

@@ -1,33 +1,16 @@
-
 package org.exist.xpath;
 
-public abstract class NodeTest {
+import org.exist.dom.NodeProxy;
+import org.exist.dom.QName;
+import org.w3c.dom.Node;
 
-   public final static int NAME_TEST = 0;
-   public final static int TYPE_TEST = 1;
-   public final static int ANY_TEST = 2;
+public interface NodeTest {
 
-   protected int type;
-   protected String name;
+	public boolean matches(NodeProxy proxy);
 
-   public NodeTest(int type, String name) {
-      this.type = type;
-      this.name = name;
-   }
-
-   public NodeTest(int type) {
-      this(type, null);
-   }
-
-   public String getName() {
-      return name;
-   }
-
-   public int getType() {
-      return type;
-   }
-
-   public String toString() {
-      return name;
-   }
+	public boolean matches(Node node);
+	
+	public boolean isWildcardTest();
+	
+	public QName getName();
 }

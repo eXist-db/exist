@@ -4,8 +4,9 @@ import java.io.StringReader;
 import java.util.Iterator;
 import org.apache.log4j.Category;
 import org.exist.EXistException;
-import org.exist.parser.XPathLexer;
-import org.exist.parser.XPathParser;
+import org.exist.parser.XPathLexer2;
+import org.exist.parser.XPathParser2;
+import org.exist.parser.XPathTreeParser2;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
@@ -18,10 +19,11 @@ import org.exist.xpath.ValueSet;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import antlr.collections.AST;
+
 public class SortedNodeSet extends NodeSet {
 
-	private static Category LOG =
-		Category.getInstance(SortedNodeSet.class.getName());
+	private static Category LOG = Category.getInstance(SortedNodeSet.class.getName());
 
 	private PathExpr expr;
 	private OrderedLinkedList list = new OrderedLinkedList();
@@ -29,7 +31,7 @@ public class SortedNodeSet extends NodeSet {
 	private String sortExpr;
 	private BrokerPool pool;
 	private User user = null;
-	
+
 	public SortedNodeSet(BrokerPool pool, User user, String sortExpr) {
 		this.sortExpr = sortExpr;
 		this.pool = pool;
@@ -45,25 +47,30 @@ public class SortedNodeSet extends NodeSet {
 			p = (NodeProxy) i.next();
 			docs.add(p.doc);
 		}
+		StaticContext context = new StaticContext(user);
 		try {
-			XPathLexer lexer = new XPathLexer(new StringReader(sortExpr));
-			XPathParser parser =
-				new XPathParser(pool, user, lexer);
+			XPathLexer2 lexer = new XPathLexer2(new StringReader(sortExpr));
+			XPathParser2 parser = new XPathParser2(lexer);
+			XPathTreeParser2 treeParser = new XPathTreeParser2(pool, context);
+			parser.xpath();
+			if (parser.foundErrors()) {
+				LOG.debug(parser.getErrorMessage());
+			}
+
+			AST ast = parser.getAST();
+			LOG.debug("generated AST: " + ast.toStringTree());
+
 			expr = new PathExpr(pool);
-			parser.expr(expr);
-			if (parser.foundErrors())
-				LOG.debug(parser.getErrorMsg());
+			treeParser.xpath(ast, expr);
+			if (treeParser.foundErrors()) {
+				LOG.debug(treeParser.getErrorMessage());
+			}
 			ndocs = expr.preselect(docs);
 		} catch (antlr.RecognitionException re) {
 			LOG.debug(re);
 		} catch (antlr.TokenStreamException tse) {
 			LOG.debug(tse);
-		} catch (PermissionDeniedException e) {
-			LOG.debug(e);
-		} catch (EXistException e) {
-			LOG.debug(e);
 		}
-		StaticContext context = new StaticContext();
 		DBBroker broker = null;
 		try {
 			broker = pool.get();
@@ -78,7 +85,9 @@ public class SortedNodeSet extends NodeSet {
 			pool.release(broker);
 		}
 		LOG.debug(
-			"sort-expression found " + list.size() + " in "
+			"sort-expression found "
+				+ list.size()
+				+ " in "
 				+ (System.currentTimeMillis() - start)
 				+ "ms.");
 	}
@@ -104,8 +113,8 @@ public class SortedNodeSet extends NodeSet {
 	}
 
 	public NodeProxy get(int pos) {
-		final Item item = (Item)list.get(pos);
-		return item == null ? null : item.proxy; 
+		final Item item = (Item) list.get(pos);
+		return item == null ? null : item.proxy;
 	}
 
 	public NodeProxy get(DocumentImpl doc, long nodeId) {
@@ -167,9 +176,13 @@ public class SortedNodeSet extends NodeSet {
 	private static final class Item implements Comparable {
 		NodeProxy proxy;
 		String value = null;
-		
-		public Item(DBBroker broker, NodeProxy proxy, PathExpr expr, 
-			DocumentSet ndocs, StaticContext context) {
+
+		public Item(
+			DBBroker broker,
+			NodeProxy proxy,
+			PathExpr expr,
+			DocumentSet ndocs,
+			StaticContext context) {
 			this.proxy = proxy;
 			NodeSet contextSet = new SingleNodeSet(proxy);
 			Value v = expr.eval(context, ndocs, contextSet, null);
@@ -196,7 +209,7 @@ public class SortedNodeSet extends NodeSet {
 						return;
 					for (int k = 0; k < valueSet.getLength(); k++) {
 						v = valueSet.get(k);
-						strings.add(v.getStringValue().toUpperCase());
+						strings.add(v.getStringValueConcat().toUpperCase());
 					}
 					for (Iterator j = strings.iterator(); j.hasNext();)
 						buf.append((String) j.next());

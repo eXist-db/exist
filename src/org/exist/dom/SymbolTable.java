@@ -77,7 +77,7 @@ public class SymbolTable {
 			return (short) nameSymbols.getInt(key);
 		short id = ++max;
 		nameSymbols.put(key, id);
-		names.put(id, attr.getName());
+		names.put(id, attr.getLocalName());
 		changed = true;
 		//		remember the prefix=namespace mapping for querying
 		String prefix = attr.getPrefix();
@@ -89,6 +89,8 @@ public class SymbolTable {
 	}
 
 	public synchronized short getSymbol(String name) {
+		if(name.length() == 0)
+			throw new IllegalArgumentException("name is empty");
 		if (nameSymbols.containsKey(name))
 			return (short) nameSymbols.getInt(name);
 		short id = ++max;
@@ -108,7 +110,6 @@ public class SymbolTable {
 		nsSymbols.put(ns, id);
 		namespaces.put(id, ns);
 		changed = true;
-		System.out.println(ns + " = " + id);
 		return id;
 	}
 

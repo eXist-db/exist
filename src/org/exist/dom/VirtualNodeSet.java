@@ -1,6 +1,6 @@
 
 /* eXist Open Source Native XML Database
- * Copyright (C) 2001,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2001-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -48,13 +48,13 @@ import org.w3c.dom.NodeList;
 public class VirtualNodeSet extends NodeSet {
 
 	protected int axis = -1;
-	protected TypeTest test;
+	protected NodeTest test;
 	protected NodeSet context;
 	protected NodeSet realSet = null;
 	protected boolean inPredicate = false;
 	protected boolean useSelfAsContext = false;
 
-	public VirtualNodeSet(int axis, TypeTest test, NodeSet context) {
+	public VirtualNodeSet(int axis, NodeTest test, NodeSet context) {
 		this.axis = axis;
 		this.test = test;
 		this.context = context;
@@ -102,7 +102,7 @@ public class VirtualNodeSet extends NodeSet {
 		NodeProxy parent;
 		// check if the start-node should be included, e.g. to process an
 		// expression like *[. = 'xxx'] 
-		if (recursions == 0 && includeSelf && test.isOfType(node, node.nodeType)) {
+		if (recursions == 0 && includeSelf && test.matches(node)) {
 			if (axis == Constants.CHILD_AXIS) {
 				// if we're on the child axis, test if
 				// the node is a direct child of the context node
@@ -133,7 +133,7 @@ public class VirtualNodeSet extends NodeSet {
 		// is pid member of the context set?
 		parent = context.get(node.doc, pid);
 
-		if (parent != null) {
+		if (parent != null && test.matches(node)) {
 			if (useSelfAsContext && inPredicate)
 				node.addContextNode(node);
 			else if (inPredicate)
@@ -235,7 +235,7 @@ public class VirtualNodeSet extends NodeSet {
 				}
 				continue;
 				// -- end of insertion --
-			} else if (proxy.getBrokerType() == DBBroker.NATIVE) {
+			} else {
 				domIter = proxy.doc.getBroker().getNodeIterator(proxy);
 				NodeImpl node = (NodeImpl) domIter.next();
 				node.setOwnerDocument(proxy.doc);
@@ -267,29 +267,31 @@ public class VirtualNodeSet extends NodeSet {
 						child.getNodeType(),
 						child.internalAddress);
 				p.matches = contextNode.matches;
-				if (axis == Constants.CHILD_AXIS
-					&& recursions == 0
-					&& test.isOfType(child.getNodeType())) {
-					result.add(p);
-					if (useSelfAsContext && inPredicate)
-						p.addContextNode(p);
-					else if (inPredicate)
-						p.addContextNode(contextNode);
-					else
-						p.copyContext(contextNode);
-				} else if (
-					(axis == Constants.DESCENDANT_AXIS || axis == Constants.DESCENDANT_SELF_AXIS)
-						&& test.isOfType(child.getNodeType())) {
-					result.add(p);
-					if (useSelfAsContext && inPredicate)
-						p.addContextNode(p);
-					else if (inPredicate)
-						p.addContextNode(contextNode);
-					else
-						p.copyContext(contextNode);
-				} else if (axis == Constants.ATTRIBUTE_AXIS)
-					return;
-				addChildren(contextNode, result, child, iter, recursions + 1);
+				if (test.matches(child)) {
+					if ((axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS)
+						&& recursions == 0) {
+						result.add(p);
+						if (useSelfAsContext && inPredicate)
+							p.addContextNode(p);
+						else if (inPredicate)
+							p.addContextNode(contextNode);
+						else
+							p.copyContext(contextNode);
+					} else if (
+						(axis == Constants.DESCENDANT_AXIS
+							|| axis == Constants.DESCENDANT_SELF_AXIS)) {
+						result.add(p);
+						if (useSelfAsContext && inPredicate)
+							p.addContextNode(p);
+						else if (inPredicate)
+							p.addContextNode(contextNode);
+						else
+							p.copyContext(contextNode);
+					} else if (axis == Constants.ATTRIBUTE_AXIS)
+						return;
+				}
+				if(axis == Constants.DESCENDANT_AXIS || axis == Constants.DESCENDANT_SELF_AXIS)
+					addChildren(contextNode, result, child, iter, recursions + 1);
 			}
 		}
 	}
@@ -297,6 +299,8 @@ public class VirtualNodeSet extends NodeSet {
 	private final void realize() {
 		if (realSet != null)
 			return;
+		System.out.println("realize");
+				Thread.dumpStack();
 		realSet = getNodes();
 	}
 
