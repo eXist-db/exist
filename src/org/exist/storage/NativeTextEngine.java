@@ -818,6 +818,9 @@ public class NativeTextEngine extends TextSearchEngine {
 				buf.add(gid);
 		}
 
+		/**
+		 * Remove the entries in the current list from the index.
+		 */
 		public void remove() {
 		    // TODO: use VariableInputStream
 			if (doc == null)
@@ -849,24 +852,29 @@ public class NativeTextEngine extends TextSearchEngine {
 					    lock.acquire(Lock.WRITE_LOCK);
 					    val = dbWords.get(ref);
 					    os.clear();
+					    // new output list containing nodes from the
+					    // document that should not be removed
 					    newList = new TermFrequencyList();
 					    if (val != null) {
 					        // add old entries to the new list
 					        data = val.getData();
+//					        LOG.debug("old size: " + data.length);
 					        is = new VariableByteArrayInput(data);
 					        try {
 					            while (is.available() > 0) {
 					                docId = is.readInt();
 					                section = is.readByte();
 					                len = is.readInt();
-					                if (docId == doc.getDocId() || section != k) {
-					                    // copy data to new buffer; skip
+					                if (docId == doc.getDocId() && section == k) {
+					                    // copy data to new output list; skip
 					                    // removed nodes
 					                    last = 0;
 					                    for (int j = 0; j < len; j++) {
 					                        last = last + is.readLong();
 					                        if(termFreq)
 					                        	freq = is.readInt();
+					                        // add the node to the new output list if it is not found
+					                        // in the list of removed nodes
 					                        if (!idList.contains(last)) {
 					                            newList.add(last);
 					                            newList.setLastTermFreq(freq);
@@ -890,33 +898,46 @@ public class NativeTextEngine extends TextSearchEngine {
 					                    + word);
 					        }
 					    }
-					    ids = newList.toArray();
-					    //i.remove();
-					    Arrays.sort(ids);
-					    len = ids.length;
-					    os.writeInt(doc.getDocId());
-					    os.writeByte(k == 0 ? TEXT_SECTION : ATTRIBUTE_SECTION);
-					    os.writeInt(len);
-					    last = 0;
-					    for (int j = 0; j < len; j++) {
-					        delta = ids[j].l - last;
-					        if (delta < 0) {
-					            LOG.debug("neg. delta: " + delta + " for " + word);
-					            LOG.debug("id = " + ids[j] + "; prev = " + last);
-					        }
-					        os.writeLong(delta);
-					        if(termFreq)
-					        	os.writeInt(ids[j].count);
-					        last = ids[j].l;
+					    if(newList.getSize() > 0) {
+					    	// save the nodes remaining in the output list for the document
+						    ids = newList.toArray();
+						    //i.remove();
+						    Arrays.sort(ids);
+						    len = ids.length;
+						    os.writeInt(doc.getDocId());
+						    os.writeByte(k == 0 ? TEXT_SECTION : ATTRIBUTE_SECTION);
+						    os.writeInt(len);
+						    last = 0;
+						    for (int j = 0; j < len; j++) {
+						        delta = ids[j].l - last;
+						        if (delta < 0) {
+						            LOG.debug("neg. delta: " + delta + " for " + word);
+						            LOG.debug("id = " + ids[j] + "; prev = " + last);
+						        }
+						        os.writeLong(delta);
+						        if(termFreq)
+						        	os.writeInt(ids[j].count);
+						        last = ids[j].l;
+						    }
 					    }
-					    try {
-					        if (val == null)
-					            dbWords.put(ref, os.data());
-					        else
-					            dbWords
-					            .update(val.getAddress(), ref, os
-					                    .data());
-					    } catch (ReadOnlyException e) {
+					    ByteArray ndata = os.data();
+//					    LOG.debug("new size: " + ndata.size());
+					    if(ndata.size() == 0) {
+					    	try {
+								dbWords.remove(ref);
+							} catch (ReadOnlyException e) {
+								LOG.warn("Error while removing fulltext entry: " + e.getMessage(), e);
+							}
+					    } else {
+						    try {
+						        if (val == null)
+						            dbWords.put(ref, os.data());
+						        else
+						            dbWords
+						            .update(val.getAddress(), ref, os
+						                    .data());
+						    } catch (ReadOnlyException e) {
+						    }
 					    }
 					} catch (LockException e) {
 					    LOG.warn("could not acquire lock", e);
