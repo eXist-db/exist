@@ -671,7 +671,16 @@ public class ElementImpl
             Node child = ownerDocument.getNode(i);
             if (child != null && child.getNodeType() == Node.ATTRIBUTE_NODE)
                 map.setNamedItem(child);
-
+        }
+        if(declaresNamespacePrefixes()) {
+            for(Iterator i = namespaceMappings.entrySet().iterator(); i.hasNext(); ) {
+                Map.Entry entry = (Map.Entry) i.next();
+                String prefix = entry.getKey().toString();
+                String ns = entry.getValue().toString();
+                QName attrName = new QName(prefix, "http://www.w3.org/XML/1998/namespace", "xmlns");
+                AttrImpl attr = new AttrImpl(attrName, ns);
+                map.setNamedItem(attr);
+            }
         }
         return map;
     }

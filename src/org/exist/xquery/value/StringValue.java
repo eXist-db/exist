@@ -352,31 +352,46 @@ public class StringValue extends AtomicValue implements Indexable {
 		return copy.toString();
 	}
 
+	/**
+	 * Collapses all sequences of adjacent whitespace chars in the input string
+	 * into a single space.
+	 *  
+	 * @param in
+	 * @return
+	 */
 	public static String collapseWhitespace(CharSequence in) {
 		if (in.length() == 0) {
 			return in.toString();
 		}
-		StringBuffer sb = new StringBuffer(in.length());
-		boolean inWhitespace = true;
 		int i = 0;
+		// this method is performance critical, so first test if we need to collapse at all
+		for (; i < in.length(); i++) {
+		    char c = in.charAt(i);
+		    if(XMLChar.isSpace(c)) {
+		        if(i + 1 < in.length() && XMLChar.isSpace(in.charAt(i + 1)))
+		            break;
+		    }
+		}
+		if(i == in.length())
+		    // no whitespace to collapse, just return
+		    return in.toString();
+		
+		// start to collapse whitespace
+		StringBuffer sb = new StringBuffer(in.length());
+		sb.append(in.subSequence(0, i + 1));
+		boolean inWhitespace = true;
 		for (; i < in.length(); i++) {
 			char c = in.charAt(i);
-			switch (c) {
-				case '\n' :
-				case '\r' :
-				case '\t' :
-				case ' ' :
-					if (inWhitespace) {
-						// remove the whitespace
-					} else {
-						sb.append(' ');
-						inWhitespace = true;
-					}
-					break;
-				default :
-					sb.append(c);
-					inWhitespace = false;
-					break;
+			if(XMLChar.isSpace(c)) {
+				if (inWhitespace) {
+					// remove the whitespace
+				} else {
+					sb.append(' ');
+					inWhitespace = true;
+				}
+			} else {
+				sb.append(c);
+				inWhitespace = false;
 			}
 		}
 		if (sb.charAt(sb.length() - 1) == ' ') {
@@ -499,5 +514,11 @@ public class StringValue extends AtomicValue implements Indexable {
      */
     public void deserialize(byte[] data) {
         value = new String(data, 3, data.length - 3);
+    }
+    
+    public static void main(String[] args) {
+        String inStr = "is \tXML";
+        inStr = StringValue.collapseWhitespace(inStr);
+        System.out.println("'" + inStr + "'");
     }
 }

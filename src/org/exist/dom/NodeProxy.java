@@ -24,8 +24,6 @@ import java.util.Iterator;
 
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.storage.DBBroker;
-import org.exist.storage.IndexSpec;
-import org.exist.storage.Indexable;
 import org.exist.storage.ValueIndexSpec;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.store.StorageAddress;
@@ -287,7 +285,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	}
 
 	public String getNodeValue() {
-		return doc.getBroker().getNodeValue(this);
+		return StringValue.collapseWhitespace(doc.getBroker().getNodeValue(this));
 	}
 
 	public String toString() {
