@@ -135,8 +135,8 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 	 */
 	public void declareVariable(String qname, Object initialValue) throws XMLDBException {
 		// TODO Not implemented
-		throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED,
-			"method not implemented");
+		//throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED,
+		//	"method not implemented");
 	}
 
 	/**
