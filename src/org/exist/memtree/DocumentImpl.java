@@ -123,7 +123,8 @@ public class DocumentImpl extends NodeImpl implements Document {
         nodeName = new int[NODE_SIZE];
         alpha = new int[NODE_SIZE];
         alphaLen = new int[NODE_SIZE];
-
+        Arrays.fill(alphaLen, -1);
+        
         characters = new char[CHAR_BUF_SIZE];
 
         attrName = new int[ATTR_SIZE];
@@ -217,7 +218,9 @@ public class DocumentImpl extends NodeImpl implements Document {
     	if(nextNamespace == namespaceCode.length) growNamespaces();
     	namespaceCode[nextNamespace] = namePool.add(qname);
     	namespaceParent[nextNamespace] = nodeNr;
-    	if(alphaLen[nodeNr] < 0) alphaLen[nodeNr] = nextNamespace;
+    	if(alphaLen[nodeNr] < 0) { 
+    		alphaLen[nodeNr] = nextNamespace;
+    	}
     	return nextNamespace++;
     }
     
@@ -250,6 +253,7 @@ public class DocumentImpl extends NodeImpl implements Document {
         alpha = newAlpha;
 
         int[] newAlphaLen = new int[newSize];
+        Arrays.fill(newAlphaLen, -1);
         System.arraycopy(alphaLen, 0, newAlphaLen, 0, size);
         alphaLen = newAlphaLen;
     }
@@ -544,7 +548,7 @@ public class DocumentImpl extends NodeImpl implements Document {
 
     /**
      * Copy the document fragment starting at the specified node to the given
-     * receiver.
+     * document builder.
      * 
      * @param node
      * @param receiver
@@ -596,7 +600,6 @@ public class DocumentImpl extends NodeImpl implements Document {
                 			&& document.namespaceParent[ns] == nr) {
                 		QName nsQName = (QName) document.namePool
                         	.get(document.namespaceCode[ns]);
-                		System.out.println("copying namespace node " + nsQName);
                 		receiver.addNamespaceNode(nsQName);
                 		context.declareInScopeNamespace(nsQName.getLocalName(), nsQName.getNamespaceURI());
                 		++ns;
@@ -633,6 +636,15 @@ public class DocumentImpl extends NodeImpl implements Document {
             receiver.endElement(node.getQName());
     }
     
+    /**
+     * Stream the specified document fragment to a receiver. This method
+     * is called by the serializer to output in-memory nodes.
+     * 
+     * @param serializer
+     * @param node
+     * @param receiver
+     * @throws SAXException
+     */
     public void streamTo(Serializer serializer, NodeImpl node, Receiver receiver) throws SAXException {
         NodeImpl top = node;
         while (node != null) {
@@ -660,22 +672,34 @@ public class DocumentImpl extends NodeImpl implements Document {
     	int nr = node.nodeNumber;
     	switch (node.getNodeType()) {
     	case Node.ELEMENT_NODE:
-    		QName nodeName = (QName) document.namePool
-			.get(document.nodeName[nr]);
-    	AttrList attribs = null;
-    	int attr = document.alpha[nr];
-    	if (-1 < attr) {
-    		attribs = new AttrList();
-    		while (attr < document.nextAttr
-    				&& document.attrParent[attr] == nr) {
-    			QName attrQName = (QName) document.namePool
-				.get(document.attrName[attr]);
-    			attribs.addAttribute(attrQName, attrValue[attr]);
-    			++attr;
-    		}
-    	}
-    	receiver.startElement(nodeName, attribs);
-    	break;
+    		QName nodeName = (QName) document.namePool.get(document.nodeName[nr]);
+    	
+    		// output required namespace declarations
+	    	int ns = document.alphaLen[nr];
+	        if (-1 < ns) {
+	        	while (ns < document.nextNamespace
+	        			&& document.namespaceParent[ns] == nr) {
+	        		QName nsQName = (QName) document.namePool
+	                	.get(document.namespaceCode[ns]);
+	        		receiver.startPrefixMapping(nsQName.getLocalName(), nsQName.getNamespaceURI());
+	        		++ns;
+	        	}
+	        }
+	        // create the attribute list
+	    	AttrList attribs = null;
+	    	int attr = document.alpha[nr];
+	    	if (-1 < attr) {
+	    		attribs = new AttrList();
+	    		while (attr < document.nextAttr
+	    				&& document.attrParent[attr] == nr) {
+	    			QName attrQName = (QName) document.namePool
+					.get(document.attrName[attr]);
+	    			attribs.addAttribute(attrQName, attrValue[attr]);
+	    			++attr;
+	    		}
+	    	}
+	    	receiver.startElement(nodeName, attribs);
+	    	break;
     	case Node.TEXT_NODE:
     		receiver.characters(new String(document.characters, document.alpha[nr],
     				document.alphaLen[nr]));
@@ -701,7 +725,20 @@ public class DocumentImpl extends NodeImpl implements Document {
     }
     
     private void endNode(NodeImpl node, Receiver receiver) throws SAXException {
-    	if(node.getNodeType() == Node.ELEMENT_NODE)
+    	if(node.getNodeType() == Node.ELEMENT_NODE) {
     		receiver.endElement(node.getQName());
+    		// end all prefix mappings used for the element
+    		int nr = node.nodeNumber;
+	    	int ns = document.alphaLen[nr];
+	        if (-1 < ns) {
+	        	while (ns < document.nextNamespace
+	        			&& document.namespaceParent[ns] == nr) {
+	        		QName nsQName = (QName) document.namePool
+	                	.get(document.namespaceCode[ns]);
+	        		receiver.endPrefixMapping(nsQName.getLocalName());
+	        		++ns;
+	        	}
+	        }
+    	}
     }
 }

@@ -81,7 +81,6 @@ public class ElementConstructor extends NodeConstructor {
 	}
 	
 	public void addNamespaceDecl(String prefix, String uri) {
-		System.out.println(prefix + "=" + uri);
 		if(namespaceDecls == null) {
 			namespaceDecls = new QName[1];
 			namespaceDecls[0] = new QName(prefix, uri, "xmlns");
@@ -145,6 +144,7 @@ public class ElementConstructor extends NodeConstructor {
 		    throw new XPathException("Type error: the node name should evaluate to a single string");
 		QName qn = QName.parse(context, qnameSeq.getStringValue());
 		
+		// add namespace declaration nodes
 		int nodeNr = builder.startElement(qn, attrs);
 		if(namespaceDecls != null) {
 			for(int i = 0; i < namespaceDecls.length; i++) {
