@@ -75,13 +75,13 @@
                 <title>Storing Documents</title>
                 
                 <screen>
-<![CDATA[<xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays"
+<![CDATA[<xdb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays"
     createcollection="true">
     <fileset dir="samples/shakespeare"> 
         <include name="*.xml"/>
         <include name="*.xsl"/>
     </fileset>
-</xmldb:store>]]></screen>
+</xdb:store>]]></screen>
             </example>
             
             <para>The store task uploads and stores the specified documents into
@@ -139,7 +139,7 @@
                 <title>Process an XQuery</title>
                 <screen>
 <![CDATA[<loadfile property="xquery" srcFile="wzb.xq"/>
-<xmldb:query uri="xmldb:exist:///db" query="${xquery}"/>]]></screen>
+<xdb:query uri="xmldb:exist:///db" query="${xquery}"/>]]></screen>
             </example>
             <para>The query task accepts the following attributes:</para>
             <variablelist>
@@ -159,7 +159,7 @@
             <example>
                 <title>Backing up the System Collection</title>
                 <screen>
-<![CDATA[<xmldb:backup uri="${backup.uri}/db/system"
+<![CDATA[<xdb:backup uri="${backup.uri}/db/system"
     dir="${backup.dir}" user="${backup.user}"
     password="${backup.pass}"/>]]></screen>
             </example>
@@ -204,7 +204,7 @@
             <example>
                 <title>Restore a Collection</title>
                 <screen>
-<![CDATA[<xmldb:restore base="xmldb:exist://" user="admin" password=""
+<![CDATA[<xdb:restore base="xmldb:exist://" user="admin" password=""
     file="${backup.dir}/db/home/__contents__.xml" initdb="true"/>]]></screen>
             </example>
         </section>
