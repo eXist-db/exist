@@ -5,6 +5,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.EXistException;
 import org.jboss.system.ServiceMBeanSupport;
+import org.apache.log4j.Category;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -16,6 +17,9 @@ import java.io.IOException;
  * @author Per Nyfelt
  */
 public class EXistService extends ServiceMBeanSupport implements EXistServiceMBean {
+
+    private static Category LOG =
+          Category.getInstance( EXistService.class.getName() );
 
     protected String confFile;
     protected Configuration configuration;
@@ -45,29 +49,29 @@ public class EXistService extends ServiceMBeanSupport implements EXistServiceMBe
     protected void startService() throws Exception {
         // get path to the deploy target directory
         String jbossServerDir = System.getProperty("jboss.server.home.dir");
-        log.debug("jbossServerDir is " + jbossServerDir + ", eXistHome is " + eXistHome);
+        LOG.debug("jbossServerDir is " + jbossServerDir + ", eXistHome is " + eXistHome);
         File eXistHomeDir = new File(jbossServerDir, eXistHome);
-        log.debug("eXistHomeDir set to " + eXistHomeDir);
+        LOG.debug("eXistHomeDir set to " + eXistHomeDir);
         eXistHome = eXistHomeDir.getAbsolutePath();
 
-        log.debug("eXistHome set to " + eXistHome);
+        LOG.debug("eXistHome set to " + eXistHome);
         if (!eXistHomeDir.exists()) {
-            log.info("exist home directory not found at " + eXistHome + ", creating new directory");
+            LOG.info("exist home directory not found at " + eXistHome + ", creating new directory");
             eXistHomeDir.mkdirs();
         }
         System.setProperty("exist.home", eXistHome);
 
         File dataDir = new File(eXistHomeDir, "data");
         if (!dataDir.exists()) {
-            log.info("creating data dir in eXist home");
+            LOG.info("creating data dir in eXist home");
             dataDir.mkdir();
         }
 
         confFile = new File(eXistHome, "conf.xml").getAbsolutePath();
-        log.debug("confFile set to " + confFile);
+        LOG.debug("confFile set to " + confFile);
         File f = new File(confFile);
         if (!f.exists()) {
-            log.info("Config file does not exist, creating default configuration...");
+            LOG.info("Config file does not exist, creating default configuration...");
             createDefaultConfigFile(f);
         }
         if (!f.canRead()) {
@@ -78,7 +82,7 @@ public class EXistService extends ServiceMBeanSupport implements EXistServiceMBe
             throw new Exception("Failed to create configuration for database");
         }
         if (!BrokerPool.isConfigured()) {
-            log.debug("Configuring database");
+            LOG.debug("Configuring database");
             BrokerPool.configure(1, 5, configuration);
         }
     }

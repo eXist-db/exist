@@ -7,6 +7,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
+import org.apache.log4j.Category;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -21,6 +22,8 @@ import java.util.Arrays;
  */
 public class XmlDbService extends ServiceMBeanSupport implements XmlDbServiceMBean {
 
+    private static Category LOG =
+          Category.getInstance( XmlDbService.class.getName() );
     private String baseCollectionURI;
     private String driver;
     private Collection baseCollection;
@@ -58,18 +61,18 @@ public class XmlDbService extends ServiceMBeanSupport implements XmlDbServiceMBe
         baseCollection = getBaseCollection();
         baseCollection.setProperty("encoding", "ISO-8859-1");
 
-        log.debug("Got base Collection");
+        LOG.debug("Got base Collection");
 
         NonSerializableFactory.rebind(context, this.getClass().getName(), this);
         String[] collections = baseCollection.listChildCollections();
-        log.debug("ChildCollections " + Arrays.asList(collections));
+        LOG.debug("ChildCollections " + Arrays.asList(collections));
     }
 
     protected void stopService() throws Exception {
         NonSerializableFactory.unbind(this.getClass().getName());
         if (baseCollection != null) {
             baseCollection.close();
-            log.debug("Closed base (db) collection");
+            LOG.debug("Closed base (db) collection");
         }
     }
 
