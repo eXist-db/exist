@@ -214,12 +214,18 @@ public abstract class Function extends PathExpr {
 			cardinalityMatches =
 				(expr.getCardinality() | type.getCardinality())
 					== type.getCardinality();
-			if ((!cardinalityMatches)
-				&& expr.getCardinality() == Cardinality.ZERO
+			if (!cardinalityMatches) {
+				if(expr.getCardinality() == Cardinality.ZERO
 				&& (type.getCardinality() & Cardinality.ZERO) == 0)
-				throw new XPathException(astNode, "Argument " + expr.pprint() + " is empty. An " +
+				    throw new XPathException(astNode, "Argument " + expr.pprint() + " is empty. An " +
 						"empty argument is not allowed here.");
+			}
 		}
+		expr =
+			new DynamicCardinalityCheck(
+				context,
+				type.getCardinality(),
+				expr);
 
 		// check return type if both types are not Type.ITEM
 		int returnType = expr.returnsType();
@@ -272,12 +278,6 @@ public abstract class Function extends PathExpr {
 		}
 		if (!typeMatches)
 			expr = new DynamicTypeCheck(context, type.getPrimaryType(), expr);
-		if (!cardinalityMatches)
-			expr =
-				new DynamicCardinalityCheck(
-					context,
-					type.getCardinality(),
-					expr);
 		return expr;
 	}
 
