@@ -192,6 +192,26 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 	    }
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.EXistResource#getContentLength()
+	 */
+	public int getContentLength() throws XMLDBException {
+		DBBroker broker = null;
+		try {
+			broker = pool.get(user);
+			DocumentImpl document = getDocument(broker, false);
+			if (!document.getPermissions().validate(user, Permission.READ))
+				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
+						"permission denied to read resource");
+			return document.getContentLength();
+		} catch (EXistException e) {
+			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(),
+					e);
+		} finally {
+			pool.release(broker);
+		}
+	}
+	
 	protected DocumentImpl getDocument(DBBroker broker, boolean lock) throws XMLDBException {
 	    DocumentImpl document = null;
 	    if(lock)

@@ -380,6 +380,7 @@ public class RpcConnection extends Thread {
 					doc.getResourceType() == DocumentImpl.BINARY_FILE
 							? "BinaryResource"
 							: "XMLResource");
+			hash.put("content-length", new Integer(doc.getContentLength()));
 			return hash;
 		} finally {
 			if(doc != null)

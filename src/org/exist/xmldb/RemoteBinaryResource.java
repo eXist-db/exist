@@ -48,7 +48,9 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
 	private String path;
 	private RemoteCollection parent;
 	private byte[] data = null;
+	
 	private Permission permissions = null;
+	private int contentLen = 0;
 	
 	public RemoteBinaryResource(RemoteCollection parent, String documentName) throws XMLDBException {
 		this.parent = parent;
@@ -174,5 +176,13 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
 	 */
 	public Permission getPermissions() {
 		return permissions;
+	}
+	
+	public void setContentLength(int len) {
+		this.contentLen = len;
+	}
+	
+	public int getContentLength() throws XMLDBException {
+		return contentLen;
 	}
 }
