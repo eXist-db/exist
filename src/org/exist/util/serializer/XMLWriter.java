@@ -369,12 +369,12 @@ public class XMLWriter {
 		    i = pos;
 		    while(i < len) {
 		        ch = s.charAt(i);
-		        if(ch < 128) {
+				if(ch < 128) {
 		            if(specialChars[ch])
 		                break;
 		            else
 		                i++;
-		        } else if(!charSet.inCharacterSet(ch))
+		        } else if(!charSet.inCharacterSet(ch) || ch == 160)
 		            break;
 		        else
 		            i++;
@@ -405,6 +405,9 @@ public class XMLWriter {
 				case '"' :
 					writer.write("&#34;");
 					break;
+				// non-breaking space:
+				case 160:
+					writer.write("&#160;");
 				default:
 				    writeCharacterReference(ch);
 		    }
