@@ -45,7 +45,6 @@ public class FulltextIndexSpec {
     private static final String PRESERVE_CONTENT_ELEMENT = "preserveContent";
     private static final String EXCLUDE_INTERFACE = "exclude";
     private static final String INCLUDE_ELEMENT = "include";
-    private static final String INDEX_DEPTH_ATTRIB = "index-depth";
     private static final String ALPHANUM_ATTRIB = "alphanum";
     private static final String ATTRIBUTES_ATTRIB = "attributes";
     private static final String DEFAULT_ATTRIB = "default";
@@ -59,8 +58,6 @@ public class FulltextIndexSpec {
     protected boolean includeByDefault = true;
     protected boolean includeAttributes = true;
     protected boolean includeAlphaNum = true;
-    
-	protected int depth = 1;
 	
     /**
      * Constructor for the IndexPaths object
@@ -87,14 +84,6 @@ public class FulltextIndexSpec {
 		String indexAlphaNum = node.getAttribute(ALPHANUM_ATTRIB);
 		if (indexAlphaNum != null && indexAlphaNum.length() > 0)
 			setIncludeAlphaNum(indexAlphaNum.equals("true"));
-
-		String indexDepth = node.getAttribute(INDEX_DEPTH_ATTRIB);
-		if (indexDepth != null && indexDepth.length() > 0)
-			try {
-				int depth = Integer.parseInt(indexDepth);
-				setIndexDepth(depth);
-			} catch (NumberFormatException e) {
-			}
 
 		// check paths to include/exclude
 		NodeList children = node.getChildNodes();
@@ -181,14 +170,6 @@ public class FulltextIndexSpec {
     public boolean getIncludeAlphaNum(  ) {
         return includeAlphaNum;
     }
-
-	public int getIndexDepth() {
-		return depth;
-	}
-	
-	public void setIndexDepth( int depth ) {
-		this.depth = depth;
-	}
 	
     /**
      * Check if a given path should be indexed.

@@ -915,7 +915,7 @@ public class NativeBroker extends DBBroker {
 		final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null; 
 		if (address < 0)
 			LOG.debug("node " + gid + ": internal address missing");
-		final int depth = ftIdx == null ? defaultIndexDepth : ftIdx.getIndexDepth();
+		final int depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
 		final int level = doc.getTreeLevel(gid);
 		int indexType = ValueIndexSpec.NO_INDEX;
 		NodeProxy tempProxy;
@@ -1118,7 +1118,7 @@ public class NativeBroker extends DBBroker {
 		final IndexSpec idxSpec = 
 		    doc.getCollection().getIdxConf(this);
 		final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
-		final int depth = ftIdx == null ? defaultIndexDepth : ftIdx.getIndexDepth();
+		final int depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
 		final int level = doc.getTreeLevel(gid);
 		if (level >= doc.reindexRequired()) {
 			NodeIndexListener listener = doc.getIndexListener();
@@ -1280,7 +1280,7 @@ public class NativeBroker extends DBBroker {
 	 */
 	private void reindex(DocumentImpl doc) {
 		LOG.debug("Reindexing document " + doc.getFileName());
-		if(doc.getFileName().equals(CollectionConfiguration.COLLECTION_CONFIG_FILE))
+		if(doc.getFileName().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX))
 		    doc.getCollection().setConfigEnabled(false);
 		final long start = System.currentTimeMillis();
 		Iterator iterator;
@@ -1295,7 +1295,7 @@ public class NativeBroker extends DBBroker {
 		    scanNodes(iterator, n, new NodePath(), true);
 		}
 		flush();
-		if(doc.getFileName().equals(CollectionConfiguration.COLLECTION_CONFIG_FILE))
+		if(doc.getFileName().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX))
 		    doc.getCollection().setConfigEnabled(true);
 		LOG.debug("reindex took " + (System.currentTimeMillis() - start) + "ms.");
 	}
@@ -2546,7 +2546,7 @@ public class NativeBroker extends DBBroker {
 		}
 		final short nodeType = node.getNodeType();
 		final String nodeName = node.getNodeName();
-		final int depth = ftIdx == null ? defaultIndexDepth : ftIdx.getIndexDepth();
+		final int depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
 		new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
 			public Object start() throws ReadOnlyException {
 				long address = -1;

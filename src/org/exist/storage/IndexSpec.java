@@ -41,11 +41,14 @@ public class IndexSpec {
     private static final String PATH_ATTRIB = "path";
     private static final String CREATE_ELEMENT = "create";
     private static final String FULLTEXT_ELEMENT = "fulltext";
+    private static final String INDEX_DEPTH_ATTRIB = "index-depth";
     
     private final static Logger LOG = Logger.getLogger(IndexSpec.class);
     
     private FulltextIndexSpec ftSpec = null;
     private ValueIndexSpec specs[] = null;
+    
+    protected int depth = 1;
     
     public IndexSpec(Element index) throws DatabaseConfigurationException {
         read(index);
@@ -58,6 +61,14 @@ public class IndexSpec {
      */
     public void read(Element index) throws DatabaseConfigurationException {
         Map namespaces = getNamespaceMap(index);
+        String indexDepth = index.getAttribute(INDEX_DEPTH_ATTRIB);
+		if (indexDepth != null && indexDepth.length() > 0)
+			try {
+				int depth = Integer.parseInt(indexDepth);
+				setIndexDepth(depth);
+			} catch (NumberFormatException e) {
+			}
+			
         NodeList cl = index.getChildNodes();
         for(int i = 0; i < cl.getLength(); i++) {
             Node node = cl.item(i);
@@ -77,6 +88,14 @@ public class IndexSpec {
         }
     }
 
+    public int getIndexDepth() {
+		return depth;
+	}
+	
+	public void setIndexDepth( int depth ) {
+		this.depth = depth;
+	}
+	
     public FulltextIndexSpec getFulltextIndexSpec() {
         return ftSpec;
     }

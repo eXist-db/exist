@@ -109,11 +109,16 @@ public class CollectionConfigurationManager {
     		next = CONFIG_COLLECTION + path.substring(0, p);
     		try {
     			coll = broker.openCollection(next, Lock.READ_LOCK);
-    			if(coll != null && coll.hasDocument(CollectionConfiguration.COLLECTION_CONFIG_FILE)) {
-    				LOG.debug("Reading collection.xconf from " + coll.getName());
-    				DocumentImpl confDoc = 
-    					coll.getDocument(broker, CollectionConfiguration.COLLECTION_CONFIG_FILE);
-    				conf.read(broker, confDoc);
+    			if (coll != null && coll.getDocumentCount() > 0) {
+    			    for(Iterator i = coll.iterator(broker); i.hasNext(); ) {
+    			        DocumentImpl confDoc = (DocumentImpl) i.next();
+    			        if(confDoc.getFileName().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX)) {
+    			            if(LOG.isDebugEnabled())
+    			                LOG.debug("Reading config for " + collection.getName() + " from " + confDoc.getName());
+    			            conf.read(broker, confDoc);
+    			            break;
+    			        }
+    			    }
     			}
     		} finally {
     			if(coll != null)
@@ -133,15 +138,15 @@ public class CollectionConfigurationManager {
      */
     protected synchronized void invalidateAll(String collectionPath) {
     	collectionPath = collectionPath.substring(CONFIG_COLLECTION.length());
-    	String next;
+    	Map.Entry next;
     	CollectionConfiguration config;
-    	for(Iterator i = cache.keySet().iterator(); i.hasNext(); ) {
-    		next = (String) i.next();
-    		if(next.startsWith(collectionPath)) {
-    			config = (CollectionConfiguration) cache.get(next);
+    	for(Iterator i = cache.entrySet().iterator(); i.hasNext(); ) {
+    		next = (Map.Entry) i.next();
+    		if(next.getKey().toString().startsWith(collectionPath)) {
+    			config = (CollectionConfiguration) next.getValue();
     			if (config != null)
     				config.getCollection().invalidateConfiguration();
-    			cache.remove(next);
+    			i.remove();
     		}
     	}
     }
