@@ -1116,7 +1116,7 @@ implements Comparable, EntityResolver, Cacheable {
 			prepareSAXParser(broker, name, oldDoc, trigger, info, reader );
 
 			// first pass: parse the document to determine tree structure
-			LOG.debug("validating document " + name);
+			LOG.debug("checking document " + name);
 			try {
 				reader.parse(source);
 			} catch (IOException e) {

@@ -84,4 +84,19 @@ public interface XPathQueryServiceImpl extends XPathQueryService {
      * @throws XMLDBException
      */
     public void declareVariable(String qname, Object initialValue) throws XMLDBException;
+    
+    /**
+	 * Execute all following queries in a protected environment.
+	 * Protected means: it is guaranteed that documents referenced by the
+	 * query or the result set are not modified by other threads
+	 * until {@link #endProtected} is called.
+	 */
+    public void beginProtected();
+    
+    /**
+	 * Close the protected environment. All locks held
+	 * by the current thread are released. The result set
+	 * is no longer guaranteed to be stable.
+	 */
+	public void endProtected();
 }

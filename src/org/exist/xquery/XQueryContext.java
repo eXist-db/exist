@@ -59,7 +59,11 @@ import org.exist.util.LockException;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
@@ -120,8 +124,10 @@ public class XQueryContext {
 	// Unresolved references to user defined functions
 	protected Stack forwardReferences = new Stack();
 	
+	// List of pragmas declared for this query
 	protected List pragmas = null;
 	
+	// the watchdog object assigned to this query
 	protected XQueryWatchDog watchdog;
 	
 	/**
@@ -130,11 +136,22 @@ public class XQueryContext {
 	protected HashMap modules = new HashMap();
 
 	/** 
-	 * The set of statically known documents.
+	 * The set of statically known documents specified as
+	 * an array of paths to documents and collections.
 	 */
 	protected String[] staticDocumentPaths = null;
+	
+	/**
+	 * The actual set of statically known documents. This
+	 * will be generated on demand from staticDocumentPaths.
+	 */
 	protected DocumentSet staticDocuments = null;
 	
+	/**
+	 * The main database broker object providing access
+	 * to storage and indexes. Every XQuery has its own
+	 * DBBroker object.
+	 */
 	protected DBBroker broker;
 
 	protected String baseURI = "";
@@ -159,6 +176,9 @@ public class XQueryContext {
 	 */
 	private boolean backwardsCompatible = true;
 
+	/**
+	 * Should whitespace inside node constructors be stripped?
+	 */
 	private boolean stripWhitespace = true;
 
 	/**
@@ -174,16 +194,31 @@ public class XQueryContext {
 	 */
 	private MemTreeBuilder builder = null;
 	
-	// Stack for temporary document fragments
+	/**
+	 * Stack for temporary document fragments
+	 */
 	private Stack fragmentStack = new Stack();
 
+	/**
+	 * The root of the expression tree
+	 */
 	private Expression rootExpression;
 	
 	/**
 	 * Flag to indicate that the query should put an exclusive
 	 * lock on all documents involved.
+	 * 
+	 * TODO: No longer needed?
 	 */
 	private boolean exclusive = false;
+	
+	/**
+	 * Should all documents loaded by the query be locked?
+	 * If set to true, it is the responsibility of the calling client
+	 * code to unlock documents after the query has completed.
+	 */
+	private boolean lockDocumentsOnLoad = false;
+	private DocumentSet lockedDocuments = null;
 	
 	protected XQueryContext() {
 		builder = new MemTreeBuilder(this);
@@ -445,6 +480,85 @@ public class XQueryContext {
 		return staticDocuments;
 	}
 	
+	/**
+	 * Should loaded documents be locked?
+	 * 
+	 * @return
+	 */
+	public boolean lockDocumentsOnLoad() {
+	    return lockDocumentsOnLoad;
+	}
+	
+	/**
+	 * If lock is true, all documents loaded during query execution
+	 * will be locked. This way, we avoid that query results become
+	 * invalid before the entire result has been processed by the client
+	 * code. All attempts to modify nodes which are part of the result
+	 * set will be blocked.
+	 * 
+	 * However, it is the client's responsibility to proper unlock
+	 * all documents once processing is completed.
+	 * 
+	 * @param lock
+	 */
+	public void setLockDocumentsOnLoad(boolean lock) {
+	    lockDocumentsOnLoad = lock;
+	    if(lock)
+	        lockedDocuments = new DocumentSet();
+	}
+	
+	/**
+	 * Returns the set of documents that have been loaded and
+	 * locked during query execution.
+	 * 
+	 * @return
+	 */
+	public DocumentSet getLockedDocuments() {
+	    return lockedDocuments;
+	}
+	
+	public void releaseLockedDocuments() {
+	    if(lockedDocuments != null)
+	        lockedDocuments.unlock(false);
+	    lockDocumentsOnLoad = false;
+		lockedDocuments = null;
+	}
+	
+	public DocumentSet releaseUnusedDocuments(Sequence seq) {
+	    if(lockedDocuments == null)
+	        return null;
+	    // determine the set of documents referenced by nodes in the sequence
+        DocumentSet usedDocs = new DocumentSet();
+        for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+            Item next = i.nextItem();
+            if(Type.subTypeOf(next.getType(), Type.NODE)) {
+                NodeValue node = (NodeValue) next;
+                if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+                    DocumentImpl doc = ((NodeProxy)node).getDocument();
+                    if(!usedDocs.contains(doc.getDocId()))
+	                    usedDocs.add(doc, false);
+                }
+            }
+        }
+        DocumentSet remaining = new DocumentSet();
+        for(Iterator i = lockedDocuments.iterator(); i.hasNext(); ) {
+            DocumentImpl next = (DocumentImpl) i.next();
+            if(usedDocs.contains(next.getDocId())) {
+               remaining.add(next); 
+            } else {
+                LOG.debug("Releasing lock on " + next.getName());
+                next.getUpdateLock().release(Lock.READ_LOCK);
+            }
+        }
+        LOG.debug("Locks remaining: " + remaining.getLength());
+        lockDocumentsOnLoad = false;
+		lockedDocuments = null;
+        return remaining;
+    }
+	
+	/**
+	 * Prepare this XQueryContext to be reused.
+	 */
 	public void reset() {
 		builder = new MemTreeBuilder(this);
 		builder.startDocument();

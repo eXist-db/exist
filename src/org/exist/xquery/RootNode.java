@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2000,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ *  Copyright (C) 2000-04 The eXist Team
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -34,7 +34,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
 /**
- * Represents the document root node in an expression.
+ * Reads a set of document root nodes from the context. Used for
+ * absolute path expression that do not start with fn:doc() or fn:collection().
  * 
  * @author Wolfgang Meier <meier@ifs.tu-darmstadt.de>
  */
@@ -50,20 +51,31 @@ public class RootNode extends Step {
     }
 
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        // get statically known documents from the context
         DocumentSet ds = context.getStaticallyKnownDocuments();
         if (ds == null || ds.getLength() == 0) return Sequence.EMPTY_SEQUENCE;
         
+        // if the expression occurs in a nested context, we might have cached the
+        // document set
+        if (cachedDocs != null && cachedDocs.equals(ds)) return cached;
+        
+        // check if the loaded documents should remain locked
+        boolean lockOnLoad = context.lockDocumentsOnLoad();
         try {
             // wait for pending updates
             ds.lock(false);
             
-            if (cachedDocs != null && cachedDocs.equals(ds)) return cached;
 	        NodeSet result = new ArraySet(ds.getLength());
-	        DocumentImpl d;
+	        DocumentImpl doc;
 	        for (Iterator i = ds.iterator(); i.hasNext();) {
-	            d = (DocumentImpl) i.next();
-	            if(d.getResourceType() == DocumentImpl.XML_FILE) // skip binary resources
-	            	result.add(new NodeProxy(d, -1));
+	            doc = (DocumentImpl) i.next();
+	            if(doc.getResourceType() == DocumentImpl.XML_FILE) {  // skip binary resources
+	            	result.add(new NodeProxy(doc, -1));
+	            	if(lockOnLoad) {
+	            	    LOG.debug("Locking document: " + doc.getName());
+	            	    context.getLockedDocuments().add(doc);
+	            	}
+	            }
 	        }
 	        cached = result;
 	        cachedDocs = ds;
@@ -71,7 +83,9 @@ public class RootNode extends Step {
         } catch (LockException e) {
             throw new XPathException(getASTNode(), "Failed to acquire lock on the context document set");
         } finally {
-	        ds.unlock(false);
+            if(!lockOnLoad)
+                // release all locks
+                ds.unlock(false);
         }
     }
 

@@ -21,6 +21,7 @@
 */
 package org.exist.xmldb.test.concurrent;
 
+import org.exist.xmldb.XPathQueryServiceImpl;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -53,7 +54,11 @@ public class XQueryAction extends Action {
 	    
 		Collection col = DatabaseManager.getCollection(collectionPath);
 		System.out.println(Thread.currentThread().getName() + ": executing query: " + xquery);
-		ResourceSet result = DBUtils.xquery(col, xquery);
+		XPathQueryServiceImpl service = (XPathQueryServiceImpl)
+			col.getService("XPathQueryService", "1.0");
+		
+		service.beginProtected();
+		ResourceSet result = service.query(xquery);
 		System.out.println(Thread.currentThread().getName() + ": found " + result.getSize());
 		
 		DefaultHandler handler = new DefaultHandler();
@@ -61,6 +66,8 @@ public class XQueryAction extends Action {
 			XMLResource next = (XMLResource) i.nextResource();
 			next.getContentAsSAX(handler);
 		}
+		service.endProtected();
+		
 		return false;
 	}
 }
