@@ -40,7 +40,6 @@ import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeIndexListener;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.XMLUtil;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.Signatures;
@@ -119,8 +118,8 @@ public class DOMFile extends BTree implements Lockable {
 
     private DocumentImpl currentDocument = null;
     
-    public DOMFile(BrokerPool pool, int buffers, int dataBuffers) {
-        super(pool, buffers);
+    public DOMFile(int buffers, int dataBuffers) {
+        super(buffers);
         lock = new ReentrantReadWriteLock("dom.dbx");
         fileHeader = (DOMFileHeader) getFileHeader();
         fileHeader.setPageCount(0);
@@ -129,8 +128,8 @@ public class DOMFile extends BTree implements Lockable {
         dataCache.setFileName("dom.dbx");
     }
 
-    public DOMFile(BrokerPool pool, File file, int buffers, int dataBuffers) {
-        this(pool, buffers, dataBuffers);
+    public DOMFile(File file, int buffers, int dataBuffers) {
+        this(buffers, dataBuffers);
         setFile(file);
     }
 
