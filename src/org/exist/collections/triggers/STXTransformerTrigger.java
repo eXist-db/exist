@@ -71,7 +71,8 @@ public class STXTransformerTrigger extends FilteringTrigger {
 		// reset property to previous setting
 		if(origProperty != null)
 			System.setProperty("javax.xml.transform.TransformerFactory", origProperty);
-
+        else
+            System.setProperty("javax.xml.transform.TransformerFactory", "");
 		getLogger().debug("compiling stylesheet " + stylesheet);
         if(stylesheet.indexOf(':') < 0) {
             // load stylesheet out of the database
