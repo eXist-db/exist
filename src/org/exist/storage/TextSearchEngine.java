@@ -169,6 +169,9 @@ public abstract class TextSearchEngine extends Observable {
 	 */
 	public abstract NodeSet getNodesContaining(DocumentSet docs, NodeSet context, String expr, int type);
 	
+	public abstract NodeSet getNodes(DocumentSet docs, NodeSet context, TermMatcher matcher,
+		CharSequence startTerm);
+	
 	/**
 	 * Scan the fulltext index and return an Occurrences object for each
 	 * of the index keys.
@@ -191,6 +194,8 @@ public abstract class TextSearchEngine extends Observable {
 		String start,
 		String end,
 		boolean inclusive) throws PermissionDeniedException;
+
+	public abstract String[] getIndexTerms(DocumentSet docs, TermMatcher matcher);
 	
 	/**
 	 * Remove index entries for an entire collection.

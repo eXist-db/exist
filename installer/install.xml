@@ -66,6 +66,7 @@
 				<exclude name="bin/**"/>
 				<exclude name="**/CVS/"/>
 				<exclude name="**/*~"/>
+				<exclude name="resources/*.jpg"/>
             </fileset>
             <fileset targetdir="$INSTALL_PATH/webapp/WEB-INF"
                 dir="webapp/WEB-INF">

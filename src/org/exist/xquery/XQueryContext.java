@@ -44,6 +44,7 @@ import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
+import org.exist.xquery.functions.text.TextModule;
 import org.exist.xquery.functions.transform.ModuleImpl;
 import org.exist.xquery.value.Sequence;
 
@@ -791,5 +792,8 @@ public class XQueryContext {
 		loadBuiltInModule(
 			Function.REQUEST_FUNCTION_NS,
 			"org.exist.xquery.functions.request.RequestModule");
+		loadBuiltInModule(
+			TextModule.NAMESPACE_URI,
+			"org.exist.xquery.functions.text.TextModule");
 	}
 }
