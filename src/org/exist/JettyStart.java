@@ -54,7 +54,8 @@ public class JettyStart {
 			return;
 		}
 		
-		boolean registerShutdownHook = Boolean.getBoolean("exist.register-shutdown-hook");
+		String shutdownHookOption = System.getProperty("exist.register-shutdown-hook", "true");
+		boolean registerShutdownHook = shutdownHookOption.equals("true");
 		
 		// configure database
 		String home = System.getProperty("exist.home");
