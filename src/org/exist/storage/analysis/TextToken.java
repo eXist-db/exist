@@ -103,6 +103,13 @@ public class TextToken {
         return tokenText.charAt( start );
     }
 
+    public CharSequence getCharSequence() {
+    	if(start >= tokenText.length() || end > tokenText.length())
+            throw new StringIndexOutOfBoundsException("start: " + start +
+                "; end=" + end + "; text=" + tokenText);
+        return tokenText.subSequence( start, end );
+    }
+    
     public String getText() {
         if(start >= tokenText.length() || end > tokenText.length())
             throw new StringIndexOutOfBoundsException("start: " + start +

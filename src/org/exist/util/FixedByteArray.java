@@ -8,9 +8,13 @@ package org.exist.util;
 public class FixedByteArray implements ByteArray {
 
 	private byte[] data;
+	private int start;
+	private int len;
 	
-	public FixedByteArray(byte[] data) {
+	public FixedByteArray(byte[] data, int start, int len) {
 		this.data = data;
+		this.start = start;
+		this.len = len;
 	}
 
 	/* (non-Javadoc)
@@ -24,25 +28,25 @@ public class FixedByteArray implements ByteArray {
 	 * @see org.exist.util.ByteArray#copyTo(byte[], int, int)
 	 */
 	public void copyTo(byte[] b, int offset, int length) {
-		System.arraycopy(data, 0, b, offset, length);
+		System.arraycopy(data, start, b, offset, length);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.util.ByteArray#copyTo(byte[], int)
 	 */
 	public void copyTo(byte[] b, int offset) {
-		System.arraycopy(data, 0, b, offset, data.length);
+		System.arraycopy(data, start, b, offset, len);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.util.ByteArray#copyTo(int, byte[], int, int)
 	 */
-	public void copyTo(int start, byte[] newBuf, int offset, int len) {
-		System.arraycopy(data, start, newBuf, offset, len);
+	public void copyTo(int startOffset, byte[] newBuf, int offset, int count) {
+		System.arraycopy(data, start + startOffset, newBuf, offset, count);
 	}
 
 	public void copyTo(ByteArray other) {
-	    other.append(data, 0, data.length);
+	    other.append(data, start, len);
 	}
 	
 	/* (non-Javadoc)
@@ -70,7 +74,7 @@ public class FixedByteArray implements ByteArray {
 	 * @see org.exist.util.ByteArray#size()
 	 */
 	public int size() {
-		return data.length;
+		return len;
 	}
 
 	/* (non-Javadoc)

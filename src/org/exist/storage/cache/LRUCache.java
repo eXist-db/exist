@@ -22,10 +22,6 @@
  */
 package org.exist.storage.cache;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-
-import org.exist.util.hashtable.Long2ObjectHashMap;
 import org.exist.util.hashtable.SequencedLongHashMap;
 
 /**
@@ -38,6 +34,8 @@ public class LRUCache implements Cache {
 	
 	private int hits = 0;
 	private int misses = 0;
+	
+	private String fileName = null;;
 	
 	public LRUCache(int size) {
 		this.max = size;
@@ -91,10 +89,14 @@ public class LRUCache implements Cache {
 	 * @see org.exist.storage.cache.Cache#flush()
 	 */
 	public void flush() {
-		Cacheable next;
-		for(Iterator i = map.valueIterator(); i.hasNext(); ) {
-			next = (Cacheable)i.next();
-			next.sync();
+		Cacheable cacheable;
+		SequencedLongHashMap.Entry next = map.getFirstEntry();
+		while(next != null) {
+			cacheable = (Cacheable)next.getValue();
+			if(cacheable.isDirty()) {
+				cacheable.sync();
+			}
+			next = next.getNext();
 		}
 	}
 
@@ -103,12 +105,14 @@ public class LRUCache implements Cache {
      * @see org.exist.storage.cache.Cache#hasDirtyItems()
      */
     public boolean hasDirtyItems() {
-        Cacheable next;
-		for(Iterator i = map.valueIterator(); i.hasNext(); ) {
-			next = (Cacheable)i.next();
-			if(next.isDirty())
-			    return true;
-		}
+        Cacheable cacheable;
+        SequencedLongHashMap.Entry next = map.getFirstEntry();
+        while(next != null) {
+        	cacheable = (Cacheable)next.getValue();
+        	if(cacheable.isDirty())
+        		return true;
+        	next = next.getNext();
+        }
 		return false;
     }
     
@@ -144,17 +148,24 @@ public class LRUCache implements Cache {
 	 * @see org.exist.storage.cache.Cache#setFileName(java.lang.String)
 	 */
 	public void setFileName(String fileName) {
+		this.fileName = fileName;
 	}
 	
 	private final void removeOne(Cacheable item) {
 		boolean removed = false;
+		SequencedLongHashMap.Entry next = map.getFirstEntry();
 		do {
-			Cacheable cached = (Cacheable)map.removeFirst();
+			Cacheable cached = (Cacheable)next.getValue();
 			if(cached.allowUnload() && cached.getKey() != item.getKey()) {
 				cached.sync();
+				map.remove(next.getKey());
 				removed = true;
 			} else {
-				map.put(cached.getKey(), cached);
+				next = next.getNext();
+				if(next == null) {
+					LOG.debug("Unable to remove entry");
+					next = map.getFirstEntry();
+				}
 			}
 		} while(!removed);
 	}

@@ -51,8 +51,8 @@ public class LRDCache extends GClockCache {
 	
 	public LRDCache(int size) {
 		super(size);
-		maxReferences = size * 1000;
-		ageingPeriod = size * 500;
+		maxReferences = size * 10000;
+		ageingPeriod = size * 5000;
 	}
 
 	public void setFileName(String name) {
@@ -73,6 +73,7 @@ public class LRDCache extends GClockCache {
 			if (count < size) {
 				items[count++] = item;
 				map.put(item.getKey(), item);
+				used++;
 			} else
 				removeOne(item);
 			totalReferences += initialRefCount;
@@ -110,6 +111,8 @@ public class LRDCache extends GClockCache {
 		if (old != null) {
 			map.remove(old.getKey());
 			old.sync();
+		} else {
+			used++;
 		}
 		items[bucket] = item;
 		map.put(item.getKey(), item);
@@ -142,15 +145,16 @@ public class LRDCache extends GClockCache {
 	 */
 	protected void cleanup() {
 		Cacheable item;
-		totalReferences = 0;
+		LOG.debug("totalReferences = " + totalReferences + "; maxReferences = " + maxReferences);
+		totalReferences = count;
 		for(int i = 0; i < count; i++) {
 			item = items[i];
 			if(item != null) {
 				item.setReferenceCount(1);
-				item.setTimestamp(totalReferences++);
+				item.setTimestamp(1);
 			}
 		}
-		LOG.debug("total references: " + totalReferences);
+		LOG.debug(fileName + " total references: " + totalReferences);
 		nextCleanup = totalReferences + ageingPeriod;
 	}
 }

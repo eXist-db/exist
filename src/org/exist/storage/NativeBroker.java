@@ -197,7 +197,7 @@ public class NativeBroker extends DBBroker {
 					dataBuffers = 512;
 				} else {
 					indexBuffers = buffers * 4;
-					dataBuffers = buffers * 8;
+					dataBuffers = buffers * 4;
 				}
 				LOG.debug("page buffer size = " + indexBuffers + "; " + dataBuffers);
 				domDb =

@@ -39,7 +39,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
 import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
-import org.exist.storage.cache.LRDCache;
+import org.exist.storage.cache.LRUCache;
 import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
@@ -98,7 +98,7 @@ public class BFile extends BTree {
     protected int minFree;
 
     protected Cache dataCache = null;
-
+    
     protected Lock lock = null;
 
     public int fixedKeyLen = -1;
@@ -106,7 +106,7 @@ public class BFile extends BTree {
     public BFile(BrokerPool pool, File file, int btreeBuffers, int dataBuffers) {
         super(pool, file, btreeBuffers);
         fileHeader = (BFileHeader) getFileHeader();
-        dataCache = new LRDCache(dataBuffers);
+        dataCache = new LRUCache(dataBuffers);
         dataCache.setFileName(getFile().getName());
         minFree = PAGE_MIN_FREE;
         lock = new ReentrantReadWriteLock(file.getName());
@@ -118,7 +118,7 @@ public class BFile extends BTree {
 	                    lock.acquire(Lock.WRITE_LOCK);
 	                    dataCache.flush();
 	                } catch (LockException e) {
-	                    LOG.warn("Failed to acquire lock on dom.dbx");
+	                    LOG.warn("Failed to acquire lock on " + getFile().getName());
 	                } finally {
 	                    lock.release();
 	                }
@@ -205,7 +205,7 @@ public class BFile extends BTree {
                     final byte[] newData = new byte[l + valueLen];
                     System.arraycopy(data, offset + 4, newData, 0, l);
                     value.copyTo(newData, l);
-                    p = update(p, page, key, new FixedByteArray(newData));
+                    p = update(p, page, key, new FixedByteArray(newData, 0, newData.length));
                 }
                 return p;
             } catch (BTreeException bte) {
@@ -741,7 +741,6 @@ public class BFile extends BTree {
         len += 4;
         // save data
         value.copyTo(data, len);
-        //System.arraycopy(value, 0, data, len, vlen);
         len += vlen;
         page.getPageHeader().setDataLength(len);
         page.getPageHeader().incRecordCount();
