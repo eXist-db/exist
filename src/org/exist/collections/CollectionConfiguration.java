@@ -23,9 +23,12 @@ package org.exist.collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 import org.exist.collections.triggers.*;
 import org.exist.storage.DBBroker;
+import org.exist.storage.IndexSpec;
+import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -33,7 +36,7 @@ import org.w3c.dom.NodeList;
 
 public class CollectionConfiguration {
 
-	private final static String NAMESPACE = "http://exist-db.org/collection-config/1.0";
+    private final static String NAMESPACE = "http://exist-db.org/collection-config/1.0";
 	private final static String ROOT_ELEMENT = "collection";
 	private final static String TRIGGERS_ELEMENT = "triggers";
 	private final static String EVENT_ATTRIBUTE = "event";
@@ -41,30 +44,49 @@ public class CollectionConfiguration {
 	private final static String PARAMETER_ELEMENT = "parameter";
 	private final static String PARAM_NAME_ATTRIBUTE = "name";
 	private final static String PARAM_VALUE_ATTRIBUTE = "value";
+	private final static String INDEX_ELEMENT = "index";
+	private static final String DOCTYPE_ATTRIBUTE = "doctype";
 	
 	private Trigger[] triggers = new Trigger[3];
+	
+	private Map indexByDoctype = new TreeMap();
 	
 	public CollectionConfiguration(DBBroker broker, Collection parent, Document doc) 
     throws CollectionConfigurationException {
 		Element root = doc.getDocumentElement();
-		if(!(root.getNamespaceURI().equals(NAMESPACE) &&
-			root.getLocalName().equals(ROOT_ELEMENT)))
+		if(!(NAMESPACE.equals(root.getNamespaceURI()) &&
+			ROOT_ELEMENT.equals(root.getLocalName())))
 			throw new CollectionConfigurationException("Wrong document root for collection.xmap");
 		NodeList childNodes = root.getChildNodes();
 		Node node;
 		for(int i = 0; i < childNodes.getLength(); i++) {
 			node = childNodes.item(i);
-			if(node.getNamespaceURI().equals(NAMESPACE) &&
-				node.getLocalName().equals(TRIGGERS_ELEMENT)) {
-				NodeList triggers = node.getChildNodes();
-				for(int j = 0; j < triggers.getLength(); j++) {
-					node = triggers.item(j);
-					if(node.getNodeType() == Node.ELEMENT_NODE)
-						createTrigger(broker, parent, (Element)node);
-				}
+			if(NAMESPACE.equals(node.getNamespaceURI())) {
+			    if(TRIGGERS_ELEMENT.equals(node.getLocalName())) {
+					NodeList triggers = node.getChildNodes();
+					for(int j = 0; j < triggers.getLength(); j++) {
+						node = triggers.item(j);
+						if(node.getNodeType() == Node.ELEMENT_NODE)
+							createTrigger(broker, parent, (Element)node);
+					}
+			    } else if(INDEX_ELEMENT.equals(node.getLocalName())) {
+			        Element elem = (Element) node;
+			        String doctype = elem.getAttribute(DOCTYPE_ATTRIBUTE);
+			        IndexSpec spec;
+                    try {
+                        spec = new IndexSpec(elem);
+                        indexByDoctype.put(doctype, spec);
+                    } catch (DatabaseConfigurationException e) {
+                        throw new CollectionConfigurationException(e.getMessage(), e);
+                    }
+			    }
 			}
 		}
 	}
+	
+	public IndexSpec getByDoctype(String doctype) {
+        return (IndexSpec) indexByDoctype.get(doctype);
+    }
 	
 	public Trigger getTrigger(int eventType) {
 		return triggers[eventType];

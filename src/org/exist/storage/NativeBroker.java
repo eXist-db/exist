@@ -343,6 +343,10 @@ public class NativeBroker extends DBBroker {
 	    return elementIndex;
 	}
 
+	public IndexConfiguration getIndexConfiguration() {
+	    return idxConf;
+	}
+	
 	public void flush() {
 		textEngine.flush();
 		elementIndex.flush();
@@ -880,7 +884,7 @@ public class NativeBroker extends DBBroker {
 		}
 		return nextDocId;
 	}
-
+	
 	/**
 	 * Index a single node, which has been added through an XUpdate
 	 * operation. This method is only called if inserting the node is possible
@@ -905,7 +909,8 @@ public class NativeBroker extends DBBroker {
 		final short nodeType = node.getNodeType();
 		final String nodeName = node.getNodeName();
 		final long address = node.getInternalAddress();
-		final IndexSpec idxSpec = idxConf.getByDoctype(node.getOwnerDocument().getDoctype().getName());
+		final IndexSpec idxSpec = 
+		    doc.getCollection().getIdxConf(this, node.getOwnerDocument().getDoctype().getName());
 		final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null; 
 		if (address < 0)
 			LOG.debug("node " + gid + ": internal address missing");
@@ -1108,11 +1113,12 @@ public class NativeBroker extends DBBroker {
 	private void reindex(final NodeImpl node, NodePath currentPath) {
 		if (node.getGID() < 0)
 			LOG.debug("illegal node: " + node.getGID() + "; " + node.getNodeName());
-		final IndexSpec idxSpec = idxConf.getByDoctype(node.getOwnerDocument().getDoctype().getName());
-		final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
 		final short nodeType = node.getNodeType();
 		final long gid = node.getGID();
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
+		final IndexSpec idxSpec = 
+		    doc.getCollection().getIdxConf(this, node.getOwnerDocument().getDoctype().getName());
+		final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
 		final int depth = ftIdx == null ? defaultIndexDepth : ftIdx.getIndexDepth();
 		final int level = doc.getTreeLevel(gid);
 		if (level >= doc.reindexRequired()) {
@@ -2025,9 +2031,10 @@ public class NativeBroker extends DBBroker {
 	}
 
 	public void removeNode(final NodeImpl node, NodePath currentPath) {
-	    final IndexSpec idxSpec = idxConf.getByDoctype(node.getOwnerDocument().getDoctype().getName());
-	    final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
+		final IndexSpec idxSpec = 
+		    doc.getCollection().getIdxConf(this, node.getOwnerDocument().getDoctype().getName());
+		final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
 		final long gid = node.getGID();
 		final short nodeType = node.getNodeType();
 		final String nodeName = node.getNodeName();
@@ -2522,7 +2529,8 @@ public class NativeBroker extends DBBroker {
 		}
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 		final boolean isTemp = TEMP_COLLECTION.equals(doc.getCollection().getName());
-		final IndexSpec idxSpec = idxConf.getByDoctype(node.getOwnerDocument().getDoctype().getName());
+		final IndexSpec idxSpec = 
+		    doc.getCollection().getIdxConf(this, node.getOwnerDocument().getDoctype().getName());
 		final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
 		final long gid = node.getGID();
 		if (gid < 0) {

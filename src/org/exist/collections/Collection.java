@@ -55,6 +55,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
+import org.exist.storage.IndexSpec;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
@@ -1596,7 +1597,7 @@ implements Comparable, EntityResolver, Cacheable {
 			doc.write(ostream);
 		}
 	}
-	
+
 	private CollectionConfiguration getConfiguration(DBBroker broker) {
 		if (configuration == null)
 			configuration = readCollectionConfiguration(broker);
@@ -1629,8 +1630,7 @@ implements Comparable, EntityResolver, Cacheable {
 			} finally {
 				triggersEnabled = true;
 			}
-		}
-				
+		}	
 		return null;
 	}
 
@@ -1862,5 +1862,13 @@ implements Comparable, EntityResolver, Cacheable {
 		}
 		return result;		
 	}
-	
+
+	public IndexSpec getIdxConf(DBBroker broker, String doctype) {
+	    CollectionConfiguration conf = getConfiguration(broker);
+	    if(conf == null)
+	        return broker.getIndexConfiguration().getByDoctype(doctype);
+	    else {
+	        return conf.getByDoctype(doctype);
+	    }
+	}
 }

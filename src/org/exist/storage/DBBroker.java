@@ -714,6 +714,8 @@ public abstract class DBBroker extends Observable {
 	
 	public abstract int getPageSize();
 	
+	public abstract IndexConfiguration getIndexConfiguration();
+	
 	public void setId(String id) {
 		this.id = id;
 	}
