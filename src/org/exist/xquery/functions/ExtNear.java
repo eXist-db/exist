@@ -62,7 +62,6 @@ public class ExtNear extends ExtFulltext {
 	}
 
 	public Sequence evalQuery(
-		XQueryContext context,
 		String searchArg,
 		NodeSet nodes)
 		throws XPathException {
