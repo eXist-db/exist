@@ -39,9 +39,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.DocumentImpl;
-import org.exist.http.webdav.WebDAVMethod;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
@@ -54,20 +53,17 @@ import org.xml.sax.SAXException;
 /**
  * @author wolf
  */
-public class Put implements WebDAVMethod {
-	
-	private BrokerPool pool;
+public class Put extends AbstractWebDAVMethod {
 	
 	public Put(BrokerPool pool) {
-		this.pool = pool;
+		super(pool);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.http.webdav.WebDAVMethod#process(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.exist.collections.Collection, org.exist.dom.DocumentImpl)
 	 */
 	public void process(User user, HttpServletRequest request,
-			HttpServletResponse response, Collection collection,
-			DocumentImpl resource) throws ServletException, IOException {
+			HttpServletResponse response, String path) throws ServletException, IOException {
 		File tempFile = saveRequestContent(request);
 		String url;
 		try {
@@ -76,40 +72,44 @@ public class Put implements WebDAVMethod {
 			url = tempFile.toString();
 		}
 		String contentType = request.getContentType();
-		String path = request.getPathInfo();
 		DBBroker broker = null;
+		Collection collection = null;
+		boolean collectionLocked = true;
 		try {
 			broker = pool.get(user);
+			if(path == null)
+				path = "";
+			if(path.endsWith("/"))
+				path = path.substring(0, path.length() - 1);
+			int p = path.lastIndexOf('/');
+			if(p < 1) {
+				response.sendError(HttpServletResponse.SC_CONFLICT, "No collection specified for PUT");
+				return;
+			}
+			String collectionName = path.substring(0, p);
+			path = path.substring(p + 1);
+			
+			collection = broker.openCollection(collectionName, Lock.WRITE_LOCK);
 			if(collection == null) {
-				if(path == null)
-					path = "";
-				if(path.endsWith("/"))
-					path = path.substring(0, path.length() - 1);
-				int p = path.lastIndexOf('/');
-				if(p < 1) {
-					response.sendError(HttpServletResponse.SC_CONFLICT, "No collection specified for PUT");
-					return;
-				}
-				String collectionName = path.substring(0, p);
-				path = path.substring(p + 1);
-				collection = broker.openCollection(collectionName, Lock.WRITE_LOCK);
-				if(collection == null) {
-					response.sendError(HttpServletResponse.SC_CONFLICT, "Parent collection " + collectionName +
-							" not found");
-					return;
-				}
-			} else {
-				collection.getLock().acquire(Lock.WRITE_LOCK);
-				path = path.substring(collection.getName().length() + 1);
+				response.sendError(HttpServletResponse.SC_CONFLICT, "Parent collection " + collectionName +
+				" not found");
+				return;
+			}
+			if(collection.hasChildCollection(path)) {
+				response.sendError(HttpServletResponse.SC_CONFLICT, "Cannot overwrite an existing collection with a resource");
+				return;
 			}
 			if(contentType == null) {
-			    contentType = URLConnection.guessContentTypeFromName(path);
+				contentType = URLConnection.guessContentTypeFromName(path);
 			}
 			LOG.debug("storing document " + path + "; content-type = " + contentType);
 			if(contentType == null || contentType.equalsIgnoreCase("text/xml") ||
-			        contentType.equals("application/xml")) {
-				DocumentImpl doc = collection.addDocument(broker, path,
-						new InputSource(url));
+					contentType.equals("application/xml")) {
+				InputSource is = new InputSource(url);
+				IndexInfo info = collection.validate(broker, path, is);
+				collection.release();
+				collectionLocked = false;
+				collection.store(broker, info, is, false);
 			} else {
 				byte[] chunk = new byte[4096];
 				ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -131,7 +131,8 @@ public class Put implements WebDAVMethod {
 		} catch (LockException e) {
 			response.sendError(HttpServletResponse.SC_CONFLICT);
 		} finally {
-			collection.release();
+			if(collectionLocked)
+				collection.release();
 			pool.release(broker);
 		}
 		response.setStatus(HttpServletResponse.SC_CREATED);

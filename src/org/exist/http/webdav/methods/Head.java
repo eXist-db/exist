@@ -28,34 +28,65 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.exist.collections.Collection;
+import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.http.webdav.WebDAV;
-import org.exist.http.webdav.WebDAVMethod;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.util.Lock;
 
 /**
  * @author wolf
  */
-public class Head implements WebDAVMethod {
+public class Head extends AbstractWebDAVMethod {
+	
+	public Head(BrokerPool pool) {
+		super(pool);
+	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.http.webdav.WebDAVMethod#process(org.exist.security.User, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.exist.collections.Collection, org.exist.dom.DocumentImpl)
 	 */
 	public void process(User user, HttpServletRequest request,
-			HttpServletResponse response, Collection collection,
-			DocumentImpl resource) throws ServletException, IOException {
-		if(resource == null) {
+			HttpServletResponse response, String path) throws ServletException, IOException {
+		DBBroker broker = null;
+		byte[] contentData = null;
+		DocumentImpl resource = null;
+		try {
+			broker = pool.get();
+			resource = broker.openDocument(path, Lock.READ_LOCK);
+			if(resource == null) {
+				// GET is not available on collections
+				response.sendError(HttpServletResponse.SC_FORBIDDEN, "GET is not available on collections");
+				return;
+			}
+			if(!resource.getPermissions().validate(user, Permission.READ)) {
+				response.sendError(HttpServletResponse.SC_FORBIDDEN, READ_PERMISSION_DENIED);
+				return;
+			}
+			String contentType;
+			if(resource.getResourceType() == DocumentImpl.XML_FILE)
+				contentType = WebDAV.XML_CONTENT;
+			else
+				contentType = WebDAV.BINARY_CONTENT;
+			response.setContentType(contentType);
+			response.setContentLength(resource.getContentLength());
+			response.addDateHeader("Last-Modified", resource.getLastModified());
+		} catch (EXistException e) {
+			throw new ServletException(e.getMessage(), e);
+		} catch (PermissionDeniedException e) {
+			response.sendError(HttpServletResponse.SC_FORBIDDEN, READ_PERMISSION_DENIED);
+		} finally {
+			if(resource != null)
+				resource.getUpdateLock().release(Lock.READ_LOCK);
+			pool.release(broker);
+		}
+		if(contentData == null) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
-		String contentType;
-		if(resource.getResourceType() == DocumentImpl.XML_FILE)
-			contentType = WebDAV.XML_CONTENT;
-		else
-			contentType = WebDAV.BINARY_CONTENT;
-		response.setContentType(contentType);
-		response.setContentLength(resource.getContentLength());
-		response.addDateHeader("Last-Modified", resource.getLastModified());
 	}
 }

@@ -115,42 +115,15 @@ public class WebDAV {
 			path = path.substring(0, path.length() - 1);
 		LOG.debug("path = " + path + "; method = " + request.getMethod());
 		
-		DocumentImpl resource = null;
-		Collection collection = null;
 		WebDAVMethod method = null;
-		DBBroker broker = null;
-		boolean collectionLocked = false;
-		try {
-			broker = pool.get(user);
-			
-			method = WebDAVMethodFactory.create(request.getMethod(), pool);
-			if(method == null) {
-				response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
-						"Method is not supported: " + request.getMethod());
-				return;
-			}
-			collection = broker.openCollection(path, Lock.READ_LOCK);
-			if(collection == null) {
-				resource = (DocumentImpl)broker.openDocument(path, Lock.READ_LOCK);
-				if(resource != null)
-					collection = resource.getCollection();
-			} else
-				collectionLocked = true;
-		} catch (EXistException e) {
-			throw new ServletException("An error occurred while retrieving resource: " + e.getMessage(), e);
-		} catch (PermissionDeniedException e) {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN, "Not allowed to access resource " + path);
-		} finally {
-			pool.release(broker);
+		
+		method = WebDAVMethodFactory.create(request.getMethod(), pool);
+		if(method == null) {
+			response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
+					"Method is not supported: " + request.getMethod());
+			return;
 		}
-		try {
-			method.process(user, request, response, collection, resource);
-		} finally {
-			if(collection != null && collectionLocked)
-				collection.release();
-			if(resource != null)
-				resource.getUpdateLock().release();
-		}
+		method.process(user, request, response, path);
 	}
 	
 	private User authenticate(HttpServletRequest request, HttpServletResponse response)
@@ -166,7 +139,6 @@ public class WebDAV {
 		if(credentials.toUpperCase().startsWith("DIGEST")) {
 			return digestAuth.authenticate(request, response);
 		} else {
-			LOG.debug("Falling back to basic authentication");
 			return basicAuth.authenticate(request, response);
 		}
 	}

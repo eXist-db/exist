@@ -30,56 +30,56 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.exist.EXistException;
-import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.http.webdav.WebDAV;
-import org.exist.http.webdav.WebDAVMethod;
 import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
+import org.exist.util.Lock;
 import org.xml.sax.SAXException;
 
 /**
+ * Implements the WebDAV GET method.
+ * 
  * @author wolf
  */
-public class Get implements WebDAVMethod {
+public class Get extends AbstractWebDAVMethod {
 	
-	private BrokerPool pool;
+	private final static String SERIALIZE_ERROR = "Error while serializing document: ";
 	
 	public Get(BrokerPool pool) {
-		this.pool = pool;
+		super(pool);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.http.webdav.WebDAVMethod#process(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.exist.collections.Collection, org.exist.dom.DocumentImpl)
-	 */
 	public void process(User user, HttpServletRequest request,
-			HttpServletResponse response, Collection collection,
-			DocumentImpl resource) throws ServletException, IOException {
-		if(resource == null) {
-			// GET is not available on collections
-			response.sendError(HttpServletResponse.SC_FORBIDDEN, "GET is not available on collections");
-			return;
-		}
-		if(!resource.getPermissions().validate(user, Permission.READ)) {
-		    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Not allowed to read resource");
-		    return;
-		}
-		String contentType;
-		if(resource.getResourceType() == DocumentImpl.XML_FILE)
-			contentType = WebDAV.XML_CONTENT;
-		else
-			contentType = WebDAV.BINARY_CONTENT;
-		response.setContentType(contentType);
-		response.addDateHeader("Last-Modified", resource.getLastModified());
-		
-		byte[] contentData = null;
+			HttpServletResponse response, String path) throws ServletException, IOException {
 		DBBroker broker = null;
+		byte[] contentData = null;
+		DocumentImpl resource = null;
 		try {
 			broker = pool.get();
+			resource = broker.openDocument(path, Lock.READ_LOCK);
+			if(resource == null) {
+				// GET is not available on collections
+				response.sendError(HttpServletResponse.SC_FORBIDDEN, "GET is not available on collections");
+				return;
+			}
+			if(!resource.getPermissions().validate(user, Permission.READ)) {
+				response.sendError(HttpServletResponse.SC_FORBIDDEN, READ_PERMISSION_DENIED);
+				return;
+			}
+			String contentType;
+			if(resource.getResourceType() == DocumentImpl.XML_FILE)
+				contentType = WebDAV.XML_CONTENT;
+			else
+				contentType = WebDAV.BINARY_CONTENT;
+			response.setContentType(contentType);
+			response.addDateHeader("Last-Modified", resource.getLastModified());
+			
 			if(resource.getResourceType() == DocumentImpl.XML_FILE) {
 				Serializer serializer = broker.getSerializer();
 				serializer.reset();
@@ -88,13 +88,17 @@ public class Get implements WebDAVMethod {
 					String content = serializer.serialize(resource);
 					contentData = content.getBytes("UTF-8");
 				} catch (SAXException e) {
-					throw new ServletException("Error while serializing document: " + e.getMessage(), e);
+					throw new ServletException(SERIALIZE_ERROR + e.getMessage(), e);
 				}
 			} else
 				contentData = broker.getBinaryResourceData((BinaryDocument)resource);
 		} catch (EXistException e) {
-			throw new ServletException("Error while serializing document: " + e.getMessage(), e);
+			throw new ServletException(SERIALIZE_ERROR + e.getMessage(), e);
+		} catch (PermissionDeniedException e) {
+			response.sendError(HttpServletResponse.SC_FORBIDDEN, READ_PERMISSION_DENIED);
 		} finally {
+			if(resource != null)
+				resource.getUpdateLock().release(Lock.READ_LOCK);
 			pool.release(broker);
 		}
 		if(contentData == null) {
