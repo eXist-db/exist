@@ -16,8 +16,6 @@
 	<ci:include src="sidebar.xml"/>
 	<chapter>
 		<title>Quick Start</title>
-		<para>For a quick start, the following sections describe how to start 
-			the server and add some files to the database.</para>
 		<section>
 			<title>Installation</title>
 			<para>For a quick start, we will use the server through 
@@ -41,10 +39,8 @@
 					to launch eXist. If the installer has created shortcuts, 
 					you may simply click on the <emphasis>"eXist Database 
 					Startup"</emphasis> icon on the desktop or select the 
-					corresponding item in the Windows start menu. On some OS, 
-					you can also double-click on the 
-					<emphasis>start.jar</emphasis> file, which can be found in 
-					the root directory of the installation. In other cases, you 
+					corresponding item in the Windows start menu. 
+					In other cases, you 
 					have to start eXist manually: Open a shell or DOS command 
 					prompt, change into the location where you installed eXist 
 					and enter:</para>
@@ -286,6 +282,11 @@ jar xfv ../exist.war]]></screen>
             
             <para>Login as "admin" and leave the password field empty. Once logged
             in, select <option>Examples Setup</option> from the menu at the left.</para>
+
+			<para>The following sections introduce the Java client, explain 
+			backup/restore, clean database shutdown and WebDAV. These things are
+			good to know, but you don't have to read them now.</para>
+			
         </section>
         
 		<section>
@@ -389,12 +390,6 @@ jar xfv ../exist.war]]></screen>
 			<para>For more information on XQuery support in eXist, please refer 
 				to the <ulink url="xquery.xml">XQuery 
 				documentation</ulink>.</para>
-		</section>
-		<section>
-			<title>Sample pages</title>
-			<para>Now that we have added some files to the database, you may 
-				have a look at the <ulink url="examples.xml">example 
-				pages</ulink> available through the web interface.</para>
 		</section>
 		<section>
 			<title>Shutting down the database</title>

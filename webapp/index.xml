@@ -20,20 +20,17 @@
                 <a href="http://www.smb-tec.com/xmldb/xupdate/index.html">XUpdate</a> support 
                 and tight integration with existing XML development 
                 tools. The database implements the current 
-            XQuery 1.0 working draft as of November, 2003 (for the core syntax, some details
-            follow later versions), with the exception of the XML schema related features.</p>
+            XQuery 1.0 working draft as of November, 2003 (for the core syntax, some details already
+            following later versions), with the exception of the XML schema related features.</p>
 
-            <p>The new <a href="xquery.xml">XQuery support</a> in eXist makes it possible to write 
+            <p><a href="xquery.xml">XQuery support</a> in eXist makes it possible to write 
             entire web applications with just XQuery and XSLT. XQuery files can be
             directly passed to the database, using either the XQueryServlet,
             the XQueryGenerator for Cocoon or the REST-style API
             (see <a href="devguide.xml">Developer's Guide</a>).</p> 
             
-            <p>Implemented features include: user-defined functions and modules, 
-            type checking, type casts, constructors, order by, ...</p>
-            
-            <p>Additional features: Java binding, fulltext-search functions, 
-            extension modules for HTTP support, database manipulation and 
+            <p>Additional features: Java binding, fulltext-search functions, modules in XQuery
+            and Java, extension modules for HTTP support, database manipulation and 
             XSL transformations.</p>
             
             <p>To avoid memory-intensive document tree

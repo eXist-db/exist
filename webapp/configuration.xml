@@ -56,6 +56,12 @@
 						<para>Controls the indexing process</para>
 					</listitem>
 				</varlistentry>
+                <varlistentry>
+                    <term>&lt;xupdate&gt;</term>
+                    <listitem>
+                        <para>Configuration options related to XUpdate processing</para>
+                    </listitem>
+                </varlistentry>
 			</variablelist>
 			<para>The following sections describe each of these settings:</para>
 		</section>
@@ -70,7 +76,8 @@
 				<programlisting format="linespecific"><![CDATA[
 <db-connection database="native" files="data" cacheSize="48M" free_mem_min="5" 
   pageSize="4096">
-  <pool min="1" max="15" sync-period="240000"/>
+  <pool min="1" max="15" sync-period="240000" wait-before-shutdown="60000"/>
+  <watchdog query-timeout="-1" output-size-limit="10000"/>
 </db-connection>
 ]]></programlisting>
 			</example>
@@ -138,7 +145,30 @@
 					thread will interrupt normal database operation after the 
 					specified number of milliseconds and write all dirty pages 
 					to disk.</para>
+                <para><option>wait-before-shutdown</option> specifies the maximum
+                amount of time (in milliseconds) the database will wait for running
+                processes to complete upon database shutdown.</para>
 			</section>
+            <section>
+                <title>watchdog</title>
+                <para>Global configuration for the query watchdog: the watchdog
+                monitors all query processes and can terminate long-running queries
+                if they exceed one of the predefined limits. The limits are:</para>
+                <itemizedlist>
+                    <listitem><para><option>query-timeout</option>: max. amount of
+                    time the query can take before it is killed.</para></listitem>
+                    <listitem><para><option>output-size-limit</option>: limits the
+                    size of XML fragments constructed within the XQuery and thus the
+                    maximum amount of main memory a query is allowed to consume. The
+                    limit is expressed in terms of the number of nodes allowed for
+                    an in-memory DOM tree.</para>
+                    
+                    <para>The purpose of this option is to avoid memory shortage on
+                    the server if users are allowed to run queries that produce potentially huge
+                    output fragments.</para>
+                    </listitem>
+                </itemizedlist>
+            </section>
 		</section>
 		<section>
 			<title>serializer</title>
@@ -214,6 +244,58 @@
 				</varlistentry>
 			</variablelist>
 		</section>
+        <section>
+            <title>xupdate</title>
+            <para>During XUpdates, the database needs to do a partial reindex of the
+            document whenever the internal node-id structure has changed. Reindex
+            runs can occur quite frequently and slow down the XUpdate process.</para>
+            
+            <para>The frequency of reindex runs can be configured to some extent in
+            the xupdate section. Also, repeatedly inserting nodes into a document can
+            lead to page fragmentation within the db files. Thus a defragmentation run
+            is triggered if the fragmentation exceeds a predefined limit that can be configured
+            here. A typical entry looks like this:</para>
+            
+            <example>
+				<title>Specifying Indexer-Options in conf.xml</title>
+				<programlisting format="linespecific"><![CDATA[
+<xupdate growth-factor="20" allowed-fragmentation="20"
+		enable-consistency-checks="no"/>]]></programlisting>
+            </example>
+            <variablelist>
+				<varlistentry>
+					<term>growth-factor</term>
+					<listitem>
+						<para>Frequent reindex runs can be avoided by leaving some space between the
+                        numeric identifiers assigned to every node. Future insertions will first
+                        fill up these spare identifiers, so no reindex is required.</para>
+
+                        <para>The "growth-factor" attribute determines the number of spare ids to be
+                        inserted whenever the node id scheme is recomputed after an XUpdate.
+                        Increase the setting to have less reindex runs. However, you have to
+                        be aware that leaving spare ids also limits the maximum size of a 
+                        document that can be indexed. </para>
+					</listitem>
+				</varlistentry>
+                <varlistentry>
+                    <term>allowed-fragmentation</term>
+                    <listitem>
+                        <para>Defines the maximum number of page splits allowed within a
+                        document before a defragmentation run will be triggered.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>enable-consistency-checks</term>
+                    <listitem>
+                        <para>For debugging only. If the parameter
+                        is set to "yes", a consistency check will be run on every modified 
+                        document after every XUpdate request. It checks if the 
+                        persistent DOM is complete and all pointers in the structural
+                        index point to valid storage addresses containing valid nodes.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </section>
 		<section>
 			<title>indexer</title>
 			<para>This section controls how XML files are indexed by eXist. An 
