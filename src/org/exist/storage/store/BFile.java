@@ -69,7 +69,7 @@ import org.exist.util.ReentrantReadWriteLock;
  */
 public class BFile extends BTree {
 
-	public final static short FILE_FORMAT_VERSION_ID = 2;
+	public final static short FILE_FORMAT_VERSION_ID = 3;
 	
 	// minimum free space a page should have to be
 	// considered for reusing
@@ -86,8 +86,6 @@ public class BFile extends BTree {
 	protected Cache dataCache = null;
 	protected Lock lock = null;
 	public int fixedKeyLen = -1;
-	
-	private int overflow = 0;
 	
 	public BFile() {
 		super();
@@ -465,11 +463,11 @@ public class BFile extends BTree {
 			wp = (DataPage)dataCache.get(pos);
 			if (wp == null) {
 				final Page page = getPage(pos);
-				final byte[] data = page.read();
 				if (page == null) {
 					LOG.debug("page " + pos + " not found!");
 					return null;
 				}
+				final byte[] data = page.read();
 				if (page.getPageHeader().getStatus() == MULTI_PAGE)
 					return new OverflowPage(page, data);
 				else
@@ -847,7 +845,7 @@ public class BFile extends BTree {
 	private final class BFileHeader extends BTreeFileHeader {
 		
 		private OrderedLinkedList freeList = new OrderedLinkedList();
-		private long freeSpacePage = -1;
+
 		private long lastDataPage = -1;
 
 		public final static int MAX_FREE_LIST_LEN = 128;
@@ -1497,7 +1495,7 @@ public class BFile extends BTree {
 		public long getAddress();
 	}
 
-	private final class SimplePageInputStream
+	private final static class SimplePageInputStream
 		extends ByteArrayInputStream
 		implements PageInputStream {
 
@@ -1518,17 +1516,15 @@ public class BFile extends BTree {
 	 * 
 	 * @author wolf
 	 */
-	private class MultiPageInputStream extends InputStream implements PageInputStream {
+	private final class MultiPageInputStream extends InputStream implements PageInputStream {
 
 		private SinglePage nextPage_;
-		private int len_ = -1;
 		private int pageLen_;
 		private int offset_ = 0;
 		private long address_ = 0L;
 
 		public MultiPageInputStream(SinglePage first, long address) {
 			nextPage_ = first;
-			len_ = first.ph.getDataLength() - 6;
 			offset_ = 6;
 			pageLen_ = fileHeader.getWorkSize();
 			dataCache.add(first, 3);
@@ -1606,7 +1602,6 @@ public class BFile extends BTree {
 		 */
 		public void close() throws IOException {
 			nextPage_ = null;
-			len_ = -1;
 		}
 
 	}

@@ -84,6 +84,7 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 	public Match match = null;
 
 	private ContextItem context = null;
+	
 	private long internalAddress = -1;
 
 	public NodeProxy() {
@@ -289,7 +290,7 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 
 	public static class NodeProxyComparator implements Comparator {
 
-		public static NodeProxyComparator instance = new NodeProxyComparator();
+		public final static NodeProxyComparator instance = new NodeProxyComparator();
 
 		public int compare(Object obj1, Object obj2) {
 			if (obj1 == null || obj2 == null)

@@ -1775,7 +1775,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		{
 			String namespaceURI= context.getURIForPrefix(nc3.getText());
 			if (namespaceURI == null)
-				throw new EXistException("No namespace defined for prefix " + nc.getText());
+				throw new EXistException("No namespace defined for prefix " + nc3.getText());
 			qname= new QName(null, namespaceURI, null);
 		}
 	)

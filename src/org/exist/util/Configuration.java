@@ -22,11 +22,8 @@ package org.exist.util;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -124,15 +121,15 @@ public class Configuration implements ErrorHandler {
 				if (parseNum != null)
 					config.put(
 						"indexer.indexNumbers",
-						new Boolean(parseNum.equals("yes")));
+						Boolean.valueOf(parseNum.equals("yes")));
 
 				if (stemming != null)
-					config.put("indexer.stem", new Boolean(stemming.equals("yes")));
+					config.put("indexer.stem", Boolean.valueOf(stemming.equals("yes")));
 
 				if (caseSensitive != null)
 					config.put(
 						"indexer.case-sensitive",
-						new Boolean(caseSensitive.equals("yes")));
+						Boolean.valueOf(caseSensitive.equals("yes")));
 
 				if (suppressWS != null)
 					config.put("indexer.suppress-whitespace", suppressWS);

@@ -229,7 +229,7 @@ public class UntypedAtomicValue extends AtomicValue {
 			IntegerValue v = (IntegerValue) convertTo(Type.BYTE);
 			return new Byte((byte) v.getInt());
 		} else if (target == boolean.class || target == Boolean.class) {
-			return new Boolean(effectiveBooleanValue());
+			return Boolean.valueOf(effectiveBooleanValue());
 		} else if (target == char.class || target == Character.class) {
 			if (value.length() > 1 || value.length() == 0)
 				throw new XPathException("cannot convert string with length = 0 or length > 1 to Java character");

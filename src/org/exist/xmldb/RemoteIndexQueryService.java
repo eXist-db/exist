@@ -39,7 +39,7 @@ public class RemoteIndexQueryService implements IndexQueryService {
 		try {
 			Vector params = new Vector();
 			params.addElement(parent.getPath());
-			params.addElement(new Boolean(inclusive));
+			params.addElement(Boolean.valueOf(inclusive));
 			Vector result = (Vector) rpcClient.execute("getIndexedElements", params);
 			Occurrences occurrences[] = new Occurrences[result.size()];
 			Vector row;
@@ -74,7 +74,7 @@ public class RemoteIndexQueryService implements IndexQueryService {
 			params.addElement(parent.getPath());
 			params.addElement(start);
 			params.addElement(end);
-			params.addElement(new Boolean(inclusive));
+			params.addElement(Boolean.valueOf(inclusive));
 			Vector result = (Vector) rpcClient.execute("scanIndexTerms", params);
 			Occurrences occurrences[] = new Occurrences[result.size()];
 			Vector row;

@@ -25,15 +25,15 @@ public final class NodeIterator implements Iterator {
 
 	private final static Logger LOG = Logger.getLogger(NodeIterator.class);
 
-	DOMFile db = null;
-	NodeProxy node = null;
-	DocumentImpl doc = null;
-	int offset;
-	short lastTID = -1;
-	DOMFile.DOMPage p = null;
-	long page;
-	long startAddress = -1;
-	Object lockKey;
+	private DOMFile db = null;
+	private NodeProxy node = null;
+	private DocumentImpl doc = null;
+	private int offset;
+	private short lastTID = -1;
+	private DOMFile.DOMPage p = null;
+	private long page;
+	private long startAddress = -1;
+	private Object lockKey;
 
 	public NodeIterator(Object lock, DOMFile db, NodeProxy node)
 		throws BTreeException, IOException {
@@ -60,7 +60,7 @@ public final class NodeIterator implements Iterator {
 	 *@return    The currentAddress value
 	 */
 	public long currentAddress() {
-		return StorageAddress.createPointer((int) page, lastTID);
+		return StorageAddress.createPointer((int) page, ItemId.getId(lastTID));
 	}
 
 	/**
@@ -97,9 +97,7 @@ public final class NodeIterator implements Iterator {
 	}
 
 	/**
-	 *  Returns the raw data of the next node in the sequence.
-	 *
-	 *@return    Description of the Return Value
+	 *  Returns the next node in document order. 
 	 */
 	public Object next() {
 		Lock lock = db.getLock();
@@ -111,42 +109,62 @@ public final class NodeIterator implements Iterator {
 				return null;
 			}
 			if(gotoNextPosition()) {
-				final DOMFile.DOMFilePageHeader ph = p.getPageHeader();
-				// next value larger than length of the current page?
-				if (offset >= ph.getDataLength()) {
-					// load next page in chain
-					final long nextPage = ph.getNextDataPage();
-					if (nextPage < 0) {
-						LOG.debug("bad link to next " + p.page.getPageInfo());
-						return null;
+			    do {
+					DOMFile.DOMFilePageHeader ph = p.getPageHeader();
+					// next value larger than length of the current page?
+					if (offset >= ph.getDataLength()) {
+						// load next page in chain
+						long nextPage = ph.getNextDataPage();
+						if (nextPage < 0) {
+							LOG.debug("bad link to next " + p.page.getPageInfo());
+							return null;
+						}
+						page = nextPage;
+						p = db.getCurrentPage(nextPage);
+						db.addToBuffer(p);
+						offset = 0;
 					}
-					page = nextPage;
-					p = db.getCurrentPage(nextPage);
-					db.addToBuffer(p);
-					offset = 0;
-				}
-				// extract the value
-				lastTID = ByteConversion.byteToShort(p.data, offset);
-				short l = ByteConversion.byteToShort(p.data, offset + 2);
-				if(l == DOMFile.OVERFLOW) {
-					// overflow page: load the overflow value
-					l = 8;
-					final long overflow = ByteConversion.byteToLong(p.data, offset + 4);
-					final byte[] odata = db.getOverflowValue(overflow);
-					nextNode = NodeImpl.deserialize(odata, 0, odata.length, doc);
-				} else {
-					nextNode = NodeImpl.deserialize(p.data, offset + 4, l, doc);
-				}
-				nextNode.setInternalAddress(StorageAddress.createPointer((int) page, lastTID));
-				nextNode.setOwnerDocument(doc);
-				offset = offset + 4 + l;
+					// extract the tid
+					lastTID = ByteConversion.byteToShort(p.data, offset);
+					if(ItemId.getId(lastTID) < 0)
+					    LOG.debug("tid < 0: " + lastTID + " at "+ p.page.getPageInfo());
+					offset += 2;
+					//	check if this is just a link to a relocated node
+					if(ItemId.isLink(lastTID)) {
+						// skip this
+						offset += 8;
+						continue;
+					}
+					// read data length
+					short l = ByteConversion.byteToShort(p.data, offset);
+					offset += 2;
+					if(ItemId.isRelocated(lastTID)) {
+						// found a relocated node. Skip the next 8 bytes
+						offset += 8;
+					}
+					//	overflow page? load the overflow value
+					if(l == DOMFile.OVERFLOW) {
+						l = 8;
+						final long overflow = ByteConversion.byteToLong(p.data, offset);
+						offset += 8;
+						final byte[] odata = db.getOverflowValue(overflow);
+						nextNode = NodeImpl.deserialize(odata, 0, odata.length, doc);
+					// normal node
+					} else {
+						nextNode = NodeImpl.deserialize(p.data, offset, l, doc);
+						offset += l;
+					}
+					nextNode.setInternalAddress(
+						StorageAddress.createPointer((int) page, ItemId.getId(lastTID))
+					);
+					nextNode.setOwnerDocument(doc);
+			    } while(nextNode == null);
 			}
 			return nextNode;
 		} catch (BTreeException e) {
-			Thread.dumpStack();
-			LOG.warn(e);
+			LOG.warn(e.getMessage(), e);
 		} catch (IOException e) {
-			LOG.warn(e);
+			LOG.warn(e.getMessage(), e);
 		} finally {
 			lock.release();
 		}
@@ -160,13 +178,13 @@ public final class NodeIterator implements Iterator {
 			final long addr = db.findValue(lockKey, node);
 			if (addr == BTree.KEY_NOT_FOUND)
 				return false;
-			DOMFile.RecordPos rec = db.findValuePosition(addr);
+			DOMFile.RecordPos rec = db.findRecord(addr);
 			page = rec.page.getPageNum();
 			p = rec.page;
 			offset = rec.offset - 2;
 			node = null;
 		} else if (-1 < startAddress) {
-			final DOMFile.RecordPos rec = db.findValuePosition(startAddress);
+			final DOMFile.RecordPos rec = db.findRecord(startAddress);
 			page = rec.page.getPageNum();
 			offset = rec.offset - 2;
 			p = rec.page;

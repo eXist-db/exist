@@ -153,7 +153,7 @@ public class BooleanValue extends AtomicValue {
 		if(target.isAssignableFrom(BooleanValue.class))
 			return this;
 		else if(target == Boolean.class || target == boolean.class || target == Object.class)
-			return new Boolean(value);
+			return Boolean.valueOf(value);
 		else if(target == String.class || target == CharSequence.class) {
 			StringValue v = (StringValue)convertTo(Type.STRING);
 			return v.value;

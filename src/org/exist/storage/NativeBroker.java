@@ -108,7 +108,7 @@ public class NativeBroker extends DBBroker {
 	protected final static int BUFFERS = 256;
 
 	/** check available memory after storing MEM_LIMIT_CHECK nodes */
-	protected static int MEM_LIMIT_CHECK = 10000;
+	protected final static int MEM_LIMIT_CHECK = 10000;
 
 	protected CollectionStore collectionsDb = null;
 	protected DOMFile domDb = null;
@@ -339,7 +339,7 @@ public class NativeBroker extends DBBroker {
 						new VariableByteInputStream(
 							val[1].data(),
 							val[1].start(),
-							val[1].length());
+							val[1].getLength());
 					try {
 						while (is.available() > 0) {
 							docId = is.readInt();
@@ -868,6 +868,12 @@ public class NativeBroker extends DBBroker {
 		return nextDocId;
 	}
 
+	/**
+	 * Index a single node, which has been added through an XUpdate
+	 * operation. This method is only called if inserting the node is possible
+	 * without changing the node identifiers of sibling or parent nodes. In other 
+	 * cases, reindex will be called.
+	 */
 	public void index(final NodeImpl node) {
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 		final long gid = node.getGID();
@@ -937,6 +943,11 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
+	/**
+	 * Reindex the nodes in the document. This method will either reindex all
+	 * descendant nodes of the passed node, or all nodes below some level of
+	 * the document if node is null.
+	 */
 	public void reindex(DocumentImpl oldDoc, DocumentImpl doc, NodeImpl node) {
 		int idxLevel = doc.reindexRequired();
 		if (idxLevel < 0) {
@@ -947,7 +958,7 @@ public class NativeBroker extends DBBroker {
 		if (node == null)
 			LOG.debug("reindexing level " + idxLevel + " of document " + doc.getDocId());
 		final long start = System.currentTimeMillis();
-		// remove old dom index
+		// remove all old index keys from the btree
 		Value ref = new NodeRef(doc.getDocId());
 		final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
 		final Lock lock = domDb.getLock();
@@ -980,7 +991,7 @@ public class NativeBroker extends DBBroker {
 		} finally {
 			lock.release();
 		}
-		// reindex the nodes
+		// now reindex the nodes
 		Iterator iterator;
 		if (node == null) {
 			NodeList nodes = doc.getChildNodes();
@@ -1006,6 +1017,13 @@ public class NativeBroker extends DBBroker {
 		LOG.debug("reindex took " + (System.currentTimeMillis() - start) + "ms.");
 	}
 
+	/**
+	 * Reindex the given node after the DOM tree has been 
+	 * modified by an XUpdate.
+	 * 
+	 * @param node
+	 * @param currentPath
+	 */
 	private void reindex(final NodeImpl node, StringBuffer currentPath) {
 		if (node.getGID() < 0)
 			LOG.debug("illegal node: " + node.getGID() + "; " + node.getNodeName());
@@ -1088,6 +1106,14 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
+	/**
+	 * Called by reindex to walk through all nodes in the tree and reindex them
+	 * if necessary.
+	 * 
+	 * @param iterator
+	 * @param node
+	 * @param currentPath
+	 */
 	private void scanNodes(Iterator iterator, NodeImpl node, StringBuffer currentPath) {
 		if (node.getNodeType() == Node.ELEMENT_NODE)
 			currentPath.append('/').append(node.getNodeName());
@@ -1106,8 +1132,6 @@ public class NativeBroker extends DBBroker {
 				throw new IllegalStateException("wrong node id");
 			}
 			final long lastChildId = firstChildId + node.getChildCount();
-			// ong p;
-			// Value value;
 			NodeImpl child;
 			for (long gid = firstChildId; gid < lastChildId; gid++) {
 				child = (NodeImpl) iterator.next();
@@ -1858,10 +1882,10 @@ public class NativeBroker extends DBBroker {
 		if (nodesCount > MEM_LIMIT_CHECK) {
 			final int percent = (int) (run.freeMemory() / (run.totalMemory() / 100));
 			if (percent < memMinFree) {
-				LOG.info(
-					"total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
+				//LOG.info(
+				//	"total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
 				flush();
-				System.gc();
+				//System.gc();
 				LOG.info(
 					"total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
 			}
@@ -2040,7 +2064,6 @@ public class NativeBroker extends DBBroker {
 			dbe.printStackTrace();
 			LOG.debug(dbe);
 		}
-		System.gc();
 	}
 
 	public void closeDocument() {
@@ -2060,11 +2083,11 @@ public class NativeBroker extends DBBroker {
 			final byte[] data = node.serialize();
 			new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
 				public Object start() throws ReadOnlyException {
-					final NodeRef ref = new NodeRef(doc.getDocId(), node.getGID());
 					if (-1 < internalAddress)
-						domDb.update(ref, internalAddress, data);
-					else
-						domDb.update(ref, data);
+						domDb.update(internalAddress, data);
+					else {
+						domDb.update(new NodeRef(doc.getDocId(), node.getGID()), data);
+					}
 					return null;
 				}
 			}
@@ -2081,6 +2104,9 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
+	/**
+	 * Physically insert a node into the DOM storage.
+	 */
 	public void insertAfter(final NodeImpl previous, final NodeImpl node) {
 		final byte data[] = node.serialize();
 		final DocumentImpl doc = (DocumentImpl) previous.getOwnerDocument();

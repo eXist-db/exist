@@ -73,7 +73,6 @@ public abstract class Modification {
 			}
 
 			AST ast = parser.getAST();
-			LOG.debug("generated AST: " + ast.toStringTree());
 
 			PathExpr expr = new PathExpr(context);
 			treeParser.xpath(ast, expr);

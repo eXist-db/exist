@@ -450,7 +450,7 @@ public class RemoteCollection implements CollectionImpl {
 		Vector params = new Vector();
 		params.addElement(data);
 		params.addElement(getPath() + '/' + res.getId());
-		params.addElement(new Boolean(true));
+		params.addElement(Boolean.TRUE);
 		try {
 			rpcClient.execute("storeBinary", params);
 		} catch (XmlRpcException xre) {
@@ -482,7 +482,7 @@ public class RemoteCollection implements CollectionImpl {
 			params = new Vector();
 			params.addElement(fileName);
 			params.addElement(getPath() + '/' + res.getId());
-			params.addElement(new Boolean(true));
+			params.addElement(Boolean.TRUE);
 			rpcClient.execute("parseLocal", params);
 		} catch (FileNotFoundException e) {
 			throw new XMLDBException(

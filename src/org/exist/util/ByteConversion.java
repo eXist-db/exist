@@ -132,14 +132,6 @@ public class ByteConversion {
             ( ( (long) data[start + 7] ) & 0xffL );
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  data   Description of the Parameter
-     *@param  start  Description of the Parameter
-     *@return        Description of the Return Value
-     */
     public final static short byteToShort( final byte[] data, final int start ) {
         return (short) ( ( ( data[start + 1] & 0xff ) << 8 ) |
             ( data[start] & 0xff ) );

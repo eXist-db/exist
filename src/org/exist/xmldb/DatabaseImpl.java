@@ -242,7 +242,7 @@ public class DatabaseImpl implements Database {
 	
     public String getProperty( String property ) throws XMLDBException {
         if ( property.equals( "create-database" ) )
-            return new Boolean( autoCreate ).toString();
+            return Boolean.valueOf( autoCreate ).toString();
         if ( property.equals( "database-id" ) )
         	return dbName;
         if ( property.equals( "configuration" ) )

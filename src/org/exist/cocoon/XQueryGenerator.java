@@ -260,7 +260,7 @@ public class XQueryGenerator extends ServiceableGenerator {
 		while ((count = is.read(t)) != -1) {
 			os.write(t, 0, count);
 		}
-		return new String(os.toString("UTF-8"));
+		return os.toString("UTF-8");
 	}
 	
 	private void declareParameters(XQueryService service) throws XMLDBException {

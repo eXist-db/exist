@@ -280,7 +280,7 @@ public class DecimalValue extends NumericValue {
 		} else if (target == String.class)
 			return getStringValue();
 		else if (target == Boolean.class)
-			return new Boolean(effectiveBooleanValue());
+			return Boolean.valueOf(effectiveBooleanValue());
 		else if (target == Object.class)
 			return value;
 

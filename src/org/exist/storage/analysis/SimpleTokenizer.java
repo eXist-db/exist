@@ -11,7 +11,6 @@ package org.exist.storage.analysis;
  */
 public class SimpleTokenizer implements Tokenizer {
 	private int pos = 0;
-	private int previous = 0;
 	private boolean stem = false;
 	private CharSequence text;
 	private int len = 0;
@@ -45,8 +44,7 @@ public class SimpleTokenizer implements Tokenizer {
 		while (ch != (char) -1) {
 			if (ch == '\\' && isWildcard(LA(2))) {
 				break;
-			}
-			if (singleCharToken(ch)) {
+			} else if (ch > '\u2E80' && singleCharToken(ch)) {
 				// if this is a single char token and first in the sequence,
 				// consume it
 				if(count == 0) {

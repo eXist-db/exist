@@ -56,9 +56,6 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	protected boolean inPredicate = false;
 	protected boolean useSelfAsContext = false;
 
-	private int lastDocAdded = -1;
-	private int sizeHint = -1;
-
 	public VirtualNodeSet(int axis, NodeTest test, NodeSet context) {
 		this.axis = axis;
 		this.test = test;
