@@ -718,7 +718,7 @@ public class DOMFile extends BTree implements Lockable {
             ph.setRecordCount((short) 0);
             if(currentDocument != null)
                 currentDocument.incPageCount();
-//            LOG.debug("New page: " + page.getPageNum());
+//            SanityCheck.TRACE("New page: " + page.getPageNum());
             return page;
         } catch (IOException ioe) {
             LOG.warn(ioe);
@@ -858,8 +858,6 @@ public class DOMFile extends BTree implements Lockable {
     public boolean flush() throws DBException {
         super.flush();
         dataCache.flush();
-//        pages.remove(owner);
-        closeDocument();
         try {
             if (fileHeader.isDirty()) fileHeader.write();
         } catch (IOException ioe) {
@@ -1006,7 +1004,7 @@ public class DOMFile extends BTree implements Lockable {
 
     public void closeDocument() {
         pages.remove(owner);
-//        LOG.debug("current doc closed by: " + owner +
+//        SanityCheck.TRACE("current doc closed by: " + owner +
 //        		"; thread: " + Thread.currentThread().getName());
     }
 
