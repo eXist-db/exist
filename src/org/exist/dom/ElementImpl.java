@@ -1142,7 +1142,7 @@ public class ElementImpl extends NamedNode implements Element {
 	 * @throws DOMException
 	 */
 	public void update(NodeList newContent) throws DOMException {
-		final String path = getPath().toString();
+		final NodePath path = getPath();
 		final DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
 		// remove old child nodes
 		NodeList nodes = getChildNodes();
@@ -1156,11 +1156,11 @@ public class ElementImpl extends NamedNode implements Element {
 				last = child;
 				break;
 			}
-			removeAll(
-				child,
-				child.getNodeType() == Node.ELEMENT_NODE
-					? path + '/' + child.getNodeName()
-					: path);
+			if(child.getNodeType() == Node.ELEMENT_NODE)
+				path.addComponent(child.getNodeName());
+			removeAll(child, path);
+			if(child.getNodeType() == Node.ELEMENT_NODE)
+				path.removeLastComponent();
 		}
 		ownerDocument.broker.endRemove();
 		children = i;
@@ -1198,8 +1198,7 @@ public class ElementImpl extends NamedNode implements Element {
 			previous = this;
 		else
 			previous = getLastNode(previous);
-		final String path = getPath().toString();
-		ownerDocument.broker.removeNode(old, path);
+		ownerDocument.broker.removeNode(old, old.getPath());
 		ownerDocument.broker.endRemove();
 		newNode.gid = old.gid;
 		ownerDocument.broker.insertAfter(previous, newNode);
@@ -1221,7 +1220,7 @@ public class ElementImpl extends NamedNode implements Element {
 		final int level = ownerDocument.getTreeLevel(gid);
 		final DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
 		final long lastChild = lastChildID();
-		removeAll(old, old.getPath().toString());
+		removeAll(old, old.getPath());
 		--children;
 		ownerDocument.broker.endRemove();
 		ownerDocument.broker.update(this);
@@ -1232,16 +1231,18 @@ public class ElementImpl extends NamedNode implements Element {
 		return old;
 	}
 
-	private void removeAll(NodeImpl node, String currentPath) {
+	private void removeAll(NodeImpl node, NodePath currentPath) {
 		switch (node.getNodeType()) {
 			case Node.ELEMENT_NODE :
 				NodeList children = node.getChildNodes();
 				NodeImpl child;
 				for (int i = children.getLength() - 1; i > -1; i--) {
 					child = (NodeImpl) children.item(i);
-					if (child.nodeType == Node.ELEMENT_NODE)
-						removeAll(child, currentPath + '/' + ((ElementImpl)child).nodeName);
-					else
+					if (child.nodeType == Node.ELEMENT_NODE) {
+						currentPath.addComponent(((ElementImpl)child).getNodeName());
+						removeAll(child, currentPath);
+						currentPath.removeLastComponent();
+					} else
 						removeAll(child, currentPath);
 				}
 				ownerDocument.broker.removeNode(node, currentPath);
@@ -1269,8 +1270,7 @@ public class ElementImpl extends NamedNode implements Element {
 			previous = this;
 		else
 			previous = getLastNode(previous);
-		final String path = getPath().toString();
-		ownerDocument.broker.removeNode(old, path);
+		ownerDocument.broker.removeNode(old, old.getPath());
 		ownerDocument.broker.endRemove();
 		appendChild(old.gid, previous, getPath(), newChild, true);
 		// reindex if required
