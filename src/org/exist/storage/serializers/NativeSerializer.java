@@ -244,8 +244,8 @@ public class NativeSerializer extends Serializer {
         case Node.COMMENT_NODE:
             String comment = ((CommentImpl) node).getData();
             char data[] = new char[comment.length()];
-            comment.getChars(0, data.length - 1, data, 0);
-            receiver.comment(data, 0, data.length - 1);
+            comment.getChars(0, data.length, data, 0);
+            receiver.comment(data, 0, data.length);
             node.release();
             break;
         }
