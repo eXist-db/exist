@@ -245,7 +245,6 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 						}
 					} finally {
 					    closeDocument(document, Lock.READ_LOCK);
-						pool.release(broker);
 					}
 				}
 			} catch (EXistException e) {
@@ -254,6 +253,8 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 			} catch (SAXException e) {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e
 						.getMessage(), e);
+			} finally {
+				pool.release(broker);
 			}
 		}
 	}
