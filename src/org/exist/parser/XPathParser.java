@@ -306,7 +306,7 @@ public XPathParser(ParserSharedInputState state) {
 			arg4 = LT(1);
 			match(CONST);
 			{
-			_loop148:
+			_loop32:
 			do {
 				if ((LA(1)==COMMA)) {
 					match(COMMA);
@@ -336,7 +336,7 @@ public XPathParser(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop148;
+					break _loop32;
 				}
 				
 			} while (true);
@@ -362,10 +362,10 @@ public XPathParser(ParserSharedInputState state) {
 			break;
 		}
 		default:
-			boolean synPredMatched143 = false;
+			boolean synPredMatched27 = false;
 			if (((LA(1)==LITERAL_document) && (LA(2)==LPAREN))) {
-				int _m143 = mark();
-				synPredMatched143 = true;
+				int _m27 = mark();
+				synPredMatched27 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -375,12 +375,12 @@ public XPathParser(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched143 = false;
+					synPredMatched27 = false;
 				}
-				rewind(_m143);
+				rewind(_m27);
 				inputState.guessing--;
 			}
-			if ( synPredMatched143 ) {
+			if ( synPredMatched27 ) {
 				match(LITERAL_document);
 				match(LPAREN);
 				match(STAR);
@@ -427,7 +427,7 @@ public XPathParser(ParserSharedInputState state) {
 						
 				}
 				{
-				_loop145:
+				_loop29:
 				do {
 					if ((LA(1)==COMMA)) {
 						match(COMMA);
@@ -452,7 +452,7 @@ public XPathParser(ParserSharedInputState state) {
 						}
 					}
 					else {
-						break _loop145;
+						break _loop29;
 					}
 					
 				} while (true);
@@ -478,7 +478,7 @@ public XPathParser(ParserSharedInputState state) {
 		
 		and_expr(left);
 		{
-		_loop123:
+		_loop7:
 		do {
 			if ((LA(1)==LITERAL_or)) {
 				match(LITERAL_or);
@@ -497,7 +497,7 @@ public XPathParser(ParserSharedInputState state) {
 				}
 			}
 			else {
-				break _loop123;
+				break _loop7;
 			}
 			
 		} while (true);
@@ -617,7 +617,7 @@ public XPathParser(ParserSharedInputState state) {
 		
 		equality_expr(left);
 		{
-		_loop126:
+		_loop10:
 		do {
 			if ((LA(1)==LITERAL_and)) {
 				match(LITERAL_and);
@@ -636,7 +636,7 @@ public XPathParser(ParserSharedInputState state) {
 				}
 			}
 			else {
-				break _loop126;
+				break _loop10;
 			}
 			
 		} while (true);
@@ -920,7 +920,7 @@ public XPathParser(ParserSharedInputState state) {
 		
 		pathexpr(left);
 		{
-		_loop140:
+		_loop24:
 		do {
 			if ((LA(1)==PLUS)) {
 				if ( inputState.guessing==0 ) {
@@ -930,7 +930,7 @@ public XPathParser(ParserSharedInputState state) {
 				pathexpr(right);
 			}
 			else {
-				break _loop140;
+				break _loop24;
 			}
 			
 		} while (true);
@@ -1042,8 +1042,8 @@ public XPathParser(ParserSharedInputState state) {
 		case SELF:
 		{
 			{
-			int _cnt151=0;
-			_loop151:
+			int _cnt35=0;
+			_loop35:
 			do {
 				if ((_tokenSet_2.member(LA(1)))) {
 					result=regularexpr(expr);
@@ -1055,10 +1055,10 @@ public XPathParser(ParserSharedInputState state) {
 					}
 				}
 				else {
-					if ( _cnt151>=1 ) { break _loop151; } else {throw new NoViableAltException(LT(1), getFilename());}
+					if ( _cnt35>=1 ) { break _loop35; } else {throw new NoViableAltException(LT(1), getFilename());}
 				}
 				
-				_cnt151++;
+				_cnt35++;
 			} while (true);
 			}
 			break;
@@ -1129,7 +1129,7 @@ public XPathParser(ParserSharedInputState state) {
 				
 			}
 			{
-			_loop168:
+			_loop52:
 			do {
 				if ((LA(1)==LPPAREN)) {
 					pred=predicate(expr);
@@ -1140,7 +1140,7 @@ public XPathParser(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop168;
+					break _loop52;
 				}
 				
 			} while (true);
@@ -1514,10 +1514,10 @@ public XPathParser(ParserSharedInputState state) {
 				}
 			}
 			else {
-				boolean synPredMatched159 = false;
+				boolean synPredMatched43 = false;
 				if (((LA(1)==FUNC) && (LA(2)==LPAREN))) {
-					int _m159 = mark();
-					synPredMatched159 = true;
+					int _m43 = mark();
+					synPredMatched43 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -1527,12 +1527,12 @@ public XPathParser(ParserSharedInputState state) {
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched159 = false;
+						synPredMatched43 = false;
 					}
-					rewind(_m159);
+					rewind(_m43);
 					inputState.guessing--;
 				}
-				if ( synPredMatched159 ) {
+				if ( synPredMatched43 ) {
 					f1 = LT(1);
 					match(FUNC);
 					if (!( env.hasFunction(f1.getText()) ))
@@ -1563,7 +1563,7 @@ public XPathParser(ParserSharedInputState state) {
 						fun.addArgument(arg1);
 					}
 					{
-					_loop161:
+					_loop45:
 					do {
 						if ((LA(1)==COMMA)) {
 							match(COMMA);
@@ -1576,7 +1576,7 @@ public XPathParser(ParserSharedInputState state) {
 							}
 						}
 						else {
-							break _loop161;
+							break _loop45;
 						}
 						
 					} while (true);
@@ -1609,7 +1609,7 @@ public XPathParser(ParserSharedInputState state) {
 			fun.addArgument(arg1);
 		}
 		{
-		_loop165:
+		_loop49:
 		do {
 			if ((LA(1)==COMMA)) {
 				match(COMMA);
@@ -1622,7 +1622,7 @@ public XPathParser(ParserSharedInputState state) {
 				}
 			}
 			else {
-				break _loop165;
+				break _loop49;
 			}
 			
 		} while (true);
