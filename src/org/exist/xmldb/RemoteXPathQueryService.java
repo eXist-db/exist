@@ -253,5 +253,19 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
             throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
         }
     }
+
+    /* (non-Javadoc)
+     * @see org.exist.xmldb.XPathQueryServiceImpl#beginProtected()
+     */
+    public void beginProtected() {
+        // not yet supported
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xmldb.XPathQueryServiceImpl#endProtected()
+     */
+    public void endProtected() {
+        // not yet supported
+    }
 }
 

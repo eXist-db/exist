@@ -65,6 +65,8 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	protected boolean xpathCompatible = true;
 	protected String moduleLoadPath = null;
 	protected Properties properties = null;
+	protected boolean lockDocuments = false;
+	protected DocumentSet lockedDocuments = null;
 	
 	public LocalXPathQueryService(
 		User user,
@@ -143,36 +145,6 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		}
 	}
 	
-	private ResourceSet execute(String[] docs, 
-		NodeSet contextSet, CompiledExpression expression, String sortExpr) 
-	throws XMLDBException {
-		long start = System.currentTimeMillis();
-		CompiledXQuery expr = (CompiledXQuery)expression;
-		DBBroker broker = null;
-		Sequence result;
-		try {
-			broker = brokerPool.get(user);
-			XQueryContext context = expr.getContext();
-			context.setBackwardsCompatibility(xpathCompatible);
-			context.setStaticallyKnownDocuments(docs);
-			setupContext(context);
-			checkPragmas(context);
-			XQuery xquery = broker.getXQueryService();
-			result = xquery.execute(expr, contextSet);
-		} catch (EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		} catch (XPathException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		} finally {
-			brokerPool.release(broker);
-		}
-		LOG.debug("query took " + (System.currentTimeMillis() - start) + " ms.");
-		if(result != null)
-			return new LocalResourceSet(user, brokerPool, collection, properties, result, sortExpr);
-		else
-			return null;
-	}
-
 	public ResourceSet execute(Source source) 
 		throws XMLDBException {
 			long start = System.currentTimeMillis();
@@ -240,6 +212,17 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 			brokerPool.release(broker);
 		}
 	}
+
+    public ResourceSet queryResource(String resource, String query)
+    	throws XMLDBException {
+    	LocalXMLResource res = (LocalXMLResource) collection.getResource(resource);
+    	if (res == null)
+    		throw new XMLDBException(
+    			ErrorCodes.INVALID_RESOURCE,
+    			"resource " + resource + " not found");
+        String[] docs = new String[] { res.getParentCollection().getName() + '/' + res.getDocumentId() };
+    	return doQuery(query, docs, null, null);
+    }
 	
 	protected void setupContext(XQueryContext context) throws XMLDBException, XPathException {
 	    context.setBaseURI(properties.getProperty("base-uri", collection.getPath()));
@@ -267,7 +250,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	 * 
 	 * @param context
 	 */
-	protected void checkPragmas(XQueryContext context) throws XPathException {
+	private void checkPragmas(XQueryContext context) throws XPathException {
 		Pragma pragma = context.getPragma(Pragma.SERIALIZE_QNAME);
 		if(pragma == null)
 			return;
@@ -282,7 +265,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		}
 	}
 	
-	protected ResourceSet doQuery(
+	private ResourceSet doQuery(
 		String query,
 		String[] docs,
 		NodeSet contextSet,
@@ -292,17 +275,30 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		return execute(docs, contextSet, expr, sortExpr);
 	}
 
-	public ResourceSet queryResource(String resource, String query)
-		throws XMLDBException {
-		LocalXMLResource res = (LocalXMLResource) collection.getResource(resource);
-		if (res == null)
-			throw new XMLDBException(
-				ErrorCodes.INVALID_RESOURCE,
-				"resource " + resource + " not found");
-        String[] docs = new String[] { res.getParentCollection().getName() + '/' + res.getDocumentId() };
-		return doQuery(query, docs, null, null);
+	/**
+	 * Execute all following queries in a protected environment.
+	 * Protected means: it is guaranteed that documents referenced by the
+	 * query or the result set are not modified by other threads
+	 * until {@link #endProtected} is called.
+	 */
+	public void beginProtected() {
+	    lockDocuments = true;
+	    lockedDocuments = new DocumentSet();
 	}
-
+	
+	/**
+	 * Close the protected environment. All locks held
+	 * by the current thread are released. The result set
+	 * is no longer guaranteed to be stable.
+	 */
+	public void endProtected() {
+	    lockDocuments = false;
+	    if(lockedDocuments != null) {
+	        lockedDocuments.unlock(false);
+	    }
+	    lockedDocuments = null;
+	}
+	
 	public void removeNamespace(String ns) throws XMLDBException {
 		for (Iterator i = namespaceDecls.values().iterator(); i.hasNext();) {
 			if (((String) i.next()).equals(ns)) {
@@ -311,6 +307,52 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		}
 	}
 
+    private ResourceSet execute(String[] docs, 
+    	NodeSet contextSet, CompiledExpression expression, String sortExpr) 
+    throws XMLDBException {
+    	long start = System.currentTimeMillis();
+    	CompiledXQuery expr = (CompiledXQuery)expression;
+    	DBBroker broker = null;
+    	Sequence result;
+    	XQueryContext context = expr.getContext();
+    	try {
+    		broker = brokerPool.get(user);
+
+    		context.setBackwardsCompatibility(xpathCompatible);
+    		context.setStaticallyKnownDocuments(docs);
+    		setupContext(context);
+    		checkPragmas(context);
+    		    
+    		XQuery xquery = broker.getXQueryService();
+    		if(lockDocuments)
+    		    context.setLockDocumentsOnLoad(true);
+    		result = xquery.execute(expr, contextSet);
+    		if(lockDocuments) {
+    		    DocumentSet locked = context.releaseUnusedDocuments(result);
+    		    if(locked != null) {
+    		        lockedDocuments.addAll(locked);
+    		    }
+    		}
+    	} catch (EXistException e) {
+    	    context.releaseLockedDocuments();
+    		throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+    	} catch (XPathException e) {
+    	    context.releaseLockedDocuments();
+    		throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+    	} catch (Exception e) {
+    	    // need to catch all runtime exceptions here to be able to release locked documents
+    	    context.releaseLockedDocuments();
+    	    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+    	} finally {
+    		brokerPool.release(broker);
+    	}
+    	LOG.debug("query took " + (System.currentTimeMillis() - start) + " ms.");
+    	if(result != null)
+    		return new LocalResourceSet(user, brokerPool, collection, properties, result, sortExpr);
+    	else
+    		return null;
+    }
+    
 	public void setCollection(Collection col) throws XMLDBException {
 	}
 
