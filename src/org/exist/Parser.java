@@ -1007,7 +1007,6 @@ public class Parser
 			URL url = new URL(systemId);
 			if (url.getProtocol().equals("file")) {
 				String path = url.getPath();
-				LOG.debug("trying to resolve " + path);
 				File f = new File(path);
 				if (!f.canRead())
 					return resolver.resolveEntity(null, f.getName());

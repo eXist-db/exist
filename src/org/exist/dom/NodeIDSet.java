@@ -96,7 +96,7 @@ public class NodeIDSet extends NodeSet {
 
 	public Node item(int pos) {
 		NodeProxy p = (NodeProxy) list.get(pos);
-		return p == null ? null : p.doc.getNode(p.gid);
+		return p == null ? null : p.doc.getNode(p);
 	}
 
 	public NodeProxy get(DocumentImpl doc, long nodeId) {

@@ -940,10 +940,11 @@ public class InteractiveClient {
 			return true;
 		} catch (XMLDBException xde) {
 			xde.printStackTrace();
-			if(startGUI)
+			if (startGUI)
 				frame.showErrorMessage("XMLDBException: " + xde.getMessage(), xde);
 			else
-				System.err.println("XMLDBException: " + xde.getMessage() + " [" + xde.errorCode + "]");
+				System.err.println(
+					"XMLDBException: " + xde.getMessage() + " [" + xde.errorCode + "]");
 			return true;
 		}
 	}
@@ -1449,7 +1450,7 @@ public class InteractiveClient {
 					break;
 				case USER_OPT :
 					properties.setProperty("user", option.getArgument());
-					if(!passwdSpecified)
+					if (!passwdSpecified)
 						needPasswd = true;
 					break;
 				case PASS_OPT :
@@ -1545,7 +1546,6 @@ public class InteractiveClient {
 			frame = new ClientFrame(this, path, properties);
 			frame.setLocation(100, 100);
 			frame.setSize(500, 450);
-			frame.show();
 		} else {
 			//			initialize Readline library
 			try {
@@ -1620,7 +1620,7 @@ public class InteractiveClient {
 		if (optionGet != null) {
 			try {
 				XMLResource res = retrieve(optionGet);
-				if(res != null)
+				if (res != null)
 					System.out.println(res.getContent());
 			} catch (XMLDBException e) {
 				System.err.println(
@@ -1632,12 +1632,12 @@ public class InteractiveClient {
 			if (!foundCollection) {
 				System.err.println("Please specify target collection with --collection");
 			} else {
-			try {
-				remove(optionRemove);
-			} catch (XMLDBException e) {
-				System.out.println("XMLDBException during parse: " + e.getMessage());
-				e.printStackTrace();
-			}
+				try {
+					remove(optionRemove);
+				} catch (XMLDBException e) {
+					System.out.println("XMLDBException during parse: " + e.getMessage());
+					e.printStackTrace();
+				}
 			}
 			interactive = false;
 			return;
@@ -1665,15 +1665,15 @@ public class InteractiveClient {
 					optionXpath = null;
 				}
 			}
-			if(optionXpath != null) {
-			try {
-				ResourceSet result = find(optionXpath);
-				for (int i = 0; i < maxResults && i < result.getSize(); i++)
-					System.out.println(((Resource) result.getResource((long) i)).getContent());
-			} catch (XMLDBException e) {
-				System.err.println("XMLDBException during query: " + e.getMessage());
-				e.printStackTrace();
-			}
+			if (optionXpath != null) {
+				try {
+					ResourceSet result = find(optionXpath);
+					for (int i = 0; i < maxResults && i < result.getSize(); i++)
+						System.out.println(((Resource) result.getResource((long) i)).getContent());
+				} catch (XMLDBException e) {
+					System.err.println("XMLDBException during query: " + e.getMessage());
+					e.printStackTrace();
+				}
 			}
 			interactive = false;
 		} else if (optionQueryFile != null) {
@@ -1689,24 +1689,27 @@ public class InteractiveClient {
 			interactive = false;
 		}
 
-		if(interactive) {
-		// enter interactive mode
-		try {
-			getResources();
-		} catch (XMLDBException e1) {
-			System.out.println(
-				"XMLDBException while retrieving collection " + "contents: " + e1.getMessage());
-			e1.getCause().printStackTrace();
-			frame.showErrorMessage("XMLDBException occurred while retrieving collection: " +
-				e1.getMessage(), e1);
-			frame.setVisible(false);
-			System.exit(0);
-		}
-		messageln("\ntype help or ? for help.");
-		if (!startGUI)
-			readlineInputLoop(home, history);
-		else
-			frame.displayPrompt();
+		if (interactive) {
+			if (startGUI)
+				frame.setVisible(true);
+			// enter interactive mode
+			try {
+				getResources();
+			} catch (XMLDBException e1) {
+				System.out.println(
+					"XMLDBException while retrieving collection " + "contents: " + e1.getMessage());
+				e1.getCause().printStackTrace();
+				frame.showErrorMessage(
+					"XMLDBException occurred while retrieving collection: " + e1.getMessage(),
+					e1);
+				frame.setVisible(false);
+				System.exit(0);
+			}
+			messageln("\ntype help or ? for help.");
+			if (!startGUI)
+				readlineInputLoop(home, history);
+			else
+				frame.displayPrompt();
 		} else
 			shutdown(false);
 	}

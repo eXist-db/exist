@@ -1,12 +1,9 @@
-/**
- * QueryResponseCollection.java
- *
- * This file was auto-generated from WSDL
- * by the Apache Axis WSDL2Java emitter.
- */
-
 package org.exist.soap;
 
+/**
+ * A wrapper class containing a query summary for all documents for which hits
+ * have been found in the collection.
+ */
 public class QueryResponseCollection  implements java.io.Serializable {
     private java.lang.String collectionName;
     private org.exist.soap.QueryResponseDocument[] documents;
@@ -14,6 +11,12 @@ public class QueryResponseCollection  implements java.io.Serializable {
     public QueryResponseCollection() {
     }
 
+	/**
+	 * Returns the name of the collection represented by this 
+	 * object.
+	 * 
+	 * @return
+	 */
     public java.lang.String getCollectionName() {
         return collectionName;
     }
@@ -22,6 +25,12 @@ public class QueryResponseCollection  implements java.io.Serializable {
         this.collectionName = collectionName;
     }
 
+	/**
+	 * Returns a query result summary for each of the documents
+	 * for which hits have been found in this collection.
+	 * 
+	 * @return
+	 */
     public org.exist.soap.QueryResponseDocument[] getDocuments() {
         return documents;
     }
@@ -42,12 +51,12 @@ public class QueryResponseCollection  implements java.io.Serializable {
         __equalsCalc = obj;
         boolean _equals;
         _equals = true && 
-            ((collectionName==null && other.getCollectionName()==null) || 
-             (collectionName!=null &&
-              collectionName.equals(other.getCollectionName()))) &&
-            ((documents==null && other.getDocuments()==null) || 
-             (documents!=null &&
-              java.util.Arrays.equals(documents, other.getDocuments())));
+            ((this.collectionName==null && other.getCollectionName()==null) || 
+             (this.collectionName!=null &&
+              this.collectionName.equals(other.getCollectionName()))) &&
+            ((this.documents==null && other.getDocuments()==null) || 
+             (this.documents!=null &&
+              java.util.Arrays.equals(this.documents, other.getDocuments())));
         __equalsCalc = null;
         return _equals;
     }
@@ -82,17 +91,18 @@ public class QueryResponseCollection  implements java.io.Serializable {
         new org.apache.axis.description.TypeDesc(QueryResponseCollection.class);
 
     static {
-        org.apache.axis.description.FieldDesc field = new org.apache.axis.description.ElementDesc();
-        field.setFieldName("collectionName");
-        field.setXmlName(new javax.xml.namespace.QName("", "collectionName"));
-        field.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
-        typeDesc.addFieldDesc(field);
-        field = new org.apache.axis.description.ElementDesc();
-        field.setFieldName("documents");
-        field.setXmlName(new javax.xml.namespace.QName("", "documents"));
-        field.setXmlType(new javax.xml.namespace.QName("urn:exist", "QueryResponseDocument"));
-        typeDesc.addFieldDesc(field);
-    };
+        typeDesc.setXmlType(new javax.xml.namespace.QName("urn:exist", "QueryResponseCollection"));
+        org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("collectionName");
+        elemField.setXmlName(new javax.xml.namespace.QName("", "collectionName"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("documents");
+        elemField.setXmlName(new javax.xml.namespace.QName("", "documents"));
+        elemField.setXmlType(new javax.xml.namespace.QName("urn:exist", "QueryResponseDocument"));
+        typeDesc.addFieldDesc(elemField);
+    }
 
     /**
      * Return type metadata object

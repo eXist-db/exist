@@ -134,7 +134,7 @@ public class SortedNodeSet extends NodeSet {
 
 	public Node item(int pos) {
 		NodeProxy p = ((Item) list.get(pos)).proxy;
-		return p == null ? null : p.doc.getNode(p.gid);
+		return p == null ? null : p.doc.getNode(p);
 	}
 
 	public Iterator iterator() {

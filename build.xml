@@ -3,18 +3,18 @@
 <!-- eXist build file                                                        -->
 <!-- ======================================================================= -->
 <project basedir="." default="all" name="exist">
-    <property file="build.properties"/>
 
     <property name="antlr-home" value="/home/wolf/Java/antlr-2.7.2a2"/>
     <property name="jetty.dir" value="Jetty-4.1.4"/>
     <property name="src" value="./src"/>
-    <property name="src.nio" value="./nio"/>
 	<property name="samples" value="./samples"/>
 	<property name="bin" value="./bin"/>
     <property name="lib.core" value="./lib/core"/>
     <property name="lib.optional" value="./lib/optional"/>
+	<property name="lib.endorsed" value="./lib/endorsed"/>
     <property name="build" value="./build"/>
     <property name="build.src" value="${build}/src"/>
+    <property name="build.soap" value="${build}/soap"/>
     <property name="build.classes" value="${build}/classes"/>
     <property name="build.docs" value="${build}/docs"/>
     <property name="ant.home" value="."/>
@@ -23,10 +23,13 @@
 	<property name="webapp.dir" value="${dist}/webapp"/>
 	<property name="docs" value="docs"/>
     <property name="build.compiler" value="modern"/>
-    <property name="debug" value="on"/>
-    <property name="optimize" value="on"/>
-    <property name="deprecation" value="on"/>
+    <property name="build.debug" value="on"/>
+    <property name="build.optimize" value="on"/>
+    <property name="build.deprecation" value="on"/>
 	<property name="jvmarg" value="-Xmx128000k -Xms32000k -Djetty.home=${jetty.dir} -Dexist.home=${basedir}"/>
+
+    <property file="build.properties"/>
+	
     <path id="classpath.core">
         <fileset dir="${lib.core}">
             <include name="*.jar"/>
@@ -46,23 +49,29 @@
 			<include name="*.jar"/>
 		</fileset>
 	</path>
+
+	<path id="classpath.axis">
+		<fileset dir="${lib.optional}">
+			<include name="axis-ant.jar"/>
+		</fileset>
+	</path>
 	
-    <!--taskdef name="java2wsdl" classname="org.apache.axis.tools.ant.wsdl.Java2WsdlAntTask">
+    <taskdef name="java2wsdl" classname="org.apache.axis.tools.ant.wsdl.Java2WsdlAntTask">
         <classpath refid="classpath.core"/>
     </taskdef>
     
     <taskdef name="wsdl2java" classname="org.apache.axis.tools.ant.wsdl.Wsdl2javaAntTask">
         <classpath refid="classpath.core"/>
-    </taskdef-->
+    </taskdef>
+
+	<taskdef name="axis-admin" classname="org.apache.axis.tools.ant.axis.AdminClientTask">
+		<classpath refid="classpath.core"/>
+	</taskdef>
+	
     
     <path id="antlr">
         <pathelement path="${antlr-home}"/>
     </path>
-    
-    <target name="is.jdk1.4.available">
-        <available classname="java.nio.ByteBuffer" property="jdk1.4.available"/>
-        <echo level="info" message="Compiling for JDK 1.4: ${jdk1.4.available}"/>
-    </target>
     
     <!-- =================================================================== -->
     <!-- Prepare the build                                                   -->
@@ -72,13 +81,6 @@
         <echo message="----------------------------"/>
         <mkdir dir="${build}"/>
         <mkdir dir="${build.classes}"/>
-        <!--mkdir dir="${build.src}"/>
-        <echo message="Copying source files to ${build.src}"/>
-        <copy todir="${build.src}">
-	    	<fileset dir="${src}">
-                <exclude name="**/*~"/>
-            </fileset>
-		</copy-->
         <uptodate property="parser_uptodate" targetfile="src/org/exist/parser/XPathParser.g">
             <srcfiles dir="src/org/exist/parser" includes="*.java"/>
         </uptodate>
@@ -89,23 +91,14 @@
         </available>
     </target>
     
-    <!--target name="prepare14" if="java.nio">
-    	<echo message="Compiling with Java 1.4 NIO"/>
-    	<copy todir="${build.src}" overwrite="true">
-    		<fileset dir="./src14">
-    			<exclude name="**/*~"/>
-    		</fileset>
-    	</copy>
-    </target-->
-    
     <!-- =================================================================== -->
     <!-- Compiles the source code                                            -->
     <!-- =================================================================== -->
     <target depends="prepare" name="compile">
         <mkdir dir="${build}"/>
-        <echo message="Compiling with Java ${ant.java.version}, debug ${debug}, optimize ${optimize}, deprecation ${deprecation}"/>
-        <javac debug="${debug}" deprecation="${deprecation}" destdir="${build.classes}"
-			optimize="${optimize}" srcdir="${src}" target="1.4">
+        <echo message="Compiling with Java ${ant.java.version}, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
+        <javac debug="${build.debug}" deprecation="${build.deprecation}" destdir="${build.classes}"
+			optimize="${build.optimize}" srcdir="${src}" target="1.4">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
@@ -117,50 +110,72 @@
     <!-- Axis SOAP                                                    -->
     <!-- ============================================================ -->
     <target depends="compile" name="wsdl2java">
+    	<mkdir dir="${build.soap}"/>
         <wsdl2java url="${src}/org/exist/soap/query.wsdl"
-            output="src"
+            output="${build.soap}"
             deployscope="session"
             serverSide="yes"
             skeletonDeploy="yes"
-	    verbose="no">
+	    	verbose="no">
             <mapping namespace="urn:exist" package="org.exist.soap"/>
         </wsdl2java>
-	<wsdl2java url="${src}/org/exist/soap/admin.wsdl"
-            output="src"
+		<copy todir="${src}/org/exist/soap">
+			<fileset dir="${build.soap}/org/exist/soap">
+				<include name="QueryService.java"/>
+				<include name="QueryServiceLocator.java"/>
+				<include name="QuerySoapBindingSkeleton.java"/>
+				<include name="QuerySoapBindingStub.java"/>
+			</fileset>
+		</copy>
+		<copy file="${build.soap}/org/exist/soap/deploy.wsdd" tofile="${src}/org/exist/soap/deployQuery.wsdd"/>
+		<copy file="${build.soap}/org/exist/soap/undeploy.wsdd" tofile="${src}/org/exist/soap/undeployQuery.wsdd"/>
+		<wsdl2java url="${src}/org/exist/soap/admin.wsdl"
+            output="${build.soap}"
             deployscope="session"
             serverSide="yes"
             skeletonDeploy="yes"
-	    verbose="no">
+	    	verbose="no">
             <mapping namespace="urn:exist" package="org.exist.soap"/>
-        </wsdl2java>    
+        </wsdl2java>
+        <copy todir="${src}/org/exist/soap">
+			<fileset dir="${build.soap}/org/exist/soap">
+				<include name="AdminService.java"/>
+				<include name="AdminServiceLocator.java"/>
+				<include name="AdminSoapBindingSkeleton.java"/>
+				<include name="AdminSoapBindingStub.java"/>
+			</fileset>
+		</copy>
+		<copy file="${build.soap}/org/exist/soap/deploy.wsdd" tofile="${src}/org/exist/soap/deployAdmin.wsdd"/>
+		<copy file="${build.soap}/org/exist/soap/undeploy.wsdd" tofile="${src}/org/exist/soap/undeployAdmin.wsdd"/>
     </target>
     
-    <target depends="compile" name="java2wsdl">
+    <target depends="jar" name="java2wsdl">
         <java2wsdl classname="org.exist.soap.Query"
             location="http://localhost:8080/exist/services/Query"
             output="${src}/org/exist/soap/query.wsdl"
-	    namespace="urn:exist">
+	    	namespace="urn:exist">
             <mapping namespace="urn:exist" package="org.exist.soap"/>
         </java2wsdl>
-	<java2wsdl classname="org.exist.soap.Admin"
+		<java2wsdl classname="org.exist.soap.Admin"
             location="http://localhost:8080/exist/services/Admin"
             output="${src}/org/exist/soap/admin.wsdl"
-	    namespace="urn:exist">
+	    	namespace="urn:exist">
             <mapping namespace="urn:exist" package="org.exist.soap"/>
         </java2wsdl>    
     </target>
 
     <target depends="compile" name="deploy">
         <java classname="org.apache.axis.client.AdminClient" fork="false">
-            <arg value="-lhttp://localhost:8080/exist/services/AdminService"/>
+            <arg value="-lhttp://localhost:8080/exist/services/QueryService"/>
             <arg value="${src}/org/exist/soap/deploy.wsdd"/>
         </java>
     </target>
     
     <target depends="compile" name="undeploy">
         <java classname="org.apache.axis.client.AdminClient" fork="false">
-            <arg value="-lhttp://localhost:8080/exist/services/AdminService"/>
+            <arg value="-lhttp://localhost:8080/exist/services/QueryService"/>
             <arg value="${src}/org/exist/soap/undeploy.wsdd"/>
+			<classpath refid="classpath.axis"/>
         </java>
     </target>
     
@@ -183,7 +198,7 @@
     <!-- ================================================================== -->
     <target depends="prepare" name="samples">
         <mkdir dir="${build}/examples"/>
-		<javac debug="on" deprecation="on" destdir="${build}/examples" srcdir="${samples}">
+		<javac debug="${build.debug}" deprecation="${build.deprecation}" destdir="${build}/examples" srcdir="${samples}">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
@@ -216,8 +231,8 @@
     <!-- Create start.jar													-->
     <!-- ================================================================== -->
     <target name="compile-start">
-    	<javac debug="${debug}" deprecation="${deprecation}" destdir="${build.classes}"
-			optimize="${optimize}" srcdir="${src}" target="1.4">
+    	<javac debug="${build.debug}" deprecation="${build.deprecation}" destdir="${build.classes}"
+			optimize="${build.optimize}" srcdir="${src}" target="1.4">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
@@ -267,8 +282,8 @@
     <!-- Create javadoc                                                     -->
     <!-- ================================================================== -->
     <target depends="prepare" name="javadocs">
-		<delete dir="webapp/api"/>
-		<mkdir dir="webapp/api"/>
+		<!--delete dir="webapp/api"/>
+		<mkdir dir="webapp/api"/-->
         <javadoc bottom="Copyright (C) Wolfgang Meier. All rights reserved."
 			destdir="webapp/api" doctitle="eXist Javadocs"
 			packagenames="org.exist.*">
@@ -300,12 +315,14 @@
     </target>
     
     <!-- ================================================================== -->
-    <!-- Create .war                                                        -->
+    <!-- Prepare webapp                                                     -->
     <!-- ================================================================== -->
     <target depends="jar" name="webapps">
         <delete dir="dist"/>
 		<mkdir dir="${webapp.dir}"/>
 		<mkdir dir="${webapp.dir}/samples"/>
+		<mkdir dir="${webapp.dir}/WEB-INF/data"/>
+		<mkdir dir="${webapp.dir}/WEB-INF/logs"/>
         <copy todir="${webapp.dir}">
 	    	<fileset dir="webapp">
                 <exclude name="**/*~"/>
@@ -342,12 +359,9 @@
                 <include name="antlr.jar"/>
 				<include name="excalibur-cli-1.0.jar"/>
 				<include name="jakarta-oro-2.0.6.jar"/>
-				<include name="resolver-20020130.jar"/>
+				<include name="resolver-20021114.jar"/>
                 <include name="log4j.jar"/>
 				<include name="fastutil-2.52.jar"/>
-                <include name="xalan-2.3.1.jar"/>
-                <include name="xercesImpl.jar"/>
-                <include name="xml-apis.jar"/>
                 <include name="xmldb.jar"/>
                 <include name="xmlrpc-1.1.jar"/>
                 <include name="libreadline-java.jar"/>
@@ -358,11 +372,15 @@
 				<exclude name="ant-optional.jar"/>
 				<exclude name="axis-ant.jar"/>
         	</fileset>
+			<fileset dir="${lib.endorsed}">
+				<include name="*.jar"/>
+			</fileset>
         </copy>
-        <mkdir dir="${webapp.dir}/WEB-INF/data"/>
-        <mkdir dir="${webapp.dir}/WEB-INF/logs"/>
     </target>
 
+	<!-- ================================================================== -->
+	<!-- Create .war file                                                   -->
+	<!-- ================================================================== -->
     <target name="dist-war" depends="webapps">
 	    <jar basedir="${webapp.dir}" jarfile="${dist}/${project.name}-${build.version}.war"/>
     </target>
@@ -513,7 +531,7 @@
     </target>
     
     <!-- ================================================================== -->
-    <!-- Create HTML files for docs                                         -->
+    <!-- Create HTML files for docs on http://exist-db.org                  -->
     <!-- ================================================================== -->
 	<target depends="jar" name="prepare-docs">
         <delete dir="${build.docs}"/>

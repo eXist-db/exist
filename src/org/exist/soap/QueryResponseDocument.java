@@ -1,12 +1,10 @@
-/**
- * QueryResponseDocument.java
- *
- * This file was auto-generated from WSDL
- * by the Apache Axis WSDL2Java emitter.
- */
-
 package org.exist.soap;
 
+/**
+ * Wrapper class containing a query result summary for a single document.
+ *  
+ * @author wolf
+ */
 public class QueryResponseDocument  implements java.io.Serializable {
     private java.lang.String documentName;
     private int hitCount;
@@ -14,6 +12,11 @@ public class QueryResponseDocument  implements java.io.Serializable {
     public QueryResponseDocument() {
     }
 
+	/**
+	 * Returns the name of the document represented by this object.
+	 * 
+	 * @return
+	 */
     public java.lang.String getDocumentName() {
         return documentName;
     }
@@ -22,6 +25,11 @@ public class QueryResponseDocument  implements java.io.Serializable {
         this.documentName = documentName;
     }
 
+	/**
+	 * Returns the number of hits found within this document.
+	 * 
+	 * @return
+	 */
     public int getHitCount() {
         return hitCount;
     }
@@ -42,10 +50,10 @@ public class QueryResponseDocument  implements java.io.Serializable {
         __equalsCalc = obj;
         boolean _equals;
         _equals = true && 
-            ((documentName==null && other.getDocumentName()==null) || 
-             (documentName!=null &&
-              documentName.equals(other.getDocumentName()))) &&
-            hitCount == other.getHitCount();
+            ((this.documentName==null && other.getDocumentName()==null) || 
+             (this.documentName!=null &&
+              this.documentName.equals(other.getDocumentName()))) &&
+            this.hitCount == other.getHitCount();
         __equalsCalc = null;
         return _equals;
     }
@@ -70,17 +78,18 @@ public class QueryResponseDocument  implements java.io.Serializable {
         new org.apache.axis.description.TypeDesc(QueryResponseDocument.class);
 
     static {
-        org.apache.axis.description.FieldDesc field = new org.apache.axis.description.ElementDesc();
-        field.setFieldName("documentName");
-        field.setXmlName(new javax.xml.namespace.QName("", "documentName"));
-        field.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
-        typeDesc.addFieldDesc(field);
-        field = new org.apache.axis.description.ElementDesc();
-        field.setFieldName("hitCount");
-        field.setXmlName(new javax.xml.namespace.QName("", "hitCount"));
-        field.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"));
-        typeDesc.addFieldDesc(field);
-    };
+        typeDesc.setXmlType(new javax.xml.namespace.QName("urn:exist", "QueryResponseDocument"));
+        org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("documentName");
+        elemField.setXmlName(new javax.xml.namespace.QName("", "documentName"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("hitCount");
+        elemField.setXmlName(new javax.xml.namespace.QName("", "hitCount"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"));
+        typeDesc.addFieldDesc(elemField);
+    }
 
     /**
      * Return type metadata object

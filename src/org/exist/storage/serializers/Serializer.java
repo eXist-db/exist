@@ -166,7 +166,7 @@ public class Serializer implements XMLReader {
 				processXInclude = entry.getValue().equals("true");
 			else if (entry.getKey().equals(HIGHLIGHT_MATCHES)) {
 				String tagging = (String) entry.getValue();
-				if (tagging.equals("none"))
+				if(tagging == null || tagging.equals("none")) 
 					highlightMatches = TAG_NONE;
 				else if (tagging.equals("both"))
 					highlightMatches = TAG_BOTH;
@@ -600,6 +600,7 @@ public class Serializer implements XMLReader {
 		format.setOmitComments(false);
 		if (indent) {
 			format.setIndenting(true);
+			format.setPreserveSpace(false);
 			format.setLineWidth(60);
 		} else
 			format.setPreserveSpace(true);

@@ -190,7 +190,7 @@
 	</index>
 	
     <entity-resolver>
-		<catalog file="webapp/WEB-INF/catalog"/>
+		<catalog file="catalog"/>
     </entity-resolver>
   </indexer>
   
@@ -249,10 +249,9 @@
 		<priority value="debug"/>
     </category>
     
-    <!--
-    <category name="exist.http">
-      <appender-ref ref="A1"/>
-      <priority value="debug" />
+	<category name="org.apache.axis" additivity="false">
+		<appender-ref ref="console"/>
+		<priority value="debug"/>
     </category>
 	-->
   </log4j:configuration>

@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeIDSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.VirtualNodeSet;
@@ -49,6 +50,7 @@ public class Predicate extends PathExpr {
     public Value eval( DocumentSet docs, NodeSet context, NodeProxy node ) {
     	long start = System.currentTimeMillis();
         ArraySet result = new ArraySet( 100 );
+        //NodeIDSet result = new NodeIDSet();
         Expression first = getExpression( 0 );
         if ( first == null )
             return new ValueNodeSet( context );
@@ -60,13 +62,11 @@ public class Predicate extends PathExpr {
                 start = System.currentTimeMillis();
                 NodeProxy l;
                 NodeProxy parent;
-                boolean includeSelf =
-                	(context instanceof VirtualNodeSet ? false : true);
                 long pid;
                 for ( Iterator i = nodes.iterator(); i.hasNext();  ) {
                     l = (NodeProxy) i.next();
                     parent =
-                        context.parentWithChild( l, false, includeSelf );
+                        context.parentWithChild( l, false, true );
                     if ( parent != null) {
                     	if(result.contains(parent.doc, parent.gid))
                     		parent.addMatches(l.matches);

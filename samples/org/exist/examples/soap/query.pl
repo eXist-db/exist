@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 
 use SOAP::Lite;
+use MIME::Base64;
 
 my $service = SOAP::Lite->service("http://localhost:8080/exist/services/Query?WSDL");
 
@@ -8,9 +9,11 @@ my $query = "//SPEAKER";
 $query = $ARGV[0] unless @ARGV == 0;
 print "query: " . $query . "\n";
 
-my $result = $service->query($query);
+print "connecting ...\n";
+my $session = $service->connect("guest", "guest");
 
-my $resultSetId = $result->{'resultSetId'};
+my $result = $service->query($session, $query);
+
 my $hits = $result->{'hits'};
 my $queryTime = $result->{'queryTime'};
 my @collections = @{$result->{'collections'}};
@@ -38,13 +41,8 @@ foreach $collection (@collections) {
 print "found $hits hits in $queryTime ms.\n";
 
 # display hits 1 to 10
-my $i = 1;
-my $xml;
 
-while($i < $hits && $i < 10) {
-  $xml = $service->retrieve($resultSetId, $i, 'ISO-8859-1', 1);
-  print $xml . "\n";
-  $i++;
+my $r = $service->retrieve($session, 1, 100, "true", "true", "elements");
+foreach $result (@{$r}) {
+	print "$result" . "\n";
 }
-
-print $xml . "\n";

@@ -233,6 +233,7 @@ public class Configuration implements ErrorHandler {
 				}
 
 				CatalogResolver resolver = new CatalogResolver(true);
+				//System.setProperty("xml.catalog.verbosity", "10");
 				config.put("resolver", resolver);
 
 				NodeList entityResolver =
@@ -255,10 +256,10 @@ public class Configuration implements ErrorHandler {
 							catalogFile = new File(catalog);
 						else
 							catalogFile = new File(dbHome + pathSep + catalog);
-
-						if (catalogFile.exists())
+						if (catalogFile.exists()) {
 							resolver.getCatalog().parseCatalog(
 								catalogFile.getAbsolutePath());
+						}
 					}
 				}
 			}

@@ -1,8 +1,5 @@
 /**
- * QueryResponse.java
- *
- * This file was auto-generated from WSDL
- * by the Apache Axis WSDL2Java emitter.
+ * Encapsulates information about the results of an executed query.
  */
 
 package org.exist.soap;
@@ -11,7 +8,6 @@ public class QueryResponse  implements java.io.Serializable {
     private org.exist.soap.QueryResponseCollection[] collections;
     private int hits;
     private long queryTime;
-    private int resultSetId;
 
     public QueryResponse() {
     }
@@ -40,14 +36,6 @@ public class QueryResponse  implements java.io.Serializable {
         this.queryTime = queryTime;
     }
 
-    public int getResultSetId() {
-        return resultSetId;
-    }
-
-    public void setResultSetId(int resultSetId) {
-        this.resultSetId = resultSetId;
-    }
-
     private java.lang.Object __equalsCalc = null;
     public synchronized boolean equals(java.lang.Object obj) {
         if (!(obj instanceof QueryResponse)) return false;
@@ -60,12 +48,11 @@ public class QueryResponse  implements java.io.Serializable {
         __equalsCalc = obj;
         boolean _equals;
         _equals = true && 
-            ((collections==null && other.getCollections()==null) || 
-             (collections!=null &&
-              java.util.Arrays.equals(collections, other.getCollections()))) &&
-            hits == other.getHits() &&
-            queryTime == other.getQueryTime() &&
-            resultSetId == other.getResultSetId();
+            ((this.collections==null && other.getCollections()==null) || 
+             (this.collections!=null &&
+              java.util.Arrays.equals(this.collections, other.getCollections()))) &&
+            this.hits == other.getHits() &&
+            this.queryTime == other.getQueryTime();
         __equalsCalc = null;
         return _equals;
     }
@@ -90,7 +77,6 @@ public class QueryResponse  implements java.io.Serializable {
         }
         _hashCode += getHits();
         _hashCode += new Long(getQueryTime()).hashCode();
-        _hashCode += getResultSetId();
         __hashCodeCalc = false;
         return _hashCode;
     }
@@ -100,27 +86,23 @@ public class QueryResponse  implements java.io.Serializable {
         new org.apache.axis.description.TypeDesc(QueryResponse.class);
 
     static {
-        org.apache.axis.description.FieldDesc field = new org.apache.axis.description.ElementDesc();
-        field.setFieldName("collections");
-        field.setXmlName(new javax.xml.namespace.QName("", "collections"));
-        field.setXmlType(new javax.xml.namespace.QName("urn:exist", "QueryResponseCollection"));
-        typeDesc.addFieldDesc(field);
-        field = new org.apache.axis.description.ElementDesc();
-        field.setFieldName("hits");
-        field.setXmlName(new javax.xml.namespace.QName("", "hits"));
-        field.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"));
-        typeDesc.addFieldDesc(field);
-        field = new org.apache.axis.description.ElementDesc();
-        field.setFieldName("queryTime");
-        field.setXmlName(new javax.xml.namespace.QName("", "queryTime"));
-        field.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "long"));
-        typeDesc.addFieldDesc(field);
-        field = new org.apache.axis.description.ElementDesc();
-        field.setFieldName("resultSetId");
-        field.setXmlName(new javax.xml.namespace.QName("", "resultSetId"));
-        field.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"));
-        typeDesc.addFieldDesc(field);
-    };
+        typeDesc.setXmlType(new javax.xml.namespace.QName("urn:exist", "QueryResponse"));
+        org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("collections");
+        elemField.setXmlName(new javax.xml.namespace.QName("", "collections"));
+        elemField.setXmlType(new javax.xml.namespace.QName("urn:exist", "QueryResponseCollection"));
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("hits");
+        elemField.setXmlName(new javax.xml.namespace.QName("", "hits"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"));
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("queryTime");
+        elemField.setXmlName(new javax.xml.namespace.QName("", "queryTime"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "long"));
+        typeDesc.addFieldDesc(elemField);
+    }
 
     /**
      * Return type metadata object
