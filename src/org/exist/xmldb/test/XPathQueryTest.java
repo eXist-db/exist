@@ -67,4 +67,20 @@ public class XPathQueryTest extends TestCase {
 			fail(e.getMessage());
 		}
 	}
+	
+	public void testMembersAsResource() {
+		try {
+			Collection testCollection =
+				DatabaseManager.getCollection(URI + "/test");
+			assertNotNull(testCollection);
+			XPathQueryService service = (XPathQueryService)
+				testCollection.getService("XPathQueryService", "1.0");
+			ResourceSet result = 
+				service.query("//SPEECH[LINE &= 'marriage']");
+			Resource r = result.getMembersAsResource();
+			System.out.println(r.getContent());
+		} catch(XMLDBException e) {
+			fail(e.getMessage());
+		}
+	}
 }

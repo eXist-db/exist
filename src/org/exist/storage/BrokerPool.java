@@ -208,7 +208,6 @@ public class BrokerPool {
 	protected DBBroker createBroker() throws EXistException {
 		DBBroker broker = BrokerFactory.getInstance(this, conf);
 		LOG.debug("database " + instanceId + ": creating new instance of " + broker.getClass().getName());
-		LOG.debug("configuration = " + conf.getPath());
 		pool.push(broker);
 		active.add(broker);
 		brokers++;
@@ -272,7 +271,7 @@ public class BrokerPool {
 			createBroker();
 		DBBroker broker = (DBBroker) pool.peek();
 		secManager = new org.exist.security.SecurityManager(this, broker);
-		LOG.debug("database engine initialized.");
+		LOG.debug("database engine " + instanceId + " initialized.");
 	}
 
 	/**
