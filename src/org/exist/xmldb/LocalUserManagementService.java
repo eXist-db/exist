@@ -6,6 +6,7 @@ import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -520,6 +521,11 @@ public class LocalUserManagementService implements UserManagementService {
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				" you are not allowed to change this user");
+		if(u.getName().equals(SecurityManager.GUEST_USER) &&
+			(!manager.hasAdminPrivileges(user)))
+			throw new XMLDBException(
+					ErrorCodes.PERMISSION_DENIED,
+					"guest user cannot be modified");
 		User old = manager.getUser(u.getName());
 		if (old == null)
 			throw new XMLDBException(
