@@ -37,6 +37,7 @@ import javax.servlet.http.HttpSession;
 
 import org.exist.source.FileSource;
 import org.exist.source.Source;
+import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.XQueryService;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.request.RequestModule;
@@ -232,10 +233,12 @@ public class XQueryServlet extends HttpServlet {
 			service.setModuleLoadPath(baseURI);
 			String prefix = RequestModule.PREFIX;
 			service.setNamespace(prefix, RequestModule.NAMESPACE_URI);
-			service.declareVariable(prefix + ":request", 
-					new HttpRequestWrapper(request, formEncoding, containerEncoding));
-			service.declareVariable(prefix + ":response", new HttpResponseWrapper(response));
-			service.declareVariable(prefix + ":session", new HttpSessionWrapper(session));
+            if(!((CollectionImpl)collection).isRemoteCollection()) {
+    			service.declareVariable(prefix + ":request", 
+    					new HttpRequestWrapper(request, formEncoding, containerEncoding));
+    			service.declareVariable(prefix + ":response", new HttpResponseWrapper(response));
+    			service.declareVariable(prefix + ":session", new HttpSessionWrapper(session));
+            }
 
 			Source source = new FileSource(f, encoding, true);
 			ResourceSet result = service.execute(source);

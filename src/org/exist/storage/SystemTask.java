@@ -22,7 +22,10 @@
  */
 package org.exist.storage;
 
+import java.util.Properties;
+
 import org.exist.EXistException;
+import org.exist.util.Configuration;
 
 /**
  * Interface to be implemented by tasks used for system
@@ -39,6 +42,8 @@ import org.exist.EXistException;
  */
 public interface SystemTask {
 
+    void configure(Configuration config, Properties properties) throws EXistException;
+    
 	/**
 	 * Execute this task.
 	 * 

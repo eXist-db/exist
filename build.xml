@@ -338,8 +338,9 @@
         <delete failonerror="false">
 			<fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
         </delete>
-		<java classname="org.exist.Server">
+		<java classname="org.exist.StandaloneServer">
             <classpath refid="classpath.core"/>
+            <classpath refid="classpath.jetty"/>
 			<!--arg value="-d"/-->	
         </java>
 		<echo>Server started.</echo>
@@ -426,8 +427,9 @@
         <delete quiet="true">
             <fileset dir="log" includes="*"/>
             <fileset dir="tmp" includes="*"/>
-	    	<fileset dir="webapps/WEB-INF/logs" includes="*"/>
+	    	<fileset dir="${src.webapp}/WEB-INF/logs" includes="*"/>
         </delete>
+        <delete dir="${src.webapp}/WEB-INF/data/backup"/>
     	<delete dir="samples/classes"/>
 		<delete file="examples.jar"/>
         <delete file="exist.jar"/>
