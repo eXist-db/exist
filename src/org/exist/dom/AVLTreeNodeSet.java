@@ -431,6 +431,8 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 		 * @see org.exist.xquery.value.SequenceIterator#nextItem()
 		 */
 		public Item nextItem() {
+            if(nodes.isEmpty())
+                return null;
 			Node currentNode = (Node) nodes.peek();
 			nodes.pop();
 			if (currentNode.hasRightChild()) {

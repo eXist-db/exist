@@ -895,6 +895,7 @@ public class DocumentImpl extends NodeImpl implements Document {
         while(top > 0 && i < cl.getLength()) {
             org.exist.dom.NodeImpl node = (org.exist.dom.NodeImpl) cl.item(i);
             NodeProxy proxy = new NodeProxy(doc, node.getGID(), node.getInternalAddress());
+            System.err.println(top + " = " + proxy.gid);
             storedNodes.put(top, proxy);
             top = getNextSiblingFor(top);
             i++;
