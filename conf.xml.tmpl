@@ -66,9 +66,9 @@ defines the user password used by the cluster for the replica.
 
 		<watchdog query-timeout="-1" output-size-limit="10000"/>
 		
-		<system-task class="org.exist.storage.DataBackup" period="120000">
+		<!--system-task class="org.exist.storage.DataBackup" period="120000">
 			<parameter name="output-dir" value="backup"/>
-		</system-task>
+		</system-task-->
     </db-connection>
 	   
     <!-- Default settings for the serializer. Most of these can be changed
