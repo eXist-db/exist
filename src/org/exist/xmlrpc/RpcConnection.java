@@ -1127,15 +1127,20 @@ public class RpcConnection extends Thread {
 					}
 					NodeProxy p;
 					Vector entry;
-					for (Iterator i = ((NodeSet) resultSet).iterator();
-						i.hasNext();
-						) {
-						p = (NodeProxy) i.next();
-						entry = new Vector();
-						entry.addElement(p.doc.getFileName());
-						entry.addElement(Long.toString(p.getGID()));
-						result.addElement(entry);
-					}
+					if (resultSet != null) {
+						Iterator i = ((NodeSet) resultSet).iterator();
+						if(i != null) {
+							while (i.hasNext()) {
+								p = (NodeProxy) i.next();
+								entry = new Vector();
+								entry.addElement(p.doc.getFileName());
+								entry.addElement(Long.toString(p.getGID()));
+								result.addElement(entry);
+							}
+						} else
+							LOG.debug("iterator was null. Should not!");
+					} else
+						LOG.debug("result set was null. Should not!");
 					break;
 				default :
 					ValueSet valueSet = resultValue.getValueSet();
