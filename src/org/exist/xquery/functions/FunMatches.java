@@ -223,7 +223,7 @@ public class FunMatches extends Function {
 				pat = compiler.compile(pattern, flags);
 			prevPattern = pattern;
 			prevFlags = flags;
-			if(matcher.matches(string, pat))
+			if(matcher.contains(string, pat))
 				return true;
 			else
 				return false;
