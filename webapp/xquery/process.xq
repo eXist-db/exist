@@ -105,6 +105,26 @@ $hitsPerPage as xs:int, $count as xs:int) as element()
         </tr>
 };
 
+(: Auxiliary function called in add-to-history()
+   to avoid having twice the same query in history
+:)
+declare function f:string-list-union(
+   $list as xs:string*,
+   $s as xs:string ) as xs:string*
+{
+  let $contains :=
+    for $ss in $list
+      return
+        if ( $ss = $s ) then true
+        else ""
+
+  return
+    if ( $contains ) then
+      $list
+    else
+      ( $list, $s )
+};
+
 (:  Add the last query to the query-history. The history is
     stored in the session as an XQuery sequence.
 :)
@@ -112,7 +132,8 @@ declare function f:add-to-history($query as xs:string) as empty()
 {
     let $history := request:get-session-attribute("history")
     return
-        request:set-session-attribute("history", ($history, $query))
+        request:set-session-attribute( "history",
+                                       f:string-list-union($history, $query) )
 };
 
 (:  The main function. If a query has been passed in parameter
@@ -160,7 +181,6 @@ declare function f:main() as element()+
     <body>
 
         <section title="Query Results">
-        
         { f:main() }
 
         </section>
