@@ -118,7 +118,7 @@ public class XQueryWatchDog {
     
     public void proceed(Expression expr, MemTreeBuilder builder) throws TerminatedException {
         proceed(expr);
-        if(builder.getSize() > maxNodesLimit) {
+        if(maxNodesLimit > 0 && builder.getSize() > maxNodesLimit) {
             if(expr == null)
                 expr = context.getRootExpression();
             LOG.warn("Query exceeded predefined limit for document fragments: " + 
