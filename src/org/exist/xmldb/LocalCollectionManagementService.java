@@ -1,7 +1,6 @@
 
 package org.exist.xmldb;
 
-import org.apache.xindice.client.xmldb.services.CollectionManager;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -10,8 +9,9 @@ import org.exist.storage.DBBroker;
 import org.w3c.dom.Document;
 import org.apache.log4j.Category;
 import org.xmldb.api.base.*;
+import org.xmldb.api.modules.CollectionManagementService;
 
-public class LocalCollectionManagementService extends CollectionManager {
+public class LocalCollectionManagementService implements CollectionManagementService {
     protected BrokerPool brokerPool;
 
     protected LocalCollection parent = null;

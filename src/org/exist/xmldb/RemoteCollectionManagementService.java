@@ -2,7 +2,6 @@
 package org.exist.xmldb;
 import java.io.IOException;
 import java.util.Vector;
-import org.apache.xindice.client.xmldb.services.CollectionManager;
 import org.apache.xmlrpc.*;
 import org.w3c.dom.Document;
 
@@ -10,7 +9,7 @@ import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 
 
-public class RemoteCollectionManagementService extends CollectionManager implements CollectionManagementService {
+public class RemoteCollectionManagementService implements CollectionManagementService {
 
     protected XmlRpcClient client;
     protected RemoteCollection parent = null;
