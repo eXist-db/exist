@@ -778,38 +778,19 @@ public class RpcServer implements RpcAPI {
 		return parse(user, xml, docName, 0);
 	}
 
-	public Hashtable queryP(User user, byte[] xpath, Hashtable namespaces)
+	public Hashtable queryP(User user, byte[] xpath, Hashtable parameters)
 		throws EXistException, PermissionDeniedException {
-		return queryP(user, xpath, null, namespaces);
+		return queryP(user, xpath, null, null, parameters);
 	}
 
-	public Hashtable queryP(User user, byte[] xpath, byte[] sortExpr, Hashtable namespaces)
-		throws EXistException, PermissionDeniedException {
-		return queryP(user, xpath, null, null, sortExpr, namespaces);
-	}
-
-	public Hashtable queryP(User user, byte[] xpath, String docName, String s_id, 
-		Hashtable namespaces)
-		throws EXistException, PermissionDeniedException {
-		return queryP(user, xpath, docName, s_id, null, namespaces);
-	}
-
-	public Hashtable queryP(User user, byte[] xpath, String docName, String s_id, byte[] sortExpr,
-		Hashtable namespaces)
+	public Hashtable queryP(User user, byte[] xpath, String docName, String s_id, Hashtable parameters)
 		throws EXistException, PermissionDeniedException {
 		String xpathString = null;
-		String sortString = null;
 		try {
 			xpathString = new String(xpath, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			throw new EXistException("failed to decode xpath expression");
 		}
-		if (sortExpr != null)
-			try {
-				sortString = new String(sortExpr, "UTF-8");
-			} catch (UnsupportedEncodingException e) {
-				throw new EXistException("failed to decode xpath expression");
-			}
 
 		// some clients (Perl) encode strings with a \0 at the end.
 		// remove it ...
@@ -817,7 +798,7 @@ public class RpcServer implements RpcAPI {
 			xpathString = xpathString.substring(0, xpathString.length() - 1);
 		RpcConnection con = pool.get();
 		try {
-			return con.queryP(user, xpathString, docName, s_id, sortString, namespaces);
+			return con.queryP(user, xpathString, docName, s_id, parameters);
 		} catch (Exception e) {
 			handleException(e);
 			return null;

@@ -29,7 +29,6 @@ import java.util.List;
 import org.exist.dom.DocumentSet;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
-import org.exist.xpath.value.Type;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -61,11 +60,11 @@ public class FilteredExpression extends AbstractExpression {
 		Sequence seq = expression.eval(docs, contextSequence, contextItem);
 		if (seq.getLength() == 0)
 			return seq;
+		setContext(seq);
 		Predicate pred;
 		Sequence result = seq;
 		for (Iterator i = predicates.iterator(); i.hasNext();) {
 			pred = (Predicate) i.next();
-			System.out.println("calling predicate with " + result.getLength());
 			result = pred.eval(docs, result);
 		}
 		return result;
@@ -103,6 +102,13 @@ public class FilteredExpression extends AbstractExpression {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#setPrimaryAxis(int)
+	 */
+	public void setPrimaryAxis(int axis) {
+		expression.setPrimaryAxis(axis);
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.AbstractExpression#getDependencies()
 	 */

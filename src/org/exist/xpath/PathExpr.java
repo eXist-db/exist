@@ -28,13 +28,15 @@ import org.apache.log4j.Logger;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
+import org.exist.xmldb.CompiledExpression;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.Type;
 import org.exist.xpath.value.ValueSequence;
+import org.xmldb.api.base.XMLDBException;
 
-public class PathExpr extends AbstractExpression {
+public class PathExpr extends AbstractExpression implements CompiledExpression {
 	
     protected static Logger LOG = Logger.getLogger( PathExpr.class );
     protected DocumentSet inputDocumentSet = new DocumentSet();
@@ -116,6 +118,10 @@ public class PathExpr extends AbstractExpression {
         return r;
     }
 
+	public StaticContext getContext() {
+		return context;
+	}
+	
     public DocumentSet getDocumentSet() {
         return inputDocumentSet;
     }
@@ -175,6 +181,15 @@ public class PathExpr extends AbstractExpression {
         steps.addFirst( s );
     }
     
+    public void replaceLastExpression( Expression s ) {
+    	if(steps.size() == 0)
+    		return;
+    	else {
+    		steps.removeLast();
+    		steps.addLast(s);
+    	}
+    }
+    
     public String getLiteralValue() {
     	if(steps.size() == 0)
     		return "";
@@ -199,12 +214,27 @@ public class PathExpr extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#setPrimaryAxis(int)
+	 */
+	public void setPrimaryAxis(int axis) {
+		if(steps.size() > 0)
+			((Expression)steps.get(0)).setPrimaryAxis(axis);
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.exist.xpath.AbstractExpression#resetState()
 	 */
 	public void resetState() {
 		for(Iterator i = steps.iterator(); i.hasNext(); ) {
 			((Expression)i.next()).resetState();
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.CompiledExpression#reset()
+	 */
+	public void reset() throws XMLDBException {
+		resetState();
 	}
 
 }

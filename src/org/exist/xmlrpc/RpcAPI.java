@@ -37,6 +37,10 @@ import org.xml.sax.SAXException;
  */
 public interface RpcAPI {
 
+	public final static String SORT_EXPR = "sort-expr";
+	public final static String NAMESPACES = "namespaces";
+	public final static String BASE_URI = "base-uri";
+	
 	/**
 	 * Shut down the database.
 	 * 
@@ -306,16 +310,10 @@ public interface RpcAPI {
 
 	Vector query(User user, byte[] xpath) throws EXistException, PermissionDeniedException;
 
-	Hashtable queryP(User user, byte[] xpath, Hashtable namespaces) throws EXistException, PermissionDeniedException;
-
-	Hashtable queryP(User user, byte[] xpath, byte[] sortExpr, Hashtable namespaces)
+	Hashtable queryP(User user, byte[] xpath, Hashtable parameters)
 		throws EXistException, PermissionDeniedException;
 
-	Hashtable queryP(User user, byte[] xpath, String docName, String s_id, byte[] sortExpr, 
-		Hashtable namespaces)
-		throws EXistException, PermissionDeniedException;
-
-	Hashtable queryP(User user, byte[] xpath, String docName, String s_id, Hashtable namespaces)
+	Hashtable queryP(User user, byte[] xpath, String docName, String s_id, Hashtable parameters)
 		throws EXistException, PermissionDeniedException;
 
 	/**

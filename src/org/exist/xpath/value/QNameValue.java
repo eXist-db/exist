@@ -34,26 +34,27 @@ public class QNameValue extends AtomicValue {
 
 	private StaticContext context;
 	private QName qname;
-	
+
 	public QNameValue(StaticContext context, QName name) {
 		this.context = context;
 		this.qname = name;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.AtomicValue#getType()
 	 */
 	public int getType() {
 		return Type.QNAME;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Sequence#getStringValue()
 	 */
 	public String getStringValue() throws XPathException {
 		String prefix = context.getPrefixForURI(qname.getNamespaceURI());
-		if(prefix == null)
-			throw new XPathException("namespace " + qname.getNamespaceURI() + " is not defined");
+		if (prefix == null)
+			throw new XPathException(
+				"namespace " + qname.getNamespaceURI() + " is not defined");
 		return qname.toString();
 	}
 
@@ -61,54 +62,65 @@ public class QNameValue extends AtomicValue {
 	 * @see org.exist.xpath.value.Sequence#convertTo(int)
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
-		switch(requiredType) {
-			case Type.ATOMIC:
-			case Type.ITEM:
-			case Type.QNAME:
+		switch (requiredType) {
+			case Type.ATOMIC :
+			case Type.ITEM :
+			case Type.QNAME :
 				return this;
-			default:
-				throw new XPathException("A QName cannot be converted to " + 
-					Type.getTypeName(requiredType));
+			default :
+				throw new XPathException(
+					"A QName cannot be converted to " + Type.getTypeName(requiredType));
 		}
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.AtomicValue#compareTo(int, org.exist.xpath.value.AtomicValue)
 	 */
-	public boolean compareTo(int operator, AtomicValue other)
-		throws XPathException {
-		if(other.getType() == Type.QNAME) {
-			int cmp = qname.compareTo(((QNameValue)other).qname);
-			switch(operator) {
-				case Constants.EQ:
+	public boolean compareTo(int operator, AtomicValue other) throws XPathException {
+		if (other.getType() == Type.QNAME) {
+			int cmp = qname.compareTo(((QNameValue) other).qname);
+			switch (operator) {
+				case Constants.EQ :
 					return cmp == 0;
-				case Constants.NEQ:
+				case Constants.NEQ :
 					return cmp != 0;
-				case Constants.GT:
+				case Constants.GT :
 					return cmp > 0;
-				case Constants.GTEQ:
+				case Constants.GTEQ :
 					return cmp >= 0;
-				case Constants.LT:
+				case Constants.LT :
 					return cmp < 0;
-				case Constants.LTEQ:
+				case Constants.LTEQ :
 					return cmp >= 0;
-				default:
+				default :
 					throw new XPathException("Type error: cannot apply operator to QName");
 			}
 		} else
-			throw new XPathException("Type error: cannot compare QName to " + 
-				Type.getTypeName(other.getType()));
+			throw new XPathException(
+				"Type error: cannot compare QName to "
+					+ Type.getTypeName(other.getType()));
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.AtomicValue#compareTo(org.exist.xpath.value.AtomicValue)
 	 */
 	public int compareTo(AtomicValue other) throws XPathException {
-		if(other.getType() == Type.QNAME) {
-			return qname.compareTo(((QNameValue)other).qname);
+		if (other.getType() == Type.QNAME) {
+			return qname.compareTo(((QNameValue) other).qname);
 		} else
-			throw new XPathException("Type error: cannot compare QName to " + 
-				Type.getTypeName(other.getType()));
+			throw new XPathException(
+				"Type error: cannot compare QName to "
+					+ Type.getTypeName(other.getType()));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.AtomicValue#max(org.exist.xpath.value.AtomicValue)
+	 */
+	public AtomicValue max(AtomicValue other) throws XPathException {
+		throw new XPathException("Invalid argument to aggregate function: QName");
+	}
+
+	public AtomicValue min(AtomicValue other) throws XPathException {
+		throw new XPathException("Invalid argument to aggregate function: QName");
+	}
 }

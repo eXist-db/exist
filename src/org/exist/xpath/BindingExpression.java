@@ -177,7 +177,7 @@ public abstract class BindingExpression extends AbstractExpression {
 	 */
 	public void resetState() {
 		inputSequence.resetState();
-		whereExpr.resetState();
+		if(whereExpr != null) whereExpr.resetState();
 		returnExpr.resetState();
 	}
 }

@@ -22,13 +22,15 @@ package org.exist.xpath.functions;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
-import org.exist.xpath.*;
 import org.exist.xpath.Cardinality;
+import org.exist.xpath.Function;
+import org.exist.xpath.FunctionSignature;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
+import org.exist.xpath.value.AtomicValue;
+import org.exist.xpath.value.ComputableValue;
 import org.exist.xpath.value.DoubleValue;
 import org.exist.xpath.value.Item;
-import org.exist.xpath.value.NumericValue;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.SequenceType;
@@ -39,29 +41,45 @@ public class FunSum extends Function {
 	public final static FunctionSignature signature =
 			new FunctionSignature(
 				new QName("sum", BUILTIN_FUNCTION_NS),
+				"Returns a value obtained by adding together the values in $a. If the " +
+				"single-argument form of the function is used, then the value returned for " +
+				"an empty sequence is the xs:double value 0.0e0. If the two-argument form " +
+				"is used, then the value returned for an empty sequence is the value of " +
+				"the $b argument.",
 				new SequenceType[] {
-					 new SequenceType(Type.NUMBER, Cardinality.ZERO_OR_MORE)},
-				new SequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE));
+					 new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE),
+					 new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE)},
+				new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE),
+				true);
 				
     public FunSum(StaticContext context) {
 		super(context, signature);
     }
 
-	/**
-	 * TODO: currently casts every item to double.
-	 */
-    public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
-		double sum = 0.0;
+	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
+		Sequence zero = DoubleValue.ZERO;
+		if(getArgumentCount() == 2)
+			zero = getArgument(1).eval(docs, contextSequence, contextItem);
 		Sequence inner = getArgument(0).eval(docs, contextSequence, contextItem);
 		if(inner.getLength() == 0)
-			return DoubleValue.ZERO;
-			
-		Item next;
-		for(SequenceIterator i = inner.iterate(); i.hasNext(); ) {
-			next = i.nextItem();
-			sum += ((NumericValue)next.convertTo(Type.NUMBER)).getDouble();
+			return zero;
+		
+		SequenceIterator iter = inner.iterate();
+		AtomicValue next = (AtomicValue)iter.nextItem();
+		if(!Type.subTypeOf(next.getType(), Type.NUMBER))
+			throw new XPathException("Invalid argument to aggregate function. Expected number, got " + 
+				Type.getTypeName(next.getType()));
+		ComputableValue sum = (ComputableValue)next;
+		while(iter.hasNext()) {
+			next = (AtomicValue)iter.nextItem();
+			if(next.getType() == Type.ATOMIC)
+				next = next.convertTo(Type.DOUBLE);
+			if(!Type.subTypeOf(next.getType(), Type.NUMBER))
+				throw new XPathException("Invalid argument to aggregate function. Expected number, got " + 
+					Type.getTypeName(next.getType()));
+			sum = sum.plus((ComputableValue)next);
 		}
-		return new DoubleValue(sum);
+		return sum;
 	}
 }
 			  

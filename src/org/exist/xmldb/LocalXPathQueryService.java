@@ -27,20 +27,25 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
+import antlr.RecognitionException;
+import antlr.TokenStreamException;
 import antlr.collections.AST;
 
-public class LocalXPathQueryService implements XPathQueryServiceImpl {
+public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryService {
 
-	private final static Logger LOG = 
-		Logger.getLogger(LocalXPathQueryService.class);
-	
+	private final static Logger LOG = Logger.getLogger(LocalXPathQueryService.class);
+
 	protected BrokerPool brokerPool;
 	protected LocalCollection collection;
 	protected User user;
 	protected TreeMap namespaceDecls = new TreeMap();
 	protected TreeMap variableDecls = new TreeMap();
-	
-	public LocalXPathQueryService(User user, BrokerPool pool, LocalCollection collection) {
+	protected boolean xpathCompatible = true;
+
+	public LocalXPathQueryService(
+		User user,
+		BrokerPool pool,
+		LocalCollection collection) {
 		this.user = user;
 		this.collection = collection;
 		this.brokerPool = pool;
@@ -69,23 +74,25 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	public ResourceSet query(String query) throws XMLDBException {
 		return query(query, null);
 	}
-	
-	public ResourceSet query(XMLResource res, String query) 
-	throws XMLDBException {
+
+	public ResourceSet query(XMLResource res, String query) throws XMLDBException {
 		return query(res, query, null);
 	}
-	
+
 	public ResourceSet query(String query, String sortBy) throws XMLDBException {
 		DocumentSet docs = null;
-		if (!(query.startsWith("document(") || query.startsWith("collection(") ||
-			query.startsWith("xcollection("))) {
+		if (!(query.startsWith("document(")
+			|| query.startsWith("collection(")
+			|| query.startsWith("xcollection("))) {
 			DBBroker broker = null;
 			try {
 				broker = brokerPool.get(user);
 				docs = collection.collection.allDocs(broker, new DocumentSet(), true);
 			} catch (EXistException e) {
-				throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR,
-					"error while loading documents: " + e.getMessage(), e);
+				throw new XMLDBException(
+					ErrorCodes.UNKNOWN_ERROR,
+					"error while loading documents: " + e.getMessage(),
+					e);
 			} finally {
 				brokerPool.release(broker);
 			}
@@ -93,7 +100,8 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 		return doQuery(query, docs, null, sortBy);
 	}
 
-	public ResourceSet query(XMLResource res, String query, String sortBy) throws XMLDBException {
+	public ResourceSet query(XMLResource res, String query, String sortBy)
+		throws XMLDBException {
 		NodeProxy node = ((LocalXMLResource) res).getNode();
 		if (node == null) {
 			// resource is a document
@@ -107,58 +115,123 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 		return doQuery(query, docs, set, sortBy);
 	}
 
-	protected ResourceSet doQuery(String query, DocumentSet docs, 
-		NodeSet contextSet, String sortExpr)
-		throws XMLDBException {
-        LOG.debug("query: " + query);
+	public ResourceSet execute(CompiledExpression expression) throws XMLDBException {
+		DBBroker broker = null;
+		DocumentSet docs = null;
+		try {
+			broker = brokerPool.get(user);
+			docs = collection.collection.allDocs(broker, new DocumentSet(), true);
+		} catch (EXistException e) {
+			throw new XMLDBException(
+				ErrorCodes.UNKNOWN_ERROR,
+				"error while loading documents: " + e.getMessage(),
+				e);
+		} finally {
+			brokerPool.release(broker);
+		}
+		expression.reset();
+		StaticContext context = ((PathExpr)expression).getContext();
+		context.setBackwardsCompatibility(xpathCompatible);
+		
+		Map.Entry entry;
+		// declare namespace/prefix mappings
+		for (Iterator i = namespaceDecls.entrySet().iterator(); i.hasNext();) {
+			entry = (Map.Entry) i.next();
+			context.declareNamespace((String) entry.getKey(), (String) entry.getValue());
+		}
+		// declare static variables
+		for (Iterator i = variableDecls.entrySet().iterator(); i.hasNext();) {
+			entry = (Map.Entry) i.next();
+			try {
+				context.declareVariable((String) entry.getKey(), entry.getValue());
+			} catch (XPathException e) {
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+			}
+		}
+		return doQuery(expression, docs, null, null);
+	}
+
+	public CompiledExpression compile(String query) throws XMLDBException {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-            StaticContext context = new StaticContext(broker);
-            context.setBaseURI(collection.getPath());
-            
-            Map.Entry entry;
-            // declare namespace/prefix mappings
-            for(Iterator i = namespaceDecls.entrySet().iterator(); i.hasNext(); ) {
-                entry = (Map.Entry)i.next();
-                LOG.debug("prefix " + entry.getKey() + " = " + entry.getValue());
-                context.declareNamespace((String)entry.getKey(), (String)entry.getValue());
-            }
-            // declare static variables
-            for(Iterator i = variableDecls.entrySet().iterator(); i.hasNext(); ) {
-            	entry = (Map.Entry)i.next();
-            	context.declareVariable((String)entry.getKey(), entry.getValue());
-            }
+			StaticContext context = new StaticContext(broker);
+			context.setBaseURI(collection.getPath());
+
+			Map.Entry entry;
+			// declare namespace/prefix mappings
+			for (Iterator i = namespaceDecls.entrySet().iterator(); i.hasNext();) {
+				entry = (Map.Entry) i.next();
+				LOG.debug("prefix " + entry.getKey() + " = " + entry.getValue());
+				context.declareNamespace(
+					(String) entry.getKey(),
+					(String) entry.getValue());
+			}
+			// declare static variables
+			for (Iterator i = variableDecls.entrySet().iterator(); i.hasNext();) {
+				entry = (Map.Entry) i.next();
+				context.declareVariable((String) entry.getKey(), entry.getValue());
+			}
+			context.setBackwardsCompatibility(xpathCompatible);
 			XPathLexer2 lexer = new XPathLexer2(new StringReader(query));
 			XPathParser2 parser = new XPathParser2(lexer, false);
 			XPathTreeParser2 treeParser = new XPathTreeParser2(context);
 			parser.xpath();
-			if(parser.foundErrors()) {
+			if (parser.foundErrors()) {
 				LOG.debug(parser.getErrorMessage());
-				throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR,
+				throw new XMLDBException(
+					ErrorCodes.UNKNOWN_ERROR,
 					parser.getErrorMessage());
 			}
 
 			AST ast = parser.getAST();
 			LOG.debug("generated AST: " + ast.toStringList());
-			
+
 			PathExpr expr = new PathExpr(context);
 			treeParser.xpath(ast, expr);
-			if(treeParser.foundErrors()) {
-				throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR,
-					treeParser.getErrorMessage(), treeParser.getLastException());
+			if (treeParser.foundErrors()) {
+				throw new XMLDBException(
+					ErrorCodes.UNKNOWN_ERROR,
+					treeParser.getErrorMessage(),
+					treeParser.getLastException());
 			}
 			LOG.debug("compiled: " + expr.pprint());
-			long start = System.currentTimeMillis();
-			//if (parser.foundErrors())
-			//	throw new XMLDBException(ErrorCodes.VENDOR_ERROR, parser.getErrorMsg());
-			Sequence result = null;
-//			docs = (docs == null ? expr.preselect() : expr.preselect(docs));
-//			if (docs.getLength() == 0) {
-//				result = Sequence.EMPTY_SEQUENCE;
-//				LOG.info("no documents!");
-//			} else 
-				result = expr.eval(docs, contextSet, null);
+			return expr;
+		} catch (EXistException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		} catch (RecognitionException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		} catch (TokenStreamException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		} catch (XPathException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		} catch (IllegalArgumentException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		} finally {
+			brokerPool.release(broker);
+		}
+	}
+
+	protected ResourceSet doQuery(
+		String query,
+		DocumentSet docs,
+		NodeSet contextSet,
+		String sortExpr)
+		throws XMLDBException {
+		CompiledExpression expr = compile(query);
+		return doQuery(expr, docs, contextSet, sortExpr);
+	}
+
+	protected ResourceSet doQuery(
+		CompiledExpression compiled,
+		DocumentSet docs,
+		NodeSet contextSet,
+		String sortExpr)
+		throws XMLDBException {
+		long start = System.currentTimeMillis();
+		PathExpr expr = ((PathExpr) compiled);
+		try {
+			Sequence result = expr.eval(docs, contextSet, null);
 			LOG.info(
 				expr.pprint()
 					+ " found: "
@@ -167,33 +240,21 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 					+ (System.currentTimeMillis() - start)
 					+ "ms.");
 			LocalResourceSet resultSet =
-				new LocalResourceSet(
-					user,
-					brokerPool,
-					collection,
-					result,
-					sortExpr);
+				new LocalResourceSet(user, brokerPool, collection, result, sortExpr);
 			return resultSet;
-		} catch (antlr.RecognitionException re) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, re.getMessage(), re);
-		} catch (antlr.TokenStreamException te) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, te.getMessage(), te);
-		} catch (IllegalArgumentException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (XPathException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		} catch (EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		} finally {
-			brokerPool.release(broker);
 		}
 	}
- 
-	public ResourceSet queryResource(String resource, String query) throws XMLDBException {
+
+	public ResourceSet queryResource(String resource, String query)
+		throws XMLDBException {
 		DocumentSet docs = new DocumentSet();
-		LocalXMLResource res = (LocalXMLResource)collection.getResource(resource);
-		if(res == null)
-			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "resource " + resource + " not found");
+		LocalXMLResource res = (LocalXMLResource) collection.getResource(resource);
+		if (res == null)
+			throw new XMLDBException(
+				ErrorCodes.INVALID_RESOURCE,
+				"resource " + resource + " not found");
 		docs.add(res.getDocument());
 		return doQuery(query, docs, null, null);
 	}
@@ -220,8 +281,16 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.XPathQueryServiceImpl#declareVariable(java.lang.String, java.lang.Object)
 	 */
-	public void declareVariable(String qname, Object initialValue) throws XMLDBException {
-		variableDecls.put(qname, initialValue);	
+	public void declareVariable(String qname, Object initialValue)
+		throws XMLDBException {
+		variableDecls.put(qname, initialValue);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.XQueryService#setXPathCompatibility(boolean)
+	 */
+	public void setXPathCompatibility(boolean backwardsCompatible) {
+		this.xpathCompatible = backwardsCompatible;
 	}
 
 }

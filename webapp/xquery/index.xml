@@ -52,6 +52,15 @@
                         XML Acronym Demystifier</a>, entirely implemented in XQuery.
                     </td>
                 </tr>
+                <tr>
+                    <td width="30%" valign="top">
+                        <link href="biblio.xml">Library</link>
+                    </td>
+                    <td width="70%">
+                        An XQuery-version of the old library search example from previous
+                        releases of eXist.
+                    </td>
+                </tr>
             </table>
             
         </section>

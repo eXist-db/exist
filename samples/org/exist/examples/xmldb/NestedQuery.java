@@ -52,7 +52,7 @@ public class NestedQuery {
             
             // iterate through the results and execute the second query
             // using the current result node as context
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < 10; i++) {
             //for ( int i = 0; i < (int) result.getSize(); i++ ) {
                 resource = (XMLResource) result.getResource( (long) i );
                 result2 = ((org.exist.xmldb.XPathQueryServiceImpl)service)

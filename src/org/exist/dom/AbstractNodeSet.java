@@ -779,25 +779,33 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @return
 	 */
 	public NodeSet intersection(NodeSet other) {
-		long start = System.currentTimeMillis();
 		AVLTreeNodeSet r = new AVLTreeNodeSet();
 		NodeProxy l, p;
-		System.out.println("intersection: " + getLength() + " : " + other.getLength());
 		for (Iterator i = iterator(); i.hasNext();) {
 			l = (NodeProxy) i.next();
 			if (other.contains(l)) {
-				System.out.println("adding " + l.gid);
 				r.add(l);
 			}
 		}
 		for (Iterator i = other.iterator(); i.hasNext();) {
 			l = (NodeProxy) i.next();
-			System.out.println("checking " + l.gid);
 			if (contains(l)) {
 				if ((p = r.get(l)) != null) {
 					p.addMatches(l.match);
 				} else
 					r.add(l);
+			}
+		}
+		return r;
+	}
+
+	public NodeSet except(NodeSet other) {
+		AVLTreeNodeSet r = new AVLTreeNodeSet();
+		NodeProxy l, p;
+		for (Iterator i = iterator(); i.hasNext();) {
+			l = (NodeProxy) i.next();
+			if (!other.contains(l)) {
+				r.add(l);
 			}
 		}
 		return r;
@@ -811,7 +819,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @return
 	 */
 	public NodeSet union(NodeSet other) {
-		long start = System.currentTimeMillis();
 		ArraySet result = new ArraySet(getLength() + other.getLength());
 		result.addAll(other);
 		NodeProxy p, c;
@@ -869,8 +876,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 			while (contextNode != null) {
 				context = contextNode.getNode();
 				context.addMatches(current.match);
-				if(!result.contains(context)) {
-					if(rememberContext)
+				if (!result.contains(context)) {
+					if (rememberContext)
 						context.addContextNode(context);
 					result.add(context);
 				}

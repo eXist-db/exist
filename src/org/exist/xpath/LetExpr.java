@@ -27,6 +27,7 @@ import org.exist.dom.QName;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.OrderedValueSequence;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 
 /**
  * Implements an XQuery let-expression.
@@ -55,10 +56,14 @@ public class LetExpr extends BindingExpression {
 		var.setValue(val);
 
 		Sequence filtered = null;
-		if (whereExpr != null)
+		if (whereExpr != null) {
 			filtered = applyWhereExpression(context, docs, null);
-		if (whereExpr != null && filtered.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
+			if(whereExpr.returnsType() == Type.BOOLEAN) {
+				if(!filtered.effectiveBooleanValue())
+					return Sequence.EMPTY_SEQUENCE;
+			} else if (filtered.getLength() == 0)
+				return Sequence.EMPTY_SEQUENCE;
+		}
 		Sequence returnSeq = null;
 		if (orderSpecs == null)
 			returnSeq = returnExpr.eval(docs, filtered, null);

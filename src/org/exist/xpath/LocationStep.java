@@ -22,7 +22,6 @@ package org.exist.xpath;
 
 import java.util.Iterator;
 
-import org.apache.log4j.Logger;
 import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -44,7 +43,6 @@ import org.w3c.dom.Node;
  */
 public class LocationStep extends Step {
 
-	protected static Logger LOG = Logger.getLogger(LocationStep.class);
 	protected NodeSet buf = null;
 	protected boolean keepVirtual = false;
 

@@ -144,6 +144,7 @@ public class XIncludeFilter implements ContentHandler {
 				processXInclude(atts);
 			}
 		} else {
+			//LOG.debug("start: " + qName);
 			contentHandler.startElement(namespaceURI, localName, qName, atts);
 		}
 	}

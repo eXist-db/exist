@@ -101,13 +101,11 @@ public class Predicate extends PathExpr {
 					throw new XPathException("Internal evaluation error: context node is missing for node " +
 						current.gid + "!");
 				}
-				int c = 0;
 				while (contextNode != null) {
-					c++;
 					next = contextNode.getNode();
 					next.addMatches(current.match);
-					if (!result.contains(next))
-						result.add(next, sizeHint);
+					result.add(next, sizeHint);
+					//System.out.println("found: " + next.gid);
 					contextNode = contextNode.getNextItem();
 				}
 			}
@@ -160,7 +158,6 @@ public class Predicate extends PathExpr {
 				}
 				return result;
 			} else {
-				LOG.debug("returning sequence item: " + contextSequence.getLength());
 				Sequence innerSeq = inner.eval(docs, contextSequence);
 				ValueSequence result = new ValueSequence();
 				for(SequenceIterator i = innerSeq.iterate(); i.hasNext(); ) {

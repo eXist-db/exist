@@ -30,22 +30,22 @@ import org.exist.xpath.XPathException;
 public class JavaObjectValue extends AtomicValue {
 
 	private Object object;
-	
+
 	public JavaObjectValue(Object object) {
 		this.object = object;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.AtomicValue#getType()
 	 */
 	public int getType() {
 		return Type.JAVA_OBJECT;
 	}
-	
+
 	public Object getObject() {
 		return object;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Sequence#getStringValue()
 	 */
@@ -57,24 +57,36 @@ public class JavaObjectValue extends AtomicValue {
 	 * @see org.exist.xpath.value.Sequence#convertTo(int)
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
-		if(requiredType == Type.JAVA_OBJECT)
+		if (requiredType == Type.JAVA_OBJECT)
 			return this;
-		throw new XPathException("cannot convert Java object to " + Type.getTypeName(requiredType));
+		throw new XPathException(
+			"cannot convert Java object to " + Type.getTypeName(requiredType));
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.AtomicValue#compareTo(int, org.exist.xpath.value.AtomicValue)
 	 */
-	public boolean compareTo(int operator, AtomicValue other)
-		throws XPathException {
-		throw new XPathException("cannot compare Java object to " + Type.getTypeName(other.getType()));
+	public boolean compareTo(int operator, AtomicValue other) throws XPathException {
+		throw new XPathException(
+			"cannot compare Java object to " + Type.getTypeName(other.getType()));
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.AtomicValue#compareTo(org.exist.xpath.value.AtomicValue)
 	 */
 	public int compareTo(AtomicValue other) throws XPathException {
-		throw new XPathException("cannot compare Java object to " + Type.getTypeName(other.getType()));
+		throw new XPathException(
+			"cannot compare Java object to " + Type.getTypeName(other.getType()));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.AtomicValue#max(org.exist.xpath.value.AtomicValue)
+	 */
+	public AtomicValue max(AtomicValue other) throws XPathException {
+		throw new XPathException("Invalid argument to aggregate function: cannot compare Java objects");
+	}
+
+	public AtomicValue min(AtomicValue other) throws XPathException {
+		throw new XPathException("Invalid argument to aggregate function: cannot compare Java objects");
+	}
 }

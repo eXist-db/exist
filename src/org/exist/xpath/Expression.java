@@ -75,6 +75,8 @@ public interface Expression {
 	public Sequence eval(DocumentSet docs, Sequence contextSequence)
 		throws XPathException;
 	
+	public void setPrimaryAxis(int axis);
+	
 	/**
 	 * The static return type of the expression.
 	 *

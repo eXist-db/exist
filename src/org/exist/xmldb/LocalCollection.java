@@ -65,8 +65,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class LocalCollection extends Observable implements CollectionImpl {
 
-	private static Category LOG =
-		Category.getInstance(LocalCollection.class.getName());
+	private static Category LOG = Category.getInstance(LocalCollection.class.getName());
 
 	protected final static Properties defaultProperties = new Properties();
 	static {
@@ -74,7 +73,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		defaultProperties.setProperty(OutputKeys.INDENT, "yes");
 		defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
 	}
-	
+
 	protected BrokerPool brokerPool = null;
 	protected org.exist.collections.Collection collection = null;
 	protected Properties properties = new Properties(defaultProperties);
@@ -137,7 +136,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		this.brokerPool = brokerPool;
 		load(name);
 	}
-	
+
 	private void load(String name) throws XMLDBException {
 		DBBroker broker = null;
 		try {
@@ -150,10 +149,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 					ErrorCodes.NO_SUCH_RESOURCE,
 					"collection not found");
 		} catch (EXistException e) {
-			throw new XMLDBException(
-				ErrorCodes.VENDOR_ERROR,
-				e.getMessage(),
-				e);
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} finally {
 			brokerPool.release(broker);
 		}
@@ -178,10 +174,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 				broker = brokerPool.get(user);
 				broker.sync();
 			} catch (EXistException e) {
-				throw new XMLDBException(
-					ErrorCodes.UNKNOWN_ERROR,
-					e.getMessage(),
-					e);
+				throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
 			} finally {
 				brokerPool.release(broker);
 			}
@@ -206,19 +199,18 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		return id;
 	}
 
-	public Resource createResource(String id, String type)
-		throws XMLDBException {
+	public Resource createResource(String id, String type) throws XMLDBException {
 		if (id == null)
 			id = createId();
 
 		Resource r = null;
-		if(type.equals("XMLResource"))
-			r =
-				new LocalXMLResource(user, brokerPool, this, id, -1);
-		else if(type.equals("BinaryResource"))
+		if (type.equals("XMLResource"))
+			r = new LocalXMLResource(user, brokerPool, this, id, -1);
+		else if (type.equals("BinaryResource"))
 			r = new LocalBinaryResource(user, brokerPool, this, id);
 		else
-			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE,
+			throw new XMLDBException(
+				ErrorCodes.INVALID_RESOURCE,
 				"unknown resource type: " + type);
 		return r;
 	}
@@ -233,8 +225,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			cname = (String) i.next();
 			if (cname.equals(name)) {
 				cname = getPath() + '/' + cname;
-				Collection temp =
-					new LocalCollection(user, brokerPool, this, cname);
+				Collection temp = new LocalCollection(user, brokerPool, this, cname);
 				return temp;
 			}
 		}
@@ -263,14 +254,12 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			DBBroker broker = null;
 			try {
 				broker = brokerPool.get(user);
-				org.exist.collections.Collection c =
-					collection.getParent(broker);
+				org.exist.collections.Collection c = collection.getParent(broker);
 				parent = new LocalCollection(user, brokerPool, null, c);
 			} catch (EXistException e) {
 				throw new XMLDBException(
 					ErrorCodes.UNKNOWN_ERROR,
-					"error while retrieving parent collection: "
-						+ e.getMessage(),
+					"error while retrieving parent collection: " + e.getMessage(),
 					e);
 			} finally {
 				brokerPool.release(broker);
@@ -300,18 +289,13 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		if (document == null)
 			return null;
 		Resource r;
-		if(document.getResourceType() == DocumentImpl.XML_FILE)
-			r =
-				new LocalXMLResource(
-					user,
-					brokerPool,
-					this,
-					document,
-					-1);
-		else if(document.getResourceType() == DocumentImpl.BINARY_FILE)
-			r = new LocalBinaryResource(user, brokerPool, this, (BLOBDocument)document);
+		if (document.getResourceType() == DocumentImpl.XML_FILE)
+			r = new LocalXMLResource(user, brokerPool, this, document, -1);
+		else if (document.getResourceType() == DocumentImpl.BINARY_FILE)
+			r = new LocalBinaryResource(user, brokerPool, this, (BLOBDocument) document);
 		else
-			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE,
+			throw new XMLDBException(
+				ErrorCodes.INVALID_RESOURCE,
 				"unknown resource type");
 		return r;
 	}
@@ -323,9 +307,11 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			return collection.getDocumentCount();
 	}
 
-	public Service getService(String name, String version)
-		throws XMLDBException {
+	public Service getService(String name, String version) throws XMLDBException {
 		if (name.equals("XPathQueryService"))
+			return new LocalXPathQueryService(user, brokerPool, this);
+
+		if (name.equals("XQueryService"))
 			return new LocalXPathQueryService(user, brokerPool, this);
 
 		if (name.equals("CollectionManagementService")
@@ -350,8 +336,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	public Service[] getServices() throws XMLDBException {
 		Service[] services = new Service[6];
 		services[0] = new LocalXPathQueryService(user, brokerPool, this);
-		services[1] =
-			new LocalCollectionManagementService(user, brokerPool, this);
+		services[1] = new LocalCollectionManagementService(user, brokerPool, this);
 		services[2] = new LocalUserManagementService(user, brokerPool, this);
 		services[3] = new LocalDatabaseInstanceManager(user, brokerPool);
 		services[4] = new LocalXUpdateQueryService(user, brokerPool, this);
@@ -416,25 +401,16 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			if(res.getResourceType().equals("XMLResource"))
+			if (res.getResourceType().equals("XMLResource"))
 				collection.removeDocument(broker, name);
 			else
 				collection.removeBinaryResource(broker, name);
 		} catch (EXistException e) {
-			throw new XMLDBException(
-				ErrorCodes.VENDOR_ERROR,
-				e.getMessage(),
-				e);
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
-			throw new XMLDBException(
-				ErrorCodes.PERMISSION_DENIED,
-				e.getMessage(),
-				e);
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
 		} catch (TriggerException e) {
-			throw new XMLDBException(
-				ErrorCodes.INVALID_RESOURCE,
-				e.getMessage(),
-				e);
+			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
 		} finally {
 			brokerPool.release(broker);
 		}
@@ -442,8 +418,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		load(getPath());
 	}
 
-	public void setProperty(String property, String value)
-		throws XMLDBException {
+	public void setProperty(String property, String value) throws XMLDBException {
 		properties.setProperty(property, value);
 	}
 
@@ -455,7 +430,8 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			LOG.debug("storing binary resource " + resource.getId());
 			storeBinaryResource((LocalBinaryResource) resource);
 		} else
-			throw new XMLDBException(ErrorCodes.UNKNOWN_RESOURCE_TYPE,
+			throw new XMLDBException(
+				ErrorCodes.UNKNOWN_RESOURCE_TYPE,
 				"unknown resource type: " + resource.getResourceType());
 		needsSync = true;
 	}
@@ -465,18 +441,22 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		try {
 			broker = brokerPool.get(user);
 			BLOBDocument blob =
-				collection.addBinaryResource(broker, res.getId(), (byte[])res.getContent());
+				collection.addBinaryResource(
+					broker,
+					res.getId(),
+					(byte[]) res.getContent());
 			res.blob = blob;
-		} catch(Exception e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
-				"Exception while storing binary resource: " + e.getMessage(), e);
+		} catch (Exception e) {
+			throw new XMLDBException(
+				ErrorCodes.VENDOR_ERROR,
+				"Exception while storing binary resource: " + e.getMessage(),
+				e);
 		} finally {
 			brokerPool.release(broker);
 		}
 	}
-	
-	private void storeXMLResource(LocalXMLResource res)
-		throws XMLDBException {
+
+	private void storeXMLResource(LocalXMLResource res) throws XMLDBException {
 		DBBroker broker = null;
 		String name = res.getDocumentId();
 		try {
@@ -502,10 +482,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			//broker.flush();
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new XMLDBException(
-				ErrorCodes.VENDOR_ERROR,
-				e.getMessage(),
-				e);
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} finally {
 			collection.deleteObservers();
 			brokerPool.release(broker);

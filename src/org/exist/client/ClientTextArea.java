@@ -23,6 +23,7 @@
 package org.exist.client;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 
 import javax.swing.text.PlainDocument;
@@ -42,6 +43,7 @@ public class ClientTextArea extends JEditTextArea {
 		super();
 		setFont(textFont);
 		setEditable(editable);
+		setPreferredSize(new Dimension(300, 200));
 		SyntaxDocument doc = new SyntaxDocument();
 		doc.putProperty(PlainDocument.tabSizeAttribute, new Integer(4));
 		setDocument(doc);

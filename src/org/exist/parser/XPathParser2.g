@@ -87,11 +87,7 @@ options {
 
 imaginaryTokenDefinitions
 :
-	QNAME PREDICATE FLWOR PARENTHESIZED ABSOLUTE_SLASH ABSOLUTE_DSLASH 
-	WILDCARD PREFIX_WILDCARD FUNCTION UNARY_MINUS UNARY_PLUS XPOINTER 
-	XPOINTER_ID VARIABLE_REF VARIABLE_BINDING ELEMENT ATTRIBUTE TEXT VERSION_DECL NAMESPACE_DECL 
-	DEF_NAMESPACE_DECL DEF_FUNCTION_NS_DECL GLOBAL_VAR FUNCTION_DECL PROLOG 
-	ATOMIC_TYPE MODULE ORDER_BY POSITIONAL_VAR
+	QNAME PREDICATE FLWOR PARENTHESIZED ABSOLUTE_SLASH ABSOLUTE_DSLASH WILDCARD PREFIX_WILDCARD FUNCTION UNARY_MINUS UNARY_PLUS XPOINTER XPOINTER_ID VARIABLE_REF VARIABLE_BINDING ELEMENT ATTRIBUTE TEXT VERSION_DECL NAMESPACE_DECL DEF_NAMESPACE_DECL DEF_FUNCTION_NS_DECL GLOBAL_VAR FUNCTION_DECL PROLOG ATOMIC_TYPE MODULE ORDER_BY POSITIONAL_VAR
 	;
 
 xpointer
@@ -161,7 +157,8 @@ defaultNamespaceDecl
 varDecl
 { String varName= null; }
 :
-	"declare"! "variable"! DOLLAR! varName=qName! ( typeDeclaration )? LCURLY! ex:expr RCURLY!
+	"declare"! "variable"! DOLLAR! varName=qName! ( typeDeclaration )?
+	LCURLY! ex:expr RCURLY!
 	{ #varDecl= #(#[GLOBAL_VAR, varName], #varDecl); }
 	;
 
@@ -211,7 +208,7 @@ singleType
 :
 	atomicType ( QUESTION )?
 	;
-	
+
 atomicType
 { String name= null; }
 :
@@ -249,7 +246,9 @@ letClause
 inVarBinding
 { String varName; }
 :
-	DOLLAR! varName=qName! ( typeDeclaration )? ( positionalVar )? "in"! exprSingle
+	DOLLAR! varName=qName! ( typeDeclaration )?
+	( positionalVar )?
+	"in"! exprSingle
 	{ #inVarBinding= #(#[VARIABLE_BINDING, varName], #inVarBinding); }
 	;
 
@@ -257,15 +256,14 @@ positionalVar
 { String varName; }
 :
 	"at" DOLLAR! varName=qName
-	{
-		#positionalVar = #[POSITIONAL_VAR, varName];
-	}
+	{ #positionalVar= #[POSITIONAL_VAR, varName]; }
 	;
-	
+
 letVarBinding
 { String varName; }
 :
-	DOLLAR! varName=qName! ( typeDeclaration )? COLON! EQ! exprSingle
+	DOLLAR! varName=qName! ( typeDeclaration )?
+	COLON! EQ! exprSingle
 	{ #letVarBinding= #(#[VARIABLE_BINDING, varName], #letVarBinding); }
 	;
 
@@ -303,10 +301,14 @@ castExpr
 :
 	comparisonExpr ( "cast"^ "as"! singleType )?
 	;
-	
+
 comparisonExpr
 :
-	rangeExpr ( ( ( EQ^ | NEQ^ | GT^ | GTEQ^ | LT^ | LTEQ^ ) rangeExpr ) | ( ( ANDEQ^ | OREQ^ ) rangeExpr ) )?
+	rangeExpr (
+		( ( "eq"^ | "ne"^ | "lt"^ | "le"^ | "gt"^ | "ge"^ ) rangeExpr )
+		| ( ( EQ^ | NEQ^ | GT^ | GTEQ^ | LT^ | LTEQ^ ) rangeExpr ) 
+		| ( ( ANDEQ^ | OREQ^ ) rangeExpr ) 
+	)?
 	;
 
 rangeExpr
@@ -339,9 +341,23 @@ unaryExpr
 
 unionExpr
 :
-	pathExpr ( UNION^ pathExpr )?
+	intersectExceptExpr
+	( 
+		( "union"! | UNION! ) intersectExceptExpr
+		{
+			#unionExpr = #(#[UNION, "union"], #unionExpr);
+		}
+	)?
 	;
 
+intersectExceptExpr
+:
+	pathExpr
+	(
+		( "intersect"^ | "except"^ ) pathExpr
+	)*
+	;
+	
 pathExpr
 :
 	relativePathExpr
@@ -610,7 +626,7 @@ elementWithAttributes
 		)
 		|
 		(
-			GT! 
+			GT!
 			{
 				elementStack.push(name);
 				lexer.inElementContent= true;
@@ -788,6 +804,18 @@ reservedKeywords returns [String name]
 	"default" { name= "default"; }
 	|
 	"function" { name= "function"; }
+	|
+	"as" { name = "as"; }
+	|
+	"union" { name = "union"; }
+	|
+	"intersect" { name = "intersect"; }
+	|
+	"except" { name = "except"; }
+	|
+	"order" { name = "order"; }
+	|
+	"by" { name = "by"; }
 	;
 
 /* -----------------------------------------------------------------------------------------------------
@@ -836,8 +864,8 @@ options {
 
 	private static class ForLetClause {
 		String varName;
-		SequenceType sequenceType = null;
-		String posVar = null;
+		SequenceType sequenceType= null;
+		String posVar= null;
 		Expression inputSequence;
 		Expression action;
 		boolean isForClause= true;
@@ -854,8 +882,8 @@ options {
 }
 
 xpointer [PathExpr path]
-:
-	#( XPOINTER expr [path] )
+{ Expression step = null; }:
+	#( XPOINTER step=expr [path] )
 	|
 	#( XPOINTER_ID nc:NCNAME )
 	{
@@ -890,13 +918,13 @@ xpath [PathExpr path]
 
 module [PathExpr path]
 throws PermissionDeniedException, EXistException, XPathException
-:
-	prolog [path] expr [path]
+{ Expression step = null; }:
+	prolog [path] step=expr [path]
 	;
 
 prolog [PathExpr path]
 throws PermissionDeniedException, EXistException, XPathException
-:
+{ Expression step = null; }:
 	(
 		#(
 			v:VERSION_DECL
@@ -923,21 +951,21 @@ throws PermissionDeniedException, EXistException, XPathException
 		)
 		|
 		#(
-			qname:GLOBAL_VAR 
-			{ 
+			qname:GLOBAL_VAR
+			{
 				PathExpr enclosed= new PathExpr(context);
-				SequenceType type = null;
+				SequenceType type= null;
 			}
 			(
 				#(
 					"as"
-					{ type = new SequenceType(); }
+					{ type= new SequenceType(); }
 					sequenceType [type]
 				)
 			)?
-			expr [enclosed]
+			step=expr [enclosed]
 			{
-				VariableDeclaration decl = new VariableDeclaration(context, qname.getText(), enclosed);
+				VariableDeclaration decl= new VariableDeclaration(context, qname.getText(), enclosed);
 				decl.setSequenceType(type);
 				path.add(decl);
 			}
@@ -949,7 +977,7 @@ throws PermissionDeniedException, EXistException, XPathException
 
 functionDecl [PathExpr path]
 throws PermissionDeniedException, EXistException, XPathException
-:
+{ Expression step = null; }:
 	#(
 		name:FUNCTION_DECL { PathExpr body= new PathExpr(context); }
 		{
@@ -979,7 +1007,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			)
 		)?
 		#(
-			LCURLY expr [body]
+			LCURLY step=expr [body]
 			{ func.setFunctionBody(body); }
 		)
 	)
@@ -1025,7 +1053,7 @@ throws XPathException
 		)
 		|
 		#(
-			"empty" 
+			"empty"
 			{
 				type.setPrimaryType(Type.EMPTY);
 				type.setCardinality(Cardinality.EMPTY);
@@ -1074,27 +1102,28 @@ throws XPathException
 	;
 
 expr [PathExpr path]
+returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
-{ Expression step= null; }
+{ step= null; }
 :
 	#(
 		"cast"
 		{
-			PathExpr expr = new PathExpr(context);
-			int cardinality = Cardinality.EXACTLY_ONE;
+			PathExpr expr= new PathExpr(context);
+			int cardinality= Cardinality.EXACTLY_ONE;
 		}
-		expr[expr]
+		step=expr [expr]
 		t:ATOMIC_TYPE
-		( QUESTION
-			{
-				cardinality = Cardinality.ZERO_OR_ONE;
-			}
+		(
+			QUESTION
+			{ cardinality= Cardinality.ZERO_OR_ONE; }
 		)?
 		{
 			QName qn= QName.parse(context, t.getText());
 			int code= Type.getType(qn);
-			CastExpression castExpr = new CastExpression(context, expr, code, cardinality);
+			CastExpression castExpr= new CastExpression(context, expr, code, cardinality);
 			path.add(castExpr);
+			step = castExpr;
 		}
 	)
 	|
@@ -1104,13 +1133,14 @@ throws PermissionDeniedException, EXistException, XPathException
 			PathExpr left= new PathExpr(context);
 			PathExpr right= new PathExpr(context);
 		}
-		expr [left]
-		expr [right]
+		step=expr [left]
+		step=expr [right]
 		{
 			SequenceConstructor sc= new SequenceConstructor(context);
 			sc.addExpression(left);
 			sc.addExpression(right);
 			path.add(sc);
+			step = sc;
 		}
 	)
 	|
@@ -1121,12 +1151,13 @@ throws PermissionDeniedException, EXistException, XPathException
 			PathExpr thenExpr= new PathExpr(context);
 			PathExpr elseExpr= new PathExpr(context);
 		}
-		expr [testExpr]
-		expr [thenExpr]
-		expr [elseExpr]
+		step=expr [testExpr]
+		step=expr [thenExpr]
+		step=expr [elseExpr]
 		{
 			ConditionalExpression cond= new ConditionalExpression(context, testExpr, thenExpr, elseExpr);
 			path.add(cond);
+			step = cond;
 		}
 	)
 	|
@@ -1151,19 +1182,15 @@ throws PermissionDeniedException, EXistException, XPathException
 						(
 							#(
 								"as"
-								{ 
-									clause.sequenceType = new SequenceType();
-								}
+								{ clause.sequenceType= new SequenceType(); }
 								sequenceType [clause.sequenceType]
 							)
 						)?
 						(
 							posVar:POSITIONAL_VAR
-							{
-								clause.posVar = posVar.getText();
-							}
+							{ clause.posVar= posVar.getText(); }
 						)?
-						expr [inputSequence]
+						step=expr [inputSequence]
 						{
 							clause.varName= varName.getText();
 							clause.inputSequence= inputSequence;
@@ -1186,13 +1213,11 @@ throws PermissionDeniedException, EXistException, XPathException
 						(
 							#(
 								"as"
-								{ 
-									clause.sequenceType = new SequenceType();
-								}
+								{ clause.sequenceType= new SequenceType(); }
 								sequenceType [clause.sequenceType]
 							)
 						)?
-						expr [inputSequence]
+						step=expr [inputSequence]
 						{
 							clause.varName= letVarName.getText();
 							clause.inputSequence= inputSequence;
@@ -1205,14 +1230,14 @@ throws PermissionDeniedException, EXistException, XPathException
 		(
 			"where"
 			{ whereExpr= new PathExpr(context); }
-			expr [whereExpr]
+			step=expr [whereExpr]
 		)?
 		(
 			#(
 				ORDER_BY { orderBy= new ArrayList(3); }
 				(
 					{ PathExpr orderSpecExpr= new PathExpr(context); }
-					expr [orderSpecExpr]
+					step=expr [orderSpecExpr]
 					{
 						OrderSpec orderSpec= new OrderSpec(orderSpecExpr);
 						int modifiers= 0;
@@ -1244,7 +1269,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				)+
 			)
 		)?
-		expr [(PathExpr) action]
+		step=expr [(PathExpr) action]
 		{
 			for (int i= clauses.size() - 1; i >= 0; i--) {
 				ForLetClause clause= (ForLetClause) clauses.get(i);
@@ -1258,7 +1283,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				expr.setInputSequence(clause.inputSequence);
 				expr.setReturnExpression(action);
 				if (clause.isForClause)
-					((ForExpr)expr).setPositionalVariable(clause.posVar);
+					 ((ForExpr) expr).setPositionalVariable(clause.posVar);
 				if (whereExpr != null) {
 					expr.setWhereExpression(whereExpr);
 					whereExpr= null;
@@ -1275,6 +1300,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				action= expr;
 			}
 			path.add(action);
+			step = action;
 		}
 	)
 	|
@@ -1284,14 +1310,15 @@ throws PermissionDeniedException, EXistException, XPathException
 			PathExpr left= new PathExpr(context);
 			PathExpr right= new PathExpr(context);
 		}
-		expr [left]
-		expr [right]
+		step=expr [left]
+		step=expr [right]
 	)
 	{
 		OpOr or= new OpOr(context);
 		or.add(left);
 		or.add(right);
 		path.addPath(or);
+		step = or;
 	}
 	|
 	#(
@@ -1300,25 +1327,16 @@ throws PermissionDeniedException, EXistException, XPathException
 			PathExpr left= new PathExpr(context);
 			PathExpr right= new PathExpr(context);
 		}
-		expr [left]
-		expr [right]
+		step=expr [left]
+		step=expr [right]
 	)
 	{
 		OpAnd and= new OpAnd(context);
 		and.add(left);
 		and.add(right);
 		path.addPath(and);
+		step = and;
 	}
-	|
-	#(
-		PARENTHESIZED
-		{
-			PathExpr pathExpr= new PathExpr(context);
-		}
-		( expr[pathExpr] )?
-	)
-	step=predicates[pathExpr]
-	{ path.add(step); }
 	|
 	#(
 		UNION
@@ -1326,12 +1344,41 @@ throws PermissionDeniedException, EXistException, XPathException
 			PathExpr left= new PathExpr(context);
 			PathExpr right= new PathExpr(context);
 		}
-		expr [left]
-		expr [right]
+		step=expr [left]
+		step=expr [right]
 	)
 	{
 		Union union= new Union(context, left, right);
 		path.add(union);
+		step = union;
+	}
+	|
+	#( "intersect"
+		{
+			PathExpr left = new PathExpr(context);
+			PathExpr right = new PathExpr(context);
+		}
+		step=expr [left]
+		step=expr [right]
+	)
+	{
+		Intersection intersect = new Intersection(context, left, right);
+		path.add(intersect);
+		step = intersect;
+	}
+	|
+	#( "except"
+		{
+			PathExpr left = new PathExpr(context);
+			PathExpr right = new PathExpr(context);
+		}
+		step=expr [left]
+		step=expr [right]
+	)
+	{
+		Except intersect = new Except(context, left, right);
+		path.add(intersect);
+		step = intersect;
 	}
 	|
 	#(
@@ -1340,7 +1387,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			RootNode root= new RootNode(context);
 			path.add(root);
 		}
-		( expr [path] )?
+		( step=expr [path] )?
 	)
 	|
 	#(
@@ -1350,7 +1397,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			path.add(root);
 		}
 		(
-			step=pathExpr [path]
+			step=expr [path]
 			{
 				if (step instanceof LocationStep) {
 					LocationStep s= (LocationStep) step;
@@ -1359,7 +1406,8 @@ throws PermissionDeniedException, EXistException, XPathException
 						s.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
 					else
 						s.setAxis(Constants.DESCENDANT_SELF_AXIS);
-				}
+				} else
+					step.setPrimaryAxis(Constants.DESCENDANT_SELF_AXIS);
 			}
 		)?
 	)
@@ -1373,30 +1421,63 @@ throws PermissionDeniedException, EXistException, XPathException
 			args.add(start);
 			args.add(end);
 		}
-		expr [start]
-		expr [end]
+		step=expr [start]
+		step=expr [end]
 		{
 			RangeExpression range= new RangeExpression(context);
 			range.setArguments(args);
 			path.addPath(range);
+			step = range;
 		}
 	)
 	|
 	step=generalComp [path]
 	|
+	step=valueComp [path]
+	|
 	step=fulltextComp [path]
+	|
+	step=primaryExpr [path]
 	|
 	step=pathExpr [path]
 	|
 	step=numericExpr [path]
-	|
-	step=constructor[path] step=predicates[step] 
-	{ 
-		path.add(step);
-		System.out.println("added: " + step.pprint());
-	}
 	;
 
+primaryExpr [PathExpr path]
+returns [Expression step]
+throws PermissionDeniedException, EXistException, XPathException
+{
+	step = null;
+}:
+	step=constructor [path]
+	step=predicates [step]
+	{
+		path.add(step);
+	}
+	|
+	#(
+		PARENTHESIZED
+		{ PathExpr pathExpr= new PathExpr(context); }
+		( step=expr [pathExpr] )?
+	)
+	step=predicates [pathExpr]
+	{ path.add(step); }
+	|
+	step=literalExpr [path]
+	step=predicates [step]
+	{ path.add(step); }
+	|
+	v:VARIABLE_REF
+	{ step= new VariableReference(context, v.getText()); }
+	step=predicates [step]
+	{ path.add(step); }
+	|
+	step=functionCall [path]
+	step=predicates [step]
+	{ path.add(step); }
+	;
+	
 pathExpr [PathExpr path]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
@@ -1406,17 +1487,6 @@ throws PermissionDeniedException, EXistException, XPathException
 	int axis= Constants.CHILD_AXIS;
 }
 :
-	step=literalExpr[path] step=predicates[step] { path.add(step); }
-	|
-	v:VARIABLE_REF
-	{
-		step= new VariableReference(context, v.getText());
-	}
-	step=predicates[step]
-	{ path.add(step); }
-	|
-	step=functionCall [path] step=predicates[step] { path.add(step); }
-	|
 	( axis=forwardAxis )?
 	{ NodeTest test; }
 	(
@@ -1455,7 +1525,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	( predicate [(LocationStep) step] )*
 	|
 	AT
-	{ QName qname = null; }
+	{ QName qname= null; }
 	(
 		attr:QNAME
 		{ qname= QName.parseAttribute(context, attr.getText()); }
@@ -1474,7 +1544,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
 	)
 	{
-		NodeTest test = qname == null ? new TypeTest(Type.ATTRIBUTE) : new NameTest(Type.ATTRIBUTE, qname);
+		NodeTest test= qname == null ? new TypeTest(Type.ATTRIBUTE) : new NameTest(Type.ATTRIBUTE, qname);
 		step= new LocationStep(context, Constants.ATTRIBUTE_AXIS, test);
 		path.add(step);
 	}
@@ -1495,12 +1565,18 @@ throws PermissionDeniedException, EXistException, XPathException
 	( predicate [(LocationStep) step] )*
 	|
 	#(
-		SLASH step=pathExpr [path]
+		SLASH step=expr [path]
 		(
-			rightStep=pathExpr [path]
+			rightStep=expr [path]
 			{
-				if (rightStep instanceof LocationStep && ((LocationStep) rightStep).getAxis() == -1)
-					 ((LocationStep) rightStep).setAxis(Constants.CHILD_AXIS);
+				if (rightStep instanceof LocationStep) {
+					if(((LocationStep) rightStep).getAxis() == -1)
+						((LocationStep) rightStep).setAxis(Constants.CHILD_AXIS);
+				} else {
+					//rightStep = new SimpleStep(context, Constants.CHILD_AXIS, rightStep);
+					rightStep.setPrimaryAxis(Constants.CHILD_AXIS);
+					//path.replaceLastExpression(rightStep);
+				}
 			}
 		)?
 	)
@@ -1510,9 +1586,9 @@ throws PermissionDeniedException, EXistException, XPathException
 	}
 	|
 	#(
-		DSLASH step=pathExpr [path]
+		DSLASH step=expr [path]
 		(
-			rightStep=pathExpr [path]
+			rightStep=expr [path]
 			{
 				if (rightStep instanceof LocationStep) {
 					LocationStep rs= (LocationStep) rightStep;
@@ -1520,30 +1596,28 @@ throws PermissionDeniedException, EXistException, XPathException
 						rs.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
 					else
 						rs.setAxis(Constants.DESCENDANT_SELF_AXIS);
+				} else {
+					rightStep.setPrimaryAxis(Constants.DESCENDANT_SELF_AXIS);
 				}
 			}
 		)?
 	)
 	{
-		if (step instanceof LocationStep && ((LocationStep) rightStep).getAxis() == -1)
+		if (step instanceof LocationStep && ((LocationStep) step).getAxis() == -1)
 			 ((LocationStep) step).setAxis(Constants.DESCENDANT_SELF_AXIS);
 	}
 	;
 
 literalExpr [PathExpr path]
 returns [Expression step]
-{
-	step = null;
-}:
+throws XPathException
+{ step= null; }
+:
 	c:STRING_LITERAL
-	{
-		step= new LiteralValue(context, new StringValue(c.getText()));
-	}
+	{ step= new LiteralValue(context, new StringValue(c.getText())); }
 	|
 	i:INTEGER_LITERAL
-	{
-		step= new LiteralValue(context, new IntegerValue(Integer.parseInt(i.getText())));
-	}
+	{ step= new LiteralValue(context, new IntegerValue(Integer.parseInt(i.getText()))); }
 	|
 	(
 		dec:DECIMAL_LITERAL
@@ -1553,7 +1627,7 @@ returns [Expression step]
 		{ step= new LiteralValue(context, new DoubleValue(Double.parseDouble(dbl.getText()))); }
 	)
 	;
-	
+
 numericExpr [PathExpr path]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
@@ -1563,21 +1637,21 @@ throws PermissionDeniedException, EXistException, XPathException
 	PathExpr right= new PathExpr(context);
 }
 :
-	#( PLUS expr [left] expr [right] )
+	#( PLUS step=expr [left] step=expr [right] )
 	{
 		OpNumeric op= new OpNumeric(context, left, right, Constants.PLUS);
 		path.addPath(op);
 		step= op;
 	}
 	|
-	#( MINUS expr [left] expr [right] )
+	#( MINUS step=expr [left] step=expr [right] )
 	{
 		OpNumeric op= new OpNumeric(context, left, right, Constants.MINUS);
 		path.addPath(op);
 		step= op;
 	}
 	|
-	#( UNARY_MINUS expr [left] )
+	#( UNARY_MINUS step=expr [left] )
 	{
 		UnaryExpr unary= new UnaryExpr(context, Constants.MINUS);
 		unary.add(left);
@@ -1585,7 +1659,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		step= unary;
 	}
 	|
-	#( UNARY_PLUS expr [left] )
+	#( UNARY_PLUS step=expr [left] )
 	{
 		UnaryExpr unary= new UnaryExpr(context, Constants.PLUS);
 		unary.add(left);
@@ -1593,28 +1667,28 @@ throws PermissionDeniedException, EXistException, XPathException
 		step= unary;
 	}
 	|
-	#( "div" expr [left] expr [right] )
+	#( "div" step=expr [left] step=expr [right] )
 	{
 		OpNumeric op= new OpNumeric(context, left, right, Constants.DIV);
 		path.addPath(op);
 		step= op;
 	}
 	|
-	#( "idiv" expr [left] expr [right] )
+	#( "idiv" step=expr [left] step=expr [right] )
 	{
 		OpNumeric op= new OpNumeric(context, left, right, Constants.IDIV);
 		path.addPath(op);
 		step= op;
 	}
 	|
-	#( "mod" expr [left] expr [right] )
+	#( "mod" step=expr [left] step=expr [right] )
 	{
 		OpNumeric op= new OpNumeric(context, left, right, Constants.MOD);
 		path.addPath(op);
 		step= op;
 	}
 	|
-	#( STAR expr [left] expr [right] )
+	#( STAR step=expr [left] step=expr [right] )
 	{
 		OpNumeric op= new OpNumeric(context, left, right, Constants.MULT);
 		path.addPath(op);
@@ -1626,22 +1700,23 @@ predicates [Expression expression]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
 {
-	FilteredExpression filter = null;
-	step = expression;
-}:
+	FilteredExpression filter= null;
+	step= expression;
+}
+:
 	(
 		#(
 			PREDICATE
-			{ 
-				if(filter == null) {
-					filter = new FilteredExpression(context, step);
-					step = filter;
+			{
+				if (filter == null) {
+					filter= new FilteredExpression(context, step);
+					step= filter;
 				}
-				Predicate predicateExpr= new Predicate(context); }
+				Predicate predicateExpr= new Predicate(context);
+			}
 			expr [predicateExpr]
-			{ 
-				filter.addPredicate(predicateExpr); 
-				System.out.println("added predicate: " + predicateExpr.pprint());
+			{
+				filter.addPredicate(predicateExpr);
 			}
 		)
 	)*
@@ -1712,7 +1787,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	PathExpr query= new PathExpr(context);
 }
 :
-	#( ANDEQ expr [nodes] expr [query] )
+	#( ANDEQ step=expr [nodes] step=expr [query] )
 	{
 		ExtFulltext exprCont= new ExtFulltext(context, Constants.FULLTEXT_AND);
 		exprCont.setPath(nodes);
@@ -1720,7 +1795,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		path.addPath(exprCont);
 	}
 	|
-	#( OREQ expr [nodes] expr [query] )
+	#( OREQ step=expr [nodes] step=expr [query] )
 	{
 		ExtFulltext exprCont= new ExtFulltext(context, Constants.FULLTEXT_OR);
 		exprCont.setPath(nodes);
@@ -1729,6 +1804,70 @@ throws PermissionDeniedException, EXistException, XPathException
 	}
 	;
 
+valueComp [PathExpr path]
+returns [Expression step]
+throws PermissionDeniedException, EXistException, XPathException
+{
+	step= null;
+	PathExpr left= new PathExpr(context);
+	PathExpr right= new PathExpr(context);
+}
+:
+	#(
+		"eq" step=expr [left]
+		step=expr [right]
+		{
+			step= new ValueComparison(context, left, right, Constants.EQ);
+			path.add(step);
+		}
+	)
+	|
+	#(
+		"ne" step=expr [left]
+		step=expr [right]
+		{
+			step= new ValueComparison(context, left, right, Constants.NEQ);
+			path.add(step);
+		}
+	)
+	|
+	#(
+		"lt" step=expr [left]
+		step=expr [right]
+		{
+			step= new ValueComparison(context, left, right, Constants.LT);
+			path.add(step);
+		}
+	)
+	|
+	#(
+		"le" step=expr [left]
+		step=expr [right]
+		{
+			step= new ValueComparison(context, left, right, Constants.LTEQ);
+			path.add(step);
+		}
+	)
+	|
+	#(
+		"gt" step=expr [left]
+		step=expr [right]
+		{
+			step= new ValueComparison(context, left, right, Constants.GT);
+			path.add(step);
+		}
+	)
+	|
+	#(
+		"ge" step=expr [left]
+		step=expr [right]
+		{
+			step= new ValueComparison(context, left, right, Constants.GTEQ);
+			path.add(step);
+		}
+	)
+	;
+	
 generalComp [PathExpr path]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
@@ -1739,8 +1878,8 @@ throws PermissionDeniedException, EXistException, XPathException
 }
 :
 	#(
-		EQ expr [left]
-		expr [right]
+		EQ step=expr [left]
+		step=expr [right]
 		{
 			step= new GeneralComparison(context, left, right, Constants.EQ);
 			path.add(step);
@@ -1748,8 +1887,8 @@ throws PermissionDeniedException, EXistException, XPathException
 	)
 	|
 	#(
-		NEQ expr [left]
-		expr [right]
+		NEQ step=expr [left]
+		step=expr [right]
 		{
 			step= new GeneralComparison(context, left, right, Constants.NEQ);
 			path.add(step);
@@ -1757,8 +1896,8 @@ throws PermissionDeniedException, EXistException, XPathException
 	)
 	|
 	#(
-		LT expr [left]
-		expr [right]
+		LT step=expr [left]
+		step=expr [right]
 		{
 			step= new GeneralComparison(context, left, right, Constants.LT);
 			path.add(step);
@@ -1766,8 +1905,8 @@ throws PermissionDeniedException, EXistException, XPathException
 	)
 	|
 	#(
-		LTEQ expr [left]
-		expr [right]
+		LTEQ step=expr [left]
+		step=expr [right]
 		{
 			step= new GeneralComparison(context, left, right, Constants.LTEQ);
 			path.add(step);
@@ -1775,8 +1914,8 @@ throws PermissionDeniedException, EXistException, XPathException
 	)
 	|
 	#(
-		GT expr [left]
-		expr [right]
+		GT step=expr [left]
+		step=expr [right]
 		{
 			step= new GeneralComparison(context, left, right, Constants.GT);
 			path.add(step);
@@ -1784,8 +1923,8 @@ throws PermissionDeniedException, EXistException, XPathException
 	)
 	|
 	#(
-		GTEQ expr [left]
-		expr [right]
+		GTEQ step=expr [left]
+		step=expr [right]
 		{
 			step= new GeneralComparison(context, left, right, Constants.GTEQ);
 			path.add(step);
@@ -1799,7 +1938,7 @@ throws PermissionDeniedException, EXistException, XPathException
 {
 	step= null;
 	PathExpr elementContent= null;
-	Expression contentExpr = null;
+	Expression contentExpr= null;
 }
 :
 	#(
@@ -1835,9 +1974,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				}
 			}
 			contentExpr=constructor [elementContent]
-			{
-				elementContent.add(contentExpr);
-			}
+			{ elementContent.add(contentExpr); }
 		)*
 	)
 	|
@@ -1867,10 +2004,8 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	#(
 		LCURLY { EnclosedExpr subexpr= new EnclosedExpr(context); }
-		expr [subexpr]
-		{
-			step= subexpr;
-		}
+		step=expr [subexpr]
+		{ step= subexpr; }
 	)
 	;
 
@@ -1937,7 +2072,8 @@ protected XML_COMMENT_END : "-->" ;
 protected XML_PI_START : "<?" ;
 protected XML_PI_END : "?>" ;
 
-protected LETTER:
+protected LETTER
+:
 	( BASECHAR | IDEOGRAPHIC )
 	;
 
@@ -1985,7 +2121,8 @@ protected WS
 protected EXPR_COMMENT
 options {
 	testLiterals=false;
-}:
+}
+:
 	"(:" ( CHAR | ( ':' ~( ')' ) ) => ':' )* ":)"
 	;
 
@@ -2078,7 +2215,8 @@ options {
 NEXT_TOKEN
 options {
 	testLiterals = false;
-}:
+}
+:
 	XML_COMMENT { $setType(XML_COMMENT); }
 	|
 	( XML_PI_START )
@@ -2107,10 +2245,9 @@ options {
 	|
 	RCURLY { $setType(RCURLY); }
 	|
-	{ inAttributeContent }? attr:ATTRIBUTE_CONTENT
-	{ 
-		$setType(ATTRIBUTE_CONTENT);
-	}
+	{ inAttributeContent }?
+	attr:ATTRIBUTE_CONTENT
+	{ $setType(ATTRIBUTE_CONTENT); }
 	|
 	{ !(parseStringLiterals || inElementContent) }?
 	QUOT
@@ -2880,3 +3017,4 @@ protected EXTENDER
 		'\u30fc'..'\u30fe'
 	)
 	;
+

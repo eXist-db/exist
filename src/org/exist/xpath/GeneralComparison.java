@@ -80,16 +80,12 @@ public class GeneralComparison extends BinaryOp {
 	 */
 	public int returnsType() {
 		// TODO: Assumes that context sequence is a node set
-		if (inPredicate) {
+		if (inPredicate && (getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
 			/* If one argument is a node set we directly
 			 * return the matching nodes from the context set. This works
 			 * only inside predicates.
 			 */
-			if (getLeft().returnsType() == Type.NODE
-				&& (getLeft().getDependencies() & Dependency.CONTEXT_ITEM) == 0
-				&& (getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
-				return Type.NODE;
-			}
+			return Type.NODE;
 		}
 		// In all other cases, we return boolean
 		return Type.BOOLEAN;
@@ -99,7 +95,17 @@ public class GeneralComparison extends BinaryOp {
 	 * @see org.exist.xpath.AbstractExpression#getDependencies()
 	 */
 	public int getDependencies() {
-		return getLeft().getDependencies() | getRight().getDependencies();
+		int leftDeps = getLeft().getDependencies();
+		if (Type.subTypeOf(getLeft().returnsType(), Type.NODE)
+			// left expression returns node set
+			&& (leftDeps & Dependency.GLOBAL_VARS) == 0
+			// and has no dependency on global vars
+			&& (leftDeps & Dependency.CONTEXT_ITEM) == 0)
+			// and does not depend on the context item
+			{
+			return Dependency.CONTEXT_SET;
+		} else
+			return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
 	}
 
 	/* (non-Javadoc)
@@ -120,24 +126,20 @@ public class GeneralComparison extends BinaryOp {
 		 * This works only inside a predicate.
 		 */
 		if (inPredicate) {
-			int leftDeps = getLeft().getDependencies();
 			int rightDeps = getRight().getDependencies();
-			if (Type.subTypeOf(getLeft().returnsType(), Type.NODE)) {
+			if((getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
 				if ((rightDeps & Dependency.CONTEXT_ITEM) == 0
 					&& (Type.subTypeOf(getRight().returnsType(), Type.STRING)
 						|| Type.subTypeOf(getRight().returnsType(), Type.NODE))
 					&& (getRight().getCardinality() & Cardinality.MANY) == 0) {
 					// lookup search terms in the fulltext index
-					System.out.println("quick node set comparison");
 					return quickNodeSetCompare(docs, contextSequence);
 				} else {
-					System.out.println("simple node set comparison");
 					return nodeSetCompare(docs, contextSequence);
 				}
 			}
 		}
 		// Fall back to the generic compare process
-		System.out.println("generic comparison");
 		return genericCompare(context, docs, contextSequence, contextItem);
 	}
 
@@ -189,7 +191,6 @@ public class GeneralComparison extends BinaryOp {
 		DocumentSet docs,
 		Sequence contextSequence)
 		throws XPathException {
-		System.out.println("node set compare");
 		NodeSet result = new ExtArrayNodeSet();
 		NodeProxy current;
 		ContextItem c;
@@ -203,7 +204,7 @@ public class GeneralComparison extends BinaryOp {
 				rs = getRight().eval(docs, c.getNode().toSequence());
 				for (SequenceIterator si = rs.iterate(); si.hasNext();) {
 					if (compareValues(context, lv, si.nextItem().atomize())) {
-						result.add(c.getNode());
+						result.add(current);
 					}
 				}
 			} while ((c = c.getNextItem()) != null);
@@ -301,8 +302,8 @@ public class GeneralComparison extends BinaryOp {
 				rv = rv.convertTo(Type.DOUBLE);
 			}
 		}
-//		System.out.println(
-//			lv.getStringValue() + Constants.OPS[relation] + rv.getStringValue());
+		//		System.out.println(
+		//			lv.getStringValue() + Constants.OPS[relation] + rv.getStringValue());
 		return lv.compareTo(relation, rv);
 	}
 
@@ -341,7 +342,7 @@ public class GeneralComparison extends BinaryOp {
 		}
 		return buf.toString();
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#pprint()
 	 */
@@ -381,8 +382,9 @@ public class GeneralComparison extends BinaryOp {
 		if ((!Type.subTypeOf(getLeft().returnsType(), Type.NODE))
 			&& Type.subTypeOf(getRight().returnsType(), Type.NODE))
 			switchOperands();
-		else if((getLeft().getCardinality() & Cardinality.MANY) != 0 &&
-			(getRight().getCardinality() & Cardinality.MANY) == 0)
+		else if (
+			(getLeft().getCardinality() & Cardinality.MANY) != 0
+				&& (getRight().getCardinality() & Cardinality.MANY) == 0)
 			switchOperands();
 	}
 }

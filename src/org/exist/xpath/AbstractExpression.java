@@ -18,47 +18,53 @@
  * 
  * $Id$
  */
- 
+
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeProxy;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceIterator;
 
 public abstract class AbstractExpression implements Expression {
 
 	protected StaticContext context;
-	
+
 	public AbstractExpression(StaticContext context) {
 		this.context = context;
 	}
-	
-	public Sequence eval(DocumentSet docs, Sequence contextSequence) 
+
+	public Sequence eval(DocumentSet docs, Sequence contextSequence)
 		throws XPathException {
-		return eval(docs, contextSequence, null); 
+		return eval(docs, contextSequence, null);
 	}
-	
-	public abstract Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException;
-		
+
+	public abstract Sequence eval(
+		DocumentSet docs,
+		Sequence contextSequence,
+		Item contextItem)
+		throws XPathException;
+
 	public abstract String pprint();
-	
+
 	public abstract int returnsType();
-	
+
 	public abstract void resetState();
-	
+
 	/**
 	 * The default cardinality is {@link Cardinality#EXACTLY_ONE}.
 	 */
 	public int getCardinality() {
-		return Cardinality.EXACTLY_ONE;	// default cardinality
+		return Cardinality.EXACTLY_ONE; // default cardinality
 	}
-	
+
 	/**
 	 * Ignored. Has no effect by default.
 	 */
 	public void setInPredicate(boolean inPredicate) {
 	}
-	
+
 	/**
 	 * Returns {@link Dependency#DEFAULT_DEPENDENCIES}.
 	 * 
@@ -66,5 +72,17 @@ public abstract class AbstractExpression implements Expression {
 	 */
 	public int getDependencies() {
 		return Dependency.DEFAULT_DEPENDENCIES;
+	}
+
+	public void setPrimaryAxis(int axis) {
+	}
+	
+	public final static void setContext(Sequence seq) {
+		Item next;
+		for (SequenceIterator i = seq.iterate(); i.hasNext();) {
+			next = i.nextItem();
+			if (next instanceof NodeProxy)
+				 ((NodeProxy) next).addContextNode((NodeProxy) next);
+		}
 	}
 }
