@@ -729,14 +729,17 @@
 	<!-- ================================================================== -->
 	<!-- Build installer                                                    -->
 	<!-- ================================================================== -->
-	<target depends="all,samples,wrapper,javadocs" name="installer">
-        <taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
+	<target depends="all,samples,wrapper,javadocs" name="prepare-installer">
+		<taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
 			classname="com.izforge.izpack.ant.IzPackTask"/>
 		<tstamp/>
 		<delete dir="${jetty.dir}/work/Jetty__8080__exist"/>
 		<touch file="webapp/WEB-INF/logs/exist.log"/>
 		<touch file="webapp/WEB-INF/logs/xmldb.log"/>
 		<copy file="installer/install.xml.tmpl" tofile="installer/install.xml" filtering="true"/>
+	</target>
+		
+	<target depends="prepare-installer" name="installer">
 		<echo message="Calling IzPack to create installer ..."/>
 		<izpack input="installer/install.xml"
 			output="installer/${project.name}-${project.version}.jar"
@@ -744,13 +747,7 @@
 			installerType="standard"/>
 	</target>
 
-	<target depends="all,samples,javadocs,wrapper" name="snapshot-installer">
-		<taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
-			classname="com.izforge.izpack.ant.IzPackTask"/>
-		<delete dir="${jetty.dir}/work/Jetty__8080__exist"/>
-		<touch file="webapp/WEB-INF/logs/exist.log"/>
-		<touch file="webapp/WEB-INF/logs/xmldb.log"/>
-		<copy file="installer/install.xml.tmpl" tofile="installer/install.xml" filtering="true"/>
+	<target depends="prepare-installer" name="snapshot-installer">
 		<echo message="Calling IzPack to create installer ..."/>
 		<izpack input="installer/install.xml"
 			output="installer/${project.name}-snapshot-${DSTAMP}.jar"
@@ -758,6 +755,14 @@
 			installerType="standard"/>
 	</target>
 
+	<target depends="prepare-installer" name="cvs-build">
+		<echo message="Calling IzPack to create installer ..."/>
+		<izpack input="installer/install.xml"
+			output="installer/${project.name}-cvs-${DSTAMP}.jar"
+			basedir="." izPackDir="${izpack.dir}"
+			installerType="standard"/>
+	</target>
+	
     <!-- ================================================================== -->
     <!-- Create HTML files for docs on http://exist-db.org                  -->
     <!-- ================================================================== -->
