@@ -35,6 +35,7 @@ import org.exist.storage.NativeTextEngine;
 import org.exist.storage.IndexPaths;
 import org.exist.storage.analysis.SimpleTokenizer;
 import org.exist.storage.analysis.TextToken;
+import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
 import org.exist.xquery.functions.*;
 import org.exist.xquery.value.AtomicValue;
@@ -287,6 +288,10 @@ public class GeneralComparison extends BinaryOp {
 			// setup up an &= expression using the fulltext index
 			ExtFulltext containsExpr = new ExtFulltext(context, Constants.FULLTEXT_AND);
 			containsExpr.setASTNode(getASTNode());
+			// disable default match highlighting
+			int oldFlags = context.getBroker().getTextEngine().getTrackMatches();
+			context.getBroker().getTextEngine().setTrackMatches(Serializer.TAG_NONE);
+			
 			int i = 0;
 			for (; i < 5 && (token = tokenizer.nextToken(true)) != null; i++) {
 				// remember if we find an alphanumeric token
@@ -302,6 +307,7 @@ public class GeneralComparison extends BinaryOp {
 				containsExpr.addTerm(new LiteralValue(context, new StringValue(cmp)));
 				nodes = (NodeSet) containsExpr.eval(nodes, null);
 			}
+			context.getBroker().getTextEngine().setTrackMatches(oldFlags);
 			cmp = cmpCopy;
 		}
 		// now compare the input node set to the search expression

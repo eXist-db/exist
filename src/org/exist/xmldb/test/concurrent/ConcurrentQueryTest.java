@@ -59,8 +59,8 @@ public class ConcurrentQueryTest extends ConcurrentTestBase {
 		String query1 = "distinct-values(//ELEMENT/@attribute-2)";
 		String query2 = "/ROOT-ELEMENT//ELEMENT-1[@attribute-3]";
 		
-		addAction(new XQueryAction(URI + "/C1", "R1.xml", query0), 20, 500, 0);
-		addAction(new XQueryAction(URI + "/C1", "R1.xml", query1), 20, 250, 0);
-		addAction(new XQueryAction(URI + "/C1", "R1.xml", query2), 20, 0, 0);
+		addAction(new XQueryAction(URI + "/C1", "R1.xml", query0), 200, 500, 0);
+		addAction(new XQueryAction(URI + "/C1", "R1.xml", query1), 200, 250, 0);
+		addAction(new XQueryAction(URI + "/C1", "R1.xml", query2), 200, 0, 0);
 	}
 }

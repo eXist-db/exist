@@ -43,7 +43,7 @@ public class XMLDBGetChildResources extends XMLDBAbstractCollectionManipulator {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-child-resources", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns the resource of collection",
+			"Returns all child resources in the specified collection.",
 			new SequenceType[] {
 					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
 			},

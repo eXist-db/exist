@@ -49,7 +49,8 @@ public class XMLDBCreateUser extends BasicFunction {
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("create-user", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
-			"Create a new user in the database. Requires username, password, and at least one group name.",
+			"Create a new user in the database. Arguments are: username, password, group memberships," +
+			"home collection.",
 			new SequenceType[]{
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),

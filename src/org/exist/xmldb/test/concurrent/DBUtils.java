@@ -25,9 +25,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
 
+import org.exist.source.Source;
+import org.exist.source.StringSource;
 import org.exist.util.Occurrences;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
+import org.exist.xmldb.XQueryService;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -122,6 +125,14 @@ public class DBUtils {
 		return service.query(xpath);
 	}
 	
+	public static ResourceSet xquery(Collection collection, String xquery)
+	throws XMLDBException
+	{
+		XQueryService service = getXQueryService(collection);
+		Source source = new StringSource(xquery);
+		return service.execute(source);
+	}
+	
 	public static XPathQueryService getQueryService(Collection collection)
 	throws XMLDBException
 	{
@@ -129,6 +140,13 @@ public class DBUtils {
 				"XPathQueryService", "1.0");
 	}
 
+	public static XQueryService getXQueryService(Collection collection)
+	throws XMLDBException
+	{
+		return (XQueryService) collection.getService(
+				"XQueryService", "1.0");
+	}
+	
 	public static String[] wordList(Collection root) throws XMLDBException {
 		IndexQueryService service = (IndexQueryService)
 		root.getService("IndexQueryService", "1.0");

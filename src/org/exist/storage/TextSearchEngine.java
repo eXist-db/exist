@@ -39,6 +39,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.analysis.SimpleTokenizer;
 import org.exist.storage.analysis.Tokenizer;
+import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
 import org.exist.util.Occurrences;
 import org.exist.util.PorterStemmer;
@@ -66,7 +67,8 @@ public abstract class TextSearchEngine extends Observable {
 	protected boolean stem = false ;
 	protected boolean termFreq = true;
 	protected PorterStemmer stemmer = null;
-
+	protected int trackMatches = Serializer.TAG_ELEMENT_MATCHES;
+	
 	/**
 	 * Construct a new instance and configure it.
 	 * 
@@ -85,6 +87,15 @@ public abstract class TextSearchEngine extends Observable {
 			stem = stemming.booleanValue();
 		if((termFrequencies = (Boolean) config.getProperty("indexer.store-term-freq")) != null)
 			termFreq = termFrequencies.booleanValue();
+		String track = (String) config.getProperty("serialization.match-tagging-elements");
+		if (track != null)
+			trackMatches = track.equalsIgnoreCase("yes")
+			? Serializer.TAG_ELEMENT_MATCHES
+					: Serializer.TAG_NONE;
+		track = (String) config.getProperty("serialization.match-tagging-attributes");
+		if (track != null && track.equalsIgnoreCase("yes"))
+			trackMatches = trackMatches | Serializer.TAG_ATTRIBUTE_MATCHES;
+		
 		if ((tokenizerClass = (String) config.getProperty("indexer.tokenizer"))
 			!= null) {
 			try {
@@ -155,6 +166,14 @@ public abstract class TextSearchEngine extends Observable {
 	public abstract void flush();
 	public abstract void close();
 
+	public int getTrackMatches() {
+		return trackMatches;
+	}
+	
+	public void setTrackMatches(int flags) {
+		trackMatches = flags;
+	}
+	
 	/**
 	 * For each of the given search terms and each of the documents in the
 	 * document set, return a node-set of matching nodes. 

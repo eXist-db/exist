@@ -51,7 +51,7 @@ public class XQueryAction extends Action {
 	public boolean execute() throws Exception {
 		Collection col = DatabaseManager.getCollection(collectionPath);
 		System.out.println(Thread.currentThread().getName() + ": executing query: " + xquery);
-		ResourceSet result = DBUtils.query(col, xquery);
+		ResourceSet result = DBUtils.xquery(col, xquery);
 		System.out.println(Thread.currentThread().getName() + ": found " + result.getSize());
 		
 		DefaultHandler handler = new DefaultHandler();

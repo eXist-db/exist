@@ -112,7 +112,6 @@ public class NativeTextEngine extends TextSearchEngine {
 	protected PatternCompiler regexCompiler = new Perl5Compiler();
 	protected PatternCompiler globCompiler = new GlobCompiler();
 	protected PatternMatcher matcher = new Perl5Matcher();
-	protected int trackMatches = Serializer.TAG_ELEMENT_MATCHES;
 
 	public NativeTextEngine(DBBroker broker, Configuration config, int buffers) {
 		super(broker, config);
@@ -129,16 +128,6 @@ public class NativeTextEngine extends TextSearchEngine {
 			dataBuffers = indexBuffers;
 		if ((temp = (String) config.getProperty("db-connection.compress")) != null)
 			compress = temp.equals("true");
-		temp = (String) config
-				.getProperty("serialization.match-tagging-elements");
-		if (temp != null)
-			trackMatches = temp.equalsIgnoreCase("yes")
-					? Serializer.TAG_ELEMENT_MATCHES
-					: Serializer.TAG_NONE;
-		temp = (String) config
-				.getProperty("serialization.match-tagging-attributes");
-		if (temp != null && temp.equalsIgnoreCase("yes"))
-			trackMatches = trackMatches | Serializer.TAG_ATTRIBUTE_MATCHES;
 		String pathSep = System.getProperty("file.separator", "/");
 		try {
 			if ((dbWords = (BFile) config.getProperty("db-connection.words")) == null) {
@@ -199,6 +188,14 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 	}
 
+	public int getTrackMatches() {
+		return trackMatches;
+	}
+	
+	public void setTrackMatches(int flags) {
+		trackMatches = flags;
+	}
+	
 	/**
 	 * Collect all words in a document to be removed
 	 * 

@@ -503,6 +503,10 @@ public class NodeProxy extends AbstractNodeSet implements NodeValue, Comparable 
 		context = node.getContext();
 	}
 
+	public void clearContext() {
+		context = null;
+	}
+	
 	public ContextItem getContext() {
 		return context;
 	}

@@ -101,7 +101,6 @@ public class Predicate extends PathExpr {
 	 * @throws XPathException
 	 */
 	private Sequence evalBoolean(Sequence contextSequence, Expression inner) throws XPathException {
-		LOG.debug("evalBoolean");
 		Sequence result = new ValueSequence();
 		int p = 0;
 		context.setContextPosition(0);

@@ -48,7 +48,8 @@ public class SetCurrentUser extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("set-current-user", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-			"Encodes the specified URL with the current HTTP session-id.",
+			"Change the user identity for the current HTTP session. Subsequent XQueries in the session will run with the " +
+			"new user identity.",
 			new SequenceType[] {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
