@@ -434,6 +434,11 @@ public abstract class DBBroker extends Observable {
 	public abstract void moveResource(DocumentImpl doc, Collection destination, String newName)
 	throws PermissionDeniedException, LockException;
 	
+	public abstract void copyResource(DocumentImpl doc, Collection destination, String newName) 
+	throws PermissionDeniedException, LockException;
+	
+	public abstract void defrag(DocumentImpl doc) throws PermissionDeniedException;
+	
 	public void sync() {
 		/*
 		 *  do nothing

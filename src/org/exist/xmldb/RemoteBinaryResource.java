@@ -44,7 +44,8 @@ import org.xmldb.api.modules.BinaryResource;
  */
 public class RemoteBinaryResource implements BinaryResource, EXistResource {
 
-	private String documentName, path;
+	private String documentName;
+	private String path;
 	private RemoteCollection parent;
 	private byte[] data = null;
 	private Permission permissions = null;

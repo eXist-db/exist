@@ -72,7 +72,7 @@ public class ElementImpl extends NamedNode implements Element {
 	public ElementImpl() {
 		super(Node.ELEMENT_NODE);
 	}
-
+	
 	/**
 	 *  Constructor for the ElementImpl object
 	 *
@@ -116,7 +116,7 @@ public class ElementImpl extends NamedNode implements Element {
 		if (namespaceMappings != null)
 			namespaceMappings = null;
 	}
-
+	
 	public static NodeImpl deserialize(
 		byte[] data,
 		int start,

@@ -595,7 +595,7 @@ public class NativeTextEngine extends TextSearchEngine {
 	 * @param doc
 	 *                The document
 	 */
-	public void removeDocument(DocumentImpl doc) {
+	public void dropIndex(DocumentImpl doc) {
 		try {
 			TreeSet words = new TreeSet();
 			NodeList children = doc.getChildNodes();
@@ -622,66 +622,57 @@ public class NativeTextEngine extends TextSearchEngine {
 				word = (String) iter.next();
 				ref = new WordRef(collectionId, word);
 				try {
-					lock.acquire(Lock.READ_LOCK);
+					lock.acquire(Lock.WRITE_LOCK);
 					is = dbWords.getAsStream(ref);
-				} catch (LockException e) {
-                    LOG.warn("removeDocument(DocumentImpl) - "
-                        + "could not acquire lock on words db", e);
-					is = null;
-				} catch (IOException e) {
-                    LOG.error("removeDocument(DocumentImpl) - "
-                        + "io error while reading words", e);
-					is = null;
-				} finally {
-					lock.release();
-				}
-				if (is == null) {
-				    LOG.warn(word + " not found in the index. This should not happen!");
-					continue;
-				}
-				os = new VariableByteOutputStream();
-				changed = false;
-				try {
-					while (is.available() > 0) {
-						docId = is.readInt();
-						section = is.readByte();
-						len = is.readInt();
-						if (docId != doc.getDocId()) {
-							// copy data to new buffer
-							os.writeInt(docId);
-							os.writeByte(section);
-							os.writeInt(len);
-							is.copyTo(os, len);
-						} else {
-							changed = true;
-							// skip
-							is.skip(len);
-						}
+					if (is == null) {
+						LOG.warn(word + " not found in the index. This should not happen!");
+						continue;
 					}
-				} catch (EOFException e) {
-//				    LOG.debug(e.getMessage(), e);
-				} catch (IOException e) {
-//				    LOG.debug(e.getMessage(), e);
-				}
-				if (changed) {
+					os = new VariableByteOutputStream();
+					changed = false;
 					try {
-						lock.acquire(Lock.WRITE_LOCK);
+						while (is.available() > 0) {
+							docId = is.readInt();
+							section = is.readByte();
+							len = is.readInt();
+							if (docId != doc.getDocId()) {
+								// copy data to new buffer
+								os.writeInt(docId);
+								os.writeByte(section);
+								os.writeInt(len);
+								is.copyTo(os, len);
+							} else {
+								changed = true;
+								// skip
+								is.skip(len);
+							}
+						}
+					} catch (EOFException e) {
+						//				    LOG.debug(e.getMessage(), e);
+					} catch (IOException e) {
+						//				    LOG.debug(e.getMessage(), e);
+					}
+					if (changed) {
 						if (os.data().size() == 0) {
 							dbWords.remove(ref);
 						} else {
-							if (dbWords.put(ref, os.data()) < 0)
-                                if (LOG.isDebugEnabled()) {
-                                    LOG.debug("removeDocument() - "
-                                        + "could not remove index for "
-                                        + word);
-                                }
+							if (dbWords.put(ref, os.data()) < 0 && LOG.isDebugEnabled()) {
+									LOG.debug("removeDocument() - "
+											+ "could not remove index for "
+											+ word);
+							}
 						}
-					} catch (LockException e) {
-                        LOG.warn("removeDocument(DocumentImpl) - "
-                            + "could not acquire lock on words db", e);
-					} finally {
-						lock.release();
 					}
+				} catch (LockException e) {
+					LOG.warn("removeDocument(DocumentImpl) - "
+							+ "could not acquire lock on words db", e);
+					is = null;
+				} catch (IOException e) {
+					LOG.error("removeDocument(DocumentImpl) - "
+							+ "io error while reading words", e);
+					is = null;
+				} finally {
+					lock.release();
 				}
 			}
             if (LOG.isDebugEnabled()) {
@@ -1170,7 +1161,8 @@ public class NativeTextEngine extends TextSearchEngine {
 
 		DocumentSet docs;
 		TermMatcher matcher;
-		NodeSet result, contextSet;
+		NodeSet result;
+		NodeSet contextSet;
 		XQueryContext context;
 		
 		public SearchCallback(XQueryContext context, TermMatcher comparator, NodeSet result,

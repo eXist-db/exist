@@ -41,4 +41,7 @@ public interface CollectionManagementServiceImpl extends
     
     public void moveResource(String resourcePath, String destinationPath, String newName) 
     throws XMLDBException;
+    
+    public void copyResource(String resourcePath, String destinationPath, String newName)
+    throws XMLDBException;
 }

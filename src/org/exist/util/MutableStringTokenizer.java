@@ -8,7 +8,8 @@ package org.exist.util;
 public class MutableStringTokenizer {
 
 	private CharSequence buf_;
-	private int pos_ = 0, last_ = 0;
+	private int pos_ = 0 ;
+	private int last_ = 0 ;
 	private String tokens_;
 	
 	public MutableStringTokenizer(CharSequence buf, String tokens) {

@@ -38,8 +38,10 @@ package org.exist.util;
 public class PorterStemmer
 {   
   private char[] b;
-  private int i,    /* offset into b */
-    j, k, k0;
+  private int i;
+  /* offset into b */ private int j;
+  private int k;
+  private int k0;
   private boolean dirty = false;
   private static final int INC = 50; /* unit of size whereby b is increased */
   private static final int EXTRA = 1;

@@ -42,7 +42,8 @@ public class ClockCache implements Cache {
 	protected Cacheable[] items;
 	protected int size;
 	protected int count = 0;
-	protected int hits = 0, fails = 0;
+	protected int hits = 0 ;
+	protected int fails = 0 ;
 	
 	public ClockCache(int size) {
 		this.size = size;

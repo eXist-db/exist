@@ -253,7 +253,8 @@ public class InteractiveClient {
 
 	protected TreeSet completitions = new TreeSet();
 	protected LinkedList queryHistory = new LinkedList();
-	protected File queryHistoryFile, historyFile;
+	protected File queryHistoryFile;
+	protected File historyFile;
 	
 	protected Collection current = null;
 	protected int nextInSet = 1;

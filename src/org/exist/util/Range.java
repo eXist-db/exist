@@ -5,7 +5,8 @@ package org.exist.util;
 
 public class Range {
 	
-	private long start_, end_;
+	private long start_;
+	private long end_;
 	
 	public Range(long start, long end) {
 		start_ = start;

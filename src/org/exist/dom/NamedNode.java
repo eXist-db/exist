@@ -22,6 +22,7 @@
  */
 package org.exist.dom;
 
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
 /**
@@ -43,14 +44,6 @@ public class NamedNode extends NodeImpl {
     public NamedNode(short nodeType, QName qname) {
         super(nodeType);
         this.nodeName = qname;
-    }
-
-    /**
-     * @param n
-     */
-    public NamedNode(Node n) {
-        super(n);
-        this.nodeName = ((NodeImpl)n).getQName();
     }
 
     /**

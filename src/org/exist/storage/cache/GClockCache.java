@@ -45,7 +45,8 @@ public class GClockCache implements Cache {
 	protected int count = 0;
 	protected int size;
 	protected Long2ObjectHashMap map;
-	protected int hits = 0, fails = 0;
+	protected int hits = 0 ;
+	protected int fails = 0 ;
 	
 	public GClockCache(int size) {
 		this.size = size;

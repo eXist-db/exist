@@ -31,7 +31,8 @@ public final class DOMFileIterator implements Iterator {
 		
 		DOMFile db = null;
 		NodeProxy node = null;
-		int offset, lastOffset = 0;
+		int offset;
+		int lastOffset = 0 ;
 		short lastTID = -1;
 		DOMPage p = null;
 		long page;

@@ -14,6 +14,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.exist.security.User;
+import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.UserManagementService;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -38,7 +39,7 @@ public class Restore extends DefaultHandler {
 	private String username;
 	private String pass;
 	private XMLReader reader;
-	private Collection current;
+	private CollectionImpl current;
 	private Stack stack = new Stack();
 	private RestoreDialog dialog = null;
 
@@ -210,7 +211,7 @@ public class Restore extends DefaultHandler {
 		}
 	}
 
-	private final Collection mkcol(String collPath) throws XMLDBException {
+	private final CollectionImpl mkcol(String collPath) throws XMLDBException {
 		if (collPath.startsWith("/db"))
 			collPath = collPath.substring("/db".length());
 		CollectionManagementService mgtService;
@@ -231,6 +232,6 @@ public class Restore extends DefaultHandler {
 			} else
 				current = c;
 		}
-		return current;
+		return (CollectionImpl)current;
 	}
 }

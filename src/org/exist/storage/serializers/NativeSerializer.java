@@ -181,6 +181,7 @@ public class NativeSerializer extends Serializer {
                         Long.toString(gid));
             }
             if (first && showId > 0) {
+            	String src = doc.getCollection().getName() + '/' + doc.getFileName();
                 attributes.addAttribute(EXIST_NS, "source", "exist:source",
                         "CDATA", doc.getFileName());
             }

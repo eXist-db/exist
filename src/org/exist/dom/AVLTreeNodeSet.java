@@ -546,7 +546,9 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 		}
 
 		NodeProxy data;
-		Node parent, leftChild, rightChild;
+		Node parent;
+		Node leftChild;
+		Node rightChild;
 		int height;
 	}
 

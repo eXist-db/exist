@@ -20,6 +20,7 @@
 
 package org.exist.xquery;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.NodeSet;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -27,6 +28,8 @@ import org.exist.xquery.value.Type;
 
 public class Union extends CombiningExpression {
 
+	private final static Logger LOG = Logger.getLogger(Union.class);
+	
     public Union(XQueryContext context, PathExpr left, PathExpr right) {
         super(context, left, right);
     }
@@ -34,6 +37,7 @@ public class Union extends CombiningExpression {
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 		Sequence lval = left.eval(contextSequence, contextItem);
 		Sequence rval = right.eval(contextSequence, contextItem);
+		long start = System.currentTimeMillis();
 		if(lval.getLength() == 0)
 		    return rval;
 		if(rval.getLength() == 0)
@@ -41,6 +45,7 @@ public class Union extends CombiningExpression {
 		if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
 			throw new XPathException("union operand is not a node sequence");
         NodeSet result = lval.toNodeSet().union(rval.toNodeSet());
+        LOG.debug("Union took " + (System.currentTimeMillis() - start));
 		return result;
 	}
 
