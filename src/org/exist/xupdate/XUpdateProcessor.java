@@ -497,7 +497,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			final String normalized = preserveWhitespace ? charBuf.toString() :
 				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
 			if (normalized.length() > 0) {
-				Text text = doc.createTextNode(normalized);
+				Text text = doc.createTextNode(charBuf.toString());
 				if (stack.isEmpty()) {
 					contents.add(text);
 				} else {
