@@ -512,7 +512,7 @@ public class DOMFile extends BTree implements Lockable {
 			}
 			final long firstChildId = XMLUtil.getFirstChildId(doc, id);
 			final Iterator iter =
-				new DOMFileIterator(lock, doc, this, parentPointer);
+				new DOMFileIterator(lock, this, parentPointer);
 			final Value value = (Value) iter.next();
 			final NodeImpl n = NodeImpl.deserialize(value.getData(), doc);
 			n.setGID(id);
@@ -754,7 +754,7 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	public Iterator iterator(DocumentImpl doc, NodeProxy node) {
 		try {
-			return new DOMFileIterator(owner, doc, this, node);
+			return new DOMFileIterator(owner, this, node);
 		} catch (IOException ioe) {
 			LOG.warn(ioe);
 		} catch (BTreeException bte) {
@@ -772,7 +772,7 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	public Iterator iterator(DocumentImpl doc, long address) {
 		try {
-			return new DOMFileIterator(owner, doc, this, address);
+			return new DOMFileIterator(owner, this, address);
 		} catch (IOException ioe) {
 			LOG.warn(ioe);
 		} catch (BTreeException bte) {
@@ -1026,249 +1026,244 @@ public class DOMFile extends BTree implements Lockable {
 		rec.page.setDirty(true);
 	}
 
-	private final class DOMFileIterator implements Iterator {
-		DOMFile db = null;
-		DocumentImpl doc = null;
-		Value nextVal = null;
-		NodeProxy node = null;
-		int offset;
-		short lastTID = -1;
-		DOMPage p = null;
-		long page;
-		long startAddress = -1;
-		Object lockKey;
+	public final class DOMFileIterator implements Iterator {
+			DOMFile db = null;
+			NodeProxy node = null;
+			int offset;
+			short lastTID = -1;
+			DOMPage p = null;
+			long page;
+			long startAddress = -1;
+			Object lockKey;
 
-		/**
-		 *  Constructor for the DOMFileIterator object
-		 *
-		 *@param  doc                 Description of the Parameter
-		 *@param  db                  Description of the Parameter
-		 *@param  node                Description of the Parameter
-		 *@exception  BTreeException  Description of the Exception
-		 *@exception  IOException     Description of the Exception
-		 */
-		public DOMFileIterator(
-			Object lock,
-			DocumentImpl doc,
-			DOMFile db,
-			NodeProxy node)
-			throws BTreeException, IOException {
-			this.db = db;
-			this.node = node;
-			this.doc = doc;
-			lockKey = (lock == null ? this : lock);
-		}
-
-		/**
-		 *  Constructor for the DOMFileIterator object
-		 *
-		 *@param  doc                 Description of the Parameter
-		 *@param  db                  Description of the Parameter
-		 *@param  address             Description of the Parameter
-		 *@exception  BTreeException  Description of the Exception
-		 *@exception  IOException     Description of the Exception
-		 */
-		public DOMFileIterator(
-			Object lock,
-			DocumentImpl doc,
-			DOMFile db,
-			long address)
-			throws BTreeException, IOException {
-			this.db = db;
-			this.startAddress = address;
-			this.doc = doc;
-			lockKey = (lock == null ? this : lock);
-		}
-
-		/**
-		 *  Gets the currentAddress attribute of the DOMFileIterator object
-		 *
-		 *@return    The currentAddress value
-		 */
-		public long currentAddress() {
-			return createPointer((int) page, lastTID);
-		}
-
-		/**
-		 *  Description of the Method
-		 *
-		 *@return    Description of the Return Value
-		 */
-		public boolean hasNext() {
-			Lock lock = db.getLock();
-			try {
-				try {
-					lock.acquire(lockKey);
-					lock.enter(lockKey);
-				} catch (LockException e) {
-					return false;
-				}
-				if (node != null) {
-					db.setOwnerObject(lockKey);
-					long addr = db.findValue(lockKey, node);
-					if(addr == KEY_NOT_FOUND)
-						return false;
-					RecordPos rec = findValuePosition(addr);
-					page = rec.page.getPageNum();
-					p = rec.page;
-					offset = rec.offset - 2;
-					node = null;
-				} else if (-1 < startAddress) {
-					RecordPos rec = findValuePosition(startAddress);
-					page = rec.page.getPageNum();
-					offset = rec.offset - 2;
-					p = rec.page;
-				} else if (page > -1)
-					p = db.getCurrentPage(page);
-				else {
-					lock.release(lockKey);
-					return false;
-				}
-				db.buffer.add(p);
-				DOMFilePageHeader ph = p.getPageHeader();
-				lock.release(lockKey);
-				if (offset < ph.getDataLength())
-					return true;
-				else if (ph.getNextDataPage() < 0)
-					return false;
+			/**
+			 *  Constructor for the DOMFileIterator object
+			 *
+			 *@param  doc                 Description of the Parameter
+			 *@param  db                  Description of the Parameter
+			 *@param  node                Description of the Parameter
+			 *@exception  BTreeException  Description of the Exception
+			 *@exception  IOException     Description of the Exception
+			 */
+			public DOMFileIterator(Object lock, DOMFile db, NodeProxy node)
+				throws BTreeException, IOException {
+				this.db = db;
+				if (-1 < node.internalAddress)
+					startAddress = node.internalAddress;
 				else
-					return true;
-			} catch (BTreeException e) {
-				LOG.warn(e);
-			} catch (IOException e) {
-				LOG.warn(e);
+					this.node = node;
+				lockKey = (lock == null ? this : lock);
 			}
-			lock.release(lockKey);
-			return false;
-		}
 
-		/**
-		 *  Description of the Method
-		 *
-		 *@return    Description of the Return Value
-		 */
-		public Object next() {
-			Lock lock = db.getLock();
-			try {
+			/**
+			 *  Constructor for the DOMFileIterator object
+			 *
+			 *@param  doc                 Description of the Parameter
+			 *@param  db                  Description of the Parameter
+			 *@param  address             Description of the Parameter
+			 *@exception  BTreeException  Description of the Exception
+			 *@exception  IOException     Description of the Exception
+			 */
+			public DOMFileIterator(Object lock, DOMFile db, long address)
+				throws BTreeException, IOException {
+				this.db = db;
+				this.startAddress = address;
+				lockKey = (lock == null ? this : lock);
+			}
+
+			/**
+			 *  Gets the currentAddress attribute of the DOMFileIterator object
+			 *
+			 *@return    The currentAddress value
+			 */
+			public long currentAddress() {
+				return createPointer((int) page, lastTID);
+			}
+
+			/**
+			 *  Description of the Method
+			 *
+			 *@return    Description of the Return Value
+			 */
+			public boolean hasNext() {
+				Lock lock = db.getLock();
 				try {
-					lock.acquire(lockKey);
-					lock.enter(lockKey);
-				} catch (LockException e) {
-					return null;
-				}
-				if (node != null) {
-					db.setOwnerObject(lockKey);
-					long addr = db.findValue(lockKey, node);
-					if(addr == KEY_NOT_FOUND)
-						return null;
-					RecordPos rec = findValuePosition(addr);
-					page = rec.page.getPageNum();
-					p = rec.page;
-					offset = rec.offset - 2;
-					node = null;
-				} else if (-1 < startAddress) {
-					RecordPos rec = findValuePosition(startAddress);
-					page = rec.page.getPageNum();
-					offset = rec.offset - 2;
-					p = rec.page;
-					startAddress = -1;
-				} else if (page > -1)
-					p = db.getCurrentPage(page);
-				else {
+					try {
+						lock.acquire(lockKey);
+						lock.enter(lockKey);
+					} catch (LockException e) {
+						return false;
+					}
+					if (node != null) {
+						db.setOwnerObject(lockKey);
+						long addr = db.findValue(lockKey, node);
+						if (addr == KEY_NOT_FOUND)
+							return false;
+						final RecordPos rec = findValuePosition(addr);
+						page = rec.page.getPageNum();
+						p = rec.page;
+						offset = rec.offset - 2;
+						node = null;
+					} else if (-1 < startAddress) {
+						final RecordPos rec = findValuePosition(startAddress);
+						page = rec.page.getPageNum();
+						offset = rec.offset - 2;
+						p = rec.page;
+					} else if (page > -1)
+						p = db.getCurrentPage(page);
+					else {
+						lock.release(lockKey);
+						return false;
+					}
+					db.buffer.add(p);
+					final DOMFilePageHeader ph = p.getPageHeader();
 					lock.release(lockKey);
-					return null;
+					if (offset < ph.getDataLength())
+						return true;
+					else if (ph.getNextDataPage() < 0)
+						return false;
+					else
+						return true;
+				} catch (BTreeException e) {
+					LOG.warn(e);
+				} catch (IOException e) {
+					LOG.warn(e);
 				}
-				DOMFilePageHeader ph = p.getPageHeader();
-				if (offset >= ph.getDataLength()) {
-					long nextPage = ph.getNextDataPage();
-					if (nextPage < 0) {
-						LOG.debug(
-							"bad link to next " + p.page.getPageInfo());
+				lock.release(lockKey);
+				return false;
+			}
+
+			/**
+			 *  Description of the Method
+			 *
+			 *@return    Description of the Return Value
+			 */
+			public Object next() {
+				Lock lock = db.getLock();
+				try {
+					try {
+						lock.acquire(lockKey);
+						lock.enter(lockKey);
+					} catch (LockException e) {
+						return null;
+					}
+					// position the iterator at the start of the first value
+					if (node != null) {
+						db.setOwnerObject(lockKey);
+						final long addr = db.findValue(lockKey, node);
+						if (addr == KEY_NOT_FOUND)
+							return null;
+						RecordPos rec = findValuePosition(addr);
+						page = rec.page.getPageNum();
+						p = rec.page;
+						offset = rec.offset - 2;
+						node = null;
+					} else if (-1 < startAddress) {
+						final RecordPos rec = findValuePosition(startAddress);
+						page = rec.page.getPageNum();
+						offset = rec.offset - 2;
+						p = rec.page;
+						startAddress = -1;
+					} else if (page > -1)
+						p = db.getCurrentPage(page);
+					else {
 						lock.release(lockKey);
 						return null;
 					}
-					page = nextPage;
-					p = db.getCurrentPage(nextPage);
-					offset = 0;
-				}
-				db.buffer.add(p);
-				short tid = ByteConversion.byteToShort(p.data, offset);
-				short l = ByteConversion.byteToShort(p.data, offset + 2);
-				int dataStart = offset + 4;
-				Value nextVal = new Value(p.data, dataStart, l);
-				nextVal.setAddress(createPointer((int) page, tid));
-				lastTID = tid;
-				offset = dataStart + l;
-				lock.release(lockKey);
-				return nextVal;
-			} catch (BTreeException e) {
-				LOG.warn(e);
-			} catch (IOException e) {
-				LOG.warn(e);
-			}
-			lock.release(lockKey);
-			return null;
-		}
-
-		/**  Description of the Method */
-		public void remove() {
-			Lock lock = db.getLock();
-			try {
-				lock.acquire(lockKey, Lock.WRITE_LOCK);
-				lock.enter(lockKey);
-				DOMPage p = null;
-				p = db.getCurrentPage(page);
-				DOMFilePageHeader ph = p.getPageHeader();
-				ph.decRecordCount();
-				p.setDirty(true);
-				if (ph.getRecordCount() == 0) {
-					long np = ph.getNextDataPage();
-					try {
-						if(np > -1) {
-							DOMPage next = getCurrentPage(np);
-							next.getPageHeader().prevDataPage = -1;
-							db.buffer.add(next);
+					final DOMFilePageHeader ph = p.getPageHeader();
+					// next value larger than length of the current page?
+					if (offset >= ph.getDataLength()) {
+						// load next page in chain
+						final long nextPage = ph.getNextDataPage();
+						if (nextPage < 0) {
+							LOG.debug("bad link to next " + p.page.getPageInfo());
+							lock.release(lockKey);
+							return null;
 						}
-						ph.setNextDataPage(-1);
-						ph.setPrevDataPage(-1);
-						ph.setDataLength(0);
-						//ph.setNextTID((short)0);
-						ph.setRecordCount((short) 0);
-						p.setDirty(true);
-						db.buffer.remove(p);
-						db.unlinkPages(p.page);
-					} catch (IOException ioe) {
-						LOG.warn(ioe);
+						page = nextPage;
+						p = db.getCurrentPage(nextPage);
+						offset = 0;
 					}
-					page = np;
-					offset = 0;
+					// extract the value
+					lastTID = ByteConversion.byteToShort(p.data, offset);
+					final short l = ByteConversion.byteToShort(p.data, offset + 2);
+					final Value nextVal = new Value(p.data, offset + 4, l);
+					nextVal.setAddress(createPointer((int) page, lastTID));
+					offset = offset + 4 + l;
+					lock.release(lockKey);
+					return nextVal;
+				} catch (BTreeException e) {
+					LOG.warn(e);
+				} catch (IOException e) {
+					LOG.warn(e);
 				}
-			} catch (LockException e) {
-				LOG.warn(e);
-			} finally {
 				lock.release(lockKey);
+				return null;
+			}
+
+			/**  Description of the Method */
+			public void remove() {
+				Lock lock = db.getLock();
+				try {
+					lock.acquire(lockKey, Lock.WRITE_LOCK);
+					lock.enter(lockKey);
+					DOMPage p = null;
+					p = db.getCurrentPage(page);
+					DOMFilePageHeader ph = p.getPageHeader();
+					ph.decRecordCount();
+					p.setDirty(true);
+					if (ph.getRecordCount() == 0) {
+						long np = ph.getNextDataPage();
+						try {
+							if (np > -1) {
+								DOMPage next = getCurrentPage(np);
+								next.getPageHeader().prevDataPage = -1;
+								db.buffer.add(next);
+							}
+							ph.setNextDataPage(-1);
+							ph.setPrevDataPage(-1);
+							ph.setDataLength(0);
+							//ph.setNextTID((short)0);
+							ph.setRecordCount((short) 0);
+							p.setDirty(true);
+							db.buffer.remove(p);
+							db.unlinkPages(p.page);
+						} catch (IOException ioe) {
+							LOG.warn(ioe);
+						}
+						page = np;
+						offset = 0;
+					}
+				} catch (LockException e) {
+					LOG.warn(e);
+				} finally {
+					lock.release(lockKey);
+				}
+			}
+
+			/**
+			 *  Sets the to attribute of the DOMFileIterator object
+			 *
+			 *@param  node  The new to value
+			 */
+			public void setTo(NodeProxy node) {
+				if (-1 < node.internalAddress) {
+					startAddress = node.internalAddress;
+				} else {
+					this.node = node;
+				}
+			}
+
+			/**
+			 *  Sets the to attribute of the DOMFileIterator object
+			 *
+			 *@param  address  The new to value
+			 */
+			public void setTo(long address) {
+				this.startAddress = address;
 			}
 		}
-
-		/**
-		 *  Sets the to attribute of the DOMFileIterator object
-		 *
-		 *@param  node  The new to value
-		 */
-		public void setTo(NodeProxy node) {
-			this.node = node;
-		}
-
-		/**
-		 *  Sets the to attribute of the DOMFileIterator object
-		 *
-		 *@param  address  The new to value
-		 */
-		public void setTo(long address) {
-			this.startAddress = address;
-		}
-	}
-
+		
 	/**
 	 *  Description of the Class
 	 *

@@ -1,4 +1,4 @@
-// $ANTLR 2.7.2rc2 (20030105): "XPathParser.g" -> "XPathLexer.java"$
+// $ANTLR : "XPathParser.g" -> "XPathLexer.java"$
 
 	package org.exist.parser;
 	
@@ -57,21 +57,21 @@ public XPathLexer(LexerSharedInputState state) {
 	caseSensitiveLiterals = true;
 	setCaseSensitive(true);
 	literals = new Hashtable();
-	literals.put(new ANTLRHashString("ancestor", this), new Integer(45));
-	literals.put(new ANTLRHashString("node", this), new Integer(40));
-	literals.put(new ANTLRHashString("near", this), new Integer(36));
+	literals.put(new ANTLRHashString("ancestor", this), new Integer(43));
+	literals.put(new ANTLRHashString("node", this), new Integer(39));
+	literals.put(new ANTLRHashString("near", this), new Integer(33));
 	literals.put(new ANTLRHashString("text", this), new Integer(28));
 	literals.put(new ANTLRHashString("doctype", this), new Integer(21));
 	literals.put(new ANTLRHashString("or", this), new Integer(8));
-	literals.put(new ANTLRHashString("starts-with", this), new Integer(32));
+	literals.put(new ANTLRHashString("starts-with", this), new Integer(29));
 	literals.put(new ANTLRHashString("collection", this), new Integer(25));
-	literals.put(new ANTLRHashString("match", this), new Integer(35));
+	literals.put(new ANTLRHashString("match", this), new Integer(32));
 	literals.put(new ANTLRHashString("document", this), new Integer(22));
 	literals.put(new ANTLRHashString("xpointer", this), new Integer(4));
 	literals.put(new ANTLRHashString("and", this), new Integer(9));
 	literals.put(new ANTLRHashString("xcollection", this), new Integer(26));
-	literals.put(new ANTLRHashString("ends-with", this), new Integer(33));
-	literals.put(new ANTLRHashString("contains", this), new Integer(34));
+	literals.put(new ANTLRHashString("ends-with", this), new Integer(30));
+	literals.put(new ANTLRHashString("contains", this), new Integer(31));
 }
 
 public Token nextToken() throws TokenStreamException {
@@ -219,10 +219,6 @@ tryAgain:
 						mPARENT(true);
 						theRetToken=_returnToken;
 					}
-					else if ((LA(1)=='@') && (_tokenSet_0.member(LA(2)))) {
-						mATTRIB(true);
-						theRetToken=_returnToken;
-					}
 					else if ((LA(1)=='@') && (LA(2)=='*')) {
 						mATTRIB_STAR(true);
 						theRetToken=_returnToken;
@@ -249,6 +245,10 @@ tryAgain:
 					}
 					else if ((LA(1)=='|') && (true)) {
 						mUNION(true);
+						theRetToken=_returnToken;
+					}
+					else if ((LA(1)=='@') && (true)) {
+						mAT(true);
 						theRetToken=_returnToken;
 					}
 					else if ((LA(1)=='<') && (true)) {
@@ -337,15 +337,15 @@ tryAgain:
 			match('"');
 			text.setLength(_saveIndex);
 			{
-			_loop66:
+			_loop975:
 			do {
-				if ((_tokenSet_1.member(LA(1)))) {
+				if ((_tokenSet_0.member(LA(1)))) {
 					{
-					match(_tokenSet_1);
+					match(_tokenSet_0);
 					}
 				}
 				else {
-					break _loop66;
+					break _loop975;
 				}
 				
 			} while (true);
@@ -361,15 +361,15 @@ tryAgain:
 			match('\'');
 			text.setLength(_saveIndex);
 			{
-			_loop69:
+			_loop978:
 			do {
-				if ((_tokenSet_2.member(LA(1)))) {
+				if ((_tokenSet_1.member(LA(1)))) {
 					{
-					match(_tokenSet_2);
+					match(_tokenSet_1);
 					}
 				}
 				else {
-					break _loop69;
+					break _loop978;
 				}
 				
 			} while (true);
@@ -554,6 +554,19 @@ tryAgain:
 		int _saveIndex;
 		
 		match('+');
+		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
+			_token = makeToken(_ttype);
+			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
+		}
+		_returnToken = _token;
+	}
+	
+	public final void mAT(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+		int _ttype; Token _token=null; int _begin=text.length();
+		_ttype = AT;
+		int _saveIndex;
+		
+		match('@');
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
 			_token = makeToken(_ttype);
 			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
@@ -822,31 +835,18 @@ tryAgain:
 		
 		mNMSTART(false);
 		{
-		_loop95:
+		_loop1005:
 		do {
-			if ((_tokenSet_3.member(LA(1)))) {
+			if ((_tokenSet_2.member(LA(1)))) {
 				mNMCHAR(false);
 			}
 			else {
-				break _loop95;
+				break _loop1005;
 			}
 			
 		} while (true);
 		}
 		_ttype = testLiteralsTable(_ttype);
-		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
-			_token = makeToken(_ttype);
-			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
-		}
-		_returnToken = _token;
-	}
-	
-	protected final void mFUNC(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
-		int _ttype; Token _token=null; int _begin=text.length();
-		_ttype = FUNC;
-		int _saveIndex;
-		
-		mNCNAME(false);
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
 			_token = makeToken(_ttype);
 			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
@@ -860,41 +860,41 @@ tryAgain:
 		int _saveIndex;
 		
 		{
-		int _cnt99=0;
-		_loop99:
+		int _cnt1008=0;
+		_loop1008:
 		do {
 			if (((LA(1) >= '0' && LA(1) <= '9'))) {
 				mDIGIT(false);
 			}
 			else {
-				if ( _cnt99>=1 ) { break _loop99; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt1008>=1 ) { break _loop1008; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			
-			_cnt99++;
+			_cnt1008++;
 		} while (true);
 		}
 		{
-		_loop103:
+		_loop1012:
 		do {
 			if ((LA(1)=='.')) {
 				match('.');
 				{
-				int _cnt102=0;
-				_loop102:
+				int _cnt1011=0;
+				_loop1011:
 				do {
 					if (((LA(1) >= '0' && LA(1) <= '9'))) {
 						mDIGIT(false);
 					}
 					else {
-						if ( _cnt102>=1 ) { break _loop102; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+						if ( _cnt1011>=1 ) { break _loop1011; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 					}
 					
-					_cnt102++;
+					_cnt1011++;
 				} while (true);
 				}
 			}
 			else {
-				break _loop103;
+				break _loop1012;
 			}
 			
 		} while (true);
@@ -913,22 +913,6 @@ tryAgain:
 		
 		_saveIndex=text.length();
 		match('$');
-		text.setLength(_saveIndex);
-		mNCNAME(false);
-		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
-			_token = makeToken(_ttype);
-			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
-		}
-		_returnToken = _token;
-	}
-	
-	public final void mATTRIB(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
-		int _ttype; Token _token=null; int _begin=text.length();
-		_ttype = ATTRIB;
-		int _saveIndex;
-		
-		_saveIndex=text.length();
-		match('@');
 		text.setLength(_saveIndex);
 		mNCNAME(false);
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
@@ -1060,33 +1044,26 @@ tryAgain:
 	
 	
 	private static final long[] mk_tokenSet_0() {
-		long[] data = new long[1025];
-		data[1]=576460745995190270L;
-		data[3]=-36028797027352577L;
-		return data;
-	}
-	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
-	private static final long[] mk_tokenSet_1() {
 		long[] data = new long[2048];
 		data[0]=-17179869192L;
 		for (int i = 1; i<=1023; i++) { data[i]=-1L; }
 		return data;
 	}
-	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
-	private static final long[] mk_tokenSet_2() {
+	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
+	private static final long[] mk_tokenSet_1() {
 		long[] data = new long[2048];
 		data[0]=-549755813896L;
 		for (int i = 1; i<=1023; i++) { data[i]=-1L; }
 		return data;
 	}
-	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
-	private static final long[] mk_tokenSet_3() {
+	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
+	private static final long[] mk_tokenSet_2() {
 		long[] data = new long[1025];
 		data[0]=288054454291267584L;
 		data[1]=576460745995190270L;
 		data[3]=-36028797027352577L;
 		return data;
 	}
-	public static final BitSet _tokenSet_3 = new BitSet(mk_tokenSet_3());
+	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
 	
 	}

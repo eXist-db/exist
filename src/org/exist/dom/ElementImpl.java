@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.RelationalBroker;
@@ -207,13 +208,6 @@ public class ElementImpl extends NodeImpl implements Element {
 		++children;
 	}
 
-	private NodeImpl getLastNode(NodeImpl node) {
-		if (node.getNodeType() == Node.ELEMENT_NODE)
-			return node.getChildCount() == 0 ? node : getLastNode((NodeImpl) node.getLastChild());
-		else
-			return node;
-	}
-
 	/**
 	 * @see org.w3c.dom.Node#appendChild(org.w3c.dom.Node)
 	 */
@@ -238,7 +232,7 @@ public class ElementImpl extends NodeImpl implements Element {
 		return child;
 	}
 
-	private void checkTree(int size) {
+	private void checkTree(int size) throws EXistException {
 		// check if the tree structure needs to be changed
 		int level = ownerDocument.getTreeLevel(gid);
 		if (ownerDocument.getMaxDepth() == level + 1) {
@@ -271,11 +265,11 @@ public class ElementImpl extends NodeImpl implements Element {
 		}
 		ownerDocument.broker.update(this);
 		ownerDocument.broker.reindex(prevDoc, ownerDocument, null);
-		try {
-			ownerDocument.broker.saveCollection(ownerDocument.getCollection());
-		} catch (PermissionDeniedException e) {
-			throw new DOMException(DOMException.INVALID_ACCESS_ERR, e.getMessage());
-		}
+//		try {
+//			ownerDocument.broker.saveCollection(ownerDocument.getCollection());
+//		} catch (PermissionDeniedException e) {
+//			throw new DOMException(DOMException.INVALID_ACCESS_ERR, e.getMessage());
+//		}
 		return node;
 	}
 
@@ -289,7 +283,12 @@ public class ElementImpl extends NodeImpl implements Element {
 	 */
 	private Node appendChildren(long gid, NodeImpl last, NodeList nodes, boolean index)
 		throws DOMException {
-		checkTree(nodes.getLength());
+		try {
+			checkTree(nodes.getLength());
+		} catch(EXistException e) {
+			throw new DOMException(DOMException.INVALID_MODIFICATION_ERR,
+				"max. document size exceeded");
+		}
 		children += nodes.getLength();
 		Node child;
 		for (int i = 0; i < nodes.getLength(); i++) {
@@ -348,7 +347,12 @@ public class ElementImpl extends NodeImpl implements Element {
 					&& index)
 					ownerDocument.broker.index(elem);
 				elem.setChildCount(0);
-				elem.checkTree(ch.getLength());
+				try {
+					elem.checkTree(ch.getLength());
+				} catch(EXistException e) {
+					throw new DOMException(DOMException.INVALID_MODIFICATION_ERR,
+						"max. document size exceeded");
+				}
 				// process child nodes
 				last = (NodeImpl) elem.appendChildren(elem.firstChildID(), elem, ch, index);
 				return last;
@@ -1061,12 +1065,12 @@ public class ElementImpl extends NodeImpl implements Element {
 			ownerDocument.reindex = level + 1;
 			ownerDocument.broker.reindex(prevDoc, ownerDocument, this);
 		}
-		try {
-			ownerDocument.broker.saveCollection(ownerDocument.getCollection());
-		} catch (PermissionDeniedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			ownerDocument.broker.saveCollection(ownerDocument.getCollection());
+//		} catch (PermissionDeniedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		return result;
 	}
 
@@ -1095,11 +1099,6 @@ public class ElementImpl extends NodeImpl implements Element {
 		} else {
 			ownerDocument.reindex = level + 1;
 			ownerDocument.broker.reindex(prevDoc, ownerDocument, this);
-		}
-		try {
-			ownerDocument.broker.saveCollection(ownerDocument.getCollection());
-		} catch (PermissionDeniedException e) {
-			throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, e.getMessage());
 		}
 		return result;
 	}
@@ -1130,11 +1129,11 @@ public class ElementImpl extends NodeImpl implements Element {
 		ownerDocument.broker.update(this);
 		// reindex if required
 		ownerDocument.broker.reindex(prevDoc, ownerDocument, null);
-		try {
-			ownerDocument.broker.saveCollection(ownerDocument.getCollection());
-		} catch (PermissionDeniedException e) {
-			throw new DOMException(DOMException.INVALID_ACCESS_ERR, e.getMessage());
-		}
+//		try {
+//			ownerDocument.broker.saveCollection(ownerDocument.getCollection());
+//		} catch (PermissionDeniedException e) {
+//			throw new DOMException(DOMException.INVALID_ACCESS_ERR, e.getMessage());
+//		}
 	}
 
 	/**

@@ -50,8 +50,8 @@
        -->
        
 	   <db-connection database="native" files="webapp/WEB-INF/data" 
-		   buffers="1024" words_buffers="32768" collection_buffers="1024" 
-		   elements_buffers="4096" free_mem_min="10" 
+		   buffers="1024" words_buffers="32768" collection_buffers="2048" 
+		   elements_buffers="8192" free_mem_min="10" 
 		   pageSize="4096">
 
 		   <!-- Settings for the database connection pool
@@ -62,7 +62,7 @@
 				- min: minimum number of connections to keep alive.
 				- max: maximum number of connections allowed.
 		   -->
-	  	   <pool min="1" max="15" idle-time="900"/>
+		   <pool min="1" max="15" sync-period="240000"/>
 	   </db-connection>
 	
   <!-- sample db-connection for MySQL --> 
@@ -95,7 +95,8 @@
 	   - indent: should the serializer pretty-print (indent) xml?
   -->
   <serializer enable-xinclude="true" enable-xsl="false"
-	  indent="false" add-exist-id="false" match-tagging="true"/>
+	  indent="false" add-exist-id="false" match-tagging-elements="true"
+	  match-tagging-attributes="false"/>
   
   <!-- settings for the indexer
        Attributes:
@@ -128,7 +129,7 @@
   -->
   <indexer batchLoad="true" tmpDir="tmp"
 	  stemming="false" controls="ctl" caseSensitive="false"
-	  suppress-whitespace="both" index-depth="2"
+	  suppress-whitespace="both" index-depth="1"
 	  tokenizer="org.exist.storage.analysis.SimpleTokenizer"
 	  validation="false">
 

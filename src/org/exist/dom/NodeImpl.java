@@ -45,8 +45,7 @@ import org.exist.storage.*;
  *@created    8. Juli 2002
  */
 public class NodeImpl implements Node {
-	private final static Category LOG =
-		Category.getInstance(NodeImpl.class.getName());
+	private final static Category LOG = Category.getInstance(NodeImpl.class.getName());
 
 	protected short attributes = 0;
 	protected long gid;
@@ -164,15 +163,11 @@ public class NodeImpl implements Node {
 	 * @see org.w3c.dom.Node#appendChild(org.w3c.dom.Node)
 	 */
 	public Node appendChild(Node child) throws DOMException {
-		throw new DOMException(
-			DOMException.NOT_SUPPORTED_ERR,
-			"not implemented");
+		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
 	}
 
 	public Node appendChildren(NodeList nodes) throws DOMException {
-		throw new DOMException(
-			DOMException.NOT_SUPPORTED_ERR,
-			"not implemented");
+		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
 	}
 
 	/**
@@ -352,22 +347,20 @@ public class NodeImpl implements Node {
 	 * @see org.w3c.dom.Node#getParentNode()
 	 */
 	public Node getParentNode() {
-		if (gid < 2)
-			return ownerDocument;
 		long pid = getParentGID();
-		return ownerDocument.getNode(pid);
+		return pid < 0 ? ownerDocument : ownerDocument.getNode(pid);
 	}
 
 	public String getPath() {
 		String path = "";
 		Node parent = getParentNode();
-		while(parent.getNodeType() != Node.DOCUMENT_NODE) {
+		while (parent.getNodeType() != Node.DOCUMENT_NODE) {
 			path = path + '/' + parent.getNodeName();
 			parent = parent.getParentNode();
 		}
 		return path;
 	}
-	
+
 	/**
 	 * @see org.w3c.dom.Node#getPrefix()
 	 */
@@ -413,23 +406,19 @@ public class NodeImpl implements Node {
 	 * @see org.w3c.dom.Node#insertBefore(org.w3c.dom.Node, org.w3c.dom.Node)
 	 */
 	public Node insertBefore(Node newChild, Node refChild) throws DOMException {
-		throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-			"not implemented");
+		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
 	}
 
 	public Node insertAfter(Node newChild, Node refChild) throws DOMException {
-		throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-			"not implemented");
+		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
 	}
 
 	public Node insertAfter(NodeList nodes, Node refChild) throws DOMException {
-		throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-			"not implemented");
+		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
 	}
-	
+
 	public Node insertBefore(NodeList nodes, Node refChild) throws DOMException {
-		throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-			"not implemented");
+		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
 	}
 	/**
 	 * @see org.w3c.dom.Node#isSupported(java.lang.String, java.lang.String)
@@ -464,8 +453,7 @@ public class NodeImpl implements Node {
 	/**
 	 * @see org.w3c.dom.Node#replaceChild(org.w3c.dom.Node, org.w3c.dom.Node)
 	 */
-	public Node replaceChild(Node newChild, Node oldChild)
-		throws DOMException {
+	public Node replaceChild(Node newChild, Node oldChild) throws DOMException {
 		return null;
 	}
 
@@ -563,10 +551,7 @@ public class NodeImpl implements Node {
 	 *@param  first             Description of the Parameter
 	 *@exception  SAXException  Description of the Exception
 	 */
-	public void toSAX(
-		ContentHandler contentHandler,
-		LexicalHandler lexicalHandler,
-		boolean first)
+	public void toSAX(ContentHandler contentHandler, LexicalHandler lexicalHandler, boolean first)
 		throws SAXException {
 		toSAX(contentHandler, lexicalHandler, first, new ArrayList(5));
 	}
@@ -625,5 +610,26 @@ public class NodeImpl implements Node {
 	 */
 	public void setNodeNameRef(int nodeNameRef) {
 		this.nodeNameRef = nodeNameRef;
+	}
+
+	protected NodeImpl getLastNode(NodeImpl node) {
+		if (node.getNodeType() == Node.ELEMENT_NODE)
+			return node.getChildCount() == 0 ? node : getLastNode((NodeImpl) node.getLastChild());
+		else
+			return node;
+	}
+
+	/**
+		 * Update a child node. This method will only update the child node
+		 * but not its potential descendant nodes.
+		 * 
+		 * @param oldChild
+		 * @param newChild
+		 * @throws DOMException
+		 */
+	public void updateChild(Node oldChild, Node newChild) throws DOMException {
+		throw new DOMException(
+			DOMException.NO_MODIFICATION_ALLOWED_ERR,
+			"method not allowed on this node type");
 	}
 }

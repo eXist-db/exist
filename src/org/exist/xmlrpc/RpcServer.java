@@ -966,7 +966,7 @@ public class RpcServer implements RpcAPI {
 	 */
 	public byte[] retrieve(User user, String doc, String id)
 		throws EXistException, PermissionDeniedException {
-		return retrieve(user, doc, id, 1);
+		return retrieve(user, doc, id, 0);
 	}
 
 	/**
@@ -1209,6 +1209,17 @@ public class RpcServer implements RpcAPI {
 			LOG.warn("shutdown failed", e);
 			return false;
 		}
+	}
+	
+	public boolean sync(User user) {
+		RpcConnection con = null;
+		try {
+			con = pool.get();
+			con.sync();
+		} finally {
+			pool.release(con);
+		}
+		return true;
 	}
 
 	/**

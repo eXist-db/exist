@@ -54,7 +54,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 	public static final String COLLECTION_ELEMENT = "collection";
 	public static final String FOR_EACH_ELEMENT = "for-each";
 	public static final String CURRENT_NODE_ELEMENT = "current-node";
-	public static final String GET_NODE_VALUE = "select-node";
+	public static final String SELECT_NODE = "select-node";
 	public static final String RESULT_SET_ELEMENT = "result-set";
 
 	public static final String ERROR_ELEMENT = "error";
@@ -80,7 +80,6 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 	private int nesting = 0;
 	private int mode = 0;
 	private XMLResource currentResource = null;
-
 
 	/**
 	 * Setup the component. Accepts parameters "driver", "user" and
@@ -122,16 +121,24 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 				startForEach(attribs);
 			else if (CURRENT_NODE_ELEMENT.equals(localName))
 				startCurrent(attribs);
-			else if (GET_NODE_VALUE.equals(localName))
-				startGetValue(attribs);
+			else if (SELECT_NODE.equals(localName))
+				startSelectNode(attribs);
 		} else {
-			if(currentResource != null) {
+			if (currentResource != null) {
 				try {
 					AttributesImpl a = new AttributesImpl(attribs);
-					a.addAttribute(NAMESPACE, "document-id", PREFIX + "document-id", "CDATA",
+					a.addAttribute(
+						NAMESPACE,
+						"document-id",
+						PREFIX + "document-id",
+						"CDATA",
 						currentResource.getDocumentId());
-					a.addAttribute(NAMESPACE, "collection", PREFIX + "collection", 
-						"CDATA", currentResource.getParentCollection().getName());
+					a.addAttribute(
+						NAMESPACE,
+						"collection",
+						PREFIX + "collection",
+						"CDATA",
+						currentResource.getParentCollection().getName());
 					super.startElement(uri, localName, qname, a);
 					currentResource = null;
 				} catch (XMLDBException e) {
@@ -150,9 +157,9 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 		String pUser = attribs.getValue("user");
 		String pPassword = attribs.getValue("password");
 		// use default user and password if not specified
-		if(pUser == null)
+		if (pUser == null)
 			pUser = user;
-		if(pPassword == null)
+		if (pPassword == null)
 			pPassword = password;
 		try {
 			collection = DatabaseManager.getCollection(uri, pUser, pPassword);
@@ -167,18 +174,18 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 	}
 
 	protected void startCurrent(Attributes attribs) throws SAXException {
-		if(commandStack.isEmpty())
+		if (commandStack.isEmpty())
 			return;
 		ForEach each = (ForEach) commandStack.peek();
 		try {
-			if(each.currentResource != null)
+			if (each.currentResource != null)
 				each.currentResource.getContentAsSAX(this);
 		} catch (XMLDBException e) {
 		}
 	}
 
-	protected void startGetValue(Attributes attribs) throws SAXException {
-		if(collection == null) {
+	protected void startSelectNode(Attributes attribs) throws SAXException {
+		if (collection == null) {
 			reportError(FATAL_ERROR, "no collection selected");
 			return;
 		}
@@ -192,20 +199,35 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 			reportError(FATAL_ERROR, "attribute 'query' is missing");
 			return;
 		}
+		String pHighlightElementMatches = attribs.getValue("match-tagging-elements");
+		boolean highlightElementMatches = false;
+		if (pHighlightElementMatches != null)
+			highlightElementMatches = pHighlightElementMatches.equals("true");
+		String pHighlightAttributeMatches = attribs.getValue("match-tagging-attributes");
+		boolean highlightAttributeMatches = false;
+		if (pHighlightAttributeMatches != null)
+			highlightAttributeMatches = pHighlightAttributeMatches.equals("true");
 		final long start = System.currentTimeMillis();
 		try {
 			XPathQueryServiceImpl service =
 				(XPathQueryServiceImpl) collection.getService("XPathQueryService", "1.0");
 			service.setProperty("sax-document-events", "false");
 			service.setProperty("create-container-elements", "false");
+			service.setProperty(
+				"match-tagging-elements",
+				Boolean.toString(highlightElementMatches));
+			service.setProperty(
+				"match-tagging-attributes",
+				Boolean.toString(highlightAttributeMatches));
 			ResourceSet queryResult =
 				(resource == null) ? service.query(xpath) : service.query(resource, xpath);
 			if (queryResult == null) {
 				reportError(WARNING, "query returned null");
 				return;
 			}
-			if (queryResult.getSize() > 0) {
-				XMLResource res = (XMLResource) queryResult.getResource(0);
+			long len = queryResult.getSize();
+			for(long i = 0; i < len; i++) {
+				XMLResource res = (XMLResource) queryResult.getResource(i);
 				res.getContentAsSAX(this);
 			}
 		} catch (XMLDBException e) {
@@ -214,7 +236,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 	}
 
 	protected void startForEach(Attributes attribs) throws SAXException {
-		if(collection == null) {
+		if (collection == null) {
 			reportError(FATAL_ERROR, "no collection selected");
 			return;
 		}
@@ -250,6 +272,14 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 			} catch (NumberFormatException e) {
 				reportError(WARNING, "attribute 'to' requires numeric value");
 			}
+		String pHighlightElementMatches = attribs.getValue("match-tagging-elements");
+		boolean highlightElementMatches = false;
+		if (pHighlightElementMatches != null)
+			highlightElementMatches = pHighlightElementMatches.equals("true");
+		String pHighlightAttributeMatches = attribs.getValue("match-tagging-attributes");
+		boolean highlightAttributeMatches = false;
+		if (pHighlightAttributeMatches != null)
+			highlightAttributeMatches = pHighlightAttributeMatches.equals("true");
 		String pSession = attribs.getValue("use-session");
 		boolean createSession = false;
 		if (pSession != null)
@@ -264,13 +294,20 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 				(XPathQueryServiceImpl) collection.getService("XPathQueryService", "1.0");
 			service.setProperty("sax-document-events", "false");
 			service.setProperty("create-container-elements", "false");
+			service.setProperty(
+				"match-tagging-elements",
+				Boolean.toString(highlightElementMatches));
+			service.setProperty(
+				"match-tagging-attributes",
+				Boolean.toString(highlightAttributeMatches));
 			// check if query result is already stored in the session
 			if (createSession && resource == null)
 				queryResult = (ResourceSet) session.getAttribute(xpath);
 			if (queryResult == null) {
 				queryResult =
-					(resource == null) ? service.query(xpath, sortExpr) : 
-						service.query(resource, xpath, sortExpr);
+					(resource == null)
+						? service.query(xpath, sortExpr)
+						: service.query(resource, xpath, sortExpr);
 				if (createSession)
 					session.setAttribute(xpath, queryResult);
 			}
@@ -388,13 +425,11 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 		DOMStreamer streamer = new DOMStreamer(this);
 		for (each.current = each.from; each.current <= each.to; ++each.current) {
 			try {
-				each.currentResource = (XMLResource)
-					each.queryResult.getResource(each.current);
+				each.currentResource = (XMLResource) each.queryResult.getResource(each.current);
 				currentResource = each.currentResource;
 				streamer.stream(fragment);
 			} catch (XMLDBException e) {
-				reportError(WARNING, "error while retrieving resource " +
-					each.current, e);
+				reportError(WARNING, "error while retrieving resource " + each.current, e);
 			}
 		}
 		commandStack.pop();
@@ -428,7 +463,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 		public ForEach() {
 		}
 	}
-	
+
 	/**
 	 * Try to read configuration parameters from the component setup.
 	 * 
@@ -448,13 +483,13 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 	public void configure(Configuration configuration) throws ConfigurationException {
 		super.configure(configuration);
 		Configuration child = configuration.getChild("user", false);
-		if(child != null)
+		if (child != null)
 			DEFAULT_USER = child.getValue();
 		child = configuration.getChild("password", false);
-		if(child != null)
+		if (child != null)
 			DEFAULT_PASSWORD = child.getValue();
 		child = configuration.getChild("driver", false);
-		if(child != null)
+		if (child != null)
 			DEFAULT_DRIVER = child.getValue();
 	}
 

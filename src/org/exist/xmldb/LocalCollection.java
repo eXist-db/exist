@@ -125,7 +125,20 @@ public class LocalCollection extends Observable implements Collection {
     }
 
 
+	/**
+	 * Close the current collection. Calling this method will flush all
+	 * open buffers to disk.
+	 */
     public void close() throws XMLDBException {
+		DBBroker broker = null;
+		try {
+			broker = brokerPool.get();
+			broker.sync();
+		} catch (EXistException e) {
+			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+		} finally {
+			brokerPool.release(broker);
+		}
     }
 
 

@@ -3,13 +3,19 @@ package org.exist.xmldb;
 
 import java.util.Iterator;
 import java.util.Vector;
+
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.SortedNodeSet;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
-import org.exist.xpath.*;
-import org.xmldb.api.base.*;
+import org.exist.xpath.Value;
+import org.exist.xpath.ValueSet;
+import org.xmldb.api.base.ErrorCodes;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.ResourceIterator;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
 
 public class LocalResourceSet implements ResourceSet {
 
@@ -20,7 +26,7 @@ public class LocalResourceSet implements ResourceSet {
     protected Vector resources = new Vector();
     protected boolean saxDocumentEvents = true;
     protected boolean createContainerElements = false;
-    protected boolean matchTagging = true;
+    protected int highlightMatches = 0;
     private User user;
 
 
@@ -35,7 +41,8 @@ public class LocalResourceSet implements ResourceSet {
                              boolean indentXML, String encoding, 
                              boolean saxDocumentEvents, 
                              boolean createContainerElements,
-                             boolean matchTagging, String sortExpr )
+                             int highlightMatches,
+                             String sortExpr )
          throws XMLDBException {
         this.user = user;
         this.brokerPool = pool;
@@ -44,6 +51,7 @@ public class LocalResourceSet implements ResourceSet {
         this.indentXML = indentXML;
         this.saxDocumentEvents = saxDocumentEvents;
         this.createContainerElements = createContainerElements;
+        this.highlightMatches = highlightMatches;
         switch ( val.getType() ) {
             case Value.isNodeList:
                 NodeSet resultSet = (NodeSet)val.getNodeList();
@@ -114,7 +122,7 @@ public class LocalResourceSet implements ResourceSet {
 			res.setSAXDocEvents( saxDocumentEvents );
 			res.setEncoding( encoding );
 			res.setCreateContainerElements( createContainerElements );
-			res.setMatchTagging(matchTagging);
+			res.setMatchTagging(highlightMatches);
         } else if(r instanceof String) {
         	res = new LocalXMLResource( user, brokerPool, collection, null, -1);
         	res.setContent( r );

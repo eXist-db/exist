@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.exist.EXistException;
+import org.exist.dom.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
@@ -30,31 +31,31 @@ public class Append extends Modification {
 	/**
 	 * @see org.exist.xupdate.Modification#process()
 	 */
-	public long process()
-		throws PermissionDeniedException, EXistException {
+	public long process() throws PermissionDeniedException, EXistException {
 		ArrayList qr = select(docs);
 		NodeList children = content.getChildNodes();
 		if (qr == null || children.getLength() == 0)
 			return 0;
 		IndexListener listener = new IndexListener(qr);
 		NodeImpl node;
-		DocumentImpl doc, prevDoc = null;
+		DocumentImpl doc = null;
+		Collection collection = null, prevCollection = null;
 		int len = children.getLength();
 		for (Iterator i = qr.iterator(); i.hasNext();) {
 			node = (NodeImpl) i.next();
-			doc = (DocumentImpl)node.getOwnerDocument();
+			doc = (DocumentImpl) node.getOwnerDocument();
 			doc.setIndexListener(listener);
-			if (!doc.getCollection().getPermissions()
-				.validate(user, Permission.UPDATE))
-				throw new PermissionDeniedException(
-					"write access to collection denied; user="
-						+ user.getName());
+			collection = doc.getCollection();
+			if (prevCollection != null && collection != prevCollection)
+				doc.getBroker().saveCollection(prevCollection);
 			if (!doc.getPermissions().validate(user, Permission.UPDATE))
-				throw new PermissionDeniedException("permission to remove document denied");
+				throw new PermissionDeniedException("permission to update document denied");
 			node.appendChildren(children);
 			doc.clearIndexListener();
-			prevDoc = doc;
+			prevCollection = collection;
 		}
+		if (doc != null)
+			doc.getBroker().saveCollection(collection);
 		return qr.size();
 	}
 

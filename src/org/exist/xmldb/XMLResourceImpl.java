@@ -48,7 +48,7 @@ public class XMLResourceImpl implements XMLResource {
 
 	public XMLResourceImpl(CollectionImpl parent, String docId, String id) 
 	throws XMLDBException {
-		this(parent, -1, -1, docId, id, 1, "UTF-8");
+		this(parent, -1, -1, docId, id, 0, "UTF-8");
 	}
 
 	public XMLResourceImpl(

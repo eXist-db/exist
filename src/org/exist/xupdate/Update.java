@@ -49,17 +49,16 @@ public class Update extends Modification {
 		AttrImpl attribute;
 		ElementImpl parent;
 		DocumentImpl doc = null;
-		Collection collection = null;
+		Collection collection = null, prevCollection = null;
 		for (Iterator i = qr.iterator(); i.hasNext();) {
 			node = (NodeImpl) i.next();
 			doc = (DocumentImpl) node.getOwnerDocument();
 			doc.setIndexListener(listener);
 			collection = doc.getCollection();
-			if (!collection.getPermissions().validate(user, Permission.UPDATE))
-				throw new PermissionDeniedException(
-					"write access to collection denied; user=" + user.getName());
 			if (!doc.getPermissions().validate(user, Permission.UPDATE))
-				throw new PermissionDeniedException("permission denied to update document");
+				throw new PermissionDeniedException("permission to update document denied");
+			if(prevCollection != null && collection != prevCollection)
+				doc.getBroker().saveCollection(prevCollection);
 			switch (node.getNodeType()) {
 				case Node.ELEMENT_NODE :
 					((ElementImpl) node).update(children);
@@ -82,7 +81,10 @@ public class Update extends Modification {
 				default :
 					throw new EXistException("unsupported node-type");
 			}
+			prevCollection = collection;
 		}
+		if(doc != null)
+			doc.getBroker().saveCollection(collection);
 		return children.getLength();
 	}
 

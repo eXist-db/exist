@@ -774,8 +774,9 @@ public class RelationalBroker extends DBBroker {
             LOG.warn( s );
         } catch ( EOFException e ) {
             LOG.error( e );
+        } catch (IOException e) {
+        	LOG.error( e );
         }
-
         LOG.info( "found: " + result.getLength() + " in " + ( System.currentTimeMillis() - start ) );
 
         elementPool.add( docs, result, tagName );
@@ -1625,7 +1626,10 @@ public class RelationalBroker extends DBBroker {
             doc.setTreeLevelOrder( level++, o );
         }
         doc.setMaxDepth( level + 1 );
-        doc.calculateTreeLevelStartPoints();
+        try {
+        	doc.calculateTreeLevelStartPoints();
+        } catch(EXistException e) {
+        }
         return doc;
     }
 
@@ -2083,7 +2087,10 @@ public class RelationalBroker extends DBBroker {
                 m_insertDocStmt.getConnection().commit();
 
             doc.setDocId( doc_id );
-            doc.calculateTreeLevelStartPoints();
+            try {
+            	doc.calculateTreeLevelStartPoints();
+            } catch(EXistException e) {
+            }
             for ( int i = 0; i < doc.getMaxDepth(); i++ ) {
                 m_insertTreeInfo.setInt( 1, doc_id );
                 m_insertTreeInfo.setInt( 2, doc.getTreeLevelOrder( i ) );

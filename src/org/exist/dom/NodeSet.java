@@ -252,6 +252,19 @@ public abstract class NodeSet implements NodeList {
 		return parents;
 	}
 
+	public NodeSet getRange(DocumentImpl doc, long lower, long upper) {
+		NodeProxy p;
+		ArraySet result = new ArraySet(5);
+		for (Iterator i = iterator(); i.hasNext(); ) {
+			p = (NodeProxy) i.next();
+			if (p.doc.docId == doc.docId &&
+				p.gid >= lower &&
+				p.gid <= upper)
+				result.add(p);
+		}
+		return result;
+	}
+	
 	public NodeSet intersection(NodeSet other) {
 		long start = System.currentTimeMillis();
 		NodeIDSet r = new NodeIDSet();

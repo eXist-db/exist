@@ -84,7 +84,7 @@ public class Parser
 	private final static Category LOG = Category.getInstance(Parser.class.getName());
 
 	public final static int MAX_STR_LEN = 225;
-	public final static int SPARSE_IDENTIFIERS = 100;
+	public final static int SPARSE_IDENTIFIERS = 10;
 
 	private final static int VALIDATION_ENABLED = 0;
 	private final static int VALIDATION_AUTO = 1;
@@ -332,7 +332,7 @@ public class Parser
 			//				currentPath.substring(0, currentPath.lastIndexOf('/'));
 			if (validate) {
 				if (document.getTreeLevelOrder(level) < last.getChildCount())
-					document.setTreeLevelOrder(level, last.getChildCount());
+					document.setTreeLevelOrder(level, last.getChildCount() + SPARSE_IDENTIFIERS);
 			} else {
 				document.setOwnerDocument(document);
 				if (broker.getDatabaseType() == DBBroker.DBM
@@ -669,6 +669,16 @@ public class Parser
 				"[line " + locator.getLineNumber() + "] " + e.getMessage(),
 				e.getException());
 		}
+		document.setMaxDepth(document.getMaxDepth() + 1);
+		try {
+			document.calculateTreeLevelStartPoints();
+		} catch (EXistException e1) {
+			throw new SAXException(
+				"the nesting-level of your document is too high. It "
+				+ "does not fit into the indexing-scheme. Please split the document into "
+				+ "several parts and try to reduce the nesting-level.");
+		}
+		
 		// new document is valid: remove old document 
 		if (oldDoc != null) {
 			LOG.debug("removing old document " + oldDoc.getFileName());
@@ -937,8 +947,8 @@ public class Parser
 		}
 		try {
 			progress = new ProgressIndicator(currentLine);
-			document.setMaxDepth(document.getMaxDepth() + 1);
-			document.calculateTreeLevelStartPoints();
+			//document.setMaxDepth(document.getMaxDepth() + 1);
+			//document.calculateTreeLevelStartPoints();
 			validate = false;
 			if (document.getDoctype() == null) {
 				// we don't know the doctype
@@ -950,11 +960,12 @@ public class Parser
 			if (broker.getDatabaseType() != DBBroker.NATIVE) {
 				broker.storeDocument(document);
 				broker.saveCollection(collection);
-			}
+			} else
+				broker.addDocument(collection, document);
 			document.setChildCount(0);
 			parser.parse(src);
-			if(broker.getDatabaseType() == DBBroker.NATIVE)
-				broker.addDocument(collection, document);
+			//if(broker.getDatabaseType() == DBBroker.NATIVE)
+			//	broker.addDocument(collection, document);
 			broker.closeDocument();
 			broker.flush();
 			if (document.getFileName().equals("/db/system/users.xml") && privileged == false) {
@@ -984,8 +995,6 @@ public class Parser
 		LOG.debug("storing document ...");
 		try {
 			progress = new ProgressIndicator(currentLine);
-			document.setMaxDepth(document.getMaxDepth() + 1);
-			document.calculateTreeLevelStartPoints();
 			validate = false;
 			if (document.getDoctype() == null) {
 				// we don't know the doctype

@@ -483,7 +483,7 @@ public class ArraySet extends NodeSet {
 	public ArraySet getDescendants(ArraySet al, int mode) {
 		if (al.counter == 0 || counter == 0)
 			return new ArraySet(1);
-		//long start = System.currentTimeMillis();
+		long start = System.currentTimeMillis();
 		al.sort();
 		sort();
 		// the descendant set will be modified: copy if required 
@@ -539,10 +539,10 @@ public class ArraySet extends NodeSet {
 			}
 		}
 		while (more);
-		//		LOG.debug(
-		//			"getDescendants took "
-		//				+ (System.currentTimeMillis() - start)
-		//				+ "ms.");
+				LOG.debug(
+					"getDescendants took "
+						+ (System.currentTimeMillis() - start)
+						+ "ms.");
 		return result;
 	}
 

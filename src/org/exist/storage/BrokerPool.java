@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.TreeMap;
 import org.apache.log4j.Logger;
+import org.exist.storage.sync.Sync;
+import org.exist.storage.sync.SyncDaemon;
 import org.exist.util.*;
 import org.exist.*;
 
@@ -48,21 +50,20 @@ public class BrokerPool {
 
 	public final static String DEFAULT_INSTANCE = "exist";
 
-	public final static void configure(
-		int minBrokers,
-		int maxBrokers,
-		Configuration config)
+	public final static void configure(int minBrokers, int maxBrokers, Configuration config)
 		throws EXistException {
 		configure(DEFAULT_INSTANCE, minBrokers, maxBrokers, config);
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Configure a new BrokerPool instance. Call this before calling getInstance().
 	 *
-	 *@param  minBrokers          Description of the Parameter
-	 *@param  maxBrokers          Description of the Parameter
-	 *@param  config              Description of the Parameter
-	 *@exception  EXistException  Description of the Exception
+	 *@param  id The name to identify this database instance. You may have more
+	 *	than one instance with different configurations.
+	 *@param  minBrokers Minimum number of database brokers to start during initialization.
+	 *@param  maxBrokers Maximum number of database brokers available to handle requests.
+	 *@param  config The configuration object used by this instance.
+	 *@exception  EXistException thrown if initialization fails.
 	 */
 	public final static void configure(
 		String id,
@@ -77,34 +78,32 @@ public class BrokerPool {
 			instances.put(id, instance);
 		} else
 			LOG.warn("instance with id " + id + " already configured");
-		
+
 	}
 
 	public final static boolean isConfigured(String id) {
 		BrokerPool instance = (BrokerPool) instances.get(id);
-		if(instance == null)
+		if (instance == null)
 			return false;
 		return instance.isInstanceConfigured();
 	}
-	
+
 	public final static boolean isConfigured() {
 		return isConfigured(DEFAULT_INSTANCE);
 	}
-	
+
 	/**
-	 *  Singleton method. Get the BrokerPool.
+	 *  Singleton method. Get the BrokerPool for a specified database instance.
 	 *
-	 *@return                     The instance.
-	 *@exception  EXistException  Description of the Exception
+	 *@return        The instance.
+	 *@exception  EXistException  thrown if the instance has not been configured.
 	 */
-	public final static BrokerPool getInstance(String id)
-		throws EXistException {
+	public final static BrokerPool getInstance(String id) throws EXistException {
 		BrokerPool instance = (BrokerPool) instances.get(id);
 		if (instance != null)
 			return instance;
 		else
-			throw new EXistException(
-				"instance with id " + id + " has not been configured yet");
+			throw new EXistException("instance with id " + id + " has not been configured yet");
 	}
 
 	public final static BrokerPool getInstance() throws EXistException {
@@ -117,36 +116,39 @@ public class BrokerPool {
 	 *  configure().
 	 */
 	public final static void stop(String id) throws EXistException {
-		BrokerPool instance = (BrokerPool)instances.get(id);
+		BrokerPool instance = (BrokerPool) instances.get(id);
 		if (instance != null) {
 			instance.shutdown();
 			instances.remove(id);
 		} else
-			throw new EXistException("instance with id " +
-				" is not available");
+			throw new EXistException("instance with id " + " is not available");
 	}
 
 	public final static void stop() throws EXistException {
 		stop(DEFAULT_INSTANCE);
 	}
-	
+
 	public final static void stopAll() {
-		for(Iterator i = instances.values().iterator(); i.hasNext(); )
-			((BrokerPool)i.next()).shutdown();
+		BrokerPool instance;
+		for (Iterator i = instances.values().iterator(); i.hasNext();) {
+			instance = (BrokerPool)i.next();
+			if(instance.conf != null)
+				instance.shutdown();
+		}
 		instances.clear();
 	}
-	
+
 	private int max = 15;
 	private int min = 1;
-	private Configuration conf = null;
-	protected ArrayList active = new ArrayList();
-	protected int brokers = 0;
-	protected Stack pool = new Stack();
+	protected Configuration conf = null;
+	private ArrayList active = new ArrayList();
+	private int brokers = 0;
+	private Stack pool = new Stack();
 	private org.exist.security.SecurityManager secManager = null;
-	private long lastRequest = System.currentTimeMillis();
-	private long idleTime = 900000L;
 	private String instanceId;
-
+	private boolean syncRequired = false;
+	private SyncDaemon syncDaemon;
+	
 	/**
 	 *  Constructor for the BrokerPool object
 	 *
@@ -157,16 +159,20 @@ public class BrokerPool {
 		instanceId = id;
 		min = minBrokers;
 		max = maxBrokers;
-		Integer minInt = (Integer)config.getProperty("db-connection.pool.min");
-		Integer maxInt = (Integer)config.getProperty("db-connection.pool.max");
-		Integer idleInt = (Integer)config.getProperty("db-connection.pool.idle");
-		if(minInt != null)
+		Integer minInt = (Integer) config.getProperty("db-connection.pool.min");
+		Integer maxInt = (Integer) config.getProperty("db-connection.pool.max");
+		Long syncInt = (Long) config.getProperty("db-connection.pool.sync-period");
+		if (minInt != null)
 			min = minInt.intValue();
-		if(maxInt != null)
+		if (maxInt != null)
 			max = maxInt.intValue();
-		if(idleInt != null)
-			idleTime = idleInt.intValue() * 1000;
-		LOG.debug("min = " + min + "; max = "+ max + "; idle = " + idleTime);
+		long syncPeriod = 120000;
+		if(syncInt != null)
+			syncPeriod = syncInt.longValue();
+		LOG.debug("min = " + min + "; max = " + max + "; sync = " + syncPeriod);
+		syncDaemon = new SyncDaemon();
+		if(syncPeriod > 0)
+			syncDaemon.executePeriodically(syncPeriod, new Sync(this), false); 
 		conf = config;
 		initialize();
 	}
@@ -192,7 +198,7 @@ public class BrokerPool {
 	public Configuration getConfiguration() {
 		return conf;
 	}
-	
+
 	/**
 	 *  Description of the Method
 	 *
@@ -201,7 +207,8 @@ public class BrokerPool {
 	 */
 	protected DBBroker createBroker() throws EXistException {
 		DBBroker broker = BrokerFactory.getInstance(this, conf);
-		LOG.debug("creating new instance of " + broker.getClass().getName());
+		LOG.debug("database " + instanceId + ": creating new instance of " + broker.getClass().getName());
+		LOG.debug("configuration = " + conf.getPath());
 		pool.push(broker);
 		active.add(broker);
 		brokers++;
@@ -215,15 +222,14 @@ public class BrokerPool {
 	 *@exception  EXistException  Description of the Exception
 	 */
 	public synchronized DBBroker get() throws EXistException {
-		if(!isInstanceConfigured())
+		if (!isInstanceConfigured())
 			throw new EXistException("database instance is not available");
 		if (pool.isEmpty()) {
 			if (brokers < max)
 				return createBroker();
 			else
 				while (pool.isEmpty()) {
-					LOG.debug(
-						"waiting for broker instance to become available");
+					LOG.debug("waiting for broker instance to become available");
 					try {
 						this.wait();
 					} catch (InterruptedException e) {
@@ -244,17 +250,24 @@ public class BrokerPool {
 		return secManager;
 	}
 
+	/**
+	 * Reload the security manager. This method is called whenever the
+	 * users.xml file has been changed.
+	 * 
+	 * @param broker
+	 */
 	public void reloadSecurityManager(DBBroker broker) {
 		LOG.debug("reloading security manager");
 		secManager = new org.exist.security.SecurityManager(this, broker);
 	}
-	
+
 	/**
-	 *  Description of the Method
+	 *  Initialize the current instance.
 	 *
 	 *@exception  EXistException  Description of the Exception
 	 */
 	protected void initialize() throws EXistException {
+		LOG.debug("initializing database " + instanceId);
 		for (int i = 0; i < min; i++)
 			createBroker();
 		DBBroker broker = (DBBroker) pool.peek();
@@ -271,15 +284,17 @@ public class BrokerPool {
 	 * 
 	 *@param  broker  Description of the Parameter
 	 */
-	public synchronized void release(DBBroker broker) {
+	public void release(DBBroker broker) {
 		if (broker == null)
 			return;
-		pool.push(broker);
-		if(pool.size() == brokers && 
-			(System.currentTimeMillis() - lastRequest) > idleTime)
-			sync(broker);
-        lastRequest = System.currentTimeMillis();
-		this.notifyAll();
+		synchronized(this) {
+			pool.push(broker);
+			if(syncRequired && pool.size() == brokers) {
+				sync(broker);
+				syncRequired = false;
+			}
+			this.notifyAll();
+		}
 	}
 
 	/**
@@ -290,12 +305,13 @@ public class BrokerPool {
 	 * @param broker
 	 */
 	public void sync(DBBroker broker) {
-		LOG.debug("database is idle; syncing buffers to disk");
+		LOG.debug("syncing buffers to disk");
 		broker.sync();
 	}
-	
+
 	/**  Shutdown all brokers. */
 	public synchronized void shutdown() {
+		syncDaemon.shutDown();
 		while (pool.size() < brokers)
 			try {
 				this.wait();
@@ -320,7 +336,7 @@ public class BrokerPool {
 	public String getId() {
 		return instanceId;
 	}
-	
+
 	/**
 	 *  Has this BrokerPool been configured?
 	 *
@@ -330,6 +346,10 @@ public class BrokerPool {
 		return conf != null;
 	}
 
+	public void triggerSync() {
+		syncRequired = true;
+	}
+	
 	protected class ShutdownThread extends Thread {
 
 		/**  Constructor for the ShutdownThread object */

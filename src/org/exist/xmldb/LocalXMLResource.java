@@ -46,13 +46,13 @@ public class LocalXMLResource implements XMLResource {
 	protected boolean indent = true;
 	protected boolean createContainerElements = true;
 	protected boolean processXInclude = true;
-	protected boolean matchTagging = true;
-	
+	protected int highlightMatches = 0;
+
 	protected User user;
 	protected String content = null;
 	protected File file = null;
 	protected Node root = null;
-	
+
 	public LocalXMLResource(
 		User user,
 		BrokerPool pool,
@@ -143,7 +143,7 @@ public class LocalXMLResource implements XMLResource {
 				serializer.setEncoding(encoding);
 				serializer.setProcessXInclude(processXInclude);
 				serializer.setCreateContainerElements(createContainerElements);
-				serializer.setHighlightMatches(matchTagging);
+				serializer.setHighlightMatches(highlightMatches);
 				if (id < 0)
 					content = serializer.serialize(document);
 				else {
@@ -154,21 +154,12 @@ public class LocalXMLResource implements XMLResource {
 				return content;
 			} catch (SAXException saxe) {
 				saxe.printStackTrace();
-				throw new XMLDBException(
-					ErrorCodes.VENDOR_ERROR,
-					saxe.getMessage(),
-					saxe);
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
 			} catch (EXistException e) {
-				throw new XMLDBException(
-					ErrorCodes.VENDOR_ERROR,
-					e.getMessage(),
-					e);
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 			} catch (Exception e) {
 				e.printStackTrace();
-				throw new XMLDBException(
-					ErrorCodes.VENDOR_ERROR,
-					e.getMessage(),
-					e);
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 			} finally {
 				brokerPool.release(broker);
 			}
@@ -190,7 +181,7 @@ public class LocalXMLResource implements XMLResource {
 			else
 				return document.getNode(id);
 		} catch (EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} finally {
 			brokerPool.release(broker);
 		}
@@ -212,7 +203,8 @@ public class LocalXMLResource implements XMLResource {
 			serializer.setProcessXInclude(processXInclude);
 			serializer.setContentHandler(handler);
 			serializer.setCreateContainerElements(createContainerElements);
-			serializer.setHighlightMatches(matchTagging);
+			if (highlightMatches > 0)
+				serializer.setHighlightMatches(highlightMatches);
 			String xml;
 			try {
 				if (id < 0)
@@ -225,13 +217,10 @@ public class LocalXMLResource implements XMLResource {
 				}
 			} catch (SAXException saxe) {
 				saxe.printStackTrace();
-				throw new XMLDBException(
-					ErrorCodes.VENDOR_ERROR,
-					saxe.getMessage(),
-					saxe);
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
 			}
 		} catch (EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} finally {
 			brokerPool.release(broker);
 		}
@@ -246,14 +235,12 @@ public class LocalXMLResource implements XMLResource {
 			return;
 		try {
 			String path =
-				(parent.getPath().equals("/")
-					? '/' + docId
-					: parent.getPath() + '/' + docId);
+				(parent.getPath().equals("/") ? '/' + docId : parent.getPath() + '/' + docId);
 			document = (DocumentImpl) broker.getDocument(path);
 			if (document == null)
 				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE);
 		} catch (PermissionDeniedException e) {
-			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,e);
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e);
 		}
 	}
 
@@ -275,9 +262,7 @@ public class LocalXMLResource implements XMLResource {
 
 	public Collection getParentCollection() throws XMLDBException {
 		if (parent == null)
-			throw new XMLDBException(
-				ErrorCodes.VENDOR_ERROR,
-				"collection parent is null");
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "collection parent is null");
 		return parent;
 	}
 
@@ -334,10 +319,10 @@ public class LocalXMLResource implements XMLResource {
 		processXInclude = process;
 	}
 
-	public void setMatchTagging(boolean tagging) {
-		matchTagging = tagging;
+	public void setMatchTagging(int mode) {
+		highlightMatches = mode;
 	}
-	
+
 	private class InternalXMLSerializer extends XMLSerializer {
 
 		StringWriter writer = new StringWriter();
@@ -356,7 +341,7 @@ public class LocalXMLResource implements XMLResource {
 			System.out.println(content);
 		}
 	}
-	
+
 	public boolean getSAXFeature(String arg0)
 		throws SAXNotRecognizedException, SAXNotSupportedException {
 		return false;

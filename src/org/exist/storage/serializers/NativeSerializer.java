@@ -314,7 +314,10 @@ public class NativeSerializer extends Serializer {
 					child = NodeImpl.deserialize(value.getData(), doc);
 					child.setOwnerDocument(doc);
 					if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
-						cdata = processText(((AttrImpl) child).getValue(), gid, matches);
+						if((highlightMatches & TAG_ATTRIBUTE_MATCHES) > 0)
+							cdata = processText(((AttrImpl) child).getValue(), gid, matches);
+						else
+							cdata = ((AttrImpl)child).getValue();
 						attributes.addAttribute(
 							child.getNamespaceURI(),
 							child.getLocalName(),
@@ -412,7 +415,7 @@ public class NativeSerializer extends Serializer {
 						"exist:text",
 						attribs);
 				}
-				if(highlightMatches)
+				if((highlightMatches & TAG_ELEMENT_MATCHES) == TAG_ELEMENT_MATCHES)
 					cdata = processText(((Text) node).getData(), gid, matches);
 				else
 					cdata = ((Text)node).getData();
@@ -445,7 +448,10 @@ public class NativeSerializer extends Serializer {
 						"exist:source",
 						"CDATA",
 						doc.getFileName());
-					cdata = processText(((AttrImpl) node).getValue(), gid, matches);
+					if((highlightMatches & TAG_ATTRIBUTE_MATCHES) > 0)
+						cdata = processText(((AttrImpl) node).getValue(), gid, matches);
+					else
+						cdata = ((AttrImpl)node).getValue();
 					attribs.addAttribute(
 						node.getNamespaceURI(),
 						node.getLocalName(),
@@ -462,7 +468,10 @@ public class NativeSerializer extends Serializer {
 						"attribute",
 						"exist:attribute");
 				} else {
-					cdata = processText(((AttrImpl) node).getValue(), gid, matches);
+					if((highlightMatches & TAG_ATTRIBUTE_MATCHES) == TAG_ATTRIBUTE_MATCHES)
+						cdata = processText(((AttrImpl) node).getValue(), gid, matches);
+					else
+						cdata = ((AttrImpl)node).getValue();
 					ch = new char[cdata.length()];
 					cdata.getChars(0, ch.length, ch, 0);
 					contentHandler.characters(ch, 0, ch.length);

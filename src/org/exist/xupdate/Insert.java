@@ -58,7 +58,7 @@ public class Insert extends Modification {
 		NodeImpl node;
 		NodeImpl parent;
 		DocumentImpl doc = null;
-		Collection collection = null;
+		Collection collection = null, prevCollection = null;
 		int len = children.getLength();
 		LOG.debug("found " + len + " nodes to insert");
 		for (Iterator i = qr.iterator(); i.hasNext();) {
@@ -66,12 +66,8 @@ public class Insert extends Modification {
 			doc = (DocumentImpl) node.getOwnerDocument();
 			doc.setIndexListener(listener);
 			collection = doc.getCollection();
-			if (!collection
-				.getPermissions()
-				.validate(user, Permission.UPDATE))
-				throw new PermissionDeniedException(
-					"write access to collection denied; user="
-						+ user.getName());
+			if(prevCollection != null && collection != prevCollection)
+				doc.getBroker().saveCollection(prevCollection);
 			if (!doc.getPermissions().validate(user, Permission.UPDATE))
 				throw new PermissionDeniedException("permission to remove document denied");
 			parent = (NodeImpl) node.getParentNode();
@@ -84,7 +80,10 @@ public class Insert extends Modification {
 					break;
 			}
 			doc.clearIndexListener();
+			prevCollection = collection;
 		}
+		if(doc != null)
+			doc.getBroker().saveCollection(collection);
 		return qr.size();
 	}
 

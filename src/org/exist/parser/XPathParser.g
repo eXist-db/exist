@@ -474,13 +474,18 @@ document_function [PathExpr expr]
 
 pathexpr [PathExpr expr] 
 	throws PermissionDeniedException, EXistException
-{ Expression result = null;
+{ 
+	Expression result = null;
+	PathExpr path = null;
 }:
 	( result=regularexpr[expr] {
 		if(result instanceof Step && ((Step)result).getAxis() == -1)
 			((Step)result).setAxis(Constants.CHILD_AXIS);
 	  }
 	  )+
+	| LPAREN { path = new PathExpr(pool); } or_expr[path] RPAREN {
+		expr.addPath(path);
+	}
 	;
 
 primary_expr [PathExpr expr]
@@ -490,17 +495,13 @@ returns [Expression step]
 	step = null;
 	PathExpr path = null;
 }:
-	step=function_call[expr]
-	| l:CONST {
+	l:CONST {
 		step = new Literal(l.getText());
 		expr.add(step);
 	}
 	| i:INT {
 		step = new IntNumber(Double.parseDouble(i.getText()));
 		expr.add(step);
-	}
-	| LPAREN { path = new PathExpr(pool); } or_expr[path] RPAREN {
-		expr.addPath(path);
 	}
 	;
 
@@ -519,11 +520,6 @@ returns [Expression step]
     "text" LPAREN RPAREN {
 			step = new LocationStep(pool, -1, new TypeTest(Constants.TEXT_NODE));
 			expr.add(step);
-	}
-	| "text" ( SLASH | DSLASH | EOF | LPPAREN ) {
-		step = new LocationStep( pool, -1,
-			new NameTest("text"));
-		expr.add(step);
 	}
 	| "starts-with" LPAREN or_expr[path] COMMA l:CONST RPAREN {
 		if(path.returnsType() == Constants.TYPE_NODELIST) {
@@ -560,11 +556,6 @@ returns [Expression step]
                 expr.add(step);
 	     }
 	}
-	| "match" ( SLASH | DSLASH | EOF | LPPAREN ) {
-		step = new LocationStep( pool, -1,
-			new NameTest("match"));
-		expr.add(step);
-	}
 	| "near" LPAREN or_expr[path] COMMA l4:CONST 
           ( COMMA i:INT { distance = Integer.parseInt(i.getText()); } )? RPAREN {
             FunNear near = new FunNear(pool);
@@ -586,26 +577,19 @@ returns [Expression step]
 	     }
             expr.addPath(near);
 	}
-	| "near" ( SLASH | DSLASH | EOF | LPPAREN ) {
-		step = new LocationStep( pool, -1,
-			new NameTest("text"));
-		expr.add(step);
-	}
-
         // generic function without arguments
-	| ( FUNC LPAREN RPAREN ) =>
-	  f1:FUNC { env.hasFunction(f1.getText()) }? LPAREN RPAREN {
+	| ( NCNAME LPAREN RPAREN ) =>
+	  f1:NCNAME { env.hasFunction(f1.getText()) }? LPAREN RPAREN {
 		fun = Function.createFunction(pool, env.getFunction(f1.getText()));
 		expr.addPath(fun);
 	}
 
 	// generic function with arguments
-	| f2:FUNC { env.hasFunction(f2.getText()) }?
+	| (NCNAME LPAREN) => f2:NCNAME LPAREN
     {
 		fun = Function.createFunction(pool, env.getFunction(f2.getText()));
 		expr.addPath(fun);
 	}
-    LPAREN
 	or_expr[arg1] { fun.addArgument(arg1); } 
     ( COMMA { arg2 = new PathExpr(pool); } 
 	or_expr[arg2] { fun.addArgument(arg2); } )*
@@ -667,11 +651,12 @@ returns [Expression step]
 	throws PermissionDeniedException, EXistException
 { step = null; 
   String qn;
+  String attr;
 }:
-	attr:ATTRIB {
+	AT attr=qname {
 			step = new LocationStep(pool,
 				Constants.ATTRIBUTE_AXIS,
-				new NameTest(attr.getText()));
+				new NameTest(attr));
 			expr.add(step);
 	}
 	| any:STAR {
@@ -700,14 +685,14 @@ returns [Expression step]
 				new TypeTest(Constants.NODE_TYPE));
 			expr.add(step);
 	}
+	| step=function_call[expr]
 	| qn=qname {
-			step = new LocationStep( pool, -1,
-				new NameTest(qn));
+			step = new LocationStep( pool, -1, new NameTest(qn));
 			expr.add(step);
 	}
 	| step=primary_expr[expr]
 	;
-
+	
 qname
 returns [String name]
 {
@@ -715,6 +700,11 @@ returns [String name]
 }:
 	n1:NCNAME { name = n1.getText(); }
 	(COLON n2:NCNAME { name = name + ':' + n2.getText(); } )?
+	| "text" { name = "text"; }
+	| "contains" { name = "contains"; }
+	| "starts-with" { name = "starts-with"; }
+	| "ends-with" { name = "ends-with"; }
+	| "near" { name = "near"; }
 	;
 
 axis_spec
@@ -796,6 +786,9 @@ UNION	:		'|'
 PLUS	:		'+'
 		;
 
+AT : '@'
+	;
+	
 protected
 BASECHAR 
 options { testLiterals=true; }
@@ -813,30 +806,25 @@ DIGIT	:	('\u0030'..'\u0039')
 		;
 		
 protected
-NMSTART :	(BASECHAR | '_')
+NMSTART
+	:	(BASECHAR | '_')
 	;
 	
 protected
-NMCHAR	:	(BASECHAR | DIGIT | '.' | '-' | '_' )
+NMCHAR
+	:	(BASECHAR | DIGIT | '.' | '-' | '_' )
 	;
 
 NCNAME
 options { testLiterals=true; }
 		:	NMSTART (NMCHAR)*
 	;
-	
-protected
-FUNC:	NCNAME
-		;
 
 INT	:	(DIGIT)+ ('.' (DIGIT)+)*
 	;
 
 VARIABLE:       '$'! NCNAME
         ;
-
-ATTRIB	:		'@'! NCNAME
-		;
 
 ATTRIB_STAR:	'@'! STAR
 		;

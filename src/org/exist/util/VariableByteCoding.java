@@ -1,6 +1,8 @@
 package org.exist.util;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  *  This class encodes integer values using variable-byte coding.
@@ -30,6 +32,8 @@ public class VariableByteCoding {
 		int i = 0;
 		do {
 			r |= ((more = d[offset + i++]) & 0177) << shift;
+			if(more < 0)
+				throw new ArrayIndexOutOfBoundsException();
 			more &= 0200;
 			shift += 7;
 		} while (more > 0);
@@ -43,7 +47,7 @@ public class VariableByteCoding {
 	 *	encoded data from
 	 *@return     the decoded value
 	 */
-	public final static long decode(ByteArrayInputStream is) {
+	public final static long decode(InputStream is) throws IOException {
 		long r = 0;
 		int shift = 0;
 		long more;
@@ -57,7 +61,7 @@ public class VariableByteCoding {
 		return r;
 	}
 
-	public final static void copyTo(ByteArrayInputStream in, FastByteBuffer out) {
+	public final static void copyTo(InputStream in, FastByteBuffer out) throws IOException {
 		long more;
 		do {
 			more = in.read();
