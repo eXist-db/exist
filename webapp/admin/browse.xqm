@@ -17,15 +17,13 @@ declare function browse:main($user as xs:string, $passwd as xs:string) as elemen
         $collection := xdb:collection($colName, $user, $passwd)
     return
         <div class="panel">
-            {
-                browse:process-action($collection)
-            }
+            { browse:process-action($collection) }
             <div class="panel-head">Browsing Collection: {$colName}</div>
             <form method="POST" enctype="multipart/form-data">
                 {
                     browse:display-collection($collection)
                 }
-                <table class="actions">
+                <table class="actions" cellspacing="0">
                     <tr><td colspan="3"><input type="submit" name="action" value="Remove Selected"/></td></tr>
                 
                     <tr>
@@ -44,7 +42,7 @@ declare function browse:main($user as xs:string, $passwd as xs:string) as elemen
                     </tr-->
                     <tr>
                         <td><input type="submit" name="action" value="Upload"/></td>
-                        <td><input type="file" size="40" name="upload"/></td>
+                        <td><input type="file" size="30" name="upload"/></td>
                         <td>Store as:<br/>
                         <input type="text" name="name" size="20"/></td>
                     </tr>
@@ -91,8 +89,9 @@ declare function browse:upload($collection as object) as element() {
         $file := request:get-uploaded-file("upload")
     return
         <div class="process">
+            <h3>Actions:</h3>
             <ul>
-            <li>Storing uploaded content to: {$docName}</li>
+                <li>Storing uploaded content to: {$docName}</li>
                 {
                     xdb:store($collection, $docName, $file)
                 }
@@ -114,6 +113,7 @@ declare function browse:store($collection as object) as element() {
         $docName := request:request-parameter("name", ())
     return
         <div class="process">
+            <h3>Actions:</h3>
             <ul>
                 <li>Storing resources from URI: {$path}</li>
                 {
@@ -130,6 +130,7 @@ declare function browse:remove() as element() {
     let $resources := request:request-parameter("resource", ())
     return
         <div class="process">
+            <h3>Actions:</h3>
             <ul>
                 {
                     for $resource in $resources
@@ -162,6 +163,7 @@ declare function browse:create-collection($parent as object) as element() {
     let $newcol := request:request-parameter("create", ())
     return
         <div class="process">
+            <h3>Actions:</h3>
             <ul>
             {
                 if($newcol) then
@@ -182,7 +184,7 @@ declare function browse:display-collection($collection as object)
 as element() {
     let $colName := util:collection-name($collection)
     return
-        <table cellpadding="5" id="browse">
+        <table cellspacing="0" cellpadding="5" id="browse">
             <tr>
                 <th/>
                 <th>Name</th>
@@ -191,10 +193,12 @@ as element() {
                 <th>Group</th>
                 <th>Created</th>
                 <th>Modified</th>
+                <th>Size (KB)</th>
             </tr>
             <tr>
                 <td/>
                 <td><a href="?panel=browse&amp;collection={browse:get-parent-collection($colName)}">Up</a></td>
+                <td/>
                 <td/>
                 <td/>
                 <td/>
@@ -224,6 +228,7 @@ as element()* {
             <td>{xdb:get-group($path)}</td>
             <td>{date:format-dateTime($created)}</td>
             <td/>
+            <td/>
         </tr>
 };
 
@@ -235,12 +240,13 @@ as element()* {
     return
         <tr>
             <td><input type="checkbox" name="resource" value="{$parent}/{$child}"/></td>
-            <td><a target="_new" href="{request:encode-url('view-source.xql')}?source={$parent}/{$child}">{$child}</a></td>
+            <td><a target="_new" href="../servlet/{$parent}/{$child}">{$child}</a></td>
             <td class="perm">{xdb:permissions-to-string(xdb:get-permissions($collection, $child))}</td>
             <td>{xdb:get-owner($collection, $child)}</td>
             <td>{xdb:get-group($collection, $child)}</td>
             <td>{date:format-dateTime(xdb:created($collection, $child))}</td>
             <td>{date:format-dateTime(xdb:last-modified($collection, $child))}</td>
+            <td>{xdb:size($collection, $child) div 1024}</td>
         </tr>
 };
 

@@ -37,7 +37,13 @@ declare function a:do-query() as element()
 
 <document xmlns:xi="http://www.w3.org/2001/XInclude">
 	
-	<xi:include href="context://header.xml"/>
+	<header>
+    	<logo src="logo.jpg"/>
+    	<title>Open Source Native XML Database</title>
+		<author email="wolfgang@exist-db.org">Wolfgang M. Meier</author>
+		<style href="styles/acronyms.css"/>
+	</header>
+    
 	<xi:include href="sidebar.xml"/>
 
 	<body>

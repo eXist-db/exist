@@ -1,30 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<book xmlns:ci="http://apache.org/cocoon/include/1.0">
+<?xml-stylesheet href="db2html.xsl" type="text/xsl"?>
+
+<book xmlns:xi="http://www.w3.org/2001/XInclude">
     <bookinfo>
-        <graphic fileref="/exist/logo.jpg"/>
-        <title>Open Source Native XML Database</title>
+        <graphic fileref="logo.jpg"/>
+        <style href="default-style.css"/>
+        <title>Open Source XML Database</title>
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
             <affiliation>
                 <address format="linespecific">
-					<email>wolfgang@exist-db.org</email>
+                    <email>meier@ifs.tu-darmstadt.de</email>
                 </address>
             </affiliation>
         </author>
     </bookinfo>
-    <ci:include src="sidebar.xml"/>
+    <xi:include href="sidebar.xml"/>
     <chapter>
-        <title>XInclude</title>
+        <title>XInclude Examples</title>
         <para>Beginning with version 0.9, eXist comes with partial support for
             the XInclude standard. If configured, the server will scan a
             document stored in the database for XInclude tags and expand those
             tags if possible. The expansion is applied during the serialization
             of the document, i.e. whenever you retrieve a document containing
             XInclude tags.</para>
+        
         <para>eXist's support for XInclude is not complete. You cannot include
             raw text, just XML. The fallback element is ignored. Also just basic
             XPath is allowed for XPointers.</para>
+            
         <para>Why do we need XInclude? One reason is that eXist does not
             preserve entity declarations. Entities are resolved by the XML
             parser, so eXist just sees the expanded text, not the entity itself.
@@ -37,25 +42,26 @@
             present some examples.</para>
         <section>
             <title>Viewing the Examples</title>
-            <para>If you have set up the provided sample files 
-            as described in the <ulink href="quickstart.xml">Quick Start</ulink>,
-            there should be a collection <filename>/db/xinclude</filename> on
-            your database with an XML file called <filename>xinclude.xml</filename>.
-            It basically contains the same text as this document. However, the
-            provided examples will actually work, i.e. you will be able to see the
-            effect.</para>
-            <para>So if your setup is correct, try to browse to
-                <ulink href="xmldb/db/xinclude/xinclude.xml">
-                http://localhost:8080/exist/xmldb/db/xinclude/xinclude.xml
-                </ulink>
+            <para>If you came here from the examples page, you are already looking at
+            a page that has been passed through XInclude, and you can see the live effect
+            of all the examples below. If not, try to browse to</para>
+            
+            <para><ulink url="servlet/db/xinclude/xinclude.xml">servlet/db/xinclude/xinclude.xml</ulink>
             </para>
+            
+            <para>and continue to read there.</para>
+            
+            <para>By the way, this page also demonstrates some of the possibilities of eXist's REST
+            interface. All the files required to render this page reside in the database and are
+            read from there, including the two XSLT stylesheets used for the formatting.</para>
         </section>
+        
         <section>
             <title>Including a Document</title>
             <para>To include an entire document, just specify its path
                 in the <option>href</option> attribute of an <sgmltag>xi:include</sgmltag>
-                tag. For example, the sidebar shown at the left of all
-                documents can be included as follows:</para>
+                tag. For example, the sidebar shown at the left of this
+                documents has been included as follows:</para>
             <synopsis><![CDATA[<xi:include href="sidebar.xml"/>]]></synopsis>
             <para>Please note that, as usual, you have to provide the correct namespace 
                 for XInclude, e.g. in the root element of the document. The official namespace is:
@@ -66,26 +72,46 @@
             <title>Shorthand Pointer</title>
             <para>The fragment part of the URI reference in the href attribute
                 is interpreted as an XPointer. If the fragment is just a
-                barename - now also called a shorthand pointer - it will select the first element of the target
+                barename - now called shorthand pointer - it will select the first 
+                element of the target
                 document that has an attribute of type ID matching the name. For
                 example, the following xinclude selects the p element from file
                 <filename>disclaimer.xml</filename>, which has an ID attribute
                 with value &quot;statement&quot;.</para>
             <synopsis><![CDATA[<xi:include href="disclaimer.xml#statement"/>]]></synopsis>
+            <para>The result of the XInclude will be displayed below:</para>
+            <xml-source>
+                <xi:include href="disclaimer.xml#statement"/>
+            </xml-source>
         </section>
         <section>
             <title>Selecting Fragments by an XPath Expression</title>
             <para>We may also use an XPath expression to select fragments. The
-                XPath expression is passed to the <command>xpointer()</command>
+                XPath expression is passed to the <command>xpointer()</command> 
                 scheme. The results of the expression will be included in place
                 of the <sgmltag>xi:include</sgmltag> element. The following
                 expression includes a section taken from Shakespeare's Macbeth:</para>
             <synopsis>&lt;xi:include href="/db/shakespeare/plays/macbeth.xml
                 #xpointer(//SPEECH[SPEAKER&amp;='witch' and near(LINE, 'fenny snake')])/&gt;</synopsis>
+            <para>As before, the results are included below:</para>
+            <xml-source>
+                <xi:include href="/db/shakespeare/plays/macbeth.xml#xpointer(//SPEECH[SPEAKER&amp;='witch' and near(LINE, 'fenny snake')])"/>
+            </xml-source>
             
             <para>An XPath expression will be applied to the entire collection if the
                 path in href points to a collection and not a single document:</para>
             <synopsis>&lt;xi:include href="/db/shakespeare#xpointer(//SPEECH[near(LINE, 'cursed spite')])"/&gt;</synopsis>
+            <xml-source>
+                <xi:include href="/db/shakespeare#xpointer(//SPEECH[near(LINE, 'cursed spite')])"/>
+			</xml-source>
+
+			<para>Test namespaces: all namespace/prefix mappings declared in
+				the source document are passed to the query context. 
+				Alternatively, you may declare mappings with xmlns().</para>
+			<xml-source>
+				<xi:include
+					href="disclaimer.xml#xpointer(//comment:comment)xmlns(t=http://nop.com)xmlns(comment=http://test.org)"/>
+			</xml-source>
         </section>
     </chapter>
 </book>

@@ -9,19 +9,20 @@
   	<xsl:preserve-space elements="*"/>
   	
   	<xsl:template match="entries">
-  		<table border="0" width="100%" cellspacing="15" cellpadding="10">
+  		<table border="0" cellspacing="15" cellpadding="10">
   			<xsl:apply-templates select="xmlad:Entry"/>
   		</table>
     </xsl:template>
    
   	<xsl:template match="xmlad:Entry">
-  		<tr bgcolor="F3F3F3">
-  			<td  class="entry">
-  				<xsl:apply-templates select="xmlad:Acronym"/> 
-  					<xsl:if test="xmlad:Acronym/@type">
-  						(Type: <xsl:value-of select="xmlad:Acronym/@type"/>)
-  					</xsl:if>
-  					<br/>
+  		<tr>
+  			<td class="entry">
+                <div class="acronym">
+                    <xsl:apply-templates select="xmlad:Acronym"/> 
+                    <xsl:if test="xmlad:Acronym/@type">
+                        (Type: <xsl:value-of select="xmlad:Acronym/@type"/>)
+                    </xsl:if>
+                </div>
   				<div class="expansion"><xsl:value-of select="xmlad:Acronym/@expansion"/></div>
   				
   				<p><xsl:apply-templates select="xmlad:Definition"/></p>
