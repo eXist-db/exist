@@ -20,9 +20,8 @@
  */
 package org.exist.storage;
 
-import it.unimi.dsi.fastutil.Object2ObjectOpenHashMap;
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import org.exist.util.FastStringBuffer;
@@ -40,8 +39,8 @@ import org.exist.util.MutableStringTokenizer;
  */
 public class IndexPaths {
 	
-	private final static Object2ObjectOpenHashMap cache =
-		new Object2ObjectOpenHashMap();
+	private final static HashMap cache =
+		new HashMap();
 	private final static int MAX_CACHE_SIZE = 64;
 	
     protected ArrayList includePath;

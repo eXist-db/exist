@@ -13,7 +13,7 @@ as xs:string
         $field
 };
 
-declare function f:get-query-start($type as xs:string)
+declare function f:get-path($type as xs:string)
 as xs:string
 {
 	if ($type = "any") then
@@ -22,18 +22,25 @@ as xs:string
 		concat("/dblp/", $type)
 };
 
+declare function f:get-filter-expr($field as xs:string, $terms as xs:string)
+as xs:string
+{
+	if($terms = "") then
+		""
+	else
+		concat("[", f:get-query-field($field), " &amp;= """, $terms, """]")
+};
+
 declare function f:build-query($field as xs:string, $terms as xs:string,
 	$type as xs:string)
 as xs:string
 {
-    concat(f:get-query-start($type), "[", 
-		f:get-query-field($field), " &amp;= """, $terms, """]")
+    concat(f:get-path($type), f:get-filter-expr($field, $terms))
 };
 
-declare function f:display($hits as node()+) as element()+
+declare function f:display($hits as node()+, $count as xs:integer) as element()+
 {
-    let $count := count($hits),
-		$start := number(request:request-parameter("start", "1")),
+    let $start := number(request:request-parameter("start", "1")),
 		$end := if ($start + 9 < $count) then $start + 9 
 			else $count
     return
@@ -49,14 +56,14 @@ declare function f:query() as element()
 {
     let $field := request:request-parameter("field", "any"),
         $keywords := request:request-parameter("keywords", ""),
-		$type := request:request-parameter("type", ""),
+		$type := request:request-parameter("type", "any"),
 		$previous := request:get-session-attribute("results")
     return
-        if ($keywords = "") then
-			if (count($previous) = 0) then
-            	<p>Please specify a search term.</p>
+        if ($keywords = "" and $type = "any") then
+			if (exists($previous)) then
+				f:display($previous, count($previous))
 			else
-				f:display($previous)
+            	<p>Please specify a search term.</p>
         else
             let $hits := util:eval(f:build-query($field, $keywords, $type)),
 				$count := count($hits),
@@ -65,12 +72,12 @@ declare function f:query() as element()
 				if ($count = 0) then
 					<p>Nothing found for your query!</p>
 				else
-					f:display($hits)
+					f:display($hits, $count)
 };
 
 <document xmlns:xi="http://www.w3.org/2001/XInclude">
 	
-	<xi:include href="cocoon://header.xml"/>
+	<xi:include href="context://header.xml"/>
 	<xi:include href="sidebar.xml"/>
 
 	<body>
@@ -87,7 +94,7 @@ declare function f:query() as element()
 					<td width="40%">
 						<select name="field" size="1">
 							<option value="title">Title</option>
-							<option value="author">Author</option>
+							<option value="author|editor">Author/Editor</option>
 							<option value="year">Definition</option>
 							<option value="any" selected="true">Any Field</option>
 						</select>

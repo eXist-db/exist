@@ -22,8 +22,6 @@
  */
 package org.exist.storage;
 
-import it.unimi.dsi.fastutil.Int2ObjectAVLTreeMap;
-
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observer;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 import org.apache.log4j.Category;
 import org.apache.oro.text.regex.MalformedPatternException;
@@ -75,6 +74,7 @@ import org.exist.storage.store.DOMFile;
 import org.exist.storage.store.DOMFileIterator;
 import org.exist.storage.store.DOMTransaction;
 import org.exist.storage.store.NodeIterator;
+import org.exist.storage.store.StorageAddress;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.Configuration;
@@ -82,7 +82,6 @@ import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.Occurrences;
 import org.exist.util.ReadOnlyException;
-import org.exist.util.StorageAddress;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
 import org.exist.xpath.Constants;
@@ -131,20 +130,22 @@ public class NativeBroker extends DBBroker {
 		throws EXistException {
 		super(pool, config);
 		String dataDir;
-		int buffers, pageSize;
+		int buffers, pageSize, cacheSize;
 		String temp;
 		boolean compress = false;
 		if ((dataDir = (String) config.getProperty("db-connection.data-dir"))
 			== null)
 			dataDir = "data";
-
-		if ((buffers = config.getInteger("db-connection.buffers")) < 0)
-			buffers = BUFFERS;
+			
 		if ((pageSize = config.getInteger("db-connection.page-size")) < 0)
 			pageSize = 4096;
-		if ((temp = (String) config.getProperty("db-connection.compress"))
-			!= null)
-			compress = temp.equals("true");
+		if ((buffers = config.getInteger("db-connection.buffers")) < 0)
+			buffers = BUFFERS;
+		if ((cacheSize = config.getInteger("db-connection.cache-size")) > 0) {
+			long totalMem = cacheSize * 1024 * 1024;
+			buffers = (int)(totalMem / pageSize / 64);
+		}
+		
 		if ((defaultIndexDepth = config.getInteger("indexer.index-depth")) < 0)
 			defaultIndexDepth = 1;
 		if ((memMinFree = config.getInteger("db-connection.min_free_memory"))
@@ -152,23 +153,24 @@ public class NativeBroker extends DBBroker {
 			memMinFree = 5000000;
 		Paged.setPageSize(pageSize);
 		String pathSep = System.getProperty("file.separator", "/");
+		int indexBuffers, dataBuffers;
 		try {
 			if ((elementsDb =
 				(BFile) config.getProperty("db-connection.elements"))
 				== null) {
-				int elementsBuffers;
-				if ((elementsBuffers =
-					config.getInteger("db-connection.elements.buffers"))
-					< 0)
-					elementsBuffers = buffers * 4;
+				if ((indexBuffers =
+					config.getInteger("db-connection.elements.buffers")) < 0) {
+					indexBuffers = buffers * 4;
+					dataBuffers = buffers * 11;
+				} else
+					dataBuffers = indexBuffers >> 2;
 
-				LOG.debug("elements index buffer size: " + elementsBuffers);
+				LOG.debug("elements index buffer size: " + indexBuffers + "; " + dataBuffers);
 				elementsDb =
 					new BFile(
 						new File(dataDir + pathSep + "elements.dbx"),
-						elementsBuffers >> 2,
-						elementsBuffers);
-				//elementsDb.fixedKeyLen = 6;
+						indexBuffers,
+						dataBuffers);
 				if (!elementsDb.exists()) {
 					LOG.info("creating elements.dbx");
 					elementsDb.create();
@@ -181,12 +183,19 @@ public class NativeBroker extends DBBroker {
 
 			if ((domDb = (DOMFile) config.getProperty("db-connection.dom"))
 				== null) {
-				LOG.debug("page buffer size = " + buffers);
+				if (config.hasProperty("db-connection.buffers")) {
+					indexBuffers = buffers;
+					dataBuffers = 512;
+				} else {
+					indexBuffers = buffers * 4;
+					dataBuffers = buffers;
+				}
+				LOG.debug("page buffer size = " + indexBuffers + "; " + dataBuffers);
 				domDb =
 					new DOMFile(
 						new File(dataDir + pathSep + "dom.dbx"),
-						buffers,
-						512);
+						indexBuffers,
+						dataBuffers);
 				if (!domDb.exists()) {
 					LOG.info("creating dom.dbx");
 					domDb.create();
@@ -197,22 +206,22 @@ public class NativeBroker extends DBBroker {
 				if (!readOnly)
 					readOnly = domDb.isReadOnly();
 			}
-			if ((collectionsDb =
-				(CollectionStore) config.getProperty(
-					"db-connection.collections"))
-				== null) {
-				int collectionBuffers;
-				if ((collectionBuffers =
-					config.getInteger("db-connection.collections.buffers"))
-					< 0)
-					collectionBuffers = buffers * 2;
+			
+			if ((collectionsDb = (CollectionStore) 
+				config.getProperty("db-connection.collections")) == null) {
+				if ((indexBuffers =
+					config.getInteger("db-connection.collections.buffers")) < 0) {
+					indexBuffers = buffers * 8;
+					dataBuffers = buffers * 8;
+				} else
+					dataBuffers = indexBuffers;
 				LOG.debug(
-					"collections index buffer size: " + collectionBuffers);
+					"collections index buffer size: " + indexBuffers + "; " + dataBuffers);
 				collectionsDb =
 					new CollectionStore(
 						new File(dataDir + pathSep + "collections.dbx"),
-						collectionBuffers / 2,
-						collectionBuffers);
+						indexBuffers,
+						dataBuffers);
 				if (!collectionsDb.exists()) {
 					LOG.info("creating collections.dbx");
 					collectionsDb.create();
@@ -223,10 +232,11 @@ public class NativeBroker extends DBBroker {
 				if (!readOnly)
 					readOnly = collectionsDb.isReadOnly();
 			}
+			
 			if (readOnly)
 				LOG.info("database runs in read-only mode");
 			idxPathMap = (Map) config.getProperty("indexer.map");
-			textEngine = new NativeTextEngine(this, config);
+			textEngine = new NativeTextEngine(this, config, buffers);
 			xmlSerializer = new NativeSerializer(this, config);
 			elementIndex = new NativeElementIndex(this, config, elementsDb);
 			user = new User("admin", null, "dba");
@@ -299,12 +309,13 @@ public class NativeBroker extends DBBroker {
 		Value val[];
 		String name;
 		Collection current;
-		Int2ObjectAVLTreeMap map = new Int2ObjectAVLTreeMap();
+		TreeMap map = new TreeMap();
 		Occurrences oc;
 		VariableByteInputStream is;
 		int docId;
 		int len;
 		final Lock lock = elementsDb.getLock();
+		Short id;
 		for (Iterator i = collections.iterator(); i.hasNext();) {
 			current = (Collection) i.next();
 			collectionId = current.getId();
@@ -316,11 +327,12 @@ public class NativeBroker extends DBBroker {
 				for (Iterator j = values.iterator(); j.hasNext();) {
 					val = (Value[]) j.next();
 					elementId = ByteConversion.byteToShort(val[0].getData(), 2);
+					id = new Short(elementId);
 					name = NativeBroker.getSymbols().getName(elementId);
-					oc = (Occurrences) map.get(elementId);
+					oc = (Occurrences) map.get(id);
 					if (oc == null) {
 						oc = new Occurrences(name);
-						map.put(elementId, oc);
+						map.put(id, oc);
 					}
 
 					is =
@@ -355,7 +367,7 @@ public class NativeBroker extends DBBroker {
 	}
 
 	/**
-	 *  find elements by their tag name. This method is comparable to the DOM's
+	 *  Find elements by their tag name. This method is comparable to the DOM's
 	 *  method call getElementsByTagName. All elements matching tagName and
 	 *  belonging to one of the documents in the DocumentSet docs are returned.
 	 *
@@ -369,7 +381,7 @@ public class NativeBroker extends DBBroker {
 		QName qname) {
 		final long start = System.currentTimeMillis();
 		//final ArraySet result = new ArraySet(10000);
-		final ExtArrayNodeSet result = new ExtArrayNodeSet(250);
+		final ExtArrayNodeSet result = new ExtArrayNodeSet(256);
 		DocumentImpl doc;
 		int docId;
 		int len;
@@ -1289,7 +1301,7 @@ public class NativeBroker extends DBBroker {
 			try {
 				lock.acquire();
 				if (!name.equals("/db"))
-					collectionsDb.getCollectionCache().remove(name);
+					collectionsDb.getCollectionCache().remove(collection);
 				Collection parent = collection.getParent(this);
 				if (parent != null) {
 					parent.removeCollection(

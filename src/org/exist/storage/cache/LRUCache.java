@@ -22,10 +22,10 @@
  */
 package org.exist.storage.cache;
 
-import it.unimi.dsi.fastutil.Long2ObjectOpenHashMap;
-
 import java.util.Iterator;
 import java.util.LinkedList;
+
+import org.exist.util.hashtable.Long2ObjectHashMap;
 
 /**
  * @author wolf
@@ -34,14 +34,14 @@ public class LRUCache implements Cache {
 
 	private int max;
 	private LinkedList stack = new LinkedList();
-	private Long2ObjectOpenHashMap map;
+	private Long2ObjectHashMap map;
 	
 	private int hits = 0;
 	private int misses = 0;
 	
 	public LRUCache(int size) {
 		this.max = size;
-		this.map = new Long2ObjectOpenHashMap(size);
+		this.map = new Long2ObjectHashMap(size);
 	}
 	
 	/* (non-Javadoc)
@@ -58,8 +58,7 @@ public class LRUCache implements Cache {
 		if(stack.size() == max) {
 			removeOne();
 		}
-		if(!map.containsKey(item.getKey()))
-			map.put(item.getKey(), item);
+		map.put(item.getKey(), item);
 		stack.addLast(item);
 	}
 

@@ -21,8 +21,6 @@
  */
 package org.exist.xmlrpc;
 
-import it.unimi.dsi.fastutil.Int2ObjectOpenHashMap;
-
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -31,17 +29,17 @@ import java.util.Iterator;
 import java.util.Stack;
 import java.util.Vector;
 
+import javax.xml.transform.OutputKeys;
+
 import org.apache.log4j.Category;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
-import org.exist.util.Configuration;
-import javax.xml.transform.OutputKeys;
-import org.xml.sax.SAXException;
-
-import javax.xml.transform.OutputKeys;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.Configuration;
+import org.exist.util.hashtable.Int2ObjectHashMap;
+import org.xml.sax.SAXException;
 
 /**
  *  Handler class for XMLRPC calls. <p>
@@ -1384,7 +1382,7 @@ public class RpcServer implements RpcAPI {
 		protected long lastCheck = System.currentTimeMillis();
 		protected int max = 1;
 		protected int min = 0;
-		protected Int2ObjectOpenHashMap resultSets = new Int2ObjectOpenHashMap();
+		protected Int2ObjectHashMap resultSets = new Int2ObjectHashMap(128);
 		protected Stack pool = new Stack();
 		protected ArrayList threads = new ArrayList();
 
@@ -1396,7 +1394,7 @@ public class RpcServer implements RpcAPI {
 		}
 
 		private void checkResultSets() {
-			for (Iterator i = resultSets.values().iterator(); i.hasNext();) {
+			for (Iterator i = resultSets.valueIterator(); i.hasNext();) {
 				final QueryResult qr = (QueryResult) i.next();
 				long ts = ((QueryResult) qr).timestamp;
 				if (System.currentTimeMillis() - ts > TIMEOUT) {

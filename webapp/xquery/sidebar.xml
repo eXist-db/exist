@@ -67,6 +67,9 @@
         <item>
             <link href="../xmldb/db/xinclude/xinclude.xml">XInclude</link>
         </item>
+        <item>
+            <img src="new.gif" border="0"/> <link href="xquery/index.xml">XQuery</link>
+        </item>
     </group>
     <group name="Administration">
         <item>

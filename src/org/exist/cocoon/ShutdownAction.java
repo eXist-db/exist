@@ -1,8 +1,3 @@
-/*
- * ShutdownAction.java - Jul 30, 2003
- * 
- * @author wolf
- */
 package org.exist.cocoon;
 
 import java.util.HashMap;
@@ -10,7 +5,7 @@ import java.util.Map;
 
 import org.apache.avalon.framework.parameters.Parameters;
 import org.apache.avalon.framework.thread.ThreadSafe;
-import org.apache.cocoon.acting.ComposerAction;
+import org.apache.cocoon.acting.ServiceableAction;
 import org.apache.cocoon.environment.ObjectModelHelper;
 import org.apache.cocoon.environment.Redirector;
 import org.apache.cocoon.environment.Request;
@@ -20,7 +15,12 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
-public class ShutdownAction extends ComposerAction implements ThreadSafe {
+/**
+ * Cocoon action to shut down a running database instance of eXist.
+ * 
+ * @author wolf
+ */
+public class ShutdownAction extends ServiceableAction implements ThreadSafe {
 
 	public ShutdownAction() {
 		super();

@@ -35,8 +35,8 @@ import org.exist.security.SecurityManager;
 import org.exist.security.User;
 
 import org.exist.storage.*;
+import org.exist.storage.store.StorageAddress;
 import org.w3c.dom.*;
-import org.exist.util.StorageAddress;
 import org.exist.util.SyntaxException;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
@@ -97,9 +97,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	protected long address = -1;
 
 	// arity of the tree at every level
-	protected int treeLevelOrder[] = new int[40];
+	protected int treeLevelOrder[] = new int[15];
 
-	protected long treeLevelStartPoints[] = new long[40];
+	protected long treeLevelStartPoints[] = new long[15];
 
 	// has document-metadata been loaded?
 	private boolean complete = true;

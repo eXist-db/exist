@@ -20,7 +20,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 
-import org.apache.cocoon.components.parser.Parser;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 import org.apache.xmlrpc.XmlRpcException;
@@ -44,7 +43,7 @@ public class RemoteXMLResource implements XMLResourceImpl {
 	 *  if this class is used from Cocoon, use the Cocoon parser component
 	 *  instead of JAXP
 	 */
-	private Parser cocoonParser = null;
+	private org.apache.excalibur.xml.sax.SAXParser cocoonParser = null;
 	protected String id, documentName, path = null;
 	protected int handle = -1;
 	protected int pos = -1;
@@ -191,8 +190,7 @@ public class RemoteXMLResource implements XMLResourceImpl {
 			}
 		} else
 			try {
-				cocoonParser.setContentHandler(handler);
-				cocoonParser.parse(new InputSource(new StringReader(content)));
+				cocoonParser.parse(new InputSource(new StringReader(content)), handler);
 			} catch (SAXException saxe) {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
 			} catch (IOException ioe) {
@@ -222,7 +220,7 @@ public class RemoteXMLResource implements XMLResourceImpl {
 	 *
 	 *@param  parser  The new cocoonParser value
 	 */
-	public void setCocoonParser(Parser parser) {
+	public void setCocoonParser(org.apache.excalibur.xml.sax.SAXParser parser) {
 		this.cocoonParser = parser;
 	}
 

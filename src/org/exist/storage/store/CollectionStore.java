@@ -12,7 +12,7 @@ import org.exist.collections.CollectionCache;
 public class CollectionStore extends BFile {
 
 	//	size of the internal buffer for collection objects
-	public static final int COLLECTION_BUFFER_SIZE = 64000;
+	public static final int COLLECTION_BUFFER_SIZE = 256;
 	
 	private CollectionCache collectionsCache = new CollectionCache(COLLECTION_BUFFER_SIZE);
 	

@@ -12,7 +12,6 @@ import org.exist.dom.NodeProxy;
 import org.exist.util.ByteConversion;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
-import org.exist.util.StorageAddress;
 
 /**
  * Class NodeIterator is used to iterate over nodes in the DOM storage.

@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Date;
-import java.util.Properties;
 
 import javax.xml.transform.TransformerException;
 
@@ -18,12 +17,11 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
-import org.exist.util.serializer.DOMSerializer;
-import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.DOMStreamer;
 import org.exist.util.IncludeXMLFilter;
+import org.exist.util.serializer.DOMSerializer;
+import org.exist.util.serializer.DOMStreamer;
+import org.exist.util.serializer.SAXSerializer;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.AtomicValue;
 import org.w3c.dom.Node;
@@ -200,10 +198,8 @@ public class LocalXMLResource implements XMLResourceImpl {
         if (root != null) {
 			try {
 				String option = parent.properties.getProperty(Serializer.GENERATE_DOC_EVENTS, "false");
-				if(option.equalsIgnoreCase("false"))
-					handler = new IncludeXMLFilter(handler);
                 DOMStreamer streamer = new DOMStreamer(handler, null);
-                streamer.stream(root);
+                streamer.serialize(root, option.equalsIgnoreCase("true"));
 			} catch (SAXException e) {
 				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
 			}

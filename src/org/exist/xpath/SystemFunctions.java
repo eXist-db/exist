@@ -34,10 +34,14 @@ public final class SystemFunctions {
 
 	public final static String[] internalFunctions =
 	{ 
+		"org.exist.xpath.functions.FunMatches",
+		"org.exist.xpath.functions.FunReplace",
+		"org.exist.xpath.functions.FunTokenize",
 		"org.exist.xpath.functions.FunSubstring",
 		"org.exist.xpath.functions.FunSubstringBefore",
 		"org.exist.xpath.functions.FunSubstringAfter",
 		"org.exist.xpath.functions.FunNormalizeSpace",
+		"org.exist.xpath.functions.FunStringPad",
 		"org.exist.xpath.functions.FunConcat",
 		"org.exist.xpath.functions.FunStartsWith",
 		"org.exist.xpath.functions.FunEndsWith",
@@ -71,7 +75,12 @@ public final class SystemFunctions {
 		"org.exist.xpath.functions.ExtDoctype",
 		"org.exist.xpath.functions.FunDistinctValues",
 		"org.exist.xpath.functions.FunEmpty",
+		"org.exist.xpath.functions.FunExists",
+		"org.exist.xpath.functions.FunSubSequence",
 		"org.exist.xpath.functions.FunItemAt",
+		"org.exist.xpath.functions.FunZeroOrOne",
+		"org.exist.xpath.functions.FunOneOrMore",
+		"org.exist.xpath.functions.FunExactlyOne",
 		"org.exist.xpath.functions.xmldb.XMLDBCollection",
 		"org.exist.xpath.functions.xmldb.XMLDBStore",
 		"org.exist.xpath.functions.xmldb.XMLDBRegisterDatabase",

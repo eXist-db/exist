@@ -22,8 +22,6 @@
  */
 package org.exist.security;
 
-import it.unimi.dsi.fastutil.Int2ObjectRBTreeMap;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -35,6 +33,7 @@ import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -65,8 +64,8 @@ public class SecurityManager {
 		Category.getInstance(SecurityManager.class.getName());
 
 	private BrokerPool pool;
-	private Int2ObjectRBTreeMap groups = new Int2ObjectRBTreeMap();
-	private Int2ObjectRBTreeMap users = new Int2ObjectRBTreeMap();
+	private Int2ObjectHashMap groups = new Int2ObjectHashMap(65);
+	private Int2ObjectHashMap users = new Int2ObjectHashMap(65);
 	private int nextUserId = 0;
 	private int nextGroupId = 0;
 
@@ -187,7 +186,7 @@ public class SecurityManager {
 
 	public synchronized User getUser(String name) {
 		User user;
-		for (Iterator i = users.values().iterator(); i.hasNext();) {
+		for (Iterator i = users.valueIterator(); i.hasNext();) {
 			user = (User) i.next();
 			if (user.getName().equals(name))
 				return user;
@@ -206,7 +205,7 @@ public class SecurityManager {
 	public synchronized User[] getUsers() {
 		User u[] = new User[users.size()];
 		int j = 0;
-		for (Iterator i = users.values().iterator(); i.hasNext(); j++)
+		for (Iterator i = users.valueIterator(); i.hasNext(); j++)
 			u[j] = (User) i.next();
 		return u;
 	}
@@ -218,7 +217,7 @@ public class SecurityManager {
 
 	public synchronized boolean hasGroup(String name) {
 		Group group;
-		for (Iterator i = groups.values().iterator(); i.hasNext();) {
+		for (Iterator i = groups.valueIterator(); i.hasNext();) {
 			group = (Group) i.next();
 			if (group.getName().equals(name))
 				return true;
@@ -228,7 +227,7 @@ public class SecurityManager {
 
 	public synchronized Group getGroup(String name) {
 		Group group;
-		for (Iterator i = groups.values().iterator(); i.hasNext();) {
+		for (Iterator i = groups.valueIterator(); i.hasNext();) {
 			group = (Group) i.next();
 			if (group.getName().equals(name))
 				return group;
@@ -243,7 +242,7 @@ public class SecurityManager {
 	public synchronized String[] getGroups() {
 		ArrayList list = new ArrayList(groups.size());
 		Group group;
-		for(Iterator i = groups.values().iterator(); i.hasNext(); ) {
+		for(Iterator i = groups.valueIterator(); i.hasNext(); ) {
 			group = (Group) i.next();
 			list.add(group.getName());
 		}
@@ -258,7 +257,7 @@ public class SecurityManager {
 
 	public synchronized boolean hasUser(String name) {
 		User user;
-		for (Iterator i = users.values().iterator(); i.hasNext();) {
+		for (Iterator i = users.valueIterator(); i.hasNext();) {
 			user = (User) i.next();
 			if (user.getName().equals(name))
 				return true;
@@ -274,14 +273,14 @@ public class SecurityManager {
 		buf.append("<groups last-id=\"");
 		buf.append(Integer.toString(nextGroupId));
 		buf.append("\">");
-		for (Iterator i = groups.values().iterator(); i.hasNext();)
+		for (Iterator i = groups.valueIterator(); i.hasNext();)
 			buf.append(((Group) i.next()).toString());
 		buf.append("</groups>");
 		//save users
 		buf.append("<users last-id=\"");
 		buf.append(Integer.toString(nextUserId));
 		buf.append("\">");
-		for (Iterator i = users.values().iterator(); i.hasNext();)
+		for (Iterator i = users.valueIterator(); i.hasNext();)
 			buf.append(((User) i.next()).toString());
 		buf.append("</users>");
 		buf.append("</auth>");

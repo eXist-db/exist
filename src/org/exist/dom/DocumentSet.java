@@ -20,16 +20,14 @@
 
 package org.exist.dom;
 
-//import it.unimi.dsi.fastutil.Int2ObjectAVLTreeMap;
-import it.unimi.dsi.fastutil.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ObjectAVLTreeSet;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.TreeSet;
 
 import org.apache.log4j.Category;
 import org.exist.collections.*;
+import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -42,18 +40,25 @@ import org.w3c.dom.NodeList;
  * 
  * @author wolf
  */
-public class DocumentSet extends Int2ObjectOpenHashMap implements NodeList {
+public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 
 	private final static Category LOG =
 		Category.getInstance(DocumentSet.class.getName());
 	private ArrayList list = null;
 	private boolean allDocuments = false;
-	private ObjectAVLTreeSet collections = new ObjectAVLTreeSet();
+	private TreeSet collections = new TreeSet();
 
 	public DocumentSet() {
 		super();
 	}
 
+	public void clear() {
+		super.clear();
+		collections = new TreeSet();
+		list = null;
+		allDocuments = false;
+	}
+	
 	public void setAllDocuments(boolean all) {
 		allDocuments = all;
 	}
@@ -107,7 +112,7 @@ public class DocumentSet extends Int2ObjectOpenHashMap implements NodeList {
 	}
 
 	public Iterator iterator() {
-		return values().iterator();
+		return valueIterator();
 	}
 
 	public Iterator getCollectionIterator() {
@@ -123,8 +128,11 @@ public class DocumentSet extends Int2ObjectOpenHashMap implements NodeList {
 	}
 	
 	public Node item(int pos) {
-		if (list == null)
-			list = new ArrayList(values());
+		if (list == null) {
+			list = new ArrayList();
+			for(Iterator i = valueIterator(); i.hasNext(); )
+				list.add(i.next());
+		}
 		return (Node) list.get(pos);
 	}
 
@@ -186,7 +194,7 @@ public class DocumentSet extends Int2ObjectOpenHashMap implements NodeList {
 		boolean equal = false;
 		for (Iterator i = other.iterator(); i.hasNext();) {
 			d = (DocumentImpl) i.next();
-			if (containsKey(new Integer(d.docId)))
+			if (containsKey(d.docId))
 				equal = true;
 			else
 				equal = false;

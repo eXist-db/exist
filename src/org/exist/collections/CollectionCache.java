@@ -5,27 +5,17 @@
  */
 package org.exist.collections;
 
-import it.unimi.dsi.fastutil.Object2ObjectAVLTreeMap;
+import org.exist.storage.cache.ClockCache;
+import org.exist.util.hashtable.Object2LongHashMap;
 
-import java.util.Iterator;
 
+public class CollectionCache extends ClockCache {
 
-public class CollectionCache {
-
-	public final static int BUFFER_SIZE = 32;
-	protected int buffers;
-
-	protected int fails = 0;
-	protected int hits = 0;
-	protected Object2ObjectAVLTreeMap map;
-
+	private Object2LongHashMap names;
+	
 	public CollectionCache(int blockBuffers) {
-		this.buffers = blockBuffers;
-		map = new Object2ObjectAVLTreeMap();
-	}
-
-	public CollectionCache() {
-		this(BUFFER_SIZE);
+		super(blockBuffers);
+		names = new Object2LongHashMap(blockBuffers);
 	}
 
 	public void add(Collection collection) {
@@ -33,63 +23,23 @@ public class CollectionCache {
 	}
 
 	public void add(Collection collection, int initialRefCount) {
-		final String name = collection.getName();
-		if (map.containsKey(name)) {
-			collection.incRefCount();
-			return;
-		}
-		collection.setRefCount(initialRefCount);
-		while (map.size() == buffers)
-			removeOne(collection);
-		map.put(name, collection);
+		super.add(collection, initialRefCount);
+		names.put(collection.getName(), collection.getKey());
 	}
 
 	public Collection get(Collection collection) {
-		return get(collection.getName());
+		return (Collection)get(collection.getKey());
 	}
 
 	public Collection get(String name) {
-		final Collection collection = (Collection)map.get(name);
-		if (collection == null)
-			fails++;
-		else {
-			collection.incRefCount();
-			hits++;
-		}
-		return collection;
-	}
-
-	public void remove(String name) {
-		map.remove(name);
-	}
-
-	public void remove(Collection collection) {
-		map.remove(collection.getName());
-	}
-
-	public void clear() {
-		map.clear();
+		long key = names.get(name);
+		if(key < 0)
+			return null;
+		return (Collection)get(key);
 	}
 	
-	private final void removeOne(Collection collection) {
-		Collection old;
-		boolean removed = false;
-		long oldId, id;
-		while (!removed) {
-			for (Iterator i = map.values().iterator(); i.hasNext();) {
-				old = (Collection) i.next();
-				if(old.getId() == collection.getId())
-					continue;
-				old.decRefCount();
-				// replace old page if it has reference count < 1,
-				if (old.getRefCount() < 1) {
-					i.remove();
-					//map.remove(oldNum);
-					removed = true;
-					old = null;
-					return;
-				}
-			}
-		}
+	public void remove(Collection collection) {
+		super.remove(collection);
 	}
+	
 }

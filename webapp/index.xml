@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Author: Wolfgang Meier "meier@ifs.tu-darmstadt.de" -->
-<document xmlns:ci="http://apache.org/cocoon/include/1.0">
+<document xmlns:xi="http://www.w3.org/2001/XInclude">
     <!-- include header -->
-    <ci:include src="header.xml"/>
-    <ci:include src="sidebar.xml"/>
+    <xi:include href="header.xml"/>
+    <xi:include href="sidebar.xml"/>
     <body>
         <section title="News">
-			<definitionlist>
+            <definitionlist>
                 <definition>
                     <term>
                         <b>November 21, 2003</b>
                     </term>
-					<def><b>XQuery</b> support is progressing fast: I have put 
+                    <def>
+                        <img src="resources/new.gif" border="0"/>XQuery support is progressing fast: I have put 
 					up a few <link href="xquery/index.xml">XQuery 
 					examples</link>
 				to demonstrate some of the new features available in the 
@@ -19,23 +20,23 @@
 				being complete, but you can already do a lot of fascinating 
 				things.</def>
                 </definition>
-				<definition>
-					<term>
-						<b>August 11, 2003</b>
-					</term>
-					<def>0.9.2 is out! This is the first official release with support for
+                <definition>
+                    <term>
+                        <b>August 11, 2003</b>
+                    </term>
+                    <def>0.9.2 is out! This is the first official release with support for
 						XUpdate. Also, much effort has been invested to ensure
 						that East Asian character encodings are correctly processed by the database
 						as well as the query engine. Further changes include: important missing 
 						parts of the XPath spec have been implemented, more synchronization and
 						database corruption bugs have been fixed and interfaces improved.
 					</def>
-				</definition>
-            	<definition>
-            		<term>
-            			<b>April 7, 2003</b>
-            		</term>
-            		<def>0.9.1 released! This is mainly a maintenance release, fixing many
+                </definition>
+                <definition>
+                    <term>
+                        <b>April 7, 2003</b>
+                    </term>
+                    <def>0.9.1 released! This is mainly a maintenance release, fixing many
             		bugs found in 0.9, including eof exceptions, out-of-memory errors,
             		and corrupted database files. It also contains further performance
             		optimizations with respect to indexing and querying speed. New features
@@ -43,7 +44,7 @@
             		database startup, access to index information, new Cocoon examples, 
             		and an IzPack-based installer. For a complete list of changes see 
             		<link href="changes.xml">changes.xml</link>.</def>
-            	</definition>
+                </definition>
             </definitionlist>
         </section>
         <section id="overview" title="Overview">
@@ -56,15 +57,12 @@
             <p>Depending on how the database engine has
                 been deployed, eXist offers several interfaces to application
                 developers, including HTTP, XML-RPC, SOAP and WebDAV. Java
-                developers should have a look at the <link
-                    href="http://www.xmldb.org">XML:DB API</link>, which
+                developers should have a look at the <link href="http://www.xmldb.org">XML:DB API</link>, which
                 provides a common interface to access XML database services.</p>
-            <p>eXist integrates well with <link
-                    href="http://xml.apache.org/cocoon">Apache's Cocoon</link>,
+            <p>eXist integrates well with <link href="http://xml.apache.org/cocoon">Apache's Cocoon</link>,
                 allowing developers to create complex web applications entirely
                 based on XML and related technologies.</p>
-            <p>For more information on eXist's features read the <link
-                    href="features.xml">feature overview</link>.</p>
+            <p>For more information on eXist's features read the <link href="features.xml">feature overview</link>.</p>
         </section>
         <section title="Online demos">
             <p>Several <b>online demos</b> are available:</p>
@@ -77,7 +75,7 @@
                 </tr>
                 <tr>
                     <td width="40%">
-						<link href="acronyms/query.xsp">XML Acronyms</link>
+                        <link href="acronyms/query.xsp">XML Acronyms</link>
                     </td>
                     <td width="60%">An eXist-based version of the 
                     <a href="http://www.xml-acronym-demystifier.org/">XML Acronym Demystifier</a>.</td>
@@ -99,14 +97,13 @@
                 </tr>
                 <tr>
                     <td width="40%">
-						<link href="xse/squery.xsp?cname=%2Fdb%2Fshakespeare%2Fplays">squery.xsp</link>
+                        <link href="xse/squery.xsp?cname=%2Fdb%2Fshakespeare%2Fplays">squery.xsp</link>
                     </td>
                     <td width="60%"> XML search engine, where you don't have to type XPath, with formatting adapted for each collection, highlight of terms of the query, history .</td>
                 </tr>
                 <tr>
                     <td width="40%">
-                        <link
-                            href="xmldb/db/xinclude/xinclude.xml">
+                        <link href="xmldb/db/xinclude/xinclude.xml">
                             XInclude Sample Document</link>
                     </td>
                     <td width="60%">This document demonstrates XInclude on the
@@ -116,10 +113,9 @@
             </table>
         </section>
         <section id="download" title="Download">
-			<p>eXist is released to the public under the terms of the <link
-                    href="http://www.gnu.org/copyleft/lesser.html">GNU
+            <p>eXist is released to the public under the terms of the <link href="http://www.gnu.org/copyleft/lesser.html">GNU
 					LGPL</link> license.</p>
-			<p>eXist may be downloaded either as a package containing the
+            <p>eXist may be downloaded either as a package containing the
                 complete distribution or as a web application archive
                 (war-file). Download the war-file if you want to install eXist
 				into an existing servlet-engine or write your own web 
@@ -139,100 +135,109 @@
                 </tr>
                 <tr>
                     <td>
-						<a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.2-install.jar">eXist-0.9.2-install.jar</a>
+                        <a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.2-install.jar">eXist-0.9.2-install.jar</a>
                     </td>
-					<td>Installer based on IzPack. Run with <tt>java -jar eXist-0.9.2-install.jar</tt>.</td>
+                    <td>Installer based on IzPack. Run with <tt>java -jar eXist-0.9.2-install.jar</tt>.</td>
                 </tr>
                 <tr>
                     <td>
-						<a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.2.tar.gz">eXist-0.9.2.tar.gz</a>
+                        <a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.2.tar.gz">eXist-0.9.2.tar.gz</a>
                     </td>
                     <td>Distribution including source code and required
                         third-party libraries. Packed with tar and gzip.</td>
                 </tr>
                 <tr>
                     <td>
-						<a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.2.zip">eXist-0.9.2.zip</a>
+                        <a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.2.zip">eXist-0.9.2.zip</a>
                     </td>
                     <td>Distribution packed with ZIP.</td>
                 </tr>
                 <tr>
                     <td>
-						<a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.2.war">eXist-0.9.2.war</a>
+                        <a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.2.war">eXist-0.9.2.war</a>
                     </td>
                     <td>Web application archive, ready to be installed into an
                         existing servlet-engine like Tomcat or Jetty.</td>
-				</tr>
-				<tr>
-					<th align="left" colspan="2">Development Snapshots</th>
-				</tr>
-				<tr>
-					<td colspan="2">We started to release frequent development 
+                </tr>
+                <tr>
+                    <th align="left" colspan="2">Development Snapshots</th>
+                </tr>
+                <tr>
+                    <td colspan="2">We started to release frequent development 
 					snapshots. The snapshots reflect the current state of 
 					development. You can find them in the unstable package on 
-					the <a href="http://sourceforge.net/project/showfiles.php?group_id=17691">Sourceforge file release system.</a></td>
-				</tr>
-			</table>
+					the <a href="http://sourceforge.net/project/showfiles.php?group_id=17691">Sourceforge file release system.</a>
+                    </td>
+                </tr>
+            </table>
         </section>
         <section title="Mailing list">
-			<p>There's a <link
-                    href="http://sourceforge.net/mail/?group_id=17691">mailing
+            <p>There's a <link href="http://sourceforge.net/mail/?group_id=17691">mailing
                 list</link> on sourceforge. If you are interested in using or
 			contributing to eXist, you are encouraged to join the list.</p>
-
-			<p>The list is archived at <a href="http://news.gmane.org/thread.php?group=gmane.text.xml.exist">Gmane</a>.</p>
+			
+            <p>The list is archived at <a href="http://news.gmane.org/thread.php?group=gmane.text.xml.exist">Gmane</a>.</p>
         </section>
         <section id="articles" title="Articles">
             <p>If you would like to know more about the internal workings of eXist, you may
                 read the following article:</p>
-                
-            <p><i>Wolfgang Meier</i>. <link href="http://exist-db.org/webdb.pdf">eXist: An 
+
+            <p>
+                <i>Wolfgang Meier</i>. <link href="http://exist-db.org/webdb.pdf">eXist: An 
             Open Source Native XML Database</link>. 
             In: Akmal B. Chaudri, Mario Jeckle, Erhard Rahm, Rainer Unland (Eds.): 
             Web, Web-Services, and Database Systems. NODe 2002 Web- and Database-Related 
             Workshops, Erfurt, Germany, October 2002. Springer LNCS Series, 2593.</p>
-            
-			<p>A chapter about eXist is also contained in the book:</p>
 			
-			<p>Akmal B. Chaudri, Awais Rashid, Roberto Zicari (Eds.): 
+            <p>A chapter about eXist is also contained in the book:</p>
+			
+            <p>Akmal B. Chaudri, Awais Rashid, Roberto Zicari (Eds.): 
 			<link href="http://www.aw.com/catalog/academic/product/1,4096,0201844524,00.html">XML 
 			Data Management: Native XML and XML-Enabled Database Systems</link>. 
 			ISBN: 0-201-84452-4. Published by Addison Wesley Professional,
 			March, 2003.</p>
-			
+
         </section>
-		<section id="links" title="Links">
-			<p>Some links to other software packages which build upon or provide access to eXist:</p>
-			<variablelist>
-				<varlistentry>
-					<term><link href="http://titanium.dstc.edu.au/xml/xmldbgui/">XMLdbGUI</link></term>
-					<listitem>
-						<p>A Swing-based graphical user-interface to access databases conforming to
+        <section id="links" title="Links">
+            <p>Some links to other software packages which build upon or provide access to eXist:</p>
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <link href="http://titanium.dstc.edu.au/xml/xmldbgui/">XMLdbGUI</link>
+                    </term>
+                    <listitem>
+                        <p>A Swing-based graphical user-interface to access databases conforming to
 							the XML:DB API.</p>
-					</listitem>
-				</varlistentry>
-				<varlistentry>
-					<term><link href="http://techweb.rfa.org/staff/bill">Python interface</link></term>
-					<listitem>
-						<p>A thin Python interface to eXist.</p>
-					</listitem>
-				</varlistentry>
-				<varlistentry>
-					<term><link href="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/exist/exist_php">
-					PHP API</link></term>
-					<listitem>
-						<p>PHP class to access eXist using the XMLRPC API.</p>
-					</listitem>
-				</varlistentry>
-				<varlistentry>
-					<term><link href="http://sourceforge.net/projects/xml-simpledb">XML-SimpleDB</link></term>
-					<listitem>
-						<p>A perl implementation of the XML:DB API.</p>
-					</listitem>
-				</varlistentry>
-			</variablelist>
-		</section>
-					
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <link href="http://techweb.rfa.org/staff/bill">Python interface</link>
+                    </term>
+                    <listitem>
+                        <p>A thin Python interface to eXist.</p>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <link href="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/exist/exist_php">
+					PHP API</link>
+                    </term>
+                    <listitem>
+                        <p>PHP class to access eXist using the XMLRPC API.</p>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <link href="http://sourceforge.net/projects/xml-simpledb">XML-SimpleDB</link>
+                    </term>
+                    <listitem>
+                        <p>A perl implementation of the XML:DB API.</p>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </section>
+
         <section id="tech" title="Technical Data">
             <table border="0" cellpadding="5" cellspacing="5">
                 <tr>
@@ -242,11 +247,11 @@
                 </tr>
                 <tr>
                     <td>Java:</td>
-					<td>JDK >1.4</td>
+                    <td>JDK >1.4</td>
                 </tr>
                 <tr>
                     <td>Tested platforms:</td>
-					<td>Linux (SuSE 7.1, Mandrake 9.1), Solaris 8, Windows 2000/XP</td>
+                    <td>Linux (SuSE 7.1, Mandrake 9.1), Solaris 8, Windows 2000/XP</td>
                 </tr>
             </table>
             <table border="0" cellpadding="5" cellspacing="5">
@@ -269,7 +274,7 @@
                     </th>
                 </tr>
                 <tr>
-					<td valign="top">Max. number of documents in the database:</td>
+                    <td valign="top">Max. number of documents in the database:</td>
                     <td>2<sup>31</sup> documents.</td>
                 </tr>
                 <tr>
@@ -295,38 +300,38 @@
         </section>
         <section id="missing" title="Future plans">
             <variablelist>
-            	<varlistentry>
-            		<term>Value-based indexes for dates, numbers ...</term>
-            		<listitem>
-            			<p>Apart from the fulltext index, it should be possible to define 
+                <varlistentry>
+                    <term>Value-based indexes for dates, numbers ...</term>
+                    <listitem>
+                        <p>Apart from the fulltext index, it should be possible to define 
             			additional indexes based on type.</p>
-            		</listitem>
-            	</varlistentry>
-            	<varlistentry>
-            		<term>XML schemas</term>
-            		<listitem>
-            			<p>An existing XML schema could be used to control the
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>XML schemas</term>
+                    <listitem>
+                        <p>An existing XML schema could be used to control the
             			indexing process. Currently, it is only possible to exclude or
             			include selected nodes from the fulltext index.</p>
-            		</listitem>
-            	</varlistentry>
+                    </listitem>
+                </varlistentry>
                 <varlistentry>
                     <term>XPath support</term>
                     <listitem>
                         <p>The XPath implementation still needs some work to be
                             done. A new implementation is on its way.</p>
                     </listitem>
-				</varlistentry>
-				<varlistentry>
-					<term>Stored procedures/Constraints</term>
-					<listitem>
-						<p>I would like to enhance the pre- and postprocessing
+                </varlistentry>
+                <varlistentry>
+                    <term>Stored procedures/Constraints</term>
+                    <listitem>
+                        <p>I would like to enhance the pre- and postprocessing
 						features of eXist, probably by using concepts similar
 						to Cocoon. Each collection could have a collection
 						configuration document, which defines how to process
 						documents.</p>
-					</listitem>
-				</varlistentry>
+                    </listitem>
+                </varlistentry>
             </variablelist>
         </section>
     </body>

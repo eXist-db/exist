@@ -13,7 +13,6 @@ import org.exist.storage.store.DOMFile.DOMPage;
 import org.exist.util.ByteConversion;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
-import org.exist.util.StorageAddress;
 
 /**
  * Class DOMFileIterator is used to iterate over nodes in the DOM storage.

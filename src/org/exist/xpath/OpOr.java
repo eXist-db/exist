@@ -22,10 +22,17 @@ package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
+import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 
-public class OpOr extends BinaryOp {
+/**
+ * Boolean operator "or".
+ * 
+ * @author Wolfgang <wolfgang@exist-db.org>
+ */
+public class OpOr extends LogicalOp {
 
 	public OpOr(StaticContext context) {
 		super(context);
@@ -34,17 +41,24 @@ public class OpOr extends BinaryOp {
 	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
 		if (getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
-		LOG.debug("processing " + getExpression(0).pprint());
-		NodeSet rr, rl = (NodeSet) getExpression(0).eval(docs, contextSequence, null);
-		rl = rl.getContextNodes((NodeSet)contextSequence, inPredicate);
-		for (int i = 1; i < getLength(); i++) {
-			LOG.debug("processing " + getExpression(i).pprint());
-			rr = (NodeSet) getExpression(i).eval(docs, contextSequence, null);
+		if(contextItem != null)
+			contextSequence = contextItem.toSequence();
+		Expression left = getLeft();
+		Expression right = getRight();
+		if(Type.subTypeOf(left.returnsType(), Type.NODE) &&
+			Type.subTypeOf(right.returnsType(), Type.NODE)) { 
+			NodeSet rl = left.eval(docs, contextSequence, null).toNodeSet();
+			rl = rl.getContextNodes((NodeSet)contextSequence, inPredicate);
+			NodeSet rr = right.eval(docs, contextSequence, null).toNodeSet();
 			rl = rl.union(rr.getContextNodes((NodeSet)contextSequence, inPredicate));
+			return rl;
+		} else {
+			boolean ls = left.eval(docs, contextSequence).effectiveBooleanValue();
+			boolean rs = right.eval(docs, contextSequence).effectiveBooleanValue();
+			return ls || rs ? BooleanValue.TRUE : BooleanValue.FALSE;
 		}
-		return rl;
 	}
-
+	
 	public String pprint() {
 		StringBuffer buf = new StringBuffer();
 		buf.append(getExpression(0).pprint());
@@ -53,15 +67,5 @@ public class OpOr extends BinaryOp {
 			buf.append(getExpression(i).pprint());
 		}
 		return buf.toString();
-	}
-
-	/* (non-Javadoc)
-		 * @see org.exist.xpath.Expression#setInPredicate(boolean)
-		 */
-	public void setInPredicate(boolean inPredicate) {
-		super.setInPredicate(inPredicate);
-		for (int i = 0; i < getLength(); i++) {
-			getExpression(i).setInPredicate(inPredicate);
-		}
 	}
 }

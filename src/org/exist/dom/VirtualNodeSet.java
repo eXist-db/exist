@@ -105,7 +105,6 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		boolean directParent,
 		int recursions) {
 		long pid = XMLUtil.getParentId(node.doc, node.gid);
-		System.out.println(node.gid + " --> " + pid);
 		NodeProxy parent;
 		// check if the start-node should be included, e.g. to process an
 		// expression like *[. = 'xxx'] 

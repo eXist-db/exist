@@ -6,7 +6,7 @@ import org.apache.cocoon.environment.Redirector;
 import org.apache.cocoon.environment.SourceResolver;
 import org.apache.cocoon.environment.ObjectModelHelper;
 import org.apache.cocoon.environment.Session;
-import org.apache.cocoon.acting.ComposerAction;
+import org.apache.cocoon.acting.ServiceableAction;
 import org.apache.avalon.framework.parameters.Parameters;
 import org.apache.avalon.framework.thread.ThreadSafe;
 
@@ -17,25 +17,16 @@ import org.xmldb.api.*;
 import org.xmldb.api.base.*;
 
 /**
- *  Description of the Class
+ *  Cocoon action to authenticate a user against the database.
+ * 
+ * If authentication succeeds, user and password will be stored into
+ * the current session.
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    9. September 2002
+ * @author     Wolfgang Meier <wolfgang@exist-db.org>
  */
-public class XMLDBSessionLoginAction extends ComposerAction
+public class XMLDBSessionLoginAction extends ServiceableAction
      implements ThreadSafe {
 
-    /**
-     *  Description of the Method
-     *
-     *@param  redirector     Description of the Parameter
-     *@param  resolver       Description of the Parameter
-     *@param  objectModel    Description of the Parameter
-     *@param  source         Description of the Parameter
-     *@param  param          Description of the Parameter
-     *@return                Description of the Return Value
-     *@exception  Exception  Description of the Exception
-     */
     public Map act( Redirector redirector, SourceResolver resolver,
                     Map objectModel, String source, Parameters param ) throws Exception {
         Request request = ObjectModelHelper.getRequest( objectModel );

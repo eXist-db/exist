@@ -22,17 +22,14 @@
  */
 package org.exist.dom;
 
-import it.unimi.dsi.fastutil.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.Object2IntMap;
-import it.unimi.dsi.fastutil.Object2IntOpenHashMap;
-import it.unimi.dsi.fastutil.Object2ShortOpenHashMap;
-
 import java.io.IOException;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
+import org.exist.util.hashtable.Int2ObjectHashMap;
+import org.exist.util.hashtable.Object2IntHashMap;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 
@@ -40,12 +37,12 @@ public class SymbolTable {
 
 	private final static Logger LOG = Logger.getLogger(SymbolTable.class);
 
-	protected Object2IntOpenHashMap nameSymbols = new Object2IntOpenHashMap();
-	protected Int2ObjectOpenHashMap names = new Int2ObjectOpenHashMap();
-	protected Object2IntOpenHashMap nsSymbols = new Object2IntOpenHashMap();
-	protected Int2ObjectOpenHashMap namespaces = new Int2ObjectOpenHashMap();
+	protected Object2IntHashMap nameSymbols = new Object2IntHashMap(200);
+	protected Int2ObjectHashMap names = new Int2ObjectHashMap(200);
+	protected Object2IntHashMap nsSymbols = new Object2IntHashMap(200);
+	protected Int2ObjectHashMap namespaces = new Int2ObjectHashMap(200);
 
-	protected Object2ShortOpenHashMap defaultMappings = new Object2ShortOpenHashMap();
+	protected Object2IntHashMap defaultMappings = new Object2IntHashMap(200);
 
 	protected short max = 0;
 	protected short nsMax = 0;
@@ -55,15 +52,18 @@ public class SymbolTable {
 	}
 
 	public synchronized short getSymbol(Element element) {
-		if (nameSymbols.containsKey(element.getLocalName()))
-			return (short) nameSymbols.getInt(element.getLocalName());
-		short id = ++max;
+		short id = (short) nameSymbols.get(element.getLocalName());
+		if (id > -1)
+			return id;
+		id = ++max;
 		nameSymbols.put(element.getLocalName(), id);
 		names.put(id, element.getLocalName());
 		changed = true;
 		// remember the prefix=namespace mapping for querying
 		String prefix = element.getPrefix();
-		if (prefix != null && prefix.length() > 0 && (!defaultMappings.containsKey(prefix))) {
+		if (prefix != null
+			&& prefix.length() > 0
+			&& (!defaultMappings.containsKey(prefix))) {
 			final short nsId = getNSSymbol(element.getNamespaceURI());
 			defaultMappings.put(prefix, nsId);
 		}
@@ -72,15 +72,18 @@ public class SymbolTable {
 
 	public synchronized short getSymbol(Attr attr) {
 		final String key = '@' + attr.getLocalName();
-		if (nameSymbols.containsKey(key))
-			return (short) nameSymbols.getInt(key);
-		short id = ++max;
+		short id = (short) nameSymbols.get(key);
+		if (id > -1)
+			return id;
+		id = ++max;
 		nameSymbols.put(key, id);
 		names.put(id, attr.getLocalName());
 		changed = true;
 		//		remember the prefix=namespace mapping for querying
 		String prefix = attr.getPrefix();
-		if (prefix != null && prefix.length() > 0 && (!defaultMappings.containsKey(prefix))) {
+		if (prefix != null
+			&& prefix.length() > 0
+			&& (!defaultMappings.containsKey(prefix))) {
 			final short nsId = getNSSymbol(attr.getNamespaceURI());
 			defaultMappings.put(prefix, nsId);
 		}
@@ -88,11 +91,12 @@ public class SymbolTable {
 	}
 
 	public synchronized short getSymbol(String name) {
-		if(name.length() == 0)
+		if (name.length() == 0)
 			throw new IllegalArgumentException("name is empty");
-		if (nameSymbols.containsKey(name))
-			return (short) nameSymbols.getInt(name);
-		short id = ++max;
+		short id = (short) nameSymbols.get(name);
+		if (id > -1)
+			return id;
+		id = ++max;
 		nameSymbols.put(name, id);
 		names.put(id, name);
 		changed = true;
@@ -103,9 +107,10 @@ public class SymbolTable {
 		if (ns == null || ns.length() == 0) {
 			return 0;
 		}
-		if (nsSymbols.containsKey(ns))
-			return (short) nsSymbols.getInt(ns);
-		short id = ++nsMax;
+		short id = (short) nsSymbols.get(ns);
+		if (id > -1)
+			return id;
+		id = ++nsMax;
 		nsSymbols.put(ns, id);
 		namespaces.put(id, ns);
 		changed = true;
@@ -126,47 +131,55 @@ public class SymbolTable {
 
 	public String[] getSymbols() {
 		String[] result = new String[nameSymbols.size()];
-		Object[] keys = nameSymbols.keySet().toArray();
-		for (int i = 0; i < keys.length; i++)
-			result[i] = (String) keys[i];
+		int j = 0;
+		for (Iterator i = nameSymbols.iterator(); i.hasNext(); j++) {
+			result[j] = (String) i.next();
+		}
 		return result;
 	}
 
 	public synchronized String getDefaultNamespace(String prefix) {
 		if (defaultMappings.containsKey(prefix))
-			return getNamespace(defaultMappings.getShort(prefix));
+			return getNamespace((short)defaultMappings.get(prefix));
 		return null;
 	}
 
 	public synchronized String[] defaultPrefixList() {
 		String[] prefixes = new String[defaultMappings.size()];
 		int i = 0;
-		for(Iterator j = defaultMappings.keySet().iterator(); j.hasNext(); i++)
-			prefixes[i] = (String)j.next();
+		for (Iterator j = defaultMappings.iterator(); j.hasNext(); i++)
+			prefixes[i] = (String) j.next();
 		return prefixes;
 	}
-	
-	public synchronized void write(final VariableByteOutputStream ostream) throws IOException {
+
+	public synchronized void write(final VariableByteOutputStream ostream)
+		throws IOException {
 		ostream.writeShort(max);
 		ostream.writeShort(nsMax);
 		ostream.writeInt(nameSymbols.size());
-		for (Iterator i = nameSymbols.entrySet().iterator(); i.hasNext();) {
-			final Object2IntMap.Entry entry = (Object2IntMap.Entry) i.next();
-			ostream.writeUTF((String) entry.getKey());
-			ostream.writeShort((short) entry.getIntValue());
+		for (Iterator i = nameSymbols.iterator(); i.hasNext();) {
+			final String entry = (String) i.next();
+			ostream.writeUTF(entry);
+			short id = (short) nameSymbols.get(entry);
+			if(id < 0)
+				Thread.dumpStack();
+			ostream.writeShort(id);
 		}
 		ostream.writeInt(nsSymbols.size());
-		for (Iterator i = nsSymbols.entrySet().iterator(); i.hasNext();) {
-			final Object2IntMap.Entry entry = (Object2IntMap.Entry) i.next();
-			ostream.writeUTF((String) entry.getKey());
-			ostream.writeShort((short) entry.getIntValue());
+		for (Iterator i = nsSymbols.iterator(); i.hasNext();) {
+			final String entry = (String) i.next();
+			ostream.writeUTF(entry);
+			short id = (short) nsSymbols.get(entry);
+			if(id < 0)
+				Thread.dumpStack();
+			ostream.writeShort(id);
 		}
 		ostream.writeInt(defaultMappings.size());
 		String prefix;
 		short nsId;
-		for (Iterator i = defaultMappings.keySet().iterator(); i.hasNext();) {
+		for (Iterator i = defaultMappings.iterator(); i.hasNext();) {
 			prefix = (String) i.next();
-			nsId = defaultMappings.getShort(prefix);
+			nsId = (short)defaultMappings.get(prefix);
 			ostream.writeUTF(prefix);
 			ostream.writeShort(nsId);
 		}
