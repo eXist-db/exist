@@ -1,7 +1,7 @@
 
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2000,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
+ *  Copyright (C) 2000-04,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
- *  $Id:
+ *  $Id$
  */
 package org.exist.dom;
 
@@ -25,7 +25,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
 import org.exist.storage.DBBroker;
 import org.exist.storage.Signatures;
 import org.w3c.dom.DOMException;
@@ -44,75 +44,40 @@ import org.xml.sax.ext.LexicalHandler;
  *@created    8. Juli 2002
  */
 public class NodeImpl implements Node {
-	private final static Category LOG = Category.getInstance(NodeImpl.class.getName());
+	
+	private final static Logger LOG = Logger.getLogger(NodeImpl.class);
 
 	protected short attributes = 0;
 	protected long gid;
 	protected long internalAddress = -1;
 	protected QName nodeName = null;
-	protected int nodeNameRef = -1;
 	protected short nodeType = 0;
 	protected DocumentImpl ownerDocument = null;
 
-	/**  Constructor for the NodeImpl object */
-	public NodeImpl() {
+	private NodeImpl() {
 	}
 
-	/**
-	 *  Constructor for the NodeImpl object
-	 *
-	 *@param  nodeType  Description of the Parameter
-	 */
 	public NodeImpl(short nodeType) {
 		this(nodeType, null, 0);
 	}
 
-	/**
-	 *  Constructor for the NodeImpl object
-	 *
-	 *@param  n  Description of the Parameter
-	 */
 	public NodeImpl(Node n) {
 		this(n.getNodeType(), ((NodeImpl) n).getQName(), 0);
 		ownerDocument = (DocumentImpl) n.getOwnerDocument();
 	}
 
-	/**
-	 *  Constructor for the NodeImpl object
-	 *
-	 *@param  gid  Description of the Parameter
-	 */
 	public NodeImpl(long gid) {
 		this((short) 0, new QName("", "", null), gid);
 	}
 
-	/**
-	 *  Constructor for the NodeImpl object
-	 *
-	 *@param  nodeType  Description of the Parameter
-	 *@param  gid       Description of the Parameter
-	 */
 	public NodeImpl(short nodeType, long gid) {
 		this(nodeType, new QName("", "", null), gid);
 	}
 
-	/**
-	 *  Constructor for the NodeImpl object
-	 *
-	 *@param  nodeType  Description of the Parameter
-	 *@param  nodeName  Description of the Parameter
-	 */
 	public NodeImpl(short nodeType, QName nodeName) {
 		this(nodeType, nodeName, 0);
 	}
 
-	/**
-	 *  Constructor for the NodeImpl object
-	 *
-	 *@param  nodeType  Description of the Parameter
-	 *@param  nodeName  Description of the Parameter
-	 *@param  gid       Description of the Parameter
-	 */
 	public NodeImpl(short nodeType, QName nodeName, long gid) {
 		this.nodeType = nodeType;
 		this.nodeName = nodeName;
@@ -130,29 +95,52 @@ public class NodeImpl implements Node {
 	}
 
 	/**
-	 *  Deserialize a node from a byte array.
-	 *
-	 *@param  data  Description of the Parameter
-	 *@param  doc   Description of the Parameter
-	 *@return       Description of the Return Value
+	 * Read a node from the specified byte array.
+	 * 
+	 * This checks the node type and calls the {@link #deserialize(byte[], int, int)}
+	 * method of the corresponding node class. The node will be allocated in the pool
+	 * and should be released once it is no longer needed.
+	 * 
+	 * @param data
+	 * @param start
+	 * @param len
+	 * @param doc
+	 * @return
 	 */
-	public static NodeImpl deserialize(byte[] data, int start, int len, DocumentImpl doc) {
-		short type = Signatures.getType(data[start]);
+	public static NodeImpl deserialize(byte[] data, int start, int len, DocumentImpl doc,
+	        boolean pooled) {
+	    short type = Signatures.getType(data[start]);
 		switch (type) {
 			case Node.TEXT_NODE :
-				return TextImpl.deserialize(data, start, len);
+				return TextImpl.deserialize(data, start, len, pooled);
 			case Node.ELEMENT_NODE :
-				return ElementImpl.deserialize(data, start, len, doc);
+				return ElementImpl.deserialize(data, start, len, doc, pooled);
 			case Node.ATTRIBUTE_NODE :
-				return AttrImpl.deserialize(data, start, len, doc);
+				return AttrImpl.deserialize(data, start, len, doc, pooled);
 			case Node.PROCESSING_INSTRUCTION_NODE :
-				return ProcessingInstructionImpl.deserialize(data, start, len);
+				return ProcessingInstructionImpl.deserialize(data, start, len, pooled);
 			case Node.COMMENT_NODE :
-				return CommentImpl.deserialize(data, start, len);
+				return CommentImpl.deserialize(data, start, len, pooled);
 			default :
 				LOG.debug("not implemented");
 				return null;
 		}
+	}
+	
+	/**
+	 * Read a node from the specified byte array.
+	 * 
+	 * This checks the node type and calls the {@link #deserialize(byte[], int, int)}
+	 * method of the corresponding node class.
+	 * 
+	 * @param data
+	 * @param start
+	 * @param len
+	 * @param doc
+	 * @return
+	 */
+	public static NodeImpl deserialize(byte[] data, int start, int len, DocumentImpl doc) {
+		return deserialize(data, start, len, doc, false);
 	}
 
 	/**
@@ -196,11 +184,6 @@ public class NodeImpl implements Node {
 		return false;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@return    Description of the Return Value
-	 */
 	public long firstChildID() {
 		return 0;
 	}
@@ -212,36 +195,23 @@ public class NodeImpl implements Node {
 		return null;
 	}
 
-	/**
-	 * Method getAttributesCount.
-	 * @return short
-	 */
 	public short getAttributesCount() {
 		return attributes;
 	}
 
 	/**
-	 *  Gets the broker attribute of the NodeImpl object
-	 *
-	 *@return    The broker value
+	 * Return the broker instance used to create this node.
+	 * 
+	 * @return
 	 */
 	public DBBroker getBroker() {
 		return (DBBroker) ownerDocument.broker;
 	}
 
-	/**
-	 * Method getChildCount.
-	 * @return int
-	 */
 	public int getChildCount() {
 		return 0;
 	}
 
-	/**
-	 *  Gets the childNodes attribute of the NodeImpl object
-	 *
-	 *@return    The childNodes value
-	 */
 	public NodeList getChildNodes() {
 		return (NodeList) new NodeListImpl();
 	}
@@ -254,9 +224,9 @@ public class NodeImpl implements Node {
 	}
 
 	/**
-	 *  Get the unique identifier assigned to this node
+	 *  Get the unique identifier assigned to this node.
 	 *
-	 *@return    The gID value
+	 *@return
 	 */
 	public long getGID() {
 		return gid;
@@ -576,28 +546,11 @@ public class NodeImpl implements Node {
 		return false;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  contentHandler    Description of the Parameter
-	 *@param  lexicalHandler    Description of the Parameter
-	 *@param  first             Description of the Parameter
-	 *@exception  SAXException  Description of the Exception
-	 */
 	public void toSAX(ContentHandler contentHandler, LexicalHandler lexicalHandler, boolean first)
 		throws SAXException {
 		toSAX(contentHandler, lexicalHandler, first, new TreeSet());
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  contentHandler    Description of the Parameter
-	 *@param  lexicalHandler    Description of the Parameter
-	 *@param  first             Description of the Parameter
-	 *@param  prefixes          Description of the Parameter
-	 *@exception  SAXException  Description of the Exception
-	 */
 	public void toSAX(
 		ContentHandler contentHandler,
 		LexicalHandler lexicalHandler,
@@ -606,11 +559,6 @@ public class NodeImpl implements Node {
 		throws SAXException {
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@return    Description of the Return Value
-	 */
 	public String toString() {
 		StringBuffer buf = new StringBuffer();
 		buf.append(Long.toString(gid));
@@ -619,30 +567,8 @@ public class NodeImpl implements Node {
 		return buf.toString();
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  top  Description of the Parameter
-	 *@return      Description of the Return Value
-	 */
 	public String toString(boolean top) {
 		return toString();
-	}
-
-	/**
-	* Returns the nodeNameRef.
-	* @return int
-	*/
-	public int getNodeNameRef() {
-		return nodeNameRef;
-	}
-
-	/**
-	 * Sets the nodeNameRef.
-	 * @param nodeNameRef The nodeNameRef to set
-	 */
-	public void setNodeNameRef(int nodeNameRef) {
-		this.nodeNameRef = nodeNameRef;
 	}
 
 	protected NodeImpl getLastNode(NodeImpl node) {
@@ -667,13 +593,6 @@ public class NodeImpl implements Node {
 			return node;
 	}
 
-	//	protected NodeImpl getLastNode(NodeImpl node) {
-	//		if (node.getNodeType() == Node.ELEMENT_NODE)
-	//			return node.getChildCount() == 0 ? node : getLastNode((NodeImpl) node.getLastChild());
-	//		else
-	//			return node;
-	//	}
-
 	/**
 		 * Update a child node. This method will only update the child node
 		 * but not its potential descendant nodes.
@@ -686,5 +605,13 @@ public class NodeImpl implements Node {
 		throw new DOMException(
 			DOMException.NO_MODIFICATION_ALLOWED_ERR,
 			"method not allowed on this node type");
+	}
+	
+	/**
+	 * Release all memory resources hold by this node. 
+	 */
+	public void release() {
+		clear();
+		NodeObjectPool.getInstance().returnNode(this);
 	}
 }

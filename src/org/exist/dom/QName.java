@@ -62,6 +62,10 @@ public class QName implements Comparable {
 		this(localName, namespaceURI, null);
 	}
 
+	public QName(QName other) {
+	    this(other.localName_, other.namespaceURI_, other.prefix_);
+	}
+	
 	public String getLocalName() {
 		return localName_;
 	}
@@ -127,7 +131,6 @@ public class QName implements Comparable {
 			c = namespaceURI_.compareTo(other.namespaceURI_);
 		return c == 0 ? localName_.compareTo(other.localName_) : c;
 	}
-
 	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)

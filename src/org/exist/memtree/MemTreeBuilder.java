@@ -104,29 +104,30 @@ public class MemTreeBuilder {
 	 */
 	public int startElement(QName qn, Attributes attributes) {
 		int nodeNr = doc.addNode(Node.ELEMENT_NODE, level, qn);
-		// parse attributes
-		String attrPrefix;
-		String attrLocalName;
-		String attrNS;
-		String attrQName;
-		int p;
-		for (int i = 0; i < attributes.getLength(); i++) {
-			attrNS = attributes.getURI(i);
-			attrLocalName = attributes.getLocalName(i);
-			attrQName = attributes.getQName(i);
-			// skip xmlns-attributes and attributes in eXist's namespace
-			if (!(attrQName.startsWith("xmlns")
-				|| attrNS.equals("http://exist.sourceforge.net/NS/exist"))) {
-				p = attrQName.indexOf(':');
-				attrPrefix = (p > -1) ? attrQName.substring(0, p) : null;
-				p =
-					doc.addAttribute(
-						nodeNr,
-						new QName(attrLocalName, attrNS, attrPrefix),
-						attributes.getValue(i));
+		if(attributes != null) {
+			// parse attributes
+			String attrPrefix;
+			String attrLocalName;
+			String attrNS;
+			String attrQName;
+			int p;
+			for (int i = 0; i < attributes.getLength(); i++) {
+				attrNS = attributes.getURI(i);
+				attrLocalName = attributes.getLocalName(i);
+				attrQName = attributes.getQName(i);
+				// skip xmlns-attributes and attributes in eXist's namespace
+				if (!(attrQName.startsWith("xmlns")
+					|| attrNS.equals("http://exist.sourceforge.net/NS/exist"))) {
+					p = attrQName.indexOf(':');
+					attrPrefix = (p > -1) ? attrQName.substring(0, p) : null;
+					p =
+						doc.addAttribute(
+							nodeNr,
+							new QName(attrLocalName, attrNS, attrPrefix),
+							attributes.getValue(i));
+				}
 			}
 		}
-
 		// update links
 		if (level + 1 >= prevNodeInLevel.length) {
 			int[] t = new int[level + 2];
@@ -153,7 +154,6 @@ public class MemTreeBuilder {
 	public void addAttribute(QName qname, String value) {
 		int lastNode = doc.getLastNode();
 		if(doc.nodeKind[lastNode] != Node.ELEMENT_NODE) {
-			System.out.println("appending attribute as text; last = " + doc.nodeKind[lastNode]);
 			characters(value);
 		} else {
 			doc.addAttribute(lastNode, qname, value);

@@ -49,6 +49,7 @@ import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.XMLUtil;
+import org.exist.memtree.Receiver;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
@@ -89,7 +90,7 @@ import org.xml.sax.helpers.AttributesImpl;
  *
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
  */
-public class Serializer implements XMLReader {
+public abstract class Serializer implements XMLReader {
 
 	protected final static Logger LOG = Logger.getLogger(Serializer.class);
 
@@ -816,6 +817,12 @@ public class Serializer implements XMLReader {
 			serializeToSAX(p, getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
 	}
 
+	public void toReceiver(NodeProxy p, Receiver receiver) throws SAXException {
+	    serializeToReceiver(p, receiver);
+	}
+	
+	protected abstract void serializeToReceiver(NodeProxy p, Receiver receiver) throws SAXException;
+	
 	private String hasXSLPi(Document doc) {
 		NodeList docChildren = doc.getChildNodes();
 		Node node;

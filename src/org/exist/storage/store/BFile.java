@@ -396,7 +396,6 @@ public class BFile extends BTree {
 		final short tid = (short) StorageAddress.tidFromPointer(pointer);
 		final int offset = findValuePosition(page, tid);
 		if(offset < 0) {
-			System.out.println("no data found at tid " + tid + "; page " + page.getPageNum());
 			throw new IOException("no data found at tid " + tid + "; page " + page.getPageNum());
 		}
 		final byte[] data = page.getData();
@@ -930,11 +929,11 @@ public class BFile extends BTree {
 			// does the free-space list fit into the file header?
 			int skip = 0;
 			if (freeList.size() > MAX_FREE_LIST_LEN) {
-				LOG.debug("removing " + (freeList.size() - MAX_FREE_LIST_LEN) + " free pages.");
+				LOG.warn("removing " + (freeList.size() - MAX_FREE_LIST_LEN) + " free pages.");
 				// no: remove some smaller entries to make it fit
-				skip = freeList.size() - MAX_FREE_LIST_LEN;
-//				for (int i = 0; i < freeList.size() - MAX_FREE_LIST_LEN; i++)
-//					freeList.removeFirst();
+//				skip = freeList.size() - MAX_FREE_LIST_LEN;
+				for (int i = 0; i < freeList.size() - MAX_FREE_LIST_LEN; i++)
+					freeList.removeFirst();
 			}
 			super.write(raf);
 			raf.writeLong(lastDataPage);
@@ -942,9 +941,9 @@ public class BFile extends BTree {
 			FreeSpace freeSpace;
 			Iterator i = freeList.iterator();
 			// skip
-			for(int j = 0; j < skip && i.hasNext(); j++) {
-				i.next();
-			}
+//			for(int j = 0; j < skip && i.hasNext(); j++) {
+//				i.next();
+//			}
 			while (i.hasNext()) {
 				freeSpace = (FreeSpace) i.next();
 				raf.writeLong(freeSpace.getPage());

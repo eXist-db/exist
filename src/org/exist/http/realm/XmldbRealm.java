@@ -12,6 +12,7 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Realm;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.exist.EXistException;
+import org.exist.security.*;
 import org.exist.security.User;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;

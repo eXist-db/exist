@@ -596,7 +596,7 @@ public class NativeBroker extends DBBroker {
 	public Iterator getNodeIterator(NodeProxy proxy) {
 		domDb.setOwnerObject(this);
 		try {
-			return new NodeIterator(this, domDb, proxy);
+			return new NodeIterator(this, domDb, proxy, true);
 		} catch (BTreeException e) {
 			LOG.debug("failed to create node iterator", e);
 		} catch (IOException e) {
@@ -2097,12 +2097,16 @@ public class NativeBroker extends DBBroker {
 			.run();
 			ByteArrayPool.releaseByteArray(data);
 		} catch (Exception e) {
+		    Value oldVal = domDb.get(node.getInternalAddress());
+		    NodeImpl old = 
+		        NodeImpl.deserialize(oldVal.data(), oldVal.start(), oldVal.getLength(), 
+		                (DocumentImpl)node.getOwnerDocument(), false);
 			LOG.debug(
 				"Exception while storing "
 					+ node.getNodeName()
 					+ "; gid = "
 					+ node.getGID()
-					+ "; address = ",
+					+ "; old = " + old.getNodeName(),
 				e);
 		}
 	}

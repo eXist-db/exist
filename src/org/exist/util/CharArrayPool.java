@@ -20,14 +20,13 @@ public class CharArrayPool {
 	}
 
 	public static char[] getCharArray(int size) {
-		if(size < MAX) {
+		if(MAX > size) {
 			final char[][] pool = (char[][])pools_.get();
-			for(int i = pool.length; i-- > 0; ) {
+			for(int i = 0; i < pool.length; i++) {
 				if(pool[i] != null && pool[i].length == size) {
-					//System.out.println("found char[" + size + "]");
-					char[] b = pool[i];
-					pool[i] = null;
-					return b;
+						char[] b = pool[i];
+						pool[i] = null;
+						return b;
 				}
 			}
 		}
@@ -38,9 +37,8 @@ public class CharArrayPool {
 	public static void releaseCharArray(final char[] b) {
 		if(b == null || b.length > MAX)
 			return;
-		//System.out.println("releasing char[" + b.length + "]");
 		final char[][] pool = (char[][]) pools_.get();
-		for(int i = pool.length; i-- > 0;) {
+		for(int i = 0; i < pool.length; i++) {
 			if(pool[i] == null) {
 				pool[i] = b;
 				return;

@@ -99,6 +99,10 @@ public class Receiver implements ContentHandler {
 		builder.startElement(namespaceURI, localName, qName, attrs);
 	}
 
+	public void startElement(QName qname) {
+		builder.startElement(qname, null);
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
 	 */
@@ -107,6 +111,10 @@ public class Receiver implements ContentHandler {
 		builder.endElement();
 	}
 
+	public void endElement(QName qname) throws SAXException {
+		builder.endElement();
+	}
+	
 	public void characters(CharSequence seq) throws SAXException {
 		builder.characters(seq);
 	}

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2000,  Wolfgang Meier (wolfgang@exist-db.org)
+ *  Copyright (C) 2000-04,  Wolfgang Meier (wolfgang@exist-db.org)
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -16,7 +16,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
- *  $Id
+ *  $Id$
  * 
  */
 package org.exist.dom;
@@ -31,64 +31,28 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
 
-/**
- *  Description of the Class
- *
- *@author     Wolfgang Meier <wolfgang@exist-db.org>
- *@created    27. Juni 2002
- */
 public class CharacterDataImpl extends NodeImpl implements CharacterData {
     
     protected XMLString cdata = null;
-
-
+    
     public CharacterDataImpl( short nodeType ) {
         super( nodeType, QName.TEXT_QNAME );
     }
     
-    /**
-     *  Constructor for the CharacterDataImpl object
-     *
-     *@param  nodeType  Description of the Parameter
-     *@param  gid       Description of the Parameter
-     */
     public CharacterDataImpl( short nodeType, long gid ) {
         super( nodeType, QName.TEXT_QNAME, gid );
     }
 
-
-    /**
-     *  Constructor for the CharacterDataImpl object
-     *
-     *@param  nodeType  Description of the Parameter
-     *@param  gid       Description of the Parameter
-     *@param  data      Description of the Parameter
-     */
     public CharacterDataImpl( short nodeType, long gid, String data ) {
         super( nodeType, QName.TEXT_QNAME, gid );
         cdata = new XMLString(data.toCharArray());
     }
 
-    /**
-     *  Constructor for the CharacterDataImpl object
-     *
-     *@param  nodeType  Description of the Parameter
-     *@param  data      Description of the Parameter
-     */
     public CharacterDataImpl( short nodeType, String data ) {
         super( nodeType, QName.TEXT_QNAME );
 		cdata = new XMLString(data.toCharArray());
     }
 
-
-    /**
-     *  Constructor for the CharacterDataImpl object
-     *
-     *@param  nodeType  Description of the Parameter
-     *@param  data      Description of the Parameter
-     *@param  start     Description of the Parameter
-     *@param  howmany   Description of the Parameter
-     */
     public CharacterDataImpl( short nodeType, char[] data, int start, int howmany ) {
         super( nodeType, QName.TEXT_QNAME );
         cdata = new XMLString(data, start, howmany);
@@ -98,12 +62,6 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
         cdata.reset();
     }
 
-    /**
-     *  Description of the Method
-     *
-     *@param  arg               Description of the Parameter
-     *@exception  DOMException  Description of the Exception
-     */
     public void appendData( String arg ) throws DOMException {
     	if(cdata == null)
     		cdata = new XMLString(arg.toCharArray());
@@ -111,15 +69,6 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
         	cdata.append(arg);
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  data              Description of the Parameter
-     *@param  start             Description of the Parameter
-     *@param  howmany           Description of the Parameter
-     *@exception  DOMException  Description of the Exception
-     */
     public void appendData( char[] data, int start, int howmany ) throws DOMException {
     	if(cdata == null)
     		cdata = new XMLString(data, start, howmany);
@@ -127,26 +76,11 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
         	cdata.append( data, start, howmany );
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  offset            Description of the Parameter
-     *@param  count             Description of the Parameter
-     *@exception  DOMException  Description of the Exception
-     */
     public void deleteData( int offset, int count ) throws DOMException {
     	if(cdata != null)
         	cdata.delete(offset, count);
     }
 
-
-    /**
-     *  Gets the data attribute of the CharacterDataImpl object
-     *
-     *@return                   The data value
-     *@exception  DOMException  Description of the Exception
-     */
     public String getData() throws DOMException {
     	if(cdata == null)
     		return null;
@@ -165,33 +99,14 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
         	return cdata.toString().toLowerCase();
     }
     
-    /**
-     *  Gets the length attribute of the CharacterDataImpl object
-     *
-     *@return    The length value
-     */
     public int getLength() {
         return cdata.length();
     }
 
-
-    /**
-     *  Gets the nodeValue attribute of the CharacterDataImpl object
-     *
-     *@return    The nodeValue value
-     */
     public String getNodeValue() {
         return cdata.toString();
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  offset            Description of the Parameter
-     *@param  arg               Description of the Parameter
-     *@exception  DOMException  Description of the Exception
-     */
     public void insertData( int offset, String arg ) throws DOMException {
     	if(cdata == null)
     		cdata = new XMLString(arg.toCharArray());
@@ -199,15 +114,6 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
         	cdata.insert(offset, arg);
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  offset            Description of the Parameter
-     *@param  count             Description of the Parameter
-     *@param  arg               Description of the Parameter
-     *@exception  DOMException  Description of the Exception
-     */
     public void replaceData( int offset, int count, String arg ) throws DOMException {
 		if(cdata == null)
 			throw new DOMException(DOMException.DOMSTRING_SIZE_ERR, 
@@ -215,13 +121,6 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
         cdata.replace(offset, count, arg);
     }
 
-
-    /**
-     *  Sets the data attribute of the CharacterDataImpl object
-     *
-     *@param  data              The new data value
-     *@exception  DOMException  Description of the Exception
-     */
     public void setData( String data ) throws DOMException {
         if(cdata == null)
         	cdata = new XMLString(data.toCharArray());
@@ -233,14 +132,6 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
 		cdata = data;
 	}
 
-    /**
-     *  Sets the data attribute of the CharacterDataImpl object
-     *
-     *@param  data              The new data value
-     *@param  start             The new data value
-     *@param  howmany           The new data value
-     *@exception  DOMException  Description of the Exception
-     */
     public void setData( char[] data, int start, int howmany ) throws DOMException {
         if(cdata == null)
         	cdata = new XMLString(data, start, howmany);
@@ -248,15 +139,6 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
         	cdata.setData(data, start, howmany);
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  offset            Description of the Parameter
-     *@param  count             Description of the Parameter
-     *@return                   Description of the Return Value
-     *@exception  DOMException  Description of the Exception
-     */
     public String substringData( int offset, int count ) throws DOMException {
     	if(cdata == null)
     		throw new DOMException(DOMException.DOMSTRING_SIZE_ERR, 
@@ -264,16 +146,6 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
         return cdata.substring(offset, count);
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  contentHandler    Description of the Parameter
-     *@param  lexicalHandler    Description of the Parameter
-     *@param  first             Description of the Parameter
-     *@param  prefixes          Description of the Parameter
-     *@exception  SAXException  Description of the Exception
-     */
     public void toSAX( ContentHandler contentHandler,
                        LexicalHandler lexicalHandler, boolean first,
                        Set namespaces)
@@ -296,17 +168,18 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
 
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@return    Description of the Return Value
-     */
     public String toString() {
     	if(cdata == null)
     		return null;
     	else
         	return cdata.toString();
     }
+    
+    /**
+     * Release all resources hold by this object.
+     */
+    public void release() {
+    	cdata.release();
+    	super.release();
+    }
 }
-

@@ -37,6 +37,7 @@ import org.exist.dom.CommentImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentTypeImpl;
 import org.exist.dom.ElementImpl;
+import org.exist.dom.NodeObjectPool;
 import org.exist.dom.ProcessingInstructionImpl;
 import org.exist.dom.QName;
 import org.exist.dom.TextImpl;
@@ -396,7 +397,7 @@ public class Indexer
 		ElementImpl node = null;
 		int p = qname.indexOf(':');
 		String prefix = p > -1 ? qname.substring(0, p) : "";
-		QName qn = new QName(name, namespace, prefix);
+		QName qn = broker.getSymbols().getQName(namespace, name, prefix);
 		if (!stack.empty()) {
 			last = (ElementImpl) stack.peek();
 			if (charBuf != null) {
@@ -478,16 +479,16 @@ public class Indexer
 			else {
 				p = attrQName.indexOf(':');
 				attrPrefix = (p > -1) ? attrQName.substring(0, p) : null;
-				final AttrImpl attr =
-					new AttrImpl(
-						new QName(attrLocalName, attrNS, attrPrefix),
-						attributes.getValue(i));
+				final AttrImpl attr = (AttrImpl)NodeObjectPool.getInstance().borrowNode(AttrImpl.class);
+				attr.setNodeName(document.getSymbols().getQName(attrNS, attrLocalName, attrPrefix));
+				attr.setValue(attributes.getValue(i));
 				attr.setOwnerDocument(document);
 				if (attributes.getType(i).equals("ID"))
 					attr.setType(AttrImpl.ID);
 				node.appendChildInternal(attr);
 				if (!validate)
 					broker.store(attr, currentPath);
+				attr.release();
 			}
 		}
 		if (attrLength > 0)

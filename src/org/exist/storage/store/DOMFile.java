@@ -996,7 +996,6 @@ public class DOMFile extends BTree implements Lockable {
     private void removeLink(long p) {
         RecordPos rec = findRecord(p, false);
         DOMFilePageHeader ph = rec.page.getPageHeader();
-        // TODO: 10 is wrong
         int end = rec.offset + 8;
         System.arraycopy(rec.page.data, rec.offset + 8, rec.page.data, rec.offset - 2, rec.page.len - end);
         rec.page.len = rec.page.len - 10;
@@ -1099,10 +1098,8 @@ public class DOMFile extends BTree implements Lockable {
 			dataCache.add(next);
         }
         
-        LOG.debug("previous = " + ph.getPrevDataPage());
         if(ph.getPrevDataPage() > -1) {
             DOMPage prev = getCurrentPage(ph.getPrevDataPage());
-            LOG.debug("previous = " + prev.getPageNum());
         	prev.getPageHeader().setNextDataPage(ph.getNextDataPage());
 			prev.setDirty(true);
 			dataCache.add(prev);
@@ -1110,7 +1107,6 @@ public class DOMFile extends BTree implements Lockable {
         
         try {
             ph.setNextDataPage(-1);
-            ph.setDataLength(0);
             ph.setDataLength(0);
             ph.setNextTID((short) -1);
             ph.setRecordCount((short) 0);
@@ -1209,7 +1205,7 @@ public class DOMFile extends BTree implements Lockable {
         	rec.offset += 8;
         if (value.length < l) {
             // value is smaller than before
-            System.out.println(value.length + " < " + l);
+            System.out.println(value.length + " < " + l + ": " + new String(value));
             System.out.println(rec.page.page.getPageInfo() + "; offset = "
                     + rec.offset + "; data-len = "
                     + rec.page.getPageHeader().getDataLength()

@@ -463,7 +463,6 @@ public class RESTServer {
 			Sequence resultSequence = expr.eval(null, null);
 			long queryTime = System.currentTimeMillis() - startTime;
 			LOG.debug("Found " + resultSequence.getLength() + " in " + queryTime + "ms.");
-			startTime = System.currentTimeMillis();
 			return printResults(broker, resultSequence, howmany, start,
 					queryTime, outputProperties);
 		} catch (RecognitionException e) {

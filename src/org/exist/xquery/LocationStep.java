@@ -195,15 +195,27 @@ public class LocationStep extends Step {
 			result = new VirtualNodeSet(axis, test, contextSet);
 			((VirtualNodeSet) result).setInPredicate(inPredicate);
 		} else {
-			DocumentSet docs = contextSet.getDocumentSet();
-			NodeSelector selector; 
-			if(axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-				selector = new DescendantSelector(contextSet, inPredicate);
-			else
-				selector = new ChildSelector(contextSet, inPredicate);
-			result = context.getBroker().findElementsByTagName(
-					ElementValue.ATTRIBUTE, docs, test.getName(), selector
-			);
+		    DocumentSet docs = contextSet.getDocumentSet();
+			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
+				currentDocs = docs;
+				currentSet =
+					(NodeSet) context.getBroker().getAttributesByName(
+						currentDocs, test.getName());
+			}
+			if (axis == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
+				result =
+					currentSet.selectAncestorDescendant(
+						contextSet,
+						NodeSet.DESCENDANT,
+						inPredicate);
+				
+			} else {
+				result =
+					currentSet.selectParentChild(
+						contextSet,
+						NodeSet.DESCENDANT,
+						inPredicate);
+			}
 		}
 		return result;
 	}
@@ -217,11 +229,22 @@ public class LocationStep extends Step {
 			vset.setInPredicate(inPredicate);
 			return vset;
 		} else {
-			DocumentSet docs = contextSet.getDocumentSet();
-			NodeSelector selector = new ChildSelector(contextSet, inPredicate);
-			NodeSet result = context.getBroker().findElementsByTagName(
-					ElementValue.ELEMENT, docs, test.getName(), selector
-			);
+		    DocumentSet docs = contextSet.getDocumentSet();
+			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
+				currentDocs = docs;
+				currentSet =
+					(NodeSet) context.getBroker().findElementsByTagName(
+						ElementValue.ELEMENT,
+						currentDocs,
+						test.getName(), null);
+			}
+			NodeSet result =
+				currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);
+//			DocumentSet docs = contextSet.getDocumentSet();
+//			NodeSelector selector = new ChildSelector(contextSet, inPredicate);
+//			NodeSet result = context.getBroker().findElementsByTagName(
+//					ElementValue.ELEMENT, docs, test.getName(), selector
+//			);
 			return result;
 		}
 	}
@@ -235,13 +258,19 @@ public class LocationStep extends Step {
 			vset.setInPredicate(inPredicate);
 			return vset;
 		} else {
-			DocumentSet docs = contextSet.getDocumentSet();
-			NodeSelector selector = axis == Constants.DESCENDANT_SELF_AXIS ?  
-				new DescendantOrSelfSelector(contextSet, inPredicate) :
-				new DescendantSelector(contextSet, inPredicate);
-			NodeSet result = context.getBroker().findElementsByTagName(
-					ElementValue.ELEMENT, docs, test.getName(), selector
-			);
+		    DocumentSet docs = contextSet.getDocumentSet();
+			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
+				currentDocs = docs;
+				currentSet =
+					(NodeSet) context.getBroker().findElementsByTagName(
+						ElementValue.ELEMENT, currentDocs,
+						test.getName(), null);
+			}
+			NodeSet result = currentSet.selectAncestorDescendant(
+				contextSet,
+				NodeSet.DESCENDANT,
+				axis == Constants.DESCENDANT_SELF_AXIS,
+				inPredicate);
 			return result;
 		}
 	}

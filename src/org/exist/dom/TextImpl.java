@@ -42,49 +42,30 @@ public class TextImpl extends CharacterDataImpl implements Text {
         super( Node.TEXT_NODE );
     }
     
-    /**
-     *  Constructor for the TextImpl object
-     *
-     *@param  gid  Description of the Parameter
-     */
     public TextImpl( long gid ) {
         super( Node.TEXT_NODE, gid );
     }
 
-    /**
-     *  Constructor for the TextImpl object
-     *
-     *@param  data  Description of the Parameter
-     */
     public TextImpl( String data ) {
         super( Node.TEXT_NODE, data );
     }
-
-    /**
-     *  Constructor for the TextImpl object
-     *
-     *@param  gid   Description of the Parameter
-     *@param  data  Description of the Parameter
-     */
+    
     public TextImpl( long gid, String data ) {
         super( Node.TEXT_NODE, gid, data );
     }
 
-
-    /**
-     *  Constructor for the TextImpl object
-     *
-     *@param  data     Description of the Parameter
-     *@param  start    Description of the Parameter
-     *@param  howmany  Description of the Parameter
-     */
     public TextImpl( char[] data, int start, int howmany ) {
         super( Node.TEXT_NODE, data, start, howmany );
     }
 
-    public static NodeImpl deserialize( byte[] data, int start, int len ) {
-        final TextImpl text = new TextImpl( 0 );
+    public static NodeImpl deserialize( byte[] data, int start, int len, boolean pooled ) {
+        TextImpl text;
+        if(pooled)
+            text = (TextImpl)NodeObjectPool.getInstance().borrowNode(TextImpl.class);
+        else
+            text = new TextImpl();
         text.cdata = UTF8.decode(data, start + 1, len - 1);
+        text.nodeName = QName.TEXT_QNAME;
         /*try { 
             text.appendData(new String( data, start + 1, len - 1, "UTF-8" ));
         } catch ( UnsupportedEncodingException uee ) {
@@ -93,92 +74,34 @@ public class TextImpl extends CharacterDataImpl implements Text {
         return text;
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  arg               Description of the Parameter
-     *@exception  DOMException  Description of the Exception
-     */
     public void appendData( String arg ) throws DOMException {
         super.appendData( arg );
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  data              Description of the Parameter
-     *@param  start             Description of the Parameter
-     *@param  howmany           Description of the Parameter
-     *@exception  DOMException  Description of the Exception
-     */
     public void appendData( char[] data, int start, int howmany ) throws DOMException {
         super.appendData( data, start, howmany );
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  offset            Description of the Parameter
-     *@param  count             Description of the Parameter
-     *@exception  DOMException  Description of the Exception
-     */
     public void deleteData( int offset, int count ) throws DOMException {
         super.deleteData( offset, count );
     }
     
-    /**
-     *  Gets the length attribute of the TextImpl object
-     *
-     *@return    The length value
-     */
     public int getLength() {
         return super.getLength();
     }
 
-
-    /**
-     *  Gets the nodeValue attribute of the TextImpl object
-     *
-     *@return    The nodeValue value
-     */
     public String getNodeValue() {
         return super.getNodeValue();
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  offset            Description of the Parameter
-     *@param  arg               Description of the Parameter
-     *@exception  DOMException  Description of the Exception
-     */
     public void insertData( int offset, String arg ) throws DOMException {
         super.insertData( offset, arg );
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  offset            Description of the Parameter
-     *@param  count             Description of the Parameter
-     *@param  arg               Description of the Parameter
-     *@exception  DOMException  Description of the Exception
-     */
     public void replaceData( int offset, int count, String arg ) throws DOMException {
         super.replaceData( offset, count, arg );
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@return    Description of the Return Value
-     */
     public byte[] serialize() {
         byte[] data = ByteArrayPool.getByteArray(cdata.UTF8Size() + 1);
         data[0] = (byte) ( Signatures.Char << 0x5 );
@@ -186,49 +109,18 @@ public class TextImpl extends CharacterDataImpl implements Text {
         return data;
     }
 
-
-    /**
-     *  Sets the nodeValue attribute of the TextImpl object
-     *
-     *@param  value             The new nodeValue value
-     *@exception  DOMException  Description of the Exception
-     */
     public void setNodeValue( String value ) throws DOMException {
         super.setNodeValue( value );
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  offset            Description of the Parameter
-     *@return                   Description of the Return Value
-     *@exception  DOMException  Description of the Exception
-     */
     public Text splitText( int offset ) throws DOMException {
         return null;
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  offset            Description of the Parameter
-     *@param  count             Description of the Parameter
-     *@return                   Description of the Return Value
-     *@exception  DOMException  Description of the Exception
-     */
     public String substringData( int offset, int count ) throws DOMException {
         return super.substringData( offset, count );
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  top  Description of the Parameter
-     *@return      Description of the Return Value
-     */
     public String toString( boolean top ) {
         if ( top ) {
             StringBuffer result = new StringBuffer();
@@ -247,12 +139,6 @@ public class TextImpl extends CharacterDataImpl implements Text {
             return toString();
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@return    Description of the Return Value
-     */
     public String toString() {
         return super.toString();
     }
