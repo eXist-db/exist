@@ -242,12 +242,10 @@ public class NativeSerializer extends Serializer {
             node.release();
             break;
         case Node.COMMENT_NODE:
-            if (lexicalHandler != null) {
-                String comment = ((CommentImpl) node).getData();
-                char data[] = new char[comment.length()];
-                comment.getChars(0, data.length - 1, data, 0);
-                receiver.comment(data, 0, data.length - 1);
-            }
+            String comment = ((CommentImpl) node).getData();
+            char data[] = new char[comment.length()];
+            comment.getChars(0, data.length - 1, data, 0);
+            receiver.comment(data, 0, data.length - 1);
             node.release();
             break;
         }
