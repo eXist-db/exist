@@ -186,14 +186,18 @@ public class ElementImpl extends NodeImpl implements Element {
 		++children;
 	}
 
-	public void appendChild(NodeImpl child) throws DOMException {
+	public Node appendChild(Node child) throws DOMException {
+		System.out.println("append Child called");
+		if(!(child instanceof NodeImpl))
+			throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong implementation");
 		NodeImpl last = (NodeImpl) getLastChild();
 		++children;
 		int level = ownerDocument.getTreeLevel(gid);
 		if (ownerDocument.getTreeLevelOrder(level + 1) < children)
 			ownerDocument.setTreeLevelOrder(level + 1, children);
-		child.setGID(lastChildID());
-		ownerDocument.broker.insertAfter(last, child);
+		((NodeImpl)child).setGID(lastChildID());
+		ownerDocument.broker.insertAfter(last, (NodeImpl)child);
+		return child;
 	}
 
 	public String getNamespaceURI() {

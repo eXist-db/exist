@@ -1849,10 +1849,10 @@ public class NativeBroker extends DBBroker {
 					);
 				long address = domDb.insertAfter(ref, data);
 				node.setInternalAddress(address);
-				LOG.debug("node stored at " + address);
 				return null;
 			}
 		}.run();
+		LOG.debug("node stored at " + node.getInternalAddress());
 	}
 
 	public String getId() {
