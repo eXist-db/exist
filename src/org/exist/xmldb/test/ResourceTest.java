@@ -58,6 +58,7 @@ public class ResourceTest extends TestCase {
 			System.out.println(sout.toString());
 			System.out.println("----------------------------------------");
 		} catch (Exception e) {
+			System.out.println("testReadResource(): Exception: " + e);
 			fail(e.getMessage());
 		}
 	}
