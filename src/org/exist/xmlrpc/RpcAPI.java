@@ -565,6 +565,9 @@ public interface RpcAPI {
 	 */
 	boolean createCollection(User user, String name)
 		throws EXistException, PermissionDeniedException;
+	
+	boolean createCollection(User user, String name, Date created)
+	throws EXistException, PermissionDeniedException;
 
 	boolean configureCollection(User user, String collection, String configuration)
 		throws EXistException, PermissionDeniedException;

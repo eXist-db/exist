@@ -135,23 +135,31 @@ public class RpcConnection extends Thread {
 
 	public void createCollection(User user, String name) throws Exception,
 			PermissionDeniedException {
-		DBBroker broker = null;
-		try {
-			broker = brokerPool.get(user);
-			Collection current = broker.getOrCreateCollection(name);
-			LOG.debug("creating collection " + name);
-			broker.saveCollection(current);
-			broker.flush();
-			//broker.sync();
-			LOG.debug("collection " + name + " has been created");
-		} catch (Exception e) {
-			LOG.debug(e);
-			throw e;
-		} finally {
-			brokerPool.release(broker);
-		}
+		createCollection(user, name, null);
 	}
 
+	public void createCollection(User user, String name, Date created) throws Exception,
+	PermissionDeniedException {
+DBBroker broker = null;
+try {
+	broker = brokerPool.get(user);
+	Collection current = broker.getOrCreateCollection(name);
+	if (created != null)
+		current.setCreationTime( created.getTime());	
+
+	LOG.debug("creating collection " + name);
+	broker.saveCollection(current);
+	broker.flush();
+	//broker.sync();
+	LOG.debug("collection " + name + " has been created");
+} catch (Exception e) {
+	LOG.debug(e);
+	throw e;
+} finally {
+	brokerPool.release(broker);
+}
+}
+	
 	public void configureCollection(User user, String collName, String configuration)
 	throws EXistException {
 	    DBBroker broker = null;

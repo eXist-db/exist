@@ -22,8 +22,10 @@
  */
 package org.exist.xmldb;
 
+import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
+import java.util.Date;
 
 
 /**
@@ -47,4 +49,7 @@ public interface CollectionManagementServiceImpl extends
     
     public void copy(String collection, String destination, String newName)
     throws XMLDBException;
+    
+    public Collection createCollection( String collName, Date created) throws XMLDBException;
+ 
 }
