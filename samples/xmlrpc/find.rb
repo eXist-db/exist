@@ -15,7 +15,7 @@ client = XMLRPC::Client.new("localhost", "/exist/xmlrpc", 8080)
 
 puts "Query: #{query}"
 
-vars = { "query" => "adrian*" }
+vars = { "query" => "love*" }
 outputOptions = { "encoding" => "UTF-8", "indent" => "yes",
 	"variables" => vars
 }
