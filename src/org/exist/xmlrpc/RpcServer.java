@@ -1494,7 +1494,7 @@ public class RpcServer implements RpcAPI {
 		RpcConnection con = pool.get();
 		try {
 							
-			con.createCollection(user, namedest);
+			createCollection(user, namedest);
 			
 	        Hashtable parametri = new Hashtable();
 			parametri.put(OutputKeys.INDENT, "no");
@@ -1512,7 +1512,7 @@ public class RpcServer implements RpcAPI {
 			while (collezioniItr.hasNext())
 			{
 			nome = collezioniItr.next().toString();
-			con.createCollection(user, namedest+"/"+nome);
+			createCollection(user, namedest+"/"+nome);
 			copyCollection(user, name+"/"+nome, namedest+"/"+nome);			
 			}
 			
@@ -1525,8 +1525,8 @@ public class RpcServer implements RpcAPI {
 				if ((p = nome.lastIndexOf('/')) > -1)
 				   nome = nome.substring(p+1);
 				   
-			String xml = con.getDocument(user,name+"/"+nome, parametri);
-			con.parse(user, xml.getBytes(), namedest +"/"+nome,false);						
+			byte[] xml = getDocument(user,name+"/"+nome, parametri);
+			parse(user, xml, namedest +"/"+nome);						
 	        }		
 			
 			
