@@ -22,7 +22,7 @@
  */
 package org.exist.xupdate;
 
-import java.io.StringReader;
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -36,23 +36,20 @@ import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeIndexListener;
 import org.exist.dom.NodeSet;
 import org.exist.security.PermissionDeniedException;
+import org.exist.source.Source;
+import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
+import org.exist.storage.XQueryPool;
 import org.exist.storage.store.StorageAddress;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
-import org.exist.xquery.PathExpr;
+import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.parser.XQueryLexer;
-import org.exist.xquery.parser.XQueryParser;
-import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.NodeList;
-
-import antlr.RecognitionException;
-import antlr.TokenStreamException;
-import antlr.collections.AST;
 
 /**
  * Base class for all XUpdate modifications.
@@ -111,41 +108,39 @@ public abstract class Modification {
 	 */
 	protected NodeList select(DocumentSet docs)
 		throws PermissionDeniedException, EXistException, XPathException {
+		XQuery xquery = broker.getXQueryService();
+		XQueryPool pool = xquery.getXQueryPool();
+		Source source = new StringSource(selectStmt);
+		CompiledXQuery compiled = pool.borrowCompiledXQuery(source);
+		XQueryContext context;
+		if(compiled == null)
+		    context = xquery.newContext();
+		else
+		    context = compiled.getContext();
+
+		context.setExclusiveMode(true);
+		context.setStaticallyKnownDocuments(docs);
+		declareNamespaces(context);
+		
+		if(compiled == null)
+			try {
+				compiled = xquery.compile(context, source);
+			} catch (IOException e) {
+				throw new EXistException("An exception occurred while compiling the query: " + e.getMessage());
+			}
+		
+		Sequence resultSeq = null;
 		try {
-			XQueryContext context = new XQueryContext(broker);
-			context.setExclusiveMode(true);
-			context.setStaticallyKnownDocuments(docs);
-			declareNamespaces(context);
-			XQueryLexer lexer = new XQueryLexer(context, new StringReader(selectStmt));
-			XQueryParser parser = new XQueryParser(lexer);
-			XQueryTreeParser treeParser = new XQueryTreeParser(context);
-			parser.xpath();
-			if (parser.foundErrors()) {
-				throw new RuntimeException(parser.getErrorMessage());
-			}
-
-			AST ast = parser.getAST();
-
-			PathExpr expr = new PathExpr(context);
-			treeParser.xpath(ast, expr);
-			if (treeParser.foundErrors()) {
-				throw new RuntimeException(treeParser.getErrorMessage());
-			}
-			long start = System.currentTimeMillis();
-
-			Sequence resultSeq = expr.eval(null, null);
-			if (!(resultSeq.getLength() == 0 || Type.subTypeOf(resultSeq.getItemType(), Type.NODE)))
-				throw new EXistException("select expression should evaluate to a node-set; got " +
-				        Type.getTypeName(resultSeq.getItemType()));
-			LOG.debug("found " + resultSeq.getLength() + " for select: " + selectStmt);
-			return (NodeList)resultSeq.toNodeSet();
-		} catch (RecognitionException e) {
-			LOG.warn("error while parsing select expression", e);
-			throw new EXistException(e);
-		} catch (TokenStreamException e) {
-			LOG.warn("error while parsing select expression", e);
-			throw new EXistException(e);
+			resultSeq = xquery.execute(compiled, null);
+		} finally {
+			pool.returnCompiledXQuery(source, compiled);
 		}
+
+		if (!(resultSeq.getLength() == 0 || Type.subTypeOf(resultSeq.getItemType(), Type.NODE)))
+			throw new EXistException("select expression should evaluate to a node-set; got " +
+			        Type.getTypeName(resultSeq.getItemType()));
+		LOG.debug("found " + resultSeq.getLength() + " for select: " + selectStmt);
+		return (NodeList)resultSeq.toNodeSet();
 	}
 
 	/**

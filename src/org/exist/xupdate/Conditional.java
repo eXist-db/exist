@@ -21,7 +21,7 @@
 */
 package org.exist.xupdate;
 
-import java.io.StringReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +29,10 @@ import java.util.Map;
 import org.exist.EXistException;
 import org.exist.dom.DocumentSet;
 import org.exist.security.PermissionDeniedException;
+import org.exist.source.Source;
+import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
+import org.exist.storage.XQueryPool;
 import org.exist.util.LockException;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
@@ -66,12 +69,31 @@ public class Conditional extends Modification {
 			EXistException, XPathException {
 		LOG.debug("Processing xupdate:if ...");
 		XQuery xquery = broker.getXQueryService();
-		XQueryContext context = xquery.newContext();
+		XQueryPool pool = xquery.getXQueryPool();
+		Source source = new StringSource(selectStmt);
+		CompiledXQuery compiled = pool.borrowCompiledXQuery(source);
+		XQueryContext context;
+		if(compiled == null)
+		    context = xquery.newContext();
+		else
+		    context = compiled.getContext();
+
 		context.setBackwardsCompatibility(true);
 		context.setStaticallyKnownDocuments(docs);
 		declareNamespaces(context);
-		CompiledXQuery compiled = xquery.compile(context, new StringReader(selectStmt));
-		Sequence seq = xquery.execute(compiled, null);
+		if(compiled == null)
+			try {
+				compiled = xquery.compile(context, source);
+			} catch (IOException e) {
+				throw new EXistException("An exception occurred while compiling the query: " + e.getMessage());
+			}
+		
+		Sequence seq = null;
+		try {
+			seq = xquery.execute(compiled, null);
+		} finally {
+			pool.returnCompiledXQuery(source, compiled);
+		}
 		if(seq.effectiveBooleanValue()) {
 			long mods = 0;
 			for (int i = 0; i < modifications.size(); i++) {
