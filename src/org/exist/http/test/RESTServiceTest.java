@@ -23,6 +23,7 @@ package org.exist.http.test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -55,6 +56,16 @@ public class RESTServiceTest extends TestCase {
 		"</xu:append>" +
 		"</xu:modifications>";
 	
+	private final static String QUERY_REQUEST =
+		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+		"<query xmlns=\"http://exist.sourceforge.net/NS/exist\">" +
+		"<properties>" +
+		"<property name=\"indent\" value=\"yes\"/>" +
+		"<property name=\"encoding\" value=\"UTF-8\"/>" +
+		"</properties>" +
+		"<text>//para[. = 'ääüüööÄÄÖÖÜÜ']/text()</text>" +
+		"</query>";
+	
 	public RESTServiceTest(String name) {
 		super(name);
 	}
@@ -78,20 +89,21 @@ public class RESTServiceTest extends TestCase {
 	}
 	
 	public void testXUpdate() throws IOException {
-		HttpURLConnection connect = getConnection(RESOURCE_URI);
-		connect.setRequestMethod("POST");
-		connect.setDoOutput(true);
-		connect.setRequestProperty("ContentType", "text/xml");
-		
-		Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
-		writer.write(XUPDATE);
-		writer.close();
-		
+		HttpURLConnection connect = preparePost(XUPDATE);
 		connect.connect();
 		int r = connect.getResponseCode();
 		assertEquals("Server returned response code " + r, 200, r);
 		
 		doGet();
+	}
+	
+	public void testQueryPost() throws IOException {
+		HttpURLConnection connect = preparePost(QUERY_REQUEST);
+		connect.connect();
+		int r = connect.getResponseCode();
+		assertEquals("Server returned response code " + r, 200, r);
+		
+		System.out.println(readResponse(connect.getInputStream()));
 	}
 	
 	protected void doGet() throws IOException {
@@ -100,14 +112,35 @@ public class RESTServiceTest extends TestCase {
 		connect.setRequestMethod("GET");
 		connect.connect();
 		
-		BufferedReader reader = 
-			new BufferedReader(new InputStreamReader(connect.getInputStream(), "UTF-8"));
-		String line;
-		while((line = reader.readLine()) != null) {
-			System.out.println(line);
-		}
 		int r = connect.getResponseCode();
 		assertEquals("Server returned response code " + r, 200, r);
+		
+		System.out.println(readResponse(connect.getInputStream()));
+	}
+	
+	protected HttpURLConnection preparePost(String content) throws IOException {
+		HttpURLConnection connect = getConnection(RESOURCE_URI);
+		connect.setRequestMethod("POST");
+		connect.setDoOutput(true);
+		connect.setRequestProperty("ContentType", "text/xml");
+		
+		Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
+		writer.write(content);
+		writer.close();
+		
+		return connect;
+	}
+	
+	protected String readResponse(InputStream is) throws IOException {
+		BufferedReader reader = 
+			new BufferedReader(new InputStreamReader(is, "UTF-8"));
+		String line;
+		StringBuffer out = new StringBuffer();
+		while((line = reader.readLine()) != null) {
+			out.append(line);
+			out.append("\r\n");
+		}
+		return out.toString();
 	}
 	
 	protected HttpURLConnection getConnection(String url) throws IOException {
