@@ -225,18 +225,24 @@ public class ElementImpl extends NodeImpl implements Element {
 	 */
 	public Node appendChild(Node child) throws DOMException {
 		DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
-		Node node = null;
-		if (children == 0)
-			node = appendChild(firstChildID(), this, child, true);
-		else {
-			long last = lastChildID();
-			node =
-				appendChild(
-					last + 1,
-					(NodeImpl) ownerDocument.getNode(last),
-					child,
-					true);
+		long childGid;
+		NodeImpl lastNode;
+		if (children == 0) {
+		    childGid = firstChildID();
+		    lastNode = this;
+		} else {
+		    childGid = lastChildID() + 1;
+		    lastNode = getLastNode((NodeImpl)ownerDocument.getNode(childGid - 1));
 		}
+		try {
+		    checkTree(1);
+		} catch(EXistException e) {
+		    throw new DOMException(
+		            DOMException.INVALID_MODIFICATION_ERR,
+					"max. document size exceeded");
+		}
+		children++;
+		Node node = appendChild(childGid, lastNode, child, true);
 		ownerDocument.broker.update(this);
 		ownerDocument.broker.reindex(prevDoc, ownerDocument, null);
 		try {
@@ -385,10 +391,10 @@ public class ElementImpl extends NodeImpl implements Element {
 				attr = (Attr) child;
 				ns= attr.getNamespaceURI();
 				prefix = (ns != null && ns.equals("http://www.w3.org/XML/1998/namespace") ? "xml" : attr.getPrefix());
+				String name = attr.getLocalName();
+				if(name == null) name = attr.getName();
 				QName attrName =
-					new QName(
-						attr.getLocalName(),
-						ns, prefix);
+					new QName(name, ns, prefix);
 				final AttrImpl attrib = new AttrImpl(attrName, attr.getValue());
 				attrib.setGID(gid);
 				attrib.setOwnerDocument(ownerDocument);
@@ -913,10 +919,10 @@ public class ElementImpl extends NodeImpl implements Element {
 				prefix = (String) entry.getKey();
 				namespace = (String) entry.getValue();
 				if (prefix.length() == 0) {
-					buf.append("xmlns=\"");
+					buf.append(" xmlns=\"");
 					buf.append(namespace);
 				} else {
-					buf.append("xmlns:");
+					buf.append(" xmlns:");
 					buf.append(prefix);
 					buf.append("=\"");
 					buf.append(namespace);
@@ -927,7 +933,7 @@ public class ElementImpl extends NodeImpl implements Element {
 		}
 		if (nodeName.getNamespaceURI().length() > 0
 			&& (!namespaces.contains(nodeName.getNamespaceURI()))) {
-			buf.append("\" xmlns:").append(nodeName.getPrefix()).append("=\"");
+			buf.append(" xmlns:").append(nodeName.getPrefix()).append("=\"");
 			buf.append(nodeName.getNamespaceURI());
 			buf.append("\" ");
 		}
