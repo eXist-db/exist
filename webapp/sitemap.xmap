@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map:sitemap xmlns:map="http://apache.org/cocoon/sitemap/1.0">
+    <!-- =========================== Components ================================ -->
+    <map:components>
+        <map:generators default="file">
+            <map:generator label="content,data" logger="sitemap.generator.file"
+                name="file" pool-grow="4" pool-max="32" pool-min="8" src="org.apache.cocoon.generation.FileGenerator"/>
+            <map:generator label="content,data"
+                logger="sitemap.generator.serverpages" name="serverpages"
+                pool-grow="2" pool-max="32" pool-min="4" src="org.apache.cocoon.generation.ServerPagesGenerator"/>
+            <map:generator label="content,data"
+                logger="sitemap.generator.directory" name="directory"
+                pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.generation.DirectoryGenerator"/>
+            <map:generator label="data" logger="sitemap.generator.request"
+                name="request" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.generation.RequestGenerator"/>
+            <map:generator label="data" logger="sitemap.generator.status"
+                name="status" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.generation.StatusGenerator"/>
+            <map:generator label="content,data"
+                logger="sitemap.generator.imagedirectory" name="imagedirectory" src="org.apache.cocoon.generation.ImageDirectoryGenerator"/>
+            <map:generator label="data" logger="sitemap.generator.extractor"
+                name="extractor" src="org.apache.cocoon.generation.FragmentExtractorGenerator"/>
+            <map:generator label="content,data" name="script" src="org.apache.cocoon.generation.ScriptGenerator"/>
+            <map:generator label="content,data" name="jsp" src="org.apache.cocoon.generation.JspGenerator"/>
+            <map:generator label="content,data" name="stream" src="org.apache.cocoon.generation.StreamGenerator"/>
+            <map:generator label="content,data" name="html" src="org.apache.cocoon.generation.HTMLGenerator"/>
+        </map:generators>
+        <map:transformers default="xslt">
+            <map:transformer name="xslt" src="org.apache.cocoon.transformation.TraxTransformer">
+                <use-store>true</use-store>
+                <use-request-parameters>false</use-request-parameters>
+                <use-browser-capabilities-db>false</use-browser-capabilities-db>
+            </map:transformer>
+            <map:transformer logger="sitemap.transformer.filter" name="filter" src="org.apache.cocoon.transformation.FilterTransformer"/>
+            <map:transformer name="log" src="org.apache.cocoon.transformation.LogTransformer"/>
+            <map:transformer name="i18n" src="org.apache.cocoon.transformation.I18nTransformer"/>
+            <map:transformer name="xinclude" src="org.apache.cocoon.transformation.XIncludeTransformer"/>
+            <map:transformer name="cinclude" src="org.apache.cocoon.transformation.CIncludeTransformer"/>
+            <map:transformer name="encodeURL" src="org.apache.cocoon.transformation.EncodeURLTransformer"/>
+        </map:transformers>
+        <map:readers default="resource">
+            <map:reader name="resource" src="org.apache.cocoon.reading.ResourceReader"/>
+        </map:readers>
+        <map:serializers default="html">
+            <map:serializer logger="sitemap.serializer.links" name="links" src="org.apache.cocoon.serialization.LinkSerializer"/>
+            <map:serializer logger="sitemap.serializer.xml" mime-type="text/xml"
+                name="xml" src="org.apache.cocoon.serialization.XMLSerializer"/>
+            <map:serializer logger="sitemap.serializer.html"
+                mime-type="text/html" name="html" pool-grow="4" pool-max="32"
+                pool-min="4" src="org.apache.cocoon.serialization.HTMLSerializer">
+                <buffer-size>1024</buffer-size>
+            </map:serializer>
+            <map:serializer logger="sitemap.serializer.vrml"
+                mime-type="model/vrml" name="vrml" src="org.apache.cocoon.serialization.TextSerializer"/>
+            <map:serializer logger="sitemap.serializer.wml"
+                mime-type="text/vnd.wap.wml" name="wml" src="org.apache.cocoon.serialization.XMLSerializer">
+                <doctype-public>-//WAPFORUM//DTD WML 1.1//EN</doctype-public>
+                <doctype-system>http://www.wapforum.org/DTD/wml_1.1.xml</doctype-system>
+                <encoding>ASCII</encoding>
+                <omit-xml-declaration>yes</omit-xml-declaration>
+            </map:serializer>
+            <map:serializer logger="sitemap.serializer.svgxml"
+                mime-type="image/svg-xml" name="svgxml" src="org.apache.cocoon.serialization.XMLSerializer">
+                <doctype-public>-//W3C//DTD SVG 20000303 Stylable//EN</doctype-public>
+                <doctype-system>http://www.w3.org/TR/2000/03/WD-SVG-20000303/</doctype-system>
+            </map:serializer>
+            <map:serializer logger="sitemap.serializer.xhtml"
+                mime-type="text/html" name="xhtml" pool-grow="2" pool-max="64"
+                pool-min="2" src="org.apache.cocoon.serialization.XMLSerializer">
+                <doctype-public>-//W3C//DTD XHTML 1.0 Strict//EN</doctype-public>
+                <doctype-system>http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd</doctype-system>
+                <encoding>ISO-8859-1</encoding>
+            </map:serializer>
+            <map:serializer logger="sitemap.serializer.text"
+                mime-type="text/text" name="text" src="org.apache.cocoon.serialization.TextSerializer"/>
+        </map:serializers>
+        <map:selectors default="browser">
+            <map:selector name="browser" src="org.apache.cocoon.selection.BrowserSelectorFactory">
+                <!-- # NOTE: The appearance indicates the search order. This is very important since
+         #       some words may be found in more than one browser description. (MSIE is
+         #       presented as "Mozilla/4.0 (Compatible; MSIE 4.01; ...")
+    -->
+                <browser name="explorer" useragent="MSIE"/>
+                <browser name="pocketexplorer" useragent="MSPIE"/>
+                <browser name="handweb" useragent="HandHTTP"/>
+                <browser name="avantgo" useragent="AvantGo"/>
+                <browser name="imode" useragent="DoCoMo"/>
+                <browser name="opera" useragent="Opera"/>
+                <browser name="lynx" useragent="Lynx"/>
+                <browser name="java" useragent="Java"/>
+                <browser name="wap" useragent="Nokia"/>
+                <browser name="wap" useragent="UP"/>
+                <browser name="wap" useragent="Wapalizer"/>
+                <browser name="mozilla5" useragent="Mozilla/5"/>
+                <browser name="mozilla5" useragent="Netscape6/"/>
+                <browser name="netscape" useragent="Mozilla"/>
+            </map:selector>
+            <map:selector name="parameter" src="org.apache.cocoon.selection.ParameterSelectorFactory"/>
+        </map:selectors>
+        <map:matchers default="wildcard">
+            <map:matcher name="wildcard" src="org.apache.cocoon.matching.WildcardURIMatcherFactory"/>
+            <map:matcher name="regexp" src="org.apache.cocoon.matching.RegexpURIMatcherFactory"/>
+            <map:matcher logger="sitemap.matcher.request-parameter"
+                name="request-parameter" src="org.apache.cocoon.matching.RequestParameterMatcher"/>
+        </map:matchers>
+        <map:actions>
+            <map:action logger="sitemap.action.request" name="request" src="org.apache.cocoon.acting.RequestParamAction"/>
+            <map:action logger="sitemap.action.xmldb.login" name="xmldb-login" src="org.exist.cocoon.XMLDBSessionLoginAction"/>
+        </map:actions>
+    </map:components>
+    <!-- =========================== Views =================================== -->
+    <!--
+  Views provide diffent, well, views to resources. Views are
+  orthogonal to pipelines. Please refer to the docs.
+-->
+    <map:views>
+        <map:view from-label="content" name="content">
+            <map:serialize type="xml"/>
+        </map:view>
+        <map:view from-label="data" name="pretty-content">
+            <map:transform src="stylesheets/simple-xml2html.xsl"/>
+            <map:serialize type="html"/>
+        </map:view>
+        <map:view from-position="last" name="links">
+            <map:serialize type="links"/>
+        </map:view>
+    </map:views>
+    
+    <!-- pipelines -->
+    <map:pipelines>
+        <map:pipeline>
+            <!-- graphics etc. -->
+            <map:match pattern="**.css">
+                <map:read mime-type="text/css" src="{1}.css"/>
+            </map:match>
+            <map:match pattern="**.jpg">
+                <map:read mime-type="text/jpg" src="{1}.jpg"/>
+            </map:match>
+            <map:match pattern="**.gif">
+                <map:read mime-type="text/gif" src="{1}.gif"/>
+            </map:match>
+            <map:match pattern="**.png">
+                <map:read mime-type="text/png" src="{1}.png"/>
+            </map:match>
+            <map:match pattern="**.dtd">
+                <map:read mime-type="text/text" src="{1}.dtd"/>
+            </map:match>
+            <map:match pattern="**.html">
+                <map:read src="{1}.html" mime-type="text/html"/>
+            </map:match>
+            
+            <!-- pipelines using the xmldb:// pseudo-protocol -->
+            
+            <map:match pattern="xmldb/db/xinclude/**.xml">
+                <map:generate src="xmldb:exist:///db/xinclude/{1}.xml"/>
+                <map:transform src="stylesheets/db2html.xsl"/>
+                <map:serialize type="html"/>
+            </map:match>
+            
+            <!-- apply stylesheet shakes.xsl to all XML documents -->
+            <!-- in xmldb-collection /db/shakespeare/plays -->
+            <map:match pattern="xmldb/db/shakespeare/plays/**.xml">
+                <map:match pattern="xpath" type="request-parameter">
+                    <!-- check if an xpath query has been passed in the request -->
+                    <map:generate src="xmldb:exist:///db/shakespeare/plays/{../1}.xml#{1}"/>
+                    <map:act type="request">
+                        <!-- convert request parameters into sitemap parameters -->
+                        <map:parameter name="parameters" value="true"/>
+                        <map:parameter name="default.howmany" value="10"/>
+                        <map:parameter name="default.start" value="1"/>
+                        <!-- we don't want to display all results on one page,
+                     so we use the filter-transformer to filter out 
+                     everything except the block we would like to see.
+                 -->
+                        <map:transform type="filter">
+                            <map:parameter name="element-name" value="result"/>
+                            <map:parameter name="count" value="{howmany}"/>
+                            <map:parameter name="blocknr" value="{start}"/>
+                        </map:transform>
+                        <map:transform src="stylesheets/xmldb-query.xsl">
+                            <map:parameter name="block" value="{start}"/>
+                            <map:parameter name="collection" value="/db/shakespeare/plays"/>
+                            <map:parameter name="resource" value="{../../1}.xml"/>
+                        </map:transform>
+                    </map:act>
+                    <map:serialize type="html"/>
+                </map:match>
+                <map:generate src="xmldb:exist:///db/shakespeare/plays/{1}.xml"/>
+                <map:transform src="xmldb:exist:///db/shakespeare/plays/shakes.xsl"/>
+                <map:serialize type="html"/>
+            </map:match>
+            
+            <!-- browse collections -->
+            <map:match pattern="xmldb/**/">
+                <!-- check if an xpath query has been passed in the request -->
+                <map:match pattern="xpath" type="request-parameter">
+                    <map:generate src="xmldb:exist:///{../1}/#{1}"/>
+                    <map:act type="request">
+                        <!-- convert request parameters into sitemap parameters -->
+                        <map:parameter name="parameters" value="true"/>
+                        <map:parameter name="default.howmany" value="10"/>
+                        <map:parameter name="default.start" value="1"/>
+                        <!-- we don't want to display all results on one page,
+                     so we use the filter-transformer to filter out 
+                     everything except the block we would like to see.
+                 -->
+                        <map:transform type="filter">
+                            <map:parameter name="element-name" value="result"/>
+                            <map:parameter name="count" value="{howmany}"/>
+                            <map:parameter name="blocknr" value="{start}"/>
+                        </map:transform>
+                        <map:transform src="stylesheets/xmldb-query.xsl">
+                            <map:parameter name="block" value="{start}"/>
+                            <map:parameter name="collection" value="{../../1}"/>
+                        </map:transform>
+                    </map:act>
+                    <map:serialize type="html"/>
+                </map:match>
+                <!-- no xpath query has been specified: display collection contents -->
+                <map:generate src="xmldb:exist:///{1}/"/>
+                <map:transform src="stylesheets/xmldb-collection.xsl">
+                    <map:parameter name="collection" value="{1}"/>
+                </map:transform>
+                <map:serialize type="html"/>
+            </map:match>
+            
+            <!-- display source XML for other resources -->
+            <map:match pattern="xmldb/**">
+                <map:match pattern="xpath" type="request-parameter">
+                    <!-- check if an xpath query has been passed in the request -->
+                    <map:generate src="xmldb:exist:///{../1}#{1}"/>
+                    <map:act type="request">
+                        <!-- convert request parameters into sitemap parameters -->
+                        <map:parameter name="parameters" value="true"/>
+                        <map:parameter name="default.howmany" value="10"/>
+                        <map:parameter name="default.start" value="1"/>
+                        <!-- we don't want to display all results on one page,
+                     so we use the filter-transformer to filter out 
+                     everything except the block we would like to see.
+                 -->
+                        <map:transform type="filter">
+                            <map:parameter name="element-name" value="result"/>
+                            <map:parameter name="count" value="{howmany}"/>
+                            <map:parameter name="blocknr" value="{start}"/>
+                        </map:transform>
+                        <map:transform src="stylesheets/xmldb-query.xsl">
+                            <map:parameter name="block" value="{start}"/>
+                            <map:parameter name="collection" value="{../../1}"/>
+                        </map:transform>
+                    </map:act>
+                    <map:serialize type="html"/>
+                </map:match>
+                <map:generate src="xmldb:exist:///{1}"/>
+                <map:select type="browser">
+                    <map:when test="explorer">
+                        <map:serialize type="xml"/>
+                    </map:when>
+                    <map:otherwise>
+                        <map:transform src="stylesheets/simple-xml2html.xsl"/>
+                        <map:serialize type="html"/>
+                    </map:otherwise>
+                </map:select>
+            </map:match>
+            
+            <map:match pattern="**.xmap">
+                <map:generate src="{1}.xmap"/>
+                <map:transform src="stylesheets/sitemap/simple-sitemap2html.xsl"/>
+                <map:serialize type="html"/>
+            </map:match>
+            
+            <map:match pattern="example1.xsp">
+                <map:generate src="test.xsp" type="serverpages"/>
+                <map:transform src="stylesheets/doc2html-2.xsl"/>
+                <map:serialize type="xhtml"/>
+            </map:match>
+            
+			<map:match pattern="">
+				<map:redirect-to uri="/exist/index.xml"/>
+			</map:match>
+
+            <map:match pattern="index.xml">
+                <map:generate src="index.xml"/>
+                <map:transform type="cinclude"/>
+                <map:transform src="stylesheets/doc2html-2.xsl"/>
+                <map:serialize type="html"/>
+            </map:match>
+            
+            <map:match pattern="xquery.xml">
+                <map:generate src="xquery.xml"/>
+                <map:transform type="cinclude"/>
+                <map:transform src="stylesheets/doc2html-2.xsl"/>
+                <map:serialize encoding="ISO-8859-1" type="xhtml"/>
+            </map:match>
+            
+            <map:match pattern="biblio.xml">
+                <map:generate src="biblio.xml"/>
+                <map:transform type="cinclude"/>
+                <map:transform src="stylesheets/doc2html-2.xsl"/>
+                <map:serialize encoding="ISO-8859-1" type="xhtml"/>
+            </map:match>
+            
+            <map:match pattern="rdf_pbib.xsp">
+                <map:generate src="rdf_pbib.xsp" type="serverpages"/>
+                <map:transform type="cinclude"/>
+                <map:transform src="stylesheets/biblio_rdf.xsl"/>
+                <map:serialize encoding="ISO-8859-1" type="xhtml"/>
+            </map:match>
+            
+            <map:match pattern="xprocess.xsp">
+                <map:generate src="xprocess.xsp" type="serverpages"/>
+                <map:transform type="cinclude"/>
+                <map:transform src="stylesheets/doc2html-2.xsl"/>
+                <map:serialize encoding="ISO-8859-1" type="xhtml"/>
+            </map:match>
+            
+            <map:match pattern="changes.xml">
+                <map:generate src="changes.xml"/>
+                <map:transform src="stylesheets/changes.xsl"/>
+                <map:serialize type="html"/>
+            </map:match>
+            
+            <!-- the login-form for the database admin servlet -->
+            <map:match pattern="adminLogin.xml">
+                <map:generate src="adminLogin.xml"/>
+                <map:transform type="encodeURL"/>
+                <map:serialize type="xhtml"/>
+            </map:match>
+            
+            <!-- this is a protected resource: it uses the xmldb-login action
+            to authenticate a user against the database -->
+            <map:match pattern="xadmin.xsp">
+                <map:act src="xmldb:exist:///db" type="xmldb-login">
+                    <map:generate src="xadmin.xsp" type="serverpages"/>
+                    <map:transform type="cinclude">
+                        <map:parameter name="use-request-parameters" value="true"/>
+                    </map:transform>
+                    <map:transform src="stylesheets/doc2html-2.xsl">
+                        <map:parameter name="use-request-parameters" value="true"/>
+                    </map:transform>
+                    <map:serialize encoding="UTF-8" type="xhtml"/>
+                </map:act>
+                <!-- no session found: display login form -->
+                <map:generate src="login.xml"/>
+                <map:transform type="cinclude"/>
+                <map:transform src="stylesheets/doc2html-2.xsl"/>
+                <map:serialize type="xhtml"/>
+            </map:match>
+            
+            <map:match pattern="**.xsp">
+                <map:generate src="{1}.xsp" type="serverpages"/>
+                <map:transform type="cinclude"/>
+                <map:transform src="stylesheets/doc2html-2.xsl"/>
+                <map:serialize encoding="ISO-8859-1" type="xhtml"/>
+            </map:match>
+            
+            <!-- Documentation -->
+            <map:match pattern="**.xml">
+                <map:generate src="{1}.xml"/>
+                <map:transform type="cinclude"/>
+                <map:transform src="stylesheets/db2html.xsl"/>
+                <map:serialize type="xhtml"/>
+            </map:match>
+            
+            <map:match pattern="**/">
+                <map:generate src="{1}" type="directory"/>
+                <map:transform src="stylesheets/system/directory2html.xsl"/>
+                <map:serialize/>
+            </map:match>
+            <map:handle-errors>
+                <map:transform src="stylesheets/system/error2html.xsl"/>
+                <map:serialize status-code="500"/>
+            </map:handle-errors>
+        </map:pipeline>
+    </map:pipelines>
+</map:sitemap>
+<!-- end of file -->

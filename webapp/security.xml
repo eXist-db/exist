@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "docbookx.dtd">-->
+<book xmlns:ci="http://apache.org/cocoon/include/1.0">
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <title>Open Source XML Database</title>
+        <author>
+            <firstname>Wolfgang M.</firstname>
+            <surname>Meier</surname>
+            <affiliation>
+                <address format="linespecific">
+                    <email>meier@ifs.tu-darmstadt.de</email>
+                </address>
+            </affiliation>
+        </author>
+    </bookinfo>
+    <ci:include src="sidebar.xml"/>
+    <chapter>
+        <title>User Authentication and Access Control</title>
+        <section>
+            <title>Overview</title>
+            <para>Beginning with version 0.9, the database engine supports basic
+                user authentication and access control. Access control loosely
+                resembles Unix conventions, so Unix users should be familiar
+                with this.</para>
+            <para>Access control is disabled unless you set a password for the
+                superuser (see below). Write access is granted to everyone, so please
+                be careful about exposing your server to the world.</para>
+            <para>eXist organizes users in groups. It has different permission
+                sets for the user, the group and the rest of the world. Every
+                user may be a member of several groups. The &quot;dba&quot;
+                group is a special group reserved to database
+                administrators. Only &quot;dba&quot; users are allowed to create
+                or remove users or change permissions for other users.</para>
+            <para>Information on users is stored in database collection
+                <filename>/db/system</filename> in the special XML file
+                <filename>/db/system/users.xml</filename>, which is created on
+                database startup. By default, the
+                <filename>/db/system</filename> collection is only readable for
+                &quot;dba&quot; users, but you may choose to change this.</para>
+            <para>Passwords are stored as MD5 digests. Whenever a user enters
+                his password, the database generates an MD5 for it and compares
+                it to the digest stored in <filename>users.xml</filename>. It is
+                rather difficult to guess the original password from the MD5
+                string, so passwords should be sufficiently secure.</para>
+            <para>Every resource in the database is owned by a user and by a
+                group. By default, the owner is set to the user creating the
+                resource and his primary group. eXist manages different
+                permissions for the owner, the owner group and others. Only the
+                owner of the resource or dba users are allowed to change these permissions.</para>
+            <para>eXist provides an XML:DB service interface to manipulate
+                permissions and manage users. The interactive client uses this
+                interface to implement a set of commands which we will use in
+                the next sections.</para>
+        </section>
+        <section>
+            <title>Change the Superuser Password</title>
+            <para>When the database is started for the first time, two default
+                users are created: &quot;admin&quot; and &quot;guest&quot;.
+                &quot;admin&quot; is a member of the dba group and thus has
+                superuser rights.</para>
+            <para>At database creation time, the &quot;admin&quot; password is
+                null. This means that access to eXist is granted to everyone. To
+                enable access control you have to set a password for the
+                &quot;admin&quot; user. You may use the interactive client or
+                the <ulink href="xadmin.xsp">administrative web
+                interface</ulink> to do so. In the interactive client, use the
+                <command>passwd</command> command:</para>
+            <example>
+                <title>Set a password for the superuser</title>
+                <screen><![CDATA[type help or ? for help.
+exist:/db>passwd admin
+password: somepass
+re-enter password: somepass
+exist:/db>quit
+]]></screen>
+            </example>
+            <para>Once a password has been set for the superuser, access control
+                is enabled. To start the interactive client as superuser you
+                will now have to specify the <option>-u</option> option, e.g.:</para>
+            <synopsis>bin/client.sh -u admin</synopsis>
+            <para>The other default user, &quot;guest&quot;, has password
+                &quot;guest&quot;. The guest identity is internally assigned to
+                all clients which have not authenticated themselves. For
+                example, the Xincon WebDAV interface does not support
+                authentication, so &quot;guest&quot; is assumed by default. This
+                is certainly a source of confusion and you have to be careful
+                about read/write permissions if you intend to use WebDAV.</para>
+        </section>
+        <section>
+            <title>Creating Users</title>
+            <para>The <command>adduser</command> allows you to create additional
+                users. The command asks for a password and a list of groups to
+                which the user should belong. An example is shown below:</para>
+            <example>
+                <title>Creating a New User</title>
+                <screen><![CDATA[
+exist:/db/shakespeare>adduser wolf
+password: xxxxxxxx
+re-enter password: xxxxxxxx
+enter groups: users]]></screen>
+            </example>
+            
+            <para>The command <command>users</command> displays a list of all known
+            database users.</para>
+        </section>
+        <section>
+            <title>Permissions</title>
+            <para>The interactive command line client displays the permissions
+                assigned to each resource (if you have set the
+                <option>permissions=true</option> property in the
+                <filename>client.properties</filename> file). An example is
+                shown below:</para>
+            <example>
+                <title>Permissions</title>
+                <screen><![CDATA[
+exist:/db/shakespeare/plays>ls
+-rwur-ur--      admin   dba     hamlet.xml
+-rwur-ur--      admin   dba     macbeth.xml
+-rwur-ur--      wolf    users   r_and_j.xml
+-rwur-ur--      admin   dba     shakes.xsl
+exist:/db/shakespeare/plays>]]></screen>
+            </example>
+            <para>In this example listing, all files except
+                <filename>r_and_j.xml</filename> are owned by user
+                &quot;admin&quot; and group &quot;dba&quot;. Currently, there
+                are three different permissions: read, write and update.</para>
+            <variablelist>
+                <varlistentry>
+                    <term>read</term>
+                    <listitem>
+                        <para>permission to read or query a file or list the
+                            contents of a collection. If the read permission is
+                            not set on a collection, you will not be able to see
+                            the collection contents. The files in the collection
+                            will also not be evaluated during XPath processing.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>write</term>
+                    <listitem>
+                        <para>permission to remove or update a file or add a new
+                            file or subcollection to a collection.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>update</term>
+                    <listitem>
+                        <para>permission to update an existing file. Removing
+                            the file is not allowed unless the write permission
+                            is granted. Also, if a user has only update permissions
+                            for a collection, he will not be allowed to create new
+                            files in it.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+            <para>Permissions for collections are <emphasis>not</emphasis> inherited by sub-collections, i.e.
+                you may have write permissions for some collections though you don't have
+                them for the parent collection.</para>
+            <para>The interactive client displays permissions similar to the
+                Unix <command>ls -l</command>. In case you are not familiar with
+                this: The first char in, for example,
+                <option>-rwur-ur--</option> shows the type of the resource: it
+                is set to minus (-) for documents and &quot;d&quot; for
+                collections. The next three chars show the permissions for the
+                user: you will see a minus here if a permission is denied, r, w
+                or u if the permission is granted. This pattern is repeated for
+                group and world, i.e. the next three chars represent group
+                permissions, the last three chars show permissions granted to others.</para>
+            <para>
+                <option>-rwur-ur--</option> is the default setting for every
+                newly created resource, i.e. group has read/update permissions,
+                but not write permissions; others are only allowed to read.</para>
+            <para>The database root collection <filename>/db</filename> by default
+            has permissions set to <option>-rwurwurwu</option>, i.e. full access is
+            granted to everyone.</para>
+        </section>
+        <section>
+            <title>Changing Permissions</title>
+            <para>Users can change permissions using the
+                <command>chmod</command> command. Please note that only the
+                owner of a resource or members of dba are allowed to do this.
+                <command>chmod</command> expects two parameters: the first
+                specifies the name of a resource or collection, the second defines the permissions 
+                to set or remove. Permissions are defined using a syntax
+                as shown below:</para>
+            <synopsis>[user|group|other]=[+|-][read|write|update][, ...]</synopsis>
+            <para>For example, to grant the write permission to the group and
+                deny all to others, you may use:</para>
+            <synopsis>chmod hamlet.xml group=+write,other=-read,-update,-write</synopsis>
+            <para>If you don't specify a resource as first argument to <command>chmod</command>,
+            the permission string will be applied to the current collection. This is an
+            important feature if you want to change permissions for the <filename>/db</filename>
+            root collection, which would otherwise not be possible. For example, to deny
+            write permissions to world, cd into the root collection and enter:</para>
+            
+            <synopsis>chmod other=-write</synopsis>
+        </section>
+        <section>
+            <title>Changing Resource Ownership</title>
+            <para>Only the owner has full control over a resource. It is thus sometimes
+                important to be able to change the ownership. The clients provides the
+                <command>chown</command> command to do this. The command expects three
+                arguments:</para>
+            <synopsis>chown user group [resource]</synopsis>
+            <para>As for <command>chmod</command>, the resource argument is optional: if skipped, chown will be applied to the
+                current collection. To change the owner of the file <filename>r_and_j.xml</filename>
+                you may do:</para>
+            <example>
+                <title>Changing Ownership</title>
+                <screen><![CDATA[
+exist:/db/shakespeare/plays>chown wolf users r_and_j.xml
+exist:/db/shakespeare/plays>ls
+-rwur-ur--      admin   dba     hamlet.xml
+-rwur-ur--      admin   dba     macbeth.xml
+-rwur-ur--      wolf    users   r_and_j.xml
+-rwur-ur--      admin   dba     shakes.xsl
+exist:/db/shakespeare/plays>]]></screen>
+            </example>
+        </section>
+        <section>
+            <title>Authentication and Cocoon</title>
+            <para>Cocoon uses the XML:DB API to access eXist. Cocoon thus has to authenticate
+                the user like any other XML:DB based application. To make this easier, eXist
+                contains a Cocoon action for the login task: <classname>XMLDBSessionLoginAction</classname>.
+                The action presents a login form, checks the entered user and password against
+                the database and stores them to a newly created HTTP session. As long as the session
+                remains valid, no further login will be required. You should probably read the
+                document about actions in Cocoon's documentation to fully understand how actions
+                work. The following snippet shows a small example from Cocoon's <filename>sitemap.xmap</filename>
+                configuration:</para>
+            <example>
+                <title><filename>sitemap.xmap</filename> snippet</title>
+                <screen><![CDATA[
+<!-- this is a protected resource: it uses the xmldb-login action
+to authenticate a user against the database -->
+<map:match pattern="xadmin.xsp">
+    <map:act src="xmldb:exist:///db" type="xmldb-login">
+         <map:generate src="xadmin.xsp" type="serverpages"/>
+         <map:transform type="cinclude">
+              <map:parameter name="use-request-parameters" value="true"/>
+         </map:transform>
+         <map:transform src="stylesheets/doc2html-2.xsl">
+              <map:parameter name="use-request-parameters" value="true"/>
+         </map:transform>
+         <map:serialize encoding="UTF-8" type="xhtml"/>
+     </map:act>
+     <!-- no session found: display login form -->
+     <map:generate src="login.xml"/>
+     <map:transform type="cinclude"/>
+     <map:transform src="stylesheets/doc2html-2.xsl"/>
+     <map:serialize type="xhtml"/>
+</map:match>]]></screen>
+            </example>
+        </section>
+    </chapter>
+</book>

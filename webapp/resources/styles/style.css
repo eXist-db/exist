@@ -1,0 +1,111 @@
+body {
+    font-style: normal;
+    color: #000000;
+    background-color: #FFFFFF;
+    text-align: left;
+    alignment: left;
+}
+
+p {
+    text-align: left;
+    alignment: left;
+}
+
+p.sectstart {
+    margin-before: 20;
+}
+
+h1 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: large;
+    color: #0033CC
+}
+
+h2 {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #0033CC
+}
+
+h3 {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #0033CC
+}
+
+b {
+    font-weight: bold;
+}
+
+a {
+  text-decoration: none;
+  color: #0033CC;
+}
+
+.sect1 {
+  font-family: Arial, Helvetica, sans-serif;
+  font-style: bold;
+  font-size: 125%;
+}
+
+.sect2 {
+  font-family: Arial, Helvetica, sans-serif;
+  font-style: bold;
+}
+
+.emph {
+    font-style: italic
+}
+
+.email {
+	font-size: smaller;
+	font-style: italic;
+}
+
+.heading {
+	font-family: Arial, Helvetica, sans-serif;		 
+	font-size: 125%;
+	font-weight: bold;
+    color: #0033CC
+}
+
+.code {
+    font-family: Courier, mono;
+}
+
+.codeblock {
+    font-family: Courier, mono;
+}
+
+.navheading {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    font-size: smaller;
+	text-decoration: none;
+    color: #993333
+}
+
+.navbody {
+    margin-left: 0.5cm;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: smaller;
+	text-decoration: none;
+}
+
+.navitem {
+    font-family: Arial, Helvetica, sans-serif;
+	text-decoration: none;
+    font-size: smaller;
+    color: #666699
+}
+
+.itemdef {
+    font-family: "Times New Roman", Times, serif;
+    font-size: smaller;
+    color: #000000
+}
+
+.fineprint {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: smaller;
+    color: #000000
+}
+

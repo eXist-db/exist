@@ -1,0 +1,28 @@
+
+eXist Native XML Database - Version 0.9
+=======================================
+
+For instructions on how to install and start eXist, please
+refer to the QuickStart.html document contained in this
+directory. Alternatively you may directly start the included
+Tomcat webserver and read the documentation which will be 
+available at
+
+http://localhost:8080/exist/index.xml.
+
+To start Tomcat and eXist, set your JAVA_HOME and EXIST_HOME
+environment variables to point to the directory of your Java
+installation and the directory where you have unpacked eXist.
+Then issue the command
+
+bin/startup.sh or bin/startup.bat
+
+depending on your operating system. 
+
+
+Copyright (C) 2001-2002 Wolfgang M. Meier. All Rights reserved.
+
+eXist comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute
+it under certain conditions; for details read the license
+file.

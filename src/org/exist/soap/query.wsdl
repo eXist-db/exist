@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="urn:exist" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="urn:exist" xmlns:intf="urn:exist" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+ <wsdl:types>
+  <schema targetNamespace="urn:exist" xmlns="http://www.w3.org/2001/XMLSchema">
+   <import namespace="http://schemas.xmlsoap.org/soap/encoding/"/>
+   <complexType name="QueryResponseDocument">
+    <sequence>
+     <element name="documentName" nillable="true" type="xsd:string"/>
+     <element name="hitCount" type="xsd:int"/>
+    </sequence>
+   </complexType>
+   <complexType name="ArrayOfQueryResponseDocument">
+    <complexContent>
+     <restriction base="soapenc:Array">
+      <attribute ref="soapenc:arrayType" wsdl:arrayType="impl:QueryResponseDocument[]"/>
+     </restriction>
+    </complexContent>
+   </complexType>
+   <complexType name="QueryResponseCollection">
+    <sequence>
+     <element name="collectionName" nillable="true" type="xsd:string"/>
+     <element name="documents" nillable="true" type="impl:ArrayOfQueryResponseDocument"/>
+    </sequence>
+   </complexType>
+   <complexType name="ArrayOfQueryResponseCollection">
+    <complexContent>
+     <restriction base="soapenc:Array">
+      <attribute ref="soapenc:arrayType" wsdl:arrayType="impl:QueryResponseCollection[]"/>
+     </restriction>
+    </complexContent>
+   </complexType>
+   <complexType name="QueryResponse">
+    <sequence>
+     <element name="collections" nillable="true" type="impl:ArrayOfQueryResponseCollection"/>
+     <element name="hits" type="xsd:int"/>
+     <element name="queryTime" type="xsd:long"/>
+     <element name="resultSetId" type="xsd:int"/>
+    </sequence>
+   </complexType>
+   <complexType name="ArrayOf_xsd_string">
+    <complexContent>
+     <restriction base="soapenc:Array">
+      <attribute ref="soapenc:arrayType" wsdl:arrayType="xsd:string[]"/>
+     </restriction>
+    </complexContent>
+   </complexType>
+   <complexType name="Collection">
+    <sequence>
+     <element name="collections" nillable="true" type="impl:ArrayOf_xsd_string"/>
+     <element name="resources" nillable="true" type="impl:ArrayOf_xsd_string"/>
+    </sequence>
+   </complexType>
+  </schema>
+ </wsdl:types>
+
+   <wsdl:message name="retrieveByDocumentRequest">
+
+      <wsdl:part name="in0" type="xsd:int"/>
+
+      <wsdl:part name="in1" type="xsd:int"/>
+
+      <wsdl:part name="in2" type="xsd:string"/>
+
+      <wsdl:part name="in3" type="xsd:string"/>
+
+      <wsdl:part name="in4" type="xsd:boolean"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="listCollectionRequest">
+
+      <wsdl:part name="in0" type="xsd:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="retrieveRequest">
+
+      <wsdl:part name="in0" type="xsd:int"/>
+
+      <wsdl:part name="in1" type="xsd:int"/>
+
+      <wsdl:part name="in2" type="xsd:string"/>
+
+      <wsdl:part name="in3" type="xsd:boolean"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getResourceResponse">
+
+      <wsdl:part name="getResourceReturn" type="xsd:base64Binary"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="queryRequest">
+
+      <wsdl:part name="in0" type="xsd:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="queryResponse">
+
+      <wsdl:part name="queryReturn" type="intf:QueryResponse"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getResourceRequest">
+
+      <wsdl:part name="in0" type="xsd:string"/>
+
+      <wsdl:part name="in1" type="xsd:string"/>
+
+      <wsdl:part name="in2" type="xsd:boolean"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="listCollectionResponse">
+
+      <wsdl:part name="listCollectionReturn" type="intf:Collection"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="retrieveResponse">
+
+      <wsdl:part name="retrieveReturn" type="xsd:base64Binary"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="retrieveByDocumentResponse">
+
+      <wsdl:part name="retrieveByDocumentReturn" type="xsd:base64Binary"/>
+
+   </wsdl:message>
+
+   <wsdl:portType name="Query">
+
+      <wsdl:operation name="getResource" parameterOrder="in0 in1 in2">
+
+         <wsdl:input message="intf:getResourceRequest" name="getResourceRequest"/>
+
+         <wsdl:output message="intf:getResourceResponse" name="getResourceResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="query" parameterOrder="in0">
+
+         <wsdl:input message="intf:queryRequest" name="queryRequest"/>
+
+         <wsdl:output message="intf:queryResponse" name="queryResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="retrieve" parameterOrder="in0 in1 in2 in3">
+
+         <wsdl:input message="intf:retrieveRequest" name="retrieveRequest"/>
+
+         <wsdl:output message="intf:retrieveResponse" name="retrieveResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="retrieveByDocument" parameterOrder="in0 in1 in2 in3 in4">
+
+         <wsdl:input message="intf:retrieveByDocumentRequest" name="retrieveByDocumentRequest"/>
+
+         <wsdl:output message="intf:retrieveByDocumentResponse" name="retrieveByDocumentResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="listCollection" parameterOrder="in0">
+
+         <wsdl:input message="intf:listCollectionRequest" name="listCollectionRequest"/>
+
+         <wsdl:output message="intf:listCollectionResponse" name="listCollectionResponse"/>
+
+      </wsdl:operation>
+
+   </wsdl:portType>
+
+   <wsdl:binding name="QuerySoapBinding" type="intf:Query">
+
+      <wsdlsoap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+      <wsdl:operation name="getResource">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="getResourceRequest">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="getResourceResponse">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="query">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="queryRequest">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="queryResponse">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="retrieve">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="retrieveRequest">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="retrieveResponse">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="retrieveByDocument">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="retrieveByDocumentRequest">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="retrieveByDocumentResponse">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="listCollection">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="listCollectionRequest">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="listCollectionResponse">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+   </wsdl:binding>
+
+   <wsdl:service name="QueryService">
+
+      <wsdl:port binding="intf:QuerySoapBinding" name="Query">
+
+         <wsdlsoap:address location="http://localhost:8080/exist/services/Query"/>
+
+      </wsdl:port>
+
+   </wsdl:service>
+
+</wsdl:definitions>

@@ -1,0 +1,6 @@
+OVERRIDE YES
+
+PUBLIC "-//PLAY//EN"
+       "http://localhost:8080/exist/play.dtd"
+SYSTEM "play.dtd" 
+       "play.dtd"

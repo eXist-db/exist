@@ -1,0 +1,20 @@
+# <PRE>
+# HTAccess example.
+#
+# HTAccess control may be turned on by uncommenting the HTAccessHandler from
+# the etc/demo.xml file.
+# If You can see this via a GET, HTAccessHandler is not configured.
+#
+# To test, use user=tom password=tom
+#
+
+AuthName "Demo HTAccess"
+AuthType Basic
+AuthUserFile  ./etc/htpasswd
+AuthGroupFile ./etc/htgroup
+
+<Limit>
+order deny,allow
+satisfy all
+require group TestGroup
+</Limit>

@@ -1,0 +1,22 @@
+#!/bin/sh
+
+cd $JETTY_HOME/src
+CLASSPATH=$JETTY_HOME/src:$JETTY_HOME/lib/javax.servlet.jar:$JETTY_HOME/lib/jaxp.jar:$JETTY_HOME/lib/parser.jar
+DOCDIR=$JETTY_HOME/javadoc
+export DOCDIR CLASSPATH
+mkdir -p $DOCDIR
+SRCDIRS=
+PACKAGES=
+S=
+DIRS=`find com -type d -print`" "`find javax -type d -print`
+for DIR in $DIRS
+do
+    LC=`ls $DIR/*.java 2>/dev/null | wc -l`
+    [ $LC -gt 0 ] && SRCDIRS="$SRCDIRS$S$DIR" && PACKAGES="$PACKAGES $DIR" && S=':'
+done
+
+PACKAGES=`echo $PACKAGES | tr / .`
+
+javadoc -d $DOCDIR -version -author -protected $PACKAGES
+
+

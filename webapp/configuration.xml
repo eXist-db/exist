@@ -1,0 +1,609 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "docbookx.dtd">-->
+<book xmlns:ci="http://apache.org/cocoon/include/1.0">
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <title>Open Source XML Database</title>
+        <author>
+            <firstname>Wolfgang M.</firstname>
+            <surname>Meier</surname>
+            <affiliation>
+                <address format="linespecific">
+                    <email>meier@ifs.tu-darmstadt.de</email>
+                </address>
+            </affiliation>
+        </author>
+    </bookinfo>
+    <ci:include src="sidebar.xml"/>
+    <chapter>
+        <title>Server Configuration</title>
+        <section>
+            <title>Overview</title>
+            <para>The central configuration file for
+                <application>eXist</application> is called
+                <filename>conf.xml</filename>. By default, if you run the
+                standalone database server (see <ulink
+                    href="deployment.xml">Deployment Options</ulink>), the file
+                will be loaded from the root directory of the distribution (as
+                specified by the system property <option>exist.home</option>).
+                If eXist is running in a servlet-context,
+                <filename>conf.xml</filename> is read from the
+                <filename>WEB-INF</filename> directory of the web application. </para>
+            <para>
+                <filename>conf.xml</filename> basically contains three sections:</para>
+            <variablelist>
+                <varlistentry>
+                    <term>&lt;db-connection></term>
+                    <listitem>
+                        <para>configures the storage backend</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>&lt;indexer></term>
+                    <listitem>
+                        <para>controls the indexing process</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>&lt;log4j:configuration></term>
+                    <listitem>
+                        <para>controls logging output. eXist uses the log4j
+                            package to print log and debug messages. The
+                            log4j:configuration section is simply forwarded to
+                            the log4j initialization process. For a description
+                            of the available options read the <ulink
+                                url="http://www.log4j.org/">log4j documentation</ulink>.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+            <para>The following sections describe each of these settings:</para>
+        </section>
+        <section>
+            <title>
+                <sgmltag>db-connection</sgmltag>
+            </title>
+            <para>This sections configures the storage backend used by eXist.
+                There are example entries for all supported databases. Only one
+                <sgmltag>db-connection</sgmltag> should be specified. By
+                default, <filename>conf.xml</filename> configures eXist to use
+                the internal native XML data store. We will first describe the
+                available options for the native data store. Using eXist with an
+                external RDBMS is described in a <ulink
+                    href="#relational">separate section</ulink> at the end of
+                this document.</para>
+            <para>An example configuration for the native backend is shown below:</para>
+            <example>
+                <title>&lt;db-connection> entry for the native backend</title>
+                <programlisting format="linespecific"><![CDATA[
+<db-connection database="native" files="data" 
+  buffers="256" words_buffers="8192" collection_buffers="512"
+  elements_buffers="64" free_mem_min="5" 
+  grow="32" compress="true" pageSize="4096"/>
+]]></programlisting>
+            </example>
+            <section>
+                <title>database</title>
+                <para>The <option>database</option>-attribute determines which
+                    database-backend is being used. It should be set either to
+                    &quot;mysql&quot;, &quot;postgresql&quot; or
+                    &quot;native&quot;. &quot;native&quot; selects the Java
+                    native backend.</para>
+                <note>
+                    <para>Using a wrong setting for the
+                        <option>database</option>-attribute will confuse eXist.</para>
+                </note>
+            </section>
+            <section>
+                <title>files</title>
+                <para>The <option>files</option> attribute specifies the
+                    directory where the native backend will keep its database
+                    files. The directory should exist. If the specified path is
+                    relative, it will be relative to the directory defined by
+                    the <option>exist.home</option> system property.</para>
+                <para>If the data directory is not writable, eXist will
+                    internally switch to <emphasis>read-only mode</emphasis>,
+                    which means that any attempt to change the database will
+                    throw an exception.</para>
+            </section>
+            <section>
+                <title>pageSize</title>
+                <para>Specifies the number of bytes used for internal data and
+                    btree pages. This should be equal to or a multiple of the
+                    page size used by the filesystem (usually a multiple of 4096).</para>
+            </section>
+            <section>
+                <title>buffers</title>
+                <para>The size of the page buffer for the persistent DOM file.
+                    This should be rather small (32 to 512).</para>
+            </section>
+            <section>
+                <title>words_buffers</title>
+                <para>The size of the page buffer for the inverted index
+                    (<filename>words.dbx</filename>), where keywords are mapped
+                    to text nodes. If your collections are large, it is very
+                    likely that the inverted index becomes a bottleneck. If you
+                    experience a considerable performance decrease during
+                    indexing, you should try to increase the
+                    <option>words_buffers</option> setting or exclude some parts
+                    of your documents from fulltext-indexing (see indexer
+                    settings below).</para>
+            </section>
+            <section>
+                <title>collection_buffers</title>
+                <para>The size of the page buffer for the collection store. The
+                    <filename>collections.dbx</filename> file stores
+                    meta-information about collections and the documents
+                    contained therein. Usually, a page buffer size of 256 to 512
+                    should be sufficient even for large collections. However, if
+                    you have thousands of rather small documents in your
+                    collections, you may try to increase this setting.</para>
+            </section>
+            <section>
+                <title>elements_buffers</title>
+                <para>Page buffer size for the elements index. This index maps
+                    element names to element node identifiers. The file is
+                    usually rather small, so the default setting of 512 should
+                    be ok in most cases.</para>
+            </section>
+            <section>
+                <title>free_mem_min</title>
+                <para>This option specifies the amount of free memory (in
+                    percent) which should be available to the Java virtual
+                    machine before eXist starts to flush its internal caches.
+                    During indexing, eXist caches index data in memory to avoid
+                    frequent disk lookups. If the amount of free memory drops
+                    below the defined limit, eXist will write all cached data to
+                    disk and trigger the garbage collection.</para>
+                <para>If your files are rather large (> 50MB) or if you
+                    experience OutOfMemory- Errors during indexing, you may
+                    consider to increase this setting to > 10%.</para>
+            </section>
+            <section>
+                <title>grow &amp; compress</title>
+                <para>These options are no longer used.</para>
+            </section>
+            <section>
+                <title><sgmltag>pool</sgmltag></title>
+                <para>These settings control the internal database connection pool.
+                    Options <option>min</option> and <option>max</option> specify
+                    the minimum and maximum size of the connection pool. The connection
+                    pool restricts the number of parallel (basic) operations that can be
+                    executed by the database. Settings should be somewhere between
+                    1 and 20.</para>
+                <para>Please note that this has nothing to do with the HTTP and 
+                    XMLRPC server settings. Those servers have their own connection
+                    pools.</para>
+                <para>The database will try to write its internal buffers to file after 
+                    being idle for some time. The <option>idle-time</option> specifies the number
+                    of seconds to wait.</para>
+            </section>
+        </section>
+        <section>
+            <title>
+                <sgmltag>indexer</sgmltag>
+            </title>
+            <para>This section controls how xml-files are indexed by eXist. An
+                example configuration is shown below:</para>
+            <example>
+                <title>Specifying indexer options in conf.xml</title>
+                <programlisting format="linespecific"><![CDATA[
+<indexer caseSensitive="false"
+	  suppress-whitespace="both" index-depth="1"
+	  tokenizer="org.exist.storage.analysis.SimpleTokenizer">
+	  
+    <stopwords file="stopword"/>
+    
+	<index doctype="users" default="none">
+	</index>
+
+	<index attributes="true" doctype="dblp" default="all">
+		<exclude path="//ee"/>
+		<exclude path="//cdrom"/>
+		<exclude path="//url"/>
+		<exclude path="//volume"/>
+	</index>
+
+	<index attributes="true" alphanum="true" doctype="movie" default="all">
+		<exclude path="//@id"/>
+	</index>
+
+    <entity-resolver>
+	    <catalog file="samples/xcatalog.xml"/>
+    </entity-resolver>
+  </indexer>
+]]></programlisting>
+            </example>
+            <para>The <option>batchLoad</option>, <option>tmpDir</option> and
+                <option>controls</option> options are not relevant for the
+                native storage backend. We will not discuss them here.</para>
+            <section>
+                <title>Common Options</title>
+                <variablelist>
+                    <varlistentry>
+                        <term>caseSensitive</term>
+                        <listitem>
+                            <para>Are string comparisons case sensitive? This
+                                option applies to XPath equality tests (=) and
+                                functions like contains(), starts-with() or
+                                ends-with(). It does not apply to operators or
+                                functions based on the fulltext index (e.g.
+                                &amp;=, |=, near() ...) - index lookups are
+                                <emphasis>always</emphasis> case-insensitive.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>suppress-whitespace</term>
+                        <listitem>
+                            <para>How should the indexer treat whitespace at the
+                                start or end of a character sequence? Possible
+                                values are <option>leading</option>,
+                                <option>trailing</option>, <option>both</option>
+                                and <option>none</option>.
+                                <option>leading</option> will suppress leading
+                                whitespace; <option>both</option> suppresses
+                                leading and trailing whitespace;
+                                <option>none</option> preserves all whitespace.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>tokenizer</term>
+                        <listitem>
+                            <para>The Java class used to tokenize a character
+                                sequence into a stream of single words or
+                                tokens. The tokens are stored to the fulltext
+                                index. Currently only the SimpleTokenizer is available.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>index-depth</term>
+                        <listitem>
+                            <para>Defines the depth of the DOM index. The DOM
+                                index maps unique node identifers to the node's
+                                storage location in the DOM file. Generating
+                                this index is expensive. It is primarily needed
+                                to access nodes by their unique node identifier
+                                (for example, when serializing query results).
+                                Those operations are usually not very
+                                time-critical. Furthermore, most XPath
+                                expressions can do without this index - they use
+                                short-cuts to access the node directly.</para>
+                            <para>Thus, beginning with version 0.9, only
+                                top-level elements are added to the index,
+                                attributes and text nodes are always excluded.
+                                This results in much smaller index sizes and -
+                                consequently - in a smaller
+                                <filename>dom.dbx</filename> file. The
+                                <option>index-depth</option> option specifies
+                                the tree level up to which elements will be
+                                added to the index. For example, a value of 2
+                                means that the document root node and all its
+                                child elements will be indexed; a value of 1
+                                only indexes the root node.</para>
+                            <para>Usually,
+                                <option>index-depth=&quot;2&quot;</option>
+                                offers a good compromise between index size and
+                                performance. However, if your documents are
+                                deeply structured, you should consider
+                                increasing this setting to 3, 4 or 5. For
+                                example, if the longest path from the document
+                                root to an element node is greater than 10, a
+                                index-depth setting of 4 or 5 might help to
+                                increase overall query performance for some
+                                types of queries. </para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </section>
+            <section>
+                <title>
+                    <sgmltag>stopwords</sgmltag>
+                </title>
+                <para>Attribute <option>file</option> points to a file
+                    containing a list of stopwords. Stopwords are
+                    <emphasis>not</emphasis> added to the fullext index.</para>
+            </section>
+            <section>
+                <title>
+                    <sgmltag>index</sgmltag>
+                </title>
+                <para>The fulltext index may easily become a bottleneck for
+                    large collections. By default, eXist indexes all character
+                    content found in a document. It is thus important to be able
+                    to restrict fulltext-indexing to those parts of a document
+                    for which fulltext queries are actually used. For example,
+                    using a fulltext query to search for URLs or some kind of
+                    serial number does probably not make much sense. However,
+                    those URLs will blow up the fulltext index, so they should
+                    be ignored by the fulltext indexer.</para>
+                <para>The <sgmltag>index</sgmltag> section allows you to exclude
+                    or include specified parts of your document into the
+                    fulltext index. Please note that even if you exclude some
+                    parts you will still be able to search for them using
+                    standard exact-match XPath expressions like =, >, &lt;,
+                    contains() ...</para>
+                <para>You may specify multiple <sgmltag>index</sgmltag> sections
+                    in your configuration. Each <sgmltag>index</sgmltag> section
+                    applies to a specified <emphasis>document type</emphasis>.
+                    For documents without a doctype declaration, the name of the
+                    document root element is used.</para>
+                <para>You have to define a default-behaviour for each of the
+                    <sgmltag>index</sgmltag> sections through the
+                    <option>default</option> attribute setting. Available values
+                    are: <option>all</option> or <option>none</option>. If the
+                    default behaviour is <option>all</option>, all content will
+                    be indexed by default. You may exclude some sections by
+                    defining a list of <sgmltag>exclude</sgmltag> elements.</para>
+                <para>If you set the default behaviour to <option>none</option>,
+                    the indexer will ignore everything by default. Use
+                    <sgmltag>include</sgmltag> elements to define those parts
+                    you want to be included.</para>
+                <para>The <sgmltag>include</sgmltag> and
+                    <sgmltag>exclude</sgmltag> elements both expect a path
+                    expression in the <option>path</option> attribute. Paths use
+                    an XPath-like syntax: elements are specified by their name,
+                    attributes as @attribute; / selects child nodes, // selects an
+                    item at every position in the tree. For example,</para>
+                <synopsis>&lt;exclude path=&quot;//url&quot;/></synopsis>
+                <para>exludes the content of all <sgmltag>url</sgmltag> tags and
+                    their descendants.</para>
+                <synopsis>&lt;exclude path=&quot;//article/@id&quot;/></synopsis>
+                <para>excludes the id-attribute of all
+                    <sgmltag>article</sgmltag> elements.</para>
+                <para>The following list explains all options available for the
+                    <sgmltag>index</sgmltag> section:</para>
+                <variablelist>
+                    <varlistentry>
+                        <term>default</term>
+                        <listitem>
+                            <para>Defines the default behaviour for the indexer.
+                                Valid settings are <option>all</option> or <option>none</option>.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>doctype</term>
+                        <listitem>
+                            <para>The document type to which these settings
+                                should be applied. </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>attributes</term>
+                        <listitem>
+                            <para>Should attributes be indexed by default?
+                                Possible values are <option>true</option> or <option>false</option>.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>alphanum</term>
+                        <listitem>
+                            <para>Should alpha-numeric sequences be indexed?
+                                Setting this to <option>false</option> will
+                                exclude numbers, dates, serial numbers and any
+                                other kind of alpha-numeric sequence not being a
+                                simple word.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>index-depth</term>
+                        <listitem>
+                            <para>Same as the common index-depth attribute (see
+                                above), but restricted to one type of document.</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </section>
+        </section>
+        <section>
+            <title>Cocoon Sitemap Configuration</title>
+            <para>eXist's integration with Cocoon is completely based on the
+                XML:DB database API. You can use any XML:DB enabled database
+                like eXist or Xindice.</para>
+            <para>Cocoon uses an XML file called
+                <filename>sitemap.xmap</filename> to configure the processing
+                pipelines it uses to process HTTP requests. Beginning with
+                version 2.0 so called pseudo-protocols are supported by Cocoon.
+                Pseudo-protocols allow you to register handlers for special urls
+                via source factories. Basically, you can use a pseudo-protocol
+                to specify resources wherever you would use a known protocol
+                like http:// or file:// in the sitemap.</para>
+            <para>Current Cocoon distributions define a pseudo-protocol to
+                access XML:DB enabled databases. The pseudo-protocol is
+                configured in Cocoon's main configuration file
+                <filename>WEB-INF/cocoon.xconf</filename>. All you have to do is
+                to specify the correct database driver class:</para>
+            <example>
+                <title>Defining the XML:DB Database Driver</title>
+                <screen><![CDATA[
+<source-handler logger="core.source-handler">
+    <!-- xmldb pseudo protocol -->
+    <protocol 
+        class="org.apache.cocoon.components.source.XMLDBSourceFactory" 
+        name="xmldb">
+        <driver class="org.exist.xmldb.DatabaseImpl" type="exist"/>
+        <!-- Add here other XML:DB compliant databases drivers -->
+    </protocol>
+</source-handler>
+]]></screen>
+            </example>
+            <para>Once the database-driver has been registered with the handler,
+                it is possible to use an XML:DB URI wherever Cocoon expects an
+                URI in its site configuration file <filename>sitemap.xmap</filename>.</para>
+            <para>For example, to access our collection of Shakespeare plays
+                directly from the web-browser with a stylesheet applied to each
+                play, we might use the following code fragment in the sitemap's
+                processing pipeline:</para>
+            <example>
+                <title>Using XML:DB URIs in the Sitemap</title>
+                <screen><![CDATA[
+<!-- apply stylesheet shakes.xsl to all XML documents
+in xmldb-collection /db/shakespeare/plays --> 
+<map:match pattern="xmldb/db/shakespeare/plays/**.xml">
+    <map:generate src="xmldb:exist:///db/shakespeare/plays/{1}.xml"/>
+    <map:transform src="xmldb:exist:///db/shakespeare/plays/shakes.xsl"/>
+    <map:serialize type="html"/>
+</map:match>
+]]></screen>
+            </example>
+            <para>The <ulink href="../sitemap.xmap">sitemap</ulink> delivered
+                with eXist contains some more complex examples.</para>
+        </section>
+        <section id="relational">
+            <title>Running eXist with the Relational Storage Backends</title>
+            <para>
+                <application>eXist</application> should run with MySQL and
+                PostgreSQL 7.1 or better. To use PostgreSQL you definitely need
+                7.1 or better. Previous PostgreSQL-versions will be very slow
+                and instable. eXist 0.7 has been tested with PostgreSQL 7.1.2.
+                This version seems to be quite stable, so if you experience
+                problems with older version, please update to 7.1.2.</para>
+            <note>
+                <para>Oracle had been supported by previous versions of eXist.
+                    The files needed are still contained in the distribution,
+                    but I do no longer test eXist against Oracle. If you would
+                    like to do the job, you are welcome.</para>
+            </note>
+            <section>
+                <title>Using MySQL</title>
+                <para>In the sql-directory of the distribution you will find a
+                    file called <filename>mysql.sql</filename> which contains
+                    all the sql commands necessary to create the tables needed
+                    by <application>eXist</application>. On my linux box I
+                    issued the following command to setup the database (Note:
+                    maybe you should set up a new mysql user and password before):</para>
+                <synopsis format="linespecific"> mysql --user=exist
+                    --password=exist test &lt; tables.sql </synopsis>
+                <tip>
+                    <para>There's another file, <filename moreinfo="none">
+                        delete.sql</filename>, which may be used to delete all
+                        data from the database. This is useful to clean up your tables.</para>
+                </tip>
+            </section>
+            <section>
+                <title>Using PostgreSQL</title>
+                <para>As with MySQL you will find a file called
+                    <filename>postgresql.sql</filename> in the sql-directory of
+                    the distribution, which contains all the sql commands to
+                    create the needed tables. To set up a database called
+                    'exist', issue the following commands:</para>
+                <synopsis format="linespecific"> createdb exist psql exist -f
+                    sql/postgres.sql </synopsis>
+                <para>When retrieving xml-content, PostgreSQL is quite slow on
+                    my machine. Since the document-content has to be reassembled
+                    from many tables, a lot of select-statements are generated.</para>
+                <para>To speed this up, some routines have been reimplemented as
+                    stored procedures (PostgreSQL offers great facilities for
+                    the easy creation of user defined functions). The stored
+                    procedures are defined in the file
+                    <filename>pg_func.sql</filename>, which can be found in
+                    directory <filename>./sql</filename>.</para>
+                <para>Before you can import those functions into the database,
+                    you have to activate the PL/pgSQL procedural language module
+                    for your db by running the createlang script:</para>
+                <synopsis format="linespecific"> createlang plpgsql DBNAME </synopsis>
+                <para>Next you may import the stored procedures:</para>
+                <synopsis format="linespecific"> psql exist -f sql/pg_func.sql </synopsis>
+                <para>As with any other database you should definitely think
+                    about tuning PostgreSQL by setting some configuration
+                    parameters. On my machine I got a considerable performance
+                    increase by setting:</para>
+                <screen> shared_buffers = 512 fsync = false </screen>
+                <para>in my <filename>postgresql.conf</filename>.</para>
+            </section>
+            <section>
+                <title>Configuration Options</title>
+                <para>The relational backend reads several options from the
+                    configuration file <filename>conf.xml</filename>. Most of
+                    them are related to JDBC. The following code snipped shows
+                    an example entry for MySQL:</para>
+                <example>
+                    <title>Specifying jdbc-options in conf.xml</title>
+                    <programlisting format="linespecific"><![CDATA[
+<db-connection driver="org.gjt.mm.mysql.Driver"
+     url="jdbc:mysql://localhost/test?autoReconnect=true&amp;
+          useUnicode=true&amp;characterEncoding=iso-8859-1"
+     user="exist"
+     password="exist"
+     encoding="ISO-8859-1"
+     database="mysql"
+/>]]></programlisting>
+                </example>
+                <para>The following attributes apply to the relational backend:</para>
+                <variablelist>
+                    <title>Attributes for the relational backend</title>
+                    <varlistentry>
+                        <term>driver</term>
+                        <listitem>
+                            <para>The JDBC driver-class to use</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>url</term>
+                        <listitem>
+                            <para>JDBC URL describing the database</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>user</term>
+                        <listitem>
+                            <para>Username</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>password</term>
+                        <listitem>
+                            <para>Password</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>serviceName</term>
+                        <listitem>
+                            <para>The <option>serviceName</option>-attribute
+                                denotes the global-service-name of your
+                                Oracle-database. Normally you could leave this
+                                out, but my local Oracle-installation on Linux
+                                needs it. The value is passed to sqlldr when
+                                loading temporary files.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>encoding</term>
+                        <listitem>
+                            <para>This options sets the encoding used for
+                                writing character data to the temporary files.
+                                It should be set to a character encoding name
+                                recognized by Java, e.g. UTF-8 or ISO-8859-1.
+                                Please note that you should choose the encoding
+                                your database expects to get as input. For
+                                example if you try to read UTF-8 with MySQL's
+                                LOAD DATA INFILE you may get wrong character
+                                translations, so you have to change to ISO-8859-1.</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+                <para>Additionally, eXist recognizes the following options in
+                    the &lt;indexer> section of the configuration file:</para>
+                <variablelist>
+                    <varlistentry>
+                        <term>tmpDir</term>
+                        <listitem>
+                            <para>temporary storage directory for files
+                                generated by the indexer.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>batchLoad</term>
+                        <listitem>
+                            <para>setting this to true will cause the relational
+                                backend to temporarily write most table-data to
+                                a file instead of directly storing it into the
+                                database. These files will be read in using the
+                                mysql LOAD DATA INFILE or the respective Oracle
+                                or PostgreSQL commands. This is about twice as
+                                fast as storing data directly. Default: true.</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </section>
+        </section>
+    </chapter>
+</book>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<server>
+  <mbean code="samples.XmlDbClientService" name="eXist:type=ServiceTest,category=Database,name=XmlDbClient">
+      <depends>eXist:type=Service,category=Database,name=XMLDB</depends>
+  </mbean>
+</server>

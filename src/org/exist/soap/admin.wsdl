@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="urn:exist" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="urn:exist" xmlns:intf="urn:exist" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+   <wsdl:message name="removeDocumentResponse">
+
+      <wsdl:part name="removeDocumentReturn" type="xsd:boolean"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="removeDocumentRequest">
+
+      <wsdl:part name="in0" type="xsd:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="removeCollectionResponse">
+
+      <wsdl:part name="removeCollectionReturn" type="xsd:boolean"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="storeResponse">
+
+   </wsdl:message>
+
+   <wsdl:message name="createCollectionRequest">
+
+      <wsdl:part name="in0" type="xsd:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="createCollectionResponse">
+
+      <wsdl:part name="createCollectionReturn" type="xsd:boolean"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="removeCollectionRequest">
+
+      <wsdl:part name="in0" type="xsd:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="storeRequest">
+
+      <wsdl:part name="in0" type="xsd:base64Binary"/>
+
+      <wsdl:part name="in1" type="xsd:string"/>
+
+      <wsdl:part name="in2" type="xsd:string"/>
+
+      <wsdl:part name="in3" type="xsd:boolean"/>
+
+   </wsdl:message>
+
+   <wsdl:portType name="Admin">
+
+      <wsdl:operation name="store" parameterOrder="in0 in1 in2 in3">
+
+         <wsdl:input message="intf:storeRequest" name="storeRequest"/>
+
+         <wsdl:output message="intf:storeResponse" name="storeResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="removeCollection" parameterOrder="in0">
+
+         <wsdl:input message="intf:removeCollectionRequest" name="removeCollectionRequest"/>
+
+         <wsdl:output message="intf:removeCollectionResponse" name="removeCollectionResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="removeDocument" parameterOrder="in0">
+
+         <wsdl:input message="intf:removeDocumentRequest" name="removeDocumentRequest"/>
+
+         <wsdl:output message="intf:removeDocumentResponse" name="removeDocumentResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="createCollection" parameterOrder="in0">
+
+         <wsdl:input message="intf:createCollectionRequest" name="createCollectionRequest"/>
+
+         <wsdl:output message="intf:createCollectionResponse" name="createCollectionResponse"/>
+
+      </wsdl:operation>
+
+   </wsdl:portType>
+
+   <wsdl:binding name="AdminSoapBinding" type="intf:Admin">
+
+      <wsdlsoap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+      <wsdl:operation name="store">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="storeRequest">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="storeResponse">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="removeCollection">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="removeCollectionRequest">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="removeCollectionResponse">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="removeDocument">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="removeDocumentRequest">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="removeDocumentResponse">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="createCollection">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="createCollectionRequest">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="createCollectionResponse">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:exist" use="encoded"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+   </wsdl:binding>
+
+   <wsdl:service name="AdminService">
+
+      <wsdl:port binding="intf:AdminSoapBinding" name="Admin">
+
+         <wsdlsoap:address location="http://localhost:8080/exist/services/Admin"/>
+
+      </wsdl:port>
+
+   </wsdl:service>
+
+</wsdl:definitions>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE disclaimer [
+	<!ELEMENT disclaimer (p*)>
+	<!ELEMENT p (ANY)>
+	<!ATTLIST p name ID #IMPLIED>
+]>
+<disclaimer xmlns:xi="http://www.w3.org/2001/XInclude">
+	<p name="statement">The opinions presented herein represent those 
+	of the individual and should not be interpreted as the official 
+	policy endorsed by this organization.</p>
+</disclaimer>

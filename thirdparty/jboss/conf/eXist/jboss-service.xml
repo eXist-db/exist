@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<server>
+
+  <mbean code="org.exist.jboss.exist.EXistService" name="eXist:type=Service,category=Database,name=eXist">
+    <attribute name="EXistHome">data/exist</attribute>
+  </mbean>
+
+  <!-- XMLDB - Xml persistence service -->
+  <mbean code="org.exist.jboss.XmlDbService" name="eXist:type=Service,category=Database,name=XMLDB">
+    <depends>eXist:type=Service,category=Database,name=eXist</depends>
+    <attribute name="Driver">org.exist.xmldb.DatabaseImpl</attribute>
+    <attribute name="BaseCollectionURI">xmldb:exist:///db</attribute>
+  </mbean>
+
+</server>

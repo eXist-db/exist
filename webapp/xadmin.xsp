@@ -1,0 +1,558 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Author: Wolfgang Meier "meier@ifs.tu-darmstadt.de" -->
+
+<xsp:page language="java"
+          xmlns:xsp="http://apache.org/xsp"
+		  xmlns:xsp-request="http://apache.org/xsp/request/2.0"
+          xmlns:ci="http://apache.org/cocoon/include/1.0"
+          xmlns:xmldb="http://exist-db.org/xmldb/1.0"
+		  xmlns:exist="http://exist.sourceforge.net/NS/exist"
+          xmlns:log="http://apache.org/xsp/log/2.0">
+	
+    <xsp:structure>
+        <xsp:include>org.apache.cocoon.components.language.markup.xsp.XSPUtil</xsp:include>
+        <xsp:include>org.apache.avalon.framework.context.ContextException</xsp:include>
+        <xsp:include>java.io.BufferedReader</xsp:include>
+        <xsp:include>java.io.FileReader</xsp:include>
+        <xsp:include>java.util.StringTokenizer</xsp:include>
+        <xsp:include>org.apache.cocoon.components.request.multipart.FilePartFile</xsp:include>
+        <xsp:include>org.exist.util.XMLUtil</xsp:include>
+    </xsp:structure>
+
+    <xsp:logic>
+        File uploadDir = null;
+        
+        /** Contextualize this class */
+        public void contextualize(Context context) throws ContextException {
+            uploadDir = (File) context.get(Constants.CONTEXT_UPLOAD_DIR);
+        }
+        
+        private void getAllCollections(Collection collection, ArrayList collections) 
+        throws XMLDBException { 
+           collections.add(collection.getName());
+           String[] childCollections = collection.listChildCollections();
+           Collection child;
+           for(int i = 0; i &lt; childCollections.length; i++) {
+               child = collection.getChildCollection(childCollections[i]);
+               getAllCollections(child, collections);
+           }
+       }
+        
+        public String serverURI = "xmldb:exist:///";
+    </xsp:logic>
+  
+<document>
+  
+   <!-- include header -->
+   <ci:include src="header.xml"/>
+       
+   <!-- include sidebar -->
+   <ci:include src="sidebar.xml"/>
+
+   <body>
+
+    <xmldb:driver class="org.exist.xmldb.DatabaseImpl"/>
+        
+    <xsp:logic>
+        response.addHeader("pragma", "no-cache");
+        response.addHeader("Cache-Control", "no-cache");
+        String user = (String)session.getAttribute("user");
+        String passwd = (String)session.getAttribute("password");
+        if(user == null || user.length() == 0) {
+            user = "guest";
+            passwd = "guest";
+        }
+        String rootCollection = request.getParameter("collection");
+        if(rootCollection == null)
+            rootCollection = "/db";
+        String collectionURI = serverURI + rootCollection;
+        String action = request.getParameter("action");
+        
+            if(action != null) {
+              
+                <!-- view document -->
+        
+                if(action.equals("view")) {
+                    String coll = request.getParameter("subcoll");
+                    if(coll != null &amp;&amp; coll.length() &gt; 0) {
+                        rootCollection = coll;
+                    } else {
+                      String docs[] = request.getParameterValues("docs");
+        
+                     <section title="View document">
+                        <!-- insert content as xml-source
+                           will be pretty printed       -->
+                        <xml-source>
+                            <xmldb:collection>
+                                <xmldb:uri>collectionURI</xmldb:uri>
+                                <xmldb:user>user</xmldb:user>
+                                <xmldb:password>passwd</xmldb:password>
+                                <xmldb:get-document as="xml" >
+                                    <xmldb:name>docs[0]</xmldb:name>
+                                </xmldb:get-document>
+                                <xmldb:error>
+                                    <error>Error: <xmldb:get-error/></error>
+                                </xmldb:error>
+                            </xmldb:collection>
+                        </xml-source>
+                          
+                     </section>                  
+                  }
+            } else if(action.equals("remove")) {
+                String subcoll = request.getParameter("subcoll");
+                if(subcoll != null &amp;&amp; subcoll.length() &gt; 0) {
+                    <section title="Removing collection">
+                    
+                        <xmldb:collection>
+                            <xmldb:uri>collectionURI</xmldb:uri>
+                            <xmldb:user>user</xmldb:user>
+                            <xmldb:password>passwd</xmldb:password>
+                            <xmldb:remove-collection>
+                                <xmldb:name>subcoll</xmldb:name>
+                            </xmldb:remove-collection>
+                            <xmldb:error>
+                                <error>Error: <xmldb:get-error/></error>
+                            </xmldb:error>
+                        </xmldb:collection>
+                        
+                        <p>Removed collection: <xsp:expr>subcoll</xsp:expr>.</p>
+                    </section>
+                } else {
+                    String docs[] = request.getParameterValues("docs");
+                    <section title="Removing document">
+                
+                        <xmldb:collection>
+                            <xmldb:uri>collectionURI</xmldb:uri>
+                            <xmldb:user>user</xmldb:user>
+                            <xmldb:password>passwd</xmldb:password>
+                            <xsp:logic>
+                                for(int i = 0; i &lt; docs.length; i++) {
+                                    <xmldb:remove-document>
+                                        <xmldb:name>docs[i]</xmldb:name>
+                                    </xmldb:remove-document>
+                                    <p>Removed: <xsp:expr>docs[i]</xsp:expr>.</p>
+                                }
+                            </xsp:logic>
+                            <xmldb:error>
+                                <error>Error: <xmldb:get-error/></error>
+                            </xmldb:error>
+                        </xmldb:collection>
+                
+                    </section>
+                }
+                
+            } else if(action.equals("store")) {
+                FilePartFile file = 
+                    (FilePartFile)request.get("uploaded_file");
+                String overwrite = request.getParameter("overwrite");
+                overwrite = (overwrite == null ? "false" : "true");
+                String fileName = request.getParameter("filename");
+                if(fileName == null || fileName.length() == 0)
+		fileName = file.getFileName();
+                String source = XMLUtil.readFile(file.getFile());
+                file.getFile().delete();
+                
+                <section title="Store document">
+                
+                <p>Filename: <xsp:expr>fileName</xsp:expr>.</p>
+                <p>Overwrite: <xsp:expr>overwrite</xsp:expr>.</p>
+                <p>Collection: <xsp:expr>rootCollection</xsp:expr>.</p>
+                
+                <xmldb:collection>
+                    <xmldb:uri>collectionURI</xmldb:uri>
+                    <xmldb:user>user</xmldb:user>
+                    <xmldb:password>passwd</xmldb:password>
+                    <xmldb:store>
+                        <xmldb:name>fileName</xmldb:name>
+                        <xmldb:source>source</xmldb:source>
+                        <xmldb:overwrite>overwrite</xmldb:overwrite>
+                    </xmldb:store>
+                    <xmldb:error>
+                        <error>Error: <xmldb:get-error/></error>
+                    </xmldb:error>
+                </xmldb:collection>
+                        
+                </section>
+            } else if(action.equals("create")) {
+                String subcoll = request.getParameter("subcoll");
+                <xmldb:collection>
+                    <xmldb:uri>collectionURI</xmldb:uri>
+                    <xmldb:user>user</xmldb:user>
+                    <xmldb:password>passwd</xmldb:password>
+                    <xmldb:create-collection>
+                        <xmldb:name>subcoll</xmldb:name>
+                    </xmldb:create-collection>
+                    <xmldb:error>
+                        <error>Error: <xmldb:get-error/></error>
+                    </xmldb:error>
+                </xmldb:collection>
+                
+            } else if(action.equals("add user")) {
+                String username = request.getParameter("username");
+                String groups = request.getParameter("groups");
+                String password = request.getParameter("password");
+                String password2 = request.getParameter("password2");
+                
+                if(username == null || groups == null ||
+                   username.length() == 0 || groups.length() == 0) {
+                    <error>No username or group specified!</error>
+                } else if(!password.equals(password2)) {
+                    <error>Entered passwords differ. Please go back.</error>
+                } else {
+                    User newUser = new User(username, password);
+                    StringTokenizer tok = new StringTokenizer(groups, ",; ");
+                    while(tok.hasMoreTokens()) {
+                        newUser.addGroup(tok.nextToken());
+                    }
+                    <xmldb:collection>
+                        <xmldb:uri>collectionURI</xmldb:uri>
+                        <xmldb:user>user</xmldb:user>
+                        <xmldb:password>passwd</xmldb:password>
+                        
+                        <xsp:logic>
+                            UserManagementService _service = (UserManagementService)
+                                collection.getService( "UserManagementService", "1.0" );
+                            if(_service.getUser(username) != null)
+                                _service.updateUser(newUser);
+                            else
+                                _service.addUser(newUser);
+                            if(username.equals(user))
+                                session.setAttribute("password", password);
+                        </xsp:logic>
+                        
+                        <xmldb:error>
+                            <error><xmldb:get-error/></error>
+                        </xmldb:error>
+                    </xmldb:collection>
+                }
+                
+            } else if(action.equalsIgnoreCase("remove user")) {
+                String username = request.getParameter("user");
+                <xmldb:collection>
+                    <xmldb:uri>collectionURI</xmldb:uri>
+                    <xmldb:user>user</xmldb:user>
+                    <xmldb:password>passwd</xmldb:password>
+                    
+                    <xsp:logic>
+                        UserManagementService _service = (UserManagementService)
+                            collection.getService( "UserManagementService", "1.0" );
+                        _service.removeUser( username );
+                    </xsp:logic>
+                    <xmldb:error>
+                        <error><xmldb:get-error/></error>
+                    </xmldb:error>
+                </xmldb:collection>
+            }
+      }
+     </xsp:logic>
+
+      <p></p>
+      
+         <tabbed-form highcolor="#D0DFEC" lowcolor="#838383">
+            <xsp:attribute name="href"><xsp:expr>response.encodeURL(request.getRequestURI())</xsp:expr></xsp:attribute>
+         
+            <page name="add" label="Add document">
+                <form name="upload" method="post" enctype="multipart/form-data">
+                     <xsp:attribute name="action"><xsp:expr>response.encodeURL(request.getRequestURI())</xsp:expr></xsp:attribute>
+        
+                   <table width="90%"> 
+                     <tr> 
+                       <td colspan="2">Select a file to insert into the repository:</td> 
+                     </tr> 
+                     <tr>
+                        <td colspan="2">
+                             <input type="file" size="40" name="uploaded_file"/> 
+                        </td>
+                     </tr>
+                     <tr>
+                       <td width="70%" align="left">(optional) store as:</td> 
+                       <td width="30%" align="right"> 
+                         <input type="text" name="filename" value="" size="20"/>
+                       </td>
+                      </tr>
+                      <tr>
+                        <td width="70%" align="left">Collection</td>
+                        <td width="30%" align="right">
+                            <select name="collection" size="1">
+                                <xmldb:collection>
+                                    <xmldb:user>user</xmldb:user>
+                                    <xmldb:password>passwd</xmldb:password>
+                                    <xmldb:uri>collectionURI</xmldb:uri>
+                                    <xsp:logic>
+                                        ArrayList collections = new ArrayList();
+                                        getAllCollections(<xmldb:get-collection/>, collections);
+                                        for(Iterator i = collections.iterator(); i.hasNext(); ) {
+                                            <option><xsp:expr>(String)i.next()</xsp:expr></option>
+                                        }
+                                    </xsp:logic>
+                                    <xmldb:error>
+                                        <error>Error: <xmldb:get-error/></error>
+                                    </xmldb:error>
+                                </xmldb:collection>
+                            </select>
+                        </td>
+                      </tr>
+                      <tr> 
+                        <td colspan="2">
+                          <input type="checkbox" name="overwrite" checked="true">
+                            Overwrite existing document with same name
+                          </input>
+                        </td> 
+                      </tr>
+                    </table>
+                    <input type="submit" name="action" value="store"/>
+                  </form>
+        
+               </page>
+    
+           <page name="edit" label="Browse collections">
+        
+               <form method="get">
+                 <xsp:attribute name="action"><xsp:expr>response.encodeURL(request.getRequestURI())</xsp:expr></xsp:attribute>
+        
+                 <p><small>Below you see a list of collections and documents contained 
+				 in the database. If you click on a collection, it's contents will be displayed. Because the file is loaded via Cocoon, the way it is displayed depends on the configuration of Cocoon in the sitemap. If you get a "file not found" message, you should check if all resources referenced by
+Cocoon are actually available (shakes.xsl may be missing in your collection).</small></p>
+
+	<p><small>To remove a document or collection, select it and click "remove".
+                 To directly view the XML source of a document select "view".</small></p>
+                 
+                 <p><small>To download or view a document, click on
+                 it's name. If no stylesheet-instruction is found in
+                 the document, pure XML is returned. What you will see
+                 depends on your browsers
+                 capability to display XML.</small></p>
+                 
+                 <xsp:logic>            
+                    String link = response.encodeURL(request.getRequestURI()) + "?page=edit&amp;collection=" + 
+                        rootCollection + "/";
+                    String upLink = response.encodeURL(request.getRequestURI()) + "?collection=" + 
+                            (rootCollection.equals("/db") ? "/db" : rootCollection.substring(0, rootCollection.lastIndexOf("/"))) +
+                        "&amp;page=edit";                    
+                    <input type="hidden" name="collection">
+                        <xsp:attribute name="value"><xsp:expr>rootCollection</xsp:expr></xsp:attribute>
+                    </input>
+                    
+                    <xmldb:collection>
+                        <xmldb:uri>collectionURI</xmldb:uri>
+                        <xmldb:user>user</xmldb:user>
+                        <xmldb:password>passwd</xmldb:password>
+                    
+                        <table width="100%" border="0" cellspacing="0">
+                            <tr bgcolor="#a0f0ff">
+                                <th align="left" width="100%">
+                                    Collection <xsp:expr>rootCollection</xsp:expr>
+                                </th>
+                            </tr>
+                            <tr>
+                                <td width="100%" colspan="2">
+                                    <table width="100%" border="0">
+                                        <tr>
+                                            <td align="left">
+                                                <link style="font-family: monospace">
+                                                    <xsp:attribute name="href"><xsp:expr>upLink</xsp:expr></xsp:attribute>
+                                                    .. parent collection
+                                                </link>
+                                            </td>
+                                        </tr>                                        
+                                        <xmldb:subcollections> 
+                                            <tr>
+                                                <td align="left">
+                                                    <input type="radio" name="subcoll">
+                                                        <xsp:attribute name="value"><xsp:expr><xmldb:child-collection-name/></xsp:expr></xsp:attribute>
+                                                        <a style="font-family: Courier,monospace">
+                                                            <xsp:attribute name="href"><xsp:expr>link + <xmldb:child-collection-name/></xsp:expr></xsp:attribute>
+                                                            <xmldb:child-collection-name/>
+                                                        </a>
+                                                    </input>
+                                                </td>
+                                            </tr>                                        
+                                        </xmldb:subcollections>                                        
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr><td colspan="2"><hr/></td></tr>
+                            <tr>                                              
+                                <td width="100%" colspan="2">
+                                    
+                                    <table width="100%" border="0">
+                                        <xsp:logic>
+                                            int resourceCount = <xmldb:get-resource-count/>;
+                                            
+                                            for( int i = 0; i &lt; resourceCount; ) {
+                                                <tr>
+                                                    <xsp:logic>
+                                                        for( int j = 0; j &lt; 3 &amp;&amp; i &lt; 
+                                                            resourceCount; j++, i++ ) {
+                                                            <td align="left">
+                                                                <input type="checkbox" name="docs">
+                                                                    <xsp:attribute name="value"><xmldb:resource-name><xmldb:count>i</xmldb:count></xmldb:resource-name></xsp:attribute>
+                                                                    <a style="font-family: Courier,monospace">
+                                                                        <xsp:attribute name="href"><xsp:expr>"xmldb" + rootCollection + "/" +
+                                                                                <xmldb:resource-name>
+                                                                                    <xmldb:count>i</xmldb:count>
+                                                                                </xmldb:resource-name>
+                                                                            </xsp:expr></xsp:attribute>
+                                                                        <xmldb:resource-name><xmldb:count>i</xmldb:count></xmldb:resource-name>
+                                                                    </a>
+                                                                </input>
+                                                            </td>
+                                                        }
+                                                    </xsp:logic>
+                                                </tr>
+                                            }
+                                        </xsp:logic>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                        <xmldb:error>
+                            <error>Error: <xmldb:get-error/></error>
+                        </xmldb:error>
+                    </xmldb:collection>
+                 </xsp:logic>
+                 
+                 <input type="hidden" name="page" value="edit"/>
+                 <table border="0" cellpadding="10">
+                     <tr>
+                         <td>
+                             <input type="submit" name="action" value="remove"/>
+                         </td>
+                         <td>
+                             <input type="submit" name="action" value="view"/>
+                         </td>
+                     </tr>
+                 </table>
+                 <hr/>
+                 <table border="0">
+                    <tr>
+                        <th colspan="2" align="left">Create subcollection</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="text" name="subcoll"/>
+                        </td>
+                        <td>
+                            <input type="submit" name="action" value="create"/>
+                        </td>
+                    </tr>
+                  </table>
+               </form>
+           </page>
+           
+            <page name="users" label="Users">
+                <form method="GET">
+                    <xsp:attribute name="action"><xsp:expr>response.encodeURL(request.getRequestURI())</xsp:expr></xsp:attribute>
+                    <input type="hidden" name="page" value="users"/>
+                    <xmldb:collection>
+                        <xmldb:uri>collectionURI</xmldb:uri>
+                        <xmldb:user>user</xmldb:user>
+                        <xmldb:password>passwd</xmldb:password>
+                        
+                        <table width="100%" border="0">
+                            <tr bgcolor="#a0f0ff">
+                                <th align="left" width="40%">
+                                    User
+                                </th>
+                                <th align="left" width="60%">
+                                    Groups
+                                </th>
+                            </tr>
+                            <xsp:logic>
+                                UserManagementService service = (UserManagementService)
+                                    collection.getService( "UserManagementService", "1.0" );
+                                User[] users = service.getUsers();
+                                for(int i = 0; i &lt; users.length; i++) {
+                                    <tr>
+                                        <td>
+                                            <input type="radio" name="user">
+                                                <xsp:attribute name="value"><xsp:expr>users[i].getName()</xsp:expr></xsp:attribute>
+                                                <xsp:expr>users[i].getName()</xsp:expr>
+                                            </input>
+                                        </td>
+                                        <td>
+                                            <xsp:logic>
+                                                StringBuffer groups = new StringBuffer();
+                                                for(Iterator gi = users[i].getGroups(); gi.hasNext(); ) {
+                                                    groups.append((String)gi.next());
+                                                    if(gi.hasNext()) groups.append(", ");
+                                                }
+                                                <xsp:content><xsp:expr>groups</xsp:expr></xsp:content>
+                                            </xsp:logic>
+                                        </td>
+                                    </tr>
+                                }
+                            </xsp:logic>
+                            <tr>
+                                <td>
+                                    <input type="submit" name="action" value="edit user"/>
+                                    <input type="submit" name="action" value="remove user"/>
+                                </td>
+                            </tr>
+                        </table>
+                        <hr/>
+                    
+                        <table width="100%" border="0">
+                            <tr bgcolor="#a0f0ff">
+                                <th colspan="2" align="left" width="100%">
+                                    Add / Edit user
+                                </th>
+                            </tr>
+                            <xsp:logic>
+                                boolean editUser = 
+                                    (action != null &amp;&amp; action.equals("edit user"));
+                                String username = "", groups = "";
+                                if(editUser) {
+                                    username = request.getParameter("user");
+                                    User oldUser = service.getUser(username);
+                                    for(Iterator gi = oldUser.getGroups(); gi.hasNext(); ) {
+                                        groups += gi.next();
+                                        if(gi.hasNext())
+                                            groups += ", ";
+                                    }
+                                }
+                                <tr>
+                                    <td>Username:</td>
+                                    <td>
+                                        <input type="text" size="30" name="username">
+                                            <xsp:attribute name="value"><xsp:expr>username</xsp:expr></xsp:attribute>
+                                        </input>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Password:</td>
+                                    <td>
+                                        <input type="password" size="30" name="password"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Re-type password:</td>
+                                    <td>
+                                        <input type="password" size="30" name="password2"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Groups (comma-separated list):</td>
+                                    <td>
+                                        <input type="text" size="30" name="groups">
+                                            <xsp:attribute name="value"><xsp:expr>groups</xsp:expr></xsp:attribute>
+                                        </input>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">
+                                        <input type="submit" name="action" value="add user"/>
+                                    </td>
+                                </tr>
+                            </xsp:logic>
+                        </table>
+                    </xmldb:collection>
+                </form>
+            </page>
+       </tabbed-form>
+         
+  </body>
+</document>
+
+</xsp:page>
