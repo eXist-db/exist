@@ -1,7 +1,24 @@
 /*
- * Util.java - Aug 29, 2003
- * 
- * @author wolf
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-03 Wolfgang M. Meier
+ *  wolfgang@exist-db.org
+ *  http://exist.sourceforge.net
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
+ *  $Id$
  */
 package org.exist.xquery;
 
@@ -9,8 +26,6 @@ import java.util.List;
 
 import org.exist.dom.QName;
 import org.exist.xquery.functions.ExtNear;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 public class FunctionFactory {
@@ -20,7 +35,8 @@ public class FunctionFactory {
 	 * 
 	 * This method handles all calls to built-in or user-defined
 	 * functions. It also deals with constructor functions and
-	 * optimizes selected function calls. 
+	 * optimizes some function calls like starts-with, ends-with or
+	 * contains. 
 	 * 
 	 * @param pool
 	 * @param context
@@ -70,16 +86,9 @@ public class FunctionFactory {
 				PathExpr p1 = (PathExpr) params.get(1);
 				if (p1.getLength() == 0)
 					throw new IllegalArgumentException("Second argument to starts-with is empty");
-				Expression e1 = p1.getExpression(0);
-				if (e1 instanceof LiteralValue && p0.returnsType() == Type.NODE) {
-					LiteralValue l = (LiteralValue) e1;
-					AtomicValue v =
-						new StringValue(l.getValue().getStringValue() + '%');
-					l.setValue(v);
-					GeneralComparison op =
-						new GeneralComparison(context, p0, e1, Constants.EQ);
-					step = op;
-				}
+				GeneralComparison op = 
+					new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_RIGHT);
+				step = op;
 			}
 	
 			// ends-with(node-set, string)
@@ -90,16 +99,9 @@ public class FunctionFactory {
 				PathExpr p1 = (PathExpr) params.get(1);
 				if (p1.getLength() == 0)
 					throw new IllegalArgumentException("Second argument to ends-with is empty");
-				Expression e1 = p1.getExpression(0);
-				if (e1 instanceof LiteralValue && p0.returnsType() == Type.NODE) {
-					LiteralValue l = (LiteralValue) e1;
-					AtomicValue v =
-						new StringValue('%' + l.getValue().getStringValue());
-					l.setValue(v);
-					GeneralComparison op =
-						new GeneralComparison(context, p0, e1, Constants.EQ);
-					step = op;
-				}
+				GeneralComparison op =
+					new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_LEFT);
+				step = op;
 			}
 	
 			// contains(node-set, string)
@@ -110,16 +112,9 @@ public class FunctionFactory {
 				PathExpr p1 = (PathExpr) params.get(1);
 				if (p1.getLength() == 0)
 					throw new IllegalArgumentException("Second argument to contains is empty");
-				Expression e1 = p1.getExpression(0);
-				if (e1 instanceof LiteralValue && p0.returnsType() == Type.NODE) {
-					LiteralValue l = (LiteralValue) e1;
-					AtomicValue v =
-						new StringValue('%' + l.getValue().getStringValue() + '%');
-					l.setValue(v);
-					GeneralComparison op =
-						new GeneralComparison(context, p0, e1, Constants.EQ);
-					step = op;
-				}
+				GeneralComparison op =
+					new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_BOTH);
+				step = op;
 			}
 		// Check if the namespace belongs to one of the schema namespaces.
 		// If yes, the function is a constructor function

@@ -23,6 +23,7 @@ package org.exist.xquery.value;
 import org.exist.dom.NodeSet;
 import org.exist.memtree.Receiver;
 import org.exist.storage.DBBroker;
+import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -54,6 +55,21 @@ public abstract class AtomicValue implements Item, Sequence {
 
 	public abstract AtomicValue min(AtomicValue other) throws XPathException;
 
+	public boolean startsWith(AtomicValue other) throws XPathException {
+		throw new XPathException("Cannot call starts-with on value of type " + 
+				Type.getTypeName(getType()));
+	}
+	
+	public boolean endsWith(AtomicValue other) throws XPathException {
+		throw new XPathException("Cannot call ends-with on value of type " + 
+				Type.getTypeName(getType()));
+	}
+	
+	public boolean contains(AtomicValue other) throws XPathException {
+		throw new XPathException("Cannot call contains on value of type " + 
+				Type.getTypeName(getType()));
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Sequence#getLength()
 	 */
@@ -61,6 +77,10 @@ public abstract class AtomicValue implements Item, Sequence {
 		return 1;
 	}
 
+	public int getCardinality() {
+		return Cardinality.EXACTLY_ONE;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Sequence#iterate()
 	 */
@@ -246,7 +266,7 @@ public abstract class AtomicValue implements Item, Sequence {
 		public boolean compareTo(int operator, AtomicValue other) throws XPathException {
 			throw new XPathException("Cannot compare operand to empty value");
 		}
-
+		
 		/* (non-Javadoc)
 		 * @see org.exist.xpath.value.AtomicValue#min(org.exist.xpath.value.AtomicValue)
 		 */

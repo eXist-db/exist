@@ -51,17 +51,28 @@ import org.exist.xquery.value.Type;
 public class GeneralComparison extends BinaryOp {
 
 	protected int relation = Constants.EQ;
-
+	protected int truncation;
+	
 	public GeneralComparison(XQueryContext context, int relation) {
+		this(context, relation, Constants.TRUNC_NONE);
+	}
+	
+	public GeneralComparison(XQueryContext context, int relation, int truncation) {
 		super(context);
 		this.relation = relation;
 	}
 
+	public GeneralComparison(XQueryContext context, Expression left, Expression right,
+		int relation) {
+		this(context, left, right, relation, Constants.TRUNC_NONE);
+	}
+	
 	public GeneralComparison(
 		XQueryContext context,
 		Expression left,
 		Expression right,
-		int relation) {
+		int relation,
+		int truncation) {
 		super(context);
 		this.relation = relation;
 		// simplify arguments
@@ -96,13 +107,13 @@ public class GeneralComparison extends BinaryOp {
 	 */
 	public int getDependencies() {
 		int leftDeps = getLeft().getDependencies();
+		// left expression returns node set
 		if (Type.subTypeOf(getLeft().returnsType(), Type.NODE)
-			// left expression returns node set
+			//	and has no dependency on global vars
 			&& (leftDeps & Dependency.GLOBAL_VARS) == 0
-			// and has no dependency on global vars
+			//	and does not depend on the context item
 			&& (leftDeps & Dependency.CONTEXT_ITEM) == 0)
-			// and does not depend on the context item
-			{
+		{
 			return Dependency.CONTEXT_SET;
 		} else {
 			return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
@@ -128,9 +139,11 @@ public class GeneralComparison extends BinaryOp {
 		 */
 		if (inPredicate) {
 			if((getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
+				int rtype = getRight().returnsType();
 				if ((getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0
-					&& (Type.subTypeOf(getRight().returnsType(), Type.STRING)
-						|| Type.subTypeOf(getRight().returnsType(), Type.NODE))
+					&& (Type.subTypeOf(rtype, Type.STRING)
+						|| Type.subTypeOf(rtype, Type.NODE)
+						|| rtype == Type.ATOMIC)
 					&& (getRight().getCardinality() & Cardinality.MANY) == 0) {
 					// lookup search terms in the fulltext index
 					return quickNodeSetCompare(contextSequence);
@@ -227,6 +240,16 @@ public class GeneralComparison extends BinaryOp {
 			return nodeSetCompare(nodes, contextSequence);
 		DocumentSet docs = nodes.getDocumentSet();
 		String cmp = rightSeq.getStringValue();
+		switch(truncation) {
+			case Constants.TRUNC_RIGHT:
+				cmp = cmp + '%';
+				break;
+			case Constants.TRUNC_LEFT:
+				cmp = '%' + cmp;
+				break;
+			case Constants.TRUNC_BOTH:
+				cmp = '%' + cmp + '%';
+		}
 		if (getLeft().returnsType() == Type.NODE
 			&& relation == Constants.EQ
 			&& nodes.hasIndex()
@@ -301,7 +324,16 @@ public class GeneralComparison extends BinaryOp {
 		}
 //				System.out.println(
 //					lv.getStringValue() + Constants.OPS[relation] + rv.getStringValue());
-		return lv.compareTo(relation, rv);
+		switch(truncation) {
+			case Constants.TRUNC_RIGHT:
+				return lv.startsWith(rv);
+			case Constants.TRUNC_LEFT:
+				return lv.endsWith(rv);
+			case Constants.TRUNC_BOTH:
+				return lv.contains(rv);
+			default:
+				return lv.compareTo(relation, rv);
+		}
 	}
 
 	private boolean checkArgumentTypes(XQueryContext context, DocumentSet docs)

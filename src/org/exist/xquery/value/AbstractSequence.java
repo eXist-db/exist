@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.exist.dom.NodeProxy;
+import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
 
 /**
@@ -42,6 +43,17 @@ public abstract class AbstractSequence implements Sequence {
 	public abstract SequenceIterator unorderedIterator();
 	
 	public abstract int getLength();
+
+	public int getCardinality() {
+		switch(getLength()) {
+			case 0:
+				return Cardinality.EMPTY;
+			case 1:
+				return Cardinality.EXACTLY_ONE;
+			default:
+				return Cardinality.ONE_OR_MORE;
+		}
+	}
 	
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		Item first = itemAt(0);

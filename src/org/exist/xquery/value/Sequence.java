@@ -94,6 +94,8 @@ public interface Sequence {
 	 */
 	public int getLength();
 	
+	public int getCardinality();
+	
 	/**
 	 * Returns the item located at the specified position within
 	 * this sequence. Items are counted beginning at 0.

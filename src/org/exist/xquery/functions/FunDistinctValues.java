@@ -41,6 +41,8 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
 /**
+ * Implements the fn:distinct-values standard library function.
+ * 
  * @author wolf
  */
 public class FunDistinctValues extends Function {
