@@ -50,7 +50,7 @@
     <third-party-feature-used>Jaxen</third-party-feature-used>
     <third-party-feature-used>Alloy LNF</third-party-feature-used>
 
-    <datatype-stored targetnamespace="???">MPEG-7</datatype-stored>
+    <datatype-stored targetnamespace="urn:mpeg:mpeg7:schema:2001">MPEG-7</datatype-stored>
     <datatype-stored targetnamespace="http://purl.org/dc/elements/1.1/">Dublin Core</datatype-stored>
     <database updates="frequent" security="multi-level"></database>
     <dev-notes>Java, Servlets, JSP, Trax XSLT transforms,Swing GUI, HTML GUI</dev-notes>
@@ -70,9 +70,10 @@
    <dc:description>A system to search and retrieve information of operatic data, based on MPEG-7 standard.</dc:description>
    <dc:format>Web application</dc:format>
 
+   <demo-site>http://www.iua.upf.es/mtg/opendrama/</demo-site>
    <dev-site>http://www.iua.upf.es/mtg/</dev-site>
    <third-party-feature-used>Quicktime for Java</third-party-feature-used>
-   <datatype-stored targetnamespace="???">MPEG-7</datatype-stored>
+   <datatype-stored targetnamespace="urn:mpeg:mpeg7:schema:2001">MPEG-7</datatype-stored>
    <dev-notes>PHP, Sablotron XSLT, Javascript</dev-notes>
    <submitter>mailto:ocelma@iua.upf.es</submitter>
   </application>
