@@ -5,11 +5,22 @@
     xmlns:java="http://xml.apache.org/xslt/java"
     version="1.0">
     
-    <xsl:template match="m:titleInfo[not(@type)]">
+    <xsl:template match="m:titleInfo">
+        <p class="citation">
+            <xsl:apply-templates select="m:title"/>
+        </p>
+    </xsl:template>
+    
+    <xsl:template match="m:nonSort|m:title">
         <span class="title">
-            <xsl:for-each select="m:nonSort|m:title">
-                <xsl:value-of select="."/><xsl:text> </xsl:text>
-            </xsl:for-each>
+            <xsl:apply-templates/>
+        </span>
+    </xsl:template>
+    
+    <xsl:template match="m:title[@type='alternative']">
+        <br/>
+        <span class="alternative">
+            <xsl:value-of select="."/>
         </span>
     </xsl:template>
     

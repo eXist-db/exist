@@ -3,9 +3,6 @@ module namespace c="http://exist-db.org/modules/mods-config";
 declare namespace mods="http://www.loc.gov/mods/v3";
 declare namespace util="http://exist-db.org/xquery/util";
 
-(: the base URI for the chiba servlet :)
-declare variable $c:chiba { "/chiba/XFormsServlet?form=/forms/mods.xml" };
-
 (: the xsl stylesheet to use for display :)
 declare variable $c:overviewXsl { "styles/overview.xsl" };
 declare variable $c:detailsXsl { "styles/mods-detailed.xsl" };
@@ -50,20 +47,21 @@ declare function c:orderExpr($field as xs:string) as xs:string
 		"$m/m:originInfo/m:dateCreated[1] descending"
 };
 
-declare function c:sidebar($url as xs:string)
+declare function c:sidebar($url as xs:string, $user as xs:string, $collection as xs:string)
+as element()
 {
     <div id="sidebar">
         <div class="block">
             <h3>Menu</h3>
             <ul>
                 <li>
-                    <a href="{$url}" id="current">Home</a>
+                    <a href=".." id="current">Home</a>
                 </li>
                 <li>
-                    <a href="#">Detailed View</a>
+                    <a href="{$url}" id="current">MODS Example</a>
                 </li>
                 <li>
-                    <a href="#">Process Document</a>
+                    <a href="{$url}?action=logout">Logout</a>
                 </li>
             </ul>
         </div>
@@ -74,6 +72,88 @@ declare function c:sidebar($url as xs:string)
                 <input class="search-sidebar" name="query" type="text" />
         		<input type="submit" class="search-button" value="search"/>
             </form>
+            <ul>
+                <li><a href="{$url}?show-form=true">Advanced Query</a></li>
+            </ul>
+        </div>
+        
+        <div class="userinfo">
+            Logged in as: {$user}<br/>
+            Collection: {$collection}
         </div>
     </div> 
+};
+
+declare function c:query-form($url as xs:string, $collection as xs:string) as element() {
+    <form action="{$url}" method="GET">
+        <table id="query" cellpadding="5" cellspacing="0" border="0">
+            <tr>
+                <th width="20%">
+                    Search in
+                </th>
+                <th width="40%">
+                    Search what
+                </th>
+                <th width="20%">
+                    Interpret as
+                </th>
+                <th width="20%">
+                </th>
+            </tr>
+            <tr>
+                <td width="20%">
+                    <select name="field1" size="1">
+                        <option value="any" selected="true">Any</option>
+                        <option value="au">Creator,Editor</option>
+                        <option value="ti">Title</option>
+                        <option value="ab">Description</option>
+                        <option value="su">Subject</option>
+                    </select>
+                 </td>
+                 <td width="40%">
+                   <input type="text" name="term1" size="30" />
+                 </td>
+                 <td width="20%">
+                   <select name="mode1" size="1">
+                     <option value="near">near</option>
+                     <option value="exact">exact match</option>
+                     <option value="contains" selected="true">word list</option>
+                   </select>
+                 </td>
+                 <td width="20%">
+                   <select name="op" size="1">
+                     <option value="or" selected="true">or</option>
+                     <option value="and" selected="false">and</option>
+                   </select>
+                 </td>
+            </tr>
+            <tr>
+                <td width="20%">
+                    <select name="field2" size="1">
+                        <option value="any" selected="true">Any</option>
+                        <option value="au">Creator,Editor</option>
+                        <option value="ti">Title</option>
+                        <option value="ab">Description</option>
+                        <option value="su">Subject</option>
+                    </select>
+                 </td>
+                 <td width="40%">
+                   <input type="text" name="term2" size="30" />
+                 </td>
+                 <td width="20%">
+                   <select name="mode2" size="1">
+                     <option value="near">near</option>
+                     <option value="exact">exact match</option>
+                     <option value="contains" selected="true">word list</option>
+                   </select>
+                 </td>
+                 <td width="20%"/>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <input type="submit" value="Submit"/>
+                </td>
+            </tr>
+        </table>
+    </form>
 };

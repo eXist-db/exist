@@ -1,28 +1,64 @@
 <html>
     <head>
-        <title>Bibliography Login</title>
-        <link href="styles/mods.css" type="text/css" rel="stylesheet"/>
+        <title>Login</title>
+        <link href="styles/display.css" type="text/css" rel="stylesheet"/>
     </head>
     <body>
-        <h1>Login</h1>
-
-        <form action="overview.xq" method="POST">
-            <table class="overview" cellpadding="5">
+        <div id="top">
+            <img src="logo.jpg" title="eXist"/>
+            <table id="menubar">
                 <tr>
-                    <th colspan="2" align="left">Please Login</th>
-                </tr>
-                <tr>
-                    <td align="left">Username:</td>
-                    <td><input name="user" type="text" size="20"/></td>
-                </tr>
-                <tr>
-                    <td align="left">Password:</td>
-                    <td><input name="password" type="password" size="20"/></td>
-                </tr>
-                <tr>
-                    <td colspan="2" align="left"><input type="submit"/></td>
+                    <td id="header">MODS Example</td>
+                    <td>
+                        <a href="http://wiki.exist-db.org">News/Wiki</a>
+                        <a href="index.xml#download">Download</a>
+                    </td>
                 </tr>
             </table>
-        </form>
+        </div>
+        <div id="sidebar">
+            <div class="block">
+                <h3>Menu</h3>
+                <ul>
+                    <li>
+                        <a href=".." id="current">Home</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div id="content">
+            
+            <p>This is a protected resource. Only registered database users can log
+            in. For testing purposes, you may log in as
+            "guest" with password "guest".</p>
+    
+            <form action="overview.xq" method="POST">
+                <table id="login" cellpadding="5">
+                    <tr>
+                        <th colspan="2" align="left">Please Login</th>
+                    </tr>
+                    <tr>
+                        <td align="left">Username:</td>
+                        <td><input name="user" type="text" size="20"/></td>
+                    </tr>
+                    <tr>
+                        <td align="left">Password:</td>
+                        <td><input name="password" type="password" size="20"/></td>
+                    </tr>
+                    <tr>
+                        <td>Collection:</td>
+                        <td>
+                            <select name="collection">
+                                <option>/db/mods</option>
+                                <option value="_home_">User Home</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" align="left"><input type="submit"/></td>
+                    </tr>
+                </table>
+            </form>
+        </div>
     </body>
 </html>

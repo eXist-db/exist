@@ -12,7 +12,6 @@
     <xsl:include href="mods-common.xsl"/>
     
     <xsl:template match="items">
-        <div id="content">
             <form action="overview.xq" method="GET">
                 <div id="navigation">
                     <table cellspacing="0">
@@ -57,7 +56,6 @@
                 </div>
                 <xsl:apply-templates select="item"/>
             </form>
-        </div>
     </xsl:template>
     
     <xsl:template match="item">
@@ -78,10 +76,7 @@
                     </td>
                 </tr>
             </table>
-            <p class="citation">
-                <input type="checkbox" class="mark"/>
-                <xsl:apply-templates select="m:titleInfo"/>
-            </p>
+            <xsl:apply-templates select="m:titleInfo"/>
             <xsl:if test="m:name">
                 <p class="keywords">
                     <span class="heading">By: </span>
