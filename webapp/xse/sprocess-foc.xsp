@@ -80,18 +80,9 @@ $Id$
             if ( squery == null ) squery = "";
             // ]]>
 
-            // add document(*) to query if missing
-            if(!(query.startsWith("document(") || query.startsWith("collection(")) ||
-                 query.startsWith("xcollection(")) {
-                if(cname == null || cname.equals("all documents"))
-                    query = "document()" + query;
-                else
-                    query = "collection('" + cname + "')" + query;
-            }
-            
             <!-- print current query -->
-            <span>XPath Query:
-              <tt><xsp:expr>query</xsp:expr></tt>
+            <span>XQuery:
+              <pre><xsp:expr>query</xsp:expr></pre>
             </span>
             <br />
             <!-- add comment to the response page -->
@@ -114,11 +105,16 @@ $Id$
         <xdb:collection uri="xmldb:exist:///db" user="guest" password="guest">
             <xdb:execute encoding="ISO-8859-1">
                 <xdb:xpath>query</xdb:xpath>
-                
+
                     <xsp:logic>
                         hits = <xdb:get-hit-count/>;
-                        <!-- print a summary of hits per document -->                     
-                        <p>Found <xdb:get-hit-count/> hits in
+                        <!-- print a summary of hits per document -->
+                        <p>Found 
+                             <xsp:expr>
+								<xdb:get-hit-count/>
+								-1
+							</xsp:expr>
+						 hits in
                         <xdb:get-query-time/> ms.</p>
                                 
                          if(hits &gt; 0) {
