@@ -942,7 +942,7 @@ implements Comparable, EntityResolver, Cacheable {
 	private void checkPermissions(DBBroker broker, String name, DocumentImpl oldDoc) throws LockException, PermissionDeniedException {
 		if (oldDoc != null) {
 
-			LOG.debug("Found old doc " + oldDoc.getDocId() + "; identity = " + oldDoc.hashCode());
+//			LOG.debug("Found old doc " + oldDoc.getDocId() + "; identity = " + oldDoc.hashCode());
 			// check if the document is locked by another user
 			User lockUser = oldDoc.getUserLock();
 			if(lockUser != null && !lockUser.equals(broker.getUser()))
