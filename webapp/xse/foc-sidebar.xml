@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Header$ -->
+<sidebar title="Navigation" xmlns="http://exist-db.org/NS/sidebar">
+    <group href="http://wwbota.free.fr/" name="WWBKB Home"/>
+
+    <group name=" Flora of China ">
+        <item id="FOC">
+            <link href="http://flora.huh.harvard.edu/china/">FOC Home Page</link>
+        </item>
+        <item id="search by name">
+            <link href="http://flora.huh.harvard.edu/china/mss/search.htm">Search by name</link>
+        </item>
+    </group>
+    <group href="/exist/index.xml" name="Local eXist pages"/>
+
+    <banner>
+        <item>
+            <link href="http://exist-db.org">
+                <!--img alt="powered by eXist" border="0" src="resources/powered.gif"/-->
+powered by eXist
+            </link>
+        </item>
+    </banner>
+</sidebar>
