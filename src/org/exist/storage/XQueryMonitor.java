@@ -54,6 +54,7 @@ public class XQueryMonitor {
 	}
 	
 	public void queryCompleted(XQueryWatchDog watchdog) {
+		watchdog.cleanUp();
 		runningQueries.remove(watchdog);
 	}
 	

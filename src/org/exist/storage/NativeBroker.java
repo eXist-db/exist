@@ -28,6 +28,7 @@ import java.io.UnsupportedEncodingException;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Observer;
 import java.util.StringTokenizer;
@@ -47,6 +48,7 @@ import org.dbxml.core.indexer.IndexQuery;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
+import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.ArraySet;
 import org.exist.dom.AttrImpl;
@@ -61,6 +63,7 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.TextImpl;
 import org.exist.dom.XMLUtil;
+import org.exist.security.MD5;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -90,6 +93,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  *  Main class for the native XML storage backend.
@@ -101,14 +105,19 @@ import org.w3c.dom.NodeList;
  */
 public class NativeBroker extends DBBroker {
 	
-    /**
+    private static final String TEMP_FRAGMENT_REMOVE_ERROR = "Could not remove temporary fragment";
+	private static final String TEMP_STORE_ERROR = "An error occurred while storing temporary data: ";
+	/**
      * Log4J Logger for this class
      */
     private static final Logger LOG = Logger.getLogger(NativeBroker.class);
 
-	private static final String DATABASE_IS_READ_ONLY = "database is read-only";
+	
 	private static final String ROOT_COLLECTION = "/db";
+	private static final String TEMP_COLLECTION ="/db/_temp_";
+	
 	private static final String EXCEPTION_DURING_REINDEX = "exception during reindex";
+	private static final String DATABASE_IS_READ_ONLY = "database is read-only";
 	
 	/** default buffer size setting */
 	protected final static int BUFFERS = 256;
@@ -2664,6 +2673,74 @@ public class NativeBroker extends DBBroker {
 		return readOnly;
 	}
 
+	public DocumentImpl storeTemporaryDoc(String data) throws EXistException, PermissionDeniedException, LockException {
+		String docName = MD5.md(Thread.currentThread().getName() + Long.toString(System.currentTimeMillis())) +
+			".xml";
+		Collection temp = openCollection(TEMP_COLLECTION, Lock.WRITE_LOCK);
+		if(temp == null)
+			temp = createTempCollection();
+		IndexInfo info;
+		try {
+			info = temp.validate(this, docName, data);
+		} catch (TriggerException e) {
+			throw new EXistException(TEMP_STORE_ERROR + e.getMessage());
+		} catch (SAXException e) {
+			throw new EXistException(TEMP_STORE_ERROR + e.getMessage());
+		} finally {
+			temp.release();
+		}
+		try {
+			temp.store(this, info, data, false);
+		} catch (TriggerException e) {
+			throw new EXistException(TEMP_STORE_ERROR + e.getMessage());
+		} catch (SAXException e) {
+			throw new EXistException(TEMP_STORE_ERROR + e.getMessage());
+		}
+		return info.getDocument();
+	}
+	
+	public void removeTempDocs(List docs) {
+		Collection temp = openCollection(TEMP_COLLECTION, Lock.WRITE_LOCK);
+		if(temp == null)
+			return;
+		try {
+			for(Iterator i = docs.iterator(); i.hasNext(); )
+				temp.removeDocument(this, (String) i.next());
+		} catch (PermissionDeniedException e) {
+			LOG.warn(TEMP_FRAGMENT_REMOVE_ERROR, e);
+		} catch (TriggerException e) {
+			LOG.warn(TEMP_FRAGMENT_REMOVE_ERROR, e);
+		} catch (LockException e) {
+			LOG.warn(TEMP_FRAGMENT_REMOVE_ERROR, e);
+		} finally {
+			temp.release();
+		}
+	}
+	
+	public void cleanUp() {
+		Collection temp = getCollection(TEMP_COLLECTION);
+		try {
+			removeCollection(temp);
+		} catch (PermissionDeniedException e) {
+			LOG.warn("Failed to remove temporary collection: " + e.getMessage(), e);
+		}
+	}
+	
+	private Collection createTempCollection() throws LockException, PermissionDeniedException {
+		Lock lock = null;
+		try {
+			lock = collectionsDb.getLock();
+			lock.acquire(Lock.WRITE_LOCK);
+			Collection temp = getOrCreateCollection(TEMP_COLLECTION);
+			temp.setPermissions(0777);
+			saveCollection(temp);
+			temp.getLock().acquire(Lock.WRITE_LOCK);
+			return temp;
+		} finally {
+			lock.release();
+		}
+	}
+	
 	public final static class NodeRef extends Value {
         /**
          * Log4J Logger for this class

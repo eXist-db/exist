@@ -21,6 +21,7 @@
 package org.exist.collections;
 
 import org.exist.Indexer;
+import org.exist.dom.DocumentImpl;
 import org.exist.util.serializer.DOMStreamer;
 import org.xml.sax.XMLReader;
 
@@ -60,5 +61,9 @@ public class IndexInfo {
 	
 	public DOMStreamer getDOMStreamer() {
 		return this.streamer;
+	}
+	
+	public DocumentImpl getDocument() {
+		return indexer.getDocument();
 	}
 }

@@ -20,14 +20,19 @@
  */
 package org.exist.memtree;
 
+import java.io.StringWriter;
 import java.util.Arrays;
 
 import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.hashtable.NamePool;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
+import org.exist.util.serializer.SAXSerializer;
+import org.exist.util.serializer.SAXSerializerPool;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
@@ -58,6 +63,8 @@ import org.xml.sax.SAXException;
  */
 public class DocumentImpl extends NodeImpl implements Document {
 
+	protected XQueryContext context;
+	
     protected NamePool namePool = new NamePool();
 
     // holds the node type of a node
@@ -111,8 +118,9 @@ public class DocumentImpl extends NodeImpl implements Document {
     private final static int CHAR_BUF_SIZE = 1024;
     private final static int REF_SIZE = 128;
     
-    public DocumentImpl() {
+    public DocumentImpl(XQueryContext context) {
         super(null, 0);
+        this.context = context;
     }
     
     private void init() {
@@ -740,5 +748,18 @@ public class DocumentImpl extends NodeImpl implements Document {
 	        	}
 	        }
     	}
+    }
+    
+    protected NodeSet toNodeSet(NodeImpl node) throws XPathException {
+    	StringWriter sw = new StringWriter();
+    	SAXSerializer out = SAXSerializerPool.getInstance().borrowSAXSerializer();
+    	out.setWriter(sw);
+    	try {
+			streamTo(context.getBroker().getSerializer(), node, out);
+		} catch (SAXException e) {
+			throw new XPathException("An error occurred while serializing in-memory document fragment", e);
+		}
+    	String data = sw.toString();
+    	return context.storeTemporaryDoc(data);
     }
 }

@@ -75,7 +75,7 @@ public class MemTreeBuilder {
 	 * Start building the document.
 	 */
 	public void startDocument() {
-		this.doc = new DocumentImpl();
+		this.doc = new DocumentImpl(context);
 	}
 
 	/**

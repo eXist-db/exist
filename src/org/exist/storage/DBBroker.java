@@ -29,6 +29,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Observable;
 
 import org.apache.log4j.Logger;
@@ -642,6 +643,33 @@ public abstract class DBBroker extends Observable {
 		throw new RuntimeException("not implemented");
 	}
 
+	/**
+	 * Create a temporary document in the temp collection and store the
+	 * supplied data.
+	 * 
+	 * @param data
+	 * @return
+	 * @throws EXistException
+	 * @throws PermissionDeniedException
+	 * @throws LockException
+	 */
+	public abstract DocumentImpl storeTemporaryDoc(String data) 
+		throws EXistException, PermissionDeniedException, LockException;
+	
+	/**
+	 * Clean up any temporary resources.
+	 *
+	 */
+	public abstract void cleanUp();
+	
+	/**
+	 * Remove the temporary document fragments specified by a list
+	 * of names.
+	 * 
+	 * @param docs
+	 */
+	public abstract void removeTempDocs(List docs);
+	
 	public void readDocumentMetadata(final DocumentImpl doc) {
 	}
 	
