@@ -639,9 +639,10 @@ public class NativeElementIndex extends ElementIndex {
                                         gid = last + delta;
                                         last = gid;
                                         address = StorageAddress.read(is);
-                                        if (!containsNode(idList, gid))
+                                        if (!containsNode(idList, gid)) {
                                             newList.add(new NodeProxy(doc, gid,
                                                     address));
+                                        }
                                     }
                                 }
                             }
@@ -667,11 +668,11 @@ public class NativeElementIndex extends ElementIndex {
                         os.writeLong(delta);
                         StorageAddress.write(p.getInternalAddress(), os);
                     }
-                        if (val == null) {
-                            dbElement.put(ref, os.data());
-                        } else {
-                            dbElement.update(val.getAddress(), ref, os.data());
-                        }
+                    if (val == null) {
+                    	dbElement.put(ref, os.data());
+                    } else {
+                    	dbElement.update(val.getAddress(), ref, os.data());
+                    }
                 } catch (LockException e) {
                     LOG.error("could not acquire lock on elements", e);
                 } finally {

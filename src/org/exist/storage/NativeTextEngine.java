@@ -74,8 +74,9 @@ import org.exist.util.ByteConversion;
 import org.exist.util.Configuration;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
+import org.exist.util.LongLinkedList;
 import org.exist.util.Occurrences;
-import org.exist.util.OrderedLinkedList;
+import org.exist.util.OrderedLongLinkedList;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.UTF8;
@@ -299,13 +300,13 @@ public class NativeTextEngine extends TextSearchEngine {
 		Value ref;
 		byte[] data;
 		long gid;
-		int freq = 1;
 		int docId;
 		int len;
 		int section;
 		int sizeHint = -1;
 		long last;
 		long delta;
+		int freq = 1;
 		Collection collection;
 		short collectionId;
 		VariableByteInput is = null;
@@ -343,10 +344,9 @@ public class NativeTextEngine extends TextSearchEngine {
 						sizeHint = contextSet.getSizeHint(doc);
 					last = 0;
 					for (int j = 0; j < len; j++) {
-						delta = is.readLong();
+						gid = last + is.readLong();
 						if(termFreq)
 							freq = is.readInt();
-						gid = last + delta;
 						last = gid;
 						count++;
 						if (contextSet != null) {
@@ -356,12 +356,11 @@ public class NativeTextEngine extends TextSearchEngine {
 							parent = contextSet.parentWithChild(current, false,
 									true, -1);
 							if (parent != null) {
+								match = new Match(term, gid);
+								match.setFrequency(freq);
 								result.add(parent, sizeHint);
-								if (trackMatches != Serializer.TAG_NONE) {
-									match = new Match(term, gid);
-									match.setFrequency(freq);
+								if (trackMatches != Serializer.TAG_NONE)
 									parent.addMatch(match);
-								}
 							}
 						} else
 							((TextSearchResult) result).add(doc, gid, term);
@@ -545,8 +544,10 @@ public class NativeTextEngine extends TextSearchEngine {
 							docId = is.readInt();
 							section = is.readByte();
 							len = is.readInt();
-							is.skip(termFreq ? len * 2 : len);
-							oc.addOccurrences(len);
+							for(int k = 0; k < len; k++) {
+								is.skip(1);
+								oc.addOccurrences(is.readInt());
+							}
 						}
 					} catch (EOFException e) {
 					}
@@ -737,7 +738,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		if (onetoken == true) {
 			invIdx.setDocument(doc);
 			String sal= text.getXMLString().transformToLower().toString() ;
-			invIdx.addText(sal, gid);		
+			invIdx.addText(sal, gid);			
 		} else {
 		while (null != (token = tokenizer.nextToken())) {
 			if (idx != null && idx.getIncludeAlphaNum() == false
@@ -771,7 +772,51 @@ public class NativeTextEngine extends TextSearchEngine {
 			lock.release();
 		}
 	}
-	
+
+	private static class TermFrequencyList extends OrderedLongLinkedList {
+		
+		protected static class TermFreq extends LongLinkedList.ListItem {
+			
+			int count = 1;
+			
+			public TermFreq(long l) {
+				super(l);
+			}
+			
+			public void increment() {
+				++count;
+			}
+		}
+		
+		/* (non-Javadoc)
+		 * @see org.exist.util.LongLinkedList#createListItem(long)
+		 */
+		protected ListItem createListItem(long l) {
+			return new TermFreq(l);
+		}
+		
+		public void incLastTerm() {
+			if(last != null)
+				((TermFreq)last).increment();
+		}
+		
+		public void setLastTermFreq(int freq) {
+			if(last != null)
+				((TermFreq)last).count = freq;
+		}
+		
+		public TermFreq[] toArray() {
+			TermFreq[] data = new TermFreq[count];
+			ListItem next = first;
+			int i = 0;
+			while( next != null ) {
+				data[i++] = (TermFreq)next;
+				next = next.next;
+			}
+			return data;
+		}
+	}
+
 	private final static class WordRef extends Value {
 
 		public WordRef(short collectionId) {
@@ -795,7 +840,6 @@ public class NativeTextEngine extends TextSearchEngine {
 					+ new String(data, pos, len);
 		}
 	}
-
 	/**
 	 * This inner class is responsible for actually storing the list of
 	 * occurrences.
@@ -803,38 +847,11 @@ public class NativeTextEngine extends TextSearchEngine {
 	 * @author Wolfgang Meier <meier@ifs.tu-darmstadt.de>
 	 */
 	final class InvertedIndex {
- 
-		private class TermOccurrence extends OrderedLinkedList.Node implements Comparable {
-			long gid;
-			int frequency = 1;
-			
-			public TermOccurrence(long gid) {
-				this.gid = gid;
-			}
-			
-			public int compareTo(OrderedLinkedList.Node o) {
-				final TermOccurrence other = (TermOccurrence)o;
-				if(gid == other.gid)
-					return 0;
-				else if(gid < other.gid)
-					return -1;
-				else
-					return 1;
-			}
-			
-			public int compareTo(Object o) {
-				return compareTo((OrderedLinkedList.Node)o);
-			}
-			
-			public boolean equals(org.exist.util.OrderedLinkedList.Node other) {
-				return gid == ((TermOccurrence)other).gid;
-			}
-		}
-		
+
 		private DocumentImpl doc = null;
 		private Map words[] = new TreeMap[2];
 		private VariableByteOutputStream os = new VariableByteOutputStream(7);
- 
+
 		public InvertedIndex() {
 			// To distinguish between attribute values and text, we use
 			// two maps: words[0] collects text, words[1] stores attribute
@@ -844,41 +861,27 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 
 		public void addText(String word, long gid) {
-			OrderedLinkedList buf = (OrderedLinkedList) words[0].get(word);
-			TermOccurrence o;
+			TermFrequencyList buf = (TermFrequencyList) words[0].get(word);
 			if (buf == null) {
-				buf = new OrderedLinkedList();
-				o = new TermOccurrence(gid);
-				buf.add(o);
+				buf = new TermFrequencyList();
+				buf.add(gid);
 				words[0].put(word, buf);
-			} else {
-				o = (TermOccurrence)buf.getLast();
-				if(o.gid == gid) {
-					o.frequency++;
-				} else {
-					o = new TermOccurrence(gid);
-					buf.add(o);
-				}
-			}
+			} else if (buf.getLast() == gid) {
+				buf.incLastTerm();
+			} else
+				buf.add(gid);
 		}
 
 		public void addAttribute(String word, long gid) {
-			OrderedLinkedList buf = (OrderedLinkedList) words[1].get(word);
-			TermOccurrence o;
+			TermFrequencyList buf = (TermFrequencyList) words[1].get(word);
 			if (buf == null) {
-				buf = new OrderedLinkedList();
-				o = new TermOccurrence(gid);
-				buf.add(o);
+				buf = new TermFrequencyList();
+				buf.add(gid);
 				words[1].put(word, buf);
-			} else {
-				o = (TermOccurrence)buf.getLast();
-				if(o.gid == gid)
-					o.frequency++;
-				else {
-					o = new TermOccurrence(gid);
-					buf.add(o);
-				}
-			}
+			} else if (buf.getLast() == gid) {
+				buf.incLastTerm();
+			} else
+				buf.add(gid);
 		}
 
 		public void remove() {
@@ -889,16 +892,16 @@ public class NativeTextEngine extends TextSearchEngine {
 			int len, docId;
 			Map.Entry entry;
 			String word;
-			OrderedLinkedList idList;
-			TermOccurrence[] ids;
+			TermFrequencyList idList;
+			TermFrequencyList.TermFreq[] ids;
 			byte[] data;
 			long last, gid;
 			long delta;
 			byte section;
 			NodeProxy p;
 			WordRef ref;
-			TermOccurrence t;
-			OrderedLinkedList newList;
+			TermFrequencyList newList;
+			int freq = 1;
 			Value val = null;
 			VariableByteArrayInput is;
 			Lock lock = dbWords.getLock();
@@ -906,13 +909,13 @@ public class NativeTextEngine extends TextSearchEngine {
 				for (Iterator i = words[k].entrySet().iterator(); i.hasNext();) {
 					entry = (Map.Entry) i.next();
 					word = (String) entry.getKey();
-					idList = (OrderedLinkedList) entry.getValue();
+					idList = (TermFrequencyList) entry.getValue();
 					ref = new WordRef(collectionId, word);
 					try {
 					    lock.acquire(Lock.WRITE_LOCK);
 					    val = dbWords.get(ref);
 					    os.clear();
-					    newList = new OrderedLinkedList();
+					    newList = new TermFrequencyList();
 					    if (val != null) {
 					        // add old entries to the new list
 					        data = val.getData();
@@ -927,13 +930,13 @@ public class NativeTextEngine extends TextSearchEngine {
 					                    // removed nodes
 					                    last = 0;
 					                    for (int j = 0; j < len; j++) {
-					                        delta = is.readLong();
-					                        last = last + delta;
-					                        t = new TermOccurrence(last);
+					                        last = last + is.readLong();
 					                        if(termFreq)
-					                        	t.frequency = is.readInt();
-					                        if (!idList.contains(t))
-					                            newList.add(t);
+					                        	freq = is.readInt();
+					                        if (!idList.contains(last)) {
+					                            newList.add(last);
+					                            newList.setLastTermFreq(freq);
+					                        }
 					                    }
 					                } else {
 					                    // section belongs to another document:
@@ -953,8 +956,7 @@ public class NativeTextEngine extends TextSearchEngine {
 					                    + word);
 					        }
 					    }
-					    ids = new TermOccurrence[newList.size()];
-					    newList.toArray(ids);
+					    ids = newList.toArray();
 					    //i.remove();
 					    Arrays.sort(ids);
 					    len = ids.length;
@@ -963,15 +965,15 @@ public class NativeTextEngine extends TextSearchEngine {
 					    os.writeInt(len);
 					    last = 0;
 					    for (int j = 0; j < len; j++) {
-					        delta = ids[j].gid - last;
+					        delta = ids[j].l - last;
 					        if (delta < 0) {
 					            LOG.debug("neg. delta: " + delta + " for " + word);
 					            LOG.debug("id = " + ids[j] + "; prev = " + last);
 					        }
 					        os.writeLong(delta);
 					        if(termFreq)
-					        	os.writeInt(ids[j].frequency);
-					        last = ids[j].gid;
+					        	os.writeInt(ids[j].count);
+					        last = ids[j].l;
 					    }
 					    try {
 					        if (val == null)
@@ -997,11 +999,10 @@ public class NativeTextEngine extends TextSearchEngine {
 		    int len, docId;
 		    Map.Entry entry;
 		    String word;
-		    OrderedLinkedList idList;
-		    TermOccurrence[] ids;
-		    TermOccurrence t;
-		    long last, gid;
-		    long delta;
+		    TermFrequencyList idList;
+		    TermFrequencyList.TermFreq[] ids;
+		    long last, gid, delta;
+		    int freq = 1;
 		    byte section;
 		    NodeProxy p;
 		    WordRef ref;
@@ -1011,7 +1012,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		        for (Iterator i = words[k].entrySet().iterator(); i.hasNext();) {
 		            entry = (Map.Entry) i.next();
 		            word = (String) entry.getKey();
-		            idList = (OrderedLinkedList) entry.getValue();
+		            idList = (TermFrequencyList) entry.getValue();
 		            ref = new WordRef(collectionId, word);
 		            try {
 		                lock.acquire(Lock.WRITE_LOCK);
@@ -1030,26 +1031,27 @@ public class NativeTextEngine extends TextSearchEngine {
 		                                os.writeInt(docId);
 		                                os.writeByte(section);
 		                                os.writeInt(len);
-		                                is.copyTo(os, (termFreq ? len * 2 : len));
+		                                is.copyTo(os, len);
 		                            } else {
 		                                // copy nodes to new list
 		                                gid = 0;
 		                                for (int j = 0; j < len; j++) {
-		                                    delta = is.readLong();
-		                                    gid += delta;
-		                                    t = new TermOccurrence(gid);
+		                                    gid += is.readLong();
 		                                    if(termFreq)
-		                                    	t.frequency = is.readInt();
+		                                    	freq = is.readInt();
 		                                    if (node == null
-		                                            && oldDoc.getTreeLevel(gid) < oldDoc.reindexRequired()) {
-		                                        idList.add(t);
+		                                            && oldDoc.getTreeLevel(gid) < oldDoc
+		                                            .reindexRequired()) {
+		                                        idList.add(gid);
+		                                        idList.setLastTermFreq(freq);
 		                                    } else if (node != null
 		                                            && (!XMLUtil
 		                                                    .isDescendantOrSelf(
 		                                                            oldDoc,
 		                                                            node.getGID(),
 		                                                            gid))) {
-		                                        idList.add(t);
+		                                        idList.add(gid);
+		                                        idList.setLastTermFreq(freq);
 		                                    }
 		                                }
 		                            }
@@ -1062,8 +1064,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		                                + word, e);
 		                    }
 		                }
-		                ids = new TermOccurrence[idList.size()];
-		                idList.toArray(ids);
+		                ids = idList.toArray();
 		                Arrays.sort(ids);
 		                len = ids.length;
 		                os.writeInt(oldDoc.getDocId());
@@ -1071,15 +1072,15 @@ public class NativeTextEngine extends TextSearchEngine {
 		                os.writeInt(len);
 		                last = 0;
 		                for (int j = 0; j < len; j++) {
-		                    delta = ids[j].gid - last;
+		                    delta = ids[j].l - last;
 		                    if (delta < 0) {
 		                        LOG.debug("neg. delta: " + delta + " for " + word);
 		                        LOG.debug("id = " + ids[j] + "; prev = " + last);
 		                    }
 		                    os.writeLong(delta);
 		                    if(termFreq)
-		                    	os.writeInt(ids[j].frequency);
-		                    last = ids[j].gid;
+		                    	os.writeInt(ids[j].count);
+		                    last = ids[j].l;
 		                }
 		                try {
 		                    if (is == null)
@@ -1116,37 +1117,34 @@ public class NativeTextEngine extends TextSearchEngine {
 			int count = 1, len;
 			Map.Entry entry;
 			String word;
-			OrderedLinkedList idList;
-			Comparable[] ids;
+			TermFrequencyList idList;
+			TermFrequencyList.TermFreq id;
+			long[] ids;
 			byte[] data;
-			long prevId, id;
+			long prevId;
 			long delta;
-			TermOccurrence t;
 			for (int k = 0; k < 2; k++) {
 				for (Iterator i = words[k].entrySet().iterator(); i.hasNext(); count++) {
 					entry = (Map.Entry) i.next();
 					word = (String) entry.getKey();
-					idList = (OrderedLinkedList) entry.getValue();
+					idList = (TermFrequencyList) entry.getValue();
 					os.clear();
-					len = idList.size();
+					len = idList.getSize();
 					os.writeInt(doc.getDocId());
 					os.writeByte(k == 0 ? TEXT_SECTION : ATTRIBUTE_SECTION);
 					os.writeInt(len);
 					prevId = 0;
 					for (Iterator j = idList.iterator(); j.hasNext();) {
-						t = (TermOccurrence) j.next();
-						id = t.gid;
-						delta = id - prevId;
+						id = ((TermFrequencyList.TermFreq) j.next());
+						delta = id.l - prevId;
 						if (delta < 0) {
 							LOG.debug("neg. delta: " + delta + " for " + word);
 							LOG.debug("id = " + id + "; prev = " + prevId);
 						}
 						os.writeLong(delta);
-						if(termFreq) {
-							// write out term frequencies
-							os.writeInt(t.frequency);
-						}
-						prevId = id;
+						if(termFreq)
+							os.writeInt(id.count);
+						prevId = id.l;
 					}
 					flushWord(collectionId, word, os.data());
 					progress.setValue(count);
@@ -1265,7 +1263,6 @@ public class NativeTextEngine extends TextSearchEngine {
 				long gid;
 				long last = -1;
 				int freq = 1;
-				long delta;
 				int sizeHint = -1;
 				byte section;
 				DocumentImpl doc;
@@ -1284,13 +1281,12 @@ public class NativeTextEngine extends TextSearchEngine {
 						}
 						if (contextSet != null)
 							sizeHint = contextSet.getSizeHint(doc);
-						last = -1;
+						last = 0;
 						for (int j = 0; j < len; j++) {
-							delta = is.readLong();
-							gid = (last < 0 ? delta : last + delta);
-							last = gid;
+							gid = last + is.readLong();
 							if(termFreq)
 								freq = is.readInt();
+							last = gid;
 							if (contextSet != null) {
 								proxy = (section == TEXT_SECTION
 										? new NodeProxy(doc, gid,
@@ -1301,11 +1297,10 @@ public class NativeTextEngine extends TextSearchEngine {
 										true, -1);
 								if (parent != null) {
 									result.add(parent, sizeHint);
-									if (trackMatches != Serializer.TAG_NONE) {
-										match = new Match(word, gid);
-										match.setFrequency(freq);
+									match = new Match(word, gid);
+									match.setFrequency(freq);
+									if (trackMatches != Serializer.TAG_NONE)
 										parent.addMatch(match);
-									}
 								}
 							} else
 								((TextSearchResult) result).add(doc, gid, word);
@@ -1350,4 +1345,6 @@ public class NativeTextEngine extends TextSearchEngine {
 			return matcher.matches(term, regexp);
 		}
 	}
+
+
 }

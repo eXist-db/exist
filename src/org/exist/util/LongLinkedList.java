@@ -4,11 +4,12 @@ import java.util.Iterator;
 
 public class LongLinkedList {
 
-	public final static class ListItem implements Comparable {
+	public static class ListItem implements Comparable {
 		
 		public long l;
-		ListItem next = null;
-		ListItem prev = null;
+		
+		public ListItem next = null;
+		public ListItem prev = null;
         
 		public ListItem( long l ) {
 			this.l = l;
@@ -46,10 +47,10 @@ public class LongLinkedList {
 	
 	public void add( long l ) {
 		if(first == null) {
-			first = new ListItem( l );
+			first = createListItem( l );
 			last = first;
 		} else {
-			ListItem next = new ListItem( l );
+			ListItem next = createListItem( l );
 			last.next = next;
             next.prev = last;
 			last = next;
@@ -103,6 +104,10 @@ public class LongLinkedList {
     
     public Iterator iterator() {
         return new LongLinkedListIterator();
+    }
+    
+    protected ListItem createListItem(long l) {
+    	return new ListItem(l);
     }
     
     private final class LongLinkedListIterator implements Iterator {
