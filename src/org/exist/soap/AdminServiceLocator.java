@@ -2,15 +2,23 @@
  * AdminServiceLocator.java
  *
  * This file was auto-generated from WSDL
- * by the Apache Axis WSDL2Java emitter.
+ * by the Apache Axis 1.2RC2 Nov 16, 2004 (12:19:44 EST) WSDL2Java emitter.
  */
 
 package org.exist.soap;
 
 public class AdminServiceLocator extends org.apache.axis.client.Service implements org.exist.soap.AdminService {
 
+    public AdminServiceLocator() {
+    }
+
+
+    public AdminServiceLocator(org.apache.axis.EngineConfiguration config) {
+        super(config);
+    }
+
     // Use to get a proxy class for Admin
-    private final java.lang.String Admin_address = "http://localhost:8080/exist/services/Admin";
+    private java.lang.String Admin_address = "http://localhost:8080/exist/services/Admin";
 
     public java.lang.String getAdminAddress() {
         return Admin_address;
@@ -49,6 +57,10 @@ public class AdminServiceLocator extends org.apache.axis.client.Service implemen
         }
     }
 
+    public void setAdminEndpointAddress(java.lang.String address) {
+        Admin_address = address;
+    }
+
     /**
      * For the given interface, get the stub implementation.
      * If this service has no port for the given interface,
@@ -77,7 +89,7 @@ public class AdminServiceLocator extends org.apache.axis.client.Service implemen
         if (portName == null) {
             return getPort(serviceEndpointInterface);
         }
-        String inputPortName = portName.getLocalPart();
+        java.lang.String inputPortName = portName.getLocalPart();
         if ("Admin".equals(inputPortName)) {
             return getAdmin();
         }
@@ -97,9 +109,28 @@ public class AdminServiceLocator extends org.apache.axis.client.Service implemen
     public java.util.Iterator getPorts() {
         if (ports == null) {
             ports = new java.util.HashSet();
-            ports.add(new javax.xml.namespace.QName("Admin"));
+            ports.add(new javax.xml.namespace.QName("urn:exist", "Admin"));
         }
         return ports.iterator();
+    }
+
+    /**
+    * Set the endpoint address for the specified port name.
+    */
+    public void setEndpointAddress(java.lang.String portName, java.lang.String address) throws javax.xml.rpc.ServiceException {
+        if ("Admin".equals(portName)) {
+            setAdminEndpointAddress(address);
+        }
+        else { // Unknown Port Name
+            throw new javax.xml.rpc.ServiceException(" Cannot set Endpoint Address for Unknown Port" + portName);
+        }
+    }
+
+    /**
+    * Set the endpoint address for the specified port name.
+    */
+    public void setEndpointAddress(javax.xml.namespace.QName portName, java.lang.String address) throws javax.xml.rpc.ServiceException {
+        setEndpointAddress(portName.getLocalPart(), address);
     }
 
 }

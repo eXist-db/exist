@@ -2,15 +2,23 @@
  * QueryServiceLocator.java
  *
  * This file was auto-generated from WSDL
- * by the Apache Axis WSDL2Java emitter.
+ * by the Apache Axis 1.2RC2 Nov 16, 2004 (12:19:44 EST) WSDL2Java emitter.
  */
 
 package org.exist.soap;
 
 public class QueryServiceLocator extends org.apache.axis.client.Service implements org.exist.soap.QueryService {
 
+    public QueryServiceLocator() {
+    }
+
+
+    public QueryServiceLocator(org.apache.axis.EngineConfiguration config) {
+        super(config);
+    }
+
     // Use to get a proxy class for Query
-    private final java.lang.String Query_address = "http://localhost:8080/exist/services/Query";
+    private java.lang.String Query_address = "http://localhost:8080/exist/services/Query";
 
     public java.lang.String getQueryAddress() {
         return Query_address;
@@ -49,6 +57,10 @@ public class QueryServiceLocator extends org.apache.axis.client.Service implemen
         }
     }
 
+    public void setQueryEndpointAddress(java.lang.String address) {
+        Query_address = address;
+    }
+
     /**
      * For the given interface, get the stub implementation.
      * If this service has no port for the given interface,
@@ -77,7 +89,7 @@ public class QueryServiceLocator extends org.apache.axis.client.Service implemen
         if (portName == null) {
             return getPort(serviceEndpointInterface);
         }
-        String inputPortName = portName.getLocalPart();
+        java.lang.String inputPortName = portName.getLocalPart();
         if ("Query".equals(inputPortName)) {
             return getQuery();
         }
@@ -97,9 +109,28 @@ public class QueryServiceLocator extends org.apache.axis.client.Service implemen
     public java.util.Iterator getPorts() {
         if (ports == null) {
             ports = new java.util.HashSet();
-            ports.add(new javax.xml.namespace.QName("Query"));
+            ports.add(new javax.xml.namespace.QName("urn:exist", "Query"));
         }
         return ports.iterator();
+    }
+
+    /**
+    * Set the endpoint address for the specified port name.
+    */
+    public void setEndpointAddress(java.lang.String portName, java.lang.String address) throws javax.xml.rpc.ServiceException {
+        if ("Query".equals(portName)) {
+            setQueryEndpointAddress(address);
+        }
+        else { // Unknown Port Name
+            throw new javax.xml.rpc.ServiceException(" Cannot set Endpoint Address for Unknown Port" + portName);
+        }
+    }
+
+    /**
+    * Set the endpoint address for the specified port name.
+    */
+    public void setEndpointAddress(javax.xml.namespace.QName portName, java.lang.String address) throws javax.xml.rpc.ServiceException {
+        setEndpointAddress(portName.getLocalPart(), address);
     }
 
 }
