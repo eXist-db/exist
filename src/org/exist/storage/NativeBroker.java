@@ -167,7 +167,7 @@ public class NativeBroker extends DBBroker {
 				if ((indexBuffers = config.getInteger("db-connection.elements.buffers"))
 					< 0) {
 					indexBuffers = buffers * 4;
-					dataBuffers = buffers * 11;
+					dataBuffers = buffers * 10;
 				} else
 					dataBuffers = indexBuffers >> 2;
 
@@ -194,7 +194,7 @@ public class NativeBroker extends DBBroker {
 					dataBuffers = 512;
 				} else {
 					indexBuffers = buffers * 4;
-					dataBuffers = buffers;
+					dataBuffers = buffers * 8;
 				}
 				LOG.debug("page buffer size = " + indexBuffers + "; " + dataBuffers);
 				domDb =
@@ -217,8 +217,8 @@ public class NativeBroker extends DBBroker {
 				if ((indexBuffers =
 					config.getInteger("db-connection.collections.buffers"))
 					< 0) {
-					indexBuffers = buffers * 8;
-					dataBuffers = buffers * 8;
+					indexBuffers = buffers * 6;
+					dataBuffers = buffers * 6;
 				} else
 					dataBuffers = indexBuffers;
 				LOG.debug(
