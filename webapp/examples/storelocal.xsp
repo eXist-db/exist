@@ -7,7 +7,7 @@
 <xsp:page language="java"
     xmlns:xsp="http://apache.org/xsp"
     xmlns:ci="http://apache.org/cocoon/include/1.0"
-    xmlns:xmldb="http://exist-db.org/xmldb/1.0"
+    xmlns:xdb="http://exist-db.org/xmldb/1.0"
     xmlns:log="http://apache.org/xsp/log/2.0">
 
     <document>
@@ -17,8 +17,8 @@
         <ci:include src="sidebar.xml"/>
 
         <body>
-            <xmldb:driver class="org.exist.xmldb.DatabaseImpl"/>
-            <xmldb:collection user="guest" password="guest" 
+            <xdb:driver class="org.exist.xmldb.DatabaseImpl"/>
+            <xdb:collection user="guest" password="guest" 
                 uri="xmldb:exist:///db">
                 <p>Storing local file much_ado.xml.</p>
                 <xsp:logic>
@@ -30,10 +30,10 @@
                     collection.storeResource(document);
                 </xsp:logic>
                 <p>Local file stored.</p>
-                <xmldb:error>
-                    <error><xmldb:get-error/></error>
-                </xmldb:error>
-            </xmldb:collection>
+                <xdb:error>
+                    <error><xdb:get-error/></error>
+                </xdb:error>
+            </xdb:collection>
         </body>
     </document>
 </xsp:page>

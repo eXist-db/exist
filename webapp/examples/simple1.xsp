@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <xsp:page xmlns:xsp="http://apache.org/xsp"
-          xmlns:xmldb="http://exist-db.org/xmldb/1.0"
+          xmlns:xdb="http://exist-db.org/xmldb/1.0"
 >
 	<document>
     	<body>
@@ -20,14 +20,14 @@
                 	String doc = request.getParameter("doc");
                 	if(doc != null &amp;&amp; doc.length() &gt; 0) {
                 		<p>Retrieving document <xsp:expr>doc</xsp:expr></p>
-		                <xmldb:collection uri="xmldb:exist:///db/shakespeare/plays"
+		                <xdb:collection uri="xmldb:exist:///db/shakespeare/plays"
 		                	user="guest" password="guest">
 		                    <xml-source>
-								<xmldb:get-document as="xml">
-		                             <xmldb:name>doc</xmldb:name>
-		                        </xmldb:get-document>
+					<xdb:get-document as="xml">
+		                             <xdb:name>doc</xdb:name>
+		                        </xdb:get-document>
 		                    </xml-source>
-		                </xmldb:collection>
+		                </xdb:collection>
 		            }
 	            </xsp:logic>
             </section>
