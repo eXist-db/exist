@@ -59,14 +59,14 @@ public class XMLWriter {
 	private static boolean[] attrSpecialChars;
 	
 	static {
-		textSpecialChars = new boolean[127];
+		textSpecialChars = new boolean[128];
 		Arrays.fill(textSpecialChars, false);
 		textSpecialChars['<'] = true;
 		textSpecialChars['>'] = true;
 		textSpecialChars['\r'] = true;
 		textSpecialChars['&'] = true;
 		
-		attrSpecialChars = new boolean[127];
+		attrSpecialChars = new boolean[128];
 		Arrays.fill(attrSpecialChars, false);
 		attrSpecialChars['<'] = true;
 		attrSpecialChars['>'] = true;
