@@ -27,7 +27,7 @@
 		<xsl:param name="field"/>
 		<xsl:choose>
 			<xsl:when test="$field='any'">.</xsl:when>
-			<xsl:when test="$field='au'">dc:creator|dc:editor|dc:contributor</xsl:when>
+			<xsl:when test="$field='au'">(dc:creator|dc:editor)|dc:contributor</xsl:when>
 			<xsl:when test="$field='ti'">dc:title</xsl:when>
 			<xsl:when test="$field='ab'">dc:description</xsl:when>
 			<xsl:when test="$field='su'">dc:subject</xsl:when>
