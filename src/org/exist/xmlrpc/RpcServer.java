@@ -1564,4 +1564,18 @@ public class RpcServer implements RpcAPI {
 			pool.release(con);
 		}
 	}
+	
+	 public boolean reindexCollection(User user, String name)
+     throws EXistException, PermissionDeniedException {
+ RpcConnection con = pool.get();
+ try {
+     con.reindexCollection(user, name);
+     return true;
+ } catch (Exception e) {
+     handleException(e);
+     return false;
+ } finally {
+     pool.release(con);
+ }
+}
 }
