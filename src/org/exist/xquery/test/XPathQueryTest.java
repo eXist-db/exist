@@ -156,6 +156,7 @@ public class XPathQueryTest extends TestCase {
 					"/test/string[starts-with(string(.), 'Hello')]");
 			assertEquals(2, result.getSize());
 		} catch (XMLDBException e) {
+			System.out.println("testStrings(): XMLDBException: "+e);
 			fail(e.getMessage());
 		}
 	}
