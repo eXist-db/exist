@@ -114,11 +114,11 @@ public abstract class AbstractSequence implements Sequence {
 			return true;
 		Item first = itemAt(0);
 		if(first instanceof StringValue)
-			return first.getStringValue().equals("") ? true : false;
+			return ((StringValue)first).effectiveBooleanValue();
 		else if(first instanceof BooleanValue)
 			return ((BooleanValue)first).getValue();
 		else if(first instanceof NumericValue)
-			return ((BooleanValue)first.convertTo(Type.BOOLEAN)).getValue();
+			return ((NumericValue)first).effectiveBooleanValue();
 		else
 			return true;
 	}

@@ -242,7 +242,6 @@ public class IntegerValue extends NumericValue {
 			case Type.STRING :
 				return new StringValue(getStringValue());
 			case Type.BOOLEAN :
-				// return (value == 0) ? BooleanValue.FALSE : BooleanValue.TRUE;
 				return (value.compareTo(ZERO_BIGINTEGER) == 0 ) ? BooleanValue.FALSE : BooleanValue.TRUE;
 			default :
 				throw new XPathException(
