@@ -32,6 +32,13 @@
         </layout>
     </appender>
 
+    <!-- the following appenders write to NULL  -->
+    <appender name="null" class="org.apache.log4j.varia.NullAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m\n"/>
+        </layout>
+    </appender>
+
     <!-- LF5 appender. Using this appender in an appender-ref will
         pop up the LogFactor5 gui.
     -->
