@@ -154,7 +154,7 @@ public class RESTServer {
 			encoding = "UTF-8";
 		Response response = new Response();
 			if (query != null) {
-				response.setContent(search(broker, query, path, howmany, start, outputProperties));
+				response.setContent(search(broker, query, path, howmany, start, outputProperties, 1));
 			} else {
 				DocumentImpl d = (DocumentImpl) broker.getDocument(path);
 				if (d == null) {
@@ -200,6 +200,8 @@ public class RESTServer {
 		boolean summary = false;
 		int howmany = 10;
 		int start = 1;
+		int enclose = 1;
+		String mime ="text/xml";
 		Properties outputProperties = new Properties(defaultProperties);
 		String query = null;
 		Response response = null;
@@ -233,6 +235,19 @@ public class RESTServer {
 								howmany = Integer.parseInt(option);
 							} catch(NumberFormatException e) {
 							}
+							
+						option = root.getAttribute("enclose");
+						enclose = 1;
+						if(option != null) {
+						  if (option.equals( "no"))
+						      enclose = 0;	
+						}
+						   
+						option = root.getAttribute("mime");
+						mime = "text/xml";
+						if((option != null) && (!option.equals(""))) {
+						  mime = option;
+						}		
 							
 							NodeList children =root.getChildNodes();
 							for(int i = 0;i < children.getLength(); i++) {
@@ -268,8 +283,11 @@ public class RESTServer {
 							}
 				}
 				// execute query
-				if (query != null)
-					response = new Response(search(broker, query, path, howmany, start, outputProperties));
+				if (query != null){
+					response = new Response();
+				    response.setContentType(mime);
+			     	response.setContent(search(broker, query, path, howmany, start, outputProperties, enclose));
+				}
 				else
 					throw new BadRequestException("No query specified");
 			} else if(rootNS != null && rootNS.equals(XUPDATE_NS)) {
@@ -424,7 +442,7 @@ public class RESTServer {
 	 * TODO: pass request and response objects to XQuery.
 	 */
 	protected String search(DBBroker broker, String query, String path,
-			int howmany, int start, Properties outputProperties)
+			int howmany, int start, Properties outputProperties, int enclose)
 	throws BadRequestException, PermissionDeniedException {
 		String result = null;
 		try {
@@ -461,7 +479,7 @@ public class RESTServer {
 			    long queryTime = System.currentTimeMillis() - startTime;
 				LOG.debug("Found " + resultSequence.getLength() + " in " + queryTime + "ms.");
 				return printResults(broker, resultSequence, howmany, start,
-						queryTime, outputProperties);
+						queryTime, outputProperties, enclose);
 			} finally {
 			    pool.returnCompiledXQuery(source, compiled);
 			}
@@ -575,7 +593,7 @@ public class RESTServer {
 	}
 
 	protected String printResults(DBBroker broker, Sequence results,
-			int howmany, int start, long queryTime, Properties outputProperties)
+			int howmany, int start, long queryTime, Properties outputProperties, int enclose)
 			throws BadRequestException {
 		int rlen = results.getLength();
 		if (rlen > 0) {
@@ -607,8 +625,11 @@ public class RESTServer {
 			attrs.addAttribute("", "count", "count", "CDATA", Integer.toString(howmany));
 			
 			sax.startDocument();
+			
+			if (enclose == 1) {
 			sax.startPrefixMapping("exist", NS);
 			sax.startElement(NS, "result", "exist:result", attrs);
+	    	} 
 			
 			Item item;
 			for (int i = --start; i < start + howmany; i++) {
@@ -629,8 +650,11 @@ public class RESTServer {
 					sax.endElement(NS, "value", "exist:value");
 				}
 			}
+			
+			if (enclose == 1) {
 			sax.endElement(NS, "result", "exist:result");
 			sax.endPrefixMapping("exist");
+            }
 			sax.endDocument();
 			
 			return writer.toString();
