@@ -1203,11 +1203,6 @@ public class ElementImpl
         ownerDocument.broker.update(this);
         // reindex if required
         ownerDocument.broker.reindex(prevDoc, ownerDocument, null);
-        //		try {
-        //			ownerDocument.broker.saveCollection(ownerDocument.getCollection());
-        //		} catch (PermissionDeniedException e) {
-        //			throw new DOMException(DOMException.INVALID_ACCESS_ERR, e.getMessage());
-        //		}
     }
 
     /**
@@ -1344,7 +1339,7 @@ public class ElementImpl
             previous = this;
         else
             previous = getLastNode(previous);
-        ownerDocument.broker.removeNode(old, old.getPath());
+        removeAll(old, old.getPath());
         ownerDocument.broker.endRemove();
         appendChild(old.gid, previous, getPath(), newChild, true);
         // reindex if required

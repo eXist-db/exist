@@ -25,6 +25,7 @@ package org.exist.storage;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
@@ -77,6 +78,7 @@ import org.exist.storage.store.StorageAddress;
 import org.exist.storage.sync.Sync;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
+import org.exist.util.Collations;
 import org.exist.util.Configuration;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
@@ -284,12 +286,8 @@ public class NativeBroker extends DBBroker {
 		elementIndex.addObserver(o);
 	}
 
-	private final boolean compare(String o1, String o2, int relation) {
-		int cmp;
-		if (!isCaseSensitive())
-			cmp = o1.compareToIgnoreCase(o2);
-		else
-			cmp = o1.compareTo(o2);
+	private final boolean compare(Collator collator, String o1, String o2, int relation) {
+		int cmp = Collations.compare(collator, o1, o2);
 		switch (relation) {
 			case Constants.LT :
 				return (cmp < 0);
@@ -1494,7 +1492,8 @@ public class NativeBroker extends DBBroker {
 		NodeSet context,
 		DocumentSet docs,
 		int relation,
-		String expr) {
+		String expr,
+		Collator collator) {
 		//		long start = System.currentTimeMillis();
 		// NodeSet temp;
 		int truncation = Constants.TRUNC_NONE;
@@ -1511,7 +1510,7 @@ public class NativeBroker extends DBBroker {
 		}
 		if (!isCaseSensitive())
 			expr = expr.toLowerCase();
-		NodeSet result = scanSequential(context, docs, relation, truncation, expr);
+		NodeSet result = scanSequential(context, docs, relation, truncation, expr, collator);
 		//				LOG.debug(
 		//					"searching "
 		//						+ result.getLength()
@@ -2272,7 +2271,8 @@ public class NativeBroker extends DBBroker {
 		DocumentSet doc,
 		int relation,
 		int truncation,
-		String expr) {
+		String expr,
+		Collator collator) {
 		ArraySet resultNodeSet = new ArraySet(context.getLength());
 		NodeProxy p;
 		String content;
@@ -2309,19 +2309,19 @@ public class NativeBroker extends DBBroker {
 			//	(p.getContext() == null ? -1 : p.getContext().getSize()));
 			switch (truncation) {
 				case Constants.TRUNC_LEFT :
-					if (cmp.endsWith(expr))
+					if (Collations.endsWith(collator, cmp, expr))
 						resultNodeSet.add(p);
 					break;
 				case Constants.TRUNC_RIGHT :
-					if (cmp.startsWith(expr))
+					if (Collations.startsWith(collator, cmp, expr))
 						resultNodeSet.add(p);
 					break;
 				case Constants.TRUNC_BOTH :
-					if (-1 < cmp.indexOf(expr))
+					if (-1 < Collations.indexOf(collator, cmp, expr))
 						resultNodeSet.add(p);
 					break;
 				case Constants.TRUNC_NONE :
-					if (compare(cmp, expr, relation))
+					if (compare(collator, cmp, expr, relation))
 						resultNodeSet.add(p);
 					break;
 				case Constants.REGEXP :

@@ -27,6 +27,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.Collator;
 import java.util.Iterator;
 import java.util.Observable;
 
@@ -362,7 +363,8 @@ public abstract class DBBroker extends Observable {
 		NodeSet context,
 		DocumentSet docs,
 		int relation,
-		String expr);
+		String expr,
+		Collator collator);
 
 	/**
 	 *  Get a range of nodes with given owner document from the database,

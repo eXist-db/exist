@@ -78,7 +78,7 @@ public class FunMin extends Function {
 				&& ((NumericValue) current).isNaN())
 				return DoubleValue.NaN;
 
-			min = min.min(current);
+			min = min.min(context.getDefaultCollator(), current);
 		}
 		return min;
 	}

@@ -81,6 +81,6 @@ public abstract class NumericValue extends ComputableValue {
 	public abstract NumericValue round() throws XPathException;
 	public abstract NumericValue mod(NumericValue other) throws XPathException;
 	public abstract NumericValue abs() throws XPathException;
-	public abstract AtomicValue max(AtomicValue other) throws XPathException;
-	public abstract AtomicValue min(AtomicValue other) throws XPathException;
+	public abstract AtomicValue max(Collator collator, AtomicValue other) throws XPathException;
+	public abstract AtomicValue min(Collator collator, AtomicValue other) throws XPathException;
 }

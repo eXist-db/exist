@@ -82,7 +82,7 @@ public class FunMax extends Function {
 				((NumericValue)current).isNaN())
 				return DoubleValue.NaN;
 				
-			max = max.max(current);
+			max = max.max(context.getDefaultCollator(), current);
 		}
 		return max;
 	}

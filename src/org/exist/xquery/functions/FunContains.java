@@ -6,6 +6,7 @@
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
+import org.exist.util.Collations;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
@@ -51,7 +52,7 @@ public class FunContains extends Function {
 			getArgument(1)
 				.eval(contextSequence)
 				.getStringValue();
-		if (s1.indexOf(s2) > -1)
+		if (Collations.indexOf(context.getDefaultCollator(), s1, s2) > -1)
 			return BooleanValue.TRUE;
 		else
 			return BooleanValue.FALSE;

@@ -254,11 +254,11 @@ public class StringValue extends AtomicValue {
 				}
 				switch (truncation) {
 					case Constants.TRUNC_BOTH :
-						return value.indexOf(otherVal) > -1;
+						return Collations.indexOf(collator, value, otherVal) > -1;
 					case Constants.TRUNC_LEFT :
-						return value.startsWith(otherVal);
+						return Collations.startsWith(collator, value, otherVal);
 					case Constants.TRUNC_RIGHT :
-						return value.endsWith(otherVal);
+						return Collations.endsWith(collator, value, otherVal);
 					case Constants.TRUNC_NONE :
 						return Collations.equals(collator, value, otherVal);
 				}
@@ -290,34 +290,31 @@ public class StringValue extends AtomicValue {
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
 	 */
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
-		if(collator == null)
-			return value.compareTo(other.getStringValue());
-		else
-			return collator.compare(value, other.getStringValue());
+		return Collations.compare(collator, value, other.getStringValue());
 	}
 
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#startsWith(org.exist.xquery.value.AtomicValue)
 	 */
-	public boolean startsWith(AtomicValue other) throws XPathException {
-		return value.startsWith(other.getStringValue());
+	public boolean startsWith(Collator collator, AtomicValue other) throws XPathException {
+		return Collations.startsWith(collator, value, other.getStringValue());
 	}
 	
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#endsWith(org.exist.xquery.value.AtomicValue)
 	 */
-	public boolean endsWith(AtomicValue other) throws XPathException {
-		return value.endsWith(other.getStringValue());
+	public boolean endsWith(Collator collator, AtomicValue other) throws XPathException {
+		return Collations.endsWith(collator, value, other.getStringValue());
 	}
 	
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#contains(org.exist.xquery.value.AtomicValue)
 	 */
-	public boolean contains(AtomicValue other) throws XPathException {
-		return value.indexOf(other.getStringValue()) > -1;
+	public boolean contains(Collator collator, AtomicValue other) throws XPathException {
+		return Collations.indexOf(collator, value, other.getStringValue()) > -1;
 	}
 	
 	/* (non-Javadoc)
@@ -453,20 +450,20 @@ public class StringValue extends AtomicValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
 	 */
-	public AtomicValue max(AtomicValue other) throws XPathException {
+	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.STRING))
-			return value.compareTo(((StringValue) other).value) > 0 ? this : other;
+			return Collations.compare(collator, value, ((StringValue) other).value) > 0 ? this : other;
 		else
-			return value.compareTo(((StringValue) other.convertTo(getType())).value) > 0
+			return Collations.compare(collator, value, ((StringValue) other.convertTo(getType())).value) > 0
 				? this
 				: other;
 	}
 
-	public AtomicValue min(AtomicValue other) throws XPathException {
+	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.STRING))
-			return value.compareTo(((StringValue) other).value) < 0 ? this : other;
+			return Collations.compare(collator, value, ((StringValue) other).value) < 0 ? this : other;
 		else
-			return value.compareTo(((StringValue) other.convertTo(getType())).value) < 0
+			return Collations.compare(collator, value, ((StringValue) other.convertTo(getType())).value) < 0
 				? this
 				: other;
 	}

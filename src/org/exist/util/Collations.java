@@ -8,7 +8,9 @@ package org.exist.util;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.CollationElementIterator;
 import java.text.Collator;
+import java.text.RuleBasedCollator;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
@@ -101,6 +103,118 @@ public class Collations {
 			return collator.compare(s1, s2);
 	}
 	
+	public final static boolean startsWith(Collator collator, String s1, String s2) {
+		if(collator == null)
+			return s1.startsWith(s2);
+		else {
+			final RuleBasedCollator rbc = (RuleBasedCollator)collator;
+			final CollationElementIterator i1 = rbc.getCollationElementIterator(s1);
+			final CollationElementIterator i2 = rbc.getCollationElementIterator(s2);
+			return collationStartsWith(i1, i2);
+		}
+	}
+	
+	public final static boolean endsWith(Collator collator, String s1, String s2) {
+		if(collator == null)
+			return s1.endsWith(s2);
+		else {
+			final RuleBasedCollator rbc = (RuleBasedCollator)collator;
+			final CollationElementIterator i1 = rbc.getCollationElementIterator(s1);
+			final CollationElementIterator i2 = rbc.getCollationElementIterator(s2);
+			return collationContains(i1, i2, null, true);
+		}
+	}
+	
+	public final static boolean contains(Collator collator, String s1, String s2) {
+		if(collator == null)
+			return s1.indexOf(s2) > -1;
+		else {
+			final RuleBasedCollator rbc = (RuleBasedCollator)collator;
+			final CollationElementIterator i1 = rbc.getCollationElementIterator(s1);
+			final CollationElementIterator i2 = rbc.getCollationElementIterator(s2);
+			return collationContains(i1, i2, null, false);
+		}
+	}
+	
+	public final static int indexOf(Collator collator, String s1, String s2) {
+		if(collator == null)
+			return s1.indexOf(s2);
+		else {
+			final int offsets[] = new int[2]; 
+			final RuleBasedCollator rbc = (RuleBasedCollator)collator;
+			final CollationElementIterator i1 = rbc.getCollationElementIterator(s1);
+			final CollationElementIterator i2 = rbc.getCollationElementIterator(s2);
+			final boolean found = collationContains(i1, i2, offsets, false);
+			if(found)
+				return offsets[0];
+			else
+				return -1;
+		}
+	}
+	
+	private final static boolean collationStartsWith(CollationElementIterator s0,
+			CollationElementIterator s1) {
+		while (true) {
+			int e1 = s1.next();
+			if (e1 == -1) {
+				return true;
+			}
+			int e0 = s0.next();
+			if (e0 != e1) {
+				return false;
+			}
+		}
+	}
+	 
+	private final static boolean collationContains(CollationElementIterator s0, CollationElementIterator s1, 
+			int[] offsets, boolean endsWith ) {
+		int e1 = s1.next();
+		if (e1 == -1) {
+			return true;
+		}
+		int e0 = -1;
+		while (true) {
+			// scan the first string to find a matching character
+			while (e0 != e1) {
+				e0 = s0.next();
+				if (e0 == -1) {
+					// hit the end, no match
+					return false;
+				}
+			}
+			// matched first character, note the position of the possible match
+			int start = s0.getOffset();
+			if (collationStartsWith(s0, s1)) {
+				if (endsWith) {
+					if (offsets != null) {
+						offsets[0] = start-1;
+						offsets[1] = s0.getOffset();
+					}
+					return true;
+				} else {
+					// operation == ENDSWITH
+					if (s0.next() == -1) {
+						// the match is at the end
+						return true;
+					}
+					// else ignore this match and keep looking
+				}
+			}
+			// reset the position and try again
+			s0.setOffset(start);
+			
+			// workaround for a difference between JDK 1.4.0 and JDK 1.4.1
+			if (s0.getOffset() != start) {
+				// JDK 1.4.0 takes this path
+				s0.next();
+			}
+			s1.reset();
+			e0 = -1;
+			e1 = s1.next();
+			// loop round to try again
+		}
+	}
+
 	/**
 	 * @param lang
 	 * @param strength

@@ -23,6 +23,8 @@
 
 package org.exist.xquery.value;
 
+import java.text.Collator;
+
 import org.exist.xquery.XPathException;
 
 /**
@@ -192,18 +194,18 @@ public class FloatValue extends NumericValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.NumericValue#max(org.exist.xquery.value.AtomicValue)
 	 */
-	public AtomicValue max(AtomicValue other) throws XPathException {
+	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.FLOAT))
 			return new FloatValue(Math.max(value, ((FloatValue) other).value));
 		else
-			return ((FloatValue) convertTo(other.getType())).max(other);
+			return ((FloatValue) convertTo(other.getType())).max(collator, other);
 	}
 
-	public AtomicValue min(AtomicValue other) throws XPathException {
+	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.FLOAT))
 			return new FloatValue(Math.min(value, ((FloatValue) other).value));
 		else
-			return ((FloatValue) convertTo(other.getType())).min(other);
+			return ((FloatValue) convertTo(other.getType())).min(collator, other);
 	}
 
 	/* (non-Javadoc)

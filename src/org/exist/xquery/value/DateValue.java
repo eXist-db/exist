@@ -221,7 +221,7 @@ public class DateValue extends AbstractDateTimeValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
 	 */
-	public AtomicValue max(AtomicValue other) throws XPathException {
+	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.DATE)
 			return date.compareTo(((DateValue) other).date) > 0 ? this : other;
 		else
@@ -233,7 +233,7 @@ public class DateValue extends AbstractDateTimeValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#min(org.exist.xquery.value.AtomicValue)
 	 */
-	public AtomicValue min(AtomicValue other) throws XPathException {
+	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.DATE)
 			return date.compareTo(((DateValue) other).date) < 0 ? this : other;
 		else
