@@ -88,15 +88,21 @@ public class CocoonSource extends AbstractSource {
     }
 
     public String getContent() throws IOException {
-        ByteArrayOutputStream os = new ByteArrayOutputStream((int) inputSource
-				.getContentLength());
-		byte[] t = new byte[512];
-		InputStream is = inputSource.getInputStream();
-		int count = 0;
-		while ((count = is.read(t)) != -1) {
-			os.write(t, 0, count);
-		}
-		return os.toString("UTF-8");
+	int len = (int) inputSource.getContentLength();
+
+        ByteArrayOutputStream os;
+	if (len == -1)
+        	os = new ByteArrayOutputStream();
+	else 
+        	os = new ByteArrayOutputStream(len);
+
+	byte[] t = new byte[512];
+	InputStream is = inputSource.getInputStream();
+	int count = 0;
+	while ((count = is.read(t)) != -1) {
+		os.write(t, 0, count);
+	}
+	return os.toString("UTF-8");
     }
     
     /* (non-Javadoc)
