@@ -304,7 +304,7 @@ public class NativeTextEngine extends TextSearchEngine {
 	 * @return array containing a NodeSet for each of the search terms
 	 */
 	public NodeSet[] getNodesExact(DocumentSet docs, String[] expr) {
-		//long start = System.currentTimeMillis();
+		long start = System.currentTimeMillis();
 		ArraySet[] result = new ArraySet[expr.length];
 		DocumentImpl doc;
 		Value ref;
@@ -374,12 +374,12 @@ public class NativeTextEngine extends TextSearchEngine {
 				}
 			}
 			//( (ArraySet) result[i] ).setIsSorted( true );
-			//			LOG.debug(
-			//				"found: "
-			//					+ result[i].getLength()
-			//					+ " in "
-			//					+ (System.currentTimeMillis() - start)
-			//					+ "ms.");
+						LOG.debug(
+							"found: "
+								+ result[i].getLength()
+								+ " in "
+								+ (System.currentTimeMillis() - start)
+								+ "ms.");
 		}
 		return result;
 	}
@@ -1012,7 +1012,6 @@ public class NativeTextEngine extends TextSearchEngine {
 			}
 			words.clear();
 			//words = new TreeMap();
-			//System.gc();
 		}
 
 		private void flushWord(short collectionId, String word, byte[] data) {
