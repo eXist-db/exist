@@ -414,7 +414,8 @@ public class NativeBroker extends DBBroker {
 				lock.release();
 			}
 			// jmv: if (dis == null)
-			if (exceptionOcurred)
+			// wolf: dis == null if no matching element has been found in the index
+			if (dis == null || exceptionOcurred)
 				continue;
 			is = new VariableByteInputStream(dis);
 			try {

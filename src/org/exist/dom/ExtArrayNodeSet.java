@@ -209,7 +209,6 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	 * @see org.exist.xpath.value.Sequence#getLength()
 	 */
 	public int getLength() {
-		sortInDocumentOrder();
 		return size;
 	}
 
@@ -219,6 +218,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	 * @see org.w3c.dom.NodeList#item(int)
 	 */
 	public Node item(int pos) {
+		sortInDocumentOrder();
 		NodeProxy p = get(pos);
 		return p == null ? null : p.getNode();
 	}
@@ -267,6 +267,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	 * @see org.exist.xpath.value.Sequence#itemAt(int)
 	 */
 	public Item itemAt(int pos) {
+		sortInDocumentOrder();
 		return get(pos);
 	}
 
@@ -315,7 +316,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 		// start) + "ms.");
 	}
 
-	public void sortInDocumentOrder() {
+	public final void sortInDocumentOrder() {
 		//		long start = System.currentTimeMillis();
 		if(isInDocumentOrder)
 			return;
