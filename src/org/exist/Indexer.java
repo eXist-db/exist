@@ -258,7 +258,8 @@ public class Indexer
 			}
 			stack.pop();
 			
-			broker.endElement(last, currentPath);
+			if (!validate)
+			    broker.endElement(last, currentPath);
 			
 			currentPath.removeLastComponent();
 			if (validate) {
