@@ -206,29 +206,42 @@ public class DurationValue extends ComputableValue implements Cloneable {
 	}
 
 	public int getPart(int part) {
+        int returnValue = 0;
 		switch(part) {
 			case YEAR:
-				return year;
+				returnValue = year;
+                break;
 			case MONTH:
-				return month;
+				returnValue = month;
+                break;
 			case DAY:
-				return day;
+				returnValue = day;
+                break;
 			case HOUR:
-				return hour;
+				returnValue = hour;
+                break;
 			case MINUTE:
-				return minute;
+				returnValue = minute;
+                break;
 			case SECOND:
-				return second;
+				returnValue = second;
+                break;
 			case MILLISECOND:
-				return millisecond;
+				returnValue = millisecond;
+                break;
 			default:
 				throw new IllegalArgumentException("Invalid argument to method getPart");
 		}
+        if (negative)
+            returnValue *= -1;
+        return returnValue;
 	}
 	
 	public double getSeconds() {
 		double value = (double)second;
 		value += ((double)millisecond / 1000);
+        if (negative)
+            value *= -1;
 		return value;
 	}
 	
