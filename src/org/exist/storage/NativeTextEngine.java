@@ -339,8 +339,11 @@ public class NativeTextEngine extends TextSearchEngine {
 						// matching text node is a descendant of one of the nodes
 						// in the context set.
 						if (contextSet != null) {
-							parent = contextSet.parentWithChild(current, false,
+							if (section == TEXT_SECTION)
+								parent = contextSet.parentWithChild(current, false,
 									true, -1);
+							else
+								parent = contextSet.get(current);
 							if (parent != null) {
 								match = new Match(term, gid);
 								match.setFrequency(freq);
@@ -1200,8 +1203,11 @@ public class NativeTextEngine extends TextSearchEngine {
 									: new NodeProxy(doc, gid,
 											Node.ATTRIBUTE_NODE));
 							if (contextSet != null) {
-								parent = contextSet.parentWithChild(proxy, false,
+								if (section == TEXT_SECTION)
+									parent = contextSet.parentWithChild(proxy, false,
 										true, -1);
+								else
+									parent = contextSet.get(proxy);
 								if (parent != null) {
 									result.add(parent, sizeHint);
 									match = new Match(word, gid);
