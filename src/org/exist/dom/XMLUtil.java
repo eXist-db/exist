@@ -21,49 +21,47 @@
  */
 package org.exist.dom;
 
-import org.w3c.dom.*;
-
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.io.PrintWriter;
-import java.io.FileInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.io.File;
 
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
+import javax.xml.transform.TransformerException;
+
 import org.exist.util.Range;
+import org.exist.util.serializer.DOMSerializer;
+import org.exist.util.serializer.DOMSerializerPool;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
- *  Description of the Class
+ *  Defines some static utility methods. 
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    18. Juli 2002
  */
 public class XMLUtil {
 
 	public final static String dump(DocumentFragment fragment) {
-		OutputFormat format = new OutputFormat("xml", "UTF-8", true);
-		format.setLineWidth(60);
-		format.setOmitXMLDeclaration(true);
+		DOMSerializer serializer = DOMSerializerPool.getInstance().borrowDOMSerializer();
+		serializer.reset();
 		StringWriter writer = new StringWriter();
-		XMLSerializer serializer = new XMLSerializer(writer, format);
+		serializer.setWriter(writer);
 		try {
 			serializer.serialize(fragment);
-		} catch (IOException ioe) {
+		} catch (TransformerException e) {
+		} finally {
+			DOMSerializerPool.getInstance().returnDOMSerializer(serializer);
 		}
 		return writer.toString();
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  new_doc   Description of the Parameter
-	 *@param  node      Description of the Parameter
-	 *@param  new_node  Description of the Parameter
-	 */
 	public final static void copyChildren(
 		Document new_doc,
 		Node node,
@@ -98,13 +96,6 @@ public class XMLUtil {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  new_doc  Description of the Parameter
-	 *@param  node     Description of the Parameter
-	 *@return          Description of the Return Value
-	 */
 	public final static Node copyNode(Document new_doc, Node node) {
 		Node new_node;
 		switch (node.getNodeType()) {
@@ -130,12 +121,6 @@ public class XMLUtil {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  str  Description of the Parameter
-	 *@return      Description of the Return Value
-	 */
 	public final static String encodeAttrMarkup(String str) {
 		StringBuffer buf = new StringBuffer();
 		char ch;
@@ -201,24 +186,6 @@ public class XMLUtil {
 		return out.toString();
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  e  Description of the Parameter
-	 *@return    Description of the Return Value
-	 */
-	public final static String exceptionToString(Throwable e) {
-		StringWriter sw = new StringWriter();
-		e.printStackTrace(new PrintWriter(sw));
-		return sw.toString();
-	}
-
-	/**
-	 *  Gets the encoding attribute of the XMLUtil class
-	 *
-	 *@param  xmlDecl  Description of the Parameter
-	 *@return          The encoding value
-	 */
 	public final static String getEncoding(String xmlDecl) {
 		if (xmlDecl == null)
 			return null;
@@ -246,13 +213,6 @@ public class XMLUtil {
 		return getFirstChildId(doc, gid, level);
 	}
 
-	/**
-	 *  Gets the firstChildId attribute of the XMLUtil class
-	 *
-	 *@param  doc  Description of the Parameter
-	 *@param  gid  Description of the Parameter
-	 *@return      The firstChildId value
-	 */
 	public final static long getFirstChildId(
 		DocumentImpl doc,
 		long gid,
@@ -286,7 +246,6 @@ public class XMLUtil {
 		final long gid) {
 		final int level = doc.getTreeLevel(gid);
 		if (level < 0) {
-			System.out.println("unable to determine level for " + gid);
 			return -1;
 		}
 		return getParentId(doc, gid, level);
@@ -371,13 +330,7 @@ public class XMLUtil {
 			}
 			return null;
 		}
-		
-	/**
-	 *  Gets the encoding attribute of the XMLUtil class
-	 *
-	 *@param  data  Description of the Parameter
-	 *@return       The encoding value
-	 */
+	
 	public final static String getXMLDecl(byte[] data) {
 		boolean foundTag = false;
 		for (int i = 0; i < data.length && !foundTag; i++)
@@ -396,35 +349,10 @@ public class XMLUtil {
 		return null;
 	}
 
-	/**
-	 *  The main program for the XMLUtil class
-	 *
-	 *@param  args  The command line arguments
-	 */
-	public static void main(String[] args) {
-		String q = "//SPEECH[LINE &amp;= 'fenny snake']";
-		System.out.println(XMLUtil.decodeAttrMarkup(q));
-	}
-
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  file             Description of the Parameter
-	 *@return                  Description of the Return Value
-	 *@exception  IOException  Description of the Exception
-	 */
 	public final static String readFile(File file) throws IOException {
 		return readFile(file, "ISO-8859-1");
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  file             Description of the Parameter
-	 *@param  defaultEncoding  Description of the Parameter
-	 *@return                  Description of the Return Value
-	 *@exception  IOException  Description of the Exception
-	 */
 	public static String readFile(File file, String defaultEncoding)
 		throws IOException {
 		// read the file into a string

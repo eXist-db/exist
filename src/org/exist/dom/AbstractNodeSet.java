@@ -1,6 +1,6 @@
 
 /* eXist Open Source Native XML Database
- * Copyright (C) 2000-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2000-04,  Wolfgang M. Meier (wolfgang@exist-db.org)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -458,6 +458,39 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		return result;
 	}
 
+	public NodeSet selectFollowing(NodeSet following) throws XPathException {
+		if (following.getLength() == 0 || getLength() == 0)
+			return EMPTY_SET;
+		NodeSet result = new ExtArrayNodeSet();
+		Iterator ia = iterator();
+		Iterator ib = following.iterator();
+		NodeProxy na = (NodeProxy) ia.next(), nb = (NodeProxy) ib.next();
+		while(true) {
+			if(na.doc.getDocId() < nb.doc.getDocId()) {
+				if(ia.hasNext())
+					na = (NodeProxy) ia.next();
+				else
+					break;
+			} else if(na.doc.getDocId() > nb.doc.getDocId()) {
+				if(ib.hasNext())
+					nb = (NodeProxy) ib.next();
+				else
+					break;
+			} else {
+				if(nb.after(na, false)) {
+					nb.addContextNode(na);
+					result.add(nb);
+				} else {
+					if(ib.hasNext())
+						nb = (NodeProxy) ib.next();
+					else
+						break;
+				}
+			}
+		}
+		return result;
+	}
+	
 	/**
 	 * Select all nodes from the passed node set, which
 	 * are preceding or following siblings of the nodes in
@@ -511,16 +544,20 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 					// if its id is greater than the id of the other node
 					if (nb.gid < na.gid) {
 						// found a preceding sibling
-						if (mode == PRECEDING)
+						if (mode == PRECEDING) {
+							nb.addContextNode(na);
 							result.add(nb);
+						}
 						if (ib.hasNext())
 							nb = (NodeProxy) ib.next();
 						else
 							break;
 					} else if (nb.gid > na.gid) {
 						// found a following sibling						
-						if (mode == FOLLOWING)
+						if (mode == FOLLOWING) {
+							nb.addContextNode(na);
 							result.add(nb);
+						}
 						if (ib.hasNext())
 							nb = (NodeProxy) ib.next();
 						else
@@ -740,6 +777,31 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		return r;
 	}
 
+	public NodeSet deepIntersection(NodeSet other) {
+//		long start = System.currentTimeMillis();
+		AVLTreeNodeSet r = new AVLTreeNodeSet();
+		NodeProxy l, p, q;
+		for (Iterator i = iterator(); i.hasNext();) {
+			l = (NodeProxy) i.next();
+			if ((p = other.parentWithChild(l, false, true, -1)) != null) {
+				if(p.gid != l.gid)
+					p.addMatches(l);
+				r.add(p);
+			}
+		}
+		for (Iterator i = other.iterator(); i.hasNext();) {
+			l = (NodeProxy) i.next();
+			if ((q = parentWithChild(l, false, true, -1)) != null) {
+				if ((p = r.get(q)) != null) {
+					p.addMatches(l);
+				} else
+					r.add(l);
+			}
+		}
+//		LOG.debug("deep intersection took " + (System.currentTimeMillis() - start));
+		return r;
+	}
+	
 	public NodeSet except(NodeSet other) {
 		AVLTreeNodeSet r = new AVLTreeNodeSet();
 		NodeProxy l, p;

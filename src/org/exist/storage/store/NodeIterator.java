@@ -143,6 +143,7 @@ public final class NodeIterator implements Iterator {
 			}
 			return nextNode;
 		} catch (BTreeException e) {
+			Thread.dumpStack();
 			LOG.warn(e);
 		} catch (IOException e) {
 			LOG.warn(e);

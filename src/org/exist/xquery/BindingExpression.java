@@ -109,6 +109,7 @@ public abstract class BindingExpression extends AbstractExpression {
 	protected Sequence applyWhereExpression(
 		Sequence contextSequence)
 		throws XPathException {
+//		long start = System.currentTimeMillis();
 		whereExpr.setInPredicate(true);
 		if (Type.subTypeOf(whereExpr.returnsType(), Type.NODE) &&
 			(contextSequence == null || 
@@ -140,6 +141,7 @@ public abstract class BindingExpression extends AbstractExpression {
 					contextNode = contextNode.getNextItem();
 				}
 			}
+//			LOG.debug("where expression took " + (System.currentTimeMillis() - start));
 			return result;
 		} else if (contextSequence == null) {
 			Sequence innerSeq = whereExpr.eval(null);

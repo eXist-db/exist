@@ -24,6 +24,7 @@ package org.exist.dom;
 
 import java.util.Iterator;
 
+import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
 import org.w3c.dom.NodeList;
 
@@ -287,6 +288,8 @@ public interface NodeSet extends Sequence, NodeList {
 	 */
 	public NodeSet selectSiblings(NodeSet siblings, int mode);
 	
+	public NodeSet selectFollowing(NodeSet following) throws XPathException;
+	
 	/**
 	 * Get all the sibling nodes of the specified node in the current set.
 	 * 
@@ -407,6 +410,8 @@ public interface NodeSet extends Sequence, NodeList {
 	 * @return
 	 */
 	public NodeSet intersection(NodeSet other);
+	
+	public NodeSet deepIntersection(NodeSet other);
 	
 	/**
 	 * Return a new node set which represents the union of the

@@ -41,13 +41,21 @@ public class DOMStreamerPool extends StackObjectPool {
 		super(factory, maxIdle, initIdleCapacity);
 	}
 
-	public DOMStreamer borrowDOMStreamer() throws Exception {
-		return (DOMStreamer)borrowObject();
+	public DOMStreamer borrowDOMStreamer() {
+		try {
+			return (DOMStreamer)borrowObject();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
-	public void returnDOMStreamer(DOMStreamer streamer) throws Exception {
+	public void returnDOMStreamer(DOMStreamer streamer) {
 		if(streamer == null)
 			return;
-		returnObject(streamer);
+		try {
+			returnObject(streamer);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

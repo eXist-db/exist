@@ -71,7 +71,7 @@
         of the returned XML fragments.
     -->
     <serializer enable-xinclude="yes" enable-xsl="no"
-        indent="yes" add-exist-id="none" match-tagging-elements="yes"
+		indent="yes" add-exist-id="none" match-tagging-elements="yes"
         match-tagging-attributes="no"/>
   
     <!-- 

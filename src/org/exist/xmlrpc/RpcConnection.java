@@ -158,7 +158,7 @@ public class RpcConnection extends Thread {
 		}
 		LOG.debug("compiling " + xquery);
 		XQueryLexer lexer = new XQueryLexer(new StringReader(xquery));
-		XQueryParser parser = new XQueryParser(lexer, false);
+		XQueryParser parser = new XQueryParser(lexer);
 		XQueryTreeParser treeParser = new XQueryTreeParser(context);
 
 		parser.xpath();
