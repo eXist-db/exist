@@ -48,7 +48,7 @@ public class FunMin extends Function {
 			"Selects an item from the input sequence $a whose value is less than or equal to " +
 			"the value of every other item in the input sequence.",
 			new SequenceType[] { new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)},
-			new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE));
+			new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE), true /* overloaded=true jmv */ );
 
 	/**
 	 * @param context
