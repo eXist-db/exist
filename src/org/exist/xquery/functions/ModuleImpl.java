@@ -73,6 +73,7 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(FunMatches.signature, FunMatches.class),
 		new FunctionDef(FunMax.signature, FunMax.class),
 		new FunctionDef(FunMin.signature, FunMin.class),
+		new FunctionDef(FunNodeName.signature, FunNodeName.class),
 		new FunctionDef(FunName.signature, FunName.class),
 		new FunctionDef(FunNamespaceURI.signature, FunNamespaceURI.class),
 		new FunctionDef(FunNormalizeSpace.signature, FunNormalizeSpace.class),

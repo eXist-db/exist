@@ -34,6 +34,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Node;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -72,7 +73,7 @@ public class FunRoot extends Function {
 		if (!Type.subTypeOf(item.getType(), Type.NODE))
 			throw new XPathException("Context item is not a node; got " + Type.getTypeName(item.getType()));
 		if (item instanceof NodeProxy)
-			return new NodeProxy(((NodeProxy) item).doc, 1);
+			return new NodeProxy(((NodeProxy) item).doc, 1, Node.ELEMENT_NODE);
 		else
 			return (NodeImpl) ((NodeImpl) item).getOwnerDocument().getDocumentElement();
 	}
