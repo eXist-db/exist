@@ -1,12 +1,14 @@
-module namespace c="http://exist-db.org/modules/mods-config";
+module namespace conf="http://exist-db.org/modules/mods-config";
 
 declare namespace mods="http://www.loc.gov/mods/v3";
 declare namespace util="http://exist-db.org/xquery/util";
 
-declare variable $c:css { "styles/display.css" };
+declare variable $conf:preload { true() };
+
+declare variable $conf:css { "styles/display.css" };
 
 (:  called to select elements from a record for display :)
-declare function c:displayItem($record as element())
+declare function conf:displayItem($record as element())
 as element()+
 {
     $record/mods:titleInfo,
@@ -17,33 +19,7 @@ as element()+
     $record/mods:location
 };
 
-declare function c:orderByName($m as element()) as xs:string?
-{
-    let $name := $m/mods:name[1],
-        $order :=
-            if($name/mods:namePart[@type='family']) then
-                concat($name/mods:namePart[@type='family'], ", ", $name/mods:namePart[@type='given'])
-            else if($name/mods:namePart) then
-                xs:string($name/mods:namePart)
-            else
-                ""
-    return
-        (util:log("debug", $order),
-        $order)
-};
-
-(: Map order parameter to xpath for order by clause :)
-declare function c:orderExpr($field as xs:string) as xs:string
-{
-	if ($field = "creator") then
-        "c:orderByName($m)"
-	else if ($field = "title") then
-		"$m/m:titleInfo[1]/m:title[1]"
-	else
-		"$m/m:originInfo/m:dateCreated[1] descending"
-};
-
-declare function c:sidebar($url as xs:string, $user as xs:string, $collection as xs:string)
+declare function conf:sidebar($url as xs:string, $user as xs:string, $collection as xs:string)
 as element()
 {
     <div id="sidebar">
@@ -64,9 +40,10 @@ as element()
         
         <div class="block">
             <h3>Search</h3>
-            <form action="{$url}" method="GET">
-                <input class="search-sidebar" name="query" type="text" />
-        		<input type="submit" class="search-button" value="search"/>
+            <form name="searchform" action="{$url}" method="GET">
+                <input id="livesearch" name="query" type="text" 
+                    onkeypress="liveSearchStart()"/>
+                <div id="LSResult" style="display: none;"><div id="LSShadow"></div></div>
             </form>
             <ul>
                 <li><a href="{$url}?show-form=true">Advanced Query</a></li>
@@ -80,7 +57,7 @@ as element()
     </div> 
 };
 
-declare function c:query-form($url as xs:string, $collection as xs:string) as element() {
+declare function conf:query-form($url as xs:string, $collection as xs:string) as element() {
     <form action="{$url}" method="GET">
         <table id="query" cellpadding="5" cellspacing="0" border="0">
             <tr>

@@ -47,15 +47,13 @@
             </head>
 
             <body bgcolor="#FFFFFF">
-                <div id="top">
+                <div id="page-head">
                     <img src="logo.jpg" title="eXist"/>
-                    <table id="menubar">
-                        <tr>
-                            <td id="header"><xsl:value-of select="header/title"/></td>
-                            <xsl:apply-templates select="sidebar:sidebar/sidebar:toolbar"/>
-                        </tr>
-                    </table>
                     <div id="version-info">Site based on <xsl:value-of select="header/version"/></div>
+                    <div id="navbar">
+                        <h1><xsl:value-of select="header/title"/></h1>
+                        <xsl:apply-templates select="sidebar:sidebar/sidebar:toolbar"/>
+                    </div>
                 </div>
                 <xsl:apply-templates select="sidebar:sidebar"/>
                 <xsl:apply-templates select="rss"/>
@@ -104,9 +102,11 @@
     </xsl:template>
 
     <xsl:template match="sidebar:toolbar">
-        <td align="right">
-            <xsl:apply-templates/>
-        </td>
+        <ul id="menu">
+            <xsl:for-each select="sidebar:link">
+                <li><xsl:apply-templates select="."/></li>
+            </xsl:for-each>
+        </ul>
     </xsl:template>
     
     <xsl:template match="sidebar:group">

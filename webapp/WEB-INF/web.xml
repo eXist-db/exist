@@ -68,7 +68,7 @@
 		<servlet-class>org.exist.http.servlets.XQueryServlet</servlet-class>
 
 		<init-param>
-			<param-name>url</param-name>
+			<param-name>uri</param-name>
 			<param-value>xmldb:exist:///db</param-value>
         </init-param>
 

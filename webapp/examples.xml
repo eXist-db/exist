@@ -43,7 +43,7 @@
 
 				<p>The examples below require some XML documents to be stored in the
 				database. If you have not yet imported these files, go to
-				<a href="admin/admin.xql?user=admin&amp;password=&amp;panel=setup">
+				<a href="admin/admin.xql?user=admin&amp;pass=&amp;panel=setup">
 				Examples Setup</a>.</p>
                 
                 <table border="0" width="100%" cellspacing="10">
