@@ -37,7 +37,9 @@
                 
                 <p>Both alternatives, the XQueryGenerator as well as the servlet,
                 keep the compiled XQuery script in a cache. The code will only
-                be recompiled if the source file has changed.</p>
+                be recompiled if the source file has changed. Beginning with 1.0b2, the
+                modification check also includes all module source files imported from
+                a query.</p>
                 
                 <table border="0" width="100%" cellspacing="10">
                     <tr>

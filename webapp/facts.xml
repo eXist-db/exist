@@ -119,9 +119,10 @@
 
                 <topic name="XPath/XQuery">
 
-                    <p>XPath 2.0/XQuery 1.0 (Nov., 2003 working drafts) with
-                        extensions (to support fulltext search). Queries may span
-                        any possible combination of collections or documents.</p>
+                    <p>XPath 2.0/XQuery 1.0 (Nov., 2003 working drafts for the core syntax 
+                    with some parts already following later versions) with
+                    extensions (to support fulltext search). Queries may span
+                    any possible combination of collections or documents.</p>
 
                     <p>According to the Bumblebee XQuery test harness, 92% of all use
                     cases are passed (excluding the "strong" use cases, which are

@@ -2264,16 +2264,17 @@ public class GetDocument {
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                    <term>resolver-xxx.jar</term>
+                    <term>xml-commons-resolver-x.x.jar</term>
                     <listitem>
                         <para>A library for resolving XML external entities 
 							from catalogue files.</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                    <term>xmlrpc-x.x.jar</term>
+                    <term>xmlrpc-x.x-patched.jar</term>
                     <listitem>
-                        <para>XMLRPC protocol support. You should include this 
+                        <para>XMLRPC protocol support. This library has been patched
+                        to handle the full unicode character range. You should include this 
 							library, even if you don't intend to connect to a 
 							remote database instance. The XML:DB driver 
 							references this library and most Java machines will 

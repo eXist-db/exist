@@ -59,7 +59,7 @@ table p {
     margin-top: 15px;
     width: 16%;
     display: block;
-    overflow: hidden;
+    overflow: visible;
 }
 
 #content2col {
@@ -69,7 +69,7 @@ table p {
     margin-top: 15px;
     display: block;
     background-color: white;
-    overflow: hidden;
+    overflow: visible;
 }
 
 #content {
@@ -79,7 +79,7 @@ table p {
     margin-top: 15px;
     display: block;
     background-color: white;
-    overflow: hidden;
+    overflow: visible;
 }
 
 #news {
@@ -88,7 +88,7 @@ table p {
     left: 82%;
     margin-top: 15px;
     display: block;
-    overflow: hidden;
+    overflow: visible;
 }
 
 #version-info {
