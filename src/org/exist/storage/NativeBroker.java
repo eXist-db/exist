@@ -1965,15 +1965,15 @@ public class NativeBroker extends DBBroker {
 	 *      fulltext-indexed).
 	 */
 	public void store(final NodeImpl node, String currentPath) {
-		IndexPaths idx =
+		final IndexPaths idx =
 			(IndexPaths) config.getProperty(
 				"indexScheme."
 					+ node.getOwnerDocument().getDoctype().getName());
-		if (node.getGID() < 0)
+        final long gid = node.getGID();
+		if (gid < 0)
 			LOG.debug(
-				"illegal node: " + node.getGID() + "; " + node.getNodeName());
+				"illegal node: " + gid + "; " + node.getNodeName());
 		final short nodeType = node.getNodeType();
-		final long gid = node.getGID();
 		final String nodeName = node.getNodeName();
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 		final int depth = idx == null ? defaultIndexDepth : idx.getIndexDepth();

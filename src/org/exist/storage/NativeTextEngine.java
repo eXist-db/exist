@@ -803,7 +803,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 
 		public void addRow(String word, long gid) {
-			OrderedLongLinkedList buf;
+			LongLinkedList buf;
 			if (words.containsKey(word)) {
 				buf = (OrderedLongLinkedList) words.get(word);
 			} else {
