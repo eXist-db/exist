@@ -99,7 +99,6 @@ public class ClockCache implements Cache {
 
 		old = items[bucket];
 		if (old != null) {
-		    LOG.debug("REMOVING " + old.getKey());
 			map.remove(old.getKey());
 			old.sync();
 		}
