@@ -21,21 +21,20 @@
  */
 package org.exist.dom;
 
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+
+import org.exist.storage.Signatures;
+import org.exist.util.StringUtil;
+import org.exist.util.XMLUtil;
 import org.w3c.dom.Attr;
-import org.w3c.dom.Node;
-import org.w3c.dom.Element;
 import org.w3c.dom.DOMException;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
-import java.io.IOException;
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import org.exist.storage.*;
-import org.exist.util.*;
 
 /**
  *  Description of the Class
@@ -169,22 +168,16 @@ public class AttrImpl extends NodeImpl implements Attr {
      *@return    Description of the Return Value
      */
     public byte[] serialize() {
-        byte[] vd;
-        try {
-            vd = value.getBytes( "UTF-8" );
-        } catch ( UnsupportedEncodingException uee ) {
-            vd = value.getBytes();
-        }
-        short id = ownerDocument.getSymbols().getSymbol( this );
-        byte idSizeType = Signatures.getSizeType( id );
-        byte[] data = new byte[vd.length +
+        final short id = ownerDocument.getSymbols().getSymbol( this );
+        final byte idSizeType = Signatures.getSizeType( id );
+        final byte[] data = new byte[StringUtil.utflen(value) +
             Signatures.getLength( idSizeType ) +
             1];
         data[0] = (byte) ( Signatures.Attr << 0x5 );
         data[0] |= idSizeType;
         data[0] |= (byte) (attributeType << 0x2);
         Signatures.write( idSizeType, id, data, 1 );
-        System.arraycopy( vd, 0, data, 1 + Signatures.getLength( idSizeType ), vd.length );
+        StringUtil.utfwrite(data, 1 + Signatures.getLength( idSizeType ), value);
         return data;
     }
 
