@@ -2,7 +2,11 @@ package org.exist.xmldb.test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 
 import junit.framework.TestCase;
 
@@ -86,35 +90,35 @@ public class CreateCollectionsTest extends TestCase {
 				"Collection state should be Open after creation",
 				testCollection.isOpen());
 
+			String directory = "samples/shakespeare";
 			System.out.println("---------------------------------------");
-			System.out.println("storing files ...");
+			System.out.println("storing all XML files in directory " +directory+"...");
 			System.out.println("---------------------------------------");
-			File f = new File("samples/shakespeare");
+			File f = new File(directory);
 			File files[] = f.listFiles(new XMLFilenameFilter());
 
 			for (int i = 0; i < files.length; i++) {
-				// XMLResource storeResourceFromFile(File f, Collection col)
 				storeResourceFromFile(files[i], testCollection);
 			}
 
-			HashSet fileNames = new HashSet();
+			HashSet fileNamesJustStored = new HashSet();
 			for (int i = 0; i < files.length; i++) {
 				String file = files[i].toString();
 				int lastSeparator = file.lastIndexOf(File.separatorChar);
-				fileNames.add(file.substring(lastSeparator + 1));
+				fileNamesJustStored.add(file.substring(lastSeparator + 1));
 			}
-			System.out.println("fileNames: " + fileNames.toString());
+			System.out.println("fileNames stored: " + fileNamesJustStored.toString());
 
 			String[] resourcesNames = testCollection.listResources();
 			int resourceCount = testCollection.getResourceCount();
-			System.out.println(
-				"testCollection.getResourceCount()=" + resourceCount);
-			for (int i = 0; i < resourceCount; i++) {
-				System.out.println("resourcesNames[i]=" + resourcesNames[i]);
-				assertTrue(
-					"resourcesNames must contain fileNames just stored",
-					fileNames.contains(resourcesNames[i]));
+			System.out.println(  "testCollection.getResourceCount()=" + resourceCount);
+
+			ArrayList fileNamesPresentInDatabase = new ArrayList();
+			for (int i = 0; i < resourcesNames.length; i++) {
+				fileNamesPresentInDatabase.add( resourcesNames[i]);
 			}
+			assertTrue( "resourcesNames must contain fileNames just stored",
+					fileNamesPresentInDatabase. containsAll( fileNamesJustStored) );
 
 			String fileToRemove = "macbeth.xml";
 			Resource resMacbeth = testCollection.getResource(fileToRemove);
@@ -126,7 +130,7 @@ public class CreateCollectionsTest extends TestCase {
 			// restore the resource just removed :
 			storeResourceFromFile(
 				new File(
-					"samples/shakespeare" + File.separatorChar + fileToRemove),
+					directory + File.separatorChar + fileToRemove),
 				testCollection);
 
 		} catch (XMLDBException e) {
