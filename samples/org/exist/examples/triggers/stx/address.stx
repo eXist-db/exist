@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<stx:transform xmlns:stx="http://stx.sourceforge.net/2002/ns" 
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#"
+	version="1.0"
+	pass-through="text">
+
+	<stx:template match="Contact">
+		<rdf:Description rdf:ID="">
+			<stx:process-children/>
+		</rdf:Description>
+	</stx:template>
+
+	<stx:template match="SName">
+		<vCard:Given><stx:process-children/></vCard:Given>
+	</stx:template>
+
+	<stx:template match="FName">
+		<vCard:Family><stx:process-children/></vCard:Family>
+	</stx:template>
+	
+	<stx:template match="Address">
+		<stx:process-children/>
+	</stx:template>
+
+	<stx:template match="Street">
+		<vCard:Street><stx:value-of select="."/></vCard:Street>
+	</stx:template>
+
+	<stx:template match="Box">
+		<vCard:Pobox><stx:value-of select="."/></vCard:Pobox>
+	</stx:template>
+
+	<stx:template match="City">
+		<vCard:Location><stx:value-of select="."/></vCard:Location>
+	</stx:template>
+
+	<stx:template match="Pcode">
+		<vCard:Pcode><stx:value-of select="."/></vCard:Pcode>
+	</stx:template>
+</stx:transform>
+		

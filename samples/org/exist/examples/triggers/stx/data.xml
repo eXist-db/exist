@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<Contact>
+	<SName>Richard</SName>
+	<FName>Rorty</FName>
+	<Address>
+		<Street>Somestreet</Street>
+		<Box>443355</Box>
+		<City>Somewhere</City>
+		<Pcode>9999</Pcode>
+	</Address>
+</Contact>
