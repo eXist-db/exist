@@ -26,7 +26,6 @@ import org.exist.dom.NodeListImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
-import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.hashtable.NamePool;
 import org.exist.util.serializer.AttrList;
@@ -48,7 +47,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
-import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 /**
@@ -574,9 +572,13 @@ public class DocumentImpl extends NodeImpl implements Document {
      * @param receiver
      */
     public void copyTo(NodeImpl node, DocumentBuilderReceiver receiver) throws SAXException {
+        copyTo(node, receiver, false);
+    }
+    
+    protected void copyTo(NodeImpl node, DocumentBuilderReceiver receiver, boolean expandRefs) throws SAXException {
         NodeImpl top = node;
         while (node != null) {
-            copyStartNode(node, receiver);
+            copyStartNode(node, receiver, expandRefs);
             NodeImpl nextNode = (NodeImpl) node.getFirstChild();
             while (nextNode == null) {
                 copyEndNode(node, receiver);
@@ -595,7 +597,7 @@ public class DocumentImpl extends NodeImpl implements Document {
         }
     }
  
-    private void copyStartNode(NodeImpl node, DocumentBuilderReceiver receiver)
+    private void copyStartNode(NodeImpl node, DocumentBuilderReceiver receiver, boolean expandRefs)
             throws SAXException {
         int nr = node.nodeNumber;
         switch (node.getNodeType()) {
@@ -645,7 +647,15 @@ public class DocumentImpl extends NodeImpl implements Document {
                 receiver.processingInstruction(qn.getLocalName(), data);
                 break;
             case NodeImpl.REFERENCE_NODE:
-                receiver.addReferenceNode(document.references[document.alpha[nr]]);
+                if(expandRefs) {
+                    Serializer serializer = context.getBroker().getSerializer();
+                    serializer.reset();
+                    serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
+                    serializer.setReceiver(receiver);
+                    serializer.toReceiver(document.references[document.alpha[nr]]);
+                } else {
+                    receiver.addReferenceNode(document.references[document.alpha[nr]]);
+                }
                 break;
         }
     }
@@ -653,6 +663,62 @@ public class DocumentImpl extends NodeImpl implements Document {
     private void copyEndNode(NodeImpl node, DocumentBuilderReceiver receiver) throws SAXException {
         if(node.getNodeType() == Node.ELEMENT_NODE)
             receiver.endElement(node.getQName());
+    }
+    
+    /**
+     * Expand all reference nodes in the current document, i.e. replace them by
+     * real nodes. Reference nodes are just pointers to nodes from other documents 
+     * stored in the database. The XQuery engine uses reference nodes to speed 
+     * up the creation of temporary doc fragments.
+     * 
+     * This method creates a new copy of the document contents and expands all
+     * reference nodes.
+     */
+    public void expand() throws DOMException {
+        if(nextRef == 0) {
+            return;
+        }
+        MemTreeBuilder builder = new MemTreeBuilder(context);
+        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+        try {
+            builder.startDocument();
+            NodeImpl node = (NodeImpl) getFirstChild();
+            while(node != null) {
+                copyTo(node, receiver, true);
+                node = (NodeImpl) node.getNextSibling();
+            }
+            receiver.endDocument();
+        } catch (SAXException e) {
+            throw new DOMException(DOMException.INVALID_STATE_ERR, e.getMessage());
+        }
+        DocumentImpl newDoc = builder.getDocument();
+        copyDocContents(newDoc);
+    }
+
+    /**
+     * @param newDoc
+     */
+    private void copyDocContents(DocumentImpl newDoc) {
+        namePool = newDoc.namePool;
+        nodeKind = newDoc.nodeKind;
+        treeLevel = newDoc.treeLevel;
+        next = newDoc.next;
+        nodeName = newDoc.nodeName;
+        alpha = newDoc.alpha;
+        alphaLen = newDoc.alphaLen;
+        characters = newDoc.characters;
+        nextChar = newDoc.nextChar;
+        attrName = newDoc.attrName;
+        attrParent = newDoc.attrParent;
+        attrValue = newDoc.attrValue;
+        nextAttr = newDoc.nextAttr;
+        namespaceParent = newDoc.namespaceParent;
+        namespaceCode = newDoc.namespaceCode;
+        nextNamespace = newDoc.nextNamespace;
+        size = newDoc.size;
+        documentRootNode = newDoc.documentRootNode;
+        references = newDoc.references;
+        nextRef = newDoc.nextRef;
     }
     
     /**

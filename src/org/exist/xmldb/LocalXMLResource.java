@@ -12,6 +12,7 @@ import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.XMLUtil;
+import org.exist.memtree.NodeImpl;
 import org.exist.security.Permission;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
@@ -145,9 +146,12 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	}
 
 	public Node getContentAsDOM() throws XMLDBException {
-		if (root != null)
+		if (root != null) {
+            if(root instanceof NodeImpl) {
+                ((NodeImpl)root).expand();
+            }
 			return root;
-		else if (value != null) {
+        } else if (value != null) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 					"cannot return an atomic value as DOM node");
 		} else {

@@ -1,17 +1,30 @@
 package org.exist.xmldb.test;
 
-import org.xmldb.api.*;
-import org.xmldb.api.base.*;
-import org.xmldb.api.modules.*;
-import org.exist.xmldb.DatabaseInstanceManager;
+import java.io.ByteArrayInputStream;
+import java.io.UnsupportedEncodingException;
 
-import java.io.*;
-import javax.xml.parsers.*;
-import javax.xml.transform.*;
-import javax.xml.transform.dom.*;
-import javax.xml.transform.sax.*;
-import org.xml.sax.*;
-import org.w3c.dom.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXResult;
+
+import org.exist.xmldb.DatabaseInstanceManager;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.Locator;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Database;
+import org.xmldb.api.base.ResourceIterator;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.modules.XMLResource;
+import org.xmldb.api.modules.XPathQueryService;
 
 /**
  * @author jmv
@@ -314,7 +327,7 @@ public class DOMTest {
 		}
 	}
 
-	class SAXHandler implements ContentHandler {
+	public static class SAXHandler implements ContentHandler {
 		SAXHandler() {
 		}
 
