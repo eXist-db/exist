@@ -101,7 +101,8 @@ public class ExtCollection extends Function {
 		for (int i = 0; i < args.size(); i++) {
 			String next = (String)args.get(i);
 		    Collection coll = context.getBroker().getCollection(next);
-		    coll.allDocs(context.getBroker(), docs, includeSubCollections, true);
+		    if(coll != null)
+		    	coll.allDocs(context.getBroker(), docs, includeSubCollections, true);
 		}
 		NodeSet result = new ExtArrayNodeSet(docs.getLength(), 1);
 		Lock dlock;
