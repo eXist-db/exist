@@ -723,6 +723,7 @@ Running tests on remote database
 			classname="com.izforge.izpack.ant.IzPackTask"/>
 		<tstamp/>
 		<delete dir="${jetty.dir}/work/Jetty__8080__exist"/>
+		<copy file="installer/install.xml.tmpl" tofile="installer/install.xml" filtering="true"/>
 		<echo message="Calling IzPack to create installer ..."/>
 		<izpack input="installer/install.xml"
 			output="installer/${project.name}-${project.version}.jar"
@@ -781,11 +782,12 @@ Running tests on remote database
             <replacefilter token="quickstart.xml" value="quickstart.html"/>
             <replacefilter token="security.xml" value="security.html"/>
             <replacefilter token="xquery.xml" value="xquery.html"/>
+        	<replacefilter token="updating.xml" value="updating.html"/>
             <replacefilter token='"xinclude.xml' value='"xinclude.html'/>
             
             <replacefilter token="examples.xml" value="${demo.host}/examples.xml"/>
             <replacefilter token="xquery/acronyms.xq" value="${demo.host}/xquery/acronyms.xq"/>
-            <replacefilter token="xquery/biblio.xml" value="${demo.host}/xquery/biblio.xml"/>
+            <replacefilter token="mods/" value="${demo.host}/mods/"/>
             <replacefilter token="xquery/xquery.xq" value="${demo.host}/xquery/xquery.xq"/>
             <replacefilter token='url="xmldb/db/' value='url="${demo.host}/xmldb/db/'/>
             <replacefilter token='href="xmldb/db/' value='href="${demo.host}/xmldb/db/'/>
@@ -794,6 +796,7 @@ Running tests on remote database
             <replacefilter token="xquery/functions.xq" value="${demo.host}/xquery/functions.xq"/>
             <replacefilter token='url="xquery/guess.xql' value='url="${demo.host}/xquery/guess.xql'/>
             <replacefilter token="xquery/login.xql" value="${demo.host}/xquery/login.xql"/>
+        	<replacefilter token="apps/applications.xml" value="${demo.host}/apps/applications.xml"/>
         </replace>
     </target>
     
@@ -834,13 +837,14 @@ Running tests on remote database
                <uri type="append" src="security.xml"/>
                <uri type="append" src="xquery.xml"/>
                <uri type="append" src="xinclude.xml"/>
+            	<uri type="append" src="updating.xml"/>
            </uris>
         </cocoon>
         
         <echo message="Renaming files ..."/>
         <move todir="${build.docs.html}">
             <fileset dir="${build.docs.html}">
-                <include name="**.xml"/>
+                <include name="*.xml"/>
             </fileset>
             <mapper type="glob" from="*.xml" to="*.html"/>
         </move>
@@ -851,6 +855,7 @@ Running tests on remote database
                 <include name="resources/**"/>
                 <include name="*.jpg"/>
                 <include name="*.png"/>
+	        	<include name="*.gif"/>
             </fileset>
         </copy>
 	</target>
@@ -877,4 +882,41 @@ Running tests on remote database
 		</replaceregexp>
 	</target>
 	
+	<target name="demoserver">
+	    <echo message="Adjusting links ..."/>
+        <property name="host" value="http://exist-db.org"/>
+        <replace dir="webapp" summary="true"
+            includes="sidebar.xml">
+            <replacefilter token="index.xml" value="${host}/index.html"/>
+            <replacefilter token="credits.xml" value="${host}/credits.html"/>
+            <replacefilter token="quickstart.xml" value="${host}/quickstart.html"/>
+            <replacefilter token="documentation.xml" value="${host}/documentation.html"/>
+            <replacefilter token="#mailing" value="${host}/index.html#mailing"/>
+            <replacefilter token="api/index.html" value="${host}/api/index.html"/>
+        </replace>
+        
+        <replace dir="webapp" summary="true">
+            <include name="acronyms/sidebar.xml"/>
+            <include name="apps/sidebar.xml"/>
+            <include name="library/sidebar.xml"/>
+            <include name="xquery/sidebar.xml"/>
+            <replacefilter token="../index.xml" value="${host}/index.html"/>
+            <replacefilter token="../credits.xml" value="${host}/credits.html"/>
+            <replacefilter token="../quickstart.xml" value="${host}/quickstart.html"/>
+            <replacefilter token="../documentation.xml" value="${host}/documentation.html"/>
+            <replacefilter token="../api/index.html" value="${host}/api/index.html"/>
+		</replace>
+
+		<replace dir="webapp/admin" summary="true">
+			<include name="admin.xql"/>
+			<replacefilter token='&lt;a href="..">Home&lt;/a>' value='&lt;a href="${host}">Home&lt;/a>'/>
+		</replace>
+		<replace dir="webapp/mods" summary="true">
+			<include name="config.xqm"/>
+			<include name="login.xhtml"/>
+			<include name="mods.xq"/>
+			<replacefilter token='&lt;a href=".."' value='&lt;a href="${host}"'/>
+			<replacefilter token="../index.xml" value="${host}"/>
+		</replace>
+    </target>
 </project>
