@@ -17,7 +17,11 @@ public class LongLinkedList {
         public long getValue() {
             return l;
         }
-        
+     
+     	public ListItem getNext() {
+     		return next;
+     	}  
+     	
 		/**
 		 * @see java.lang.Comparable#compareTo(java.lang.Object)
 		 */
@@ -55,6 +59,18 @@ public class LongLinkedList {
 	
     public int getSize() {
         return count;
+    }
+    
+    public ListItem getFirst() {
+    	return first;
+    }
+    
+    public ListItem removeFirst() {
+    	ListItem temp = first;
+    	first = first.next;
+    	if(first != null)
+    		first.prev = null;
+    	return temp;
     }
     
     public long getLast() {

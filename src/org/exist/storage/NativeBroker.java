@@ -92,7 +92,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- *  NativeBroker.
+ *  Main class for the native XML storage backend.
+ * 
+ * Provides access to all low-level operations required by
+ * the database. Extends {@link DBBroker}.
  *
  *@author     Wolfgang Meier
  *@created    15. Mai 2002
@@ -124,12 +127,6 @@ public class NativeBroker extends DBBroker {
 	protected int nodesCount = 0;
 	private final Runtime run = Runtime.getRuntime();
 
-	/**
-	 *  Constructor for the NativeBroker object
-	 *
-	 *@param  config              Description of the Parameter
-	 *@exception  EXistException  Description of the Exception
-	 */
 	public NativeBroker(BrokerPool pool, Configuration config)
 		throws EXistException {
 		super(pool, config);
@@ -169,7 +166,7 @@ public class NativeBroker extends DBBroker {
 				elementsDb =
 					new BFile(
 						new File(dataDir + pathSep + "elements.dbx"),
-						elementsBuffers >> 1,
+						elementsBuffers >> 2,
 						elementsBuffers);
 				//elementsDb.fixedKeyLen = 6;
 				if (!elementsDb.exists()) {
@@ -178,7 +175,6 @@ public class NativeBroker extends DBBroker {
 				} else
 					elementsDb.open();
 
-				elementsDb.setCompression(compress);
 				config.setProperty("db-connection.elements", elementsDb);
 				readOnly = elementsDb.isReadOnly();
 			}
@@ -223,7 +219,6 @@ public class NativeBroker extends DBBroker {
 				} else
 					collectionsDb.open();
 
-				collectionsDb.setCompression(compress);
 				config.setProperty("db-connection.collections", collectionsDb);
 				if (!readOnly)
 					readOnly = collectionsDb.isReadOnly();

@@ -20,7 +20,6 @@ package org.exist.storage.store;
  *
  *  $Id$
  */
-import it.unimi.dsi.fastutil.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.Object2LongOpenHashMap;
 
 import java.io.ByteArrayOutputStream;
@@ -46,6 +45,12 @@ import org.exist.dom.XMLUtil;
 import org.exist.storage.BufferStats;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.Signatures;
+import org.exist.storage.cache.Cache;
+import org.exist.storage.cache.Cacheable;
+import org.exist.storage.cache.ClockCache;
+import org.exist.storage.cache.GClockCache;
+import org.exist.storage.cache.LRDCache;
+import org.exist.storage.cache.LRUCache;
 import org.exist.util.ByteConversion;
 import org.exist.util.Lock;
 import org.exist.util.Lockable;
@@ -78,7 +83,7 @@ public class DOMFile extends BTree implements Lockable {
 
 	private static Logger LOG = Logger.getLogger(DOMFile.class);
 
-	private final ClockPageBuffer buffer;
+	private final Cache dataCache;
 	private DOMFileHeader fileHeader;
 	private Object owner = null;
 
@@ -86,70 +91,38 @@ public class DOMFile extends BTree implements Lockable {
 
 	private final Object2LongOpenHashMap pages = new Object2LongOpenHashMap();
 
-	/**
-	 *  Constructor for the DOMFile object
-	 *
-	 *@param  buffers      the number of btree buffers to use
-	 *@param  dataBuffers  the number of data page buffers
-	 */
 	public DOMFile(int buffers, int dataBuffers) {
 		super(buffers);
 		lock = new ReentrantReadWriteLock("dom.dbx");
 		fileHeader = (DOMFileHeader) getFileHeader();
 		fileHeader.setPageCount(0);
 		fileHeader.setTotalCount(0);
-		buffer = new ClockPageBuffer(dataBuffers);
+		dataCache = new ClockCache(dataBuffers);
+		dataCache.setFileName("dom.dbx");
 	}
 
-	/**
-	 *  Constructor for the DOMFile object
-	 *
-	 *@param  file  the file to use
-	 */
 	public DOMFile(File file) {
 		this(256, 256);
 		setFile(file);
 	}
 
-	/**
-	 *  Constructor for the DOMFile object
-	 *
-	 *@param  file     the file to use
-	 *@param  buffers  size of the data page buffer
-	 */
 	public DOMFile(File file, int buffers) {
 		this(buffers, 256);
 		setFile(file);
 	}
 
-	/**
-	 *  Constructor for the DOMFile object
-	 *
-	 *@param  file         the file to use 
-	 *@param  buffers      size of the buffer for btree pages
-	 *@param  dataBuffers  size of the buffer for data pages
-	 */
 	public DOMFile(File file, int buffers, int dataBuffers) {
 		this(buffers, dataBuffers);
 		setFile(file);
 	}
 
-	/**
-	 *  Constructor for the DOMFile object.
-	 * 
-	 * Use this constructor if all keys have the same length.
-	 *
-	 *@param  file     the file to use
-	 *@param  buffers  size of the data page buffer
-	 *@param  keyLen   key size if all keys have the same length
-	 */
 	public DOMFile(File file, int buffers, short keyLen) {
 		this(file, buffers);
 		fileHeader.setKeyLen(keyLen);
 	}
 
-	protected final ClockPageBuffer getPageBuffer() {
-		return buffer;
+	protected final Cache getPageBuffer() {
+		return dataCache;
 	}
 
 	/**
@@ -163,7 +136,6 @@ public class DOMFile extends BTree implements Lockable {
 			return -1;
 		// overflow value?
 		if (value.length + 4 > fileHeader.getWorkSize()) {
-			LOG.debug("creating overflow page");
 			OverflowDOMPage overflow = new OverflowDOMPage();
 			overflow.write(value);
 			byte[] pnum = ByteConversion.longToByte(overflow.getPageNum());
@@ -185,7 +157,7 @@ public class DOMFile extends BTree implements Lockable {
 				ph.setNextDataPage(newPage.getPageNum());
 				newPage.getPageHeader().setPrevDataPage(page.getPageNum());
 				page.setDirty(true);
-				buffer.add(page);
+				dataCache.add(page);
 			}
 			page = newPage;
 			setCurrentPage(newPage);
@@ -208,7 +180,7 @@ public class DOMFile extends BTree implements Lockable {
 		ph.incRecordCount();
 		ph.setDataLength(page.len);
 		page.setDirty(true);
-		buffer.add(page, 2);
+		dataCache.add(page, 2);
 		// create pointer from pageNum and offset into page
 		final long p =
 			StorageAddress.createPointer((int) page.getPageNum(), tid);
@@ -328,7 +300,7 @@ public class DOMFile extends BTree implements Lockable {
 					getRecordCount(splitPage));
 				splitPage.setDirty(true);
 				reportSplit(doc, rec.page, splitPage);
-				buffer.add(splitPage);
+				dataCache.add(splitPage);
 				long next = splitPage.getPageHeader().getNextDataPage();
 				if (-1 < next) {
 					DOMPage nextPage =
@@ -337,7 +309,7 @@ public class DOMFile extends BTree implements Lockable {
 					nextPage.getPageHeader().setPrevDataPage(
 						splitPage.getPageNum());
 					nextPage.setDirty(true);
-					buffer.add(nextPage);
+					dataCache.add(nextPage);
 				}
 				rec.page.getPageHeader().setNextDataPage(
 					splitPage.getPageNum());
@@ -352,7 +324,7 @@ public class DOMFile extends BTree implements Lockable {
 					rec.page.getPageHeader().setNextDataPage(
 						newPage.getPageNum());
 					rec.page.setDirty(true);
-					buffer.add(rec.page);
+					dataCache.add(rec.page);
 					rec.page = newPage;
 					rec.offset = 0;
 					rec.page.len = value.length + 4;
@@ -374,7 +346,7 @@ public class DOMFile extends BTree implements Lockable {
 				rec.page.getPageHeader().getNextDataPage());
 			rec.page.getPageHeader().setNextDataPage(newPage.getPageNum());
 			rec.page.setDirty(true);
-			buffer.add(rec.page);
+			dataCache.add(rec.page);
 			rec.page = newPage;
 			rec.offset = 0;
 			rec.page.len = value.length + 4;
@@ -398,7 +370,7 @@ public class DOMFile extends BTree implements Lockable {
 		rec.offset += value.length;
 		rec.page.getPageHeader().incRecordCount();
 		rec.page.setDirty(true);
-		buffer.add(rec.page);
+		dataCache.add(rec.page);
 		return StorageAddress.createPointer((int) rec.page.getPageNum(), tid);
 	}
 
@@ -666,7 +638,7 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	public boolean flush() throws DBException {
 		super.flush();
-		buffer.flush();
+		dataCache.flush();
 		pages.remove(owner);
 		try {
 			if (fileHeader.isDirty())
@@ -679,7 +651,7 @@ public class DOMFile extends BTree implements Lockable {
 
 	public void sync() throws DBException {
 		super.flush();
-		buffer.clear();
+		dataCache.flush();
 		pages.remove(owner);
 		try {
 			if (fileHeader.isDirty())
@@ -691,15 +663,21 @@ public class DOMFile extends BTree implements Lockable {
 
 	public void printStatistics() {
 		super.printStatistics();
-		buffer.printStatistics();
+		StringBuffer buf = new StringBuffer();
+		buf.append(getFile().getName()).append(" DATA ");
+		buf.append(dataCache.getBuffers()).append(" / ");
+		buf.append(dataCache.getUsedBuffers()).append(" / ");
+		buf.append(dataCache.getHits()).append(" / ");
+		buf.append(dataCache.getFails());
+		LOG.info(buf.toString());
 	}
 
 	public BufferStats getDataBufferStats() {
 		return new BufferStats(
-			buffer.blockBuffers,
-			buffer.map.size(),
-			buffer.hits,
-			buffer.misses);
+			dataCache.getBuffers(),
+			dataCache.getUsedBuffers(),
+			dataCache.getHits(),
+			dataCache.getFails());
 	}
 
 	/**
@@ -826,7 +804,7 @@ public class DOMFile extends BTree implements Lockable {
 		if (!pages.containsKey(owner)) {
 			final DOMPage page = new DOMPage();
 			pages.put(owner, page.page.getPageNum());
-			buffer.add(page);
+			dataCache.add(page);
 			return page;
 		} else
 			return getCurrentPage(pages.getLong(owner));
@@ -839,7 +817,7 @@ public class DOMFile extends BTree implements Lockable {
 	 *@return    The currentPage value
 	 */
 	protected final DOMPage getCurrentPage(long p) {
-		DOMPage page = (DOMPage) buffer.get(p);
+		DOMPage page = (DOMPage) dataCache.get(p);
 		if (page == null) {
 			page = new DOMPage(p);
 		}
@@ -934,13 +912,13 @@ public class DOMFile extends BTree implements Lockable {
 		rec.page.setDirty(true);
 		ph.decRecordCount();
 		if (ph.getRecordCount() == 0) {
-			buffer.remove(rec.page);
+			dataCache.remove(rec.page);
 			long np = ph.getNextDataPage();
 			if (ph.getPrevDataPage() > -1) {
 				DOMPage prev = getCurrentPage(ph.getPrevDataPage());
 				prev.getPageHeader().setNextDataPage(np);
 				prev.setDirty(true);
-				buffer.add(prev);
+				dataCache.add(prev);
 			}
 			try {
 				ph.setNextDataPage(-1);
@@ -954,7 +932,7 @@ public class DOMFile extends BTree implements Lockable {
 			}
 			rec.page = null;
 		} else
-			buffer.add(rec.page);
+			dataCache.add(rec.page);
 	}
 
 	/**
@@ -1131,7 +1109,7 @@ public class DOMFile extends BTree implements Lockable {
 				return;
 			}
 			rec.page = getCurrentPage(nextPage);
-			buffer.add(rec.page);
+			dataCache.add(rec.page);
 			rec.offset = 2;
 		}
 		short len = ByteConversion.byteToShort(rec.page.data, rec.offset);
@@ -1191,7 +1169,7 @@ public class DOMFile extends BTree implements Lockable {
 		int dlen;
 		while (pageNr > -1) {
 			page = getCurrentPage(pageNr);
-			buffer.add(page);
+			dataCache.add(page);
 			pos = 0;
 			dlen = page.getPageHeader().getDataLength();
 			//System.out.println(pos + " < " + dlen);
@@ -1479,32 +1457,21 @@ public class DOMFile extends BTree implements Lockable {
 		}
 	}
 
-	/**
-	 *  Description of the Class
-	 *
-	 *@author     wolf
-	 *@created    3. Juni 2002
-	 */
-	protected final class DOMPage {
+	protected final class DOMPage implements Cacheable {
 
 		byte[] data;
 		int len = 0;
 		Page page;
 		int refCount = 0;
+		int timestamp = 0;
 		boolean saved = true;
 
-		/**  Constructor for the DOMPage object */
 		public DOMPage() {
 			page = createNewPage();
 			data = new byte[fileHeader.getWorkSize()];
 			len = 0;
 		}
 
-		/**
-		 *  Constructor for the DOMPage object
-		 *
-		 *@param  pos  Description of the Parameter
-		 */
 		public DOMPage(long pos) {
 			try {
 				page = getPage(pos);
@@ -1515,58 +1482,64 @@ public class DOMFile extends BTree implements Lockable {
 			}
 		}
 
-		/**
-		 *  Constructor for the DOMPage object
-		 *
-		 *@param  page  Description of the Parameter
-		 */
 		public DOMPage(Page page) {
 			this.page = page;
 			load(page);
 		}
 
-		/**  Description of the Method */
-		public void decRefCount() {
-			refCount--;
-		}
-
-		/**
-		 *  Gets the pageHeader attribute of the DOMPage object
-		 *
-		 *@return    The pageHeader value
+		/* (non-Javadoc)
+		 * @see org.exist.storage.cache.Cacheable#getKey()
 		 */
+		public long getKey() {
+			return page.getPageNum();
+		}
+		
+		/* (non-Javadoc)
+		 * @see org.exist.storage.cache.Cacheable#getReferenceCount()
+		 */
+		public int getReferenceCount() {
+			return refCount;
+		}
+		
+		public int decReferenceCount() {
+			return refCount > 0 ? --refCount : 0;
+		}
+		
+		public int incReferenceCount() {
+					if(refCount < Cacheable.MAX_REF)
+						++refCount;
+					return refCount;
+				}
+				
+		/* (non-Javadoc)
+		 * @see org.exist.storage.cache.Cacheable#setReferenceCount(int)
+		 */
+		public void setReferenceCount(int count) {
+			refCount = count;
+		}
+		
+		/* (non-Javadoc)
+		 * @see org.exist.storage.cache.Cacheable#setTimestamp(int)
+		 */
+		public void setTimestamp(int timestamp) {
+			this.timestamp = timestamp;
+		}
+		
+		/* (non-Javadoc)
+		 * @see org.exist.storage.cache.Cacheable#getTimestamp()
+		 */
+		public int getTimestamp() {
+			return timestamp;
+		}
+		
 		public DOMFilePageHeader getPageHeader() {
 			return (DOMFilePageHeader) page.getPageHeader();
 		}
 
-		/**
-		 *  Gets the pageNum attribute of the DOMPage object
-		 *
-		 *@return    The pageNum value
-		 */
 		public long getPageNum() {
 			return page.getPageNum();
 		}
 
-		/**
-		 *  Gets the refCount attribute of the DOMPage object
-		 *
-		 *@return    The refCount value
-		 */
-		public int getRefCount() {
-			return refCount;
-		}
-
-		/**  Description of the Method */
-		public void incRefCount() {
-			refCount++;
-		}
-
-		/**
-		 *  Gets the dirty attribute of the DOMPage object
-		 *
-		 *@return    The dirty value
-		 */
 		public boolean isDirty() {
 			return !saved;
 		}
@@ -1593,7 +1566,6 @@ public class DOMFile extends BTree implements Lockable {
 			saved = true;
 		}
 
-		/**  Description of the Method */
 		public void write() {
 			if (page == null)
 				return;
@@ -1610,6 +1582,22 @@ public class DOMFile extends BTree implements Lockable {
 			} catch (IOException ioe) {
 				LOG.error(ioe);
 			}
+		}
+		
+		/* (non-Javadoc)
+		 * @see org.exist.storage.cache.Cacheable#release()
+		 */
+		public void release() {
+			if(isDirty())
+				write();
+		}
+		
+		/* (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		public boolean equals(Object obj) {
+			DOMPage other = (DOMPage)obj;
+			return page.equals(other.page); 
 		}
 	}
 
@@ -1693,189 +1681,27 @@ public class DOMFile extends BTree implements Lockable {
 		}
 	}
 
-	/**
-	 *  Cache for data pages. Pages are put on top of a stack. If the stack size
-	 *  exceeds blockBuffers, the last page in the stack will be removed and
-	 *  saved to disk. When a page is removed, it's dirty flag is check to
-	 *  determine if the page needs to be saved. If the page is dirty, the page
-	 *  is saved.
-	 *
-	 *@author     Wolfgang Meier <wolfgang@exist-db.org>
-	 *@created    25. Mai 2002
-	 */
-	protected class ClockPageBuffer {
-		protected int blockBuffers;
-		protected int hits = 0;
-		//protected TLongObjectHashMap map;
-		protected Long2ObjectLinkedOpenHashMap map;
-		protected int misses = 0;
-
-		//protected LinkedList queue = new LinkedList();
-
-		/**
-		 *  Constructor for the PageBuffer object
-		 *
-		 *@param  blockBuffers  Description of the Parameter
-		 */
-		public ClockPageBuffer(int blockBuffers) {
-			this.blockBuffers = blockBuffers;
-			//map = new TLongObjectHashMap(blockBuffers);
-			map = new Long2ObjectLinkedOpenHashMap(blockBuffers);
-		}
-
-		/**  Constructor for the PageBuffer object */
-		public ClockPageBuffer() {
-			this(64);
-		}
-
-		public void add(DOMPage page) {
-			add(page, 1);
-		}
-
-		/**
-		 *  Description of the Method
-		 *
-		 *@param  page  Description of the Parameter
-		 */
-		public void add(DOMPage page, int initialRefCount) {
-			if (map.containsKey(page.page.getPageNum())) {
-				page.incRefCount();
-				return;
-			}
-			while (map.size() > blockBuffers) {
-				boolean removed = false;
-				while (!removed) {
-					for (Iterator i = map.values().iterator(); i.hasNext();) {
-						DOMPage old = (DOMPage) i.next();
-						old.decRefCount();
-						if (old.getRefCount() < 1
-							&& old.getPageNum() != page.getPageNum()) {
-							//i.remove();
-							map.remove(old.page.getPageNum());
-							if (old.isDirty()) {
-								old.write();
-							}
-							removed = true;
-							break;
-						}
-					}
-				}
-			}
-			//queue.add(page);
-			page.refCount = initialRefCount;
-			map.put(page.page.getPageNum(), page);
-		}
-
-		/**  Description of the Method */
-		public void flush() {
-			DOMPage page;
-			for (Iterator i = map.values().iterator(); i.hasNext();) {
-				page = (DOMPage) i.next();
-				if (page.isDirty()) {
-					//					LOG.debug(
-					//						"writing page "
-					//							+ page.getPageNum()
-					//							+ "; length = "
-					//							+ page.getPageHeader().getDataLength());
-					page.write();
-				}
-			}
-		}
-
-		public void clear() {
-			flush();
-			//queue.clear();
-			map.clear();
-		}
-
-		/**
-		 *  Description of the Method
-		 *
-		 *@param  page  Description of the Parameter
-		 *@return       Description of the Return Value
-		 */
-		public DOMPage get(Page page) {
-			return get(page.getPageNum());
-		}
-
-		/**
-		 *  Description of the Method
-		 *
-		 *@param  pnum  Description of the Parameter
-		 *@return       Description of the Return Value
-		 */
-		public DOMPage get(long pnum) {
-			DOMPage page = (DOMPage) map.get(pnum);
-			if (page == null)
-				misses++;
-			else
-				hits++;
-			return page;
-		}
-
-		/**
-		 *  Description of the Method
-		 *
-		 *@param  page  Description of the Parameter
-		 */
-		public void remove(DOMPage page) {
-			map.remove(page.page.getPageNum());
-		}
-
-		public void printStatistics() {
-			StringBuffer buf = new StringBuffer();
-			buf.append("dom.dbx DATA ").append(blockBuffers);
-			buf.append(" / ").append(hits);
-			buf.append(" / ").append(misses);
-			LOG.info(buf.toString());
-		}
-	}
-
 	public final void addToBuffer(DOMPage page) {
-		buffer.add(page);
+		dataCache.add(page);
 	}
 
-	/**
-	 *  Description of the Class
-	 *
-	 *@author     wolf
-	 *@created    3. Juni 2002
-	 */
 	private final class FindCallback implements BTreeCallback {
-		/**  Description of the Field */
-		public final static int KEYS = 1;
 
-		/**  Description of the Field */
+		public final static int KEYS = 1;
 		public final static int VALUES = 0;
+		
 		int mode = VALUES;
 
 		ArrayList values = new ArrayList();
 
-		/**
-		 *  Constructor for the FindCallback object
-		 *
-		 *@param  mode  Description of the Parameter
-		 */
 		public FindCallback(int mode) {
 			this.mode = mode;
 		}
 
-		/**
-		 *  Gets the values attribute of the FindCallback object
-		 *
-		 *@return    The values value
-		 */
 		public ArrayList getValues() {
 			return values;
 		}
 
-		/**
-		 *  Description of the Method
-		 *
-		 *@param  value    Description of the Parameter
-		 *@param  pointer  Description of the Parameter
-		 *@return          Description of the Return Value
-		 */
 		public boolean indexInfo(Value value, long pointer) {
 			switch (mode) {
 				case VALUES :
@@ -1895,36 +1721,17 @@ public class DOMFile extends BTree implements Lockable {
 		}
 	}
 
-	/**
-	 *  Description of the Class
-	 *
-	 *@author     wolf
-	 *@created    3. Juni 2002
-	 */
 	private final class RangeCallback implements BTreeCallback {
 
 		ArrayList values = new ArrayList();
 
-		/**  Constructor for the RangeCallback object */
 		public RangeCallback() {
 		}
 
-		/**
-		 *  Gets the values attribute of the RangeCallback object
-		 *
-		 *@return    The values value
-		 */
 		public ArrayList getValues() {
 			return values;
 		}
 
-		/**
-		 *  Description of the Method
-		 *
-		 *@param  value    Description of the Parameter
-		 *@param  pointer  Description of the Parameter
-		 *@return          Description of the Return Value
-		 */
 		public boolean indexInfo(Value value, long pointer) {
 			RecordPos rec = findValuePosition(pointer);
 			short l = ByteConversion.byteToShort(rec.page.data, rec.offset);

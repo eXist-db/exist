@@ -51,7 +51,7 @@ public class ForExpr extends BindingExpression {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		Sequence result = new ValueSequence();
+		Sequence result = null;
 		context.pushLocalContext(false);
 		// declare the variable
 		Variable var = new Variable(QName.parse(context, varName));
@@ -68,14 +68,15 @@ public class ForExpr extends BindingExpression {
 			in = applyWhereExpression(context, docs, null);
 			whereExpr = null;
 		}
-		if(orderSpecs != null) {
-			OrderedValueSequence ordered = new OrderedValueSequence(docs, orderSpecs);
-			ordered.addAll(in);
-			in = ordered;
-		}
+		
+		if(orderSpecs != null)
+			result = 
+				new OrderedValueSequence(docs, orderSpecs, in.getLength());
+		else
+			result = new ValueSequence();
+			
 		Sequence val = null;
-		int p = 0;
-		context.setContextPosition(0);
+		int p = 1;
 		// loop through each variable binding
 		for (SequenceIterator i = in.iterate(); i.hasNext(); p++) {
 			contextItem = i.nextItem();
@@ -83,15 +84,37 @@ public class ForExpr extends BindingExpression {
 			if(contextItem instanceof NodeProxy)
 				((NodeProxy)contextItem).addContextNode((NodeProxy)contextItem);
 			contextSequence = contextItem.toSequence();
+			// set variable value to current item
 			var.setValue(contextSequence);
+			// check optional where clause
 			if (whereExpr != null) {
 				val = applyWhereExpression(context, docs, contextSequence);
 				if(val.getLength() == 0)
 					continue;
 			} else
 				val = contextItem.toSequence();
-			val = returnExpr.eval(docs, val);
+			
+			// if there is no "order by" clause, immediately call
+			// the return clause
+			if(orderSpecs == null)
+				val = returnExpr.eval(docs, val);
 			result.addAll(val);
+		}
+		if(orderSpecs != null) {
+			// sort the result and call return for every item
+			((OrderedValueSequence)result).sort();
+			Sequence orderedResult = new ValueSequence();
+			p = 1;
+			for(SequenceIterator i = result.iterate(); i.hasNext(); p++) {
+				contextItem = i.nextItem();
+				contextSequence = contextItem.toSequence();
+				// set variable value to current item
+				var.setValue(contextSequence);
+				context.setContextPosition(p);
+				val = returnExpr.eval(docs, contextSequence);
+				orderedResult.addAll(val);
+			}
+			result = orderedResult;
 		}
 		context.popLocalContext();
 		return result;

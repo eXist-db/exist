@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<antlib>
+	<typedef name="store" classname="org.exist.ant.XMLDBStoreTask"/>
+	<typedef name="query" classname="org.exist.ant.XMLDBQueryTask"/>
+	<typedef name="backup" classname="org.exist.ant.BackupTask"/>
+	<typedef name="restore" classname="org.exist.ant.RestoreTask"/>
+	<typedef name="remove" classname="org.exist.ant.XMLDBRemoveTask"/>
+</antlib>
