@@ -65,6 +65,7 @@ public class ConditionalExpression extends AbstractExpression {
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
     public void analyze(Expression parent, int flags) throws XPathException {
+        flags &= (~IN_PREDICATE);
         testExpr.analyze(this, flags);
         thenExpr.analyze(this, flags);
         elseExpr.analyze(this, flags);
