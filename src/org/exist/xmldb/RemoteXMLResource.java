@@ -209,7 +209,9 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	}
 
 	public String getId() throws XMLDBException {
-		return (id == null) ? documentName : documentName + '_' + id;
+		if (id == null || id.equals("1")) 
+		    return documentName; 
+		return documentName + '_' + id;
 	}
 
 	public Collection getParentCollection() throws XMLDBException {

@@ -77,12 +77,13 @@ public class RemoteResourceSet implements ResourceSet {
         if ( pos >= resources.size() )
             return null;
         // node or value?
-        if ( resources.elementAt( (int) pos ) instanceof Vector ) {
+        if ( resources.elementAt( (int) pos ) instanceof Vector ) {            
             // node
             Vector v = (Vector) resources.elementAt( (int) pos );
             String doc = (String) v.elementAt( 0 );
             String s_id = (String) v.elementAt( 1 );
 			String path = doc.substring(0, doc.lastIndexOf('/'));
+			System.out.println("Processing " + doc);
 			RemoteCollection parent = 
 				new RemoteCollection(collection.getClient(), null, path);
 			parent.properties = outputProperties;
