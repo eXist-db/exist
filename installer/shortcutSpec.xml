@@ -16,6 +16,14 @@
 		target="$INSTALL_PATH/bin/shutdown.bat"
         description="Cleanly shutdown a running database" 
         programGroup="yes" desktop="yes"/>
+	<shortcut name="Install eXist as Service" 
+		target="$INSTALL_PATH/tools/wrapper/bin/install.bat"
+		description="Install the eXist server as a service"
+		programGroup="yes" desktop="no"/>
+	<shortcut name="Uninstall the eXist service"
+		target="$INSTALL_PATH/tools/wrapper/bin/uninstall.bat"
+		description="Uninstall the eXist service"
+		programGroup="yes" desktop="no"/>
 	<shortcut name="Uninstall" target="$INSTALL_PATH/Uninstaller/uninstaller.jar"
 		description="Uninstall eXist" programGroup="yes"/>
 </shortcuts>

@@ -1,11 +1,7 @@
 <installation version="1.0">
     <info>
         <appname>eXist</appname>
-		<appversion>20040803-dev</appversion>
-        <authors>
-			<author email="wolfgang@exist-db.org" 
-				name="Wolfgang Meier"/>
-        </authors>
+		<appversion>1.0-dev</appversion>
         <url>http://exist-db.org</url>
     </info>
 	<guiprefs height="430" resizable="yes" width="640"/>
@@ -15,7 +11,7 @@
     <resources>
     	<res id="Installer.image" src="installer/ilogo.jpg"/>
     	<res id="shortcutSpec.xml" src="installer/shortcutSpec.xml"/>
-        <res id="XInfoPanel.info" src="installer/finished.txt"/>
+        <res id="HTMLInfoPanel.info" src="installer/readme.html"/>
     </resources>
     <native type="izpack" name="ShellLink.dll"/>
     <variables>
@@ -27,7 +23,7 @@
         <panel classname="TargetPanel"/>
         <panel classname="InstallPanel"/>
         <panel classname="ShortcutPanel"/>
-        <panel classname="XInfoPanel"/>
+        <panel classname="HTMLInfoPanel"/>
         <panel classname="FinishPanel"/>
     </panels>
     <packs>
@@ -39,7 +35,6 @@
                 <include name="conf.xml"/>
                 <include name="log4j.xml"/>
                 <include name="build.xml"/>
-				<include name="build.properties"/>
             	<include name="LICENSE"/>
             	<include name="README"/>
 				<include name="exist.jar"/>
@@ -48,6 +43,7 @@
                 <include name="examples.jar"/>
                 <include name="examples-setup.xml"/>
                 <include name="Jetty*/**"/>
+                <include name="Jetty*/logs/"/>
             	<include name="lib/"/>
             	<include name="samples/**"/>
             	<include name="thirdparty/"/>
@@ -58,6 +54,7 @@
             </fileset>
 			<fileset targetdir="$INSTALL_PATH/tools" dir="tools">
 				<include name="**/*.jar"/>
+				<include name="wrapper/**"/>
 			</fileset>
             <fileset targetdir="$INSTALL_PATH/webapp" dir="webapp">
             	<exclude name="**/*.dbx"/>
@@ -95,6 +92,10 @@
 			<parsable targetfile="$INSTALL_PATH/bin/server.bat"/>
             <parsable targetfile="$INSTALL_PATH/bin/shutdown.bat"/>
             <parsable targetfile="$INSTALL_PATH/build.bat"/>
+			<singlefile src="tools/wrapper/conf/wrapper.conf.install"
+				target="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf"
+				override="true"/>
+			<parsable targetfile="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf"/>
 			<executable targetfile="$INSTALL_PATH/bin/client.sh"
 				stage="never" os="unix"/>
 			<executable targetfile="$INSTALL_PATH/bin/startup.sh"
@@ -105,6 +106,10 @@
                 stage="never" os="unix"/>
             <executable targetfile="$INSTALL_PATH/build.sh"
                 stage="never" os="unix"/>
+			<executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper"
+				stage="never" os="unix"/>
+			<executable targetfile="$INSTALL_PATH/tools/wrapper/bin/exist.sh"
+				stage="never" os="unix"/>
         </pack>
         <pack name="sources" required="no">
             <description>Java source files</description>

@@ -1,4 +1,3 @@
-
 package org.exist.util;
 
 import java.util.ArrayList;

@@ -718,7 +718,7 @@ Running tests on remote database
 			installerType="standard"/>
 	</target>
 
-	<target depends="all,samples,javadocs" name="snapshot-installer">
+	<target depends="all,samples,javadocs,wrapper" name="snapshot-installer">
 		<taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
 			classname="com.izforge.izpack.ant.IzPackTask"/>
 		<copy file="installer/install.xml.tmpl" tofile="installer/install.xml" filtering="true"/>
@@ -851,6 +851,10 @@ Running tests on remote database
 		<ant antfile="build.xml" dir="thirdparty/jboss"/>
 	</target>
 
+	<target name="wrapper" depends="jar">
+		<ant antfile="build.xml" dir="tools/wrapper"/>
+	</target>
+	
 	<target name="cleandocs">
 		<replaceregexp>
 			<regexp pattern="/\*.*Description of the Method.*\*/"/>
