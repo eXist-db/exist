@@ -2,14 +2,16 @@
 package org.exist.xmldb;
 import java.io.IOException;
 import java.util.Vector;
-import org.apache.xmlrpc.*;
+
+import org.apache.xmlrpc.XmlRpcClient;
+import org.apache.xmlrpc.XmlRpcException;
 import org.w3c.dom.Document;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.ErrorCodes;
+import org.xmldb.api.base.XMLDBException;
 
-import org.xmldb.api.base.*;
-import org.xmldb.api.modules.CollectionManagementService;
 
-
-public class RemoteCollectionManagementService implements CollectionManagementService {
+public class RemoteCollectionManagementService implements CollectionManagementServiceImpl {
 
     protected XmlRpcClient client;
     protected RemoteCollection parent = null;
@@ -97,6 +99,64 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
 
     public void setProperty( String property,
                              String value ) {
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xmldb.CollectionManagementServiceImpl#move(java.lang.String, java.lang.String, java.lang.String)
+     */
+    public void move(String collectionPath, String destinationPath, String newName) throws XMLDBException {
+        if(!collectionPath.startsWith("/db"))
+            collectionPath = parent.getPath() + '/' + collectionPath;
+        if(!destinationPath.startsWith("/db"))
+            destinationPath = parent.getPath() + '/' + destinationPath;
+        if(newName == null) {
+            int p = collectionPath.lastIndexOf(('/'));
+            newName = collectionPath.substring(p + 1);
+        }
+        Vector params = new Vector();
+        params.addElement( collectionPath );
+        params.addElement( destinationPath );
+        params.addElement( newName );
+        try {
+            client.execute( "moveCollection", params );
+        } catch ( XmlRpcException xre ) {
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
+                xre.getMessage(),
+                xre );
+        } catch ( IOException ioe ) {
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
+                ioe.getMessage(),
+                ioe);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xmldb.CollectionManagementServiceImpl#moveResource(java.lang.String, java.lang.String, java.lang.String)
+     */
+    public void moveResource(String resourcePath, String destinationPath, String newName) throws XMLDBException {
+        if(!resourcePath.startsWith("/db"))
+            resourcePath = parent.getPath() + '/' + resourcePath;
+        if(!destinationPath.startsWith("/db"))
+            destinationPath = parent.getPath() + '/' + destinationPath;
+        if(newName == null) {
+            int p = resourcePath.lastIndexOf(('/'));
+            newName = resourcePath.substring(p + 1);
+        }
+        Vector params = new Vector();
+        params.addElement( resourcePath );
+        params.addElement( destinationPath );
+        params.addElement( newName );
+        try {
+            client.execute( "moveResource", params );
+        } catch ( XmlRpcException xre ) {
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
+                xre.getMessage(),
+                xre );
+        } catch ( IOException ioe ) {
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
+                ioe.getMessage(),
+                ioe);
+        }
     }
 
 }

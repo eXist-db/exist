@@ -51,6 +51,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -96,7 +97,9 @@ import org.exist.security.Permission;
 import org.exist.security.User;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.xmldb.CollectionImpl;
+import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.EXistResource;
+import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.UserManagementService;
 import org.gnu.readline.Readline;
 import org.xml.sax.SAXException;
@@ -168,6 +171,7 @@ public class ClientFrame extends JFrame
 	private void setupComponents() {
 		setJMenuBar(createMenuBar());
 
+		// create the toolbar
 		JToolBar toolbar = new JToolBar();
 		URL url = getClass().getResource("icons/Up24.gif");
 		JButton button = new JButton(new ImageIcon(url));
@@ -275,6 +279,7 @@ public class ClientFrame extends JFrame
 		});
 		toolbar.add(button);
 
+		// the split pane separates the resource view table from the shell
 		JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		split.setResizeWeight(0.5);
 
@@ -307,6 +312,7 @@ public class ClientFrame extends JFrame
 		split.setRightComponent(scroll);
 
 		statusbar = new JLabel();
+		statusbar.setMinimumSize(new Dimension(400, 15));
 		statusbar.setBorder(BorderFactory
 				.createBevelBorder(BevelBorder.LOWERED));
 
@@ -349,6 +355,24 @@ public class ClientFrame extends JFrame
 		});
 		fileMenu.add(item);
 
+		item = new JMenuItem("Move", KeyEvent.VK_M);
+		item.setAccelerator(KeyStroke.getKeyStroke("control M"));
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				moveAction(e);
+			}
+		});
+		fileMenu.add(item);
+		
+		item = new JMenuItem("Reindex collection", KeyEvent.VK_R);
+		item.setAccelerator(KeyStroke.getKeyStroke("control R"));
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				reindexAction(e);
+			}
+		});
+		fileMenu.add(item);
+		
 		item = new JMenuItem("Resource properties");
 		item.setAccelerator(KeyStroke.getKeyStroke("control P"));
 		item.addActionListener(new ActionListener() {
@@ -692,10 +716,9 @@ public class ClientFrame extends JFrame
 		if (JOptionPane.showConfirmDialog(this,
 				"Are you sure you want to remove the selected " + "resources?",
 				"Confirm deletion", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-			final JFrame parent = this;
 			Runnable removeTask = new Runnable() {
 				public void run() {
-					ProgressMonitor monitor = new ProgressMonitor(parent,
+					ProgressMonitor monitor = new ProgressMonitor(ClientFrame.this,
 							"Remove Progress", "", 1, rows.length);
 					monitor.setMillisToDecideToPopup(500);
 					monitor.setMillisToPopup(500);
@@ -736,6 +759,105 @@ public class ClientFrame extends JFrame
 		}
 	}
 
+	private void moveAction(ActionEvent ev) {
+	    final int[] rows = fileman.getSelectedRows();
+	    final Object[] res = new Object[rows.length];
+		for (int i = 0; i < rows.length; i++) {
+			res[i] = resources.getValueAt(rows[i], 3);
+		}
+		String[] collections = null;
+		try {
+            Collection root = client.getCollection("/db");
+            Vector collectionsVec = getCollections(root, new Vector());
+            collections = new String[collectionsVec.size()];
+            collectionsVec.toArray(collections);
+        } catch (XMLDBException e) {
+            showErrorMessage(e.getMessage(), e);
+            return;
+        }
+		Object val = JOptionPane.showInputDialog(this, "Select target collection", "Move", JOptionPane.QUESTION_MESSAGE,
+		        null, collections, collections[0]);
+		if(val == null)
+		    return;
+		final String destinationPath = (String)val;
+		Runnable moveTask = new Runnable() {
+			public void run() {
+				try {
+				    CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
+                		client.current.getService("CollectionManagementService", "1.0");
+		            for(int i = 0; i < res.length; i++) {
+		                setStatus("Moving " + res[i].toString() + " to " + destinationPath + "...");
+		                if(res[i] instanceof InteractiveClient.CollectionName)
+		                    service.move(res[i].toString(), destinationPath, null);
+		                else
+		                    service.moveResource(res[i].toString(), destinationPath, null);
+		            }
+		            client.reloadCollection();
+		        } catch (XMLDBException e) {
+		            showErrorMessage(e.getMessage(), e);
+		        }
+		        setStatus("Move completed.");
+			}
+		};
+		new Thread(moveTask).start();
+	}
+	
+	private Vector getCollections(Collection root, Vector collectionsList)
+	throws XMLDBException {
+	    collectionsList.addElement(root.getName());
+	    String[] childCollections= root.listChildCollections();
+	    Collection child;
+	    for (int i= 0; i < childCollections.length; i++) {
+	        child= root.getChildCollection(childCollections[i]);
+	        getCollections(child, collectionsList);
+	    }
+	    return collectionsList;
+	}
+	
+	private void reindexAction(ActionEvent ev) {
+	    final int[] rows = fileman.getSelectedRows();
+	    Object[] res;
+	    if(rows.length == 0) {
+	        res = new Object[1];
+	        res[0] = new InteractiveClient.CollectionName(client.path);
+	    } else {
+			res = new Object[rows.length];
+			for (int i = 0; i < rows.length; i++) {
+				res[i] = resources.getValueAt(rows[i], 3);
+				if(!(res[i] instanceof InteractiveClient.CollectionName)) {
+				    JOptionPane.showMessageDialog(this, "Only collections can be reindexed.", "Error", JOptionPane.ERROR_MESSAGE);
+				    return;
+				}
+			}
+	    }
+	    
+	    if (JOptionPane.showConfirmDialog(this,
+				"Are you sure you want to reindex the selected collections \nand all resources below them?",
+				"Confirm reindex", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+	        final Object collections[] = res;
+	        Runnable reindexThread = new Runnable() {
+                public void run() {
+                    ClientFrame.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    IndexQueryService service;
+                    try {
+                        service = (IndexQueryService) 
+                        	client.current.getService("IndexQueryService", "1.0");
+                        for(int i = 0; i < collections.length; i++) {
+                            InteractiveClient.CollectionName next = (InteractiveClient.CollectionName)collections[i];
+                            setStatus("Reindexing collection " + next + "...");
+                            service.reindexCollection(next.toString());
+                        }
+                        setStatus("Reindex completed.");
+                    } catch (XMLDBException e) {
+                        showErrorMessage(e.getMessage(), e);
+                    }
+                    ClientFrame.this.setCursor(Cursor.getDefaultCursor());
+                }
+	        };
+	        new Thread(reindexThread).start();
+	    }
+	}
+	
 	private void uploadAction(ActionEvent ev) {
 		String dir = properties.getProperty("working-dir", System
 				.getProperty("exist.home"));

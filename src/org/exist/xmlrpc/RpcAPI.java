@@ -20,10 +20,10 @@
  *  $Id$
  */
 package org.exist.xmlrpc;
+import java.io.IOException;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Vector;
-import java.io.IOException;
 
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
@@ -34,7 +34,6 @@ import org.xml.sax.SAXException;
  *  Defines the methods callable through the XMLRPC interface.
  *
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    21. Juni 2002
  */
 public interface RpcAPI {
 
@@ -699,8 +698,13 @@ public interface RpcAPI {
 	byte[] getDocumentChunk(User user, String name, int start, int stop)
 	throws EXistException, PermissionDeniedException, IOException;
 	
+	boolean moveCollection(User user, String collectionPath, String destinationPath, String newName) 
+	throws EXistException, PermissionDeniedException;
+	
+	boolean moveResource(User user, String docPath, String destinationPath, String newName) 
+	throws EXistException, PermissionDeniedException;
+	
 	boolean reindexCollection(User user, String name)
 	throws EXistException, PermissionDeniedException;
-
 
 }
