@@ -70,7 +70,12 @@ public class FunNumber extends Function {
 			arg = contextSequence;
 		if(arg.getLength() == 0)
 			return DoubleValue.NaN;
-		else
-			return arg.convertTo(Type.DOUBLE);
+		else {
+            try {
+                return arg.convertTo(Type.DOUBLE);
+            } catch(XPathException e) {
+                return DoubleValue.NaN;
+            }
+        }
 	}
 }
