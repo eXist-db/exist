@@ -137,6 +137,8 @@ public class CollectionConfigurationManager {
      * @param collectionPath
      */
     protected synchronized void invalidateAll(String collectionPath) {
+        if (!collectionPath.startsWith(CONFIG_COLLECTION))
+    		return;
     	collectionPath = collectionPath.substring(CONFIG_COLLECTION.length());
     	Map.Entry next;
     	CollectionConfiguration config;
