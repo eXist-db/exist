@@ -189,6 +189,14 @@ public class Configuration implements ErrorHandler {
 						ps = ((Element) exclude.item(j)).getAttribute("path");
 						paths.addExclude(ps);
 					}
+
+					NodeList preserveContent = idx.getElementsByTagName("preserveContent");
+
+					for (int j = 0; j < preserveContent.getLength(); j++) {
+						ps = ((Element) preserveContent.item(j)).getAttribute("path");
+						paths.addpreserveContent(ps);
+					}
+
 				}
 
 				// stopwords

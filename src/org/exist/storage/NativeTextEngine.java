@@ -727,12 +727,17 @@ public class NativeTextEngine extends TextSearchEngine {
 	 * @return boolean indicates if all of the text content has been added to
 	 *            the index
 	 */
-	public void storeText(IndexPaths idx, TextImpl text) {
+	public void storeText(IndexPaths idx, TextImpl text, boolean onetoken) {
 		final DocumentImpl doc = (DocumentImpl) text.getOwnerDocument();
 		tokenizer.setText(text.getXMLString().transformToLower());
 		TextToken token;
 		String word;
 		final long gid = text.getGID();
+		if (onetoken == true) {
+			invIdx.setDocument(doc);
+			String sal= text.getXMLString().transformToLower().toString() ;
+			invIdx.addText(sal, gid);			
+		} else {
 		while (null != (token = tokenizer.nextToken())) {
 			if (idx != null && idx.getIncludeAlphaNum() == false
 					&& token.isAlpha() == false) {
@@ -744,6 +749,7 @@ public class NativeTextEngine extends TextSearchEngine {
 			}
 			invIdx.setDocument(doc);
 			invIdx.addText(word, gid);
+		}
 		}
 	}
 
