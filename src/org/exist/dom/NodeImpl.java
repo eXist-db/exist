@@ -306,7 +306,7 @@ public class NodeImpl implements Node, QNameable {
 	public NodePath getPath() {
 		NodePath path = new NodePath();
 		NodeImpl parent = (NodeImpl)getParentNode();
-		while (parent.getNodeType() != Node.DOCUMENT_NODE) {
+		while (parent != null && parent.getNodeType() != Node.DOCUMENT_NODE) {
 		    path.addComponent(parent.getQName());
 			parent = (NodeImpl)parent.getParentNode();
 		}
