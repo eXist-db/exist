@@ -31,7 +31,6 @@ import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.store.CollectionStore;
@@ -47,9 +46,9 @@ import org.exist.util.ReadOnlyException;
  */
 final class NativeCollectionIndexer {
     /**
-     * TODO section follows (must be initialized)
+     * Temporary DBBroker instance.
      */
-    protected User user = null;
+    private DBBroker broker = null;
     
     /**
      * Is any of the databases read-only?
@@ -75,12 +74,16 @@ final class NativeCollectionIndexer {
      * Create a new NativeCollectionIndexer. The CollectionStore
      * must be initialized when calling this constructor.
      * 
+     * Refactor note: currently, DBBroker is used here, but
+     * this should <b>not</b> be the case in future.
+     *  
      * @param pool broker pool to use
      * @param collectionsDb initialized collectionsDb
      */
-    public NativeCollectionIndexer(BrokerPool pool, CollectionStore collectionsDb) {
+    public NativeCollectionIndexer(BrokerPool pool, DBBroker broker, CollectionStore collectionsDb) {
         this.pool = pool;
         this.collectionsDb = collectionsDb;
+        this.broker = broker;
     }
 
     /**
@@ -93,8 +96,6 @@ final class NativeCollectionIndexer {
         this.readOnly = readOnly;
     }
     
-    //  TODO
-    boolean removeCollection(Collection collection) throws PermissionDeniedException {return false;}
     
     public void reloadCollection(Collection collection) {
         Value key = null;
@@ -121,12 +122,12 @@ final class NativeCollectionIndexer {
                 LOG.warn("Collection data not found for collection " + collection.getName());
                 return;
             }
-            /*
+            
             try {
-                // TODO collection.read(this, is);
+                collection.read(broker, is);
             } catch (IOException ioe) {
                 LOG.warn(ioe);
-            }*/
+            }
         } catch (LockException e) {
             LOG.warn("failed to acquire lock on collections.dbx");
         } finally {
@@ -262,7 +263,7 @@ final class NativeCollectionIndexer {
             }
             try {
                 final VariableByteOutputStream ostream = new VariableByteOutputStream(8);
-                // TODO collection.write(this, ostream);
+                collection.write(broker, ostream);
                 final long addr = collectionsDb.put(name, ostream.data());
                 if (addr < 0) {
                     LOG.debug(
@@ -317,8 +318,8 @@ final class NativeCollectionIndexer {
                     LOG.debug("creating root collection /db");
                     current = new Collection(collectionsDb, NewNativeBroker.ROOT_COLLECTION);
                     current.getPermissions().setPermissions(0777);
-                    current.getPermissions().setOwner(user);
-                    current.getPermissions().setGroup(user.getPrimaryGroup());
+                    current.getPermissions().setOwner(broker.getUser());
+                    current.getPermissions().setGroup(broker.getUser().getPrimaryGroup());
                     current.setId(getNextCollectionId());
                     current.setCreationTime(System.currentTimeMillis());
                     saveCollection(current);
@@ -329,14 +330,14 @@ final class NativeCollectionIndexer {
                     if (current.hasSubcollection(temp)) {
                         current = openCollection(path, -1L, Lock.NO_LOCK);
                     } else {
-                        if (!current.getPermissions().validate(user, Permission.WRITE)) {
+                        if (!current.getPermissions().validate(broker.getUser(), Permission.WRITE)) {
                             LOG.debug("permission denied to create collection " + path);
                             throw new PermissionDeniedException("not allowed to write to collection");
                         }
                         LOG.debug("creating collection " + path);
                         sub = new Collection(collectionsDb, path);
-                        sub.getPermissions().setOwner(user);
-                        sub.getPermissions().setGroup(user.getPrimaryGroup());
+                        sub.getPermissions().setOwner(broker.getUser());
+                        sub.getPermissions().setGroup(broker.getUser().getPrimaryGroup());
                         sub.setId(getNextCollectionId());
                         sub.setCreationTime(System.currentTimeMillis());
                         current.addCollection(sub);
@@ -399,7 +400,7 @@ final class NativeCollectionIndexer {
                         }
                         if (is == null)
                             return null;
-                        // TODO collection.read(this, is);
+                        collection.read(broker, is);
                     } catch (IOException ioe) {
                         LOG.warn(ioe.getMessage(), ioe);
                     }
@@ -438,10 +439,10 @@ final class NativeCollectionIndexer {
             throw new PermissionDeniedException("Cannot move collection to itself");
         if(collection.getName().equals(NewNativeBroker.ROOT_COLLECTION))
             throw new PermissionDeniedException("Cannot move the db root collection");
-        if(!collection.getPermissions().validate(user, Permission.WRITE))
+        if(!collection.getPermissions().validate(broker.getUser(), Permission.WRITE))
             throw new PermissionDeniedException("Insufficient privileges to move collection " +
                     collection.getName());
-        if(!destination.getPermissions().validate(user, Permission.WRITE))
+        if(!destination.getPermissions().validate(broker.getUser(), Permission.WRITE))
             throw new PermissionDeniedException("Insufficient privileges on target collection " +
                     destination.getName());
         if(newName == null) {
@@ -454,7 +455,7 @@ final class NativeCollectionIndexer {
         Collection old = openCollection(destination.getName() + '/' + newName, -1, Lock.WRITE_LOCK);
         if(old != null) {
             try {
-                removeCollection(old);
+                broker.removeCollection(old);
             } finally {
                 old.release();
             }
