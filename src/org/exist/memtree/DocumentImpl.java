@@ -26,6 +26,8 @@ import org.apache.xerces.dom.AttrNSImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.util.hashtable.NamePool;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
@@ -277,6 +279,9 @@ public class DocumentImpl extends NodeImpl implements Document {
             case NodeImpl.REFERENCE_NODE:
                 node = new ReferenceNode(this, nodeNr);
                 break;
+            case NodeImpl.NAMESPACE_NODE:
+                node = new NamespaceNode(this, nodeNr);
+            	break;
             default:
                 throw new DOMException(DOMException.NOT_FOUND_ERR,
                         "node not found");
@@ -566,6 +571,13 @@ public class DocumentImpl extends NodeImpl implements Document {
                 receiver
                         .addReferenceNode(document.references[document.alpha[nr]]);
                 break;
+            case NodeImpl.NAMESPACE_NODE:
+                XQueryContext context = receiver.getContext();
+            	QName prefix = (QName) document.namePool.get(document.nodeName[nr]);
+            	String uri = new String(document.characters,
+                    document.alpha[nr], document.alphaLen[nr]);
+            	context.declareInScopeNamespace(prefix.getLocalName(), uri);
+            	break;
         }
     }
     

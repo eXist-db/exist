@@ -52,7 +52,7 @@ public class Type {
 	public final static int PROCESSING_INSTRUCTION = 4;
 	public final static int COMMENT = 5;
 	public final static int DOCUMENT = 6;
-	public final static int NAMESPACE = 7;
+	public final static int NAMESPACE = 500;
 
 	public final static int EMPTY = 10;
 	public final static int ITEM = 11;
