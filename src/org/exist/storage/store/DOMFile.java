@@ -47,6 +47,7 @@ import org.exist.storage.Signatures;
 import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.ClockCache;
+import org.exist.storage.cache.LRDCache;
 import org.exist.storage.cache.LRUCache;
 import org.exist.util.ByteConversion;
 import org.exist.util.Lock;
@@ -127,7 +128,7 @@ public class DOMFile extends BTree implements Lockable {
         fileHeader = (DOMFileHeader) getFileHeader();
         fileHeader.setPageCount(0);
         fileHeader.setTotalCount(0);
-        dataCache = new LRUCache(dataBuffers);
+        dataCache = new LRDCache(dataBuffers);
         dataCache.setFileName("dom.dbx");
         
         Runnable syncAction = new Runnable() {
