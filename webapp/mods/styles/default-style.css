@@ -57,14 +57,14 @@ table p {
 #sidebar {
     position: absolute;
     margin-top: 15px;
-    width: 16%;
+    width: 20%;
     display: block;
     overflow: hidden;
 }
 
 #content2col {
     position: absolute;
-    left: 18%;
+    left: 22%;
     width: 81%;
     margin-top: 15px;
     display: block;
@@ -74,8 +74,8 @@ table p {
 
 #content {
     position: absolute;
-    left: 18%;
-    width: 62%;
+    left: 22%;
+    width: 78%;
     margin-top: 15px;
     display: block;
     background-color: white;
@@ -142,31 +142,6 @@ h3 {
 h4 {
     font-weight: bold;
     padding-left: 15px;
-}
-
-.record {
-    margin: 10px;
-    padding: 10px;
-    width: 457px;
-    border: solid 1px #DEDEDE;
-}
-			
-.citation {
-    
-}
-			
-.heading {
-    font-weight: bold;
-}
-			
-.title {
-    font-weight: bold;
-    font-size: 12px;
-}
-			
-.citekey {
-    color: #50497A;
-    margin-left: 20px;
 }
 			
 .note {

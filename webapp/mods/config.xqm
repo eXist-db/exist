@@ -20,7 +20,8 @@ as element()+
     $record/mods:name,
     $record/mods:abstract,
     $record/mods:subject,
-    $record/mods:originInfo/mods:dateIssued
+    $record/mods:originInfo/mods:dateIssued,
+    $record/mods:location
 };
 
 declare function c:orderByName($m as element()) as xs:string?

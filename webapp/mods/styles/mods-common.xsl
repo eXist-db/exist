@@ -45,6 +45,13 @@
         </xsl:choose>
     </xsl:template>
     
+    <xsl:template match="m:publisher">
+        <xsl:if test="position() != 1">
+            <xsl:text>; </xsl:text>
+        </xsl:if>
+        <xsl:value-of select="text()"/>
+    </xsl:template>
+    
     <xsl:template match="m:topic|m:geographic">
         <xsl:if test="position() != 1">
             <xsl:text>; </xsl:text>
@@ -52,5 +59,33 @@
         <a href="?field=su&amp;query={java:java.net.URLEncoder.encode(text(), 'UTF-8')}&amp;max={ancestor::items/@max}">
             <xsl:value-of select="."/>
         </a>
+    </xsl:template>
+    
+    <xsl:template match="m:location">
+        <a href="{m:url/text()}"><xsl:value-of select="m:url/text()"/></a>
+    </xsl:template>
+    
+    <xsl:template match="m:originInfo">
+        <xsl:apply-templates/>
+    </xsl:template>
+    
+    <xsl:template match="m:publisher"/>
+    
+    <xsl:template match="m:dateCreated">
+        <p class="keywords">
+            <span class="heading">Topics: </span>
+            <xsl:value-of select="text()"/>
+        </p>
+    </xsl:template>
+    
+    <xsl:template match="m:physicalDescription">
+        <xsl:apply-templates/>
+    </xsl:template>
+    
+    <xsl:template match="m:internetMediaType">
+        <p class="keywords">
+            <span class="heading">Media Type: </span>
+            <xsl:value-of select="text()"/>
+        </p>
     </xsl:template>
 </xsl:stylesheet>

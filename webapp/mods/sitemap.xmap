@@ -42,7 +42,7 @@
                             <map:transform src="styles/mods-detailed.xsl"/>
                         </map:when>
                         <map:otherwise>
-                            <map:transform src="styles/overview.xsl"/>
+                            <map:transform src="styles/mods-overview.xsl"/>
                         </map:otherwise>
                     </map:select>
                     <map:transform type="encodeURL"/>
