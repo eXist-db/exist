@@ -2513,14 +2513,14 @@ public class NativeBroker extends DBBroker {
 		                boolean valore = (idx == null ? false : idx.preserveContent(currentPath));
 						textEngine.storeText(idx, (TextImpl) node, valore);
 					}
-					if (idxSpec != null) {
-					    ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-					    if(spec != null) {
-					        tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
-					        valueIndex.setDocument(doc);
-					        valueIndex.storeText(spec, (TextImpl) node, tempProxy);
-					    }
-					}
+//					if (idxSpec != null) {
+//					    ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
+//					    if(spec != null) {
+//					        tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
+//					        valueIndex.setDocument(doc);
+//					        valueIndex.storeText(spec, (TextImpl) node, tempProxy);
+//					    }
+//					}
 				}
 				break;
 		}

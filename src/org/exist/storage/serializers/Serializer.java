@@ -684,15 +684,19 @@ public abstract class Serializer implements XMLReader {
 				NodeValue node = (NodeValue) item;
 				serializeToReceiver(node, false);
 			} else {
-				attrs = new AttrList();
-				attrs.addAttribute(ATTR_TYPE_QNAME, Type.getTypeName(item.getType()));
-				receiver.startElement(ELEM_VALUE_QNAME, attrs);
+				if(wrap) {
+					attrs = new AttrList();
+					attrs.addAttribute(ATTR_TYPE_QNAME, Type.getTypeName(item.getType()));
+					receiver.startElement(ELEM_VALUE_QNAME, attrs);
+				}
 				try {
 					receiver.characters(item.getStringValue());
 				} catch (XPathException e) {
 					throw new SAXException(e.getMessage(), e);
 				}
-				receiver.endElement(ELEM_VALUE_QNAME);
+				if(wrap) {
+					receiver.endElement(ELEM_VALUE_QNAME);
+				}
 			}
 		}
 		
