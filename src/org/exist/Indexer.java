@@ -1,5 +1,5 @@
 /*
- *  Parser.java - eXist Open Source Native XML Database
+ *  eXist Open Source Native XML Database
  *  Copyright (C) 2001-03 Wolfgang M. Meier
  *  meier@ifs.tu-darmstadt.de
  *  http://exist.sourceforge.net
@@ -68,7 +68,7 @@ public class Indexer
 	implements ContentHandler, LexicalHandler, ErrorHandler {
 
 	private final static Category LOG =
-		Category.getInstance(Parser.class.getName());
+		Category.getInstance(Indexer.class.getName());
 
 	protected DBBroker broker = null;
 	protected XMLString charBuf = new XMLString();
@@ -213,8 +213,12 @@ public class Indexer
 		final ElementImpl last = (ElementImpl) stack.peek();
 		if (last.getNodeName().equals(qname)) {
 			if (charBuf != null && charBuf.length() > 0) {
-				final XMLString normalized = charBuf.normalize(normalize);
-				if (normalized.length() > 0) {
+				// remove whitespace if the node has just a single text child,
+				// keep whitespace for mixed content.
+				final XMLString normalized =
+					last.getChildCount() == 0 ? charBuf.normalize(normalize) : 
+						(charBuf.isWhitespaceOnly() ? null : charBuf);
+				if (normalized != null && normalized.length() > 0) {
 					text.setData(normalized);
 					text.setOwnerDocument(document);
 					last.appendChildInternal(text);
@@ -225,9 +229,11 @@ public class Indexer
 				charBuf.reset();
 			}
 			stack.pop();
-			currentPath.delete(
-				currentPath.lastIndexOf("/"),
-				currentPath.length());
+			
+			currentPath = removeLastPathComponent(currentPath);
+//			currentPath.delete(
+//				currentPath.lastIndexOf("/"),
+//				currentPath.length());
 			//				currentPath.substring(0, currentPath.lastIndexOf('/'));
 			if (validate) {
 				if (document.getTreeLevelOrder(level) < last.getChildCount()) {
@@ -393,17 +399,18 @@ public class Indexer
 		QName qn = new QName(name, namespace, prefix);
 		if (!stack.empty()) {
 			last = (ElementImpl) stack.peek();
-			if (charBuf != null && charBuf.length() > 0) {
-				// mixed element content: don't normalize the text node, just check
-				// if there is any text at all
-				final XMLString normalized = charBuf.normalize(normalize);
-				if (normalized.length() > 0) {
-					text.setData(charBuf);
-					text.setOwnerDocument(document);
-					last.appendChildInternal(text);
-					if (!validate)
-						broker.store(text, currentPath);
-					text.clear();
+			if (charBuf != null) {
+				if(!charBuf.isWhitespaceOnly()) {
+					// mixed element content: don't normalize the text node, just check
+					// if there is any text at all
+					if(charBuf.length() > 0) {
+						text.setData(charBuf);
+						text.setOwnerDocument(document);
+						last.appendChildInternal(text);
+						if (!validate)
+							broker.store(text, currentPath);
+						text.clear();
+					}
 				}
 				charBuf.reset();
 			}
@@ -512,6 +519,17 @@ public class Indexer
 		throw new SAXException(
 			"warning at line " + e.getLineNumber() + ": " + e.getMessage(),
 			e);
+	}
+	
+	private static StringBuffer removeLastPathComponent(StringBuffer path) {
+		int i = -1;
+		for(i = path.length() - 1; i > -1; i--) {
+			if(path.charAt(i) == '/')
+				break;
+		}
+		if(i < 0)
+			return path;
+		return path.delete(i, path.length());
 	}
 
 }

@@ -22,8 +22,6 @@
  */
 package org.exist.xmldb;
 
-import org.xmldb.api.base.XMLDBException;
-
 /**
  * Identifies a compiled representation of an XQuery expression.
  * 
@@ -31,5 +29,9 @@ import org.xmldb.api.base.XMLDBException;
  */
 public interface CompiledExpression {
 
-	public void reset() throws XMLDBException;
+	/**
+	 * Prepare the expression for being reused.
+	 *
+	 */
+	public void reset();
 }

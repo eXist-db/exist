@@ -1,5 +1,9 @@
 package org.exist.examples.xmldb;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
 import javax.xml.transform.OutputKeys;
 
 import org.xmldb.api.DatabaseManager;
@@ -12,9 +16,7 @@ import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.CompiledExpression;
 
 /**
- *  The same as SearchExample.java, but uses XQueryService to compile the
- *  query.
- *  To run this example enter: 
+ *  Reads an XQuery file and executes it. To run this example enter: 
  * 
  *  bin/run.sh examples.xmldb.XQueryExample xquery
  *  
@@ -25,10 +27,23 @@ import org.exist.xmldb.CompiledExpression;
  */
 public class XQueryExample {
 
-    protected static String URI = "xmldb:exist://";
+    protected static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
 
     protected static String driver = "org.exist.xmldb.DatabaseImpl";
 
+    /**
+     * Read the xquery file and return as string.
+     */
+    protected static String readFile(String file) throws IOException {
+    	BufferedReader f = new BufferedReader(new FileReader(file));
+    	String line;
+    	StringBuffer xml = new StringBuffer();
+    	while((line = f.readLine()) != null)
+    		xml.append(line);
+    	f.close();
+    	return xml.toString();
+    }
+    
     public static void main( String args[] ) {
         try {
             if ( args.length < 1 )
@@ -38,29 +53,24 @@ public class XQueryExample {
             Database database = (Database) cl.newInstance();
             database.setProperty( "create-database", "true" );
             DatabaseManager.registerDatabase( database );
-            String collection = "/db";
-            String query;
-            if ( args.length == 2 ) {
-                // if collection does not start with "/" add it
-                collection = ( args[0].charAt( 0 ) == '/' ) ? args[0] : "/" + args[0];
-                query = args[1];
-            }
-            else
-                query = args[0];
+            
+            String query = readFile(args[0]);
             
             // get root-collection
             Collection col =
-                DatabaseManager.getCollection( URI + collection );
+                DatabaseManager.getCollection( URI + "/db" );
             // get query-service
             XQueryService service =
                 (XQueryService) col.getService( "XQueryService", "1.0" );
+            
             // set pretty-printing on
             service.setProperty( OutputKeys.INDENT, "yes" );
-            service.setProperty( OutputKeys.ENCODING, "ISO-8859-1" );
+            service.setProperty( OutputKeys.ENCODING, "UTF-8" );
 
             CompiledExpression compiled = service.compile( query );
             
             long start = System.currentTimeMillis();
+            
             // execute query and get results in ResourceSet
             ResourceSet result = service.execute( compiled );
 
@@ -72,7 +82,6 @@ public class XQueryExample {
                 System.out.println( resource.getContent().toString() );
             }
             long rtime = System.currentTimeMillis() - start;
-			System.out.println("query:         " + query);
 			System.out.println("hits:          " + result.getSize());
             System.out.println("query time:    " + qtime);
             System.out.println("retrieve time: " + rtime);
@@ -83,7 +92,7 @@ public class XQueryExample {
 
 
     protected static void usage() {
-        System.out.println( "usage: examples.xmldb.ExampleSearch [ collection ] xpath-query" );
+        System.out.println( "usage: examples.xmldb.XQueryExample xquery-file" );
         System.exit( 0 );
     }
 }

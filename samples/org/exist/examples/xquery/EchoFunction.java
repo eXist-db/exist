@@ -23,17 +23,17 @@
 package org.exist.examples.xquery;
 
 import org.exist.dom.QName;
-import org.exist.xpath.BasicFunction;
-import org.exist.xpath.Cardinality;
-import org.exist.xpath.FunctionSignature;
-import org.exist.xpath.XPathException;
-import org.exist.xpath.XQueryContext;
-import org.exist.xpath.value.Sequence;
-import org.exist.xpath.value.SequenceIterator;
-import org.exist.xpath.value.SequenceType;
-import org.exist.xpath.value.StringValue;
-import org.exist.xpath.value.Type;
-import org.exist.xpath.value.ValueSequence;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)

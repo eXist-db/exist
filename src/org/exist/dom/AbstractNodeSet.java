@@ -24,12 +24,12 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.exist.util.Range;
-import org.exist.xpath.XPathException;
-import org.exist.xpath.value.AbstractSequence;
-import org.exist.xpath.value.Item;
-import org.exist.xpath.value.Sequence;
-import org.exist.xpath.value.SequenceIterator;
-import org.exist.xpath.value.Type;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.AbstractSequence;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
 /**
@@ -44,6 +44,9 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 
 	protected final static Logger LOG = Logger.getLogger(AbstractNodeSet.class);
 
+	protected AbstractNodeSet() {
+	}
+	
 	/**
 	 * Return an iterator on the nodes in this list. The iterator returns nodes
 	 * according to the internal ordering of nodes (i.e. level first), not in document-
@@ -58,6 +61,11 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 */
 	public abstract SequenceIterator iterate();
 
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Sequence#unorderedIterator()
+	 */
+	public abstract SequenceIterator unorderedIterator();
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Sequence#getItemType()
 	 */
@@ -201,88 +209,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		return ds;
 	}
 	
-	/**
-	 * Check if node has an ancestor contained in this node set.
-	 *
-	 * If directParent is true, only immediate ancestors (parents) are considered.
-	 * Otherwise the method will call itself recursively for all the node's
-	 * parents.
-	 *
-	 */
-	public NodeProxy nodeHasParent(NodeProxy p, boolean directParent) {
-		return nodeHasParent(p.doc, p.gid, directParent, false);
-	}
-
-	/**
-	 * Check if node has an ancestor contained in this node set.
-	 *
-	 * If directParent is true, only immediate ancestors (parents) are considered.
-	 * Otherwise the method will call itself recursively for all the node's
-	 * parents.
-	 *
-	 * If includeSelf is true, the method returns also true if
-	 * the node itself is contained in the node set.
-	 */
-	public NodeProxy nodeHasParent(
-		NodeProxy p,
-		boolean directParent,
-		boolean includeSelf) {
-		return nodeHasParent(p.doc, p.gid, directParent, includeSelf);
-	}
-
-	/**
-	 * Check if the node identified by its node id has an ancestor contained in this node set.
-	 *
-	 * If directParent is true, only immediate ancestors (parents) are considered.
-	 * Otherwise the method will call itself recursively for all the node's
-	 * parents.
-	 *
-	 * If includeSelf is true, the method returns also true if
-	 * the node itself is contained in the node set.
-	 */
-	public NodeProxy nodeHasParent(
-		DocumentImpl doc,
-		long gid,
-		boolean directParent,
-		boolean includeSelf) {
-		return nodeHasParent(doc, gid, directParent, includeSelf, -1);
-	}
-
-	/**
-	 * Check if node has an ancestor contained in this node set.
-	 *
-	 * If directParent is true, only immediate ancestors (parents) are considered.
-	 * Otherwise the method will call itself recursively for all the node's
-	 * parents.
-	 *
-	 * If includeSelf is true, the method returns also true if
-	 * the node itself is contained in the node set.
-	 */
-	public NodeProxy nodeHasParent(
-		DocumentImpl doc,
-		long gid,
-		boolean directParent,
-		boolean includeSelf,
-		int level) {
-		NodeProxy parent;
-		if (includeSelf && (parent = get(doc, gid)) != null)
-			return parent;
-		if (level < 0)
-			level = doc.getTreeLevel(gid);
-		while (gid > 0) {
-			// calculate parent's gid
-			gid = XMLUtil.getParentId(doc, gid, level);
-			if ((parent = get(doc, gid)) != null)
-				return parent;
-			else if (directParent)
-				return null;
-			else {
-				--level;
-			}
-		}
-		return null;
-	}
-
 	/**
 	 * Get all children of the given parent node contained in this node set.
 	 * If mode is {@link #DESCENDANT}, the returned node set will contain
@@ -803,7 +729,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 			l = (NodeProxy) i.next();
 			if (contains(l)) {
 				if ((p = r.get(l)) != null) {
-					p.addMatches(l.match);
+					p.addMatches(l);
 				} else
 					r.add(l);
 			}
@@ -839,7 +765,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 			if (other.contains(p)) {
 				c = other.get(p);
 				if(c != null)
-					c.addMatches(p.match);
+					c.addMatches(p);
 			} else
 				result.add(p);
 		}
@@ -871,7 +797,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 						}
 						result.add(context);
 					}
-					context.addMatches(current.match);
+					context.addMatches(current);
 				}
 				contextNode = contextNode.getNextItem();
 			}
@@ -888,7 +814,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 			contextNode = current.getContext();
 			while (contextNode != null) {
 				context = contextNode.getNode();
-				context.addMatches(current.match);
+				context.addMatches(current);
 				if (!result.contains(context)) {
 					if (rememberContext)
 						context.addContextNode(context);
@@ -903,9 +829,23 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	/**
 	 * Always returns this.
 	 * 
-	 * @see org.exist.xpath.value.Sequence#toNodeSet()
+	 * @see org.exist.xquery.value.Sequence#toNodeSet()
 	 */
 	public NodeSet toNodeSet() throws XPathException {
 		return this;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#getState()
+	 */
+	public int getState() {
+		return 1;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#hasChanged(int)
+	 */
+	public boolean hasChanged(int previousState) {
+		return false;
 	}
 }

@@ -23,29 +23,36 @@
                 <title>Use a Local Connection to the Database for Large Files</title>
                 <para>The XML:DB driver uses XMLRPC calls to communicate with a
                     remote database server. When storing files, the file content
-                    has first to be send over the network. The XMLRPC interface supports
+                    has first to be send over the network. To avoid memory problems, the XMLRPC interface supports
                     file uploads in chunks. This way, not the whole file has to fit into
                     main memory. Instead, the file is first uploaded chunk by chunk and stored
                     into a temporary file on the server, which is then stored into the database. 
                     However, sending the content of larger files over XMLRPC can cost a lot 
                     of time.</para>
+                    
                 <para>It is thus usually better to use a client with direct connection to
-                    the database. The client will open the database in embedded mode,
-                    so no network connection is established. To launch the client in
-                    local mode, enter:</para>
+                    the database to load a large amount of data. The client will open 
+                    the database in embedded mode, so no network connection is established. 
+                    To launch the client in local mode, enter:</para>
+                    
                 <synopsis>bin/client.sh -l</synopsis>
+                
                 <para>Please note that you should stop any running server before starting
                     the client in local mode (or make sure that the server is not writing
                     any data).</para>
+                    
                 <para>The embedded XML:DB driver uses SAX to parse the XML files. Since the
                     file content is not loaded into memory, there should be no limit to the 
                     size of a file.</para>
+                    
                 <para>Developers using the XML:DB API should prefer the setContent()
                     method of class XMLResource and pass a Java File object. The file object
                     is directly forwarded to the indexer.</para>
             </section>
             <section>
-                <title>Split Large Collections</title>
+                <title>Find a Compromise Between Collection Size and Number of
+                Collections in the DB</title>
+                
                 <para> Indexing performance is affected by a number of factors:
                     First of all, eXist manages its indexes internally by
                     collection, not by document, i.e. it will store all index
@@ -55,8 +62,9 @@
                     uses several tricks to handle this, for example, it simply
                     appends new entries to the B+-tree value without loading the
                     entire value into memory.</para>
-                <para> However, there will always be some performance limit if
-                    collections grow large. It is thus recommended to split
+                    
+                <para>However, there will always be some performance limit if
+                    collections grow large (&gt; 100,000 documents). It is thus recommended to split
                     large collections into several sub-collections. Splitting
                     collections has not much impact on query formulation: eXist
                     is able to process an XPath query over multiple
@@ -66,13 +74,14 @@
                 from thousand different collections is equally bad with respect to
                 query performance. You thus have to find a good compromise between
                 the collection size and the number of collections in the database.
-                The data should be organized in no more than a few dozen top-level
+                The data should be organized into no more than a few dozen top-level
                 collections.</para> 
             </section>
             <section>
                 <title>Restrict Fulltext-Indexing</title>
                 <para>Another alternative is to exclude some parts of your
-                    documents from fulltext-indexing. Usually, fulltext-queries
+                    documents from fulltext-indexing. By default, eXist tries to
+                    index every character sequence it finds. But usually, fulltext-queries
                     make more sense for some parts of a document than for
                     others. For example, URLs, serial numbers and the like
                     consume a lot of space in the index, but will rarely be
@@ -169,19 +178,19 @@
                     extensions are index-based, while the standard XPath functions
                     like <command>contains()</command> or operators like <command>=</command>
                     are not.</para>
-                <para>It would not be a problem to also apply indexing to the standard
-                    functions - and earlier versions of eXist actually had a value-index
-                    for that purpose. However, adding a value-index costs a lot of disk
-                    space and indexing time, so I decided to drop it. eXist already provides
-                    a word-based fulltext-index, so the benefits of an additional value index 
-                    are questionable.</para>
-                <para>There's one exception to this: equality comparisons may access the fulltext-
-                index in the background to restrict the number of candidate nodes.</para>
+                    
+                <note>
+                    <para>There's one exception to this: equality comparisons may access the fulltext-
+                    index in the background to restrict the number of candidate nodes.</para>
+                </note>
+                
                 <para>However, in many cases, replacing exact match XPath functions with the
                     corresponding, index-based fulltext-search extensions will be easily
                     possible. For example, if we search for the author of an article, we could
                     do:</para>
+                    
                 <synopsis>//article[author='Marx, Karl']</synopsis>
+                
                 <para>Query performance will be quite slow. The <command>=</command> operator
                 is not index-based. This means that the text value of each <sgmltag>author</sgmltag>
                 tag has to be compared to the string literal. The XPath engine thus has to actually 
@@ -280,17 +289,6 @@ return
                     structured, setting this to 4 or 5 may yield result in better download times
                     for query results. Note that the setting will only apply to newly indexed files, not to your 
                     old ones.</para>
-			</section>
-			<section>
-				<title>Which OS?</title>
-				<para>From my personal experience, I recommend running eXist on
-					a Linux box. In particular, the multi-threading support
-					seems to be much better on Linux than on Windows. Win XP
-					tends to block threads if the database is accessed by 
-					multiple clients. Also, it does not really recover from 
-					high load. After indexing a large number of files, 
-					response times remain bad though the database is idle.
-				</para>
 			</section>
         </section>
     </chapter>

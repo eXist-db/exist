@@ -7,8 +7,8 @@ package org.exist.dom;
 
 import java.util.Iterator;
 
-import org.exist.xpath.value.SequenceIterator;
-import org.exist.xpath.value.SingleItemIterator;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.SingleItemIterator;
 import org.w3c.dom.Node;
 
 /**

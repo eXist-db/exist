@@ -3,8 +3,8 @@ package org.exist.dom;
 import java.util.Iterator;
 import java.util.Stack;
 
-import org.exist.xpath.value.Item;
-import org.exist.xpath.value.SequenceIterator;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.SequenceIterator;
 
 public class AVLTreeNodeSet extends AbstractNodeSet {
 
@@ -21,6 +21,10 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 		return new InorderTraversal();
 	}
 
+	public SequenceIterator unorderedIterator() {
+		return new InorderTraversal();
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.dom.NodeSet#addAll(org.exist.dom.NodeSet)
 	 */

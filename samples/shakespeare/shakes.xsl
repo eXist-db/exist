@@ -7,6 +7,7 @@
                 <title>
                     <xsl:value-of select="PLAY/TITLE"/>
                 </title>
+                <link rel="stylesheet" type="text/css" href="shakes.css"/>
             </head>
             <body bgcolor="#ffffff">
                 <xsl:apply-templates/>
@@ -28,16 +29,14 @@
             <ul>
                 <xsl:for-each select="PERSONAE|ACT">
                     <li>
-                        <a>
-                            <xsl:attribute name="href">#<xsl:value-of select="generate-id()"/></xsl:attribute>
+                        <a href="#{generate-id()}">
                             <xsl:value-of select="TITLE"/>
                         </a>
                     </li>
                     <ul>
                         <xsl:for-each select="SCENE">                        
                             <li>
-                                <a>
-                                    <xsl:attribute name="href">#<xsl:value-of select="generate-id()"/></xsl:attribute>
+                                <a href="#{generate-id()}">
                                     <xsl:value-of select="TITLE"/>
                                 </a>
                             </li>
@@ -62,7 +61,9 @@
                 <xsl:value-of select="TITLE"/>
             </a>
         </h2>
-        <xsl:apply-templates select="PERSONA|PGROUP"/>
+        <table border="0" cellpadding="5">
+            <xsl:apply-templates select="PERSONA|PGROUP"/>
+        </table>
     </xsl:template>
     <xsl:template match="ACT">
 	   <hr/>        
@@ -87,12 +88,12 @@
         <table border="0" cellpadding="5" cellspacing="5" width="100%">
         <tr>
             <td width="20%" valign="top">
-                <i><xsl:apply-templates select="SPEAKER"/></i>
+                <div class="speaker"><xsl:apply-templates select="SPEAKER"/></div>
             </td>
             <td width="4%"/>
-            <td width="76%">
+            <td width="76%" valign="top">
                 <verse>
-                <xsl:apply-templates select="LINE|STAGEDIR"/>
+                    <xsl:apply-templates select="LINE|STAGEDIR"/>
                 </verse>
             </td>
         </tr>
@@ -102,10 +103,11 @@
         <xsl:value-of select="text()"/>
         <br/>
     </xsl:template>
+    
     <xsl:template match="LINE">
-        <xsl:apply-templates/>
-        <br/>
+        <xsl:apply-templates/><br/>
     </xsl:template>
+    
     <xsl:template match="LINE/STAGEDIR">[<b>
             <xsl:apply-templates/>
         </b>]</xsl:template>
@@ -140,15 +142,24 @@
         </blockquote>
     </xsl:template>
     <xsl:template match="PERSONAE/PERSONA">
-        <xsl:apply-templates/>
-        <br/>
+        <tr>
+            <td colspan="2"><xsl:apply-templates/></td>
+        </tr>
     </xsl:template>
+    
     <xsl:template match="PGROUP">
-        <xsl:for-each select="PERSONA">
-            <xsl:value-of select="text()"/>,</xsl:for-each>
-        <xsl:value-of select="GRPDESCR"/>
-        <br/>
+        <tr>
+            <td>
+                <xsl:for-each select="PERSONA">
+                    <xsl:value-of select="text()"/><br/>
+                </xsl:for-each>
+            </td>
+            <td>
+                <xsl:value-of select="GRPDESCR"/>
+            </td>
+        </tr>
     </xsl:template>
+    
     <xsl:template match="P">
         <tt>
             <xsl:apply-templates/>

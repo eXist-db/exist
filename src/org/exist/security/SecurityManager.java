@@ -22,14 +22,13 @@
  */
 package org.exist.security;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.log4j.Category;
 import org.exist.EXistException;
-import org.exist.Parser;
 import org.exist.collections.Collection;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -91,7 +90,7 @@ public class SecurityManager {
 				broker.saveCollection(sysCollection);
 				sysCollection.setPermissions(0770);
 			}
-			Document acl = broker.getDocument(SYSTEM + '/' + ACL_FILE);
+			Document acl = sysCollection.getDocument(SYSTEM + '/' + ACL_FILE);
 			Element docElement = null;
 			if (acl != null)
 				docElement = acl.getDocumentElement();
@@ -290,16 +289,17 @@ public class SecurityManager {
 		broker.flush();
 		broker.sync();
 		try {
-			Parser parser = new Parser(broker, getUser(DBA_USER), true, true);
+			broker.setUser(getUser(DBA_USER));
+			Collection sysCollection = broker.getCollection(SYSTEM);
 			DocumentImpl doc =
-				parser.parse(buf.toString(), SYSTEM + '/' + ACL_FILE);
+				sysCollection.addDocument(broker, ACL_FILE, buf.toString(), true);
 			doc.setPermissions(0770);
 			broker.saveCollection(doc.getCollection());
-		} catch (IOException e) {
-			e.printStackTrace();
 		} catch (SAXException e) {
 			e.printStackTrace();
 		} catch (PermissionDeniedException e) {
+			e.printStackTrace();
+		} catch (TriggerException e) {
 			e.printStackTrace();
 		}
 		broker.flush();

@@ -749,37 +749,6 @@
     -->
  </component>
 
-  <component class="org.apache.cocoon.jxpath.JXPathCocoonContexts" logger="core.jxpath" role="org.apache.cocoon.jxpath.JXPathCocoonContexts"/>	
-
-	
-  <component class="org.apache.cocoon.components.ExtendedComponentSelector" role="org.apache.cocoon.taglib.TagSelector">
-    <taglib class="org.apache.cocoon.components.ExtendedComponentSelector" logger="sitemap.taglib.core" name="urn:apache:taglib:core">
-      <tag class="org.apache.cocoon.taglib.core.SourceTag" logger="sitemap.taglib.core.source" name="source"/>
-    </taglib>
-    <taglib class="org.apache.cocoon.components.ExtendedComponentSelector" logger="sitemap.taglib.datetime" name="urn:apache:taglib:datetime">
-      <tag class="org.apache.cocoon.taglib.datetime.MonthsTag" logger="sitemap.taglib.datetime.months" name="months"/>
-    </taglib>
-    <taglib class="org.apache.cocoon.components.ExtendedComponentSelector" logger="sitemap.taglib.i18n" name="urn:apache:taglib:i18n">
-      <tag class="org.apache.cocoon.taglib.i18n.LocaleTag" logger="sitemap.taglib.i18n.Locale" name="locale"/>
-	</taglib>
-	<taglib class="org.apache.cocoon.components.ExtendedComponentSelector" logger="sitemap.taglib.jxpath" name="urn:apache:taglib:jxpath:core">
-      <tag class="org.apache.cocoon.taglib.jxpath.core.OutTag" logger="sitemap.taglib.jxpath.core.out" name="out"/>
-      <tag class="org.apache.cocoon.taglib.jxpath.core.ForEachTag" logger="sitemap.taglib.jxpath.core.forEach" name="forEach"/>
-    </taglib>
-    <taglib class="org.apache.cocoon.components.ExtendedComponentSelector" logger="sitemap.taglib.string" name="urn:apache:taglib:string">
-      <tag class="org.apache.cocoon.taglib.string.LowerCaseTag" logger="sitemap.taglib.string.lower" name="lower"/>
-      <tag class="org.apache.cocoon.taglib.string.TextRecordingTag" logger="sitemap.taglib.string.textRecording" name="textRecording"/>
-      <tag class="org.apache.cocoon.taglib.string.TrimTag" logger="sitemap.taglib.string.trim" name="trim"/>
-      <tag class="org.apache.cocoon.taglib.string.UpperCaseTag" logger="sitemap.taglib.string.upper" name="upper"/>
-    </taglib>
-    <taglib class="org.apache.cocoon.components.ExtendedComponentSelector" logger="sitemap.taglib.test" name="urn:apache:taglib:test">
-      <tag class="org.apache.cocoon.taglib.test.HelloWorldTag" logger="sitemap.taglib.test.hello" name="hello"/>
-      <tag class="org.apache.cocoon.taglib.test.IterationTestTag" logger="sitemap.taglib.test.iteration" name="iteration"/>
-    </taglib>
-  </component>
-	
-
-
   <!--+
       | URL Factory
       |

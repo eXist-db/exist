@@ -161,7 +161,6 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 				return o;
 			}
 		}
-		System.out.println(key + " not found for remove");
 		return null;
 	}
 
@@ -235,7 +234,7 @@ public class Int2ObjectHashMap extends AbstractHashtable {
 		return retVal;
 	}
 
-	protected final static int hash(int i) {
+	protected static int hash(int i) {
 		return i;
 	}
 

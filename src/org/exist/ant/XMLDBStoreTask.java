@@ -53,6 +53,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
 	private FileSet fileSet = null;
 	private boolean createCollection = false;
 	private boolean createSubcollections = false;
+	private String type = "xml";
 	
 	/* (non-Javadoc)
 	 * @see org.apache.tools.ant.Task#execute()
@@ -90,7 +91,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
 			Collection collection = root;
 			Resource res;
 			File file;
-			String relDir, prevDir = null;
+			String relDir, prevDir = null, resourceType = "XMLResource";
 			for (int i = 0; i < files.length; i++) {
 				file =
 					new File(scanner.getBasedir() + File.separator + files[i]);
@@ -103,7 +104,8 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
 						prevDir = relDir;
 					}
 				}
-				res = collection.createResource(file.getName(), "XMLResource");
+				resourceType = type.equals("binary") ? "BinaryResource" : "XMLResource";
+				res = collection.createResource(file.getName(), resourceType);
 				res.setContent(file);
 				collection.storeResource(res);
 			}
@@ -127,6 +129,10 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
 		this.createSubcollections = create;
 	}
 
+	public void setType(String type) {
+		this.type = type;
+	}
+	
 	private final Collection mkcol(
 		Collection root,
 		String baseURI,

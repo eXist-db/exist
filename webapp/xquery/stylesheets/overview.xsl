@@ -11,7 +11,7 @@
     <xsl:include href="context://stylesheets/doc2html-2.xsl"/>
     
     <xsl:template match="query-results">
-        <table border="0" cellpadding="7" cellspacing="0" width="100%" class="overview">
+        <table class="overview" cellspacing="0" border="0" cellpadding="2" bgcolor="#F3F3F3">
             <xsl:call-template name="navigation">
                 <xsl:with-param name="position" select="'top'"/>
             </xsl:call-template>
@@ -24,36 +24,39 @@
     
     <xsl:template name="navigation">
         <xsl:param name="position"/>
-        <tr bgcolor="#D9D9D9" width="100%">
+        <tr class="result-head" width="100%">
             <th class="nav{$position}" align="left" width="20%">
                 <xsl:if test="@start &gt; 1">
-                    <a href="biblio.xq?start={@start - 10}">
+                    <a href="biblio.xq?start={@start - @max}&amp;howmany={@max}">
                         &lt;&lt; Previous
                     </a>
                 </xsl:if>
+
             </th>
             <th class="nav{$position}" align="center" width="60%">
                 Displaying hits <xsl:value-of select="@start"/> to <xsl:value-of select="@next - 1"/>
-                (total: <xsl:value-of select="@hits"/>)
+                (total: <xsl:value-of select="@hits"/>)<br/>
+                <a href="biblio.xml">New Query</a>
             </th>
             <th class="nav{$position}" align="right" width="20%">
-                <xsl:if test="number(@next) &lt; @hits">
-                    <a href="biblio.xq?start={@next}">
+                <xsl:if test="number(@next) &lt;= @hits">
+                    <a href="biblio.xq?start={@next}&amp;howmany={@max}">
                         Next &gt;&gt;
                     </a>
                 </xsl:if>
+
             </th>
         </tr>
         <xsl:if test="$position='top'">
             <tr bgcolor="#99CCFF" width="100%">
                 <th class="navtop" align="left" width="20%">
-                    <a href="biblio.xq?order=creator&amp;start={@start}">Creator/Editor</a>
+                    <a href="biblio.xq?order=creator&amp;start={@start}&amp;howmany={@max}">Creator/Editor</a>
                 </th>
                 <th class="navtop" align="left" width="60%">
-                    <a href="biblio.xq?order=title&amp;start={@start}">Title</a>
+                    <a href="biblio.xq?order=title&amp;start={@start}&amp;howmany={@max}">Title</a>
                 </th>
                 <th class="navtop" align="left" width="20%">
-                    <a href="biblio.xq?order=date&amp;start={@start}">Year</a>
+                    <a href="biblio.xq?order=date&amp;start={@start}&amp;howmany={@max}">Year</a>
                 </th>
             </tr>
         </xsl:if>
@@ -73,7 +76,8 @@
                 <xsl:apply-templates select="creator"/>
             </td>
             <td class="overview">
-                <a href="biblio.xq?start={../@start + position() - 1}&amp;display=details">
+                <a href="biblio.xq?start={../@start + position() -
+                1}&amp;howmany={../@max}&amp;display=details">
                     <xsl:apply-templates select="dc:title"/>
                 </a>
             </td>

@@ -123,6 +123,10 @@
                         extensions (to support fulltext search). Queries may span
                         any possible combination of collections or documents.</p>
 
+                    <p>Older code based on XPath should be compatible
+                    with the XQuery engine, though some aspects (e.g. the rules for
+                    automatic type conversions) have changed.</p>
+
                 </topic>
 
                 <topic name="XQuery Modules">
@@ -137,7 +141,7 @@
                 </topic>
 
                 <topic name="XInclude">
-                    <p>Yes.</p>
+                    <p>Yes. Some features missing.</p>
                 </topic>
 
                 <topic name="XPointer">
@@ -183,11 +187,12 @@
 
             <category name="Network Protocols">
 
-                <topic name="HTTP">
+                <topic name="HTTP/REST">
 
-                    <p>Simple HTTP access in standalone mode (REST like).
-                        Tight integration with Cocoon for complex web
-                        applications.</p>
+					<p>eXist offers a REST-style web service API for simple access 
+                    via HTTP. Running in a servlet context, the REST functionality
+                    is provided through the EXistServlet. In stand-alone mode, the
+                    database has its own, built-in web server.</p>
                 </topic>
 
                 <topic name="XML-RPC">
@@ -236,9 +241,10 @@
                         wasted for the balancing.</p>
 						
                     <p>However, there are some documents with a very irregular
-                        structure, which cannot be mapped into the internal
-                        identifer scheme. Such documents have to be split into
-                        smaller, logical parts.</p>
+                    structure, which cannot be mapped into the internal
+                    identifer scheme. Such documents have to be split into
+                    smaller, logical parts. We are working on an automatic
+                    splitting algorithm to simplify this.</p>
                 
                 </topic>
             </category>

@@ -7,7 +7,7 @@ declare namespace util="http://exist-db.org/xquery/util";
 declare function a:query-part($field as xs:string) as xs:string
 {
 	if($field = "acronym") then
-		"a:Acronym/@id|.//a:AlternateForm"
+		"a:Acronym/@id"
 	else if($field = "expansion") then
 		"a:Acronym/@expansion"
 	else if($field = "definition") then

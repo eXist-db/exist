@@ -8,7 +8,7 @@ import org.exist.dom.NodeImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.xpath.XPathException;
+import org.exist.xquery.XPathException;
 import org.w3c.dom.NodeList;
 
 /**

@@ -37,12 +37,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
 
-/**
- *  Description of the Class
- *
- *@author     Wolfgang Meier <wolfgang@exist-db.org>
- *@created    9. Juli 2002
- */
 public class AttrImpl extends NodeImpl implements Attr {
 	
 	public final static int CDATA = 0;
@@ -52,36 +46,15 @@ public class AttrImpl extends NodeImpl implements Attr {
     protected ElementImpl ownerElement = null;
     protected String value = null;
 
-
-    /**
-     *  Constructor for the AttrImpl object
-     *
-     *@param  gid  Description of the Parameter
-     */
     public AttrImpl( long gid ) {
         super( Node.ATTRIBUTE_NODE, gid );
     }
 
-
-    /**
-     *  Constructor for the AttrImpl object
-     *
-     *@param  name   Description of the Parameter
-     *@param  value  Description of the Parameter
-     */
     public AttrImpl( QName name, String value ) {
         super( Node.ATTRIBUTE_NODE, name);
 		this.value = value;
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  data  Description of the Parameter
-     *@param  doc   Description of the Parameter
-     *@return       Description of the Return Value
-     */
     public static NodeImpl deserialize( byte[] data, int start, int len, DocumentImpl doc ) {
     	int next = start;
         byte idSizeType = (byte) ( data[next] & 0x3 );
@@ -118,12 +91,6 @@ public class AttrImpl extends NodeImpl implements Attr {
         return attr;
     }
 
-
-    /**
-     *  Gets the name attribute of the AttrImpl object
-     *
-     *@return    The name value
-     */
     public String getName() {
         return nodeName.toString();
     }
@@ -137,51 +104,22 @@ public class AttrImpl extends NodeImpl implements Attr {
 		attributeType = type;
 	}
 	
-    /**
-     *  Gets the nodeValue attribute of the AttrImpl object
-     *
-     *@return    The nodeValue value
-     */
     public String getNodeValue() {
         return value;
     }
 
-
-    /**
-     *  Gets the ownerElement attribute of the AttrImpl object
-     *
-     *@return    The ownerElement value
-     */
     public Element getOwnerElement() {
         return (Element) ownerDocument.getNode( getParentGID() );
     }
 
-
-    /**
-     *  Gets the specified attribute of the AttrImpl object
-     *
-     *@return    The specified value
-     */
     public boolean getSpecified() {
         return true;
     }
 
-
-    /**
-     *  Gets the value attribute of the AttrImpl object
-     *
-     *@return    The value value
-     */
     public String getValue() {
         return value;
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@return    Description of the Return Value
-     */
     public byte[] serialize() {
         final short id = ownerDocument.getSymbols().getSymbol( this );
         final byte idSizeType = Signatures.getSizeType( id );
@@ -217,26 +155,10 @@ public class AttrImpl extends NodeImpl implements Attr {
     }
 
 
-    /**
-     *  Sets the value attribute of the AttrImpl object
-     *
-     *@param  value             The new value value
-     *@exception  DOMException  Description of the Exception
-     */
     public void setValue( String value ) throws DOMException {
         this.value = XMLUtil.encodeAttrMarkup( value );
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  contentHandler    Description of the Parameter
-     *@param  lexicalHandler    Description of the Parameter
-     *@param  first             Description of the Parameter
-     *@param  prefixes          Description of the Parameter
-     *@exception  SAXException  Description of the Exception
-     */
     public void toSAX( ContentHandler contentHandler,
                        LexicalHandler lexicalHandler, boolean first,
                        Set namespaces)
@@ -256,12 +178,6 @@ public class AttrImpl extends NodeImpl implements Attr {
         }
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@return    Description of the Return Value
-     */
     public String toString() {
         StringBuffer buf = new StringBuffer();
         buf.append( ' ' );
@@ -272,13 +188,6 @@ public class AttrImpl extends NodeImpl implements Attr {
         return buf.toString();
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  top  Description of the Parameter
-     *@return      Description of the Return Value
-     */
     public String toString( boolean top ) {
         if ( top ) {
             StringBuffer result = new StringBuffer();

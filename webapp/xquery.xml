@@ -25,8 +25,8 @@
                 November, 2003 with the exception of the XML Schema related
                 features. Also, computed node constructors, some functions, and
                 operator combinations still have to be implemented. Apart from
-                that, eXist passes most of the official XQuery use cases. Please
-                have a look at the list of missing features below.</para>
+                that, eXist passes most of the official XQuery use cases (except two). 
+                Please have a look at the list of missing features below.</para>
 
             <para>The XQuery engine is a complete rewrite and replaces the old
                 XPath engine. Older code based on XPath should be compatible
@@ -84,7 +84,8 @@
                 to be running. The function description is directly extracted
                 from the signature provided by each class implementing the
                 <classname>Function</classname> interface. </para>
-
+            
+            
         </section>
         <section>
             <title>Extensions</title>

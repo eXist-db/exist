@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!--DOCTYPE PLAY PUBLIC "-//PLAY//EN" "play.dtd"-->
+<?xml-stylesheet href="shakes.xsl" type="text/xsl"?>
 
 <PLAY>
 <TITLE>The Tragedy of Romeo and Juliet</TITLE>

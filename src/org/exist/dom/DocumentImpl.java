@@ -310,6 +310,15 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return children;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.w3c.dom.Node#getFirstChild()
+	 */
+	public Node getFirstChild() {
+		checkAvail();
+		long address = ((Long)childList.getFirst()).longValue();
+		return broker.objectWith(new NodeProxy(this, 1, address));
+	}
+	
 	public NodeList getChildNodes() {
 		checkAvail();
 		NodeListImpl list = new NodeListImpl();
@@ -442,7 +451,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public SymbolTable getSymbols() {
-		return NativeBroker.getSymbols();
+		return broker.getSymbols();
 	}
 
 	public int getTreeLevel(long gid) {

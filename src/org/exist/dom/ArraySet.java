@@ -23,8 +23,8 @@ package org.exist.dom;
 import java.util.Iterator;
 
 import org.exist.util.FastQSort;
-import org.exist.xpath.value.Item;
-import org.exist.xpath.value.SequenceIterator;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.Node;
 
 public class ArraySet extends AbstractNodeSet {
@@ -315,7 +315,7 @@ public class ArraySet extends AbstractNodeSet {
 			else {
 				switch (mode) {
 					case ANCESTOR :
-						al.nodes[ax].addMatches(dl[dx].match);
+						al.nodes[ax].addMatches(dl[dx]);
 						if (rememberContext)
 							al.nodes[ax].addContextNode(dl[dx]);
 						else
@@ -323,7 +323,7 @@ public class ArraySet extends AbstractNodeSet {
 						result.add(al.nodes[ax]);
 						break;
 					case DESCENDANT :
-						nodes[dx].addMatches(al.nodes[ax].match);
+						nodes[dx].addMatches(al.nodes[ax]);
 						if (rememberContext)
 							nodes[dx].addContextNode(al.nodes[ax]);
 						else
@@ -424,7 +424,7 @@ public class ArraySet extends AbstractNodeSet {
 					switch (mode) {
 						case ANCESTOR :
 							// remember the ancestor-node
-							al.nodes[ax].addMatches(dl[dx].match);
+							al.nodes[ax].addMatches(dl[dx]);
 							if (rememberContext)
 								al.nodes[ax].addContextNode(nodes[dx]);
 							else
@@ -434,7 +434,7 @@ public class ArraySet extends AbstractNodeSet {
 							break;
 						case DESCENDANT :
 							// remember the descendant-node
-							nodes[dx].addMatches(al.nodes[ax].match);
+							nodes[dx].addMatches(al.nodes[ax]);
 							if (rememberContext)
 								nodes[dx].addContextNode(al.nodes[ax]);
 							else
@@ -513,7 +513,7 @@ public class ArraySet extends AbstractNodeSet {
 					// found a matching node
 					if ((temp = result.get(al.nodes[ax])) == null) {
 						// remember the ancestor-node
-						al.nodes[ax].addMatches(nodes[dx].match);
+						al.nodes[ax].addMatches(nodes[dx]);
 						if (rememberContext)
 							al.nodes[ax].addContextNode(nodes[dx]);
 						else
@@ -576,22 +576,13 @@ public class ArraySet extends AbstractNodeSet {
 		sortInDocumentOrder();
 		return new ArraySequenceIterator();
 	}
-
-	public NodeProxy nodeHasParent(
-		DocumentImpl doc,
-		long gid,
-		boolean directParent,
-		boolean includeSelf) {
+	
+	/* (non-Javadoc)
+	 * @see org.exist.dom.AbstractNodeSet#unorderedIterator()
+	 */
+	public SequenceIterator unorderedIterator() {
 		sort();
-		return super.nodeHasParent(doc, gid, directParent, includeSelf);
-	}
-
-	public NodeProxy nodeHasParent(
-		DocumentImpl doc,
-		long gid,
-		boolean directParent) {
-		sort();
-		return super.nodeHasParent(doc, gid, directParent, false);
+		return new ArraySequenceIterator();
 	}
 
 	public int position(NodeImpl test) {

@@ -26,14 +26,14 @@ import org.exist.dom.NodeSet;
 import org.exist.storage.DBBroker;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.util.serializer.DOMStreamerPool;
-import org.exist.xpath.XPathException;
-import org.exist.xpath.value.AtomicValue;
-import org.exist.xpath.value.Item;
-import org.exist.xpath.value.NodeValue;
-import org.exist.xpath.value.Sequence;
-import org.exist.xpath.value.SequenceIterator;
-import org.exist.xpath.value.StringValue;
-import org.exist.xpath.value.Type;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -127,6 +127,8 @@ public class NodeImpl implements Node, NodeValue {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	public boolean equals(Object obj) {
+		if(!(obj instanceof NodeImpl))
+			return false;
 		return nodeNumber == ((NodeImpl) obj).nodeNumber;
 	}
 
@@ -405,6 +407,13 @@ public class NodeImpl implements Node, NodeValue {
 	public SequenceIterator iterate() {
 		return new SingleNodeIterator(this);
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Sequence#unorderedIterator()
+	 */
+	public SequenceIterator unorderedIterator() {
+		return new SingleNodeIterator(this);
+	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Sequence#getLength()
@@ -524,5 +533,11 @@ public class NodeImpl implements Node, NodeValue {
 			StringValue v = new StringValue(getStringValue());
 			return v.toJavaObject(target);
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Sequence#setSelfAsContext()
+	 */
+	public void setSelfAsContext() {
 	}
 }

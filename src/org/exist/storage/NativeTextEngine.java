@@ -130,11 +130,11 @@ public class NativeTextEngine extends TextSearchEngine {
 		temp = (String) config.getProperty("serialization.match-tagging-elements");
 		if (temp != null)
 			trackMatches =
-				temp.equalsIgnoreCase("true")
+				temp.equalsIgnoreCase("yes")
 					? Serializer.TAG_ELEMENT_MATCHES
 					: Serializer.TAG_NONE;
 		temp = (String) config.getProperty("serialization.match-tagging-attributes");
-		if (temp != null && temp.equalsIgnoreCase("true"))
+		if (temp != null && temp.equalsIgnoreCase("yes"))
 			trackMatches = trackMatches | Serializer.TAG_ATTRIBUTE_MATCHES;
 
 		String pathSep = System.getProperty("file.separator", "/");
@@ -322,7 +322,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		if (context == null)
 			result = new TextSearchResult(trackMatches != Serializer.TAG_NONE);
 		else
-			result = new ExtArrayNodeSet(250);
+			result = new ExtArrayNodeSet(docs.getLength(), 250);
 		String term = (stem) ? stemmer.stem(expr.toLowerCase()) : expr.toLowerCase();
 		int count = 0;
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
@@ -408,7 +408,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		NodeSet context,
 		String expr,
 		int type) {
-		//long start = System.currentTimeMillis();
+		long start = System.currentTimeMillis();
 		NodeSet result;
 		if (context == null)
 			result = new TextSearchResult(trackMatches != Serializer.TAG_NONE);
@@ -470,12 +470,12 @@ public class NativeTextEngine extends TextSearchEngine {
 				lock.release();
 			}
 		}
-		//		LOG.debug(
-		//			"regexp found: "
-		//				+ result.getLength()
-		//				+ " in "
-		//				+ (System.currentTimeMillis() - start)
-		//				+ "ms.");
+				LOG.debug(
+					"regexp found: "
+						+ result.getLength()
+						+ " in "
+						+ (System.currentTimeMillis() - start)
+						+ "ms.");
 		return result;
 	}
 
@@ -556,36 +556,23 @@ public class NativeTextEngine extends TextSearchEngine {
 	public void removeCollection(Collection collection) {
 		Lock lock = dbWords.getLock();
 		try {
-			try {
-				lock.acquire(Lock.WRITE_LOCK);
-				dbWords.flush();
-			} catch (LockException e) {
-				LOG.warn("could not acquire lock on words db", e);
-				return;
-			} finally {
-				lock.release();
-			}
-			LOG.debug("removing words ...");
+			lock.acquire(Lock.WRITE_LOCK);
+			LOG.debug("removing fulltext index ...");
 			WordRef ref = new WordRef(collection.getId());
 			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-
-			ArrayList entries = null;
-			try {
-				lock.acquire(Lock.WRITE_LOCK);
-				dbWords.removeAll(query);
-			} catch (LockException e) {
-				LOG.warn("could not acquire lock on words db", e);
-				entries = null;
-			} finally {
-				lock.release();
-			}
-			LOG.debug("removed words index");
+				
+			dbWords.flush();
+			dbWords.removeAll(query);
 		} catch (BTreeException bte) {
 			LOG.debug(bte);
 		} catch (IOException ioe) {
 			LOG.debug(ioe);
 		} catch (DBException dbe) {
 			LOG.warn(dbe);
+		} catch (LockException e) {
+			LOG.warn("Failed to acquire lock on collections.dbx", e);
+		} finally {
+			lock.release();
 		}
 	}
 
@@ -700,7 +687,7 @@ public class NativeTextEngine extends TextSearchEngine {
 				continue;
 			}
 			word = token.getText().toLowerCase();
-			if (stoplist.contains(word)) {
+			if (stoplist.contains(word) || word.length() > 512) {
 				continue;
 			}
 			invIdx.setDocument(doc);
@@ -729,7 +716,7 @@ public class NativeTextEngine extends TextSearchEngine {
 				continue;
 			}
 			word = token.getText();
-			if (stoplist.contains(word)) {
+			if (stoplist.contains(word) || word.length() > 1024) {
 				continue;
 			}
 			invIdx.setDocument(doc);
@@ -1190,7 +1177,7 @@ public class NativeTextEngine extends TextSearchEngine {
 								proxy = (section == TEXT_SECTION ? new NodeProxy(doc, gid, Node.TEXT_NODE) : 
 									new NodeProxy(doc, gid, Node.ATTRIBUTE_NODE));
 								parent =
-									context.parentWithChild(doc, gid, false, true, -1);
+									context.parentWithChild(proxy, false, true, -1);
 								if (parent != null) {
 									result.add(parent, sizeHint);
 									if (trackMatches != Serializer.TAG_NONE)

@@ -80,7 +80,17 @@
                             An XQuery-version of the old library search example from previous
                             releases of eXist.
                         </td>
-                    </tr> 
+                    </tr>
+                    <!--tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/mods.xml">MODS Bibliography</link>
+                        </td>
+                        <td width="70%">
+                            Similar to the above, but based on the MODS
+                            bibliographic format, which is maintained by the Library of
+                            Congress.
+                        </td>
+                    </tr-->
                     <tr>
                         <th align="left" colspan="2">
                             XQueryServlet
@@ -117,20 +127,9 @@
                 </table>
                 
             </section>
-
-            <section title="Cocoon Examples">
             
-                <p>These are older examples based on different Cocoon features. Some
-                    of the examples have been rewritten in XQuery, so there are now
-                    two versions of these. Nevertheless, the pages here are still valid
-                    if you don't want to rely on the XQuery engine.</p>
-                
+            <section title="Misc Examples">
                 <table border="0" width="100%" cellspacing="10">
-                    <tr>
-                        <th align="left" colspan="2">
-                            XInclude
-                        </th>
-                    </tr>
                     <tr>
                         <td width="30%" valign="top">
                             <link href="xmldb/db/xinclude/xinclude.xml">XInclude
@@ -140,7 +139,29 @@
                             database by expanding XInclude tags found in the source
                             document.</td>
                     </tr>
-
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="servlet/db/shakespeare/plays/macbeth.xml">
+                                Retrieve a document through REST
+                            </link>
+                        </td>
+                        <td width="70%">Retrieves a document through the REST-style
+                        API. The document contains an XSL processing instruction.
+                        The XSL stylesheet is read from the database and applied
+                        to the output. Please note that also the CSS file referenced
+                        by the HTML output is loaded from the database.</td>
+                    </tr>
+                </table>
+            </section>
+            
+            <section title="Cocoon Examples">
+            
+                <p>These are older examples based on different Cocoon features. Some
+                    of the examples have been rewritten in XQuery, so there are now
+                    two versions of these. Nevertheless, the pages here are still valid
+                    if you don't want to rely on the XQuery engine.</p>
+                
+                <table border="0" width="100%" cellspacing="10">
                     <tr>
                         <th align="left" colspan="2">
                             Cocoon XML:DB Pseudo-Protocol

@@ -40,7 +40,6 @@ import java.util.TimerTask;
  *  change this.
  *  
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    22 May 2002
  */
 public class Server {
 

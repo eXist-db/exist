@@ -25,9 +25,14 @@ package org.exist.client;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.text.PlainDocument;
 
+import org.jedit.syntax.InputHandler;
 import org.jedit.syntax.JEditTextArea;
 import org.jedit.syntax.SyntaxDocument;
 import org.jedit.syntax.SyntaxStyle;
@@ -35,7 +40,11 @@ import org.jedit.syntax.TextAreaPainter;
 import org.jedit.syntax.Token;
 import org.jedit.syntax.XMLTokenMarker;
 
-public class ClientTextArea extends JEditTextArea {
+public class ClientTextArea extends JEditTextArea implements ActionListener {
+	
+	public final static String CUT = "Cut";
+	public final static String COPY = "Copy";
+	public final static String PASTE = "Paste";
 	
 	protected Font textFont = new Font("Monospaced", Font.PLAIN, 12);
 	
@@ -45,11 +54,17 @@ public class ClientTextArea extends JEditTextArea {
 		setFont(textFont);
 		setEditable(editable);
 		setPreferredSize(new Dimension(300, 200));
+		
 		SyntaxDocument doc = new SyntaxDocument();
 		doc.putProperty(PlainDocument.tabSizeAttribute, new Integer(4));
-		
 		setDocument(doc);
 		setElectricScroll(2);
+		
+		popup = new JPopupMenu("Edit Menu");
+		popup.add(new JMenuItem(CUT)).addActionListener(this);
+		popup.add(new JMenuItem(COPY)).addActionListener(this);
+		popup.add(new JMenuItem(PASTE)).addActionListener(this);
+		
 		if(mode.equals("XML"))
 			setTokenMarker(new XMLTokenMarker());
 		TextAreaPainter painter = getPainter();
@@ -60,7 +75,34 @@ public class ClientTextArea extends JEditTextArea {
 		styles[Token.LITERAL1] = new SyntaxStyle(new Color(255, 0, 204), false, false);
 		styles[Token.LITERAL2] = new SyntaxStyle(new Color(204, 0, 204), false, false);
 		painter.setStyles(styles);
-		painter.setEOLMarkersPainted(false);
+		painter.setEOLMarkersPainted(true);
+		painter.setBracketHighlightEnabled(true);
+		
+		InputHandler inputHandler = getInputHandler();
+		inputHandler.addKeyBinding("C+c",
+				new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						copy();
+					}
+		});
+		inputHandler.addKeyBinding("C+v",
+				new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				paste();
+			}
+		});
 	}
-
+	
+	/* (non-Javadoc)
+	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	 */
+	public void actionPerformed(ActionEvent e) {
+		String cmd = e.getActionCommand();
+		if(cmd.equals(CUT))
+			cut();
+		else if(cmd.equals(COPY))
+			copy();
+		else if(cmd.equals(PASTE))
+			paste();
+	}
 }

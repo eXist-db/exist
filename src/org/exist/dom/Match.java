@@ -17,6 +17,11 @@ public class Match implements Comparable {
 		this.nodeId = nodeId;
 	}
 	
+	public Match(Match match) {
+		this.matchTerm = match.matchTerm;
+		this.nodeId = match.nodeId;
+	}
+	
 	public String getMatchingTerm() {
 		return matchTerm;
 	}
@@ -44,7 +49,7 @@ public class Match implements Comparable {
 	 */
 	public int compareTo(Object o) {
 		Match other = (Match)o;
-		return other.matchTerm.compareTo(matchTerm);
+		return matchTerm.compareTo(other.matchTerm);
 	}
 
 }

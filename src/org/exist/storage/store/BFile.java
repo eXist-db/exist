@@ -30,7 +30,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import org.apache.log4j.Category;
 import org.dbxml.core.DBException;
 import org.dbxml.core.data.Value;
 import org.dbxml.core.filer.BTree;
@@ -70,8 +69,6 @@ import org.exist.util.ReentrantReadWriteLock;
  *@created    25. Mai 2002
  */
 public class BFile extends BTree {
-
-	private final static Category LOG = Category.getInstance(BFile.class.getName());
 
 	// minimum free space a page should have to be
 	// considered for reusing
@@ -921,6 +918,7 @@ public class BFile extends BTree {
 		public void write(java.io.RandomAccessFile raf) throws IOException {
 			// does the free-space list fit into the file header?
 			if (freeList.size() > MAX_FREE_LIST_LEN) {
+				LOG.debug("removing " + (freeList.size() - MAX_FREE_LIST_LEN) + " free pages.");
 				// no: remove some smaller entries to make it fit
 				for (int i = 0; i < freeList.size() - MAX_FREE_LIST_LEN; i++)
 					freeList.removeFirst();
@@ -1503,7 +1501,7 @@ public class BFile extends BTree {
 	 * 
 	 * @author wolf
 	 */
-	private final class MultiPageInputStream extends InputStream implements PageInputStream {
+	private class MultiPageInputStream extends InputStream implements PageInputStream {
 
 		private SinglePage nextPage_;
 		private int len_ = -1;

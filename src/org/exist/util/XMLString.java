@@ -88,7 +88,7 @@ public class XMLString implements CharSequence, Comparable {
 		start_ = 0;
 		append(ch, offset, len);
 	}
-
+	
 	public final XMLString normalize(int mode) {
 		if(length_ == 0)
 			return this;
@@ -107,6 +107,15 @@ public class XMLString implements CharSequence, Comparable {
 		return this;
 	}
 
+	public final boolean isWhitespaceOnly() {
+		if(length_ == 0)
+			return true;
+		int i = 0;
+		while(i < length_ && isWhiteSpace(value_[start_ + i]))
+			i++;
+		return i == length_;
+	}
+	
 	public final String toString() {
 		if (value_ == null)
 			return "null";

@@ -8,7 +8,7 @@ package org.exist.soap;
 import java.io.Serializable;
 
 import org.exist.security.User;
-import org.exist.xpath.value.Sequence;
+import org.exist.xquery.value.Sequence;
 
 public class Session implements Serializable {
 

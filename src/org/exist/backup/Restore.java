@@ -22,9 +22,9 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
-import org.xmldb.api.modules.XMLResource;
 
 /**
  * Restore.java
@@ -172,6 +172,7 @@ public class Restore extends DefaultHandler {
 				else
 					System.err.println(f.getAbsolutePath() + " does not exist or is not readable.");
 			} else if (localName.equals("resource")) {
+				final String type = atts.getValue("type");
 				final String name = atts.getValue("name");
 				final String owner = atts.getValue("owner");
 				final String group = atts.getValue("group");
@@ -187,8 +188,8 @@ public class Restore extends DefaultHandler {
 					}
 					if(dialog != null)
 						dialog.setResource(name);
-					final XMLResource res =
-						(XMLResource) current.createResource(name, "XMLResource");
+					final Resource res =
+						current.createResource(name, type);
 					res.setContent(f);
 					if(dialog == null)
 						System.out.println("restoring " + name);

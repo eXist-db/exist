@@ -26,6 +26,8 @@ public class EXistOutputKeys {
 
 	public final static String EXPAND_XINCLUDES = "expand-xincludes";
 	
+	public final static String PROCESS_XSL_PI = "process-xsl-pi";
+	
 	public final static String HIGHLIGHT_MATCHES = "highlight-matches";
 	
 	public final static String INDENT_SPACES = "indent-spaces";

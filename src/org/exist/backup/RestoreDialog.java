@@ -131,6 +131,7 @@ public class RestoreDialog extends JDialog {
 
 	public void displayMessage(String message) {
 		messages.append(message + '\n');
+		messages.setCaretPosition(messages.getDocument().getLength());
 	}
 	
 	public Observer getObserver() {

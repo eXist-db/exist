@@ -23,8 +23,8 @@ package org.exist.dom;
 
 import java.util.Iterator;
 
-import org.exist.xpath.value.Item;
-import org.exist.xpath.value.SequenceIterator;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 
@@ -40,6 +40,13 @@ public class EmptyNodeSet extends AbstractNodeSet {
 	 * @see org.exist.dom.NodeSet#iterate()
 	 */
 	public SequenceIterator iterate() {
+		return SequenceIterator.EMPTY_ITERATOR;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.dom.AbstractNodeSet#unorderedIterator()
+	 */
+	public SequenceIterator unorderedIterator() {
 		return SequenceIterator.EMPTY_ITERATOR;
 	}
 	

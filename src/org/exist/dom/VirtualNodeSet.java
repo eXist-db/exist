@@ -24,10 +24,10 @@ package org.exist.dom;
 import java.util.Iterator;
 
 import org.dbxml.core.data.Value;
-import org.exist.xpath.Constants;
-import org.exist.xpath.NodeTest;
-import org.exist.xpath.value.Item;
-import org.exist.xpath.value.SequenceIterator;
+import org.exist.xquery.Constants;
+import org.exist.xquery.NodeTest;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -410,6 +410,14 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		return realSet.iterate();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.dom.AbstractNodeSet#unorderedIterator()
+	 */
+	public SequenceIterator unorderedIterator() {
+		realize();
+		return realSet.unorderedIterator();
+	}
+	
 	public NodeSet intersection(NodeSet other) {
 		realize();
 		return realSet.intersection(other);

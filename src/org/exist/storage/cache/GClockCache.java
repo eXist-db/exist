@@ -47,7 +47,7 @@ public class GClockCache implements Cache {
 	protected Long2ObjectHashMap map;
 	protected int hits = 0, fails = 0;
 
-	protected long syncPeriod = 15000;
+	protected long syncPeriod = 30000;
 	protected long lastSync = System.currentTimeMillis();
 	
 	public GClockCache(int size) {

@@ -34,23 +34,23 @@
     
     <xsl:template name="navigation">
         <xsl:param name="cssclass"/>
-        <xsl:variable name="summary" select="floor((@start - 1) div 20) * 20 + 1"/>
+        <xsl:variable name="summary" select="floor((@start - 1) div @max) * @max + 1"/>
         <tr bgcolor="#D9D9D9" width="100%">
             <th class="{$cssclass}" align="left" width="20%">
                 <xsl:if test="@start &gt; 1">
-                    <a href="biblio.xq?start={@start - 1}&amp;display=details">
+                    <a href="biblio.xq?start={@start - 1}&amp;howmany={@max}&amp;display=details">
                         &lt;&lt; Previous
                     </a>
                 </xsl:if>
             </th>
             <th class="{$cssclass}" align="center" width="60%">
-                <a href="biblio.xq?start={$summary}&amp;display=summary">
+                <a href="biblio.xq?start={$summary}&amp;howmany={@max}&amp;display=summary">
                     <span class="icondesc">[Short Display]</span>
                 </a>
             </th>
             <th class="{$cssclass}" align="right" width="20%">
                 <xsl:if test="number(@next) &lt; @hits">
-                    <a href="biblio.xq?start={@next}&amp;display=details">
+                    <a href="biblio.xq?start={@next}&amp;howmany={@max}&amp;display=details">
                         Next &gt;&gt;
                     </a>
                 </xsl:if>

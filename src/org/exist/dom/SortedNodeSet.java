@@ -5,19 +5,19 @@ import java.util.Iterator;
 
 import org.apache.log4j.Category;
 import org.exist.EXistException;
-import org.exist.parser.XPathLexer2;
-import org.exist.parser.XPathParser2;
-import org.exist.parser.XPathTreeParser2;
+import org.exist.xquery.parser.XQueryLexer;
+import org.exist.xquery.parser.XQueryParser;
+import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.OrderedLinkedList;
-import org.exist.xpath.PathExpr;
-import org.exist.xpath.XQueryContext;
-import org.exist.xpath.XPathException;
-import org.exist.xpath.value.Item;
-import org.exist.xpath.value.Sequence;
-import org.exist.xpath.value.SequenceIterator;
+import org.exist.xquery.PathExpr;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -58,9 +58,9 @@ public class SortedNodeSet extends AbstractNodeSet {
 		try {
 			broker = pool.get(user);
 			XQueryContext context = new XQueryContext(broker);
-			XPathLexer2 lexer = new XPathLexer2(new StringReader(sortExpr));
-			XPathParser2 parser = new XPathParser2(lexer);
-			XPathTreeParser2 treeParser = new XPathTreeParser2(context);
+			XQueryLexer lexer = new XQueryLexer(new StringReader(sortExpr));
+			XQueryParser parser = new XQueryParser(lexer);
+			XQueryTreeParser treeParser = new XQueryTreeParser(context);
 			parser.xpath();
 			if (parser.foundErrors()) {
 				LOG.debug(parser.getErrorMessage());
@@ -164,6 +164,13 @@ public class SortedNodeSet extends AbstractNodeSet {
 	 * @see org.exist.dom.NodeSet#iterate()
 	 */
 	public SequenceIterator iterate() {
+		return new SortedNodeSetIterator(list.iterator());
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.dom.AbstractNodeSet#unorderedIterator()
+	 */
+	public SequenceIterator unorderedIterator() {
 		return new SortedNodeSetIterator(list.iterator());
 	}
 	

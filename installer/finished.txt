@@ -1,11 +1,18 @@
 eXist has been installed into directory $INSTALL_PATH.
 
-To start the database manually, call 
+On Windows, click on the "eXist Database Startup" icon (if desktop 
+shortcuts have been installed) or choose from the start menu. 
 
-	$INSTALL_PATH/bin/startup.sh 
+To start the database manually, call
+
+$INSTALL_PATH/bin/startup.sh
+
 or
-	$INSTALL_PATH/bin/startup.bat
 
-This will launch the Jetty webserver and eXist. Then browse to
+$INSTALL_PATH/bin/startup.bat
+
+Then browse to
 
 http://localhost:8080/exist/index.xml
+
+and read the quickstart guide.

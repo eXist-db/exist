@@ -21,8 +21,12 @@
 package org.exist.util;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -31,9 +35,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-import org.apache.log4j.xml.DOMConfigurator;
 import org.apache.xml.resolver.tools.CatalogResolver;
 import org.exist.storage.IndexPaths;
 import org.w3c.dom.Document;
@@ -43,12 +45,7 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-/**
- * Description of the Class
- *
- * @author Wolfgang Meier
- *
- */
+
 public class Configuration implements ErrorHandler {
 	
 	private final static Logger LOG = 
@@ -58,104 +55,84 @@ public class Configuration implements ErrorHandler {
 	protected HashMap config = new HashMap();
 	protected String file = null;
 
-	/**
-	 * Constructor for the Configuration object
-	 *
-	 * @param file Description of the Parameter
-	 *
-	 * @exception DatabaseConfigurationException Description of the Exception
-	 */
 	public Configuration(String file) throws DatabaseConfigurationException {
 		this(file, null);
 	}
 
-	/**
-	 * Constructor for the Configuration object
-	 *
-	 * @param file Description of the Parameter
-	 * @param dbHome Description of the Parameter
-	 *
-	 * @exception DatabaseConfigurationException Description of the Exception
-	 */
 	public Configuration(String file, String dbHome)
 		throws DatabaseConfigurationException {
-		BasicConfigurator.configure();
 		try {
 			String pathSep = System.getProperty("file.separator", "/");
-	
-			File f = new File(file);
-			if((!f.isAbsolute()) && dbHome != null) {
-				file = dbHome + pathSep + file;
-				f = new File(file);
-			}
-			if (!f.canRead()) {
-				LOG.info("unable to read configuration. Trying to guess location ...");
-				
-				// fall back and try to read from home directory
-				if (dbHome == null) {
-					// try to determine exist home directory
-					dbHome = System.getProperty("exist.home");
-
-					if (dbHome == null)
-						dbHome = System.getProperty("user.dir");
-				}
-
-				if (dbHome != null)
+			
+			// first try to read the configuration from a file within the classpath
+			InputStream is = Configuration.class.getClassLoader().getResourceAsStream(file);
+			if(is != null) {
+				LOG.info("Reading configuration from classloader");
+				this.file = file;
+			} else {
+				// try to read configuration from file. Guess the location if necessary
+				File f = new File(file);
+				if((!f.isAbsolute()) && dbHome != null) {
 					file = dbHome + pathSep + file;
-				f = new File(file);
-				if(!f.canRead()) {
-					LOG.warn("giving up");
-					throw new DatabaseConfigurationException("unable to read configuration file");
+					f = new File(file);
 				}
+				if (!f.canRead()) {
+					LOG.info("unable to read configuration. Trying to guess location ...");
+					
+					// fall back and try to read from home directory
+					if (dbHome == null) {
+						// try to determine exist home directory
+						dbHome = System.getProperty("exist.home");
+	
+						if (dbHome == null)
+							dbHome = System.getProperty("user.dir");
+					}
+	
+					if (dbHome != null)
+						file = dbHome + pathSep + file;
+					f = new File(file);
+					if(!f.canRead()) {
+						LOG.warn("giving up");
+						throw new DatabaseConfigurationException("unable to read configuration file");
+					}
+				}
+				this.file = file;
+				is = new FileInputStream(file);
 			}
-			this.file = file;
-				
+			
 			// initialize xml parser
 			DocumentBuilderFactory factory =
 				DocumentBuilderFactory.newInstance();
 			builder = factory.newDocumentBuilder();
 			builder.setErrorHandler(this);
-			InputSource src = new InputSource(new FileReader(file));
+			InputSource src = new InputSource(is);
 			Document doc = builder.parse(src);
 			Element root = doc.getDocumentElement();
-			NodeList parser = doc.getElementsByTagName("indexer");
-
-			if (parser.getLength() > 0) {
-				Element p = (Element) parser.item(0);
-				String tmp = p.getAttribute("tmpDir");
-				String batchLoad = p.getAttribute("batchLoad");
+			
+			// indexer settings
+			NodeList indexer = doc.getElementsByTagName("indexer");
+			if (indexer.getLength() > 0) {
+				Element p = (Element) indexer.item(0);
 				String parseNum = p.getAttribute("parseNumbers");
 				String indexDepth = p.getAttribute("index-depth");
 				String stemming = p.getAttribute("stemming");
-				String ctlDir = p.getAttribute("controls");
 				String suppressWS = p.getAttribute("suppress-whitespace");
 				String caseSensitive = p.getAttribute("caseSensitive");
 				String tokenizer = p.getAttribute("tokenizer");
 				String validation = p.getAttribute("validation");
 
-				if (tmp != null)
-					config.put("tmpDir", tmp);
-
-				if (batchLoad != null)
-					config.put(
-						"batchLoad",
-						new Boolean(batchLoad.equals("true")));
-
 				if (parseNum != null)
 					config.put(
 						"indexer.indexNumbers",
-						new Boolean(parseNum.equals("true")));
-
-				if (ctlDir != null)
-					config.put("parser.ctlDir", ctlDir);
+						new Boolean(parseNum.equals("yes")));
 
 				if (stemming != null)
-					config.put("indexer.stem", new Boolean(stemming.equals("true")));
+					config.put("indexer.stem", new Boolean(stemming.equals("yes")));
 
 				if (caseSensitive != null)
 					config.put(
 						"indexer.case-sensitive",
-						new Boolean(caseSensitive.equals("true")));
+						new Boolean(caseSensitive.equals("yes")));
 
 				if (suppressWS != null)
 					config.put("indexer.suppress-whitespace", suppressWS);
@@ -172,6 +149,7 @@ public class Configuration implements ErrorHandler {
 					} catch (NumberFormatException e) {
 					}
 
+				// index settings
 				NodeList index = p.getElementsByTagName("index");
 
 				Map indexPathMap = new TreeMap();
@@ -216,8 +194,8 @@ public class Configuration implements ErrorHandler {
 					}
 				}
 
+				// stopwords
 				NodeList stopwords = p.getElementsByTagName("stopwords");
-
 				if (stopwords.getLength() > 0) {
 					String stopwordFile =
 						((Element) stopwords.item(0)).getAttribute("file");
@@ -275,34 +253,10 @@ public class Configuration implements ErrorHandler {
 				String wordBuffers = con.getAttribute("words_buffers");
 				String elementBuffers = con.getAttribute("elements_buffers");
 				String freeMem = con.getAttribute("free_mem_min");
-				String driver = con.getAttribute("driver");
-				String url = con.getAttribute("url");
-				String user = con.getAttribute("user");
-				String pass = con.getAttribute("password");
 				String mysql = con.getAttribute("database");
-				String service = con.getAttribute("serviceName");
-				String encoding = con.getAttribute("encoding");
-
-				if (driver != null)
-					config.put("driver", driver);
-
-				if (url != null)
-					config.put("url", url);
-
-				if (user != null)
-					config.put("user", user);
-
-				if (pass != null)
-					config.put("password", pass);
 
 				if (mysql != null)
 					config.put("database", mysql);
-
-				if (encoding != null)
-					config.put("encoding", encoding);
-
-				if (service != null)
-					config.put("db-connection.serviceName", service);
 
 				// directory for database files
 				if (dataFiles != null) {
@@ -428,45 +382,6 @@ public class Configuration implements ErrorHandler {
                 if(tagAttributeMatches != null)
                 	config.put("serialization.match-tagging-attributes", tagAttributeMatches);
 			}
-			
-			NodeList log4j = doc.getElementsByTagName("log4j:configuration");
-
-			if (log4j.getLength() > 0) {
-				Element logRoot = (Element) log4j.item(0);
-
-				// make files relative if dbHome != null
-				if (dbHome != null) {
-					NodeList params = logRoot.getElementsByTagName("param");
-					Element param;
-					String name;
-					String path;
-
-					if (pathSep.equals("\\"))
-						dbHome = dbHome.replace('\\', '/');
-
-					for (int i = 0; i < params.getLength(); i++) {
-						param = (Element) params.item(i);
-						name = param.getAttribute("name");
-
-						if ((name != null) && name.equalsIgnoreCase("File")) {
-							path = param.getAttribute("value");
-
-							if (path != null) {
-								//if ( pathSep.equals( "\\" ) )
-								//    path = path.replace( '/', '\\' );
-								f = new File(path);
-
-								if (!f.isAbsolute())
-									path = dbHome + '/' + path;
-							}
-
-							param.setAttribute("value", path);
-						}
-					}
-				}
-
-				DOMConfigurator.configure(logRoot);
-			}
 		} catch (SAXException e) {
 			LOG.warn("error while reading config file: " + file, e);
 			throw new DatabaseConfigurationException(e.getMessage());
@@ -479,13 +394,6 @@ public class Configuration implements ErrorHandler {
 		}
 	}
 
-	/**
-	 * Gets the integer attribute of the Configuration object
-	 *
-	 * @param name Description of the Parameter
-	 *
-	 * @return The integer value
-	 */
 	public int getInteger(String name) {
 		Object obj = getProperty(name);
 
@@ -495,49 +403,22 @@ public class Configuration implements ErrorHandler {
 		return ((Integer) obj).intValue();
 	}
 
-	/**
-	 * Gets the path attribute of the Configuration object
-	 *
-	 * @return The path value
-	 */
 	public String getPath() {
 		return file;
 	}
 
-	/**
-	 * Gets the property attribute of the Configuration object
-	 *
-	 * @param name Description of the Parameter
-	 *
-	 * @return The property value
-	 */
 	public Object getProperty(String name) {
 		return config.get(name);
 	}
 
-	/**
-	 * Description of the Method
-	 *
-	 * @param name Description of the Parameter
-	 *
-	 * @return Description of the Return Value
-	 */
 	public boolean hasProperty(String name) {
 		return config.containsKey(name);
 	}
 
-	/**
-	 * Sets the property attribute of the Configuration object
-	 *
-	 * @param name The new property value
-	 * @param obj The new property value
-	 */
 	public void setProperty(String name, Object obj) {
 		config.put(name, obj);
 	}
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ErrorHandler#error(org.xml.sax.SAXParseException)
-	 */
+
 	public void error(SAXParseException exception) throws SAXException {
 		System.err.println("error occured while reading configuration file " +
 			"[line: " + exception.getLineNumber() + "]:" +

@@ -320,11 +320,16 @@ class UserDialog extends JFrame {
 		}
 		user.setPassword(pass1);
 		user.setHome(homedir.getText());
+		if(groupsModel.size() == 0) {
+			JOptionPane.showMessageDialog(this, "Please assign a group to the new user");
+			return;
+		}
 		for (int i = 0; i < groupsModel.size(); i++)
 			user.addGroup((String) groupsModel.elementAt(i));
 		try {
 			service.addUser(user);
 			userModel.reload();
+			client.getResources();
 		} catch (XMLDBException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage());
 		}

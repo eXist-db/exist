@@ -1,25 +1,23 @@
 package org.exist.soap;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
-
 import java.rmi.RemoteException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Category;
 import org.exist.EXistException;
-import org.exist.Parser;
 import org.exist.collections.Collection;
+import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.xpath.XPathException;
+import org.exist.xquery.XPathException;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
-
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -67,7 +65,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 
 	public boolean createCollection(String sessionId, String collection)
 		throws RemoteException {
-		Session session = SessionManager.getInstance().getSession(sessionId);
+		Session session = getSession(sessionId);
 		DBBroker broker = null;
 		try {
 			broker = pool.get(session.getUser());
@@ -83,7 +81,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 			broker.sync();
 			return true;
 		} catch (Exception e) {
-			LOG.debug(e);
+			LOG.debug(e.getMessage(), e);
 			throw new RemoteException(e.getMessage());
 		} finally {
 			pool.release(broker);
@@ -92,7 +90,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 
 	public boolean removeCollection(String sessionId, String collection)
 		throws RemoteException {
-		Session session = SessionManager.getInstance().getSession(sessionId);
+		Session session = getSession(sessionId);
 		DBBroker broker = null;
 		try {
 			broker = pool.get(session.getUser());
@@ -107,16 +105,9 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  path                 Description of the Parameter
-	 *@return                      Description of the Return Value
-	 *@exception  RemoteException  Description of the Exception
-	 */
 	public boolean removeDocument(String sessionId, String path)
 		throws RemoteException {
-		Session session = SessionManager.getInstance().getSession(sessionId);
+		Session session = getSession(sessionId);
 		DBBroker broker = null;
 		try {
 			broker = pool.get(session.getUser());
@@ -124,12 +115,18 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 			if (p < 0 || p == path.length() - 1)
 				throw new EXistException("Illegal document path");
 			String collectionName = path.substring(0, p);
-			path = path.substring(p + 1);
+			String docName = path.substring(p + 1);
 			Collection collection = broker.getCollection(collectionName);
 			if (collection == null)
 				throw new EXistException(
 					"Collection " + collectionName + " not found");
-            collection.removeDocument(broker, path);
+			DocumentImpl doc = collection.getDocument(path);
+			if(doc == null)
+				throw new EXistException("Document " + docName + " not found");
+			if(doc.getResourceType() == DocumentImpl.BINARY_FILE)
+				collection.removeBinaryResource(broker, doc);
+			else
+				collection.removeDocument(broker, docName);
 			return true;
 		} catch (Exception e) {
 			LOG.debug(e.getMessage(), e);
@@ -139,15 +136,6 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  data                 Description of the Parameter
-	 *@param  encoding             Description of the Parameter
-	 *@param  path                 Description of the Parameter
-	 *@param  replace              Description of the Parameter
-	 *@exception  RemoteException  Description of the Exception
-	 */
 	public void store(
 		String sessionId,
 		byte[] data,
@@ -155,28 +143,29 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		java.lang.String path,
 		boolean replace)
 		throws RemoteException {
-		Session session = SessionManager.getInstance().getSession(sessionId);
+		Session session = getSession(sessionId);
 		DBBroker broker = null;
 		try {
 			broker = pool.get(session.getUser());
-			if (broker.getDocument(path) != null) {
-				if (!replace)
-					throw new RemoteException(
-						"document "
-							+ path
-							+ " exists and parameter replace is set to false.");
-			}
-			String xml;
-			try {
-				xml = new String(data, encoding);
-			} catch (UnsupportedEncodingException e) {
-				throw new RemoteException(e.getMessage());
+			int p = path.lastIndexOf('/');
+			if (p < 0 || p == path.length() - 1)
+				throw new RemoteException("Illegal document path");
+			String collectionName = path.substring(0, p);
+			path = path.substring(p + 1);
+			Collection collection = broker.getCollection(collectionName);
+			if (collection == null)
+				throw new EXistException("Collection " + collectionName + " not found");
+			if(!replace) {
+				DocumentImpl old = collection.getDocument(path);
+				if(old != null)
+					throw new RemoteException("Document exists and overwrite is not allowed");
 			}
 			long startTime = System.currentTimeMillis();
-			Parser parser = new Parser(broker, session.getUser(), true);
-			Document doc = parser.parse(xml, path);
-			LOG.debug("flushing data files");
-			broker.flush();
+			DocumentImpl doc =
+				collection.addDocument(
+						broker,
+						path,
+						new InputSource(new ByteArrayInputStream(data)));
 			LOG.debug(
 				"parsing "
 					+ path

@@ -43,6 +43,7 @@ import org.xml.sax.helpers.AttributesImpl;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
+import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
@@ -57,8 +58,9 @@ public class Backup {
 
 	public final static Properties defaultOutputProperties = new Properties();
 	static {
-		defaultOutputProperties.setProperty(OutputKeys.INDENT, "no");
+		defaultOutputProperties.setProperty(OutputKeys.INDENT, "yes");
 		defaultOutputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+		defaultOutputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
 	}
 	
 	public Backup(String user, String pass, String backupDir, String rootCollection) {
@@ -102,6 +104,7 @@ public class Backup {
 		current.setProperty(OutputKeys.ENCODING, "UTF-8");
 		current.setProperty(OutputKeys.INDENT, "no");
 		current.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
+		current.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
 
 		// get resources and permissions
 		String[] resources = current.listResources();
@@ -151,12 +154,12 @@ public class Backup {
 		serializer.startElement(NS, "collection", "collection", attr);
 
 		// scan through resources
-		XMLResource resource;
+		Resource resource;
 		FileOutputStream os;
 		BufferedWriter writer;
 		SAXSerializer contentSerializer;
 		for (int i = 0; i < resources.length; i++) {
-			resource = (XMLResource) current.getResource(resources[i]);
+			resource = current.getResource(resources[i]);
 			file = new File(path);
 			if (!file.exists())
 				file.mkdirs();
@@ -166,21 +169,27 @@ public class Backup {
 				dialog.setResource(resources[i]);
 				dialog.setProgress(i);
 			}
-			writer =
-				new BufferedWriter(
-					new OutputStreamWriter(
-						new FileOutputStream(path + '/' + resources[i]),
-						"UTF-8"));
-			// write resource to contentSerializer
-			contentSerializer = SAXSerializerPool.getInstance().borrowSAXSerializer();
-			contentSerializer.setWriter(writer);
-			contentSerializer.setOutputProperties(defaultOutputProperties);
-			resource.getContentAsSAX(contentSerializer);
-            //writer.write((String)resource.getContent());
-			writer.close();
-			SAXSerializerPool.getInstance().returnSAXSerializer(contentSerializer);
+			os = new FileOutputStream(path + '/' + resources[i]);
+			if(resource.getResourceType().equals("BinaryResource")) {
+				byte[] bdata = (byte[])resource.getContent();
+				os.write(bdata);
+				os.close();
+			} else {
+				writer =
+					new BufferedWriter(
+						new OutputStreamWriter(os, "UTF-8"));
+				// write resource to contentSerializer
+				contentSerializer = SAXSerializerPool.getInstance().borrowSAXSerializer();
+				contentSerializer.setWriter(writer);
+				contentSerializer.setOutputProperties(defaultOutputProperties);
+				((XMLResource)resource).getContentAsSAX(contentSerializer);
+				SAXSerializerPool.getInstance().returnSAXSerializer(contentSerializer);
+				writer.close();
+			}
+			
 			// store permissions
 			attr.clear();
+			attr.addAttribute(NS, "type", "type", "CDATA", resource.getResourceType());
 			attr.addAttribute(NS, "name", "name", "CDATA", resources[i]);
 			attr.addAttribute(NS, "owner", "owner", "CDATA", perms[i].getOwner());
 			attr.addAttribute(NS, "group", "group", "CDATA", perms[i].getOwnerGroup());

@@ -1,8 +1,3 @@
-/*
- * CreateBackupDialog.java - Jun 16, 2003
- * 
- * @author wolf
- */
 package org.exist.backup;
 
 import java.awt.Dimension;
@@ -35,12 +30,6 @@ public class CreateBackupDialog extends JPanel {
 	String user;
 	String passwd;
 
-	/**
-	 * @param owner
-	 * @param title
-	 * @param modal
-	 * @throws java.awt.HeadlessException
-	 */
 	public CreateBackupDialog(String uri, String user, String passwd, String backupDir)
 		throws HeadlessException {
 		super(false);
@@ -110,6 +99,7 @@ public class CreateBackupDialog extends JPanel {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		chooser.setCurrentDirectory(null);
 		if (chooser.showDialog(this, "Select directory for backup")
 			== JFileChooser.APPROVE_OPTION) {
 			File f = chooser.getSelectedFile();

@@ -1,25 +1,18 @@
 
 package org.exist.xmlrpc;
-import java.lang.reflect.*;
-
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Vector;
-import org.apache.log4j.Category;
 
+import org.apache.log4j.Category;
 import org.apache.xmlrpc.AuthenticatedXmlRpcHandler;
 import org.apache.xmlrpc.XmlRpc;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.EXistException;
-import org.exist.dom.XMLUtil;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 
-/**
- *  Description of the Class
- *
- *@author     Wolfgang Meier <wolfgang@exist-db.org>
- *@created    25. August 2002
- */
 public class AuthenticatedHandler implements AuthenticatedXmlRpcHandler {
     private static Category LOG =
         Category.getInstance( AuthenticatedXmlRpcHandler.class.getName() );
@@ -44,16 +37,6 @@ public class AuthenticatedHandler implements AuthenticatedXmlRpcHandler {
     }
 
 
-    /**
-     *  Description of the Method
-     *
-     *@param  method         Description of the Parameter
-     *@param  v              Description of the Parameter
-     *@param  user           Description of the Parameter
-     *@param  password       Description of the Parameter
-     *@return                Description of the Return Value
-     *@exception  Exception  Description of the Exception
-     */
     public Object execute( String method, Vector v,
                            String user, String password ) throws Exception {
         // assume guest user if no user is specified
@@ -137,20 +120,28 @@ public class AuthenticatedHandler implements AuthenticatedXmlRpcHandler {
             throw iarg_e;
         } catch ( InvocationTargetException it_e ) {
             // check whether the thrown exception is XmlRpcException
-            Throwable t = it_e.getTargetException();
+            Throwable t = getCause(it_e);
             if(XmlRpc.debug)
             	t.printStackTrace();
-            LOG.debug("Caught exception: " + XMLUtil.exceptionToString(it_e));
-            LOG.warn("Caused by: " + XMLUtil.exceptionToString(t));
-            if ( t instanceof XmlRpcException )
-                throw (XmlRpcException) t;
-            // It is some other exception
-            throw new Exception( t.toString() );
+            if (t instanceof Exception) {
+                throw (Exception) t;
+            }  else
+            	throw new Exception(t);
         } catch(Exception e) {
-        	LOG.debug(e.getMessage(), e);
-        	throw e;
+        	Throwable t = getCause(e);
+        	if(t instanceof Exception)
+        		throw (Exception)t;
+        	else
+        		throw e;
         }
         return returnValue;
+    }
+        
+    private final static Throwable getCause(Throwable e) {
+    	Throwable t;
+    	while((t = e.getCause()) != null)
+    		e = t;
+    	return e;
     }
 }
 

@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<book xmlns:ci="http://apache.org/cocoon/include/1.0">
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+
+        <title>Open Source XML Database</title>
+        <author>
+            <firstname>Wolfgang M.</firstname>
+            <surname>Meier</surname>
+            <affiliation>
+                <address format="linespecific">
+                    <email>wolfgang@exist-db.org</email>
+                </address>
+            </affiliation>
+        </author>
+    </bookinfo>
+    <ci:include src="sidebar.xml"/>
+    <chapter>
+        <title>Ant Tasks</title>
+        
+        <para>eXist provides a taskdef library for the <ulink
+        url="http://ant.apache.org">Ant</ulink> build tool to automate common 
+        tasks like backup/restore or importing a bunch of files. To use this library
+        you need at least Ant 1.6, which is included in the eXist distribution (if you
+        installed the eXist source code).</para>
+        
+        <para>In your build file, import the eXist tasks as follows:</para>
+        
+        <example>
+            <title>Import the Tasks</title>
+            
+            <screen>
+<![CDATA[<typedef resource="org/exist/ant/antlib.xml"
+    uri="http://exist-db.org/ant">
+    <classpath refid="classpath.core"/>
+</typedef>]]></screen>
+        </example>
+        
+        <para>All tasks share the following common attributes:</para>
+        
+        <variablelist>
+            <varlistentry>
+                <term>uri</term>
+                <listitem>
+                    <para>An XMLDB URI specifying the database collection.</para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>initdb</term>
+                <listitem>
+                    <para>Setting this option to "true" will automatically
+                    initialize a database instance if the uri points to an
+                    embedded database.</para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>user</term>
+                <listitem>
+                    <para>The user to connect with (default: guest).</para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>password</term>
+                <listitem>
+                    <para>Password for the user (default: guest).</para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+
+        <section>
+            <title>Storing Documents</title>
+            
+            <example>
+                <title>Storing Documents</title>
+                
+                <screen>
+<![CDATA[<xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays"
+    createcollection="true">
+    <fileset dir="samples/shakespeare"> 
+        <include name="*.xml"/>
+        <include name="*.xsl"/>
+    </fileset>
+</xmldb:store>]]></screen>
+            </example>
+            
+            <para>The store task uploads and stores the specified documents into
+            the database. Documents are specified through a fileset. The following
+            attributes are recognized:</para>
+            
+            <variablelist>
+                <varlistentry>
+                    <term>createcollection</term>
+                    <listitem>
+                        <para>If set to "true", any non-existing subcollections will
+                        be automatically created.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>type</term>
+                    <listitem>
+                        <para>The type of the resource: either "xml" or "binary". If
+                        "binary", documents will be stored as binary resources.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </section>
+        <section>
+            <title>Removing Documents/Collections</title>
+            <para>The remove task removes a single resource or collection from
+            the collection specified in the uri attribute.</para>
+            
+            <variablelist>
+                <varlistentry>
+                    <term>collection</term>
+                    <listitem>
+                        <para>The name of the subcollection which should be
+                        removed.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>resource</term>
+                    <listitem>
+                        <para>The name of the resource which should be
+                        removed.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </section>
+        <section>
+            <title>Process an XQuery Expression</title>
+            <para>The query task executes an XQuery expression. This task is
+            primarily intended for transformations. The output of the script is
+            discarded.</para>
+            <para>The XQuery may either be specified through the query attribute
+            or within the text content of the element. You can also use the
+            loadfile task to load the query from a file as in the following example:</para>
+            <example>
+                <title>Process an XQuery</title>
+                <screen>
+<![CDATA[<loadfile property="xquery" srcFile="wzb.xq"/>
+<xmldb:query uri="xmldb:exist:///db" query="${xquery}"/>]]></screen>
+            </example>
+            <para>The query task accepts the following attributes:</para>
+            <variablelist>
+                <varlistentry>
+                    <term>query</term>
+                    <listitem>
+                        <para>The query to be processed.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </section>
+        <section>
+            <title>Backup</title>
+            <para>Creates a backup of the specified database collection on the
+            local disk. For example:</para>
+            
+            <example>
+                <title>Backing up the System Collection</title>
+                <screen>
+<![CDATA[<xmldb:backup uri="${backup.uri}/db/system"
+    dir="${backup.dir}" user="${backup.user}"
+    password="${backup.pass}"/>]]></screen>
+            </example>
+            
+            <para>creates a backup of the system collection.</para>
+            
+            <variablelist>
+                <varlistentry>
+                    <term>dir</term>
+                    <listitem>
+                        <para>The directory where backup files will be stored.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </section>
+        <section>
+            <title>Restore</title>
+            <para>Restores database contents from a backup. The file attribute
+            should point to one of the <filename>__contents__.xml</filename>
+            files created by the backup. The base attribute specifies the base
+            XMLDB URI (i.e. the URI without collections) used for the restore.
+            The collection names will be read from the __contents__.xml file.</para>
+            
+            <variablelist>
+                <varlistentry>
+                    <term>base</term>
+                    <listitem>
+                        <para>The base XMLDB URI of the database.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>file</term>
+                    <listitem>
+                        <para>The __content__.xml file to be used for the 
+                        restore.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+            
+            <para>The following example restores the /db/home collection:</para>
+            
+            <example>
+                <title>Restore a Collection</title>
+                <screen>
+<![CDATA[<xmldb:restore base="xmldb:exist://" user="admin" password=""
+    file="${backup.dir}/db/home/__contents__.xml" initdb="true"/>]]></screen>
+            </example>
+        </section>
+        <section>
+            <title>Database Shutdown</title>
+            <para>The shutdown task is required if you use the database in embedded
+            mode. It will try to shut down the database instance listening at
+            the provided URI.</para>
+        </section>
+    </chapter>
+</book>

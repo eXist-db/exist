@@ -19,16 +19,16 @@ import javax.xml.parsers.SAXParserFactory;
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.XMLUtil;
-import org.exist.parser.XPathLexer2;
-import org.exist.parser.XPathParser2;
-import org.exist.parser.XPathTreeParser2;
+import org.exist.xquery.parser.XQueryLexer;
+import org.exist.xquery.parser.XQueryParser;
+import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.storage.DBBroker;
 import org.exist.util.FastStringBuffer;
-import org.exist.xpath.PathExpr;
-import org.exist.xpath.XQueryContext;
-import org.exist.xpath.XPathException;
-import org.exist.xpath.value.Sequence;
-import org.exist.xpath.value.Type;
+import org.exist.xquery.PathExpr;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
@@ -459,9 +459,9 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					(String) entry.getKey(),
 					(String) entry.getValue());
 			}
-			XPathLexer2 lexer = new XPathLexer2(new StringReader(select));
-			XPathParser2 parser = new XPathParser2(lexer);
-			XPathTreeParser2 treeParser = new XPathTreeParser2(context);
+			XQueryLexer lexer = new XQueryLexer(new StringReader(select));
+			XQueryParser parser = new XQueryParser(lexer);
+			XQueryTreeParser treeParser = new XQueryTreeParser(context);
 			parser.xpath();
 			if (parser.foundErrors()) {
 				throw new SAXException(parser.getErrorMessage());

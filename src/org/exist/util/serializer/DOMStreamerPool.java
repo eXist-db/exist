@@ -46,6 +46,8 @@ public class DOMStreamerPool extends StackObjectPool {
 	}
 	
 	public void returnDOMStreamer(DOMStreamer streamer) throws Exception {
+		if(streamer == null)
+			return;
 		returnObject(streamer);
 	}
 }

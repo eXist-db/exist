@@ -37,6 +37,7 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.TreeMap;
 
+import javax.swing.text.Document;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -47,7 +48,7 @@ import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.BLOBDocument;
+import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.security.Group;
@@ -410,7 +411,7 @@ public class Collection
 						doc = new DocumentImpl(broker, this);
 						break;
 					case DocumentImpl.BINARY_FILE :
-						doc = new BLOBDocument(broker, this);
+						doc = new BinaryDocument(broker, this);
 						break;
 					case -1 :
 						return; // EOF found
@@ -472,16 +473,21 @@ public class Collection
 		throws PermissionDeniedException {
 		String path = getName() + '/' + docname;
 		DocumentImpl doc = getDocument(path);
+		removeBinaryResource(broker, doc);
+	}
+
+	synchronized public void removeBinaryResource(DBBroker broker, DocumentImpl doc)
+		throws PermissionDeniedException {
 		if (doc == null)
 			return;
 		if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
 			throw new PermissionDeniedException(
-				"document " + docname + " is not a binary object");
-		broker.removeBinaryResource((BLOBDocument) doc);
-		documents.remove(path);
+					"document " + doc.getFileName() + " is not a binary object");
+		broker.removeBinaryResource((BinaryDocument) doc);
+		documents.remove(doc.getFileName());
 		broker.saveCollection(this);
 	}
-
+	
 	public DocumentImpl addDocument(DBBroker broker, String name, String data)
 		throws EXistException, PermissionDeniedException, TriggerException, SAXException {
 		return addDocument(broker, name, data, false);
@@ -594,7 +600,10 @@ public class Collection
 			// new document is valid: remove old document 
 			if (oldDoc != null) {
 				LOG.debug("removing old document " + oldDoc.getFileName());
-				broker.removeDocument(oldDoc.getFileName());
+				if(oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
+					broker.removeBinaryResource((BinaryDocument)oldDoc);
+				else
+					broker.removeDocument(oldDoc.getFileName());
 				document.setFileName(oldDoc.getFileName());
 			}
 			addDocument(broker, document);
@@ -742,7 +751,10 @@ public class Collection
 			// new document is valid: remove old document 
 			if (oldDoc != null) {
 				LOG.debug("removing old document " + oldDoc.getFileName());
-				broker.removeDocument(oldDoc.getFileName());
+				if(oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
+					broker.removeBinaryResource((BinaryDocument)oldDoc);
+				else
+					broker.removeDocument(oldDoc.getFileName());
 				document.setFileName(oldDoc.getFileName());
 			}
 			addDocument(broker, document);
@@ -887,7 +899,10 @@ public class Collection
 			// new document is valid: remove old document 
 			if (oldDoc != null) {
 				LOG.debug("removing old document " + oldDoc.getFileName());
-				broker.removeDocument(oldDoc.getFileName());
+				if(oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
+					broker.removeBinaryResource((BinaryDocument)oldDoc);
+				else
+					broker.removeDocument(oldDoc.getFileName());
 				document.setFileName(oldDoc.getFileName());
 			}
 
@@ -918,7 +933,7 @@ public class Collection
 		return document;
 	}
 
-	public synchronized BLOBDocument addBinaryResource(
+	public synchronized BinaryDocument addBinaryResource(
 		DBBroker broker,
 		String name,
 		byte[] data)
@@ -939,14 +954,17 @@ public class Collection
 			throw new PermissionDeniedException(
 				"not allowed to write to collection " + getName());
 
-		BLOBDocument blob = new BLOBDocument(broker, getName() + '/' + name, this);
+		BinaryDocument blob = new BinaryDocument(broker, getName() + '/' + name, this);
 		if (oldDoc != null) {
 			blob.setCreated(oldDoc.getCreated());
 			blob.setLastModified(System.currentTimeMillis());
 			blob.setPermissions(oldDoc.getPermissions());
 
 			LOG.debug("removing old document " + oldDoc.getFileName());
-			broker.removeDocument(oldDoc.getFileName());
+			if(oldDoc instanceof BinaryDocument)
+				broker.removeBinaryResource((BinaryDocument)oldDoc);
+			else
+				broker.removeDocument(oldDoc.getFileName());
 		} else {
 			blob.setCreated(System.currentTimeMillis());
 			blob.getPermissions().setOwner(broker.getUser());
@@ -956,6 +974,7 @@ public class Collection
 		synchronized (this) {
 			addDocument(broker, blob);
 			broker.addDocument(this, blob);
+			broker.closeDocument();
 		}
 		return blob;
 	}

@@ -1,92 +1,113 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-	This is the central configuration file for eXist.
+	This is the central configuration file for the database. If the database
+    is running in a servlet-context, the configuration file will be read from
+    the WEB-INF directory of the web application. Otherwise, the configuration
+    is read from the directory specified by the exist.home system property.
 -->
 <exist>
 
-  <!-- sample db-connection for the native Java backend
+    <!-- Configures the database backend:
+        - database: 
+            selects a database backend. Currently, "native" is the
+            only valid setting.
+        - files:
+            path to the directory where database files are
+            stored.
+        - cacheSize:
+            the maximum amount of memory to use for database page buffers.
+            Each database file has an associated page buffer for B+-tree and
+            data pages. However, the memory specified via cacheSize is shared 
+            between all page buffers. It represents an absolute maximum, which
+            would be occupied if all page buffers were completely full.
+        - free_mem_min:
+            minimum amount of free memory in percent during indexing. The
+            database will start to flush its internal buffers whenever
+            free memory drops below the specified limit.
+        - pageSize: 
+            the size of one page on the disk. This is the smallest unit 
+            transferred from and to the database files. Should be a multiple of 
+            the operating system's file system page size (usually 4096).
+    -->
 
-       - files:   the name of the directory where database files are
-                  stored.
-       - buffers: size of page buffer. Each db file has an associated page
-                  buffer to speed up access. Increasing this value reduces
-                  disc access, but increases memory consumption.
-	   - words_buffers: size of the page buffer for words.
-	   - elements_buffers: size of the page buffer for elements.
-	   - collection_buffers: size of the page buffer for collections.
-	   - free_mem_min: amount of free memory in percent which should be available
-	   	          to the JVM before eXist starts to flush internal caches.
-	   - pageSize: disk page size - should be a multiple of the operating system's
-				  file system page size.
-       -->
-
-	   <!-- The settings below are very conservative to avoid out-of-memory
-	   exceptions on machines with limited memory (256MB). Increase the
-	   buffer settings for elements_buffers and words_buffers if you have
-	   some more memory to waste. -->
-	   <db-connection database="native" files="data"
-		   pageSize="4096" cacheSize="48M" free_mem_min="10">
-
-		   <!-- Settings for the database connection pool
-
-				- sync-period
-					defines how often the database will flush its 
-					internal buffers to disk. The sync thread will interrupt 
-					normal database operation after the specified number of 
-					milliseconds and write all dirty pages to disk.
-				- min: minimum number of connections to keep alive.
-				- max: maximum number of connections allowed.
-		   -->
-		   <pool min="1" max="30" sync-period="300000"/>
-	   </db-connection>
-
-	   <!-- Settings for a machine with more memory.
-		<db-connection database="native" files="webapp/WEB-INF/data" 
-			buffers="1024" words_buffers="8192" collection_buffers="256" 
-			elements_buffers="2048" free_mem_min="10" 
-		   pageSize="4096">
-		   <pool min="1" max="15" sync-period="300000"/>
-	   </db-connection>
-	   -->
+    <!-- The settings below are very conservative to avoid out-of-memory
+    exceptions on machines with limited memory (256MB). Increase the
+    buffer settings for elements_buffers and words_buffers if you have
+    some more memory to waste. -->
+    <db-connection database="native" files="data"
+        pageSize="4096" cacheSize="48M" free_mem_min="10">
+    
+        <!-- Settings for the database connection pool:
+            - sync-period
+                defines how often the database will flush its 
+                internal buffers to disk. The sync thread will interrupt 
+                normal database operation after the specified number of 
+                milliseconds and write all dirty pages to disk.
+            - min: minimum number of connections to keep alive.
+            - max: maximum number of connections allowed.
+        -->
+        <pool min="1" max="20" sync-period="300000"/>
+    </db-connection>
 	   
-  <!-- settings for the serializer
+    <!-- Default settings for the serializer. Most of these can be changed
+    by client code:
 
-       - enable-xinclude: should the database expand xinclude tags?
-	   - enable-xsl: should the database evaluate xsl processing instructions
-	   if found in documents?
-	   - indent: should the serializer pretty-print (indent) xml?
-  -->
-  <serializer enable-xinclude="no" enable-xsl="false"
-	  indent="yes" add-exist-id="no" match-tagging-elements="true"
-	  match-tagging-attributes="false"/>
+    - enable-xinclude: 
+        should the database expand XInclude tags by default?
+    - enable-xsl: 
+        should the database evaluate XSL processing instructions
+        when serializing documents?
+    - indent:
+        should the serializer pretty-print (indent) XML?
+    - match-tagging-elements:
+    - match-tagging-attributes:
+        
+    - add-exist-id:
+        for debugging: add an exist:id attribute to every element, showing
+        the internal node identifier (as a long int) assigned to this node.
+        Possible values are: "none", "element", "all". "all" displays the node
+        of every element node; "element" displays the id only for the root nodes
+        of the returned XML fragments.
+    -->
+    <serializer enable-xinclude="yes" enable-xsl="no"
+        indent="yes" add-exist-id="none" match-tagging-elements="yes"
+        match-tagging-attributes="no"/>
   
-  <!-- settings for the indexer
-       Attributes:
-	- suppress-whitespace
-		should leading or trailing whitespace be removed from a text
-		node? Set to "leading", "trailing", "both" or "none".
-    - stemming
+    <!-- 
+        Settings for the indexer:
+        - suppress-whitespace
+            should leading or trailing whitespace be removed from a text
+            node? Set to "leading", "trailing", "both" or "none".
+        - caseSensitive
+            should equality comparisons between strings be case-sensitive or
+            insensitive: "yes" or "no".
+        - validation
+            should XML source files be validated against a schema or DTD before
+            storing them? The setting is passed to the XML parser. The actual
+            effects depend on the parser you use. eXist comes with Xerces which can
+            validate against both: schemas and DTDs. Possible values: "yes",
+            "no", "auto". "auto" will leave validation to the parser.
+        - stemming
             eXist includes a very simple english language stemmer, based on Porter's algorithm.
             Set the "stemming"-option to "true" if you would like to use stemming. This does
             only work for english.
-    - index-depth
-    		defines the maximum nesting depth of nodes which will be indexed
-    		in the DOM index. Nodes below the specified nesting depth will
-    		not be indexed in the DOM file. This has only an effect when 
-    		retrieving query results or for some types of XPath subexpressions, like
-    		equality comparisons.
-  -->
-  <indexer stemming="false" caseSensitive="false"
-	  suppress-whitespace="both" index-depth="1"
-	  tokenizer="org.exist.storage.analysis.SimpleTokenizer"
-	  validation="false">
-
-    <!-- where's the file containing a list of stopwords to be ignored
+        - index-depth
+            defines the maximum nesting depth of nodes which will be indexed
+            in the DOM index. Nodes below the specified nesting depth will
+            not be indexed in the DOM file. This has only an effect when 
+            retrieving query results or for some types of XPath subexpressions, like
+            equality comparisons.
+    -->
+    <indexer stemming="no" caseSensitive="no" suppress-whitespace="both" 
+        index-depth="1" tokenizer="org.exist.storage.analysis.SimpleTokenizer" 
+		validation="no">
+        
+		<!-- where's the file containing a list of stopwords to be ignored
          by the parser. -->
-    <stopwords file="stopword"/>
-    
-    <!-- index tells the parser which element-content should be
+		<stopwords file="stopword"/>
+        
+		<!-- index tells the parser which element-content should be
 	     fulltext-indexed. By default everything is indexed. To
 	     change this, set default="none". Additionally you may
 	     specify which elements to include, by defining one or
@@ -112,94 +133,31 @@
 	    		not be indexed in the DOM file. This has only an effect when 
 	    		retrieving queryb results or for some types of XPath subexpressions, like
 	    		equality comparisons.
-	-->
-	<index doctype="users" default="none" attributes="false">
-	</index>
-
-	<index doctype="PLAY" default="all">
-	</index>
-
-	<index doctype="dblp" attributes="true" alphanum="true" default="all">
-		<exclude path="//@mdate"/>
-		<exclude path="//ee"/>
-		<exclude path="//volume"/>
-		<exclude path="//cdrom"/>
-		<exclude path="//url"/>
-	</index>
-
-	<index attributes="false" doctype="species" default="all" alphanum="true"/>
-
-	<index attributes="true" doctype="sptr" default="all" alphanum="true">
-		<exclude path="//sequence"/>
-		<exclude path="//dbReference"/>
-	</index>
-	
-    <entity-resolver>
-		<catalog file="webapp/WEB-INF/catalog"/>
-    </entity-resolver>
-  </indexer>
-  
-  <!-- the following section configures the logging facility. 
-       It is just handed over to log4j.
-       For a description read the log4j documentation
-	   (www.log4j.org). -->
-
-  <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j">
-
-    <!-- writes log messages to the console. It outputs file name,
-	     method name and line number of the caller. This is slow,
-		 so just use it for debugging. -->
-    <appender name="console" class="org.apache.log4j.ConsoleAppender">
-      <layout class="org.apache.log4j.PatternLayout">
-        <param name="ConversionPattern" value="%d{DATE} [%t] %-5p (%F [%M]:%L) - %m\n"/>
-      </layout>
-    </appender>
-
-    <!-- writes simple log messages to the console. -->
-    <appender name="simple" class="org.apache.log4j.ConsoleAppender">
-      <layout class="org.apache.log4j.PatternLayout">
-        <param name="ConversionPattern" value="%d{DATE} %-5p> %m\n"/>
-      </layout>
-    </appender>
-
-    <!-- file appenders -->
-    <appender name="exist.core" class="org.apache.log4j.RollingFileAppender">
-		<param name="File" value="logs/exist.log"/>
-		<param name="MaximumFileSize" value="5000000"/>
-		<param name="Encoding" value="UTF-8"/>
-      <layout class="org.apache.log4j.PatternLayout">
-        <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m\n"/>
-      </layout>
-    </appender>
-
-    <appender name="exist.xmldb" class="org.apache.log4j.RollingFileAppender">
-	    <param name="File" value="logs/xmldb.log"/>
-	  <param name="MaximumFileSize" value="500000"/>
-      <layout class="org.apache.log4j.PatternLayout">
-        <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m\n"/>
-      </layout>
-    </appender>
-
-    <!-- LF5 appender -->
-    <appender name="lf5" class="org.apache.log4j.lf5.LF5Appender">
-	<param name="MaxNumberOfRecords" value="1000"/>
-    </appender>
-    
-    <root>
-		<appender-ref ref="console"/>
-		<priority value="debug"/>
-    </root>
-
-    <category name="org.exist.xmldb" additivity="false">
-		<appender-ref ref="console"/>
-		<priority value="debug"/>
-    </category>
-    
-    <!--
-    <category name="exist.http">
-      <appender-ref ref="A1"/>
-      <priority value="debug" />
-    </category>
-	-->
-  </log4j:configuration>
+        -->
+        <index doctype="users" default="none" attributes="false">
+		</index>
+		<index doctype="PLAY" default="all">
+		</index>
+		<index doctype="dblp" attributes="true" alphanum="true" default="all">
+			<exclude path="//@mdate"/>
+			<exclude path="//ee"/>
+			<exclude path="//volume"/>
+			<exclude path="//cdrom"/>
+			<exclude path="//url"/>
+		</index>
+		<index attributes="false" doctype="species" default="all" 
+			alphanum="true"/>
+		<index attributes="true" doctype="sptr" default="all" alphanum="true">
+			<exclude path="//sequence"/>
+			<exclude path="//dbReference"/>
+		</index>
+        
+        <!-- Specify the location of one or more catalog files.
+        Catalogs are used to resolve external entities in XML documents.
+        -->
+		<entity-resolver>
+			<catalog file="webapp/WEB-INF/catalog"/>
+		</entity-resolver>
+    </indexer>
+   
 </exist>

@@ -196,8 +196,8 @@ public class Main {
 								for (int i = 0; i < jars.length; i++) {
 									String jar = jars[i].getCanonicalPath();
 									if (!done.containsKey(jar)) {
-										done.put(jar, jar);
 										if (include_subject) {
+											done.put(jar, jar);
 											if (classpath.addComponent(jar) && _debug)
 												System.err.println(
 													"Adding JAR from directory: " + jar);
@@ -263,10 +263,10 @@ public class Main {
 				_mode = "jetty";
 			} else if (args[0].equals("shutdown")) {
 				_classname = "org.exist.ServerShutdown";
-				_mode = "none";
+				_mode = "other";
 			} else {
 				_classname = args[0];
-				_mode = "none";
+				_mode = "other";
 			}
 			String[] nargs = new String[args.length - 1];
 			if (args.length > 1)
@@ -276,7 +276,10 @@ public class Main {
 			_classname = "org.exist.JettyStart";
 			_mode = "jetty";
 		}
-
+		
+		if(_debug) {
+			System.err.println("mode = " + _mode);
+		}
 		//--------------------
 		// detect exist.home:
 		//--------------------
@@ -362,8 +365,9 @@ public class Main {
 				System.err.println("EXIST_HOME=" + System.getProperty("exist.home"));
 			System.setProperty("exist.home", _home_dir.getPath());
 			System.setProperty("user.dir", _home_dir.getPath());
+			
+			// try to find Jetty
 			if (_mode.equals("jetty")) {
-				// try to find Jetty
 				String _jetty_dir = null;
 				String _dirs[] = _home_dir.list();
 				for (int i = 0; i < _dirs.length; i++)
@@ -377,7 +381,7 @@ public class Main {
 				}
 				System.setProperty(
 					"jetty.home",
-					_home_dir.getPath() + File.separatorChar + "Jetty-4.1.4");
+					_home_dir.getPath() + File.separatorChar + _jetty_dir);
 				args =
 					new String[] {
 						System.getProperty("jetty.home")
@@ -387,6 +391,15 @@ public class Main {
 							+ "jetty.xml" };
 			}
 
+			// find log4j.xml
+			String log4j = System.getProperty("log4j.configuration");
+			if(log4j == null) {
+				log4j = _home_dir.getPath() + File.separatorChar + "log4j.xml";
+				File lf = new File(log4j);
+				if(lf.canRead())
+					System.setProperty("log4j.configuration", lf.toURI().toASCIIString());
+			}
+			
 			// set up classpath:
 
 			// prefill existing paths in classpath_dirs...

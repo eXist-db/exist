@@ -26,15 +26,15 @@ import java.util.Iterator;
 import org.exist.memtree.Receiver;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
-import org.exist.xpath.XPathException;
-import org.exist.xpath.value.AtomicValue;
-import org.exist.xpath.value.Item;
-import org.exist.xpath.value.NodeValue;
-import org.exist.xpath.value.Sequence;
-import org.exist.xpath.value.SequenceIterator;
-import org.exist.xpath.value.StringValue;
-import org.exist.xpath.value.Type;
-import org.exist.xpath.value.UntypedAtomicValue;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.UntypedAtomicValue;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -365,7 +365,7 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 		Match next = match;
 		int cmp;
 		while (next != null) {
-			cmp = m.compareTo(next);
+			cmp = next.compareTo(m);
 			if (cmp == 0 && m.getNodeId() == next.getNodeId())
 				return;
 			else if (cmp < 0) {
@@ -387,22 +387,23 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 		}
 	}
 
-	public void addMatches(Match m) {
-		Match next;
+	public void addMatches(NodeProxy p) {
+		if(p == this)
+			return;
+		Match m = p.match;
 		while (m != null) {
-			next = m.nextMatch;
-			addMatch(m);
-			m = next;
+			addMatch(new Match(m));
+			m = m.nextMatch;
 		}
-		//printMatches();
 	}
 
-	public void printMatches() {
+	public void printMatches(Match m) {
 		System.out.print(gid);
 		System.out.print(": ");
-		Match next = match;
+		Match next = m;
 		while (next != null) {
-			System.out.print(next.getMatchingTerm());
+			System.out.print(next.getMatchingTerm() + " [" + next.getNodeId() + "] ");
+			System.out.print("-> " + (next.nextMatch == null ? "null" : next.nextMatch.getMatchingTerm()));
 			System.out.print(" ");
 			next = next.nextMatch;
 		}
@@ -533,6 +534,13 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 	 * @see org.exist.dom.NodeSet#iterate()
 	 */
 	public SequenceIterator iterate() {
+		return new SingleNodeIterator(this);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Sequence#unorderedIterator()
+	 */
+	public SequenceIterator unorderedIterator() {
 		return new SingleNodeIterator(this);
 	}
 

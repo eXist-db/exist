@@ -2,7 +2,7 @@ xquery version "1.0";
 
 (: Test module import :)
 import module namespace utils="http://exist-db.org/xquery/collection-utils"
-at "webapp/xquery/collections.xqm";
+at "http://localhost:8080/exist/xquery/collections.xqm";
 
 (: Namespace for the local functions in this script :)
 declare namespace f="http://exist-db.org/xquery/local-functions";
@@ -23,6 +23,25 @@ as element()+
         )
     return
         <option>{$c}</option>
+};
+
+(:  Read query examples into the select box 
+    - see examples.xml in directory samples/ :)
+declare function f:get-examples() as element()
+{
+    let $queries := /example-queries/query
+    return
+        if (empty($queries)) then
+            <p><small>No examples found. Please store document samples/examples.xml
+            into the database to get some examples.</small></p>
+        else
+            <form>
+                <select onchange="forms['xquery'].query.value=this.value">
+                    {for $q in $queries return
+                        <option value="{$q/code}">{$q/description}</option>
+                    }
+                </select>
+            </form>
 };
 
 (:  Retrieve previous queries from the query history. We
@@ -55,9 +74,15 @@ declare function f:get-query-history() as element()*
         <p>Using the form below, arbitrary XQuery expressions can be send to the
         server. Results are shown in raw XML.</p>
 
-        <p>This application is itself implemented as an XQuery script.</p>
+        <p>This application is itself implemented as an XQuery script. For
+        getting started, you may select one of the example queries in the
+        select box below:</p>
 
-        <form action="process.xq" name="xquery">
+        {f:get-examples()}
+
+        <p></p>
+
+        <form action="process.xq" method="post" name="xquery">
             <table class="query" border="0" bgcolor="#EEEEEE" 
                 cellpadding="5" cellspacing="0">
                 <tr>
@@ -75,7 +100,7 @@ declare function f:get-query-history() as element()*
                 <tr>
                     <td colspan="2">
                         <span class="label">XQuery:</span><br/>
-                        <textarea name="query" cols="70" rows="10"/>
+                        <textarea name="query" cols="70" rows="15"/>
                     </td>
                 </tr>
                 <tr>

@@ -24,7 +24,7 @@ package org.exist.dom;
 
 import java.util.Iterator;
 
-import org.exist.xpath.value.Sequence;
+import org.exist.xquery.value.Sequence;
 import org.w3c.dom.NodeList;
 
 /**
@@ -146,64 +146,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 */
 	public NodeProxy get(DocumentImpl doc, long nodeId);
 	
-	/**
-	 * Check if node has an ancestor contained in this node set.
-	 *
-	 * If directParent is true, only immediate ancestors (parents) are considered.
-	 * Otherwise the method will call itself recursively for all the node's
-	 * parents.
-	 *
-	 */
-	public NodeProxy nodeHasParent(NodeProxy p, boolean directParent);
-	
-	/**
-	 * Check if node has an ancestor contained in this node set.
-	 *
-	 * If directParent is true, only immediate ancestors (parents) are considered.
-	 * Otherwise the method will call itself recursively for all the node's
-	 * parents.
-	 *
-	 * If includeSelf is true, the method returns also true if
-	 * the node itself is contained in the node set.
-	 */
-	public NodeProxy nodeHasParent(
-		NodeProxy p,
-		boolean directParent,
-		boolean includeSelf);
-		
-	/**
-	 * Check if the node identified by its node id has an ancestor contained in this node set.
-	 *
-	 * If directParent is true, only immediate ancestors (parents) are considered.
-	 * Otherwise the method will call itself recursively for all the node's
-	 * parents.
-	 *
-	 * If includeSelf is true, the method returns also true if
-	 * the node itself is contained in the node set.
-	 */
-	public NodeProxy nodeHasParent(
-		DocumentImpl doc,
-		long gid,
-		boolean directParent,
-		boolean includeSelf);
-		
-	/**
-	 * Check if node has an ancestor contained in this node set.
-	 *
-	 * If directParent is true, only immediate ancestors (parents) are considered.
-	 * Otherwise the method will call itself recursively for all the node's
-	 * parents.
-	 *
-	 * If includeSelf is true, the method returns also true if
-	 * the node itself is contained in the node set.
-	 */
-	public NodeProxy nodeHasParent(
-		DocumentImpl doc,
-		long gid,
-		boolean directParent,
-		boolean includeSelf,
-		int level);
-		
 	/**
 	 * Get all children of the given parent node contained in this node set.
 	 * If mode is {@link #DESCENDANT}, the returned node set will contain
@@ -497,4 +439,8 @@ public interface NodeSet extends Sequence, NodeList {
 		boolean rememberContext);
 	
 	public NodeSet getContextNodes(boolean rememberContext);
+	
+	public boolean hasChanged(int previousState);
+	
+	public int getState();
 }

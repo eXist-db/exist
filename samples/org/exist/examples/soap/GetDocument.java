@@ -10,11 +10,11 @@ public class GetDocument {
         QueryService service = new QueryServiceLocator();
         Query query = service.getQuery();
 		String session = query.connect("guest", "guest");
-		
-		String data = query.getResource(session, 
+        
+		byte[] data = query.getResourceData(session, 
 			"/db/shakespeare/plays/hamlet.xml",
-			true, true);
-		System.out.println(data);
+			true, false, false);
+		System.out.println(new String(data, "UTF-8"));
 		query.disconnect(session);
     }
 }
