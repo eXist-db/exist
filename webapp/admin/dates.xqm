@@ -1,0 +1,32 @@
+module namespace date="http://exist-db.org/xquery/admin-interface/date";
+
+declare variable $date:months {
+	("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct",
+	"Nov", "Dec")
+};
+
+declare function date:format-date($date as xs:dateTime) as xs:string {
+	string-join((
+		item-at($date:months, month-from-date($date)),
+		day-from-date($date),
+		year-from-date($date)), " ")
+};
+
+declare function date:format-int($component as xs:integer) as xs:string {
+	if($component lt 10) then
+		concat("0", $component)
+	else
+		xs:string($component)
+};
+
+declare function date:format-time($time as xs:dateTime) as xs:string {
+	concat(
+		date:format-int(hours-from-dateTime($time)), ":",
+		date:format-int(minutes-from-dateTime($time)), ":",
+		date:format-int(xs:integer(seconds-from-dateTime($time)))
+	)
+};
+
+declare function date:format-dateTime($dt as xs:dateTime) as xs:string {
+    concat(date:format-date($dt), " ", date:format-time($dt))
+};

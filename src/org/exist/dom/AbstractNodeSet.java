@@ -452,9 +452,9 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 			    // same document
 			    pa = na.gid;
 			    pb = nb.gid;
-			    System.out.println(pa + " -> " + pb);
+//			    System.out.println(pa + " -> " + pb);
 				pb = XMLUtil.getParentId(nb.getDocument(), pb, nb.getDocument().getTreeLevel(pb));
-				System.out.println("comparing " + pa + " -> " + pb);
+//				System.out.println("comparing " + pa + " -> " + pb);
 				if(pa == pb) {
 				    if(mode == NodeSet.DESCENDANT) {
 				        if (rememberContext)
