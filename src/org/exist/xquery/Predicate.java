@@ -1,7 +1,7 @@
 
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ *  Copyright (C) 2001-04,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -40,10 +40,12 @@ import org.exist.xquery.value.ValueSequence;
 /**
  *  Handles predicate expressions.
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ *@author     Wolfgang Meier
  */
 public class Predicate extends PathExpr {
 
+	protected CachedResult cached = null;
+	
 	public Predicate(XQueryContext context) {
 		super(context);
 	}
@@ -83,8 +85,16 @@ public class Predicate extends PathExpr {
 			ExtArrayNodeSet result = new ExtArrayNodeSet();
 			NodeSet contextSet = contextSequence.toNodeSet();
 			boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;
+			
 			NodeSet nodes =
 				super.eval(contextSequence, null).toNodeSet();
+			
+			/* if the predicate expression returns results from the cache
+			 * we can also return the cached result. 
+			 */
+			if(cached != null && cached.isValid(contextSequence) && nodes.isCached())
+				return cached.getResult();
+			
 			NodeProxy current;
 			ContextItem contextNode;
 			NodeProxy next;
@@ -110,6 +120,8 @@ public class Predicate extends PathExpr {
 					contextNode = contextNode.getNextItem();
 				}
 			}
+			if(contextSequence instanceof NodeSet)
+				cached = new CachedResult((NodeSet)contextSequence, result);
 			return result;
 		
 		// Case 2: predicate expression returns a boolean. Call the

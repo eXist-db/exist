@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2000-03,  Wolfgang M. Meier (wolfgang@exist-db.org)
+ *  Copyright (C) 2000-04,  Wolfgang M. Meier (wolfgang@exist-db.org)
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -40,7 +40,7 @@ import org.w3c.dom.Node;
 /**
  * Processes all location path steps (like descendant::*, ancestor::XXX).
  * 
- * The results of the first evaluation of the expression  are cached for the 
+ * The results of the first evaluation of the expression are cached for the 
  * lifetime of the object and only reloaded if the context sequence
  * (as passed to the {@link #eval(Sequence, Item)} method) has changed.
  * 
@@ -52,9 +52,7 @@ public class LocationStep extends Step {
 	protected DocumentSet currentDocs = null;
 	
 	// Fields for caching the last result
-	protected Sequence cachedResult = null;
-	protected Sequence cachedContext = null;
-	protected int timestamp = 0;
+	protected CachedResult cached = null;
 	
 	public LocationStep(XQueryContext context, int axis) {
 		super(context, axis);
@@ -98,17 +96,13 @@ public class LocationStep extends Step {
 			contextSequence = contextItem.toSequence();
 		if(contextSequence == null)
 			return Sequence.EMPTY_SEQUENCE;
-		if(cachedResult != null &&
-			cachedContext == contextSequence &&
-			Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {
-			if(!((NodeSet)contextSequence).hasChanged(timestamp)) {
-//				LOG.debug("returning cached result");
-				cachedResult.setIsCached(true);
-				return 
-					(predicates.size() == 0)
-					? cachedResult :
-					 applyPredicate(contextSequence, cachedResult);
-			}
+		if(cached != null &&
+			cached.isValid(contextSequence)) {
+//			LOG.debug("returning cached result for " + pprint());
+			return 
+			(predicates.size() == 0)
+			? cached.getResult() :
+				applyPredicate(contextSequence, cached.getResult());
 		}
 		Sequence temp;
 		switch (axis) {
@@ -168,10 +162,9 @@ public class LocationStep extends Step {
 			default :
 				throw new IllegalArgumentException("Unsupported axis specified");
 		}
-		if(contextSequence instanceof NodeSet)
-			timestamp = ((NodeSet)contextSequence).getState();
-		cachedResult = temp;
-		cachedContext = contextSequence;
+		if(contextSequence instanceof NodeSet) {
+			cached = new CachedResult((NodeSet)contextSequence, temp);
+		}
 		return
 			(predicates.size() == 0)
 				? temp
@@ -186,26 +179,14 @@ public class LocationStep extends Step {
 			result = new VirtualNodeSet(axis, test, contextSet);
 			((VirtualNodeSet) result).setInPredicate(inPredicate);
 		} else {
-		    DocumentSet docs = getDocumentSet(contextSet);
-			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
-				currentDocs = docs;
-				currentSet =
-					(NodeSet) context.getBroker().getElementIndex().getAttributesByName(
-						currentDocs, test.getName());
-			}
-			if (axis == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
-				result =
-					currentSet.selectAncestorDescendant(
-						contextSet,
-						NodeSet.DESCENDANT,
-						inPredicate);
-			} else {
-				result =
-					currentSet.selectParentChild(
-						contextSet,
-						NodeSet.DESCENDANT,
-						inPredicate);
-			}
+			NodeSelector selector;
+			if(axis == Constants.DESCENDANT_ATTRIBUTE_AXIS) 
+				selector = new DescendantSelector(contextSet, inPredicate);
+			else
+				selector = new ChildSelector(contextSet, inPredicate);
+			DocumentSet docs = getDocumentSet(contextSet);
+			result = context.getBroker().getElementIndex().getAttributesByName(
+		            docs, test.getName(), selector);
 		}
 		return result;
 	}
@@ -221,23 +202,10 @@ public class LocationStep extends Step {
 		} else {
 		    NodeSet result = null;
 		    DocumentSet docs = getDocumentSet(contextSet);
-		    if(cacheResults()) {
-				if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
-					currentDocs = docs;
-						currentSet =
-							(NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
-								ElementValue.ELEMENT,
-								currentDocs,
-								test.getName(), null);
-				}
-				result =
-					currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);
-			} else {
-			    NodeSelector selector = new ChildSelector(contextSet, inPredicate);
-			    result = context.getBroker().getElementIndex().findElementsByTagName(
-			            ElementValue.ELEMENT, docs, test.getName(), selector
-			    );
-			}
+		    NodeSelector selector = new ChildSelector(contextSet, inPredicate);
+		    result = context.getBroker().getElementIndex().findElementsByTagName(
+		    		ElementValue.ELEMENT, docs, test.getName(), selector
+		    );
 			return result;
 		}
 	}
@@ -251,27 +219,30 @@ public class LocationStep extends Step {
 			vset.setInPredicate(inPredicate);
 			return vset;
 		} else {
-		    DocumentSet docs = getDocumentSet(contextSet);
-//		    DocumentSet docs = contextSet.getDocumentSet();
-			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
-				currentDocs = docs;
-				currentSet =
-					(NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
-						ElementValue.ELEMENT, currentDocs,
-						test.getName(), null);
-			}
-			NodeSet result = currentSet.selectAncestorDescendant(
-				contextSet,
-				NodeSet.DESCENDANT,
-				axis == Constants.DESCENDANT_SELF_AXIS,
-				inPredicate);
-//			DocumentSet docs = contextSet.getDocumentSet();
-//			NodeSelector selector = axis == Constants.DESCENDANT_SELF_AXIS ?
-//			        new DescendantOrSelfSelector(contextSet, inPredicate) :
-//			    new DescendantSelector(contextSet, inPredicate);
-//			NodeSet result = context.getBroker().findElementsByTagName(
-//					ElementValue.ELEMENT, docs, test.getName(), selector
-//			);
+			NodeSet result;
+//			if(cacheResults()) {
+//			    DocumentSet docs = getDocumentSet(contextSet);
+//				if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
+//					currentDocs = docs;
+//					currentSet =
+//						(NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
+//							ElementValue.ELEMENT, currentDocs,
+//							test.getName(), null);
+//				}
+//				result = currentSet.selectAncestorDescendant(
+//					contextSet,
+//					NodeSet.DESCENDANT,
+//					axis == Constants.DESCENDANT_SELF_AXIS,
+//					inPredicate);
+//			} else {
+				DocumentSet docs = contextSet.getDocumentSet();
+				NodeSelector selector = axis == Constants.DESCENDANT_SELF_AXIS ?
+						new DescendantOrSelfSelector(contextSet, inPredicate) :
+							new DescendantSelector(contextSet, inPredicate);
+						result = context.getBroker().getElementIndex().findElementsByTagName(
+								ElementValue.ELEMENT, docs, test.getName(), selector
+						);
+//			}
 			return result;
 		}
 	}
@@ -396,11 +367,6 @@ public class LocationStep extends Step {
 	    return ds;
 	}
 	
-	protected boolean cacheResults() {
-	    //return getContextDocSet() != null;
-	    return true;
-	}
-	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Step#resetState()
 	 */
@@ -409,7 +375,6 @@ public class LocationStep extends Step {
 //		System.out.println(pprint() + ": reset!!!!");
 		currentSet = null;
 		currentDocs = null;
-		cachedContext = null;
-		cachedResult = null;
+		cached = null;
 	}
 }

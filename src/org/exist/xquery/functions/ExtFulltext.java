@@ -103,6 +103,8 @@ public class ExtFulltext extends Function {
 		throws XPathException {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
+//		long start = System.currentTimeMillis();
+		NodeSet result = null;
 		if ((getDependencies() & Dependency.CONTEXT_ITEM)
 			== Dependency.NO_DEPENDENCY) {
 			NodeSet nodes =
@@ -113,12 +115,12 @@ public class ExtFulltext extends Function {
 				searchTerm
 					.eval(contextSequence)
 					.getStringValue();
-			return evalQuery(context, arg, nodes);
+			result = evalQuery(context, arg, nodes).toNodeSet();
 		} else {
 			Item current;
 			String arg;
 			NodeSet nodes = null;
-			NodeSet result = new ExtArrayNodeSet();
+			result = new ExtArrayNodeSet();
 			Sequence temp;
 			boolean haveNodes = false;
 			if ((path.getDependencies() & Dependency.CONTEXT_ITEM)
@@ -137,7 +139,6 @@ public class ExtFulltext extends Function {
 					searchTerm
 						.eval(current.toSequence())
 						.getStringValue();
-//				long start = System.currentTimeMillis();
 				if (!haveNodes) {
 					nodes =
 						path == null
@@ -148,16 +149,14 @@ public class ExtFulltext extends Function {
 				}
 				temp = evalQuery(context, arg, nodes);
 				result.addAll(temp);
-//				LOG.debug(
-//					"found "
-//						+ temp.getLength()
-//						+ " for "
-//						+ arg
-//						+ " in "
-//						+ (System.currentTimeMillis() - start));
 			}
-			return result;
 		}
+//		LOG.debug(
+//				"found "
+//					+ result.getLength()
+//					+ " in "
+//					+ (System.currentTimeMillis() - start));
+		return result;
 	}
 
 	public Sequence evalQuery(

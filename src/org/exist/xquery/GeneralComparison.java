@@ -54,6 +54,8 @@ public class GeneralComparison extends BinaryOp {
 	protected int relation = Constants.EQ;
 	protected int truncation = Constants.TRUNC_NONE;
 	
+	protected CachedResult cached = null;
+	
 	public GeneralComparison(XQueryContext context, int relation) {
 		this(context, relation, Constants.TRUNC_NONE);
 	}
@@ -236,6 +238,10 @@ public class GeneralComparison extends BinaryOp {
 	 */
 	protected Sequence quickNodeSetCompare(Sequence contextSequence)
 		throws XPathException {
+		if(cached != null && cached.isValid(contextSequence)) {
+//			LOG.debug("Returning cached result for " + pprint());
+			return cached.getResult();
+		}
 		//	evaluate left expression
 		NodeSet nodes = (NodeSet) getLeft().eval(contextSequence);
 		if(nodes.getLength() < 2)
@@ -293,7 +299,11 @@ public class GeneralComparison extends BinaryOp {
 			cmp = cmpCopy;
 		}
 		// now compare the input node set to the search expression
-		return context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp, context.getDefaultCollator());
+		NodeSet result =
+			context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp, context.getDefaultCollator());
+		if(contextSequence instanceof NodeSet)
+			cached = new CachedResult((NodeSet)contextSequence, result);
+		return result;
 	}
 
 	/**
@@ -429,5 +439,13 @@ public class GeneralComparison extends BinaryOp {
 			(getLeft().getCardinality() & Cardinality.MANY) != 0
 				&& (getRight().getCardinality() & Cardinality.MANY) == 0)
 			switchOperands();
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.PathExpr#resetState()
+	 */
+	public void resetState() {
+		super.resetState();
+		cached = null;
 	}
 }
