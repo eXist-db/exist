@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shortcuts>
+	<programGroup defaultName="eXist XML Database" location="applications"/>
+	
+	<shortcut 
+		name="eXist Database Startup"
+		type="Application"
+		encoding="UTF-8"
+		target="$INSTALL_PATH/bin/startup.sh"
+		description="eXist Database Startup" 
+		programGroup="yes"
+        		desktop="yes"
+		applications="yes"
+		terminal="true"
+		iconFile="$INSTALL_PATH/icon.bmp"/>
+	<shortcut 
+		name="eXist Local Homepage" 
+		target="$INSTALL_PATH/index.html"
+		url="$INSTALL_PATH/index.html"
+		description="The local homepage of the server"
+		iconFile="help"
+		iconIndex="0"
+		programGroup="yes"
+        		desktop="yes"
+		applications="yes"
+		type="Link"/>
+	<shortcut name="eXist Client Shell"
+        		target="$INSTALL_PATH/bin/client.sh"
+		description="Start the command-line client" 
+		programGroup="yes"
+        		desktop="yes"
+		type="Application"
+		applications="yes"/>
+	<shortcut name="Database Shutdown"
+		target="$INSTALL_PATH/bin/shutdown.sh"
+        		description="Cleanly shutdown a running database" 
+        		programGroup="yes"
+		applications="yes"
+		desktop="no"
+		terminal="true"
+		type="Application"/>
+	<shortcut name="Uninstall eXist" 
+		target="$JAVA_HOME/bin/java"
+		commandLine="-jar &quot;$INSTALL_PATH/Uninstaller/uninstaller.jar&quot;"
+		iconFile="trashcan_full"
+		description="Uninstall eXist" 
+		programGroup="yes"
+		applications="yes"
+		desktop="no"
+		type="Application"/>
+</shortcuts>

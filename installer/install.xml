@@ -1,20 +1,21 @@
 <installation version="1.0">
     <info>
         <appname>eXist</appname>
-		<appversion>1.0b2</appversion>
+        <appversion>1.0-dev</appversion>
         <url>http://exist-db.org</url>
     </info>
-	<guiprefs height="450" resizable="yes" width="640">
-		<laf name="metouia">
-			<os family="unix"/>
-		</laf>
-	</guiprefs>
+    <guiprefs height="450" resizable="yes" width="640">
+        <laf name="metouia">
+            <os family="unix"/>
+        </laf>
+    </guiprefs>
     <locale>
         <langpack iso3="eng"/>
     </locale>
     <resources>
-    	<res id="Installer.image" src="installer/ilogo.jpg"/>
-    	<res id="shortcutSpec.xml" src="installer/shortcutSpec.xml"/>
+        <res id="Installer.image" src="installer/ilogo.jpg"/>
+        <res id="shortcutSpec.xml" src="installer/shortcutSpec.xml"/>
+        <res id="Unix_shortcutSpec.xml" src="installer/UnixShortcutSpec.xml"/>
         <res id="HTMLInfoPanel.info" src="installer/readme.html"/>
     </resources>
     <native type="izpack" name="ShellLink.dll"/>
@@ -28,45 +29,48 @@
         <panel classname="InstallPanel"/>
         <panel classname="ShortcutPanel"/>
         <panel classname="HTMLInfoPanel"/>
-        <panel classname="FinishPanel"/>
+        <!--panel classname="FinishPanel"/-->
     </panels>
     <packs>
         <pack name="core" required="yes">
-            <description>Everything needed for the database core, including Jetty + Cocoon</description>
+            <description>Everything needed for the database core, including
+                Jetty + Cocoon</description>
             <fileset targetdir="$INSTALL_PATH" dir=".">
                 <include name="client.properties"/>
                 <include name="backup.properties"/>
+                <include name="build.properties"/>
+                <include name="server.properties"/>
                 <include name="conf.xml"/>
                 <include name="build.xml"/>
-				<include name="log4j.xml"/>
-            	<include name="LICENSE"/>
-            	<include name="README"/>
-				<include name="exist.jar"/>
-				<include name="exist-optional.jar"/>
-            	<include name="start.jar"/>
+                <include name="log4j.xml"/>
+                <include name="LICENSE"/>
+                <include name="README"/>
+                <include name="exist.jar"/>
+                <include name="exist-optional.jar"/>
+                <include name="start.jar"/>
                 <include name="examples.jar"/>
-                <include name="examples-setup.xml"/>
-            	<include name="lib/"/>
-            	<include name="samples/**"/>
-            	<include name="thirdparty/"/>
-            	<exclude name="**/CVS/"/>
-            	<exclude name="**/*~"/>
-				<exclude name="**/*.log*"/>
-				<exclude name="**/.*"/>
+                <include name="mime-types.xml"/>
+                <include name="lib/"/>
+                <include name="samples/**"/>
+                <include name="thirdparty/"/>
+                <exclude name="**/CVS/"/>
+                <exclude name="**/*~"/>
+                <exclude name="**/*.log*"/>
+                <exclude name="**/.*"/>
             </fileset>
-			<fileset targetdir="$INSTALL_PATH/tools" dir="tools">
-				<include name="**/*.jar"/>
-				<include name="wrapper/**"/>
-				<include name="jetty/**"/>
+            <fileset targetdir="$INSTALL_PATH/tools" dir="tools">
+                <include name="**/*.jar"/>
+                <include name="wrapper/**"/>
+                <include name="jetty/**"/>
                 <exclude name="jetty/logs/*"/>
-			</fileset>
+            </fileset>
             <fileset targetdir="$INSTALL_PATH/webapp" dir="webapp">
-            	<exclude name="**/*.dbx"/>
-            	<exclude name="**/*.log*"/>
-				<exclude name="api/**"/>
-				<exclude name="**/CVS/"/>
-				<exclude name="**/*~"/>
-				<exclude name="resources/*.jpg"/>
+                <exclude name="**/*.dbx"/>
+                <exclude name="**/*.log*"/>
+                <exclude name="api/**"/>
+                <exclude name="**/CVS/"/>
+                <exclude name="**/*~"/>
+                <exclude name="resources/*.jpg"/>
             </fileset>
             <fileset targetdir="$INSTALL_PATH/webapp/WEB-INF"
                 dir="webapp/WEB-INF">
@@ -79,59 +83,56 @@
             <file src="installer/index.html" targetdir="$INSTALL_PATH"/>
             <file src="installer/icon.bmp" targetdir="$INSTALL_PATH"/>
             <fileset targetdir="$INSTALL_PATH/bin" dir="installer">
-            	<include name="*.sh"/>
+                <include name="*.sh"/>
                 <include name="*.bat"/>
                 <exclude name="build.bat"/>
                 <exclude name="build.sh"/>
             </fileset>
             <file src="installer/build.sh" targetdir="$INSTALL_PATH"/>
             <file src="installer/build.bat" targetdir="$INSTALL_PATH"/>
-
-			<parsable type="shell" targetfile="$INSTALL_PATH/bin/client.sh"/>
-			<parsable type="shell" targetfile="$INSTALL_PATH/bin/startup.sh"/>
-			<parsable type="shell" targetfile="$INSTALL_PATH/bin/server.sh"/>
+            <parsable type="shell" targetfile="$INSTALL_PATH/bin/client.sh"/>
+            <parsable type="shell" targetfile="$INSTALL_PATH/bin/startup.sh"/>
+            <parsable type="shell" targetfile="$INSTALL_PATH/bin/server.sh"/>
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/shutdown.sh"/>
             <parsable type="shell" targetfile="$INSTALL_PATH/build.sh"/>
-			<parsable targetfile="$INSTALL_PATH/bin/client.bat"/>
-			<parsable targetfile="$INSTALL_PATH/bin/startup.bat"/>
-			<parsable targetfile="$INSTALL_PATH/bin/server.bat"/>
+            <parsable targetfile="$INSTALL_PATH/bin/client.bat"/>
+            <parsable targetfile="$INSTALL_PATH/bin/startup.bat"/>
+            <parsable targetfile="$INSTALL_PATH/bin/server.bat"/>
             <parsable targetfile="$INSTALL_PATH/bin/shutdown.bat"/>
             <parsable targetfile="$INSTALL_PATH/build.bat"/>
-			<singlefile src="tools/wrapper/conf/wrapper.conf.install"
-				target="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf"
-				override="true"/>
-			<parsable targetfile="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf"/>
-			<executable targetfile="$INSTALL_PATH/bin/client.sh"
-				stage="never" os="unix"/>
-			<executable targetfile="$INSTALL_PATH/bin/startup.sh"
-				stage="never" os="unix"/>
-			<executable targetfile="$INSTALL_PATH/bin/server.sh"
-				stage="never" os="unix"/>
-			<executable targetfile="$INSTALL_PATH/bin/shutdown.sh"
+            <singlefile src="tools/wrapper/conf/wrapper.conf.install"
+                target="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf"
+                override="true"/>
+            <parsable targetfile="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf"/>
+            <executable targetfile="$INSTALL_PATH/bin/client.sh" stage="never"
+                os="unix"/>
+            <executable targetfile="$INSTALL_PATH/bin/startup.sh" stage="never"
+                os="unix"/>
+            <executable targetfile="$INSTALL_PATH/bin/server.sh" stage="never"
+                os="unix"/>
+            <executable targetfile="$INSTALL_PATH/bin/shutdown.sh" stage="never"
+                os="unix"/>
+            <executable targetfile="$INSTALL_PATH/build.sh" stage="never"
+                os="unix"/>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper"
                 stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/build.sh"
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/exist.sh"
                 stage="never" os="unix"/>
-			<executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper"
-				stage="never" os="unix"/>
-			<executable targetfile="$INSTALL_PATH/tools/wrapper/bin/exist.sh"
-				stage="never" os="unix"/>
         </pack>
         <pack name="sources" required="no">
             <description>Java source files</description>
-            <fileset targetdir="$INSTALL_PATH/src" 
-            	dir="src">
-            	<exclude name="**/*~"/>
-            	<exclude name="**/.*"/>
-				<exclude name="**/CVS/"/>
-				<exclude name=".*"/>
+            <fileset targetdir="$INSTALL_PATH/src" dir="src">
+                <exclude name="**/*~"/>
+                <exclude name="**/.*"/>
+                <exclude name="**/CVS/"/>
+                <exclude name=".*"/>
             </fileset>
         </pack>
         <pack name="javadoc" required="no">
-        	<description>Generated Javadocs</description>
-        	<fileset targetdir="$INSTALL_PATH/webapp/api"
-        		dir="webapp/api">
-        		<exclude name="**/CVS/"/>
-        	</fileset>
+            <description>Generated Javadocs</description>
+            <fileset targetdir="$INSTALL_PATH/webapp/api" dir="webapp/api">
+                <exclude name="**/CVS/"/>
+            </fileset>
         </pack>
     </packs>
 </installation>
