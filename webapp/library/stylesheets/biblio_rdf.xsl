@@ -160,11 +160,21 @@
 	  	</tr>
 	</xsl:template>
 
+	<xsl:template match="@*|*" mode="get-text">
+		<xsl:apply-templates mode="get-text"/>
+	</xsl:template>
+	
+	<xsl:template match="text()" mode="get-text">
+		<xsl:value-of select="."/>
+	</xsl:template>
+	
   <xsl:template match="dc:creator">
     <xsl:if test="position()>1">
       <xsl:text>; </xsl:text>
     </xsl:if>
-    <xsl:variable name="creator" select="./text()"/>
+    <xsl:variable name="creator">
+		<xsl:apply-templates mode="get-text"/>
+	</xsl:variable>
     <xsl:variable name="query">document(*)//rdf:Description[near(dc:editor|dc:creator|dc:contributor,'<xsl:value-of select="$creator"/>')]</xsl:variable>
     <xsl:variable name="encoded" select='java:java.net.URLEncoder.encode($query,"UTF-8")'/>
     <a href="?query={$encoded}">
@@ -179,7 +189,9 @@
     <xsl:if test="position()>1">
       <xsl:text>; </xsl:text>
     </xsl:if>
-    <xsl:variable name="editor" select="./text()"/>
+    <xsl:variable name="editor">
+		<xsl:apply-templates mode="get-text"/>
+	</xsl:variable>
     <xsl:variable name="query">document(*)//rdf:Description[near(dc:editor|dc:creator|dc:contributor,'<xsl:value-of select="$editor"/>')]</xsl:variable>
     <xsl:variable name="encoded" select='java:java.net.URLEncoder.encode($query,"UTF-8")'/>
     <a href="?query={$encoded}">
@@ -194,7 +206,9 @@
     <xsl:if test="position()>1">
       <xsl:text>; </xsl:text>
     </xsl:if>
-    <xsl:variable name="contributor" select="./text()"/>
+    <xsl:variable name="contributor">
+		<xsl:apply-templates mode="get-text"/>
+	</xsl:variable>
     <xsl:variable name="query">document(*)//rdf:Description[near(dc:editor|dc:creator|dc:contributor,'<xsl:value-of select="$contributor"/>')]</xsl:variable>
     <xsl:variable name="encoded" select='java:java.net.URLEncoder.encode($query)'/>
     <a href="?query={$encoded}">
@@ -207,7 +221,9 @@
   </xsl:template>
 
   <xsl:template match="dc:subject">
-    <xsl:variable name="subject" select="./text()"/>
+    <xsl:variable name="subject">
+		<xsl:apply-templates mode="get-text"/>
+	</xsl:variable>
     <xsl:variable name="query">document(*)//rdf:Description[dc:subject&amp;='<xsl:value-of select='$subject'/>']</xsl:variable>
     <xsl:variable name="encoded" select='java:java.net.URLEncoder.encode($query,"UTF-8")'/>
     <a href="?query={$encoded}">

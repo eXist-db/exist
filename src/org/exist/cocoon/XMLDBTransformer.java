@@ -201,7 +201,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 			return;
 		}
 		String pHighlightElementMatches = attribs.getValue("match-tagging-elements");
-		boolean highlightElementMatches = false;
+		boolean highlightElementMatches = true;
 		if (pHighlightElementMatches != null)
 			highlightElementMatches = pHighlightElementMatches.equals("true");
 		String pHighlightAttributeMatches = attribs.getValue("match-tagging-attributes");
@@ -275,7 +275,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 				reportError(WARNING, "attribute 'to' requires numeric value");
 			}
 		String pHighlightElementMatches = attribs.getValue("match-tagging-elements");
-		boolean highlightElementMatches = false;
+		boolean highlightElementMatches = true;
 		if (pHighlightElementMatches != null)
 			highlightElementMatches = pHighlightElementMatches.equals("true");
 		String pHighlightAttributeMatches = attribs.getValue("match-tagging-attributes");

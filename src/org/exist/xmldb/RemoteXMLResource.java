@@ -339,7 +339,6 @@ public class RemoteXMLResource implements XMLResourceImpl {
 			}
 		} else if(content != null)
 			try {
-				System.out.println("returning content");
 				return content.getBytes("UTF-8");
 			} catch (UnsupportedEncodingException e) {
 			}
