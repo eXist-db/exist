@@ -1,5 +1,26 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-03 Wolfgang M. Meier
+ *  wolfgang@exist-db.org
+ *  http://exist.sourceforge.net
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
+ *  $Id$
+ */
 package org.exist.xquery;
-
 
 public interface Constants {
 
@@ -19,21 +40,24 @@ public interface Constants {
 					    "self",
 					    "attribute-descendant"
 	};
-					    
+
+    // Reverse axes
     public final static int ANCESTOR_AXIS = 0;
     public final static int ANCESTOR_SELF_AXIS = 1;
-    public final static int ATTRIBUTE_AXIS = 2;
-    public final static int CHILD_AXIS = 3;
-    public final static int DESCENDANT_AXIS = 4;
-    public final static int DESCENDANT_SELF_AXIS = 5;
-    public final static int FOLLOWING_AXIS = 6;
-    public final static int FOLLOWING_SIBLING_AXIS = 7;
-    public final static int NAMESPACE_AXIS = 8;
-    public final static int PARENT_AXIS =  9;
-    public final static int PRECEDING_AXIS = 10;
-    public final static int PRECEDING_SIBLING_AXIS = 11;
-    public final static int SELF_AXIS = 12;
-	public final static int DESCENDANT_ATTRIBUTE_AXIS = 13;
+    public final static int PARENT_AXIS =  2;
+    public final static int PRECEDING_AXIS = 3;
+    public final static int PRECEDING_SIBLING_AXIS = 4;
+    
+    // Forward axes
+    public final static int CHILD_AXIS = 10;
+    public final static int ATTRIBUTE_AXIS = 11;
+    public final static int DESCENDANT_AXIS = 12;
+    public final static int DESCENDANT_SELF_AXIS = 13;
+    public final static int FOLLOWING_AXIS = 14;
+    public final static int FOLLOWING_SIBLING_AXIS = 15;
+    public final static int NAMESPACE_AXIS = 16;
+    public final static int SELF_AXIS = 17;
+	public final static int DESCENDANT_ATTRIBUTE_AXIS = 18;
 	
     /**
      * These constants represent the
@@ -103,6 +127,8 @@ public interface Constants {
 
     public final static int FULLTEXT_OR = 0;
     public final static int FULLTEXT_AND = 1;
+    
+    
 }
 
 

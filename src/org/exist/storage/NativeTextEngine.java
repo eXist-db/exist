@@ -437,7 +437,7 @@ public class NativeTextEngine extends TextSearchEngine {
 			collection = (Collection) iter.next();
 			collectionId = collection.getId();
 			if (startTerm != null && startTerm.length() > 0)
-				ref = new WordRef(collectionId, startTerm.toString());
+				ref = new WordRef(collectionId, startTerm.toString().toLowerCase());
 			else
 				ref = new WordRef(collectionId);
 			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);

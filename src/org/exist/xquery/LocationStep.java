@@ -95,7 +95,7 @@ public class LocationStep extends Step {
 		Sequence result = contextSequence;
 		for (Iterator i = predicates.iterator(); i.hasNext();) {
 			pred = (Predicate) i.next();
-			result = pred.evalPredicate(outerSequence, result);
+			result = pred.evalPredicate(outerSequence, result, axis);
 		}
 		return result;
 	}
@@ -299,8 +299,8 @@ public class LocationStep extends Step {
 						ElementValue.ELEMENT, currentDocs,
 						test.getName(), null);
 			}
-			result = contextSet.selectSiblings(
-				currentSet,
+			result = currentSet.selectSiblings(
+				contextSet,
 				axis == Constants.PRECEDING_SIBLING_AXIS
 					? NodeSet.PRECEDING
 					: NodeSet.FOLLOWING);
@@ -366,8 +366,8 @@ public class LocationStep extends Step {
 						test.getName(), null);
 			}
 			result =
-				contextSet.selectAncestors(
-					currentSet,
+				currentSet.selectAncestors(
+					contextSet,
 					axis == Constants.ANCESTOR_SELF_AXIS,
 					inPredicate);
 //			LOG.debug("getAncestors found " + result.getLength());
@@ -389,6 +389,9 @@ public class LocationStep extends Step {
 		return result;
 	}
 
+	/**
+	 * TODO: works only for ..
+	 */
 	protected NodeSet getParents(
 		XQueryContext context,
 		NodeSet contextSet) {
