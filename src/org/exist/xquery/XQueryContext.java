@@ -424,11 +424,10 @@ public class XQueryContext {
 						doc.getUpdateLock().release(Lock.READ_LOCK);
 						
 					} else {
-						collection = broker.openCollection(staticDocumentPaths[i], Lock.READ_LOCK);
+						collection = broker.getCollection(staticDocumentPaths[i]);
 						if(collection != null) {
 							LOG.debug("reading collection " + staticDocumentPaths[i]);
 							collection.allDocs(broker, staticDocuments, true, true);
-							collection.release();
 						}
 					}
 				} catch(PermissionDeniedException e) {

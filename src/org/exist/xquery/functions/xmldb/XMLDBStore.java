@@ -49,11 +49,15 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("store", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Store a node as a new document into the database. The first " +
-			"argument specifies the collection object as returned by the collection or " +
+			"Store a new resource into the database. The first " +
+			"argument denotes the collection where the resource should be stored. " +
+			"The collection can be either specified as a simple collection path, " +
+			"an XMLDB URI, or a collection object as returned by the collection or " +
 			"create-collection functions. The second argument is the name of the new " +
-			"document. The third argument is either a node or a string. A node will be " +
-			"serialized to SAX. It becomes the root node of the new document.",
+			"resource. The third argument is either a node, a string or an xs:anyURI. " +
+			"A node will be serialized to SAX. It becomes the root node of the new " +
+			"document. If the argument is of type xs:anyURI, the resource is loaded " +
+			"from that URI. Currently, the URI should point to a file on the server.",
 			new SequenceType[] {
 				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),

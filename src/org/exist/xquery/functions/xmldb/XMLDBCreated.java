@@ -23,26 +23,20 @@ package org.exist.xquery.functions.xmldb;
 
 import java.util.Date;
 
-import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.xmldb.CollectionImpl;
-import org.exist.xquery.BasicFunction;
+import org.exist.xmldb.EXistResource;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.exist.xquery.value.DateTimeValue;
-
-
-import org.exist.security.User;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.base.Resource;
-import org.exist.xmldb.EXistResource;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -53,7 +47,9 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
 	public final static FunctionSignature signatures[] = {
         new FunctionSignature(
 			new QName("created", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns the creation date",
+			"Returns the creation date of a resource in the collection specified by $a. " +
+			"The collection can be passed as a simple collection " +
+			"path, an XMLDB URI or a collection object (obtained from the collection function).",
 			new SequenceType[] {
                 new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
                 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
@@ -62,7 +58,8 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
         ),
 		new FunctionSignature(
 			new QName("created", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns the creation date",
+			"Returns the creation date of a collection. The collection can be passed as a simple collection "
+			+ "path, an XMLDB URI or a collection object (obtained from the collection function).",
 			new SequenceType[] {
 					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
 			},

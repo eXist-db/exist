@@ -43,8 +43,10 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("create-collection", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
-			"Create a new collection as a child of the collection object passed as "
-					+ "first argument. The second argument specifies the name of the new "
+					"Create a new collection as a child of the collection specified in the "
+					+ "first argument. The collection can be passed as a simple collection "
+					+ "path, an XMLDB URI or as a collection object (obtained from the collection function)."
+					+ "The second argument specifies the name of the new "
 					+ "collection.",
 			new SequenceType[]{
 					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),

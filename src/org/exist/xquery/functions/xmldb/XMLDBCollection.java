@@ -47,7 +47,8 @@ public class XMLDBCollection extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("collection", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Get a reference to a collection identified by the XMLDB URI passed " +
+			"Get a reference to a collection. The collection is identified by the first argument, " +
+			"which is either a collection path like '/db' or an XMLDB URI like 'xmldb:exist://localhost:8081/db'. " +
 			"as first argument. The second argument should specify the name of " +
 			"a valid user, the third is the password. The method returns a Java object " +
 			"type, which can then be used as argument to the create-collection or store " +

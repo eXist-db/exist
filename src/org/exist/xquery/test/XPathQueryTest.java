@@ -153,8 +153,9 @@ public class XPathQueryTest extends TestCase {
 
 			queryResource(service, "strings.xml", "/test/string[starts-with(string(.), 'Hello')]", 2);
 			
-			queryResource(service, "strings.xml", "sum(/test/item/price)", 0,
+			result = queryResource(service, "strings.xml", "count(/test/item/price)", 1,
 					"Query should return an empty set (wrong document)");
+			assertEquals("0", result.getResource(0).getContent());
 		} catch (XMLDBException e) {
 			System.out.println("testStrings(): XMLDBException: "+e);
 			fail(e.getMessage());
