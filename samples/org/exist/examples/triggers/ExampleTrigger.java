@@ -54,8 +54,7 @@ public class ExampleTrigger extends FilteringTrigger {
 		getLogger().debug(xupdate);
 		// create a document set containing "contents.xml"
 		DocumentSet docs = new DocumentSet();
-		docs.add(this.doc);
-		System.out.println("doc is " + this.doc.hashCode());
+		docs.add(doc);
 		try {
 			// IMPORTANT: temporarily disable triggers on the collection.
 			// We would end up in infinite recursion if we don't do that
@@ -90,7 +89,6 @@ public class ExampleTrigger extends FilteringTrigger {
 		if(contentsFile == null)
 			contentsFile = "contents.xml";
 		// try to retrieve the contents file
-		System.out.println(parent.toString());
 		this.doc = parent.getDocument(broker, contentsFile);
 		if(this.doc == null)
 			// doesn't exist yet: create it
