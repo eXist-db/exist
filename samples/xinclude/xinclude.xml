@@ -113,5 +113,11 @@
 					href="disclaimer.xml#xpointer(//comment:comment)xmlns(t=http://nop.com)xmlns(comment=http://test.org)"/>
 			</xml-source>
         </section>
+        <section>
+            <title>Including the Results of a Stored XQuery</title>
+            <xml-source>
+                <xi:include href="display-collection.xq"/>
+            </xml-source>
+        </section>
     </chapter>
 </book>

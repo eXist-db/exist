@@ -68,17 +68,29 @@ public class XQuery {
     
     public CompiledXQuery compile(XQueryContext context, Source source) 
     throws XPathException, IOException {
+        return compile(context, source, false);
+    }
+    
+    public CompiledXQuery compile(XQueryContext context, Source source, boolean xpointer) 
+    throws XPathException, IOException {
         Reader reader = source.getReader();
-        return compile(context, reader);
+        return compile(context, reader, xpointer);
     }
     
     public CompiledXQuery compile(XQueryContext context, Reader reader) throws XPathException {
+        return compile(context, reader, false);
+    }
+    
+    public CompiledXQuery compile(XQueryContext context, Reader reader, boolean xpointer) throws XPathException {
         long start = System.currentTimeMillis();
         XQueryLexer lexer = new XQueryLexer(context, reader);
 		XQueryParser parser = new XQueryParser(lexer);
 		XQueryTreeParser treeParser = new XQueryTreeParser(context);
 		try {
-            parser.xpath();
+            if (xpointer)
+                parser.xpointer();
+            else
+                parser.xpath();
             if (parser.foundErrors()) {
             	LOG.debug(parser.getErrorMessage());
             	throw new XPathException(
@@ -88,7 +100,10 @@ public class XQuery {
             AST ast = parser.getAST();
 //            LOG.debug("Generated AST: " + ast.toStringTree());
             PathExpr expr = new PathExpr(context);
-            treeParser.xpath(ast, expr);
+            if (xpointer)
+                treeParser.xpointer(ast, expr);
+            else
+                treeParser.xpath(ast, expr);
             if (treeParser.foundErrors()) {
             	throw new XPathException(
             		treeParser.getErrorMessage(),

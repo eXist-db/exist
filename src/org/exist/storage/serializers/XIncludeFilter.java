@@ -21,34 +21,34 @@
 */
 package org.exist.storage.serializers;
 
-import java.io.StringReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
+import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.source.DBSource;
+import org.exist.source.Source;
+import org.exist.source.StringSource;
+import org.exist.storage.XQueryPool;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
-import org.exist.xquery.PathExpr;
+import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.parser.XQueryLexer;
-import org.exist.xquery.parser.XQueryParser;
-import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
-
-import antlr.RecognitionException;
-import antlr.TokenStreamException;
-import antlr.collections.AST;
 
 /**
  * A filter that listens for XInclude elements in the stream
@@ -209,43 +209,55 @@ public class XIncludeFilter implements Receiver {
 			 */
 			if (doc == null && xpointer == null)
 				throw new SAXException("document " + docName + " not found");
-			if (xpointer == null)
+            
+            /* Check if the document is a stored XQuery */
+            boolean xqueryDoc = false;
+            if (doc != null && doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+                xqueryDoc = "application/xquery".equals(doc.getMimeType());
+            }
+            
+			if (xpointer == null && !xqueryDoc)
 				// no xpointer found - just serialize the doc
 				serializer.serializeToReceiver(doc, false);
 			else {
-				// process the xpointer
-				try {
-					XQueryContext context = new XQueryContext(serializer.broker);
-					if(doc != null)
-						context.setStaticallyKnownDocuments(new String[] { doc.getName() } );
-					else
-						context.setStaticallyKnownDocuments(new String[] { docName });
-					xpointer = checkNamespaces(context, xpointer);
-					context.declareNamespaces(namespaces);
+				// process the xpointer or the stored XQuery
+				try { 
+                    Source source;
+                    if (xpointer == null)
+                        source = new DBSource(serializer.broker, (BinaryDocument) doc, true);
+                    else {
+                        xpointer = checkNamespaces(xpointer);
+                        source = new StringSource(xpointer);
+                    }
+                    XQuery xquery = serializer.broker.getXQueryService();
+                    XQueryPool pool = xquery.getXQueryPool();
+                    XQueryContext context;
+                    CompiledXQuery compiled = pool.borrowCompiledXQuery(serializer.broker, source);
+                    if (compiled != null)
+                        context = compiled.getContext();
+                    else
+                        context = xquery.newContext();
+                    context.declareNamespaces(namespaces);
+                    context.declareNamespace("xinclude", XINCLUDE_NS);
+                    context.declareVariable("xinclude:current-doc", document.getFileName());
+                    context.declareVariable("xinclude:current-collection", document.getCollection().getName());
+                    if (xpointer != null) {
+    					if(doc != null)
+    						context.setStaticallyKnownDocuments(new String[] { doc.getName() } );
+    					else
+    						context.setStaticallyKnownDocuments(new String[] { docName });
+                    }
 					
-					context.declareNamespace("xinclude", XINCLUDE_NS);
-					context.declareVariable("xinclude:current-doc", document.getName());
-					
-					XQueryLexer lexer = new XQueryLexer(context, new StringReader(xpointer));
-					XQueryParser parser = new XQueryParser(lexer);
-					XQueryTreeParser treeParser = new XQueryTreeParser(context);
-					parser.xpointer();
-					if (parser.foundErrors()) {
-						throw new SAXException(parser.getErrorMessage());
-					}
-
-					AST ast = parser.getAST();
-
-					PathExpr expr = new PathExpr(context);
-					treeParser.xpointer(ast, expr);
-					if (treeParser.foundErrors()) {
-						throw new SAXException(treeParser.getErrorMessage());
-					}
-					LOG.info("xpointer query: " + ExpressionDumper.dump(expr));
-					long start = System.currentTimeMillis();
-					expr.analyze(null, 0);
-					expr.reset();
-					Sequence seq = expr.eval(null, null);
+                    if(compiled == null) {
+                        try {
+                            compiled = xquery.compile(context, source, xpointer != null);
+                        } catch (IOException e) {
+                            throw new SAXException("I/O error while reading query for xinclude: " + e.getMessage(), e);
+                        }
+                    }
+                    LOG.info("xpointer query: " + ExpressionDumper.dump((Expression) compiled));
+                    Sequence seq = xquery.execute(compiled, null);
+                    
 					if(Type.subTypeOf(seq.getItemType(), Type.NODE)) {
 						LOG.info("xpointer found: " + seq.getLength());
 						
@@ -262,14 +274,9 @@ public class XIncludeFilter implements Receiver {
 						}
 					}
 
-				} catch (RecognitionException e) {
-					LOG.warn("xpointer error", e);
-					throw new SAXException(e);
-				} catch (TokenStreamException e) {
-					LOG.warn("xpointer error", e);
-					throw new SAXException(e);
 				} catch (XPathException e) {
-					throw new SAXException(e);
+					LOG.warn("xpointer error", e);
+					throw new SAXException("Error while processing XInclude expression: " + e.getMessage(), e);
 				}
 			}
 		}
@@ -295,7 +302,7 @@ public class XIncludeFilter implements Receiver {
 	 * @return
 	 * @throws XPathException
 	 */
-	private String checkNamespaces(XQueryContext context, String xpointer) throws XPathException {
+	private String checkNamespaces(String xpointer) throws XPathException {
 		int p0 = -1;
 		while((p0 = xpointer.indexOf("xmlns(")) > -1) {
 			if(p0 < 0)
