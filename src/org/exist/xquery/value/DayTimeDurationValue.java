@@ -40,6 +40,7 @@ public class DayTimeDurationValue extends DurationValue {
 		this.second = other.second;
 		this.millisecond = other.millisecond;
 		this.negative = other.negative;
+		normalize();
 	}
 
 	public DayTimeDurationValue(long millis) {
@@ -145,6 +146,7 @@ public class DayTimeDurationValue extends DurationValue {
 			}
 			p++;
 		}
+		normalize();
 	}
 
 	/* (non-Javadoc)
@@ -175,20 +177,20 @@ public class DayTimeDurationValue extends DurationValue {
 	
 	public void normalize() {
 		if(millisecond >= 1000) {
-			second += (millisecond / 1000);
-			millisecond = millisecond % 1000;
+			second += millisecond / 1000;
+			millisecond %= 1000;
 		}
-		if(second > 60) {
-			minute += (second / 60);
-			second = second % 60;
+		if(second >= 60) {
+			minute += second / 60;
+			second %= 60;
 		}
-		if(minute > 60) {
-			hour += (minute / 60);
-			minute = minute % 60;
+		if(minute >= 60) {
+			hour += minute / 60;
+			minute %= 60;
 		}
-		if(hour > 24) {
-			day += (hour / 24);
-			hour = hour % 24;
+		if(hour >= 24) {
+			day += hour / 24;
+			hour %= 24;
 		}
 	}
 	
