@@ -460,10 +460,9 @@ public class NativeValueIndex {
                         }
                     }
                     // write out the updated list
-                    ids = idList.getData();
+                    ids = newList.getData();
 	                Arrays.sort(ids);
 	                len = ids.length;
-                    
                     os.writeInt(doc.getDocId());
                     os.writeInt(len);
                     last = 0;
@@ -656,7 +655,7 @@ public class NativeValueIndex {
                 	for (int j = 0; j < len; j++) {
                 		gid = gid + is.readLong();
                 		current = new NodeProxy(doc, gid, Node.TEXT_NODE);
-                		
+						
                 		// if a context set is specified, we can directly check if the
                 		// matching text node is a descendant of one of the nodes
                 		// in the context set.
