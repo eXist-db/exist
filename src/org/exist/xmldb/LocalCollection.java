@@ -48,6 +48,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.LockException;
 import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.Service;
@@ -83,6 +84,8 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	protected User user = null;
 	protected ArrayList observers = new ArrayList(1);
 	protected boolean needsSync = false;
+
+	private XMLReader userReader = null;
 
 	/**
 	 * Create a collection with no parent (root collection).
@@ -132,6 +135,9 @@ public class LocalCollection extends Observable implements CollectionImpl {
 				throw new XMLDBException(
 					ErrorCodes.NO_SUCH_COLLECTION,
 					"collection not found");
+			
+			collection.setReader(userReader);
+			
 			return collection;
 		} catch (EXistException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
@@ -515,4 +521,11 @@ public class LocalCollection extends Observable implements CollectionImpl {
     public boolean isRemoteCollection() throws XMLDBException {
         return false;
     }
+
+	/** set user-defined Reader 
+	 * @param dataSource
+*/
+	public void setReader(XMLReader reader){
+			userReader = reader;
+	}
 }
