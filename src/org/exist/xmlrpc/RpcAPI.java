@@ -714,6 +714,12 @@ public interface RpcAPI {
 	boolean moveResource(User user, String docPath, String destinationPath, String newName) 
 	throws EXistException, PermissionDeniedException;
 	
+	boolean copyCollection(User user, String collectionPath, String destinationPath, String newName) 
+	throws EXistException, PermissionDeniedException;
+	
+	boolean copyResource(User user, String docPath, String destinationPath, String newName) 
+	throws EXistException, PermissionDeniedException;
+	
 	boolean reindexCollection(User user, String name)
 	throws EXistException, PermissionDeniedException;
 

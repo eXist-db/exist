@@ -943,6 +943,20 @@ public class RpcServer implements RpcAPI {
         }
     }
 
+    public boolean copyCollection(User user, String collectionPath,
+    String destinationPath, String newName) throws EXistException,
+    PermissionDeniedException {
+    	RpcConnection con = pool.get();
+        try {
+            return con.moveOrCopyCollection(user, collectionPath, destinationPath, newName, false);
+        } catch (Exception e) {
+            handleException(e);
+            return false;
+        } finally {
+            con.synchronize();
+            pool.release(con);
+        }
+    }
     
     /* (non-Javadoc)
      * @see org.exist.xmlrpc.RpcAPI#moveCollection(org.exist.security.User, java.lang.String, java.lang.String, java.lang.String)
@@ -952,7 +966,7 @@ public class RpcServer implements RpcAPI {
             PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
-            return con.moveCollection(user, collectionPath, destinationPath, newName);
+            return con.moveOrCopyCollection(user, collectionPath, destinationPath, newName, true);
         } catch (Exception e) {
             handleException(e);
             return false;
@@ -971,7 +985,22 @@ public class RpcServer implements RpcAPI {
             PermissionDeniedException {
         RpcConnection con = pool.get();
         try {
-            return con.moveResource(user, docPath, destinationPath, newName);
+            return con.moveOrCopyResource(user, docPath, destinationPath, newName, true);
+        } catch (Exception e) {
+            handleException(e);
+            return false;
+        } finally {
+            con.synchronize();
+            pool.release(con);
+        }
+    }
+    
+    public boolean copyResource(User user, String docPath,
+            String destinationPath, String newName) throws EXistException,
+            PermissionDeniedException {
+        RpcConnection con = pool.get();
+        try {
+            return con.moveOrCopyResource(user, docPath, destinationPath, newName, false);
         } catch (Exception e) {
             handleException(e);
             return false;
