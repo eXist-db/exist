@@ -23,6 +23,7 @@
 
 package org.exist.xquery.value;
 
+import java.text.Collator;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -54,7 +55,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 
 	public abstract AtomicValue convertTo(int requiredType) throws XPathException;
 
-	public abstract boolean compareTo(int operator, AtomicValue other)
+	public abstract boolean compareTo(Collator collator, int operator, AtomicValue other)
 		throws XPathException;
 
 	public int getPart(int part) {

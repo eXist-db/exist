@@ -1,5 +1,7 @@
 package org.exist.xquery.value;
 
+import java.text.Collator;
+
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
@@ -28,7 +30,7 @@ public abstract class NumericValue extends ComputableValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 	 */
-	public boolean compareTo(int operator, AtomicValue other)
+	public boolean compareTo(Collator collator, int operator, AtomicValue other)
 		throws XPathException {
 		if(Type.subTypeOf(other.getType(), Type.NUMBER)) {
 			double otherVal = ((NumericValue)other).getDouble();
@@ -58,7 +60,7 @@ public abstract class NumericValue extends ComputableValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
 	 */
-	public int compareTo(AtomicValue other) throws XPathException {
+	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 		if(Type.subTypeOf(other.getType(), Type.NUMBER)) {
 			double otherVal = ((NumericValue)other).getDouble();
 			double val = getDouble();

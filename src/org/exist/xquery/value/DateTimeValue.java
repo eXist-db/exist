@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.value;
 
+import java.text.Collator;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.SimpleTimeZone;
@@ -227,7 +228,7 @@ public class DateTimeValue extends AbstractDateTimeValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 	 */
-	public boolean compareTo(int operator, AtomicValue other) throws XPathException {
+	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.DATE_TIME) {
 			int cmp = date.compareTo(((DateTimeValue) other).date);
 			switch(operator) {
@@ -255,7 +256,7 @@ public class DateTimeValue extends AbstractDateTimeValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
 	 */
-	public int compareTo(AtomicValue other) throws XPathException {
+	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.DATE_TIME)
 			return date.compareTo(((DateTimeValue) other).date);
 		else

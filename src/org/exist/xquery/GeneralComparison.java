@@ -338,7 +338,7 @@ public class GeneralComparison extends BinaryOp {
 				case Constants.TRUNC_BOTH:
 					return lv.contains(rv);
 				default:
-					return lv.compareTo(relation, rv);
+					return lv.compareTo(context.getDefaultCollator(), relation, rv);
 			}
 		} catch (XPathException e) {
 			e.setASTNode(getASTNode());

@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions;
 
+import java.text.Collator;
 import java.util.Comparator;
 import java.util.TreeSet;
 
@@ -84,7 +85,7 @@ public class FunDistinctValues extends Function {
 			contextSequence = contextItem.toSequence();
 		long start = System.currentTimeMillis();
 		Sequence values = getArgument(0).eval(contextSequence);
-		TreeSet set = new TreeSet(new ValueComparator());
+		TreeSet set = new TreeSet(new ValueComparator(context.getCollator(null)));
 		ValueSequence result = new ValueSequence();
 		AtomicValue value;
 		for (SequenceIterator i = values.iterate(); i.hasNext();) {
@@ -103,12 +104,19 @@ public class FunDistinctValues extends Function {
 	}
 
 	private final static class ValueComparator implements Comparator {
+		
+		Collator collator;
+		
+		public ValueComparator(Collator collator) {
+			this.collator = collator;
+		}
+		
 		/* (non-Javadoc)
 		 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 		 */
 		public int compare(Object o1, Object o2) {
 			try {
-				return ((AtomicValue) o1).compareTo((AtomicValue) o2);
+				return ((AtomicValue) o1).compareTo(collator, (AtomicValue) o2);
 			} catch (XPathException e) {
 				throw new IllegalArgumentException("cannot compare values");
 			}

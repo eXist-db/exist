@@ -26,6 +26,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.text.Collator;
 
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
@@ -81,7 +82,7 @@ public class AnyURIValue extends AtomicValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 	 */
-	public boolean compareTo(int operator, AtomicValue other) throws XPathException {
+	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.ANY_URI) {
 			String otherURI = other.getStringValue();
 			int cmp = uri.compareTo(otherURI);
@@ -97,18 +98,18 @@ public class AnyURIValue extends AtomicValue {
 							+ " to xs:anyURI");
 			}
 		} else
-			return compareTo(operator, other.convertTo(Type.ANY_URI));
+			return compareTo(collator, operator, other.convertTo(Type.ANY_URI));
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
 	 */
-	public int compareTo(AtomicValue other) throws XPathException {
+	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.ANY_URI) {
 			String otherURI = other.getStringValue();
 			return uri.compareTo(otherURI);
 		} else {
-			return compareTo(other.convertTo(Type.ANY_URI));
+			return compareTo(collator, other.convertTo(Type.ANY_URI));
 		}
 	}
 

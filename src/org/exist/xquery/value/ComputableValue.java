@@ -22,6 +22,8 @@
  */
 package org.exist.xquery.value;
 
+import java.text.Collator;
+
 import org.exist.xquery.XPathException;
 
 /**
@@ -42,12 +44,12 @@ public abstract class ComputableValue extends AtomicValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 	 */
-	public abstract boolean compareTo(int operator, AtomicValue other) throws XPathException;
+	public abstract boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException;
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
 	 */
-	public abstract int compareTo(AtomicValue other) throws XPathException;
+	public abstract int compareTo(Collator collator, AtomicValue other) throws XPathException;
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
