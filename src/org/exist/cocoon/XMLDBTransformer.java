@@ -66,7 +66,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 	public static final String ERRMSG_ELEMENT = "message";
 	public static final String STACKTRACE_ELEMENT = "stacktrace";
 
-	public static final String PREFIX = "xmldb:";
+	public static final String PREFIX = "xdb:";
 
 	public static final String FATAL_ERROR = "fatal";
 	public static final String WARNING = "warn";
