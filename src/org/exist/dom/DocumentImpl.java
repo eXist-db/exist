@@ -824,7 +824,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	/*
 	 * @see org.exist.dom.NodeImpl#insertBefore(org.w3c.dom.NodeList, org.w3c.dom.Node)
 	 */
-	public Node insertBefore(NodeList nodes, Node refChild) throws DOMException {
+	public void insertBefore(NodeList nodes, Node refChild) throws DOMException {
 		if (!(refChild instanceof NodeImpl))
 			throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
 		NodeImpl ref = (NodeImpl) refChild;
@@ -848,10 +848,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			childList[++idx] = prev.internalAddress;
 		}
 		broker.storeDocument(this);
-		return prev;
 	}
 
-	public Node insertAfter(NodeList nodes, Node refChild) throws DOMException {
+	public void insertAfter(NodeList nodes, Node refChild) throws DOMException {
 		if (!(refChild instanceof NodeImpl))
 			throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
 		NodeImpl ref = (NodeImpl) refChild;
@@ -875,7 +874,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			childList[idx] = prev.internalAddress;
 		}
 		broker.storeDocument(this);
-		return prev;
 	}
 
 	private Node appendChild(NodeImpl last, Node child) throws DOMException {
