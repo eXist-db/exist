@@ -110,7 +110,8 @@
         <echo message="Compiling with Java ${ant.java.version}, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
         <javac debug="${build.debug}" deprecation="${build.deprecation}" 
 			destdir="${build.classes}" encoding="UTF-8"
-			optimize="${build.optimize}" srcdir="${src}" >
+			optimize="${build.optimize}" srcdir="${src}" 
+        	source="1.4">
 			<!-- jmv target="1.4" -->
         	<include name="org/**"/>
 			<include name="org/exist/schema/**"/>
@@ -281,6 +282,7 @@ Running tests on a local database instance
 				todir="${junit.reports}">
 			</test>
 			<test fork="yes" name="org.exist.xupdate.test.AllTests" todir="${junit.reports}"/>
+        	<test fork="yes" name="org.exist.xquery.test.AllTests" todir="${junit.reports}"/>
 			<!-- Execute all other tests except those that have to be called
 				 manually.
 		    -->
