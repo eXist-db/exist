@@ -24,6 +24,7 @@ package org.exist.wrapper;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import org.exist.start.Classpath;
 import org.tanukisoftware.wrapper.WrapperListener;
@@ -46,26 +47,41 @@ public class Main implements WrapperListener {
 	 * Start the included Jetty server using reflection. The ClassLoader is set up through eXist's
 	 * bootstrap loader, so the wrapper doesn't need to know all jars.
 	 * 
+	 * The first argument passed to this method determines the run mode. It should
+	 * be either "jetty" or "standalone".
+	 * 
 	 * @see org.tanukisoftware.wrapper.WrapperListener#start(java.lang.String[])
 	 */
 	public Integer start(String[] args) {
 		System.setProperty("exist.register-shutdown-hook", "false");
 		System.err.println("jetty.home = " + System.getProperty("jetty.home"));
 		try {
-			org.exist.start.Main loader = new org.exist.start.Main("jetty");
+			// use the bootstrap loader to autodetect EXIST_HOME and
+			// construct a correct classpath
+			org.exist.start.Main loader = new org.exist.start.Main(args[0]);
 			File homeDir = loader.detectHome();
 			Classpath classpath = loader.constructClasspath(homeDir, args);
 			ClassLoader cl = classpath.getClassLoader(null);
 			Thread.currentThread().setContextClassLoader(cl);
 			
-			klazz = cl.loadClass("org.exist.JettyStart");
+			// determine class to load
+			if (args[0].equals("jetty"))
+				klazz = cl.loadClass("org.exist.JettyStart");
+			else
+				klazz = cl.loadClass("org.exist.StandaloneServer");
+			
+			// find the run() method in the class
 			Class[] methodParamTypes = new Class[1];
 			methodParamTypes[0] = args.getClass();
 			Method method = klazz.getDeclaredMethod("run", methodParamTypes);
 			
+			// create a new instance and invoke the run() method
 			app = klazz.newInstance();
+			String[] myArgs = new String[args.length - 1];
+			for (int i = 1; i < args.length; i++)
+				myArgs[i - 1] = args[i];
 			Object[] params = new Object[1];
-			params[0] = args;
+			params[0] = myArgs;
 			method.invoke(app, params);
 			
 			return null;

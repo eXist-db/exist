@@ -230,7 +230,11 @@
 			todir="${build.classes}/org/exist" filtering="true"/>
 		<copy file="${src}/org/exist/util/mime-types.xml"
 			todir="${build.classes}/org/exist/util"/>
-
+		<copy todir="${build.classes}/org/exist/http/webdav/methods">
+    		<fileset dir="${src}/org/exist/http/webdav/methods">
+				<include name="**.xq"/>
+			</fileset>
+    	</copy>
         <echo message="Creating exist.jar ..."/>
         <jar basedir="${build.classes}" compress="true" jarfile="exist.jar">
        		<exclude name="org/exist/start/**"/>
@@ -274,7 +278,7 @@
 	<!-- ================================================================== -->
 	<!-- Rebuild all                                                        -->
 	<!-- ================================================================== -->
-	<target name="rebuild" depends="clean,all"/>
+	<target name="rebuild" depends="clean,all,wrapper"/>
 
     <!-- ================================================================== -->
     <!-- Run JUnit tests                                                    -->
