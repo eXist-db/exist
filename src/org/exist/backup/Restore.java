@@ -199,7 +199,12 @@ public class Restore extends DefaultHandler {
 					UserManagementService service =
 						(UserManagementService) current.getService("UserManagementService", "1.0");
 					User u = new User(owner, null, group);
-					service.chown(res, u, group);
+					try {
+						service.chown(res, u, group);
+					} catch (XMLDBException e1) {
+						if(dialog != null)
+							dialog.displayMessage("failed to change owner on document " + name + "; skipping ...");
+					}
 					service.chmod(res, Integer.parseInt(perms, 8));
 					if(dialog != null)
 						dialog.displayMessage("restored " + name);
