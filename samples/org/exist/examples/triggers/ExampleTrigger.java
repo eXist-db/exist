@@ -55,6 +55,7 @@ public class ExampleTrigger extends FilteringTrigger {
 		// create a document set containing "contents.xml"
 		DocumentSet docs = new DocumentSet();
 		docs.add(this.doc);
+		System.out.println("doc is " + this.doc.hashCode());
 		try {
 			// IMPORTANT: temporarily disable triggers on the collection.
 			// We would end up in infinite recursion if we don't do that
@@ -67,6 +68,7 @@ public class ExampleTrigger extends FilteringTrigger {
 				modifications[i].process();
 			broker.flush();
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new TriggerException(e.getMessage(), e);
 		} finally {
 			// IMPORTANT: reenable trigger processing for the collection.
@@ -88,7 +90,8 @@ public class ExampleTrigger extends FilteringTrigger {
 		if(contentsFile == null)
 			contentsFile = "contents.xml";
 		// try to retrieve the contents file
-		this.doc = parent.getDocument(broker, parent.getName() + '/' + contentsFile);
+		System.out.println(parent.toString());
+		this.doc = parent.getDocument(broker, contentsFile);
 		if(this.doc == null)
 			// doesn't exist yet: create it
 			try {
