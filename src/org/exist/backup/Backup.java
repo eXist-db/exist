@@ -46,6 +46,8 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
+import org.exist.xmldb.EXistResource;
+import org.exist.xmldb.CollectionImpl; 
 
 public class Backup {
 
@@ -141,6 +143,7 @@ public class Backup {
 		serializer.startDocument();
 		serializer.startPrefixMapping("", NS);
 		// write <collection> element
+		CollectionImpl cur = (CollectionImpl)current;
 		AttributesImpl attr = new AttributesImpl();
 		attr.addAttribute(NS, "name", "name", "CDATA", current.getName());
 		attr.addAttribute(NS, "owner", "owner", "CDATA", currentPerms.getOwner());
@@ -151,6 +154,12 @@ public class Backup {
 			"mode",
 			"CDATA",
 			Integer.toOctalString(currentPerms.getPermissions()));
+		attr.addAttribute(
+				NS,
+				"created",
+				"created",
+				"CDATA",
+				cur.getCreationTime().toString());
 		serializer.startElement(NS, "collection", "collection", attr);
 
 		// scan through resources
@@ -192,8 +201,9 @@ public class Backup {
 			        continue;
 			    }
 			}
+			EXistResource ris = (EXistResource)resource;
 			
-			// store permissions
+			//store permissions
 			attr.clear();
 			attr.addAttribute(NS, "type", "type", "CDATA", resource.getResourceType());
 			attr.addAttribute(NS, "name", "name", "CDATA", resources[i]);
@@ -205,6 +215,19 @@ public class Backup {
 				"mode",
 				"CDATA",
 				Integer.toOctalString(perms[i].getPermissions()));
+			attr.addAttribute(
+					NS,
+					"created",
+					"created",
+					"CDATA",
+					ris.getCreationTime().toString() );
+			attr.addAttribute(
+					NS,
+					"modified",
+					"modified",
+					"CDATA",
+					ris.getLastModificationTime().toString() );
+			
 			serializer.startElement(NS, "resource", "resource", attr);
 			serializer.endElement(NS, "resource", "resource");
 		}
