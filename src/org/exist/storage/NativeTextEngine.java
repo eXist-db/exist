@@ -102,6 +102,7 @@ public class NativeTextEngine extends TextSearchEngine {
 
 	public final static byte ATTRIBUTE_SECTION = 1;
 	public final static byte TEXT_SECTION = 0;
+	
 	protected BFile dbWords;
 	protected InvertedIndex invIdx;
 	protected boolean useCompression = false;

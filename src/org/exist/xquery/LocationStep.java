@@ -119,6 +119,7 @@ public class LocationStep extends Step {
 					 applyPredicate(contextSequence, cachedResult);
 			}
 		}
+//		LOG.debug("processing " + pprint());
 		Sequence temp;
 		switch (axis) {
 			case Constants.DESCENDANT_AXIS :
@@ -177,6 +178,7 @@ public class LocationStep extends Step {
 			default :
 				throw new IllegalArgumentException("Unsupported axis specified");
 		}
+//		LOG.debug("Found: " + temp.getLength());
 		if(contextSequence instanceof NodeSet)
 			timestamp = ((NodeSet)contextSequence).getState();
 		cachedResult = temp;
