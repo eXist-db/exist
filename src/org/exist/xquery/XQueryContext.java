@@ -449,9 +449,11 @@ public class XQueryContext {
 	 */
 	public DocumentSet getStaticallyKnownDocuments() throws XPathException {
 		if(staticDocuments != null)
+            // the document set has already been built, return it
 			return staticDocuments;
 		staticDocuments = new DocumentSet();
 		if(staticDocumentPaths == null)
+            // no path defined: return all documents in the db 
 			broker.getAllDocuments(staticDocuments);
 		else {
 			DocumentImpl doc;
@@ -483,6 +485,8 @@ public class XQueryContext {
 	/**
 	 * Should loaded documents be locked?
 	 * 
+     * @see #setLockDocumentsOnLoad(boolean)
+     * 
 	 * @return
 	 */
 	public boolean lockDocumentsOnLoad() {
@@ -511,12 +515,20 @@ public class XQueryContext {
 	 * Returns the set of documents that have been loaded and
 	 * locked during query execution.
 	 * 
+     * @see #setLockDocumentsOnLoad(boolean)
+     * 
 	 * @return
 	 */
 	public DocumentSet getLockedDocuments() {
 	    return lockedDocuments;
 	}
 	
+    /**
+     * Release all locks on documents that have been locked
+     * during query execution.
+     *
+     *@see #setLockDocumentsOnLoad(boolean)
+     */
 	public void releaseLockedDocuments() {
 	    if(lockedDocuments != null)
 	        lockedDocuments.unlock(false);
@@ -524,6 +536,15 @@ public class XQueryContext {
 		lockedDocuments = null;
 	}
 	
+    /**
+     * Release all locks on documents not being referenced by the sequence.
+     * This is called after query execution has completed. Only locks on those
+     * documents contained in the final result set will be preserved. All other
+     * locks are released as they are no longer needed.
+     * 
+     * @param seq
+     * @return
+     */
 	public DocumentSet releaseUnusedDocuments(Sequence seq) {
 	    if(lockedDocuments == null)
 	        return null;
@@ -546,18 +567,19 @@ public class XQueryContext {
             if(usedDocs.contains(next.getDocId())) {
                remaining.add(next); 
             } else {
-                LOG.debug("Releasing lock on " + next.getName());
+//                LOG.debug("Releasing lock on " + next.getName());
                 next.getUpdateLock().release(Lock.READ_LOCK);
             }
         }
-        LOG.debug("Locks remaining: " + remaining.getLength());
+//        LOG.debug("Locks remaining: " + remaining.getLength());
         lockDocumentsOnLoad = false;
 		lockedDocuments = null;
         return remaining;
     }
 	
 	/**
-	 * Prepare this XQueryContext to be reused.
+	 * Prepare this XQueryContext to be reused. This should be
+     * called when adding an XQuery to the cache.
 	 */
 	public void reset() {
 		builder = new MemTreeBuilder(this);

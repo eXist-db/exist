@@ -99,6 +99,9 @@ public class ExtDocument extends Function {
 		throws XPathException {
 	    DocumentSet docs = null;
 	    Sequence result = null;
+	    // check if the loaded documents should remain locked
+        boolean lockOnLoad = context.lockDocumentsOnLoad();
+        boolean cacheIsValid = false;
 	    if (getArgumentCount() == 0) {
 	        if(cached != null) {
 	            result = cached;
@@ -109,7 +112,6 @@ public class ExtDocument extends Function {
 	        }
 	    } else {
 		    List args = getParameterValues(contextSequence, contextItem);
-			boolean cacheIsValid = false;
 			if(cachedArgs != null)
 			    cacheIsValid = compareArguments(cachedArgs, args);
 			if(cacheIsValid) {
@@ -138,18 +140,27 @@ public class ExtDocument extends Function {
 			}
 	    }
 	    try {
-	        docs.lock(false);
+            if(!cacheIsValid)
+                // wait for pending updates
+                docs.lock(false);
 	        // wait for pending updates
 			if(result == null) {
 			    result = new ExtArrayNodeSet(docs.getLength(), 1);
+                DocumentImpl doc;
 				for (Iterator i = docs.iterator(); i.hasNext();) {
-					result.add(new NodeProxy((DocumentImpl) i.next(), -1, Node.DOCUMENT_NODE));
+                    doc = (DocumentImpl) i.next();
+					result.add(new NodeProxy(doc, -1, Node.DOCUMENT_NODE));
+                    if(lockOnLoad) {
+                        context.getLockedDocuments().add(doc);
+                    }
 				}
 			}
 	    } catch (LockException e) {
             throw new XPathException(getASTNode(), "Could not acquire lock on document set.");
         } finally {
-	        docs.unlock(false);
+            if(!(cacheIsValid || lockOnLoad))
+                // release all locks
+                docs.unlock(false);
 	    }
 		cached = result;
 		return result;

@@ -61,17 +61,17 @@ public class XQueryAction extends Action {
 		XPathQueryServiceImpl service = (XPathQueryServiceImpl)
 			col.getService("XPathQueryService", "1.0");
 		
-//		service.beginProtected();
+		service.beginProtected();
 		ResourceSet result = service.query(xquery);
 
 		System.out.println(Thread.currentThread().getName() + ": found " + result.getSize());
 		
-//		DefaultHandler handler = new DefaultHandler();
-//		for (int i = 0; i < result.getSize(); i++) {
-//			XMLResource next = (XMLResource) result.getResource((long)i);
-//			next.getContentAsSAX(handler);
-//		}
-//		service.endProtected();
+		DefaultHandler handler = new DefaultHandler();
+		for (int i = 0; i < result.getSize(); i++) {
+			XMLResource next = (XMLResource) result.getResource((long)i);
+			next.getContentAsSAX(handler);
+		}
+		service.endProtected();
 		
 		runningTime += (System.currentTimeMillis() - start);
 		called++;

@@ -91,42 +91,55 @@ public class FunDoc extends Function {
 			return Sequence.EMPTY_SEQUENCE;
 		String path = arg.itemAt(0).getStringValue();
 		if (path.length() == 0)
-			throw new XPathException("Invalid argument to fn:doc function: empty string is not allowed here.");
+			throw new XPathException(getASTNode(), "Invalid argument to fn:doc function: empty string is not allowed here.");
 		if (path.charAt(0) != '/')
 			path = context.getBaseURI() + '/' + path;
-		Lock dlock = null;
+
+		// check if the loaded documents should remain locked
+        boolean lockOnLoad = context.lockDocumentsOnLoad();
+        Lock dlock = null;
+        
+		// if the expression occurs in a nested context, we might have cached the
+        // document set
 		if(path.equals(cachedPath) && cachedNode != null) {
 		    dlock = cachedNode.getDocument().getUpdateLock();
 		    try {
-		        // wait for pending updates
+		        // wait for pending updates by acquiring a lock
 		        dlock.acquire(Lock.READ_LOCK);
 		        return cachedNode;
 		    } catch (LockException e) {
 		        throw new XPathException(getASTNode(), "Failed to acquire lock on document " + path);
             } finally {
-		        dlock.release(Lock.READ_LOCK);
+                dlock.release(Lock.READ_LOCK);
 		    }
 		}
-		
+        
+        DocumentImpl doc = null;
 		try {
-		    DocumentImpl doc = (DocumentImpl) context.getBroker().getDocument(path);
+            // try to open the document and acquire a lock
+		    doc = (DocumentImpl) context.getBroker().openDocument(path, Lock.READ_LOCK);
 		    if(doc == null)
 		        return Sequence.EMPTY_SEQUENCE;
-		    if(!doc.getPermissions().validate(context.getUser(), Permission.READ))
-			    throw new XPathException(getASTNode(), "Insufficient privileges to read resource " + path);
-		    // wait for currently pending updates
-		    dlock = doc.getUpdateLock();
-		    dlock.acquire(Lock.READ_LOCK);
+		    if(!doc.getPermissions().validate(context.getUser(), Permission.READ)) {
+                doc.getUpdateLock().release(Lock.READ_LOCK);
+                doc = null;
+                throw new XPathException(getASTNode(), "Insufficient privileges to read resource " + path);
+            }
 			cachedPath = path;
 			cachedNode = new NodeProxy(doc, -1, Node.DOCUMENT_NODE);
+            if(lockOnLoad) {
+                LOG.debug("Locking document: " + doc.getName());
+                // add the document to the list of locked documents
+                context.getLockedDocuments().add(doc);
+            }
 			return cachedNode;
 		} catch (PermissionDeniedException e) {
-			throw new XPathException(
+			throw new XPathException(getASTNode(),
 				"Permission denied: unable to load document " + path);
-		} catch (LockException e) {
-		    throw new XPathException(getASTNode(), "Failed to acquire read lock on document " + path);
         } finally {
-		    if(dlock != null) dlock.release(Lock.READ_LOCK);
+            // release all locks unless lockOnLoad is true
+		    if(!lockOnLoad && doc != null)
+		        doc.getUpdateLock().release(Lock.READ_LOCK);
 		}
 	}
 

@@ -59,7 +59,7 @@ public class FunctionCall extends Function {
 		setFunction(functionDef);
 	}
 	
-	public void setFunction(UserDefinedFunction functionDef) {
+	private void setFunction(UserDefinedFunction functionDef) {
 		this.functionDef = functionDef;
 		this.mySignature = functionDef.getSignature();
 		this.expression = functionDef;
@@ -83,6 +83,14 @@ public class FunctionCall extends Function {
 		expression.analyze(this, flags);
 	}
 	
+    /**
+     * Called by {@link XQueryContext} to resolve a call to a function that has not
+     * yet been declared. XQueryContext remembers all calls to undeclared functions
+     * and tries to resolve them after parsing has completed.
+     * 
+     * @param functionDef
+     * @throws XPathException
+     */
 	public void resolveForwardReference(UserDefinedFunction functionDef) throws XPathException {
 		setFunction(functionDef);
 		setArguments(arguments);
@@ -113,7 +121,6 @@ public class FunctionCall extends Function {
 		}
 		functionDef.setArguments(seq);
 		
-//		context.pushLocalContext(true);
 		LocalVariable mark = context.markLocalVariables();
 		try {
 			Sequence returnSeq = expression.eval(contextSequence, contextItem);
@@ -127,7 +134,6 @@ public class FunctionCall extends Function {
 					"]");
 			throw e;
 		} finally {
-//			context.popLocalContext();
 			context.popLocalVariables(mark);
 		}
 	}

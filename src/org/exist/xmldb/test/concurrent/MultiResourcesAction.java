@@ -47,13 +47,7 @@ public class MultiResourcesAction extends Action {
      * @see org.exist.xmldb.test.concurrent.Action#execute()
      */
     public boolean execute() throws Exception {
-        Collection parent = DatabaseManager.getCollection(collectionPath, "admin", null);
-        Collection col = parent.getChildCollection("col1");
-        if(col != null) {
-        	System.out.println("Removing collection: " + collectionPath + "/col1");
-        	DBUtils.removeCollection(parent, "col1");
-        }
-        col = DBUtils.addCollection(parent, "col1");
+        Collection col = DatabaseManager.getCollection(collectionPath, "admin", null);
         addFiles(col);
         return false;
     }
