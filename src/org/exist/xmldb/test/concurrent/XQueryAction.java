@@ -52,8 +52,6 @@ public class XQueryAction extends Action {
 	 * @see org.exist.xmldb.test.concurrent.Action#execute()
 	 */
 	public boolean execute() throws Exception {
-	    Thread.currentThread().setName("XQuery Thread");
-	    
 	    long start = System.currentTimeMillis();
 	    
 		Collection col = DatabaseManager.getCollection(collectionPath);
@@ -69,7 +67,7 @@ public class XQueryAction extends Action {
 		System.out.println(Thread.currentThread().getName() + ": found " + result.getSize());
 		
 //		DefaultHandler handler = new DefaultHandler();
-//		for (int i = 0; i < 1; i++) {
+//		for (int i = 0; i < result.getSize(); i++) {
 //			XMLResource next = (XMLResource) result.getResource((long)i);
 //			next.getContentAsSAX(handler);
 //		}
@@ -78,6 +76,7 @@ public class XQueryAction extends Action {
 		runningTime += (System.currentTimeMillis() - start);
 		called++;
 		
+		System.out.println(Thread.currentThread().getName() + ": XQuery completed.");
 		return false;
 	}
 	
