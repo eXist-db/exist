@@ -488,7 +488,10 @@ public class ArraySet extends NodeSet {
 	 *@param  mode  Description of the Parameter
 	 *@return       The descendants value
 	 */
-	public ArraySet getDescendants(ArraySet al, int mode) {
+	public ArraySet getDescendants(NodeSet other, int mode) {
+		if(!(other instanceof ArraySet))
+			return super.getDescendants(other, mode);
+		ArraySet al = (ArraySet)other;
 		if (al.counter == 0 || counter == 0)
 			return new ArraySet(1);
 		long start = System.currentTimeMillis();

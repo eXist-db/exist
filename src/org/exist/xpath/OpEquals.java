@@ -20,17 +20,22 @@
 package org.exist.xpath;
 
 import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.log4j.Category;
 import org.exist.EXistException;
 import org.exist.dom.ArraySet;
+import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.IndexPaths;
 import org.exist.storage.analysis.SimpleTokenizer;
 import org.exist.storage.analysis.TextToken;
+import org.exist.storage.analysis.Token;
+import org.exist.util.Configuration;
 
 /**
  *  compare two operands by =, <, > etc..
@@ -244,12 +249,22 @@ public class OpEquals extends BinaryOp {
 				tokenizer.setText(cmp);
 				TextToken token;
 				String term;
+				boolean foundNumeric = false;
+				// setup up an &= expression using the fulltext index
 				containsExpr = new FunContains(pool, Constants.FULLTEXT_AND);
 				for (int i = 0; i < 5 && (token = tokenizer.nextToken(true)) != null; i++) {
+					if(token.getType() == TextToken.ALPHANUM)
+						foundNumeric = true;
 					containsExpr.addTerm(token.getText());
+				} 
+				// check if all elements are indexed. If not, we can't use the
+				// fulltext index.
+				if(foundNumeric)
+					foundNumeric = checkArgumentTypes(docs);
+				if(!foundNumeric) {
+					Value temp = containsExpr.eval(docs, nodes, null);
+					nodes = (NodeSet) temp.getNodeList();
 				}
-				Value temp = containsExpr.eval(docs, nodes, null);
-				nodes = (NodeSet) temp.getNodeList();
 			}
 			// get a list of all nodes equal to ...
 			DBBroker broker = null;
@@ -311,6 +326,30 @@ public class OpEquals extends BinaryOp {
 		return new ValueNodeSet(result);
 	}
 
+	private boolean checkArgumentTypes(DocumentSet docs) {
+		DBBroker broker = null;
+		try {
+			broker = pool.get();
+			Configuration config = broker.getConfiguration();
+			Map idxPathMap = (Map) config.getProperty("indexer.map");
+			DocumentImpl doc;
+			IndexPaths idx;
+			for(Iterator i = docs.iterator(); i.hasNext(); ) {
+				doc = (DocumentImpl)i.next();
+				idx = (IndexPaths) idxPathMap.get(doc.getDoctype().getName());
+				if(idx != null && idx.isSelective())
+					return true;
+				if(idx != null && (!idx.getIncludeAlphaNum()))
+					return true;
+			}
+		} catch(EXistException e) {
+			LOG.warn("Exception while processing expression", e);
+		} finally {
+			pool.release(broker);
+		}
+		return false;
+	}
+	
 	/**
 	 *  Left argument is a number: Convert right argument to a number for every
 	 *  node in context.

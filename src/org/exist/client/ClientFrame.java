@@ -25,6 +25,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.Properties;
@@ -32,6 +34,7 @@ import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -117,7 +120,7 @@ public class ClientFrame extends JFrame {
 		this.path = path;
 		this.properties = properties;
 		this.client = client;
-		prepare();
+		//prepare();
 		setupComponents();
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent ev) {
@@ -364,7 +367,7 @@ public class ClientFrame extends JFrame {
 	}
 
 	private void uploadAction(ActionEvent ev) {
-		JFileChooser chooser = new JFileChooser();
+		JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
 		chooser.setMultiSelectionEnabled(true);
 		chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 		if (chooser.showDialog(this, "Select files or directories to store")
@@ -378,7 +381,7 @@ public class ClientFrame extends JFrame {
 							client.parse(files, upload);
 							client.getResources();
 						} catch (XMLDBException e) {
-							JOptionPane.showMessageDialog(null, "XMLDBException: " + e.getMessage());
+							showErrorMessage("XMLDBException: " + e.getMessage(), e);
 						}
 						upload.setVisible(false);
 					}
@@ -417,11 +420,11 @@ public class ClientFrame extends JFrame {
 			try {
 				backup.backup(true, this);
 			} catch (XMLDBException e) {
-				e.printStackTrace();
+				showErrorMessage("XMLDBException: " + e.getMessage(), e);
 			} catch (IOException e) {
-				e.printStackTrace();
+				showErrorMessage("IOException: " + e.getMessage(), e);
 			} catch (SAXException e) {
-				e.printStackTrace();
+				showErrorMessage("SAXException: " + e.getMessage(), e);
 			}
 		}
 	}
@@ -470,11 +473,7 @@ public class ClientFrame extends JFrame {
 			UserDialog dialog = new UserDialog(service, "Edit Users");
 			dialog.show();
 		} catch (XMLDBException e) {
-			JOptionPane.showMessageDialog(
-				this,
-				"Failed to retrieve UserManagementService",
-				"Error",
-				JOptionPane.ERROR_MESSAGE);
+			showErrorMessage("Failed to retrieve UserManagementService", e);
 			e.printStackTrace();
 		}
 	}
@@ -522,11 +521,7 @@ public class ClientFrame extends JFrame {
 				client.getResources();
 			}
 		} catch(XMLDBException e) {
-			JOptionPane.showMessageDialog(
-				this,
-				"XMLDB Exception: " + e.getMessage(),
-				"Error",
-				JOptionPane.ERROR_MESSAGE);
+			showErrorMessage("XMLDB Exception: " + e.getMessage(), e);
 			e.printStackTrace();
 		}
 	}
@@ -805,6 +800,14 @@ public class ClientFrame extends JFrame {
 		}
 		return null;
 	}
+	
+	protected void showErrorMessage(String message, Throwable t) {
+		ErrorPanel panel = new ErrorPanel(message, t);
+		JOptionPane.showOptionDialog(null, panel, "Exception",
+			JOptionPane.OK_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE,
+			null, null, null);
+		return;
+	}
 }
 
 class LoginPanel extends JPanel {
@@ -862,6 +865,28 @@ class LoginPanel extends JPanel {
 
 	public String getPassword() {
 		return new String(password.getPassword());
+	}
+}
+
+class ErrorPanel extends JPanel {
+	
+	JLabel text;
+	JTextArea stacktrace;
+	
+	public ErrorPanel(String message, Throwable t) {
+		super(false);
+		setLayout(new BorderLayout(5, 10));
+		text = new JLabel(message);
+		add(text, BorderLayout.NORTH);
+		
+		StringWriter out = new StringWriter();
+		PrintWriter writer = new PrintWriter(out);
+		t.printStackTrace(writer);
+		stacktrace = new JTextArea(out.toString(), 10, 50);
+		stacktrace.setEditable(false);
+		JScrollPane scroll = new JScrollPane(stacktrace);
+		scroll.setPreferredSize(new Dimension(200, 100));
+		add(scroll, BorderLayout.CENTER);
 	}
 }
 

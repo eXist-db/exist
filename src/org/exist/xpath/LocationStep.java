@@ -170,7 +170,7 @@ public class LocationStep extends Step {
 						return result;
 					}
 				}
-				return ((ArraySet) buf).getDescendants((ArraySet) context, ArraySet.DESCENDANT);
+				return buf.getDescendants(context, ArraySet.DESCENDANT);
 
 			} catch (EXistException e) {
 				e.printStackTrace();

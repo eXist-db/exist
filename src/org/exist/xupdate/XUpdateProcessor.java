@@ -33,6 +33,7 @@ import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -366,6 +367,15 @@ public class XUpdateProcessor implements ContentHandler {
 				}
 			}
 			charBuf.setLength(0);
+		}
+		if(inModification) {
+			ProcessingInstruction pi = doc.createProcessingInstruction(target, data);
+			if (stack.isEmpty()) {
+				fragment.appendChild(pi);
+			} else {
+				Element last = (Element) stack.peek();
+				last.appendChild(pi);
+			}
 		}
 	}
 

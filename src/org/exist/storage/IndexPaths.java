@@ -89,6 +89,19 @@ public class IndexPaths {
         excludePath.add( arr );
     }
 
+	/**
+	 * Returns false if all elements are indexed, true 
+	 * if indexation is selective.
+	 * 
+	 * @return
+	 */
+	public boolean isSelective() {
+		if((includeByDefault && excludePath.size() > 0) ||
+			((!includeByDefault) && includePath.size() > 0))
+			return true;
+		return false;
+	}
+	
     /**
      * Include attribute values?
      *

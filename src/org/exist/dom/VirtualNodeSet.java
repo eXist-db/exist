@@ -54,41 +54,69 @@ public class VirtualNodeSet extends NodeSet {
 	}
 
 	public boolean contains(DocumentImpl doc, long nodeId) {
-		NodeProxy first = getFirstParent(new NodeProxy(doc, nodeId), null, false, 0);
-		return (first != null);
+		NodeProxy first =
+			getFirstParent(new NodeProxy(doc, nodeId), null, false, 0);
+		// Timo Boehme: getFirstParent returns now only real parents
+		//              therefore test if node is child of context
+		//return (first != null);
+		return ((first != null) ||
+                        (context.get(doc, XMLUtil.getParentId(doc, nodeId)) != null));
 	}
 
 	public boolean contains(NodeProxy p) {
 		NodeProxy first = getFirstParent(p, null, false, 0);
-		return (first != null);
-	}
-
-	protected NodeProxy getFirstParent(NodeProxy node, long gid, boolean includeSelf) {
-		return getFirstParent(node, null, includeSelf, 0);
+		// Timo Boehme: getFirstParent returns now only real parents
+		//              therefore test if node is child of context
+		//return (first != null);
+		return ((first != null) ||
+                        (context.get(p.doc, XMLUtil.getParentId(p.doc, p.gid)) != null));
 	}
 
 	protected NodeProxy getFirstParent(
 		NodeProxy node,
-		NodeProxy first,
-		boolean includeSelf,
-		int recursions) {
-		// if includeSelf is true check node during first recursion
-		if (recursions == 0 && includeSelf && isOfType(node.doc, node.gid, node.nodeType, test))
+		long gid,
+		boolean includeSelf) {
+		return getFirstParent(node, null, includeSelf, true, 0);
+	}
+
+	protected NodeProxy getFirstParent(NodeProxy node, NodeProxy first,
+		boolean includeSelf, int recursions) {
+	    return getFirstParent(node, first, includeSelf, true, recursions);
+	}
+
+	protected NodeProxy getFirstParent(NodeProxy node, NodeProxy first,
+		boolean includeSelf, boolean directParent, int recursions) {
+		// if includeSelf is true set first to gid during the first recursion
+		if (recursions == 0 && includeSelf && 
+			isOfType(node.doc, node.gid, node.nodeType, test))
 			return node;
 		long pid = XMLUtil.getParentId(node.doc, node.gid);
-		if(first == null)
+		if(first == null) {
 			first = new NodeProxy(node.doc, pid, Node.ELEMENT_NODE);
-		//System.out.println(node.gid + " -> " + pid);
+			// Timo Boehme: we need a real parent (child from context)
+			return getFirstParent(first, first, false, directParent, recursions + 1);
+		}
+
+		// is pid member of the context set?
 		NodeProxy parent = context.get(node.doc, pid);
-		if (parent != null && recursions > 0)
-			return first == null ? parent : first;
-		if(pid < 0)
+
+
+		if (parent != null)
+		    // Timo Boehme: we return the ancestor which is child of context 
+		    //return first == null ? parent : first;
+			return node;
+		else if (pid < 0)
 			return null;
-		if (axis == Constants.CHILD_AXIS && recursions == 1)
+		else if (directParent && axis == Constants.CHILD_AXIS && recursions == 1)
 			return null;
 		else {
 			parent = new NodeProxy(node.doc, pid, Node.ELEMENT_NODE);
-			return getFirstParent(parent, first, false, recursions + 1);
+			return getFirstParent(
+				parent,
+				first,
+				false,
+				directParent,
+				recursions + 1);
 		}
 	}
 
@@ -127,33 +155,35 @@ public class VirtualNodeSet extends NodeSet {
 		return (type == domType);
 	}
 
-	public boolean nodeHasParent(
-		DocumentImpl doc,
-		long gid,
-		boolean directParent,
-		boolean includeSelf) {
-		final NodeProxy p = getFirstParent(new NodeProxy(doc, gid), null, includeSelf, 0);
-		if (p != null)
+	public boolean nodeHasParent(DocumentImpl doc, long gid,
+		boolean directParent, boolean includeSelf) {
+		final NodeProxy p =
+			getFirstParent(new NodeProxy(doc, gid), null, includeSelf, directParent, 0);
+		if(p != null)
 			addInternal(p);
 		return p != null;
 	}
-
-	public boolean nodeHasParent(NodeProxy parent, boolean directParent, boolean includeSelf) {
-		final NodeProxy p = getFirstParent(parent, null, includeSelf, 0);
-		if (p != null)
+	
+	public boolean nodeHasParent(NodeProxy parent, boolean directParent,
+		boolean includeSelf) {
+		final NodeProxy p = getFirstParent(parent, null, includeSelf, directParent, 0);
+		if(p != null)
 			addInternal(p);
 		return p != null;
 	}
 
 	private void addInternal(NodeProxy p) {
-		if (realSet == null)
+		if(realSet == null)
 			realSet = new ArraySet(100);
 
-		if (!realSet.contains(p))
+		if(!realSet.contains(p))
 			realSet.add(p);
 	}
-
-	public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent) {
+	
+	public NodeProxy parentWithChild(
+		DocumentImpl doc,
+		long gid,
+		boolean directParent) {
 		return parentWithChild(doc, gid, directParent, false);
 	}
 
@@ -162,17 +192,22 @@ public class VirtualNodeSet extends NodeSet {
 		long gid,
 		boolean directParent,
 		boolean includeSelf) {
-		if(realSet != null)
-			return super.parentWithChild(doc, gid, directParent, includeSelf);
-		NodeProxy first = getFirstParent(new NodeProxy(doc, gid), null, includeSelf, 0);
+		//if(realSet != null)
+		//	return super.parentWithChild(doc, gid, directParent, includeSelf);
+		NodeProxy first =
+			getFirstParent(new NodeProxy(doc, gid), null, includeSelf, directParent, 0);
 		return first;
 	}
 
-	public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent, boolean includeSelf) {
-		NodeProxy first = getFirstParent(proxy, null, includeSelf, 0);
+	public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent,
+		boolean includeSelf) {
+		NodeProxy first =
+			getFirstParent(
+				proxy, null,
+				includeSelf, directParent, 0);
 		return first;
 	}
-
+	
 	private final NodeSet getNodes(boolean recursive) {
 		ArraySet result = new ArraySet(100);
 		Node p, c;
@@ -182,10 +217,11 @@ public class VirtualNodeSet extends NodeSet {
 		for (Iterator i = context.iterator(); i.hasNext();) {
 			proxy = (NodeProxy) i.next();
 			if (proxy.gid < 0) {
+/* // commented out by Timo Boehme (document element is already part of virtual node set (not parent!))
 				proxy.gid = proxy.doc.getDocumentElementId();
+*/
 				// -- inserted by Timo Boehme --
-				NodeProxy docElemProxy =
-					new NodeProxy(proxy.getDoc(), proxy.gid);
+				NodeProxy docElemProxy = new NodeProxy(proxy.getDoc(), proxy.doc.getDocumentElementId());
 				result.add(docElemProxy);
 				if (recursive)
 					addChildren(result, docElemProxy.getNode(), recursive);
@@ -194,7 +230,7 @@ public class VirtualNodeSet extends NodeSet {
 			}
 			if (proxy.getBrokerType() == DBBroker.NATIVE) {
 				domIter = proxy.doc.getBroker().getNodeIterator(proxy);
-				NodeImpl node = (NodeImpl) domIter.next();
+				NodeImpl node = (NodeImpl)domIter.next();
 				node.setOwnerDocument(proxy.doc);
 				node.setGID(proxy.gid);
 				addChildren(result, node, proxy, domIter, recursive);
@@ -219,15 +255,11 @@ public class VirtualNodeSet extends NodeSet {
 			Value value;
 			NodeProxy p;
 			for (int i = 0; i < node.getChildCount(); i++) {
-				child = (NodeImpl) iter.next();
+				child = (NodeImpl)iter.next();
 				child.setOwnerDocument(node.getOwnerDocument());
 				child.setGID(node.firstChildID() + i);
-				p =
-					new NodeProxy(
-						child.ownerDocument,
-						child.gid,
-						child.getNodeType(),
-						child.internalAddress);
+				p = new NodeProxy(child.ownerDocument, child.gid, 
+					child.getNodeType(), child.internalAddress);
 				p.matches = proxy.matches;
 				if (isOfType(child.getNodeType(), test)) {
 					result.add(p);
@@ -247,7 +279,6 @@ public class VirtualNodeSet extends NodeSet {
 			for (int j = 0; j < cl.getLength(); j++) {
 				c = cl.item(j);
 				if (isOfType(c.getNodeType(), test)) {
-					//					System.out.println("found " + c.getNodeName());
 					result.add(c);
 				} else if (axis == Constants.ATTRIBUTE_AXIS)
 					return;
@@ -260,7 +291,6 @@ public class VirtualNodeSet extends NodeSet {
 	private final void realize() {
 		if (realSet != null)
 			return;
-		System.err.println("realizing nodes");
 		switch (axis) {
 			case Constants.ATTRIBUTE_AXIS :
 			case Constants.CHILD_AXIS :
@@ -317,7 +347,7 @@ public class VirtualNodeSet extends NodeSet {
 		realize();
 		return realSet.get(doc, gid);
 	}
-
+	
 	public NodeProxy get(NodeProxy proxy) {
 		realize();
 		return realSet.get(proxy);
