@@ -21,7 +21,7 @@
   
     <!-- DatabaseAdminServlet: this servlet can be used to ensure that
      eXist is running in the background. Just set the start-parameter to true and
-     load-on-startup to greater 0 -->
+     load-on-startup to greater -->
     <servlet>
         <servlet-name>org.exist.DatabaseAdminServlet</servlet-name>
         <servlet-class>org.exist.DatabaseAdminServlet</servlet-class>
@@ -89,7 +89,12 @@
 
         <load-on-startup>1</load-on-startup>
     </servlet>
-		 
+	
+	<servlet>
+		<servlet-name>dumper</servlet-name>
+		<servlet-class>org.exist.cocoon.RequestDumper</servlet-class>
+	</servlet>
+	
   <!-- Cocoon2 Configuration starts here ================================ -->
 
     <servlet>
@@ -372,23 +377,19 @@
     <!--
       Set encoding used by the container. If not set the ISO-8859-1 encoding will be assumed.
     -->
-    <!--
-    <init-param>
+	<init-param>
       <param-name>container-encoding</param-name>
-      <param-value>utf-8</param-value>
+	  <param-value>ISO-8859-1</param-value>
     </init-param>
-    -->
 
     <!--
       Set form encoding. This will be the character set used to decode request parameters.
       If not set the ISO-8859-1 encoding will be assumed. 
     -->
-    <!--
     <init-param>
       <param-name>form-encoding</param-name>
-      <param-value>utf-8</param-value>
+      <param-value>UTF-8</param-value>
     </init-param>
-    -->
 
     <!--
       This parameter allows you to startup Cocoon2 immediately after startup
@@ -409,6 +410,11 @@
   <servlet-mapping>
     <servlet-name>org.exist.DatabaseAdminServlet</servlet-name>
     <url-pattern>/admin</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
+  	<servlet-name>dumper</servlet-name>
+  	<url-pattern>/dump</url-pattern>
   </servlet-mapping>
   
   <!-- Define where Xincon listens for WebDAV requests -->

@@ -54,7 +54,12 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public class NativeSerializer extends Serializer {
 
-	private boolean showId = false;
+	public final static int EXIST_ID_NONE = 0;
+	public final static int EXIST_ID_ELEMENT = 1;
+	public final static int EXIST_ID_ALL = 2;
+	
+	private int showId = EXIST_ID_ELEMENT;
+	
 	private Perl5Util reutil = new Perl5Util();
 	
 	/**
@@ -67,8 +72,14 @@ public class NativeSerializer extends Serializer {
 		super(broker, config);
 		String showIdParam =
 			(String) config.getProperty("serialization.add-exist-id");
-		if (showIdParam != null)
-			showId = showIdParam.equalsIgnoreCase("true");
+		if (showIdParam != null) {
+			if(showIdParam.equals("element"))
+				showId = EXIST_ID_ELEMENT;
+			else if(showIdParam.equals("all"))
+				showId = EXIST_ID_ALL;
+			else
+				showId = EXIST_ID_NONE;
+		}
 	}
 
 	/**
@@ -304,7 +315,7 @@ public class NativeSerializer extends Serializer {
 				int childLen;
 				NodeImpl child = null;
 				AttributesImpl attributes = new AttributesImpl();
-				if (first || showId) {
+				if ((first && showId == EXIST_ID_ELEMENT) || showId == EXIST_ID_ALL) {
 					attributes.addAttribute(
 						EXIST_NS,
 						"id",
@@ -312,7 +323,7 @@ public class NativeSerializer extends Serializer {
 						"CDATA",
 						Long.toString(gid));
 				}
-				if (first) {
+				if (first && showId > 0) {
 					attributes.addAttribute(
 						EXIST_NS,
 						"source",
@@ -409,6 +420,7 @@ public class NativeSerializer extends Serializer {
 			case Node.TEXT_NODE :
 				if (first && createContainerElements) {
 					AttributesImpl attribs = new AttributesImpl();
+					if(showId > 0) {
 					attribs.addAttribute(
 						EXIST_NS,
 						"id",
@@ -421,6 +433,7 @@ public class NativeSerializer extends Serializer {
 						"exist:source",
 						"CDATA",
 						doc.getFileName());
+					}
 					contentHandler.startElement(
 						EXIST_NS,
 						"text",
@@ -443,6 +456,7 @@ public class NativeSerializer extends Serializer {
 			case Node.ATTRIBUTE_NODE : 
 				if (first && createContainerElements) {
 					AttributesImpl attribs = new AttributesImpl();
+					if(showId > 0) {
 					attribs.addAttribute(
 						EXIST_NS,
 						"id",
@@ -455,6 +469,7 @@ public class NativeSerializer extends Serializer {
 						"exist:source",
 						"CDATA",
 						doc.getFileName());
+					}
 					if((highlightMatches & TAG_ATTRIBUTE_MATCHES) > 0)
 						cdata = processAttribute(((AttrImpl) node).getValue(), gid, matches);
 					else

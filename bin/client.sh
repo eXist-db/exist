@@ -17,9 +17,6 @@ exist_home () {
 		(cd `/usr/bin/dirname $p` ; /bin/pwd)
 }
 
-unset LANG
-OPTIONS=
-
 if [ -z "$EXIST_HOME" ]; then
 	EXIST_HOME_1=`exist_home`
 	EXIST_HOME="$EXIST_HOME_1/.."
@@ -32,21 +29,21 @@ fi
 
 OPTIONS="-Dexist.home=$EXIST_HOME"
 
-if [ -n "$JETTY_HOME" ]; then
-	OPTIONS="-Djetty.home=$JETTY_HOME $OPTIONS"
-fi
-
-# use xerces as SAX parser
-SAXFACTORY=org.apache.xerces.jaxp.SAXParserFactoryImpl
-
 # set java options
 if [ -z "$JAVA_OPTIONS" ]; then
-    export JAVA_OPTIONS="-Xms32000k -Xmx384000k -Djavax.xml.parsers.SAXParserFactory=$SAXFACTORY -Dfile.encoding=UTF-8"
+    export JAVA_OPTIONS="-Xms32000k -Xmx384000k -Dfile.encoding=UTF-8"
 fi
 
 JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
 
 JAVA_OPTIONS="$JAVA_OPTIONS -Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS"
+
+# save LANG
+if [ -n "$LANG" ]; then
+	OLD_LANG="$LANG"
+fi
+# set LANG to UTF-8
+LANG=en_US.UTF-8
 
 # save LD_LIBRARY_PATH
 if [ -n "$LD_LIBRARY_PATH" ]; then
@@ -59,4 +56,7 @@ $JAVA_HOME/bin/java $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" client $
 
 if [ -n "$OLD_LIBRARY_PATH" ]; then
 	LD_LIBRARY_PATH="$OLD_LIBRARY_PATH"
+fi
+if [ -n "$OLD_LANG" ]; then
+	LANG="$OLD_LANG"
 fi

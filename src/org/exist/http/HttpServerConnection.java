@@ -1118,7 +1118,6 @@ public class HttpServerConnection extends Thread {
             pool.release( this );
         }
 
-        broker.shutdown(  );
         pool.release( this );
     }
 

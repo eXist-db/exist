@@ -101,10 +101,12 @@
     <target depends="prepare" name="compile">
         <mkdir dir="${build}"/>
         <echo message="Compiling with Java ${ant.java.version}, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
-        <javac debug="${build.debug}" deprecation="${build.deprecation}" destdir="${build.classes}"
+        <javac debug="${build.debug}" deprecation="${build.deprecation}" 
+			destdir="${build.classes}" encoding="UTF-8"
 			optimize="${build.optimize}" srcdir="${src}" target="1.4">
             <classpath>
                 <path refid="classpath.core"/>
+				<path refid="classpath.jetty"/>
             </classpath>
             <exclude name="org/exist/start/**"/>
         </javac>
@@ -202,7 +204,8 @@
     <!-- ================================================================== -->
     <target depends="prepare" name="samples">
         <mkdir dir="${build}/examples"/>
-		<javac debug="${build.debug}" deprecation="${build.deprecation}" destdir="${build}/examples" srcdir="${samples}">
+		<javac debug="${build.debug}" deprecation="${build.deprecation}" 
+			destdir="${build}/examples" srcdir="${samples}" encoding="UTF-8">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
@@ -239,6 +242,7 @@
 			optimize="${build.optimize}" srcdir="${src}" target="1.4">
             <classpath>
                 <path refid="classpath.core"/>
+				<path refid="classpath.jetty"/>
             </classpath>
             <include name="org/exist/start/**"/>
         </javac>
@@ -316,6 +320,7 @@
 	    <fileset dir="webapps/WEB-INF/logs" includes="*"/>
         </delete>
     	<delete dir="samples/classes"/>
+		<delete file="examples.jar"/>
         <delete file="exist.jar"/>
         <delete dir="${dist.dir}"/>
     </target>

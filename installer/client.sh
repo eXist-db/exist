@@ -25,7 +25,6 @@ fi
 
 JAVA_CMD="$JAVA_HOME/bin/java"
 
-unset LANG
 OPTIONS=
 
 if [ -z "$EXIST_HOME" ]; then
@@ -44,12 +43,16 @@ if [ -n "$JETTY_HOME" ]; then
 	OPTIONS="-Djetty.home=$JETTY_HOME $OPTIONS"
 fi
 
-# use xerces as SAX parser
-SAXFACTORY=org.apache.xerces.jaxp.SAXParserFactoryImpl
+# save LANG
+if [ -n "$LANG" ]; then
+	OLD_LANG="$LANG"
+fi
+# set LANG to UTF-8
+LANG=en_US.UTF-8
 
 # set java options
 if [ -z "$JAVA_OPTIONS" ]; then
-    export JAVA_OPTIONS="-Xms64000k -Xmx256000k -Djavax.xml.parsers.SAXParserFactory=$SAXFACTORY -Dfile.encoding=ISO8859-1"
+    export JAVA_OPTIONS="-Xms64000k -Xmx256000k -Dfile.encoding=UTF-8"
 fi
 
 # save LD_LIBRARY_PATH
@@ -58,9 +61,15 @@ if [ -n "$LD_LIBRARY_PATH" ]; then
 fi
 # add lib/core to LD_LIBRARY_PATH for readline support
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$EXIST_HOME/lib/core"
+JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
 
-$JAVA_CMD $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" client $*
+$JAVA_CMD $JAVA_OPTIONS $OPTIONS \
+    -Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS \
+    -jar "$EXIST_HOME/start.jar" client $*
 
 if [ -n "$OLD_LIBRARY_PATH" ]; then
 	LD_LIBRARY_PATH="$OLD_LIBRARY_PATH"
+fi
+if [ -n "$OLD_LANG" ]; then
+	LANG="$OLD_LANG"
 fi

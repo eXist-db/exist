@@ -1,5 +1,5 @@
 
-/* eXist xml document repository and xpath implementation
+/* eXist Native XML Database
  * Copyright (C) 2001,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
@@ -39,11 +39,7 @@ public class FunCount extends Function {
     }
 
     public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
-		NodeSet set = new ArraySet(1);
-		DocumentSet dset = new DocumentSet();
-		set.add(node);
-		dset.add(node.doc);
-		NodeSet temp = (NodeSet)getArgument(0).eval(dset, set, node).getNodeList();
+		NodeSet temp = (NodeSet)getArgument(0).eval(docs, context, node).getNodeList();
 		return new ValueNumber(temp.getLength());
 	}
 

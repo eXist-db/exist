@@ -65,22 +65,14 @@
             	<include name="*.sh"/>
             	<include name="*.bat"/>
             </fileset>
-			<parsable targetfile="$INSTALL_PATH/bin/backup.sh"/>
 			<parsable targetfile="$INSTALL_PATH/bin/client.sh"/>
 			<parsable targetfile="$INSTALL_PATH/bin/startup.sh"/>
 			<parsable targetfile="$INSTALL_PATH/bin/server.sh"/>
-			<parsable targetfile="$INSTALL_PATH/bin/backup.bat"/>
 			<parsable targetfile="$INSTALL_PATH/bin/client.bat"/>
-			<parsable targetfile="$INSTALL_PATH/bin/gui_client.sh"/>
-			<parsable targetfile="$INSTALL_PATH/bin/gui_client.bat"/>
 			<parsable targetfile="$INSTALL_PATH/bin/startup.bat"/>
 			<parsable targetfile="$INSTALL_PATH/bin/server.bat"/>
 			<parsable targetfile="$INSTALL_PATH/bin/launch_client.bat"/>
-			<executable targetfile="$INSTALL_PATH/bin/backup.sh"
-				stage="never" os="unix"/>
 			<executable targetfile="$INSTALL_PATH/bin/client.sh"
-				stage="never" os="unix"/>
-			<executable targetfile="$INSTALL_PATH/bin/gui_client.sh"
 				stage="never" os="unix"/>
 			<executable targetfile="$INSTALL_PATH/bin/startup.sh"
 				stage="never" os="unix"/>

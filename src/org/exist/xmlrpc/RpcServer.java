@@ -283,6 +283,33 @@ public class RpcServer implements RpcAPI {
 	}
 
 	/**
+	 * Retrieve a document. The document data is returned as a string.
+	 */
+	public String getDocumentAsString(User user, String name, int prettyPrint)
+		throws EXistException, PermissionDeniedException {
+		return getDocumentAsString(user, name, prettyPrint, null);
+	}
+
+	/**
+	 * Retrieve a document. The document data is returned as a string.
+	 */
+	public String getDocumentAsString(User user, String name, int prettyPrint, String stylesheet)
+		throws EXistException, PermissionDeniedException {
+		RpcConnection con = pool.get();
+		try {
+			String xml = con.getDocument(user, name, (prettyPrint > 0), "UTF-8", stylesheet);
+			if (xml == null)
+				throw new EXistException("document " + name + " not found!");
+			else
+				return xml;
+		} catch (Exception e) {
+			handleException(e);
+			return null;
+		} finally {
+			pool.release(con);
+		}
+	}
+	/**
 	 *  get a list of all documents contained in the repository.
 	 *
 	 *@param  user                           Description of the Parameter
@@ -418,7 +445,7 @@ public class RpcServer implements RpcAPI {
 			pool.release(con);
 		}
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xmlrpc.RpcAPI#getGroups(org.exist.security.User)
 	 */
@@ -431,7 +458,7 @@ public class RpcServer implements RpcAPI {
 			pool.release(con);
 		}
 	}
-	
+
 	public Vector getIndexedElements(User user, String collectionName, boolean inclusive)
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = null;
@@ -538,7 +565,6 @@ public class RpcServer implements RpcAPI {
 		// remove it ...
 		if (xml.charAt(xml.length() - 1) == 0x0)
 			xml = xml.substring(0, xml.length() - 1);
-
 		return parse(user, xml, docName, overwrite);
 	}
 
@@ -625,67 +651,6 @@ public class RpcServer implements RpcAPI {
 		return parse(user, xml, docName, 0);
 	}
 
-	/**
-	 *  execute XPath query and return a list of results. The result is an array
-	 *  of String[][2], which represents a two dimensional table, where every
-	 *  row consists of a document-name / node-id pair. e.g.:
-	 *  <tableborder="1">
-	 *
-	 *    <tr>
-	 *
-	 *      <td>
-	 *        hamlet.xml
-	 *      </td>
-	 *
-	 *      <td>
-	 *        8398
-	 *      </td>
-	 *
-	 *    </tr>
-	 *
-	 *    <tr>
-	 *
-	 *      <td>
-	 *        hamlet.xml
-	 *      </td>
-	 *
-	 *      <td>
-	 *        8399
-	 *      </td>
-	 *
-	 *    </tr>
-	 *
-	 *  </table>
-	 *  You may use this information with the retrieve-call to retrieve the
-	 *  actual nodes.
-	 *
-	 *@param  xpath                          the XPath query to execute.
-	 *@param  encoding                       Description of the Parameter
-	 *@param  user                           Description of the Parameter
-	 *@return                                string[][2]
-	 *@exception  EXistException             Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
-	 */
-	public Vector query(User user, byte[] xpath, String encoding)
-		throws EXistException, PermissionDeniedException {
-		String xpathString = null;
-		if (encoding != null)
-			try {
-				xpathString = new String(xpath, encoding);
-			} catch (UnsupportedEncodingException e) {
-			}
-
-		if (xpathString == null)
-			xpathString = new String(xpath);
-
-		// some clients (Perl) encode strings with a \0 at the end.
-		// remove it ...
-		if (xpathString.charAt(xpathString.length() - 1) == 0x0)
-			xpathString = xpathString.substring(0, xpathString.length() - 1);
-
-		return query(user, xpathString);
-	}
-
 	public Hashtable queryP(User user, byte[] xpath)
 		throws EXistException, PermissionDeniedException {
 		return queryP(user, xpath, null);
@@ -742,7 +707,11 @@ public class RpcServer implements RpcAPI {
 	}
 
 	public Vector query(User user, byte[] xpath) throws EXistException, PermissionDeniedException {
-		return query(user, xpath, "UTF-8");
+		try {
+			return query(user, new String(xpath, "UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+			return query(user, new String(xpath));
+		}
 	}
 
 	public Vector query(User user, String xpath) throws EXistException, PermissionDeniedException {
@@ -779,15 +748,9 @@ public class RpcServer implements RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	public byte[] query(
-		User user,
-		String xpath,
-		String encoding,
-		int howmany,
-		int start,
-		int prettyPrint)
+	public String query(User user, String xpath, int howmany, int start, int prettyPrint)
 		throws EXistException, PermissionDeniedException {
-		return query(user, xpath, encoding, howmany, start, prettyPrint, null);
+		return query(user, xpath, howmany, start, prettyPrint, null);
 	}
 
 	/**
@@ -808,10 +771,9 @@ public class RpcServer implements RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	public byte[] query(
+	public String query(
 		User user,
 		String xpath,
-		String encoding,
 		int howmany,
 		int start,
 		int prettyPrint,
@@ -820,21 +782,8 @@ public class RpcServer implements RpcAPI {
 		RpcConnection con = pool.get();
 		String result = null;
 		try {
-			try {
-				result =
-					con.query(
-						user,
-						xpath,
-						howmany,
-						start,
-						(prettyPrint > 0),
-						false,
-						encoding,
-						sortExpr);
-				return result.getBytes(encoding);
-			} catch (UnsupportedEncodingException uee) {
-				return result.getBytes();
-			}
+			result = con.query(user, xpath, howmany, start, (prettyPrint > 0), false, sortExpr);
+			return result;
 		} catch (Exception e) {
 			handleException(e);
 			return null;
@@ -1064,6 +1013,19 @@ public class RpcServer implements RpcAPI {
 			} catch (UnsupportedEncodingException uee) {
 				return xml.getBytes();
 			}
+		} catch (Exception e) {
+			handleException(e);
+			return null;
+		} finally {
+			pool.release(con);
+		}
+	}
+
+	public String retrieveAsString(User user, String doc, String id, int prettyPrint)
+		throws EXistException, PermissionDeniedException {
+		RpcConnection con = pool.get();
+		try {
+			return con.retrieve(user, doc, id, (prettyPrint > 0), "UTF-8");
 		} catch (Exception e) {
 			handleException(e);
 			return null;

@@ -192,13 +192,16 @@ public class Main {
 								}
 							});
 
-							for (int i = 0; i < jars.length; i++) {
-								String jar = jars[i].getCanonicalPath();
-								if (!done.containsKey(jar)) {
-									done.put(jar, jar);
-									if (include_subject) {
-										if (classpath.addComponent(jar) && _debug)
-											System.err.println("Adding JAR from directory: " + jar);
+							if (jars != null) {
+								for (int i = 0; i < jars.length; i++) {
+									String jar = jars[i].getCanonicalPath();
+									if (!done.containsKey(jar)) {
+										done.put(jar, jar);
+										if (include_subject) {
+											if (classpath.addComponent(jar) && _debug)
+												System.err.println(
+													"Adding JAR from directory: " + jar);
+										}
 									}
 								}
 							}
@@ -255,8 +258,12 @@ public class Main {
 				_classname = "org.exist.backup.Main";
 				_mode = "backup";
 			} else if (args[0].equals("jetty")) {
-				_classname = "org.mortbay.jetty.Server";
+				//_classname = "org.mortbay.jetty.Server";
+				_classname = "org.exist.JettyStart";
 				_mode = "jetty";
+			} else if (args[0].equals("shutdown")) {
+				_classname = "org.exist.ServerShutdown";
+				_mode = "none";
 			} else {
 				_classname = args[0];
 				_mode = "none";
@@ -266,7 +273,7 @@ public class Main {
 				System.arraycopy(args, 1, nargs, 0, args.length - 1);
 			args = nargs;
 		} else {
-			_classname = "org.mortbay.jetty.Server";
+			_classname = "org.exist.JettyStart";
 			_mode = "jetty";
 		}
 

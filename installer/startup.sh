@@ -24,7 +24,6 @@ fi
 
 JAVA_CMD="$JAVA_HOME/bin/java"
 
-unset LANG
 OPTIONS=
 
 if [ ! -f "$EXIST_HOME/start.jar" ]; then
@@ -38,11 +37,22 @@ if [ -n "$JETTY_HOME" ]; then
 	OPTIONS="-Djetty.home=$JETTY_HOME $OPTIONS"
 fi
 
-# use xerces as SAX parser
-SAXFACTORY=org.apache.xerces.jaxp.SAXParserFactoryImpl
+# save LANG
+if [ -n "$LANG" ]; then
+	OLD_LANG="$LANG"
+fi
+# set LANG to UTF-8
+LANG=en_US.UTF-8
 
 if [ -z "$JAVA_OPTIONS" ]; then
-    export JAVA_OPTIONS="-Xms64000k -Xmx256000k -Djavax.xml.parsers.SAXParserFactory=$SAXFACTORY -Dfile.encoding=ISO8859-1"
+    export JAVA_OPTIONS="-Xms64000k -Xmx256000k -Dfile.encoding=UTF-8"
 fi
+JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
 
-$JAVA_CMD $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" jetty $*
+$JAVA_CMD $JAVA_OPTIONS $OPTIONS \
+    -Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS \
+    -jar "$EXIST_HOME/start.jar" jetty $*
+
+if [ -n "$OLD_LANG" ]; then
+	LANG="$OLD_LANG"
+fi

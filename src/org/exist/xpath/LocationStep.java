@@ -63,6 +63,10 @@ public class LocationStep extends Step {
 	}
 
 	public Value eval(DocumentSet documents, NodeSet context, NodeProxy node) {
+		if(node != null) {
+			context = new ArraySet(1);
+			context.add(node);
+		}
 		NodeSet temp;
 		switch (axis) {
 			case Constants.DESCENDANT_AXIS :
@@ -128,6 +132,7 @@ public class LocationStep extends Step {
 					}
 				}
 				result = ((ArraySet) buf).getChildren(context, ArraySet.DESCENDANT, inPredicate);
+				LOG.debug("found " + result.getLength() + " attributes");
 				break;
 			default :
 				Node n;
@@ -152,7 +157,7 @@ public class LocationStep extends Step {
 		if (test.getType() == NodeTest.TYPE_TEST) {
 			// test is one out of *, text(), node()
 			VirtualNodeSet vset = new VirtualNodeSet(axis, (TypeTest) test, context);
-			vset.setInPredicate(true);
+			vset.setInPredicate(inPredicate);
 			return vset;
 		} else {
 			DBBroker broker = null;
@@ -161,7 +166,6 @@ public class LocationStep extends Step {
 				if (buf == null)
 					buf = (NodeSet) broker.findElementsByTagName(documents, test.getName());
 				return buf.getChildren(context, ArraySet.DESCENDANT, inPredicate);
-
 			} catch (EXistException e) {
 				e.printStackTrace();
 				return null;

@@ -19,6 +19,7 @@ import org.xmldb.api.modules.*;
 public class SearchExample {
 
     protected static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
+    //protected static String URI = "xmldb:exist://";
 
     protected static String driver = "org.exist.xmldb.DatabaseImpl";
 
@@ -40,7 +41,7 @@ public class SearchExample {
             }
             else
                 query = args[0];
-                
+            
             // get root-collection
             Collection col =
                 DatabaseManager.getCollection( URI + collection );
@@ -59,11 +60,8 @@ public class SearchExample {
             start = System.currentTimeMillis();
 
             for ( int i = 0; i < (int) result.getSize(); i++ ) {
-                XMLResource resource = (XMLResource) result.getResource( (long) i );
-                //String xml = resource.getContent().toString();
-                //System.out.println( xml );
-                Element elem = (Element)resource.getContentAsDOM();
-                System.out.println(elem.getTagName());
+                XMLResource resource = (XMLResource) result.getResource( (long) i ); 
+                System.out.println( resource.getContent().toString() );
             }
             long rtime = System.currentTimeMillis() - start;
 			System.out.println("query:         " + query);

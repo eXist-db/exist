@@ -23,7 +23,7 @@
 		                <xmldb:collection uri="xmldb:exist:///db/shakespeare/plays"
 		                	user="guest" password="guest">
 		                    <xml-source>
-		                        <xmldb:get-document encoding="ISO-8859-1" as="xml">
+								<xmldb:get-document as="xml">
 		                             <xmldb:name>doc</xmldb:name>
 		                        </xmldb:get-document>
 		                    </xml-source>

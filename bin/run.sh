@@ -28,7 +28,7 @@ SAXFACTORY=org.apache.xerces.jaxp.SAXParserFactoryImpl
 LOCALCLASSPATH=$CLASSPATH:$LOCALCLASSPATH
 
 if [ -z "$JAVA_OPTS" ]; then
-    JAVA_OPTS="-Xms64000k -Xmx128000k"
+    JAVA_OPTS="-Xms64000k -Xmx128000k -Dfile.encoding=UTF-8"
 fi
 
 JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed

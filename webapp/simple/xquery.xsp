@@ -41,6 +41,7 @@
 	   with the document() or collection() function.</p>
 
        <form action="xprocess.xsp" method="GET">
+       <!--form action="/exist/request.xml" method="GET"-->
          
          <table width="100%">
             <tr>
@@ -75,6 +76,7 @@
                         <xsp:logic>
                             String query = request.getParameter("query");
                             if(query != null) {
+   	                            query = new String(query.getBytes("ISO-8859-1"), "UTF-8");
                                 <xsp:attribute name="value"><xsp:expr>query</xsp:expr></xsp:attribute>
                             }
                         </xsp:logic>

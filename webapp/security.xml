@@ -64,8 +64,16 @@
                 enable access control you have to set a password for the
                 &quot;admin&quot; user. You may use the interactive client or
                 the <ulink href="xadmin.xsp">administrative web
-                interface</ulink> to do so. In the interactive client, use the
-                <command>passwd</command> command:</para>
+                interface</ulink> to do so. The client's graphical user interface
+                has a dialog for user management. It is shown below:</para>
+                
+            <screenshot>
+                <graphic fileref="client-5.png"/>
+            </screenshot>
+            
+            <para>If you prefer the shell mode, use the
+                <command>passwd</command> command to set a new password for
+                the superuser:</para>
             <example>
                 <title>Set a password for the superuser</title>
                 <screen><![CDATA[type help or ? for help.
@@ -76,7 +84,7 @@ exist:/db>quit
 ]]></screen>
             </example>
             <para>Once a password has been set for the superuser, access control
-                is enabled. To start the interactive client as superuser you
+                is enabled. To start the shell-mode client as superuser you
                 will now have to specify the <option>-u</option> option, e.g.:</para>
             <synopsis>bin/client.sh -u admin</synopsis>
             <para>The other default user, &quot;guest&quot;, has password
@@ -106,7 +114,7 @@ enter groups: users]]></screen>
         </section>
         <section>
             <title>Permissions</title>
-            <para>The interactive command line client displays the permissions
+            <para>The interactive client displays the permissions
                 assigned to each resource (if you have set the
                 <option>permissions=true</option> property in the
                 <filename>client.properties</filename> file). An example is
@@ -177,10 +185,18 @@ exist:/db/shakespeare/plays>]]></screen>
         </section>
         <section>
             <title>Changing Permissions</title>
-            <para>Users can change permissions using the
-                <command>chmod</command> command. Please note that only the
-                owner of a resource or members of dba are allowed to do this.
-                <command>chmod</command> expects two parameters: the first
+            <para>Permissions can be changed either through the <emphasis>Edit Properties</emphasis>
+            dialog in the client GUI or with the <command>chmod</command> command in the shell 
+            window. The <emphasis>Edit Properties</emphasis> dialog is shown below:</para>
+            
+            <screenshot>
+                <graphic fileref="client-6.png"/>
+            </screenshot>
+            
+            <para>Please note that only the owner of a resource or members of dba are allowed to change
+                permissions. All other users will see an error message.</para>
+                
+            <para><command>chmod</command> expects two parameters: the first
                 specifies the name of a resource or collection, the second defines the permissions 
                 to set or remove. Permissions are defined using a syntax
                 as shown below:</para>

@@ -228,8 +228,7 @@ public class SyncDaemon {
   public Object executePeriodically(long period,
                                     Runnable command, 
                                     boolean startNow) {
-
-    if (period <= 0) throw new IllegalArgumentException();
+    if (period <= 0) return null;
 
     long firstTime = System.currentTimeMillis();
     if (!startNow) firstTime += period;

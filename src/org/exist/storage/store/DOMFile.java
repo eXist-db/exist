@@ -246,8 +246,8 @@ public class DOMFile extends BTree implements Lockable {
 		//check if we need an overflow page
 		boolean isOverflow = false;
 		if (value.length + 4 > fileHeader.getWorkSize()) {
-			LOG.debug("creating overflow page");
 			OverflowDOMPage overflow = new OverflowDOMPage();
+			LOG.debug("creating overflow page: " + overflow.getPageNum());
 			overflow.write(value);
 			value = ByteConversion.longToByte(overflow.getPageNum());
 			isOverflow = true;
@@ -260,9 +260,12 @@ public class DOMFile extends BTree implements Lockable {
 		short l = ByteConversion.byteToShort(rec.page.data, rec.offset);
 		rec.offset = rec.offset + l + 2;
 		int dataLen = rec.page.getPageHeader().getDataLength();
+		//LOG.debug("trying " + value.length + " bytes to " + rec.page.getPageNum() +
+		//	"; offset = " + rec.offset + "; len = " + dataLen);
 		// insert in the middle of the page?
 		if (rec.offset < dataLen) {
 			if (dataLen + value.length + 4 < fileHeader.getWorkSize()) {
+				//LOG.debug("copying data in page " + rec.page.getPageNum());
 				// new value fits into the page
 				int end = rec.offset + value.length + 4;
 				System.arraycopy(
@@ -276,6 +279,7 @@ public class DOMFile extends BTree implements Lockable {
 			} else {
 				// doesn't fit: split the page
 				DOMPage splitPage = new DOMPage();
+				//LOG.debug("splitting " + rec.page.getPageNum() + ": new: " + splitPage.getPageNum());
 				splitPage.len = dataLen - rec.offset;
 				System.arraycopy(rec.page.data, rec.offset, splitPage.data, 0, splitPage.len);
 				splitPage.getPageHeader().setDataLength(splitPage.len);
@@ -287,10 +291,13 @@ public class DOMFile extends BTree implements Lockable {
 				splitPage.setDirty(true);
 				reportSplit(doc, rec.page, splitPage);
 				buffer.add(splitPage);
-				DOMPage nextPage = getCurrentPage(splitPage.getPageHeader().getNextDataPage());
-				nextPage.getPageHeader().setPrevDataPage(splitPage.getPageNum());
-				nextPage.setDirty(true);
-				buffer.add(nextPage);
+				long next = splitPage.getPageHeader().getNextDataPage();
+				if(-1 < next) {
+					DOMPage nextPage = getCurrentPage(splitPage.getPageHeader().getNextDataPage());
+					nextPage.getPageHeader().setPrevDataPage(splitPage.getPageNum());
+					nextPage.setDirty(true);
+					buffer.add(nextPage);
+				}
 				rec.page.getPageHeader().setNextDataPage(splitPage.getPageNum());
 				rec.page.len = rec.offset + value.length + 4;
 				rec.page.getPageHeader().setDataLength(rec.page.len);
@@ -301,6 +308,7 @@ public class DOMFile extends BTree implements Lockable {
 			// append at the end of the page
 			// does value fit into page?
 			DOMPage newPage = new DOMPage();
+			//LOG.debug("creating new page: " + newPage.getPageNum());
 			newPage.getPageHeader().setNextDataPage(rec.page.getPageHeader().getNextDataPage());
 			rec.page.getPageHeader().setNextDataPage(newPage.getPageNum());
 			rec.page.setDirty(true);
@@ -315,9 +323,7 @@ public class DOMFile extends BTree implements Lockable {
 		}
 
 		// write the data
-		if(dataLen + 4 > fileHeader.getWorkSize()) {
-			
-		}
+		//LOG.debug("writing " + value.length + " to "+ rec.page.getPageNum() + " at " + rec.offset);
 		short tid = rec.page.getPageHeader().getNextTID();
 		ByteConversion.shortToByte((short) tid, rec.page.data, rec.offset);
 		rec.offset += 2;
@@ -658,6 +664,10 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	public Value get(long p) {
 		RecordPos rec = findValuePosition(p);
+		if(rec == null) {
+			LOG.warn("object at " + StorageAddress.toString(p) + " not found.");
+			return null;
+		}
 		short l = ByteConversion.byteToShort(rec.page.data, rec.offset);
 		Value v = null;
 		if (l == OVERFLOW) {
@@ -1489,7 +1499,7 @@ public class DOMFile extends BTree implements Lockable {
 		}
 
 		public void write(byte[] data) {
-			LOG.debug("writing overflow page");
+			LOG.debug("writing overflow page " + firstPage.getPageNum());
 			try {
 				int remaining = data.length;
 				int chunkSize = fileHeader.getWorkSize();
@@ -1504,7 +1514,6 @@ public class DOMFile extends BTree implements Lockable {
 					if (remaining > 0) {
 						next = createNewPage();
 						page.getPageHeader().setNextPage(next.getPageNum());
-						LOG.debug("next: " + next.getPageNum());
 					} else
 						page.getPageHeader().setNextPage(-1);
 					writeValue(page, value);
@@ -1518,7 +1527,7 @@ public class DOMFile extends BTree implements Lockable {
 		}
 
 		public byte[] read() {
-			LOG.debug("reading overflow page");
+			LOG.debug("reading overflow page " + firstPage.getPageNum());
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			try {
 				Page page = firstPage;
@@ -1531,7 +1540,7 @@ public class DOMFile extends BTree implements Lockable {
 					page = np > -1 ? getPage(np) : null;
 				}
 			} catch (IOException e) {
-				LOG.error("io error while loading overflow page", e);
+				LOG.error("io error while loading overflow page " + firstPage.getPageNum(), e);
 			}
 			return os.toByteArray();
 		}

@@ -28,13 +28,18 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import java.io.OutputStreamWriter;
 import java.io.PushbackInputStream;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -110,6 +115,7 @@ public class InteractiveClient {
 	private final static int THREADS_OPT = 't';
 	private final static int RECURSE_DIRS_OPT = 'd';
 	private final static int NO_GUI_OPT = 's';
+	private final static int TRACE_QUERIES_OPT = 'T';
 
 	private final static CLOptionDescriptor OPTIONS[] =
 		new CLOptionDescriptor[] {
@@ -227,7 +233,13 @@ public class InteractiveClient {
 				"no-gui",
 				CLOptionDescriptor.ARGUMENT_DISALLOWED,
 				NO_GUI_OPT,
-				"don't start client with GUI. Just use the shell.")};
+				"don't start client with GUI. Just use the shell."),
+			new CLOptionDescriptor(
+				"trace",
+				CLOptionDescriptor.ARGUMENT_REQUIRED,
+				TRACE_QUERIES_OPT,
+				"log queries to the file specified by the argument (for debugging).")
+		};
 
 	// ANSI colors for ls display
 	private final static String ANSI_BLUE = "\033[0;34m";
@@ -272,6 +284,7 @@ public class InteractiveClient {
 	protected boolean verbose = false;
 	protected boolean recurseDirs = false;
 	protected boolean startGUI = true;
+	protected Writer traceWriter = null;
 	protected ClientFrame frame;
 
 	public InteractiveClient() {
@@ -327,7 +340,7 @@ public class InteractiveClient {
 	 *@exception  Exception  Description of the Exception
 	 */
 	private void connect() throws Exception {
-		if (startGUI)
+		if (startGUI && frame != null)
 			frame.setStatus("connecting to " + properties.getProperty("uri"));
 		Class cl = Class.forName(properties.getProperty("driver"));
 		Database database = (Database) cl.newInstance();
@@ -340,7 +353,7 @@ public class InteractiveClient {
 				properties.getProperty("uri") + path,
 				properties.getProperty("user"),
 				properties.getProperty("password"));
-		if (startGUI)
+		if (startGUI && frame != null)
 			frame.setStatus(
 				"connected to "
 					+ properties.getProperty("uri")
@@ -950,6 +963,13 @@ public class InteractiveClient {
 	}
 
 	private final ResourceSet find(String xpath) throws XMLDBException {
+		if(traceWriter != null)
+			try {
+				traceWriter.write("<query>");
+				traceWriter.write(xpath);
+				traceWriter.write("</query>\r\n");
+			} catch (IOException e) {
+			}
 		String sortBy = null;
 		int p = xpath.indexOf(" sort by ");
 		if (p > -1) {
@@ -1472,15 +1492,18 @@ public class InteractiveClient {
 					doParse = true;
 					if (option.getArgumentCount() == 1)
 						optionalArgs.add(option.getArgument());
+					interactive = false;
 					break;
 				case RECURSE_DIRS_OPT :
 					recurseDirs = true;
 					break;
 				case REMOVE_OPT :
 					optionRemove = option.getArgument();
+					interactive = false;
 					break;
 				case GET_OPT :
 					optionGet = option.getArgument();
+					interactive = false;
 					break;
 				case MKCOL_OPT :
 					optionMkcol = option.getArgument();
@@ -1489,9 +1512,11 @@ public class InteractiveClient {
 				case RMCOL_OPT :
 					optionRmcol = option.getArgument();
 					foundCollection = true;
+					interactive = false;
 					break;
 				case FIND_OPT :
 					optionXpath = (option.getArgumentCount() == 1 ? option.getArgument() : "stdin");
+					interactive = false;
 					break;
 				case RESULTS_OPT :
 					try {
@@ -1506,6 +1531,7 @@ public class InteractiveClient {
 					break;
 				case QUERY_FILE_OPT :
 					optionQueryFile = option.getArgument();
+					interactive = false;
 					break;
 				case THREADS_OPT :
 					try {
@@ -1516,14 +1542,30 @@ public class InteractiveClient {
 					break;
 				case XUPDATE_OPT :
 					optionXUpdate = option.getArgument();
+					interactive = false;
+					break;
+				case TRACE_QUERIES_OPT :
+					String traceFile = option.getArgument();
+					File f = new File(traceFile);
+					try {
+						traceWriter = new OutputStreamWriter(new FileOutputStream(f, false), "UTF-8");
+						traceWriter.write("<?xml version=\"1.0\"?>\r\n");
+						traceWriter.write("<query-log>\r\n");
+					} catch (UnsupportedEncodingException e1) {
+					} catch (FileNotFoundException e1) {
+						messageln("Cannot open file " + traceFile);
+					} catch (IOException e) {
+					}
 					break;
 				case CLOption.TEXT_ARGUMENT :
 					optionalArgs.add(option.getArgument());
 					break;
 			}
 		}
+		if (!quiet)
+			printNotice();
 		// prompt for password if needed
-		if (startGUI) {
+		if (interactive && startGUI) {
 			String[] loginData = ClientFrame.getLoginData(properties.getProperty("user"));
 			if (loginData == null) {
 				System.exit(0);
@@ -1542,14 +1584,12 @@ public class InteractiveClient {
 		if (home == null)
 			home = System.getProperty("user.dir");
 		File history = new File(home + File.separatorChar + ".exist_history");
-		if (startGUI) {
-			frame = new ClientFrame(this, path, properties);
-			frame.setLocation(100, 100);
-			frame.setSize(500, 450);
-		} else {
-			//			initialize Readline library
+		if (interactive && (!startGUI)) {
+			// initialize Readline library
 			try {
 				Readline.load(ReadlineLibrary.GnuReadline);
+				System.out.println("GNU Readline found. IMPORTANT: Don't use GNU Readline");
+				System.out.println("to work with other character encodings than ISO-8859-1.");
 			} catch (UnsatisfiedLinkError ule) {
 				if (!quiet) {
 					System.out.println("GNU Readline not found. Using System.in.");
@@ -1557,6 +1597,7 @@ public class InteractiveClient {
 					System.out.println("add directory ./lib to your LD_LIBRARY_PATH");
 				}
 			}
+			Readline.setEncoding("UTF-8");
 			Readline.initReadline("exist");
 			Readline.setCompleter(new CollectionCompleter());
 			if (history.canRead())
@@ -1566,28 +1607,26 @@ public class InteractiveClient {
 				}
 		}
 
-		if (!quiet)
-			printNotice();
-
 		// connect to the db
 		try {
 			connect();
 		} catch (XMLDBException xde) {
-			if (startGUI)
+			if (startGUI && frame != null)
 				frame.setStatus("Connection to database failed; message: " + xde.getMessage());
 			else
 				System.err.println("Connection to database failed; message: " + xde.getMessage());
 			xde.printStackTrace();
 			return;
 		} catch (Exception cnf) {
-			if (startGUI)
+			if (startGUI && frame != null)
 				frame.setStatus("Connection to database failed; message: " + cnf.getMessage());
 			else
 				System.err.println("Connection to database failed; message: " + cnf.getMessage());
+			cnf.printStackTrace();
 			return;
 		}
 		if (current == null) {
-			if (startGUI)
+			if (startGUI && frame != null)
 				frame.setStatus("Could not retrieve collection " + path);
 			else
 				System.err.println("Could not retrieve collection " + path);
@@ -1606,7 +1645,6 @@ public class InteractiveClient {
 				System.err.println("XMLDBException while removing collection: " + e.getMessage());
 				e.printStackTrace();
 			}
-			interactive = false;
 		}
 		if (optionMkcol != null) {
 			try {
@@ -1615,7 +1653,6 @@ public class InteractiveClient {
 				System.err.println("XMLDBException during mkcol: " + e.getMessage());
 				e.printStackTrace();
 			}
-			interactive = false;
 		}
 		if (optionGet != null) {
 			try {
@@ -1627,7 +1664,6 @@ public class InteractiveClient {
 					"XMLDBException while trying to retrieve document: " + e.getMessage());
 				e.printStackTrace();
 			}
-			interactive = false;
 		} else if (optionRemove != null) {
 			if (!foundCollection) {
 				System.err.println("Please specify target collection with --collection");
@@ -1639,7 +1675,6 @@ public class InteractiveClient {
 					e.printStackTrace();
 				}
 			}
-			interactive = false;
 			return;
 		} else if (doParse) {
 			if (!foundCollection) {
@@ -1653,7 +1688,6 @@ public class InteractiveClient {
 						e.printStackTrace();
 					}
 			}
-			interactive = false;
 		} else if (optionXpath != null) {
 			// if no argument has been found, read query from stdin
 			if (optionXpath.equals("stdin")) {
@@ -1675,7 +1709,6 @@ public class InteractiveClient {
 					e.printStackTrace();
 				}
 			}
-			interactive = false;
 		} else if (optionQueryFile != null) {
 			testQuery(optionQueryFile);
 		} else if (optionXUpdate != null) {
@@ -1686,12 +1719,15 @@ public class InteractiveClient {
 			} catch (IOException e) {
 				System.err.println("IOException during xupdate: " + e.getMessage());
 			}
-			interactive = false;
 		}
 
 		if (interactive) {
-			if (startGUI)
+			if (startGUI) {
+				frame = new ClientFrame(this, path, properties);
+							frame.setLocation(100, 100);
+							frame.setSize(500, 450);
 				frame.setVisible(true);
+			}
 			// enter interactive mode
 			try {
 				getResources();
@@ -1741,6 +1777,12 @@ public class InteractiveClient {
 	}
 
 	private final void shutdown(boolean force) {
+		if(traceWriter != null)
+			try {
+				traceWriter.write("</query-log>");
+				traceWriter.close();
+			} catch (IOException e1) {
+			}
 		try {
 			DatabaseInstanceManager mgr =
 				(DatabaseInstanceManager) current.getService("DatabaseInstanceManager", "1.0");
@@ -1762,7 +1804,7 @@ public class InteractiveClient {
 	}
 
 	public void printNotice() {
-		messageln("eXist version 0.9, Copyright (C) 2003 Wolfgang Meier");
+		messageln("eXist version 0.9.2, Copyright (C) 2003 Wolfgang Meier");
 		messageln("eXist comes with ABSOLUTELY NO WARRANTY.");
 		messageln(
 			"This is free software, and you are welcome to "
@@ -1772,7 +1814,7 @@ public class InteractiveClient {
 
 	private final void message(String msg) {
 		if (!quiet) {
-			if (startGUI)
+			if (startGUI && frame != null)
 				frame.display(msg);
 			else
 				System.out.print(msg);
@@ -1781,7 +1823,7 @@ public class InteractiveClient {
 
 	private final void messageln(String msg) {
 		if (!quiet) {
-			if (startGUI)
+			if (startGUI && frame != null)
 				frame.display(msg + '\n');
 			else
 				System.out.println(msg);

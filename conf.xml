@@ -28,9 +28,11 @@
 
 		   <!-- Settings for the database connection pool
 
-		   	    - idle-time: the database will try to sync its internal buffers
-				with the filesystem after being idle for the specified number of
-				seconds.
+				- sync-period
+					defines how often the database will flush its 
+					internal buffers to disk. The sync thread will interrupt 
+					normal database operation after the specified number of 
+					milliseconds and write all dirty pages to disk.
 				- min: minimum number of connections to keep alive.
 				- max: maximum number of connections allowed.
 		   -->
@@ -45,7 +47,7 @@
 	   - indent: should the serializer pretty-print (indent) xml?
   -->
   <serializer enable-xinclude="true" enable-xsl="false"
-	  indent="false" add-exist-id="false" match-tagging-elements="true"
+	  indent="false" add-exist-id="element" match-tagging-elements="true"
 	  match-tagging-attributes="false"/>
   
   <!-- settings for the indexer
@@ -155,7 +157,8 @@
     <!-- file appenders -->
     <appender name="exist.core" class="org.apache.log4j.RollingFileAppender">
 	    <param name="File" value="webapp/WEB-INF/logs/exist.log"/>
-	  <param name="MaximumFileSize" value="500000"/>
+		<param name="MaximumFileSize" value="500000"/>
+		<param name="Encoding" value="UTF-8"/>
       <layout class="org.apache.log4j.PatternLayout">
         <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m\n"/>
       </layout>

@@ -138,8 +138,9 @@ public class VirtualNodeSet extends NodeSet {
 				node.addContextNode(node);
 			else if(inPredicate)
 				node.addContextNode(parent);
-			else
+			else {
 				node.copyContext(parent);
+			}
 		    // Timo Boehme: we return the ancestor which is child of context 
 			return node;
 		} else if (pid < 0)

@@ -21,18 +21,18 @@ package org.exist.http;
  *
  *  $Id$
  */
-import java.net.*;
-import java.util.Stack;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.HashMap;
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import javax.xml.parsers.*;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Stack;
+
 import org.apache.log4j.Category;
-import org.exist.util.*;
-import org.exist.storage.*;
-import org.exist.*;
+import org.exist.EXistException;
+import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
 
 /**
  *  Description of the Class
@@ -48,7 +48,7 @@ public class HttpServer extends Thread {
     protected ConnectionPool pool;
     //protected static StyleSheetCache styles = new HttpServer.StyleSheetCache();
     protected static Category LOG = Category.getInstance( "exist.http" );
-
+	protected boolean stop = false;
 
     /**
      *  Constructor for the HttpServer object
@@ -112,7 +112,7 @@ public class HttpServer extends Thread {
             sock = new ServerSocket( port );
             sock.setSoTimeout( 500 );
             LOG.debug( "listening at port " + port );
-            while ( true )
+            while ( !stop )
                 try {
                     Socket s = sock.accept();
                     LOG.info( "connection from " +
@@ -120,14 +120,6 @@ public class HttpServer extends Thread {
                     HttpServerConnection con = pool.get();
                     con.process( s );
                 } catch ( InterruptedIOException ie ) {
-                    /*
-                     *  if (System.in.available() > 0 &&
-                     *  System.in.read() == 'q') {
-                     *  LOG.info("starting shutdown ...");
-                     *  pool.shutdown();
-                     *  System.exit(0);
-                     *  }
-                     */
                 }
 
         } catch ( IOException io ) {
@@ -137,7 +129,11 @@ public class HttpServer extends Thread {
         }
     }
 
-
+	public void shutdown() {
+		stop = true;
+		pool.shutdown();
+	}
+	
     class ConnectionPool {
 
         protected Stack pool = new Stack();
@@ -237,7 +233,7 @@ public class HttpServer extends Thread {
 
 
     private static void printNotice() {
-        System.out.println( "eXist version 0.5, Copyright (C) 2001 Wolfgang M. Meier" );
+        System.out.println( "eXist version 0.9.2, Copyright (C) 2001 Wolfgang M. Meier" );
         System.out.println( "eXist comes with ABSOLUTELY NO WARRANTY." );
         System.out.println(
                 "This is free software, and you are welcome to " +
