@@ -125,7 +125,6 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             expr = (Expression) iter.next();
             if (contextDocs != null) expr.setContextDocSet(contextDocs);
             if ((expr.getDependencies() & Dependency.CONTEXT_ITEM) != 0) {
-                //LOG.debug("single step mode: " + expr.pprint());
                 if (r.getLength() == 0) {
                     r = expr.eval(null, null);
                 } else {
