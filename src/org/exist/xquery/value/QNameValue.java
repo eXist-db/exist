@@ -37,6 +37,11 @@ public class QNameValue extends AtomicValue {
 	private XQueryContext context;
 	private QName qname;
 
+	public QNameValue(XQueryContext context, String name) throws XPathException {
+	    this.context = context;
+        this.qname = QName.parse(context, name, context.getURIForPrefix(""));
+    }
+    
 	public QNameValue(XQueryContext context, QName name) {
 		this.context = context;
 		this.qname = name;
