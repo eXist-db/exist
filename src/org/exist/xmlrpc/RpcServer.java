@@ -1413,7 +1413,11 @@ public class RpcServer implements RpcAPI {
         return true;
     }
 
-public boolean dataBackup(User user, String dest) {
+public boolean dataBackup(User user, String dest) throws PermissionDeniedException {
+    if (!user.hasGroup("dba")) {
+        throw new PermissionDeniedException("not allowed to backup the database");
+    }
+	
         RpcConnection con = null;
         try {    
         	con = pool.get();
