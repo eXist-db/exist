@@ -14,4 +14,5 @@ return
   
   Hello { $name } !
 
+<br/><a href="source/hello.xq">See the XQuery source of this page</a>
 </html>
