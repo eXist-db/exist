@@ -339,6 +339,10 @@ public class RpcConnection extends Thread {
 		
 		try {
 			broker = brokerPool.get(user);
+			Configuration config = broker.getConfiguration();
+			String option = (String) config.getProperty("serialization.enable-xinclude");
+			
+			
 			DocumentImpl doc = (DocumentImpl) broker.getDocument(name);
 			if (doc == null) {
 				LOG.debug("document " + name + " not found!");
@@ -355,7 +359,16 @@ public class RpcConnection extends Thread {
 
 if (param.equals(EXistOutputKeys.EXPAND_XINCLUDES)){
 	serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, paramvalue);
-	}
+	} else
+	{
+	
+	  if (option.equals("true")){
+			serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");	
+	  }	else {
+			serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
+	}	 
+	  
+	}	
 	
 if (param.equals(OutputKeys.INDENT)){
 	prettyPrint= paramvalue;
