@@ -89,7 +89,7 @@ public class LRDCache extends GClockCache {
 	/* (non-Javadoc)
 	 * @see org.exist.storage.cache.LFUCache#removeOne(org.exist.storage.cache.Cacheable)
 	 */
-	protected void removeOne(Cacheable item) {
+	protected Cacheable removeOne(Cacheable item) {
 		Cacheable old;
 		double rd = 0, minRd = -1;
 		int bucket = -1;
@@ -116,6 +116,7 @@ public class LRDCache extends GClockCache {
 		}
 		items[bucket] = item;
 		map.put(item.getKey(), item);
+		return old;
 	}
 	
 	/**

@@ -156,8 +156,8 @@ public class LocalResourceSet implements ResourceSet {
 			LocalCollection coll = collection;
 			if (coll == null
 				|| p.doc.getCollection() == null
-				|| coll.collection.getId() != p.doc.getCollection().getId()) {
-				coll = new LocalCollection(user, brokerPool, null, p.doc.getCollection());
+				|| coll.getCollection().getId() != p.doc.getCollection().getId()) {
+				coll = new LocalCollection(user, brokerPool, null, p.doc.getCollection().getName());
 			}
 			res = new LocalXMLResource(user, brokerPool, coll, p);
 		} else if (r instanceof Node) {

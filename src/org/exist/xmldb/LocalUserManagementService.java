@@ -418,16 +418,15 @@ public class LocalUserManagementService implements UserManagementService {
 	}
 
 	public Permission[] listResourcePermissions() throws XMLDBException {
-		if (!collection
-			.collection
-			.getPermissions()
+	    org.exist.collections.Collection c = collection.getCollection();
+		if (!c	.getPermissions()
 			.validate(user, Permission.READ))
 			return new Permission[0];
 		Permission perms[] =
-			new Permission[collection.collection.getDocumentCount()];
+			new Permission[c.getDocumentCount()];
 		int j = 0;
 		DocumentImpl doc;
-		for (Iterator i = collection.collection.iterator(); i.hasNext(); j++) {
+		for (Iterator i = c.iterator(); i.hasNext(); j++) {
 			doc = (DocumentImpl) i.next();
 			perms[j] = doc.getPermissions();
 		}
@@ -435,20 +434,19 @@ public class LocalUserManagementService implements UserManagementService {
 	}
 
 	public Permission[] listCollectionPermissions() throws XMLDBException {
-		if (!collection
-			.collection
-			.getPermissions()
+	    org.exist.collections.Collection c = collection.getCollection();
+		if (!c.getPermissions()
 			.validate(user, Permission.READ))
 			return new Permission[0];
 		Permission perms[] =
-			new Permission[collection.collection.getChildCollectionCount()];
+			new Permission[c.getChildCollectionCount()];
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
 			String child;
 			org.exist.collections.Collection childColl;
 			int j = 0;
-			for (Iterator i = collection.collection.collectionIterator();
+			for (Iterator i = c.collectionIterator();
 				i.hasNext();
 				j++) {
 				child = (String) i.next();
