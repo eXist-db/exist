@@ -54,6 +54,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JSpinner;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.SpinnerNumberModel;
@@ -82,6 +83,7 @@ public class QueryDialog extends JFrame {
 	private JProgressBar progress;
 
 	public QueryDialog(InteractiveClient client, Collection collection, Properties properties) {
+		super("Query Dialog");
 		this.collection= collection;
 		this.properties= properties;
         this.client = client;
@@ -185,8 +187,11 @@ public class QueryDialog extends JFrame {
 	}
 
 	private JComponent createQueryBox() {
+		JTabbedPane tabs = new JTabbedPane();
+
 		JPanel inputVBox = new JPanel();
 		inputVBox.setLayout(new BorderLayout());
+		tabs.add("Query Input:", inputVBox);
 		
 		Box historyBox= Box.createHorizontalBox();
 		JLabel label= new JLabel("History: ");
@@ -207,17 +212,11 @@ public class QueryDialog extends JFrame {
 		historyBox.add(historyList);
 		inputVBox.add(historyBox, BorderLayout.NORTH);
         
-        JPanel queryPanel = new JPanel();
-        queryPanel.setLayout(new BorderLayout());
-        label = new JLabel("XQuery:");
-        queryPanel.add(label, BorderLayout.NORTH);
-        
         query = new ClientTextArea(true, "XQUERY");
         query.setElectricScroll(1);
 		query.setEditable(true);
 		query.setPreferredSize(new Dimension(350, 200));
-		queryPanel.add(query, BorderLayout.CENTER);
-        inputVBox.add(queryPanel, BorderLayout.CENTER);
+        inputVBox.add(query, BorderLayout.CENTER);
         
 		Box optionsPanel = Box.createHorizontalBox();
         
@@ -264,7 +263,7 @@ public class QueryDialog extends JFrame {
         optionsPanel.add(button);
         
 		inputVBox.add(optionsPanel, BorderLayout.SOUTH);
-		return inputVBox;
+		return tabs;
 	}
 
 	private Vector getCollections(Collection root, Collection collection, Vector collectionsList)
@@ -282,7 +281,8 @@ public class QueryDialog extends JFrame {
 
 	private void open() {
 		String workDir = properties.getProperty("working-dir", System.getProperty("user.dir"));
-		JFileChooser chooser = new JFileChooser(workDir);
+		JFileChooser chooser = new JFileChooser();
+		chooser.setCurrentDirectory(new File(workDir));
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		if (chooser.showDialog(this, "Select query file")
@@ -312,9 +312,10 @@ public class QueryDialog extends JFrame {
 	
 	private void save() {
 		String workDir = properties.getProperty("working-dir", System.getProperty("user.dir"));
-		JFileChooser chooser = new JFileChooser(workDir);
+		JFileChooser chooser = new JFileChooser();
 		chooser.setMultiSelectionEnabled(false);
-		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY + JFileChooser.SAVE_DIALOG);
+		chooser.setCurrentDirectory(new File(workDir));
+		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		if (chooser.showDialog(this, "Select file for query export")
 			== JFileChooser.APPROVE_OPTION) {
 			File selectedDir = chooser.getCurrentDirectory();
