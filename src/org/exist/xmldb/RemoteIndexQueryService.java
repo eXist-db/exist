@@ -56,7 +56,7 @@ public class RemoteIndexQueryService implements IndexQueryService {
 		Vector params = new Vector();
 		params.addElement(path);
 		try {
-			Vector result = (Vector) rpcClient.execute("reindexCollection", params);
+			rpcClient.execute("reindexCollection", params);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(
 					ErrorCodes.UNKNOWN_ERROR,
