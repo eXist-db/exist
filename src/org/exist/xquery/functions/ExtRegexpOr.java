@@ -44,7 +44,7 @@ public class ExtRegexpOr extends ExtRegexp {
 				"node containing any of the keywords is copied to the result sequence.",
 			new SequenceType[] {
 				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
+				new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
 			true);
 
