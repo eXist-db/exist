@@ -1303,15 +1303,25 @@ public class RpcServer implements RpcAPI {
 		}
 	}
 
+
+
 	/* (non-Javadoc)
 	 * @see org.exist.xmlrpc.RpcAPI#xupdateResource(org.exist.security.User, java.lang.String, byte[])
 	 */
 	public int xupdateResource(User user, String resource, byte[] xupdate)
+		throws PermissionDeniedException, EXistException, SAXException {			
+		return xupdateResource(user, resource, xupdate, "UTF-8");
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xmlrpc.RpcAPI#xupdateResource(org.exist.security.User, java.lang.String, byte[])
+	 */
+	public int xupdateResource(User user, String resource, byte[] xupdate, String encoding)
 		throws PermissionDeniedException, EXistException, SAXException {
 		RpcConnection con = null;
 		try {
 			con = pool.get();
-			String xupdateStr = new String(xupdate, "UTF-8");
+			String xupdateStr = new String(xupdate, encoding);
 			return con.xupdateResource(user, resource, xupdateStr);
 		} catch (Exception e) {
 			handleException(e);

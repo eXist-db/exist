@@ -729,9 +729,13 @@ public interface RpcAPI {
 
 	int xupdate(User user, String collectionName, byte[] xupdate)
 		throws PermissionDeniedException, EXistException, SAXException;
-
+	
 	int xupdateResource(User user, String resource, byte[] xupdate)
 		throws PermissionDeniedException, EXistException, SAXException;
+
+	int xupdateResource(User user, String resource, byte[] xupdate, String encoding)
+		throws PermissionDeniedException, EXistException, SAXException;
+
 		
 	Date getCreationDate(User user, String collectionName)
 		throws PermissionDeniedException, EXistException;
