@@ -26,12 +26,16 @@ import org.exist.dom.NamedNodeMapImpl;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.QName;
 import org.exist.dom.QNameable;
+import org.exist.storage.DBBroker;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.TypeInfo;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
 
 public class ElementImpl extends NodeImpl implements Element, QNameable {
 
@@ -322,4 +326,31 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 		return getAttributeNS(namespaceURI, localName) != null;
 	}
 
+	/** ? @see org.w3c.dom.Element#getSchemaTypeInfo()
+	 */
+	public TypeInfo getSchemaTypeInfo() {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
+
+	/** ? @see org.w3c.dom.Element#setIdAttribute(java.lang.String, boolean)
+	 */
+	public void setIdAttribute(String name, boolean isId) throws DOMException {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		
+	}
+
+	/** ? @see org.w3c.dom.Element#setIdAttributeNS(java.lang.String, java.lang.String, boolean)
+	 */
+	public void setIdAttributeNS(String namespaceURI, String localName, boolean isId) throws DOMException {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		
+	}
+
+	/** ? @see org.w3c.dom.Element#setIdAttributeNode(org.w3c.dom.Attr, boolean)
+	 */
+	public void setIdAttributeNode(Attr idAttr, boolean isId) throws DOMException {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		
+	}
 }

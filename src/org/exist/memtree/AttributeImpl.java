@@ -24,11 +24,15 @@ package org.exist.memtree;
 
 import org.exist.dom.QName;
 import org.exist.dom.QNameable;
+import org.exist.storage.DBBroker;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.TypeInfo;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
 
 public class AttributeImpl extends NodeImpl implements Attr, QNameable {
 
@@ -134,5 +138,19 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable {
 	 */
 	public Node getParentNode() {
 		return null;
+	}
+
+	/** ? @see org.w3c.dom.Attr#getSchemaTypeInfo()
+	 */
+	public TypeInfo getSchemaTypeInfo() {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
+
+	/** ? @see org.w3c.dom.Attr#isId()
+	 */
+	public boolean isId() {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return false;
 	}
 }

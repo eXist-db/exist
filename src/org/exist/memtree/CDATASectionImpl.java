@@ -21,9 +21,12 @@
  */
 package org.exist.memtree;
 
+import org.exist.storage.DBBroker;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Text;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
 
 /**
  * Represents a CDATA section.
@@ -93,4 +96,24 @@ public class CDATASectionImpl extends NodeImpl implements CDATASection {
     public void setData(String data) throws DOMException {
     }
 
+	/** ? @see org.w3c.dom.Text#isElementContentWhitespace()
+	 */
+	public boolean isElementContentWhitespace() {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return false;
+	}
+
+	/** ? @see org.w3c.dom.Text#getWholeText()
+	 */
+	public String getWholeText() {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
+
+	/** ? @see org.w3c.dom.Text#replaceWholeText(java.lang.String)
+	 */
+	public Text replaceWholeText(String content) throws DOMException {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
 }

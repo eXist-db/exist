@@ -45,6 +45,7 @@ import org.exist.xquery.NodeSelector;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
+import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -55,6 +56,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
+import org.w3c.dom.UserDataHandler;
 
 /**
  *  Represents a persistent document object in the database.
@@ -411,7 +413,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		}
 		return null;
 	}
-
+	
 	public Collection getCollection() {
 		return collection;
 	}
@@ -546,9 +548,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	/* (non-Javadoc)
      * @see org.w3c.dom.Node#getParentNode()
      */
-    public Node getParentNode() {
-        return null;
-    }
+	public Node getParentNode() {
+		return null;
+	}
     
 	public String getVersion() {
 		return "";
@@ -1010,5 +1012,166 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	
 	public void triggerDefrag() {
 		splitCount = broker.getFragmentationLimit();
+	}
+
+	/** ? @see org.w3c.dom.Document#getInputEncoding()
+	 */
+	public String getInputEncoding() {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
+
+	/** ? @see org.w3c.dom.Document#getXmlEncoding()
+	 */
+	public String getXmlEncoding() {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
+
+	/** ? @see org.w3c.dom.Document#getXmlStandalone()
+	 */
+	public boolean getXmlStandalone() {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return false;
+	}
+
+	/** ? @see org.w3c.dom.Document#setXmlStandalone(boolean)
+	 */
+	public void setXmlStandalone(boolean xmlStandalone) throws DOMException {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		
+	}
+
+	/** ? @see org.w3c.dom.Document#getXmlVersion()
+	 */
+	public String getXmlVersion() {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
+
+	/** ? @see org.w3c.dom.Document#setXmlVersion(java.lang.String)
+	 */
+	public void setXmlVersion(String xmlVersion) throws DOMException {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		
+	}
+
+	/** ? @see org.w3c.dom.Document#getDocumentURI()
+	 */
+	public String getDocumentURI() {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
+
+	/** ? @see org.w3c.dom.Document#setDocumentURI(java.lang.String)
+	 */
+	public void setDocumentURI(String documentURI) {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		
+	}
+
+	/** ? @see org.w3c.dom.Document#getDomConfig()
+	 */
+	public DOMConfiguration getDomConfig() {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
+
+	/** ? @see org.w3c.dom.Document#normalizeDocument()
+	 */
+	public void normalizeDocument() {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		
+	}
+
+	/** ? @see org.w3c.dom.Document#renameNode(org.w3c.dom.Node, java.lang.String, java.lang.String)
+	 */
+	public Node renameNode(Node n, String namespaceURI, String qualifiedName) throws DOMException {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
+
+	/** ? @see org.w3c.dom.Node#getBaseURI()
+	 */
+	public String getBaseURI() {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
+
+	/** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
+	 */
+	public short compareDocumentPosition(Node other) throws DOMException {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return 0;
+	}
+
+	/** ? @see org.w3c.dom.Node#getTextContent()
+	 */
+	public String getTextContent() throws DOMException {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
+
+	/** ? @see org.w3c.dom.Node#setTextContent(java.lang.String)
+	 */
+	public void setTextContent(String textContent) throws DOMException {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		
+	}
+
+	/** ? @see org.w3c.dom.Node#isSameNode(org.w3c.dom.Node)
+	 */
+	public boolean isSameNode(Node other) {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return false;
+	}
+
+	/** ? @see org.w3c.dom.Node#lookupPrefix(java.lang.String)
+	 */
+	public String lookupPrefix(String namespaceURI) {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
+
+	/** ? @see org.w3c.dom.Node#isDefaultNamespace(java.lang.String)
+	 */
+	public boolean isDefaultNamespace(String namespaceURI) {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return false;
+	}
+
+	/** ? @see org.w3c.dom.Node#lookupNamespaceURI(java.lang.String)
+	 */
+	public String lookupNamespaceURI(String prefix) {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
+
+	/** ? @see org.w3c.dom.Node#isEqualNode(org.w3c.dom.Node)
+	 */
+	public boolean isEqualNode(Node arg) {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return false;
+	}
+
+	/** ? @see org.w3c.dom.Node#getFeature(java.lang.String, java.lang.String)
+	 */
+	public Object getFeature(String feature, String version) {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
+
+	/** ? @see org.w3c.dom.Node#setUserData(java.lang.String, java.lang.Object, org.w3c.dom.UserDataHandler)
+	 */
+	public Object setUserData(String key, Object data, UserDataHandler handler) {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
+
+	/** ? @see org.w3c.dom.Node#getUserData(java.lang.String)
+	 */
+	public Object getUserData(String key) {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
 	}
 }
