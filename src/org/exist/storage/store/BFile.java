@@ -947,7 +947,7 @@ public class BFile extends BTree {
         
         public void removeFreeSpace(FreeSpace space) {
             if (space == null) return;
-            freeList.removeNode(space);
+            freeList.remove(space);
         }
 
         public FreeSpace getMaxFreeSpace() {
