@@ -37,7 +37,8 @@ public class UserManagementServiceImpl implements UserManagementService {
 			for (Iterator i = user.getGroups(); i.hasNext();)
 				groups.addElement((String) i.next());
 			params.addElement(groups);
-			params.addElement(user.getHome());
+			if(user.getHome() != null)
+				params.addElement(user.getHome());
 			parent.getClient().execute("setUser", params);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
@@ -436,7 +437,8 @@ public class UserManagementServiceImpl implements UserManagementService {
 			for (Iterator i = user.getGroups(); i.hasNext();)
 				groups.addElement((String) i.next());
 			params.addElement(groups);
-			params.addElement(user.getHome());
+			if(user.getHome() != null)
+				params.addElement(user.getHome());
 			parent.getClient().execute("setUser", params);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);

@@ -1,0 +1,50 @@
+
+table.status {
+	margin-top: 10px;
+	margin-bottom: 10px;
+	border: 1pt solid black;
+}
+
+table.single {
+	margin-right: 10px;
+	margin-left: 10px;
+	border: 1pt solid black;
+}
+
+th.colheadings {
+	font-size: 12px;
+	color: black;
+	background-color: #DDDDDD;
+}
+
+th {
+	background-color: #1111FF;
+	font-size: 12pt;
+	font-weight: bold;
+	color: white;
+	border-bottom: 1pt solid black;
+}
+
+td.left {
+	background-color: #667766;
+	color: white;
+}
+
+td.head {
+	border-bottom: 1pt solid black;
+}
+
+a, a:active, a:visited {
+	color: #1111FF;
+	font-weight: bold;
+}
+
+a:hover {
+	background-color: #1111FF;
+	color: white;
+	font-decoration: none;
+}
+
+div.item {
+	padding: 4px;
+}

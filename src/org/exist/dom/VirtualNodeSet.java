@@ -23,7 +23,6 @@ package org.exist.dom;
 
 import org.exist.xpath.*;
 import org.exist.storage.*;
-import org.exist.dom.*;
 import org.exist.util.XMLUtil;
 import org.dbxml.core.data.Value;
 import java.util.Iterator;
@@ -85,7 +84,7 @@ public class VirtualNodeSet extends NodeSet {
 		NodeProxy parent = context.get(node.doc, pid);
 		if (parent != null)
 			return first == null ? parent : first;
-		else if (pid < 0)
+		else if (node.gid < 0)
 			return null;
 		else if (axis == Constants.CHILD_AXIS && recursions == 1)
 			return null;
@@ -136,16 +135,18 @@ public class VirtualNodeSet extends NodeSet {
 
 	public boolean nodeHasParent(DocumentImpl doc, long gid,
 		boolean directParent, boolean includeSelf) {
-		NodeProxy p =
+		final NodeProxy p =
 			getFirstParent(new NodeProxy(doc, gid), null, includeSelf, 0);
-		addInternal(p);
+		if(p != null)
+			addInternal(p);
 		return p != null;
 	}
 	
 	public boolean nodeHasParent(NodeProxy parent, boolean directParent,
 		boolean includeSelf) {
-		NodeProxy p = getFirstParent(parent, null, includeSelf, 0);
-		addInternal(p);
+		final NodeProxy p = getFirstParent(parent, null, includeSelf, 0);
+		if(p != null)
+			addInternal(p);
 		return p != null;
 	}
 
@@ -168,8 +169,8 @@ public class VirtualNodeSet extends NodeSet {
 		long gid,
 		boolean directParent,
 		boolean includeSelf) {
-		if(realSet != null)
-			return super.parentWithChild(doc, gid, directParent, includeSelf);
+		//if(realSet != null)
+		//	return super.parentWithChild(doc, gid, directParent, includeSelf);
 		NodeProxy first =
 			getFirstParent(new NodeProxy(doc, gid), null, includeSelf, 0);
 		return first;

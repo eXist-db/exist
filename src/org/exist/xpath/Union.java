@@ -54,9 +54,9 @@ public class Union extends PathExpr {
 
 	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
 		NodeSet lval = (NodeSet)left.eval(docs, context, node).getNodeList();
-		LOG.debug("left returned: " + lval.getLength());
+		LOG.debug("left " + left.pprint() + " returned: " + lval.getLength());
 		NodeSet rval = (NodeSet)right.eval(docs, context, node).getNodeList();
-		LOG.debug("right returned: " + rval.getLength());
+		LOG.debug("right " + right.pprint() + " returned: " + rval.getLength());
 		long start = System.currentTimeMillis();
         NodeSet result = lval.union(rval);
 		LOG.debug("union took " + (System.currentTimeMillis() - start));

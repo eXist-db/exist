@@ -73,7 +73,7 @@ public class BrokerPool {
 		BrokerPool instance = (BrokerPool) instances.get(id);
 		if (instance == null) {
 			LOG.debug("configuring database instance '" + id + "' ...");
-			instance = new BrokerPool(minBrokers, maxBrokers, config);
+			instance = new BrokerPool(id, minBrokers, maxBrokers, config);
 			instances.put(id, instance);
 		} else
 			LOG.warn("instance with id " + id + " already configured");
@@ -145,14 +145,16 @@ public class BrokerPool {
 	private org.exist.security.SecurityManager secManager = null;
 	private long lastRequest = System.currentTimeMillis();
 	private long idleTime = 900000L;
+	private String instanceId;
 
 	/**
 	 *  Constructor for the BrokerPool object
 	 *
 	 *@exception  EXistException  Description of the Exception
 	 */
-	public BrokerPool(int minBrokers, int maxBrokers, Configuration config)
+	public BrokerPool(String id, int minBrokers, int maxBrokers, Configuration config)
 		throws EXistException {
+		instanceId = id;
 		min = minBrokers;
 		max = maxBrokers;
 		Integer minInt = (Integer)config.getProperty("db-connection.pool.min");
@@ -315,6 +317,10 @@ public class BrokerPool {
 		return max;
 	}
 
+	public String getId() {
+		return instanceId;
+	}
+	
 	/**
 	 *  Has this BrokerPool been configured?
 	 *

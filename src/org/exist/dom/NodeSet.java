@@ -264,8 +264,12 @@ public abstract class NodeSet implements NodeList {
 		}
 		for (Iterator i = other.iterator(); i.hasNext();) {
 			l = (NodeProxy) i.next();
-			if (contains(l) && (!r.contains(l))) {
-				r.add(l);
+			if (contains(l)) {
+				if(r.contains(l)) {
+					p = r.get(l);
+					p.addMatches(l.matches);
+				} else
+					r.add(l);
 			}
 		}
 		return r;

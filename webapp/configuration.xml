@@ -485,8 +485,8 @@ in xmldb-collection /db/shakespeare/plays -->
                     the distribution, which contains all the sql commands to
                     create the needed tables. To set up a database called
                     'exist', issue the following commands:</para>
-                <synopsis format="linespecific"> createdb exist psql exist -f
-                    sql/postgres.sql </synopsis>
+                <synopsis format="linespecific"> createdb exist</synopsis> 
+                <synopsis>psql exist -f sql/postgres.sql</synopsis>
                 <para>When retrieving xml-content, PostgreSQL is quite slow on
                     my machine. Since the document-content has to be reassembled
                     from many tables, a lot of select-statements are generated.</para>

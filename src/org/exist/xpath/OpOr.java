@@ -48,12 +48,17 @@ public class OpOr extends BinaryOp {
         if(getLength() == 0)
             return new ValueNodeSet(context);
         NodeSet rr, rl = (NodeSet)getExpression(0).eval(docs, context, null).getNodeList();
+        System.out.println("left: " + getExpression(0).pprint());
+        System.out.println("right: " + getExpression(1).pprint());
         if(context != null)
             rl = getParents(rl, context);
+        System.out.println("left parents: " + rl.getLength());
         for(int i = 1; i < getLength(); i++) {
             rr = (NodeSet)getExpression(i).eval(docs, context, null).getNodeList();
-            if(context != null)
+            if(context != null) {
                 rr = getParents(rr, context);
+				System.out.println("right parents: " + rr.getLength());
+            }
             rl = rl.union(rr);
         }
         return new ValueNodeSet(rl);

@@ -73,13 +73,6 @@
         </item>
     </group>
     
-    <banner>
-        <item>
-            <link href="http://exist-db.org">
-                <img alt="powered by eXist" border="0" src="resources/powered.gif"/>
-            </link>
-        </item>
-    </banner>
     <!--
      <group name="" empty="true">
       <item>

@@ -137,6 +137,8 @@ public class AuthenticatedHandler implements AuthenticatedXmlRpcHandler {
         } catch ( InvocationTargetException it_e ) {
             // check whether the thrown exception is XmlRpcException
             Throwable t = it_e.getTargetException();
+            if(XmlRpc.debug)
+            	t.printStackTrace();
             if ( t instanceof XmlRpcException )
                 throw (XmlRpcException) t;
             // It is some other exception

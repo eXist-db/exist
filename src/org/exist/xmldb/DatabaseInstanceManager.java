@@ -12,5 +12,7 @@ import org.xmldb.api.base.XMLDBException;
 public interface DatabaseInstanceManager extends Service {
 	
 	public void shutdown() throws XMLDBException;
+	
+	public DatabaseStatus getStatus() throws XMLDBException;
 
 }

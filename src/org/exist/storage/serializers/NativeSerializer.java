@@ -495,14 +495,14 @@ public class NativeSerializer extends Serializer {
 			if (matches[i].getNodeId() == gid) {
 				if(expr == null) {
 					expr = new StringBuffer();
-					expr.append("s/(");
+					expr.append("s/\\b(");
 				}
-				if(expr.length() > 3)
+				if(expr.length() > 5)
 					expr.append('|');
 				expr.append(matches[i].getMatchingTerm());
 			}
 		if(expr != null) {
-			expr.append(")/||$1||/gi");
+			expr.append(")\\b/||$1||/gi");
 			data = reutil.substitute(expr.toString(), data);
 		}
 		return data;

@@ -7,6 +7,19 @@
     <body>
         <section title="News">
             <definitionlist>
+            	<definition>
+            		<term>
+            			<b>April 7, 2003</b>
+            		</term>
+            		<def>0.9.1 released! This is mainly a maintenance release, fixing many
+            		bugs found in 0.9, including eof exceptions, out-of-memory errors,
+            		and corrupted database files. It also contains further performance
+            		optimizations with respect to indexing and querying speed. New features
+            		include the highlighting of search terms in query results, simpler
+            		database startup, access to index information, new Cocoon examples, 
+            		and an IzPack-based installer. For a complete list of changes see 
+            		<link href="changes.xml">changes.xml</link>.</def>
+            	</definition>
                 <definition>
                     <term>
 						<b>January 14, 2003</b>
@@ -69,7 +82,7 @@
                 </tr>
                 <tr>
                     <td width="40%">
-                        <link href="biblio.xml">Bibliography</link>
+                        <link href="library/biblio.xml">Bibliography</link>
                     </td>
                     <td width="60%">This example provides a customized interface
                         to search through a library catalogue.</td>
@@ -109,20 +122,26 @@
                 </tr>
                 <tr>
                     <td>
-                        <a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.tar.gz">eXist-0.9.tar.gz</a>
+                        <a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.1-install.jar">eXist-0.9.1-install.jar</a>
+                    </td>
+                    <td>Installer based on IzPack. Run with <tt>java -jar eXist-0.9.1-install.jar</tt>.</td>
+                </tr>
+                <tr>
+                    <td>
+                        <a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.1.tar.gz">eXist-0.9.1.tar.gz</a>
                     </td>
                     <td>Distribution including source code and required
                         third-party libraries. Packed with tar and gzip.</td>
                 </tr>
                 <tr>
                     <td>
-                        <a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.zip">eXist-0.9.zip</a>
+                        <a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.1.zip">eXist-0.9.1.zip</a>
                     </td>
                     <td>Distribution packed with ZIP.</td>
                 </tr>
                 <tr>
                     <td>
-                        <a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.war">eXist-0.9.war</a>
+                        <a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.1.war">eXist-0.9.1.war</a>
                     </td>
                     <td>Web application archive, ready to be installed into an
                         existing servlet-engine like Tomcat or Jetty.</td>

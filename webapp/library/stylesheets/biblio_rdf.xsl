@@ -27,16 +27,14 @@
   	<!-- create links to the previous/next set of query results -->
   	<xsl:variable name="next">
   		<xsl:choose>
-  			<xsl:when test="$to + 1 &lt;= @count">
-  				?query=<xsl:value-of select="java:java.net.URLEncoder.encode(@xpath)"/>&amp;from=<xsl:value-of select="$to + 1"/>&amp;to=<xsl:value-of select="$to + 11"/>
+  			<xsl:when test="$to + 1 &lt;= @count">?query=<xsl:value-of select="java:java.net.URLEncoder.encode(normalize-space(@xpath))"/>&amp;from=<xsl:value-of select="$to + 1"/>&amp;to=<xsl:value-of select="$to + 11"/>
   			</xsl:when>
   			<xsl:otherwise></xsl:otherwise>
   		</xsl:choose>
   	</xsl:variable>
   	<xsl:variable name="prev">
   		<xsl:choose>
-  			<xsl:when test="number($from) &gt; 0">
-  				?query=<xsl:value-of select="java:java.net.URLEncoder.encode(@xpath)"/>&amp;from=<xsl:value-of select="$from - 11"/>&amp;to=<xsl:value-of select="$from - 1"/>
+  			<xsl:when test="number($from) &gt; 0">?query=<xsl:value-of select="java:java.net.URLEncoder.encode(normalize-space(@xpath))"/>&amp;from=<xsl:value-of select="$from - 11"/>&amp;to=<xsl:value-of select="$from - 1"/>
   			</xsl:when>
   			<xsl:otherwise></xsl:otherwise>
   		</xsl:choose>
