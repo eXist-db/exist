@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<items xmlns:x="http://www.foo.com">
-    <item>
+<items xmlns:x="http://www.foo.com" xmlns:xx="http://test.com">
+    <item xx:test="123">
         <itemno>1</itemno>
         <name>Red Bicycle</name>
         <price specialprice="false">645.5</price>
         <stock>15</stock>
 		<x:rating>8.7</x:rating>
     </item>
-    <item>
+    <item xx:test="456">
         <itemno>2</itemno>
         <name>Racing Bicycle</name>
         <price specialprice="true">1024.99</price>
