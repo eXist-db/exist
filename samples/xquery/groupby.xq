@@ -1,4 +1,4 @@
-let $speech := //SPEECH[LINE &= "corrupt*"]
+let $speech := //SPEECH[LINE &= "passion*"]
 let $plays := (for $s in $speech return root($s))
 for $play in $plays
 let $hits := $play//$speech
