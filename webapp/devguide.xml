@@ -331,7 +331,99 @@ DatabaseManager.registerDatabase(database1);
 				The XMLDBTransformer provides a simple way to query the
 				database. It works like other transformers supplied with 
 				Cocoon. Basically, the transformer watches out for known tags,
-				processes 
+				takes some action, and replaces the tags found with the results
+				of this action. You should read the Cocoon documentation about
+				transformers to understand the basic concepts.</para>
+			<para>The XMLDBTransformer listens for a limited set of tags,
+				belonging to the namespace 
+				<filename>http://exist-db/transformer/1.0</filename>. The
+				tags are <sgmltag>collection</sgmltag>, 
+				<sgmltag>for-each</sgmltag>, <sgmltag>select-node</sgmltag>,
+				<sgmltag>current-node</sgmltag>. Their use is best understood
+				by looking at an example:</para>
+			<example>
+				<title>XMLDBTransformer Example</title>
+				<screen><![CDATA[
+<xmldb:collection xmlns:xmldb="http://exist-db/transformer/1.0"
+	uri="xmldb:exist:///db">
+	<!-- iterate through all rdf:Description elements containing the
+	     term "computer" -->
+	<xmldb:for-each query="//rdf:Description[dc:title &amp;= 'computer']"
+		from="0" to="9" sort-by="/dc:title">
+		<!-- output a book element for each entry -->
+		<book>
+			<!-- extract the title. There's only one title, so we use
+			     select-node -->
+			<title><xmldb:select-node query="dc:title/text()"/></title>
+			<!-- extract the creators. There's probably more than one,
+			     so we use a nested for-each -->
+			<xmldb:for-each query="dc:creator/text()">
+				<creator><xmldb:current-node/></creator>
+			</xmldb:for-each>
+		</book>
+	</xmldb:for-each>
+</xmldb:collection>
+]]></screen>
+			</example>
+			<para>You will find the complete example in directory
+				<filename>webapp/examples/simple2.xml</filename>. Before
+				you can start to query the database, you have to select
+				a collection with the <sgmltag>collection</sgmltag> tag.
+				It accepts a standard XMLDB URI in its <option>uri</option>
+				attribute. To process a query, you may either use the
+				<sgmltag>for-each</sgmltag>, or the 
+				<sgmltag>select-node</sgmltag> tag. The difference should
+				be obvious: for-each iterates over all the results it finds
+				for the given query. The body of the statement will be 
+				evaluated for each query result. Contrary to that, the 
+				select-node tag simply selects the first result it finds.
+				If the result set contains more than one match, the remaining
+				matches will be ignored.</para>
+			<para>The current-node tag is used to actually insert the result 
+				currently processed by the for-each tag into the output
+				document. You may restrict the number of iterations for
+				a for-each tag by specifying the <option>from</option> and
+				<option>to</option> attributes. The <option>sort-by</option>
+				attribute is still experimental: the query results will be
+				sorted by the specified XPath expression. For each of the
+				results, the XPath expression is evaluated and the resulting
+				string value is used to sort the query results in ascending
+				order.</para>
+			<para>As shown above, it is possible to nest multiple for-each 
+				or select-node tags. The nested tag will be evaluated 
+				relative to the current result node. In the example above,
+				the main for-each statement selects all 
+				<sgmltag>rdf:Description</sgmltag> fragments whose title
+				contains the term "computer". During each iteration, we
+				further process the current result fragment by using nested
+				for-each and select-node tags to select the title and
+				creators.</para>
+			<para>The same result could be achieved by an XSLT stylesheet.
+				However, if the selected fragments are rather large, 
+				post-processing with XSLT can be quite slow, because
+				each fragment has to be serialized and then parsed by 
+				the XSLT processor.</para>
+			<para>Finally, the output of the XMLDBTransformer for the 
+				above fragment is shown below:</para>
+			<example>
+				<title>XMLDBTransformer Output</title>
+				<screen>
+<![CDATA[
+<xmldb:result-set count="72" xpath="//rdf:Description[dc:title &= 'computer']"
+	query-time="370" from="0" to="9">
+	<book xmldb:document-id="zit.rdf" xmldb:collection="/db/library"> 
+		<title> A Centennial History of the American Society of Mechanical Engineers 1880-1980 </title> 
+		<creator xmldb:document-id="zit.rdf" xmldb:collection="/db/library" > Sinclair, Bruce </creator>
+	</book>
+	<!-- more books here ... -->
+</xmldb:result-set>
+]]></screen>
+			</example>
+			<para>The result-set element describes the number of hits for the
+				query, the XPath query processed, the query time, and the
+				start and end position of the retrieved records in the result
+				set.</para>
+		</section>
         <section>
             <title>XML:DB Logicsheet for Cocoon</title>
             <para>Cocoon offers a powerfull mechanism called XSP to write
