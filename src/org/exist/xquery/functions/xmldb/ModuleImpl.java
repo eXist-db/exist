@@ -42,7 +42,9 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(XMLDBAuthenticate.signature, XMLDBAuthenticate.class),
 		new FunctionDef(XMLDBXUpdate.signature, XMLDBXUpdate.class),
 		new FunctionDef(XMLDBRemove.signature, XMLDBRemove.class),
-		new FunctionDef(XMLDBHasLock.signature, XMLDBHasLock.class)
+		new FunctionDef(XMLDBHasLock.signature, XMLDBHasLock.class),
+		new FunctionDef(XMLDBCreated.signature, XMLDBCreated.class),
+		new FunctionDef(XMLDBLastModified.signature, XMLDBLastModified.class)
 	};
 	
 	public ModuleImpl() {
