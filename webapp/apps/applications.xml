@@ -142,4 +142,25 @@
     <dc:rights>GPL</dc:rights>
     <demo-site>http://mycoresample.rz.uni-greifswald.de/docportal/</demo-site>
   </application>
+  <application>
+        <dc:creator>Keith Campbell</dc:creator>
+        <creator-site>http://www.nutritionadvocate.com/</creator-site>
+        <dc:title>Content Management System</dc:title>
+        <dc:subject>health</dc:subject>
+        <dc:subject>nutrition</dc:subject>
+        <dc:subject>newsletter</dc:subject>
+        <dc:description>A site about nutrition and health and how nutrition relates to disease and
+            health. Nutrition research, health news, and intelligent articles and commentary to
+            create greater awareness of nutrition and its relationship to health.</dc:description>
+        <dc:publisher>Nutrition Advocate, Inc.</dc:publisher>
+        <dc:format>eXist standalone distribution</dc:format>
+        <production-site>http://www.nutritionadvocate.com/</production-site>
+        <status>production</status>
+        <feature-used>XQuery,XML-RPC</feature-used>
+        <third-party-feature-used>Tomcat</third-party-feature-used>
+        <database size="5Mb" documents="200" updates="rare" security="read for all"/>
+        <dev-notes>XSLT styles, java classes interpreting user input and generating
+            XQuery, Apache serving static XHTML content</dev-notes>
+        <submitter>Keith Campbell</submitter>
+    </application>
 </applications>
