@@ -1,12 +1,14 @@
 package samples;
 
 import org.exist.jboss.XmlDbService;
+import org.exist.jboss.exist.EXistService;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.jboss.system.ServiceMBeanSupport;
+import org.apache.log4j.Category;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -21,6 +23,9 @@ import java.util.Arrays;
  * @author Per Nyfelt
  */
 public class XmlDbClientService extends ServiceMBeanSupport implements XmlDbClientServiceMBean {
+
+    private static Category LOG =
+        Category.getInstance( XmlDbClientService.class.getName() );
 
     private static final String INVENTORY_NAME = "inventory";
     private Collection inventory;
@@ -60,12 +65,12 @@ public class XmlDbClientService extends ServiceMBeanSupport implements XmlDbClie
 
             Resource res = inventory.getResource(resourceName);
             if (res == null) {
-                log.info("creating resource");
+                LOG.info("creating resource");
                 res = inventory.createResource(resourceName, XMLResource.RESOURCE_TYPE);
             }
-            log.info("Storing xml content");
+            LOG.info("Storing xml content");
             res.setContent(xml);
-            log.info("Storing resource to eXist");
+            LOG.info("Storing resource to eXist");
             inventory.storeResource(res);
             inventory.close();
             return resourceName + " stored successfully!";
@@ -83,7 +88,7 @@ public class XmlDbClientService extends ServiceMBeanSupport implements XmlDbClie
             if (res == null) {
                 return "resource " + resourceName + " was not found";
             }
-            log.info("Getting xml content");
+            LOG.info("Getting xml content");
             return (String)res.getContent();
         } catch (Exception e) {
             e.printStackTrace();
@@ -95,18 +100,18 @@ public class XmlDbClientService extends ServiceMBeanSupport implements XmlDbClie
         Context ctx = new InitialContext();
         XmlDbService xmlDbService = (XmlDbService) ctx.lookup(XmlDbService.class.getName());
         Collection baseCol = xmlDbService.getBaseCollection();
-        log.info("Got base Collection " + baseCol);
+        LOG.info("Got base Collection " + baseCol);
 
         inventory = baseCol.getChildCollection(INVENTORY_NAME);
         if (inventory == null) {
-            log.info("Creating a new Collection for " + INVENTORY_NAME);
+            LOG.info("Creating a new Collection for " + INVENTORY_NAME);
             CollectionManagementService mgtService = XmlDbService.getCollectionManagementService(baseCol);
-            log.info("got CollectionManagementService");
+            LOG.info("got CollectionManagementService");
             inventory = mgtService.createCollection(INVENTORY_NAME);
 
-            log.info("Collection " + INVENTORY_NAME + " created.");
+            LOG.info("Collection " + INVENTORY_NAME + " created.");
         } else {
-            log.info("Found existing inventory collection ");
+            LOG.info("Found existing inventory collection ");
         }
     }
 }
