@@ -321,6 +321,8 @@ public class CollectionImpl implements Collection {
 	}
 
 	public void storeResource(Resource res) throws XMLDBException {
+		if(resources == null)
+			readCollection();
 		resources.remove(res.getId());
 		long start = System.currentTimeMillis();
 		String data = (String) res.getContent();
