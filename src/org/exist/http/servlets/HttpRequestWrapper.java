@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.fileupload.DefaultFileItem;
 import org.apache.commons.fileupload.DiskFileUpload;
@@ -362,7 +363,11 @@ public class HttpRequestWrapper implements RequestWrapper {
 	 * @return
 	 */
 	public SessionWrapper getSession() {
-		return new HttpSessionWrapper(request.getSession());
+		HttpSession session = request.getSession();
+		if(session == null)
+			return null;
+		else
+			return new HttpSessionWrapper(session);
 	}
 
 	/**
@@ -370,7 +375,11 @@ public class HttpRequestWrapper implements RequestWrapper {
 	 * @return
 	 */
 	public SessionWrapper getSession(boolean arg0) {
-		return new HttpSessionWrapper(request.getSession(arg0));
+		HttpSession session = request.getSession(arg0);
+		if(session == null)
+			return null;
+		else
+			return new HttpSessionWrapper(session);
 	}
 
 	/**

@@ -36,6 +36,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.cocoon.environment.Request;
+import org.apache.cocoon.environment.Session;
 import org.apache.cocoon.servlet.multipart.Part;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.SessionWrapper;
@@ -283,7 +284,11 @@ public class CocoonRequestWrapper implements RequestWrapper {
 	 * @return
 	 */
 	public SessionWrapper getSession() {
-		return new CocoonSessionWrapper(request.getSession());
+		Session session = request.getSession();
+		if(session == null)
+			return null;
+		else
+			return new CocoonSessionWrapper(session);
 	}
 
 	/**
@@ -291,7 +296,11 @@ public class CocoonRequestWrapper implements RequestWrapper {
 	 * @return
 	 */
 	public SessionWrapper getSession(boolean arg0) {
-		return new CocoonSessionWrapper(request.getSession(arg0));
+		Session session = request.getSession(arg0);
+		if(session == null)
+			return null;
+		else
+			return new CocoonSessionWrapper(session);
 	}
 
 	/**

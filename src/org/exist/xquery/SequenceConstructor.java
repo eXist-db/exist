@@ -55,7 +55,8 @@ public class SequenceConstructor extends PathExpr {
 		Sequence temp;
 		for(Iterator i = steps.iterator(); i.hasNext(); ) {
 			temp = ((Expression)i.next()).eval(contextSequence, contextItem);
-			result.addAll(temp);
+			if(temp != null && temp.getLength() > 0)
+				result.addAll(temp);
 		}
 		return result;
 	}

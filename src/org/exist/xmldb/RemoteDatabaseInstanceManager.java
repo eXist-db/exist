@@ -20,12 +20,22 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
 		this.client = client;
 	}
 
-	/**
+	/* (non-Javadoc)
 	 * @see org.exist.xmldb.DatabaseInstanceManager#shutdown()
 	 */
 	public void shutdown() throws XMLDBException {
+		shutdown(0);		
+	}
+	
+	/**
+	 * @see org.exist.xmldb.DatabaseInstanceManager#shutdown()
+	 */
+	public void shutdown(long delay) throws XMLDBException {
+		Vector params = new Vector();
+		if(delay > 0)
+			params.addElement(new Long(delay));
 		try {
-			client.execute("shutdown", new Vector());
+			client.execute("shutdown", params);
 		} catch(XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, 
 				"shutdown failed",
@@ -34,8 +44,7 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, 
 							"shutdown failed",
 							e);
-		}
-		
+		}		
 	}
 
 	/**

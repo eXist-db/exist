@@ -139,7 +139,7 @@ imaginaryTokenDefinitions
 	COMP_DOC_CONSTRUCTOR
 	;
 
-xpointer
+xpointer throws XPathException
 :
 	"xpointer"^ LPAREN! ex:expr RPAREN!
 	{ #xpointer= #(#[XPOINTER, "xpointer"], #ex); }
@@ -148,14 +148,14 @@ xpointer
 	{ #xpointer= #(#[XPOINTER_ID, "id"], #nc); }
 	;
 
-xpath
+xpath throws XPathException
 :
 	( module )? EOF
 	;
 //	exception catch [RecognitionException e]
 //	{ handleException(e); }
 
-module : 
+module throws XPathException: 
 	( ( "xquery" "version" ) => v:versionDecl SEMICOLON! )?
 	(
 		( "module" "namespace" ) => libraryModule 
@@ -164,18 +164,20 @@ module :
 	)
 	;
 
-mainModule : prolog queryBody ;
+mainModule throws XPathException: 
+	prolog queryBody ;
 
-libraryModule: moduleDecl prolog;
+libraryModule throws XPathException: 
+	moduleDecl prolog;
 
-moduleDecl: 
+moduleDecl throws XPathException: 
 	"module"! "namespace"! prefix:NCNAME EQ! uri:STRING_LITERAL SEMICOLON!
 	{
 		#moduleDecl = #(#[MODULE_DECL, prefix.getText()], uri);
 	}
 	;
 	
-prolog
+prolog throws XPathException
 { boolean inSetters = true; }
 :
 	(
@@ -233,7 +235,7 @@ namespaceDecl
 	{ #namespaceDecl= #(#[NAMESPACE_DECL, prefix.getText()], uri); }
 	;
 
-varDecl
+varDecl throws XPathException
 { String varName= null; }
 :
 	decl:"declare"! "variable"! DOLLAR! varName=qName! ( typeDeclaration )?
@@ -249,34 +251,40 @@ moduleImport
 	"import"^ "module"! ( "namespace"! NCNAME EQ! )? STRING_LITERAL ( "at"! STRING_LITERAL )?
 	;
 	
-functionDecl
+functionDecl throws XPathException
 { String name= null; }
 :
-	"declare"! "function"! name=qName! LPAREN! ( paramList )?
+	"declare"! "function"! name=qName! lp:LPAREN! ( paramList )?
 	RPAREN! ( returnType )?
 	functionBody
-	{ #functionDecl= #(#[FUNCTION_DECL, name], #functionDecl); }
+	{ 
+		#functionDecl= #(#[FUNCTION_DECL, name], #functionDecl); 
+		#functionDecl.copyLexInfo(#lp);
+	}
 	;
 
-functionBody : LCURLY^ e:expr RCURLY! ;
+functionBody throws XPathException: 
+	LCURLY^ e:expr RCURLY! ;
 
-returnType : "as"^ sequenceType ;
+returnType throws XPathException: 
+	"as"^ sequenceType ;
 
-paramList
+paramList throws XPathException
 :
 	param ( COMMA! p1:param )*
 	;
 
-param
+param throws XPathException
 { String varName= null; }
 :
 	DOLLAR! varName=qName ( t:typeDeclaration )?
 	{ #param= #(#[VARIABLE_BINDING, varName], #t); }
 	;
 
-typeDeclaration : "as"^ sequenceType ;
+typeDeclaration throws XPathException: 
+	"as"^ sequenceType ;
 
-sequenceType
+sequenceType throws XPathException
 :
 	( "empty" LPAREN ) => "empty"^ LPAREN! RPAREN! | itemType ( occurrenceIndicator )?
 	;
@@ -286,31 +294,31 @@ occurrenceIndicator
 	QUESTION | STAR | PLUS
 	;
 
-itemType
+itemType throws XPathException
 :
 	( "item" LPAREN ) => "item"^ LPAREN! RPAREN! | ( . LPAREN ) => kindTest | atomicType
 	;
 
-singleType
+singleType throws XPathException
 :
 	atomicType ( QUESTION )?
 	;
 
-atomicType
+atomicType throws XPathException
 { String name= null; }
 :
 	name=qName
 	{ #atomicType= #[ATOMIC_TYPE, name]; }
 	;
 
-queryBody : expr ;
+queryBody throws XPathException: expr ;
 
-expr
+expr throws XPathException
 :
 	exprSingle ( COMMA^ exprSingle )*
 	;
 
-exprSingle
+exprSingle throws XPathException
 :
 	( ( "for" | "let" ) DOLLAR ) => flworExpr
 	| ( ( "some" | "every" ) DOLLAR ) => quantifiedExpr
@@ -318,22 +326,22 @@ exprSingle
 	| orExpr
 	;
 
-flworExpr
+flworExpr throws XPathException
 :
 	( forClause | letClause )+ ( "where" expr )? ( orderByClause )? "return"^ exprSingle
 	;
 
-forClause
+forClause throws XPathException
 :
 	"for"^ inVarBinding ( COMMA! inVarBinding )*
 	;
 
-letClause
+letClause throws XPathException
 :
 	"let"^ letVarBinding ( COMMA! letVarBinding )*
 	;
 
-inVarBinding
+inVarBinding throws XPathException
 { String varName; }
 :
 	DOLLAR! varName=qName! ( typeDeclaration )?
@@ -349,7 +357,7 @@ positionalVar
 	{ #positionalVar= #[POSITIONAL_VAR, varName]; }
 	;
 
-letVarBinding
+letVarBinding throws XPathException
 { String varName; }
 :
 	DOLLAR! varName=qName! ( typeDeclaration )?
@@ -357,63 +365,63 @@ letVarBinding
 	{ #letVarBinding= #(#[VARIABLE_BINDING, varName], #letVarBinding); }
 	;
 
-orderByClause
+orderByClause throws XPathException
 :
 	"order"! "by"! orderSpecList
 	{ #orderByClause= #([ORDER_BY, "order by"], #orderByClause); }
 	;
 
-orderSpecList
+orderSpecList throws XPathException
 :
 	orderSpec ( COMMA! orderSpec )*
 	;
 
-orderSpec : exprSingle orderModifier ;
+orderSpec throws XPathException: exprSingle orderModifier ;
 
 orderModifier
 :
 	( "ascending" | "descending" )? ( "empty" ( "greatest" | "least" ) )? ( "collation" STRING_LITERAL )?
 	;
 
-quantifiedExpr:
+quantifiedExpr throws XPathException:
 	( "some"^ | "every"^ ) quantifiedInVarBinding ( COMMA! quantifiedInVarBinding )*
 	"satisfies"! exprSingle
 	;
 
-quantifiedInVarBinding
+quantifiedInVarBinding throws XPathException
 { String varName; }:
 	DOLLAR! varName=qName! ( typeDeclaration )? "in"! exprSingle
 	{ #quantifiedInVarBinding = #(#[VARIABLE_BINDING, varName], #quantifiedInVarBinding); }
 	;
 	
-ifExpr : "if"^ LPAREN! expr RPAREN! "then"! exprSingle "else"! exprSingle ;
+ifExpr throws XPathException: "if"^ LPAREN! expr RPAREN! "then"! exprSingle "else"! exprSingle ;
 
-orExpr
+orExpr throws XPathException
 :
 	andExpr ( "or"^ andExpr )*
 	;
 
-andExpr
+andExpr throws XPathException
 :
 	instanceofExpr ( "and"^ instanceofExpr )*
 	;
 
-instanceofExpr
+instanceofExpr throws XPathException
 :
 	castableExpr ( "instance"^ "of"! sequenceType )?
 	;
 
-castableExpr
+castableExpr throws XPathException
 :
 	castExpr ( "castable"^ "as"! singleType )?
 	;
 	
-castExpr
+castExpr throws XPathException
 :
 	comparisonExpr ( "cast"^ "as"! singleType )?
 	;
 
-comparisonExpr
+comparisonExpr throws XPathException
 :
 	rangeExpr (
 		( LT LT ) => LT! LT! rangeExpr 
@@ -432,22 +440,22 @@ comparisonExpr
 	)?
 	;
 
-rangeExpr
+rangeExpr throws XPathException
 :
 	additiveExpr ( "to"^ additiveExpr )?
 	;
 
-additiveExpr
+additiveExpr throws XPathException
 :
 	multiplicativeExpr ( ( PLUS^ | MINUS^ ) multiplicativeExpr )*
 	;
 
-multiplicativeExpr
+multiplicativeExpr throws XPathException
 :
 	unaryExpr ( ( STAR^ | "div"^ | "idiv"^ | "mod"^ ) unaryExpr )*
 	;
 
-unaryExpr
+unaryExpr throws XPathException
 :
 	// TODO: XPath 2.0 allows an arbitrary number of +/-, 
 	// we restrict it to one
@@ -466,7 +474,7 @@ unaryExpr
 	unionExpr
 	;
 
-unionExpr
+unionExpr throws XPathException
 :
 	intersectExceptExpr
 	(
@@ -477,7 +485,7 @@ unionExpr
 	)?
 	;
 
-intersectExceptExpr
+intersectExceptExpr throws XPathException
 :
 	pathExpr
 	(
@@ -485,7 +493,7 @@ intersectExceptExpr
 	)*
 	;
 	
-pathExpr
+pathExpr throws XPathException
 :
 	relativePathExpr
 	|
@@ -501,12 +509,12 @@ pathExpr
 	{ #pathExpr= #(#[ABSOLUTE_DSLASH, "AbsoluteSlashSlash"], #relPath2); }
 	;
 
-relativePathExpr
+relativePathExpr throws XPathException
 :
 	stepExpr ( ( SLASH^ | DSLASH^ ) stepExpr )*
 	;
 
-stepExpr
+stepExpr throws XPathException
 :
 	( ( "text" | "node" | "element" | "attribute" | "comment" | "processing-instruction" | "document-node" ) LPAREN )
 	=> axisStep
@@ -524,23 +532,23 @@ stepExpr
 	axisStep
 	;
 
-axisStep
+axisStep throws XPathException
 :
 	( forwardOrReverseStep ) predicates
 	;
 
-predicates
+predicates throws XPathException
 :
 	( predicate )*
 	;
 
-predicate
+predicate throws XPathException
 :
 	LPPAREN! predExpr:expr RPPAREN!
 	{ #predicate= #(#[PREDICATE, "Pred"], #predExpr); }
 	;
 
-forwardOrReverseStep
+forwardOrReverseStep throws XPathException
 :
 	( forwardAxisSpecifier COLON )
 	=> forwardAxis nodeTest
@@ -551,7 +559,7 @@ forwardOrReverseStep
 	abbrevStep
 	;
 
-abbrevStep
+abbrevStep throws XPathException
 :
 	( AT )? nodeTest | PARENT
 	;
@@ -571,12 +579,12 @@ reverseAxisSpecifier
 	"parent" | "ancestor" | "ancestor-or-self" | "preceding-sibling"
 	;
 
-nodeTest
+nodeTest throws XPathException
 :
 	( . LPAREN ) => kindTest | nameTest
 	;
 
-nameTest
+nameTest throws XPathException
 { String name= null; }
 :
 	( ( NCNAME COLON STAR ) | STAR )
@@ -606,9 +614,10 @@ wildcard
 	}
 	;
 
-filterStep : primaryExpr predicates ;
+filterStep throws XPathException: 
+	primaryExpr predicates ;
 
-primaryExpr
+primaryExpr throws XPathException
 { String varName= null; }
 :
 	( ( "element" | "attribute" | "text" | "document" | "processing-instruction" | 
@@ -644,14 +653,14 @@ numericLiteral
 	DOUBLE_LITERAL^ | DECIMAL_LITERAL^ | INTEGER_LITERAL^
 	;
 
-parenthesizedExpr
+parenthesizedExpr throws XPathException
 :
 	LPAREN! ( e:expr )?
 	RPAREN!
 	{ #parenthesizedExpr= #(#[PARENTHESIZED, "Parenthesized"], #e); }
 	;
 
-functionCall
+functionCall throws XPathException
 { String fnName= null; }
 :
 	fnName=q:qName l:LPAREN!
@@ -666,7 +675,7 @@ functionCall
 	RPAREN!
 	;
 
-functionParameters
+functionParameters throws XPathException
 :
 	exprSingle ( COMMA! exprSingle )*
 	;
@@ -724,7 +733,7 @@ qName returns [String name]
 	name=ncnameOrKeyword
 	;
 
-constructor
+constructor throws XPathException
 :
 	elementConstructor
 	| 
@@ -733,7 +742,7 @@ constructor
 	xmlPI
 	;
 
-computedConstructor
+computedConstructor throws XPathException
 :
 	compElemConstructor
 	|
@@ -748,7 +757,7 @@ computedConstructor
 	compXmlComment
 	;
 
-compElemConstructor
+compElemConstructor throws XPathException
 {
 	String qn;
 }
@@ -761,7 +770,7 @@ compElemConstructor
 	{ #compElemConstructor = #(#[COMP_ELEM_CONSTRUCTOR, qn], #[STRING_LITERAL, qn], #e3); }
 	;
 
-compElemBody
+compElemBody throws XPathException
 :
 	( 
 		( "namespace" ncnameOrKeyword LCURLY ) => localNamespaceDecl 
@@ -775,7 +784,7 @@ compElemBody
 	)*
 	;
 	
-compAttrConstructor
+compAttrConstructor throws XPathException
 {
 	String qn;
 }
@@ -788,19 +797,19 @@ compAttrConstructor
 	{ #compAttrConstructor = #(#[COMP_ATTR_CONSTRUCTOR, qn], #[STRING_LITERAL, qn], #e3); }
 	;
 
-compTextConstructor
+compTextConstructor throws XPathException
 :
 	"text" LCURLY! e:expr RCURLY!
 	{ #compTextConstructor = #(#[COMP_TEXT_CONSTRUCTOR, "text"], #e); }
 	;
 
-compDocumentConstructor
+compDocumentConstructor throws XPathException
 :
 	"document" LCURLY! e:expr RCURLY!
 	{ #compDocumentConstructor = #(#[COMP_DOC_CONSTRUCTOR, "document"], #e); }
 	;
 
-compXmlPI
+compXmlPI throws XPathException
 {
 	String qn;
 }
@@ -813,7 +822,7 @@ compXmlPI
 	{ #compXmlPI = #(#[COMP_PI_CONSTRUCTOR, qn], #[STRING_LITERAL, qn], #e3); }
 	;
 
-compXmlComment
+compXmlComment throws XPathException
 :
 	"comment" LCURLY! e:expr RCURLY!
 	{ #compXmlComment = #(#[COMP_COMMENT_CONSTRUCTOR, "comment"], #e); }
@@ -828,7 +837,7 @@ localNamespaceDecl
 	{ #localNamespaceDecl = #(#[COMP_NS_CONSTRUCTOR, nc], #l); }
 	;
 
-elementConstructor
+elementConstructor throws XPathException
 {
 	String name= null;
 	//lexer.wsExplicit= false;
@@ -837,7 +846,7 @@ elementConstructor
 	( LT qName ~( GT | SLASH ) ) => elementWithAttributes | elementWithoutAttributes
 	;
 
-elementWithoutAttributes
+elementWithoutAttributes throws XPathException
 { String name= null; }
 :
 	LT name=q:qName
@@ -858,13 +867,13 @@ elementWithoutAttributes
 				elementStack.push(name);
 				lexer.inElementContent= true;
 			}
-			content:mixedElementContent END_TAG_START! name=qName! GT!
+			content:mixedElementContent END_TAG_START! name=qn:qName! GT!
 			{
 				if (elementStack.isEmpty())
-					throw new RecognitionException("found wrong closing tag: " + name);
+					throw new XPathException(#qn, "found wrong closing tag: " + name);
 				String prev= (String) elementStack.pop();
 				if (!prev.equals(name))
-					throw new RecognitionException("found closing tag: " + name + "; expected: " + prev);
+					throw new XPathException(#qn, "found closing tag: " + name + "; expected: " + prev);
 				#elementWithoutAttributes= #(#[ELEMENT, name], #content);
 				if (!elementStack.isEmpty()) {
 					lexer.inElementContent= true;
@@ -876,7 +885,7 @@ elementWithoutAttributes
     { #elementWithoutAttributes.copyLexInfo(#q); }
 	;
 
-elementWithAttributes
+elementWithAttributes throws XPathException
 { String name= null; }
 :
 	LT! name=q:qName attrs:attributeList
@@ -898,13 +907,13 @@ elementWithAttributes
 				lexer.inElementContent= true;
 				//lexer.wsExplicit= false;
 			}
-			content:mixedElementContent END_TAG_START! name=qName! GT!
+			content:mixedElementContent END_TAG_START! name=qn:qName! GT!
 			{
 				if (elementStack.isEmpty())
-					throw new RecognitionException("found closing tag without opening tag: " + name);
+					throw new XPathException(#qn, "found closing tag without opening tag: " + name);
 				String prev= (String) elementStack.pop();
 				if (!prev.equals(name))
-					throw new RecognitionException("found closing tag: " + name + "; expected: " + prev);
+					throw new XPathException(#qn, "found closing tag: " + name + "; expected: " + prev);
 				#elementWithAttributes= #(#[ELEMENT, name], #attrs);
 				if (!elementStack.isEmpty()) {
 					lexer.inElementContent= true;
@@ -916,12 +925,12 @@ elementWithAttributes
     { #elementWithAttributes.copyLexInfo(#q); }
 	;
 
-attributeList
+attributeList throws XPathException
 :
 	( attributeDef )+
 	;
 
-attributeDef
+attributeDef throws XPathException
 {
 	String name= null;
 	lexer.parseStringLiterals= false;
@@ -952,17 +961,17 @@ attributeDef
 	}
 	;
 
-attributeValue
+attributeValue throws XPathException
 :
 	( ATTRIBUTE_CONTENT | attributeEnclosedExpr )+
 	;
 
-mixedElementContent
+mixedElementContent throws XPathException
 :
 	( elementContent )*
 	;
 
-elementContent
+elementContent throws XPathException
 :
 	elementConstructor
 	|
@@ -980,7 +989,7 @@ xmlComment : XML_COMMENT XML_COMMENT_END! ;
 
 xmlPI : XML_PI XML_PI_END! ;
 
-enclosedExpr
+enclosedExpr throws XPathException
 :
 	LCURLY^
 	{
@@ -997,7 +1006,7 @@ enclosedExpr
 	}
 	;
 
-attributeEnclosedExpr
+attributeEnclosedExpr throws XPathException
 :
 	LCURLY^
 	{

@@ -254,12 +254,12 @@ throws PermissionDeniedException, EXistException, XPathException
 			moduleURI:STRING_LITERAL 
 			( at:STRING_LITERAL { location = at.getText(); } )?
 			{
-                try {
-				    context.importModule(moduleURI.getText(), modulePrefix, location);
-                } catch(XPathException xpe) {
-                    xpe.setASTNode(i);
-                    throw xpe;
-                }
+		                try {
+					context.importModule(moduleURI.getText(), modulePrefix, location);
+		                } catch(XPathException xpe) {
+		                    xpe.prependMessage("error found while loading module " + modulePrefix + ": ");
+		                    throw xpe;
+		                }
 			}
 		)
 	)*
@@ -274,7 +274,14 @@ throws PermissionDeniedException, EXistException, XPathException
 	#(
 		name:FUNCTION_DECL { PathExpr body= new PathExpr(context); }
 		{
-			QName qn= QName.parse(context, name.getText());
+			QName qn= null;
+			try {
+				qn = QName.parse(context, name.getText());
+			} catch(XPathException e) {
+				// throw exception with correct source location
+				e.setASTNode(name);
+				throw e;
+			}
 			FunctionSignature signature= new FunctionSignature(qn);
 			UserDefinedFunction func= new UserDefinedFunction(context, signature);
 			func.setASTNode(name);

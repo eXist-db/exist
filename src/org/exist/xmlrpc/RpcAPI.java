@@ -47,12 +47,20 @@ public interface RpcAPI {
 	public static final String COLUMN = "column";
 	
 	/**
-	 * Shut down the database.
+	 * Shut down the database immediately.
 	 * 
-	 * @return boolean
+	 * @return true if the shutdown succeeded, false otherwise
 	 */
 	public boolean shutdown(User user) throws PermissionDeniedException;
 
+	/**
+	 * Shut down the database after the specified delay (in milliseconds).
+	 * 
+	 * @return true if the shutdown succeeded, false otherwise
+	 * @throws PermissionDeniedException
+	 */
+	public boolean shutdown(User user, long delay) throws PermissionDeniedException;
+	
 	public boolean sync(User user);
 
 	/**

@@ -31,6 +31,8 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Stack;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -1344,16 +1346,34 @@ public class RpcServer implements RpcAPI {
     }
 
     public boolean shutdown(User user) throws PermissionDeniedException {
+    	return shutdown(user, 0);
+    }
+    
+    public boolean shutdown(User user, long delay) throws PermissionDeniedException {
         if (!user.hasGroup("dba"))
                 throw new PermissionDeniedException("not allowed to shut down"
                         + "the database");
-        try {
-            BrokerPool.stop();
-            return true;
-        } catch (EXistException e) {
-            LOG.warn("shutdown failed", e);
-            return false;
+        if(delay > 0) {
+        	TimerTask task = new TimerTask() {
+				public void run() {
+					try {
+						BrokerPool.stop();
+					} catch (EXistException e) {
+			            LOG.warn("shutdown failed", e);
+			        }
+				}
+			};
+			Timer timer = new Timer();
+			timer.schedule(task, delay);
+        } else {
+	        try {
+	            BrokerPool.stop();
+	        } catch (EXistException e) {
+	            LOG.warn("shutdown failed", e);
+	            return false;
+	        }
         }
+        return true;
     }
 
     public boolean sync(User user) {

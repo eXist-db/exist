@@ -1,5 +1,8 @@
 package org.exist.xmldb;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.xmldb.api.base.Collection;
@@ -19,19 +22,27 @@ public class LocalDatabaseInstanceManager implements DatabaseInstanceManager {
 		this.user = user;
 	}
 	
-	/**
-	 *  Shutdown the Database instance
-	 *
-	 *@exception  XMLDBException
-	 */
 	public void shutdown() throws XMLDBException {
+		shutdown(0);
+	}
+
+	public void shutdown(long delay) throws XMLDBException {
 		if(!user.hasGroup("dba"))
 			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, 
 				"only users in group dba may " +				
 				"shut down the database");
-		pool.shutdown();
+		if(delay > 0) {
+			TimerTask task = new TimerTask() {
+				public void run() {
+					pool.shutdown();
+				}
+			};
+			Timer timer = new Timer();
+			timer.schedule(task, delay);
+		} else
+			pool.shutdown();
 	}
-
+	
 	public DatabaseStatus getStatus() throws XMLDBException {
 		return new DatabaseStatus(pool);
 	}

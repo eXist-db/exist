@@ -1,12 +1,8 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-03 Wolfgang M. Meier
+ *  Copyright (C) 2001-04 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
- *  
- *  Modifications Copyright (C) 2004 Luigi P. Bai
- *  finder@users.sf.net
- *  Licensed as below under the LGPL.
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -27,6 +23,7 @@
 package org.exist.xquery.functions.xmldb;
 
 import org.exist.dom.QName;
+import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.UserManagementService;
@@ -35,6 +32,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -44,64 +42,42 @@ import org.xmldb.api.base.XMLDBException;
 /**
  * @author wolf
  */
-public class XMLDBCreateUser extends BasicFunction {
+public class XMLDBIsAdmin extends BasicFunction {
 
 	public final static FunctionSignature signature = new FunctionSignature(
-			new QName("create-user", XMLDBModule.NAMESPACE_URI,
+			new QName("is-admin-user", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
-			"Create a new user in the database. Requires username, password, and at least one group name.",
+			"Returns true if user exists. Requires username. Does not delete the user's home collection.",
 			new SequenceType[]{
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE),
-					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
             },
-			new SequenceType(Type.ITEM, Cardinality.EMPTY));
+			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE));
 	
-	/**
-	 * @param context
-	 * @param signature
-	 */
-	public XMLDBCreateUser(XQueryContext context) {
+	public XMLDBIsAdmin(XQueryContext context) {
 		super(context, signature);
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet,
-	 *         org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence args[], Sequence contextSequence)
+	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-
-        String user = args[0].getStringValue();
-        String pass = args[1].getStringValue();
-        User userObj = new User(user, pass);
+		String userName = args[0].getStringValue();
         
-        LOG.info("Attempting to create user "+user);
-        
-        // changed by wolf: the first group is always the primary group, so we don't need
-        // an additional argument
-        Sequence groups = args[2];
-        int len = groups.getLength();
-        for (int x = 0; x < len; x++)
-            userObj.addGroup(groups.itemAt(x).getStringValue());
-        
-        if(args[3].getLength() > 0)
-        	userObj.setHome(args[3].getStringValue());
         Collection collection = null;
 		try {
             collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), "/db");
 			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
-			ums.addUser(userObj);
-			
+			User user = ums.getUser(userName);
+			if(user == null)
+				return Sequence.EMPTY_SEQUENCE;
+			return user.hasGroup(SecurityManager.DBA_GROUP) ? BooleanValue.TRUE : BooleanValue.FALSE;
 		} catch (XMLDBException xe) {
-			throw new XPathException(getASTNode(), "Failed to create new user " + user, xe);
+			throw new XPathException(getASTNode(), "Failed to access user " + userName, xe);
         } finally {
             if (null != collection)
                 try { collection.close(); } catch (XMLDBException e) { /* ignore */ }
 		}
-        return Sequence.EMPTY_SEQUENCE;
 	}
+
 }

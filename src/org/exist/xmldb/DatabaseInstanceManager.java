@@ -11,7 +11,24 @@ import org.xmldb.api.base.XMLDBException;
  */
 public interface DatabaseInstanceManager extends Service {
 	
+	/**
+	 * Immediately shutdown the current database instance.
+	 * This current user should be a member of the "dba" group
+	 * or an exception will be thrown.
+	 * 
+	 * @throws XMLDBException
+	 */
 	public void shutdown() throws XMLDBException;
+	
+	/**
+	 * Shutdown the current database instance after the specified
+	 * delay (in milliseconds).
+	 * This current user should be a member of the "dba" group
+	 * or an exception will be thrown.
+	 * 
+	 * @throws XMLDBException
+	 */
+	public void shutdown(long delay) throws XMLDBException;
 	
 	public DatabaseStatus getStatus() throws XMLDBException;
 	

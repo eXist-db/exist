@@ -59,7 +59,7 @@ public class XPathUtil {
      */
 	public final static Sequence javaObjectToXPath(Object obj) throws XPathException {
 		if (obj == null)
-			return null;
+			return Sequence.EMPTY_SEQUENCE;
 		if (obj instanceof Sequence)
 			return (Sequence) obj;
 		else if (obj instanceof String)

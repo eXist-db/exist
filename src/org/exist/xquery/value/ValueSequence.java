@@ -78,7 +78,7 @@ public class ValueSequence extends AbstractSequence {
 	 * @see org.exist.xquery.value.Sequence#getItemType()
 	 */
 	public int getItemType() {
-		return itemType;
+		return itemType == Type.ANY_TYPE ? Type.ITEM : itemType;
 	}
 
 	/* (non-Javadoc)
