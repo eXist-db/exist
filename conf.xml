@@ -20,11 +20,15 @@
 	   - pageSize: disk page size - should be a multiple of the operating system's
 				  file system page size.
        -->
-       
-	   <!--db-connection database="native" files="webapp/WEB-INF/data" 
+
+	   <!-- The settings below are very conservative to avoid out-of-memory
+	   exceptions on machines with limited memory (256MB). Increase the
+	   buffer settings for elements_buffers and words_buffers if you have
+	   some more memory to waste. -->
+	   <db-connection database="native" files="webapp/WEB-INF/data" 
 		   buffers="1024" words_buffers="4096" collection_buffers="256" 
 		   elements_buffers="1024" free_mem_min="10" 
-		   pageSize="4096"-->
+		   pageSize="4096">
 
 		   <!-- Settings for the database connection pool
 
@@ -36,15 +40,17 @@
 				- min: minimum number of connections to keep alive.
 				- max: maximum number of connections allowed.
 		   -->
-		   <!--pool min="1" max="30" sync-period="300000"/>
-   		</db-connection-->
-  
+		   <pool min="1" max="30" sync-period="300000"/>
+	   </db-connection>
+
+	   <!-- Settings for a machine with more memory.
 		<db-connection database="native" files="webapp/WEB-INF/data" 
 			buffers="1024" words_buffers="8192" collection_buffers="256" 
 			elements_buffers="2048" free_mem_min="10" 
 		   pageSize="4096">
 		   <pool min="1" max="15" sync-period="300000"/>
 	   </db-connection>
+	   -->
 	   
   <!-- settings for the serializer
 
