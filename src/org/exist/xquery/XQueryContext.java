@@ -155,8 +155,7 @@ public class XQueryContext {
 	protected DBBroker broker;
 
 	protected String baseURI = "";
-
-    protected String baseCollection = "/db";
+    protected boolean baseURISetInProlog = false;
     
 	protected String moduleLoadPath = ".";
 	
@@ -953,11 +952,26 @@ public class XQueryContext {
 	 * @param uri
 	 */
 	public void setBaseURI(String uri) {
-		if (uri == null)
-			baseURI = "";
-		baseURI = uri;
+		setBaseURI(uri, false);
 	}
 
+    /**
+     * Set the base URI for the evaluation context.
+     * 
+     * A base URI specified via the base-uri directive in the
+     * XQuery prolog overwrites any other setting.
+     * 
+     * @param uri
+     * @param setInProlog
+     */
+    public void setBaseURI(String uri, boolean setInProlog) {
+        if (baseURISetInProlog)
+            return;
+        if (uri == null)
+            baseURI = "";
+        baseURI = uri;
+        baseURISetInProlog = setInProlog;
+    }
 	/**
 	 * Set the path to a base directory where modules should
 	 * be loaded from. Relative module paths will be resolved against
@@ -984,22 +998,6 @@ public class XQueryContext {
 	public String getBaseURI() {
 		return baseURI;
 	}
-	
-    /**
-     * Returns the base collection for the current query.
-     * The value depends on how the XQuery was called.
-     * 
-     * @return
-     */
-    public String getBaseCollection() {
-        return baseCollection;
-    }
-    
-    public void setBaseCollection(String collection) {
-		if (collection == null)
-			baseCollection = "";
-        this.baseCollection = collection;
-    }
     
 	/**
 	 * Set the current context position, i.e. the position

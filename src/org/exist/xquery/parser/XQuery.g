@@ -185,7 +185,7 @@ prolog throws XPathException
 		(
 			( "import" "module" ) => moduleImport
 			|
-			( "declare" ( "default" | "xmlspace" | "ordering" | "construction" ) ) =>
+			( "declare" ( "default" | "xmlspace" | "ordering" | "construction" | "base-uri" ) ) =>
 			setter
 			{
 				if(!inSetters)
@@ -231,6 +231,9 @@ setter:
 		( "declare" "xmlspace" ) =>
 		"declare"! "xmlspace"^ ( "preserve" | "strip" )
 		|
+		( "declare" "base-uri" ) =>
+		"declare"! "base-uri"^ STRING_LITERAL
+		|
 		( "declare" "ordering" ) =>
 		"declare"! "ordering"^ ( "ordered" | "unordered" )
 		|
@@ -274,14 +277,16 @@ functionDecl throws XPathException
 :
 	"declare"! "function"! name=qName! lp:LPAREN! ( paramList )?
 	RPAREN! ( returnType )?
-	functionBody
+	( functionBody | "external" )
 	{ 
 		#functionDecl= #(#[FUNCTION_DECL, name], #functionDecl); 
 		#functionDecl.copyLexInfo(#lp);
 	}
 	exception catch [RecognitionException e]
 	{ 
-		throw new XPathException(#lp, "Syntax error in declaration of function " + 
+		#lp.setLine(e.getLine());
+		#lp.setColumn(e.getColumn());
+		throw new XPathException(#lp, "Syntax error within user defined function " + 
 			name + ": " + e.getMessage());
 	}
 	;
@@ -677,15 +682,21 @@ primaryExpr throws XPathException
 	|
 	parenthesizedExpr
 	|
-	DOLLAR! varName=v:qName
-	{ 
-        #primaryExpr= #[VARIABLE_REF, varName];
-        #primaryExpr.copyLexInfo(#v);
-    }
+	varRef
 	|
 	literal
 	;
 
+varRef throws XPathException
+{ String varName = null; }
+:
+	DOLLAR! varName=v:qName
+	{ 
+		#varRef= #[VARIABLE_REF, varName];
+		#varRef.copyLexInfo(#v);
+	}
+	;
+	
 literal
 :
 	STRING_LITERAL^ | numericLiteral
@@ -1198,6 +1209,8 @@ reservedKeywords returns [String name]
 	|
 	"function" { name= "function"; }
 	|
+	"external" { name = "external"; }
+	|
 	"as" { name = "as"; }
 	|
 	"union" { name = "union"; }
@@ -1253,6 +1266,8 @@ reservedKeywords returns [String name]
 	"typeswitch" { name = "typeswitch"; }
 	|
 	"encoding" { name = "encoding"; }
+	|
+	"base-uri" { name = "base-uri"; }
 	;
 
 /**
@@ -1281,6 +1296,15 @@ options {
 	public XQueryLexer(XQueryContext context, Reader in) {
 		this(in);
 		this.context = context;
+	}
+	
+	private void parseLinefeeds(String str) {
+		char ch;
+		for (int i = 0;  i < str.length(); i++) {
+			ch = str.charAt(i);
+			if (ch == '\n')
+				newline();
+		}
 	}
 }
 
@@ -1521,7 +1545,12 @@ options {
 	testLiterals = false;
 }
 :
-	XML_COMMENT { $setType(XML_COMMENT); }
+	XML_COMMENT 
+	{ 
+		String data = $getText;
+		parseLinefeeds(data);
+		$setType(XML_COMMENT); 
+	}
 	|
 	( XML_PI_START )
 	=> XML_PI { $setType(XML_PI); }
