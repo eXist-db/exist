@@ -1,0 +1,74 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2000-04,  Wolfgang M. Meier (wolfgang@exist-db.org)
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Library General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ *  $Id$
+ */
+package org.exist.xmldb.test.concurrent;
+
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.XUpdateQueryService;
+
+/**
+ * Removes the last element from the resource and inserts a 
+ * new element at the top.
+ * 
+ * @author wolf
+ */
+class RemoveAppendAction extends Action {
+	
+	private static final String REMOVE =
+        "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">"
+        + "<xu:remove select=\"//ELEMENT[last()]\">"
+        + "</xu:remove>"
+        + "</xu:modifications>";
+	
+	private XMLGenerator gen;
+	
+	public RemoveAppendAction(String collectionPath, String resourceName, String[] wordList) {
+		super(collectionPath, resourceName);
+		gen = new XMLGenerator(1, 5, 1, wordList);
+	}
+			
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.test.concurrent.ConcurrentXUpdateTest.Action#execute()
+	 */
+	public boolean execute() throws Exception {
+		Collection col = DatabaseManager.getCollection(collectionPath);
+		XUpdateQueryService service = (XUpdateQueryService)
+			col.getService("XUpdateQueryService", "1.0");
+		append(service);
+        remove(service);
+        return false;
+	}
+	
+	private void remove(XUpdateQueryService service) throws XMLDBException {
+		service.update(REMOVE);
+	}
+	
+	private void append(XUpdateQueryService service) throws Exception {
+		String update =
+			"<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
+			"<xu:append select=\"/ROOT-ELEMENT\" child=\"1\">" +
+			gen.generateElement() +
+			"</xu:append>" +
+			"</xu:modifications>";
+		service.update(update);
+	}
+}
