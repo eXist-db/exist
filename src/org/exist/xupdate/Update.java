@@ -50,6 +50,10 @@ public class Update extends Modification {
 		int result = children.getLength();
 		for (int i = 0; i < qr.length; i++) {
 			node = qr[i];
+			if(node == null) {
+				LOG.warn("select " + selectStmt + " returned empty node");
+				continue;
+			}
 			doc = (DocumentImpl) node.getOwnerDocument();
 			doc.setIndexListener(listener);
 			collection = doc.getCollection();

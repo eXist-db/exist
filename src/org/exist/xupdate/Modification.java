@@ -35,7 +35,7 @@ import antlr.collections.AST;
  */
 public abstract class Modification {
 
-	private final static Logger LOG = Logger.getLogger(Modification.class);
+	protected final static Logger LOG = Logger.getLogger(Modification.class);
 
 	protected String selectStmt = null;
 	protected DocumentFragment content = null;

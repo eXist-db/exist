@@ -45,8 +45,9 @@ import org.exist.storage.analysis.SimpleTokenizer;
  */
 public abstract class TextSearchEngine extends Observable {
 
-	private final static Category LOG =
+	protected final static Category LOG =
 		Category.getInstance(TextSearchEngine.class.getName());
+		
 	protected TreeSet stoplist = new TreeSet();
 	protected DBBroker broker = null;
 	protected Tokenizer tokenizer;

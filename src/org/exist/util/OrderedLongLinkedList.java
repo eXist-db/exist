@@ -58,9 +58,9 @@ public final class OrderedLongLinkedList extends LongLinkedList {
         list.add(7);
         list.add(44);
         list.add(4);
-        list.add(43);
+        list.add(-43);
         list.add(60);
-        list.add(122);
+        list.add(-122);
         list.add(1);
         System.out.println("size: " + list.getSize());
         for(Iterator i = list.iterator(); i.hasNext(); ) {

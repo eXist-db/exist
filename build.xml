@@ -532,7 +532,14 @@
         <zip basedir="${dist}" compress="true"
             excludes="${project.name}-${build.version}.zip" zipfile="${dist}/${project.name}-${build.version}.zip"/>
     </target>
-    
+   
+    <target depends="dist" name="snapshot">
+		<tstamp/>
+		<zip basedir="${dist}" compress="true"
+			excludes="${project.name}-${build.version}.zip"
+			zipfile="${dist}/${project.name}-snapshot-${DSTAMP}.zip"/>
+	</target>
+	
     <!-- ================================================================== -->
     <!-- Create dist-tgz                                                    -->
     <!-- ================================================================== -->

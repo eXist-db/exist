@@ -44,7 +44,9 @@ public class TypeTest implements NodeTest {
 	 * @see org.exist.xpath.NodeTest#matches(org.exist.dom.NodeProxy)
 	 */
 	public boolean matches(NodeProxy proxy) {
-		if(proxy.nodeType == Type.ITEM) {
+		if(proxy.nodeType == Type.ITEM || proxy.nodeType == Type.NODE) {
+			if(nodeType == Type.NODE)
+				return true;
 			Node node = proxy.getNode();
 			return matches(node);
 		} else

@@ -104,26 +104,26 @@ public XPathTreeParser2() {
 			switch ( _t.getType()) {
 			case XPOINTER:
 			{
-				AST __t237 = _t;
+				AST __t232 = _t;
 				AST tmp1_AST_in = (AST)_t;
 				match(_t,XPOINTER);
 				_t = _t.getFirstChild();
 				step=expr(_t,path);
 				_t = _retTree;
-				_t = __t237;
+				_t = __t232;
 				_t = _t.getNextSibling();
 				break;
 			}
 			case XPOINTER_ID:
 			{
-				AST __t238 = _t;
+				AST __t233 = _t;
 				AST tmp2_AST_in = (AST)_t;
 				match(_t,XPOINTER_ID);
 				_t = _t.getFirstChild();
 				nc = (AST)_t;
 				match(_t,NCNAME);
 				_t = _t.getNextSibling();
-				_t = __t238;
+				_t = __t233;
 				_t = _t.getNextSibling();
 				
 						Function fun= new FunId(context);
@@ -175,7 +175,7 @@ public XPathTreeParser2() {
 		switch ( _t.getType()) {
 		case LITERAL_cast:
 		{
-			AST __t279 = _t;
+			AST __t274 = _t;
 			AST tmp3_AST_in = (AST)_t;
 			match(_t,LITERAL_cast);
 			_t = _t.getFirstChild();
@@ -216,13 +216,13 @@ public XPathTreeParser2() {
 						path.add(castExpr);
 						step = castExpr;
 					
-			_t = __t279;
+			_t = __t274;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case COMMA:
 		{
-			AST __t281 = _t;
+			AST __t276 = _t;
 			AST tmp5_AST_in = (AST)_t;
 			match(_t,COMMA);
 			_t = _t.getFirstChild();
@@ -241,13 +241,13 @@ public XPathTreeParser2() {
 						path.add(sc);
 						step = sc;
 					
-			_t = __t281;
+			_t = __t276;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_if:
 		{
-			AST __t282 = _t;
+			AST __t277 = _t;
 			AST tmp6_AST_in = (AST)_t;
 			match(_t,LITERAL_if);
 			_t = _t.getFirstChild();
@@ -267,13 +267,13 @@ public XPathTreeParser2() {
 						path.add(cond);
 						step = cond;
 					
-			_t = __t282;
+			_t = __t277;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_some:
 		{
-			AST __t283 = _t;
+			AST __t278 = _t;
 			AST tmp7_AST_in = (AST)_t;
 			match(_t,LITERAL_some);
 			_t = _t.getFirstChild();
@@ -282,11 +282,11 @@ public XPathTreeParser2() {
 						PathExpr satisfiesExpr = new PathExpr(context);
 					
 			{
-			_loop288:
+			_loop283:
 			do {
 				if (_t==null) _t=ASTNULL;
 				if ((_t.getType()==VARIABLE_BINDING)) {
-					AST __t285 = _t;
+					AST __t280 = _t;
 					someVarName = _t==ASTNULL ? null :(AST)_t;
 					match(_t,VARIABLE_BINDING);
 					_t = _t.getFirstChild();
@@ -299,13 +299,13 @@ public XPathTreeParser2() {
 					switch ( _t.getType()) {
 					case LITERAL_as:
 					{
-						AST __t287 = _t;
+						AST __t282 = _t;
 						AST tmp8_AST_in = (AST)_t;
 						match(_t,LITERAL_as);
 						_t = _t.getFirstChild();
 						sequenceType(_t,clause.sequenceType);
 						_t = _retTree;
-						_t = __t287;
+						_t = __t282;
 						_t = _t.getNextSibling();
 						break;
 					}
@@ -398,11 +398,11 @@ public XPathTreeParser2() {
 										clause.inputSequence= inputSequence;
 										clauses.add(clause);
 									
-					_t = __t285;
+					_t = __t280;
 					_t = _t.getNextSibling();
 				}
 				else {
-					break _loop288;
+					break _loop283;
 				}
 				
 			} while (true);
@@ -424,13 +424,13 @@ public XPathTreeParser2() {
 						path.add(action);
 						step = action;
 					
-			_t = __t283;
+			_t = __t278;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_every:
 		{
-			AST __t289 = _t;
+			AST __t284 = _t;
 			AST tmp9_AST_in = (AST)_t;
 			match(_t,LITERAL_every);
 			_t = _t.getFirstChild();
@@ -439,11 +439,11 @@ public XPathTreeParser2() {
 						PathExpr satisfiesExpr = new PathExpr(context);
 					
 			{
-			_loop294:
+			_loop289:
 			do {
 				if (_t==null) _t=ASTNULL;
 				if ((_t.getType()==VARIABLE_BINDING)) {
-					AST __t291 = _t;
+					AST __t286 = _t;
 					everyVarName = _t==ASTNULL ? null :(AST)_t;
 					match(_t,VARIABLE_BINDING);
 					_t = _t.getFirstChild();
@@ -456,13 +456,13 @@ public XPathTreeParser2() {
 					switch ( _t.getType()) {
 					case LITERAL_as:
 					{
-						AST __t293 = _t;
+						AST __t288 = _t;
 						AST tmp10_AST_in = (AST)_t;
 						match(_t,LITERAL_as);
 						_t = _t.getFirstChild();
 						sequenceType(_t,clause.sequenceType);
 						_t = _retTree;
-						_t = __t293;
+						_t = __t288;
 						_t = _t.getNextSibling();
 						break;
 					}
@@ -555,11 +555,11 @@ public XPathTreeParser2() {
 										clause.inputSequence= inputSequence;
 										clauses.add(clause);
 									
-					_t = __t291;
+					_t = __t286;
 					_t = _t.getNextSibling();
 				}
 				else {
-					break _loop294;
+					break _loop289;
 				}
 				
 			} while (true);
@@ -581,13 +581,13 @@ public XPathTreeParser2() {
 						path.add(action);
 						step = action;
 					
-			_t = __t289;
+			_t = __t284;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_return:
 		{
-			AST __t295 = _t;
+			AST __t290 = _t;
 			AST tmp11_AST_in = (AST)_t;
 			match(_t,LITERAL_return);
 			_t = _t.getFirstChild();
@@ -598,24 +598,24 @@ public XPathTreeParser2() {
 						List orderBy= null;
 					
 			{
-			int _cnt310=0;
-			_loop310:
+			int _cnt305=0;
+			_loop305:
 			do {
 				if (_t==null) _t=ASTNULL;
 				switch ( _t.getType()) {
 				case LITERAL_for:
 				{
-					AST __t297 = _t;
+					AST __t292 = _t;
 					AST tmp12_AST_in = (AST)_t;
 					match(_t,LITERAL_for);
 					_t = _t.getFirstChild();
 					{
-					int _cnt303=0;
-					_loop303:
+					int _cnt298=0;
+					_loop298:
 					do {
 						if (_t==null) _t=ASTNULL;
 						if ((_t.getType()==VARIABLE_BINDING)) {
-							AST __t299 = _t;
+							AST __t294 = _t;
 							varName = _t==ASTNULL ? null :(AST)_t;
 							match(_t,VARIABLE_BINDING);
 							_t = _t.getFirstChild();
@@ -628,14 +628,14 @@ public XPathTreeParser2() {
 							switch ( _t.getType()) {
 							case LITERAL_as:
 							{
-								AST __t301 = _t;
+								AST __t296 = _t;
 								AST tmp13_AST_in = (AST)_t;
 								match(_t,LITERAL_as);
 								_t = _t.getFirstChild();
 								clause.sequenceType= new SequenceType();
 								sequenceType(_t,clause.sequenceType);
 								_t = _retTree;
-								_t = __t301;
+								_t = __t296;
 								_t = _t.getNextSibling();
 								break;
 							}
@@ -822,33 +822,33 @@ public XPathTreeParser2() {
 														clause.inputSequence= inputSequence;
 														clauses.add(clause);
 													
-							_t = __t299;
+							_t = __t294;
 							_t = _t.getNextSibling();
 						}
 						else {
-							if ( _cnt303>=1 ) { break _loop303; } else {throw new NoViableAltException(_t);}
+							if ( _cnt298>=1 ) { break _loop298; } else {throw new NoViableAltException(_t);}
 						}
 						
-						_cnt303++;
+						_cnt298++;
 					} while (true);
 					}
-					_t = __t297;
+					_t = __t292;
 					_t = _t.getNextSibling();
 					break;
 				}
 				case LITERAL_let:
 				{
-					AST __t304 = _t;
+					AST __t299 = _t;
 					AST tmp14_AST_in = (AST)_t;
 					match(_t,LITERAL_let);
 					_t = _t.getFirstChild();
 					{
-					int _cnt309=0;
-					_loop309:
+					int _cnt304=0;
+					_loop304:
 					do {
 						if (_t==null) _t=ASTNULL;
 						if ((_t.getType()==VARIABLE_BINDING)) {
-							AST __t306 = _t;
+							AST __t301 = _t;
 							letVarName = _t==ASTNULL ? null :(AST)_t;
 							match(_t,VARIABLE_BINDING);
 							_t = _t.getFirstChild();
@@ -862,14 +862,14 @@ public XPathTreeParser2() {
 							switch ( _t.getType()) {
 							case LITERAL_as:
 							{
-								AST __t308 = _t;
+								AST __t303 = _t;
 								AST tmp15_AST_in = (AST)_t;
 								match(_t,LITERAL_as);
 								_t = _t.getFirstChild();
 								clause.sequenceType= new SequenceType();
 								sequenceType(_t,clause.sequenceType);
 								_t = _retTree;
-								_t = __t308;
+								_t = __t303;
 								_t = _t.getNextSibling();
 								break;
 							}
@@ -962,26 +962,26 @@ public XPathTreeParser2() {
 														clause.inputSequence= inputSequence;
 														clauses.add(clause);
 													
-							_t = __t306;
+							_t = __t301;
 							_t = _t.getNextSibling();
 						}
 						else {
-							if ( _cnt309>=1 ) { break _loop309; } else {throw new NoViableAltException(_t);}
+							if ( _cnt304>=1 ) { break _loop304; } else {throw new NoViableAltException(_t);}
 						}
 						
-						_cnt309++;
+						_cnt304++;
 					} while (true);
 					}
-					_t = __t304;
+					_t = __t299;
 					_t = _t.getNextSibling();
 					break;
 				}
 				default:
 				{
-					if ( _cnt310>=1 ) { break _loop310; } else {throw new NoViableAltException(_t);}
+					if ( _cnt305>=1 ) { break _loop305; } else {throw new NoViableAltException(_t);}
 				}
 				}
-				_cnt310++;
+				_cnt305++;
 			} while (true);
 			}
 			{
@@ -1085,14 +1085,14 @@ public XPathTreeParser2() {
 			switch ( _t.getType()) {
 			case ORDER_BY:
 			{
-				AST __t313 = _t;
+				AST __t308 = _t;
 				AST tmp17_AST_in = (AST)_t;
 				match(_t,ORDER_BY);
 				_t = _t.getFirstChild();
 				orderBy= new ArrayList(3);
 				{
-				int _cnt319=0;
-				_loop319:
+				int _cnt314=0;
+				_loop314:
 				do {
 					if (_t==null) _t=ASTNULL;
 					if ((_tokenSet_0.member(_t.getType()))) {
@@ -1345,13 +1345,13 @@ public XPathTreeParser2() {
 						}
 					}
 					else {
-						if ( _cnt319>=1 ) { break _loop319; } else {throw new NoViableAltException(_t);}
+						if ( _cnt314>=1 ) { break _loop314; } else {throw new NoViableAltException(_t);}
 					}
 					
-					_cnt319++;
+					_cnt314++;
 				} while (true);
 				}
-				_t = __t313;
+				_t = __t308;
 				_t = _t.getNextSibling();
 				break;
 			}
@@ -1472,13 +1472,13 @@ public XPathTreeParser2() {
 						path.add(action);
 						step = action;
 					
-			_t = __t295;
+			_t = __t290;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_or:
 		{
-			AST __t320 = _t;
+			AST __t315 = _t;
 			AST tmp23_AST_in = (AST)_t;
 			match(_t,LITERAL_or);
 			_t = _t.getFirstChild();
@@ -1490,7 +1490,7 @@ public XPathTreeParser2() {
 			_t = _retTree;
 			step=expr(_t,right);
 			_t = _retTree;
-			_t = __t320;
+			_t = __t315;
 			_t = _t.getNextSibling();
 			
 					OpOr or= new OpOr(context);
@@ -1503,7 +1503,7 @@ public XPathTreeParser2() {
 		}
 		case LITERAL_and:
 		{
-			AST __t321 = _t;
+			AST __t316 = _t;
 			AST tmp24_AST_in = (AST)_t;
 			match(_t,LITERAL_and);
 			_t = _t.getFirstChild();
@@ -1515,7 +1515,7 @@ public XPathTreeParser2() {
 			_t = _retTree;
 			step=expr(_t,right);
 			_t = _retTree;
-			_t = __t321;
+			_t = __t316;
 			_t = _t.getNextSibling();
 			
 					OpAnd and= new OpAnd(context);
@@ -1528,7 +1528,7 @@ public XPathTreeParser2() {
 		}
 		case UNION:
 		{
-			AST __t322 = _t;
+			AST __t317 = _t;
 			AST tmp25_AST_in = (AST)_t;
 			match(_t,UNION);
 			_t = _t.getFirstChild();
@@ -1540,7 +1540,7 @@ public XPathTreeParser2() {
 			_t = _retTree;
 			step=expr(_t,right);
 			_t = _retTree;
-			_t = __t322;
+			_t = __t317;
 			_t = _t.getNextSibling();
 			
 					Union union= new Union(context, left, right);
@@ -1551,7 +1551,7 @@ public XPathTreeParser2() {
 		}
 		case LITERAL_intersect:
 		{
-			AST __t323 = _t;
+			AST __t318 = _t;
 			AST tmp26_AST_in = (AST)_t;
 			match(_t,LITERAL_intersect);
 			_t = _t.getFirstChild();
@@ -1563,7 +1563,7 @@ public XPathTreeParser2() {
 			_t = _retTree;
 			step=expr(_t,right);
 			_t = _retTree;
-			_t = __t323;
+			_t = __t318;
 			_t = _t.getNextSibling();
 			
 					Intersection intersect = new Intersection(context, left, right);
@@ -1574,7 +1574,7 @@ public XPathTreeParser2() {
 		}
 		case LITERAL_except:
 		{
-			AST __t324 = _t;
+			AST __t319 = _t;
 			AST tmp27_AST_in = (AST)_t;
 			match(_t,LITERAL_except);
 			_t = _t.getFirstChild();
@@ -1586,7 +1586,7 @@ public XPathTreeParser2() {
 			_t = _retTree;
 			step=expr(_t,right);
 			_t = _retTree;
-			_t = __t324;
+			_t = __t319;
 			_t = _t.getNextSibling();
 			
 					Except intersect = new Except(context, left, right);
@@ -1597,7 +1597,7 @@ public XPathTreeParser2() {
 		}
 		case ABSOLUTE_SLASH:
 		{
-			AST __t325 = _t;
+			AST __t320 = _t;
 			AST tmp28_AST_in = (AST)_t;
 			match(_t,ABSOLUTE_SLASH);
 			_t = _t.getFirstChild();
@@ -1696,13 +1696,13 @@ public XPathTreeParser2() {
 			}
 			}
 			}
-			_t = __t325;
+			_t = __t320;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case ABSOLUTE_DSLASH:
 		{
-			AST __t327 = _t;
+			AST __t322 = _t;
 			AST tmp29_AST_in = (AST)_t;
 			match(_t,ABSOLUTE_DSLASH);
 			_t = _t.getFirstChild();
@@ -1812,13 +1812,13 @@ public XPathTreeParser2() {
 			}
 			}
 			}
-			_t = __t327;
+			_t = __t322;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_to:
 		{
-			AST __t329 = _t;
+			AST __t324 = _t;
 			AST tmp30_AST_in = (AST)_t;
 			match(_t,LITERAL_to);
 			_t = _t.getFirstChild();
@@ -1839,7 +1839,7 @@ public XPathTreeParser2() {
 						path.addPath(range);
 						step = range;
 					
-			_t = __t329;
+			_t = __t324;
 			_t = _t.getNextSibling();
 			break;
 		}
@@ -2003,7 +2003,7 @@ public XPathTreeParser2() {
 		switch ( _t.getType()) {
 		case VERSION_DECL:
 		{
-			AST __t243 = _t;
+			AST __t238 = _t;
 			v = _t==ASTNULL ? null :(AST)_t;
 			match(_t,VERSION_DECL);
 			_t = _t.getFirstChild();
@@ -2011,7 +2011,7 @@ public XPathTreeParser2() {
 							if (!v.getText().equals("1.0"))
 								throw new XPathException("Wrong XQuery version: require 1.0");
 						
-			_t = __t243;
+			_t = __t238;
 			_t = _t.getNextSibling();
 			break;
 		}
@@ -2103,13 +2103,13 @@ public XPathTreeParser2() {
 		}
 		}
 		{
-		_loop251:
+		_loop246:
 		do {
 			if (_t==null) _t=ASTNULL;
 			switch ( _t.getType()) {
 			case NAMESPACE_DECL:
 			{
-				AST __t245 = _t;
+				AST __t240 = _t;
 				prefix = _t==ASTNULL ? null :(AST)_t;
 				match(_t,NAMESPACE_DECL);
 				_t = _t.getFirstChild();
@@ -2117,13 +2117,13 @@ public XPathTreeParser2() {
 				match(_t,STRING_LITERAL);
 				_t = _t.getNextSibling();
 				context.declareNamespace(prefix.getText(), uri.getText());
-				_t = __t245;
+				_t = __t240;
 				_t = _t.getNextSibling();
 				break;
 			}
 			case DEF_NAMESPACE_DECL:
 			{
-				AST __t246 = _t;
+				AST __t241 = _t;
 				AST tmp31_AST_in = (AST)_t;
 				match(_t,DEF_NAMESPACE_DECL);
 				_t = _t.getFirstChild();
@@ -2131,13 +2131,13 @@ public XPathTreeParser2() {
 				match(_t,STRING_LITERAL);
 				_t = _t.getNextSibling();
 				context.declareNamespace("", defu.getText());
-				_t = __t246;
+				_t = __t241;
 				_t = _t.getNextSibling();
 				break;
 			}
 			case DEF_FUNCTION_NS_DECL:
 			{
-				AST __t247 = _t;
+				AST __t242 = _t;
 				AST tmp32_AST_in = (AST)_t;
 				match(_t,DEF_FUNCTION_NS_DECL);
 				_t = _t.getFirstChild();
@@ -2145,13 +2145,13 @@ public XPathTreeParser2() {
 				match(_t,STRING_LITERAL);
 				_t = _t.getNextSibling();
 				context.setDefaultFunctionNamespace(deff.getText());
-				_t = __t247;
+				_t = __t242;
 				_t = _t.getNextSibling();
 				break;
 			}
 			case GLOBAL_VAR:
 			{
-				AST __t248 = _t;
+				AST __t243 = _t;
 				qname = _t==ASTNULL ? null :(AST)_t;
 				match(_t,GLOBAL_VAR);
 				_t = _t.getFirstChild();
@@ -2164,14 +2164,14 @@ public XPathTreeParser2() {
 				switch ( _t.getType()) {
 				case LITERAL_as:
 				{
-					AST __t250 = _t;
+					AST __t245 = _t;
 					AST tmp33_AST_in = (AST)_t;
 					match(_t,LITERAL_as);
 					_t = _t.getFirstChild();
 					type= new SequenceType();
 					sequenceType(_t,type);
 					_t = _retTree;
-					_t = __t250;
+					_t = __t245;
 					_t = _t.getNextSibling();
 					break;
 				}
@@ -2264,7 +2264,7 @@ public XPathTreeParser2() {
 								decl.setSequenceType(type);
 								path.add(decl);
 							
-				_t = __t248;
+				_t = __t243;
 				_t = _t.getNextSibling();
 				break;
 			}
@@ -2276,7 +2276,7 @@ public XPathTreeParser2() {
 			}
 			default:
 			{
-				break _loop251;
+				break _loop246;
 			}
 			}
 		} while (true);
@@ -2296,7 +2296,7 @@ public XPathTreeParser2() {
 		switch ( _t.getType()) {
 		case ATOMIC_TYPE:
 		{
-			AST __t267 = _t;
+			AST __t262 = _t;
 			t = _t==ASTNULL ? null :(AST)_t;
 			match(_t,ATOMIC_TYPE);
 			_t = _t.getFirstChild();
@@ -2305,13 +2305,13 @@ public XPathTreeParser2() {
 							int code= Type.getType(qn);
 							type.setPrimaryType(code);
 						
-			_t = __t267;
+			_t = __t262;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_empty:
 		{
-			AST __t268 = _t;
+			AST __t263 = _t;
 			AST tmp34_AST_in = (AST)_t;
 			match(_t,LITERAL_empty);
 			_t = _t.getFirstChild();
@@ -2319,95 +2319,95 @@ public XPathTreeParser2() {
 							type.setPrimaryType(Type.EMPTY);
 							type.setCardinality(Cardinality.EMPTY);
 						
-			_t = __t268;
+			_t = __t263;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_item:
 		{
-			AST __t269 = _t;
+			AST __t264 = _t;
 			AST tmp35_AST_in = (AST)_t;
 			match(_t,LITERAL_item);
 			_t = _t.getFirstChild();
 			type.setPrimaryType(Type.ITEM);
-			_t = __t269;
+			_t = __t264;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_node:
 		{
-			AST __t270 = _t;
+			AST __t265 = _t;
 			AST tmp36_AST_in = (AST)_t;
 			match(_t,LITERAL_node);
 			_t = _t.getFirstChild();
 			type.setPrimaryType(Type.NODE);
-			_t = __t270;
+			_t = __t265;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_element:
 		{
-			AST __t271 = _t;
+			AST __t266 = _t;
 			AST tmp37_AST_in = (AST)_t;
 			match(_t,LITERAL_element);
 			_t = _t.getFirstChild();
 			type.setPrimaryType(Type.ELEMENT);
-			_t = __t271;
+			_t = __t266;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_attribute:
 		{
-			AST __t272 = _t;
+			AST __t267 = _t;
 			AST tmp38_AST_in = (AST)_t;
 			match(_t,LITERAL_attribute);
 			_t = _t.getFirstChild();
 			type.setPrimaryType(Type.ATTRIBUTE);
-			_t = __t272;
+			_t = __t267;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_text:
 		{
-			AST __t273 = _t;
+			AST __t268 = _t;
 			AST tmp39_AST_in = (AST)_t;
 			match(_t,LITERAL_text);
 			_t = _t.getFirstChild();
 			type.setPrimaryType(Type.ITEM);
-			_t = __t273;
+			_t = __t268;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case 130:
 		{
-			AST __t274 = _t;
+			AST __t269 = _t;
 			AST tmp40_AST_in = (AST)_t;
 			match(_t,130);
 			_t = _t.getFirstChild();
 			type.setPrimaryType(Type.PROCESSING_INSTRUCTION);
-			_t = __t274;
+			_t = __t269;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_comment:
 		{
-			AST __t275 = _t;
+			AST __t270 = _t;
 			AST tmp41_AST_in = (AST)_t;
 			match(_t,LITERAL_comment);
 			_t = _t.getFirstChild();
 			type.setPrimaryType(Type.COMMENT);
-			_t = __t275;
+			_t = __t270;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case 131:
 		{
-			AST __t276 = _t;
+			AST __t271 = _t;
 			AST tmp42_AST_in = (AST)_t;
 			match(_t,131);
 			_t = _t.getFirstChild();
 			type.setPrimaryType(Type.DOCUMENT);
-			_t = __t276;
+			_t = __t271;
 			_t = _t.getNextSibling();
 			break;
 		}
@@ -2465,7 +2465,7 @@ public XPathTreeParser2() {
 		AST name = null;
 		Expression step = null;
 		
-		AST __t253 = _t;
+		AST __t248 = _t;
 		name = _t==ASTNULL ? null :(AST)_t;
 		match(_t,FUNCTION_DECL);
 		_t = _t.getFirstChild();
@@ -2512,7 +2512,7 @@ public XPathTreeParser2() {
 		switch ( _t.getType()) {
 		case LITERAL_as:
 		{
-			AST __t256 = _t;
+			AST __t251 = _t;
 			AST tmp46_AST_in = (AST)_t;
 			match(_t,LITERAL_as);
 			_t = _t.getFirstChild();
@@ -2520,7 +2520,7 @@ public XPathTreeParser2() {
 			sequenceType(_t,type);
 			_t = _retTree;
 			signature.setReturnType(type);
-			_t = __t256;
+			_t = __t251;
 			_t = _t.getNextSibling();
 			break;
 		}
@@ -2534,16 +2534,16 @@ public XPathTreeParser2() {
 		}
 		}
 		}
-		AST __t257 = _t;
+		AST __t252 = _t;
 		AST tmp47_AST_in = (AST)_t;
 		match(_t,LCURLY);
 		_t = _t.getFirstChild();
 		step=expr(_t,body);
 		_t = _retTree;
 		func.setFunctionBody(body);
-		_t = __t257;
+		_t = __t252;
 		_t = _t.getNextSibling();
-		_t = __t253;
+		_t = __t248;
 		_t = _t.getNextSibling();
 		_retTree = _t;
 	}
@@ -2557,7 +2557,7 @@ public XPathTreeParser2() {
 		param(_t,vars);
 		_t = _retTree;
 		{
-		_loop260:
+		_loop255:
 		do {
 			if (_t==null) _t=ASTNULL;
 			if ((_t.getType()==VARIABLE_BINDING)) {
@@ -2565,7 +2565,7 @@ public XPathTreeParser2() {
 				_t = _retTree;
 			}
 			else {
-				break _loop260;
+				break _loop255;
 			}
 			
 		} while (true);
@@ -2580,7 +2580,7 @@ public XPathTreeParser2() {
 		AST param_AST_in = (AST)_t;
 		AST varname = null;
 		
-		AST __t262 = _t;
+		AST __t257 = _t;
 		varname = _t==ASTNULL ? null :(AST)_t;
 		match(_t,VARIABLE_BINDING);
 		_t = _t.getFirstChild();
@@ -2593,14 +2593,14 @@ public XPathTreeParser2() {
 		switch ( _t.getType()) {
 		case LITERAL_as:
 		{
-			AST __t264 = _t;
+			AST __t259 = _t;
 			AST tmp48_AST_in = (AST)_t;
 			match(_t,LITERAL_as);
 			_t = _t.getFirstChild();
 			SequenceType type= new SequenceType();
 			sequenceType(_t,type);
 			_t = _retTree;
-			_t = __t264;
+			_t = __t259;
 			_t = _t.getNextSibling();
 			var.type= type;
 			break;
@@ -2615,7 +2615,7 @@ public XPathTreeParser2() {
 		}
 		}
 		}
-		_t = __t262;
+		_t = __t257;
 		_t = _t.getNextSibling();
 		_retTree = _t;
 	}
@@ -2636,7 +2636,7 @@ public XPathTreeParser2() {
 		switch ( _t.getType()) {
 		case EQ:
 		{
-			AST __t386 = _t;
+			AST __t381 = _t;
 			AST tmp49_AST_in = (AST)_t;
 			match(_t,EQ);
 			_t = _t.getFirstChild();
@@ -2648,13 +2648,13 @@ public XPathTreeParser2() {
 						step= new GeneralComparison(context, left, right, Constants.EQ);
 						path.add(step);
 					
-			_t = __t386;
+			_t = __t381;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case NEQ:
 		{
-			AST __t387 = _t;
+			AST __t382 = _t;
 			AST tmp50_AST_in = (AST)_t;
 			match(_t,NEQ);
 			_t = _t.getFirstChild();
@@ -2666,13 +2666,13 @@ public XPathTreeParser2() {
 						step= new GeneralComparison(context, left, right, Constants.NEQ);
 						path.add(step);
 					
-			_t = __t387;
+			_t = __t382;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LT:
 		{
-			AST __t388 = _t;
+			AST __t383 = _t;
 			AST tmp51_AST_in = (AST)_t;
 			match(_t,LT);
 			_t = _t.getFirstChild();
@@ -2684,13 +2684,13 @@ public XPathTreeParser2() {
 						step= new GeneralComparison(context, left, right, Constants.LT);
 						path.add(step);
 					
-			_t = __t388;
+			_t = __t383;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LTEQ:
 		{
-			AST __t389 = _t;
+			AST __t384 = _t;
 			AST tmp52_AST_in = (AST)_t;
 			match(_t,LTEQ);
 			_t = _t.getFirstChild();
@@ -2702,13 +2702,13 @@ public XPathTreeParser2() {
 						step= new GeneralComparison(context, left, right, Constants.LTEQ);
 						path.add(step);
 					
-			_t = __t389;
+			_t = __t384;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case GT:
 		{
-			AST __t390 = _t;
+			AST __t385 = _t;
 			AST tmp53_AST_in = (AST)_t;
 			match(_t,GT);
 			_t = _t.getFirstChild();
@@ -2720,13 +2720,13 @@ public XPathTreeParser2() {
 						step= new GeneralComparison(context, left, right, Constants.GT);
 						path.add(step);
 					
-			_t = __t390;
+			_t = __t385;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case GTEQ:
 		{
-			AST __t391 = _t;
+			AST __t386 = _t;
 			AST tmp54_AST_in = (AST)_t;
 			match(_t,GTEQ);
 			_t = _t.getFirstChild();
@@ -2738,7 +2738,7 @@ public XPathTreeParser2() {
 						step= new GeneralComparison(context, left, right, Constants.GTEQ);
 						path.add(step);
 					
-			_t = __t391;
+			_t = __t386;
 			_t = _t.getNextSibling();
 			break;
 		}
@@ -2767,7 +2767,7 @@ public XPathTreeParser2() {
 		switch ( _t.getType()) {
 		case LITERAL_eq:
 		{
-			AST __t379 = _t;
+			AST __t374 = _t;
 			AST tmp55_AST_in = (AST)_t;
 			match(_t,LITERAL_eq);
 			_t = _t.getFirstChild();
@@ -2779,13 +2779,13 @@ public XPathTreeParser2() {
 						step= new ValueComparison(context, left, right, Constants.EQ);
 						path.add(step);
 					
-			_t = __t379;
+			_t = __t374;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_ne:
 		{
-			AST __t380 = _t;
+			AST __t375 = _t;
 			AST tmp56_AST_in = (AST)_t;
 			match(_t,LITERAL_ne);
 			_t = _t.getFirstChild();
@@ -2797,13 +2797,13 @@ public XPathTreeParser2() {
 						step= new ValueComparison(context, left, right, Constants.NEQ);
 						path.add(step);
 					
-			_t = __t380;
+			_t = __t375;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_lt:
 		{
-			AST __t381 = _t;
+			AST __t376 = _t;
 			AST tmp57_AST_in = (AST)_t;
 			match(_t,LITERAL_lt);
 			_t = _t.getFirstChild();
@@ -2815,13 +2815,13 @@ public XPathTreeParser2() {
 						step= new ValueComparison(context, left, right, Constants.LT);
 						path.add(step);
 					
-			_t = __t381;
+			_t = __t376;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_le:
 		{
-			AST __t382 = _t;
+			AST __t377 = _t;
 			AST tmp58_AST_in = (AST)_t;
 			match(_t,LITERAL_le);
 			_t = _t.getFirstChild();
@@ -2833,13 +2833,13 @@ public XPathTreeParser2() {
 						step= new ValueComparison(context, left, right, Constants.LTEQ);
 						path.add(step);
 					
-			_t = __t382;
+			_t = __t377;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_gt:
 		{
-			AST __t383 = _t;
+			AST __t378 = _t;
 			AST tmp59_AST_in = (AST)_t;
 			match(_t,LITERAL_gt);
 			_t = _t.getFirstChild();
@@ -2851,13 +2851,13 @@ public XPathTreeParser2() {
 						step= new ValueComparison(context, left, right, Constants.GT);
 						path.add(step);
 					
-			_t = __t383;
+			_t = __t378;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_ge:
 		{
-			AST __t384 = _t;
+			AST __t379 = _t;
 			AST tmp60_AST_in = (AST)_t;
 			match(_t,LITERAL_ge);
 			_t = _t.getFirstChild();
@@ -2869,7 +2869,7 @@ public XPathTreeParser2() {
 						step= new ValueComparison(context, left, right, Constants.GTEQ);
 						path.add(step);
 					
-			_t = __t384;
+			_t = __t379;
 			_t = _t.getNextSibling();
 			break;
 		}
@@ -2898,7 +2898,7 @@ public XPathTreeParser2() {
 		switch ( _t.getType()) {
 		case LITERAL_is:
 		{
-			AST __t393 = _t;
+			AST __t388 = _t;
 			AST tmp61_AST_in = (AST)_t;
 			match(_t,LITERAL_is);
 			_t = _t.getFirstChild();
@@ -2910,13 +2910,13 @@ public XPathTreeParser2() {
 						step = new NodeComparison(context, left, right, Constants.IS);
 						path.add(step);
 					
-			_t = __t393;
+			_t = __t388;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LITERAL_isnot:
 		{
-			AST __t394 = _t;
+			AST __t389 = _t;
 			AST tmp62_AST_in = (AST)_t;
 			match(_t,LITERAL_isnot);
 			_t = _t.getFirstChild();
@@ -2928,13 +2928,13 @@ public XPathTreeParser2() {
 						step = new NodeComparison(context, left, right, Constants.ISNOT);
 						path.add(step);
 					
-			_t = __t394;
+			_t = __t389;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case BEFORE:
 		{
-			AST __t395 = _t;
+			AST __t390 = _t;
 			AST tmp63_AST_in = (AST)_t;
 			match(_t,BEFORE);
 			_t = _t.getFirstChild();
@@ -2946,13 +2946,13 @@ public XPathTreeParser2() {
 						step = new NodeComparison(context, left, right, Constants.BEFORE);
 						path.add(step);
 					
-			_t = __t395;
+			_t = __t390;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case AFTER:
 		{
-			AST __t396 = _t;
+			AST __t391 = _t;
 			AST tmp64_AST_in = (AST)_t;
 			match(_t,AFTER);
 			_t = _t.getFirstChild();
@@ -2964,7 +2964,7 @@ public XPathTreeParser2() {
 						step = new NodeComparison(context, left, right, Constants.AFTER);
 						path.add(step);
 					
-			_t = __t396;
+			_t = __t391;
 			_t = _t.getNextSibling();
 			break;
 		}
@@ -2993,7 +2993,7 @@ public XPathTreeParser2() {
 		switch ( _t.getType()) {
 		case ANDEQ:
 		{
-			AST __t376 = _t;
+			AST __t371 = _t;
 			AST tmp65_AST_in = (AST)_t;
 			match(_t,ANDEQ);
 			_t = _t.getFirstChild();
@@ -3001,7 +3001,7 @@ public XPathTreeParser2() {
 			_t = _retTree;
 			step=expr(_t,query);
 			_t = _retTree;
-			_t = __t376;
+			_t = __t371;
 			_t = _t.getNextSibling();
 			
 					ExtFulltext exprCont= new ExtFulltext(context, Constants.FULLTEXT_AND);
@@ -3013,7 +3013,7 @@ public XPathTreeParser2() {
 		}
 		case OREQ:
 		{
-			AST __t377 = _t;
+			AST __t372 = _t;
 			AST tmp66_AST_in = (AST)_t;
 			match(_t,OREQ);
 			_t = _t.getFirstChild();
@@ -3021,7 +3021,7 @@ public XPathTreeParser2() {
 			_t = _retTree;
 			step=expr(_t,query);
 			_t = _retTree;
-			_t = __t377;
+			_t = __t372;
 			_t = _t.getNextSibling();
 			
 					ExtFulltext exprCont= new ExtFulltext(context, Constants.FULLTEXT_OR);
@@ -3070,7 +3070,7 @@ public XPathTreeParser2() {
 		}
 		case PARENTHESIZED:
 		{
-			AST __t331 = _t;
+			AST __t326 = _t;
 			AST tmp67_AST_in = (AST)_t;
 			match(_t,PARENTHESIZED);
 			_t = _t.getFirstChild();
@@ -3166,7 +3166,7 @@ public XPathTreeParser2() {
 			}
 			}
 			}
-			_t = __t331;
+			_t = __t326;
 			_t = _t.getNextSibling();
 			step=predicates(_t,pathExpr);
 			_t = _retTree;
@@ -3301,14 +3301,14 @@ public XPathTreeParser2() {
 			}
 			case PREFIX_WILDCARD:
 			{
-				AST __t336 = _t;
+				AST __t331 = _t;
 				AST tmp68_AST_in = (AST)_t;
 				match(_t,PREFIX_WILDCARD);
 				_t = _t.getFirstChild();
 				nc1 = (AST)_t;
 				match(_t,NCNAME);
 				_t = _t.getNextSibling();
-				_t = __t336;
+				_t = __t331;
 				_t = _t.getNextSibling();
 				
 							QName qname= new QName(nc1.getText(), null, null);
@@ -3318,14 +3318,14 @@ public XPathTreeParser2() {
 			}
 			case NCNAME:
 			{
-				AST __t337 = _t;
+				AST __t332 = _t;
 				nc = _t==ASTNULL ? null :(AST)_t;
 				match(_t,NCNAME);
 				_t = _t.getFirstChild();
 				AST tmp69_AST_in = (AST)_t;
 				match(_t,WILDCARD);
 				_t = _t.getNextSibling();
-				_t = __t337;
+				_t = __t332;
 				_t = _t.getNextSibling();
 				
 							String namespaceURI= context.getURIForPrefix(nc.getText());
@@ -3369,7 +3369,7 @@ public XPathTreeParser2() {
 					path.add(step);
 				
 			{
-			_loop339:
+			_loop334:
 			do {
 				if (_t==null) _t=ASTNULL;
 				if ((_t.getType()==PREDICATE)) {
@@ -3377,7 +3377,7 @@ public XPathTreeParser2() {
 					_t = _retTree;
 				}
 				else {
-					break _loop339;
+					break _loop334;
 				}
 				
 			} while (true);
@@ -3410,28 +3410,28 @@ public XPathTreeParser2() {
 			}
 			case PREFIX_WILDCARD:
 			{
-				AST __t341 = _t;
+				AST __t336 = _t;
 				AST tmp75_AST_in = (AST)_t;
 				match(_t,PREFIX_WILDCARD);
 				_t = _t.getFirstChild();
 				nc2 = (AST)_t;
 				match(_t,NCNAME);
 				_t = _t.getNextSibling();
-				_t = __t341;
+				_t = __t336;
 				_t = _t.getNextSibling();
 				qname= new QName(nc2.getText(), null, null);
 				break;
 			}
 			case NCNAME:
 			{
-				AST __t342 = _t;
+				AST __t337 = _t;
 				nc3 = _t==ASTNULL ? null :(AST)_t;
 				match(_t,NCNAME);
 				_t = _t.getFirstChild();
 				AST tmp76_AST_in = (AST)_t;
 				match(_t,WILDCARD);
 				_t = _t.getNextSibling();
-				_t = __t342;
+				_t = __t337;
 				_t = _t.getNextSibling();
 				
 							String namespaceURI= context.getURIForPrefix(nc3.getText());
@@ -3453,7 +3453,7 @@ public XPathTreeParser2() {
 					path.add(step);
 				
 			{
-			_loop344:
+			_loop339:
 			do {
 				if (_t==null) _t=ASTNULL;
 				if ((_t.getType()==PREDICATE)) {
@@ -3461,7 +3461,7 @@ public XPathTreeParser2() {
 					_t = _retTree;
 				}
 				else {
-					break _loop344;
+					break _loop339;
 				}
 				
 			} while (true);
@@ -3478,7 +3478,7 @@ public XPathTreeParser2() {
 					path.add(step);
 				
 			{
-			_loop346:
+			_loop341:
 			do {
 				if (_t==null) _t=ASTNULL;
 				if ((_t.getType()==PREDICATE)) {
@@ -3486,7 +3486,7 @@ public XPathTreeParser2() {
 					_t = _retTree;
 				}
 				else {
-					break _loop346;
+					break _loop341;
 				}
 				
 			} while (true);
@@ -3503,7 +3503,7 @@ public XPathTreeParser2() {
 					path.add(step);
 				
 			{
-			_loop348:
+			_loop343:
 			do {
 				if (_t==null) _t=ASTNULL;
 				if ((_t.getType()==PREDICATE)) {
@@ -3511,7 +3511,7 @@ public XPathTreeParser2() {
 					_t = _retTree;
 				}
 				else {
-					break _loop348;
+					break _loop343;
 				}
 				
 			} while (true);
@@ -3520,7 +3520,7 @@ public XPathTreeParser2() {
 		}
 		case SLASH:
 		{
-			AST __t349 = _t;
+			AST __t344 = _t;
 			AST tmp79_AST_in = (AST)_t;
 			match(_t,SLASH);
 			_t = _t.getFirstChild();
@@ -3627,7 +3627,7 @@ public XPathTreeParser2() {
 			}
 			}
 			}
-			_t = __t349;
+			_t = __t344;
 			_t = _t.getNextSibling();
 			
 					if (step instanceof LocationStep && ((LocationStep) step).getAxis() == -1)
@@ -3637,7 +3637,7 @@ public XPathTreeParser2() {
 		}
 		case DSLASH:
 		{
-			AST __t351 = _t;
+			AST __t346 = _t;
 			AST tmp80_AST_in = (AST)_t;
 			match(_t,DSLASH);
 			_t = _t.getFirstChild();
@@ -3745,7 +3745,7 @@ public XPathTreeParser2() {
 			}
 			}
 			}
-			_t = __t351;
+			_t = __t346;
 			_t = _t.getNextSibling();
 			
 					if (step instanceof LocationStep && ((LocationStep) step).getAxis() == -1)
@@ -3778,7 +3778,7 @@ public XPathTreeParser2() {
 		switch ( _t.getType()) {
 		case PLUS:
 		{
-			AST __t356 = _t;
+			AST __t351 = _t;
 			AST tmp81_AST_in = (AST)_t;
 			match(_t,PLUS);
 			_t = _t.getFirstChild();
@@ -3786,7 +3786,7 @@ public XPathTreeParser2() {
 			_t = _retTree;
 			step=expr(_t,right);
 			_t = _retTree;
-			_t = __t356;
+			_t = __t351;
 			_t = _t.getNextSibling();
 			
 					OpNumeric op= new OpNumeric(context, left, right, Constants.PLUS);
@@ -3797,7 +3797,7 @@ public XPathTreeParser2() {
 		}
 		case MINUS:
 		{
-			AST __t357 = _t;
+			AST __t352 = _t;
 			AST tmp82_AST_in = (AST)_t;
 			match(_t,MINUS);
 			_t = _t.getFirstChild();
@@ -3805,7 +3805,7 @@ public XPathTreeParser2() {
 			_t = _retTree;
 			step=expr(_t,right);
 			_t = _retTree;
-			_t = __t357;
+			_t = __t352;
 			_t = _t.getNextSibling();
 			
 					OpNumeric op= new OpNumeric(context, left, right, Constants.MINUS);
@@ -3816,13 +3816,13 @@ public XPathTreeParser2() {
 		}
 		case UNARY_MINUS:
 		{
-			AST __t358 = _t;
+			AST __t353 = _t;
 			AST tmp83_AST_in = (AST)_t;
 			match(_t,UNARY_MINUS);
 			_t = _t.getFirstChild();
 			step=expr(_t,left);
 			_t = _retTree;
-			_t = __t358;
+			_t = __t353;
 			_t = _t.getNextSibling();
 			
 					UnaryExpr unary= new UnaryExpr(context, Constants.MINUS);
@@ -3834,13 +3834,13 @@ public XPathTreeParser2() {
 		}
 		case UNARY_PLUS:
 		{
-			AST __t359 = _t;
+			AST __t354 = _t;
 			AST tmp84_AST_in = (AST)_t;
 			match(_t,UNARY_PLUS);
 			_t = _t.getFirstChild();
 			step=expr(_t,left);
 			_t = _retTree;
-			_t = __t359;
+			_t = __t354;
 			_t = _t.getNextSibling();
 			
 					UnaryExpr unary= new UnaryExpr(context, Constants.PLUS);
@@ -3852,7 +3852,7 @@ public XPathTreeParser2() {
 		}
 		case LITERAL_div:
 		{
-			AST __t360 = _t;
+			AST __t355 = _t;
 			AST tmp85_AST_in = (AST)_t;
 			match(_t,LITERAL_div);
 			_t = _t.getFirstChild();
@@ -3860,7 +3860,7 @@ public XPathTreeParser2() {
 			_t = _retTree;
 			step=expr(_t,right);
 			_t = _retTree;
-			_t = __t360;
+			_t = __t355;
 			_t = _t.getNextSibling();
 			
 					OpNumeric op= new OpNumeric(context, left, right, Constants.DIV);
@@ -3871,7 +3871,7 @@ public XPathTreeParser2() {
 		}
 		case LITERAL_idiv:
 		{
-			AST __t361 = _t;
+			AST __t356 = _t;
 			AST tmp86_AST_in = (AST)_t;
 			match(_t,LITERAL_idiv);
 			_t = _t.getFirstChild();
@@ -3879,7 +3879,7 @@ public XPathTreeParser2() {
 			_t = _retTree;
 			step=expr(_t,right);
 			_t = _retTree;
-			_t = __t361;
+			_t = __t356;
 			_t = _t.getNextSibling();
 			
 					OpNumeric op= new OpNumeric(context, left, right, Constants.IDIV);
@@ -3890,7 +3890,7 @@ public XPathTreeParser2() {
 		}
 		case LITERAL_mod:
 		{
-			AST __t362 = _t;
+			AST __t357 = _t;
 			AST tmp87_AST_in = (AST)_t;
 			match(_t,LITERAL_mod);
 			_t = _t.getFirstChild();
@@ -3898,7 +3898,7 @@ public XPathTreeParser2() {
 			_t = _retTree;
 			step=expr(_t,right);
 			_t = _retTree;
-			_t = __t362;
+			_t = __t357;
 			_t = _t.getNextSibling();
 			
 					OpNumeric op= new OpNumeric(context, left, right, Constants.MOD);
@@ -3909,7 +3909,7 @@ public XPathTreeParser2() {
 		}
 		case STAR:
 		{
-			AST __t363 = _t;
+			AST __t358 = _t;
 			AST tmp88_AST_in = (AST)_t;
 			match(_t,STAR);
 			_t = _t.getFirstChild();
@@ -3917,7 +3917,7 @@ public XPathTreeParser2() {
 			_t = _retTree;
 			step=expr(_t,right);
 			_t = _retTree;
-			_t = __t363;
+			_t = __t358;
 			_t = _t.getNextSibling();
 			
 					OpNumeric op= new OpNumeric(context, left, right, Constants.MULT);
@@ -3957,7 +3957,7 @@ public XPathTreeParser2() {
 		switch ( _t.getType()) {
 		case ELEMENT:
 		{
-			AST __t398 = _t;
+			AST __t393 = _t;
 			e = _t==ASTNULL ? null :(AST)_t;
 			match(_t,ELEMENT);
 			_t = _t.getFirstChild();
@@ -3966,11 +3966,11 @@ public XPathTreeParser2() {
 						step= c;
 					
 			{
-			_loop404:
+			_loop399:
 			do {
 				if (_t==null) _t=ASTNULL;
 				if ((_t.getType()==ATTRIBUTE)) {
-					AST __t400 = _t;
+					AST __t395 = _t;
 					attrName = _t==ASTNULL ? null :(AST)_t;
 					match(_t,ATTRIBUTE);
 					_t = _t.getFirstChild();
@@ -3979,8 +3979,8 @@ public XPathTreeParser2() {
 										c.addAttribute(attrib);
 									
 					{
-					int _cnt403=0;
-					_loop403:
+					int _cnt398=0;
+					_loop398:
 					do {
 						if (_t==null) _t=ASTNULL;
 						switch ( _t.getType()) {
@@ -3994,7 +3994,7 @@ public XPathTreeParser2() {
 						}
 						case LCURLY:
 						{
-							AST __t402 = _t;
+							AST __t397 = _t;
 							AST tmp89_AST_in = (AST)_t;
 							match(_t,LCURLY);
 							_t = _t.getFirstChild();
@@ -4002,29 +4002,29 @@ public XPathTreeParser2() {
 							expr(_t,enclosed);
 							_t = _retTree;
 							attrib.addEnclosedExpr(enclosed);
-							_t = __t402;
+							_t = __t397;
 							_t = _t.getNextSibling();
 							break;
 						}
 						default:
 						{
-							if ( _cnt403>=1 ) { break _loop403; } else {throw new NoViableAltException(_t);}
+							if ( _cnt398>=1 ) { break _loop398; } else {throw new NoViableAltException(_t);}
 						}
 						}
-						_cnt403++;
+						_cnt398++;
 					} while (true);
 					}
-					_t = __t400;
+					_t = __t395;
 					_t = _t.getNextSibling();
 				}
 				else {
-					break _loop404;
+					break _loop399;
 				}
 				
 			} while (true);
 			}
 			{
-			_loop406:
+			_loop401:
 			do {
 				if (_t==null) _t=ASTNULL;
 				if ((_tokenSet_1.member(_t.getType()))) {
@@ -4039,18 +4039,18 @@ public XPathTreeParser2() {
 					elementContent.add(contentExpr);
 				}
 				else {
-					break _loop406;
+					break _loop401;
 				}
 				
 			} while (true);
 			}
-			_t = __t398;
+			_t = __t393;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case TEXT:
 		{
-			AST __t407 = _t;
+			AST __t402 = _t;
 			pcdata = _t==ASTNULL ? null :(AST)_t;
 			match(_t,TEXT);
 			_t = _t.getFirstChild();
@@ -4058,13 +4058,13 @@ public XPathTreeParser2() {
 						TextConstructor text= new TextConstructor(context, pcdata.getText());
 						step= text;
 					
-			_t = __t407;
+			_t = __t402;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case XML_COMMENT:
 		{
-			AST __t408 = _t;
+			AST __t403 = _t;
 			cdata = _t==ASTNULL ? null :(AST)_t;
 			match(_t,XML_COMMENT);
 			_t = _t.getFirstChild();
@@ -4072,13 +4072,13 @@ public XPathTreeParser2() {
 						CommentConstructor comment= new CommentConstructor(context, cdata.getText());
 						step= comment;
 					
-			_t = __t408;
+			_t = __t403;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case XML_PI:
 		{
-			AST __t409 = _t;
+			AST __t404 = _t;
 			p = _t==ASTNULL ? null :(AST)_t;
 			match(_t,XML_PI);
 			_t = _t.getFirstChild();
@@ -4086,13 +4086,13 @@ public XPathTreeParser2() {
 						PIConstructor pi= new PIConstructor(context, p.getText());
 						step= pi;
 					
-			_t = __t409;
+			_t = __t404;
 			_t = _t.getNextSibling();
 			break;
 		}
 		case LCURLY:
 		{
-			AST __t410 = _t;
+			AST __t405 = _t;
 			AST tmp90_AST_in = (AST)_t;
 			match(_t,LCURLY);
 			_t = _t.getFirstChild();
@@ -4100,7 +4100,7 @@ public XPathTreeParser2() {
 			step=expr(_t,subexpr);
 			_t = _retTree;
 			step= subexpr;
-			_t = __t410;
+			_t = __t405;
 			_t = _t.getNextSibling();
 			break;
 		}
@@ -4125,11 +4125,11 @@ public XPathTreeParser2() {
 		
 		
 		{
-		_loop367:
+		_loop362:
 		do {
 			if (_t==null) _t=ASTNULL;
 			if ((_t.getType()==PREDICATE)) {
-				AST __t366 = _t;
+				AST __t361 = _t;
 				AST tmp91_AST_in = (AST)_t;
 				match(_t,PREDICATE);
 				_t = _t.getFirstChild();
@@ -4145,11 +4145,11 @@ public XPathTreeParser2() {
 				
 								filter.addPredicate(predicateExpr);
 							
-				_t = __t366;
+				_t = __t361;
 				_t = _t.getNextSibling();
 			}
 			else {
-				break _loop367;
+				break _loop362;
 			}
 			
 		} while (true);
@@ -4239,13 +4239,13 @@ public XPathTreeParser2() {
 			step= null;
 		
 		
-		AST __t371 = _t;
+		AST __t366 = _t;
 		fn = _t==ASTNULL ? null :(AST)_t;
 		match(_t,FUNCTION);
 		_t = _t.getFirstChild();
 		List params= new ArrayList(2);
 		{
-		_loop373:
+		_loop368:
 		do {
 			if (_t==null) _t=ASTNULL;
 			if ((_tokenSet_0.member(_t.getType()))) {
@@ -4255,12 +4255,12 @@ public XPathTreeParser2() {
 				params.add(pathExpr);
 			}
 			else {
-				break _loop373;
+				break _loop368;
 			}
 			
 		} while (true);
 		}
-		_t = __t371;
+		_t = __t366;
 		_t = _t.getNextSibling();
 		step= FunctionFactory.createFunction(context, path, fn.getText(), params);
 		_retTree = _t;
@@ -4370,7 +4370,7 @@ public XPathTreeParser2() {
 		
 		AST predicate_AST_in = (AST)_t;
 		
-		AST __t369 = _t;
+		AST __t364 = _t;
 		AST tmp102_AST_in = (AST)_t;
 		match(_t,PREDICATE);
 		_t = _t.getFirstChild();
@@ -4378,7 +4378,7 @@ public XPathTreeParser2() {
 		expr(_t,predicateExpr);
 		_t = _retTree;
 		step.addPredicate(predicateExpr);
-		_t = __t369;
+		_t = __t364;
 		_t = _t.getNextSibling();
 		_retTree = _t;
 	}
