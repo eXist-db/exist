@@ -329,4 +329,5 @@ public class DateTimeValue extends AbstractDateTimeValue {
 		}
 	}
 
+	public Date getDate() { return calendar.getTime(); }
 }
