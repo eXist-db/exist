@@ -24,7 +24,7 @@ public class NameTest extends TypeTest {
 	public boolean matches(NodeProxy proxy) {
 		Node node = null;
 		short type = proxy.nodeType;
-		if(type == Type.ITEM) {
+		if(proxy.getType() == Type.ITEM) {
 			node = proxy.getNode();
 			type = node.getNodeType();
 		}
