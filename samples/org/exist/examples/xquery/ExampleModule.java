@@ -50,4 +50,7 @@ public class ExampleModule extends AbstractInternalModule {
 		return PREFIX;
 	}
 
+	public String getDescription() {
+		return "A simple example module";
+	}
 }
