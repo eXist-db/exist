@@ -515,4 +515,11 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		if (!observers.contains(o))
 			observers.add(o);
 	}
+
+    /* (non-Javadoc)
+     * @see org.exist.xmldb.CollectionImpl#isRemoteCollection()
+     */
+    public boolean isRemoteCollection() throws XMLDBException {
+        return false;
+    }
 }

@@ -15,6 +15,8 @@ import org.xmldb.api.base.XMLDBException;
  */
 public interface CollectionImpl extends Collection {
 
+    public boolean isRemoteCollection() throws XMLDBException;
+    
 	/**
 	 * Returns the time of creation of the collection.
 	 * @return

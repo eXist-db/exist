@@ -502,4 +502,11 @@ public class RemoteCollection implements CollectionImpl {
 	public Permission getPermissions() {
 		return permissions;
 	}
+
+    /* (non-Javadoc)
+     * @see org.exist.xmldb.CollectionImpl#isRemoteCollection()
+     */
+    public boolean isRemoteCollection() throws XMLDBException {
+        return true;
+    }
 }
