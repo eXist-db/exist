@@ -404,6 +404,10 @@ public abstract class Serializer implements XMLReader {
 			receiver = toSAX;
 	}
 
+    public void setReceiver(Receiver receiver) {
+        this.receiver = receiver;
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.xml.sax.XMLReader#setContentHandler(org.xml.sax.ContentHandler)
 	 */

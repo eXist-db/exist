@@ -29,6 +29,7 @@ import org.exist.dom.QName;
 import org.exist.dom.QNameable;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
+import org.exist.util.sanity.SanityCheck;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.util.serializer.DOMStreamerPool;
 import org.exist.util.serializer.Receiver;
@@ -131,6 +132,10 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 		}
 	}
 	
+    public void expand() throws DOMException {
+        document.expand();
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getNodeValue()
 	 */
