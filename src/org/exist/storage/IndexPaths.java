@@ -41,6 +41,7 @@ public class IndexPaths {
 	
     protected ArrayList includePath;
     protected ArrayList excludePath;
+    protected ArrayList preserveContent;
     
     protected boolean includeByDefault = true;
     protected boolean includeAttributes = true;
@@ -58,6 +59,7 @@ public class IndexPaths {
         includeByDefault = def;
         includePath = new ArrayList(  );
         excludePath = new ArrayList(  );
+        preserveContent = new ArrayList(  );
     }
 
     /**
@@ -158,4 +160,34 @@ public class IndexPaths {
 
         return false;
     }
+
+    /**
+     * Add a path to the list of node with preserveContent option
+     *
+     * @param path DOCUMENT ME!
+     */
+    public void addpreserveContent( String path ) {
+    	preserveContent.add( new NodePath(path) );
+    }
+    
+    
+    /**
+     * Check if a given path should be preserveContent.
+     *
+     * @param path path to the node
+     *
+     * @return Description of the Return Value
+     */
+
+      public boolean preserveContent( NodePath path ) {
+     	
+    	for ( Iterator i = preserveContent.iterator(); i.hasNext(); ) 
+            if( ((NodePath)i.next()).match(path) )
+                return true; 
+
+        return false;
+    }
+
+
+
 }
