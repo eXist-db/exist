@@ -72,8 +72,8 @@ LITERAL_unordered="unordered"=72
 DOLLAR("dollar sign '$'")=73
 LCURLY("opening curly brace '{'")=74
 RCURLY("closing curly brace '{'")=75
-LITERAL_at="at"=76
-LITERAL_external="external"=77
+LITERAL_external="external"=76
+LITERAL_at="at"=77
 LITERAL_as="as"=78
 COMMA=79
 LITERAL_empty="empty"=80

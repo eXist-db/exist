@@ -333,7 +333,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		}
 	}
 
-	private final void realize() {
+	public final void realize() {
 		if (realSet != null && realSetIsComplete)
 			return;
 		realSet = getNodes();

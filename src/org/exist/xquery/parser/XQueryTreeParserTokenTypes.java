@@ -98,8 +98,8 @@ public interface XQueryTreeParserTokenTypes {
 	int DOLLAR = 73;
 	int LCURLY = 74;
 	int RCURLY = 75;
-	int LITERAL_at = 76;
-	int LITERAL_external = 77;
+	int LITERAL_external = 76;
+	int LITERAL_at = 77;
 	int LITERAL_as = 78;
 	int COMMA = 79;
 	int LITERAL_empty = 80;

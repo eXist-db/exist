@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.xml.transform.OutputKeys;
 
 import org.exist.source.FileSource;
 import org.exist.source.Source;
@@ -226,7 +227,6 @@ public class XQueryServlet extends HttpServlet {
 		
 		try {
 			Collection collection = DatabaseManager.getCollection(collectionURI, actualUser, actualPassword);
-			
 			XQueryService service = (XQueryService)
 				collection.getService("XQueryService", "1.0");
 			service.setProperty("base-uri", baseURI);

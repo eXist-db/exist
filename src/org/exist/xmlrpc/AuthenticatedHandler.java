@@ -4,7 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Vector;
 
-import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
 import org.apache.xmlrpc.AuthenticatedXmlRpcHandler;
 import org.apache.xmlrpc.XmlRpc;
 import org.apache.xmlrpc.XmlRpcException;
@@ -14,8 +14,9 @@ import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 
 public class AuthenticatedHandler implements AuthenticatedXmlRpcHandler {
-    private static Category LOG =
-        Category.getInstance( AuthenticatedXmlRpcHandler.class.getName() );
+    
+    private static Logger LOG =
+        Logger.getLogger( AuthenticatedXmlRpcHandler.class.getName() );
 
     private RpcAPI handler;
     private BrokerPool pool = null;

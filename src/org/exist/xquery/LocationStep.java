@@ -32,8 +32,6 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.VirtualNodeSet;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.ElementValue;
-import org.exist.util.sanity.SanityCheck;
-import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
@@ -203,7 +201,7 @@ public class LocationStep extends Step {
 					if (contextSet instanceof VirtualNodeSet) {
 						((VirtualNodeSet) contextSet).setInPredicate(true);
 						((VirtualNodeSet) contextSet).setSelfIsContext();
-					} else if(Type.subTypeOf(contextSet.getItemType(), Type.NODE)) {
+                    } else if(Type.subTypeOf(contextSet.getItemType(), Type.NODE)) {
 						NodeProxy p;
 						for (Iterator i = contextSet.iterator(); i.hasNext();) {
 							p = (NodeProxy) i.next();
@@ -213,6 +211,16 @@ public class LocationStep extends Step {
 				}
 				return contextSet;
 			} else {
+//                NodeSet result = new ExtArrayNodeSet();
+//                NodeProxy p;
+//                for (Iterator i = contextSet.iterator(); i.hasNext(); ) {
+//                    p = (NodeProxy) i.next();
+//                    if (test.matches(p)) {
+//                        result.add(p);
+//                        p.addContextNode(p);
+//                    }
+//                }
+//                return result;
 				VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextSet);
 				vset.setInPredicate(inPredicate);
 				return vset;

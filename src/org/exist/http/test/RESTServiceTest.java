@@ -113,7 +113,7 @@ public class RESTServiceTest extends TestCase {
 	}
 	
 	public void testQueryGet() throws IOException {
-		String uri = COLLECTION_URI + "?_query=" + URLEncoder.encode("doc('/db/test/test.xml')//para[. = 'ääüüööÄÄÖÖÜÜ']/text()");
+		String uri = COLLECTION_URI + "?_query=" + URLEncoder.encode("doc('/db/test/test.xml')//para[. = 'ääüüööÄÄÖÖÜÜ']/text()", "UTF-8");
 		HttpURLConnection connect = getConnection(uri);
 		connect.setRequestMethod("GET");
 		connect.connect();
