@@ -24,8 +24,10 @@ package org.exist.xquery;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 
 import org.apache.log4j.Logger;
+import org.exist.dom.NodeSet;
 import org.exist.source.Source;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
@@ -117,5 +119,11 @@ public class XQuery {
         } finally {
         	broker.getBrokerPool().getXQueryMonitor().queryCompleted(context.getWatchDog());
         }
+    }
+    
+    public Sequence execute(String expression, Sequence contextSequence) throws XPathException {
+		XQueryContext context = new XQueryContext(broker);
+		CompiledXQuery compiled = compile(context, new StringReader(expression));
+		return execute(compiled, null);
     }
 }

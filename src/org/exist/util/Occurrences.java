@@ -1,6 +1,7 @@
 package org.exist.util;
 
-import org.exist.util.hashtable.ObjectHashSet;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
 
 /**
  * Class to count element and word frequencies.
@@ -9,7 +10,7 @@ public class Occurrences implements Comparable {
 
 	private Comparable term;
 	private int occurrences = 0;
-	private ObjectHashSet docs = new ObjectHashSet(1024);
+	private DocumentSet docs = new DocumentSet();
     
 	public Occurrences(Comparable name) {
 		term = name;
@@ -33,10 +34,14 @@ public class Occurrences implements Comparable {
 		occurrences += count;
 	}
 
-    public void addDocument(int docId) {
-        Integer i = new Integer(docId);
-        if(!docs.contains(i))
-            docs.add(i);
+    public void addDocument(DocumentImpl doc) {
+        if(!docs.contains(doc.getDocId()))
+            docs.add(doc);
+    }
+    
+    public void add(Occurrences other) {
+    	addOccurrences(other.occurrences);
+    	docs.addAll(other.docs);
     }
     
     /**
@@ -46,7 +51,7 @@ public class Occurrences implements Comparable {
      * @return
      */
     public int getDocuments() {
-        return docs.size();
+        return docs.getLength();
     }
     
 	/*

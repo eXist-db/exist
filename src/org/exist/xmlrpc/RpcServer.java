@@ -48,6 +48,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.Configuration;
 import org.exist.util.hashtable.Int2ObjectHashMap;
+import org.exist.xquery.XPathException;
 import org.xml.sax.SAXException;
 
 
@@ -582,6 +583,19 @@ public class RpcServer implements RpcAPI {
         }
     }
 
+    /* (non-Javadoc)
+	 * @see org.exist.xmlrpc.RpcAPI#scanIndexTerms(org.exist.security.User, java.lang.String, java.lang.String, java.lang.String)
+	 */
+	public Vector scanIndexTerms(User user, String xpath, String start, String end) throws PermissionDeniedException, EXistException, XPathException {
+		RpcConnection con = null;
+        try {
+            con = pool.get();
+            return con.scanIndexTerms(user, xpath, start, end);
+        } finally {
+            pool.release(con);
+        }
+	}
+	
     private void handleException(Exception e) throws EXistException,
             PermissionDeniedException {
         LOG.debug(e.getMessage(), e);

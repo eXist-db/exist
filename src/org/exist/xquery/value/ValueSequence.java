@@ -20,6 +20,7 @@
  */
 package org.exist.xquery.value;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -58,6 +59,13 @@ public class ValueSequence extends AbstractSequence {
 	public ValueSequence(Sequence otherSequence) {
 		values = new Item[otherSequence.getLength()];
 		addAll(otherSequence);
+	}
+	
+	public void clear() {
+		Arrays.fill(values, null);
+		size = -1;
+		itemType = Type.ANY_TYPE;
+		noDuplicates = false;
 	}
 	
 	public void add(Item item) {

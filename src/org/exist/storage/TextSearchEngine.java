@@ -36,7 +36,6 @@ import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeSet;
 import org.exist.dom.TextImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
 import org.exist.storage.analysis.SimpleTokenizer;
 import org.exist.storage.analysis.Tokenizer;
 import org.exist.storage.serializers.Serializer;
@@ -208,27 +207,17 @@ public abstract class TextSearchEngine extends Observable {
 	        TermMatcher matcher, CharSequence startTerm) throws TerminatedException;
 	
 	/**
-	 * Scan the fulltext index and return an Occurrences object for each
-	 * of the index keys.
-	 * 
-	 * Arguments start and end are used to restrict the range of keys returned.
-	 * For example start="a" and end="az" will return all keywords starting
-	 * with letter "a".
-	 * 
-	 * @param user
-	 * @param collection
-	 * @param start
-	 * @param end
-	 * @param inclusive
-	 * @return
-	 * @throws PermissionDeniedException
+	 * Queries the fulltext index to retrieve information on indexed words contained
+	 * in the index for the current collection. Returns a list of {@link Occurrences} for all 
+	 * words contained in the index. If {@param end} is null, all words starting with 
+	 * the string sequence {@param start} are returned. Otherwise, the method 
+	 * returns all words that come after start and before end in lexical order.
 	 */
 	public abstract Occurrences[] scanIndexTerms(
-		User user,
-		Collection collection,
+		DocumentSet docs,
+		NodeSet contextSet,
 		String start,
-		String end,
-		boolean inclusive) throws PermissionDeniedException;
+		String end) throws PermissionDeniedException;
 
 	public abstract String[] getIndexTerms(DocumentSet docs, TermMatcher matcher);
 	

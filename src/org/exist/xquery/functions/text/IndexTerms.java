@@ -21,10 +21,8 @@
  */
 package org.exist.xquery.functions.text;
 
-import java.util.Iterator;
-
-import org.exist.collections.Collection;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.Occurrences;
@@ -50,7 +48,7 @@ public class IndexTerms extends BasicFunction {
     public final static FunctionSignature signature = new FunctionSignature(
             new QName("index-terms", TextModule.NAMESPACE_URI, TextModule.PREFIX),
             "This function can be used to collect some information on the distribution " +
-            "of index terms within a set of collections. For each distinct collection in $a" +
+            "of index terms within a set of collections. For each distinct collection in $a " +
             "and every term in the collection that starts with substring $b, " +
             "the function $c is called with three arguments: 1) the term as found in the index, " +
             "2) the overall frequency of the term within the collection, 3) the number of documents " +
@@ -59,9 +57,10 @@ public class IndexTerms extends BasicFunction {
             new SequenceType[]{
                     new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
                     new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE)
+                    new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE),
+                    new SequenceType(Type.INT, Cardinality.EXACTLY_ONE)
             },
-            new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
+            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
     
     public IndexTerms(XQueryContext context) {
         super(context, signature);
@@ -74,30 +73,34 @@ public class IndexTerms extends BasicFunction {
             throws XPathException {
         if(args[0].getLength() == 0)
             return Sequence.EMPTY_SEQUENCE;
-        DocumentSet docs = args[0].getDocumentSet();
+        NodeSet nodes = args[0].toNodeSet();
+        DocumentSet docs = nodes.getDocumentSet();
         String start = args[1].getStringValue();
         FunctionReference ref = (FunctionReference) args[2].itemAt(0);
+        int max = ((IntegerValue) args[3].itemAt(0)).getInt();
         FunctionCall call = ref.getFunctionCall();
-        
         Sequence result = new ValueSequence();
-        for (Iterator i = docs.getCollectionIterator(); i.hasNext(); ) {
-            Collection collection = (Collection) i.next();
-            try {
-                Occurrences occur[] = 
-                    context.getBroker().getTextEngine().scanIndexTerms(context.getUser(), collection, start, null, true);
-                LOG.debug("Found: " + occur.length);
-                for (int j = 0; j < occur.length; j++) {
-                    Sequence params[] = new Sequence[3];
-                    params[0] = new StringValue(occur[j].getTerm().toString());
-                    params[1] = new IntegerValue(occur[j].getOccurrences());
-                    params[2] = new IntegerValue(occur[j].getDocuments());
-                    
-                    result.addAll(call.evalFunction(contextSequence, null, params));
-                }
-            } catch (PermissionDeniedException e) {
+        try {
+            Occurrences occur[] = 
+                context.getBroker().getTextEngine().scanIndexTerms(docs, nodes, start, null);
+            int len = (occur.length > max ? max : occur.length);
+            Sequence params[] = new Sequence[2];
+            ValueSequence data = new ValueSequence();
+            for (int j = 0; j < len; j++) {
+                params[0] = new StringValue(occur[j].getTerm().toString());
+                data.add(new IntegerValue(occur[j].getOccurrences(), Type.UNSIGNED_INT));
+                data.add(new IntegerValue(occur[j].getDocuments(), Type.UNSIGNED_INT));
+                data.add(new IntegerValue(j + 1, Type.UNSIGNED_INT));
+                params[1] = data;
+                
+                result.addAll(call.evalFunction(contextSequence, null, params));
+                data.clear();
             }
+            LOG.debug("Returning: " + result.getLength());
+            return result;
+        } catch (PermissionDeniedException e) {
+        	throw new XPathException(getASTNode(), e.getMessage(), e);
         }
-        return result;
     }
 
 }
