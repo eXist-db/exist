@@ -20,6 +20,7 @@
  */
 package org.exist.xquery.value;
 
+import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.memtree.Receiver;
 import org.exist.storage.DBBroker;
@@ -167,6 +168,14 @@ public abstract class AtomicValue implements Item, Sequence {
 				+ " to a node set");
 	}
 
+	
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#getDocumentSet()
+     */
+    public DocumentSet getDocumentSet() {
+        return DocumentSet.EMPTY_DOCUMENT_SET;
+    }
+    
 	public String pprint() {
 		try {
 			return getStringValue();

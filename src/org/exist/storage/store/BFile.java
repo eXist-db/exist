@@ -400,7 +400,6 @@ public class BFile extends BTree {
         try {
             final long p = findValue(key);
             if (p == KEY_NOT_FOUND) {
-                LOG.debug("key not found");
                 return null;
             }
             final long pnum = StorageAddress.pageFromPointer(p);

@@ -20,6 +20,7 @@
  */
 package org.exist.xquery.value;
 
+import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.xquery.XPathException;
 
@@ -139,6 +140,8 @@ public interface Sequence {
 	 * @throws XPathException if the sequence contains items which are not nodes.
 	 */
 	public NodeSet toNodeSet() throws XPathException;
+	
+	public DocumentSet getDocumentSet();
 	
 	/**
 	 * Returns a preference indicator, indicating the preference of

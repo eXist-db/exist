@@ -23,6 +23,7 @@ package org.exist.xquery.value;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
@@ -92,7 +93,15 @@ public abstract class AbstractSequence implements Sequence {
 	 * @see org.exist.xquery.value.Sequence#itemAt(int)
 	 */
 	public abstract Item itemAt(int pos);
+
 	
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#getDocumentSet()
+     */
+    public DocumentSet getDocumentSet() {
+        return DocumentSet.EMPTY_DOCUMENT_SET;
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#effectiveBooleanValue()
 	 */

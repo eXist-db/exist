@@ -49,6 +49,7 @@ import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.ReadOnlyException;
+import org.exist.xquery.TerminatedException;
 
 public class NativeElementIndex extends ElementIndex {
 
@@ -86,6 +87,89 @@ public class NativeElementIndex extends ElementIndex {
 		} catch (LockException e) {
 			LOG.error("could not acquire lock on elements index", e);
 		} catch (BTreeException e) {
+            LOG.warn(e.getMessage(), e);
+        } catch (IOException e) {
+            LOG.warn(e.getMessage(), e);
+        } finally {
+			lock.release();
+		}
+	}
+	
+	public void dropIndex(DocumentImpl doc) throws ReadOnlyException {
+//	  drop element-index
+		short collectionId = doc.getCollection().getId();
+		Value ref = new ElementValue(collectionId);
+		IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+		Lock lock = dbElement.getLock();
+		try {
+			lock.acquire(Lock.WRITE_LOCK);
+			ArrayList elements = dbElement.findKeys(query);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("removeDocument() - "
+                    + "found "
+                    + elements.size()
+                    + " elements.");
+            }
+
+			Value key;
+			Value value;
+			byte[] data;
+			// byte[] ndata;
+			VariableByteArrayInput is;
+			VariableByteOutputStream os;
+			int len;
+			int docId;
+			long delta;
+			long address;
+			boolean changed;
+			for (int i = 0; i < elements.size(); i++) {
+				key = (Value) elements.get(i);
+				value = dbElement.get(key);
+				data = value.getData();
+				is = new VariableByteArrayInput(data);
+				os = new VariableByteOutputStream();
+				changed = false;
+				try {
+					while (is.available() > 0) {
+						docId = is.readInt();
+						len = is.readInt();
+						if (docId != doc.getDocId()) {
+							// copy data to new buffer
+							os.writeInt(docId);
+							os.writeInt(len);
+							for (int j = 0; j < len; j++) {
+								delta = is.readLong();
+								address = StorageAddress.read(is);
+								os.writeLong(delta);
+								StorageAddress.write(address, os);
+							}
+						} else {
+							changed = true;
+							// skip
+							is.skip(len * 4);
+						}
+					}
+				} catch (EOFException e) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("removeDocument(String) - eof", e);
+                    }
+				} catch (IOException e) {
+                    LOG.warn("removeDocument(String) " + e.getMessage(), e);
+                }
+				if (changed) {
+					if (dbElement.put(key, os.data()) < 0)
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("removeDocument() - "
+                                + "could not save element");
+                        }
+				}
+			}
+		} catch (LockException e) {
+            LOG.warn("removeDocument(String) - "
+                + "could not acquire lock on elements", e);
+		} catch (TerminatedException e) {
+            LOG.warn("method terminated", e);
+        } catch (BTreeException e) {
             LOG.warn(e.getMessage(), e);
         } catch (IOException e) {
             LOG.warn(e.getMessage(), e);

@@ -41,7 +41,7 @@ import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.store.StorageAddress;
 import org.exist.util.Lock;
-import org.exist.util.ReentrantReadWriteLock;
+import org.exist.util.MultiReadReentrantLock;
 import org.exist.util.SyntaxException;
 import org.exist.xquery.DescendantSelector;
 import org.exist.xquery.NodeSelector;
@@ -123,13 +123,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	// has document-metadata been loaded?
 	private transient boolean complete = true;
-
-	// true while a write operation is in progress
-	private transient boolean writeLocked = false;
 	
 	private transient User lockOwner = null;
 	
-	private transient Lock updateLock = null;
+	private transient Lock updateLock = new MultiReadReentrantLock();
 	
 	public DocumentImpl(DBBroker broker, Collection collection) {
 		super(Node.DOCUMENT_NODE, 0);
@@ -179,16 +176,28 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			treeLevelStartPoints[i] = old.treeLevelStartPoints[i];
 	}
 
+	/**
+	 * Returns the type of this resource, either  {@link #XML_FILE} or 
+	 * {@link #BINARY_FILE}.
+	 * 
+	 * @return
+	 */
 	public byte getResourceType() {
 		return XML_FILE;
 	}
 	
-	public void setWriteLock(boolean locked) {
-		this.writeLocked = locked;
+	/**
+	 * Returns true if the document is currently locked for
+	 * write.
+	 * 
+	 * @return
+	 */
+	public boolean isLockedForWrite() {
+		return updateLock.isLockedForWrite();
 	}
 	
-	public boolean isLockedForWrite() {
-		return writeLocked;
+	public void setCollection(Collection parent) {
+	    this.collection = parent;
 	}
 	
 	protected static NodeImpl createNode(long gid, short type) {
@@ -239,12 +248,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 					"to be mapped into eXist's numbering scheme");
 		}
 	}
-
-	// jmv - PMD - Avoid unused private methods
-//	private void checkRange(int level) throws EXistException {
-//		if (treeLevelStartPoints[level] < 0 || treeLevelStartPoints[level + 1] < 0)
-//			throw new EXistException("index out of range");
-//	}
 
 	public int compareTo(Object other) {
 		final long otherId = ((DocumentImpl)other).docId;
@@ -832,16 +835,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		}
 	}
 
-	// jmv - PMD - Avoid unused private methods
-//	private void checkTree(int size) throws EXistException {
-//		// check if the tree structure needs to be changed
-//		System.out.println(treeLevelOrder[0]);
-//		if (treeLevelOrder[0] < children + size) {
-//			// recompute the order of the tree
-//			treeLevelOrder[0] = children + size;
-//			calculateTreeLevelStartPoints();
-//		}
-//	}
 	/**
 	 * @return
 	 */
@@ -874,9 +867,13 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		lastModified = l;
 	}
 	
+	/**
+	 * Returns the update lock associated with this
+	 * resource.
+	 * 
+	 * @return
+	 */
 	public synchronized Lock getUpdateLock() {
-	    if(updateLock == null)
-	        updateLock = new ReentrantReadWriteLock(getFileName());
 	    return updateLock;
 	}
 	

@@ -74,20 +74,34 @@ public class XQueryContext {
 
 	private final static Logger LOG = Logger.getLogger(XQueryContext.class);
 
+	// Static namespace/prefix mappings
 	private Map namespaces;
+	
+	// Local in-scope namespace/prefix mappings in the current context
 	private HashMap inScopeNamespaces = new HashMap();
 
+	// Static prefix/namespace mappings
 	private HashMap prefixes;
+	
+	// Local prefix/namespace mappings in the current context
 	private HashMap inScopePrefixes = new HashMap();
 
+	// Local namespace stack
 	private Stack namespaceStack = new Stack();
 
+	// Known user defined functions in the local module
 	private TreeMap declaredFunctions = new TreeMap();
 
+	// Globally declare variables
 	private TreeMap globalVariables = new TreeMap();
+	
+	// Local in-scope variables in the current context
 	private TreeMap variables = new TreeMap();
+	
+	// Local in-scope variable stack
 	private Stack variableStack = new Stack();
 
+	// Unresolved references to user defined functions
 	private Stack forwardReferences = new Stack();
 	
 	private XQueryWatchDog watchdog;
@@ -130,9 +144,17 @@ public class XQueryContext {
 	 * fragments
 	 */
 	private MemTreeBuilder builder = null;
+	
+	// Stack for temporary document fragments
 	private Stack fragmentStack = new Stack();
 
 	private Expression rootExpression;
+	
+	/**
+	 * Flag to indicate that the query should put an exclusive
+	 * lock on all documents involved.
+	 */
+	private boolean exclusive = false;
 	
 	public XQueryContext(DBBroker broker) {
 		this.broker = broker;
@@ -142,10 +164,22 @@ public class XQueryContext {
 		builder.startDocument();
 	}
 	
+	/**
+	 * Called from the XQuery compiler to set the root expression
+	 * for this context.
+	 * 
+	 * @param expr
+	 */
 	public void setRootExpression(Expression expr) {
 		this.rootExpression = expr;
 	}
 	
+	/**
+	 * Returns the root expression of the XQuery associated with
+	 * this context.
+	 * 
+	 * @return
+	 */
 	public Expression getRootExpression() {
 		return rootExpression;
 	}
@@ -813,10 +847,21 @@ public class XQueryContext {
 		}
 	}
 
+	/**
+	 * Add a forward reference to an undeclared function. Forward
+	 * references will be resolved later.
+	 * 
+	 * @param call
+	 */
 	public void addForwardReference(FunctionCall call) {
 		forwardReferences.push(call);
 	}
 	
+	/**
+	 * Resolve all forward references to previously undeclared functions.
+	 * 
+	 * @throws XPathException
+	 */
 	public void resolveForwardReferences() throws XPathException {
 		while(!forwardReferences.empty()) {
 			FunctionCall call = (FunctionCall)forwardReferences.pop();
@@ -827,6 +872,15 @@ public class XQueryContext {
 			call.resolveForwardReference(func);
 		}
 	}
+	
+	public void setExclusiveMode(boolean exclusive) {
+	    this.exclusive = exclusive;
+	}
+	
+	public boolean inExclusiveMode() {
+	    return exclusive;
+	}
+	
 	/**
 	 * Load the default prefix/namespace mappings table and set up
 	 * internal functions.

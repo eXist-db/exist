@@ -659,9 +659,9 @@ public class NativeTextEngine extends TextSearchEngine {
 						}
 					}
 				} catch (EOFException e) {
-				    LOG.debug(e.getMessage(), e);
+//				    LOG.debug(e.getMessage(), e);
 				} catch (IOException e) {
-				    LOG.debug(e.getMessage(), e);
+//				    LOG.debug(e.getMessage(), e);
 				}
 				if (changed) {
 					try {

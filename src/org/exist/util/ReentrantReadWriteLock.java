@@ -98,6 +98,21 @@ public class ReentrantReadWriteLock implements Lock {
 		}
 	}
 
+	
+    /* (non-Javadoc)
+     * @see org.exist.util.Lock#isLockedForWrite()
+     */
+    public boolean isLockedForWrite() {
+        return holds_ > 0 && mode_ == Lock.WRITE_LOCK;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.util.Lock#release(int)
+     */
+    public void release(int mode) {
+        release();
+    }
+    
 	/**
 	 * Release the lock.
 	 * @exception Error thrown if not current owner of lock

@@ -48,6 +48,7 @@ import org.dbxml.core.filer.Paged;
 import org.dbxml.core.indexer.IndexQuery;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.ArraySet;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.BinaryDocument;
@@ -414,64 +415,64 @@ public class NativeBroker extends DBBroker {
 			(type == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
 		final Lock lock = elementsDb.getLock();
 		for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
-			collection = (Collection) i.next();
-			collectionId = collection.getId();
-			if (type == ElementValue.ATTRIBUTE_ID) {
-				ref = new ElementValue((byte) type, collectionId, qname.getLocalName());
-			} else {
-				sym = getSymbols().getSymbol(qname.getLocalName());
-				nsSym = getSymbols().getNSSymbol(qname.getNamespaceURI());
-				ref = new ElementValue((byte) type, collectionId, sym, nsSym);
-			}
-			boolean exceptionOcurred = false;
-			try {
-				lock.acquire(Lock.READ_LOCK);
-				is = elementsDb.getAsStream(ref);
-			} catch (LockException e) {
-                LOG.warn(
-                    "findElementsByTagName(byte, DocumentSet, QName, NodeSelector) - "
-                        + "failed to acquire lock",
-                    e);
-				// jmv: dis = null;
-				exceptionOcurred = true;
-			} catch (IOException e) {
-                LOG.warn(
-                    "findElementsByTagName(byte, DocumentSet, QName, NodeSelector) - "
-                        + "io exception while reading elements for "
-                        + qname,
-                    e);
-				// jmv: dis = null;
-				exceptionOcurred = true;
-			} finally {
-				lock.release();
-			}
-			// jmv: if (dis == null)
-			// wolf: dis == null if no matching element has been found in the index
-			if (is == null || exceptionOcurred)
-				continue;
-			try {
-				while (is.available() > 0) {
-					docId = is.readInt();
-					len = is.readInt();
-					if ((doc = docs.getDoc(docId)) == null) {
-						is.skip(len * 4);
-						continue;
-					}
-					gid = 0;
-					for (int k = 0; k < len; k++) {
-						gid = gid + is.readLong();
-						p = new NodeProxy(doc, gid, nodeType, StorageAddress.read(is));
-						if(selector == null || selector.match(p))
-							result.add(p, len);
-					}
-				}
-			} catch (EOFException e) {
-			} catch (IOException e) {
-                LOG.warn(
-                    "findElementsByTagName(byte, DocumentSet, QName, NodeSelector) - "
-                        + "unexpected io error",
-                    e);
-			}
+		    collection = (Collection) i.next();
+		    collectionId = collection.getId();
+		    if (type == ElementValue.ATTRIBUTE_ID) {
+		        ref = new ElementValue((byte) type, collectionId, qname.getLocalName());
+		    } else {
+		        sym = getSymbols().getSymbol(qname.getLocalName());
+		        nsSym = getSymbols().getNSSymbol(qname.getNamespaceURI());
+		        ref = new ElementValue((byte) type, collectionId, sym, nsSym);
+		    }
+		    boolean exceptionOcurred = false;
+		    try {
+		        lock.acquire(Lock.READ_LOCK);
+		        is = elementsDb.getAsStream(ref);
+		    } catch (LockException e) {
+		        LOG.warn(
+		                "findElementsByTagName(byte, DocumentSet, QName, NodeSelector) - "
+		                + "failed to acquire lock",
+		                e);
+		        // jmv: dis = null;
+		        exceptionOcurred = true;
+		    } catch (IOException e) {
+		        LOG.warn(
+		                "findElementsByTagName(byte, DocumentSet, QName, NodeSelector) - "
+		                + "io exception while reading elements for "
+		                + qname,
+		                e);
+		        // jmv: dis = null;
+		        exceptionOcurred = true;
+		    } finally {
+		        lock.release();
+		    }
+		    // jmv: if (dis == null)
+		    // wolf: dis == null if no matching element has been found in the index
+		    if (is == null || exceptionOcurred)
+		        continue;
+		    try {
+		        while (is.available() > 0) {
+		            docId = is.readInt();
+		            len = is.readInt();
+		            if ((doc = docs.getDoc(docId)) == null) {
+		                is.skip(len * 4);
+		                continue;
+		            }
+		            gid = 0;
+		            for (int k = 0; k < len; k++) {
+		                gid = gid + is.readLong();
+		                p = new NodeProxy(doc, gid, nodeType, StorageAddress.read(is));
+		                if(selector == null || selector.match(p))
+		                    result.add(p, len);
+		            }
+		        }
+		    } catch (EOFException e) {
+		    } catch (IOException e) {
+		        LOG.warn(
+		                "findElementsByTagName(byte, DocumentSet, QName, NodeSelector) - "
+		                + "unexpected io error",
+		                e);
+		    }
 		}
 //		result.sort();
 //				LOG.debug(
@@ -1376,7 +1377,7 @@ public class NativeBroker extends DBBroker {
 	 *@return        a list of nodes
 	 */
 	public NodeList getRange(final Document doc, final long first, final long last) {
-		NodeListImpl result = new NodeListImpl((int) (last - first));
+		NodeListImpl result = new NodeListImpl((int) (last - first + 1));
 		for (long gid = first; gid <= last; gid++) {
 			result.add(objectWith(doc, gid));
 		}
@@ -1641,84 +1642,8 @@ public class NativeBroker extends DBBroker {
                     + " ...");
             }
 
-			// drop element-index
-			short collectionId = doc.getCollection().getId();
-			Value ref = new ElementValue(collectionId);
-			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-			Lock lock = elementsDb.getLock();
-			try {
-				lock.acquire(Lock.WRITE_LOCK);
-				ArrayList elements = elementsDb.findKeys(query);
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("removeDocument() - "
-                        + "found "
-                        + elements.size()
-                        + " elements.");
-                }
-
-				Value key;
-				Value value;
-				byte[] data;
-				// byte[] ndata;
-				VariableByteArrayInput is;
-				VariableByteOutputStream os;
-				int len;
-				int docId;
-				long delta;
-				long address;
-				boolean changed;
-				for (int i = 0; i < elements.size(); i++) {
-					key = (Value) elements.get(i);
-					value = elementsDb.get(key);
-					data = value.getData();
-					is = new VariableByteArrayInput(data);
-					os = new VariableByteOutputStream();
-					changed = false;
-					try {
-						while (is.available() > 0) {
-							docId = is.readInt();
-							len = is.readInt();
-							if (docId != doc.getDocId()) {
-								// copy data to new buffer
-								os.writeInt(docId);
-								os.writeInt(len);
-								for (int j = 0; j < len; j++) {
-									delta = is.readLong();
-									address = StorageAddress.read(is);
-									os.writeLong(delta);
-									StorageAddress.write(address, os);
-								}
-							} else {
-								changed = true;
-								// skip
-								is.skip(len * 4);
-							}
-						}
-					} catch (EOFException e) {
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("removeDocument(String) - "
-                                + "eof: "
-                                + is.available(), e);
-                        }
-					}
-					if (changed) {
-						if (elementsDb.put(key, os.data()) < 0)
-                            if (LOG.isDebugEnabled()) {
-                                LOG.debug("removeDocument() - "
-                                    + "could not save element");
-                            }
-					}
-				}
-			} catch (LockException e) {
-                LOG.warn("removeDocument(String) - "
-                    + "could not acquire lock on elements", e);
-			} catch (TerminatedException e) {
-                LOG.warn("method terminated", e);
-            } finally {
-				lock.release();
-			}
-
-			((NativeTextEngine) textEngine).removeDocument(doc);
+			elementIndex.dropIndex(doc);
+			textEngine.removeDocument(doc);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("removeDocument() - " + "removing dom");
             }
@@ -1731,7 +1656,7 @@ public class NativeBroker extends DBBroker {
 			}
 			.run();
 			
-			ref = new NodeRef(doc.getDocId());
+			NodeRef ref = new NodeRef(doc.getDocId());
 			final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
 			new DOMTransaction(this, domDb) {
 				public Object start() {
@@ -1752,12 +1677,6 @@ public class NativeBroker extends DBBroker {
 			}
 			.run();
 			freeDocument(doc.getDocId());
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-            LOG.warn("removeDocument(String) - " + ioe);
-		} catch (BTreeException bte) {
-			bte.printStackTrace();
-            LOG.warn("removeDocument(String) - " + bte);
 		} catch (ReadOnlyException e) {
             LOG.warn("removeDocument(String) - " + DATABASE_IS_READ_ONLY);
 		}
@@ -1897,6 +1816,59 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
+	public void moveResource(DocumentImpl doc, Collection destination, String newName)
+	throws PermissionDeniedException, LockException {
+	    if (readOnly)
+			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+	    Collection collection = doc.getCollection();
+	    if(!collection.getPermissions().validate(user, Permission.WRITE))
+	        throw new PermissionDeniedException("Insufficient privileges to move resource " +
+	                doc.getFileName());
+	    if(newName == null) {
+            int p = doc.getFileName().lastIndexOf('/');
+            newName = doc.getFileName().substring(p + 1);
+        }
+	    Lock lock = null;
+	    try {
+	        lock = collectionsDb.getLock();
+	        lock.acquire(Lock.WRITE_LOCK);
+	        // check if the move would overwrite a collection
+	        if(getCollection(destination.getName() + '/' + newName) != null)
+	            throw new PermissionDeniedException("A resource can not replace an existing collection");
+	        DocumentImpl oldDoc = destination.getDocument(newName);
+	        if(oldDoc != null) {
+	            if(!destination.getPermissions().validate(user, Permission.UPDATE))
+	                throw new PermissionDeniedException("Resource with same name exists in target " +
+	                		"collection and update is denied");
+	            if(!oldDoc.getPermissions().validate(user, Permission.UPDATE))
+	                throw new PermissionDeniedException("Resource with same name exists in target " +
+	                		"collection and update is denied");
+	            collection.removeDocument(this, oldDoc.getFileName());
+	        } else
+	            if(!destination.getPermissions().validate(user, Permission.WRITE))
+	    	        throw new PermissionDeniedException("Insufficient privileges on target collection " +
+	    	                destination.getName());
+	        collection.unlinkDocument(doc);
+	        elementIndex.dropIndex(doc);
+			textEngine.removeDocument(doc);
+			saveCollection(collection);
+			
+			doc.setFileName(destination.getName() + '/' + newName);
+			destination.addDocument(this, doc);
+	        doc.setCollection(destination);
+
+	        // reindexing
+			reindex(doc);
+			saveCollection(destination);
+        } catch (TriggerException e) {
+            throw new PermissionDeniedException(e.getMessage());
+        } catch (ReadOnlyException e) {
+            throw new PermissionDeniedException(e.getMessage());
+        } finally {
+	        lock.release();
+	    }
+	}
+	
 	public void moveCollection(Collection collection, Collection destination, String newName) 
 	throws PermissionDeniedException, LockException {
 	    if (readOnly)
@@ -1909,10 +1881,21 @@ public class NativeBroker extends DBBroker {
 	    if(!destination.getPermissions().validate(user, Permission.WRITE))
 	        throw new PermissionDeniedException("Insufficient privileges on target collection " +
 	                destination.getName());
+	    if(newName == null) {
+            int p = collection.getName().lastIndexOf('/');
+            newName = collection.getName().substring(p + 1);
+        }
+	    if(newName.indexOf('/') > -1)
+	        throw new PermissionDeniedException("New collection name is illegal (may not contain a '/')");
 	    Lock lock = null;
 	    try {
 	        lock = collectionsDb.getLock();
 	        lock.acquire(Lock.WRITE_LOCK);
+	        // check if another collection with the same name exists at the destination
+		    Collection old = getCollection(destination.getName() + '/' + newName);
+		    if(old != null)
+		        removeCollection(old.getName());
+		    
 	        String name = collection.getName();
 	        Collection parent = collection.getParent(this);
 	        if(parent != null)
