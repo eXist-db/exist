@@ -118,7 +118,7 @@
 	   - indent: should the serializer pretty-print (indent) xml?
   -->
   <serializer enable-xinclude="true" enable-xsl="false"
-	  indent="false" add-exist-id="false"/>
+	  indent="false" match-tagging="true" add-exist-id="false"/>
   
   <!-- settings for the indexer
        Attributes:
@@ -203,7 +203,7 @@
 	</index>
 
     <entity-resolver>
-	    <catalog file="samples/xcatalog.xml"/>
+		<catalog file="catalog"/>
     </entity-resolver>
   </indexer>
   
@@ -253,15 +253,20 @@
     </appender>
     
     <root>
-		<appender-ref ref="exist.core"/>
+		<appender-ref ref="console"/>
 		<priority value="debug"/>
     </root>
 
     <category name="org.exist.xmldb" additivity="false">
 		<appender-ref ref="exist.xmldb"/>
-		<priority value="debug"/>
+		<priority value="warn"/>
     </category>
-    
+
+	<category name="org.apache.axis" additivity="false">
+		<priority value="warn"/>
+		<appender-ref ref="console"/>
+	</category>
+
     <!--
     <category name="exist.http">
       <appender-ref ref="A1"/>

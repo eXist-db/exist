@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<!--<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "docbookx.dtd">-->
-
+<!--DOCTYPE book SYSTEM "file:/Users/byoung/Documents/dtd/docbook-xml-4.2/docbookx.dtd"-->
 <book xmlns:ci="http://apache.org/cocoon/include/1.0">
   <bookinfo>
     <graphic fileref="logo.jpg"/>
@@ -15,6 +13,24 @@
         </address>
       </affiliation>
     </author>
+    <author>
+		<firstname>Benjamin</firstname>
+  		<surname>Young</surname>
+  		<affiliation>
+      		<address format="linespecific">
+        		<email>byoung@bigbluehat.com</email>
+      		</address>
+  		</affiliation>
+  	</author>
+  	<author>
+		<firstname>Michael I.</firstname>
+  		<surname>Angermann</surname>
+  		<affiliation>
+      		<address format="linespecific">
+        		<email>byoung@bigbluehat.com</email>
+      		</address>
+  		</affiliation>
+  	</author>
   </bookinfo>
   
   <ci:include src="sidebar.xml"/>
@@ -23,65 +39,65 @@
     <title>How-Tos</title>
 
 	<section>
-		<title>Integrating eXist into an existing Cocoon installation</title>
+		<title>Integrating eXist into an existing Cocoon 2.0.4 installation</title>
 		
-		<para>eXist comes with its own pre-installed Cocoon. However, integrating
-		eXist into an already running Cocoon is not very difficult. For the 
-		following, I downloaded the Cocoon 2.1 development version from the Apache
-		CVS and installed it as a web-application in Tomcat.</para>
+		<para> eXist comes with its own pre-installed Cocoon. However, integrating eXist into an already
+		    running Cocoon is not very difficult. Follow the steps bellow to integrate eXist 0.9 into an existing
+		    Cocoon 2.0.4 web application.</para>
 		
-		<para>The following paragraphs assume that you have already set up a web application
-		    based on Cocoon, i.e. you have created a web application folder and installed the 
-		    required Cocoon files.</para>
+		<para>The following paragraphs assume that you have already set up a web application based on Cocoon.</para>
+		
+		<para>First create a directory named data in the WEB-INF folder of your Cocoon based web application.
+		    This is where the database files will be created by eXist.</para>
 		    
-		<para>You should first create a directory <filename>WEB-INF/data</filename>
-		in the folder of your Cocoon-enabled web-application, which will later contain
-		the database files created by eXist. Next, copy the <filename>conf.xml</filename>
-		configuration file from eXist into <filename>WEB-INF</filename>. Additionally, you have to
-		copy a number of jar-files from eXist into the <filename>WEB-INF/lib</filename>
-		directory:</para>
-		
-		<unorderedlist>
+		<para>Next, copy the <filename>conf.xml</filename> configuration file from eXist into the <filename>WEB-INF</filename> folder of your Cocoon application.
+		    Additionally, you have to copy a number of jar-files from eXist's <filename>WEB-INF/lib</filename> folder into the <filename>WEB-INF/lib</filename> folder
+		    of your Cocoon application:</para>
+
+		<itemizedlist>
 			<listitem><para>exist.jar</para></listitem>
-			<listitem><para>lib/antlr.jar</para></listitem>
-			<listitem><para>lib/axis.jar</para></listitem>
-			<listitem><para>lib/clutil.jar</para></listitem>
-			<listitem><para>lib/getopt.jar</para></listitem>
-			<listitem><para>lib/jaxrpc.jar</para></listitem>
-			<listitem><para>lib/libreadline-java.jar</para></listitem>
-			<listitem><para>lib/log4j.jar</para></listitem>
-			<listitem><para>lib/trove.jar</para></listitem>
-			<listitem><para>lib/tt-bytecode.jar</para></listitem>
-			<listitem><para>lib/wsdl4j.jar</para></listitem>
-			<listitem><para>lib/xmldb.jar</para></listitem>
-			<listitem><para>lib/xmlrpc-1.1.jar</para></listitem>
-		</unorderedlist>
+			<listitem><para>antlr.jar</para></listitem>
+			<listitem><para>axis.jar</para></listitem>
+			<listitem><para>clutil.jar</para></listitem>
+                                 <listitem><para>commons-collections-2.1.jar</para></listitem>
+                                 <listitem><para>commons-discovery.jar</para></listitem>
+                                <listitem><para>commons-httpclient-20020423.jar</para></listitem>
+                                <listitem><para>commons-jxpath-1.0.jar</para></listitem>
+                                <listitem><para>commons-logging-1.0.jar</para></listitem>
+                                <listitem><para>jakarta-oro-2.0.6.jar</para></listitem>
+			<listitem><para>jaxrpc.jar</para></listitem>
+			<listitem><para>libreadline-java.jar</para></listitem>
+			<listitem><para>log4j.jar</para></listitem>
+			<listitem><para>saaj.jar</para></listitem>
+			<listitem><para>trove.jar</para></listitem>
+			<listitem><para>tt-bytecode.jar</para></listitem>
+			<listitem><para>wsdl4j.jar</para></listitem>
+			<listitem><para>xmldb.jar</para></listitem>
+			<listitem><para>xmlrpc-1.1.jar</para></listitem>
+		</itemizedlist>
 		
 		<para>If you want WebDAV access you'll also need:</para>
 		
-		<unorderedlist>
-			<listitem><para>jakarta-tomcat-4.0.3/webapps/exist/WEB-INF/lib/dom4j.jar</para></listitem>
-			<listitem><para>jakarta-tomcat-4.0.3/webapps/exist/WEB-INF/lib/xincon.jar</para></listitem>
-			<listitem><para>jakarta-tomcat-4.0.3/webapps/exist/WEB-INF/lib/catalina-util.jar</para></listitem>
-		</unorderedlist>
+		<itemizedlist>
+			<listitem><para>webapp/WEB-INF/lib/dom4j.jar</para></listitem>
+			<listitem><para>webapp/WEB-INF/lib/xincon.jar</para></listitem>
+			<listitem><para>webapp/WEB-INF/lib/catalina-util.jar</para></listitem>
+		</itemizedlist>
 
-		<para>Next step: edit the file <filename>web.xml</filename> in your
-		<filename>WEB-INF</filename> directory. From the <filename>web.xml</filename>
-		file that comes with eXist (directory 
-		<filename>eXist-0.8.1/jakarta-tomcat-4.0.3/webapps/exist/WEB-INF</filename>)
-		copy the servlet definitions for the RpcServlet, DatabaseAdminServlet,
-		AxisServlet, AdminServlet and (optionally) the xincon servlet into your
-		own <filename>web.xml</filename>. Additionally, copy all the servlet-mapping
-		sections for these servlets. Please note that order is important in the web.xml
-		file: the block with &lt;servlet&gt; sections should always precede the &lt;servlet-mapping&gt;
-		sections.</para>
+		<para>Next step: edit the <filename>web.xml</filename> file in your <filename>WEB-INF</filename> directory.
+		From the <filename>web.xml</filename> file that comes with eXist copy the servlet definitions for the
+		RpcServlet, DatabaseAdminServlet, AxisServlet, AdminServlet and (optionally) the xincon servlet into your
+		own <filename>web.xml</filename>. Additionally, copy all the servlet-mapping sections for these servlets.
+		Please note that order is important in the <filename>web.xml</filename> file: the block with &lt;servlet&gt; sections
+		should always precede the &lt;servlet-mapping&gt; sections.</para>
 		
 		<para>An example <filename>web.xml</filename> file is shown below:</para>
 		
 		<example>
-			<title>web.xml example (Cocoon CVS version 2.1 and eXist CVS version)</title>
+			<title>web.xml example (Cocoon version 2.0.4 and eXist 0.9)</title>
 			
-			<screen><![CDATA[
+			<screen>
+			    <![CDATA[
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <!--
@@ -238,7 +254,7 @@
     <url-pattern>/</url-pattern>
   </servlet-mapping>
   
-</web-app>]]>			
+</web-app>]]>
 			</screen>
 		</example>
 		
@@ -268,21 +284,23 @@
 		</example>
 
 		<para>If you want to access eXist through Cocoon's XML:DB pseudo protocol,
-		don't forget to add eXist's XML:DB driver to the corresponding &lt;component-instance&gt;
-		section. The section should like this:</para>
+		don't forget to add eXist's XML:DB driver to the &lt;source-handler&gt;
+		section. The section should look something like this:</para>
 		
 		<example>
 			<title>Adding eXist's XML:DB driver</title>
 			<screen><![CDATA[
 <!-- xmldb pseudo protocol -->
-<component-instance class="org.apache.cocoon.components.source.impl.SourceFactoryWrapper" name="xmldb">
-    <source-factory class="org.apache.cocoon.components.source.XMLDBSourceFactory">
+<source-handler logger="core.source-handler">
+    <!-- ...other predefined protocol handlers... -->
+    <!-- xmldb pseudo protocol -->
+    <protocol class="org.apache.cocoon.components.source.XMLDBSourceFactory">
         <!-- Xindice driver -->
-        <driver class="org.apache.xindice.client.xmldb.DatabaseImpl" type="xindice"/>
+            <driver class="org.apache.xindice.client.xmldb.DatabaseImpl" type="xindice"/>
         <!-- Add here other XML:DB compliant databases drivers -->
-        <driver class="org.exist.xmldb.DatabaseImpl" type="exist"/>
-    </source-factory>
-</component-instance>]]>
+            <driver class="org.exist.xmldb.DatabaseImpl" type="exist"/>
+    </protocol>
+</source-handler>]]>
 			</screen>
 		</example>
 		
