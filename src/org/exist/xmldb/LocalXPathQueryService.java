@@ -118,44 +118,56 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	}
 
 	public ResourceSet execute(CompiledExpression expression) throws XMLDBException {
+		return execute(null, null, expression, null);
+	}
+	
+	private ResourceSet execute(DocumentSet docs, 
+		NodeSet contextSet, CompiledExpression expression, String sortExpr) 
+	throws XMLDBException {
 		DBBroker broker = null;
-		DocumentSet docs = null;
+		Sequence result;
 		try {
 			broker = brokerPool.get(user);
-			docs = collection.collection.allDocs(broker, new DocumentSet(), true);
+			if(docs == null)
+				docs = collection.collection.allDocs(broker, new DocumentSet(), true);
+		
+			expression.reset();
+			XQueryContext context = ((PathExpr)expression).getContext();
+			context.setBroker(broker);
+			context.setBackwardsCompatibility(xpathCompatible);
+			context.setStaticallyKnownDocuments(docs);
+			
+			Map.Entry entry;
+			// declare namespace/prefix mappings
+			for (Iterator i = namespaceDecls.entrySet().iterator(); i.hasNext();) {
+				entry = (Map.Entry) i.next();
+				context.declareNamespace((String) entry.getKey(), (String) entry.getValue());
+			}
+			// declare static variables
+			for (Iterator i = variableDecls.entrySet().iterator(); i.hasNext();) {
+				entry = (Map.Entry) i.next();
+				try {
+					context.declareVariable((String) entry.getKey(), entry.getValue());
+				} catch (XPathException e) {
+					throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+				}
+			}
+			result = ((PathExpr)expression).eval(contextSet, null);
+			expression.reset();
 		} catch (EXistException e) {
-			throw new XMLDBException(
-				ErrorCodes.UNKNOWN_ERROR,
-				"error while loading documents: " + e.getMessage(),
-				e);
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		} catch (XPathException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} finally {
 			brokerPool.release(broker);
 		}
-		expression.reset();
-		XQueryContext context = ((PathExpr)expression).getContext();
-		context.setBackwardsCompatibility(xpathCompatible);
-		context.setStaticallyKnownDocuments(docs);
-		
-		Map.Entry entry;
-		// declare namespace/prefix mappings
-		for (Iterator i = namespaceDecls.entrySet().iterator(); i.hasNext();) {
-			entry = (Map.Entry) i.next();
-			context.declareNamespace((String) entry.getKey(), (String) entry.getValue());
-		}
-		// declare static variables
-		for (Iterator i = variableDecls.entrySet().iterator(); i.hasNext();) {
-			entry = (Map.Entry) i.next();
-			try {
-				context.declareVariable((String) entry.getKey(), entry.getValue());
-			} catch (XPathException e) {
-				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-			}
-		}
-		return doQuery(expression, docs, null, null);
+		if(result != null)
+			return new LocalResourceSet(user, brokerPool, collection, properties, result, sortExpr);
+		else
+			return null;
 	}
 
 	public CompiledExpression compile(String query) throws XMLDBException {
-		//LOG.debug("compiling " + query);
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
@@ -167,7 +179,6 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 			// declare namespace/prefix mappings
 			for (Iterator i = namespaceDecls.entrySet().iterator(); i.hasNext();) {
 				entry = (Map.Entry) i.next();
-				LOG.debug("prefix " + entry.getKey() + " = " + entry.getValue());
 				context.declareNamespace(
 					(String) entry.getKey(),
 					(String) entry.getValue());
@@ -190,7 +201,6 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 			}
 
 			AST ast = parser.getAST();
-			LOG.debug("generated AST: " + ast.toStringList());
 
 			PathExpr expr = new PathExpr(context);
 			treeParser.xpath(ast, expr);
@@ -224,10 +234,10 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		String sortExpr)
 		throws XMLDBException {
 		CompiledExpression expr = compile(query);
-		return doQuery(expr, docs, contextSet, sortExpr);
+		return execute(docs, contextSet, expr, sortExpr);
 	}
 
-	protected ResourceSet doQuery(
+/*	protected ResourceSet doQuery(
 		CompiledExpression compiled,
 		DocumentSet docs,
 		NodeSet contextSet,
@@ -252,7 +262,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		} catch (XPathException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
-	}
+	} */
 
 	public ResourceSet queryResource(String resource, String query)
 		throws XMLDBException {

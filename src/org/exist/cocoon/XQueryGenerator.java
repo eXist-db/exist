@@ -85,7 +85,17 @@ public class XQueryGenerator extends ServiceableGenerator {
 	private String defaultUser = null;
 	private String defaultPassword = null;
 	private Map optionalParameters;
-	private Map cache = new HashMap();
+	
+	private ThreadLocal cache = new ThreadLocal() {
+		
+		/* (non-Javadoc)
+		 * @see java.lang.ThreadLocal#initialValue()
+		 */
+		protected Object initialValue() {
+			return new HashMap();
+		}
+	};
+	
 	private class CachedExpression {
 
 		SourceValidity validity;
@@ -206,8 +216,7 @@ public class XQueryGenerator extends ServiceableGenerator {
 			String uri = inputSource.getURI();
 			CompiledExpression expr;
 			CachedExpression cached;
-			synchronized (cache) {
-				cached = (CachedExpression) cache.get(uri);
+				cached = (CachedExpression) ((Map)cache.get()).get(uri);
 				if (cached != null) {
 					// check if source is valid or should be reloaded
 					int valid = cached.validity.isValid();
@@ -215,7 +224,7 @@ public class XQueryGenerator extends ServiceableGenerator {
 						valid = cached.validity.isValid(inputSource
 								.getValidity());
 					if (valid != SourceValidity.VALID) {
-						cache.remove(uri);
+						((Map)cache.get()).remove(uri);
 						cached = null;
 					}
 				}
@@ -224,10 +233,10 @@ public class XQueryGenerator extends ServiceableGenerator {
 					expr = service.compile(xquery);
 					cached = new CachedExpression(inputSource.getValidity(),
 							expr);
-					cache.put(uri, cached);
-				} else
+					((Map)cache.get()).put(uri, cached);
+				} else {
 					expr = cached.expr;
-			}
+				}
 			ResourceSet result = service.execute(expr);
 			XMLResource resource;
 			this.contentHandler.startDocument();

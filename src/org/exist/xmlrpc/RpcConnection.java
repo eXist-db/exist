@@ -36,9 +36,6 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.SortedNodeSet;
 import org.exist.memtree.NodeImpl;
-import org.exist.xquery.parser.XQueryLexer;
-import org.exist.xquery.parser.XQueryParser;
-import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -55,6 +52,9 @@ import org.exist.util.serializer.DOMSerializerPool;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.parser.XQueryLexer;
+import org.exist.xquery.parser.XQueryParser;
+import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -151,10 +151,6 @@ public class RpcConnection extends Thread {
 		Hashtable namespaces = (Hashtable)parameters.get(RpcAPI.NAMESPACES);
 		if(namespaces != null && namespaces.size() > 0) {
 			context.declareNamespaces(namespaces);
-//			for(Iterator i = namespaces.entrySet().iterator(); i.hasNext(); ) {
-//				Map.Entry entry = (Map.Entry)i.next();
-//				context.declareNamespace((String)entry.getKey(), (String)entry.getValue());
-//			}
 		}
 		LOG.debug("compiling " + xquery);
 		XQueryLexer lexer = new XQueryLexer(new StringReader(xquery));
@@ -202,7 +198,12 @@ public class RpcConnection extends Thread {
 		XQueryContext context = expr.getContext();
 		context.setBaseURI(baseURI);
 		context.setStaticallyKnownDocuments(docs);
-		
+		Hashtable namespaces = (Hashtable)parameters.get(RpcAPI.NAMESPACES);
+		if(namespaces != null && namespaces.size() > 0) {
+			context.declareNamespaces(namespaces);
+		}
+		// set the current broker object when reusing a compiled query:
+		context.setBroker(broker);
 		long start = System.currentTimeMillis();
 		Sequence result = expr.eval(contextSet, null);
 		LOG.info("query took " + (System.currentTimeMillis() - start) + "ms.");

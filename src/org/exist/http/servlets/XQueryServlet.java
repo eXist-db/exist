@@ -98,7 +98,15 @@ public class XQueryServlet extends HttpServlet {
 	private String formEncoding = null;
 	private String encoding = null;
 	
-	private Map cache = new HashMap();
+	private ThreadLocal cache = new ThreadLocal() {
+		
+		/* (non-Javadoc)
+		 * @see java.lang.ThreadLocal#initialValue()
+		 */
+		protected Object initialValue() {
+			return new HashMap();
+		}
+	};
 	
 	/* (non-Javadoc)
 	 * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
@@ -209,14 +217,15 @@ public class XQueryServlet extends HttpServlet {
 			service.declareVariable(prefix + ":session", new HttpSessionWrapper(session));
 						
 			CompiledExpression compiled;
-			CachedQuery cached = (CachedQuery)cache.get(path);
+			CachedQuery cached = (CachedQuery)((Map)cache.get()).get(path);
 			if(cached == null || (!cached.isValid())) {
 				String xquery = readQuery(f);
 				compiled = service.compile(xquery);
 				cached = new CachedQuery(f, compiled);
-				cache.put(path, cached);
-			} else
+				((Map)cache.get()).put(path, cached);
+			} else {
 				compiled = cached.getExpression();
+			}
 			ResourceSet result = service.execute(compiled);
 			for(ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
 				Resource res = i.nextResource();

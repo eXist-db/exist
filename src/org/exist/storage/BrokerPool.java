@@ -217,6 +217,7 @@ public class BrokerPool {
 
 	protected DBBroker createBroker() throws EXistException {
 		DBBroker broker = BrokerFactory.getInstance(this, conf);
+		//Thread.dumpStack();
 		LOG.debug(
 			"database " + instanceId + ": creating new instance of " + broker.getClass().getName());
 		pool.push(broker);

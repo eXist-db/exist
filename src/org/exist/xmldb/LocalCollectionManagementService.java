@@ -20,13 +20,6 @@ public class LocalCollectionManagementService extends CollectionManager {
     private static Category LOG =
         Category.getInstance( LocalCollection.class.getName() );
         
-    /**
-     *  Constructor for the LocalCollectionManagementService object
-     *
-     *@param  pool    Description of the Parameter
-     *@param  parent  Description of the Parameter
-     *@param  user    Description of the Parameter
-     */
     public LocalCollectionManagementService( User user, BrokerPool pool,
                                              LocalCollection parent ) {
         if ( user == null )
@@ -36,14 +29,6 @@ public class LocalCollectionManagementService extends CollectionManager {
         this.user = user;
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  collName            Description of the Parameter
-     *@return                     Description of the Return Value
-     *@exception  XMLDBException  Description of the Exception
-     */
     public Collection createCollection( String collName ) throws XMLDBException {
         collName = parent.getPath() + '/' + collName;
         DBBroker broker = null;
@@ -82,48 +67,18 @@ public class LocalCollectionManagementService extends CollectionManager {
         return createCollection( path );
     }
 
-
-    /**
-     *  Gets the name attribute of the LocalCollectionManagementService object
-     *
-     *@return                     The name value
-     *@exception  XMLDBException  Description of the Exception
-     */
     public String getName() throws XMLDBException {
         return "CollectionManagementService";
     }
 
-
-    /**
-     *  Gets the property attribute of the LocalCollectionManagementService
-     *  object
-     *
-     *@param  property  Description of the Parameter
-     *@return           The property value
-     */
     public String getProperty( String property ) {
         return null;
     }
 
-
-    /**
-     *  Gets the version attribute of the LocalCollectionManagementService
-     *  object
-     *
-     *@return                     The version value
-     *@exception  XMLDBException  Description of the Exception
-     */
     public String getVersion() throws XMLDBException {
         return "1.0";
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  collName            Description of the Parameter
-     *@exception  XMLDBException  Description of the Exception
-     */
     public void removeCollection( String collName ) throws XMLDBException {
     	String path = (collName.startsWith("/db") ? collName : 
     		parent.getPath() + '/' + collName);
@@ -144,26 +99,10 @@ public class LocalCollectionManagementService extends CollectionManager {
         }
     }
 
-
-    /**
-     *  Sets the collection attribute of the LocalCollectionManagementService
-     *  object
-     *
-     *@param  parent              The new collection value
-     *@exception  XMLDBException  Description of the Exception
-     */
     public void setCollection( Collection parent ) throws XMLDBException {
         this.parent = (LocalCollection) parent;
     }
 
-
-    /**
-     *  Sets the property attribute of the LocalCollectionManagementService
-     *  object
-     *
-     *@param  property  The new property value
-     *@param  value     The new property value
-     */
     public void setProperty( String property,
                              String value ) {
     }

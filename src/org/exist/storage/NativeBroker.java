@@ -1016,6 +1016,7 @@ public class NativeBroker extends DBBroker {
 		if (level >= doc.reindexRequired()) {
 			NodeIndexListener listener = doc.getIndexListener();
 			// jmv if ((listener = doc.getIndexListener()) != null)
+			if(listener != null)
 				listener.nodeChanged(node);
 			if (nodeType == Node.ELEMENT_NODE && level <= depth) {
 				new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
