@@ -1598,7 +1598,7 @@ implements Comparable, EntityResolver, Cacheable {
 		
 		if (configuration == null)
 		{			
-			String recursiv = ParentHasDoc(broker,getName(), COLLECTION_CONFIG_FILE );
+			String recursiv = parentHasDoc(broker,getName(), COLLECTION_CONFIG_FILE );
 			if (!(recursiv == null)) {
 				LOG.debug (" -->Try to use conf from "+recursiv);
 				configuration = broker.getCollection( recursiv).readCollectionConfiguration(broker);
@@ -1833,25 +1833,24 @@ implements Comparable, EntityResolver, Cacheable {
 		return col1;
 	}
     
-	public String ParentHasDoc(DBBroker broker, String col, String document) {
-		DBBroker broker1 = broker;
-		Collection collection1 = null;
+	public String parentHasDoc(DBBroker broker, String col, String document) {
+		Collection collection = null;
 		String col2 = "";
 		String result = null;
 		boolean test = true;
 		while (test) {
-			col2 = getParentPathGen(col);
-		    if (col2.equals("/db")) 
-		    		test=false;
-			collection1 = broker.openCollection(col2, Lock.READ_LOCK);
-			if (collection1.hasDocument(document)) {
-				result = col2;
-				test=false;
+			col = getParentPathGen(col);
+			if (col == null)
+				test = false;
+			else {
+				collection = broker.openCollection(col, Lock.READ_LOCK);
+				if (collection.hasDocument(document)) {
+					result = col;
+					test = false;
+				}
+				collection.release();
 			}
-			col = col2;
-			collection1.release();
-		}		
-		broker = broker1;
+		}
 		return result;		
 	}
 	
