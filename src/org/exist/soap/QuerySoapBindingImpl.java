@@ -10,7 +10,7 @@ import java.util.TreeMap;
 
 import javax.xml.transform.OutputKeys;
 
-import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentImpl;
@@ -50,7 +50,7 @@ import antlr.collections.AST;
  */
 public class QuerySoapBindingImpl implements org.exist.soap.Query {
 
-	private static Category LOG = Category.getInstance("QueryService");
+	private static Logger LOG = Logger.getLogger("QueryService");
 
 	private BrokerPool pool;
 
