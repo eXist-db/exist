@@ -300,13 +300,10 @@ public class GeneralComparison extends BinaryOp {
 		// get the type of a possible index
 		int indexType = nodes.getIndexType();
 		
-		// we can't use the index if the node has mixed content
-		boolean hasMixedContent = nodes.hasMixedContent();
-		
 		DocumentSet docs = nodes.getDocumentSet();
 		NodeSet result = null;
 		Item key = rightSeq.itemAt(0).atomize();
-	    if(!hasMixedContent && indexType != Type.ITEM) {
+	    if(indexType != Type.ITEM) {
 	        // we have a range index defined on the nodes in this sequence
 	        if(truncation != Constants.TRUNC_NONE) {
 	        	// truncation is only possible on strings
@@ -329,13 +326,14 @@ public class GeneralComparison extends BinaryOp {
 						throw new XPathException(getASTNode(), e.getMessage(), e);
 					}
 	        	} else {
-		            LOG.debug("Using value index for key: " + key.getStringValue());
+		            LOG.debug("Using value index for key: " + Type.getTypeName(key.getType()) + ": " 
+							+ key.getStringValue());
 		            result = context.getBroker().getValueIndex().find(relation, docs, nodes, (Indexable)key);
 				}
 	        } else
 	            return nodeSetCompare(nodes, contextSequence);
 	    } else if (key.getType() == Type.ATOMIC || Type.subTypeOf(key.getType(), Type.STRING)) {
-	        if (!hasMixedContent && relation == Constants.EQ 
+	        if (!nodes.hasMixedContent() && relation == Constants.EQ 
 	            && nodes.hasTextIndex()) {
 	        
 		        // we can use the fulltext index
@@ -355,7 +353,6 @@ public class GeneralComparison extends BinaryOp {
 					        getCollator(contextSequence));
 			}
 		} else {
-		    
 		    // no usable index found. Fall back to nodeSetCompare
 		    return nodeSetCompare(nodes, contextSequence);
 		}

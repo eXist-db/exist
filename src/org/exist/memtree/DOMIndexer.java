@@ -120,7 +120,7 @@ public class DOMIndexer {
         
         // close the wrapper element
         stack.pop();
-        broker.endElement(elem, path);
+        broker.endElement(elem, path, null);
         path.removeLastComponent();
     }
     
@@ -272,7 +272,7 @@ public class DOMIndexer {
         if (doc.nodeKind[nodeNr] == Node.ELEMENT_NODE) {
             ElementImpl last =
                 (ElementImpl) stack.pop();
-            broker.endElement(last, currentPath);
+            broker.endElement(last, currentPath, null);
             currentPath.removeLastComponent();
         }
     }

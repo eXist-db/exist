@@ -26,8 +26,10 @@ package org.exist.dom;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
 import org.exist.storage.Signatures;
+import org.exist.storage.ValueIndexSpec;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
@@ -54,15 +56,14 @@ import java.util.TreeSet;
  *
  * @author Wolfgang Meier
  */
-public class ElementImpl
-        extends NamedNode
-        implements Element {
+public class ElementImpl extends NamedNode implements Element {
 
     protected short attributes = 0;
     protected int children = 0;
     protected long firstChild = -1;
     protected Map namespaceMappings = null;
-
+	protected int indexType = ValueIndexSpec.NO_INDEX;
+	
     public ElementImpl() {
         super(Node.ELEMENT_NODE);
     }
@@ -433,7 +434,7 @@ public class ElementImpl
                 if ((ownerDocument.reindex < 0
                         || ownerDocument.reindex > ownerDocument.getTreeLevel(gid))
                         && index)
-                    ownerDocument.broker.endElement(elem, lastPath);
+                    ownerDocument.broker.endElement(elem, lastPath, null);
                 lastPath.removeLastComponent();
                 return elem;
             case Node.TEXT_NODE:
@@ -503,6 +504,14 @@ public class ElementImpl
         }
     }
 
+	public void setIndexType(int idxType) {
+		this.indexType = idxType;
+	}
+	
+	public int getIndexType() {
+		return indexType;
+	}
+	
     public boolean declaresNamespacePrefixes() {
         return namespaceMappings != null && namespaceMappings.size() > 0;
     }
@@ -1278,13 +1287,13 @@ public class ElementImpl
             previous = this;
         else
             previous = getLastNode(previous);
-        ownerDocument.broker.removeNode(old, old.getPath());
+        ownerDocument.broker.removeNode(old, old.getPath(), null);
         ownerDocument.broker.endRemove();
         newNode.gid = old.gid;
         ownerDocument.broker.insertAfter(previous, newNode);
         NodePath path = newNode.getPath();
         ownerDocument.broker.index(newNode, path);
-        ownerDocument.broker.endElement(newNode, path);
+        ownerDocument.broker.endElement(newNode, path, null);
         ownerDocument.broker.flush();
     }
 
@@ -1317,6 +1326,16 @@ public class ElementImpl
     private void removeAll(NodeImpl node, NodePath currentPath) {
         switch (node.getNodeType()) {
             case Node.ELEMENT_NODE:
+				String content = null;
+				IndexSpec idxSpec = 
+				    ownerDocument.getCollection().getIdxConf(ownerDocument.broker);
+				if (idxSpec != null) {
+					ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
+					if (spec != null) {
+						NodeProxy p = new NodeProxy(node.ownerDocument, node.gid, node.internalAddress);
+						content = ownerDocument.broker.getNodeValue(p, false);
+					}
+				}
                 NodeList children = node.getChildNodes();
                 NodeImpl child;
                 for (int i = children.getLength() - 1; i > -1; i--) {
@@ -1329,10 +1348,10 @@ public class ElementImpl
                     else
                         removeAll(child, currentPath);
                 }
-                ownerDocument.broker.removeNode(node, currentPath);
+                ownerDocument.broker.removeNode(node, currentPath, content);
                 break;
             default :
-                ownerDocument.broker.removeNode(node, currentPath);
+                ownerDocument.broker.removeNode(node, currentPath, null);
                 break;
         }
     }
@@ -1351,7 +1370,7 @@ public class ElementImpl
 					NodeImpl old = (NodeImpl) oldChild;
 					if (old.getParentGID() != gid)
 						throw new DOMException(DOMException.NOT_FOUND_ERR, "node is not a child of this element");
-					ownerDocument.broker.removeNode(old, old.getPath());
+					ownerDocument.broker.removeNode(old, old.getPath(), null);
 					if(old.gid < lastChild) ownerDocument.reindex = level + 1;
 					children--;
 				}

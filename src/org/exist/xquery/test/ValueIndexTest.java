@@ -23,6 +23,8 @@ package org.exist.xquery.test;
 
 import java.io.File;
 
+import junit.framework.TestCase;
+
 import org.exist.xmldb.IndexQueryService;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -34,8 +36,6 @@ import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
 
-import junit.framework.TestCase;
-
 /**
  * @author wolf
  */
@@ -46,7 +46,7 @@ public class ValueIndexTest extends TestCase {
     private final static String CONFIG =
     	"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" + 
     	"	<index xmlns:x=\"http://www.foo.com\" xmlns:xx=\"http://test.com\">" + 
-    	"		<fulltext default=\"all\">" + 
+    	"		<fulltext default=\"none\">" + 
     	"			<include path=\"//item/name\"/>" + 
     	"			<include path=\"//item/mixed\"/>" + 
     	"		</fulltext>" + 
@@ -57,6 +57,7 @@ public class ValueIndexTest extends TestCase {
     	"		<create path=\"//item/price/@specialprice\" type=\"xs:boolean\"/>" + 
     	"		<create path=\"//item/x:rating\" type=\"xs:double\"/>" +
     	"		<create path=\"//item/@xx:test\" type=\"xs:integer\"/>" +
+    	"       <create path=\"//item/mixed\" type=\"xs:string\"/>" +
     	"	</index>" + 
     	"</collection>";
     
@@ -99,6 +100,8 @@ public class ValueIndexTest extends TestCase {
         queryResource(service, "items.xml", "declare namespace xx=\"http://test.com\"; //item[@xx:test = 123]", 1);
         queryResource(service, "items.xml", "//item[name &= 'Racing Bicycle']", 1);
         queryResource(service, "items.xml", "//item[mixed = 'uneven']", 1);
+		queryResource(service, "items.xml", "//item[mixed = 'external']", 1);
+		queryResource(service, "items.xml", "//item[fn:matches(mixed, 'un.*')]", 2);
     }
     
     public void testUpdates() throws Exception {
@@ -114,19 +117,18 @@ public class ValueIndexTest extends TestCase {
             "</xu:modifications>";
         String remove =
             "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
-            "<xu:remove select=\"/items/item[itemno='10']\"/>" +
+            "<xu:remove select=\"/items/item[itemno=7]\"/>" +
             "</xu:modifications>";
         
         XPathQueryService query = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
         XUpdateQueryService update = (XUpdateQueryService) testCollection.getService("XUpdateQueryService", "1.0");
-        update.updateResource("items.xml", append);
+        long mods = update.updateResource("items.xml", append);
+		assertEquals(mods, 1);
         queryResource(query, "items.xml", "//item[price = 55.50]", 1);
         
-        update.updateResource("items.xml", remove);
-        queryResource(query, "items.xml", "//item[price = 55.50]", 0);
-        
-        update.updateResource("items.xml", append);
-        queryResource(query, "items.xml", "//item[price = 55.50]", 1);
+        mods = update.updateResource("items.xml", remove);
+		assertEquals(mods, 1);
+        queryResource(query, "items.xml", "//item[itemno = 7]", 0);
     }
     
     private ResourceSet queryResource(XPathQueryService service,

@@ -76,6 +76,13 @@ public final class XMLString implements CharSequence, Comparable {
 		return this;
 	}
 
+	public final XMLString append(XMLString other) {
+		ensureCapacity(length_ + other.length_);
+		System.arraycopy(other.value_, other.start_, value_, length_, other.length_);
+		length_ += other.length_;
+		return this;
+	}
+	
 	public final XMLString append(char ch) {
 		if(value_.length < length_ + 2)
 			ensureCapacity(length_ + 1);
