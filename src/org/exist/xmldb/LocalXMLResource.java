@@ -136,7 +136,6 @@ public class LocalXMLResource implements XMLResource, EXistResource {
 							Permission.READ))
 						throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 								"permission denied to read resource");
-
 					if (id < 0)
 						content = serializer.serialize(document);
 					else {

@@ -107,15 +107,16 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 	 * 
 	 * @param docs
 	 */
-	public void addAll(DBBroker broker, java.util.Collection docs) {
+	public void addAll(DBBroker broker, java.util.Collection docs, boolean checkPermissions) {
 		DocumentImpl doc;
 		for(Iterator i = docs.iterator(); i.hasNext(); ) {
 			doc = (DocumentImpl)i.next();
-			if(broker == null || doc.getPermissions().validate(broker.getUser(), Permission.READ)) {
 //			    if(doc.isLockedForWrite())
 //			        continue;
-			    put(doc.getDocId(), doc);
-			}
+		    if(broker == null || !checkPermissions || 
+		        doc.getPermissions().validate(broker.getUser(), Permission.READ)) {
+		        put(doc.getDocId(), doc);
+		    }
 		}
 	}
 

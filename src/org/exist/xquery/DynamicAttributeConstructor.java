@@ -54,7 +54,7 @@ public class DynamicAttributeConstructor extends NodeConstructor {
         this.qnameExpr = new Atomize(context, expr);
     }
     
-    public void setValueExpr(Expression expr) {
+    public void setContentExpr(Expression expr) {
         this.valueExpr  = new Atomize(context, expr);
     }
     
@@ -63,6 +63,7 @@ public class DynamicAttributeConstructor extends NodeConstructor {
      */
     public Sequence eval(Sequence contextSequence, Item contextItem)
             throws XPathException {
+        System.out.println(pprint());
         MemTreeBuilder builder = context.getDocumentBuilder();
         context.proceed(this, builder);
         Sequence nameSeq = qnameExpr.eval(contextSequence, contextItem);

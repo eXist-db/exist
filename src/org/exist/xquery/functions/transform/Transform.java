@@ -51,6 +51,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.Receiver;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -295,6 +296,8 @@ public class Transform extends BasicFunction {
 			try {
 				xslDoc = (DocumentImpl)
 					context.getBroker().getDocument(path);
+				if(!xslDoc.getPermissions().validate(context.getUser(), Permission.READ))
+				    throw new TransformerException("Insufficient privileges to read resource " + path);
 			} catch (PermissionDeniedException e) {
 				throw new TransformerException(e.getMessage(), e);
 			}

@@ -266,16 +266,16 @@ implements Comparable, EntityResolver, Cacheable {
 	 * @return
 	 */
 	public DocumentSet allDocs(DBBroker broker, DocumentSet docs,
-			boolean recursive) {
+			boolean recursive, boolean checkPermissions) {
 		if (permissions.validate(broker.getUser(), Permission.READ)) {
-			getDocuments(broker, docs);
+			getDocuments(broker, docs, checkPermissions);
 			if (recursive)
-				allDocs(broker, docs);
+				allDocs(broker, docs, checkPermissions);
 		}
 		return docs;
 	}
 
-	private DocumentSet allDocs(DBBroker broker, DocumentSet docs) {
+	private DocumentSet allDocs(DBBroker broker, DocumentSet docs, boolean checkPermissions) {
 		try {
 			lock.acquire(Lock.READ_LOCK);
 			Collection child;
@@ -286,10 +286,11 @@ implements Comparable, EntityResolver, Cacheable {
 				child = broker.getCollection(name + '/' + childName);
 				if(child == null) {
 					LOG.warn("child collection " + childName + " not found. Skipping ...");
+				// we always check if we have permissions to read the child collection
 				} else if (child.permissions.validate(broker.getUser(), Permission.READ)) {
-					child.getDocuments(broker, docs);
+					child.getDocuments(broker, docs, checkPermissions);
 					if (child.getChildCollectionCount() > 0)
-						child.allDocs(broker, docs);
+						child.allDocs(broker, docs, checkPermissions);
 				}
 			}
 		} catch (LockException e) {
@@ -305,7 +306,7 @@ implements Comparable, EntityResolver, Cacheable {
 	 *  
 	 * @param docs
 	 */
-	public DocumentSet getDocuments(DBBroker broker, DocumentSet docs) {
+	public DocumentSet getDocuments(DBBroker broker, DocumentSet docs, boolean checkPermissions) {
 		try {
 			lock.acquire(Lock.READ_LOCK);
 			if(reloadRequired) {
@@ -313,7 +314,7 @@ implements Comparable, EntityResolver, Cacheable {
 			    reloadRequired = false;
 			}
 			docs.addCollection(this);
-			docs.addAll(broker, documents.values());
+			docs.addAll(broker, documents.values(), checkPermissions);
 		} catch (LockException e) {
 			LOG.warn(e.getMessage(), e);
 		} finally {
@@ -537,7 +538,7 @@ implements Comparable, EntityResolver, Cacheable {
 	 *@return
 	 */
 	public Iterator iterator(DBBroker broker) {
-		return getDocuments(broker, new DocumentSet()).iterator();
+		return getDocuments(broker, new DocumentSet(), false).iterator();
 	}
 	
 	/**
@@ -681,6 +682,11 @@ implements Comparable, EntityResolver, Cacheable {
 		if(doc.isLockedForWrite())
 			throw new PermissionDeniedException("Document " + doc.getFileName() + 
 					" is locked for write");
+		if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
+			throw new PermissionDeniedException(
+					"write access to collection denied; user=" + broker.getUser().getName());
+		if (!doc.getPermissions().validate(broker.getUser(), Permission.WRITE))
+			throw new PermissionDeniedException("permission to remove document denied");
 		try {
 			lock.acquire(Lock.WRITE_LOCK);
 			broker.removeBinaryResource((BinaryDocument) doc);

@@ -276,7 +276,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			if (document.getResourceType() == DocumentImpl.XML_FILE)
 				r = new LocalXMLResource(user, brokerPool, this, id, -1);
 			else if (document.getResourceType() == DocumentImpl.BINARY_FILE)
-				r = new LocalBinaryResource(user, brokerPool, this, (BinaryDocument) document);
+				r = new LocalBinaryResource(user, brokerPool, this, id);
 			else
 				throw new XMLDBException(
 					ErrorCodes.INVALID_RESOURCE,
@@ -452,7 +452,6 @@ public class LocalCollection extends Observable implements CollectionImpl {
 					broker,
 					res.getId(),
 					(byte[]) res.getContent());
-			res.blob = blob;
 		} catch (Exception e) {
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,

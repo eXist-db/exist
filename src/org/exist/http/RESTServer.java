@@ -163,12 +163,13 @@ public class RESTServer {
 					if(collection != null) {
 						if(!collection.getPermissions().validate(broker.getUser(), Permission.READ))
 							throw new PermissionDeniedException("Not allowed to read collection");
-						else
-							response = new Response(printCollection(broker, collection));
+						response = new Response(printCollection(broker, collection));
 					} else {
 						throw new NotFoundException("Document " + path + " not found");
 					}
 				} else {
+				    if(!d.getPermissions().validate(broker.getUser(), Permission.READ))
+						throw new PermissionDeniedException("Not allowed to read resource");
 					if(d.getResourceType() == DocumentImpl.BINARY_FILE) {
 						response.setContent(broker.getBinaryResourceData((BinaryDocument)d));
 					} else {
@@ -276,12 +277,14 @@ public class RESTServer {
 				DocumentSet docs =new DocumentSet();
 				Collection collection = broker.getCollection(path);
 				if(collection != null) {
-					collection.allDocs(broker, docs, true);
+					collection.allDocs(broker, docs, true, true);
 				} else {
 					DocumentImpl xupdateDoc = (DocumentImpl)broker.getDocument(path);
-					if(doc != null)
-						docs.add(doc);
-					else
+					if(xupdateDoc != null) {
+					    if(!xupdateDoc.getPermissions().validate(broker.getUser(), Permission.READ))
+							throw new PermissionDeniedException("Not allowed to read collection");
+						docs.add(xupdateDoc);
+					} else
 						broker.getAllDocuments(docs);
 				}
 				XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
@@ -431,12 +434,14 @@ public class RESTServer {
 			DocumentSet docs = new DocumentSet();
 			Collection collection = broker.getCollection(path);
 			if (collection != null) {
-				collection.allDocs(broker, docs, true);
+				collection.allDocs(broker, docs, true, true);
 			} else {
 				DocumentImpl doc = (DocumentImpl) broker.getDocument(path);
-				if (doc != null)
+				if (doc != null) {
+				    if(!doc.getPermissions().validate(broker.getUser(), Permission.READ))
+						throw new PermissionDeniedException("Not allowed to read collection");
 					docs.add(doc);
-				else
+				} else
 					broker.getAllDocuments(docs);
 			}
 			Source source = new StringSource(query);

@@ -107,7 +107,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			docs = collection.getCollection().allDocs(broker, new DocumentSet(), true);
+			docs = collection.getCollection().allDocs(broker, new DocumentSet(), true, true);
 		} catch (EXistException e) {
 			throw new XMLDBException(
 				ErrorCodes.UNKNOWN_ERROR,
@@ -150,7 +150,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		try {
 			broker = brokerPool.get(user);
 			if(docs == null) {
-				docs = collection.getCollection().allDocs(broker, new DocumentSet(), true);
+				docs = collection.getCollection().allDocs(broker, new DocumentSet(), true, true);
 			}
 
 			XQueryContext context = expr.getContext();
@@ -180,7 +180,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 			Sequence result;
 			try {
 				broker = brokerPool.get(user);
-				DocumentSet docs = collection.getCollection().allDocs(broker, new DocumentSet(), true);
+				DocumentSet docs = collection.getCollection().allDocs(broker, new DocumentSet(), true, true);
 				
 				XQuery xquery = broker.getXQueryService();
 				XQueryPool pool = xquery.getXQueryPool();

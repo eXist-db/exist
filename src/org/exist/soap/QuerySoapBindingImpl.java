@@ -164,6 +164,8 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			DocumentImpl document = (DocumentImpl) broker.getDocument(name);
 			if (document == null)
 				throw new RemoteException("resource " + name + " not found");
+			if(!document.getPermissions().validate(broker.getUser(), Permission.READ))
+				throw new PermissionDeniedException("Not allowed to read resource");
 			Serializer serializer = broker.getSerializer();
 			serializer.reset();
 			serializer.setProperties(outputProperties);

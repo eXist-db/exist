@@ -55,7 +55,7 @@ public class LocalUserManagementService implements UserManagementService {
 			if (resource.getResourceType().equals("XMLResource"))
 				document = ((LocalXMLResource) resource).getDocument(broker, true);
 			else
-				document = ((LocalBinaryResource) resource).getBlob();
+				document = ((LocalBinaryResource) resource).getDocument(broker, true);
 			if (!(document.getPermissions().getOwner().equals(user.getName())
 				|| manager.hasAdminPrivileges(user)))
 				throw new XMLDBException(
@@ -163,7 +163,7 @@ public class LocalUserManagementService implements UserManagementService {
 			if (resource.getResourceType().equals("XMLResource"))
 				document = ((LocalXMLResource) resource).getDocument(broker, true);
 			else
-				document = ((LocalBinaryResource) resource).getBlob();
+			    document = ((LocalBinaryResource) resource).getDocument(broker, true);
 			if (!document.getPermissions().getOwner().equals(user.getName())
 				&& !manager.hasAdminPrivileges(user))
 				throw new XMLDBException(
@@ -228,7 +228,7 @@ public class LocalUserManagementService implements UserManagementService {
 			if (resource.getResourceType().equals("XMLResource"))
 				document = ((LocalXMLResource) resource).getDocument(broker, true);
 			else
-				document = ((LocalBinaryResource) resource).getBlob();
+			    document = ((LocalBinaryResource) resource).getDocument(broker, true);
 			if (!document.getPermissions().getOwner().equals(user.getName())
 				&& !manager.hasAdminPrivileges(user))
 				throw new XMLDBException(
@@ -301,8 +301,10 @@ public class LocalUserManagementService implements UserManagementService {
 				if(res.getResourceType().equals("XMLResource")) {
 				    document = ((LocalXMLResource) res).getDocument(broker, true);
 					perm = document.getPermissions();
-				} else
-					perm = ((LocalBinaryResource) res).getBlob().getPermissions();
+				} else {
+				    document = ((LocalBinaryResource) res).getDocument(broker, true);
+					perm = ((LocalBinaryResource) res).getPermissions();
+				}
 				perm.setOwner(u);
 				perm.setGroup(group);
 				broker.saveCollection(collection.getCollection());
@@ -334,7 +336,7 @@ public class LocalUserManagementService implements UserManagementService {
 			if(res.getResourceType().equals("XMLResource"))
 				doc = ((LocalXMLResource) res).getDocument(broker, true);
 			else
-				doc = ((LocalBinaryResource) res).getBlob();
+			    doc = ((LocalBinaryResource) res).getDocument(broker, true);
 			User lockOwner = doc.getUserLock();
 			return lockOwner == null ? null : lockOwner.getName();
 		} catch (EXistException e) {
@@ -356,7 +358,7 @@ public class LocalUserManagementService implements UserManagementService {
 			if(res.getResourceType().equals("XMLResource"))
 				doc = ((LocalXMLResource) res).getDocument(broker, true);
 			else
-				doc = ((LocalBinaryResource) res).getBlob();
+			    doc = ((LocalBinaryResource) res).getDocument(broker, true);
 			if (!doc.getPermissions().validate(user, Permission.UPDATE))
 				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, 
 						"User is not allowed to lock resource " + res.getId());
@@ -396,7 +398,7 @@ public class LocalUserManagementService implements UserManagementService {
 			if(res.getResourceType().equals("XMLResource"))
 				doc = ((LocalXMLResource) res).getDocument(broker, true);
 			else
-				doc = ((LocalBinaryResource) res).getBlob();
+			    doc = ((LocalBinaryResource) res).getDocument(broker, true);
 			if (!doc.getPermissions().validate(user, Permission.UPDATE))
 				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, 
 						"User is not allowed to lock resource " + res.getId());
@@ -437,7 +439,7 @@ public class LocalUserManagementService implements UserManagementService {
 	        if (resource.getResourceType().equals("XMLResource"))
 	            return ((LocalXMLResource) resource).getDocument(broker, false).getPermissions();
 	        else
-	            return ((LocalBinaryResource) resource).getBlob().getPermissions();
+	            return ((LocalBinaryResource) resource).getDocument(broker, false).getPermissions();
 	    } catch (EXistException e) {
 	        throw new XMLDBException(
 					ErrorCodes.VENDOR_ERROR,

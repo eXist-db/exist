@@ -181,6 +181,7 @@ public class DatabaseImpl implements Database {
                 return ( current != null )
                      ? current : null;
             } catch ( XMLDBException e ) {
+                e.printStackTrace();
                 switch ( e.errorCode ) {
                     case ErrorCodes.NO_SUCH_RESOURCE:
                     case ErrorCodes.NO_SUCH_COLLECTION:
