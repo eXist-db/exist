@@ -36,7 +36,7 @@ public class ComplexUpdateTest extends ConcurrentTestBase {
 		getTestCollection().storeResource(res);
 		getTestCollection().close();
 		
-		addAction(new ComplexUpdateAction(URI + "/complex", "R01.xml", 10000), 1, 0);
+		addAction(new ComplexUpdateAction(URI + "/complex", "R01.xml", 10000), 1, 0, 0);
 	}
 
 }

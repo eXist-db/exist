@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Resource;
 import org.xmldb.api.modules.CollectionManagementService;
 
 import junit.framework.TestCase;
@@ -40,8 +41,6 @@ public abstract class ConcurrentTestBase extends TestCase {
 	protected Collection rootCol;
 	protected String testColName;
 	protected Collection testCol;
-	
-	protected String[] wordList;
 	
 	protected List actions = new ArrayList(5);
 	
@@ -65,8 +64,8 @@ public abstract class ConcurrentTestBase extends TestCase {
 	 * @param action the action.
 	 * @param repeat number of times the actions should be repeated.
 	 */
-	public void addAction(Action action, int repeat, long delay) {
-		actions.add(new Runner(action, repeat, delay));
+	public void addAction(Action action, int repeat, long delayBeforeStart, long delay) {
+		actions.add(new Runner(action, repeat, delayBeforeStart, delay));
 	}
 	
 	public Collection getTestCollection() {
@@ -108,12 +107,16 @@ public abstract class ConcurrentTestBase extends TestCase {
 		
 		testCol = DBUtils.addCollection(rootCol, testColName);
 		assertNotNull(testCol);
+		
+		DBUtils.addXMLResource(rootCol, "biblio.rdf", new File("samples/biblio.rdf"));
 	}
 
 	/*
 	 * @see TestCase#tearDown()
 	 */
 	protected void tearDown() throws Exception {
+		Resource res = rootCol.getResource("biblio.rdf");
+		rootCol.removeResource(res);
 		DBUtils.removeCollection(rootCol, testColName);
 		DBUtils.shutdownDB(rootColURI);
 	}
@@ -128,18 +131,31 @@ public abstract class ConcurrentTestBase extends TestCase {
 		private Action action;
 		private int repeat;
 		private long delay = 0;
+		private long delayBeforeStart = 0;
 		
-		public Runner(Action action, int repeat, long delay) {
+		public Runner(Action action, int repeat, long delayBeforeStart, long delay) {
 			super();
 			this.action = action;
 			this.repeat = repeat;
 			this.delay = delay;
+			this.delayBeforeStart = delayBeforeStart;
 		}
 		
 		/* (non-Javadoc)
 		 * @see java.lang.Thread#run()
 		 */
 		public void run() {
+			if(delayBeforeStart > 0) {
+				synchronized(this) {
+					try {
+						wait(delayBeforeStart);
+					} catch (InterruptedException e) {
+						System.err.println("Action failed in Thread " + getName() + ": " + e.getMessage());
+			            e.printStackTrace();
+			            failed = true;
+					}
+				}
+			}
 			try
 	        {
 	            for (int i = 0; i < repeat; i++)
