@@ -48,7 +48,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-public class NodeImpl implements Node, NodeValue, QNameable {
+public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 
     public final static short REFERENCE_NODE = 100;
     public final static short NAMESPACE_NODE = 101;
@@ -199,6 +199,21 @@ public class NodeImpl implements Node, NodeValue, QNameable {
 		return nodeNumber > ((NodeImpl) other).nodeNumber;
 	}
 
+	public int compareTo(Object other) {
+		if(!(other instanceof NodeImpl))
+			return -1;
+		NodeImpl n = (NodeImpl)other;
+		if(n.document == document) {
+			if (nodeNumber == n.nodeNumber)
+				return 0;
+			else if (nodeNumber < n.nodeNumber)
+				return 1;
+			else
+				return -1;
+		} else
+			return -1;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getChildNodes()
 	 */
