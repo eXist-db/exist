@@ -2,6 +2,110 @@
 <?xml-stylesheet href="changes.xsl" type="text/xsl"?>
 <!-- Author: Wolfgang Meier "meier@ifs.tu-darmstadt.de" -->
 <changes title="History of Changes">
+
+    <release version="1.0beta2">
+        <topic category="Stability/Concurrency">
+            <action name="General Storage Issues">The persistent DOM storage backend has been rewritten in large parts to
+            fix update issues and database corruptions. Addressing of nodes within the database files has been improved to
+            simplify page splits/relocation of nodes upon node insertion and removal. Concurrency-related bugs
+            in the storage backend led to database corruptions if several threads modified resources
+            concurrently.</action>
+            
+            <action name="XUpdate Support">XUpdate support should now have reached a mature state:
+            thanks to the extensive testing performed within a commercial project, dozens of bugs could be 
+            identified and fixed - some of them did only occur after thousands of mixed
+            update operations and were particularly hard to locate. Incomplete features in eXist's XUpdate 
+            support have been completed: variables declared with xu:variable are now ordinary XPath variables;
+            added support for xu:if; check for duplicate attributes before insertion ...</action>
+            
+            <action name="Concurrent XUpdate Operations">In 1.0b1, concurrent updates were possible, but not
+            safe when operating on the same collection or resource. Concurrent XUpdate operations are now 
+            fully supported.</action>
+            
+            <action name="Locking">Collection and resource locking has changed completely: tests with a long-running 
+            application doing lots of concurrent updates showed that the locking strategy used so far had been 
+            insufficient. The calling code is now responsible for cleanly locking/unlocking the resources it intends
+            to modify, thus moving the responsibilty for locking out of the core and into the APIs. Every document 
+            now has a shared read/exclusive write lock which is observed by all update operations.</action>
+            
+            <action name="Defragmentation">Repeatedly inserting nodes into a document may lead to
+            considerable fragmentation within the pages used by a resource. eXist now triggers a defragmentation
+            run on the document if the number of page splits exceeds a given limit.</action>
+            
+            <action name="JUnit Tests">A large number of new JUnit tests have been added to test basic database
+            operations, the query engine, the various interface and concurrency. In particular, the existing 
+            concurrency tests can be used as a framework for testing other application issues.</action>
+            
+        </topic>
+        
+        <topic category="General Improvements">
+            <action name="WebDAV">New WebDAV interface, replacing the old Xincon module. The new implementation
+            operates on eXist's low-level API and provides full user authentication (using HTTP basic or digest
+            auth). Implemented WebDAV methods: GET, HEAD, OPTIONS, PUT, DELETE, PROPFIND, COPY, MOVE. Missing: 
+            PROPPATCH, LOCK, UNLOCK.</action>
+            
+            <action name="Copy/Move">Copying or moving entire collections or single resources is
+            now supported through the XMLDB API, the Java client or WebDAV.</action>
+            
+            <action name="Reindex of Collections">Collections can now be reindexed, for example, if
+            there has been an index corruption. Recovering from a corruption is possible if the
+            dom.dbx node store and the collections.dbx collections store are still intact.</action>
+            
+            <action name="Running eXist as a Service">Using the included Java Server Wrapper configuration,
+            eXist can now be started as a system wide service on Windows and Unix.</action>
+        </topic>
+        
+        <topic category="XQuery">
+        
+            <action name="Fixes for Bugs in Path Selection Steps">Support for the preceding-sibling/following-sibling 
+            axis had been broken; ancestor and ancestor-or-self axis steps only returned the first node found; items 
+            in a sequence that results from a reverse axis selection are now counted in reverse document order;
+            self::, parent:: axis should behave correct; steps involving a variable reference ($A//$B) work now.
+            Fixed optimizations for filter (//a[b]) expressions.</action>
+            
+            <action name="XQuery Lexer">Non-terminated string literal threw the XQuery lexer into an endless loop.
+            Character sequences like ".." resulted in an exception when occurring within an element or attribute
+            value.</action>
+            
+            <action name="Join-by-value/Cross-document joins">Some optimizations have been added to speed up
+            joins between values from different documents or parts of a document. The query engine now caches those
+            parts of an expression that will not change while iterating the input sequences. This also applies to 
+            typical SQL-like group-by expressions</action>
+            
+            <action name="Fulltext Search">Fulltext search functions were partially broken.</action>
+            
+            <action name="Collations">eXist now supports collations. Collations are used to compare strings 
+            in a locale-sensitive fashion, and can be specified, for example, within the "order by" clause of
+            a FLWOR expression. eXist uses Java's collation support.</action>
+            
+            <action name="Computed Node Constructors">Computed node constructors are now fully supported.</action>
+            
+            <action name="Internal Modules">An XQuery function implementation may now be registered for more
+            than one function signature, so similar functions can be implemented by the same Java class.
+            Function signatures may differ in function name or argument count.</action>
+            
+            <action name="Module Reloading">The XQuery engine detects now changes in imported modules. An XQuery
+            cached by the XQueryServlet or XQueryGenerator will also be recompiled if one its imported modules has
+            been modified. Previously, the XQuery was only reloaded if the main source file had changed.</action>
+            
+            <action name="Nested Module Loading">Importing a module into another module does now work.</action>
+            
+            <action name="Pragma Support">A pragma is used to provide additional information to the XQuery engine.
+            eXist supports the following pragmas: exist:timeout, exist:output-size-limit, exist:serialize).</action>
+            
+            <action name="Function Library">Many missing functions have been added, including all the date/time related
+            functions. Please note that the function names follow the July, 2004 working draft.</action>
+            
+            <action name="Error Reporting">Error reporting by the XQuery engine has been improved a lot: line
+            and column information is now provided with most dynamic errors. Errors in function calls show
+            a trace of the call stack.</action>
+            
+            <action name="Long-Running Queries">XQueries are now monitored and can be terminated
+            if they 1) do not return after a specified period of time, 2) exceed a pre-defined memory limit,
+            3) upon database shutdown.</action>
+        </topic>
+    </release>
+    
 	<release version="1.0beta1">
 		<topic category="New Features">
 			<action name="XQuery">eXist now implements the current XQuery working draft as of

@@ -438,6 +438,13 @@ declare function local:main() as node()?
 								sequence to be returned</para>
                         </listitem>
                     </varlistentry>
+                    <varlistentry>
+                        <term>_wrap=yes|no</term>
+                        <listitem>
+                            <para>Should the returned query results be wrapped into
+                            a surrounding exist:result element? Default is: yes.</para>
+                        </listitem>
+                    </varlistentry>
                 </variablelist>
                 <para>The following URL finds all SPEECH elements in collection 
 					<filename>/db/shakespeare</filename> with SPEAKER "Juliet". 
@@ -1456,6 +1463,16 @@ sub process {
                         out of the database.</para>
                     </listitem>
                 </varlistentry>
+                <varlistentry>
+                    <term>stylesheet-param.key1...stylesheet-param.key2</term>
+                    <listitem>
+                        <para>If a stylesheet has been specified with <option>stylesheet</option>,
+                        you can also pass parameters to it. Stylesheet parameters are recognized
+                        if they start with "stylesheet-param.", followed by the name of the parameter.
+                        The leading "stylesheet-param" string will be removed before the parameter
+                        is passed to the stylesheet.</para>
+                    </listitem>
+                </varlistentry>
             </variablelist>
             
             <section>
@@ -1479,6 +1496,51 @@ sub process {
                                 <listitem>
                                     <para>A struct containing key=value pairs to
                                     configure the output.</para>
+                                </listitem>
+                            </varlistentry>
+                        </variablelist>
+                    </listitem>
+                    <listitem>
+                        <synopsis format="linespecific">Hashtable getDocumentData(String name, Hashtable parameters)</synopsis>
+                        <synopsis>Hashtable getNextChunk(String handle, int offset)</synopsis>
+                        <para>Retrieve a document from the database, but limit the number of bytes
+                        transmitted in one chunk to avoid memory shortage on the server. getDocumentData()
+                        returns a struct containing the following fields: "data", "handle", "offset".
+                        "data" contains the document's data (as byte[]) or the first chunk of data if the
+                        document size exceeds the predefined internal limit. "handle" and "offset" can
+                        be passed to getNextChunk() to retrieve the remaining data chunks.</para>
+                        
+                        <para>If offset is 0, no more chunks are available and all data is already contained
+                        in the "data" field. Otherwise, further chunks can be retrieved by passing the handle and
+                        the offset (as returned by the last call) to getNextChunk(). Once the last chunk is
+                        read, offset will be 0 and the handle becomes invalid.</para>
+                        <variablelist>
+                            <title>Parameters:</title>
+                            <varlistentry>
+                                <term>name</term>
+                                <listitem>
+                                    <para>Path of the document to retrieve, 
+										e.g. /db/shakespeare/plays/r_and_j.xml</para>
+                                </listitem>
+                            </varlistentry>
+                            <varlistentry>
+                                <term>parameters</term>
+                                <listitem>
+                                    <para>A struct containing key=value pairs to
+                                    configure the output.</para>
+                                </listitem>
+                            </varlistentry>
+                            <varlistentry>
+                                <term>handle</term>
+                                <listitem>
+                                    <para>The handle returned by the call to getDocumentData(). This identifies
+                                    a temporary file on the server to read from.</para>
+                                </listitem>
+                            </varlistentry>
+                            <varlistentry>
+                                <term>offset</term>
+                                <listitem>
+                                    <para>The offset into the document from which the next chunk will be read.</para>
                                 </listitem>
                             </varlistentry>
                         </variablelist>
@@ -1757,7 +1819,7 @@ sub process {
                         </variablelist>
                     </listitem>
                     <listitem>
-                        <synopsis format="linespecific">String query(String xquery, int howmany, int start, Hashtable parameters)</synopsis>
+                        <synopsis format="linespecific">String query(byte[] xquery, int howmany, int start, Hashtable parameters)</synopsis>
                         <para>Execute an XQuery expression and return a specified subset
                         of the results. This 
 							method will directly return a subset of the 
@@ -1809,10 +1871,48 @@ sub process {
                 <title>Getting Information on Collections and Documents</title>
                 <itemizedlist style="none">
                     <listitem>
+                        <synopsis format="linespecific">Hashtable describeCollection(String collection)</synopsis>
+                        <para>Get a struct describing a collection. The 
+							returned struct has the following fields: "name", 
+							"owner", "group", "created", "permissions", "collections". 
+							"name" is the collection's path, "owner" identifies the owner of the collection, 
+							"group" is the name of the group owning this 
+							collection, "created" contains the creation date
+                            of the collection as a long value, "permissions" contains 
+                            the active permissions that apply to this collection as an integer 
+							value.</para>
+                            
+                        <para>"collections" is an array listing the names of 
+							available sub-collections in this collection.</para>
+                            
+                        <variablelist>
+                            <title>Parameters:</title>
+                            <varlistentry>
+                                <term>collection</term>
+                                <listitem>
+                                    <para>The full path to the 
+										collection.</para>
+                                </listitem>
+                            </varlistentry>
+                        </variablelist>
+                    </listitem>
+                    <listitem>
+                        <synopsis format="linespecific">Hashtable describeResource(String resource)</synopsis>
+                        <para>Returns a struct describing a resource. The 
+							returned struct has the following fields: "name", 
+							"owner", "group", "created", "permissions", "type" and
+                            "content-length". Their meaning is basically the same as 
+                            for describeCollection. However, "type" will be either
+                            "XMLResource" or "BinaryResource". "Content-length" contains
+                            the estimated size of the resource in bytes. This is calculated
+                            on basis of the number of pages occupied by the resource in the
+                            DOM storage. For binary resources, the value will always be 0.</para>
+                    </listitem>
+                    <listitem>
                         <synopsis format="linespecific">Hashtable getCollectionDesc(String collection)</synopsis>
                         <para>Get a struct describing a collection. The 
 							returned struct has the following fields: "name", 
-							"owner", "group", "created", "permissions", "collections", 
+							"owner", "group", "created", "permissions", "collections". 
 							"documents". "name" is the collection's path, 
 							"owner" identifies the owner of the collection, 
 							"group" is the name of the group owning this 
