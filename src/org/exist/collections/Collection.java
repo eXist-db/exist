@@ -862,7 +862,7 @@ implements Comparable, EntityResolver, Cacheable {
 			}
 	
 			if(oldDoc == null)
-			    addDocumentLink(broker, document);
+			    addDocument(broker, document);
 			broker.addDocument(this, document);
 			broker.closeDocument();
 			broker.flush();
@@ -1061,7 +1061,7 @@ implements Comparable, EntityResolver, Cacheable {
 			}
 	
 			if(oldDoc == null)
-			    addDocumentLink(broker, document);
+			    addDocument(broker, document);
 			broker.addDocument(this, document);
 			broker.closeDocument();
 			broker.flush();
@@ -1227,7 +1227,7 @@ implements Comparable, EntityResolver, Cacheable {
 			streamer.serialize(node, true);
 	
 			if(oldDoc == null)
-			    addDocumentLink(broker, document);
+			    addDocument(broker, document);
 			broker.addDocument(this, document);
 			broker.closeDocument();
 			broker.flush();
@@ -1294,7 +1294,7 @@ implements Comparable, EntityResolver, Cacheable {
 						broker.getUser().getPrimaryGroup());
 			}
 			broker.storeBinaryResource(blob, data);
-			addDocumentLink(broker, blob);
+			addDocument(broker, blob);
 			broker.addDocument(this, blob);
 			broker.closeDocument();
 			return blob;
