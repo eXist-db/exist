@@ -61,7 +61,7 @@ public class XQueryAction extends Action {
 		XPathQueryServiceImpl service = (XPathQueryServiceImpl)
 			col.getService("XPathQueryService", "1.0");
 		
-		service.beginProtected();
+//		service.beginProtected();
 		ResourceSet result = service.query(xquery);
 
 		System.out.println(Thread.currentThread().getName() + ": found " + result.getSize());
@@ -71,7 +71,7 @@ public class XQueryAction extends Action {
 			XMLResource next = (XMLResource) result.getResource((long)i);
 			next.getContentAsSAX(handler);
 		}
-		service.endProtected();
+//		service.endProtected();
 		
 		runningTime += (System.currentTimeMillis() - start);
 		called++;

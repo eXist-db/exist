@@ -22,8 +22,6 @@ public class RemoteResourceSet implements ResourceSet {
     protected int handle = -1;
     protected Vector resources;
     protected Properties outputProperties;
-    
-    protected XmlRpcClient rpcClient;
 
     public RemoteResourceSet( RemoteCollection col, Properties properties, Vector resources, int handle ) {
         this.handle = handle;
@@ -137,7 +135,9 @@ public class RemoteResourceSet implements ResourceSet {
 		try {
 			Vector params = new Vector(1);
 			params.addElement(new Integer(handle));
-			rpcClient.execute("releaseQueryResult", params);
+			XmlRpcClient rpcClient = collection.getClient();
+			if(rpcClient != null)
+				rpcClient.execute("releaseQueryResult", params);
 		} catch(XmlRpcException e) {
 			e.printStackTrace();
 		} catch(IOException e) {

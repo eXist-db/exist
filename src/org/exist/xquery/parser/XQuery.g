@@ -330,6 +330,7 @@ exprSingle throws XPathException
 	( ( "for" | "let" ) DOLLAR ) => flworExpr
 	| ( ( "some" | "every" ) DOLLAR ) => quantifiedExpr
 	| ( "if" LPAREN ) => ifExpr 
+//	| ( "typeswitch" LPAREN ) => typeswitchExpr
 	| orExpr
 	;
 
@@ -399,6 +400,25 @@ quantifiedInVarBinding throws XPathException
 { String varName; }:
 	DOLLAR! varName=qName! ( typeDeclaration )? "in"! exprSingle
 	{ #quantifiedInVarBinding = #(#[VARIABLE_BINDING, varName], #quantifiedInVarBinding); }
+	;
+
+typeswitchExpr throws XPathException
+{ String varName; }:
+	"typeswitch"^ LPAREN! expr RPAREN!
+	( caseClause )+
+	"default" ( DOLLAR! varName=qName! )? "return"! exprSingle
+	;
+	
+caseClause throws XPathException
+{ String varName; }:
+	"case"^ ( caseVar  )?
+	sequenceType "return"! exprSingle
+	;
+	
+caseVar throws XPathException
+{ String varName; }:
+	DOLLAR! varName=qName! "as"
+	{ #caseVar = #[VARIABLE_BINDING, varName]; }
 	;
 	
 ifExpr throws XPathException: "if"^ LPAREN! expr RPAREN! "then"! exprSingle "else"! exprSingle ;
@@ -698,8 +718,14 @@ textTest : "text"^ LPAREN! RPAREN! ;
 
 anyKindTest : "node"^ LPAREN! RPAREN! ;
 
-elementTest : "element"^ LPAREN! ( elementNameOrWildcard )? RPAREN! ;
+elementTest : "element"^ LPAREN! ( elementNameOrWildcard ( COMMA! typeName ( QUESTION )? )?  )? RPAREN! ;
 
+typeName 
+{ String qn = null; }: 
+	qn=qName 
+	{ #typeName = #[QNAME, qn]; }
+	;
+	
 elementNameOrWildcard 
 { String qn = null; }:
 	STAR { #elementNameOrWildcard = #[WILDCARD, "*"]; }
@@ -707,7 +733,7 @@ elementNameOrWildcard
 	qn=qName { #elementNameOrWildcard = #[QNAME, qn]; }
 	;
 
-attributeTest : "attribute"! LPAREN! ( attributeNameOrWildcard ) ? RPAREN! 
+attributeTest : "attribute"! LPAREN! ( attributeNameOrWildcard ( COMMA! typeName ( QUESTION )? )? ) ? RPAREN! 
 	{ #attributeTest= #(#[ATTRIBUTE_TEST, "attribute()"], #attributeTest); }
 	;
 
@@ -1171,6 +1197,8 @@ reservedKeywords returns [String name]
 	"ordered" { name = "ordered"; }
 	|
 	"unordered" { name = "unordered"; }
+	|
+	"typeswitch" { name = "typeswitch"; }
 	;
 
 /**

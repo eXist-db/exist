@@ -32,16 +32,16 @@ public class NameTest extends TypeTest {
 			return false;
 		if(node == null)
 			node = proxy.getNode();
-		return matchesInternal(node);
+		return matchesName(node);
 	}
 
 	public boolean matches(Node other) {
 		if(!isOfType(other.getNodeType()))
 			return false;
-		return matchesInternal(other);
+		return matchesName(other);
 	}
 	
-	private boolean matchesInternal(Node other) {
+	public boolean matchesName(Node other) {
 		if (nodeName.getNamespaceURI() != null) {
 			if (!nodeName.getNamespaceURI().equals(other.getNamespaceURI()))
 				return false;

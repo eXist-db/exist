@@ -22,11 +22,10 @@
  */
 package org.exist.xquery.value;
 
-import org.exist.xquery.AtomicToString;
-import org.exist.xquery.Atomize;
+import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.UntypedValueCheck;
 import org.exist.xquery.XPathException;
+import org.w3c.dom.Node;
 
 /**
  * @author wolf
@@ -35,7 +34,8 @@ public class SequenceType {
  
 	private int primaryType = Type.ITEM;
 	private int cardinality = Cardinality.EXACTLY_ONE;
-
+	private QName nodeName = null;
+	
 	public SequenceType() {
 	}
 
@@ -60,6 +60,30 @@ public class SequenceType {
 		this.cardinality = cardinality;
 	}
 
+	public QName getNodeName() {
+		return nodeName;
+	}
+	
+	public void setNodeName(QName qname) {
+		this.nodeName = qname;
+	}
+
+	public boolean checkType(Item item) {
+		if(!Type.subTypeOf(item.getType(), primaryType))
+			return false;
+		if(nodeName != null) {
+			Node node = ((NodeValue)item).getNode();
+			if (nodeName.getNamespaceURI() != null) {
+				if (!nodeName.getNamespaceURI().equals(node.getNamespaceURI()))
+					return false;
+			}
+			if (nodeName.getLocalName() != null) {
+				return nodeName.getLocalName().equals(node.getLocalName());
+			}
+		}
+		return true;
+	}
+	
 	public void checkType(int type) throws XPathException {
 		if (type == Type.EMPTY || type == Type.ITEM)
 			return;
