@@ -118,6 +118,4 @@ public class ExtDocument extends Function {
 		}
 		return result;
 	}
-
-	
 }
