@@ -22,7 +22,9 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
@@ -71,7 +73,12 @@ public class ForExpr extends BindingExpression {
 		
 		// evaluate the "in" expression
 		Sequence in = inputSequence.eval(null, null);
+		// assign to the bound variable
 		var.setValue(in);
+		if(in instanceof NodeSet) {
+		    DocumentSet contextDocs = ((NodeSet)in).getDocumentSet();
+		    var.setContextDocs(contextDocs);
+		}
 		if(whereExpr != null) {
 			whereExpr.setInPredicate(true);
 			setContext(in);
@@ -85,7 +92,8 @@ public class ForExpr extends BindingExpression {
 			LOG.debug("fast evaluation mode");
 			in = applyWhereExpression(in);
 		}
-		
+		// if there's an order by clause, wrap the result into
+		// an OrderedValueSequence
 		if(resultSequence == null) {
 			if(orderSpecs != null)
 				resultSequence = 

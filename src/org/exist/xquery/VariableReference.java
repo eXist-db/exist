@@ -115,6 +115,15 @@ public class VariableReference extends AbstractExpression {
 		return Cardinality.ZERO_OR_MORE;		// unknown cardinality
 	}
 
+	public Variable getVariable() {
+	    try {
+			Variable var = context.resolveVariable(qname);
+			return var;
+		} catch (XPathException e) {
+		    return null;
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.AbstractExpression#resetState()
 	 */

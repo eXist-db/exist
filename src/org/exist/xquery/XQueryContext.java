@@ -99,7 +99,7 @@ public class XQueryContext {
 	 * The set of statically known documents.
 	 */
 	private DocumentSet staticDocuments = null;
-
+	
 	private DBBroker broker;
 
 	private String baseURI = "";
@@ -305,7 +305,7 @@ public class XQueryContext {
 	public DocumentSet getStaticallyKnownDocuments() {
 		return staticDocuments;
 	}
-
+	
 	public void reset() {
 		builder = null;
 		staticDocuments = null;
