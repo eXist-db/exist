@@ -9,6 +9,7 @@ package org.exist.xquery;
 import java.util.Iterator;
 
 import org.exist.dom.DocumentSet;
+import org.exist.memtree.MemTreeBuilder;
 
 
 /**
@@ -25,8 +26,10 @@ public class ModuleContext extends XQueryContext {
 	 * @param broker
 	 */
 	public ModuleContext(XQueryContext parentContext) {
-		super(parentContext.getBroker());
+		super();
 		this.parentContext = parentContext;
+		this.broker = parentContext.getBroker();
+		loadDefaults();
 	}
 
 	/* (non-Javadoc)
