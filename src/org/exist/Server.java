@@ -23,7 +23,6 @@ package org.exist;
  */
 
 import org.apache.xmlrpc.*;
-import org.exist.client.*;
 import org.exist.http.*;
 import org.exist.storage.*;
 import org.exist.util.*;
