@@ -21,7 +21,7 @@ outputOptions = { "encoding" => "UTF-8", "indent" => "yes",
 }
 
 begin
-  result = client.call("query", query, 20, 1, outputOptions)
+  result = client.call("query", XMLRPC::Base64.new(query), 20, 1, outputOptions)
   puts "#{result}\n"
 
 rescue XMLRPC::FaultException => e
