@@ -116,7 +116,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	// has document-metadata been loaded?
 	private transient boolean complete = true;
 	
-	private transient User lockOwner = null;
+	//private transient User lockOwner = null;
+	private transient int lockOwnerId = 0;
 	
 	private transient Lock updateLock = null;
 	
@@ -571,8 +572,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			permissions.setGroup(secman.getGroup(gid).getName());
 		}
 		permissions.setPermissions(perm);
-		final int lockId = istream.readInt();
-		lockOwner = (lockId > 0 ? secman.getUser(lockId) : null);
+		lockOwnerId = istream.readInt();
+//		lockOwner = (lockId > 0 ? secman.getUser(lockId) : null);
 		
 		try {
 			calculateTreeLevelStartPoints();
@@ -628,11 +629,14 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public void setUserLock(User user) {
-		lockOwner = user;
+		lockOwnerId = (user == null ? 0 : user.getUID());
 	}
 	
 	public User getUserLock() {
-		return lockOwner;
+		if(lockOwnerId < 1)
+			return null;
+		final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
+		return secman.getUser(lockOwnerId);
 	}
 	
 	public void setPermissions(int mode) {
@@ -683,8 +687,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			ostream.writeInt(group.getId());
 		}
 		ostream.writeByte((byte) permissions.getPermissions());
-		if(lockOwner != null)
-			ostream.writeInt(lockOwner.getUID());
+		if(lockOwnerId > 0)
+			ostream.writeInt(lockOwnerId);
 		else
 			ostream.writeInt(0);
 	}
