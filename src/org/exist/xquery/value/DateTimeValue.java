@@ -112,20 +112,24 @@ public class DateTimeValue extends AbstractDateTimeValue {
 			millis = Integer.parseInt(part);
 		}
 		part = util.group(10);
-		if (part != null && part.length() > 0 && (!part.equals("Z"))) {
-			if (!util.match(tzre, part))
-				throw new XPathException("Type error: error in  timezone: " + part);
+		if (part != null && part.length() > 0) {
 			explicitTimeZone = true;
-			part = util.group(2);
-			tzOffset = Integer.parseInt(part) * 60;
-			part = util.group(3);
-			if (part != null) {
-				int tzminute = Integer.parseInt(part);
-				tzOffset += tzminute;
+			if (part.equals("Z")) {
+				tzOffset = 0;
+			} else {
+				if (!util.match(tzre, part))
+					throw new XPathException("Type error: error in  timezone: " + part);
+				part = util.group(2);
+				tzOffset = Integer.parseInt(part) * 60;
+				part = util.group(3);
+				if (part != null) {
+					int tzminute = Integer.parseInt(part);
+					tzOffset += tzminute;
+				}
+				part = util.group(1);
+				if (part.equals("-"))
+					tzOffset *= -1;
 			}
-			part = util.group(1);
-			if (part.equals("-"))
-				tzOffset *= -1;
 		}
 		SimpleTimeZone zone = new SimpleTimeZone(tzOffset * 60000, "LLL");
 		if(explicitTimeZone)
