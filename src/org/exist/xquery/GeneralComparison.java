@@ -297,17 +297,24 @@ public class GeneralComparison extends BinaryOp {
 	        
 	    } else if (relation == Constants.EQ
 				&& nodes.hasTextIndex()) {
+	        
 	        // we can use the fulltext index
 	        String cmp = getComparisonString(rightSeq);
 	        if(cmp.length() < NativeTextEngine.MAX_WORD_LENGTH)
 	            nodes = useFulltextIndex(cmp, nodes, docs);
 	        // now compare the input node set to the search expression
-			Collator collator = getCollator(contextSequence);
 			result =
-				context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp, collator);
+				context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp, getCollator(contextSequence));
+		} else if(Type.subTypeOf(rightSeq.getItemType(), Type.STRING) ||
+		        rightSeq.getItemType() == Type.ATOMIC) {
+		    
+		    // no usable index found. Fall back to a sequential scan of the nodes
+		    result =
+				context.getBroker().getNodesEqualTo(nodes, docs, relation, getComparisonString(rightSeq), 
+				        getCollator(contextSequence));
 		} else {
 		    
-		    // no usable index found. Fall back to nodeSetCompare()
+		    // no usable index found. Fall back to nodeSetCompare
 		    return nodeSetCompare(nodes, contextSequence);
 		}
 		
@@ -404,6 +411,8 @@ public class GeneralComparison extends BinaryOp {
 		int rtype = rv.getType();
 		if (ltype == Type.ITEM || ltype == Type.ATOMIC) {
 			if (Type.subTypeOf(rtype, Type.NUMBER)) {
+			    if(isEmptyString(lv))
+			        return false;
 				lv = lv.convertTo(Type.DOUBLE);
 			} else if (rtype == Type.ITEM || rtype == Type.ATOMIC) {
 				lv = lv.convertTo(Type.STRING);
@@ -412,6 +421,8 @@ public class GeneralComparison extends BinaryOp {
 				lv = lv.convertTo(rv.getType());
 		} else if (rtype == Type.ITEM || rtype == Type.ATOMIC) {
 			if (Type.subTypeOf(ltype, Type.NUMBER)) {
+			    if(isEmptyString(lv))
+			        return false;
 				rv = rv.convertTo(Type.DOUBLE);
 			} else if (rtype == Type.ITEM || rtype == Type.ATOMIC) {
 				lv = lv.convertTo(Type.STRING);
@@ -442,7 +453,21 @@ public class GeneralComparison extends BinaryOp {
 		}
 	}
 	
-	private boolean checkArgumentTypes(XQueryContext context, DocumentSet docs)
+	/**
+     * @param lv
+     * @return
+	 * @throws XPathException
+     */
+    private static boolean isEmptyString(AtomicValue lv) throws XPathException {
+        if(Type.subTypeOf(lv.getType(), Type.STRING) || lv.getType() == Type.ATOMIC) {
+            String str = lv.getStringValue();
+            if(str.length() == 0)
+                return true;
+        }
+        return false;
+    }
+
+    private boolean checkArgumentTypes(XQueryContext context, DocumentSet docs)
 		throws XPathException {
 		Configuration config = context.getBroker().getConfiguration();
 		IndexConfiguration idxConf = (IndexConfiguration) config.getProperty("indexer.map");

@@ -49,6 +49,8 @@ public class XQueryAction extends Action {
 	 * @see org.exist.xmldb.test.concurrent.Action#execute()
 	 */
 	public boolean execute() throws Exception {
+	    Thread.currentThread().setName("XQuery Thread");
+	    
 		Collection col = DatabaseManager.getCollection(collectionPath);
 		System.out.println(Thread.currentThread().getName() + ": executing query: " + xquery);
 		ResourceSet result = DBUtils.xquery(col, xquery);

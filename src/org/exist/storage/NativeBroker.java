@@ -927,13 +927,14 @@ public class NativeBroker extends DBBroker {
 				tempProxy = new NodeProxy(doc, gid, address);
 				if (idxSpec != null) {
 				    ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-				    if(spec != null)
+				    if(spec != null) {
 				        indexType = spec.getIndexType();
+				        LOG.debug("Index for " + gid + ": " + indexType);
+				    }
 				}
 				if(ftIdx == null || currentPath == null || ftIdx.match(currentPath))
 				    indexType |= ValueIndexSpec.TEXT;
 				tempProxy.setIndexType(indexType);
-				
 				elementIndex.setDocument(doc);
 				elementIndex.addRow(qname, tempProxy);
 				break;
@@ -1281,6 +1282,8 @@ public class NativeBroker extends DBBroker {
 	 */
 	private void reindex(DocumentImpl doc) {
 		LOG.debug("Reindexing document " + doc.getFileName());
+		if(doc.getFileName().equals(Collection.COLLECTION_CONFIG_FILE))
+		    doc.getCollection().setConfigEnabled(false);
 		final long start = System.currentTimeMillis();
 		Iterator iterator;
 		NodeList nodes = doc.getChildNodes();
@@ -1294,6 +1297,8 @@ public class NativeBroker extends DBBroker {
 		    scanNodes(iterator, n, new NodePath(), true);
 		}
 		flush();
+		if(doc.getFileName().equals(Collection.COLLECTION_CONFIG_FILE))
+		    doc.getCollection().setConfigEnabled(true);
 		LOG.debug("reindex took " + (System.currentTimeMillis() - start) + "ms.");
 	}
 	

@@ -91,7 +91,7 @@ implements Comparable, EntityResolver, Cacheable {
 
 	private final static Logger LOG = Logger.getLogger(Collection.class);
 
-	private final static String COLLECTION_CONFIG_FILE = "collection.xconf";
+	public final static String COLLECTION_CONFIG_FILE = "collection.xconf";
 
 	private final static int VALIDATION_ENABLED = 0;
 	private final static int VALIDATION_AUTO = 1;
@@ -125,6 +125,7 @@ implements Comparable, EntityResolver, Cacheable {
 	private List observers = null;
 
 	private CollectionConfiguration configuration = null;
+	private boolean collectionConfEnabled = true;
 	private boolean triggersEnabled = true;
 
 	// fields required by the collections cache
@@ -1473,21 +1474,26 @@ implements Comparable, EntityResolver, Cacheable {
 	 */
 	private Trigger setupTriggers(DBBroker broker, String name, DocumentImpl oldDoc) {
 		Trigger trigger = null;
-		if (triggersEnabled && !name.equals(COLLECTION_CONFIG_FILE)) {
+		if (name.equals(COLLECTION_CONFIG_FILE)) {
+		    // set configuration to null if we are updating collection.xconf
+			configuration = null;
+			collectionConfEnabled = false;
+		} else {
+		    collectionConfEnabled = true;
 			if (triggersEnabled) {
-				CollectionConfiguration config = getConfiguration(broker);
-				if (config != null) {
-					if (oldDoc == null)
-						trigger = config
-								.getTrigger(Trigger.STORE_DOCUMENT_EVENT);
-					else
-						trigger = config
-								.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
+				if (triggersEnabled) {
+					CollectionConfiguration config = getConfiguration(broker);
+					if (config != null) {
+						if (oldDoc == null)
+							trigger = config
+									.getTrigger(Trigger.STORE_DOCUMENT_EVENT);
+						else
+							trigger = config
+									.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
+					}
 				}
 			}
-		} else
-			// set configuration to null if we are updating collection.xconf
-			configuration = null;
+		}
 		return trigger;
 	}
 
@@ -1599,6 +1605,8 @@ implements Comparable, EntityResolver, Cacheable {
 	}
 
 	private CollectionConfiguration getConfiguration(DBBroker broker) {
+	    if (!collectionConfEnabled)
+	        return null;
 		if (configuration == null)
 			configuration = readCollectionConfiguration(broker);
 		
@@ -1630,10 +1638,21 @@ implements Comparable, EntityResolver, Cacheable {
 			} finally {
 				triggersEnabled = true;
 			}
-		}	
+		}
 		return null;
 	}
 
+	/**
+	 * Should the collection configuration document be enabled
+	 * for this collection? Called by {@link org.exist.storage.NativeBroker}
+	 * before doing a reindex.
+	 * 
+	 * @param enabled
+	 */
+	public void setConfigEnabled(boolean enabled) {
+	    collectionConfEnabled = enabled;
+	}
+	
 	/**
 	 * Set the internal storage address of the collection data.
 	 * 
