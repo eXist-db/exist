@@ -204,21 +204,6 @@ public class XQueryServlet extends HttpServlet {
 
         //-------------------------------
         
-		String contentType = this.contentType;
-        try {
-            contentType = getServletContext().getMimeType(path);
-            if (contentType == null)
-                contentType = this.contentType;
-        }
-        catch (Throwable e) {
-            contentType = this.contentType;
-        }
-        finally {
-            if (contentType.startsWith("text/") || (contentType.endsWith("+xml")))
-                contentType += ";charset=" + formEncoding;
-            response.setContentType(contentType );
-        }
-        
 		String baseURI = request.getRequestURI();
 		int p = baseURI.lastIndexOf('/');
 		if(p > -1)
