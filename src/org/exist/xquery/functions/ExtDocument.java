@@ -185,6 +185,7 @@ public class ExtDocument extends Function {
      * @see org.exist.xquery.PathExpr#resetState()
      */
     public void resetState() {
+    	super.resetState();
         cached = null;
         cachedArgs = null;
     }
