@@ -23,8 +23,8 @@ declare function f:product($a as xs:integer, $b as xs:integer) {
 	$a * $b
 };
 
-declare function f:remove($node as node()) as xs:boolean {
-	node-name($node) ne xs:QName("b")
+declare function f:remove($item as xs:integer) as xs:boolean {
+	$item gt 10
 };
 
 declare function f:table-row($a, $b) {
@@ -35,14 +35,14 @@ declare function f:table-row($a, $b) {
 };
 
 <body>
-	<p>The sum of numbers 1 to 4 is:
-	{seq:apply(util:function("f:plus", 2), 1 to 4)}</p>
+	<p>The sum of numbers 1 to 4 is:</p>
+	<p>{seq:apply(util:function("f:plus", 2), 1 to 4)}</p>
 
-	<p>The product of numbers 1 to 4 is:
-	{seq:apply(util:function("f:product", 2), 1 to 4)}</p>
+	<p>The product of numbers 1 to 4 is:</p>
+	<p>{seq:apply(util:function("f:product", 2), 1 to 4)}</p>
 
-	<p>Adding the elements of sequences (4, 7, 6) and (10, 15, 8)
-	element-wise: {seq:map(util:function("f:plus", 2), (4, 7, 6), (10, 15, 8))}</p>
+	<p>Adding the elements of sequences (4, 7, 6) and (10, 15, 8) element-wise:</p> 
+	<p>{seq:map(util:function("f:plus", 2), (4, 7, 6), (10, 15, 8))}</p>
 
 	<p>Generating a table from the elements of sequences: (1, 2, 3) and
 	("Franz", "Klaus", "Erwin"):</p>
@@ -51,6 +51,6 @@ declare function f:table-row($a, $b) {
 		{seq:map(util:function("f:table-row", 2), 1 to 3, ("Franz", "Klaus", "Erwin"))}
 	</table>
 
-	<p>Filter out all "b" nodes:
-	{seq:filter(util:function("f:remove", 1), (<a/>, <b/>, <c/>, <d/>, <b/>))}</p>
+	<p>Filter out all items greater than 10:</p>
+	<p>{seq:filter(util:function("f:remove", 1), (8, 15, 7, 19, 22, 5))}</p>
 </body>
