@@ -355,6 +355,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 			}
 		} catch (XMLDBException e) {
 			reportError(FATAL_ERROR, e.getMessage(), e);
+			commandStack.pop();
 			return;
 		}
 		nesting++;
@@ -380,6 +381,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 	protected void reportError(String type, String message, Exception cause) throws SAXException {
 		AttributesImpl attribs = new AttributesImpl();
 		attribs.addAttribute("", "type", "type", "CDATA", type);
+		super.startPrefixMapping(PREFIX, NAMESPACE);
 		super.startElement(NAMESPACE, ERROR_ELEMENT, PREFIX + ERROR_ELEMENT, attribs);
 		super.startElement(
 			NAMESPACE,
@@ -401,6 +403,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 			super.endElement(NAMESPACE, STACKTRACE_ELEMENT, PREFIX + STACKTRACE_ELEMENT);
 		}
 		super.endElement(NAMESPACE, ERROR_ELEMENT, PREFIX + ERROR_ELEMENT);
+		super.endPrefixMapping(PREFIX);
 	}
 
 	/* (non-Javadoc)

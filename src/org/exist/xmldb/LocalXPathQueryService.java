@@ -77,6 +77,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	
 	public ResourceSet query(String query, String sortBy) throws XMLDBException {
 		DocumentSet docs = null;
+		LOG.debug("query: " + query);
 		if (!(query.startsWith("document(") || query.startsWith("collection(") ||
 			query.startsWith("xcollection("))) {
 			DBBroker broker = null;
@@ -125,6 +126,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 			XPathTreeParser2 treeParser = new XPathTreeParser2(context);
 			parser.xpath();
 			if(parser.foundErrors()) {
+				LOG.debug(parser.getErrorMessage());
 				throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR,
 					parser.getErrorMessage());
 			}
