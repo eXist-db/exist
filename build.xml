@@ -7,7 +7,7 @@
 
 	<property file="build.properties"/>
 
-    <property name="jetty.dir" value="Jetty-4.1.4"/>
+    <property name="jetty.dir" value="tools/jetty"/>
     <property name="src" value="./src"/>
     <property name="src.webapp" value="./webapp"/>
 	<property name="samples" value="./samples"/>
@@ -581,6 +581,8 @@ Running tests on remote database
 		<mkdir dir="${dist.dir}/tools"/>
 		<mkdir dir="${dist.dir}/tools/lib"/>
         <mkdir dir="${dist.dir}/${jetty.dir}"/>
+		<mkdir dir="${jetty.dir}/logs"/>
+        <mkdir dir="${jetty.dir}/work"/>
         <mkdir dir="${dist.dir}/webapp"/>
         <mkdir dir="${dist.dir}/webapp/WEB-INF/logs"/>
         <mkdir dir="${dist.dir}/webapp/WEB-INF/data"/>
