@@ -44,7 +44,10 @@ public class CatchFunction extends Function {
     public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("catch", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
-			"Catches the specified exceptions.",
+			"This function corresponds to a try-catch statement in Java. The code block " +
+			"in $b will be put inside a try-catch statement. If an exception is thrown while executing " +
+			"$b, the function checks the name of the exception and calls $c if it matches one of " +
+			"the fully qualified Java class names specified in $a",
 			new SequenceType[] {
 					new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE),
 					new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
