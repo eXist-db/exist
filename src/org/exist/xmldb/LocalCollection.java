@@ -134,7 +134,6 @@ public class LocalCollection extends Observable implements CollectionImpl {
             LOG.debug("loading collection " + name);
             collection =
                 broker.getCollection( name );
-            LOG.debug("resources = " + collection.getDocumentCount());
             if ( collection == null )
                 throw new XMLDBException( ErrorCodes.NO_SUCH_RESOURCE,
                     "collection not found" );
