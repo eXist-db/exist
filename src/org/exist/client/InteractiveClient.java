@@ -38,6 +38,7 @@ import java.io.OutputStreamWriter;
 import java.io.PushbackInputStream;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.nio.charset.Charset;
@@ -65,7 +66,11 @@ import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
 import org.apache.avalon.excalibur.cli.CLUtil;
 import org.apache.oro.io.GlobFilenameFilter;
+import org.apache.xerces.parsers.DOMParser;
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
 import org.exist.dom.XMLUtil;
+import org.exist.schema.SchemaService;
 import org.exist.security.Permission;
 import org.exist.security.User;
 import org.exist.util.CollectionScanner;
@@ -1038,6 +1043,27 @@ public class InteractiveClient {
 				displayHelp();
 			else if (args[0].equalsIgnoreCase("quit")) {
 				return false;
+				
+			}  else if (args[0].equalsIgnoreCase("validate")) {
+				if (args.length < 2)
+					messageln("missing document name.");
+				else {
+					SchemaService schemaService = (SchemaService) current.getService("SchemaService", "1.0");
+					if (schemaService.validateResource(args[1]))
+						messageln("validated ok.");
+					else
+						messageln("there were errors.");
+				}
+				
+			}  else if (args[0].equalsIgnoreCase("putschema")) {
+				if (args.length < 2) {
+					messageln("missing schema file name.");
+				} else {
+					importSchema(args[1]);
+					getResources();
+				}
+				return true;
+
 			} else {
 				messageln("unknown command");
 				return true;
@@ -1053,6 +1079,33 @@ public class InteractiveClient {
 		}
 	}
 
+	/**
+	 * @param String filename of the file that contains the schema
+	 */
+	private void importSchema(String filename) throws XMLDBException {
+		SchemaService schemaService = (SchemaService) current.getService("SchemaService", "1.0");
+		if (schemaService != null) {
+			String schemaContents = null;
+			try {
+				DOMParser parser = new DOMParser();
+				parser.parse(filename);
+				Document document = parser.getDocument();
+				StringWriter sw = new StringWriter();
+				XMLSerializer serializer = new XMLSerializer(sw, new OutputFormat(document, "UTF-8", true));
+				serializer.serialize(document);
+				schemaContents = sw.toString();
+				
+				schemaService.putSchema(schemaContents);
+				messageln("imported schema in file \"" + filename + "\".");
+
+			} catch (SAXException saxEx) {
+				messageln("Unable to parse schema in " + filename + ": " + saxEx.getMessage());
+			} catch (IOException ioEx) {
+				messageln("Uable to parse schema in " + filename + ": " + ioEx.getMessage());
+			}
+		}
+	}
+	
 	private final ResourceSet find(String xpath) throws XMLDBException {
 		if (xpath.charAt(xpath.length() - 1) == '\n')
 			xpath = xpath.substring(0, xpath.length() - 1);
@@ -1300,6 +1353,11 @@ public class InteractiveClient {
 		return true;
 	}
 
+	/** stores given Resource
+	 * @param fileName simple file or directory
+	 * @return
+	 * @throws XMLDBException
+	 */
 	protected synchronized boolean parse(String fileName) throws XMLDBException {
 		fileName = fileName.replace('/', File.separatorChar).replace('\\',
 				File.separatorChar);
@@ -2117,10 +2175,14 @@ public class InteractiveClient {
 				break;
 			} catch (IOException ioe) {
 				System.err.println(ioe);
+			} catch (Exception e) {
+				// TODO: handle exception
+				System.err.println(e);
 			}
 		try {
 			Readline.writeHistoryFile(historyFile.getAbsolutePath());
 		} catch (Exception e) {
+			System.err.println("Could not write history File to " + historyFile.getAbsolutePath() );
 		}
 		Readline.cleanup();
 		shutdown(false);
