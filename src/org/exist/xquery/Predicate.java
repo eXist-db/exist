@@ -256,7 +256,6 @@ public class Predicate extends PathExpr {
 	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
 	public void resetState() {
-		LOG.debug("Clearing cached result");
 		super.resetState();
 		cached = null;
 	}

@@ -225,7 +225,7 @@ public class Configuration implements ErrorHandler {
 				}
 
 				CatalogResolver resolver = new CatalogResolver(true);
-				//System.setProperty("xml.catalog.verbosity", "10");
+				System.setProperty("xml.catalog.verbosity", "10");
 				config.put("resolver", resolver);
 
 				NodeList entityResolver =
