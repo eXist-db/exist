@@ -35,6 +35,8 @@ import org.w3c.dom.NodeList;
  */
 public class IndexConfiguration {
 
+    private static final String DOCTYPE_ATTRIB = "doctype";
+    private static final String INDEX_ELEMENT = "index";
     private final static Logger LOG = Logger.getLogger(IndexConfiguration.class);
     
     private Map indexByDoctype = new TreeMap();
@@ -45,8 +47,8 @@ public class IndexConfiguration {
             Node node = cl.item(i);
             if(node.getNodeType() == Node.ELEMENT_NODE) {
                 Element elem = (Element)node;
-                if("index".equals(elem.getLocalName())) {
-                    String doctype = elem.getAttribute("doctype");
+                if(INDEX_ELEMENT.equals(elem.getLocalName())) {
+                    String doctype = elem.getAttribute(DOCTYPE_ATTRIB);
                     IndexSpec spec = new IndexSpec(elem);
                     LOG.debug("Registering index configuration for doctype: " + doctype);
                     indexByDoctype.put(doctype, spec);

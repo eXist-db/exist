@@ -37,6 +37,11 @@ import org.w3c.dom.NodeList;
  */
 public class IndexSpec {
 
+    private static final String TYPE_ATTRIB = "type";
+    private static final String PATH_ATTRIB = "path";
+    private static final String CREATE_ELEMENT = "create";
+    private static final String FULLTEXT_ELEMENT = "fulltext";
+    
     private final static Logger LOG = Logger.getLogger(IndexSpec.class);
     
     private FulltextIndexSpec ftSpec = null;
@@ -48,14 +53,14 @@ public class IndexSpec {
         for(int i = 0; i < cl.getLength(); i++) {
             Node node = cl.item(i);
             if(node.getNodeType() == Node.ELEMENT_NODE) {
-	            if("fulltext".equals(node.getLocalName())) {
+	            if(FULLTEXT_ELEMENT.equals(node.getLocalName())) {
 	                if(ftSpec != null)
 	                    throw new DatabaseConfigurationException("Only one fulltext section is allowed per index");
 	                ftSpec = new FulltextIndexSpec(namespaces, (Element)node);
-	            } else if("create".equals(node.getLocalName())) {
+	            } else if(CREATE_ELEMENT.equals(node.getLocalName())) {
 	                Element elem = (Element) node;
-	                String path = elem.getAttribute("path");
-	                String type = elem.getAttribute("type");
+	                String path = elem.getAttribute(PATH_ATTRIB);
+	                String type = elem.getAttribute(TYPE_ATTRIB);
 	                ValueIndexSpec valueIdx = new ValueIndexSpec(namespaces, path, type);
 	                addValueIndex(valueIdx);
 	            }
