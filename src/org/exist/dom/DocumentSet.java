@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.Iterator;
 import java.util.Arrays;
-import gnu.trove.TIntObjectHashMap;
-import gnu.trove.TObjectProcedure;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.apache.log4j.Category;

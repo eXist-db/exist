@@ -52,8 +52,8 @@
        -->
        
        <db-connection database="native" files="webapp/WEB-INF/data" 
-		   buffers="1024" words_buffers="8192" collection_buffers="1024" 
-		   elements_buffers="1024" free_mem_min="10" 
+		   buffers="1024" words_buffers="12288" collection_buffers="1024" 
+		   elements_buffers="2048" free_mem_min="10" 
 		   pageSize="4096">
 
 		   <!-- Settings for the database connection pool
@@ -259,7 +259,7 @@
 
     <category name="org.exist.xmldb" additivity="false">
 		<appender-ref ref="console"/>
-		<priority value="debug"/>
+		<priority value="warn"/>
     </category>
     
     <!--

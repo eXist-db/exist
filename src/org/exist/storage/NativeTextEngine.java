@@ -22,6 +22,8 @@
  */
 package org.exist.storage;
 
+import it.unimi.dsi.fastUtil.Object2ObjectRBTreeMap;
+
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
@@ -32,7 +34,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.apache.log4j.Category;
 import org.apache.oro.text.GlobCompiler;
@@ -297,7 +298,7 @@ public class NativeTextEngine extends TextSearchEngine {
 	 * @return array containing a NodeSet for each of the search terms
 	 */
 	public NodeSet[] getNodesExact(DocumentSet docs, String[] expr) {
-		long start = System.currentTimeMillis();
+		//long start = System.currentTimeMillis();
 		ArraySet[] result = new ArraySet[expr.length];
 		DocumentImpl doc;
 		Value ref;
@@ -367,9 +368,12 @@ public class NativeTextEngine extends TextSearchEngine {
 				}
 			}
 			//( (ArraySet) result[i] ).setIsSorted( true );
-						LOG.debug("found: " + result[i].getLength() + " in "
-						 + (System.currentTimeMillis() - start)
-						 + "ms.");
+//			LOG.debug(
+//				"found: "
+//					+ result[i].getLength()
+//					+ " in "
+//					+ (System.currentTimeMillis() - start)
+//					+ "ms.");
 		}
 		return result;
 	}
@@ -692,96 +696,96 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 	}
 
-		final static class WordRef extends Value {
-	
-            public WordRef() {
-                this(512);
-            }
-            
-			public WordRef(int size) {
-				data = new byte[size];
-			}
-	
-			public WordRef(short collectionId) {
-				this();
-	            set(collectionId);
-			}
-	
-			public WordRef(short collectionId, String word) {
-	            this();
-				set(collectionId, word);
-			}
-	
-			public final void set(short collectionId) {
-				ByteConversion.shortToByte(collectionId, data, 0);
-				len = 2;
-				pos = 0;
-			}
-	
-			public final void set(short collectionId, String word) {
-				ByteConversion.shortToByte(collectionId, data, 0);
-				len = 2;
-				writeChars(word);
-				pos = 0;
-			}
-	
-			private final void writeChars(String s) {
-                final int slen = s.length();
-				for (int i = 0; i < slen; i++) {
-					final int code = (int) s.charAt(i);
-					if (code >= 0x01 && code <= 0x7F)
-						data[len++] = (byte) code;
-					else if (((code >= 0x80) && (code <= 0x7FF)) || code == 0) {
-						data[len++] = (byte) (0xC0 | (code >> 6));
-						data[len++] = (byte) (0x80 | (code & 0x3F));
-					} else {
-						data[len++] = (byte) (0xE0 | (code >>> 12));
-						data[len++] = (byte) (0x80 | ((code >> 6) & 0x3F));
-						data[len++] = (byte) (0x80 | (code & 0x3F));
-					}
-				}
-			}
+	final static class WordRef extends Value {
 
-			/**
-			 * @see org.dbxml.core.data.Value#streamTo(java.io.OutputStream)
-			 */
-			public void streamTo(OutputStream out) throws IOException {
-				super.streamTo(out);
-			}
-
-			/**
-			 * @see java.lang.Object#toString()
-			 */
-			public String toString() {
-				return ByteConversion.byteToShort(data, pos) + 
-                    new String(data, pos, len);
-			}
-
+		public WordRef() {
+			this(512);
 		}
 
-//	final static class WordRef extends Value {
-//
-//		WordRef(short collectionId) {
-//			data = new byte[2];
-//			ByteConversion.shortToByte(collectionId, data, 0);
-//			len = 2;
-//			pos = 0;
-//		}
-//
-//		WordRef(short collectionId, String word) {
-//			byte[] ndata;
-//			try {
-//				ndata = word.getBytes("UTF-8");
-//			} catch (UnsupportedEncodingException uee) {
-//				ndata = word.getBytes();
-//			}
-//			data = new byte[2 + ndata.length];
-//			ByteConversion.shortToByte(collectionId, data, 0);
-//			System.arraycopy(ndata, 0, data, 2, ndata.length);
-//			len = data.length;
-//			pos = 0;
-//		}
-//	}
+		public WordRef(int size) {
+			data = new byte[size];
+		}
+
+		public WordRef(short collectionId) {
+			this();
+			set(collectionId);
+		}
+
+		public WordRef(short collectionId, String word) {
+			this();
+			set(collectionId, word);
+		}
+
+		public final void set(short collectionId) {
+			ByteConversion.shortToByte(collectionId, data, 0);
+			len = 2;
+			pos = 0;
+		}
+
+		public final void set(short collectionId, String word) {
+			ByteConversion.shortToByte(collectionId, data, 0);
+			len = 2;
+			writeChars(word);
+			pos = 0;
+		}
+
+		private final void writeChars(String s) {
+			final int slen = s.length();
+			for (int i = 0; i < slen; i++) {
+				final int code = (int) s.charAt(i);
+				if (code >= 0x01 && code <= 0x7F)
+					data[len++] = (byte) code;
+				else if (((code >= 0x80) && (code <= 0x7FF)) || code == 0) {
+					data[len++] = (byte) (0xC0 | (code >> 6));
+					data[len++] = (byte) (0x80 | (code & 0x3F));
+				} else {
+					data[len++] = (byte) (0xE0 | (code >>> 12));
+					data[len++] = (byte) (0x80 | ((code >> 6) & 0x3F));
+					data[len++] = (byte) (0x80 | (code & 0x3F));
+				}
+			}
+		}
+
+		/**
+		 * @see org.dbxml.core.data.Value#streamTo(java.io.OutputStream)
+		 */
+		public void streamTo(OutputStream out) throws IOException {
+			super.streamTo(out);
+		}
+
+		/**
+		 * @see java.lang.Object#toString()
+		 */
+		public String toString() {
+			return ByteConversion.byteToShort(data, pos)
+				+ new String(data, pos, len);
+		}
+
+	}
+
+	//	final static class WordRef extends Value {
+	//
+	//		WordRef(short collectionId) {
+	//			data = new byte[2];
+	//			ByteConversion.shortToByte(collectionId, data, 0);
+	//			len = 2;
+	//			pos = 0;
+	//		}
+	//
+	//		WordRef(short collectionId, String word) {
+	//			byte[] ndata;
+	//			try {
+	//				ndata = word.getBytes("UTF-8");
+	//			} catch (UnsupportedEncodingException uee) {
+	//				ndata = word.getBytes();
+	//			}
+	//			data = new byte[2 + ndata.length];
+	//			ByteConversion.shortToByte(collectionId, data, 0);
+	//			System.arraycopy(ndata, 0, data, 2, ndata.length);
+	//			len = data.length;
+	//			pos = 0;
+	//		}
+	//	}
 
 	/**
 	 *  This inner class is responsible for actually storing the list of
@@ -795,11 +799,12 @@ public class NativeTextEngine extends TextSearchEngine {
 
 		protected DocumentImpl doc = null;
 		protected boolean flushed = false;
-		protected TreeMap words = new TreeMap();
+		//protected TreeMap words = new TreeMap();
+        private Object2ObjectRBTreeMap words = new Object2ObjectRBTreeMap();
 		private VariableByteOutputStream os = new VariableByteOutputStream();
-        private WordRef reusableWordRef = new WordRef(512);
-        private long currentSize = 0;
-        
+		private WordRef reusableWordRef = new WordRef(512);
+		private long currentSize = 0;
+
 		public InvertedIndex() {
 		}
 
@@ -878,7 +883,8 @@ public class NativeTextEngine extends TextSearchEngine {
 					lock.release(this);
 				}
 			}
-			words = new TreeMap();
+			//words = new TreeMap();
+            words.clear();
 		}
 
 		public void flush() {
@@ -905,14 +911,14 @@ public class NativeTextEngine extends TextSearchEngine {
 				i.remove();
 				//Arrays.sort(ids);
 				//len = ids.length;
-                len = idList.getSize();
+				len = idList.getSize();
 				os.writeInt(doc.getDocId());
 				os.writeInt(len);
 				prevId = 0;
 				//for (int j = 0; j < len; j++) {
-                for(Iterator j = idList.iterator(); j.hasNext(); ) {
-                    id = ((LongLinkedList.ListItem)j.next()).l;
-                    delta = id - prevId;
+				for (Iterator j = idList.iterator(); j.hasNext();) {
+					id = ((LongLinkedList.ListItem) j.next()).l;
+					delta = id - prevId;
 					//delta = ids[j] - prevId;
 					if (delta < 0) {
 						LOG.debug("neg. delta: " + delta + " for " + word);
@@ -938,8 +944,8 @@ public class NativeTextEngine extends TextSearchEngine {
 				return;
 			// if data has already been written to the table,
 			// we may need to do updates.
-            //final WordRef ref = new WordRef(collectionId, word);
-            reusableWordRef.set(collectionId, word);
+			//final WordRef ref = new WordRef(collectionId, word);
+			reusableWordRef.set(collectionId, word);
 			Lock lock = dbWords.getLock();
 			try {
 				lock.acquire(this, Lock.WRITE_LOCK);

@@ -669,15 +669,23 @@ public interface RpcAPI {
 
 
     boolean setPermissions( User user, String resource, String permissions )
-         throws EXistException, PermissionDeniedException;
+        throws EXistException, PermissionDeniedException;
 
-
+    boolean setPermissions( User user, String resource, int permissions )
+        throws EXistException, PermissionDeniedException;
+        
     boolean setPermissions( User user, String resource,
                             String owner, String ownerGroup, String permissions )
-         throws EXistException, PermissionDeniedException;
+        throws EXistException, PermissionDeniedException;
 
-
+    boolean setPermissions( User user, String resource,
+                            String owner, String ownerGroup, int permissions )
+        throws EXistException, PermissionDeniedException;
+             
     Hashtable getUser( User user, String name )
+         throws EXistException, PermissionDeniedException;
+         
+    public Vector getUsers(User user)
          throws EXistException, PermissionDeniedException;
 
 

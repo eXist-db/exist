@@ -18,29 +18,21 @@
  */
 package org.exist.storage;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Observable;
+import java.util.TreeMap;
+
 import org.apache.log4j.Category;
-import java.sql.*;
-import java.io.ByteArrayOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.DataOutputStream;
-import java.io.DataInputStream;
-import java.io.OutputStream;
-import java.io.InputStream;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.FileNotFoundException;
-import java.util.*;
-import java.util.zip.GZIPOutputStream;
-import java.util.zip.GZIPInputStream;
-import sun.misc.BASE64Encoder;
-import sun.misc.BASE64Decoder;
-import org.w3c.dom.*;
-//import gnu.trove.THashMap;
-import org.exist.*;
-import org.exist.util.*;
-import org.exist.dom.*;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.NodeProxy;
+import org.exist.util.Configuration;
+import org.exist.util.ProgressIndicator;
+import org.exist.util.VariableByteOutputStream;
 
 /**
 * ElementIndex collects all element occurrences. It uses the name of the

@@ -140,16 +140,18 @@ public class NativeSerializer extends Serializer {
 			"http://exist.sourceforge.net/NS/exist");
 		// iterate through children
 		for (int i = 0; i < children.getLength(); i++) {
-			Node n = children.item(i);
+			final NodeImpl n =(NodeImpl) children.item(i);
+            final NodeProxy p =
+                new NodeProxy((DocumentImpl)n.getOwnerDocument(), 
+                    n.getGID(), n.getInternalAddress());
 			Iterator domIter =
-				broker.getDOMIterator(
-					(DocumentImpl) n.getOwnerDocument(),
-					((NodeImpl) n).getGID());
+				broker.getDOMIterator(p);
+            domIter.next();
 			serializeToSAX(
-				null,
+				n,
 				domIter,
 				(DocumentImpl) n.getOwnerDocument(),
-				((NodeImpl) n).getGID(),
+				n.getGID(),
 				false);
 		}
 		LOG.debug(

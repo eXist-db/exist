@@ -99,8 +99,6 @@ public class NativeBroker extends DBBroker {
 	protected DOMFile domDb = null;
 	protected NativeElementIndex elementIndex;
 	protected ElementPool elementPool = new ElementPool(50);
-
-	//protected BFile docsDb = null;
 	protected BFile elementsDb = null;
 	protected BFile namespacesDb = null;
 	protected NativeTextEngine textEngine;
@@ -421,7 +419,7 @@ public class NativeBroker extends DBBroker {
 	public void flush() {
 		try {
 			synchronized (domDb) {
-				domDb.flush();
+				domDb.sync();
 			}
 		} catch (DBException e) {
 			e.printStackTrace();
@@ -684,7 +682,7 @@ public class NativeBroker extends DBBroker {
 		boolean inclusive)
 		throws PermissionDeniedException {
 		DocumentSet docs = new DocumentSet();
-		long start = System.currentTimeMillis();
+		//long start = System.currentTimeMillis();
 		if (collection == null || collection.length() == 0)
 			return docs;
 		if (collection.charAt(0) != '/')
@@ -717,14 +715,14 @@ public class NativeBroker extends DBBroker {
 				docs.addAll(childDocs);
 			}
 		}
-		LOG.debug(
-			"loading "
-				+ docs.getLength()
-				+ " documents from collection "
-				+ collection
-				+ " took "
-				+ (System.currentTimeMillis() - start)
-				+ "ms.");
+//		LOG.debug(
+//			"loading "
+//				+ docs.getLength()
+//				+ " documents from collection "
+//				+ collection
+//				+ " took "
+//				+ (System.currentTimeMillis() - start)
+//				+ "ms.");
 		return docs;
 	}
 
@@ -1971,17 +1969,15 @@ public class NativeBroker extends DBBroker {
 	 *      fulltext-indexed).
 	 */
 	public void store(final NodeImpl node, String currentPath) {
+		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 		final IndexPaths idx =
-			(IndexPaths) config.getProperty(
-				"indexScheme."
-					+ node.getOwnerDocument().getDoctype().getName());
+			(IndexPaths) config.getProperty('@' + doc.getDoctype().getName());
         final long gid = node.getGID();
 		if (gid < 0)
 			LOG.debug(
 				"illegal node: " + gid + "; " + node.getNodeName());
 		final short nodeType = node.getNodeType();
 		final String nodeName = node.getNodeName();
-		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 		final int depth = idx == null ? defaultIndexDepth : idx.getIndexDepth();
 		final byte data[] = node.serialize();
 		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
@@ -1992,6 +1988,7 @@ public class NativeBroker extends DBBroker {
 					|| doc.getTreeLevel(gid) > depth)
 					address = domDb.add(data);
 				else {
+                    //LOG.debug("adding " + gid + " to dom.dbx");
 					address = domDb.put(new NodeRef(doc.getDocId(), gid), data);
 				}
 				node.setInternalAddress(address);

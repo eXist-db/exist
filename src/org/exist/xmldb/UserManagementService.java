@@ -84,6 +84,10 @@ public interface UserManagementService extends Service {
      */
     public void chmod( String modeStr ) throws XMLDBException;
     
+    public void chmod( int mode ) throws XMLDBException;
+    
+    public void chmod( Resource resource, int mode ) throws XMLDBException;
+    
     /**
      *  Add a new user to the database
      *
