@@ -36,11 +36,11 @@ declare function f:table-row($a, $b) {
 
 <body>
 	<p>The sum of numbers 1 to 4 is:
-	{seq:apply(util:function("f:plus", 2), 1 to 4)}</p>
+	{seq:fold(util:function("f:plus", 2), 1 to 4, 0)}</p>
 
 	<p>The product of numbers 1 to 4 is:
-	{seq:apply(util:function("f:product", 2), 1 to 4)}</p>
-
+	{seq:fold(util:function("f:product", 2), 1 to 4, 1)}</p>
+    
 	<p>Adding the elements of sequences (4, 7, 6) and (10, 15, 8)
 	element-wise: {seq:map(util:function("f:plus", 2), (4, 7, 6), (10, 15, 8))}</p>
 
