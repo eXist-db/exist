@@ -174,6 +174,10 @@ implements Comparable, EntityResolver, Cacheable {
 		documents.put(doc.getFileName(), doc);
 	}
 
+	public void unlinkDocument(DocumentImpl doc) {
+	    documents.remove(doc.getFileName());
+	}
+	
 	/**
 	 *  Return an iterator over all subcollections.
 	 * 
@@ -541,7 +545,7 @@ implements Comparable, EntityResolver, Cacheable {
 			lock.release();
 		}
 	}
-
+	
 	/**
 	 *  Remove the specified document from the collection.
 	 *
@@ -662,6 +666,10 @@ implements Comparable, EntityResolver, Cacheable {
 						Permission.UPDATE))
 					throw new PermissionDeniedException(
 							"Document exists and update is not allowed");
+				if (!(getPermissions().validate(broker.getUser(), Permission.UPDATE) ||
+				        getPermissions().validate(broker.getUser(), Permission.WRITE)))
+					throw new PermissionDeniedException(
+							"Document exists and update is not allowed for the collection");
 				// do we have write permissions?
 			} else if (!getPermissions().validate(broker.getUser(),
 					Permission.WRITE))
@@ -757,8 +765,8 @@ implements Comparable, EntityResolver, Cacheable {
 					broker.removeDocument(oldDoc.getFileName());
 				document.setFileName(oldDoc.getFileName());
 			}
+			document.getUpdateLock().acquire(Lock.WRITE_LOCK);
 			addDocument(broker, document);
-			document.setWriteLock(true);
 			indexer.setValidating(false);
 			if (trigger != null)
 				trigger.setValidating(false);
@@ -794,7 +802,7 @@ implements Comparable, EntityResolver, Cacheable {
 				lock.release();
 			}
 		} finally {
-			document.setWriteLock(false);
+			document.getUpdateLock().release(Lock.WRITE_LOCK);
 		}
 		broker.deleteObservers();
 		return document;
@@ -834,6 +842,10 @@ implements Comparable, EntityResolver, Cacheable {
 						Permission.UPDATE))
 					throw new PermissionDeniedException(
 							"Document exists and update is not allowed");
+				if (!(getPermissions().validate(broker.getUser(), Permission.UPDATE) ||
+				        getPermissions().validate(broker.getUser(), Permission.WRITE)))
+					throw new PermissionDeniedException(
+							"Document exists and update is not allowed for the collection");
 				// do we have write permissions?
 			} else if (!getPermissions().validate(broker.getUser(),
 					Permission.WRITE))
@@ -929,7 +941,7 @@ implements Comparable, EntityResolver, Cacheable {
 					broker.removeDocument(oldDoc.getFileName());
 				document.setFileName(oldDoc.getFileName());
 			}
-			document.setWriteLock(true);
+			document.getUpdateLock().acquire(Lock.WRITE_LOCK);
 			addDocument(broker, document);
 
 			parser.setValidating(false);
@@ -979,7 +991,7 @@ implements Comparable, EntityResolver, Cacheable {
 				lock.release();
 			}
 		} finally {
-			document.setWriteLock(false);
+			document.getUpdateLock().release(Lock.WRITE_LOCK);
 		}
 		broker.deleteObservers();
 		return document;
@@ -1017,6 +1029,10 @@ implements Comparable, EntityResolver, Cacheable {
 						Permission.UPDATE))
 					throw new PermissionDeniedException(
 							"document exists and update " + "is not allowed");
+				if (!(getPermissions().validate(broker.getUser(), Permission.UPDATE) ||
+				        getPermissions().validate(broker.getUser(), Permission.WRITE)))
+					throw new PermissionDeniedException(
+							"Document exists and update is not allowed for the collection");
 				// no: do we have write permissions?
 			} else if (!getPermissions().validate(broker.getUser(),
 					Permission.WRITE))
@@ -1097,7 +1113,7 @@ implements Comparable, EntityResolver, Cacheable {
 					broker.removeDocument(oldDoc.getFileName());
 				document.setFileName(oldDoc.getFileName());
 			}
-			document.setWriteLock(true);
+			document.getUpdateLock().acquire(Lock.WRITE_LOCK);
 			addDocument(broker, document);
 
 			parser.setValidating(false);
@@ -1128,7 +1144,7 @@ implements Comparable, EntityResolver, Cacheable {
 				lock.release();
 			}
 		} finally {
-			document.setWriteLock(false);
+			document.getUpdateLock().release(Lock.WRITE_LOCK);
 		}
 		broker.deleteObservers();
 		return document;
@@ -1188,8 +1204,6 @@ implements Comparable, EntityResolver, Cacheable {
 			broker.closeDocument();
 			return blob;
 		} finally {
-			if(blob != null)
-				blob.setWriteLock(false);
 			lock.release();
 		}
 	}
@@ -1277,7 +1291,6 @@ implements Comparable, EntityResolver, Cacheable {
 	        path = childDoc.getFileName();
 	        path = path.substring(path.lastIndexOf('/') + 1);
 	        childDoc.setFileName(getName() + '/' + path);
-	        LOG.debug("Moved " + childDoc.getFileName());
 	        newMap.put(childDoc.getFileName(), childDoc);
 	    }
 	    documents = newMap;

@@ -22,6 +22,7 @@
  */
 package org.exist.memtree;
 
+import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
@@ -68,6 +69,14 @@ public class NodeImpl implements Node, NodeValue {
 		return NodeValue.IN_MEMORY_NODE;
 	}
 
+	
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#getDocumentSet()
+     */
+    public DocumentSet getDocumentSet() {
+        return DocumentSet.EMPTY_DOCUMENT_SET;
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.NodeValue#getNode()
 	 */

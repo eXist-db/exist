@@ -33,6 +33,8 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
+import org.exist.util.Lock;
+import org.exist.util.LockException;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
@@ -105,8 +107,19 @@ public class ExtCollection extends Function {
 			}
 		}
 		NodeSet result = new ExtArrayNodeSet(docs.getLength(), 1);
+		Lock dlock;
+		DocumentImpl doc;
 		for (Iterator i = docs.iterator(); i.hasNext();) {
-			result.add(new NodeProxy((DocumentImpl) i.next(), -1));
+		    doc = (DocumentImpl)i.next();
+		    dlock = doc.getUpdateLock();
+		    try {
+		        dlock.acquire(Lock.READ_LOCK);
+		        result.add(new NodeProxy(doc, -1));
+		    } catch (LockException e) {
+                LOG.info("Could not acquire read lock on document " + doc.getFileName());
+            } finally {
+		        dlock.release(Lock.READ_LOCK);
+		    }
 		}
 		cached = result;
 		cachedArgs = args;

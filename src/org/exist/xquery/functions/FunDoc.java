@@ -26,6 +26,8 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
+import org.exist.util.Lock;
+import org.exist.util.LockException;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
@@ -89,18 +91,37 @@ public class FunDoc extends Function {
 			throw new XPathException("Invalid argument to fn:doc function: empty string is not allowed here.");
 		if (path.charAt(0) != '/')
 			path = context.getBaseURI() + '/' + path;
-		if(path.equals(cachedPath) && cachedNode != null)
-			return cachedNode;
+		Lock dlock = null;
+		if(path.equals(cachedPath) && cachedNode != null) {
+		    dlock = cachedNode.doc.getUpdateLock();
+		    try {
+		        // wait for pending updates
+		        dlock.acquire(Lock.READ_LOCK);
+		        return cachedNode;
+		    } catch (LockException e) {
+		        throw new XPathException(getASTNode(), "Failed to acquire lock on document " + path);
+            } finally {
+		        dlock.release(Lock.READ_LOCK);
+		    }
+		}
+		
 		try {
-			DocumentImpl doc = (DocumentImpl) context.getBroker().getDocument(path);
+		    DocumentImpl doc = (DocumentImpl) context.getBroker().getDocument(path);
+		    if(doc == null)
+		        return Sequence.EMPTY_SEQUENCE;
+		    // wait for currently pending updates
+		    dlock = doc.getUpdateLock();
+		    dlock.acquire(Lock.READ_LOCK);
 			cachedPath = path;
-			if(doc == null)
-				return Sequence.EMPTY_SEQUENCE;
 			cachedNode = new NodeProxy(doc, -1);
 			return cachedNode;
 		} catch (PermissionDeniedException e) {
 			throw new XPathException(
 				"Permission denied: unable to load document " + path);
+		} catch (LockException e) {
+		    throw new XPathException(getASTNode(), "Failed to acquire read lock on document " + path);
+        } finally {
+		    if(dlock != null) dlock.release(Lock.READ_LOCK);
 		}
 	}
 

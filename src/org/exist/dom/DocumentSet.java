@@ -1,7 +1,7 @@
 /* 
  * eXist Open Source Native XML Database
  * 
- * Copyright (C) 2000,  Wolfgang Meier (wolfgang@exist-db.org)
+ * Copyright (C) 2000-04,  Wolfgang Meier (wolfgang@exist-db.org)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * $Id$
  */
 
 package org.exist.dom;
@@ -32,6 +34,7 @@ import org.exist.storage.DBBroker;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.Int2ObjectHashMap;
+import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -46,13 +49,13 @@ import org.w3c.dom.NodeList;
  */
 public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 
+    public final static DocumentSet EMPTY_DOCUMENT_SET = new DocumentSet(9);
+    
 	private final static Logger LOG =
 		Logger.getLogger(DocumentSet.class.getName());
 	
 	private ArrayList list = null;
 	private TreeSet collections = new TreeSet();
-	
-	private boolean exclusive = false;
 	
 	public DocumentSet() {
 		super(29);
@@ -60,11 +63,6 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 
 	public DocumentSet(int initialSize) {
 	    super(initialSize);
-	}
-	
-	public DocumentSet(boolean exclusive) {
-	    super(29);
-	    this.exclusive = exclusive;
 	}
 	
 	public void clear() {
@@ -114,22 +112,11 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 		for(Iterator i = docs.iterator(); i.hasNext(); ) {
 			doc = (DocumentImpl)i.next();
 			if(broker == null || doc.getPermissions().validate(broker.getUser(), Permission.READ)) {
-			    if(doc.isLockedForWrite())
-			        continue;
-			    if(exclusive) {
-			        Lock lock = doc.getUpdateLock();
-			        try {
-                        lock.acquire(Lock.WRITE_LOCK);
-                        put(doc.getDocId(), doc);
-                    } catch (LockException e) {
-                        LOG.debug("Failed to lock document " + doc.getFileName());
-                        continue;
-                    } finally {
-                        lock.release();
-                    }
-			    } else
-			        put(doc.getDocId(), doc);
-			}
+//			    if(doc.isLockedForWrite())
+//			        continue;
+			    put(doc.getDocId(), doc);
+			} else
+			    put(doc.getDocId(), doc);
 		}
 	}
 
@@ -161,13 +148,6 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 		}
 		return (Node) list.get(pos);
 	}
-
-	/*
-	public boolean contains(int docId) {
-	    return containsKey(docId);
-	    //return containsKey(new Integer(docId));
-	}
-	*/
 
 	public DocumentImpl getDoc(int docId) {
 		return (DocumentImpl) get(docId);
@@ -261,12 +241,43 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 		if (size() != o.size())
 			return false;
 		return hasEqualKeys(o);
-//		DocumentImpl d;
-//		for (Iterator i = iterator(); i.hasNext();) {
-//			d = (DocumentImpl) i.next();
-//			if (!o.containsKey(d.docId))
-//				return false;
-//		}
-//		return true;
+	}
+	
+	public void lock(XQueryContext context) throws LockException {
+	    lock(context.inExclusiveMode());
+	}
+	
+	public void lock(boolean exclusive) throws LockException {
+	    DocumentImpl d;
+	    Lock dlock;
+	    for(int idx = 0; idx < tabSize; idx++) {
+	        if(values[idx] == null || values[idx] == REMOVED)
+	            continue;
+	        d = (DocumentImpl)values[idx];
+	        dlock = d.getUpdateLock();
+	        if(exclusive)
+	            dlock.acquire(Lock.WRITE_LOCK);
+	        else
+	            dlock.acquire(Lock.READ_LOCK);
+	    }
+	}
+	
+	public void unlock(XQueryContext context) {
+	    unlock(context.inExclusiveMode());
+	}
+	
+	public void unlock(boolean exclusive) {
+	    DocumentImpl d;
+	    Lock dlock;
+	    for(int idx = 0; idx < tabSize; idx++) {
+	        if(values[idx] == null || values[idx] == REMOVED)
+	            continue;
+	        d = (DocumentImpl)values[idx];
+	        dlock = d.getUpdateLock();
+	        if(exclusive)
+	            dlock.release(Lock.WRITE_LOCK);
+	        else
+	            dlock.release(Lock.READ_LOCK);
+	    }
 	}
 }

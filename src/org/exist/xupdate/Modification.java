@@ -1,11 +1,31 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-03 Wolfgang M. Meier
+ *  wolfgang@exist-db.org
+ *  http://exist.sourceforge.net
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
+ *  $Id$
+ */
 package org.exist.xupdate;
 
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -14,6 +34,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeIndexListener;
+import org.exist.dom.NodeSet;
 import org.exist.dom.XMLUtil;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -36,7 +57,7 @@ import antlr.TokenStreamException;
 import antlr.collections.AST;
 
 /**
- * Modification.java
+ * Base class for all XUpdate modifications.
  * 
  * @author Wolfgang Meier
  */
@@ -49,7 +70,7 @@ public abstract class Modification {
 	protected DBBroker broker;
 	protected DocumentSet docs;
 	protected Map namespaces;
-	protected List activeLocks;
+	protected DocumentSet lockedDocuments = null;
 
 	/**
 	 * Constructor for Modification.
@@ -60,7 +81,6 @@ public abstract class Modification {
 		this.broker = broker;
 		this.docs = docs;
 		this.namespaces = new HashMap(namespaces);
-		this.activeLocks = new ArrayList(docs.getLength());
 	}
 
 	/**
@@ -95,6 +115,7 @@ public abstract class Modification {
 		throws PermissionDeniedException, EXistException, XPathException {
 		try {
 			XQueryContext context = new XQueryContext(broker);
+			context.setExclusiveMode(true);
 			context.setStaticallyKnownDocuments(docs);
 			Map.Entry entry;
 			for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {
@@ -147,25 +168,22 @@ public abstract class Modification {
 		EXistException, XPathException {
 	    Lock globalLock = broker.getBrokerPool().getGlobalUpdateLock();
 	    try {
-	        globalLock.acquire(Lock.WRITE_LOCK);
+	        globalLock.acquire(Lock.READ_LOCK);
+	        
 	        NodeList nl = select(docs);
+	        lockedDocuments = ((NodeSet)nl).getDocumentSet();
 	        
 		    // acquire a lock on all documents
 	        // we have to avoid that node positions change
 	        // during the modification
+	        lockedDocuments.lock(true);
+	        
 		    NodeImpl ql[] = new NodeImpl[nl.getLength()];
-		    DocumentImpl doc, prevDoc = null;
-		    Lock lock;
+		    DocumentImpl doc;
 			for (int i = 0; i < ql.length; i++) {
 				ql[i] = (NodeImpl)nl.item(i);
 				doc = (DocumentImpl)ql[i].getOwnerDocument();
-				if(prevDoc == null || doc != prevDoc) {
-				    lock = doc.getUpdateLock();
-				    lock.acquire(Lock.WRITE_LOCK);
-				    activeLocks.add(lock);
-				    doc.setBroker(broker);
-				}
-				prevDoc = doc;
+				doc.setBroker(broker);
 			}
 			return ql;
 	    } finally {
@@ -177,11 +195,7 @@ public abstract class Modification {
 	 * Release all acquired document locks.
 	 */
 	protected void unlockDocuments() {
-	    Lock lock;
-        for(int i = 0; i < activeLocks.size(); i++) {
-            lock = (Lock)activeLocks.get(i);
-            lock.release();
-        }
+	    lockedDocuments.unlock(true);
 	}
 	
 	public String toString() {

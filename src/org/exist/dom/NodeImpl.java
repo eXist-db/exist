@@ -42,7 +42,6 @@ import org.xml.sax.ext.LexicalHandler;
  *  The base class for all persistent DOM nodes in the database.
  *
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    8. Juli 2002
  */
 public class NodeImpl implements Node {
 	

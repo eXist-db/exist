@@ -444,6 +444,9 @@ public abstract class DBBroker extends Observable {
 	public abstract void moveCollection(Collection collection, Collection destination, String newName) 
 	throws PermissionDeniedException, LockException;
 	
+	public abstract void moveResource(DocumentImpl doc, Collection destination, String newName)
+	throws PermissionDeniedException, LockException;
+	
 	public void sync() {
 		/*
 		 *  do nothing
