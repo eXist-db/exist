@@ -34,6 +34,7 @@ import org.exist.dom.ProcessingInstructionImpl;
 import org.exist.dom.QName;
 import org.exist.dom.TextImpl;
 import org.exist.storage.DBBroker;
+import org.exist.storage.NodePath;
 import org.exist.storage.serializers.Serializer;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
@@ -92,48 +93,51 @@ public class DOMIndexer {
         targetDoc.calculateTreeLevelStartPoints(true);
     }
     
+    /**
+     * Store the nodes.
+     *
+     */
     public void store() {
     	// create a wrapper element as root node
     	ElementImpl elem = new ElementImpl(1, ROOT_QNAME);
     	elem.setOwnerDocument(targetDoc);
         elem.setChildCount(doc.getChildCount());
         elem.addNamespaceMapping("exist", Serializer.EXIST_NS);
+        NodePath path = new NodePath();
+        path.addComponent(ROOT_QNAME);
         
         stack.push(elem);
-        broker.store(elem, null);
+        broker.store(elem, path);
         targetDoc.appendChild(elem);
         elem.setChildCount(0);
         
         // store the document nodes
         int top = doc.size > 1 ? 1 : -1;
         while(top > 0) {
-            store(top);
+            store(top, path);
             top = doc.getNextSiblingFor(top);
         }
         
         // close the wrapper element
         stack.pop();
-        broker.endElement(elem, null);
+        broker.endElement(elem, path);
+        path.removeLastComponent();
     }
     
-    private void store(org.exist.memtree.ElementImpl rootNode) {
-        store(rootNode.nodeNumber);
-    }
-    
-    private void store(int top) {
+    private void store(int top, NodePath currentPath) {
         int nodeNr = top;
         while (nodeNr > 0) {
-            startNode(nodeNr);
+            startNode(nodeNr, currentPath);
             int nextNode = doc.getFirstChildFor(nodeNr);
             while (nextNode == -1) {
-                endNode(nodeNr);
+                endNode(nodeNr, currentPath);
                 if (top == nodeNr)
                     break;
                 nextNode = doc.getNextSiblingFor(nodeNr);
                 if (nextNode == -1) {
                     nodeNr = doc.getParentNodeFor(nodeNr);
                     if (nodeNr == -1 || top == nodeNr) {
-                        endNode(nodeNr);
+                        endNode(nodeNr, currentPath);
                         nextNode = -1;
                         break;
                     }
@@ -146,13 +150,13 @@ public class DOMIndexer {
     /**
      * @param nodeNr
      */
-    private void startNode(int nodeNr) {
+    private void startNode(int nodeNr, NodePath currentPath) {
         if (doc.nodeKind[nodeNr] == Node.ELEMENT_NODE) {
             ElementImpl elem = new ElementImpl(1);
             if(stack.empty()) {
                 initElement(nodeNr, elem);
                 stack.push(elem);
-                broker.store(elem, null);
+                broker.store(elem, currentPath);
                 targetDoc.appendChild(elem);
                 elem.setChildCount(0);
             } else {
@@ -161,10 +165,11 @@ public class DOMIndexer {
                 initElement(nodeNr, elem);
                 last.appendChildInternal(elem);
                 stack.push(elem);
-                broker.store(elem, null);
+                broker.store(elem, currentPath);
                 elem.setChildCount(0);
             }
-            storeAttributes(nodeNr, elem);
+            currentPath.addComponent(elem.getQName());
+            storeAttributes(nodeNr, elem, currentPath);
         } else if (doc.nodeKind[nodeNr] == Node.TEXT_NODE) {
             ElementImpl last =
                 (ElementImpl) stack.peek();
@@ -245,7 +250,7 @@ public class DOMIndexer {
      * @param elem
      * @throws DOMException
      */
-    private void storeAttributes(int nodeNr, ElementImpl elem) throws DOMException {
+    private void storeAttributes(int nodeNr, ElementImpl elem, NodePath path) throws DOMException {
         int attr = doc.alpha[nodeNr];
         if(-1 < attr) {
             while (attr < doc.nextAttr
@@ -254,7 +259,7 @@ public class DOMIndexer {
                 AttrImpl attrib = new AttrImpl(qn, doc.attrValue[attr]);
                 attrib.setOwnerDocument(targetDoc);
                 elem.appendChildInternal(attrib);
-                broker.store(attrib, null);
+                broker.store(attrib, path);
                 ++attr;
             }
         }
@@ -263,11 +268,12 @@ public class DOMIndexer {
     /**
      * @param nodeNr
      */
-    private void endNode(int nodeNr) {
+    private void endNode(int nodeNr, NodePath currentPath) {
         if (doc.nodeKind[nodeNr] == Node.ELEMENT_NODE) {
             ElementImpl last =
                 (ElementImpl) stack.pop();
             broker.endElement(last, null);
+            currentPath.removeLastComponent();
         }
     }
 }

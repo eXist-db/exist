@@ -29,6 +29,7 @@ import java.util.Properties;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.OutputKeys;
 
 import junit.framework.TestCase;
 
@@ -77,6 +78,7 @@ public class DOMIndexerTest extends TestCase {
         "</root>";
     
     private final static String XQUERY =
+        "declare namespace f='urn:foo'; " +
         "let $a := " +
         "   (" +
         "		<!-- My test data -->," +
@@ -87,10 +89,11 @@ public class DOMIndexerTest extends TestCase {
         "       <section>" +
         "           <title>Section 2</title>" +
         "           <para>First paragraph in second section.</para>" +
+        "           {collection('/db/test')//f:item[@itemno='2']/f:name}" +
         "       </section>" +
         "   ) " +
         "return" +
-        "   ($a/title, $a//para)";
+        "   <result>{$a/title, $a/f:name, $a}</result>";
     
     public void testIndexer() throws Exception {
         DocumentImpl doc = parse(XML);
@@ -136,7 +139,9 @@ public class DOMIndexerTest extends TestCase {
             Sequence result = xquery.execute(XQUERY, null);
             System.out.println("Found: " + result.getLength());
             StringWriter out = new StringWriter();
-            SAXSerializer serializer = new SAXSerializer(out, new Properties());
+            Properties props = new Properties();
+            props.setProperty(OutputKeys.INDENT, "yes");
+            SAXSerializer serializer = new SAXSerializer(out, props);
             serializer.startDocument();
             for (SequenceIterator i = result.iterate(); i.hasNext(); ) {
                 Item next = i.nextItem();
