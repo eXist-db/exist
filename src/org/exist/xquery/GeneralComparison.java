@@ -283,16 +283,17 @@ public class GeneralComparison extends BinaryOp {
 		
 	    if(!hasMixedContent && indexType != Type.ITEM) {
 	        // we have a range index defined on the nodes in this sequence
-	        Item key = rightSeq.itemAt(0);
+	        Item key = rightSeq.itemAt(0).atomize();
 	        if(truncation != Constants.TRUNC_NONE) {
 	        	// truncation is only possible on strings
 	        	key = key.convertTo(Type.STRING);
 	        } else if(key.getType() != indexType) {
-	            // index type doesn't match. If index and argument have a numeric type,
-	            // we convert to the type of the index
-	            if(Type.subTypeOf(indexType, Type.NUMBER) &&
-	                    Type.subTypeOf(key.getType(), Type.NUMBER))
-	                key = key.convertTo(indexType);
+	            // index type doesn't match. If key is untyped atomic, convert it to string
+	            if(key.getType() == Type.ATOMIC)
+	                key = key.convertTo(Type.STRING);
+	            // If index has a numeric type, we convert to xs:double 
+	            if(Type.subTypeOf(indexType, Type.NUMBER))
+	                key = key.convertTo(Type.DOUBLE);
 	        }
 	        // if key does not implement Indexable, we can't use the index
 	        if(key instanceof Indexable && Type.subTypeOf(key.getType(), indexType)) {
