@@ -613,7 +613,9 @@ SYSTEM "play.dtd" "entities/play.dtd"
     <servlet-mapping>
         <servlet-name>Cocoon</servlet-name>
         <url-pattern>*.html</url-pattern>
-    </servlet-mapping>
+    </servlet-mapping>]]></screen>
+
+<screen><![CDATA[
 
   <!-- various MIME type mappings ====================================== -->
 
