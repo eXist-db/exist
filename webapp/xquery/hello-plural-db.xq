@@ -36,4 +36,5 @@ return
   
   Hello { $names } !
 
+<br/><a href="source/hello-plural-db.xq">See the XQuery source of this page</a>
 </html>
