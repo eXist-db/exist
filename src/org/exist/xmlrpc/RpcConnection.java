@@ -1117,6 +1117,7 @@ public class RpcConnection extends Thread {
 					throw new PermissionDeniedException(
 							"Old document exists and overwrite is not allowed");
 			}
+			LOG.debug("Storing binary resource to collection " + collection.getName());
 			doc = collection.addBinaryResource(broker, docName, data);
 		} finally {
 			if(collection != null)

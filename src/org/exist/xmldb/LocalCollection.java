@@ -23,7 +23,6 @@
  */
 package org.exist.xmldb;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -175,7 +174,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			if (collection == null)
 				throw new XMLDBException(
 					ErrorCodes.NO_SUCH_COLLECTION,
-					"collection not found");
+					"Collection " + path + " not found");
 			
 			collection.setReader(userReader);
 			
