@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -78,7 +79,18 @@ public class HttpRequestWrapper implements RequestWrapper {
 			List items = upload.parseRequest(request);
 			for(Iterator i = items.iterator(); i.hasNext(); ) {
 				FileItem next = (FileItem) i.next();
-				this.params.put(next.getFieldName(), next);
+				Object old = params.get(next.getFieldName());
+				if(old != null) {
+					if(old instanceof List)
+						((List)old).add(next);
+					else {
+						ArrayList list = new ArrayList();
+						list.add(old);
+						list.add(next);
+						params.put(next.getFieldName(), list);
+					}
+				} else
+					params.put(next.getFieldName(), next);
 			}
 		} catch (FileUploadException e) {
 			// TODO: handle this
@@ -185,10 +197,14 @@ public class HttpRequestWrapper implements RequestWrapper {
 				return value;
 			return decode(value);
 		} else {
-			FileItem item = (FileItem) params.get(name);
-			if(item == null) {
+			Object o = params.get(name);
+			if(o == null)
 				return null;
-			}
+			FileItem item;
+			if(o instanceof List)
+				item = (FileItem)((List)o).get(0);
+			else
+				item = (FileItem)o;
 			if(formEncoding == null)
 				return item.getString();
 			else
@@ -203,7 +219,10 @@ public class HttpRequestWrapper implements RequestWrapper {
 	public File getFileUploadParam(String name) {
 		if(params == null)
 			return null;
-		FileItem item = (FileItem) params.get(name);
+		Object o = params.get(name);
+		if(o == null)
+			return null;
+		FileItem item = getItem(o);
 		if(item.isFormField())
 			return null;
 		return ((DefaultFileItem)item).getStoreLocation();
@@ -212,16 +231,28 @@ public class HttpRequestWrapper implements RequestWrapper {
 	public String getUploadedFileName(String name) {
 		if(params == null)
 			return null;
-		FileItem item = (FileItem) params.get(name);
+		Object o = params.get(name);
+		if(o == null)
+			return null;
+		FileItem item = getItem(o);
 		if(item.isFormField())
 			return null;
 		File f = new File(item.getName());
 		return f.getName();
 	}
 	
+	private FileItem getItem(Object obj) {
+		if(obj instanceof List)
+			return (FileItem)((List)obj).get(0);
+		else
+			return (FileItem)obj;
+	}
+	
 	private String decode(String value) {
 		if(containerEncoding == null)
 			containerEncoding = "ISO-8859-1";
+		if(containerEncoding.equals(formEncoding))
+			return value;
 		try {
 			byte[] bytes = value.getBytes(containerEncoding);
 			return new String(bytes, formEncoding);
@@ -255,14 +286,30 @@ public class HttpRequestWrapper implements RequestWrapper {
 			}
 			return values;
 		} else {
-			FileItem item = (FileItem)params.get(key);
-			if(item == null)
+			Object obj = (Object)params.get(key);
+			if(obj == null)
 				return null;
-			String[] values = new String[1];
-			try {
-				values[0] = formEncoding == null ? item.getString() : item.getString(formEncoding);
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
+			String[] values;
+			if(obj instanceof List) {
+				List list = (List)obj;
+				values = new String[list.size()];
+				int j = 0;
+				for(Iterator i = list.iterator(); i.hasNext(); j++) {
+					FileItem item = (FileItem)i.next();
+					try {
+						values[j] = formEncoding == null ? item.getString() : item.getString(formEncoding);
+					} catch (UnsupportedEncodingException e) {
+						e.printStackTrace();
+					}
+				}
+			} else {
+				FileItem item = (FileItem)obj;
+				values = new String[1];
+				try {
+					values[0] = formEncoding == null ? item.getString() : item.getString(formEncoding);
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
 			}
 			return values;
 		}
