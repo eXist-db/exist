@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet href="db2html.xsl" type="text/xsl"?>
 
-<book xmlns:xi="http://www.w3.org/2001/XInclude">
+<book xmlns:ci="http://apache.org/cocoon/include/1.0"
+	xmlns:xi="http://www.w3.org/2001/XInclude">
     <bookinfo>
         <graphic fileref="logo.jpg"/>
-        <style href="default-style.css"/>
         <title>Open Source XML Database</title>
         <author>
             <firstname>Wolfgang M.</firstname>
@@ -16,7 +16,7 @@
             </affiliation>
         </author>
     </bookinfo>
-    <xi:include href="sidebar.xml"/>
+    <ci:include src="sidebar.xml"/>
     <chapter>
         <title>XInclude Examples</title>
         <para>Beginning with version 0.9, eXist comes with partial support for

@@ -39,7 +39,7 @@
     </group>
     <group name="Community">
         <item>
-            <link href="#mailing">Mailing List/IRC</link>
+            <link href="index.xml#mailing">Mailing List/IRC</link>
         </item>
         <item>
             <link href="apps/applications.xml">Powered By eXist</link>
