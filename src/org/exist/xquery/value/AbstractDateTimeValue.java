@@ -87,4 +87,19 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		String s = "000" + value;
 		buf.append(s.substring(s.length() - size));
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.ComputableValue#mult(org.exist.xquery.value.NumericValue)
+	 */
+	public ComputableValue mult(ComputableValue other) throws XPathException {
+		throw new XPathException("multiplication is not supported for type " + Type.getTypeName(getType()));
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.ComputableValue#div(org.exist.xquery.value.NumericValue)
+	 */
+	public ComputableValue div(ComputableValue other) throws XPathException {
+		throw new XPathException("division is not supported for type " + Type.getTypeName(getType()));
+	}
+
 }

@@ -281,46 +281,25 @@ public class TimeValue extends AbstractDateTimeValue {
 	}
 
 	public ComputableValue minus(ComputableValue other) throws XPathException {
-		if (other.getType() == Type.TIME) {
-			TimeValue otherTime = (TimeValue) other;
-			long delta =
-				calendar.getTimeInMillis() - otherTime.calendar.getTimeInMillis();
-			return new DayTimeDurationValue(delta);
-		} else if (other.getType() == Type.DAY_TIME_DURATION) {
-			long newMillis =
-				calendar.getTimeInMillis()
-					- ((DayTimeDurationValue) other).getValueInMilliseconds();
-			return new TimeValue(newMillis, tzOffset);
-		} else
-			throw new XPathException(
-				"Operand to minus should be of type xs:time or xdt:dayTimeDuration; got: "
-					+ Type.getTypeName(other.getType()));
+		switch(other.getType()) {
+			case Type.TIME:
+				return new DayTimeDurationValue(calendar.getTimeInMillis() - ((TimeValue) other).calendar.getTimeInMillis());
+			case Type.DAY_TIME_DURATION:
+				return ((DayTimeDurationValue) other).negate().plus(this);
+			default:
+				throw new XPathException(
+						"Operand to minus should be of type xs:time or xdt:dayTimeDuration; got: "
+							+ Type.getTypeName(other.getType()));
+		}
 	}
 
 	public ComputableValue plus(ComputableValue other) throws XPathException {
 		if (other.getType() == Type.DAY_TIME_DURATION) {
-			long newMillis =
-				calendar.getTimeInMillis()
-					+ ((DayTimeDurationValue) other).getValueInMilliseconds();
-			return new TimeValue(newMillis, tzOffset);
+			return other.plus(this);
 		} else
 			throw new XPathException(
 				"Operand to plus should be of type xdt:dayTimeDuration; got: "
 					+ Type.getTypeName(other.getType()));
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.ComputableValue#mult(org.exist.xquery.value.NumericValue)
-	 */
-	public ComputableValue mult(ComputableValue other) throws XPathException {
-		throw new XPathException("Multiplication is not defined for xs:time values");
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.ComputableValue#div(org.exist.xquery.value.NumericValue)
-	 */
-	public ComputableValue div(ComputableValue other) throws XPathException {
-		throw new XPathException("Division is not defined for xs:time values");
 	}
 
 	/* (non-Javadoc)

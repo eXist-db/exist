@@ -175,10 +175,15 @@ public class DecimalValue extends NumericValue {
 	 * @see org.exist.xquery.value.NumericValue#mult(org.exist.xquery.value.NumericValue)
 	 */
 	public ComputableValue mult(ComputableValue other) throws XPathException {
-		if (other.getType() == Type.DECIMAL)
-			return new DecimalValue(value.multiply(((DecimalValue) other).value));
-		else
-			return ((ComputableValue) convertTo(other.getType())).mult(other);
+		switch(other.getType()) {
+			case Type.DECIMAL:
+				return new DecimalValue(value.multiply(((DecimalValue) other).value));
+			case Type.DAY_TIME_DURATION:
+			case Type.YEAR_MONTH_DURATION:
+				return other.mult(this);
+			default:
+				return ((ComputableValue) convertTo(other.getType())).mult(other);
+		}
 	}
 
 	/* (non-Javadoc)

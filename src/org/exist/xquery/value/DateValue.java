@@ -267,26 +267,16 @@ public class DateValue extends AbstractDateTimeValue {
 	 * @see org.exist.xquery.value.ComputableValue#minus(org.exist.xquery.value.NumericValue)
 	 */
 	public ComputableValue minus(ComputableValue other) throws XPathException {
-		Calendar ncal;
 		switch (other.getType()) {
-			case Type.YEAR_MONTH_DURATION :
-				YearMonthDurationValue value = (YearMonthDurationValue) other;
-				ncal = (Calendar) calendar.clone();
-				ncal.add(Calendar.YEAR, (value.negative ? value.year : -value.year));
-				ncal.add(Calendar.MONTH, (value.negative ? value.month : -value.month));
-				return new DateValue(ncal, tzOffset);
-			case Type.DAY_TIME_DURATION :
-				DayTimeDurationValue dtv = (DayTimeDurationValue) other;
-				ncal = (Calendar) calendar.clone();
-				ncal.add(Calendar.DATE, dtv.day);
-				return new DateValue(ncal, tzOffset);
 			case Type.DATE :
-				return new DayTimeDurationValue(
-					calendar.getTimeInMillis()
-						- ((DateValue) other).calendar.getTimeInMillis());
+				return new DayTimeDurationValue(calendar.getTimeInMillis() - ((DateValue) other).calendar.getTimeInMillis());
+			case Type.YEAR_MONTH_DURATION :
+				return ((YearMonthDurationValue) other).negate().plus(this);
+			case Type.DAY_TIME_DURATION :
+				return ((DayTimeDurationValue) other).negate().plus(this);
 			default :
 				throw new XPathException(
-					"Operand to plus should be of type xdt:yearMonthDuration or xdt:dayTimeDuration; got: "
+					"Operand to minus should be of type xdt:yearMonthDuration or xdt:dayTimeDuration; got: "
 						+ Type.getTypeName(other.getType()));
 		}
 	}
@@ -295,40 +285,16 @@ public class DateValue extends AbstractDateTimeValue {
 	 * @see org.exist.xquery.value.ComputableValue#plus(org.exist.xquery.value.NumericValue)
 	 */
 	public ComputableValue plus(ComputableValue other) throws XPathException {
-		Calendar ncal;
 		switch (other.getType()) {
 			case Type.YEAR_MONTH_DURATION :
-				YearMonthDurationValue value = (YearMonthDurationValue) other;
-				ncal = (Calendar) calendar.clone();
-				ncal.add(Calendar.YEAR, (value.negative ? -value.year : value.year));
-				ncal.add(Calendar.MONTH, (value.negative ? -value.month : value.month));
-				return new DateValue(ncal, tzOffset);
+				return other.plus(this);
 			case Type.DAY_TIME_DURATION :
-				DayTimeDurationValue dtv = (DayTimeDurationValue) other;
-				ncal = (Calendar) calendar.clone();
-				ncal.add(Calendar.DATE, (dtv.negative ? -dtv.day : dtv.day));
-				return new DateValue(ncal, tzOffset);
+				return other.plus(this);
 			default :
 				throw new XPathException(
 					"Operand to plus should be of type xdt:yearMonthDuration or xdt:dayTimeDuration; got: "
 						+ Type.getTypeName(other.getType()));
 		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.ComputableValue#mult(org.exist.xquery.value.NumericValue)
-	 */
-	public ComputableValue mult(ComputableValue other) throws XPathException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.ComputableValue#div(org.exist.xquery.value.NumericValue)
-	 */
-	public ComputableValue div(ComputableValue other) throws XPathException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	/* (non-Javadoc)
