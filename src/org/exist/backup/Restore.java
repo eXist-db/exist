@@ -16,6 +16,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.exist.security.User;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.EXistResource;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -184,7 +185,9 @@ public class Restore extends DefaultHandler {
 				final String group = atts.getValue("group");
 				final String perms = atts.getValue("mode");
 				
+				
 				String filename = atts.getValue("filename");
+				final String mimetype = atts.getValue("mimetype");
 				if (filename == null) filename = name;
 
 				if (name == null)
@@ -200,6 +203,9 @@ public class Restore extends DefaultHandler {
 						dialog.setResource(name);
 					final Resource res =
 						current.createResource(name, type);
+					if (mimetype != null)
+						((EXistResource)res).setMimeType(mimetype);
+					
 					res.setContent(f);
 					if(dialog == null)
 						System.out.println("restoring " + name);
