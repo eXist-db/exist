@@ -16,7 +16,7 @@
 
     <!-- file appenders -->
     <appender name="exist.core" class="org.apache.log4j.RollingFileAppender">
-	    <param name="File" value="WEB-INF/logs/exist.log"/>
+	    <param name="File" value="logs/exist.log"/>
 		<param name="MaximumFileSize" value="5000000"/>
 		<param name="Encoding" value="UTF-8"/>
       <layout class="org.apache.log4j.PatternLayout">
@@ -25,7 +25,7 @@
     </appender>
 
     <appender name="exist.xmldb" class="org.apache.log4j.RollingFileAppender">
-	    <param name="File" value="WEB-INF/logs/xmldb.log"/>
+	    <param name="File" value="logs/xmldb.log"/>
 	  <param name="MaximumFileSize" value="500000"/>
       <layout class="org.apache.log4j.PatternLayout">
         <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m\n"/>
@@ -39,7 +39,7 @@
 
     <category name="org.exist.xmldb" additivity="false">
         <priority value="debug"/>
-		<appender-ref ref="exist.core"/>
+		<appender-ref ref="exist.xmldb"/>
     </category>
 
     <category name="httpclient" additivity="false">
@@ -63,6 +63,6 @@
 
     <root>
         <priority value="debug"/>
-		<appender-ref ref="lf5"/>
+		<appender-ref ref="exist.core"/>
     </root>
   </log4j:configuration>
