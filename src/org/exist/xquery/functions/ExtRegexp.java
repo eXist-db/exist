@@ -102,7 +102,6 @@ public class ExtRegexp extends Function {
 			contextSequence = contextItem.toSequence();
 		Expression path = getArgument(0);
 		if ((getDependencies() & Dependency.CONTEXT_ITEM) == Dependency.NO_DEPENDENCY) {
-			LOG.debug("single execution");
 			NodeSet nodes =
 				path == null
 					? contextSequence.toNodeSet()

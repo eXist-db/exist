@@ -22,6 +22,8 @@
  */
 package org.exist.xquery.functions.text;
 
+import java.util.List;
+
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.TermMatcher;
@@ -60,8 +62,8 @@ public class FuzzyMatchAll extends AbstractMatchFunction {
 	}
 	
 	public Sequence evalQuery(XQueryContext context, NodeSet nodes,
-								String[] terms) throws XPathException {
-		if (terms == null || terms.length == 0)
+								List terms) throws XPathException {
+		if (terms == null || terms.size() == 0)
 			return Sequence.EMPTY_SEQUENCE; // no search terms
 		double threshold = 0.65;
 		if (getArgumentCount() == 3) {
@@ -71,20 +73,21 @@ public class FuzzyMatchAll extends AbstractMatchFunction {
 						"should be a single double value");
 			threshold = ((DoubleValue) thresOpt.convertTo(Type.DOUBLE)).getDouble();
 		}
-		NodeSet hits[] = new NodeSet[terms.length];
-		String prefix;
+		NodeSet hits[] = new NodeSet[terms.size()];
+		String term;
 		TermMatcher matcher;
-		for (int k = 0; k < terms.length; k++) {
-			if(terms[k].length() == 0)
+		for (int k = 0; k < terms.size(); k++) {
+		    term = (String)terms.get(k);
+			if(term.length() == 0)
 				hits[k] = null;
 			else {
-				matcher = new FuzzyMatcher(terms[k], threshold);
+				matcher = new FuzzyMatcher(term, threshold);
 				hits[k] =
 					context.getBroker().getTextEngine().getNodes(
 					    context,
 						nodes.getDocumentSet(),
 						nodes,
-						matcher, terms[k].substring(0, 1));
+						matcher, term.substring(0, 1));
 			}
 		}
 		return mergeResults(hits);
