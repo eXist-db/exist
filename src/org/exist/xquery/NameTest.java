@@ -63,7 +63,10 @@ public class NameTest extends TypeTest {
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-		return nodeName.toString();
+	    if(nodeName.getLocalName() == null)
+	        return nodeName.getPrefix() + ":*";
+	    else
+	        return nodeName.toString();
 	}
 
 }
