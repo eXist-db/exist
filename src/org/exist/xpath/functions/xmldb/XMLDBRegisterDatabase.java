@@ -25,10 +25,10 @@ package org.exist.xpath.functions.xmldb;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.xpath.Cardinality;
+import org.exist.xpath.Function;
+import org.exist.xpath.FunctionSignature;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
-import org.exist.xpath.functions.Function;
-import org.exist.xpath.functions.FunctionSignature;
 import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
@@ -44,7 +44,7 @@ public class XMLDBRegisterDatabase extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("register-database", XMLDB_FUNCTION_NS),
+			new QName("register-database", XMLDB_FUNCTION_NS, "xmldb"),
 			new SequenceType[] {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)},

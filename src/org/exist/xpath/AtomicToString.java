@@ -86,4 +86,11 @@ public class AtomicToString extends AbstractExpression {
 		return in_docs;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#resetState()
+	 */
+	public void resetState() {
+		expression.resetState();
+	}
+
 }

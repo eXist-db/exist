@@ -44,7 +44,6 @@ public abstract class BinaryOp extends PathExpr {
   	steps.add(1, expr);
   }
   
-  public abstract DocumentSet preselect(DocumentSet in_docs) throws XPathException;
   public abstract Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException;
 
   public abstract String pprint();

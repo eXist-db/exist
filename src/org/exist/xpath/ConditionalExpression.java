@@ -28,6 +28,8 @@ import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.Type;
 
 /**
+ * XQuery if ... then ... else expression.
+ * 
  * @author wolf
  */
 public class ConditionalExpression extends AbstractExpression {
@@ -70,7 +72,6 @@ public class ConditionalExpression extends AbstractExpression {
 		if(testSeq.effectiveBooleanValue()) {
 			return thenExpr.eval(docs, contextSequence, contextItem);
 		} else {
-			System.out.println("else");
 			return elseExpr.eval(docs, contextSequence, contextItem);
 		}
 	}
@@ -103,6 +104,15 @@ public class ConditionalExpression extends AbstractExpression {
 		if(thenExpr.returnsType() == elseExpr.returnsType())
 			return thenExpr.returnsType();
 		return Type.ITEM;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#resetState()
+	 */
+	public void resetState() {
+		testExpr.resetState();
+		thenExpr.resetState();
+		elseExpr.resetState();
 	}
 
 }

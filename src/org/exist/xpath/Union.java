@@ -26,7 +26,7 @@ import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.Type;
 
-public class Union extends PathExpr {
+public class Union extends AbstractExpression {
 
 	protected PathExpr left, right;
 
@@ -40,18 +40,6 @@ public class Union extends PathExpr {
 		return Type.NODE;
 	}
 	
-	/**
-	 * check relevant documents. if right operand is a string literal
-	 * we check which documents contain it at all. in other cases
-	 * do nothing.
-	 */
-	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
-        //return in_docs;
-		DocumentSet left_docs = left.preselect(in_docs);
-		DocumentSet right_docs = right.preselect(in_docs);
-		return left_docs.union(right_docs);
-	}
-
 	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
 		Sequence lval = left.eval(docs, contextSequence, contextItem);
 		Sequence rval = right.eval(docs, contextSequence, contextItem);
@@ -76,6 +64,14 @@ public class Union extends PathExpr {
 		super.setInPredicate(inPredicate);
 		left.setInPredicate(inPredicate);
 		right.setInPredicate(inPredicate);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#resetState()
+	 */
+	public void resetState() {
+		left.resetState();
+		right.resetState();
 	}
 
 }

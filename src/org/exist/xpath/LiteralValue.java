@@ -28,6 +28,10 @@ import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 
 /**
+ * A literal value, i.e. a string, integer, decimal or double literal.
+ * 
+ * This is just a wrapper around the corresponding atomic value.
+ * 
  * @author wolf
  */
 public class LiteralValue extends AbstractExpression {
@@ -92,5 +96,11 @@ public class LiteralValue extends AbstractExpression {
 	 */
 	public int getCardinality() {
 		return Cardinality.EXACTLY_ONE;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#resetState()
+	 */
+	public void resetState() {
 	}
 }

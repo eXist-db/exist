@@ -27,6 +27,11 @@ import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.Type;
 
+/**
+ * Represents a reference to an in-scope variable.
+ * 
+ * @author wolf
+ */
 public class VariableReference extends AbstractExpression {
 
 	private String qname;
@@ -54,7 +59,6 @@ public class VariableReference extends AbstractExpression {
 	 */
 	public DocumentSet preselect(DocumentSet in_docs)
 		throws XPathException {
-		//this.context = context;
 		return in_docs;
 	}
 
@@ -69,13 +73,12 @@ public class VariableReference extends AbstractExpression {
 	 * @see org.exist.xpath.Expression#returnsType()
 	 */
 	public int returnsType() {
-		if(context != null) {
-			try {
-				Variable var = context.resolveVariable(qname);
-				if(var != null && var.getValue() != null)
-					return var.getValue().getItemType();
-			} catch (XPathException e) {
+		try {
+			Variable var = context.resolveVariable(qname);
+			if(var != null && var.getValue() != null) {
+				return var.getValue().getItemType();
 			}
+		} catch (XPathException e) {
 		}
 		return Type.ITEM;
 	}
@@ -85,5 +88,11 @@ public class VariableReference extends AbstractExpression {
 	 */
 	public int getDependencies() {
 		return Dependency.LOCAL_VARS;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#resetState()
+	 */
+	public void resetState() {
 	}
 }

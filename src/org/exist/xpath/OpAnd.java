@@ -22,9 +22,7 @@
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeSet;
-import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
@@ -35,15 +33,6 @@ public class OpAnd extends BinaryOp {
 
 	public OpAnd(StaticContext context) {
 		super(context);
-	}
-
-	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
-		if (getLength() == 0)
-			return in_docs;
-		DocumentSet out_docs = getExpression(0).preselect(in_docs);
-		for (int i = 1; i < getLength(); i++)
-			out_docs = out_docs.intersection(getExpression(i).preselect(out_docs));
-		return out_docs;
 	}
 
 	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
@@ -66,11 +55,7 @@ public class OpAnd extends BinaryOp {
 			}
 			return rl;
 		} else {
-			Sequence result;
-			if(Type.subTypeOf(contextSequence.getItemType(), Type.NODE))
-				result = new ExtArrayNodeSet();
-			else
-				result = new ValueSequence();
+			Sequence result = new ValueSequence();
 			Item item;
 			boolean r;
 			for(SequenceIterator i = contextSequence.iterate(); i.hasNext(); ) {

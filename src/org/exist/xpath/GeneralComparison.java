@@ -98,8 +98,8 @@ public class GeneralComparison extends BinaryOp {
 	 * @see org.exist.xpath.AbstractExpression#getDependencies()
 	 */
 	public int getDependencies() {
-		return getLeft().getDependencies() | getRight().getDependencies();		
-	}
+		return getLeft().getDependencies() | getRight().getDependencies();
+    }
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#preselect(org.exist.dom.DocumentSet, org.exist.xpath.StaticContext)
@@ -123,7 +123,7 @@ public class GeneralComparison extends BinaryOp {
 		 * This works only inside a predicate.
 		 */
 		if (inPredicate) {
-			if (Type.isNode(getLeft().returnsType())) {
+			if (Type.subTypeOf(getLeft().returnsType(), Type.NODE)) {
 				if ((getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0 &&
 					(Type.subTypeOf(getRight().returnsType(), Type.STRING) ||
 					Type.subTypeOf(getRight().returnsType(), Type.NODE)))
@@ -290,7 +290,7 @@ public class GeneralComparison extends BinaryOp {
 				rv = rv.convertTo(Type.DOUBLE);
 			}
 		}
-		System.out.println(lv.getStringValue() + " = " + rv.getStringValue());
+		//System.out.println(lv.getStringValue() + Constants.OPS[relation] + rv.getStringValue());
 		return lv.compareTo(relation, rv);
 	}
 
@@ -335,7 +335,9 @@ public class GeneralComparison extends BinaryOp {
 	public String pprint() {
 		StringBuffer buf = new StringBuffer();
 		buf.append(getLeft().pprint());
+		buf.append(' ');
 		buf.append(Constants.OPS[relation]);
+		buf.append(' ');
 		buf.append(getRight().pprint());
 		return buf.toString();
 	}

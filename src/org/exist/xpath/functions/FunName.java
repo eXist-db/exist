@@ -26,6 +26,7 @@ import java.util.List;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
+import org.exist.xpath.*;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Expression;
 import org.exist.xpath.StaticContext;

@@ -26,6 +26,7 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
+import org.exist.xpath.*;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Dependency;
 import org.exist.xpath.Expression;

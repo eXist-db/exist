@@ -74,18 +74,15 @@ public class SortedNodeSet extends NodeSet {
 			if (treeParser.foundErrors()) {
 				LOG.debug(treeParser.getErrorMessage());
 			}
-			ndocs = expr.preselect(docs);
 			for (SequenceIterator i = other.iterate(); i.hasNext();) {
 				p = (NodeProxy) i.nextItem();
-				item = new IteratorItem(broker, p, expr, ndocs, context);
+				item = new IteratorItem(broker, p, expr, docs, context);
 				list.add(item);
 			}
 		} catch (antlr.RecognitionException re) {
 			LOG.debug(re);
 		} catch (antlr.TokenStreamException tse) {
 			LOG.debug(tse);
-		} catch (XPathException e) {
-			LOG.debug(e.getMessage(), e);
 		} catch (EXistException e) {
 			LOG.debug("exception during sort", e);
 		} finally {

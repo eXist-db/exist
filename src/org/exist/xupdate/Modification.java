@@ -81,9 +81,6 @@ public abstract class Modification {
 			}
 			LOG.info("modification select: " + expr.pprint());
 			long start = System.currentTimeMillis();
-			docs = expr.preselect(docs);
-			if (docs.getLength() == 0)
-				return null;
 
 			Sequence resultSeq = expr.eval(docs, null, null);
 			if (resultSeq.getItemType() != Type.NODE)

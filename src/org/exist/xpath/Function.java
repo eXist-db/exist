@@ -19,7 +19,7 @@
  * 
  * $Id$
  */
-package org.exist.xpath.functions;
+package org.exist.xpath;
 
 import java.lang.reflect.Constructor;
 import java.util.Iterator;
@@ -27,36 +27,60 @@ import java.util.List;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
-import org.exist.xpath.AtomicToString;
-import org.exist.xpath.Atomize;
-import org.exist.xpath.Cardinality;
-import org.exist.xpath.Dependency;
-import org.exist.xpath.DynamicCardinalityCheck;
-import org.exist.xpath.DynamicTypeCheck;
-import org.exist.xpath.Expression;
-import org.exist.xpath.PathExpr;
-import org.exist.xpath.StaticContext;
-import org.exist.xpath.UntypedValueCheck;
-import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceType;
 import org.exist.xpath.value.Type;
 
+/**
+ * Abstract base class for all built-in and user-defined functions.
+ * 
+ * Built-in functions just extend this class. A new function instance
+ * will be created for each function call. In addition to the methods in this class, 
+ * all built-in functions need to declare a public static field, called "signature", 
+ * containing the signature of the function.
+ * 
+ * User-defined functions extend class {@link org.exist.xpath.functions.UserDefinedFunction},
+ * which is again a subclass of Function. They will not be called directly, but through a
+ * {@link org.exist.xpath.FunctionCall} object, which checks the type and cardinality of
+ * all arguments and takes care that the current execution context is saved properly.
+ * 
+ * @author wolf
+ */
 public abstract class Function extends PathExpr {
 
+	/** 
+	 * XQuery/XPath 2.0 function namespace.
+	 */
 	public final static String BUILTIN_FUNCTION_NS =
 		"http://www.w3.org/2003/05/xpath-functions";
 	
+	/**
+	 * Namespace for the built-in xmldb functions.
+	 */
 	public final static String XMLDB_FUNCTION_NS =
 		"http://exist-db.org/xquery/xmldb";
 
+	/**
+	 * Namespace for the built-in utility functions.
+	 */
 	public final static String UTIL_FUNCTION_NS =
 		"http://exist-db.org/xquery/util";
-		
+	
+	// The signature of the function.	
 	private FunctionSignature mySignature;
-
-	public Function(StaticContext context, FunctionSignature signature) {
+	
+	// The parent expression from which this function is called.
+	private Expression parent;
+	
+	/**
+	 * Internal constructor. Subclasses should <b>always</b> call this and
+	 * pass the current context and their function signature.
+	 * 
+	 * @param context
+	 * @param signature
+	 */
+	protected Function(StaticContext context, FunctionSignature signature) {
 		super(context);
 		this.mySignature = signature;
 	}
@@ -74,7 +98,14 @@ public abstract class Function extends PathExpr {
 	public int getCardinality() {
 		return mySignature.getReturnType().getCardinality();
 	}
-
+	
+	/**
+	 * Create a built-in function from the specified class.
+	 * 
+	 * @param context
+	 * @param fclass
+	 * @return the created function or null if the class could not be initialized.
+	 */
 	public static Function createFunction(
 		StaticContext context,
 		Class fclass) {
@@ -98,6 +129,35 @@ public abstract class Function extends PathExpr {
 		}
 	}
 
+	/**
+	 * Set the parent expression of this function, i.e. the
+	 * expression from which the function is called.
+	 * 
+	 * @param parent
+	 */
+	public void setParent(Expression parent) {
+		this.parent = parent;
+	}
+	
+	/**
+	 * Returns the expression from which this function
+	 * gets called.
+	 * 
+	 * @return
+	 */
+	public Expression getParent() {
+		return parent;
+	}
+	
+	/**
+	 * Set the (static) arguments for this function from a list of expressions.
+	 * 
+	 * This will also check the type and cardinality of the
+	 * passed argument expressions.
+	 * 
+	 * @param arguments
+	 * @throws XPathException
+	 */
 	public void setArguments(List arguments) throws XPathException {
 		SequenceType[] argumentTypes = mySignature.getArgumentTypes();
 		if ((!mySignature.isOverloaded())
@@ -120,6 +180,15 @@ public abstract class Function extends PathExpr {
 		}
 	}
 
+	/**
+	 * Statically check an argument against the sequence type specified in
+	 * the signature.
+	 * 
+	 * @param expr
+	 * @param type
+	 * @return
+	 * @throws XPathException
+	 */
 	protected Expression checkArgument(Expression expr, SequenceType type)
 		throws XPathException {
 		if (type == null)
@@ -177,9 +246,9 @@ public abstract class Function extends PathExpr {
 		}
 
 		if (!Type.subTypeOf(returnType, type.getPrimaryType())) {
-			if (returnType != Type.ITEM)
+			if ((!Type.subTypeOf(type.getPrimaryType(), returnType)) && returnType != Type.ITEM)
 				throw new XPathException(
-					"Supplied argument doesn't match required type: required: "
+					"Supplied argument " + expr.pprint() + " doesn't match required type: required: "
 						+ type.toString()
 						+ "; got: "
 						+ Type.getTypeName(returnType)
@@ -196,31 +265,46 @@ public abstract class Function extends PathExpr {
 		return expr;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xpath.PathExpr#preselect(org.exist.dom.DocumentSet, org.exist.xpath.StaticContext)
-	 */
-	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
-		return super.preselect(in_docs);
-	}
-
 	public abstract Sequence eval(
 		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException;
 
+	/**
+	 * Get an argument expression by its position in the
+	 * argument list.
+	 * 
+	 * @param pos
+	 * @return
+	 */
 	public Expression getArgument(int pos) {
 		return getExpression(pos);
 	}
 
+	/**
+	 * Get the number of arguments passed to this function.
+	 * 
+	 * @return
+	 */
 	public int getArgumentCount() {
 		return steps.size();
 	}
 
+	/**
+	 * Return the name of this function.
+	 * 
+	 * @return
+	 */
 	public QName getName() {
 		return mySignature.getName();
 	}
 
+	/**
+	 * Get the signature of this function.
+	 * 
+	 * @return
+	 */
 	public FunctionSignature getSignature() {
 		return mySignature;
 	}

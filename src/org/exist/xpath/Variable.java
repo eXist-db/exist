@@ -25,6 +25,11 @@ package org.exist.xpath;
 import org.exist.dom.QName;
 import org.exist.xpath.value.Sequence;
 
+/**
+ * An XQuery/XPath variable, consisting of a QName and a value.
+ * 
+ * @author wolf
+ */
 public class Variable {
 
 	private QName qname;

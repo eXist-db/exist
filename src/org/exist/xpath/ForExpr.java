@@ -26,13 +26,14 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.xpath.value.Item;
+import org.exist.xpath.value.OrderedValueSequence;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.Type;
 import org.exist.xpath.value.ValueSequence;
 
 /**
- * Represents an XQuery/XPath 2.0 "for" expression.
+ * Represents an XQuery "for" expression.
  * 
  * @author Wolfgang Meier <wolfgang@exist-db.org>
  */
@@ -50,12 +51,8 @@ public class ForExpr extends BindingExpression {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		Sequence result;
-		//if (returnExpr.returnsType() == Type.NODE) {
-		//	result = new ExtArrayNodeSet();
-		//} else {
-		result = new ValueSequence();
-		//}
+		Sequence result = new ValueSequence();
+		context.pushLocalContext(false);
 		// declare the variable
 		Variable var = new Variable(QName.parse(context, varName));
 		context.declareVariable(var);
@@ -70,6 +67,11 @@ public class ForExpr extends BindingExpression {
 			setContext(in);
 			in = applyWhereExpression(context, docs, null);
 			whereExpr = null;
+		}
+		if(orderSpecs != null) {
+			OrderedValueSequence ordered = new OrderedValueSequence(docs, orderSpecs);
+			ordered.addAll(in);
+			in = ordered;
 		}
 		Sequence val = null;
 		int p = 0;
@@ -91,6 +93,7 @@ public class ForExpr extends BindingExpression {
 			val = returnExpr.eval(docs, val);
 			result.addAll(val);
 		}
+		context.popLocalContext();
 		return result;
 	}
 

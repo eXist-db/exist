@@ -20,28 +20,53 @@
  *  
  *  $Id$
  */
-package org.exist.xpath.functions;
+package org.exist.xpath;
 
 import org.exist.dom.QName;
 import org.exist.xpath.value.SequenceType;
+import org.exist.xpath.value.Type;
 
+/**
+ * Describes the signature of a built-in or user-defined function, i.e.
+ * its name, the type and cardinality of its arguments and its return type.
+ *  
+ * @author wolf
+ */
 public class FunctionSignature {
 
+	/**
+	 * Default sequence type for function parameters.
+	 */
+	public final static SequenceType DEFAULT_TYPE =
+		new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE);
+		
 	private QName name;
 	private SequenceType[] arguments;
 	private SequenceType returnType;
 	private boolean isOverloaded = false;
 	
+	public FunctionSignature(QName name) {
+		this(name, null, DEFAULT_TYPE, false);
+	}
+	
+	public FunctionSignature(QName name, SequenceType[] arguments, SequenceType returnType) {
+		this(name, arguments, returnType, false);	
+	}
+	
+	/**
+	 * Create a new function signature.
+	 * 
+	 * @param name the QName of the function.
+	 * @param arguments the sequence types of all expected arguments
+	 * @param returnType the sequence type returned by the function
+	 * @param overloaded set to true if the function may expect additional parameters
+	 */		
 	public FunctionSignature(QName name, SequenceType[] arguments, SequenceType returnType,
 		boolean overloaded) {
 		this.name = name;
 		this.arguments = arguments;
 		this.returnType = returnType;
 		this.isOverloaded = overloaded;
-	}
-		
-	public FunctionSignature(QName name, SequenceType[] arguments, SequenceType returnType) {
-		this(name, arguments, returnType, false);	
 	}
 	
 	public QName getName() {
@@ -56,11 +81,35 @@ public class FunctionSignature {
 		return returnType;
 	}
 	
+	public void setReturnType(SequenceType type) {
+		returnType = type;
+	}
+	
 	public SequenceType[] getArgumentTypes() {
 		return arguments;
 	}
 	
+	public void setArgumentTypes(SequenceType[] types) {
+		this.arguments = types;
+	}
+	
 	public boolean isOverloaded() {
 		return isOverloaded;
+	}
+	
+	public String toString() {
+		StringBuffer buf = new StringBuffer();
+		buf.append(name.toString());
+		buf.append('(');
+		if(arguments != null) {
+			for(int i = 0; i < arguments.length; i++) {
+				if(i > 0)
+					buf.append(", ");
+				buf.append(arguments[i].toString());
+			}
+		}
+		buf.append(") ");
+		buf.append(returnType.toString());
+		return buf.toString();
 	}
 }

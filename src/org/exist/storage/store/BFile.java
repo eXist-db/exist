@@ -90,7 +90,7 @@ public class BFile extends BTree {
 	protected ClockPageBuffer pages = null;
 	protected Lock lock = null;
 	public int fixedKeyLen = -1;
-
+	
 	/**  Constructor for the BFile object */
 	public BFile() {
 		super();
@@ -766,15 +766,7 @@ public class BFile extends BTree {
 			LOG.debug("io problem", e);
 		}
 	}
-
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  page                Description of the Parameter
-	 *@param  p                   Description of the Parameter
-	 *@exception  BTreeException  Description of the Exception
-	 *@exception  IOException     Description of the Exception
-	 */
+	
 	protected void remove(DataPage page, long p)
 		throws BTreeException, IOException, ReadOnlyException {
 		if (page.getPageHeader().getStatus() == MULTI_PAGE) {
@@ -821,8 +813,7 @@ public class BFile extends BTree {
 				}
 				fileHeader.addFreeSpace(free);
 			}
-			if(pages != null)
-				pages.add(page);
+			pages.add(page, 2);
 		}
 	}
 
@@ -926,8 +917,7 @@ public class BFile extends BTree {
 		page.getPageHeader().incRecordCount();
 		saveFreeSpace(free, page);
 		page.setDirty(true);
-		if(pages != null)
-			pages.add(page, 2);
+		pages.add(page);
 		// return pointer from pageNum and offset into page
 		return StorageAddress.createPointer((int) page.getPageNum(), (short) tid);
 	}
@@ -1126,6 +1116,8 @@ public class BFile extends BTree {
 		 *@return         Description of the Return Value
 		 */
 		public FreeSpace findFreeSpace(int needed) {
+			if(freeList.size() > 100)
+				System.out.println("free list: " + freeList.size());
 			FreeSpace freeSpace;
 			for (Iterator i = freeList.iterator(); i.hasNext();) {
 				freeSpace = (FreeSpace) i.next();
@@ -1433,8 +1425,8 @@ public class BFile extends BTree {
 		boolean saved = true;
 
 		/**  Description of the Method */
-		public void decRefCount() {
-			refCount--;
+		public int decRefCount() {
+			return --refCount;
 		}
 
 		/**
@@ -1483,6 +1475,8 @@ public class BFile extends BTree {
 
 		/**  Description of the Method */
 		public void incRefCount() {
+			if(refCount == Integer.MAX_VALUE)
+				LOG.debug(getFile().getName() + " max value reached");
 			refCount++;
 		}
 
@@ -1713,8 +1707,7 @@ public class BFile extends BTree {
 			ph.setLastInChain(0L);
 			ph.setDataLength(0);
 			firstPage.setData(new byte[fileHeader.getWorkSize()]);
-			if(pages != null)
-				pages.add(firstPage, 3);
+			pages.add(firstPage, 3);
 		}
 
 		/**
@@ -1794,8 +1787,7 @@ public class BFile extends BTree {
 			ph = firstPage.getPageHeader();
 			if (page != firstPage) {
 				// add link to last page
-				if(pages != null)
-					pages.add(page, 2);
+				pages.add(page);
 				ph.setLastInChain(page.getPageNum());
 				ph.setDataLength(ph.getDataLength() + chunkLen);
 			} else
@@ -1806,9 +1798,8 @@ public class BFile extends BTree {
 				firstPage.getData(),
 				2);
 			firstPage.setDirty(true);
-			if(pages != null)
-				// keep the first page in cache
-				pages.add(firstPage, 7);
+			// keep the first page in cache
+			pages.add(firstPage, 2);
 		}
 
 		/**
@@ -1980,8 +1971,7 @@ public class BFile extends BTree {
 					} else
 						firstPage.getPageHeader().setLastInChain(0L);
 					firstPage.setDirty(true);
-					if(pages != null)
-						pages.add(firstPage, 3);
+					pages.add(firstPage, 3);
 				}
 			}
 			if (next > 0) {
@@ -2127,31 +2117,18 @@ public class BFile extends BTree {
 
 		protected int fails = 0;
 		protected int hits = 0;
+				
 		protected Long2ObjectLinkedOpenHashMap map;
 
-		//protected LinkedList queue = new LinkedList();
-
-		/**
-		 *  Constructor for the PageBuffer object
-		 *
-		 *@param  blockBuffers  Description of the Parameter
-		 */
 		public ClockPageBuffer(int blockBuffers) {
 			this.blockBuffers = blockBuffers;
-			//map = new TLongObjectHashMap(blockBuffers);
 			map = new Long2ObjectLinkedOpenHashMap(blockBuffers);
 		}
 
-		/**  Constructor for the PageBuffer object */
 		public ClockPageBuffer() {
 			this(PAGE_BUFFER_SIZE);
 		}
 
-		/**
-		 *  Description of the Method
-		 *
-		 *@param  page  Description of the Parameter
-		 */
 		public void add(DataPage page) {
 			add(page, 1);
 		}
@@ -2163,10 +2140,9 @@ public class BFile extends BTree {
 				page.incRefCount();
 				return;
 			}
-			while (map.size() >= blockBuffers)
-				removeOne(page);
 			page.setRefCount(initialRefCount);
-			//queue.addLast(page);
+			if (map.size() >= blockBuffers)
+				removeOne(page);
 			map.put(page.getPageNum(), page);
 		}
 
@@ -2177,10 +2153,9 @@ public class BFile extends BTree {
 				if (page.isDirty())
 					try {
 						page.write();
-						//fileHeader.write();
 					} catch (IOException ioe) {
 						ioe.printStackTrace();
-					}	
+					}
 			}
 		}
 
@@ -2190,17 +2165,15 @@ public class BFile extends BTree {
 
 		public DataPage get(long pnum) {
 			final DataPage page = (DataPage) map.get(pnum);
-			if (page == null)
+			if (page == null) {
+				//LOG.debug(getFile().getName() + " page " + pnum + " not found in buffer");
 				fails++;
-			else
+			} else
 				hits++;
 			return page;
 		}
 
 		public void remove(DataPage page) {
-			//			final int idx = queue.indexOf(page);
-			//			if (idx > -1)
-			//				queue.remove(idx);
 			map.remove(page.getPageNum());
 			if (page.isDirty())
 				try {
@@ -2215,8 +2188,8 @@ public class BFile extends BTree {
 			DataPage old;
 			boolean removed = false;
 			long oldNum, pNum;
-			while (!removed) {
-				for (Iterator i = map.values().iterator(); i.hasNext();) {
+			do {
+				for (Iterator i = map.values().iterator(); i.hasNext(); ) {
 					old = (DataPage) i.next();
 					oldNum = old.getPageNum();
 					pNum = page.getPageNum();
@@ -2224,9 +2197,9 @@ public class BFile extends BTree {
 					// and don't replace consecutive pages
 					if (oldNum == pNum || oldNum == pNum + 1)
 						continue;
-					old.decRefCount();
-					// replace old page if it has reference count < 1,
-					if (old.getRefCount() < 1) {
+					// replace old page if it has reference count < 1
+					if (old.decRefCount() < 1) {
+						//LOG.debug(getFile().getName() + ": replacing page " + old.getPageNum());
 						i.remove();
 						//map.remove(oldNum);
 						removed = true;
@@ -2244,7 +2217,7 @@ public class BFile extends BTree {
 						return;
 					}
 				}
-			}
+			} while(!removed);
 		}
 
 		public int getBuffers() {

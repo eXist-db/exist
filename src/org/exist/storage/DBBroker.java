@@ -182,7 +182,7 @@ public abstract class DBBroker extends Observable {
 	 *@param  user  Description of the Parameter
 	 *@return       The allDocuments value
 	 */
-	public abstract DocumentSet getAllDocuments();
+	public abstract DocumentSet getAllDocuments(DocumentSet docs);
 
 	/**
 	 *  find elements by their tag name. This method is comparable to the DOM's
@@ -267,7 +267,7 @@ public abstract class DBBroker extends Observable {
 	 *@return                                The documentsByCollection value
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	public abstract DocumentSet getDocumentsByCollection(String collection)
+	public abstract DocumentSet getDocumentsByCollection(String collection, DocumentSet docs)
 		throws PermissionDeniedException;
 		
 	/**
@@ -280,7 +280,7 @@ public abstract class DBBroker extends Observable {
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
 	public abstract DocumentSet getDocumentsByCollection(
-		String collection, boolean inclusive)
+		String collection, DocumentSet docs, boolean inclusive)
 		throws PermissionDeniedException;
 
 	/**
@@ -291,7 +291,7 @@ public abstract class DBBroker extends Observable {
 	 *@param  user         Description of the Parameter
 	 *@return              The documentsByDoctype value
 	 */
-	public abstract DocumentSet getDocumentsByDoctype(String doctype);
+	public abstract DocumentSet getDocumentsByDoctype(String doctype, DocumentSet result);
 
 	/**
 	 *  get a common prefix for a namespace URI. It should be guaranteed that

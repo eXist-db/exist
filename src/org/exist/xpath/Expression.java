@@ -27,7 +27,7 @@ import org.exist.xpath.value.Sequence;
 
 /**
  * Base interface implemented by all classes which are part
- * of an XPath expression. The main method is 
+ * of an XQuery/XPath expression. The main method is 
  * {@link #eval(StaticContext, DocumentSet, Sequence, Item)}. Please
  * read the description there.
  */
@@ -55,7 +55,7 @@ public interface Expression {
 	 *
 	 * The context sequence might be a node set, a sequence of atomic values or a single
 	 * node or atomic value. 
-	 * @param context the static xpath context
+	 * 
 	 * @param docs the set of documents all nodes belong to.
 	 * @param contextSequence the current context sequence.
 	 * @param contextItem a single item, taken from context. This defines the item,
@@ -66,27 +66,15 @@ public interface Expression {
 	/**
 	 * Evaluate the expression represented by this object.
 	 *
-	 * An overloaded method which just passes the context sequence. Depending on the
+	 * An overloaded method which just passes the context sequence depending on the
 	 * expression context.
 	 *
-	 * @param context the static xpath context
 	 * @param docs the set of documents all nodes belong to.
 	 * @param contextSet the node-set which defines the current context node-set.
 	 */
 	public Sequence eval(DocumentSet docs, Sequence contextSequence)
 		throws XPathException;
 	
-	/**
-	 * Determine the documents, taken from in_docs, for which this expression
-	 * will possibly yield a result. An expression does not have to do
-	 * anything here. It may simply return in_docs.
-	 *
-	 * This method is used to restrict the range of documents in question for
-	 * a given xpath-expression. It is called before the xpath-expression is
-	 * actually executed.
-	 */
-	public DocumentSet preselect(DocumentSet in_docs) throws XPathException;
-
 	/**
 	 * The static return type of the expression.
 	 *
@@ -111,7 +99,16 @@ public interface Expression {
 	 * @return
 	 */
 	public int getDependencies();
-	
+
+	/**
+	 * Called to inform an expression that it should reset to its initial state. 
+	 * 
+	 * All cached data in the expression object should be dropped. For example,
+	 * the document() function calls this method whenever the input document
+	 * set has changed.
+	 */	
+	public void resetState();
+
 	/**
 	 * This method is called to inform the expression object that
 	 * it is executed inside an XPath predicate (or in a where clause).

@@ -612,6 +612,11 @@
 				<map:match pattern="acronyms/**">
 					<map:mount check-reload="yes" src="acronyms/sitemap.xmap" uri-prefix="acronyms"/>
 				</map:match>
+
+				<map:match pattern="xquery/**">
+					<map:mount check-reload="yes" src="xquery/sitemap.xmap"
+						uri-prefix="xquery"/>
+				</map:match>
 				
                 <map:match pattern="status">
                     <map:generate type="exist-status"/>

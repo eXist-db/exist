@@ -25,10 +25,10 @@ package org.exist.xpath.functions.xmldb;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.xpath.Cardinality;
+import org.exist.xpath.Function;
+import org.exist.xpath.FunctionSignature;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
-import org.exist.xpath.functions.Function;
-import org.exist.xpath.functions.FunctionSignature;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.JavaObjectValue;
 import org.exist.xpath.value.Sequence;
@@ -45,12 +45,12 @@ public class XMLDBCollection extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("collection", XMLDB_FUNCTION_NS),
+			new QName("collection", XMLDB_FUNCTION_NS, "xmldb"),
 			new SequenceType[] {
 				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
-			new SequenceType(Type.JAVA_OBJECT, Cardinality.EXACTLY_ONE));
+			new SequenceType(Type.JAVA_OBJECT, Cardinality.ZERO_OR_ONE));
 
 	/**
 	 * @param context
@@ -71,11 +71,11 @@ public class XMLDBCollection extends Function {
 		String collectionURI = getArgument(0).eval(docs, contextSequence, contextItem).getStringValue();
 		String user = getArgument(1).eval(docs, contextSequence, contextItem).getStringValue();
 		String passwd = getArgument(2).eval(docs, contextSequence, contextItem).getStringValue();
-		Collection collection;
+		Collection collection = null;
 		try {
 			collection = DatabaseManager.getCollection(collectionURI, user, passwd);
 		} catch (XMLDBException e) {
-			throw new XPathException("exception while retrieving collection: " + e.getMessage(), e);
+			LOG.debug("exception while retrieving collection: " + e.getMessage(), e);
 		}
 		return collection == null ? Sequence.EMPTY_SEQUENCE : new JavaObjectValue(collection);
 	}

@@ -50,10 +50,16 @@ public class Predicate extends PathExpr {
 	 * @see org.exist.xpath.PathExpr#getDependencies()
 	 */
 	public int getDependencies() {
-		if(getLength() == 1)
-			return getExpression(0).getDependencies();
-		else
+		if(getLength() == 1) {
+            getExpression(0).setInPredicate(true);
+			if(Type.subTypeOf(getExpression(0).returnsType(), Type.NODE)) {
+				return getExpression(0).getDependencies();
+			} else {
+				return Dependency.CONTEXT_ITEM + Dependency.CONTEXT_SET;
+            }
+		} else {
 			return super.getDependencies();
+        }
 	}
 	
 	public Sequence eval(
@@ -127,20 +133,12 @@ public class Predicate extends PathExpr {
 			Sequence innerSeq = inner.eval(docs, contextSequence);
 			NumericValue v = (NumericValue)innerSeq.convertTo(Type.NUMBER);
 			int pos = v.getInt() - 1;
-			if(pos > contextSequence.getLength() || pos < 0)
+			if(pos >= contextSequence.getLength() || pos < 0)
 				return Sequence.EMPTY_SEQUENCE;
 			return contextSequence.itemAt(pos).toSequence();
 		} else
 			LOG.debug("unable to determine return type of predicate expression");
 		return Sequence.EMPTY_SEQUENCE;
-	}
-
-	public DocumentSet preselect(DocumentSet in_docs)
-		throws XPathException {
-		DocumentSet docs = in_docs;
-		for (Iterator iter = steps.iterator(); iter.hasNext();)
-			docs = ((Expression) iter.next()).preselect(docs);
-		return docs;
 	}
 
 	/*public Value evalBody(StaticContext context, DocumentSet docs, NodeSet contextSet, 

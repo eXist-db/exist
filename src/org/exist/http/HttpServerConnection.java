@@ -63,6 +63,7 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.StaticContext;
+import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.Type;
@@ -228,7 +229,10 @@ public class HttpServerConnection extends Thread {
 
 				if (name.endsWith("/")) {
 					// print collection contents
-					DocumentSet docs = broker.getDocumentsByCollection(name);
+					DocumentSet docs =
+						broker.getDocumentsByCollection(
+							name,
+							new DocumentSet());
 					String[] names = docs.getNames();
 					data = printCollection(name, names);
 				} else {
@@ -249,7 +253,9 @@ public class HttpServerConnection extends Thread {
 
 						try {
 							Map properties = new TreeMap();
-							serializer.setProperty(OutputKeys.ENCODING, encoding);
+							serializer.setProperty(
+								OutputKeys.ENCODING,
+								encoding);
 							serializer.setProperty(
 								OutputKeys.INDENT,
 								indent ? "yes" : "no");
@@ -621,9 +627,7 @@ public class HttpServerConnection extends Thread {
 
 		try {
 			serializer.setProperty(OutputKeys.ENCODING, "UTF-8");
-			serializer.setProperty(
-				OutputKeys.INDENT,
-				indent ? "yes" : "no");
+			serializer.setProperty(OutputKeys.INDENT, indent ? "yes" : "no");
 			return serializer.serialize(
 				(NodeSet) resultSet,
 				start,
@@ -806,7 +810,11 @@ public class HttpServerConnection extends Thread {
 			buf.append("<");
 			buf.append(elem);
 			buf.append(" value=\"");
-			buf.append(item.getStringValue());
+			try {
+				buf.append(item.getStringValue());
+			} catch (XPathException e) {
+				buf.append("ERROR: " + e.getMessage());
+			}
 			buf.append("\"/>");
 		}
 
@@ -1176,43 +1184,35 @@ public class HttpServerConnection extends Thread {
 				return formatErrorMsg(parser.getErrorMessage(), SYNTAX_ERROR);
 
 			long startTime = System.currentTimeMillis();
-			DocumentSet ndocs = expr.preselect(context);
+			Sequence resultSequence = expr.eval(null, null, null);
+			long queryTime = System.currentTimeMillis() - startTime;
+			HttpServer.LOG.debug("evaluation took " + queryTime + "ms.");
+			startTime = System.currentTimeMillis();
 
-			if (ndocs.getLength() == 0)
-				result = formatErrorMsg("nothing found", OK);
-			else {
-				Sequence resultSequence = expr.eval(ndocs, null, null);
-				long queryTime = System.currentTimeMillis() - startTime;
-				HttpServer.LOG.debug("evaluation took " + queryTime + "ms.");
-				startTime = System.currentTimeMillis();
+			switch (resultSequence.getItemType()) {
+				case Type.NODE :
 
-				switch (resultSequence.getItemType()) {
-					case Type.NODE :
+					if (printSummary)
+						result =
+							printSummary((NodeSet) resultSequence, queryTime);
+					else
+						result =
+							printAll(
+								(NodeSet) resultSequence,
+								howmany,
+								start,
+								queryTime,
+								indent,
+								stylesheet);
 
-						if (printSummary)
-							result =
-								printSummary(
-									(NodeSet) resultSequence,
-									queryTime);
-						else
-							result =
-								printAll(
-									(NodeSet) resultSequence,
-									howmany,
-									start,
-									queryTime,
-									indent,
-									stylesheet);
+					break;
 
-						break;
+				default :
+					result = printValues(resultSequence, howmany, start);
 
-					default :
-						result = printValues(resultSequence, howmany, start);
-
-						break;
-				}
-
+					break;
 			}
+
 		} catch (Exception e) {
 			HttpServer.LOG.debug(e.toString(), e);
 			result = formatErrorMsg(e.toString(), UNKNOWN_ERROR);

@@ -5,7 +5,7 @@ import org.exist.xpath.XPathException;
 
 public abstract class NumericValue extends AtomicValue {
 
-	public abstract String getStringValue();
+	public abstract String getStringValue() throws XPathException;
 
 	public abstract AtomicValue convertTo(int requiredType) throws XPathException;
 	
@@ -41,7 +41,7 @@ public abstract class NumericValue extends AtomicValue {
 				case Constants.LT:
 					return val < otherVal;
 				case Constants.LTEQ:
-					return val >= otherVal;
+					return val <= otherVal;
 				default:
 					throw new XPathException("Type error: cannot apply operator to numeric value");
 			}
@@ -72,4 +72,9 @@ public abstract class NumericValue extends AtomicValue {
 	public abstract NumericValue ceiling();
 	public abstract NumericValue floor();
 	public abstract NumericValue round();
+	public abstract NumericValue minus(NumericValue other);
+	public abstract NumericValue plus(NumericValue other);
+	public abstract NumericValue mult(NumericValue other);
+	public abstract NumericValue div(NumericValue other) throws XPathException;
+	public abstract NumericValue mod(NumericValue other);
 }

@@ -40,21 +40,28 @@ public abstract class AbstractExpression implements Expression {
 	
 	public abstract Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException;
 		
-	public abstract DocumentSet preselect(DocumentSet in_docs) throws XPathException;
-	
 	public abstract String pprint();
 	
 	public abstract int returnsType();
 	
+	public abstract void resetState();
+	
+	/**
+	 * The default cardinality is {@link Cardinality#EXACTLY_ONE}.
+	 */
 	public int getCardinality() {
 		return Cardinality.EXACTLY_ONE;	// default cardinality
 	}
 	
+	/**
+	 * Ignored. Has no effect by default.
+	 */
 	public void setInPredicate(boolean inPredicate) {
-		// has no effect by default
 	}
 	
-	/* (non-Javadoc)
+	/**
+	 * Returns {@link Dependency#DEFAULT_DEPENDENCIES}.
+	 * 
 	 * @see org.exist.xpath.Expression#getDependencies()
 	 */
 	public int getDependencies() {

@@ -54,7 +54,7 @@
 	   - indent: should the serializer pretty-print (indent) xml?
   -->
   <serializer enable-xinclude="true" enable-xsl="false"
-	  indent="false" add-exist-id="element" match-tagging-elements="false"
+	  indent="false" add-exist-id="element" match-tagging-elements="true"
 	  match-tagging-attributes="false"/>
   
   <!-- settings for the indexer

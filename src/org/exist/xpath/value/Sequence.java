@@ -110,7 +110,7 @@ public interface Sequence {
 	 * 
 	 * @return
 	 */
-	public String getStringValue();
+	public String getStringValue() throws XPathException;
 	
 	/**
 	 * Get the effective boolean value of this sequence. Will be false if the sequence is empty,

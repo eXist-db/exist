@@ -79,13 +79,12 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	
 	public ResourceSet query(String query, String sortBy) throws XMLDBException {
 		DocumentSet docs = null;
-		LOG.debug("query: " + query);
 		if (!(query.startsWith("document(") || query.startsWith("collection(") ||
 			query.startsWith("xcollection("))) {
 			DBBroker broker = null;
 			try {
 				broker = brokerPool.get(user);
-				docs = collection.collection.allDocs(broker, true);
+				docs = collection.collection.allDocs(broker, new DocumentSet(), true);
 			} catch (EXistException e) {
 				throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR,
 					"error while loading documents: " + e.getMessage(), e);
@@ -113,6 +112,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	protected ResourceSet doQuery(String query, DocumentSet docs, 
 		NodeSet contextSet, String sortExpr)
 		throws XMLDBException {
+        LOG.debug("query: " + query);
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
@@ -142,13 +142,13 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 			}
 
 			AST ast = parser.getAST();
-			LOG.debug("generated AST: " + ast.toStringTree());
+			LOG.debug("generated AST: " + ast.toStringList());
 			
 			PathExpr expr = new PathExpr(context);
 			treeParser.xpath(ast, expr);
 			if(treeParser.foundErrors()) {
 				throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR,
-					treeParser.getErrorMessage());
+					treeParser.getErrorMessage(), treeParser.getLastException());
 			}
 						
 			LOG.info("query: " + expr.pprint());
@@ -156,11 +156,11 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 			//if (parser.foundErrors())
 			//	throw new XMLDBException(ErrorCodes.VENDOR_ERROR, parser.getErrorMsg());
 			Sequence result = null;
-			docs = (docs == null ? expr.preselect(context) : expr.preselect(docs));
-			if (docs.getLength() == 0) {
-				result = Sequence.EMPTY_SEQUENCE;
-				LOG.info("no documents!");
-			} else 
+//			docs = (docs == null ? expr.preselect() : expr.preselect(docs));
+//			if (docs.getLength() == 0) {
+//				result = Sequence.EMPTY_SEQUENCE;
+//				LOG.info("no documents!");
+//			} else 
 				result = expr.eval(docs, contextSet, null);
 			LOG.info(
 				expr.pprint()

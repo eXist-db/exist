@@ -46,6 +46,7 @@ public class LetExpr extends BindingExpression {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
+		context.pushLocalContext(false);
 		Variable var = new Variable(QName.parse(context, varName));
 		context.declareVariable(var);
 		Sequence val = inputSequence.eval(docs, null, null);
@@ -56,7 +57,9 @@ public class LetExpr extends BindingExpression {
 			filtered = applyWhereExpression(context, docs, null);
 		if(whereExpr != null && filtered.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE; 
-		return returnExpr.eval(docs, filtered, null);
+		Sequence returnSeq = returnExpr.eval(docs, filtered, null);
+		context.popLocalContext();
+		return returnSeq;
 	}
 
 	/* (non-Javadoc)

@@ -57,19 +57,12 @@ public class DynamicTypeCheck extends AbstractExpression {
 		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
 			item = i.nextItem();
 			if(!Type.subTypeOf(item.getType(), requiredType)) {
-				throw new XPathException("Type error: required type: " + Type.getTypeName(requiredType) +
+				throw new XPathException("Type error in expression" +
+					": required type is " + Type.getTypeName(requiredType) +
 					"; got: " + Type.getTypeName(item.getType()) + ": " + item.getStringValue());
 			}
 		}
 		return seq;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#preselect(org.exist.dom.DocumentSet, org.exist.xpath.StaticContext)
-	 */
-	public DocumentSet preselect(DocumentSet in_docs)
-		throws XPathException {
-		return expression.preselect(in_docs);
 	}
 
 	/* (non-Javadoc)
@@ -91,5 +84,12 @@ public class DynamicTypeCheck extends AbstractExpression {
 	 */
 	public int getDependencies() {
 		return expression.getDependencies();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#resetState()
+	 */
+	public void resetState() {
+		expression.resetState();
 	}
 }

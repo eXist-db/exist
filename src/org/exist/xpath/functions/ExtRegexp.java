@@ -27,6 +27,7 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
+import org.exist.xpath.*;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Constants;
 import org.exist.xpath.Dependency;

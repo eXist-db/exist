@@ -31,14 +31,13 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.Type;
 
 /**
- * Abstract superclass for variable binding expressions like "for" and "let".
+ * Abstract superclass for the variable binding expressions "for" and "let".
  * 
  * @author Wolfgang Meier <wolfgang@exist-db.org>
  */
@@ -51,6 +50,7 @@ public abstract class BindingExpression extends AbstractExpression {
 	protected Expression inputSequence;
 	protected Expression returnExpr;
 	protected Expression whereExpr;
+	protected OrderSpec orderSpecs[] = null;
 
 	public BindingExpression(StaticContext context) {
 		super(context);
@@ -72,6 +72,10 @@ public abstract class BindingExpression extends AbstractExpression {
 		whereExpr = expr;
 	}
 
+	public void setOrderSpecs(OrderSpec specs[]) {
+		this.orderSpecs = specs;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
@@ -154,4 +158,12 @@ public abstract class BindingExpression extends AbstractExpression {
 		return Type.ITEM;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#resetState()
+	 */
+	public void resetState() {
+		inputSequence.resetState();
+		whereExpr.resetState();
+		returnExpr.resetState();
+	}
 }

@@ -28,7 +28,9 @@ import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 
 /**
- * A global variable declaration (with: declare variable).
+ * A global variable declaration (with: declare variable). Variable bindings within
+ * for and let expressions are handled by {@link org.exist.xpath.ForExpr} and
+ * {@link org.exist.xpath.LetExpr}.
  * 
  * @author wolf
  */
@@ -63,13 +65,6 @@ public class VariableDeclaration extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#preselect(org.exist.dom.DocumentSet)
-	 */
-	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
-		return expression.preselect(in_docs);
-	}
-
-	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#pprint()
 	 */
 	public String pprint() {
@@ -95,5 +90,12 @@ public class VariableDeclaration extends AbstractExpression {
 	 */
 	public int getCardinality() {
 		return expression.getCardinality();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#resetState()
+	 */
+	public void resetState() {
+		expression.resetState();
 	}
 }

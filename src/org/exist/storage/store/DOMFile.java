@@ -1655,7 +1655,6 @@ public class DOMFile extends BTree implements Lockable {
 		}
 
 		public byte[] read() {
-			LOG.debug("reading overflow page " + firstPage.getPageNum());
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			try {
 				Page page = firstPage;

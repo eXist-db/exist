@@ -29,8 +29,11 @@ import org.exist.xpath.Cardinality;
  */
 public class SequenceType {
 
-	private int primaryType;
-	private int cardinality;
+	private int primaryType = Type.ITEM;
+	private int cardinality = Cardinality.EXACTLY_ONE;
+	
+	public SequenceType() {
+	}
 	
 	public SequenceType(int primaryType, int cardinality) {
 		this.primaryType = primaryType;
@@ -41,8 +44,16 @@ public class SequenceType {
 		return primaryType;
 	}
 	
+	public void setPrimaryType(int type) {
+		this.primaryType = type;
+	}
+	
 	public int getCardinality() {
 		return cardinality;
+	}
+	
+	public void setCardinality(int cardinality) {
+		this.cardinality = cardinality;
 	}
 	
 	public String toString() {

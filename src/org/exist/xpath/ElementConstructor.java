@@ -69,7 +69,7 @@ public class ElementConstructor extends NodeConstructor {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		context.pushContext();
+		context.pushNamespaceContext();
 		MemTreeBuilder builder = context.getDocumentBuilder();
 		// process attributes
 		AttributesImpl attrs = new AttributesImpl();
@@ -110,7 +110,7 @@ public class ElementConstructor extends NodeConstructor {
 		}
 		builder.endElement();
 		NodeImpl node = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
-		context.popContext();
+		context.popNamespaceContext();
 		return node;
 	}
 
@@ -138,13 +138,9 @@ public class ElementConstructor extends NodeConstructor {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.NodeConstructor#preselect(org.exist.dom.DocumentSet, org.exist.xpath.StaticContext)
+	 * @see org.exist.xpath.AbstractExpression#resetState()
 	 */
-	public DocumentSet preselect(DocumentSet in_docs)
-		throws XPathException {
-		if(content != null)
-			return content.preselect(in_docs);
-		else
-			return in_docs;
+	public void resetState() {
+		content.resetState();
 	}
 }

@@ -21,6 +21,7 @@ package org.exist.xpath.functions;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
+import org.exist.xpath.*;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
@@ -45,10 +46,6 @@ public class FunCeiling extends Function {
 
     public int returnsType() {
 		return Type.NUMBER;
-    }
-
-    public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
-		return getArgument(0).preselect(in_docs);
     }
 
     public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
