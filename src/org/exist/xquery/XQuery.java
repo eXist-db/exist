@@ -91,7 +91,7 @@ public class XQuery {
             		treeParser.getErrorMessage(),
             		treeParser.getLastException());
             }
-            LOG.debug("compilation took "  +  (System.currentTimeMillis() - start));
+            LOG.debug("Query:\n" + expr.pprint() + "\nCompilation took "  +  (System.currentTimeMillis() - start));
             return expr;
         } catch (RecognitionException e) {
             throw new XPathException(e.getMessage(), e);
