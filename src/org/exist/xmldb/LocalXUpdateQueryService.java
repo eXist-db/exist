@@ -6,6 +6,7 @@ import java.io.StringReader;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.exist.EXistException;
+import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -44,25 +45,25 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 	}
 
 	/**
-	 * @see org.xmldb.api.modules.XUpdateQueryService#update(java.lang.String)
+	 * @see org.xmldb.api.modules.XUpdateQueryService#updateResource(java.lang.String, java.lang.String)
 	 */
-	public long update(String xupdate) throws XMLDBException {
+	public long updateResource(String resource, String xupdate)
+		throws XMLDBException {
 		DocumentSet docs = null;
 		DBBroker broker = null;
-
 		try {
 			broker = pool.get();
-			docs =
-				broker.getDocumentsByCollection(user, parent.collection.getName());
-		} catch (EXistException e) {
-            throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, e.getMessage());
-		} catch (PermissionDeniedException e) {
-            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage());
-		} finally {
-            pool.release(broker);
-		}
-
-		try {
+			if (resource == null) {
+				docs =
+					broker.getDocumentsByCollection(
+						user,
+						parent.collection.getName());
+			} else {
+				docs = new DocumentSet();
+				String id = parent.getName() + '/' + resource;
+				DocumentImpl doc = parent.collection.getDocument(id);
+				docs.add(doc);
+			}
 			XUpdateProcessor processor = new XUpdateProcessor(pool, user);
 			Modification modifications[] =
 				processor.parse(new InputSource(new StringReader(xupdate)));
@@ -70,6 +71,7 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 			for (int i = 0; i < modifications.length; i++) {
 				mods += modifications[i].process(docs);
 			}
+            broker.sync();
 			return mods;
 		} catch (ParserConfigurationException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
@@ -83,15 +85,16 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 				e.getMessage());
 		} catch (EXistException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+		} finally {
+			pool.release(broker);
 		}
 	}
 
 	/**
-	 * @see org.xmldb.api.modules.XUpdateQueryService#updateResource(java.lang.String, java.lang.String)
+	 * * @see org.xmldb.api.modules.XUpdateQueryService#update(java.lang.String)
 	 */
-	public long updateResource(String arg0, String arg1)
-		throws XMLDBException {
-		return 0;
+	public long update(String arg1) throws XMLDBException {
+		return updateResource(null, arg1);
 	}
 
 	/**

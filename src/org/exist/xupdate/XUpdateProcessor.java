@@ -36,34 +36,33 @@ public class XUpdateProcessor implements ContentHandler {
 
 	public final static String XUPDATE_NS = "http://www.xmldb.org/xupdate";
 
-    private final static Logger LOG = Logger.getLogger(XUpdateProcessor.class);
-    
+	private final static Logger LOG = Logger.getLogger(XUpdateProcessor.class);
+
 	private boolean inModifications = false;
 	private boolean inModification = false;
-    private boolean inAttribute = false;
+	private boolean inAttribute = false;
 	private Modification modification = null;
 	private DocumentBuilder builder;
-    private Document doc;
+	private Document doc;
 	private DocumentFragment fragment = null;
-    private Stack stack = new Stack();
-    private Node currentNode = null;
-    private BrokerPool pool;
-    private User user;
-    private ArrayList modifications = new ArrayList();
-    protected FastStringBuffer charBuf =
-            new FastStringBuffer( 6, 15, 5 );
-             
+	private Stack stack = new Stack();
+	private Node currentNode = null;
+	private BrokerPool pool;
+	private User user;
+	private ArrayList modifications = new ArrayList();
+	protected FastStringBuffer charBuf = new FastStringBuffer(6, 15, 5);
+
 	/**
 	 * Constructor for XUpdateProcessor.
 	 */
-	public XUpdateProcessor(BrokerPool pool, User user) 
-    throws ParserConfigurationException {
+	public XUpdateProcessor(BrokerPool pool, User user)
+		throws ParserConfigurationException {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setNamespaceAware(true);
 		factory.setValidating(false);
 		builder = factory.newDocumentBuilder();
-        this.pool = pool;
-        this.user = user;
+		this.pool = pool;
+		this.user = user;
 	}
 
 	public Modification[] parse(InputSource is)
@@ -75,10 +74,10 @@ public class XUpdateProcessor implements ContentHandler {
 		XMLReader reader = sax.getXMLReader();
 		reader.setContentHandler(this);
 		reader.parse(is);
-        Modification mods[] = new Modification[modifications.size()];
-        return (Modification[]) modifications.toArray(mods);
+		Modification mods[] = new Modification[modifications.size()];
+		return (Modification[]) modifications.toArray(mods);
 	}
-        
+
 	/**
 	 * @see org.xml.sax.ContentHandler#setDocumentLocator(org.xml.sax.Locator)
 	 */
@@ -119,6 +118,21 @@ public class XUpdateProcessor implements ContentHandler {
 		String qName,
 		Attributes atts)
 		throws SAXException {
+		if (inModification && charBuf.length() > 0) {
+			final String normalized =
+				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+			if (normalized.length() > 0) {
+				Text text = doc.createTextNode(normalized);
+				if (stack.isEmpty()) {
+					LOG.debug("appending text to fragment: " + text.getData());
+					fragment.appendChild(text);
+				} else {
+					Element last = (Element) stack.peek();
+					last.appendChild(text);
+				}
+			}
+			charBuf.setLength(0);
+		}
 		if (namespaceURI.equals(XUPDATE_NS)) {
 			if (localName.equals("modifications")) {
 				inModifications = true;
@@ -139,7 +153,7 @@ public class XUpdateProcessor implements ContentHandler {
 			if (localName.equals("append")
 				|| localName.equals("insert-before")
 				|| localName.equals("insert-after")
-                || localName.equals("remove")
+				|| localName.equals("remove")
 				|| localName.equals("update")) {
 				if (inModification)
 					throw new SAXException("nested modifications are not allowed");
@@ -147,9 +161,9 @@ public class XUpdateProcessor implements ContentHandler {
 				if (select == null)
 					throw new SAXException(
 						localName + " requires a select attribute");
-                doc = builder.newDocument();
-                fragment = doc.createDocumentFragment();
-                inModification = true;
+				doc = builder.newDocument();
+				fragment = doc.createDocumentFragment();
+				inModification = true;
 			} else if (
 				(localName.equals("element")
 					|| localName.equals("attribute")
@@ -162,52 +176,54 @@ public class XUpdateProcessor implements ContentHandler {
 						+ "a modification");
 			if (localName.equals("append"))
 				modification = new Append(pool, user, select);
-            else if (localName.equals("insert-before"))
-                modification = new Insert(pool, user, select, Insert.INSERT_BEFORE);
-            else if (localName.equals("insert-after"))
-                modification = new Insert(pool, user, select, Insert.INSERT_AFTER);
-            else if (localName.equals("remove"))
-                modification = new Remove(pool, user, select);
-            else if (localName.equals("element")) {
-                String name = atts.getValue("name");
-                if(name == null)
-                    throw new SAXException("element requires a name attribute");
-                Element elem = doc.createElement(name);
-                if(stack.isEmpty()) {
-                    fragment.appendChild(elem);
-                } else {
-                    Element last = (Element)stack.peek();
-                    last.appendChild(elem);
-                }
-                stack.push(elem);
-            } else if (localName.equals("attribute")) {
-                String name = atts.getValue("name");
-                if(name == null)
-                    throw new SAXException("attribute requires a name attribute");
-                Attr attrib = doc.createAttribute(name);
-                if(stack.isEmpty())
-                    fragment.appendChild(attrib);
-                else {
-                    Element last = (Element)stack.peek();
-                    last.setAttributeNode(attrib);
-                }
-                inAttribute = true;
-                currentNode = attrib;
-            }   
-		} else if(inModification) {
-            Element elem = doc.createElementNS(namespaceURI, qName);
-            Attr a;
-            for(int i = 0; i < atts.getLength(); i++) {
-                 a = doc.createAttributeNS(atts.getURI(i), atts.getQName(i));
-                 a.setValue(atts.getValue(i));
-                 elem.setAttributeNodeNS(a);
-            }
-            if(!stack.isEmpty()) {
-                Element last = (Element)stack.peek();
-                last.appendChild(elem);
-            }
-            stack.push(elem);
-        }
+			else if (localName.equals("insert-before"))
+				modification =
+					new Insert(pool, user, select, Insert.INSERT_BEFORE);
+			else if (localName.equals("insert-after"))
+				modification =
+					new Insert(pool, user, select, Insert.INSERT_AFTER);
+			else if (localName.equals("remove"))
+				modification = new Remove(pool, user, select);
+			else if (localName.equals("element")) {
+				String name = atts.getValue("name");
+				if (name == null)
+					throw new SAXException("element requires a name attribute");
+				Element elem = doc.createElement(name);
+				if (stack.isEmpty()) {
+					fragment.appendChild(elem);
+				} else {
+					Element last = (Element) stack.peek();
+					last.appendChild(elem);
+				}
+				stack.push(elem);
+			} else if (localName.equals("attribute")) {
+				String name = atts.getValue("name");
+				if (name == null)
+					throw new SAXException("attribute requires a name attribute");
+				Attr attrib = doc.createAttribute(name);
+				if (stack.isEmpty())
+					fragment.appendChild(attrib);
+				else {
+					Element last = (Element) stack.peek();
+					last.setAttributeNode(attrib);
+				}
+				inAttribute = true;
+				currentNode = attrib;
+			}
+		} else if (inModification) {
+			Element elem = doc.createElementNS(namespaceURI, qName);
+			Attr a;
+			for (int i = 0; i < atts.getLength(); i++) {
+				a = doc.createAttributeNS(atts.getURI(i), atts.getQName(i));
+				a.setValue(atts.getValue(i));
+				elem.setAttributeNodeNS(a);
+			}
+			if (!stack.isEmpty()) {
+				Element last = (Element) stack.peek();
+				last.appendChild(elem);
+			}
+			stack.push(elem);
+		}
 	}
 
 	/**
@@ -215,22 +231,37 @@ public class XUpdateProcessor implements ContentHandler {
 	 */
 	public void endElement(String namespaceURI, String localName, String qName)
 		throws SAXException {
-        if(namespaceURI.equals(XUPDATE_NS)) {
-            if(localName.equals("element")) {
-                stack.pop();
-            } else if(localName.equals("attribute"))
-                inAttribute = false;
-            if(localName.equals("append") ||
-                localName.equals("remove") ||
-                localName.equals("insert-before") ||
-                localName.equals("insert-after")) {
-                inModification = false;
-                modification.setContent(fragment);
-                modifications.add(modification);
-                modification = null;
-            }
-        } else if(inModification)
-            stack.pop();
+		if (inModification && charBuf.length() > 0) {
+			final String normalized =
+				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+			if (normalized.length() > 0) {
+				Text text = doc.createTextNode(normalized);
+				if (stack.isEmpty()) {
+					LOG.debug("appending text to fragment: " + text.getData());
+					fragment.appendChild(text);
+				} else {
+					Element last = (Element) stack.peek();
+					last.appendChild(text);
+				}
+			}
+			charBuf.setLength(0);
+		}
+		if (namespaceURI.equals(XUPDATE_NS)) {
+			if (localName.equals("element")) {
+				stack.pop();
+			} else if (localName.equals("attribute"))
+				inAttribute = false;
+			if (localName.equals("append")
+				|| localName.equals("remove")
+				|| localName.equals("insert-before")
+				|| localName.equals("insert-after")) {
+				inModification = false;
+				modification.setContent(fragment);
+				modifications.add(modification);
+				modification = null;
+			}
+		} else if (inModification)
+			stack.pop();
 	}
 
 	/**
@@ -238,20 +269,13 @@ public class XUpdateProcessor implements ContentHandler {
 	 */
 	public void characters(char[] ch, int start, int length)
 		throws SAXException {
-        if(inModification) {
-            if(inAttribute)
-                ((Attr)currentNode).setValue(new String(ch, start, length));
-            else {
-                Text text = doc.createTextNode(new String(ch, start, length));
-                if(stack.isEmpty()) {
-                    LOG.debug("appending text to fragment: " + text.getData());
-                    fragment.appendChild(text);
-                } else {
-                    Element last = (Element)stack.peek();
-                    last.appendChild(text);
-                }
-            }
-        }
+		if (inModification) {
+			if (inAttribute)
+				 ((Attr) currentNode).setValue(new String(ch, start, length));
+			else {
+				charBuf.append(ch, start, length);
+			}
+		}
 	}
 
 	/**
@@ -266,6 +290,21 @@ public class XUpdateProcessor implements ContentHandler {
 	 */
 	public void processingInstruction(String target, String data)
 		throws SAXException {
+		if (inModification && charBuf.length() > 0) {
+			final String normalized =
+				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+			if (normalized.length() > 0) {
+				Text text = doc.createTextNode(normalized);
+				if (stack.isEmpty()) {
+					LOG.debug("appending text to fragment: " + text.getData());
+					fragment.appendChild(text);
+				} else {
+					Element last = (Element) stack.peek();
+					last.appendChild(text);
+				}
+			}
+			charBuf.setLength(0);
+		}
 	}
 
 	/**

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xu:modifications version="1.0" 
+	xmlns:xu="http://www.xmldb.org/xupdate"
+	xmlns:dc="http://purl.org/dc/elements/1.1">
+
+	<xu:remove select="//rdf:Description[near(dc:title, 'mind children')]"/>
+
+	<xu:append select="//rdf:Description[@id='5']">
+		<xu:element name="dc:publisher">Xyz Publishers</xu:element>
+	</xu:append>
+	
+</xu:modifications>

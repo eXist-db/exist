@@ -466,7 +466,7 @@ public class RpcServer implements RpcAPI {
 			pool.release(con);
 		}
 	}
-
+             
 	public Vector getUsers(User user)
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = null;
