@@ -144,7 +144,7 @@ public abstract class AbstractSequence implements Sequence {
 	 * @see org.exist.xquery.value.Sequence#toJavaObject(java.lang.Class)
 	 */
 	public Object toJavaObject(Class target) throws XPathException {
-		if(target.isAssignableFrom(Sequence.class)) {
+		if(Sequence.class.isAssignableFrom(target)) {
 			return this;
 		} else if(target.isArray()) {
 			Class componentType = target.getComponentType();
