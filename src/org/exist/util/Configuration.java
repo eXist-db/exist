@@ -118,7 +118,7 @@ public class Configuration implements ErrorHandler {
 				String caseSensitive = p.getAttribute("caseSensitive");
 				String tokenizer = p.getAttribute("tokenizer");
 				String validation = p.getAttribute("validation");
-				String suppressWSmixed = p.getAttribute("suppress-whitespace-mixed-content");
+				String suppressWSmixed = p.getAttribute("preserve-whitespace-mixed-content");
 				
 				if (parseNum != null)
 					config.put(
@@ -153,7 +153,7 @@ public class Configuration implements ErrorHandler {
 
 					if (suppressWSmixed != null)
 					config.put(
-						"indexer.suppress-whitespace-mixed-content",
+						"indexer.preserve-whitespace-mixed-content",
 						Boolean.valueOf(suppressWSmixed.equals("yes")));
 				
 				// index settings
