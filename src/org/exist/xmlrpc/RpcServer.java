@@ -381,6 +381,32 @@ public class RpcServer implements RpcAPI {
         }
     }
 
+    public Hashtable getDocumentData(User user, String name, Hashtable parameters)
+	throws EXistException, PermissionDeniedException {
+    	RpcConnection con = pool.get();
+    	try {
+            return con.getDocumentData(user, name, parameters);
+        } catch (Exception e) {
+            handleException(e);
+            return null;
+        } finally {
+            pool.release(con);
+        }
+    }
+    
+    public Hashtable getNextChunk(User user, String handle, int offset) 
+    throws EXistException, PermissionDeniedException {
+    	RpcConnection con = pool.get();
+    	try {
+            return con.getNextChunk(user, handle, offset);
+        } catch (Exception e) {
+            handleException(e);
+            return null;
+        } finally {
+            pool.release(con);
+        }
+    }
+    
     public Vector getDocumentListing(User user) throws EXistException,
             PermissionDeniedException {
         RpcConnection con = pool.get();

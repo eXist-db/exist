@@ -124,6 +124,23 @@ public interface RpcAPI {
 	String getDocumentAsString(User user, String name, Hashtable parameters)
 		throws EXistException, PermissionDeniedException;
 	
+	/**
+	 * Retrieve the specified document, but limit the number of bytes transmitted
+	 * to avoid memory shortage on the server.
+	 * 
+	 * @param user
+	 * @param name
+	 * @param parameters
+	 * @return
+	 * @throws EXistException
+	 * @throws PermissionDeniedException
+	 */
+	Hashtable getDocumentData(User user, String name, Hashtable parameters)
+	throws EXistException, PermissionDeniedException;
+	
+	Hashtable getNextChunk(User user, String handle, int offset) 
+    throws EXistException, PermissionDeniedException;
+	
 	byte[] getBinaryResource(User user, String name)
 		throws EXistException, PermissionDeniedException;
 	

@@ -8,6 +8,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -125,10 +126,24 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 			Vector params = new Vector();
 			params.addElement(path);
 			params.addElement(properties);
-			//params.addElement("UTF-8");
-			//params.addElement(new Integer(1));
 			try {
-				data = (byte[]) parent.getClient().execute("getDocument", params);
+				Hashtable table = (Hashtable) parent.getClient().execute("getDocumentData", params);
+				ByteArrayOutputStream os = new ByteArrayOutputStream();
+		        int offset = ((Integer)table.get("offset")).intValue();
+		        data = (byte[])table.get("data");
+		        System.out.println("Received: " + data.length);
+		    	os.write(data);
+		        while(offset > 0) {
+		        	params.clear();
+		        	params.addElement(table.get("handle"));
+		        	params.addElement(new Integer(offset));
+		        	table = (Hashtable) parent.getClient().execute("getNextChunk", params);
+		        	offset = ((Integer)table.get("offset")).intValue();
+		        	data = (byte[])table.get("data");
+		        	System.out.println("Received: " + data.length);
+		        	os.write(data);
+		        }
+		        data = os.toByteArray();
 			} catch (XmlRpcException xre) {
 				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
 			} catch (IOException ioe) {

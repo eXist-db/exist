@@ -27,11 +27,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -68,7 +70,6 @@ import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
-import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
 import org.exist.util.Configuration;
@@ -120,6 +121,8 @@ public class RpcConnection extends Thread {
 	protected List cachedExpressions = new LinkedList();
 
 	protected RpcServer.ConnectionPool connectionPool;
+
+	private static final int MAX_DOWNLOAD_CHUNK_SIZE = 0x40000;
 
 	public RpcConnection(Configuration conf, RpcServer.ConnectionPool pool)
 			throws EXistException {
@@ -454,20 +457,10 @@ public class RpcConnection extends Thread {
 		long start = System.currentTimeMillis();
 		DBBroker broker = null;
 
-		String stylesheet = null;
-		String encoding = "UTF-8";
-		String processXSL = "yes";
-		Hashtable styleparam = null;
-
 		Collection collection = null;
 		DocumentImpl doc = null;
 		try {
 			broker = brokerPool.get(user);
-			Configuration config = broker.getConfiguration();
-			String option = (String) config
-					.getProperty("serialization.enable-xinclude");
-			String prettyPrint = (String) config
-					.getProperty("serialization.indent");
 
 			int pos = name.lastIndexOf('/');
 			String collName = name.substring(0, pos);
@@ -492,78 +485,7 @@ public class RpcConnection extends Thread {
 			if(!doc.getPermissions().validate(user, Permission.READ))
 			    throw new PermissionDeniedException("Insufficient privileges to read resource " + docName);
 			Serializer serializer = broker.getSerializer();
-
-			if (parametri != null) {
-
-				for (Enumeration en = parametri.keys(); en.hasMoreElements(); ) {
-
-					String param = (String) en.nextElement();
-					String paramvalue = parametri.get(param).toString();
-					//LOG.debug("-------Parametri passati:"+param+":
-					// "+paramvalue);
-
-					if (param.equals(EXistOutputKeys.EXPAND_XINCLUDES)) {
-						option = (paramvalue.equals("yes")) ? "true" : "false";
-					}
-
-					if (param.equals(OutputKeys.INDENT)) {
-						prettyPrint = paramvalue;
-					}
-
-					if (param.equals(OutputKeys.ENCODING)) {
-						encoding = paramvalue;
-					}
-
-					if (param.equals(EXistOutputKeys.STYLESHEET)) {
-						stylesheet = paramvalue;
-					}
-
-					if (param.equals(EXistOutputKeys.STYLESHEET_PARAM)) {
-						styleparam = (Hashtable) parametri.get(param);
-					}
-
-					if (param.equals(OutputKeys.DOCTYPE_SYSTEM)) {
-						serializer.setProperty(OutputKeys.DOCTYPE_SYSTEM,
-								paramvalue);
-					}
-
-					if(param.equals(EXistOutputKeys.PROCESS_XSL_PI)) {
-						serializer.setProperty(EXistOutputKeys.PROCESS_XSL_PI, paramvalue);
-					}
-				}
-
-			}
-
-			if (option.equals("true")) {
-				serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
-			} else {
-				serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
-			}
-
-			serializer.setProperty(OutputKeys.ENCODING, encoding);
-			serializer.setProperty(OutputKeys.INDENT, prettyPrint);
-			if (stylesheet != null) {
-				if (stylesheet.indexOf(":") < 0) {
-					if (!stylesheet.startsWith("/")) {
-						// make path relative to current collection
-						stylesheet = collection.getName() + '/' + stylesheet;
-					}
-
-				}
-				serializer.setStylesheet(stylesheet);
-
-				// set stylesheet param if present
-				if (styleparam != null) {
-					for (Enumeration en1 = styleparam.keys(); en1
-							.hasMoreElements(); ) {
-						String param1 = (String) en1.nextElement();
-						String paramvalue1 = styleparam.get(param1).toString();
-						// System.out.println("-->"+param1+"--"+paramvalue1);
-						serializer
-								.setStylesheetParamameter(param1, paramvalue1);
-					}
-				}
-			}
+			serializer.setProperties(parametri);
 			String xml = serializer.serialize(doc);
 
 			return xml;
@@ -577,6 +499,101 @@ public class RpcConnection extends Thread {
 		}
 	}
 
+	public Hashtable getDocumentData(User user, String name, Hashtable parameters)
+	throws Exception{
+		Collection collection = null;
+		DocumentImpl doc = null;
+		DBBroker broker = null;
+		try {
+			broker = brokerPool.get(user);
+
+			int pos = name.lastIndexOf('/');
+			String collName = name.substring(0, pos);
+			String docName = name.substring(pos + 1);
+			
+			collection = broker.openCollection(collName, Lock.READ_LOCK);
+			if (collection == null) {
+				LOG.debug("collection " + collName + " not found!");
+				throw new EXistException("Collection " + collName + " not found!");
+			}
+			if(!collection.getPermissions().validate(user, Permission.READ)) {
+			    collection.release();
+				throw new PermissionDeniedException("Insufficient privileges to read resource");
+			}
+			doc = collection.getDocumentWithLock(broker, docName);
+			collection.release();
+			if (doc == null) {
+				LOG.debug("document " + name + " not found!");
+				throw new EXistException("document not found");
+			}
+			
+			if(!doc.getPermissions().validate(user, Permission.READ))
+			    throw new PermissionDeniedException("Insufficient privileges to read resource " + docName);
+			String encoding = (String)parameters.get(OutputKeys.ENCODING);
+			if(encoding == null)
+				encoding = "UTF-8";
+			
+			Serializer serializer = broker.getSerializer();
+			serializer.setProperties(parameters);
+			Hashtable result = new Hashtable();
+			if(doc.getContentLength() > MAX_DOWNLOAD_CHUNK_SIZE) {
+				File tempFile = File.createTempFile("eXist", ".xml");
+				tempFile.deleteOnExit();
+				LOG.debug("Writing to temporary file: " + tempFile.getName());
+				
+				OutputStream os = new FileOutputStream(tempFile);
+				Writer writer = new OutputStreamWriter(os, encoding);
+				serializer.serialize(doc, writer);
+				writer.close();
+				
+				byte[] firstChunk = getChunk(tempFile, 0);
+				result.put("data", firstChunk);
+				result.put("handle", tempFile.getAbsolutePath());
+				result.put("offset", new Integer(firstChunk.length));
+			} else {
+				String xml = serializer.serialize(doc);
+				result.put("data", xml.getBytes(encoding));
+				result.put("offset", new Integer(0));
+			}
+			return result;
+		} finally {
+			if(collection != null)
+		        collection.releaseDocument(doc);
+			brokerPool.release(broker);
+		}
+	}
+	
+	public Hashtable getNextChunk(User user, String handle, int offset) throws Exception {
+		File file = new File(handle);
+		if(!(file.isFile() && file.canRead()))
+			throw new EXistException("Invalid handle specified");
+		if(offset <= 0 || offset > file.length())
+			throw new EXistException("No more data available");
+		byte[] chunk = getChunk(file, offset);
+		int nextChunk = offset + chunk.length;
+
+		Hashtable result = new Hashtable();
+		result.put("data", chunk);
+		result.put("handle", handle);
+		if(nextChunk == file.length()) {
+			file.delete();
+			result.put("offset", new Integer(0));
+		} else
+			result.put("offset", new Integer(nextChunk));
+		return result;
+	}
+	
+	private byte[] getChunk(File file, int offset) throws IOException {
+		RandomAccessFile raf = new RandomAccessFile(file, "r");
+		raf.seek((long)offset);
+		int remaining = (int)(raf.length() - offset);
+		if(remaining > MAX_DOWNLOAD_CHUNK_SIZE)
+			remaining = MAX_DOWNLOAD_CHUNK_SIZE;
+		byte[] data = new byte[remaining];
+		raf.readFully(data);
+		return data;
+	}
+	
 	public byte[] getBinaryResource(User user, String name)
 			throws EXistException, PermissionDeniedException {
 		DBBroker broker = null;
@@ -1282,7 +1299,7 @@ public class RpcConnection extends Thread {
 							entry = new Vector();
 							if (((NodeValue) next).getImplementationType() == NodeValue.PERSISTENT_NODE) {
 								p = (NodeProxy) next;
-								entry.addElement(p.getDocument().getCollection().getName() + '/' + p.getDocument().getFileName());
+								entry.addElement(p.getDoc().getCollection().getName() + '/' + p.getDoc().getFileName());
 								entry.addElement(Long.toString(p.getGID()));
 							} else {
 								entry.addElement("temp_xquery/"
@@ -1750,13 +1767,13 @@ public class RpcConnection extends Thread {
 			DoctypeCount doctypeCounter;
 			for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext(); ) {
 				p = (NodeProxy) i.next();
-				docName = p.getDocument().getCollection().getName() + '/' + p.getDocument().getFileName();
-				doctype = p.getDocument().getDoctype();
+				docName = p.getDoc().getCollection().getName() + '/' + p.getDoc().getFileName();
+				doctype = p.getDoc().getDoctype();
 				if (map.containsKey(docName)) {
 					counter = (NodeCount) map.get(docName);
 					counter.inc();
 				} else {
-					counter = new NodeCount(p.getDocument());
+					counter = new NodeCount(p.getDoc());
 					map.put(docName, counter);
 				}
 				if (doctype == null)
@@ -1826,13 +1843,13 @@ public class RpcConnection extends Thread {
 			DoctypeCount doctypeCounter;
 			for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext(); ) {
 				p = (NodeProxy) i.next();
-				docName = p.getDocument().getCollection().getName() + '/' + p.getDocument().getFileName();
-				doctype = p.getDocument().getDoctype();
+				docName = p.getDoc().getCollection().getName() + '/' + p.getDoc().getFileName();
+				doctype = p.getDoc().getDoctype();
 				if (map.containsKey(docName)) {
 					counter = (NodeCount) map.get(docName);
 					counter.inc();
 				} else {
-					counter = new NodeCount(p.getDocument());
+					counter = new NodeCount(p.getDoc());
 					map.put(docName, counter);
 				}
 				if (doctype == null)

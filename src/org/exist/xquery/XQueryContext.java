@@ -519,7 +519,7 @@ public class XQueryContext {
 	public Module loadBuiltInModule(String namespaceURI, String moduleClass) {
 		Module module = getModule(namespaceURI);
 		if (module != null) {
-			LOG.debug("module " + namespaceURI + " is already present");
+//			LOG.debug("module " + namespaceURI + " is already present");
 			return module;
 		}
 		try {
