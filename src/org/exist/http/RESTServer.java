@@ -59,6 +59,7 @@ import org.exist.util.LockException;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SAXSerializerPool;
 import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.Pragma;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
@@ -450,9 +451,10 @@ public class RESTServer {
 			else
 			    context = compiled.getContext();
 			context.setStaticallyKnownDocuments(docs);
-
+			
 			if(compiled == null)
 			    compiled = xquery.compile(context, source);
+			checkPragmas(context, outputProperties);
 			try {
 			    long startTime = System.currentTimeMillis();
 			    Sequence resultSequence = xquery.execute(compiled, null);
@@ -468,6 +470,27 @@ public class RESTServer {
 		} catch (IOException e) {
 		    throw new BadRequestException(e.getMessage(), e);
         }
+	}
+	
+	/**
+	 * Check if the XQuery contains pragmas that define serialization settings.
+	 * If yes, copy the corresponding settings to the current set of output properties.
+	 * 
+	 * @param context
+	 */
+	protected void checkPragmas(XQueryContext context, Properties properties) throws XPathException {
+		Pragma pragma = context.getPragma(Pragma.SERIALIZE_QNAME);
+		if(pragma == null)
+			return;
+		String[] contents = pragma.tokenizeContents();
+		for(int i = 0; i < contents.length; i++) {
+			String[] pair = Pragma.parseKeyValuePair(contents[i]);
+			if(pair == null)
+				throw new XPathException("Unknown parameter found in " + pragma.getQName().toString() +
+						": '" + contents[i] + "'");
+			LOG.debug("Setting serialization property from pragma: " + pair[0] + " = " + pair[1]);
+			properties.setProperty(pair[0], pair[1]);
+		}
 	}
 	
 	protected String printCollection(DBBroker broker, Collection collection) {

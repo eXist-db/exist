@@ -158,6 +158,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 			context.setBackwardsCompatibility(xpathCompatible);
 			context.setStaticallyKnownDocuments(docs);
 			setupContext(context);
+			checkPragmas(context);
 			XQuery xquery = broker.getXQueryService();
 			result = xquery.execute(expr, contextSet);
 		} catch (EXistException e) {
@@ -197,6 +198,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 				
 				if(compiled == null)
 				    compiled = xquery.compile(context, source);
+				checkPragmas(context);
 				try {
 				    result = xquery.execute(compiled, null);
 				} finally {
@@ -227,7 +229,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 			XQueryContext context = xquery.newContext();
 			setupContext(context);
 			CompiledXQuery expr = xquery.compile(context, new StringReader(query));
-
+			checkPragmas(context);
 			LOG.debug("compilation took "  +  (System.currentTimeMillis() - start));
 			return expr;
 		} catch (EXistException e) {
@@ -259,7 +261,6 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 			context.declareVariable((String) entry.getKey(), entry.getValue());
 		}
 		context.setBackwardsCompatibility(xpathCompatible);
-		checkPragmas(context);
 	}
 	
 	/**

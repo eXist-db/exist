@@ -63,7 +63,11 @@ public class RESTServiceTest extends TestCase {
 		"<property name=\"indent\" value=\"yes\"/>" +
 		"<property name=\"encoding\" value=\"UTF-8\"/>" +
 		"</properties>" +
-		"<text>//para[. = 'ääüüööÄÄÖÖÜÜ']/text()</text>" +
+		"<text>" +
+		"xquery version \"1.0\";" +
+		"(::pragma exist:serialize indent=no ::)" +
+		"//para[. = 'ääüüööÄÄÖÖÜÜ']/text()" +
+		"</text>" +
 		"</query>";
 	
 	public RESTServiceTest(String name) {
