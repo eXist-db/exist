@@ -22,6 +22,7 @@
  */
 package org.exist.storage;
 
+import it.unimi.dsi.fastUtil.Object2ObjectAVLTreeMap;
 import it.unimi.dsi.fastUtil.Object2ObjectRBTreeMap;
 
 import java.io.EOFException;
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Category;
@@ -57,12 +59,16 @@ import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.TextImpl;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.User;
 import org.exist.storage.analysis.TextToken;
 import org.exist.util.ByteConversion;
 import org.exist.util.Configuration;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.LongLinkedList;
+import org.exist.util.Occurrences;
 import org.exist.util.OrderedLongLinkedList;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.ReadOnlyException;
@@ -368,12 +374,12 @@ public class NativeTextEngine extends TextSearchEngine {
 				}
 			}
 			//( (ArraySet) result[i] ).setIsSorted( true );
-//			LOG.debug(
-//				"found: "
-//					+ result[i].getLength()
-//					+ " in "
-//					+ (System.currentTimeMillis() - start)
-//					+ "ms.");
+			//			LOG.debug(
+			//				"found: "
+			//					+ result[i].getLength()
+			//					+ " in "
+			//					+ (System.currentTimeMillis() - start)
+			//					+ "ms.");
 		}
 		return result;
 	}
@@ -466,6 +472,81 @@ public class NativeTextEngine extends TextSearchEngine {
 					+ "ms.");
 		}
 		return result;
+	}
+
+	public Occurrences[] scanIndexTerms(
+		User user,
+		Collection collection,
+		String start,
+		String end,
+		boolean inclusive) 
+		throws PermissionDeniedException {
+		if(!collection.getPermissions().validate(user, Permission.READ))
+			throw new PermissionDeniedException("permission denied");
+		List collections =
+			inclusive ? collection.getDescendants(user) : new ArrayList();
+		collections.add(collection);
+		final Lock lock = dbWords.getLock();
+		short collectionId;
+		Collection current;
+		IndexQuery query;
+		ArrayList values;
+		Value[] val;
+		String term;
+		Object2ObjectAVLTreeMap map = new Object2ObjectAVLTreeMap();
+		Occurrences oc;
+		VariableByteInputStream is;
+		int docId;
+		int len;
+		for (Iterator i = collections.iterator(); i.hasNext();) {
+			current = (Collection) i.next();
+			collectionId = current.getId();
+			query =
+				new IndexQuery(
+					null,
+					IndexQuery.BW,
+					new WordRef(collectionId, start),
+					new WordRef(collectionId, end));
+			try {
+				lock.acquire(this);
+				lock.enter(this);
+				values = dbWords.findEntries(query);
+				for (Iterator j = values.iterator(); j.hasNext();) {
+					val = (Value[]) j.next();
+					term =
+						new String(
+							val[0].getData(),
+							2,
+							val[0].getLength() - 2,
+							"UTF-8");
+					oc = (Occurrences) map.get(term);
+					if (oc == null) {
+						oc = new Occurrences(term);
+						map.put(term, oc);
+					}
+					is = new VariableByteInputStream(val[1].getData());
+					try {
+						while (is.available() > 0) {
+							docId = is.readInt();
+							len = is.readInt();
+							is.skip(len);
+							oc.addOccurrences(len);
+						}
+					} catch (EOFException e) {
+					}
+				}
+			} catch (LockException e) {
+				LOG.warn("cannot get lock on words", e);
+			} catch (IOException e) {
+				LOG.warn("error while reading words", e);
+			} catch (BTreeException e) {
+				LOG.warn("error while reading words", e);
+			} finally {
+				lock.release(this);
+			}
+		}
+		Occurrences[] result = new Occurrences[map.size()];
+		return (Occurrences[])map.values().toArray(result);
 	}
 
 	/**
@@ -800,7 +881,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		protected DocumentImpl doc = null;
 		protected boolean flushed = false;
 		//protected TreeMap words = new TreeMap();
-        private Object2ObjectRBTreeMap words = new Object2ObjectRBTreeMap();
+		private Object2ObjectRBTreeMap words = new Object2ObjectRBTreeMap();
 		private VariableByteOutputStream os = new VariableByteOutputStream();
 		private WordRef reusableWordRef = new WordRef(512);
 		private long currentSize = 0;
@@ -884,7 +965,7 @@ public class NativeTextEngine extends TextSearchEngine {
 				}
 			}
 			//words = new TreeMap();
-            words.clear();
+			words.clear();
 		}
 
 		public void flush() {
@@ -907,19 +988,14 @@ public class NativeTextEngine extends TextSearchEngine {
 				entry = (Map.Entry) i.next();
 				word = (String) entry.getKey();
 				idList = (LongLinkedList) entry.getValue();
-				//ids = idList.getData();
 				i.remove();
-				//Arrays.sort(ids);
-				//len = ids.length;
 				len = idList.getSize();
 				os.writeInt(doc.getDocId());
 				os.writeInt(len);
 				prevId = 0;
-				//for (int j = 0; j < len; j++) {
 				for (Iterator j = idList.iterator(); j.hasNext();) {
 					id = ((LongLinkedList.ListItem) j.next()).l;
 					delta = id - prevId;
-					//delta = ids[j] - prevId;
 					if (delta < 0) {
 						LOG.debug("neg. delta: " + delta + " for " + word);
 						LOG.debug("id = " + id + "; prev = " + prevId);

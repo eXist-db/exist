@@ -54,10 +54,8 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 		try {
 			broker = pool.get();
 			if (resource == null) {
-				docs =
-					broker.getDocumentsByCollection(
-						user,
-						parent.collection.getName());
+				docs = parent.collection.allDocs(user);
+				System.out.println("searching " + docs.getLength() + " docs.");
 			} else {
 				docs = new DocumentSet();
 				String id = parent.getName() + '/' + resource;
@@ -71,6 +69,7 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 			for (int i = 0; i < modifications.length; i++) {
 				mods += modifications[i].process(docs);
 			}
+			broker.flush();
             broker.sync();
 			return mods;
 		} catch (ParserConfigurationException e) {

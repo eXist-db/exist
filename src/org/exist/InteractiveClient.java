@@ -48,6 +48,7 @@ import java.util.Observable;
 import org.apache.oro.io.GlobFilenameFilter;
 import org.exist.security.Permission;
 import org.exist.security.User;
+import org.exist.util.Occurrences;
 import org.exist.util.XMLFilenameFilter;
 import org.exist.util.DirectoryScanner;
 import org.exist.util.CollectionScanner;
@@ -55,6 +56,7 @@ import org.exist.util.ProgressBar;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.XMLUtil;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.UserManagementService;
 import org.gnu.readline.Readline;
 import org.gnu.readline.ReadlineCompleter;
@@ -809,6 +811,43 @@ public class InteractiveClient {
 					return true;
 				}
 				System.err.println("Resource " + args[3] + " not found.");
+				
+			} else if (args[0].equalsIgnoreCase("elements")) {
+				System.out.println("Element occurrences in collection " +
+					current.getName());
+				System.out.println("--------------------------------------------" +
+					"-----------");
+				IndexQueryService service = (IndexQueryService)
+					current.getService("IndexQueryService", "1.0");
+				Occurrences[] elements = service.getIndexedElements(true);
+				for (int i = 0; i < elements.length; i++) {
+					System.out.println(
+						formatString(elements[i].getTerm(), 
+							Integer.toString(elements[i].getOccurrences()),
+							50)
+					);
+				}
+				return true;
+				
+			} else if (args[0].equalsIgnoreCase("terms")) {
+				if(args.length < 3) {
+					System.out.println("Usage: terms sequence-start sequence-end");
+					return true;
+				}
+				IndexQueryService service = (IndexQueryService)
+					current.getService("IndexQueryService", "1.0");
+				Occurrences[] terms = service.scanIndexTerms(args[1], args[2], true);
+				System.out.println("Element occurrences in collection " +
+					current.getName());
+				System.out.println("--------------------------------------------" +
+					"-----------");
+				for (int i = 0; i < terms.length; i++) {
+					System.out.println(
+						formatString(terms[i].getTerm(),
+							Integer.toString(terms[i].getOccurrences()),
+							50)
+					);
+				}
 			} else if (args[0].equalsIgnoreCase("set")) {
 				if (args.length == 1)
 					properties.list(System.out);
@@ -1655,5 +1694,17 @@ public class InteractiveClient {
 
 			lastObservable = o;
 		}
+	}
+	
+	private static String formatString(String s1, String s2, int width) {
+		StringBuffer buf = new StringBuffer(width);
+		if(s1.length() > width)
+			s1 = s1.substring(0, width - 1);
+		buf.append(s1);
+		int fill = width - (s1.length() + s2.length());
+		for(int i = 0; i < fill; i++)
+			buf.append(' ');
+		buf.append(s2);
+		return buf.toString();
 	}
 }

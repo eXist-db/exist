@@ -29,6 +29,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.TreeMap;
 import org.apache.log4j.Category;
 import org.exist.security.Permission;
@@ -40,350 +41,399 @@ import org.exist.util.VariableByteOutputStream;
 
 public class Collection implements Comparable {
 
-    protected static Category LOG =
-        Category.getInstance(Collection.class.getName());
-    private DBBroker broker;
+	protected static Category LOG =
+		Category.getInstance(Collection.class.getName());
+	private DBBroker broker;
 
-    private short collectionId = -1;
-    private TreeMap documents = new TreeMap();
-    private String name;
-    private Permission permissions = new Permission(0755);
-    private ArrayList subcollections = new ArrayList();
+	private short collectionId = -1;
+	private TreeMap documents = new TreeMap();
+	private String name;
+	private Permission permissions = new Permission(0755);
+	private ArrayList subcollections = new ArrayList();
 
-    public Collection(DBBroker broker) {
-        this.broker = broker;
-    }
+	public Collection(DBBroker broker) {
+		this.broker = broker;
+	}
 
-    public Collection(DBBroker broker, String name) {
-        this(broker);
-        this.name = name;
-    }
+	public Collection(DBBroker broker, String name) {
+		this(broker);
+		this.name = name;
+	}
 
-    /**
-     *  Adds a feature to the Collection attribute of the Collection object
-     *
-     *@param  name  The feature to be added to the Collection attribute
-     */
-    public void addCollection(String name) {
-        if (!subcollections.contains(name))
-            subcollections.add(name);
+	/**
+	 *  Adds a feature to the Collection attribute of the Collection object
+	 *
+	 *@param  name  The feature to be added to the Collection attribute
+	 */
+	public void addCollection(String name) {
+		if (!subcollections.contains(name))
+			subcollections.add(name);
 
-    }
+	}
 
-    /**
-     *  Adds a feature to the Document attribute of the Collection object
-     *
-     *@param  doc  The feature to be added to the Document attribute
-     */
-    public void addDocument(DocumentImpl doc) {
-        addDocument(new User("admin", null, "dba"), doc);
-    }
+	/**
+	 *  Adds a feature to the Document attribute of the Collection object
+	 *
+	 *@param  doc  The feature to be added to the Document attribute
+	 */
+	public void addDocument(DocumentImpl doc) {
+		addDocument(new User("admin", null, "dba"), doc);
+	}
 
-    /**
-     *  Adds a feature to the Document attribute of the Collection object
-     *
-     *@param  user  The feature to be added to the Document attribute
-     *@param  doc   The feature to be added to the Document attribute
-     */
-    public void addDocument(User user, DocumentImpl doc) {
-        if (doc.getDocId() < 0)
-            doc.setDocId(broker.getNextDocId(this));
-        documents.put(doc.getFileName(), doc);
-    }
+	/**
+	 *  Adds a feature to the Document attribute of the Collection object
+	 *
+	 *@param  user  The feature to be added to the Document attribute
+	 *@param  doc   The feature to be added to the Document attribute
+	 */
+	public void addDocument(User user, DocumentImpl doc) {
+		if (doc.getDocId() < 0)
+			doc.setDocId(broker.getNextDocId(this));
+		documents.put(doc.getFileName(), doc);
+	}
 
-    /**
-     *  Description of the Method
-     *
-     *@return    Description of the Return Value
-     */
-    public Iterator collectionIterator() {
-        return subcollections.iterator();
-    }
+	/**
+	 *  Description of the Method
+	 *
+	 *@return    Description of the Return Value
+	 */
+	public Iterator collectionIterator() {
+		return subcollections.iterator();
+	}
 
-    /**
-     *  Description of the Method
-     *
-     *@param  obj  Description of the Parameter
-     *@return      Description of the Return Value
-     */
-    public int compareTo(Object obj) {
-        Collection other = (Collection) obj;
-        if (collectionId == other.collectionId)
-            return 0;
-        else if (collectionId < other.collectionId)
-            return -1;
-        else
-            return 1;
-    }
+	/**
+	 * Load all collections being descendants of this collections
+	 * and return them in a List.
+	 * 
+	 * @return List
+	 */
+	public List getDescendants(User user) {
+		final ArrayList cl = new ArrayList(subcollections.size());
+		Collection child;
+		String childName;
+		for (Iterator i = subcollections.iterator(); i.hasNext();) {
+			childName = (String) i.next();
+			child = broker.getCollection(name + '/' + childName);
+			if (permissions.validate(user, Permission.READ)) {
+				cl.add(child);
+				if (child.getChildCollectionCount() > 0)
+					cl.addAll(child.getDescendants(user));
+			}
+		}
+		return cl;
+	}
 
-    public boolean equals(Object obj) {
-        if (!(obj instanceof Collection))
-            return false;
-        return ((Collection) obj).collectionId == collectionId;
-    }
+	public DocumentSet allDocs(User user) {
+		DocumentSet docs = new DocumentSet();
+		getDocuments(docs);
+		allDocs(user, docs);
+		return docs;
+	}
+	
+	private DocumentSet allDocs(User user, DocumentSet docs) {
+		Collection child;
+		String childName;
+		for (Iterator i = subcollections.iterator(); i.hasNext();) {
+			childName = (String) i.next();
+			child = broker.getCollection(name + '/' + childName);
+			if (permissions.validate(user, Permission.READ)) {
+				child.getDocuments(docs);
+				if (child.getChildCollectionCount() > 0)
+					child.allDocs(user, docs);
+			}
+		}
+		return docs;
+	}
+	
+	public void getDocuments(DocumentSet set) {
+		for(Iterator i = documents.values().iterator(); i.hasNext(); )
+			set.add((DocumentImpl)i.next());
+	}
+	
+	/**
+	 *  Description of the Method
+	 *
+	 *@param  obj  Description of the Parameter
+	 *@return      Description of the Return Value
+	 */
+	public int compareTo(Object obj) {
+		Collection other = (Collection) obj;
+		if (collectionId == other.collectionId)
+			return 0;
+		else if (collectionId < other.collectionId)
+			return -1;
+		else
+			return 1;
+	}
 
-    /**
-     *  Gets the childCollectionCount attribute of the Collection object
-     *
-     *@return    The childCollectionCount value
-     */
-    public int getChildCollectionCount() {
-        return subcollections.size();
-    }
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Collection))
+			return false;
+		return ((Collection) obj).collectionId == collectionId;
+	}
 
-    /**
-     *  Gets the document attribute of the Collection object
-     *
-     *@param  name  Description of the Parameter
-     *@return       The document value
-     */
-    public DocumentImpl getDocument(String name) {
-        return (DocumentImpl) documents.get(name);
-    }
+	/**
+	 *  Gets the childCollectionCount attribute of the Collection object
+	 *
+	 *@return    The childCollectionCount value
+	 */
+	public int getChildCollectionCount() {
+		return subcollections.size();
+	}
 
-    /**
-     *  Gets the documentCount attribute of the Collection object
-     *
-     *@return    The documentCount value
-     */
-    public int getDocumentCount() {
-        return documents.size();
-    }
+	/**
+	 *  Gets the document attribute of the Collection object
+	 *
+	 *@param  name  Description of the Parameter
+	 *@return       The document value
+	 */
+	public DocumentImpl getDocument(String name) {
+		return (DocumentImpl) documents.get(name);
+	}
 
-    /**
-     *  Gets the id attribute of the Collection object
-     *
-     *@return    The id value
-     */
-    public short getId() {
-        return collectionId;
-    }
+	/**
+	 *  Gets the documentCount attribute of the Collection object
+	 *
+	 *@return    The documentCount value
+	 */
+	public int getDocumentCount() {
+		return documents.size();
+	}
 
-    /**
-     *  Gets the name attribute of the Collection object
-     *
-     *@return    The name value
-     */
-    public String getName() {
-        return name;
-    }
+	/**
+	 *  Gets the id attribute of the Collection object
+	 *
+	 *@return    The id value
+	 */
+	public short getId() {
+		return collectionId;
+	}
 
-    /**
-     *  Gets the parent attribute of the Collection object
-     *
-     *@return    The parent value
-     */
-    public Collection getParent() {
-        if (name.equals("/db"))
-            return null;
-        String parent =
-            (name.lastIndexOf("/") < 1
-                ? "/"
-                : name.substring(0, name.lastIndexOf("/")));
-        return broker.getCollection(parent);
-    }
+	/**
+	 *  Gets the name attribute of the Collection object
+	 *
+	 *@return    The name value
+	 */
+	public String getName() {
+		return name;
+	}
 
-    /**
-     *  Gets the permissions attribute of the Collection object
-     *
-     *@return    The permissions value
-     */
-    public Permission getPermissions() {
-        return permissions;
-    }
+	/**
+	 *  Gets the parent attribute of the Collection object
+	 *
+	 *@return    The parent value
+	 */
+	public Collection getParent() {
+		if (name.equals("/db"))
+			return null;
+		String parent =
+			(name.lastIndexOf("/") < 1
+				? "/"
+				: name.substring(0, name.lastIndexOf("/")));
+		return broker.getCollection(parent);
+	}
 
-    /**
-     *  Gets the symbols attribute of the Collection object
-     *
-     *@return    The symbols value
-     */
-    public SymbolTable getSymbols() {
-        return null;
-    }
+	/**
+	 *  Gets the permissions attribute of the Collection object
+	 *
+	 *@return    The permissions value
+	 */
+	public Permission getPermissions() {
+		return permissions;
+	}
 
-    /**
-     *  Description of the Method
-     *
-     *@param  name  Description of the Parameter
-     *@return       Description of the Return Value
-     */
-    public boolean hasDocument(String name) {
-        return documents.containsKey(name);
-    }
+	/**
+	 *  Gets the symbols attribute of the Collection object
+	 *
+	 *@return    The symbols value
+	 */
+	public SymbolTable getSymbols() {
+		return null;
+	}
 
-    /**
-     *  Description of the Method
-     *
-     *@param  name  Description of the Parameter
-     *@return       Description of the Return Value
-     */
-    public boolean hasSubcollection(String name) {
-        return subcollections.contains(name);
-    }
+	/**
+	 *  Description of the Method
+	 *
+	 *@param  name  Description of the Parameter
+	 *@return       Description of the Return Value
+	 */
+	public boolean hasDocument(String name) {
+		return documents.containsKey(name);
+	}
 
-    /**
-     *  Description of the Method
-     *
-     *@return    Description of the Return Value
-     */
-    public Iterator iterator() {
-        return documents.values().iterator();
-    }
+	/**
+	 *  Description of the Method
+	 *
+	 *@param  name  Description of the Parameter
+	 *@return       Description of the Return Value
+	 */
+	public boolean hasSubcollection(String name) {
+		return subcollections.contains(name);
+	}
 
-    /**
-     *  Description of the Method
-     *
-     *@param  istream          Description of the Parameter
-     *@exception  IOException  Description of the Exception
-     */
-    public void read(DataInput istream) throws IOException {
-        collectionId = istream.readShort();
-        name = istream.readUTF();
-        int collLen = istream.readInt();
-        for (int i = 0; i < collLen; i++)
-            subcollections.add(istream.readUTF());
-        permissions.read(istream);
-        DocumentImpl doc;
-        try {
-            while (true) {
-                doc = new DocumentImpl(broker, this);
-                doc.read(istream);
-                addDocument(doc);
-            }
-        } catch (EOFException e) {
-        }
-    }
+	/**
+	 *  Description of the Method
+	 *
+	 *@return    Description of the Return Value
+	 */
+	public Iterator iterator() {
+		return documents.values().iterator();
+	}
 
-    public void read(VariableByteInputStream istream) throws IOException {
-        collectionId = istream.readShort();
-        name = istream.readUTF();
-        final int collLen = istream.readInt();
-        for (int i = 0; i < collLen; i++) {
-            final String sub = istream.readUTF();
-            subcollections.add(sub);
-        }
-        permissions.read(istream);
-        try {
-            while (true) {
-                final DocumentImpl doc = new DocumentImpl(broker, this);
-                doc.read(istream);
-                addDocument(doc);
-            }
-        } catch (EOFException e) {
-        }
-    }
+	/**
+	 *  Description of the Method
+	 *
+	 *@param  istream          Description of the Parameter
+	 *@exception  IOException  Description of the Exception
+	 */
+	public void read(DataInput istream) throws IOException {
+		collectionId = istream.readShort();
+		name = istream.readUTF();
+		int collLen = istream.readInt();
+		for (int i = 0; i < collLen; i++)
+			subcollections.add(istream.readUTF());
+		permissions.read(istream);
+		DocumentImpl doc;
+		try {
+			while (true) {
+				doc = new DocumentImpl(broker, this);
+				doc.read(istream);
+				addDocument(doc);
+			}
+		} catch (EOFException e) {
+		}
+	}
 
-    /**
-     *  Description of the Method
-     *
-     *@param  name  Description of the Parameter
-     */
-    public void removeCollection(String name) {
-        subcollections.remove(subcollections.indexOf(name));
-    }
+	public void read(VariableByteInputStream istream) throws IOException {
+		collectionId = istream.readShort();
+		name = istream.readUTF();
+		final int collLen = istream.readInt();
+		for (int i = 0; i < collLen; i++) {
+			final String sub = istream.readUTF();
+			subcollections.add(sub);
+		}
+		permissions.read(istream);
+		try {
+			while (true) {
+				final DocumentImpl doc = new DocumentImpl(broker, this);
+				doc.read(istream);
+				addDocument(doc);
+			}
+		} catch (EOFException e) {
+		}
+	}
 
-    /**
-     *  Description of the Method
-     *
-     *@param  name  Description of the Parameter
-     */
-    public void removeDocument(String name) {
-        DocumentImpl doc = (DocumentImpl) documents.remove(name);
-        if (doc == null) {
-            LOG.debug("could not remove document " + name);
-            return;
-        }
-    }
+	/**
+	 *  Description of the Method
+	 *
+	 *@param  name  Description of the Parameter
+	 */
+	public void removeCollection(String name) {
+		subcollections.remove(subcollections.indexOf(name));
+	}
 
-    /**
-     *  Description of the Method
-     *
-     *@param  oldName  Description of the Parameter
-     *@param  newName  Description of the Parameter
-     *@return          Description of the Return Value
-     */
-    public boolean renameDocument(String oldName, String newName) {
-        DocumentImpl doc = getDocument(oldName);
-        if (doc == null) {      
-            LOG.debug("document " + oldName + " not found");
-            return false;
-        }
-        doc.setFileName(newName);
-        documents.remove(oldName);
-        documents.put(newName, doc);
-        return true;
-    }
+	/**
+	 *  Description of the Method
+	 *
+	 *@param  name  Description of the Parameter
+	 */
+	public void removeDocument(String name) {
+		DocumentImpl doc = (DocumentImpl) documents.remove(name);
+		if (doc == null) {
+			LOG.debug("could not remove document " + name);
+			return;
+		}
+	}
 
-    /**
-     *  Sets the id attribute of the Collection object
-     *
-     *@param  id  The new id value
-     */
-    public void setId(short id) {
-        this.collectionId = id;
-    }
+	/**
+	 *  Description of the Method
+	 *
+	 *@param  oldName  Description of the Parameter
+	 *@param  newName  Description of the Parameter
+	 *@return          Description of the Return Value
+	 */
+	public boolean renameDocument(String oldName, String newName) {
+		DocumentImpl doc = getDocument(oldName);
+		if (doc == null) {
+			LOG.debug("document " + oldName + " not found");
+			return false;
+		}
+		doc.setFileName(newName);
+		documents.remove(oldName);
+		documents.put(newName, doc);
+		return true;
+	}
 
-    /**
-     *  Sets the name attribute of the Collection object
-     *
-     *@param  name  The new name value
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
+	/**
+	 *  Sets the id attribute of the Collection object
+	 *
+	 *@param  id  The new id value
+	 */
+	public void setId(short id) {
+		this.collectionId = id;
+	}
 
-    /**
-     *  Sets the permissions attribute of the Collection object
-     *
-     *@param  mode  The new permissions value
-     */
-    public void setPermissions(int mode) {
-        permissions.setPermissions(mode);
-    }
+	/**
+	 *  Sets the name attribute of the Collection object
+	 *
+	 *@param  name  The new name value
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    /**
-     *  Sets the permissions attribute of the Collection object
-     *
-     *@param  mode                 The new permissions value
-     *@exception  SyntaxException  Description of the Exception
-     */
-    public void setPermissions(String mode) throws SyntaxException {
-        permissions.setPermissions(mode);
-    }
+	/**
+	 *  Sets the permissions attribute of the Collection object
+	 *
+	 *@param  mode  The new permissions value
+	 */
+	public void setPermissions(int mode) {
+		permissions.setPermissions(mode);
+	}
 
-    /**
-     *  Description of the Method
-     *
-     *@param  ostream          Description of the Parameter
-     *@exception  IOException  Description of the Exception
-     */
-    public void write(DataOutput ostream) throws IOException {
-        ostream.writeShort(collectionId);
-        ostream.writeUTF(name);
-        ostream.writeInt(subcollections.size());
-        for (Iterator i = collectionIterator(); i.hasNext();)
-            ostream.writeUTF((String) i.next());
+	/**
+	 *  Sets the permissions attribute of the Collection object
+	 *
+	 *@param  mode                 The new permissions value
+	 *@exception  SyntaxException  Description of the Exception
+	 */
+	public void setPermissions(String mode) throws SyntaxException {
+		permissions.setPermissions(mode);
+	}
 
-        //        symbols.write(ostream);
-        permissions.write(ostream);
-        ostream.writeInt(documents.size());
-        DocumentImpl doc;
-        for (Iterator i = iterator(); i.hasNext();) {
-            doc = (DocumentImpl) i.next();
-            doc.write(ostream);
-        }
-    }
+	/**
+	 *  Description of the Method
+	 *
+	 *@param  ostream          Description of the Parameter
+	 *@exception  IOException  Description of the Exception
+	 */
+	public void write(DataOutput ostream) throws IOException {
+		ostream.writeShort(collectionId);
+		ostream.writeUTF(name);
+		ostream.writeInt(subcollections.size());
+		for (Iterator i = collectionIterator(); i.hasNext();)
+			ostream.writeUTF((String) i.next());
 
-    public void write(VariableByteOutputStream ostream) throws IOException {
-        ostream.writeShort(collectionId);
-        ostream.writeUTF(name);
-        ostream.writeInt(subcollections.size());
-        for (Iterator i = collectionIterator(); i.hasNext();)
-            ostream.writeUTF((String) i.next());
-        permissions.write(ostream);
-        for (Iterator i = iterator(); i.hasNext();) {
-            final DocumentImpl doc = (DocumentImpl) i.next();
-            doc.write(ostream);
-        }
-    }
+		//        symbols.write(ostream);
+		permissions.write(ostream);
+		ostream.writeInt(documents.size());
+		DocumentImpl doc;
+		for (Iterator i = iterator(); i.hasNext();) {
+			doc = (DocumentImpl) i.next();
+			doc.write(ostream);
+		}
+	}
+
+	public void write(VariableByteOutputStream ostream) throws IOException {
+		ostream.writeShort(collectionId);
+		ostream.writeUTF(name);
+		ostream.writeInt(subcollections.size());
+		for (Iterator i = collectionIterator(); i.hasNext();)
+			ostream.writeUTF((String) i.next());
+		permissions.write(ostream);
+		for (Iterator i = iterator(); i.hasNext();) {
+			final DocumentImpl doc = (DocumentImpl) i.next();
+			doc.write(ostream);
+		}
+	}
 }

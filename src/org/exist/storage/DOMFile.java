@@ -246,7 +246,6 @@ public class DOMFile extends BTree implements Lockable {
 		if (rec.offset < dataLen) {
 			if (dataLen + value.length + 4 < fileHeader.getWorkSize()) {
 				int end = rec.offset + value.length + 4;
-				LOG.debug(rec.page.getPageNum() + " moving data to " + end);
 				System.arraycopy(
 					rec.page.data,
 					rec.offset,
@@ -257,11 +256,6 @@ public class DOMFile extends BTree implements Lockable {
 				rec.page.getPageHeader().setDataLength(rec.page.len);
 			} else {
 				// split the page
-				LOG.debug(
-					"splitting page "
-						+ rec.page.getPageNum()
-						+ " at "
-						+ rec.offset);
 				DOMPage splitPage = new DOMPage();
 				splitPage.len = dataLen - rec.offset;
 				System.arraycopy(
@@ -299,7 +293,6 @@ public class DOMFile extends BTree implements Lockable {
 			// append at the end of the page
 			// does value fit into page?
 			DOMPage newPage = new DOMPage();
-			LOG.debug("appending to new page " + newPage.getPageNum());
 			newPage.getPageHeader().setNextDataPage(
 				rec.page.getPageHeader().getNextDataPage());
 			rec.page.getPageHeader().setNextDataPage(newPage.getPageNum());
@@ -316,14 +309,6 @@ public class DOMFile extends BTree implements Lockable {
 
 		// write the data
 		short tid = rec.page.getPageHeader().getNextTID();
-		LOG.debug(
-			"writing tid "
-				+ 
-				+ tid
-				+ " to page "
-				+ rec.page.getPageNum()
-				+ " at "
-				+ rec.offset);
 		ByteConversion.shortToByte((short) tid, rec.page.data, rec.offset);
 		rec.offset += 2;
 		ByteConversion.shortToByte(
@@ -507,6 +492,7 @@ public class DOMFile extends BTree implements Lockable {
 			// first try to find the node in the index
 			return findValue(nodeRef);
 		} catch (BTreeException e) {
+			LOG.debug("node " + node.gid + " not found, trying parent.");
 			// node not found in index: try to find the nearest available
 			// ancestor and traverse it
 			long id = node.getGID();
@@ -824,8 +810,7 @@ public class DOMFile extends BTree implements Lockable {
 	public void remove(Value key) {
 		try {
 			long p = findValue(key);
-			remove(p);
-			removeValue(key);
+			remove(key, p);
 		} catch (BTreeException bte) {
 			LOG.debug(bte);
 		} catch (IOException ioe) {
@@ -838,7 +823,7 @@ public class DOMFile extends BTree implements Lockable {
 	 *
 	 *@param  p  Description of the Parameter
 	 */
-	public void remove(long p) {
+	public void remove(Value key, long p) {
 		RecordPos rec = findValuePosition(p);
 		LOG.debug(
 			"removing tid "
@@ -883,6 +868,15 @@ public class DOMFile extends BTree implements Lockable {
 			rec.page = null;
 		} else
 			buffer.add(rec.page);
+		try {
+			removeValue(key);
+		} catch (BTreeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**

@@ -239,16 +239,18 @@ public class XMLUtil {
 	 *@return      The firstChildId value
 	 */
 	public final static long getFirstChildId(DocumentImpl doc, long gid) {
-		int level = doc.getTreeLevel(gid);
+		final int level = doc.getTreeLevel(gid);
 		if (level < 0)
 			throw new RuntimeException("child index out of bounds");
-		//        System.out.println("level = " + level + "max = " +
-		//        	doc.getMaxDepth());
-		//        System.out.println("(" + gid + " - " + doc.getLevelStartPoint( level ) +
-		//        	") * " + doc.getTreeLevelOrder( level + 1 ) + " + " +
-		//        	doc.getLevelStartPoint( level + 1 ));
+		final int order = doc.getTreeLevelOrder(level + 1);
+		if(order < 0) {
+			System.err.println("level " + (level + 1) + " out of bounds: " +
+				gid + "; start = " + doc.getLevelStartPoint(level));
+			Thread.dumpStack();
+		}
+			
 		return (gid - doc.getLevelStartPoint(level))
-			* doc.getTreeLevelOrder(level + 1)
+			* order
 			+ doc.getLevelStartPoint(level + 1);
 	}
 

@@ -1,18 +1,18 @@
 package org.exist.xupdate;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.dom.NodeImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.util.XMLUtil;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -37,34 +37,33 @@ public class Append extends Modification {
 	public long process(DocumentSet docs)
 		throws PermissionDeniedException, EXistException {
 		System.out.println(XMLUtil.dump(content));
-		NodeSet qr = select(docs);
-		LOG.debug("select found " + qr.getLength() + " nodes for append");
-		NodeProxy proxy;
-		Node node;
+		ArrayList qr = select(docs);
+		LOG.debug("select found " + qr.size() + " nodes for append");
+		IndexListener listener = new IndexListener(qr);
+		NodeImpl node;
+		DocumentImpl doc, prevDoc = null;
 		NodeList children = content.getChildNodes();
 		int len = children.getLength();
 		LOG.debug("found " + len + " nodes to append");
 		for (Iterator i = qr.iterator(); i.hasNext();) {
-			proxy = (NodeProxy) i.next();
-			if (!proxy
-				.doc
-				.getCollection()
-				.getPermissions()
+			node = (NodeImpl) i.next();
+			doc = (DocumentImpl)node.getOwnerDocument();
+			doc.setIndexListener(listener);
+			if (!doc.getCollection().getPermissions()
 				.validate(user, Permission.UPDATE))
 				throw new PermissionDeniedException(
 					"write access to collection denied; user="
 						+ user.getName());
-			if (!proxy.doc.getPermissions().validate(user, Permission.UPDATE))
+			if (!doc.getPermissions().validate(user, Permission.UPDATE))
 				throw new PermissionDeniedException("permission to remove document denied");
-			node = proxy.getNode();
-			for (int j = 0; j < len; j++)
-				node.appendChild(children.item(j));
+			node.appendChildren(children);
+			doc.clearIndexListener();
+			prevDoc = doc;
 		}
-		return qr.getLength();
+		return qr.size();
 	}
 
 	public String getName() {
 		return "append";
 	}
-
 }

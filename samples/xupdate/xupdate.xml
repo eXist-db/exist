@@ -6,24 +6,23 @@
 			<fname>Joschka</fname>
 			<lname>Fischer</lname>
 			<city>Berlin</city>
-			<email type="work">joschka@aa.de</email>
 		</xu:element>
 	</xu:append>
 
-	<!-- append work phone to the address of Mr. Hyde -->
-	<xu:append select="//address[lname = 'Hyde']">
-		<xu:element name="phone">
+	<!-- append work phone to each address -->
+	<xu:insert-after select="//address/city">
+		<xu:element name="email">
 			<xu:attribute name="type">work</xu:attribute>
-			<xu:text>(+49) 76574 3343</xu:text>
+			<xu:text>common@web.de</xu:text>
 		</xu:element>
-	</xu:append>
+	</xu:insert-after>
 
 	<!-- add home email to addresses containing london. Insert the
 	new email after an existing email -->
-	<xu:insert-before select="//address[. &amp;= 'london']/email">
+	<!--xu:insert-before select="//address[. &amp;= 'london']/email">
 		<xu:element name="email">
 			<xu:attribute name="type">home</xu:attribute>
 			hyde@nowhere.com
 		</xu:element>
-	</xu:insert-before>
+	</xu:insert-before-->
 </xu:modifications>

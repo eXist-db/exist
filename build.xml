@@ -45,13 +45,13 @@
 		</fileset>
 	</path>
 	
-    <taskdef name="java2wsdl" classname="org.apache.axis.tools.ant.wsdl.Java2WsdlAntTask">
+    <!--taskdef name="java2wsdl" classname="org.apache.axis.tools.ant.wsdl.Java2WsdlAntTask">
         <classpath refid="classpath.core"/>
     </taskdef>
     
     <taskdef name="wsdl2java" classname="org.apache.axis.tools.ant.wsdl.Wsdl2javaAntTask">
         <classpath refid="classpath.core"/>
-    </taskdef>
+    </taskdef-->
     
     <path id="antlr">
         <pathelement path="${antlr-home}"/>

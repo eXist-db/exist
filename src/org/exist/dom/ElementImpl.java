@@ -186,7 +186,9 @@ public class ElementImpl extends NodeImpl implements Element {
 
 	private NodeImpl getLastNode(NodeImpl node) {
 		if (node.getNodeType() == Node.ELEMENT_NODE)
-			return getLastNode((NodeImpl) node.getLastChild());
+			return node.getChildCount() == 0
+				? node
+				: getLastNode((NodeImpl) node.getLastChild());
 		else
 			return node;
 	}
@@ -195,21 +197,69 @@ public class ElementImpl extends NodeImpl implements Element {
 	 * @see org.w3c.dom.Node#appendChild(org.w3c.dom.Node)
 	 */
 	public Node appendChild(Node child) throws DOMException {
-		NodeImpl previous;
-		if (children == 0)
-			previous = this;
-		else
-			previous = getLastNode(this);
 		DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
-		Node node = appendChild(previous, child);
+		Node node = null;
+		if (children == 0)
+			node = appendChild(firstChildID(), this, child);
+		else {
+			long last = lastChildID();
+			node =
+				appendChild(
+					last + 1,
+					(NodeImpl) ownerDocument.getNode(last),
+					child);
+		}
 		ownerDocument.broker.update(this);
 		ownerDocument.broker.reindex(prevDoc, ownerDocument);
 		try {
 			ownerDocument.broker.saveCollection(ownerDocument.getCollection());
 		} catch (PermissionDeniedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		ownerDocument.broker.flush();
 		return child;
+	}
+
+	private void checkTree(int size) {
+		// check if the tree structure needs to be changed
+		int level = ownerDocument.getTreeLevel(gid);
+		if (level + 1 > ownerDocument.getMaxDepth()) {
+			ownerDocument.incMaxDepth();
+			System.out.println(
+				"setting maxDepth = " + ownerDocument.getMaxDepth());
+		}
+		children += size;
+		if (ownerDocument.getTreeLevelOrder(level + 1) < children) {
+			// recompute the order of the tree
+			ownerDocument.setTreeLevelOrder(level + 1, children);
+			ownerDocument.calculateTreeLevelStartPoints();
+			if (ownerDocument.reindex < 0 || ownerDocument.reindex > level + 1)
+				ownerDocument.reindex = level + 1;
+		}
+	}
+
+	public Node appendChildren(NodeList nodes) throws DOMException {
+		DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
+		Node node = null;
+		if (children == 0)
+			node = appendChildren(firstChildID(), this, nodes);
+		else {
+			long last = lastChildID();
+			node =
+				appendChildren(
+					last + 1,
+					getLastNode((NodeImpl) ownerDocument.getNode(last)),
+					nodes);
+		}
+		ownerDocument.broker.update(this);
+		ownerDocument.broker.reindex(prevDoc, ownerDocument);
+		try {
+			ownerDocument.broker.saveCollection(ownerDocument.getCollection());
+		} catch (PermissionDeniedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return node;
 	}
 
 	/**
@@ -220,64 +270,67 @@ public class ElementImpl extends NodeImpl implements Element {
 	 * @return Node
 	 * @throws DOMException
 	 */
-	public Node appendChild(NodeImpl last, Node child) throws DOMException {
-		// check if the tree structure needs to be changed
-		int level = ownerDocument.getTreeLevel(gid);
-		if (level + 1 >= ownerDocument.getMaxDepth()) {
-			ownerDocument.incMaxDepth();
-			System.out.println(
-				"setting maxDepth = " + ownerDocument.getMaxDepth());
+	private Node appendChildren(long gid, NodeImpl last, NodeList nodes)
+		throws DOMException {
+		checkTree(nodes.getLength());
+		for (int i = 0; i < nodes.getLength(); i++) {
+			final Node child = nodes.item(i);
+			last = (NodeImpl) appendChild(gid + i, last, child);
 		}
-		if (ownerDocument.getTreeLevelOrder(level + 1) < ++children) {
-			// recompute the order of the tree
-			ownerDocument.setTreeLevelOrder(level + 1, children);
-			ownerDocument.calculateTreeLevelStartPoints();
-			if (ownerDocument.reindex < 0 || ownerDocument.reindex > level + 1)
-				ownerDocument.reindex = level + 1;
-		}
+		return last;
+	}
+
+	private Node appendChild(long gid, NodeImpl last, Node child)
+		throws DOMException {
 		switch (child.getNodeType()) {
 			case Node.ELEMENT_NODE :
-				ElementImpl elem =
+				final ElementImpl elem =
 					new ElementImpl(((Element) child).getTagName());
-				elem.setGID(lastChildID());
+				elem.setGID(gid);
 				elem.setOwnerDocument(ownerDocument);
-				NodeList ch = child.getChildNodes();
-				NamedNodeMap attribs = child.getAttributes();
-				elem.setChildCount(ch.getLength() + attribs.getLength());
+				final NodeListImpl ch = new NodeListImpl();
+				final NamedNodeMap attribs = child.getAttributes();
+				for (int i = 0; i < attribs.getLength(); i++)
+					ch.add(attribs.item(i));
+				ch.addAll(child.getChildNodes());
+				elem.setChildCount(ch.getLength());
+				// insert the node
 				ownerDocument.broker.insertAfter(last, elem);
+				// index now?
 				if (ownerDocument.reindex < 0)
 					ownerDocument.broker.index(elem);
 				elem.setChildCount(0);
-				last = elem;
-				Node temp;
-				for (int i = 0; i < attribs.getLength(); i++) {
-					temp = attribs.item(i);
-					last = (NodeImpl) elem.appendChild(last, temp);
-				}
-				for (int i = 0; i < ch.getLength(); i++) {
-					temp = ch.item(i);
-					last = (NodeImpl) elem.appendChild(last, temp);
-				}
+				// process child nodes
+				last =
+					(NodeImpl) elem.appendChildren(
+						elem.firstChildID(),
+						elem,
+						ch);
 				return last;
 			case Node.TEXT_NODE :
-				TextImpl text = new TextImpl(((Text) child).getData());
-				text.setGID(lastChildID());
+				final TextImpl text = new TextImpl(((Text) child).getData());
+				text.setGID(gid);
 				text.setOwnerDocument(ownerDocument);
+				// insert the node
 				ownerDocument.broker.insertAfter(last, text);
 				if (ownerDocument.reindex < 0)
 					ownerDocument.broker.index(text);
 				return text;
 			case Node.ATTRIBUTE_NODE :
-				Attr attr = (Attr) child;
-				AttrImpl attrib = new AttrImpl(attr.getName(), attr.getValue());
-				attrib.setGID(lastChildID());
+				final Attr attr = (Attr) child;
+				final AttrImpl attrib =
+					new AttrImpl(attr.getName(), attr.getValue());
+				attrib.setGID(gid);
 				attrib.setOwnerDocument(ownerDocument);
+				// insert the node
 				ownerDocument.broker.insertAfter(last, attrib);
+				// index now?
 				if (ownerDocument.reindex < 0)
 					ownerDocument.broker.index(attrib);
 				return attrib;
+			default :
+				return null;
 		}
-		return null;
 	}
 
 	/**
@@ -929,10 +982,10 @@ public class ElementImpl extends NodeImpl implements Element {
 				"reference node is not a child of the selected node");
 		Node result;
 		if (ref.gid == first)
-			result = appendChild(this, newChild);
+			result = appendChild(first, this, newChild);
 		else {
 			NodeImpl prev = (NodeImpl) ref.getPreviousSibling();
-			result = appendChild(getLastNode(prev), newChild);
+			result = appendChild(ref.gid, getLastNode(prev), newChild);
 		}
 		ownerDocument.broker.update(this);
 		ownerDocument.broker.reindex(prevDoc, ownerDocument);
@@ -940,32 +993,67 @@ public class ElementImpl extends NodeImpl implements Element {
 			ownerDocument.broker.saveCollection(ownerDocument.getCollection());
 		} catch (PermissionDeniedException e) {
 		}
-		ownerDocument.broker.flush();
 		return result;
 	}
 
-	public Node insertAfter(Node newChild, Node refChild) throws DOMException {
+	public Node insertBefore(NodeList nodes, Node refChild)
+		throws DOMException {
 		if (!(refChild instanceof NodeImpl))
 			throw new DOMException(
 				DOMException.WRONG_DOCUMENT_ERR,
 				"wrong node type");
 		DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
 		if (refChild == null)
-			return appendChild(newChild);
+			return appendChildren(nodes);
 		NodeImpl ref = (NodeImpl) refChild;
 		long first = firstChildID();
 		if (ref.gid < first || ref.gid > ref.gid + children - 1)
 			throw new DOMException(
 				DOMException.HIERARCHY_REQUEST_ERR,
 				"reference node is not a child of the selected node");
-		Node result = appendChild(getLastNode(ref), newChild);
+		Node result;
+		if (ref.gid == first)
+			result = appendChildren(first, this, nodes);
+		else {
+			NodeImpl prev = (NodeImpl) ref.getPreviousSibling();
+			result = appendChildren(ref.gid, getLastNode(prev), nodes);
+		}
 		ownerDocument.broker.update(this);
 		ownerDocument.broker.reindex(prevDoc, ownerDocument);
 		try {
 			ownerDocument.broker.saveCollection(ownerDocument.getCollection());
 		} catch (PermissionDeniedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		ownerDocument.broker.flush();
+		return result;
+	}
+
+	public Node insertAfter(NodeList nodes, Node refChild)
+		throws DOMException {
+		if (!(refChild instanceof NodeImpl))
+			throw new DOMException(
+				DOMException.WRONG_DOCUMENT_ERR,
+				"wrong node type");
+		final DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
+		if (refChild == null)
+			return appendChildren(nodes);
+		final NodeImpl ref = (NodeImpl) refChild;
+		final long first = firstChildID();
+		if (ref.gid < first || ref.gid > ref.gid + children - 1)
+			throw new DOMException(
+				DOMException.HIERARCHY_REQUEST_ERR,
+				"reference node is not a child of the selected node");
+		System.out.println("inserting " + nodes.getLength() + " nodes...");
+		Node result = appendChildren(ref.gid + 1, getLastNode(ref), nodes);
+		ownerDocument.broker.update(this);
+		ownerDocument.broker.reindex(prevDoc, ownerDocument);
+		try {
+			ownerDocument.broker.saveCollection(ownerDocument.getCollection());
+		} catch (PermissionDeniedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return result;
 	}
 
