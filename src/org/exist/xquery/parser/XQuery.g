@@ -333,9 +333,14 @@ orExpr
 
 andExpr
 :
-	castExpr ( "and"^ castExpr )*
+	instanceofExpr ( "and"^ instanceofExpr )*
 	;
 
+instanceofExpr
+:
+	castExpr ( "instance"^ "of"! sequenceType )?
+	;
+	
 castExpr
 :
 	comparisonExpr ( "cast"^ "as"! singleType )?
@@ -912,6 +917,10 @@ reservedKeywords returns [String name]
     "cast" { name = "cast"; }
 	|
 	"return" { name = "return"; }
+	|
+	"instance" { name = "instance"; }
+	|
+	"of" { name = "of"; }
 	;
 
 /**
@@ -1536,6 +1545,20 @@ throws PermissionDeniedException, EXistException, XPathException
 			}
 			path.add(action);
 			step = action;
+		}
+	)
+	|
+	#(
+		"instance"
+		{ 
+			PathExpr expr = new PathExpr(context);
+			SequenceType type= new SequenceType(); 
+		}
+		step=expr [expr]
+		sequenceType [type]
+		{ 
+			step = new InstanceOfExpression(context, expr, type); 
+			path.add(step);
 		}
 	)
 	|
