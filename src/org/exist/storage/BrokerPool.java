@@ -37,10 +37,12 @@ import org.exist.storage.sync.SyncDaemon;
 import org.exist.util.Configuration;
 import org.exist.util.Lock;
 import org.exist.util.ReentrantReadWriteLock;
+import org.exist.util.XMLReaderObjectFactory;
+import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.ShutdownListener;
 
 /**
- *  This class controls all available instances of the database.
+ * This class controls all available instances of the database.
  * Use it to configure, start and stop database instances. You may
  * have multiple instances defined, each using its own configuration,
  * database directory etc.. To define multiple instances, pass an
@@ -174,11 +176,36 @@ public class BrokerPool {
 	private boolean syncRequired = false;
 	private boolean initializing = true;
 	
+	/**
+	 * The security manager for this database instance.
+	 */
 	private org.exist.security.SecurityManager secManager = null;
+	
+	/**
+	 * SyncDaemon is a daemon thread which periodically triggers a cache sync.
+	 */
 	private SyncDaemon syncDaemon;
+	
+	/**
+	 * ShutdownListener will be notified when the database instance shuts down.
+	 */
 	private ShutdownListener shutdownListener = null;
+	
+	/**
+	 * The global pool for compiled XQuery expressions.
+	 */
 	private XQueryPool xqueryCache;
+	
+	/**
+	 * The global collection cache.
+	 */
 	protected CollectionCache collectionsCache;
+	
+	/**
+	 * Global pool for SAX XMLReader instances.
+	 */
+	protected XMLReaderPool xmlReaderPool;
+	
 	private Lock globalXUpdateLock = new ReentrantReadWriteLock("xupdate");
 
 	/**
@@ -208,6 +235,7 @@ public class BrokerPool {
 		conf = config;
 		xqueryCache = new XQueryPool();
 		collectionsCache = new CollectionCache(COLLECTION_BUFFER_SIZE);
+		xmlReaderPool = new XMLReaderPool(new XMLReaderObjectFactory(this), 5, 0);
 		initialize();
 	}
 
@@ -235,8 +263,18 @@ public class BrokerPool {
 		return conf;
 	}
 
+	/**
+	 * Returns the global collections cache. Collection objects
+	 * are shared within one database instance.
+	 * 
+	 * @return
+	 */
 	public CollectionCache getCollectionsCache() {
 		return collectionsCache;
+	}
+	
+	public XMLReaderPool getParserPool() {
+		return xmlReaderPool;
 	}
 	
 	protected DBBroker createBroker() throws EXistException {
@@ -388,9 +426,9 @@ public class BrokerPool {
 	/**  Shutdown all brokers. */
 	public synchronized void shutdown(boolean killed) {
 		syncDaemon.shutDown();
-		while (pool.size() < brokers)
+		while (threads.size() > 0)
 			try {
-				this.wait();
+				this.wait(2000);
 			} catch (InterruptedException e) {
 			}
 		LOG.debug("calling shutdown ...");

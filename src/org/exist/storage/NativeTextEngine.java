@@ -1163,6 +1163,7 @@ public class NativeTextEngine extends TextSearchEngine {
 				}
 				words[k].clear();
 			}
+//			dbWords.debugFreeList();
 		}
 
 		private void flushWord(short collectionId, String word, ByteArray data) {

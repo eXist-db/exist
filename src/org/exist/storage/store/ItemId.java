@@ -22,7 +22,12 @@
  */
 package org.exist.storage.store;
 
-
+/**
+ * Provides static methods to set or test the status bits of a record identifier
+ * in the dom.dbx persistent DOM store.
+ * 
+ * @author wolf
+ */
 class ItemId {
 	
 	public static final short RELOCATED_MASK = (short) 0x8000;
