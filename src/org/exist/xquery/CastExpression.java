@@ -25,6 +25,7 @@ package org.exist.xquery;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
@@ -77,8 +78,18 @@ public class CastExpression extends AbstractExpression {
 			else
 				return Sequence.EMPTY_SEQUENCE;
 		}
-		try {
-			return (AtomicValue)seq.itemAt(0).convertTo(requiredType);
+        Item item = seq.itemAt(0);
+        try {
+            // casting to QName needs special treatment
+            if(requiredType == Type.QNAME) {
+                if(item.getType() == Type.ATOMIC || Type.subTypeOf(item.getType(), Type.STRING)) {
+                    return new QNameValue(context, item.getStringValue());
+                } else {
+                    throw new XPathException(getASTNode(), "Cannot cast " + Type.getTypeName(item.getType()) + 
+                            " to xs:QName");
+                }
+            } else
+        		return (AtomicValue)seq.itemAt(0).convertTo(requiredType);
 		} catch(XPathException e) {
 			e.setASTNode(getASTNode());
 			throw e;
