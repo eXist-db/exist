@@ -718,6 +718,7 @@ implements Comparable, EntityResolver, Cacheable {
 				if(lockUser != null && !lockUser.equals(broker.getUser()))
 					throw new PermissionDeniedException("The document is locked by user " +
 							lockUser.getName());
+				
 				// check if the document is currently being changed by someone else
 				Lock oldLock = oldDoc.getUpdateLock();
 				oldLock.acquire(Lock.WRITE_LOCK);
@@ -834,6 +835,18 @@ implements Comparable, EntityResolver, Cacheable {
 			indexer.setValidating(false);
 			if (trigger != null)
 				trigger.setValidating(false);
+		} catch(EXistException e) {
+		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    throw e;
+		} catch(SAXException e) {
+		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    throw e;
+		} catch(PermissionDeniedException e) {
+		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    throw e;
+		} catch(TriggerException e) {
+		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    throw e;
 		} finally {
 			lock.release();
 		}
@@ -841,7 +854,7 @@ implements Comparable, EntityResolver, Cacheable {
 		source = new InputSource(new StringReader(data));
 
 		// second pass: store the document
-		LOG.debug("storing document ...");
+		LOG.debug("storing document " + document.getDocId() + " ...");
 		try {
 			try {
 				reader.parse(source);
@@ -867,7 +880,6 @@ implements Comparable, EntityResolver, Cacheable {
 			document.getUpdateLock().release(Lock.WRITE_LOCK);
 		}
 		broker.deleteObservers();
-		System.out.println(this);
 		return document;
 	}
 
@@ -883,7 +895,7 @@ implements Comparable, EntityResolver, Cacheable {
 			LockException {
 		if (broker.isReadOnly())
 			throw new PermissionDeniedException("Database is read-only");
-		DocumentImpl document, oldDoc = null;
+		DocumentImpl document = null, oldDoc = null;
 		XMLReader reader;
 		try {
 			lock.acquire(Lock.WRITE_LOCK);
@@ -912,6 +924,7 @@ implements Comparable, EntityResolver, Cacheable {
 					Permission.WRITE))
 				throw new PermissionDeniedException(
 						"Not allowed to write to collection " + getName());
+			
 			// if an old document exists, save the new document with a temporary
 			// document name
 			if (oldDoc != null) {
@@ -1009,6 +1022,18 @@ implements Comparable, EntityResolver, Cacheable {
 			parser.setValidating(false);
 			if (trigger != null)
 				trigger.setValidating(false);
+		} catch(EXistException e) {
+		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    throw e;
+		} catch(SAXException e) {
+		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    throw e;
+		} catch(PermissionDeniedException e) {
+		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    throw e;
+		} catch(TriggerException e) {
+		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    throw e;
 		} finally {
 			lock.release();
 		}
@@ -1181,6 +1206,18 @@ implements Comparable, EntityResolver, Cacheable {
 			parser.setValidating(false);
 			if (trigger != null)
 				trigger.setValidating(false);
+		} catch(EXistException e) {
+		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    throw e;
+		} catch(SAXException e) {
+		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    throw e;
+		} catch(PermissionDeniedException e) {
+		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    throw e;
+		} catch(TriggerException e) {
+		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+		    throw e;
 		} finally {
 			lock.release();
 		}
