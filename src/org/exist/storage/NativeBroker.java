@@ -1993,6 +1993,7 @@ public class NativeBroker extends DBBroker {
                     + "removing document "
                     + document.getDocId()
                     + " ...");
+                Thread.dumpStack();
             }
 
 			elementIndex.dropIndex(document);
@@ -2883,13 +2884,18 @@ public class NativeBroker extends DBBroker {
             DocumentImpl targetDoc = new DocumentImpl(this, temp);
             targetDoc.setFileName(docName);
             targetDoc.setPermissions(0771);
-            temp.addDocumentLink(this, targetDoc);
+            long now = System.currentTimeMillis();
+            targetDoc.setLastModified(now);
+            targetDoc.setCreated(now);
+            targetDoc.setDocId(getNextDocId(temp));
+
     		DOMIndexer indexer = new DOMIndexer(this, doc, targetDoc);
             indexer.scan();
             indexer.store();
-            flush();
+            temp.addDocument(this, targetDoc);
             addDocument(temp, targetDoc);
             closeDocument();
+            flush();
             saveCollection(temp);
             return targetDoc;
         } finally {
