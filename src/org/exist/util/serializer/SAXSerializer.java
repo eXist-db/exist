@@ -65,10 +65,10 @@ public class SAXSerializer implements ContentHandler, LexicalHandler {
 		this.receiver.setOutputProperties(outputProperties);
 	}
 
-	public void setOutputProperties(Properties outputProperties) {
-		if(outputProperties == null)
+	public void setOutputProperties(Properties properties) {
+		if(properties == null)
 			outputProperties = defaultProperties;
-		this.outputProperties = outputProperties;
+		outputProperties = properties;
 		receiver.setOutputProperties(outputProperties);
 	}
 	
