@@ -65,9 +65,10 @@ public class FunLast extends Function {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		if(contextSequence == null || contextSequence.getLength() == 0)
+	    final int len = contextSequence.getLength();
+		if(contextSequence == null || len == 0)
 			return Sequence.EMPTY_SEQUENCE;
-		return new IntegerValue(contextSequence.getLength());
+		return new IntegerValue(len);
 	}
 
 	/*public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,

@@ -123,6 +123,7 @@ public final class NodeIterator implements Iterator {
 									ph.getPrevDataPage());
 							return null;
 						}
+//						LOG.debug(page + " -> " + nextPage);
 						page = nextPage;
 						p = db.getCurrentPage(nextPage);
 						db.addToBuffer(p);
@@ -161,6 +162,13 @@ public final class NodeIterator implements Iterator {
 					} else {
 						nextNode = NodeImpl.deserialize(p.data, offset, l, doc, useNodePool);
 						offset += l;
+					}
+					if(nextNode == null) {
+					    LOG.warn("illegal node on page " + p.getPageNum() + "; tid = " + ItemId.getId(lastTID) +
+					            "; next = " + p.getPageHeader().getNextDataPage() + "; prev = " + 
+					            p.getPageHeader().getPrevDataPage() + "; offset = " + (offset - l) +
+					            "; len = " + p.getPageHeader().getDataLength());
+					    return null;
 					}
 					nextNode.setInternalAddress(
 						StorageAddress.createPointer((int) page, ItemId.getId(lastTID))

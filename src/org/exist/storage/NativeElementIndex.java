@@ -413,7 +413,6 @@ public class NativeElementIndex extends ElementIndex {
                 // try to retrieve old index entry for the element
                 try {
                     lock.acquire(Lock.READ_LOCK);
-                    //val = dbElement.get(ref);
                     is = dbElement.getAsStream(ref);
                 } catch (LockException e) {
                     LOG.error("could not acquire lock for index on " + qname);
@@ -428,7 +427,6 @@ public class NativeElementIndex extends ElementIndex {
                 oldList.clear();
                 if (is != null) {
                     // add old entries to the new list
-                    //data = val.getData();
                     try {
                         while (is.available() > 0) {
                             docId = is.readInt();
@@ -446,7 +444,6 @@ public class NativeElementIndex extends ElementIndex {
                                     delta = is.readLong();
                                     gid = last + delta;
                                     last = gid;
-                                    //address = is.readFixedLong();
                                     address = StorageAddress.read(is);
                                     if (node == null
                                             && oldDoc.getTreeLevel(gid) < oldDoc
@@ -522,90 +519,84 @@ public class NativeElementIndex extends ElementIndex {
         try {
             // iterate through elements
             for (Iterator i = elementIds.entrySet().iterator(); i.hasNext();) {
-                entry = (Map.Entry) i.next();
-                idList = (ArrayList) entry.getValue();
-                qname = (QName) entry.getKey();
-                if (qname.getNameType() != ElementValue.ATTRIBUTE_ID) {
-                    sym = broker.getSymbols().getSymbol(qname.getLocalName());
-                    nsSym = broker.getSymbols().getNSSymbol(
-                            qname.getNamespaceURI());
-                    ref = new ElementValue(qname.getNameType(), collectionId,
-                            sym, nsSym);
-                } else {
-                    ref = new ElementValue(qname.getNameType(), collectionId,
-                            qname.getLocalName());
-                }
-                // try to retrieve old index entry for the element
                 try {
-                    lock.acquire(Lock.READ_LOCK);
+                    lock.acquire(Lock.WRITE_LOCK);
+                    entry = (Map.Entry) i.next();
+                    idList = (ArrayList) entry.getValue();
+                    qname = (QName) entry.getKey();
+                    if (qname.getNameType() != ElementValue.ATTRIBUTE_ID) {
+                        sym = broker.getSymbols().getSymbol(qname.getLocalName());
+                        nsSym = broker.getSymbols().getNSSymbol(
+                                qname.getNamespaceURI());
+                        ref = new ElementValue(qname.getNameType(), collectionId,
+                                sym, nsSym);
+                    } else {
+                        ref = new ElementValue(qname.getNameType(), collectionId,
+                                qname.getLocalName());
+                    }
                     val = dbElement.get(ref);
-                } catch (LockException e) {
-                    LOG.error("could not acquire lock for index on " + qname);
-                    return;
-                } finally {
-                    lock.release();
-                }
-                os.clear();
-                newList.clear();
-                if (val != null) {
-                    // add old entries to the new list
-                    data = val.getData();
-                    is = new VariableByteArrayInput(data);
-                    try {
-                        while (is.available() > 0) {
-                            docId = is.readInt();
-                            len = is.readInt();
-                            if (docId != doc.getDocId()) {
-                                // section belongs to another document:
-                                // copy data to new buffer
-                                os.writeInt(docId);
-                                os.writeInt(len);
-                                is.copyTo(os, len * 4);
-                            } else {
-                                // copy nodes to new list
-                                last = 0;
-                                for (int j = 0; j < len; j++) {
-                                    delta = is.readLong();
-                                    gid = last + delta;
-                                    last = gid;
-                                    address = StorageAddress.read(is);
-                                    //address = is.readFixedLong();
-                                    if (!containsNode(idList, gid)) {
-                                        newList.add(new NodeProxy(doc, gid,
-                                                address));
+                    os.clear();
+                    newList.clear();
+                    if (val != null) {
+                        // add old entries to the new list
+                        data = val.getData();
+                        is = new VariableByteArrayInput(data);
+                        try {
+                            while (is.available() > 0) {
+                                docId = is.readInt();
+                                len = is.readInt();
+                                if (docId != doc.getDocId()) {
+                                    // section belongs to another document:
+                                    // copy data to new buffer
+                                    os.writeInt(docId);
+                                    os.writeInt(len);
+                                    try {
+                                        is.copyTo(os, len * 4);
+                                    } catch(EOFException e) {
+                                        LOG.error("EOF while copying: expected: " + len);
+                                    }
+                                } else {
+                                    // copy nodes to new list
+                                    last = 0;
+                                    for (int j = 0; j < len; j++) {
+                                        delta = is.readLong();
+                                        gid = last + delta;
+                                        last = gid;
+                                        address = StorageAddress.read(is);
+                                        if (!containsNode(idList, gid)) {
+                                            newList.add(new NodeProxy(doc, gid,
+                                                    address));
+                                        }
                                     }
                                 }
                             }
+                        } catch (EOFException e) {
+                            LOG
+                            .error("end-of-file while updating index for element "
+                                    + qname);
+                        } catch (IOException e) {
+                            LOG.error("io-error while updating index for element "
+                                    + qname);
                         }
-                    } catch (EOFException e) {
-                        LOG
-                                .error("end-of-file while updating index for element "
-                                        + qname);
-                    } catch (IOException e) {
-                        LOG.error("io-error while updating index for element "
-                                + qname);
                     }
-                }
-                // write out the updated list
-                FastQSort.sort(newList, 0, newList.size() - 1);
-                len = newList.size();
-                os.writeInt(doc.getDocId());
-                os.writeInt(len);
-                last = 0;
-                for (int j = 0; j < len; j++) {
-                    p = (NodeProxy) newList.get(j);
-                    delta = p.gid - last;
-                    last = p.gid;
-                    os.writeLong(delta);
-                    StorageAddress.write(p.getInternalAddress(), os);
-                }
-                try {
-                    lock.acquire(Lock.WRITE_LOCK);
-                    if (val == null) {
-                        dbElement.put(ref, os.data());
-                    } else {
-                        dbElement.update(val.getAddress(), ref, os.data());
+                    // write out the updated list
+                    FastQSort.sort(newList, 0, newList.size() - 1);
+                    len = newList.size();
+                    os.writeInt(doc.getDocId());
+                    os.writeInt(len);
+                    last = 0;
+                    for (int j = 0; j < len; j++) {
+                        p = (NodeProxy) newList.get(j);
+                        delta = p.gid - last;
+                        last = p.gid;
+                        os.writeLong(delta);
+                        StorageAddress.write(p.getInternalAddress(), os);
                     }
+                        if (val == null) {
+                            dbElement.put(ref, os.data());
+                        } else {
+                            dbElement.update(val.getAddress(), ref, os.data());
+                        }
                 } catch (LockException e) {
                     LOG.error("could not acquire lock on elements", e);
                 } finally {

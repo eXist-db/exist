@@ -275,9 +275,10 @@ public class ElementImpl extends NamedNode implements Element {
 	public Node appendChildren(NodeList nodes, int child) throws DOMException {
 		DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
 		Node node = null;
-		if (children == 0)
-			node = appendChildren(firstChildID(), this, getPath(), nodes, true);
-		else {
+		if (children == 0) {
+		    // no children: append a new child
+		    node = appendChildren(firstChildID(), this, getPath(), nodes, true);
+		} else {
 		    if(child == 1) {
 		        Node firstChild = getFirstChild();
 		        insertBefore(nodes, firstChild);
@@ -1165,12 +1166,15 @@ public class ElementImpl extends NamedNode implements Element {
 				"node is not a child of this element");
 		final int level = ownerDocument.getTreeLevel(gid);
 		final DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
+		final long lastChild = lastChildID();
 		removeAll(old, old.getPath().toString());
 		--children;
 		ownerDocument.broker.endRemove();
 		ownerDocument.broker.update(this);
-		ownerDocument.reindex = level + 1;
-		ownerDocument.broker.reindex(prevDoc, ownerDocument, this);
+		if(old.gid < lastChild) {
+			ownerDocument.reindex = level + 1;
+			ownerDocument.broker.reindex(prevDoc, ownerDocument, this);
+		}
 		return old;
 	}
 
