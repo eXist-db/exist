@@ -136,5 +136,6 @@ public class FunDoc extends Function {
 	public void resetState() {
 		cachedNode = null;
 		cachedPath = null;
+		getArgument(0).resetState();
 	}
 }
