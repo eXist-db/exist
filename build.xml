@@ -420,11 +420,8 @@
         <mkdir dir="${dist.dir}/webapp/WEB-INF/data"/>
         <mkdir dir="${dist.dir}/log"/>
         <mkdir dir="${dist.dir}/samples"/>
-        <mkdir dir="${dist.dir}/sql"/>
-		<mkdir dir="${dist.dir}/tmp"/>
 		<mkdir dir="${dist.dir}/docs"/>
 		<mkdir dir="${dist.dir}/thirdparty"/>
-        <touch file="${dist.dir}/tmp/.DO_NOT_DELETE"/>
 		<touch file="${dist.dir}/webapp/WEB-INF/data/.DO_NOT_DELETE"/>
 		<touch file="${dist.dir}/webapp/WEB-INF/logs/.DO_NOT_DELETE"/>
         <touch file="${dist.dir}/log/.DO_NOT_DELETE"/>

@@ -27,8 +27,6 @@ if [ ! -f "$EXIST_HOME/start.jar" ]; then
 	exit 1
 fi
 
-OPTIONS="-Dexist.home=$EXIST_HOME"
-
 if [ -n "$JETTY_HOME" ]; then
 	OPTIONS="-Djetty.home=$JETTY_HOME $OPTIONS"
 fi
