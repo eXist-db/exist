@@ -22,8 +22,6 @@ package org.exist.xmldb.test;
 
 import junit.framework.TestCase;
 
-import org.exist.Server;
-import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.RemoteCollection;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -59,8 +57,6 @@ public abstract class RemoteDBTest extends TestCase {
      */
     protected void setUpRemoteDatabase() throws Exception, ClassNotFoundException, InstantiationException,
             IllegalAccessException, XMLDBException {
-        startServer();
-
         Class cl = Class.forName(DB_DRIVER);
         Database database = (Database) cl.newInstance();
         DatabaseManager.registerDatabase(database);
@@ -79,19 +75,6 @@ public abstract class RemoteDBTest extends TestCase {
     }
 
     /**
-     * @throws Exception
-     */
-    protected void startServer() throws Exception {
-        String[] args = { "standalone" };
-        //Server.main(args);
-        // Thread ??
-        Server.main(new String[] {});
-        synchronized(this) {
-        	wait(500);
-        }
-    }
-
-    /**
      * @throws XMLDBException
      * @throws Exception
      */
@@ -100,19 +83,6 @@ public abstract class RemoteDBTest extends TestCase {
         CollectionManagementService cms = (CollectionManagementService) rootCollection.getService(
                 "CollectionManagementService", "1.0");
         cms.removeCollection(COLLECTION_NAME);
-    }
-
-    protected void stopServer(Collection current) throws XMLDBException {
-        DatabaseInstanceManager mgr = (DatabaseInstanceManager) current.getService("DatabaseInstanceManager", "1.0");
-        if (mgr != null)
-            mgr.shutdown();
-        Server.shutdown();
-        synchronized(this) {
-        	try {
-				wait(1000);
-			} catch (InterruptedException e) {
-			}
-        }
     }
 
     /**

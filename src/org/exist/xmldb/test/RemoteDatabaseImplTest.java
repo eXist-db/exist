@@ -42,8 +42,6 @@ public class RemoteDatabaseImplTest extends RemoteDBTest {
     }
 
     public void testGetCollection() throws Exception {
-        startServer();
-
         Class cl = Class.forName(DB_DRIVER);
         Database database = (Database) cl.newInstance();
         DatabaseManager.registerDatabase(database);
@@ -73,7 +71,6 @@ public class RemoteDatabaseImplTest extends RemoteDBTest {
             }
 
             cms.removeCollection(ADMIN_COLLECTION_NAME);
-            stopServer(rootCollection);
         }
     }
 }
