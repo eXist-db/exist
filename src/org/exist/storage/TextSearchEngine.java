@@ -64,6 +64,7 @@ public abstract class TextSearchEngine extends Observable {
 	protected Configuration config;
 	protected boolean indexNumbers = false ;
 	protected boolean stem = false ;
+	protected boolean termFreq = true;
 	protected PorterStemmer stemmer = null;
 
 	/**
@@ -76,12 +77,14 @@ public abstract class TextSearchEngine extends Observable {
 		this.broker = broker;
 		this.config = conf;
 		String stopword, tokenizerClass;
-		Boolean num, stemming;
+		Boolean num, stemming, termFrequencies;
 		if ((num = (Boolean) config.getProperty("indexer.indexNumbers"))
 			!= null)
 			indexNumbers = num.booleanValue();
 		if ((stemming = (Boolean) config.getProperty("indexer.stem")) != null)
 			stem = stemming.booleanValue();
+		if((termFrequencies = (Boolean) config.getProperty("indexer.store-term-freq")) != null)
+			termFreq = termFrequencies.booleanValue();
 		if ((tokenizerClass = (String) config.getProperty("indexer.tokenizer"))
 			!= null) {
 			try {

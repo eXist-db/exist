@@ -54,6 +54,7 @@ import org.exist.util.LockException;
 import org.exist.util.OrderedLinkedList;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.ReentrantReadWriteLock;
+import org.exist.util.OrderedLinkedList.Node;
 import org.exist.xquery.TerminatedException;
 
 /**
@@ -863,7 +864,8 @@ public class BFile extends BTree {
         }
     }
 
-    private final static class FreeSpace implements Comparable {
+    private final static class FreeSpace extends OrderedLinkedList.Node {
+    	
         /**
          * Log4J Logger for this class
          */
@@ -878,16 +880,20 @@ public class BFile extends BTree {
             free = space;
         }
 
-        public int compareTo(Object obj) {
-            FreeSpace other = (FreeSpace) obj;
+        public int compareTo(Node node) {
+        	FreeSpace other = (FreeSpace) node;
             if (free < other.free)
                 return -1;
             else if (free > other.free)
                 return 1;
             else
                 return 0;
-        }
-
+		}
+        
+        public boolean equals(Node other) {
+			return page == ((FreeSpace)other).page;
+		}
+        
         public int getFree() {
             return free;
         }
@@ -938,9 +944,10 @@ public class BFile extends BTree {
             }
             return null;
         }
-
-        public long getLastDataPage() {
-            return lastDataPage;
+        
+        public void removeFreeSpace(FreeSpace space) {
+            if (space == null) return;
+            freeList.removeNode(space);
         }
 
         public FreeSpace getMaxFreeSpace() {
@@ -965,6 +972,10 @@ public class BFile extends BTree {
             System.out.println();
         }
 
+        public long getLastDataPage() {
+            return lastDataPage;
+        }
+        
         public void read(java.io.RandomAccessFile raf) throws IOException {
             super.read(raf);
             lastDataPage = raf.readLong();
@@ -976,11 +987,6 @@ public class BFile extends BTree {
                 space = raf.readInt();
                 freeList.add(new FreeSpace(page, space));
             }
-        }
-
-        public void removeFreeSpace(FreeSpace space) {
-            if (space == null) return;
-            freeList.remove(space);
         }
 
         public void setLastDataPage(long last) {

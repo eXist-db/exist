@@ -22,9 +22,6 @@
  */
 package org.exist.xquery.functions.text;
 
-import java.util.Set;
-import java.util.TreeSet;
-
 import org.exist.dom.Match;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
@@ -68,13 +65,14 @@ public class TextRank extends BasicFunction {
 		if(val.getImplementationType() == NodeValue.IN_MEMORY_NODE)
 			return DoubleValue.ZERO;
 		NodeProxy proxy = (NodeProxy)val;	// this is a persistent node, so casting is safe
-		Set distinctTerms = new TreeSet();
+
+		int freq = 0;
 		Match nextMatch = proxy.match;
 		// we just count the number of distinct terms matched
 		while(nextMatch != null) {
-			distinctTerms.add(nextMatch.getMatchingTerm());
+			freq += nextMatch.getFrequency();
 			nextMatch = nextMatch.getNextMatch();
 		}
-		return new DoubleValue(distinctTerms.size());
+		return new DoubleValue(freq);
 	}
 }

@@ -113,6 +113,7 @@ public class Configuration implements ErrorHandler {
 				String parseNum = p.getAttribute("parseNumbers");
 				String indexDepth = p.getAttribute("index-depth");
 				String stemming = p.getAttribute("stemming");
+				String termFreq = p.getAttribute("track-term-freq");
 				String suppressWS = p.getAttribute("suppress-whitespace");
 				String caseSensitive = p.getAttribute("caseSensitive");
 				String tokenizer = p.getAttribute("tokenizer");
@@ -126,6 +127,9 @@ public class Configuration implements ErrorHandler {
 				if (stemming != null)
 					config.put("indexer.stem", Boolean.valueOf(stemming.equals("yes")));
 
+				if (termFreq != null)
+					config.put("indexer.store-term-freq", Boolean.valueOf(termFreq.equals("yes")));
+				
 				if (caseSensitive != null)
 					config.put(
 						"indexer.case-sensitive",
