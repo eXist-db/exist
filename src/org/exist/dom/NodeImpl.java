@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.exist.storage.*;
+import org.exist.util.XMLUtil;
 
 /**
  * NodeImpl.java
@@ -294,16 +295,6 @@ public class NodeImpl implements Node {
 	}
 
 	/**
-	 * @see org.w3c.dom.Node#getNextSibling()
-	 */
-	public Node getNextSibling() {
-		NodeImpl parent = (NodeImpl) getParentNode();
-		if (gid < parent.lastChildID())
-			return ownerDocument.getNode(gid + 1);
-		return null;
-	}
-
-	/**
 	 * @see org.w3c.dom.Node#getNodeName()
 	 */
 	public String getNodeName() {
@@ -375,9 +366,9 @@ public class NodeImpl implements Node {
 	 * @see org.w3c.dom.Node#getPreviousSibling()
 	 */
 	public Node getPreviousSibling() {
-		if(gid < 2)
-			return ownerDocument.getPreviousSibling(this);
 		int level = ownerDocument.getTreeLevel(gid);
+		if (level == 0)
+			return ownerDocument.getPreviousSibling(this);
 		long pid =
 			(gid - ownerDocument.getLevelStartPoint(level))
 				/ ownerDocument.getTreeLevelOrder(level)
@@ -388,6 +379,26 @@ public class NodeImpl implements Node {
 				+ ownerDocument.getLevelStartPoint(level);
 		if (gid > firstChildId)
 			return ownerDocument.getNode(gid - 1);
+		return null;
+	}
+
+	/**
+	 * @see org.w3c.dom.Node#getNextSibling()
+	 */
+	public Node getNextSibling() {
+		int level = ownerDocument.getTreeLevel(gid);
+		if (level == 0)
+			return ownerDocument.getFollowingSibling(this);
+		long pid =
+			(gid - ownerDocument.getLevelStartPoint(level))
+				/ ownerDocument.getTreeLevelOrder(level)
+				+ ownerDocument.getLevelStartPoint(level - 1);
+		long firstChildId =
+			(pid - ownerDocument.getLevelStartPoint(level - 1))
+				* ownerDocument.getTreeLevelOrder(level)
+				+ ownerDocument.getLevelStartPoint(level);
+		if (gid < firstChildId + ownerDocument.getTreeLevelOrder(level))
+			return ownerDocument.getNode(gid + 1);
 		return null;
 	}
 
@@ -617,19 +628,18 @@ public class NodeImpl implements Node {
 
 	protected NodeImpl getLastNode(NodeImpl node) {
 		final NodeProxy p = new NodeProxy(ownerDocument, node.gid, node.internalAddress);
-		Iterator iterator = 
-			ownerDocument.getBroker().getNodeIterator(p);
+		Iterator iterator = ownerDocument.getBroker().getNodeIterator(p);
 		iterator.next();
 		return getLastNode(iterator, node);
 	}
-	
+
 	protected NodeImpl getLastNode(Iterator iterator, NodeImpl node) {
-		if(node.hasChildNodes()) {
+		if (node.hasChildNodes()) {
 			final long firstChild = node.firstChildID();
 			final long lastChild = firstChild + node.getChildCount();
 			NodeImpl next = null;
-			for(long gid = firstChild; gid < lastChild; gid++) { 
-				next = (NodeImpl)iterator.next();
+			for (long gid = firstChild; gid < lastChild; gid++) {
+				next = (NodeImpl) iterator.next();
 				next.setGID(gid);
 				next = getLastNode(iterator, next);
 			}
@@ -637,12 +647,12 @@ public class NodeImpl implements Node {
 		} else
 			return node;
 	}
-//	protected NodeImpl getLastNode(NodeImpl node) {
-//		if (node.getNodeType() == Node.ELEMENT_NODE)
-//			return node.getChildCount() == 0 ? node : getLastNode((NodeImpl) node.getLastChild());
-//		else
-//			return node;
-//	}
+	//	protected NodeImpl getLastNode(NodeImpl node) {
+	//		if (node.getNodeType() == Node.ELEMENT_NODE)
+	//			return node.getChildCount() == 0 ? node : getLastNode((NodeImpl) node.getLastChild());
+	//		else
+	//			return node;
+	//	}
 
 	/**
 		 * Update a child node. This method will only update the child node

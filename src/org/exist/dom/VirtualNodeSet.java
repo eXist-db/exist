@@ -95,7 +95,7 @@ public class VirtualNodeSet extends NodeSet {
 		// check if the start-node should be included, e.g. to process an
 		// expression like *[. = 'xxx'] 
 		if (recursions == 0 && includeSelf && 
-			isOfType(node, node.nodeType, test)) {
+			test.isOfType(node, node.nodeType)) {
 			if(axis == Constants.CHILD_AXIS) {
 				// if we're on the child axis, test if
 				// the node is a direct child of the context node
@@ -135,40 +135,6 @@ public class VirtualNodeSet extends NodeSet {
 				directParent,
 				recursions + 1);
 		}
-	}
-
-	protected final static boolean isOfType(
-		NodeProxy proxy,
-		short type,
-		TypeTest test) {
-		if (test.getNodeType() == Constants.NODE_TYPE)
-			return true;
-		if (type == Constants.TYPE_UNKNOWN) {
-			Node node = proxy.doc.getNode(proxy);
-			if (node == null)
-				return false;
-			type = node.getNodeType();
-		}
-		return isOfType(type, test);
-	}
-
-	protected final static boolean isOfType(short type, TypeTest test) {
-		int domType;
-		switch (test.getNodeType()) {
-			case Constants.ELEMENT_NODE :
-				domType = Node.ELEMENT_NODE;
-				break;
-			case Constants.TEXT_NODE :
-				domType = Node.TEXT_NODE;
-				break;
-			case Constants.ATTRIBUTE_NODE :
-				domType = Node.ATTRIBUTE_NODE;
-				break;
-			case Constants.NODE_TYPE :
-			default :
-				return true;
-		}
-		return (type == domType);
 	}
 
 	public boolean nodeHasParent(DocumentImpl doc, long gid,
@@ -278,11 +244,11 @@ public class VirtualNodeSet extends NodeSet {
 					child.getNodeType(), child.internalAddress);
 				p.matches = proxy.matches;
 				if (axis == Constants.CHILD_AXIS && recursions == 0 &&
-					isOfType(child.getNodeType(), test)) {
+					test.isOfType(child.getNodeType())) {
 					result.add(p);
 				} else if ((axis == Constants.DESCENDANT_AXIS ||
 					axis == Constants.DESCENDANT_SELF_AXIS) &&
-					isOfType(child.getNodeType(), test)) {
+					test.isOfType(child.getNodeType())) {
 					result.add(p);
 				} else if (axis == Constants.ATTRIBUTE_AXIS)
 					return;

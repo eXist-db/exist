@@ -485,7 +485,7 @@ public class ArraySet extends NodeSet {
 		return result;
 	}
 
-	public ArraySet getDescendants(NodeSet other, int mode) {
+	public NodeSet getDescendants(NodeSet other, int mode) {
 		return getDescendants(other, mode, false);
 	}
 
@@ -497,7 +497,7 @@ public class ArraySet extends NodeSet {
 	 *@param  mode  Description of the Parameter
 	 *@return       The descendants value
 	 */
-	public ArraySet getDescendants(NodeSet other, int mode, boolean includeSelf) {
+	public NodeSet getDescendants(NodeSet other, int mode, boolean includeSelf) {
 		if (!(other instanceof ArraySet))
 			return super.getDescendants(other, mode);
 		ArraySet al = (ArraySet) other;

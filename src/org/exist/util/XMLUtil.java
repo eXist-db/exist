@@ -229,6 +229,13 @@ public class XMLUtil {
 		return null;
 	}
 
+	public final static long getFirstChildId(DocumentImpl doc, long gid) {
+		final int level = doc.getTreeLevel(gid);
+		if (level < 0)
+			throw new RuntimeException("child index out of bounds");
+		return getFirstChildId(doc, gid, level);
+	}
+
 	/**
 	 *  Gets the firstChildId attribute of the XMLUtil class
 	 *
@@ -236,10 +243,7 @@ public class XMLUtil {
 	 *@param  gid  Description of the Parameter
 	 *@return      The firstChildId value
 	 */
-	public final static long getFirstChildId(DocumentImpl doc, long gid) {
-		final int level = doc.getTreeLevel(gid);
-		if (level < 0)
-			throw new RuntimeException("child index out of bounds");
+	public final static long getFirstChildId(DocumentImpl doc, long gid, int level) {
 		final int order = doc.getTreeLevelOrder(level + 1);
 		if (order < 0) {
 			System.err.println(
@@ -251,7 +255,6 @@ public class XMLUtil {
 					+ doc.getLevelStartPoint(level));
 			Thread.dumpStack();
 		}
-
 		return (gid - doc.getLevelStartPoint(level)) * order + doc.getLevelStartPoint(level + 1);
 	}
 
@@ -261,6 +264,10 @@ public class XMLUtil {
 			System.out.println("unable to determine level for " + gid);
 			return -1;
 		}
+		return getParentId(doc, gid, level);
+	}
+
+	public final static long getParentId(final DocumentImpl doc, final long gid, final int level) {
 		return (gid - doc.getLevelStartPoint(level)) / doc.getTreeLevelOrder(level)
 			+ doc.getLevelStartPoint(level - 1);
 	}
@@ -335,7 +342,7 @@ public class XMLUtil {
 		// read the file into a string
 		return readFile(new FileInputStream(file), defaultEncoding);
 	}
-	
+
 	public static String readFile(InputStream in, String defaultEncoding) throws IOException {
 		byte[] chunk = new byte[512];
 		ByteArrayOutputStream out = new ByteArrayOutputStream();

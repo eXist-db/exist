@@ -216,6 +216,8 @@ public XPathParser(ParserSharedInputState state) {
 			case LITERAL_attribute:
 			case LITERAL_ancestor:
 			case 49:
+			case 50:
+			case 51:
 			{
 				or_expr(expr);
 				if ( inputState.guessing==0 ) {
@@ -617,6 +619,8 @@ public XPathParser(ParserSharedInputState state) {
 			case LITERAL_attribute:
 			case LITERAL_ancestor:
 			case 49:
+			case 50:
+			case 51:
 			{
 				or_expr(exprIn);
 				break;
@@ -1071,6 +1075,8 @@ public XPathParser(ParserSharedInputState state) {
 		case LITERAL_attribute:
 		case LITERAL_ancestor:
 		case 49:
+		case 50:
+		case 51:
 		{
 			{
 			int _cnt36=0;
@@ -1135,6 +1141,8 @@ public XPathParser(ParserSharedInputState state) {
 		case LITERAL_attribute:
 		case LITERAL_ancestor:
 		case 49:
+		case 50:
+		case 51:
 		{
 			axis=axis_spec();
 			result=step(expr);
@@ -1696,6 +1704,30 @@ public XPathParser(ParserSharedInputState state) {
 			}
 			break;
 		}
+		case 50:
+		{
+			match(50);
+			match(COLON);
+			match(COLON);
+			if ( inputState.guessing==0 ) {
+				
+						axis = Constants.FOLLOWING_SIBLING_AXIS;
+					
+			}
+			break;
+		}
+		case 51:
+		{
+			match(51);
+			match(COLON);
+			match(COLON);
+			if ( inputState.guessing==0 ) {
+				
+						axis = Constants.PRECEDING_SIBLING_AXIS;
+					
+			}
+			break;
+		}
 		default:
 		{
 			throw new NoViableAltException(LT(1), getFilename());
@@ -1906,6 +1938,8 @@ public XPathParser(ParserSharedInputState state) {
 			case LITERAL_attribute:
 			case LITERAL_ancestor:
 			case 49:
+			case 50:
+			case 51:
 			case LPPAREN:
 			case RPPAREN:
 			{
@@ -2019,6 +2053,8 @@ public XPathParser(ParserSharedInputState state) {
 		"\"attribute\"",
 		"\"ancestor\"",
 		"\"ancestor-or-self\"",
+		"\"following-sibling\"",
+		"\"preceding-sibling\"",
 		"LPPAREN",
 		"RPPAREN",
 		"WS",
@@ -2031,7 +2067,7 @@ public XPathParser(ParserSharedInputState state) {
 	};
 	
 	private static final long[] mk_tokenSet_0() {
-		long[] data = { 1123700757759104L, 0L};
+		long[] data = { 4501400478286976L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
@@ -2046,7 +2082,7 @@ public XPathParser(ParserSharedInputState state) {
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
 	private static final long[] mk_tokenSet_3() {
-		long[] data = { 4503599520415682L, 0L};
+		long[] data = { 18014398402527170L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_3 = new BitSet(mk_tokenSet_3());

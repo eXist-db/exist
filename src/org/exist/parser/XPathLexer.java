@@ -75,9 +75,11 @@ public XPathLexer(LexerSharedInputState state) {
 	literals.put(new ANTLRHashString("document", this), new Integer(22));
 	literals.put(new ANTLRHashString("xpointer", this), new Integer(4));
 	literals.put(new ANTLRHashString("ancestor-or-self", this), new Integer(49));
+	literals.put(new ANTLRHashString("preceding-sibling", this), new Integer(51));
 	literals.put(new ANTLRHashString("and", this), new Integer(9));
 	literals.put(new ANTLRHashString("xcollection", this), new Integer(26));
 	literals.put(new ANTLRHashString("ends-with", this), new Integer(30));
+	literals.put(new ANTLRHashString("following-sibling", this), new Integer(50));
 	literals.put(new ANTLRHashString("contains", this), new Integer(31));
 }
 

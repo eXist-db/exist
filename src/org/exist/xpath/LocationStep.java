@@ -25,12 +25,15 @@ import java.util.Iterator;
 import org.apache.log4j.Category;
 import org.exist.EXistException;
 import org.exist.dom.ArraySet;
+import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.VirtualNodeSet;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.util.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -81,6 +84,10 @@ public class LocationStep extends Step {
 				break;
 			case Constants.ATTRIBUTE_AXIS :
 				temp = getAttributes(documents, context);
+				break;
+			case Constants.PRECEDING_SIBLING_AXIS :
+			case Constants.FOLLOWING_SIBLING_AXIS :
+				temp = getSiblings(documents, context);
 				break;
 			default :
 				throw new IllegalArgumentException("Unsupported axis specified");
@@ -154,7 +161,9 @@ public class LocationStep extends Step {
 				broker = pool.get();
 				if (buf == null)
 					buf = (NodeSet) broker.findElementsByTagName(documents, test.getName());
-				return buf.getDescendants(context, ArraySet.DESCENDANT, 
+				return buf.getDescendants(
+					context,
+					ArraySet.DESCENDANT,
 					axis == Constants.DESCENDANT_SELF_AXIS);
 
 			} catch (EXistException e) {
@@ -166,6 +175,50 @@ public class LocationStep extends Step {
 		} else
 			return new VirtualNodeSet(axis, (TypeTest) test, context);
 	}
+
+	protected NodeSet getSiblings(DocumentSet documents, NodeSet context) {
+		if (test.getType() == NodeTest.NAME_TEST) {
+			DBBroker broker = null;
+			try {
+				broker = pool.get();
+				if (buf == null)
+					buf = (NodeSet) broker.findElementsByTagName(documents, test.getName());
+				return context.getSiblings(
+					buf,
+					axis == Constants.PRECEDING_SIBLING_AXIS
+						? NodeSet.PRECEDING
+						: NodeSet.FOLLOWING);
+			} catch (EXistException e) {
+				LOG.debug(e.getMessage(), e);
+				return null;
+			} finally {
+				pool.release(broker);
+			}
+		} else {
+			ArraySet result = new ArraySet(context.getLength());
+			NodeProxy p;
+			NodeImpl n;
+			for(Iterator i = context.iterator(); i.hasNext(); ) {
+				p = (NodeProxy)i.next();
+				n = (NodeImpl)p.getNode();
+				while((n = getNextSibling(n)) != null) {
+					if(((TypeTest)test).isOfType(n.getNodeType()))
+						result.add(new NodeProxy((DocumentImpl)n.getOwnerDocument(),
+							n.getGID(), n.getInternalAddress()));
+				}
+			}
+			return result;
+		}
+	}
+
+	protected NodeImpl getNextSibling(NodeImpl last) {
+		switch(axis) {
+			case Constants.FOLLOWING_SIBLING_AXIS :
+				return (NodeImpl)last.getNextSibling();
+			default :
+				return (NodeImpl)last.getPreviousSibling();
+		}
+	}
 	
 	protected NodeSet getAncestors(DocumentSet documents, NodeSet context) {
 		if (test.getType() == NodeTest.NAME_TEST) {
@@ -174,18 +227,34 @@ public class LocationStep extends Step {
 				broker = pool.get();
 				if (buf == null)
 					buf = (NodeSet) broker.findElementsByTagName(documents, test.getName());
-				NodeSet r = ((ArraySet)context).getDescendants((ArraySet)buf, 
-					ArraySet.ANCESTOR, axis == Constants.ANCESTOR_SELF_AXIS);
+				NodeSet r =
+					context.getDescendants(
+						(ArraySet) buf,
+						ArraySet.ANCESTOR,
+						axis == Constants.ANCESTOR_SELF_AXIS);
 				LOG.debug("getAncestors found " + r.getLength());
 				return r;
-			} catch(EXistException e) {
+			} catch (EXistException e) {
 				LOG.debug(e.getMessage(), e);
 				return null;
 			} finally {
 				pool.release(broker);
 			}
-		} else
-			return NodeSet.EMPTY_SET;
+		} else {
+			NodeSet result = new ArraySet(context.getLength());
+			NodeProxy p;
+			for(Iterator i = context.iterator(); i.hasNext(); ) {
+				p = (NodeProxy)i.next();
+				if(axis == Constants.ANCESTOR_SELF_AXIS &&
+					((TypeTest)test).isOfType(p, p.nodeType))
+					result.add(new NodeProxy(p.doc, p.gid, p.internalAddress));
+				while((p.gid = XMLUtil.getParentId(p.doc, p.gid)) > 0) {
+					if(((TypeTest)test).isOfType(p, Node.ELEMENT_NODE))
+						result.add(new NodeProxy(p.doc, p.gid));
+				}
+			}
+			return result;
+		}
 	}
 
 	protected NodeSet getParents(DocumentSet documents, NodeSet context) {

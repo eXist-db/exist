@@ -19,7 +19,6 @@
     <property name="build.docs" value="${build}/docs"/>
     <property name="ant.home" value="."/>
     <property name="dist" value="./dist"/>
-    <property name="dist.dir" value="${dist}/${project.name}-${build.version}"/>
 	<property name="webapp.dir" value="${dist}/webapp"/>
 	<property name="docs" value="docs"/>
     <property name="build.compiler" value="modern"/>
@@ -29,6 +28,8 @@
 	<property name="jvmarg" value="-Xmx128000k -Xms32000k -Djetty.home=${jetty.dir} -Dexist.home=${basedir}"/>
 
     <property file="build.properties"/>
+	
+    <property name="dist.dir" value="${dist}/${project.name}-${build.version}"/>
 	
     <path id="classpath.core">
         <fileset dir="${lib.core}">
