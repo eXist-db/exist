@@ -51,6 +51,8 @@ import javax.xml.transform.OutputKeys;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.CollectionConfigurationException;
+import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.ArraySet;
@@ -101,6 +103,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+import org.xmldb.api.base.ErrorCodes;
+import org.xmldb.api.base.XMLDBException;
 
 import antlr.collections.AST;
 
@@ -151,6 +155,26 @@ public class RpcConnection extends Thread {
 		}
 	}
 
+	public void configureCollection(User user, String collName, String configuration)
+	throws EXistException {
+	    DBBroker broker = null;
+	    Collection collection = null;
+        try {
+            broker = brokerPool.get(user);
+            collection = broker.openCollection(collName, Lock.READ_LOCK);
+            if (collection == null)
+				throw new EXistException("collection " + collName + " not found!");
+            CollectionConfigurationManager mgr = brokerPool.getConfigurationManager();
+            mgr.addConfiguration(broker, collection, configuration);
+        } catch (CollectionConfigurationException e) {
+			throw new EXistException(e.getMessage());
+		} finally {
+		    if(collection != null)
+				collection.release();
+            brokerPool.release(broker);
+        }
+	}
+	
 	public String createId(User user, String collName) throws EXistException {
 		DBBroker broker = brokerPool.get(user);
 		Collection collection = null;

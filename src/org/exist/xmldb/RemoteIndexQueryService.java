@@ -172,7 +172,21 @@ public class RemoteIndexQueryService implements IndexQueryService {
 	 * @see org.exist.xmldb.IndexQueryService#configureCollection(java.lang.String)
 	 */
 	public void configureCollection(String configData) throws XMLDBException {
-		throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED, "Method is not yet implemented");		
+	    String path = parent.getPath();
+		Vector params = new Vector();
+		params.addElement(path);
+		params.addElement(configData);
+		try {
+			rpcClient.execute("configureCollection", params);
+		} catch (XmlRpcException e) {
+			throw new XMLDBException(
+					ErrorCodes.UNKNOWN_ERROR,
+					"xmlrpc error while doing reindexCollection: ", e);
+		} catch (IOException e) {
+			throw new XMLDBException(
+					ErrorCodes.UNKNOWN_ERROR,
+					"xmlrpc error while doing reindexCollection: ", e);
+		}		
 	}
 
 }
