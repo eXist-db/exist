@@ -35,6 +35,7 @@
    </xsl:copy>
   </xsl:template>
 
+  <!-- Rubrics: -->
   <xsl:template match="t:description" mode="wwbota-classic" >
     <h3>Description</h3>
     <xsl:apply-templates select="*|text()|processing-instruction()|comment()" mode="wwbota-classic" />
@@ -64,22 +65,34 @@
     <xsl:apply-templates select="*|text()|processing-instruction()|comment()" />
   </xsl:template>
 
+  <xsl:template match="taxon_date" mode="wwbota-classic" >
+    <h4>Taxon date</h4>
+    <xsl:apply-templates select="*|text()|processing-instruction()|comment()" />
+  </xsl:template>
+  <xsl:template match="common_name" mode="wwbota-classic" >
+    <h4>Common name</h4>
+    <xsl:apply-templates select="*|text()|processing-instruction()|comment()" />
+  </xsl:template>
+  <xsl:template match="country" mode="wwbota-classic" >
+    <h4>Country</h4>
+    <xsl:apply-templates select="*|text()|processing-instruction()|comment()" />
+  </xsl:template>
+  <xsl:template match="region" mode="wwbota-classic" >
+    <h4>Region</h4>
+    <xsl:apply-templates select="*|text()|processing-instruction()|comment()" />
+  </xsl:template>
+
   <xsl:template match="*[local-name()='taxon_id'][1]" mode="wwbota-classic" >
       <xsl:variable name="FOCTaxonKey" select='normalize-space(.)'/>
       <xsl:variable name="name" select="../* [local-name()='name']"/>
       <b><a href="http://flora.huh.harvard.edu:8080/flora/browse.do?flora_id=2&amp;taxon_id={$FOCTaxonKey}" title="Browse Taxon on official Site"> <xsl:value-of select='$name'/> (FOC Taxon key: <xsl:value-of select='$FOCTaxonKey'/>)</a> </b>
   </xsl:template>
-  <xsl:template match="*[local-name()='name' or
-                         local-name()='authority_id' or
-                         local-name()='publication_id' or 
-                         local-name()='taxon_page' or
-                         local-name()='tropicos_id'
-]" mode="wwbota-classic" />
+
   <xsl:template match="*[local-name()='rank_id']" mode="wwbota-classic" >
     rank_id:  <xsl:value-of select='.'/>; 
   </xsl:template>
   <xsl:template match="*[local-name()='taxon_date']" mode="wwbota-classic" >
-    taxon_date:  <xsl:value-of select='.'/>; 
+    taxon date:  <xsl:value-of select='.'/>; 
   </xsl:template>
 
   <xsl:template match="t:taxon" mode="wwbota-classic" priority='10' >
@@ -88,6 +101,17 @@
    </p>
   </xsl:template> 
 
+  <!-- suppress all this -->
+  <xsl:template match="*[local-name()='name' or
+                         local-name()='authority_id' or
+                         local-name()='publication_id' or 
+                         local-name()='taxon_page' or
+                         local-name()='category_id' or
+                         local-name()='tropicos_id'
+]" mode="wwbota-classic" />
+  <xsl:template match="*[local-name()='taxon_id'] [position() >= 2]" mode="wwbota-classic" />
+
+  <!-- description processing -->
   <xsl:template match="t:f" priority='1.9' mode="wwbota-classic" >
   <!-- <xsl:call-template name="manage-highlight-container" /> -->
     <xsl:apply-templates />
@@ -119,13 +143,16 @@
   </xsl:template>
 
   <!-- numeric count -->
-  <xsl:template match="t:num" priority='2' mode="wwbota-classic" >
+  <xsl:template match="t:num" priority='3' mode="wwbota-classic" >
+    <xsl:text> </xsl:text>
     <span style="color:brown" class='num' >
      <!-- <xsl:call-template name="manage-highlight-container" /> -->
      <xsl:apply-templates />
     </span>
+    <xsl:text> </xsl:text>
     <xsl:call-template name="manage-comma" />
   </xsl:template>
+
   <!-- measure with units -->
   <xsl:template match="t:meas" priority='2' mode="wwbota-classic" >
     <i><span style="color:brown" class='meas' >
@@ -155,6 +182,7 @@
       <xsl:variable name="preceding-low-level" select="
         preceding-sibling::t:f or
         preceding-sibling::t:meas or
+        preceding-sibling::t:num or
         following-sibling::t:num 
       " />
       <xsl:if test="$preceding-low-level">; </xsl:if>
