@@ -1631,45 +1631,4 @@ public class NewNativeBroker extends DBBroker {
 	public boolean isReadOnly() {
 		return readOnly;
 	}
-
-	public final static class NodeRef extends Value {
-        /**
-         * Log4J Logger for this class
-         */
-        private static final Logger LOG = Logger.getLogger(NodeRef.class);
-
-		public NodeRef() {
-			data = new byte[12];
-		}
-
-		public NodeRef(int docId, long gid) {
-			data = new byte[12];
-			ByteConversion.intToByte(docId, data, 0);
-			ByteConversion.longToByte(gid, data, 4);
-			len = 12;
-			pos = 0;
-		}
-
-		public NodeRef(int docId) {
-			data = new byte[4];
-			ByteConversion.intToByte(docId, data, 0);
-			len = 4;
-			pos = 0;
-		}
-
-		int getDocId() {
-			return ByteConversion.byteToInt(data, 0);
-		}
-
-		long getGid() {
-			return ByteConversion.byteToLong(data, 4);
-		}
-
-		void set(int docId, long gid) {
-			ByteConversion.intToByte(docId, data, 0);
-			ByteConversion.longToByte(gid, data, 4);
-			len = 12;
-			pos = 0;
-		}
-	}
 }
