@@ -1595,11 +1595,21 @@ implements Comparable, EntityResolver, Cacheable {
 	private CollectionConfiguration getConfiguration(DBBroker broker) {
 		if (configuration == null)
 			configuration = readCollectionConfiguration(broker);
+		
+		if (configuration == null)
+		{			
+			String recursiv = ParentHasDoc(broker,getName(), COLLECTION_CONFIG_FILE );
+			if (!(recursiv == null)) {
+				LOG.debug (" -->Try to use conf from "+recursiv);
+				configuration = broker.getCollection( recursiv).readCollectionConfiguration(broker);
+			}		
+		}
+		
 		return configuration;
 	}
 
 	private CollectionConfiguration readCollectionConfiguration(DBBroker broker) {
-		if (hasDocument(COLLECTION_CONFIG_FILE)) {
+		if (hasDocument(COLLECTION_CONFIG_FILE)) {			
 		    DocumentImpl doc = getDocument(broker, COLLECTION_CONFIG_FILE);
 		    if(doc == null) {
 		        LOG.warn("collection.xconf exists but could not be loaded");
@@ -1615,6 +1625,7 @@ implements Comparable, EntityResolver, Cacheable {
 				triggersEnabled = true;
 			}
 		}
+				
 		return null;
 	}
 
@@ -1813,4 +1824,35 @@ implements Comparable, EntityResolver, Cacheable {
         buf.append("]");
         return buf.toString();
     }
+    
+	public String getParentPathGen(String col) {
+		if (col.equals("/db"))
+			return null;
+		String col1 = (col.lastIndexOf("/") < 1 ? "/db" : col.substring(0,
+				col.lastIndexOf("/")));
+		return col1;
+	}
+    
+	public String ParentHasDoc(DBBroker broker, String col, String document) {
+		DBBroker broker1 = broker;
+		Collection collection1 = null;
+		String col2 = "";
+		String result = null;
+		boolean test = true;
+		while (test) {
+			col2 = getParentPathGen(col);
+		    if (col2.equals("/db")) 
+		    		test=false;
+			collection1 = broker.openCollection(col2, Lock.READ_LOCK);
+			if (collection1.hasDocument(document)) {
+				result = col2;
+				test=false;
+			}
+			col = col2;
+			collection1.release();
+		}		
+		broker = broker1;
+		return result;		
+	}
+	
 }
