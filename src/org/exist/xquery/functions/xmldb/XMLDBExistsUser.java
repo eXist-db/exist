@@ -32,7 +32,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.JavaObjectValue;
+import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -47,25 +47,22 @@ import org.exist.xmldb.UserManagementService;
 /**
  * @author wolf
  */
-public class XMLDBCreateUser extends BasicFunction {
+public class XMLDBExistsUser extends BasicFunction {
 
 	public final static FunctionSignature signature = new FunctionSignature(
-			new QName("create-user", XMLDBModule.NAMESPACE_URI,
+			new QName("exists-user", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
-			"Create a new user in the database. Requires username, password, and at least one group name.",
+			"Returns true if user exists. Requires username. Does not delete the user's home collection.",
 			new SequenceType[]{
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE),
             },
-			new SequenceType(Type.ITEM, Cardinality.EMPTY));
+			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
 
 	/**
 	 * @param context
 	 * @param signature
 	 */
-	public XMLDBCreateUser(XQueryContext context) {
+	public XMLDBExistsUser(XQueryContext context) {
 		super(context, signature);
 	}
 
@@ -79,29 +76,18 @@ public class XMLDBCreateUser extends BasicFunction {
 			throws XPathException {
 
         String user = args[0].getStringValue();
-        String pass = args[1].getStringValue();
-        String group = args[2].getStringValue();
-        User userObj = new User(user, pass, group);
-        
-        LOG.info("Attempting to create user "+user+" in group "+group);
-        
-        Sequence otherGroups = args[3];
-        int len = otherGroups.getLength();
-        for (int x = 0; x < len; x++)
-            userObj.addGroup(otherGroups.itemAt(x).getStringValue());
         
         Collection collection = null;
 		try {
             collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), "/db");
 			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
-			ums.addUser(userObj);
+			return ((null == ums.getUser(user)) ? BooleanValue.FALSE : BooleanValue.TRUE);
 		} catch (XMLDBException xe) {
 			throw new XPathException(getASTNode(), "Failed to create new user " + user, xe);
         } finally {
             if (null != collection)
                 try { collection.close(); } catch (XMLDBException e) { /* ignore */ }
 		}
-        return Sequence.EMPTY_SEQUENCE;
 	}
     
 }

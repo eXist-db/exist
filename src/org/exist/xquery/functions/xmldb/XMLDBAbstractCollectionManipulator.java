@@ -56,8 +56,10 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
         
-        if (args.length == 0)
+        if (0 == args.length)
             throw new XPathException("Expected a collection as the first argument.");
+        
+        boolean collectionNeedsClose = true;
         
         // If the incoming is a collection object, use it:
         Collection collection = null;
@@ -68,20 +70,43 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
                 collection = (Collection) o;
         } 
         
-        if (collection == null) {
+        if (null == collection) {
             // Otherwise, just extract the name as a string:
             String collectionURI = args[0].getStringValue();
-            try {
-                collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), collectionURI);
-                collection.getName();
-            } catch (XMLDBException xe) {
-                XPathException xpe = new  XPathException("Could not locate collection "+collectionURI);
-                xpe.initCause(xe);
-                throw xpe;
+            if (null != collectionURI) {
+                try {
+                    java.net.URI uri = new java.net.URI(collectionURI);
+                    if (null == uri.getScheme()) {
+                        // Must be a LOCAL collection
+                        collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), collectionURI);
+                        collection.getName();
+                    } else {
+                        // Right now, the collection is retrieved as GUEST. Need to figure out how to
+                        // get user information into the URL?
+                        collection = org.xmldb.api.DatabaseManager.getCollection(collectionURI);
+                    }
+                } catch (java.net.URISyntaxException use) {
+                    throw new XPathException(getASTNode(), "Could not parse URI: "+collectionURI, use);
+                } catch (XMLDBException xe) {
+                    throw new XPathException(getASTNode(), "Could not locate collection: "+collectionURI, xe);
+                }
             }
+            if (null == collection) {
+                throw new XPathException(getASTNode(), "Unable to find collection: "+collectionURI);
+            }
+        } else {
+            // Don't close incoming JavaObjects:
+            collectionNeedsClose = false;
         }
-	
-        return  evalWithCollection(collection, args, contextSequence);
+        
+        Sequence s = Sequence.EMPTY_SEQUENCE;
+        try {
+            s = evalWithCollection(collection, args, contextSequence);
+        } finally {
+            if (collectionNeedsClose)
+                try { collection.close(); } catch (Exception e) { throw new XPathException(getASTNode(), "Unable to close collection", e); }
+        }
+        return s;
 	}
 
     abstract protected Sequence evalWithCollection(Collection c, Sequence[] args, Sequence contextSequence) throws XPathException;

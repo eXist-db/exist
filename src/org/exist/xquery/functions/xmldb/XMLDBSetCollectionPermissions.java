@@ -30,6 +30,7 @@ import org.xmldb.api.base.XMLDBException;
 
 import org.exist.xmldb.UserManagementService;
 import org.exist.security.Permission;
+import org.exist.security.User;
 
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
@@ -76,7 +77,23 @@ public class XMLDBSetCollectionPermissions extends XMLDBAbstractCollectionManipu
 
         try {
             UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
-            ums.setPermissions(collection, new Permission(args[1].getStringValue(), args[2].getStringValue(), ((IntegerValue) args[3].convertTo(Type.INTEGER)).getInt()));
+            String user = args[1].getStringValue();
+            String group = args[2].getStringValue();
+            int mode = ((IntegerValue) args[3].convertTo(Type.INTEGER)).getInt();
+            
+            if (null == user || 0 == user.length())
+                throw new XPathException(getASTNode(), "Needs a valid user name, not: "+user);
+            if (null == group || 0 == group.length())
+                throw new XPathException(getASTNode(), "Needs a valid group name, not: "+group);
+
+            // Must actually get a User object for the Permission...
+            Permission p = new Permission(user, group, mode);
+            User u = ums.getUser(user);
+            if (null == u)
+                throw new XPathException(getASTNode(), "Needs a valid user name, not: "+user);
+            p.setOwner(u);
+            
+            ums.setPermissions(collection, p);
         } catch (XMLDBException xe) {
             throw new XPathException(getASTNode(), "Unable to change collection permissions", xe);
         }
