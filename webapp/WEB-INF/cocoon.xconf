@@ -1,5 +1,18 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<cocoon version="2.1">
+<?xml version="1.0" encoding="UTF-8"?><!--
+  Copyright 1999-2004 The Apache Software Foundation
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+--><cocoon version="2.1">
 
 <!--+
     |  This is the Apache Cocoon configuration file. This is the place
@@ -77,14 +90,6 @@
       <check-time>4000</check-time>
       <!--  <debugger>enabled</debugger> -->  <!-- JavaScript Debugger support -->
     </component-instance>
-    <!-- (Deprecated) Original
-    <component-instance name="JavaScript" class="org.apache.cocoon.components.flow.javascript.JavaScriptInterpreter">
-      <load-on-startup>resource://org/apache/cocoon/components/flow/javascript/system.js</load-on-startup>
-      <reload-scripts>true</reload-scripts>
-      <check-time>4000</check-time>
-      <debugger>enabled</debugger>
-    </component-instance>
-    -->
   </flow-interpreters>
 
   <!--+
@@ -98,7 +103,7 @@
       | expiring continuations. Currently only the "periodic" type is
       | supported.
       +-->
-  <continuations-manager logger="flow" time-to-live="3600000">
+  <continuations-manager logger="flow.manager" time-to-live="3600000">
     <expirations-check type="periodic">
       <offset>180000</offset>
       <period>180000</period>
@@ -184,6 +189,9 @@
       <file src="http://slashdot.org/slashdot.rss"/>
     </component-instance>
 
+    <component-instance class="org.apache.cocoon.components.modules.input.FlowAttributeModule" logger="core.modules.input" name="flow-attribute"/>
+    <component-instance class="org.apache.cocoon.components.modules.input.FlowContinuationModule" logger="core.modules.input" name="flow-continuation"/>
+
   <!--..... Start configuration from 'db-modules-input' -->
 
 
@@ -235,6 +243,7 @@
     <!-- the "*" protocol handles all uri schemes that are not explicitely specified. This includes all
          JDK standard protocols. -->
     <component-instance class="org.apache.excalibur.source.impl.URLSourceFactory" name="*"/>
+    <component-instance class="org.apache.cocoon.components.source.impl.ModuleSourceFactory" name="module"/>
   <!--..... Start configuration from 'blob' -->
 
 
@@ -247,8 +256,8 @@
 
     <!-- xmldb pseudo protocol -->
     <component-instance class="org.apache.cocoon.components.source.impl.XMLDBSourceFactory" name="xmldb">
-		<!-- Add here other XML:DB compliant databases drivers -->
-		<driver class="org.exist.xmldb.DatabaseImpl" type="exist"/>
+	  <driver class="org.exist.xmldb.DatabaseImpl" type="exist"/>
+      <!-- Add here other XML:DB compliant databases' drivers -->
     </component-instance>
 
 <!--..... End configuration from 'xmldb' -->
@@ -424,46 +433,24 @@
       |    in the cache will be thrown out.
       +-->
   <transient-store logger="core.store.transient">
-     <parameter name="maxobjects" value="100"/>
+    <parameter name="maxobjects" value="1000"/>
   </transient-store>
   
   <!--+
       | Store: generic store. The default implementation is an in-memory store
-      | backed by the persistent store (see below). This forms a two-stage
+      | backed by a disk store (based on JCS). This forms a two-stage
       | cache composed of a fast in-memory MRU front-end and a persistent
-      | back-end storing less used objects.
+      | back-end which stores the less-used objects.
       |
       | Common configuration parameters:
-      | maxobjects: Indicates how many objects will be hold in the cache.
+      | maxobjects: Indicates how many objects will be held in the cache.
       |    When the number of maxobjects has been reached. The last object
       |    in the cache will be thrown out.
       +-->
   <store logger="core.store">
-     <parameter name="maxobjects" value="100"/>
-  </store>
-
-  <!--+
-      | Persistent Store: holds objects that have to survive shutdown.
-      | WARNING: FilesystemStore is broken. Cocoon uses DefaultPersistentStore based
-      | on the Avalon Excalibur JispStore instead.
-      |
-      | Common configuration parameters:
-      |  use-cache-directory: Indicates that cache directory specified in
-      |                       web.xml should be used.
-      |  use-work-directory: Indicates that work directory specified in
-      |                      web.xml should be used.
-      |  directory: Specifies directory to use. Absolute or relative to the
-      |             work directory.
-      |
-      | DefaultStore configuration parameters:
-      |  datafile: Name of the store file to use. Defaults to cocoon.dat
-      |  indexfile: Name of the index file to use. Defaults to cocoon.idx
-      |  order: FIXME: put description here.
-      +-->
-  <persistent-store logger="core.store.persistent">
+    <parameter name="maxobjects" value="1000"/>
     <parameter name="use-cache-directory" value="true"/>
-    <parameter name="order" value="2701"/>
-  </persistent-store>
+  </store>
 
   <!--+
       | Store Janitor: the store garbage collector and memory usage controller.
@@ -526,65 +513,44 @@
     <cache-at-startup>true</cache-at-startup>
   </i18n-bundles>
 
-<!-- ================ XSP (eXtensible Server Pages) ===================== -->
+<!-- ====================== System Components =========================== -->
 
   <!--+
-      | Program Generator
-      |
-      | The ProgamGenerator builds programs from a XML document written in a
-      | MarkupLanguage.
-      |
-      |    auto-reload: whether the system should check if the source was
-      |                 modified and reload of consequence.
-      |    root-package: the java package to use for the generated classes
-      |    preload: whether the system should preload the necessary components
+      | The core classloader implementation
       +-->
-  <program-generator logger="core.program-generator">
-    <parameter name="auto-reload" value="true"/>
-    <parameter name="root-package" value="org.apache.cocoon.www"/>
-    <parameter name="preload" value="true"/>
-  </program-generator>
+  <classloader class="org.apache.cocoon.components.classloader.ClassLoaderManagerImpl" logger="core.classloader"/>
 
   <!--+
-      | Programming Languages for the XSP pages
+      | XML compiler/decompiler
+      |
+      | these components are used to process SAX events and produce a binary
+      | representation that is much more compact and efficient for
+      | subsequent parsing. These are used by the cache system to save
+      | the intermediate results of the pipeline stages reducing the overhead
+      | of xml parsing/serialization.
       +-->
-  <programming-languages>
-    <java-language logger="core.language.java" name="java">
+  <xml-serializer class="org.apache.cocoon.components.sax.XMLByteStreamCompiler" logger="core.xml-serializer" pool-grow="4" pool-max="32" pool-min="8"/>
+  <xml-deserializer class="org.apache.cocoon.components.sax.XMLByteStreamInterpreter" logger="core.xml-deserializer" pool-grow="4" pool-max="32" pool-min="8"/>
 
-      <!-- Specifies which formatter to use to format source code.
-           This parameter is optional.
-           It is commented out because of bug #5689: Java "code-formatter"
-           incorrectly formats double values -->
-      <!--parameter name="code-formatter" value="org.apache.cocoon.components.language.programming.java.JstyleFormatter"/-->
+  <!--+
+      | The Monitor keeps track on changes to a Resource.
+      +-->
+  <monitor logger="core.monitor">
+    <thread frequency="10000" priority="5"/>
+  </monitor>
 
-      <!-- A singleton-like implementation of a ClassLoader -->
-      <parameter name="class-loader" value="org.apache.cocoon.components.classloader.ClassLoaderManagerImpl"/>
-
-      <!--+
-          | Specifies which Java compiler to use. Possible variants are:
-          |
-          |  - EclipseJavaCompiler: the Eclipse JTD java compiler
-          |  - Javac: the java compiler that comes with JDK
-          |  - Jikes: the Jikes java compiler
-          |  - Pizza: the Pizza java compiler
-          |
-          | NOTE: the Eclipse JTD is the only java compiler that is capable
-          |       of imports classes thru the context classloader. All other
-          |       compilers import classes from the JVM classpath and might
-          |       normally result in ClassNotFound problems at compilation
-          |       time. It is *HIGHLY* suggested that you use this compiler
-          |       or you might experience problems in some servlet containers.
-          +-->
-		  <parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.EclipseJavaCompiler"/>
-	  <!--parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.Javac"/-->
-      <!--parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.Jikes"/-->
-	  <!--parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.Pizza"/-->
-
-    </java-language>
-
-    <!-- Interpreted JavaScript language -->
-    <js-language logger="core.language.js" name="js"/>
-  </programming-languages>
+  <!--+
+      | The Cache Manager is a component that can be used to cache content.
+      | It is currently used by the cinclude transformer
+      +-->
+  <component class="org.apache.cocoon.transformation.helpers.DefaultIncludeCacheManager" role="org.apache.cocoon.transformation.helpers.IncludeCacheManager">
+    <!-- Set the preemptive-loader-url to a pipeline inside Cocoon that
+         contains the preemptive loader action. The URL must be absolute! 
+    <parameter name="preemptive-loader-url" 
+               value="http://localhost:8080/cocoon/samples/cinclude/loader"/>
+    -->
+ </component>
+<!--..... Start configuration from 'xsp-markup' -->
 
   <!--+
       | Logicsheets
@@ -725,13 +691,14 @@
           <parameter name="href" value="resource://org/apache/cocoon/components/language/markup/xsp/java/esql.xsl"/>
         </builtin-logicsheet>
 
+
+<!--..... End configuration from 'esql' -->
+
 		<builtin-logicsheet>
 			<parameter name="prefix" value="xdb"/>
 			<parameter name="uri" value="http://exist-db.org/xmldb/1.0"/>
 			<parameter name="href" value="resource://org/exist/xmldb.xsl"/>
 		</builtin-logicsheet>
-
-<!--..... End configuration from 'esql' -->
 </target-language>
 
       <!--+
@@ -757,53 +724,81 @@
           <parameter name="uri" value="http://apache.org/xsp/session/2.0"/>
           <parameter name="href" value="resource://org/apache/cocoon/components/language/markup/xsp/javascript/session.xsl"/>
         </builtin-logicsheet>
+
       </target-language>
     </xsp-language>
   </markup-languages>
+<!--..... End configuration from 'xsp-markup' -->
+<!--..... Start configuration from 'xsp-program-generator' -->
+
+  <!--+
+      | Program Generator
+      |
+      | The ProgamGenerator builds programs from a XML document written in a
+      | MarkupLanguage.
+      |
+      |    auto-reload: whether the system should check if the source was
+      |                 modified and reload of consequence.
+      |    root-package: the java package to use for the generated classes
+      |    preload: whether the system should preload the necessary components
+      +-->
+  <program-generator logger="core.program-generator">
+    <parameter name="auto-reload" value="true"/>
+    <parameter name="root-package" value="org.apache.cocoon.www"/>
+    <parameter name="preload" value="true"/>
+  </program-generator>
+<!--..... End configuration from 'xsp-program-generator' -->
+<!--..... Start configuration from 'xsp-program-language' -->
+
+  <!--+
+      | Programming Languages for the XSP pages
+      +-->
+  <programming-languages>
+    <java-language logger="core.language.java" name="java">
+
+      <!--+ Specifies which formatter to use to format source code.
+          | This parameter is optional.
+          | At the moment there is no implementation of a code formatter available.
+          +-->
+      <!--parameter name="code-formatter" value="org.apache.cocoon.components.language.programming.java.NullFormatter"/-->
+
+      <!-- A singleton-like implementation of a ClassLoader -->
+      <parameter name="class-loader" value="org.apache.cocoon.components.classloader.ClassLoaderManagerImpl"/>
+
+      <!--+
+          | Specifies which Java compiler to use. Possible variants are:
+          |
+          |  - EclipseJavaCompiler: the Eclipse JTD java compiler
+          |  - Javac: the java compiler that comes with JDK
+          |  - Jikes: the Jikes java compiler
+          |  - Pizza: the Pizza java compiler
+          |
+          | NOTE: the Eclipse JTD is the only java compiler that is capable
+          |       of imports classes thru the context classloader. All other
+          |       compilers import classes from the JVM classpath and might
+          |       normally result in ClassNotFound problems at compilation
+          |       time. It is *HIGHLY* suggested that you use this compiler
+          |       or you might experience problems in some servlet containers.
+          +-->
+      <parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.EclipseJavaCompiler"/>
+      <!--parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.Javac"/-->
+      <!--parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.Jikes"/-->
+      <!--parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.Pizza"/-->
+
+    </java-language>
+
+    <!-- Interpreted JavaScript language -->
+    <js-language logger="core.language.js" name="js"/>
+  </programming-languages>
+<!--..... End configuration from 'xsp-program-language' -->
+<!--..... Start configuration from 'xsp-xscript' -->
 
   <!-- Xscript -->
   <xscript logger="core.xscript">
     <parameter name="xscript:copy-of" value="resource://org/apache/cocoon/components/xscript/xslt/copy-of.xsl"/>
     <parameter name="xscript:value-of" value="resource://org/apache/cocoon/components/xscript/xslt/value-of.xsl"/>
   </xscript>
-
-<!-- ====================== System Components =========================== -->
-
-  <!--+
-      | The core classloader implementation
-      +-->
-  <classloader class="org.apache.cocoon.components.classloader.ClassLoaderManagerImpl" logger="core.classloader"/>
-
-  <!--+
-      | XML compiler/decompiler
-      |
-      | these components are used to process SAX events and produce a binary
-      | representation that is much more compact and efficient for
-      | subsequent parsing. These are used by the cache system to save
-      | the intermediate results of the pipeline stages reducing the overhead
-      | of xml parsing/serialization.
-      +-->
-  <xml-serializer class="org.apache.cocoon.components.sax.XMLByteStreamCompiler" logger="core.xml-serializer" pool-grow="4" pool-max="32" pool-min="8"/>
-  <xml-deserializer class="org.apache.cocoon.components.sax.XMLByteStreamInterpreter" logger="core.xml-deserializer" pool-grow="4" pool-max="32" pool-min="8"/>
-
-  <!--+
-      | The Monitor keeps track on changes to a Resource.
-      +-->
-  <monitor logger="core.monitor">
-    <thread frequency="10000" priority="5"/>
-  </monitor>
-
-  <!--+
-      | The Cache Manager is a component that can be used to cache content.
-      | It is currently used by the cinclude transformer
-      +-->
-  <component class="org.apache.cocoon.transformation.helpers.DefaultIncludeCacheManager" role="org.apache.cocoon.transformation.helpers.IncludeCacheManager">
-    <!-- Set the preemptive-loader-url to a pipeline inside Cocoon that
-         contains the preemptive loader action. The URL must be absolute! 
-    <parameter name="preemptive-loader-url" 
-               value="http://localhost:8080/cocoon/samples/cinclude/loader"/>
-    -->
- </component>
+<!--..... End configuration from 'xsp-xscript' -->
 <!--..... Start configuration from 'datasources' -->
 
   <datasources>
