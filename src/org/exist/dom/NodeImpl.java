@@ -43,7 +43,7 @@ import org.xml.sax.ext.LexicalHandler;
  *
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
  */
-public class NodeImpl implements Node {
+public class NodeImpl implements Node, QNameable {
 	
 	protected final static Logger LOG = Logger.getLogger(NodeImpl.class);
 
