@@ -80,12 +80,16 @@ public class XQueryServlet extends HttpServlet {
 	public final static String DEFAULT_PASS = "guest";
 	public final static String DEFAULT_URI = "xmldb:exist:///db";
 
+	public final static String DEFAULT_ENCODING = "UTF-8";
+
 	public final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 		
 	private String user = null;
 	private String password = null;
 	private String collectionURI = null;
-	
+
+	private String encoding = null;
+
 	private Map cache = new HashMap();
 	
 	/* (non-Javadoc)
@@ -100,6 +104,12 @@ public class XQueryServlet extends HttpServlet {
 		if(password == null)
 			password = DEFAULT_PASS;
 		collectionURI = config.getInitParameter("uri");
+
+		encoding = config.getInitParameter("encoding");
+		if(encoding == null) {
+			encoding = DEFAULT_ENCODING;
+		}
+
 		if(collectionURI == null)
 			collectionURI = DEFAULT_URI;
 		try {
@@ -239,7 +249,7 @@ public class XQueryServlet extends HttpServlet {
 	}
 	
 	private String readQuery(File source) throws IOException {
-		Reader reader = new InputStreamReader(new FileInputStream(source), "UTF-8");
+		Reader reader = new InputStreamReader(new FileInputStream(source), encoding);
 		char[] chars = new char[1024];
 		StringBuffer buf = new StringBuffer();
 		int read;
