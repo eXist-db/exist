@@ -11,26 +11,33 @@
             <section title="XQuery Examples">
             
                 <p>XQuery is probably the next big language for Web programming.
-                Contrary to JSP, PHP, ASP, XSP, it is not a mix of a "normal" programming language with HTML, it is a single language that is designed by the W3C from scratch to support the procedural aspect and the XML. XQuery is equally good for Web XHTML content creation as for querying XML. And with the eXist HTTP request extensions there are the necessary functions to access the HTTP request.</p>
-                <p>The examples here demonstrate eXist's new XQuery processing
+                Contrary to JSP, PHP, ASP, XSP, it is not a mix of a "normal" 
+                programming language with HTML, it is a single language that 
+                is designed by the W3C from scratch to support the procedural 
+                aspect and the XML. XQuery is equally good for Web XHTML content 
+                creation as for querying XML. And with the eXist HTTP request extensions 
+                there are the necessary functions to access the HTTP request.</p>
+                
+                <p>The examples here demonstrate eXist's XQuery processing
                     features. eXist provides two alternatives to execute a single
-                    XQuery script in a web application: 
-                    <ul>
+                    XQuery script in a web application:</p> 
+                <ul>
                     <li>
-						<para>a generator for Cocoon, called <b>XQueryGenerator</b>, and </para>
+                        a generator for Cocoon, called <b>XQueryGenerator</b>, and
                     </li>
                     <li>
-                      a servlet, implemented in class <b>XQueryServlet</b>. 
+                        a servlet, implemented in class <b>XQueryServlet</b>. 
                     </li>
-                    </ul>
-                    The XQueryGenerator passes the
-                    generated output of the XQuery script as a SAX stream into the
-                    Cocoon pipeline. Use it if you need the full power of Cocoon. The servlet is configured to respond to
-                    requests ending with the suffix <code>.xql</code>.</p>
+                </ul>
+                
+                <p>The XQueryGenerator passes the
+                generated output of the XQuery script as a SAX stream into the
+                Cocoon pipeline. Use it if you need the full power of Cocoon. The servlet 
+                is configured to respond to requests ending with the suffix <code>.xql</code>.</p>
                 
                 <p>Both alternatives, the XQueryGenerator as well as the servlet,
-                    keep the compiled XQuery script in a cache. The code will only
-                    be recompiled if the source file has changed.</p>
+                keep the compiled XQuery script in a cache. The code will only
+                be recompiled if the source file has changed.</p>
                 
                 <table border="0" width="100%" cellspacing="10">
                     <tr>
@@ -93,7 +100,7 @@
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
-                            <link href="xquery/biblio.xml">Bibliography</link>
+                            <link href="xquery/biblio.xml">Bibliography 2</link>
                         </td>
                         <td width="70%">
                             An XQuery-version of the old library search example from previous

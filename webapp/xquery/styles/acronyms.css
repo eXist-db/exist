@@ -1,0 +1,14 @@
+@import url(default-style.css);
+
+.entry {
+    border: 1px solid #999;
+}
+
+.acronym {
+    font-weight: bold;
+}
+
+.expansion {
+    color: #009966;
+    font-weight: bold;
+}

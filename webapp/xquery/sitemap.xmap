@@ -115,7 +115,7 @@
 
 			<map:match pattern="*.xq">
                 <map:generate src="{1}.xq" type="xquery">
-                	<map:parameter name="create-session" value="true"/>
+                    <map:parameter name="create-session" value="true"/>
                     <map:parameter name="file" value="{1}.xq"/>
 				</map:generate>
 				<map:serialize encoding="UTF-8" type="html"/>

@@ -10,6 +10,7 @@ body {
 
 .header {
   position: relative;
+  top: 10px;
   padding: 5px;
   display: block;
 }
@@ -19,11 +20,11 @@ body {
 }
 
 .info {
+  position: absolute;
   vertical-align: top;
-  float: right;
+  right: 20px;
   color: #999999;
   font-size: x-small;
-  position: relative;
 }
 
 .info ul {
@@ -68,17 +69,15 @@ body {
     left: 27%;
     width: 62%;
     margin-top: 15px;
+    margin-left: 15px;
+    padding-top: 10px;
     display: block;
     background-color: white;
-    overflow: hidden;
     vertical-align: top;
 }
 
 .panel-head {
   font-size: large;
-  padding: 10px;
-  padding-left: 5px;
-
 }
 
 #status {
@@ -96,6 +95,7 @@ body {
 #browse {
     margin-left: 15px;
     font-size: smaller;
+    border-bottom: 1px solid black;
 }
 
 #browse th {
@@ -107,28 +107,43 @@ body {
     font-family: Courier, monospace;
 }
 
-.panel .process {
+.process {
     padding: 5px;
-    border: 1px solid #0000AA;
-    font-size: smaller;
+    border-top: 1px solid #999;
+    border-bottom: 1px solid #999;
+    font-size: small;
     margin-bottom: 10px;
+    margin-left: 25px;
+    margin-right: 25px;
+}
+
+.process h3 {
+    color: #999;
+    padding: 0px;
+    margin-top: 5px;
+    margin-bottom: 0px;
 }
 
 .process ul {
     list-style-type: none;
+    padding-left: 0px;
+    margin-top: 0px;
+}
+
+.process li {
+    margin-left: 0px;
 }
 
 .panel .actions {
     margin-top: 15px;
+    margin-left: 15px;
     font-size: smaller;
     width: 100%;
 }
 
-.actions td {
-    border-top: 1px solid #0000AA;
-    margin-top: 10px;
-    padding-top: 10px;
-    padding-bottom: 10px;
+.actions td { 
+    padding-top: 5px;
+    padding-bottom: 5px;
     padding-right: 5px;
     padding-left: 5px;
     vertical-align: bottom;

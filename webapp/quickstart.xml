@@ -263,12 +263,38 @@ jar xfv ../exist.war]]></screen>
 				</varlistentry>
 			</variablelist>
 		</section>
+        <section>
+            <title>Import the Example Documents</title>
+            
+            <para>To play with the database, we first need to store something into it.
+            The examples that come with eXist require a few documents to be stored into
+            the correct collections.</para>
+            
+            <para>To make things as simple as possible, we added an XQuery script
+            to create the required collections and import the files. However, you can
+            also do that manually as described in the next section.</para>
+            
+            <para>The setup script can be found in the admin web application, which
+            is itself completely written in XQuery and can be used for the basic
+            administration steps. Browse to</para>
+            
+            <para><ulink url="http://localhost:8080/exist/admin/admin.xql">
+            http://localhost:8080/exist/admin/admin.xql</ulink></para>
+            
+            <para>or select <option>Administration/Admin</option> from the
+            sidebar on the start page of eXist.</para>
+            
+            <para>Login as "admin" and leave the password field empty. Once logged
+            in, select <option>Examples Setup</option> from the menu at the left.</para>
+        </section>
+        
 		<section>
 			<title>Using the Client to Index Files</title>
-			<para>There is no preferred way to work with eXist. The server 
-				offers quite a number of different interfaces, including 
-				XML-RPC, SOAP, REST-style HTTP or direct access via Cocoon 
-                and the XML:DB API.</para>
+
+            <para>There is no preferred way to work with eXist. The server 
+            offers quite a number of different interfaces, including 
+            XML-RPC, SOAP, REST-style HTTP or direct access via Cocoon 
+            and the XML:DB API.</para>
 			<para>This section explains how to add and query files using the 
 				admin client. The command-line client may either be controlled by 
 				parameters, or used interactively. If no action is specified on 
