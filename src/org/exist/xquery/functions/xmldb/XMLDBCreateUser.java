@@ -85,8 +85,10 @@ public class XMLDBCreateUser extends BasicFunction {
         
         LOG.info("Attempting to create user "+user+" in group "+group);
         
-        for (int x = 3; x < args.length; x++)
-            userObj.addGroup(args[x].getStringValue());
+        Sequence otherGroups = args[3];
+        int len = otherGroups.getLength();
+        for (int x = 0; x < len; x++)
+            userObj.addGroup(otherGroups.itemAt(x).getStringValue());
         
 		try {
             Collection collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), "/db");
