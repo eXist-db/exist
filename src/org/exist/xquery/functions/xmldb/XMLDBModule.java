@@ -4,6 +4,10 @@
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
+ *  Some modifications Copyright (C) 2004 Luigi P. Bai
+ *  finder@users.sf.net
+ *  Licensed as below under the LGPL.
+ *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
@@ -50,7 +54,14 @@ public class XMLDBModule extends AbstractInternalModule {
 		new FunctionDef(XMLDBGroup.signature, XMLDBGroup.class),
 		new FunctionDef(XMLDBOwner.signature, XMLDBOwner.class),
 		new FunctionDef(XMLDBGetChildCollections.signature, XMLDBGetChildCollections.class),
-		new FunctionDef(XMLDBGetResourceCollections.signature, XMLDBGetResourceCollections.class)
+		new FunctionDef(XMLDBGetResourceCollections.signature, XMLDBGetResourceCollections.class),
+		new FunctionDef(XMLDBSetCollectionPermissions.signature, XMLDBSetCollectionPermissions.class),
+		new FunctionDef(XMLDBSetResourcePermissions.signature, XMLDBSetResourcePermissions.class),
+       		new FunctionDef(XMLDBCreateUser.signature, XMLDBCreateUser.class),
+        	new FunctionDef(XMLDBDeleteUser.signature, XMLDBDeleteUser.class),
+	        new FunctionDef(XMLDBChmodCollection.signature, XMLDBChmodCollection.class),
+	        new FunctionDef(XMLDBChmodResource.signature, XMLDBChmodResource.class),
+	        new FunctionDef(XMLDBCollectionExists.signature, XMLDBCollectionExists.class),
 	};
 	
 	public XMLDBModule() {
