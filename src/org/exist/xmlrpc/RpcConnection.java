@@ -347,16 +347,7 @@ public class RpcConnection extends Thread {
 
 if (param.equals(EXistOutputKeys.EXPAND_XINCLUDES)){
 	serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, paramvalue);
-	} else
-	{
-	
-	  if (option.equals("true")){
-			serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");	
-	  }	else {
-			serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
-	}	 
-	  
-	}	
+	} 
 	
 if (param.equals(OutputKeys.INDENT)){
 	prettyPrint= paramvalue;
@@ -374,9 +365,18 @@ if (param.equals(EXistOutputKeys.STYLESHEET_PARAM)){
 	 styleparam = (Hashtable)parametri.get(param);
 	}
 
-				  }
-			
-				  }	
+}
+}
+
+
+if (!parametri.containsKey(EXistOutputKeys.EXPAND_XINCLUDES))
+{
+	  if (option.equals("true")){
+			serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");	
+	  }	else {
+			serializer.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
+	  }	 
+}
 
 		    serializer.setProperty(OutputKeys.ENCODING, encoding);
 			serializer.setProperty(OutputKeys.INDENT, prettyPrint);
