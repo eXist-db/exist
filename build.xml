@@ -9,6 +9,7 @@
 
     <property name="jetty.dir" value="Jetty-4.1.4"/>
     <property name="src" value="./src"/>
+    <property name="src.webapp" value="./webapp"/>
 	<property name="samples" value="./samples"/>
 	<property name="bin" value="./bin"/>
     <property name="lib.core" value="./lib/core"/>
@@ -20,6 +21,8 @@
     <property name="build.soap" value="${build}/soap"/>
     <property name="build.classes" value="${build}/classes"/>
     <property name="build.docs" value="${build}/docs"/>
+    <property name="build.docs.src" value="${build.docs}/source"/>
+    <property name="build.docs.html" value="${build.docs}/html"/>
     <property name="ant.home" value="."/>
     <property name="dist" value="./dist"/>
 	<property name="webapp.dir" value="${dist}/webapp"/>
@@ -79,16 +82,24 @@
 		<classpath refid="classpath.core"/>
 	</taskdef>
     
+    <taskdef name="cocoon" classname="org.apache.cocoon.CocoonTask">
+        <classpath refid="classpath.core"/>
+    </taskdef>
+    
     <!-- =================================================================== -->
     <!-- Prepare the build                                                   -->
     <!-- =================================================================== -->
     <target name="prepare">
+    	<echo message="-------------------------"/>
         <echo message="eXist ${project.version} build"/>
-        <echo message="----------------------------"/>
+        <echo message="-------------------------"/>
 		<echo message="basedir=${basedir}"/>
         <mkdir dir="${build}"/>
         <mkdir dir="${build.classes}"/>
 		<mkdir dir="${jetty.dir}/logs"/>
+        <tstamp/>
+		<filter token="version" value="${project.version}-${DSTAMP}"/>
+		<copy file="${src.webapp}/header.xml.tmpl" tofile="${src.webapp}/header.xml" filtering="true"/>
     </target>
 
     <!-- =================================================================== -->
@@ -100,7 +111,8 @@
         <javac debug="${build.debug}" deprecation="${build.deprecation}" 
 			destdir="${build.classes}" encoding="UTF-8"
 			optimize="${build.optimize}" srcdir="${src}" target="1.4">
-			<include name="org/**"/>
+        	<include name="org/**"/>
+        	<exclude name="org/exist/schema/**"/>
 			<exclude name="org/exist/http/realm/**"/>
             <classpath>
                 <path refid="classpath.core"/>
@@ -595,7 +607,6 @@
         <taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
 			classname="com.izforge.izpack.ant.IzPackTask"/>
 		<tstamp/>
-		<filter token="version" value="${project.version}"/>
 		<echo message="Calling IzPack to create installer ..."/>
 		<izpack input="installer/install.xml"
 			output="installer/${project.name}-${project.version}.jar"
@@ -606,8 +617,6 @@
 	<target depends="all,samples,javadocs" name="snapshot-installer">
 		<taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
 			classname="com.izforge.izpack.ant.IzPackTask"/>
-		<tstamp/>
-		<filter token="version" value="${DSTAMP}-dev"/>
 		<copy file="installer/install.xml.tmpl" tofile="installer/install.xml" filtering="true"/>
 		<echo message="Calling IzPack to create installer ..."/>
 		<izpack input="installer/install.xml"
@@ -620,98 +629,112 @@
     <!-- Create HTML files for docs on http://exist-db.org                  -->
     <!-- ================================================================== -->
 	<target depends="jar" name="prepare-docs">
+        <property name="demo.host" value="http://demo.exist-db.org/exist"/>
         <delete dir="${build.docs}" failonerror="false"/>
         <mkdir dir="${build.docs}"/>
-        <echo message="Copying docs to temporary location ${build.docs}"/>
-        <copy todir="${build.docs}">
-	        <fileset dir="webapp">
-                <exclude name="**/*~"/>
+        <mkdir dir="${build.docs.src}"/>
+        
+        <echo message="Copying docs to temporary location ${build.docs.src}"/>
+        <copy todir="${build.docs.src}">
+	        <fileset dir="${src.webapp}">
+                <include name="WEB-INF/**"/>
+                <include name="*.xml"/>
+                <include name="sitemap.xmap"/>
+                <include name="styles/**"/>
+                <include name="stylesheets/**"/>
                 <exclude name="WEB-INF/data/*"/>
-                <exclude name="**.xsp"/>
-                <exclude name="adminLogin.xml"/>
-                <exclude name="biblio.xml"/>
-				<exclude name="login.xml"/>
-				<exclude name="xse/**"/>
             </fileset>
         </copy>
-        <echo message="Making links to examples absolute"/>
-
-		<replace dir="${build.docs}" includes="sidebar.xml"
-			token="index.xml#articles" summary="true"
-			value="index.html#articles"/>
         
-		<replace dir="${build.docs}" includes="sidebar.xml"
-			token="index.xml#mailing" summary="true"
-			value="index.html#mailing"/>
-		
-        <replace dir="${build.docs}" includes="index.xml sidebar.xml"
-			token="examples.xml" summary="true"
-			value="http://demo.exist-db.org/exist/examples.xml"/>
-
-        <replace dir="${build.docs}" includes="sidebar.xml"
-			token="xquery/acronyms.xq" summary="true"
-			value="http://demo.exist-db.org/exist/xquery/acronyms.xq"/>
-
-        <replace dir="${build.docs}" includes="sidebar.xml"
-			token="xquery/biblio.xml" summary="true"
-			value="http://demo.exist-db.org/exist/xquery/biblio.xml"/>
-        
-        <replace dir="${build.docs}" includes="sidebar.xml"
-			token="xquery/xquery.xq" summary="true"
-			value="http://demo.exist-db.org/exist/xquery/xquery.xq"/>
-
-        <replace dir="${build.docs}" includes="sidebar.xml"
-			token="xmldb/db/" summary="true"
-			value="http://demo.exist-db.org/exist/xmldb/db/"/>
-
-        <replace dir="${build.docs}" includes="sidebar.xml"
-			token="xadmin.xsp" summary="true"
-			value="http://demo.exist-db.org/exist/xadmin.xsp"/>
-
-		<replace dir="${build.docs}" includes="sidebar.xml"
-			token="status" summary="true"
-			value="http://demo.exist-db.org/exist/status"/>
-		
-		<replace dir="${build.docs}" includes="index.xml quickstart.xml xquery.xml"
-			token="examples.xml" summary="true"
-			value="http://demo.exist-db.org/exist/examples.xml"/>
-		
-		<replace dir="${build.docs}" includes="xquery.xml"
-			token="xquery/functions.xq" summary="true"
-			value="http://demo.exist-db.org/exist/xquery/functions.xq"/>
+        <echo message="Adjusting links ..."/>
+        <replace dir="${build.docs.src}" summary="true"
+            includes="*.xml">
+            <replacefilter token="index.xml" value="index.html"/>
+            <replacefilter token="ant-tasks.xml" value="ant-tasks.html"/>
+            <replacefilter token="changes.xml" value="changes.html"/>
+            <replacefilter token="client.xml" value="client.html"/>
+            <replacefilter token="configuration.xml" value="configuration.html"/>
+            <replacefilter token="credits.xml" value="credits.html"/>
+            <replacefilter token="deployment.xml" value="deployment.html"/>
+            <replacefilter token="devguide.xml" value="devguide.html"/>
+            <replacefilter token="documentation.xml" value="documentation.html"/>
+            <replacefilter token="donations.xml" value="donations.html"/>
+            <replacefilter token="facts.xml" value="facts.html"/>
+            <replacefilter token="howtos.xml" value="howtos.html"/>
+            <replacefilter token="performance.xml" value="performance.html"/>
+            <replacefilter token="quickstart.xml" value="quickstart.html"/>
+            <replacefilter token="security.xml" value="security.html"/>
+            <replacefilter token="xquery.xml" value="xquery.html"/>
+            <replacefilter token='"xinclude.xml' value='"xinclude.html'/>
+            
+            <replacefilter token="examples.xml" value="${demo.host}/examples.xml"/>
+            <replacefilter token="xquery/acronyms.xml" value="${demo.host}/xquery/acronyms.xml"/>
+            <replacefilter token="xquery/biblio.xml" value="${demo.host}/xquery/biblio.xml"/>
+            <replacefilter token="xquery/xquery.xq" value="${demo.host}/xquery/xquery.xq"/>
+            <replacefilter token='url="xmldb/db/' value='url="${demo.host}/xmldb/db/'/>
+            <replacefilter token="xadmin.xsp" value="${demo.host}/xadmin.xsp"/>
+            <replacefilter token="xquery/functions.xq" value="${demo.host}/xquery/functions.xq"/>
+            <replacefilter token='url="xquery/guess.xql' value='url="${demo.host}/xquery/guess.xql'/>
+            <replacefilter token="xquery/login.xql" value="${demo.host}/xquery/login.xql"/>
+        </replace>
     </target>
     
-	<target name="docs">
-	    <mkdir dir="${build.docs}"/>
+	<target depends="prepare-docs" name="docs">
+        <mkdir dir="${build.docs.html}"/>
+        
 	    <delete dir="${build}/work"/>
+        
 	    <echo message="Calling Cocoon ..."/>
-	    <java classname="org.apache.cocoon.Main" dir="${build.docs}"
-            failonerror="true" fork="true" output="${build}/cocoon.output">
-            <arg value="-c."/>
-            <arg value="-CWEB-INF/cocoon.xconf"/>
-            <arg value="-d."/>
-            <arg value="-w../work"/>
-            <arg value="-l../work/cocoon.log"/>
-			<arg value="-V"/>
-            <arg value="index.xml"/>
-			<classpath>
-				<path refid="classpath.core"/>
-            </classpath>
-        </java>
-	</target>
-
-	<target name="rename-files">
-        <echo message="Renaming files ..."/>    
-        <move todir="${build.docs}">
-            <fileset dir="${build.docs}">
-                <include name="**.xml.html"/>
+        
+        <cocoon verbose="true"
+            classpathref="classpath.core"
+            precompile-only="false" 
+            confirm-extensions="false"
+            context-dir="${build.docs.src}"
+            config-file="${build.docs.src}/WEB-INF/cocoon.xconf"
+            work-dir="${build}/work"
+            dest-dir="${build.docs.html}"
+            extension=".html"
+            accept="*/*">
+            <logging log-kit="${build.docs.src}/WEB-INF/logkit.xconf" logger="cli" level="DEBUG" />
+            <uris name="site" follow-links="false">
+               <uri type="append" src="index.xml"/>
+               <uri type="append" src="ant-tasks.xml"/>
+               <uri type="append" src="changes.xml"/>
+               <uri type="append" src="client.xml"/>
+               <uri type="append" src="configuration.xml"/>
+               <uri type="append" src="credits.xml"/>
+               <uri type="append" src="deployment.xml"/>
+               <uri type="append" src="devguide.xml"/>
+               <uri type="append" src="documentation.xml"/>
+               <uri type="append" src="donations.xml"/>
+               <uri type="append" src="examples.xml"/>
+               <uri type="append" src="facts.xml"/>
+               <uri type="append" src="howtos.xml"/>
+               <uri type="append" src="performance.xml"/>
+               <uri type="append" src="quickstart.xml"/>
+               <uri type="append" src="security.xml"/>
+               <uri type="append" src="xquery.xml"/>
+               <uri type="append" src="xinclude.xml"/>
+           </uris>
+        </cocoon>
+        
+        <echo message="Renaming files ..."/>
+        <move todir="${build.docs.html}">
+            <fileset dir="${build.docs.html}">
+                <include name="**.xml"/>
             </fileset>
-            <mapper type="glob" from="*.xml.html" to="*.html"/>
+            <mapper type="glob" from="*.xml" to="*.html"/>
         </move>
-        <replace dir="${build.docs}" summary="true"
-            token=".xml.html" value=".html"/>
-		<replace dir="${build.docs}" summary="true"
-			token=".jpg.jpeg" value=".jpg"/>
+        
+        <copy todir="${build.docs.html}">
+	        <fileset dir="webapp">
+                <include name="styles/**"/>
+                <include name="resources/**"/>
+                <include name="*.jpg"/>
+                <include name="*.png"/>
+            </fileset>
+        </copy>
 	</target>
 
 	<!-- ============================================================================ -->
