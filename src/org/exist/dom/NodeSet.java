@@ -221,16 +221,18 @@ public abstract class NodeSet implements NodeList {
     public NodeSet intersection(NodeSet other) {
         long start = System.currentTimeMillis();
         NodeIDSet r = new NodeIDSet();
-        NodeProxy l;
+        NodeProxy l, p;
         for(Iterator i = iterator(); i.hasNext(); ) {
             l = (NodeProxy)i.next();
-            if(other.contains(l))
+            if(other.contains(l)) {
                 r.add(l);
+            }
         }
         for(Iterator i = other.iterator(); i.hasNext(); ) {
             l = (NodeProxy)i.next();
-            if(contains(l) && (!r.contains(l)))
+            if(contains(l) && (!r.contains(l))) {
                 r.add(l);
+            }
         }
         return r;
     }
@@ -239,7 +241,7 @@ public abstract class NodeSet implements NodeList {
         long start = System.currentTimeMillis();
         NodeIDSet result = new NodeIDSet();
         result.addAll(other);
-        NodeProxy p;
+        NodeProxy p, c;
         for(Iterator i = iterator(); i.hasNext(); ) {
             p = (NodeProxy)i.next();
             if(!result.contains(p))

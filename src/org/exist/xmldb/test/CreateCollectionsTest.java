@@ -49,6 +49,9 @@ public class CreateCollectionsTest extends TestCase {
 			assertNotNull(service);
 			Collection testCollection = service.createCollection("test");
 			assertNotNull(testCollection);
+			System.out.println("---------------------------------------");
+			System.out.println("storing files ...");
+			System.out.println("---------------------------------------");
 			File f = new File("samples/shakespeare");
 			File files[] = f.listFiles(new XMLFilenameFilter());
 			XMLResource res;

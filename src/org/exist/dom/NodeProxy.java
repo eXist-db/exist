@@ -36,16 +36,13 @@ import org.w3c.dom.Node;
  *@created    22. Juli 2002
  */
 public final class NodeProxy implements Comparable, Cloneable {
-    /**  Description of the Field */
+
     public DocumentImpl doc = null;
-
-    /**  Description of the Field */
     public long gid = 0;
-    /**  Description of the Field */
     public long internalAddress = -1;
-    /**  Description of the Field */
     public short nodeType = -1;
-
+	public Match[] matches = null;
+	
     public NodeProxy() {
     }
         
@@ -111,7 +108,8 @@ public final class NodeProxy implements Comparable, Cloneable {
     public NodeProxy( NodeProxy p ) {
         this.gid = p.gid;
         this.doc = p.doc;
-	this.internalAddress = p.internalAddress;
+		this.internalAddress = p.internalAddress;
+		this.matches = p.matches;
     }
 
 
@@ -125,6 +123,10 @@ public final class NodeProxy implements Comparable, Cloneable {
     }
 
 
+	/**
+	 * Reset the object's state (for reuse).
+	 *
+	 */
     public void clear() {
         doc = null;
         gid = 0;
@@ -132,23 +134,10 @@ public final class NodeProxy implements Comparable, Cloneable {
         nodeType = -1;
     }
     
-    /**
-     *  Description of the Method
-     *
-     *@param  other  Description of the Parameter
-     *@return        Description of the Return Value
-     */
     public int compareTo( Object other ) {
         return NodeProxyComparator.instance.compare( this, other );
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  other  Description of the Parameter
-     *@return        Description of the Return Value
-     */
     public boolean equals( Object other ) {
         if ( !( other instanceof NodeProxy ) )
             throw new RuntimeException( "cannot compare nodes from different implementations" );
@@ -158,17 +147,6 @@ public final class NodeProxy implements Comparable, Cloneable {
             return true;
         return false;
     }
-
-
-    /**
-     *  Gets the address attribute of the NodeProxy object
-     *
-     *@return    The address value
-     */
-    public long getAddress() {
-        return internalAddress;
-    }
-
 
     /**
      *  Gets the brokerType attribute of the NodeProxy object
@@ -231,62 +209,7 @@ public final class NodeProxy implements Comparable, Cloneable {
 
 
     /**
-     *  Gets the parent attribute of the NodeProxy object
-     *
-     *@return    The parent value
-     */
-    public long getParent() {
-        // calculate parent's gid
-        int level = getTreeLevel();
-        return ( gid - doc.getLevelStartPoint( level ) ) /
-            doc.getTreeLevelOrder( level )
-             + doc.getLevelStartPoint( level - 1 );
-    }
-
-
-    /**
-     *  Gets the parentAtLevel attribute of the NodeProxy object
-     *
-     *@param  level  Description of the Parameter
-     *@return        The parentAtLevel value
-     */
-    public long getParentAtLevel( int level ) {
-        int currentLevel = getTreeLevel();
-        long pid = this.gid;
-        if ( currentLevel < level )
-            return -1;
-        while ( currentLevel > level ) {
-            pid = ( pid - doc.getLevelStartPoint( currentLevel ) ) /
-                doc.getTreeLevelOrder( currentLevel )
-                 + doc.getLevelStartPoint( currentLevel - 1 );
-            currentLevel = currentLevel - 1;
-        }
-        return pid;
-    }
-
-
-    /**
-     *  Gets the treeLevel attribute of the NodeProxy object
-     *
-     *@return    The treeLevel value
-     */
-    public int getTreeLevel() {
-        return doc.getTreeLevel( gid );
-    }
-
-
-    /**
-     *  Sets the address attribute of the NodeProxy object
-     *
-     *@param  address  The new address value
-     */
-    public void setAddress( long address ) {
-        internalAddress = address;
-    }
-
-
-    /**
-     *  Sets the gID attribute of the NodeProxy object
+     *  Sets the node-identifier of this node.
      *
      *@param  gid  The new gID value
      */
@@ -294,12 +217,6 @@ public final class NodeProxy implements Comparable, Cloneable {
         this.gid = gid;
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@return    Description of the Return Value
-     */
     public String toString() {
         return doc.getNode( gid ).toString();
     }
@@ -350,7 +267,7 @@ public final class NodeProxy implements Comparable, Cloneable {
 
 
     /**
-     * Returns the internalAddress.
+     * Returns the storage address of this node in dom.dbx.
      * @return long
      */
     public long getInternalAddress() {
@@ -358,7 +275,7 @@ public final class NodeProxy implements Comparable, Cloneable {
     }
 
     /**
-     * Sets the doc.
+     * Sets the doc this node belongs to.
      * @param doc The doc to set
      */
     public void setDoc(DocumentImpl doc) {
@@ -366,7 +283,8 @@ public final class NodeProxy implements Comparable, Cloneable {
     }
 
     /**
-     * Sets the internalAddress.
+     * Sets the storage address of this node in dom.dbx.
+     * 
      * @param internalAddress The internalAddress to set
      */
     public void setInternalAddress(long internalAddress) {
@@ -382,7 +300,36 @@ public final class NodeProxy implements Comparable, Cloneable {
     }
 
 	public Object clone() throws CloneNotSupportedException {
-		return super.clone();
+		final NodeProxy clone = 
+			new NodeProxy(doc, gid, nodeType, internalAddress);
+		clone.matches = matches;
+		return clone;
+	}
+
+	public void addMatch(Match match) {
+		Match m[] = new Match[(matches == null ? 1 : matches.length + 1)];
+		m[0] = match;
+		if(matches != null) 
+			System.arraycopy(matches, 0, m, 1, matches.length);
+		matches = m;
+	}
+	
+	public void addMatches(Match ms[]) {
+		if(ms == null || ms.length == 0)
+			return;
+		Match m[] = new Match[matches == null ? ms.length : matches.length + ms.length];
+		System.arraycopy(ms, 0, m, 0, ms.length);
+		if(matches != null)
+			System.arraycopy(matches, 0, m, ms.length, matches.length);
+		matches = m;
+	}
+	
+	public String printMatches() {
+		StringBuffer buf = new StringBuffer();
+		buf.append(gid).append(": ");
+		for(int i = 0; i < matches.length; i++)
+			buf.append(matches[i].getMatchingTerm()).append(' ');
+		return buf.toString();
 	}
 }
 

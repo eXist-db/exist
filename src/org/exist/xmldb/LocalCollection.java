@@ -416,6 +416,8 @@ public class LocalCollection extends Observable implements Collection {
             LOG.debug( "storing document " + res.getDocumentId() );
 			if(res.file != null)
                 res.document = parser.parse( collection, (File)res.file, name );
+			else if(res.root != null)
+				res.document = parser.parse( collection, res.root, name);
 			else
 				res.document = parser.parse( collection, res.content, name);
             broker.flush();

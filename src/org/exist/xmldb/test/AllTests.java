@@ -9,8 +9,8 @@ public class AllTests {
 		TestSuite suite = new TestSuite("Test suite for org.exist.xmldb.test");
 		//$JUnit-BEGIN$
 		suite.addTest(new TestSuite(CreateCollectionsTest.class));
-		suite.addTest(new TestSuite(ResourceTest.class));
 		suite.addTest(new TestSuite(XPathQueryTest.class));
+		suite.addTest(new TestSuite(ResourceTest.class));
 		//$JUnit-END$
 		return suite;
 	}

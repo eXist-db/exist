@@ -53,7 +53,7 @@
        
 	   <db-connection database="native" files="webapp/WEB-INF/data" 
 		   buffers="1024" words_buffers="32768" collection_buffers="1024" 
-		   elements_buffers="4096" free_mem_min="10" 
+		   elements_buffers="4096" free_mem_min="-1" 
 		   pageSize="4096">
 
 		   <!-- Settings for the database connection pool

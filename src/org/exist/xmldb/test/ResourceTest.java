@@ -3,6 +3,8 @@ package org.exist.xmldb.test;
 import java.io.StringReader;
 import java.io.StringWriter;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -10,6 +12,7 @@ import junit.framework.TestCase;
 
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -111,6 +114,31 @@ public class ResourceTest extends TestCase {
 			reader.parse(new InputSource(new StringReader(xml)));
 			testCollection.storeResource(doc);
 		} catch (Exception e) {
+			fail(e.getMessage());
+		}
+	}
+
+	public void testSetContentAsDOM() {
+		try {
+			Collection testCollection =
+				DatabaseManager.getCollection(URI + "/test");
+			assertNotNull(testCollection);
+
+			XMLResource doc =
+				(XMLResource) testCollection.createResource(
+					"dom.xml",
+					"XMLResource");
+			String xml =
+				"<test><title>Title</title>"
+					+ "<para>Paragraph1</para>"
+					+ "<para>Paragraph2</para>"
+					+ "</test>";
+			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = docFactory.newDocumentBuilder();
+			Document dom = builder.parse(new InputSource(new StringReader(xml)));
+			doc.setContentAsDOM(dom.getDocumentElement());
+			testCollection.storeResource(doc);
+		} catch(Exception e) {
 			fail(e.getMessage());
 		}
 	}

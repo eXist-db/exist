@@ -26,4 +26,4 @@ JAVA_OPTS="-Djavax.xml.parsers.SAXParserFactory=org.apache.xerces.jaxp.SAXParser
 echo Starting Ant...
 echo
 
-$JAVA_HOME/bin/java $JAVA_OPTS -classpath $LOCALCLASSPATH org.apache.tools.ant.Main $*
+$JAVA_HOME/bin/java -Xms64000K $JAVA_OPTS -classpath $LOCALCLASSPATH org.apache.tools.ant.Main $*

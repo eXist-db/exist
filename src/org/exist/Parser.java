@@ -40,6 +40,7 @@ import org.exist.security.User;
 import org.exist.storage.*;
 import org.exist.util.*;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
@@ -51,7 +52,6 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
-
 
 /**
  * Parser parses a given input document via SAX and stores it to
@@ -89,7 +89,7 @@ public class Parser
 	protected boolean replace = false;
 	protected CatalogResolver resolver;
 	protected Element rootNode;
-	protected InputSource src;
+	//protected InputSource src;
 	protected Stack stack = new Stack();
 	protected User user;
 	private String previousPath = null;
@@ -246,7 +246,7 @@ public class Parser
 			broker.store(comment, currentPath.toString());
 
 	}
-	
+
 	public void endCDATA() {
 	}
 
@@ -280,9 +280,10 @@ public class Parser
 				}
 			}
 			stack.pop();
-			currentPath.delete(currentPath.lastIndexOf("/"), 
+			currentPath.delete(
+				currentPath.lastIndexOf("/"),
 				currentPath.length());
-//				currentPath.substring(0, currentPath.lastIndexOf('/'));
+			//				currentPath.substring(0, currentPath.lastIndexOf('/'));
 			if (validate) {
 				if (document.getTreeLevelOrder(level) < last.getChildCount())
 					document.setTreeLevelOrder(level, last.getChildCount());
@@ -370,7 +371,7 @@ public class Parser
 		try {
 			scan(is, fileName);
 
-			return store();
+			return store(is);
 		} finally {
 			broker.releaseWriteLock(lock);
 		}
@@ -412,7 +413,7 @@ public class Parser
 		try {
 			final InputSource in = new InputSource(file.getAbsolutePath());
 			scan(in, xmlFileName);
-			return store();
+			return store(in);
 		} finally {
 			broker.releaseWriteLock(lock);
 		}
@@ -450,8 +451,19 @@ public class Parser
 		final Object lock = broker.acquireWriteLock();
 		try {
 			scan(new InputSource(new StringReader(str)), xmlFileName);
-			this.src = new InputSource(new StringReader(str));
-			return store();
+			return store(new InputSource(new StringReader(str)));
+		} finally {
+			broker.releaseWriteLock(lock);
+		}
+	}
+
+	public DocumentImpl parse(Collection coll, Node node, String xmlFileName)
+		throws SAXException, IOException, PermissionDeniedException {
+		collection = coll;
+		final Object lock = broker.acquireWriteLock();
+		try {
+			scan(node, xmlFileName);
+			return store(node);
 		} finally {
 			broker.releaseWriteLock(lock);
 		}
@@ -540,8 +552,6 @@ public class Parser
 			throw new IOException("no input source");
 		if (broker.isReadOnly())
 			throw new PermissionDeniedException("database is read-only");
-		final String pathSep = File.pathSeparator;
-		this.src = src;
 		this.fileName = xmlFileName;
 		parser.setContentHandler(this);
 		parser.setErrorHandler(this);
@@ -549,7 +559,7 @@ public class Parser
 		int p;
 		if (fileName == null) {
 			fileName = src.getSystemId();
-			if ((p = fileName.lastIndexOf(pathSep)) > -1)
+			if ((p = fileName.lastIndexOf(File.pathSeparator)) > -1)
 				fileName = fileName.substring(p + 1);
 		}
 		if (fileName.charAt(0) != '/')
@@ -575,16 +585,19 @@ public class Parser
 			if (!oldDoc.getPermissions().validate(user, Permission.UPDATE))
 				throw new PermissionDeniedException(
 					"document exists and update " + "is not allowed");
-		// no: do we have write permissions?
+			// no: do we have write permissions?
 		} else if (
 			!collection.getPermissions().validate(user, Permission.WRITE))
 			throw new PermissionDeniedException(
 				"not allowed to write to collection " + collection.getName());
 		// if an old document exists, save the new document with a temporary
 		// document name
-		if(oldDoc != null)
+		if (oldDoc != null)
 			document =
-				new DocumentImpl(broker, collName + "/__" + fileName, collection);
+				new DocumentImpl(
+					broker,
+					collName + "/__" + fileName,
+					collection);
 		else
 			document =
 				new DocumentImpl(broker, collName + '/' + fileName, collection);
@@ -594,7 +607,7 @@ public class Parser
 			document.getPermissions().setGroup(user.getPrimaryGroup());
 		} else
 			document.setPermissions(oldDoc.getPermissions());
-			
+
 		// reset internal variables
 		maxLevel = 0;
 		level = 0;
@@ -612,13 +625,113 @@ public class Parser
 				collection.removeDocument(document.getFileName());
 			throw e;
 		}
-        // new document is valid: remove old document
-        if(oldDoc != null) {
-            broker.removeDocument(oldDoc.getFileName());
-			collection.renameDocument(document.getFileName(),
+		// new document is valid: remove old document
+		if (oldDoc != null) {
+			broker.removeDocument(oldDoc.getFileName());
+			collection.renameDocument(
+				document.getFileName(),
 				oldDoc.getFileName());
-        }
-        
+		}
+
+	}
+
+	/**
+		 *  Prepare for storing the document. 
+		 * 
+		 * The document is parsed for validation. If a document with the same 
+		 * name exists and updates are allowed, the old document is removed. 
+		 *
+		 *@param  src                            InputSource
+		 *@param  xmlFileName                    name of the document
+		 *@exception  SAXException               
+		 *@exception  IOException                
+		 *@exception  PermissionDeniedException  
+		 */
+	public void scan(Node node, String xmlFileName)
+		throws SAXException, IOException, PermissionDeniedException {
+		if (node == null)
+			throw new IOException("no input");
+		if (broker.isReadOnly())
+			throw new PermissionDeniedException("database is read-only");
+		this.fileName = xmlFileName;
+		parser.setContentHandler(this);
+		parser.setErrorHandler(this);
+		validate = true;
+		int p;
+		if (fileName == null)
+			throw new SAXException("no document name specified");
+		if (fileName.charAt(0) != '/')
+			fileName = '/' + fileName;
+
+		if (!fileName.startsWith("/db"))
+			fileName = "/db" + fileName;
+
+		final int pos = fileName.lastIndexOf('/');
+		final String collName = (pos > 0) ? fileName.substring(0, pos) : "/db";
+		if (pos > 0)
+			fileName = fileName.substring(pos + 1);
+
+		if (collection == null || (!collection.getName().equals(collName))) {
+			collection = broker.getOrCreateCollection(user, collName);
+			broker.saveCollection(collection);
+		}
+		DocumentImpl oldDoc = null;
+		// does a document with the same name exist?
+		if ((oldDoc = collection.getDocument(collName + '/' + fileName))
+			!= null) {
+			// do we have permissions for update?
+			if (!oldDoc.getPermissions().validate(user, Permission.UPDATE))
+				throw new PermissionDeniedException(
+					"document exists and update " + "is not allowed");
+			// no: do we have write permissions?
+		} else if (
+			!collection.getPermissions().validate(user, Permission.WRITE))
+			throw new PermissionDeniedException(
+				"not allowed to write to collection " + collection.getName());
+		// if an old document exists, save the new document with a temporary
+		// document name
+		if (oldDoc != null)
+			document =
+				new DocumentImpl(
+					broker,
+					collName + "/__" + fileName,
+					collection);
+		else
+			document =
+				new DocumentImpl(broker, collName + '/' + fileName, collection);
+		collection.addDocument(document);
+		if (oldDoc == null) {
+			document.getPermissions().setOwner(user);
+			document.getPermissions().setGroup(user.getPrimaryGroup());
+		} else
+			document.setPermissions(oldDoc.getPermissions());
+
+		// reset internal variables
+		maxLevel = 0;
+		level = 0;
+		currentPath.setLength(0);
+		stack = new Stack();
+		prefixes = new Stack();
+		previousPath = null;
+		rootNode = null;
+		LOG.debug("validating document " + fileName + " ...");
+		DOMStreamer streamer = new DOMStreamer(this, this);
+		try {
+			streamer.stream(node);
+		} catch (SAXException e) {
+			LOG.debug(e.getMessage());
+			if (collection != null)
+				collection.removeDocument(document.getFileName());
+			throw e;
+		}
+		// new document is valid: remove old document
+		if (oldDoc != null) {
+			broker.removeDocument(oldDoc.getFileName());
+			collection.renameDocument(
+				document.getFileName(),
+				oldDoc.getFileName());
+		}
+
 	}
 
 	public void setDocumentLocator(Locator locator) {
@@ -759,7 +872,7 @@ public class Parser
 			setChanged();
 			notifyObservers(progress);
 		}
-//		previousPath = currentPath;
+		//		previousPath = currentPath;
 	}
 
 	public void startEntity(String name) {
@@ -790,7 +903,8 @@ public class Parser
 	 *@exception  SAXException  Description of the Exception
 	 *@exception  IOException   Description of the Exception
 	 */
-	public DocumentImpl store() throws SAXException, IOException {
+	public DocumentImpl store(InputSource src)
+		throws SAXException, IOException {
 		LOG.debug("storing document ...");
 		try {
 			final InputStream is = src.getByteStream();
@@ -827,6 +941,51 @@ public class Parser
 			}
 			document.setChildCount(0);
 			parser.parse(src);
+			broker.flush();
+			return document;
+		} catch (NullPointerException npe) {
+			LOG.debug("null pointer", npe);
+			throw new SAXException(npe);
+		} catch (PermissionDeniedException e) {
+			throw new SAXException("permission denied");
+		}
+	}
+
+	/**
+	 *  Actually store the document to the database.
+	 * 
+	 * scan() should have been called before. 
+	 *
+	 *@return                   Description of the Return Value
+	 *@exception  SAXException  Description of the Exception
+	 *@exception  IOException   Description of the Exception
+	 */
+	public DocumentImpl store(Node node) throws SAXException, IOException {
+		LOG.debug("storing document ...");
+		try {
+			progress = new ProgressIndicator(currentLine);
+			document.setMaxDepth(document.getMaxDepth() + 1);
+			document.calculateTreeLevelStartPoints();
+			validate = false;
+			if (document.getDoctype() == null) {
+				// we don't know the doctype
+				// set it to the root node's tag name
+				final DocumentTypeImpl dt =
+					new DocumentTypeImpl(
+						rootNode.getTagName(),
+						null,
+						document.getFileName());
+				document.setDocumentType(dt);
+			}
+			if (broker.getDatabaseType() != DBBroker.NATIVE) {
+				broker.storeDocument(document);
+				broker.saveCollection(collection);
+			} else {
+				broker.addDocument(collection, document);
+			}
+			document.setChildCount(0);
+			DOMStreamer streamer = new DOMStreamer(this, this);
+			streamer.stream(node);
 			broker.flush();
 			return document;
 		} catch (NullPointerException npe) {

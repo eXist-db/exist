@@ -55,6 +55,7 @@ import org.exist.dom.AttrImpl;
 import org.exist.dom.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.Match;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
@@ -319,6 +320,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		Collection collection;
 		short collectionId;
 		VariableByteInputStream is;
+		NodeProxy p;
 		Lock lock = dbWords.getLock();
 		for (int i = 0; i < expr.length; i++) {
 			if (expr[i] == null)
@@ -366,8 +368,9 @@ public class NativeTextEngine extends TextSearchEngine {
 							delta = is.readLong();
 							gid = last + delta;
 							last = gid;
-							result[i].add(
-								new NodeProxy(doc, gid, Node.TEXT_NODE));
+							p = new NodeProxy(doc, gid, Node.TEXT_NODE);
+							p.addMatch(new Match(term, gid));
+							result[i].add(p);
 						}
 					}
 				} catch (EOFException e) {
@@ -1068,7 +1071,6 @@ public class NativeTextEngine extends TextSearchEngine {
 				word = new String(key.getData(), 2, key.getLength() - 2);
 			}
 			if (matcher.matches(word, regexp)) {
-				//				LOG.debug("found: " + word);
 				Value value = dbWords.get(pointer);
 				if (value == null)
 					return true;
@@ -1080,6 +1082,7 @@ public class NativeTextEngine extends TextSearchEngine {
 				long last = -1;
 				long delta;
 				DocumentImpl doc;
+				NodeProxy proxy;
 				VariableByteInputStream is = new VariableByteInputStream(data);
 				try {
 					while (is.available() > 0) {
@@ -1094,7 +1097,9 @@ public class NativeTextEngine extends TextSearchEngine {
 							delta = is.readLong();
 							gid = (last < 0 ? delta : last + delta);
 							last = gid;
-							result.add(new NodeProxy(doc, gid, Node.TEXT_NODE));
+							proxy = new NodeProxy(doc, gid, Node.TEXT_NODE);
+							proxy.addMatch(new Match(word, gid));
+							result.add(proxy);
 						}
 					}
 				} catch (EOFException e) {

@@ -14,7 +14,7 @@ import org.apache.xml.serialize.*;
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
  *@created    20. September 2002
  */
-public class APISearch {
+public class ExampleSearch {
 
     protected static String URI = "xmldb:exist://";
 
@@ -79,7 +79,7 @@ public class APISearch {
 
     /**  Description of the Method */
     protected static void usage() {
-        System.out.println( "usage: samples.APISearch [ collection ] xpath-query" );
+        System.out.println( "usage: samples.ExampleSearch [ collection ] xpath-query" );
         System.exit( 0 );
     }
 }

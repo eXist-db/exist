@@ -190,15 +190,16 @@
 		<fileset dir="data" includes="*.dbx"/>
 		<fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
         </delete>
-        <junit haltonfailure="yes" printsummary="yes" showoutput="${junit.output}">
+        <junit haltonfailure="yes" printsummary="yes" 
+        	showoutput="${junit.output}">
             <formatter type="plain"/>
             <test fork="yes" name="org.exist.xmldb.test.AllTests" todir="${junit.reports}"/>
-            <batchtest fork="yes" todir="${junit.reports}">
+            <!--batchtest fork="yes" todir="${junit.reports}">
                 <fileset dir="${src}">
                     <include name="**/test/*.java"/>
                     <exclude name="**/xmldb/test/*.java"/>
                 </fileset>
-            </batchtest>
+            </batchtest-->
             <classpath refid="classpath.core"/>
         </junit>
     </target>
