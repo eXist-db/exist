@@ -78,6 +78,7 @@ final class NativeCollectionIndexer {
      * this should <b>not</b> be the case in future.
      *  
      * @param pool broker pool to use
+     * @param broker the broker to use
      * @param collectionsDb initialized collectionsDb
      */
     public NativeCollectionIndexer(BrokerPool pool, DBBroker broker, CollectionStore collectionsDb) {

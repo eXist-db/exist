@@ -8,6 +8,7 @@ package org.exist.storage;
 
 import java.io.IOException;
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
@@ -38,6 +39,7 @@ import org.exist.storage.store.DOMTransaction;
 import org.exist.storage.store.NodeIterator;
 import org.exist.storage.store.StorageAddress;
 import org.exist.util.ByteArrayPool;
+import org.exist.util.ByteConversion;
 import org.exist.util.Collations;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
@@ -55,29 +57,23 @@ import org.w3c.dom.NodeList;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 final class NativeDomIndexer {
-    // TODO
-    protected boolean xupdateConsistencyChecks = false;
-    protected PatternCompiler compiler = new Perl5Compiler();
-    protected PatternMatcher matcher = new Perl5Matcher();
     
-    /**
-     * Temporary DBBroker instance.
-     */
+    /** Regular expression compiler */
+    private PatternCompiler compiler = new Perl5Compiler();
+    
+    /** Compiled regular expression matcher */
+    private PatternMatcher matcher = new Perl5Matcher();
+    
+    /** Temporary DBBroker instance */
     private DBBroker broker = null;
     
-    /**
-     * Is any of the databases read-only?
-     */
+    /** Is any of the databases read-only? */
     private boolean readOnly = false;
     
-    /**
-     * The underlying native db.
-     */
+    /** The underlying native db */
     private DOMFile domDb = null;
     
-    /**
-     * The Log4J logger.
-     */
+    /** The Log4J logger */
     private static final Logger LOG = Logger.getLogger(NativeDomIndexer.class);
 
     /**
@@ -230,7 +226,7 @@ final class NativeDomIndexer {
     
     public void checkTree(final DocumentImpl doc) {
         LOG.debug("Checking DOM tree for document " + doc.getFileName());
-        if(xupdateConsistencyChecks) {
+        if(broker.consistencyChecksEnabled()) {
             new DOMTransaction(this, domDb, Lock.READ_LOCK) {
                 public Object start() throws ReadOnlyException {
                     LOG.debug("Pages used: " + domDb.debugPages(doc));
@@ -508,4 +504,251 @@ final class NativeDomIndexer {
         return domDb.close();
     }
     /////// DB FUNCS
+    
+    ////// new funcs
+    public void n1(final DocumentImpl doc, final NodeImpl node, final long gid) {
+        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+            public Object start() throws ReadOnlyException {
+                try {
+                    domDb.addValue(
+                        new NodeRef(doc.getDocId(), gid),
+                        node.getInternalAddress());
+                } catch (BTreeException e) {
+                    LOG.warn(NewNativeBroker.EXCEPTION_DURING_REINDEX, e);
+                } catch (IOException e) {
+                    LOG.warn(NewNativeBroker.EXCEPTION_DURING_REINDEX, e);
+                }
+                return null;
+            }
+        }
+        .run();
+    }
+    
+    public void n2(final DocumentImpl doc, final DocumentImpl oldDoc,
+            final NodeImpl node) {
+        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+            public Object start() throws ReadOnlyException {
+                try {
+                    Value ref = new NodeRef(doc.getDocId());
+                    IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+                    final ArrayList nodes = domDb.findKeys(query);
+                    long gid;
+                    for (Iterator i = nodes.iterator(); i.hasNext();) {
+                        ref = (Value) i.next();
+                        gid = ByteConversion.byteToLong(ref.data(), ref.start() + 4);
+                        if (oldDoc.getTreeLevel(gid) >= doc.reindexRequired()) {
+                            if (node != null) {
+                                if (XMLUtil.isDescendant(oldDoc, node.getGID(), gid)) {
+                                    domDb.removeValue(ref);
+                                }
+                            } else
+                                domDb.removeValue(ref);
+                        }
+                    }
+                } catch (BTreeException e) {
+                    LOG.debug("Exception while reindexing document: " + e.getMessage(), e);
+                } catch (IOException e) {
+                    LOG.debug("Exception while reindexing document: " + e.getMessage(), e);
+                }
+                return null;
+            }
+        }.run();
+    }
+    
+    public void n3(final DocumentImpl doc, final NodeImpl node) {
+        new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
+            public Object start() {
+                final long address = node.getInternalAddress();
+                if (address > -1)
+                    domDb.remove(new NodeRef(doc.getDocId(), node.getGID()), address);
+                else
+                    domDb.remove(new NodeRef(doc.getDocId(), node.getGID()));
+                return null;
+            }
+        }
+        .run();
+    }
+    
+    public void n4(final DocumentImpl doc, final NodeImpl node,
+            final long gid) {
+        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+            public Object start() throws ReadOnlyException {
+                try {
+                    domDb.addValue(
+                        new NodeRef(doc.getDocId(), gid),
+                        node.getInternalAddress());
+                } catch (BTreeException e) {
+                    LOG.warn(NewNativeBroker.EXCEPTION_DURING_REINDEX, e);
+                } catch (IOException e) {
+                    LOG.warn(NewNativeBroker.EXCEPTION_DURING_REINDEX, e);
+                }
+                return null;
+            }
+        }
+        .run();
+    }
+    
+    public void n5(final DocumentImpl doc) {
+        NodeRef ref = new NodeRef(doc.getDocId());
+        final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+        new DOMTransaction(this, domDb) {
+            public Object start() {
+                try {
+                    domDb.remove(idx, null);
+                    domDb.flush();
+                } catch (BTreeException e) {
+                    LOG.warn("start() - " + "error while removing doc", e);
+                } catch (IOException e) {
+                    LOG.warn("start() - " + "error while removing doc", e);
+                } catch (TerminatedException e) {
+                    LOG.warn("method terminated", e);
+                } catch (DBException e) {
+                    LOG.warn("start() - " + "error while removing doc", e);
+                }
+                return null;
+            }
+        }
+        .run();
+    }
+    
+    public void n6(final long firstChild) {
+        new DOMTransaction(this, domDb) {
+            public Object start() {
+                domDb.removeAll(firstChild);
+                try {
+                    domDb.flush();
+                } catch (DBException e) {
+                    LOG.warn("start() - " + "error while removing doc", e);
+                }
+                return null;
+            }
+        }
+        .run();
+    }
+    
+    public void n7(final DocumentImpl document) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("removeDocument() - removing dom");
+        }
+        
+        new DOMTransaction(this, domDb) {
+            public Object start() {
+                NodeImpl node = (NodeImpl)document.getFirstChild();
+                domDb.removeAll(node.getInternalAddress());
+                return null;
+            }
+        }
+        .run();
+        
+        NodeRef ref = new NodeRef(document.getDocId());
+        final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+        new DOMTransaction(this, domDb) {
+            public Object start() {
+                try {
+                    domDb.remove(idx, null);
+                    domDb.flush();
+                } catch (BTreeException e) {
+                    LOG.warn("start() - " + "error while removing doc", e);
+                } catch (DBException e) {
+                    LOG.warn("start() - " + "error while removing doc", e);
+                } catch (IOException e) {
+                    LOG.warn("start() - " + "error while removing doc", e);
+                } catch (TerminatedException e) {
+                    LOG.warn("method terminated", e);
+                }
+                return null;
+            }
+        }
+        .run();
+    }
+    
+    public void n8(final DocumentImpl doc, final NodeImpl node, 
+            final short nodeType, final long gid, final int depth) {
+        
+        
+        new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
+            public Object start() throws ReadOnlyException {
+                long address = -1;
+                final byte data[] = node.serialize();
+                if (nodeType == Node.TEXT_NODE
+                    || nodeType == Node.ATTRIBUTE_NODE
+                    || doc.getTreeLevel(gid) > depth)
+                    address = domDb.add(data);
+                else {
+                    address = domDb.put(new NodeRef(doc.getDocId(), gid), data);
+                }
+                if (address < 0)
+                    LOG.warn("address is missing");
+                node.setInternalAddress(address);
+                ByteArrayPool.releaseByteArray(data);
+                return null;
+            }
+        }
+        .run();
+    }
+    
+    // TODO check if this is ok with external "lock" of collection cache 
+    public void n9(final DocumentImpl doc) {
+        LOG.debug("removing document " + doc.getFileName());
+        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+            public Object start() {
+                if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+                    domDb.remove(doc.getAddress());
+                    domDb.removeOverflowValue(((BinaryDocument)doc).getPage());
+                } else {
+                    NodeImpl node = (NodeImpl)doc.getFirstChild();
+                    domDb.removeAll(node.getInternalAddress());
+                }
+                return null;
+            }
+        }
+        .run();
+        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+            public Object start() {
+                try {
+                    Value ref = new NodeRef(doc.getDocId());
+                    IndexQuery query =
+                        new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+                    domDb.remove(query, null);
+                    domDb.flush();
+                } catch (BTreeException e) {
+                    LOG.warn("btree error while removing document", e);
+                } catch (DBException e) {
+                    LOG.warn("db error while removing document", e);
+                } catch (IOException e) {
+                    LOG.warn("io error while removing document", e);
+                } catch (TerminatedException e) {
+                    LOG.warn("method terminated", e);
+                }
+                return null;
+            }
+        }
+        .run();
+    }
+    
+    public void n10(final DocumentImpl doc) {
+        LOG.debug("Dropping index for document " + doc.getFileName());
+        
+        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+            public Object start() {
+                try {
+                    Value ref = new NodeRef(doc.getDocId());
+                    IndexQuery query =
+                        new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+                    domDb.remove(query, null);
+                    domDb.flush();
+                } catch (BTreeException e) {
+                    LOG.warn("btree error while removing document", e);
+                } catch (DBException e) {
+                    LOG.warn("db error while removing document", e);
+                } catch (IOException e) {
+                    LOG.warn("io error while removing document", e);
+                } catch (TerminatedException e) {
+                    LOG.warn("method terminated", e);
+                }
+                return null;
+            }
+        }
+        .run();
+    }
 }

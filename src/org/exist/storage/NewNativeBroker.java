@@ -32,12 +32,6 @@ import java.util.Map;
 import java.util.Observer;
 
 import org.apache.log4j.Logger;
-import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.Pattern;
-import org.apache.oro.text.regex.PatternCompiler;
-import org.apache.oro.text.regex.PatternMatcher;
-import org.apache.oro.text.regex.Perl5Compiler;
-import org.apache.oro.text.regex.Perl5Matcher;
 import org.dbxml.core.DBException;
 import org.dbxml.core.data.Value;
 import org.dbxml.core.filer.BTreeException;
@@ -47,7 +41,6 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.ArraySet;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
@@ -69,14 +62,11 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.store.BFile;
 import org.exist.storage.store.CollectionStore;
 import org.exist.storage.store.DOMFile;
-import org.exist.storage.store.DOMFileIterator;
 import org.exist.storage.store.DOMTransaction;
-import org.exist.storage.store.NodeIterator;
 import org.exist.storage.store.StorageAddress;
 import org.exist.storage.sync.Sync;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
-import org.exist.util.Collations;
 import org.exist.util.Configuration;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
@@ -105,7 +95,7 @@ public class NewNativeBroker extends DBBroker {
 
 	static final String DATABASE_IS_READ_ONLY = "database is read-only";
 	static final String ROOT_COLLECTION = "/db";
-	private static final String EXCEPTION_DURING_REINDEX = "exception during reindex";
+    static final String EXCEPTION_DURING_REINDEX = "exception during reindex";
 	
 	/** default buffer size setting */
 	protected final static int BUFFERS = 256;
@@ -113,19 +103,17 @@ public class NewNativeBroker extends DBBroker {
 	/** check available memory after storing MEM_LIMIT_CHECK nodes */
 	protected final static int MEM_LIMIT_CHECK = 10000;
 
-	// the database files
-	//protected CollectionStore collectionsDb = null;
+	/** Indexer to access the collection db */
     protected NativeCollectionIndexer collectionIndexer = null;
     
-	protected DOMFile domDb = null;
+    /** Indexer to access the dom db */
+    protected NativeDomIndexer domIndexer = null;
+    
 	protected NativeElementIndex elementIndex;
 	protected BFile elementsDb = null;
 	
 	protected NativeTextEngine textEngine;
 	protected Serializer xmlSerializer;
-	
-	protected PatternCompiler compiler = new Perl5Compiler();
-	protected PatternMatcher matcher = new Perl5Matcher();
 	
 	protected int defaultIndexDepth = 1;
 	protected Map idxPathMap;
@@ -193,7 +181,9 @@ public class NewNativeBroker extends DBBroker {
 				config.setProperty("db-connection.elements", elementsDb);
 				readOnly = elementsDb.isReadOnly();
 			}
-
+            
+			// Initialize dom store
+			DOMFile domDb = null;
 			if ((domDb = (DOMFile) config.getProperty("db-connection.dom")) == null) {
 				if (config.hasProperty("db-connection.buffers")) {
 					indexBuffers = buffers;
@@ -216,6 +206,8 @@ public class NewNativeBroker extends DBBroker {
 				if (!readOnly)
 					readOnly = domDb.isReadOnly();
 			}
+			// finally initialize NativeDomIndexer
+            domIndexer = new NativeDomIndexer(this, domDb);
             
             // Initialize collection store
 			CollectionStore collectionsDb = null;
@@ -252,7 +244,10 @@ public class NewNativeBroker extends DBBroker {
 			}
 			// finally initialize NativeCollectionIndexer
             collectionIndexer = new NativeCollectionIndexer(pool, this, collectionsDb);
+            
+            // set readonly attributes
             collectionIndexer.setReadOnly(readOnly);
+            domIndexer.setReadOnly(readOnly);
             
 			if (readOnly)
 				LOG.info("database runs in read-only mode");
@@ -278,26 +273,6 @@ public class NewNativeBroker extends DBBroker {
 		super.addObserver(o);
 		textEngine.addObserver(o);
 		elementIndex.addObserver(o);
-	}
-
-	private final boolean compare(Collator collator, String o1, String o2, int relation) {
-		int cmp = Collations.compare(collator, o1, o2);
-		switch (relation) {
-			case Constants.LT :
-				return (cmp < 0);
-			case Constants.LTEQ :
-				return (cmp <= 0);
-			case Constants.GT :
-				return (cmp > 0);
-			case Constants.GTEQ :
-				return (cmp >= 0);
-			case Constants.EQ :
-				return (cmp == 0);
-			case Constants.NEQ :
-				return (cmp != 0);
-		}
-		return false;
-		// never reached
 	}
 
 	public ElementIndex getElementIndex() {
@@ -350,14 +325,23 @@ public class NewNativeBroker extends DBBroker {
 		}
 	}
 
+    /**
+     * Move later to DBBroker?
+     */
 	public Collection getCollection(String name) {
 		return openCollection(name, -1, Lock.NO_LOCK);
 	}
 	
+    /**
+     * Move later to DBBroker?
+     */
 	public Collection getCollection(String name, long addr) {
 		return openCollection(name, addr, Lock.NO_LOCK);
 	}
 	
+    /**
+     * Move later to DBBroker?
+     */
 	public Collection openCollection(String name, int lockMode) {
 		return openCollection(name, -1, lockMode);
 	}
@@ -378,26 +362,11 @@ public class NewNativeBroker extends DBBroker {
 	}
 	
 	public Iterator getDOMIterator(NodeProxy proxy) {
-		try {
-			return new DOMFileIterator(this, domDb, proxy);
-		} catch (BTreeException e) {
-			LOG.debug("failed to create DOM iterator", e);
-		} catch (IOException e) {
-			LOG.debug("failed to create DOM iterator", e);
-		}
-		return null;
+		return domIndexer.getDOMIterator(proxy);
 	}
 
 	public Iterator getNodeIterator(NodeProxy proxy) {
-//		domDb.setOwnerObject(this);
-		try {
-			return new NodeIterator(this, domDb, proxy, false);
-		} catch (BTreeException e) {
-			LOG.debug("failed to create node iterator", e);
-		} catch (IOException e) {
-			LOG.debug("failed to create node iterator", e);
-		}
-		return null;
+	    return domIndexer.getNodeIterator(proxy);
 	}
 
 	/**
@@ -626,21 +595,7 @@ public class NewNativeBroker extends DBBroker {
 				break;
 		}
 		if (nodeType == Node.ELEMENT_NODE && level <= depth) {
-			new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-				public Object start() throws ReadOnlyException {
-					try {
-						domDb.addValue(
-							new NodeRef(doc.getDocId(), gid),
-							node.getInternalAddress());
-					} catch (BTreeException e) {
-						LOG.warn(EXCEPTION_DURING_REINDEX, e);
-					} catch (IOException e) {
-						LOG.warn(EXCEPTION_DURING_REINDEX, e);
-					}
-					return null;
-				}
-			}
-			.run();
+			domIndexer.n1(doc, node, gid);
 		}
 	}
 
@@ -663,33 +618,8 @@ public class NewNativeBroker extends DBBroker {
 		
 		final long start = System.currentTimeMillis();
 		// remove all old index keys from the btree 
-		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-			public Object start() throws ReadOnlyException {
-				try {
-					Value ref = new NodeRef(doc.getDocId());
-					IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-					final ArrayList nodes = domDb.findKeys(query);
-					long gid;
-					for (Iterator i = nodes.iterator(); i.hasNext();) {
-						ref = (Value) i.next();
-						gid = ByteConversion.byteToLong(ref.data(), ref.start() + 4);
-						if (oldDoc.getTreeLevel(gid) >= doc.reindexRequired()) {
-							if (node != null) {
-								if (XMLUtil.isDescendant(oldDoc, node.getGID(), gid)) {
-									domDb.removeValue(ref);
-								}
-							} else
-								domDb.removeValue(ref);
-						}
-					}
-				} catch (BTreeException e) {
-					LOG.debug("Exception while reindexing document: " + e.getMessage(), e);
-				} catch (IOException e) {
-					LOG.debug("Exception while reindexing document: " + e.getMessage(), e);
-				}
-				return null;
-			}
-		}.run();
+		domIndexer.n2(doc, oldDoc, node);
+        
 		try {
 			// now reindex the nodes
 			Iterator iterator;
@@ -744,21 +674,7 @@ public class NewNativeBroker extends DBBroker {
 			if(listener != null)
 				listener.nodeChanged(node);
 			if (nodeType == Node.ELEMENT_NODE && level <= depth) {
-				new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-					public Object start() throws ReadOnlyException {
-						try {
-							domDb.addValue(
-								new NodeRef(doc.getDocId(), gid),
-								node.getInternalAddress());
-						} catch (BTreeException e) {
-							LOG.warn(EXCEPTION_DURING_REINDEX, e);
-						} catch (IOException e) {
-							LOG.warn(EXCEPTION_DURING_REINDEX, e);
-						}
-						return null;
-					}
-				}
-				.run();
+				domIndexer.n4(doc, node, gid);
 			}
 			final NodeProxy tempProxy =
 				new NodeProxy(doc, gid, node.getInternalAddress());
@@ -970,27 +886,8 @@ public class NewNativeBroker extends DBBroker {
 			elementIndex.dropIndex(doc);
 			
 			// dropping dom index
-			NodeRef ref = new NodeRef(doc.getDocId());
-			final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-			new DOMTransaction(this, domDb) {
-				public Object start() {
-					try {
-						domDb.remove(idx, null);
-						domDb.flush();
-					} catch (BTreeException e) {
-			            LOG.warn("start() - " + "error while removing doc", e);
-					} catch (IOException e) {
-			            LOG.warn("start() - " + "error while removing doc", e);
-					} catch (TerminatedException e) {
-			            LOG.warn("method terminated", e);
-			        } catch (DBException e) {
-			        	LOG.warn("start() - " + "error while removing doc", e);
-					}
-					return null;
-				}
-			}
-			.run();
-			
+			domIndexer.n5(doc);
+            
 			// create a copy of the old doc to copy the nodes into it
 			DocumentImpl tempDoc = new DocumentImpl(this, doc.getFileName(), doc.getCollection());
 			tempDoc.copyOf(doc);
@@ -1013,18 +910,7 @@ public class NewNativeBroker extends DBBroker {
 //			checkTree(tempDoc);
 			
 			// remove the old nodes
-			new DOMTransaction(this, domDb) {
-				public Object start() {
-					domDb.removeAll(firstChild);
-					try {
-						domDb.flush();
-					} catch (DBException e) {
-						LOG.warn("start() - " + "error while removing doc", e);
-					}
-					return null;
-				}
-			}
-			.run();
+			domIndexer.n6(firstChild);
 			
 //			checkTree(tempDoc);
 			
@@ -1099,77 +985,11 @@ public class NewNativeBroker extends DBBroker {
 	}
 	
 	public void checkTree(final DocumentImpl doc) {
-		LOG.debug("Checking DOM tree for document " + doc.getFileName());
-		if(xupdateConsistencyChecks) {
-			new DOMTransaction(this, domDb, Lock.READ_LOCK) {
-				public Object start() throws ReadOnlyException {
-					LOG.debug("Pages used: " + domDb.debugPages(doc));
-					return null;
-				}
-			}.run();
-			
-			NodeList nodes = doc.getChildNodes();
-			NodeImpl n;
-			for (int i = 0; i < nodes.getLength(); i++) {
-			    n = (NodeImpl) nodes.item(i);
-			    Iterator iterator =
-			        getNodeIterator(
-			                new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
-			    iterator.next();
-			    checkTree(iterator, n);
-			}
-			NodeRef ref = new NodeRef(doc.getDocId());
-			final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-			new DOMTransaction(this, domDb) {
-				public Object start() {
-					try {
-						domDb.findKeys(idx);
-					} catch (BTreeException e) {
-			            LOG.warn("start() - " + "error while removing doc", e);
-					} catch (IOException e) {
-			            LOG.warn("start() - " + "error while removing doc", e);
-					}
-					return null;
-				}
-			}
-			.run();
-		}
+		domIndexer.checkTree(doc);
 	}
-	
-	private void checkTree(Iterator iterator, NodeImpl node) {
-		if (node.hasChildNodes()) {
-			final long firstChildId = XMLUtil.getFirstChildId((DocumentImpl)node.getOwnerDocument(), 
-					node.getGID());
-			if (firstChildId < 0) {
-				LOG.fatal(
-					"no child found: expected = "
-						+ node.getChildCount()
-						+ "; node = "
-						+ node.getNodeName()
-						+ "; gid = "
-						+ node.getGID());
-				throw new IllegalStateException("wrong node id");
-			}
-			final long lastChildId = firstChildId + node.getChildCount();
-			NodeImpl child;
-			for (long gid = firstChildId; gid < lastChildId; gid++) {
-				child = (NodeImpl) iterator.next();
-				if(child == null)
-					LOG.debug("child " + gid + " not found for node: " + node.getNodeName() +
-							"; last = " + lastChildId + "; children = " + node.getChildCount());
-				child.setGID(gid);
-				checkTree(iterator, child);
-			}
-		}
-	}
-	
+
 	public String getNodeValue(final NodeProxy proxy) {
-		return (String) new DOMTransaction(this, domDb, Lock.READ_LOCK) {
-			public Object start() {
-				return domDb.getNodeValue(proxy);
-			}
-		}
-		.run();
+		return domIndexer.getNodeValue(proxy);
 	}
 
 	/**
@@ -1205,7 +1025,7 @@ public class NewNativeBroker extends DBBroker {
 		}
 		if (!isCaseSensitive())
 			expr = expr.toLowerCase();
-		NodeSet result = scanSequential(context, docs, relation, truncation, expr, collator);
+		NodeSet result = domIndexer.scanSequential(context, docs, relation, truncation, expr, collator);
 		//				LOG.debug(
 		//					"searching "
 		//						+ result.getLength()
@@ -1260,58 +1080,11 @@ public class NewNativeBroker extends DBBroker {
 	}
 
 	public Node objectWith(final Document doc, final long gid) {
-		return (Node) new DOMTransaction(this, domDb) {
-			public Object start() {
-				Value val = domDb.get(new NodeProxy((DocumentImpl) doc, gid));
-				if (val == null) {
-//				    if(LOG.isDebugEnabled()) {
-//				        LOG.debug("node " + gid + " not found in document " + ((DocumentImpl)doc).getDocId());
-//				        Thread.dumpStack();
-//				    }
-					return null;
-				}
-				NodeImpl node =
-					NodeImpl.deserialize(
-						val.getData(),
-						0,
-						val.getLength(),
-						(DocumentImpl) doc);
-				node.setGID(gid);
-				node.setOwnerDocument(doc);
-				node.setInternalAddress(val.getAddress());
-				return node;
-			}
-		}
-		.run();
+		return domIndexer.objectWith(doc, gid);
 	}
 
 	public Node objectWith(final NodeProxy p) {
-		if (p.getInternalAddress() < 0)
-			return objectWith(p.getDocument(), p.gid);
-		return (Node) new DOMTransaction(this, domDb) {
-			public Object start() {
-				Value val = domDb.get(p.getInternalAddress());
-				if (val == null) {
-					LOG.debug("Node " + p.gid + " not found in document " + p.getDocument().getName() +
-							"; docId = " + p.getDocument().getDocId());
-//					LOG.debug(domDb.debugPages(p.doc));
-					Thread.dumpStack();
-//					return null;
-					return objectWith(p.getDocument(), p.gid); // retry?
-				}
-				NodeImpl node =
-					NodeImpl.deserialize(
-						val.getData(),
-						0,
-						val.getLength(),
-						(DocumentImpl) p.getDocument());
-				node.setGID(p.gid);
-				node.setOwnerDocument(p.getDocument());
-				node.setInternalAddress(p.getInternalAddress());
-				return node;
-			}
-		}
-		.run();
+		return domIndexer.objectWith(p);
 	}
 
 	public void dropIndex(Collection collection) throws PermissionDeniedException {
@@ -1326,28 +1099,7 @@ public class NewNativeBroker extends DBBroker {
 	    
 	    for (Iterator i = collection.iterator(this); i.hasNext();) {
 	        final DocumentImpl doc = (DocumentImpl) i.next();
-	        LOG.debug("Dropping index for document " + doc.getFileName());
-	        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-	            public Object start() {
-	                try {
-	                    Value ref = new NodeRef(doc.getDocId());
-	                    IndexQuery query =
-	                        new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-	                    domDb.remove(query, null);
-	                    domDb.flush();
-	                } catch (BTreeException e) {
-	                    LOG.warn("btree error while removing document", e);
-	                } catch (DBException e) {
-	                    LOG.warn("db error while removing document", e);
-	                } catch (IOException e) {
-	                    LOG.warn("io error while removing document", e);
-	                } catch (TerminatedException e) {
-	                    LOG.warn("method terminated", e);
-	                }
-	                return null;
-	            }
-	        }
-	        .run();
+	        domIndexer.n10(doc);
 	    }
 	}
 	
@@ -1460,41 +1212,7 @@ public class NewNativeBroker extends DBBroker {
 		    LOG.debug("removing resources ...");
 		    for (Iterator i = collection.iterator(this); i.hasNext();) {
 		    	final DocumentImpl doc = (DocumentImpl) i.next();
-		    	LOG.debug("removing document " + doc.getFileName());
-		    	new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-		    		public Object start() {
-		    			if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-		    				domDb.remove(doc.getAddress());
-		    				domDb.removeOverflowValue(((BinaryDocument)doc).getPage());
-		    			} else {
-		    				NodeImpl node = (NodeImpl)doc.getFirstChild();
-		    				domDb.removeAll(node.getInternalAddress());
-		    			}
-		    			return null;
-		    		}
-		    	}
-		    	.run();
-		    	new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-		    		public Object start() {
-		    			try {
-		    				Value ref = new NodeRef(doc.getDocId());
-		    				IndexQuery query =
-		    					new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-		    				domDb.remove(query, null);
-		    				domDb.flush();
-		    			} catch (BTreeException e) {
-		    				LOG.warn("btree error while removing document", e);
-		    			} catch (DBException e) {
-		    				LOG.warn("db error while removing document", e);
-		    			} catch (IOException e) {
-		    				LOG.warn("io error while removing document", e);
-		    			} catch (TerminatedException e) {
-		    				LOG.warn("method terminated", e);
-		    			}
-		    			return null;
-		    		}
-		    	}
-		    	.run();
+		    	domIndexer.n9(doc);
 		    	collectionIndexer.freeDocument(doc.getDocId());
 		    }
 		    return true;
@@ -1514,38 +1232,8 @@ public class NewNativeBroker extends DBBroker {
 
 			elementIndex.dropIndex(document);
 			textEngine.dropIndex(document);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("removeDocument() - removing dom");
-            }
-			new DOMTransaction(this, domDb) {
-				public Object start() {
-				    NodeImpl node = (NodeImpl)document.getFirstChild();
-					domDb.removeAll(node.getInternalAddress());
-					return null;
-				}
-			}
-			.run();
-			
-			NodeRef ref = new NodeRef(document.getDocId());
-			final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-			new DOMTransaction(this, domDb) {
-				public Object start() {
-					try {
-						domDb.remove(idx, null);
-						domDb.flush();
-					} catch (BTreeException e) {
-                        LOG.warn("start() - " + "error while removing doc", e);
-					} catch (DBException e) {
-                        LOG.warn("start() - " + "error while removing doc", e);
-					} catch (IOException e) {
-                        LOG.warn("start() - " + "error while removing doc", e);
-					} catch (TerminatedException e) {
-                        LOG.warn("method terminated", e);
-                    }
-					return null;
-				}
-			}
-			.run();
+			domIndexer.n7(document);
+            
 			if(freeDocId)
 			    collectionIndexer.freeDocument(document.getDocId());
 		} catch (ReadOnlyException e) {
@@ -1560,17 +1248,8 @@ public class NewNativeBroker extends DBBroker {
 		final long gid = node.getGID();
 		final short nodeType = node.getNodeType();
 		final String nodeName = node.getNodeName();
-		new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
-			public Object start() {
-				final long address = node.getInternalAddress();
-				if (address > -1)
-					domDb.remove(new NodeRef(doc.getDocId(), node.getGID()), address);
-				else
-					domDb.remove(new NodeRef(doc.getDocId(), node.getGID()));
-				return null;
-			}
-		}
-		.run();
+		domIndexer.n3(doc, node);
+        
 		final NodeProxy tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
 		QName qname;
 		switch (nodeType) {
@@ -1777,91 +1456,13 @@ public class NewNativeBroker extends DBBroker {
         collectionIndexer.moveCollection(collection, destination, newName);
 	}
 	
-	/**
-	 *  Do a sequential search through the DOM-file.
-	 *
-	 *@param  context     Description of the Parameter
-	 *@param  doc         Description of the Parameter
-	 *@param  relation    Description of the Parameter
-	 *@param  truncation  Description of the Parameter
-	 *@param  expr        Description of the Parameter
-	 *@return             Description of the Return Value
-	 */
-	protected NodeSet scanSequential(
-		NodeSet context,
-		DocumentSet doc,
-		int relation,
-		int truncation,
-		String expr,
-		Collator collator) {
-		ArraySet resultNodeSet = new ArraySet(context.getLength());
-		NodeProxy p;
-		String content;
-		String cmp;
-		Pattern regexp = null;
-		if (relation == Constants.REGEXP)
-			try {
-				regexp =
-					compiler.compile(
-						expr.toLowerCase(),
-						Perl5Compiler.CASE_INSENSITIVE_MASK);
-				truncation = Constants.REGEXP;
-			} catch (MalformedPatternException e) {
-				LOG.debug(e);
-			}
-		for (Iterator i = context.iterator(); i.hasNext();) {
-			p = (NodeProxy) i.next();
-			try {
-				domDb.getLock().acquire(Lock.READ_LOCK);
-				domDb.setOwnerObject(this);
-				content = domDb.getNodeValue(p);
-			} catch (LockException e) {
-				LOG.warn("failed to acquire read lock on dom.dbx");
-				continue;
-			} finally {
-				domDb.getLock().release();
-			}
-			if (isCaseSensitive())
-				cmp = content;
-			else {
-				cmp = content.toLowerCase();
-			}
-			//System.out.println("context = " + p.gid + "; context-length = " + 
-			//	(p.getContext() == null ? -1 : p.getContext().getSize()));
-			switch (truncation) {
-				case Constants.TRUNC_LEFT :
-					if (Collations.endsWith(collator, cmp, expr))
-						resultNodeSet.add(p);
-					break;
-				case Constants.TRUNC_RIGHT :
-					if (Collations.startsWith(collator, cmp, expr))
-						resultNodeSet.add(p);
-					break;
-				case Constants.TRUNC_BOTH :
-					if (-1 < Collations.indexOf(collator, cmp, expr))
-						resultNodeSet.add(p);
-					break;
-				case Constants.TRUNC_NONE :
-					if (compare(collator, cmp, expr, relation))
-						resultNodeSet.add(p);
-					break;
-				case Constants.REGEXP :
-					if (regexp != null && matcher.contains(cmp, regexp)) {
-						resultNodeSet.add(p);
-					}
-					break;
-			}
-		}
-		return resultNodeSet;
-	}
-
 	public void shutdown() {
 		super.shutdown();
 		try {
 			flush();
 			sync(Sync.MAJOR_SYNC);
 			textEngine.close();
-			domDb.close();
+			domIndexer.close();
 			elementsDb.close();
 			collectionIndexer.close();
 		} catch (Exception e) {
@@ -1905,25 +1506,8 @@ public class NewNativeBroker extends DBBroker {
 		final String nodeName = node.getNodeName();
 		// final String localName = node.getLocalName();
 		final int depth = idx == null ? defaultIndexDepth : idx.getIndexDepth();
-		new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
-			public Object start() throws ReadOnlyException {
-				long address = -1;
-				final byte data[] = node.serialize();
-				if (nodeType == Node.TEXT_NODE
-					|| nodeType == Node.ATTRIBUTE_NODE
-					|| doc.getTreeLevel(gid) > depth)
-					address = domDb.add(data);
-				else {
-					address = domDb.put(new NodeRef(doc.getDocId(), gid), data);
-				}
-				if (address < 0)
-					LOG.warn("address is missing");
-				node.setInternalAddress(address);
-				ByteArrayPool.releaseByteArray(data);
-				return null;
-			}
-		}
-		.run();
+		domIndexer.n8(doc, node, nodeType, gid, depth);
+        
 		++nodesCount;
 		NodeProxy tempProxy = null;
 		QName qname;
@@ -1980,18 +1564,7 @@ public class NewNativeBroker extends DBBroker {
 	}
 
 	public void storeDocument(final DocumentImpl doc) {
-		final byte data[] = doc.serialize();
-		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-			public Object start() throws ReadOnlyException {
-				if (doc.getAddress() > -1) {
-					domDb.remove(doc.getAddress());
-				}
-				doc.setAddress(domDb.add(data));
-//				LOG.debug("Document metadata stored to " + StorageAddress.toString(doc.getAddress()));
-				return null;
-			}
-		}
-		.run();
+		domIndexer.storeDocument(doc);
 	}
 
 	public void updateDocument(DocumentImpl doc) throws LockException, PermissionDeniedException {
@@ -2000,71 +1573,27 @@ public class NewNativeBroker extends DBBroker {
 	}
 	
 	public void storeBinaryResource(final BinaryDocument blob, final byte[] data) {
-		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-			public Object start() throws ReadOnlyException {
-//				if (blob.getPage() > -1) {
-//					domDb.remove(blob.getPage());
-//				}
-				LOG.debug("Storing binary resource " + blob.getFileName());
-				blob.setPage(domDb.addBinary(data));
-				return null;
-			}
-		}
-		.run();
+		domIndexer.storeBinaryResource(blob, data);
 	}
 	
 	public byte[] getBinaryResourceData(final BinaryDocument blob) {
-		byte[] data = (byte[]) new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-			public Object start() throws ReadOnlyException {
-				return domDb.getBinary(blob.getPage());
-			}
-		}
-		.run();
-		return data;
+		return domIndexer.getBinaryResourceData(blob);
 	}
 
 	public void removeBinaryResource(final BinaryDocument blob)
 		throws PermissionDeniedException {
-		if (readOnly)
-			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-		LOG.info("removing binary resource " + blob.getDocId() + "...");
-		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-			public Object start() throws ReadOnlyException {
-				domDb.remove(blob.getAddress());
-				domDb.removeOverflowValue(blob.getPage());
-				return null;
-			}
-		}
-		.run();
+		domIndexer.removeBinaryResource(blob);
 	}
 
 	public void readDocumentMetadata(final DocumentImpl doc) {
-		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-			public Object start() throws ReadOnlyException {
-				final Value val = domDb.get(doc.getAddress());
-				doc.deserialize(val.getData());
-				return null;
-			}
-		}
-		.run();
-
+		domIndexer.readDocumentMetadata(doc);
 	}
 
 	public void sync(int syncEvent) {
 		try {
             collectionIndexer.sync(syncEvent);
+			domIndexer.sync(syncEvent);
             
-			new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-				public Object start() {
-					try {
-						domDb.flush();
-					} catch (DBException e) {
-						LOG.warn("error while flushing dom.dbx", e);
-					}
-					return null;
-				}
-			}
-			.run();
 			if(syncEvent == Sync.MAJOR_SYNC) {
 				elementIndex.sync();
 				textEngine.sync();
@@ -2076,7 +1605,7 @@ public class NewNativeBroker extends DBBroker {
 				// uncomment this to get statistics on page buffer usage
 				elementsDb.printStatistics();
 				collectionIndexer.printStatistics();
-				domDb.printStatistics();
+				domIndexer.printStatistics();
 			}
 		} catch (DBException dbe) {
 			dbe.printStackTrace();
@@ -2089,67 +1618,18 @@ public class NewNativeBroker extends DBBroker {
 	}
 	
 	public void closeDocument() {
-		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-			public Object start() {
-				domDb.closeDocument();
-				return null;
-			}
-		}
-		.run();
+		domIndexer.closeDocument();
 	}
 
 	public void update(final NodeImpl node) {
-		try {
-			final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
-			final long internalAddress = node.getInternalAddress();
-			final byte[] data = node.serialize();
-			new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-				public Object start() throws ReadOnlyException {
-					if (-1 < internalAddress)
-						domDb.update(internalAddress, data);
-					else {
-						domDb.update(new NodeRef(doc.getDocId(), node.getGID()), data);
-					}
-					return null;
-				}
-			}
-			.run();
-			ByteArrayPool.releaseByteArray(data);
-		} catch (Exception e) {
-		    Value oldVal = domDb.get(node.getInternalAddress());
-		    NodeImpl old = 
-		        NodeImpl.deserialize(oldVal.data(), oldVal.start(), oldVal.getLength(), 
-		                (DocumentImpl)node.getOwnerDocument(), false);
-			LOG.debug(
-				"Exception while storing "
-					+ node.getNodeName()
-					+ "; gid = "
-					+ node.getGID()
-					+ "; old = " + old.getNodeName(),
-				e);
-		}
+		domIndexer.update(node);
 	}
 
 	/**
 	 * Physically insert a node into the DOM storage.
 	 */
 	public void insertAfter(final NodeImpl previous, final NodeImpl node) {
-		final byte data[] = node.serialize();
-		final DocumentImpl doc = (DocumentImpl) previous.getOwnerDocument();
-		new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
-			public Object start() {
-				long address = previous.getInternalAddress();
-				if (address > -1) {
-					address = domDb.insertAfter(doc, address, data);
-				} else {
-					NodeRef ref = new NodeRef(doc.getDocId(), previous.getGID());
-					address = domDb.insertAfter(doc, ref, data);
-				}
-				node.setInternalAddress(address);
-				return null;
-			}
-		}
-		.run();
+		domIndexer.insertAfter(previous, node);
 	}
 
 	public boolean isReadOnly() {
@@ -2196,5 +1676,4 @@ public class NewNativeBroker extends DBBroker {
 			pos = 0;
 		}
 	}
-
 }
