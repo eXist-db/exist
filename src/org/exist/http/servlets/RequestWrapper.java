@@ -22,6 +22,7 @@
  */
 package org.exist.http.servlets;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -63,6 +64,10 @@ public interface RequestWrapper {
 	public Enumeration getParameterNames();
 	
 	public String[] getParameterValues(String arg0);
+	
+	public File getFileUploadParam(String parameter);
+	
+	public String getUploadedFileName(String parameter);
 	
 	public String getPathInfo();
 	

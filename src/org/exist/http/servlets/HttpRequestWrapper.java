@@ -22,14 +22,24 @@
  */
 package org.exist.http.servlets;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.fileupload.DefaultFileItem;
+import org.apache.commons.fileupload.DiskFileUpload;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUpload;
+import org.apache.commons.fileupload.FileUploadException;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -40,6 +50,8 @@ public class HttpRequestWrapper implements RequestWrapper {
 	private String formEncoding = null;
 	private String containerEncoding = null;
 	
+	private Hashtable params = null;
+	
 	/**
 	 * 
 	 */
@@ -48,9 +60,32 @@ public class HttpRequestWrapper implements RequestWrapper {
 		this.request = request;
 		this.formEncoding = formEncoding;
 		this.containerEncoding = containerEncoding;
+		if(FileUpload.isMultipartContent(request)) {
+			parseMultipartContent(request);
+		}
 	}
 
 	
+	/**
+	 * @param request2
+	 */
+	private void parseMultipartContent(HttpServletRequest request) {
+		DiskFileUpload upload = new DiskFileUpload();
+		upload.setSizeThreshold(0);
+		try {
+			this.params = new Hashtable();
+			List items = upload.parseRequest(request);
+			for(Iterator i = items.iterator(); i.hasNext(); ) {
+				FileItem next = (FileItem) i.next();
+				this.params.put(next.getFieldName(), next);
+			}
+		} catch (FileUploadException e) {
+			// TODO: handle this
+			e.printStackTrace();
+		}
+	}
+
+
 	/* (non-Javadoc)
 	 * @see org.exist.http.servlets.RequestWrapper#getInputStream()
 	 */
@@ -143,10 +178,44 @@ public class HttpRequestWrapper implements RequestWrapper {
 	 * @return
 	 */
 	public String getParameter(String name) {
-		String value = request.getParameter(name);
-		if(formEncoding == null || value == null)
-			return value;
-		return decode(value);
+		if(params == null) {
+			String value = request.getParameter(name);
+			if(formEncoding == null || value == null)
+				return value;
+			return decode(value);
+		} else {
+			FileItem item = (FileItem) params.get(name);
+			if(item == null) {
+				return null;
+			}
+			if(formEncoding == null)
+				return item.getString();
+			else
+				try {
+					return item.getString(formEncoding);
+				} catch (UnsupportedEncodingException e) {
+					return null;
+				}
+		}
+	}
+	
+	public File getFileUploadParam(String name) {
+		if(params == null)
+			return null;
+		FileItem item = (FileItem) params.get(name);
+		if(item.isFormField())
+			return null;
+		return ((DefaultFileItem)item).getStoreLocation();
+	}
+	
+	public String getUploadedFileName(String name) {
+		if(params == null)
+			return null;
+		FileItem item = (FileItem) params.get(name);
+		if(item.isFormField())
+			return null;
+		File f = new File(item.getName());
+		return f.getName();
 	}
 	
 	private String decode(String value) {
@@ -164,7 +233,11 @@ public class HttpRequestWrapper implements RequestWrapper {
 	 * @return
 	 */
 	public Enumeration getParameterNames() {
-		return request.getParameterNames();
+		if(params == null)
+			return request.getParameterNames();
+		else {
+			return params.keys();
+		}
 	}
 
 	/**
@@ -172,13 +245,26 @@ public class HttpRequestWrapper implements RequestWrapper {
 	 * @return
 	 */
 	public String[] getParameterValues(String key) {
-		String[] values = request.getParameterValues(key);
-		if(formEncoding == null || values == null)
+		if(params == null) {
+			String[] values = request.getParameterValues(key);
+			if(formEncoding == null || values == null)
+				return values;
+			for(int i = 0; i < values.length; i++) {
+				values[i] = decode(values[i]);
+			}
 			return values;
-		for(int i = 0; i < values.length; i++) {
-			values[i] = decode(values[i]);
+		} else {
+			FileItem item = (FileItem)params.get(key);
+			if(item == null)
+				return null;
+			String[] values = new String[1];
+			try {
+				values[0] = formEncoding == null ? item.getString() : item.getString(formEncoding);
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+			return values;
 		}
-		return values;
 	}
 
 	/**
