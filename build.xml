@@ -209,7 +209,6 @@
 			todir="${build.classes}/org/exist"/>
         <copy file="${src}/org/exist/xmldb2.xsl" 
 			todir="${build.classes}/org/exist"/>
-        <copy file="${src}/org/exist/start/MANIFEST.MF" todir="${build.classes}/org/exist/start"/>
 		<copy file="${src}/org/exist/start/start.config" todir="${build.classes}/org/exist/start"/>
 		<copy file="${src}/org/exist/security/security.properties" todir="${build.classes}/org/exist/security"/>
 
@@ -226,8 +225,13 @@
 		</jar>
 
         <echo message="Creating start.jar ..."/>
-        <jar basedir="${build.classes}" compress="true" jarfile="start.jar"
-            manifest="${src}/org/exist/start/MANIFEST.MF">
+        <jar basedir="${build.classes}" compress="true" jarfile="start.jar">
+			<manifest>
+				<attribute name="Main-Class" value="org.exist.start.Main"/>
+				<attribute name="Package-Title" value="org.exist"/>
+				<attribute name="Implementation-Title" value="eXist XML Database"/>
+				<attribute name="Implementation-URL" value="http://exist-db.org"/>
+			</manifest>
             <include name="org/exist/start/**"/>
         </jar>
 
@@ -299,8 +303,13 @@ Running tests on a local database instance
 Concurrency tests
 -----------------
 		</echo>
-		<test fork="yes" name="org.exist.xmldb.test.concurrent.AllTests"
-			todir="${junit.reports}"/>
+        <junit haltonfailure="yes" printsummary="yes" 
+        	showoutput="${junit.output}">
+        	<classpath refid="classpath.core"/>
+            <formatter type="plain"/>
+			<test fork="yes" name="org.exist.xmldb.test.concurrent.AllTests"
+				todir="${junit.reports}"/>
+		</junit>
 	</target>
 	
 	<target name="start-server">
