@@ -68,6 +68,8 @@ public class RedirectTo extends BasicFunction {
 		String redirectURI = args[0].getStringValue();
 		// response object is read from global variable $response
 		Variable var = myModule.resolveVariable(RequestModule.RESPONSE_VAR);
+		if(var == null)
+			throw new XPathException("No response object found in the current XQuery context.");
 		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
 			throw new XPathException("Variable $response is not bound to an Java object.");
 
