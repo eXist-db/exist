@@ -29,10 +29,8 @@ public class SimpleTokenizer implements Tokenizer {
 	}
 
 	private final char LA(int i) {
-		final int current = pos + i - 1;
-		if (current >= len)
-			return (char) - 1;
-		return text.charAt(current);
+		final int current = pos + i;
+		return current > len ? (char) -1 : text.charAt(current - 1);
 	}
 
 	protected TextToken alpha(TextToken token, boolean allowWildcards) {
@@ -43,16 +41,27 @@ public class SimpleTokenizer implements Tokenizer {
 		int oldPos = pos;
 		// consume letters
 		char ch = LA(1);
+		int count = 0;
 		while (ch != (char) - 1) {
 			if (ch == '\\' && isWildcard(LA(2))) {
-				System.out.println("found \\*");
 				break;
-			} else if (Character.isLetter(ch) || (allowWildcards && isWildcard(ch))) {
+			} else if (singleCharToken(ch)) {
+				// if this is a single char token and first in the sequence,
+				// consume it
+				if(count == 0) {
+					token.consumeNext();
+					consume();
+					ch = LA(1);
+				}
+				break;
+			} else if (isNonBreakingCharacter(ch) || (allowWildcards && isWildcard(ch))) {
 				token.consumeNext();
 				consume();
 				ch = LA(1);
-			} else
+				count++;
+			} else {
 				break;
+			}
 		}
 		if (Character.isDigit(ch)) {
 			// found non-letter character
@@ -110,9 +119,11 @@ public class SimpleTokenizer implements Tokenizer {
 		char ch = LA(1);
 		if (ch == (char) - 1)
 			return eof();
-		if (Character.isLetter(ch) || (wildcards && isWildcard(ch)))
+		if (Character.isLetter(ch) || nonBreakingChar(ch)
+			|| singleCharToken(ch) 
+			|| (wildcards && isWildcard(ch))) {
 			token = alpha(null, wildcards);
-
+		}
 		if (token == null
 			&& (Character.isLetterOrDigit(ch)
 				|| (wildcards && isWildcard(ch))))
@@ -277,5 +288,78 @@ public class SimpleTokenizer implements Tokenizer {
 	protected TextToken whitespace() {
 		consume();
 		return TextToken.WS_TOKEN;
+	}
+	
+	private boolean isNonBreakingCharacter(char ch) {
+		return Character.isLetter(ch)
+			&& (!singleCharToken(ch));
+	}
+	
+	/**
+	 * The code ranges defined here should be interpreted as 1-char
+	 * tokens.
+	 */
+	private static boolean singleCharToken(char ch) {
+		return
+			// CJK Radicals Supplement 
+			checkRange(ch, '\u2E80', '\u2EFF') ||
+			// KangXi Radicals
+			checkRange(ch, '\u2F00', '\u2FDF') ||
+			// Ideographic Description Characters
+			checkRange(ch, '\u2FF0', '\u2FFF') ||
+			// Enclosed CJK Letters and Months
+			checkRange(ch, '\u3200', '\u32FF') ||
+			// CJK Compatibility
+			checkRange(ch, '\u3300', '\u33FF') ||
+			// CJK Unified Ideographs Extension A
+			checkRange(ch, '\u3400', '\u4DB5') ||
+			// Yijing Hexagram Symbols
+			checkRange(ch, '\u4DC0', '\u4DFF') ||
+			// CJK Unified Ideographs
+			checkRange(ch, '\u4E00', '\u9FFF') ||
+			// CJK Compatibility Ideographs
+			checkRange(ch, '\uF900', '\uFAFF') ||
+			// CJK Compatibility Forms
+			checkRange(ch, '\uFE30', '\uFE4F');
+	}
+	
+	/**
+	 * These codepoints should not be broken in tokens.
+	 */
+	private final static boolean nonBreakingChar(char ch) {
+		return
+			// Hiragana
+			checkRange(ch, '\u3040', '\u309F') ||
+			// Katakana
+			checkRange(ch, '\u30A0', '\u30FF') ||
+			// Bopomofo
+			checkRange(ch, '\u3100', '\u312F') ||
+			// Hangul Compatibility Jamo
+			checkRange(ch, '\u3130', '\u318F') ||
+			// Kanbun
+			checkRange(ch, '\u3190', '\u319F') ||
+			// Bopomofo Extended
+			checkRange(ch, '\u31A0', '\u31BF') ||
+			// Katakana Phonetic Extensions
+			checkRange(ch, '\u31F0', '\u31FF') ||
+			// Hangul Syllables
+			checkRange(ch, '\uAC00', '\uD7A3');
+	}
+	
+	private final static boolean checkRange(char ch, char lower, char upper) {
+		return (ch >= lower && ch <= upper);
+	}
+	
+	public static void main(String args[]) {
+		String t1 = "\u30A8\u31A1\uACFF\u2FAA\u312A\u3045";
+		String t2 = "为了有效地传播佛教，中文版的佛经必须被中国的信徒所读懂。";
+		String t3 = "문자 사용 상의 오류를 찾아내기 위해 검증된 중국어 판을 재검토하고, 보다 읽기 쉽게 하기 위해 언어적 표현을 다듬는다.";
+		SimpleTokenizer tokenizer = new SimpleTokenizer();
+		tokenizer.setText(t1);
+		TextToken token = tokenizer.nextToken();
+		while(token != null && token.getType() != TextToken.EOF) {
+			System.out.println(token.getText());
+			token = tokenizer.nextToken();
+		}
 	}
 }

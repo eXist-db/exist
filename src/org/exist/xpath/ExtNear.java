@@ -1,7 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2001-03 Wolfgang M. Meier
- *  meier@ifs.tu-darmstadt.de
+ *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *
  *  This program is free software; you can redistribute it and/or
@@ -43,7 +43,7 @@ import org.exist.storage.analysis.Tokenizer;
 /**
  *  near() function.
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ *@author     Wolfgang Meier <wolfgang@exist-db.org>
  *@created    July 31, 2002
  */
 public class ExtNear extends ExtFulltext {

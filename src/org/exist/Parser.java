@@ -596,7 +596,7 @@ public class Parser
 			document.getPermissions().setGroup(user.getPrimaryGroup());
 		} else
 			document.setPermissions(oldDoc.getPermissions());
-
+			
 		// reset internal variables
 		level = 0;
 		currentPath.setLength(0);

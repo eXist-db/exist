@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ *  Copyright (C) 2001-03,  Wolfgang M. Meier (wolfgang@exist-db.org)
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -22,17 +22,24 @@ package org.exist.dom;
 
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
+
+import java.util.Arrays;
 import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.exist.xpath.Value;
 import org.exist.util.FastQSort;
+import org.exist.util.Range;
+import org.exist.util.XMLUtil;
 
 public class ArraySet extends NodeSet {
 
 	public final static int ANCESTOR = 0;
 	public final static int DESCENDANT = 1;
 
-	protected static Logger LOG = Logger.getLogger(ArraySet.class);
+	public final static int CHOOSE_TOP_DOWN_MAX = 10;
+
+	private final static Logger LOG = Logger.getLogger(ArraySet.class);
+
 	protected int counter = 0;
 	protected int length;
 
@@ -91,7 +98,11 @@ public class ArraySet extends NodeSet {
 	 *@param  cmpItem  Description of the Parameter
 	 *@return          Description of the Return Value
 	 */
-	private final static int search(NodeProxy[] items, int low, int high, NodeProxy cmpItem) {
+	private final static int search(
+		NodeProxy[] items,
+		int low,
+		int high,
+		NodeProxy cmpItem) {
 		int mid;
 		int cmp;
 		while (low <= high) {
@@ -108,6 +119,16 @@ public class ArraySet extends NodeSet {
 		return -1;
 	}
 
+	private final static NodeSet searchRange(
+		NodeProxy[] items,
+		int low,
+		int high,
+		NodeProxy lower,
+		NodeProxy upper) {
+		ArraySet result = new ArraySet(100);
+		return searchRange(result, items, low, high, lower, upper);
+	}
+
 	/**
 	 *  get all nodes contained in the set, which are greater or equal to lower
 	 *  and less or equal to upper. This is basically needed by all functions
@@ -121,6 +142,7 @@ public class ArraySet extends NodeSet {
 	 *@return        Description of the Return Value
 	 */
 	private final static NodeSet searchRange(
+		ArraySet result,
 		NodeProxy[] items,
 		int low,
 		int high,
@@ -140,7 +162,6 @@ public class ArraySet extends NodeSet {
 				low = mid + 1;
 
 		}
-		ArraySet result = new ArraySet(100);
 		while (mid > 0 && items[mid].compareTo(lower) > 0)
 			mid--;
 
@@ -211,18 +232,6 @@ public class ArraySet extends NodeSet {
 		return true;
 	}
 
-	protected void checkSorted() {
-		if (counter > 1 && nodes[counter - 1].compareTo(nodes[counter - 2]) < 0)
-			sorted = false;
-		else
-			sorted = true;
-	}
-
-	public void clear() {
-		counter = 0;
-		sorted = false;
-	}
-
 	public boolean contains(DocumentImpl doc, long nodeId) {
 		sort();
 		NodeProxy p = new NodeProxy(doc, nodeId);
@@ -258,15 +267,17 @@ public class ArraySet extends NodeSet {
 		return nodes[pos];
 	}
 
-	public NodeSet getChildren(DocumentImpl doc, long gid) {
+	public NodeSet getSiblings(DocumentImpl doc, long gid) {
 		int level = doc.getTreeLevel(gid);
 		// get parents id
 		long pid =
-			(gid - doc.getLevelStartPoint(level)) / doc.getTreeLevelOrder(level)
+			(gid - doc.getLevelStartPoint(level))
+				/ doc.getTreeLevelOrder(level)
 				+ doc.getLevelStartPoint(level - 1);
 		// get first childs id
 		long f_gid =
-			(pid - doc.getLevelStartPoint(level - 1)) * doc.getTreeLevelOrder(level)
+			(pid - doc.getLevelStartPoint(level - 1))
+				* doc.getTreeLevelOrder(level)
 				+ doc.getLevelStartPoint(level);
 		// get last childs id
 		long e_gid = f_gid + doc.getTreeLevelOrder(level);
@@ -275,7 +286,83 @@ public class ArraySet extends NodeSet {
 		return set;
 	}
 
-	public ArraySet getChildren(NodeSet ancestors, int mode, boolean rememberContext) {
+	private void getChildrenTopDown(
+		ArraySet result,
+		NodeProxy ancestor,
+		NodeProxy lower,
+		NodeProxy upper,
+		int mode,
+		boolean rememberContext) {
+		int low = 0;
+		int high = counter - 1;
+		int mid = 0;
+		int max = high;
+		int cmp;
+		while (low <= high) {
+			mid = (low + high) / 2;
+			cmp = nodes[mid].compareTo(lower);
+			if (cmp == 0)
+				break;
+			if (cmp > 0)
+				high = mid - 1;
+			else
+				low = mid + 1;
+		}
+		while (mid > 0 && nodes[mid].compareTo(lower) >= 0)
+			mid--;
+		if (nodes[mid] == null || nodes[mid].compareTo(lower) < 0)
+			mid++;
+		while (mid <= max && (nodes[mid] == null || nodes[mid].compareTo(upper) <= 0)) {
+			switch (mode) {
+				case DESCENDANT :
+					nodes[mid].addMatches(ancestor.matches);
+					if (rememberContext)
+						nodes[mid].addContextNode(ancestor);
+					else
+						nodes[mid].copyContext(ancestor);
+					result.add(nodes[mid]);
+					break;
+				case ANCESTOR :
+					ancestor.addMatches(nodes[mid].matches);
+					if (rememberContext)
+						ancestor.addContextNode(nodes[mid]);
+					else
+						ancestor.copyContext(nodes[mid]);
+					result.add(ancestor);
+					break;
+			}
+			mid++;
+		}
+	}
+
+	public ArraySet getChildrenTopDown(
+		NodeSet ancestors,
+		int mode,
+		boolean rememberContext) {
+		sort();
+		NodeProxy p;
+		Range range;
+		ArraySet result = new ArraySet(50);
+		for (Iterator i = ancestors.iterator(); i.hasNext();) {
+			p = (NodeProxy) i.next();
+			range = XMLUtil.getChildRange(p.doc, p.gid);
+			getChildrenTopDown(
+				result,
+				p,
+				new NodeProxy(p.doc, range.getStart()),
+				new NodeProxy(p.doc, range.getEnd()),
+				mode,
+				rememberContext);
+		}
+		return result;
+	}
+
+	public ArraySet getChildren(
+		NodeSet ancestors,
+		int mode,
+		boolean rememberContext) {
+		if (ancestors.getLength() < CHOOSE_TOP_DOWN_MAX)
+			return getChildrenTopDown(ancestors, mode, rememberContext);
 		if (!(ancestors instanceof ArraySet))
 			return super.getChildren(ancestors, mode, rememberContext);
 		ArraySet al = (ArraySet) ancestors;
@@ -285,30 +372,32 @@ public class ArraySet extends NodeSet {
 		//long start = System.currentTimeMillis();
 		sort();
 		al.sort();
+		final ArraySet result = new ArraySet(al.counter);
 		// get a deep copy of array - will be modified
 		NodeProxy[] dl = null;
 		if (mode == DESCENDANT) {
 			dl = copyNodeSet(al, this);
+			result.sorted = true;
 		} else
 			dl = nodes;
-		final ArraySet result = new ArraySet(al.counter);
+		//result.sorted = true;
 		int ax = 0;
 		int dx = 0;
 		final int dlen = dl.length;
 		int cmp;
 		getParentSet(dl, dlen);
 		while (dx < dlen) {
-			while(dl[dx] == null && ++dx < dlen);
-			if(dx == dlen)
+			while (dl[dx] == null && ++dx < dlen);
+			if (dx == dlen)
 				break;
-//			          System.out.println(
-//			              dl[dx].doc.getDocId()
-//			                  + ":"
-//			                  + dl[dx].gid
-//			                  + " = "
-//			                  + al.nodes[ax].doc.getDocId()
-//			                  + ':'
-//			                  + al.nodes[ax].gid);
+			//			          System.out.println(
+			//			              dl[dx].doc.getDocId()
+			//			                  + ":"
+			//			                  + dl[dx].gid
+			//			                  + " = "
+			//			                  + al.nodes[ax].doc.getDocId()
+			//			                  + ':'
+			//			                  + al.nodes[ax].gid);
 			cmp = dl[dx].compareTo(al.nodes[ax]);
 			if (cmp > 0) {
 				if (ax < al.counter - 1)
@@ -348,11 +437,102 @@ public class ArraySet extends NodeSet {
 		return result;
 	}
 
+	private void getDescendantsTopDown(
+		ArraySet result,
+		NodeProxy ancestor,
+		NodeProxy lower,
+		NodeProxy upper,
+		int mode,
+		boolean rememberContext) {
+		System.out.println("getDescendantsTopDown: " + lower.gid + " - " + upper.gid);
+		int low = 0;
+		int high = counter - 1;
+		int mid = 0;
+		int max = high;
+		int cmp;
+		while (low <= high) {
+			mid = (low + high) / 2;
+			cmp = nodes[mid].compareTo(lower);
+			if (cmp == 0)
+				break;
+			if (cmp > 0)
+				high = mid - 1;
+			else
+				low = mid + 1;
+		}
+		while (mid > 0 && nodes[mid].compareTo(lower) >= 0)
+			mid--;
+		if (nodes[mid].compareTo(lower) < 0)
+			mid++;
+		int level;
+		while (mid <= max && nodes[mid].compareTo(upper) <= 0) {
+			level = nodes[mid].doc.getTreeLevel(nodes[mid].gid);
+			System.out.println(nodes[mid].gid + " = " + level);
+			if (level + 1 <= nodes[mid].doc.getMaxDepth()) {
+				Range range =
+					XMLUtil.getChildRange(nodes[mid].doc, nodes[mid].gid);
+				System.out.println("next: " + range.getStart() + ":" + range.getEnd());
+				getDescendantsTopDown(
+					result,
+					nodes[mid],
+					new NodeProxy(nodes[mid].doc, range.getStart()),
+					new NodeProxy(nodes[mid].doc, range.getEnd()),
+					mode,
+					rememberContext);
+			}
+			switch (mode) {
+				case DESCENDANT :
+					nodes[mid].addMatches(ancestor.matches);
+					if (rememberContext)
+						nodes[mid].addContextNode(ancestor);
+					else
+						nodes[mid].copyContext(ancestor);
+					result.add(nodes[mid]);
+					break;
+				case ANCESTOR :
+					ancestor.addMatches(nodes[mid].matches);
+					if (rememberContext)
+						ancestor.addContextNode(nodes[mid]);
+					else
+						ancestor.copyContext(nodes[mid]);
+					result.add(ancestor);
+					break;
+			}
+			mid++;
+		}
+	}
+
+	public ArraySet getDescendantsTopDown(
+		NodeSet ancestors,
+		int mode,
+		boolean rememberContext) {
+		sort();
+		NodeProxy p;
+		Range range;
+		ArraySet result = new ArraySet(50);
+		for (Iterator i = ancestors.iterator(); i.hasNext();) {
+			p = (NodeProxy) i.next();
+			System.out.println("p = " + p.gid);
+			range = XMLUtil.getChildRange(p.doc, p.gid);
+			getDescendantsTopDown(
+				result,
+				p,
+				new NodeProxy(p.doc, range.getStart()),
+				new NodeProxy(p.doc, range.getEnd()),
+				mode,
+				rememberContext);
+		}
+		return result;
+	}
+
 	public NodeSet getDescendants(NodeSet other, int mode) {
 		return getDescendants(other, mode, false);
 	}
 
-	public NodeSet getDescendants(NodeSet other, int mode, boolean includeSelf) {
+	public NodeSet getDescendants(
+		NodeSet other,
+		int mode,
+		boolean includeSelf) {
 		return getDescendants(other, mode, includeSelf, false);
 	}
 
@@ -369,8 +549,14 @@ public class ArraySet extends NodeSet {
 		int mode,
 		boolean includeSelf,
 		boolean rememberContext) {
+//		if (other.getLength() < CHOOSE_TOP_DOWN_MAX)
+//			return getDescendantsTopDown(other, mode, rememberContext);
 		if (!(other instanceof ArraySet))
-			return super.getDescendants(other, mode, includeSelf, rememberContext);
+			return super.getDescendants(
+				other,
+				mode,
+				includeSelf,
+				rememberContext);
 		ArraySet al = (ArraySet) other;
 		if (al.counter == 0 || counter == 0)
 			return NodeSet.EMPTY_SET;
@@ -385,6 +571,7 @@ public class ArraySet extends NodeSet {
 			dl = nodes;
 
 		ArraySet result = new ArraySet(dl.length);
+		//result.sorted = true;
 		int ax;
 		int dx;
 		int cmp;
@@ -445,10 +632,6 @@ public class ArraySet extends NodeSet {
 		//				+ " in "
 		//				+ (System.currentTimeMillis() - start)
 		//				+ "ms.");
-//		for(int i = 0; i < counter; i++) {
-//			nodes[i].gid = nodes[i].backupId;
-//			nodes[i].valid = true;
-//		}
 		return result;
 	}
 
@@ -460,7 +643,10 @@ public class ArraySet extends NodeSet {
 		 *@param  mode  Description of the Parameter
 		 *@return       The descendants value
 		 */
-	public NodeSet getAncestors(NodeSet other, boolean includeSelf, boolean rememberContext) {
+	public NodeSet getAncestors(
+		NodeSet other,
+		boolean includeSelf,
+		boolean rememberContext) {
 		if (!(other instanceof ArraySet))
 			return super.getAncestors(other, includeSelf, rememberContext);
 		ArraySet al = (ArraySet) other;
@@ -568,7 +754,10 @@ public class ArraySet extends NodeSet {
 		return super.nodeHasParent(doc, gid, directParent, includeSelf);
 	}
 
-	public NodeProxy nodeHasParent(DocumentImpl doc, long gid, boolean directParent) {
+	public NodeProxy nodeHasParent(
+		DocumentImpl doc,
+		long gid,
+		boolean directParent) {
 		sort();
 		return super.nodeHasParent(doc, gid, directParent, false);
 	}
@@ -582,9 +771,17 @@ public class ArraySet extends NodeSet {
 		return super.parentWithChild(doc, gid, directParent, includeSelf);
 	}
 
-	public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent, boolean includeSelf) {
+	public NodeProxy parentWithChild(
+		NodeProxy proxy,
+		boolean directParent,
+		boolean includeSelf) {
 		sort();
-		return parentWithChild(proxy.doc, proxy.gid, directParent, includeSelf, -1);
+		return parentWithChild(
+			proxy.doc,
+			proxy.gid,
+			directParent,
+			includeSelf,
+			-1);
 	}
 
 	public int position(NodeImpl test) {
@@ -608,7 +805,8 @@ public class ArraySet extends NodeSet {
 		System.arraycopy(nodes, pos + 1, temp, pos + 1, temp.length - pos - 1);
 		nodes = temp;
 		counter--;
-		LOG.debug("removal of node took " + (System.currentTimeMillis() - start));
+		LOG.debug(
+			"removal of node took " + (System.currentTimeMillis() - start));
 	}
 
 	public void setIsSorted(boolean sorted) {
@@ -618,10 +816,9 @@ public class ArraySet extends NodeSet {
 	public void sort() {
 		if (this.sorted || counter < 2)
 			return;
-		//quickSort(nodes, 0, counter - 1);
 		//Arrays.sort(nodes, 0, counter - 1);
 		FastQSort.sort(nodes, 0, counter - 1);
-		sorted = true;
+		this.sorted = true;
 	}
 
 	private final static NodeProxy[] copyNodeSet(ArraySet al, ArraySet dl) {
@@ -629,15 +826,15 @@ public class ArraySet extends NodeSet {
 		int ad = al.nodes[ax].doc.docId, dd = dl.nodes[dx].doc.docId;
 		final int alen = al.counter - 1, dlen = dl.counter - 1;
 		final NodeProxy[] ol = new NodeProxy[dl.counter];
-		while(true) {
-			if(ad < dd) {
-				if(ax < alen) {
+		while (true) {
+			if (ad < dd) {
+				if (ax < alen) {
 					++ax;
 					ad = al.nodes[ax].doc.docId;
 				} else
 					break;
-			} else if(ad > dd) {
-				if(dx < dlen) {
+			} else if (ad > dd) {
+				if (dx < dlen) {
 					ol[dx] = null;
 					++dx;
 					dd = dl.nodes[dx].doc.docId;
@@ -645,7 +842,7 @@ public class ArraySet extends NodeSet {
 					break;
 			} else {
 				ol[dx] = new NodeProxy(dl.nodes[dx]);
-				if(dx < dlen) {
+				if (dx < dlen) {
 					++dx;
 					dd = dl.nodes[dx].doc.docId;
 				} else
@@ -654,37 +851,37 @@ public class ArraySet extends NodeSet {
 		}
 		return ol;
 	}
-	
+
 	private final static void trimNodeSet(ArraySet al, ArraySet dl) {
-			int ax = 0, dx = 0;
-			int ad = al.nodes[ax].doc.docId, dd = dl.nodes[dx].doc.docId;
-			int count = 0;
-			final int alen = al.counter - 1, dlen = dl.counter - 1;
-			while(true) {
-				if(ad < dd) {
-					if(ax < alen) {
-						++ax;
-						ad = al.nodes[ax].doc.docId;
-					} else
-						break;
-				} else if(ad > dd) {
-					if(dx < dlen) {
-						++dx;
-						dd = dl.nodes[dx].doc.docId;
-					} else
-						break;
-				} else {
-					if(dx < dlen) {
-						++dx;
-						count++;
-						dd = dl.nodes[dx].doc.docId;
-					} else
-						break;
-				}
+		int ax = 0, dx = 0;
+		int ad = al.nodes[ax].doc.docId, dd = dl.nodes[dx].doc.docId;
+		int count = 0;
+		final int alen = al.counter - 1, dlen = dl.counter - 1;
+		while (true) {
+			if (ad < dd) {
+				if (ax < alen) {
+					++ax;
+					ad = al.nodes[ax].doc.docId;
+				} else
+					break;
+			} else if (ad > dd) {
+				if (dx < dlen) {
+					++dx;
+					dd = dl.nodes[dx].doc.docId;
+				} else
+					break;
+			} else {
+				if (dx < dlen) {
+					++dx;
+					count++;
+					dd = dl.nodes[dx].doc.docId;
+				} else
+					break;
 			}
-			System.out.println("dl = " + dlen + "; copy = " + count);
 		}
-		
+		System.out.println("dl = " + dlen + "; copy = " + count);
+	}
+
 	public class ArraySetIterator implements Iterator {
 
 		protected int pos = 0;
@@ -699,5 +896,31 @@ public class ArraySet extends NodeSet {
 
 		public void remove() {
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.util.Sortable#compare(int, int)
+	 */
+	public int compare(int a, int b) {
+		NodeProxy anode = nodes[a], bnode = nodes[b];
+		if (anode.doc.docId == bnode.doc.docId) {
+			return anode.gid == bnode.gid
+				? 0
+				: (anode.gid < bnode.gid ? -1 : 1);
+		}
+		return anode.doc.docId < bnode.doc.docId ? -1 : 1;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.util.Sortable#swap(int, int)
+	 */
+	public void swap(int a, int b) {
+		NodeProxy t = nodes[a];
+		nodes[a] = nodes[b];
+		nodes[b] = nodes[a];
+	}
+
+	public Comparable[] array() {
+		return nodes;
 	}
 }

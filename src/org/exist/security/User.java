@@ -12,7 +12,7 @@ import org.w3c.dom.NodeList;
 /**
  *  Description of the Class
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ *@author     Wolfgang Meier <wolfgang@exist-db.org>
  *@created    18. August 2002
  */
 public class User {

@@ -1,8 +1,8 @@
 /*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2001-03 Wolfgang M. Meier
- *  meier@ifs.tu-darmstadt.de
- *  http://exist.sourceforge.net
+ *  wolfgang@exist-db.org
+ *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -158,7 +158,7 @@ public class NativeBroker extends DBBroker {
 				elementsDb =
 					new BFile(
 						new File(dataDir + pathSep + "elements.dbx"),
-						elementsBuffers >> 3,
+						elementsBuffers >> 1,
 						elementsBuffers);
 				elementsDb.fixedKeyLen = 6;
 				if (!elementsDb.exists()) {
@@ -1724,16 +1724,18 @@ public class NativeBroker extends DBBroker {
 		}
 		.run();
 		++nodesCount;
-		final NodeProxy tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
+		NodeProxy tempProxy = null;
 		QName qname;
 		switch (nodeType) {
 			case Node.ELEMENT_NODE :
+				tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
 				tempProxy.setHasIndex(idx == null || idx.match(currentPath));
 				// save element by calling ElementIndex
 				elementIndex.setDocument(doc);
 				elementIndex.addRow(node.getQName(), tempProxy);
 				break;
 			case Node.ATTRIBUTE_NODE :
+				tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
 				tempProxy.setHasIndex(idx == null || idx.match(currentPath));
 				qname =
 					new QName("@" + node.getLocalName(), node.getNamespaceURI(), node.getPrefix());

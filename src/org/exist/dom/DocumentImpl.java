@@ -1,7 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2001 Wolfgang M. Meier
- *  meier@ifs.tu-darmstadt.de
+ *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *
  *  This program is free software; you can redistribute it and/or
@@ -44,7 +44,7 @@ import org.exist.util.VariableByteOutputStream;
 /**
  *  Description of the Class
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ *@author     Wolfgang Meier <wolfgang@exist-db.org>
  *@created    21. Mai 2002
  */
 public class DocumentImpl extends NodeImpl implements Document, Comparable {
@@ -866,5 +866,4 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public void setLastModified(long l) {
 		lastModified = l;
 	}
-
 }

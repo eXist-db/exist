@@ -29,7 +29,7 @@ import org.apache.log4j.Category;
 /**
  *  Description of the Class
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ *@author     Wolfgang Meier <wolfgang@exist-db.org>
  *@created    July 31, 2002
  */
 public class ExtFulltext extends Function {

@@ -1,7 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2001 Wolfgang M. Meier
- *  meier@ifs.tu-darmstadt.de
+ *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *
  *  This program is free software; you can redistribute it and/or
@@ -50,6 +50,7 @@ import org.exist.util.LockException;
 import org.exist.util.OrderedLinkedList;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.ReentrantReadWriteLock;
+import org.exist.util.StorageAddress;
 
 /**
  *  Data store for variable size values.
@@ -65,19 +66,12 @@ import org.exist.util.ReentrantReadWriteLock;
  * 
  * Data pages are buffered.
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ *@author     Wolfgang Meier <wolfgang@exist-db.org>
  *@created    25. Mai 2002
  */
 public class BFile extends BTree {
-	/**  Description of the Field */
-	public final static byte FREE_LIST = 22;
-
-	/**  Description of the Field */
-	public final static byte LOB = 21;
 
 	private final static Category LOG = Category.getInstance(BFile.class.getName());
-	/**  Description of the Field */
-	public final static byte MULTI_PAGE = 23;
 
 	// minimum free space a page should have to be
 	// considered for reusing
@@ -85,6 +79,10 @@ public class BFile extends BTree {
 
 	// page signatures
 	public final static byte RECORD = 20;
+	public final static byte LOB = 21;
+	public final static byte FREE_LIST = 22;
+	public final static byte MULTI_PAGE = 23;
+	
 	protected boolean compressPages = false;
 
 	protected BFileHeader fileHeader;
@@ -145,11 +143,15 @@ public class BFile extends BTree {
 		lock = new ReentrantReadWriteLock(file.getName());
 	}
 
-	private final static long createPointer(int page, int offset) {
-		if(page < 0)
+	/*private final static long createPointer(int page, int offset) {
+		if(page == Integer.MAX_VALUE) {
+			LOG.error("page num < 0");
 			throw new IllegalArgumentException("page num < 0");
-		if(offset < 0)
+		}
+		if(offset == Short.MAX_VALUE) {
+			LOG.error("offset < 0");
 			throw new IllegalArgumentException("offset < 0");
+		}
 		long p = (page & 0xffff);
 		long o = (offset & 0xffff);
 		return page | (o << 32);
@@ -161,7 +163,7 @@ public class BFile extends BTree {
 
 	private final static int pageFromPointer(long pointer) {
 		return (int) (pointer & 0xffff);
-	}
+	}*/
 
 	/**
 	 * Returns the Lock object responsible for this BFile.
@@ -187,8 +189,8 @@ public class BFile extends BTree {
 					return p;
 				}
 				// key exists: get old data
-				final long pnum = (long) pageFromPointer(p);
-				final short tid = (short) offsetFromPointer(p);
+				final long pnum = StorageAddress.pageFromPointer(p);
+				final short tid = StorageAddress.tidFromPointer(p);
 				final DataPage page = getDataPage(pnum);
 				if (page instanceof OverflowPage)
 					 ((OverflowPage) page).append(value);
@@ -196,6 +198,8 @@ public class BFile extends BTree {
 					final int valueLen = value.size();
 					final byte[] data = page.getData();
 					final int offset = findValuePosition(page, tid);
+					if(offset < 0)
+						throw new IOException("tid " + tid + " not found on page " + pnum);
 					final int l = ByteConversion.byteToInt(data, offset);
 					if (offset + 4 > data.length || offset < 0) {
 						LOG.error(
@@ -399,27 +403,22 @@ public class BFile extends BTree {
 		query(query, cb);
 	}
 
-	private final int findValuePosition(DataPage page, short tid) throws IOException {
+	private final int findValuePosition(final DataPage page, final short tid) throws IOException {
 		int pos = 0;
-		int l;
-		short current = -1;
-		byte[] data = page.getData();
-		while (pos < page.getPageHeader().getDataLength()) {
-			current = ByteConversion.byteToShort(data, pos);
-			if (current == tid)
+		final byte[] data = page.getData();
+		final int dlen = page.getPageHeader().getDataLength();
+		while (pos < dlen) {
+			if (ByteConversion.byteToShort(data, pos) == tid)
 				return pos + 2;
-			l = ByteConversion.byteToInt(data, pos + 2);
-			pos = pos + l + 6;
+			pos += ByteConversion.byteToInt(data, pos + 2) + 6;
 		}
-		LOG.debug(
+		LOG.warn(
 			"tid "
 				+ tid
 				+ " not found. "
 				+ page.getPageInfo()
 				+ "; pos: "
-				+ pos
-				+ "; last-tid: "
-				+ current);
+				+ pos);
 		return -1;
 	}
 
@@ -459,7 +458,7 @@ public class BFile extends BTree {
 			final long p = findValue(key);
 			if (p == KEY_NOT_FOUND)
 				return null;
-			final long pnum = (long) pageFromPointer(p);
+			final long pnum = StorageAddress.pageFromPointer(p);
 			final DataPage page = getDataPage(pnum);
 			return get(page, p);
 		} catch (BTreeException b) {
@@ -475,7 +474,7 @@ public class BFile extends BTree {
 			final long p = findValue(key);
 			if (p == KEY_NOT_FOUND)
 				return null;
-			final long pnum = (long) pageFromPointer(p);
+			final long pnum = StorageAddress.pageFromPointer(p);
 			final DataPage page = getDataPage(pnum);
 			switch (page.getPageHeader().getStatus()) {
 				case MULTI_PAGE :
@@ -490,7 +489,7 @@ public class BFile extends BTree {
 	}
 
 	public InputStream getAsStream(long pointer) throws IOException {
-		final DataPage page = getDataPage((long) pageFromPointer(pointer));
+		final DataPage page = getDataPage(StorageAddress.pageFromPointer(pointer));
 		switch (page.getPageHeader().getStatus()) {
 			case MULTI_PAGE :
 				return ((OverflowPage) page).getDataStream(pointer);
@@ -501,7 +500,7 @@ public class BFile extends BTree {
 
 	private InputStream getAsStream(DataPage page, long pointer) throws IOException {
 		pages.add(page);
-		final short tid = (short) offsetFromPointer(pointer);
+		final short tid = (short) StorageAddress.tidFromPointer(pointer);
 		final int offset = findValuePosition(page, tid);
 		final byte[] data = page.getData();
 		final int l = ByteConversion.byteToInt(data, offset);
@@ -511,12 +510,12 @@ public class BFile extends BTree {
 	public int getValueSize(Value key) {
 		try {
 			long p = findValue(key);
-			long pnum = (long) pageFromPointer(p);
+			long pnum = StorageAddress.pageFromPointer(p);
 			DataPage page = getDataPage(pnum);
 			if (page.getPageHeader().getStatus() == MULTI_PAGE)
 				return page.getPageHeader().getDataLength();
 			else {
-				short tid = (short) offsetFromPointer(p);
+				short tid = StorageAddress.tidFromPointer(p);
 				int offset = findValuePosition(page, tid);
 				byte[] data = page.getData();
 				return ByteConversion.byteToInt(data, offset);
@@ -536,7 +535,7 @@ public class BFile extends BTree {
 	 */
 	public Value get(long p) {
 		try {
-			long pnum = (long) pageFromPointer(p);
+			long pnum = StorageAddress.pageFromPointer(p);
 			DataPage page = getDataPage(pnum);
 			return get(page, p);
 		} catch (BTreeException b) {
@@ -556,7 +555,7 @@ public class BFile extends BTree {
 	 *@exception  IOException     Description of the Exception
 	 */
 	protected Value get(DataPage page, long p) throws BTreeException, IOException {
-		final short tid = (short) offsetFromPointer(p);
+		final short tid = StorageAddress.tidFromPointer(p);
 		final int offset = findValuePosition(page, tid);
 		final byte[] data = page.getData();
 		if (offset > data.length || offset < 0) {
@@ -734,7 +733,7 @@ public class BFile extends BTree {
 			long p = findValue(key);
 			if (p == KEY_NOT_FOUND)
 				return;
-			long pos = (long) pageFromPointer(p);
+			long pos = StorageAddress.pageFromPointer(p);
 			DataPage page = getDataPage(pos);
 			remove(page, p);
 
@@ -748,7 +747,7 @@ public class BFile extends BTree {
 
 	public void remove(long p) throws ReadOnlyException {
 		try {
-			long pos = (long) pageFromPointer(p);
+			long pos = StorageAddress.pageFromPointer(p);
 			DataPage page = getDataPage(pos);
 			remove(page, p);
 		} catch (BTreeException e) {
@@ -774,7 +773,7 @@ public class BFile extends BTree {
 			pages.remove(page);
 			return;
 		}
-		short tid = (short) offsetFromPointer(p);
+		short tid = StorageAddress.tidFromPointer(p);
 		int offset = findValuePosition(page, tid);
 		byte[] data = page.getData();
 		if (offset > data.length || offset < 0) {
@@ -791,19 +790,25 @@ public class BFile extends BTree {
 		len = len - l - 6;
 		page.getPageHeader().setDataLength(len);
 		page.setDirty(true);
-
-		// adjust free space data
-		FreeSpace free = fileHeader.getFreeSpace(page.getPageNum());
-		if (free == null)
-			free = new FreeSpace(page.getPageNum(), fileHeader.getWorkSize() - len);
-		free.setFree(fileHeader.getWorkSize() - len);
-		fileHeader.removeFreeSpace(free);
+		// if this page is empty, remove it
 		if (len == 0) {
-			// if this page is empty, remove it
+			final FreeSpace free = fileHeader.getFreeSpace(page.getPageNum());
+			fileHeader.removeFreeSpace(free);
 			pages.remove(page);
 			page.delete();
 		} else {
-			fileHeader.addFreeSpace(free);
+			// adjust free space data
+			final int newFree = fileHeader.getWorkSize() - len;
+			if(newFree > minFree) {
+				FreeSpace free = fileHeader.getFreeSpace(page.getPageNum());
+				if (free == null)
+					free = new FreeSpace(page.getPageNum(), newFree);
+				else {
+					free.setFree(newFree);
+					fileHeader.removeFreeSpace(free);
+				}
+				fileHeader.addFreeSpace(free);
+			}
 			pages.add(page);
 		}
 	}
@@ -846,10 +851,9 @@ public class BFile extends BTree {
 			//System.arraycopy(value, 0, data, 6, vlen);
 			value.copyTo(data, 6);
 			page.setData(data);
-			page.getPageHeader().setDirty(true);
 			page.setDirty(true);
 			//pages.add( page );
-			return createPointer((int) page.getPageNum(), 1);
+			return StorageAddress.createPointer((int) page.getPageNum(), (short)1);
 		}
 		DataPage page = null;
 		short tid = -1;
@@ -867,11 +871,18 @@ public class BFile extends BTree {
 						fileHeader.getWorkSize() - page.getPageHeader().getDataLength());
 			} else {
 				page = getDataPage(free.getPage());
+				// check if this is really a data page
+				if(page.getPageHeader().getStatus() != BFile.RECORD) {
+					LOG.warn("page " + page.getPageNum() + " is not a data page; removing it");
+					fileHeader.printFreeSpace();
+					fileHeader.removeFreeSpace(free);
+					continue;
+				}
 				// check if the information about free space is really correct
 				realSpace = fileHeader.getWorkSize() - page.getPageHeader().getDataLength();
 				if (realSpace < 6 + vlen) {
 					// not correct: adjust and continue
-					LOG.debug("wrong data length in list of free pages: adjusting to " + realSpace);
+					LOG.warn("wrong data length in list of free pages: adjusting to " + realSpace);
 					free.setFree(realSpace);
 					fileHeader.removeFreeSpace(free);
 					fileHeader.addFreeSpace(free);
@@ -880,14 +891,13 @@ public class BFile extends BTree {
 			}
 			tid = page.getPageHeader().getNextTID();
 			if (tid < 0) {
-				LOG.info("removing page " + page.getPageHeader() + " from free pages");
+				LOG.info("removing page " + page.getPageNum() + " from free pages");
 				fileHeader.removeFreeSpace(free);
+				fileHeader.printFreeSpace();
 			}
 		}
-		// create pointer from pageNum and offset into page
-		long p = createPointer((int) page.getPageNum(), (int) tid);
 		int len = page.getPageHeader().getDataLength();
-		byte[] data = page.getData();
+		final byte[] data = page.getData();
 
 		// save tid
 		ByteConversion.shortToByte(tid, data, len);
@@ -904,7 +914,8 @@ public class BFile extends BTree {
 		saveFreeSpace(free, page);
 		page.setDirty(true);
 		pages.add(page, 2);
-		return p;
+		// return pointer from pageNum and offset into page
+		return StorageAddress.createPointer((int) page.getPageNum(), (short) tid);
 	}
 
 	/**
@@ -938,14 +949,12 @@ public class BFile extends BTree {
 	 */
 	public long update(long p, Value key, ByteArray value) throws ReadOnlyException {
 		try {
-			long pos = (long) pageFromPointer(p);
-			DataPage page = getDataPage(pos);
-			return update(p, page, key, value);
+			return update(p, getDataPage(StorageAddress.pageFromPointer(p)), key, value);
 		} catch (BTreeException bte) {
 			LOG.debug(bte);
 			return -1;
 		} catch (IOException ioe) {
-			LOG.debug(ioe);
+			LOG.warn(ioe.getMessage(), ioe);
 			return -1;
 		}
 	}
@@ -969,12 +978,12 @@ public class BFile extends BTree {
 			if (valueLen + 6 < fileHeader.getWorkSize()) {
 				// yes: remove the overflow page
 				remove(page, p);
-				long np = storeValue(value);
+				final long np = storeValue(value);
 				addValue(key, np);
 				return np;
 			} else {
 				// this is an overflow page: simply replace the value
-				byte[] data = new byte[valueLen + 6];
+				final byte[] data = new byte[valueLen + 6];
 				// save tid
 				ByteConversion.shortToByte((short) 1, data, 0);
 
@@ -988,7 +997,7 @@ public class BFile extends BTree {
 			}
 		} else {
 			remove(page, p);
-			long np = storeValue(value);
+			final long np = storeValue(value);
 			addValue(key, np);
 			return np;
 		}
@@ -1189,6 +1198,8 @@ public class BFile extends BTree {
 		 *@param  space  Description of the Parameter
 		 */
 		public void removeFreeSpace(FreeSpace space) {
+			if(space == null)
+				return;
 			freeList.remove(space);
 		}
 
@@ -1296,12 +1307,11 @@ public class BFile extends BTree {
 		 *@return    The nextTID value
 		 */
 		public short getNextTID() {
-			++nextTID;
-			if (nextTID < 0) {
-				LOG.debug("tid limit reached");
+			if (nextTID == Short.MAX_VALUE) {
+				LOG.warn("tid limit reached");
 				return -1;
 			}
-			return nextTID;
+			return ++nextTID;
 		}
 
 		/**
@@ -1482,6 +1492,8 @@ public class BFile extends BTree {
 		 */
 		public abstract void setData(byte[] buf);
 
+		public abstract SinglePage getFirstPage();
+		
 		/**
 		 *  Sets the dirty attribute of the DataPage object
 		 *
@@ -1543,8 +1555,8 @@ public class BFile extends BTree {
 				int offset;
 				int l;
 				Value v;
-				pos = (long) pageFromPointer(pointer);
-				tid = (short) offsetFromPointer(pointer);
+				pos = StorageAddress.pageFromPointer(pointer);
+				tid = StorageAddress.tidFromPointer(pointer);
 				page = getDataPage(pos);
 				offset = findValuePosition(page, tid);
 				byte[] data = page.getData();
@@ -1621,8 +1633,8 @@ public class BFile extends BTree {
 			try {
 				switch (mode) {
 					case VALUES :
-						pos = (long) pageFromPointer(pointer);
-						tid = (short) offsetFromPointer(pointer);
+						pos = StorageAddress.pageFromPointer(pointer);
+						tid = StorageAddress.tidFromPointer(pointer);
 						page = getDataPage(pos);
 						pages.add(page);
 						offset = findValuePosition(page, tid);
@@ -1645,8 +1657,8 @@ public class BFile extends BTree {
 					case BOTH :
 						Value[] entry = new Value[2];
 						entry[0] = value;
-						pos = (long) pageFromPointer(pointer);
-						tid = (short) offsetFromPointer(pointer);
+						pos = StorageAddress.pageFromPointer(pointer);
+						tid = StorageAddress.tidFromPointer(pointer);
 						page = getDataPage(pos);
 						pages.add(page);
 						offset = findValuePosition(page, tid);
@@ -1679,7 +1691,7 @@ public class BFile extends BTree {
 		 */
 		public OverflowPage() throws IOException {
 			firstPage = new SinglePage(false);
-			BFilePageHeader ph = firstPage.getPageHeader();
+			final BFilePageHeader ph = firstPage.getPageHeader();
 			ph.setStatus(MULTI_PAGE);
 			ph.setNextInChain(0L);
 			ph.setLastInChain(0L);
@@ -2114,9 +2126,7 @@ public class BFile extends BTree {
 		}
 
 		public void add(DataPage page, int initialRefCount) {
-			if (page instanceof OverflowPage) {
-				page = ((OverflowPage) page).getFirstPage();
-			}
+			page = page.getFirstPage();
 			if (map.containsKey(page.getPageNum())) {
 				page.incRefCount();
 				return;
@@ -2185,8 +2195,7 @@ public class BFile extends BTree {
 					old.decRefCount();
 					// replace old page if it has reference count < 1,
 					if (old.getRefCount() < 1) {
-						if(getFile().getName().equals("words.dbx"))
-							System.out.println("removing page " + oldNum);
+						LOG.debug("removing page " + old.getPageNum());
 						i.remove();
 						//map.remove(oldNum);
 						removed = true;
@@ -2227,7 +2236,7 @@ public class BFile extends BTree {
 	/**
 	 *  wrapper class around a page of data.
 	 *
-	 *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+	 *@author     Wolfgang Meier <wolfgang@exist-db.org>
 	 *@created    25. Mai 2002
 	 */
 	private final class SinglePage extends DataPage {
@@ -2259,6 +2268,7 @@ public class BFile extends BTree {
 			ph.setStatus(RECORD);
 			ph.setDirty(true);
 			ph.setDataLength(0);
+			ph.setTID((short)-1);
 			//ph.setNextChunk( -1 );
 			fileHeader.setLastDataPage(page.getPageNum());
 			data = new byte[fileHeader.getWorkSize()];
@@ -2312,6 +2322,10 @@ public class BFile extends BTree {
 			unlinkPages(page);
 		}
 
+		public SinglePage getFirstPage() {
+			return this;
+		}
+		
 		/**
 		 *  Gets the data attribute of the DataPage object
 		 *
@@ -2363,8 +2377,7 @@ public class BFile extends BTree {
 		 *@exception  IOException  Description of the Exception
 		 */
 		public void write() throws IOException {
-			Value value = new Value(data);
-			writeValue(page, value);
+			writeValue(page, new Value(data));
 			setDirty(false);
 		}
 	}

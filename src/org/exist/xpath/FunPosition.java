@@ -1,6 +1,6 @@
 
 /* eXist Native XML Database
- * Copyright (C) 2000-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2000-03,  Wolfgang M. Meier (wolfgang@exist-db.org)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -48,7 +48,7 @@ public class FunPosition extends Function {
     public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
     	NodeProxy contextNode) {
         DocumentImpl doc = contextNode.getDoc();
-        NodeSet set = ((ArraySet)contextSet).getChildren(doc, contextNode.getGID());
+        NodeSet set = ((ArraySet)contextSet).getSiblings(doc, contextNode.getGID());
         // determine position of current node in the set
         NodeProxy p;
         double count = 1.0;

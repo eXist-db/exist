@@ -7,7 +7,6 @@ package org.exist.util;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.OutputStream;
 
 /**
  * @author wolf

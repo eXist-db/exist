@@ -7,7 +7,6 @@ import java.util.Observable;
 import java.util.Observer;
 
 import javax.swing.BorderFactory;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
@@ -36,9 +35,28 @@ class UploadDialog extends JFrame {
 		GridBagConstraints c = new GridBagConstraints();
 		c.insets = new Insets(5, 5, 5, 5);
 
-		JLabel label = new JLabel("Directory:");
+		JLabel label = new JLabel("Stored:");
 		c.gridx = 0;
 		c.gridy = 0;
+		c.anchor = GridBagConstraints.WEST;
+		c.fill = GridBagConstraints.NONE;
+		grid.setConstraints(label, c);
+		getContentPane().add(label);
+
+		byDirProgress = new JProgressBar();
+		byDirProgress.setStringPainted(true);
+		byDirProgress.setString("Calculating file sizes ...");
+		byDirProgress.setIndeterminate(true);
+		c.gridx = 1;
+		c.gridy = 0;
+		c.anchor = GridBagConstraints.EAST;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		grid.setConstraints(byDirProgress, c);
+		getContentPane().add(byDirProgress);
+
+		label = new JLabel("Directory:");
+		c.gridx = 0;
+		c.gridy = 1;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
 		grid.setConstraints(label, c);
@@ -47,28 +65,11 @@ class UploadDialog extends JFrame {
 		currentDir = new JTextField(30);
 		currentDir.setEditable(false);
 		c.gridx = 1;
-		c.gridy = 0;
+		c.gridy = 1;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.HORIZONTAL;
 		grid.setConstraints(currentDir, c);
 		getContentPane().add(currentDir);
-
-		label = new JLabel("Stored:");
-		c.gridx = 0;
-		c.gridy = 1;
-		c.anchor = GridBagConstraints.WEST;
-		c.fill = GridBagConstraints.NONE;
-		grid.setConstraints(label, c);
-		getContentPane().add(label);
-
-		byDirProgress = new JProgressBar();
-		byDirProgress.setStringPainted(true);
-		c.gridx = 1;
-		c.gridy = 1;
-		c.anchor = GridBagConstraints.EAST;
-		c.fill = GridBagConstraints.HORIZONTAL;
-		grid.setConstraints(byDirProgress, c);
-		getContentPane().add(byDirProgress);
 
 		label = new JLabel("Uploading file:");
 		c.gridx = 0;
@@ -153,20 +154,24 @@ class UploadDialog extends JFrame {
 	}
 
 	public void setCurrentSize(long size) {
-		if(size >= 1024)
+		if (size >= 1024)
 			currentSize.setText(String.valueOf(size / 1024) + "K");
 		else
 			currentSize.setText(String.valueOf(size));
 	}
 
-	public void setMaxFilesCount(int count) {
-		byDirProgress.setMaximum(count);
+	public void setTotalSize(long size) {
+		byDirProgress.setIndeterminate(false);
+		byDirProgress.setString(null);
+		byDirProgress.setMinimum(0);
+		byDirProgress.setValue(0);
+		byDirProgress.setMaximum((int) (size / 1024));
 	}
-	
-	public void setFilesCount(int count) {
-		byDirProgress.setValue(count);
+
+	public void setStoredSize(long count) {
+		byDirProgress.setValue((int) (count / 1024));
 	}
-	
+
 	public void showMessage(String msg) {
 		messages.append(msg + "\n");
 	}

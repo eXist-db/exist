@@ -1,7 +1,7 @@
 
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ *  Copyright (C) 2001-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -39,333 +39,333 @@ import org.w3c.dom.Node;
  */
 public final class NodeProxy implements Comparable, Cloneable {
 
-    public DocumentImpl doc = null;
-    public long gid = 0;
-    public long internalAddress = -1;
-    public LongLinkedList contextNodes = null;
-    public short nodeType = -1;
+	public DocumentImpl doc = null;
+	public long gid = 0;
+	public long internalAddress = -1;
+	public LongLinkedList contextNodes = null;
+	public short nodeType = -1;
 	public Match[] matches = null;
-	
-	//public long backupId = -1;
-	//public boolean valid = true;
-	
-    public NodeProxy() {
-    }
-        
-    /**
-     *  Constructor for the NodeProxy object
-     *
-     *@param  doc      Description of the Parameter
-     *@param  gid      Description of the Parameter
-     *@param  address  Description of the Parameter
-     */
-    public NodeProxy( DocumentImpl doc, long gid, long address ) {
-        this.gid = gid;
-        this.doc = doc;
-        this.internalAddress = address;
-    }
 
+	public NodeProxy() {
+	}
 
-    /**
-     *  Construct a node proxy with unique id gid and owned by document doc.
-     *
-     *@param  doc  Description of the Parameter
-     *@param  gid  Description of the Parameter
-     */
-    public NodeProxy( DocumentImpl doc, long gid ) {
-        this.doc = doc;
-        this.gid = gid;
-    }
-
-
-    /**
-     *  as above, but a hint is given about the node type of this proxy-object.
-     *
-     *@param  doc       Description of the Parameter
-     *@param  gid       Description of the Parameter
-     *@param  nodeType  Description of the Parameter
-     */
-    public NodeProxy( DocumentImpl doc, long gid, short nodeType ) {
-		this.doc = doc;
-		this.gid = gid;
-        this.nodeType = nodeType;
-    }
-
-
-    /**
-     *  Constructor for the NodeProxy object
-     *
-     *@param  doc       Description of the Parameter
-     *@param  gid       Description of the Parameter
-     *@param  nodeType  Description of the Parameter
-     *@param  address   Description of the Parameter
-     */
-    public NodeProxy( DocumentImpl doc, long gid, short nodeType,
-                      long address ) {
+	/**
+	 *  Constructor for the NodeProxy object
+	 *
+	 *@param  doc      Description of the Parameter
+	 *@param  gid      Description of the Parameter
+	 *@param  address  Description of the Parameter
+	 */
+	public NodeProxy(DocumentImpl doc, long gid, long address) {
 		this.gid = gid;
 		this.doc = doc;
 		this.internalAddress = address;
-        this.nodeType = nodeType;
-    }
+	}
 
+	/**
+	 *  Construct a node proxy with unique id gid and owned by document doc.
+	 *
+	 *@param  doc  Description of the Parameter
+	 *@param  gid  Description of the Parameter
+	 */
+	public NodeProxy(DocumentImpl doc, long gid) {
+		this.doc = doc;
+		this.gid = gid;
+	}
 
-    /**
-     *  Constructor for the NodeProxy object
-     *
-     *@param  p  Description of the Parameter
-     */
-    public NodeProxy( NodeProxy p ) {
-        this.gid = p.gid;
-        this.doc = p.doc;
+	/**
+	 *  as above, but a hint is given about the node type of this proxy-object.
+	 *
+	 *@param  doc       Description of the Parameter
+	 *@param  gid       Description of the Parameter
+	 *@param  nodeType  Description of the Parameter
+	 */
+	public NodeProxy(DocumentImpl doc, long gid, short nodeType) {
+		this.doc = doc;
+		this.gid = gid;
+		this.nodeType = nodeType;
+	}
+
+	/**
+	 *  Constructor for the NodeProxy object
+	 *
+	 *@param  doc       Description of the Parameter
+	 *@param  gid       Description of the Parameter
+	 *@param  nodeType  Description of the Parameter
+	 *@param  address   Description of the Parameter
+	 */
+	public NodeProxy(
+		DocumentImpl doc,
+		long gid,
+		short nodeType,
+		long address) {
+		this.gid = gid;
+		this.doc = doc;
+		this.internalAddress = address;
+		this.nodeType = nodeType;
+	}
+
+	/**
+	 *  Constructor for the NodeProxy object
+	 *
+	 *@param  p  Description of the Parameter
+	 */
+	public NodeProxy(NodeProxy p) {
+		this.gid = p.gid;
+		this.doc = p.doc;
 		this.internalAddress = p.internalAddress;
 		this.nodeType = p.nodeType;
 		this.matches = p.matches;
-		//this.backupId = p.backupId;
-    }
+	}
 
-
-    /**
-     *  Constructor for the NodeProxy object
-     *
-     *@param  node  Description of the Parameter
-     */
-    public NodeProxy( NodeImpl node ) {
-        this( (DocumentImpl) node.getOwnerDocument(), node.getGID() );
-    }
-
+	/**
+	 *  Constructor for the NodeProxy object
+	 *
+	 *@param  node  Description of the Parameter
+	 */
+	public NodeProxy(NodeImpl node) {
+		this((DocumentImpl) node.getOwnerDocument(), node.getGID());
+	}
 
 	/**
 	 * Reset the object's state (for reuse).
 	 *
 	 */
-    public void clear() {
-        doc = null;
-        gid = 0;
-        internalAddress = -1;
-        nodeType = -1;
-    }
-    
-    public int compareTo( Object other ) {
+	public void clear() {
+		doc = null;
+		gid = 0;
+		internalAddress = -1;
+		nodeType = -1;
+		contextNodes = null;
+		matches = null;
+	}
+
+	public void copy(NodeProxy other) {
+		this.gid = other.gid;
+		this.doc = other.doc;
+		this.internalAddress = other.internalAddress;
+		this.nodeType = other.nodeType;
+		this.matches = other.matches;
+		this.contextNodes = other.contextNodes;
+	}
+
+	public int compareTo(NodeProxy other) {
+		final int diff = doc.docId - other.doc.docId;
+		return diff == 0 ? (gid < other.gid ? -1 : (gid > other.gid ? 1 : 0)) : diff;
+	}
+
+	public int compareTo(Object other) {
 		final NodeProxy p = (NodeProxy) other;
-		if ( doc.docId == p.doc.docId ) {
-			if ( gid == p.gid )
+		if (doc.docId == p.doc.docId) {
+			if (gid == p.gid)
 				return 0;
-			else if ( gid < p.gid )
+			else if (gid < p.gid)
 				return -1;
 			else
 				return 1;
-		} else if ( doc.docId < p.doc.docId )
+		} else if (doc.docId < p.doc.docId)
 			return -1;
 		else
 			return 1;
-    }
+	}
 
-    public boolean equals( Object other ) {
-        if ( !( other instanceof NodeProxy ) )
-            throw new RuntimeException( "cannot compare nodes from different implementations" );
-        NodeProxy node = (NodeProxy) other;
-        if ( node.doc.getDocId() == doc.getDocId() &&
-            node.gid == gid )
-            return true;
-        return false;
-    }
+	public boolean equals(Object other) {
+		if (!(other instanceof NodeProxy))
+			throw new RuntimeException("cannot compare nodes from different implementations");
+		NodeProxy node = (NodeProxy) other;
+		if (node.doc.getDocId() == doc.getDocId() && node.gid == gid)
+			return true;
+		return false;
+	}
 
-    /**
-     *  Gets the brokerType attribute of the NodeProxy object
-     *
-     *@return    The brokerType value
-     */
-    public int getBrokerType() {
-        return doc.broker.getDatabaseType();
-    }
+	/**
+	 *  Gets the brokerType attribute of the NodeProxy object
+	 *
+	 *@return    The brokerType value
+	 */
+	public int getBrokerType() {
+		return doc.broker.getDatabaseType();
+	}
 
+	/**
+	 *  Gets the doc attribute of the NodeProxy object
+	 *
+	 *@return    The doc value
+	 */
+	public DocumentImpl getDoc() {
+		return doc;
+	}
 
-    /**
-     *  Gets the doc attribute of the NodeProxy object
-     *
-     *@return    The doc value
-     */
-    public DocumentImpl getDoc() {
-        return doc;
-    }
+	/**
+	 *  Gets the gID attribute of the NodeProxy object
+	 *
+	 *@return    The gID value
+	 */
+	public long getGID() {
+		return gid;
+	}
 
+	/**
+	 *  Gets the node attribute of the NodeProxy object
+	 *
+	 *@return    The node value
+	 */
+	public Node getNode() {
+		return doc.getNode(this);
+	}
 
-    /**
-     *  Gets the gID attribute of the NodeProxy object
-     *
-     *@return    The gID value
-     */
-    public long getGID() {
-        return gid;
-    }
+	/**
+	 *  Gets the nodeType attribute of the NodeProxy object
+	 *
+	 *@return    The nodeType value
+	 */
+	public short getNodeType() {
+		return nodeType;
+	}
 
+	/**
+	 *  Gets the nodeValue attribute of the NodeProxy object
+	 *
+	 *@return    The nodeValue value
+	 */
+	public String getNodeValue() {
+		return doc.getBroker().getNodeValue(this);
+	}
 
-    /**
-     *  Gets the node attribute of the NodeProxy object
-     *
-     *@return    The node value
-     */
-    public Node getNode() {
-        return doc.getNode( this );
-    }
+	/**
+	 *  Sets the node-identifier of this node.
+	 *
+	 *@param  gid  The new gID value
+	 */
+	public void setGID(long gid) {
+		this.gid = gid;
+	}
 
+	public String toString() {
+		return doc.getNode(gid).toString();
+	}
 
-    /**
-     *  Gets the nodeType attribute of the NodeProxy object
-     *
-     *@return    The nodeType value
-     */
-    public short getNodeType() {
-        return nodeType;
-    }
+	public static class NodeProxyComparator implements Comparator {
 
+		public static NodeProxyComparator instance = new NodeProxyComparator();
 
-    /**
-     *  Gets the nodeValue attribute of the NodeProxy object
-     *
-     *@return    The nodeValue value
-     */
-    public String getNodeValue() {
-        return doc.getBroker().getNodeValue( this );
-    }
+		public int compare(Object obj1, Object obj2) {
+			if (obj1 == null || obj2 == null)
+				throw new NullPointerException("cannot compare null values");
+			if (!(obj1 instanceof NodeProxy && obj2 instanceof NodeProxy))
+				throw new RuntimeException(
+					"cannot compare nodes " + "from different implementations");
+			NodeProxy p1 = (NodeProxy) obj1;
+			NodeProxy p2 = (NodeProxy) obj2;
+			if (p1.doc.docId == p2.doc.docId) {
+				if (p1.gid == p2.gid)
+					return 0;
+				else if (p1.gid < p2.gid)
+					return -1;
+				else
+					return 1;
+			} else if (p1.doc.docId < p2.doc.docId)
+				return -1;
+			else
+				return 1;
+		}
+	}
 
+	/**
+	 * Returns the storage address of this node in dom.dbx.
+	 * @return long
+	 */
+	public long getInternalAddress() {
+		return internalAddress;
+	}
 
-    /**
-     *  Sets the node-identifier of this node.
-     *
-     *@param  gid  The new gID value
-     */
-    public void setGID( long gid ) {
-        this.gid = gid;
-    }
+	/**
+	 * Sets the doc this node belongs to.
+	 * @param doc The doc to set
+	 */
+	public void setDoc(DocumentImpl doc) {
+		this.doc = doc;
+	}
 
-    public String toString() {
-        return doc.getNode( gid ).toString();
-    }
-
-    public static class NodeProxyComparator implements Comparator {
-
-        public static NodeProxyComparator instance =
-            new NodeProxyComparator();
-
-        public int compare( Object obj1, Object obj2 ) {
-            if ( obj1 == null || obj2 == null )
-                throw new NullPointerException( "cannot compare null values" );
-            if ( !( obj1 instanceof NodeProxy && obj2 instanceof NodeProxy ) )
-                throw new RuntimeException( "cannot compare nodes " +
-                    "from different implementations" );
-            NodeProxy p1 = (NodeProxy) obj1;
-            NodeProxy p2 = (NodeProxy) obj2;
-            if ( p1.doc.docId == p2.doc.docId ) {
-                if ( p1.gid == p2.gid )
-                    return 0;
-                else if ( p1.gid < p2.gid )
-                    return -1;
-                else
-                    return 1;
-            }
-            else if ( p1.doc.docId < p2.doc.docId )
-                return -1;
-            else
-                return 1;
-        }
-    }
-
-
-    /**
-     * Returns the storage address of this node in dom.dbx.
-     * @return long
-     */
-    public long getInternalAddress() {
-        return internalAddress;
-    }
-
-    /**
-     * Sets the doc this node belongs to.
-     * @param doc The doc to set
-     */
-    public void setDoc(DocumentImpl doc) {
-        this.doc = doc;
-    }
-
-    /**
-     * Sets the storage address of this node in dom.dbx.
-     * 
-     * @param internalAddress The internalAddress to set
-     */
-    public void setInternalAddress(long internalAddress) {
-        this.internalAddress = internalAddress;
-    }
+	/**
+	 * Sets the storage address of this node in dom.dbx.
+	 * 
+	 * @param internalAddress The internalAddress to set
+	 */
+	public void setInternalAddress(long internalAddress) {
+		this.internalAddress = internalAddress;
+	}
 
 	public void setHasIndex(boolean hasIndex) {
-		internalAddress = (hasIndex ? internalAddress | 0x10000L :
-			internalAddress & (~ 0x10000L));
+		internalAddress =
+			(hasIndex
+				? internalAddress | 0x10000L
+				: internalAddress & (~0x10000L));
 	}
-	
+
 	public boolean hasIndex() {
 		return (internalAddress & 0x10000L) > 0;
 	}
-	
-    /**
-     * Sets the nodeType.
-     * @param nodeType The nodeType to set
-     */
-    public void setNodeType(short nodeType) {
-        this.nodeType = nodeType;
-    }
+
+	/**
+	 * Sets the nodeType.
+	 * @param nodeType The nodeType to set
+	 */
+	public void setNodeType(short nodeType) {
+		this.nodeType = nodeType;
+	}
 
 	public Object clone() throws CloneNotSupportedException {
-		final NodeProxy clone = 
+		final NodeProxy clone =
 			new NodeProxy(doc, gid, nodeType, internalAddress);
 		clone.matches = matches;
 		return clone;
 	}
 
 	public boolean hasMatch(Match match) {
-		if(match == null || matches == null)
+		if (match == null || matches == null)
 			return false;
-		for(int i = 0; i < matches.length; i++)
-			if(matches[i].equals(match))
+		for (int i = 0; i < matches.length; i++)
+			if (matches[i].equals(match))
 				return true;
 		return false;
 	}
-	
+
 	public void addMatch(Match match) {
 		Match m[] = new Match[(matches == null ? 1 : matches.length + 1)];
 		m[0] = match;
-		if(matches != null) 
+		if (matches != null)
 			System.arraycopy(matches, 0, m, 1, matches.length);
 		matches = m;
 	}
-	
+
 	public void addMatches(Match m[]) {
-		if(m == null || m.length == 0)
+		if (m == null || m.length == 0)
 			return;
-		for(int i = 0; i < m.length; i++)
-			if(!hasMatch(m[i]))
+		for (int i = 0; i < m.length; i++)
+			if (!hasMatch(m[i]))
 				addMatch(m[i]);
 	}
-	
+
 	public String printMatches() {
 		StringBuffer buf = new StringBuffer();
 		buf.append(gid).append(": ");
-		for(int i = 0; i < matches.length; i++)
+		for (int i = 0; i < matches.length; i++)
 			buf.append(matches[i].getMatchingTerm()).append(' ');
 		return buf.toString();
 	}
-	
+
 	public void addContextNode(NodeProxy node) {
-		if(contextNodes == null)
+		if (contextNodes == null)
 			contextNodes = new LongLinkedList();
 		contextNodes.add(node.gid);
 	}
-	
+
 	public void copyContext(NodeProxy node) {
 		contextNodes = node.contextNodes;
 	}
-	
+
 	public LongLinkedList getContext() {
 		return contextNodes;
 	}
 }
-

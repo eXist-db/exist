@@ -1,7 +1,7 @@
 
 /*
  *  eXist xml document repository and xpath implementation
- *  Copyright (C) 2000,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ *  Copyright (C) 2000,  Wolfgang M. Meier (wolfgang@exist-db.org)
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -25,7 +25,7 @@ import java.io.PrintWriter;
 /**
  *  Description of the Class
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ *@author     Wolfgang Meier <wolfgang@exist-db.org>
  *@created    24. Juni 2002
  */
 public class EXistException extends Exception {

@@ -22,8 +22,8 @@
        -->
        
 	   <db-connection database="native" files="webapp/WEB-INF/data" 
-		   buffers="1024" words_buffers="32768" collection_buffers="2048" 
-		   elements_buffers="8192" free_mem_min="10" 
+		   buffers="1024" words_buffers="4096" collection_buffers="2048" 
+		   elements_buffers="4096" free_mem_min="10" 
 		   pageSize="4096">
 
 		   <!-- Settings for the database connection pool
@@ -54,7 +54,7 @@
 	   - indent: should the serializer pretty-print (indent) xml?
   -->
   <serializer enable-xinclude="true" enable-xsl="false"
-	  indent="false" add-exist-id="all" match-tagging-elements="true"
+	  indent="false" add-exist-id="element" match-tagging-elements="true"
 	  match-tagging-attributes="false"/>
   
   <!-- settings for the indexer
@@ -164,7 +164,7 @@
     <!-- file appenders -->
     <appender name="exist.core" class="org.apache.log4j.RollingFileAppender">
 	    <param name="File" value="webapp/WEB-INF/logs/exist.log"/>
-		<param name="MaximumFileSize" value="500000"/>
+		<param name="MaximumFileSize" value="5000000"/>
 		<param name="Encoding" value="UTF-8"/>
       <layout class="org.apache.log4j.PatternLayout">
         <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m\n"/>
@@ -191,7 +191,7 @@
 
     <category name="org.exist.xmldb" additivity="false">
 		<appender-ref ref="console"/>
-		<priority value="debug"/>
+		<priority value="info"/>
     </category>
     
     <!--

@@ -32,7 +32,7 @@ import org.xml.sax.SAXException;
 /**
  *  Description of the Class
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ *@author     Wolfgang Meier <wolfgang@exist-db.org>
  *@created    August 2, 2002
  */
 public class AdminSoapBindingImpl implements org.exist.soap.Admin {

@@ -1,7 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2001-03 Wolfgang M. Meier
- *  meier@ifs.tu-darmstadt.de
+ *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *
  *  This program is free software; you can redistribute it and/or
@@ -33,7 +33,7 @@ import org.exist.storage.DBBroker;
 /**
  *  xpath-library function: match-keywords(XPATH, arg1, arg2 ...)
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ *@author     Wolfgang Meier <wolfgang@exist-db.org>
  *@created    7. Oktober 2002
  */
 public class FunKeywordMatchAll extends Function {

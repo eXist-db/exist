@@ -54,7 +54,7 @@ public class DatabaseAdminServlet extends HttpServlet {
                 }
                 else if ( action.equalsIgnoreCase( "shutdown" ) ) {
                     if ( BrokerPool.isConfigured() ) {
-                        BrokerPool.stopAll();
+                        BrokerPool.stopAll(false);
                         output.println( "<p>Server has been shut down...</p>" );
                     }
                     else
@@ -139,10 +139,10 @@ public class DatabaseAdminServlet extends HttpServlet {
     }
 
 
-    /*public void destroy() {
+    public void destroy() {
     	this.log("starting database shutdown ...");
-	    BrokerPool.stopAll();
-    }*/
+	    BrokerPool.stopAll(false);
+    }
 
     private void startup() throws ServletException {
         if ( configuration == null )
