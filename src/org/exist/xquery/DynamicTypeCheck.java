@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -55,7 +56,7 @@ public class DynamicTypeCheck extends AbstractExpression {
 		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
 			item = i.nextItem();
 			if(!Type.subTypeOf(item.getType(), requiredType)) {
-				throw new XPathException("Type error in expression" +
+				throw new XPathException(expression.getASTNode(), "Type error in expression" +
 					": required type is " + Type.getTypeName(requiredType) +
 					"; got: " + Type.getTypeName(item.getType()) + ": " + item.getStringValue());
 			}
@@ -89,5 +90,13 @@ public class DynamicTypeCheck extends AbstractExpression {
 	 */
 	public void resetState() {
 		expression.resetState();
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.AbstractExpression#getASTNode()
+	 */
+	public XQueryAST getASTNode() {
+		return expression.getASTNode();
 	}
 }

@@ -22,6 +22,8 @@
  */
 package org.exist.http.servlets;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.util.Enumeration;
@@ -48,6 +50,14 @@ public class HttpRequestWrapper implements RequestWrapper {
 		this.containerEncoding = containerEncoding;
 	}
 
+	
+	/* (non-Javadoc)
+	 * @see org.exist.http.servlets.RequestWrapper#getInputStream()
+	 */
+	public InputStream getInputStream() throws IOException {
+		return request.getInputStream();
+	}
+	
 	/**
 	 * @param arg0
 	 * @return

@@ -21,6 +21,7 @@
 
 package org.exist.xquery;
 
+import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
@@ -125,4 +126,8 @@ public interface Expression {
 	 * displayed to the user.
 	 */
 	public String pprint();
+	
+	public XQueryAST getASTNode();
+	
+	public void setASTNode(XQueryAST ast);
 }

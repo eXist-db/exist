@@ -1,7 +1,11 @@
 package org.exist.xquery;
 
+import org.exist.xquery.parser.XQueryAST;
+
 public class XPathException extends Exception {
 
+	private XQueryAST astNode = null;
+	
 	/**
 	 * 
 	 */
@@ -16,6 +20,11 @@ public class XPathException extends Exception {
 		super(message);
 	}
 
+	public XPathException(XQueryAST ast, String message) {
+		super(message);
+		this.astNode = ast;
+	}
+	
 	/**
 	 * @param cause
 	 */
@@ -31,4 +40,31 @@ public class XPathException extends Exception {
 		super(message, cause);
 	}
 
+	public XPathException(XQueryAST ast, String message, Throwable cause) {
+		super(message, cause);
+		this.astNode = ast;
+	}
+	
+	public void setASTNode(XQueryAST ast) {
+		System.out.println(ast);
+		this.astNode = ast;
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Throwable#getMessage()
+	 */
+	public String getMessage() {
+		if(astNode == null)
+			return super.getMessage();
+		else {
+			StringBuffer buf = new StringBuffer();
+			buf.append(super.getMessage());
+			buf.append(" [line ");
+			buf.append(astNode.getLine());
+			buf.append(", column ");
+			buf.append(astNode.getColumn());
+			buf.append("]");
+			return buf.toString();
+		}
+	}
 }

@@ -23,6 +23,7 @@
 package org.exist.xquery;
 
 import org.exist.dom.DocumentSet;
+import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -59,7 +60,12 @@ public class UntypedValueCheck extends AbstractExpression {
 		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
 			item = i.nextItem();
 			//System.out.println(item.getStringValue() + " converting to " + Type.getTypeName(requiredType));
-			result.add(item.convertTo(requiredType));
+			try {
+				result.add(item.convertTo(requiredType));
+			} catch (XPathException e) {
+				e.setASTNode(expression.getASTNode());
+				throw e;
+			}
 		}
 		return result;
 	}
@@ -98,5 +104,13 @@ public class UntypedValueCheck extends AbstractExpression {
 	 */
 	public void resetState() {
 		expression.resetState();
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.AbstractExpression#getASTNode()
+	 */
+	public XQueryAST getASTNode() {
+		return expression.getASTNode();
 	}
 }

@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.exist.dom.QName;
 import org.exist.xquery.functions.ExtNear;
+import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.Type;
 
 public class FunctionFactory {
@@ -49,11 +50,11 @@ public class FunctionFactory {
 	 */
 	public static Expression createFunction(
 		XQueryContext context,
+		XQueryAST ast,
 		PathExpr parent,
-		String fnName,
 		List params)
 		throws XPathException {
-		QName qname = QName.parseFunction(context, fnName);
+		QName qname = QName.parseFunction(context, ast.getText());
 		String local = qname.getLocalName();
 		String uri = qname.getNamespaceURI();
 		Expression step = null;
@@ -146,7 +147,7 @@ public class FunctionFactory {
 					if (clazz == null)
 						throw new XPathException("function " + qname.toString() + " ( namespace-uri = " + 
 							qname.getNamespaceURI() + ") is not defined");
-					Function func = Function.createFunction(context, clazz);
+					Function func = Function.createFunction(context, ast, clazz);
 					func.setArguments(params);
 					func.setParent(parent);
 					step = func;
@@ -157,6 +158,7 @@ public class FunctionFactory {
 							qname.getNamespaceURI() + ") is not defined");
 					FunctionCall call = new FunctionCall(context, func);
 					call.setArguments(params);
+					call.setASTNode(ast);
 					step = call;
 				}
 			} else {
@@ -164,10 +166,12 @@ public class FunctionFactory {
 				FunctionCall call;
 				if(func != null) {
 					call = new FunctionCall(context, func);
+					call.setASTNode(ast);
 					call.setArguments(params);
 				} else {
 					// create a forward reference which will be resolved later
 					call = new FunctionCall(context, qname, params);
+					call.setASTNode(ast);
 					context.addForwardReference(call);
 				}
 				step = call;

@@ -29,6 +29,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.xmldb.CompiledExpression;
+import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -207,6 +208,18 @@ public class PathExpr extends AbstractExpression implements CompiledExpression {
     	return "";
     }
     
+    
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.AbstractExpression#getASTNode()
+	 */
+	public XQueryAST getASTNode() {
+		XQueryAST ast = super.getASTNode();
+		if(ast == null && steps.size() == 1) {
+			return ((Expression)steps.get(0)).getASTNode();
+		}
+		return ast;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#setInPredicate(boolean)
 	 */

@@ -28,6 +28,8 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.avalon.framework.parameters.Parameters;
 import org.apache.cocoon.ProcessingException;
 import org.apache.cocoon.environment.ObjectModelHelper;
@@ -35,6 +37,7 @@ import org.apache.cocoon.environment.Request;
 import org.apache.cocoon.environment.Response;
 import org.apache.cocoon.environment.Session;
 import org.apache.cocoon.environment.SourceResolver;
+import org.apache.cocoon.environment.http.HttpEnvironment;
 import org.apache.cocoon.generation.ServiceableGenerator;
 import org.apache.excalibur.source.Source;
 import org.apache.excalibur.source.SourceValidity;
@@ -160,7 +163,9 @@ public class XQueryGenerator extends ServiceableGenerator {
 			String prefix = RequestModule.PREFIX;
 			service.setNamespace(prefix, RequestModule.NAMESPACE_URI);
 			service.setModuleLoadPath(contextPath);
-			service.declareVariable(prefix + ":request", new CocoonRequestWrapper(request));
+			HttpServletRequest httpRequest = (HttpServletRequest)
+				objectModel.get(HttpEnvironment.HTTP_REQUEST_OBJECT);
+			service.declareVariable(prefix + ":request", new CocoonRequestWrapper(request, httpRequest));
 			service.declareVariable(prefix + ":response", new CocoonResponseWrapper(response));
 			service.declareVariable(prefix + ":session", new CocoonSessionWrapper(session));
 			
