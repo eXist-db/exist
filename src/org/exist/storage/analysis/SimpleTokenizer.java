@@ -42,10 +42,11 @@ public class SimpleTokenizer implements Tokenizer {
 		// consume letters
 		char ch = LA(1);
 		int count = 0;
-		while (ch != (char) - 1) {
+		while (ch != (char) -1) {
 			if (ch == '\\' && isWildcard(LA(2))) {
 				break;
-			} else if (singleCharToken(ch)) {
+			}
+			if (singleCharToken(ch)) {
 				// if this is a single char token and first in the sequence,
 				// consume it
 				if(count == 0) {
@@ -54,7 +55,7 @@ public class SimpleTokenizer implements Tokenizer {
 					ch = LA(1);
 				}
 				break;
-			} else if (isNonBreakingCharacter(ch) || (allowWildcards && isWildcard(ch))) {
+			} else if (Character.isLetter(ch) || nonBreakingChar(ch) || (allowWildcards && isWildcard(ch))) {
 				token.consumeNext();
 				consume();
 				ch = LA(1);
@@ -290,11 +291,6 @@ public class SimpleTokenizer implements Tokenizer {
 		return TextToken.WS_TOKEN;
 	}
 	
-	private boolean isNonBreakingCharacter(char ch) {
-		return Character.isLetter(ch)
-			&& (!singleCharToken(ch));
-	}
-	
 	/**
 	 * The code ranges defined here should be interpreted as 1-char
 	 * tokens.
@@ -347,20 +343,20 @@ public class SimpleTokenizer implements Tokenizer {
 	}
 	
 	public static void main(String args[]) {
-		String t1 = "\u30A8\u31A1\uACFF\u2FAA\u312A\u3045";
+		String t1 = "\u30A8\u30FB\u31A1\uACFF\u2FAA\u312A\u3045";
 		String t2 = "選官盍若究出世法以選佛邪師善其言毅欲超";
 		String t3 = "문자 사용 상의 오류를 찾아내기 위해 검증된 중국어 판을 재검토하고, 보다 읽기 쉽게 하기 위해 언어적 표현을 다듬는다.";
-		for(int i = 0; i < t2.length(); i++) {
-			char ch = t2.charAt(i);
-			System.out.print(
-				Integer.toHexString(ch) + ' '
-			);
-		}
+//		for(int i = 0; i < t2.length(); i++) {
+//			char ch = t2.charAt(i);
+//			System.out.print(
+//				Integer.toHexString(ch) + ' '
+//			);
+//		}
 		SimpleTokenizer tokenizer = new SimpleTokenizer();
-		tokenizer.setText(t3);
+		tokenizer.setText(t2);
 		TextToken token = tokenizer.nextToken(true);
 		while(token != null && token.getType() != TextToken.EOF) {
-			System.out.println(token.getText());
+			//System.out.println(token.getText());
 			token = tokenizer.nextToken(true);
 		}
 	}
