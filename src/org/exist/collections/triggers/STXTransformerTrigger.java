@@ -24,7 +24,7 @@
 package org.exist.collections.triggers;
 
 import java.util.Map;
-import java.util.Properties;
+
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
@@ -64,19 +64,14 @@ public class STXTransformerTrigger extends FilteringTrigger {
 		if(stylesheet == null)
 			throw new CollectionConfigurationException("STXTransformerTrigger requires an " +
 				"attribute 'src'");
-		// save system properties
-		Properties props = System.getProperties();
-		String oldProp = (String)
-			props.setProperty("javax.xml.transform.TransformerFactory", 
-				"net.sf.joost.trax.TransformerFactoryImpl");
+		String origProperty = System.getProperty("javax.xml.transform.TransformerFactory");
+		System.setProperty("javax.xml.transform.TransformerFactory", 
+			"net.sf.joost.trax.TransformerFactoryImpl");
 		factory = (SAXTransformerFactory)TransformerFactory.newInstance();
 		// reset property to previous setting
-		if(oldProp != null)
-			props.setProperty("javax.xml.transform.TransformerFactory", 
-				oldProp);
-		else
-			props.remove("javax.xml.transform.TransformerFactory");
-		
+		if(origProperty != null)
+			System.setProperty("javax.xml.transform.TransformerFactory", origProperty);
+
 		getLogger().debug("compiling stylesheet " + stylesheet);
         if(stylesheet.indexOf(':') < 0) {
             // load stylesheet out of the database
