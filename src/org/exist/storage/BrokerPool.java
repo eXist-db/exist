@@ -301,6 +301,10 @@ public class BrokerPool {
 		secManager = new org.exist.security.SecurityManager(this, broker);
 	}
 
+	public SyncDaemon getSyncDaemon() {
+	    return syncDaemon;
+	}
+	
 	/**
 	 *  Initialize the current instance.
 	 *

@@ -44,9 +44,6 @@ public class ClockCache implements Cache {
 	protected int count = 0;
 	protected int hits = 0, fails = 0;
 	
-	private long lastSync = System.currentTimeMillis();
-	private long syncPeriod = 30000;
-	
 	public ClockCache(int size) {
 		this.size = size;
 		items = new Cacheable[size];
@@ -75,8 +72,6 @@ public class ClockCache implements Cache {
 			} else
 				removeOne(item);
 		}
-		//if(System.currentTimeMillis() - lastSync > syncPeriod)
-		//	flush();
 	}
 
 	protected Cacheable removeOne(Cacheable item) {
@@ -102,6 +97,7 @@ public class ClockCache implements Cache {
 			map.remove(old.getKey());
 			old.sync();
 		}
+//		System.out.println(old.getKey() + " -> " + item.getKey());
 		items[bucket] = item;
 		map.put(item.getKey(), item);
 		return old;
@@ -147,10 +143,12 @@ public class ClockCache implements Cache {
 	 * @see org.exist.storage.cache.Cache#flush()
 	 */
 	public void flush() {
-		for(int i = 0; i < count; i++)
-			if(items[i] != null)
-				items[i].sync();
-		lastSync = System.currentTimeMillis();
+	    int written = 0;
+		for(int i = 0; i < count; i++) {
+			if(items[i] != null && items[i].sync())
+				++written;
+		}
+//		LOG.debug(written + " pages written to disk");
 	}
 
 	/* (non-Javadoc)

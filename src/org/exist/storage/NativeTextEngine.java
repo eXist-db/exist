@@ -139,7 +139,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		String pathSep = System.getProperty("file.separator", "/");
 		try {
 			if ((dbWords = (BFile) config.getProperty("db-connection.words")) == null) {
-				dbWords = new BFile(new File(dataDir + pathSep + "words.dbx"),
+				dbWords = new BFile(broker.getBrokerPool(), new File(dataDir + pathSep + "words.dbx"),
 						indexBuffers, dataBuffers);
 				if (!dbWords.exists())
 					dbWords.create();
