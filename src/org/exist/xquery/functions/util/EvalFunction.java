@@ -85,9 +85,7 @@ public class EvalFunction extends Function {
 		Item contextItem)
 		throws XPathException {
         // get the query expression
-		String expr = StringValue.expand(
-			getArgument(0).eval(contextSequence, contextItem).getStringValue()
-		);
+		String expr = getArgument(0).eval(contextSequence, contextItem).getStringValue();
         // check optional collection argument
         DocumentSet oldDocumentSet = null;
         if(getArgumentCount() > 1) {
