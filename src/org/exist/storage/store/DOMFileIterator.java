@@ -251,8 +251,9 @@ public final class DOMFileIterator implements Iterator {
 					return true;
 				} else
 				    return false;
-			} else if (page > -1)
-				p = db.getCurrentPage(page);
+			} else if (page == -1)
+			    return false;
+			p = db.getCurrentPage(page);
 			return true;
 		}
 		
