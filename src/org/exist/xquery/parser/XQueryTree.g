@@ -243,17 +243,24 @@ throws PermissionDeniedException, EXistException, XPathException
 					sequenceType [type]
 				)
 			)?
-			step=e:expr [enclosed]
-			{
-				VariableDeclaration decl= new VariableDeclaration(context, qname.getText(), enclosed);
-				decl.setSequenceType(type);
-				decl.setASTNode(e);
-				path.add(decl);
-				if(myModule != null) {
-					QName qn = QName.parse(context, qname.getText());
-					myModule.declareVariable(qn, decl);
+			(
+				step=e:expr [enclosed]
+				{
+					VariableDeclaration decl= new VariableDeclaration(context, qname.getText(), enclosed);
+					decl.setSequenceType(type);
+					decl.setASTNode(e);
+					path.add(decl);
+					if(myModule != null) {
+						QName qn = QName.parse(context, qname.getText());
+						myModule.declareVariable(qn, decl);
+					}
 				}
-			}
+				|
+				"external"
+				{
+					context.declareVariable(qname.getText(), null);
+				}
+			)
 		)
 		|
 		functionDecl [path]

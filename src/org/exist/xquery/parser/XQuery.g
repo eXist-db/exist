@@ -253,11 +253,15 @@ varDecl throws XPathException
 { String varName= null; }
 :
 	decl:"declare"! "variable"! DOLLAR! varName=qName! ( typeDeclaration )?
-	LCURLY! ex:expr RCURLY!
+	(
+		LCURLY! ex:expr RCURLY!
+		|
+		"external"
+	)
 	{ 
-        #varDecl= #(#[GLOBAL_VAR, varName], #varDecl);
-        #varDecl.copyLexInfo(#decl);
-    }
+		#varDecl= #(#[GLOBAL_VAR, varName], #varDecl);
+		#varDecl.copyLexInfo(#decl);
+	}
 	;
 	
 moduleImport

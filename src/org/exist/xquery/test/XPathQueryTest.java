@@ -8,6 +8,7 @@ import junit.framework.TestCase;
 import org.exist.xmldb.XPathQueryServiceImpl;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.CompiledExpression;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceIterator;
@@ -16,6 +17,7 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
+import org.xmldb.api.modules.XQueryService;
 
 public class XPathQueryTest extends TestCase {
 
@@ -313,6 +315,27 @@ public class XPathQueryTest extends TestCase {
 		}
 	}
 	
+    public void testExternalVars() {
+        try {
+            XQueryService service = (XQueryService)
+                storeXMLStringAndGetQueryService("strings.xml", strings);
+            
+            String query =
+                "declare variable $local:string external;" +
+                "/test/string[. = $local:string]";
+            CompiledExpression expr = service.compile(query);
+            service.declareVariable("local:string", "Hello");
+            
+            ResourceSet result = service.execute(expr);
+            
+            Resource r = result.getResource(0);
+            assertEquals("<string>Hello</string>", r.getContent().toString());
+        } catch (XMLDBException e) {
+            System.out.println("testExternalVars(): XMLDBException: "+e);
+            fail(e.getMessage());
+        }
+    }
+    
 	public void testQueryResource() {
 		try {
 			XMLResource doc =
