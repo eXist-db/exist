@@ -760,15 +760,13 @@ public class Parser
 		if (!stack.empty()) {
 			last = (ElementImpl) stack.peek();
 			if (charBuf != null && charBuf.length() > 0) {
-				final XMLString normalized = charBuf.normalize(normalize);
-				if (normalized.length() > 0) {
-					text.setData(normalized);
-					text.setOwnerDocument(document);
-					last.appendChildInternal(text);
-					if (!validate)
-						broker.store(text, currentPath);
-					text.clear();
-				}
+				// mixed element content: don't normalize the text node 
+				text.setData(charBuf);
+				text.setOwnerDocument(document);
+				last.appendChildInternal(text);
+				if (!validate)
+					broker.store(text, currentPath);
+				text.clear();
 				charBuf.reset();
 			}
 			if (!usedElements.isEmpty()) {
