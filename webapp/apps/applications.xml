@@ -163,4 +163,21 @@
             XQuery, Apache serving static XHTML content</dev-notes>
         <submitter>Keith Campbell</submitter>
     </application>
+    <application>
+         <dc:creator>Bruno Pinaud</dc:creator>
+         <dc:title>GVSR: Graph Visualisation Software References</dc:title>
+         <dc:subject>Computer science</dc:subject>
+         <dc:subject>directory</dc:subject>
+         <dc:subject>Graph drawing software</dc:subject>
+         <dc:description> A directory for referencing software
+	which can draw and manipulate graphs.
+         </dc:description>
+        <production-site>http://hulk.performanse.fr/GVSR</production-site>
+        <status>production</status>
+        <feature-used>XQuery</feature-used>
+        <feature-used>XUpdate</feature-used>
+	<database size="220kb" documents="50" updates="frequent"/>
+        <dev-notes> JSP under tomcat, XQuery based search-engine </dev-notes>
+        <submitter />
+    </application>
 </applications>
