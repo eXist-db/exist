@@ -165,7 +165,7 @@ declare function f:eval($query as xs:string) as element()+
 				$queryTime := current-time() - $startTime
 			return (
 				<p>Found {$count} hits in
-				{get-seconds-from-dayTimeDuration($queryTime)} seconds.
+				{seconds-from-duration($queryTime)} seconds.
 				{if($count gt 100) then "Max. 100 will be shown." else ()}
 				</p>,
 				request:set-session-attribute(
