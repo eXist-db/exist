@@ -373,8 +373,9 @@ public abstract class GenericSchemaService implements SchemaService {
 	private Schema getCastorSchema(String namespaceURI) throws XMLDBException {
 		XMLResource resource = getSchema(namespaceURI);
 		try {
-			Schema schema = (new SchemaReader((String) resource.getContent())).read();
-			return schema;
+		  //TODO does the next line have to be this complicated?
+		  Schema schema = (new SchemaReader(new InputSource(new StringReader((String) resource.getContent())))).read();
+		  return schema;		
 		} catch (IOException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Error reading schema information for target namespace: " + namespaceURI, e);
 		}
@@ -462,7 +463,7 @@ public abstract class GenericSchemaService implements SchemaService {
   protected XUpdateQueryService getXUpdateService() throws XMLDBException {
     if (updateService == null)
       updateService = (XUpdateQueryService) getSchemasCollection().getService("XUpdateQueryService", "1.0");
-    ;
+    
     return updateService;
   }
 
