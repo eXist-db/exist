@@ -85,7 +85,7 @@ public class XIncludeFilter implements ContentHandler {
 	 */
 	public void endElement(String namespaceURI, String localName, String qName)
 		throws SAXException {
-		if (namespaceURI != null && (!namespaceURI.equals(XINCLUDE_NS)))
+		if (namespaceURI == null || (!namespaceURI.equals(XINCLUDE_NS)))
 			contentHandler.endElement(namespaceURI, localName, qName);
 	}
 

@@ -796,7 +796,7 @@ public class Serializer implements XMLReader {
 				setStylesheet((DocumentImpl) doc, stylesheet);
 		}
 		setXSLHandler();
-		serializeToSAX(doc, outputProperties.getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
+		serializeToSAX(doc, outputProperties.getProperty(GENERATE_DOC_EVENTS, "true").equals("true"));
 	}
 
 	/**
