@@ -53,8 +53,8 @@
 	   if found in documents?
 	   - indent: should the serializer pretty-print (indent) xml?
   -->
-  <serializer enable-xinclude="true" enable-xsl="false"
-	  indent="false" add-exist-id="element" match-tagging-elements="true"
+  <serializer enable-xinclude="yes" enable-xsl="false"
+	  indent="yes" add-exist-id="element" match-tagging-elements="true"
 	  match-tagging-attributes="false"/>
   
   <!-- settings for the indexer

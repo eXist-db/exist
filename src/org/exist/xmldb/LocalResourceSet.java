@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Vector;
 
+import javax.xml.transform.OutputKeys;
+
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 import org.exist.EXistException;
@@ -34,7 +36,6 @@ public class LocalResourceSet implements ResourceSet {
 	protected BrokerPool brokerPool;
 	protected LocalCollection collection;
 	protected Vector resources = new Vector();
-	protected Properties properties;
 	private User user;
 
 	public LocalResourceSet(User user, BrokerPool pool, LocalCollection col) {
@@ -48,12 +49,10 @@ public class LocalResourceSet implements ResourceSet {
 		BrokerPool pool,
 		LocalCollection col,
 		Sequence val,
-		Properties properties,
 		String sortExpr)
 		throws XMLDBException {
 		this.user = user;
 		this.brokerPool = pool;
-		this.properties = properties;
 		this.collection = col;
 		if(val.getLength() == 0)
 			return;
@@ -91,9 +90,7 @@ public class LocalResourceSet implements ResourceSet {
 	}
 
 	public Resource getMembersAsResource() throws XMLDBException {
-		String encoding = "UTF-8";
-		if(properties != null && properties.containsKey("encoding"))
-			encoding = (String)properties.get("encoding");
+		String encoding = collection.properties.getProperty(OutputKeys.ENCODING, "UTF-8");
 		OutputFormat format = new OutputFormat("xml", encoding, false);
 		StringWriter writer = new StringWriter();
 		XMLSerializer handler = new XMLSerializer(writer, format);
@@ -102,10 +99,10 @@ public class LocalResourceSet implements ResourceSet {
 			broker = brokerPool.get(user);
 			// configure the serializer
 			Serializer serializer = broker.getSerializer();
-			serializer.setContentHandler(handler);
-			properties.put(Serializer.GENERATE_DOC_EVENTS, "false");
-			serializer.setProperties(properties);
+			collection.properties.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
+			serializer.setProperties(collection.properties);
 			serializer.setUser(user);
+			serializer.setContentHandler(handler);
 
 			//	serialize results
 			handler.startDocument();
@@ -143,7 +140,7 @@ public class LocalResourceSet implements ResourceSet {
 		} finally {
 			brokerPool.release(broker);
 		}
-		Resource res = new LocalXMLResource(user, brokerPool, collection, null, -1);
+		Resource res = new LocalXMLResource(user, brokerPool, collection, "", -1);
 		res.setContent(writer.toString());
 		return res;
 	}
@@ -164,12 +161,12 @@ public class LocalResourceSet implements ResourceSet {
 				|| coll.collection.getId() != p.doc.getCollection().getId()) {
 				coll = new LocalCollection(user, brokerPool, null, p.doc.getCollection());
 			}
-			res = new LocalXMLResource(user, brokerPool, coll, p, properties);
+			res = new LocalXMLResource(user, brokerPool, coll, p);
 		} else if (r instanceof Node) {
-			res = new LocalXMLResource(user, brokerPool, collection, "", -1, properties);
+			res = new LocalXMLResource(user, brokerPool, collection, "", -1);
 			res.setContentAsDOM((Node)r);
 		} else if (r instanceof AtomicValue) {
-			res = new LocalXMLResource(user, brokerPool, collection, "", -1, properties);
+			res = new LocalXMLResource(user, brokerPool, collection, "", -1);
 			res.setContent(r);
 		} else if (r instanceof Resource)
 			return (Resource) r;

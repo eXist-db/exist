@@ -525,8 +525,8 @@ public final class NodeProxy extends NodeSet implements Item, Comparable {
 
 	public void toSAX(DBBroker broker, ContentHandler handler) throws SAXException {
 		Serializer serializer = broker.getSerializer();
-		serializer.setContentHandler(handler);
 		serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
+		serializer.setContentHandler(handler);
 		serializer.toSAX(this);
 	}
 	

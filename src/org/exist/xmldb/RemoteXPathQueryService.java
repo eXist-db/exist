@@ -6,8 +6,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
 
-import javax.xml.transform.OutputKeys;
-
 import org.apache.xmlrpc.XmlRpcException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -18,8 +16,6 @@ import org.xmldb.api.modules.XMLResource;
 
 public class RemoteXPathQueryService implements XPathQueryServiceImpl {
 
-    protected int indentXML = 0;
-    protected String encoding = "UTF-8";
     protected RemoteCollection collection;
 	protected Hashtable namespaceMappings = new Hashtable(5);
 
@@ -43,7 +39,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
             int handle = -1;
             if(resources != null && resources.size() > 0)
             	handle = ((Integer)result.get("id")).intValue();
-            return new ResourceSetImpl( collection, resources, handle, indentXML, encoding );
+            return new ResourceSetImpl( collection, resources, handle );
         } catch ( XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre );
         } catch ( IOException ioe ) {
@@ -72,7 +68,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
 			int handle = -1;
 			if(resources != null && resources.size() > 0)
 				handle = ((Integer)result.get("id")).intValue();
-			return new ResourceSetImpl( collection, resources, handle, indentXML, encoding );
+			return new ResourceSetImpl( collection, resources, handle );
         } catch ( XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre );
         } catch ( IOException ioe ) {
@@ -133,11 +129,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
      *@exception  XMLDBException  Description of the Exception
      */
     public String getProperty( String property ) throws XMLDBException {
-        if ( property.equals( OutputKeys.INDENT ) )
-            return ( indentXML == 1 ) ? "yes" : "no";
-        if ( property.equals( OutputKeys.ENCODING ) )
-            return encoding;
-        return null;
+    	return collection.getProperty(property);
     }
 
 
@@ -149,10 +141,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
      *@exception  XMLDBException  Description of the Exception
      */
     public void setProperty( String property, String value ) throws XMLDBException {
-        if ( property.equals( OutputKeys.INDENT ) )
-            indentXML = ( value.equals( "yes" ) ? 1 : -1 );
-        if ( property.equals( OutputKeys.ENCODING ) )
-            encoding = value;
+        collection.setProperty(property, value);
     }
 
 

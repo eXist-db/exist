@@ -8,6 +8,9 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Vector;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -15,6 +18,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.OutputKeys;
 
 import org.apache.cocoon.components.parser.Parser;
 import org.apache.xml.serialize.OutputFormat;
@@ -41,20 +45,18 @@ public class RemoteXMLResource implements XMLResourceImpl {
 	 *  instead of JAXP
 	 */
 	private Parser cocoonParser = null;
-	protected String encoding = "UTF-8";
 	protected String id, documentName, path = null;
-	protected int indent = -1;
 	protected int handle = -1;
 	protected int pos = -1;
 	protected RemoteCollection parent;
-	protected boolean saxDocEvents = true;
 	protected String content = null;
 	protected File file = null;
 	protected Permission permissions = null;
+	protected Map properties = new HashMap();
 
 	public RemoteXMLResource(RemoteCollection parent, String docId, String id)
 		throws XMLDBException {
-		this(parent, -1, -1, docId, id, 0, "UTF-8");
+		this(parent, -1, -1, docId, id);
 	}
 
 	public RemoteXMLResource(
@@ -62,9 +64,7 @@ public class RemoteXMLResource implements XMLResourceImpl {
 		int handle,
 		int pos,
 		String docId,
-		String id,
-		int indent,
-		String encoding)
+		String id)
 		throws XMLDBException {
 		this.handle = handle;
 		this.pos = pos;
@@ -78,7 +78,6 @@ public class RemoteXMLResource implements XMLResourceImpl {
 			path = parent.getPath() + '/' + docId;
 			documentName = docId;
 		}
-		this.indent = indent;
 	}
 
 	public Date getCreationTime() throws XMLDBException {
@@ -110,12 +109,12 @@ public class RemoteXMLResource implements XMLResourceImpl {
 			return content;
 		if (file != null)
 			return file;
+		Properties properties = parent.getProperties();
 		byte[] data = null;
 		if (id == null) {
 			Vector params = new Vector();
 			params.addElement(path);
-			params.addElement(encoding);
-			params.addElement(new Integer(indent));
+			params.addElement(properties);
 			try {
 				data = (byte[]) parent.getClient().execute("getDocument", params);
 			} catch (XmlRpcException xre) {
@@ -124,11 +123,12 @@ public class RemoteXMLResource implements XMLResourceImpl {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 			}
 		} else {
+			String indent = properties.getProperty(OutputKeys.INDENT, "yes");
 			Vector params = new Vector();
 			params.addElement(new Integer(handle));
 			params.addElement(new Integer(pos));
-			params.addElement(new Integer(indent));
-			params.addElement(encoding);
+			params.addElement(new Integer(indent.equals("no") ? 0 : 1));
+			params.addElement(properties.getProperty(OutputKeys.ENCODING, "UTF-8"));
 			try {
 				data = (byte[]) parent.getClient().execute("retrieve", params);
 			} catch (XmlRpcException xre) {
@@ -138,7 +138,7 @@ public class RemoteXMLResource implements XMLResourceImpl {
 			}
 		}
 		try {
-			content = new String(data, encoding);
+			content = new String(data, properties.getProperty(OutputKeys.ENCODING, "UTF-8"));
 		} catch (UnsupportedEncodingException ue) {
 			content = new String(data);
 		}
@@ -260,14 +260,6 @@ public class RemoteXMLResource implements XMLResourceImpl {
 	public ContentHandler setContentAsSAX() throws XMLDBException {
 		OutputFormat format = new OutputFormat("xml", "UTF-8", false);
 		return new InternalXMLSerializer(format);
-	}
-
-	protected void setEncoding(String encoding) {
-		this.encoding = encoding;
-	}
-
-	protected void setSAXDocEvents(boolean generate) {
-		this.saxDocEvents = generate;
 	}
 
 	private class InternalXMLSerializer extends XMLSerializer {

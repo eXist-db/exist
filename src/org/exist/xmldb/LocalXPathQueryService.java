@@ -35,7 +35,6 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	private final static Logger LOG = 
 		Logger.getLogger(LocalXPathQueryService.class);
 	
-	protected Properties properties = new Properties();
 	protected BrokerPool brokerPool;
 	protected LocalCollection collection;
 	protected User user;
@@ -61,7 +60,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	}
 
 	public String getProperty(String property) throws XMLDBException {
-		return properties.getProperty(property);
+		return collection.properties.getProperty(property);
 	}
 
 	public String getVersion() throws XMLDBException {
@@ -175,7 +174,6 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 					brokerPool,
 					collection,
 					result,
-					properties,
 					sortExpr);
 			return resultSet;
 		} catch (antlr.RecognitionException re) {
@@ -218,7 +216,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	}
 
 	public void setProperty(String property, String value) throws XMLDBException {
-		properties.setProperty(property, value);
+		collection.properties.setProperty(property, value);
 	}
 
 	/* (non-Javadoc)

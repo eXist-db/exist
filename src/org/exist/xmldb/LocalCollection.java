@@ -31,6 +31,8 @@ import java.util.Observer;
 import java.util.Properties;
 import java.util.Random;
 
+import javax.xml.transform.OutputKeys;
+
 import org.apache.log4j.Category;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
@@ -41,6 +43,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.xml.sax.InputSource;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -66,9 +69,16 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	private static Category LOG =
 		Category.getInstance(LocalCollection.class.getName());
 
+	protected final static Properties defaultProperties = new Properties();
+	static {
+		defaultProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+		defaultProperties.setProperty(OutputKeys.INDENT, "yes");
+		defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
+	}
+	
 	protected BrokerPool brokerPool = null;
 	protected org.exist.collections.Collection collection = null;
-	protected Properties properties = new Properties();
+	protected Properties properties = new Properties(defaultProperties);
 	protected LocalCollection parent = null;
 	protected User user = null;
 	protected ArrayList observers = new ArrayList(1);
@@ -128,7 +138,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		this.brokerPool = brokerPool;
 		load(name);
 	}
-
+	
 	private void load(String name) throws XMLDBException {
 		DBBroker broker = null;
 		try {
@@ -205,7 +215,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		Resource r = null;
 		if(type.equals("XMLResource"))
 			r =
-				new LocalXMLResource(user, brokerPool, this, id, -1, properties);
+				new LocalXMLResource(user, brokerPool, this, id, -1);
 		else if(type.equals("BinaryResource"))
 			r = new LocalBinaryResource(user, brokerPool, this, id);
 		else
@@ -298,8 +308,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 					brokerPool,
 					this,
 					document,
-					-1,
-					properties);
+					-1);
 		else if(document.getResourceType() == DocumentImpl.BINARY_FILE)
 			r = new LocalBinaryResource(user, brokerPool, this, (BLOBDocument)document);
 		else

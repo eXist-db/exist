@@ -16,26 +16,20 @@ import org.xmldb.api.modules.XMLResource;
 public class ResourceSetImpl implements ResourceSet {
 
     protected RemoteCollection collection;
-    protected String encoding = "UTF-8";
-    protected int indentXML = 0;
     protected int handle = -1;
     protected Vector resources;
 
     protected XmlRpcClient rpcClient;
-
 
     public ResourceSetImpl( RemoteCollection col ) {
         this.collection = col;
         resources = new Vector();
     }
 
-    public ResourceSetImpl( RemoteCollection col, Vector resources, int handle,
-                            int indentXML, String encoding ) {
+    public ResourceSetImpl( RemoteCollection col, Vector resources, int handle ) {
         this.handle = handle;
         this.resources = resources;
         this.collection = col;
-        this.indentXML = indentXML;
-        this.encoding = encoding;
     }
 
     public void addResource( Resource resource ) {
@@ -74,14 +68,14 @@ public class ResourceSetImpl implements ResourceSet {
 			
             XMLResource res =
                 new RemoteXMLResource( parent, handle,
-                	(int)pos, doc, s_id, indentXML, encoding );
+                	(int)pos, doc, s_id );
             return res;
         } else if ( resources.elementAt( (int) pos ) instanceof Resource )
             return (Resource) resources.elementAt( (int) pos );
         else {
             // value
             XMLResource res = new RemoteXMLResource( collection, handle, (int)pos, 
-            	Long.toString( pos ), null, indentXML, encoding );
+            	Long.toString( pos ), null );
             res.setContent( resources.elementAt( (int) pos ) );
             return res;
         }
