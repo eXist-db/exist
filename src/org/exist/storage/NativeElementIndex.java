@@ -109,7 +109,7 @@ public class NativeElementIndex extends ElementIndex {
      */
     public NodeSet findElementsByTagName(byte type, DocumentSet docs,
             QName qname, NodeSelector selector) {
-        //		final long start = System.currentTimeMillis();
+        		final long start = System.currentTimeMillis();
         final ExtArrayNodeSet result = new ExtArrayNodeSet(docs.getLength(),
                 256);
         final SymbolTable symbols = broker.getSymbols();
@@ -166,6 +166,7 @@ public class NativeElementIndex extends ElementIndex {
                     docId = is.readInt();
                     len = is.readInt();
                     if ((doc = docs.getDoc(docId)) == null) {
+                        LOG.debug("skipping doc " + docId);
                         is.skip(len * 4);
                         continue;
                     }
@@ -194,14 +195,14 @@ public class NativeElementIndex extends ElementIndex {
             }
         }
         //		result.sort();
-        //				LOG.debug(
-        //					"found "
-        //						+ qname
-        //						+ ": "
-        //						+ result.getLength()
-        //						+ " in "
-        //						+ (System.currentTimeMillis() - start)
-        //						+ "ms.");
+        				LOG.debug(
+        					"found "
+        						+ qname
+        						+ ": "
+        						+ result.getLength()
+        						+ " in "
+        						+ (System.currentTimeMillis() - start)
+        						+ "ms.");
         return result;
     }
 

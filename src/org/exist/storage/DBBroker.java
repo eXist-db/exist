@@ -54,8 +54,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * This is the base class for all database backends. All other components rely
- * on the methods defined here.
+ * This is the base class for all database backends. All the basic database operations like storing,
+ * removing or index access are provided by subclasses of this class.
  *
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
  */
@@ -91,6 +91,14 @@ public abstract class DBBroker extends Observable {
 
 	protected int xupdateGrowthFactor = 1;
 	
+	protected int docFragmentationLimit = 25;
+	
+	/**
+	 * Save the global symbol table. The global symbol table stores
+	 * QNames and namespace/prefix mappings.
+	 *  
+	 * @throws EXistException
+	 */
 	protected void saveSymbols() throws EXistException {
 		synchronized (symbols) {
 			try {
@@ -109,7 +117,13 @@ public abstract class DBBroker extends Observable {
 			}
 		}
 	}
-
+	
+	/**
+	 * Read the global symbol table. The global symbol table stores
+	 * QNames and namespace/prefix mappings.
+	 *  
+	 * @throws EXistException
+	 */
 	protected void loadSymbols() throws EXistException {
 		try {
 			FileInputStream fis = new FileInputStream(symbols.getFile());
@@ -154,18 +168,36 @@ public abstract class DBBroker extends Observable {
 		}
 		if ((xupdateGrowthFactor = config.getInteger("xupdate.growth-factor")) < 0)
 		    xupdateGrowthFactor = 1;
+		if ((docFragmentationLimit = config.getInteger("xupdate.fragmentation")) < 0)
+		    docFragmentationLimit = 50;
+		
 		this.pool = pool;
 		xqueryService = new XQuery(this);
 	}
 
+	/**
+	 * Set the user that is currently using this DBBroker object.
+	 * 
+	 * @param user
+	 */
 	public void setUser(User user) {
 		this.user = user;
 	}
 	
+	/**
+	 * Get the user that is currently using this DBBroker object.
+	 * 
+	 * @return
+	 */
 	public User getUser() {
 		return user;
 	}
 	
+	/**
+	 * Returns a reference to the global {@link XQuery} service.
+	 * 
+	 * @return
+	 */
 	public XQuery getXQueryService() {
 	    return xqueryService;
 	}
@@ -371,6 +403,12 @@ public abstract class DBBroker extends Observable {
 	public abstract void removeDocument(String docName, boolean freeDocId)
 		throws PermissionDeniedException;
 
+	/**
+	 * Reindex a collection.
+	 * 
+	 * @param collectionName
+	 * @throws PermissionDeniedException
+	 */
 	public abstract void reindex(String collectionName) 
 		throws PermissionDeniedException;
 	
@@ -404,12 +442,17 @@ public abstract class DBBroker extends Observable {
 	 *      the Broker to determine if a node's content should be
 	 *      fulltext-indexed).
 	 */
-	public abstract void store(NodeImpl node, NodePath currentPath);
+	public abstract void store(NodeImpl node, NodePath currentPath, boolean index);
 
+	public void store(NodeImpl node, NodePath currentPath) {
+	    store(node, currentPath, true);
+	}
+	
 	/**
-	 *  Store a document into the database.
+	 *  Store a document into the database. This method will save the document
+	 * metadata and add the document to the collection.
 	 *
-	 *@param  doc  Description of the Parameter
+	 *@param  doc
 	 */
 	public abstract void storeDocument(DocumentImpl doc);
 
@@ -431,13 +474,29 @@ public abstract class DBBroker extends Observable {
 	public abstract void moveCollection(Collection collection, Collection destination, String newName) 
 	throws PermissionDeniedException, LockException;
 	
+	/**
+	 * Move a resource to the destination collection and rename it.
+	 * 
+	 * @param doc the resource to move
+	 * @param destination the destination collection
+	 * @param new Name the new name the resource should have in the destination collection
+	 */
 	public abstract void moveResource(DocumentImpl doc, Collection destination, String newName)
 	throws PermissionDeniedException, LockException;
 	
+	/**
+	 * Copy a resource to the destination collection and rename it.
+	 * 
+	 * @param doc the resource to copy
+	 * @param destination the destination collection
+	 * @param newName the new name the resource should have in the destination collection
+	 * @throws PermissionDeniedException
+	 * @throws LockException
+	 */
 	public abstract void copyResource(DocumentImpl doc, Collection destination, String newName) 
 	throws PermissionDeniedException, LockException;
 	
-	public abstract void defrag(DocumentImpl doc) throws PermissionDeniedException;
+	public abstract void defrag(DocumentImpl doc);
 	
 	public void sync() {
 		/*
@@ -446,10 +505,8 @@ public abstract class DBBroker extends Observable {
 	}
 
 	/**
-	 *  Update a node's data. This method is only used by the NativeBroker. To
-	 *  keep nodes in a correct sequential order, it sometimes needs to update a
-	 *  previous written node. Warning: don't use it for other purposes.
-	 *  RelationalBroker does not implement this method.
+	 *  Update a node's data. To keep nodes in a correct sequential order, it is sometimes 
+	 * necessary to update a previous written node. Warning: don't use it for other purposes.
 	 *
 	 *@param  node  Description of the Parameter
 	 */
@@ -500,7 +557,7 @@ public abstract class DBBroker extends Observable {
 	}
 	
 	/**
-	 *  get all the documents in this database matching the given  document-type's name.@param  doctypeName  Description of the Parameter@param  user         Description of the Parameter@return              The documentsByDoctype value  
+	 *   
 	 */
 	public abstract DocumentSet getDocumentsByDoctype(
 		String doctype,
@@ -520,6 +577,10 @@ public abstract class DBBroker extends Observable {
 	
 	public int getXUpdateGrowthFactor() {
 	    return xupdateGrowthFactor;
+	}
+	
+	public int getFragmentationLimit() {
+	    return docFragmentationLimit;
 	}
 	
 	public abstract int getPageSize();

@@ -578,6 +578,13 @@ public class NativeBroker extends DBBroker {
 		return result;
 	}
 
+	/**
+	 * Release the collection id assigned to a collection so it can be
+	 * reused later.
+	 * 
+	 * @param id
+	 * @throws PermissionDeniedException
+	 */
 	protected void freeCollection(short id) throws PermissionDeniedException {
 //		LOG.debug("freeing collection " + id);
 		Value key = new Value("__free_collection_id");
@@ -605,6 +612,13 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 	
+	/**
+	 * Get the next free collection id. If a collection is removed, its collection id
+	 * is released so it can be reused.
+	 * 
+	 * @return
+	 * @throws ReadOnlyException
+	 */
 	protected short getFreeCollectionId() throws ReadOnlyException {
 		short freeCollectionId = -1;
 		Value key = new Value("__free_collection_id");
@@ -632,6 +646,12 @@ public class NativeBroker extends DBBroker {
 		return freeCollectionId;
 	}
 	
+	/**
+	 * Get the next available unique collection id.
+	 * 
+	 * @return
+	 * @throws ReadOnlyException
+	 */
 	protected short getNextCollectionId() throws ReadOnlyException {
 		short nextCollectionId = getFreeCollectionId();
 		if(nextCollectionId > -1)
@@ -657,6 +677,13 @@ public class NativeBroker extends DBBroker {
 		return nextCollectionId;
 	}
 
+	/**
+	 * Release the document id reserved for a document so it
+	 * can be reused.
+	 * 
+	 * @param id
+	 * @throws PermissionDeniedException
+	 */
 	protected void freeDocument(int id) throws PermissionDeniedException {
 //		LOG.debug("freeing document " + id);
 		Value key = new Value("__free_doc_id");
@@ -684,6 +711,13 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 	
+	/**
+	 * Get the next unused document id. If a document is removed, its doc id is
+	 * released, so it can be reused.
+	 * 
+	 * @return
+	 * @throws ReadOnlyException
+	 */
 	protected int getFreeDocId() throws ReadOnlyException {
 		int freeDocId = -1;
 		Value key = new Value("__free_doc_id");
@@ -1152,19 +1186,18 @@ public class NativeBroker extends DBBroker {
 		        getNodeIterator(
 		                new NodeProxy(oldDoc, n.getGID(), n.getInternalAddress()));
 		    iterator.next();
-		    copyNodes(iterator, n, new NodePath(), newDoc);
+		    copyNodes(iterator, n, new NodePath(), newDoc, true);
 		}
 		flush();
 		LOG.debug("Copy took " + (System.currentTimeMillis() - start) + "ms.");
 	}
 	
-	public void defrag(final DocumentImpl doc) throws PermissionDeniedException {
+	public void defrag(final DocumentImpl doc) {
 		LOG.debug("--------------------> Defragmenting document " + doc.getFileName());
 		final long start = System.currentTimeMillis();
 		try {
 			// dropping old index
 			elementIndex.dropIndex(doc);
-			textEngine.dropIndex(doc);
 			// dropping dom index
 			NodeRef ref = new NodeRef(doc.getDocId());
 			final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
@@ -1189,6 +1222,7 @@ public class NativeBroker extends DBBroker {
 			
 			DocumentImpl tempDoc = new DocumentImpl(this, doc.getFileName(), doc.getCollection());
 			tempDoc.copyOf(doc);
+			tempDoc.setDocId(doc.getDocId());
 			
 			Iterator iterator;
 			NodeList nodes = doc.getChildNodes();
@@ -1199,11 +1233,10 @@ public class NativeBroker extends DBBroker {
 			        getNodeIterator(
 			                new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
 			    iterator.next();
-			    copyNodes(iterator, n, new NodePath(), tempDoc);
+			    copyNodes(iterator, n, new NodePath(), tempDoc, false);
 			}
 			flush();
 			
-			LOG.debug("Removing old dom...");
 			new DOMTransaction(this, domDb) {
 				public Object start() {
 				    NodeImpl node = (NodeImpl)doc.getFirstChild();
@@ -1214,20 +1247,31 @@ public class NativeBroker extends DBBroker {
 			.run();
 			
 			doc.copyChildren(tempDoc);
+			doc.setSplitCount(0);
+			doc.setAddress(-1);
+			doc.setPageCount(tempDoc.getPageCount());
+			LOG.debug("New doc size: " + doc.getContentLength());
+			storeDocument(doc);
+			
 			saveCollection(doc.getCollection());
 			LOG.debug("Defragmentation took " + (System.currentTimeMillis() - start) + "ms.");
 		} catch (ReadOnlyException e) {
-			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-		}
+			LOG.warn(DATABASE_IS_READ_ONLY, e);
+		} catch (PermissionDeniedException e) {
+		    LOG.warn(DATABASE_IS_READ_ONLY, e);
+        }
 	}
 	
-	private void copyNodes(Iterator iterator, NodeImpl node, NodePath currentPath, DocumentImpl newDoc) {
+	private void copyNodes(Iterator iterator, NodeImpl node, NodePath currentPath, 
+	        DocumentImpl newDoc, boolean index) {
 		if (node.getNodeType() == Node.ELEMENT_NODE)
 		    currentPath.addComponent(node.getNodeName());
 		final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
 		node.setOwnerDocument(newDoc);
 		node.setInternalAddress(-1);
-		store(node, currentPath);
+		store(node, currentPath, index);
+		if(node.getGID() == 1)
+		    newDoc.appendChild(node);
 		node.setOwnerDocument(doc);
 		
 		if (node.hasChildNodes()) {
@@ -1250,7 +1294,7 @@ public class NativeBroker extends DBBroker {
 					LOG.debug("child " + gid + " not found for node: " + node.getNodeName() +
 							"; last = " + lastChildId + "; children = " + node.getChildCount());
 				child.setGID(gid);
-				copyNodes(iterator, child, currentPath, newDoc);
+				copyNodes(iterator, child, currentPath, newDoc, index);
 			}
 		}
 		if(node.getNodeType() == Node.ELEMENT_NODE)
@@ -2066,7 +2110,7 @@ public class NativeBroker extends DBBroker {
 	 *      the Broker to determine if a node's content should be
 	 *      fulltext-indexed).
 	 */
-	public void store(final NodeImpl node, NodePath currentPath) {
+	public void store(final NodeImpl node, NodePath currentPath, boolean index) {
 		// first, check available memory
 		if (nodesCount > MEM_LIMIT_CHECK) {
 			final int percent = (int) (run.freeMemory() / (run.totalMemory() / 100));
@@ -2134,12 +2178,12 @@ public class NativeBroker extends DBBroker {
 				elementIndex.addRow(qname, tempProxy);
 				// check if attribute value should be fulltext-indexed
 				// by calling IndexPaths.match(path) 
-				boolean indexAttribs = true;
-				if(idx != null) {
+				boolean indexAttribs = index;
+				if(index && idx != null) {
 				    if(idx.getIncludeAttributes()) {
-					    currentPath.addComponent('@' + nodeName);
-					    indexAttribs = idx.match(currentPath);
-					    currentPath.removeLastComponent();
+				        currentPath.addComponent('@' + nodeName);
+				        indexAttribs = idx.match(currentPath);
+				        currentPath.removeLastComponent();
 				    } else
 				        indexAttribs = false;
 				}
@@ -2157,7 +2201,7 @@ public class NativeBroker extends DBBroker {
 			case Node.TEXT_NODE :
 				// check if this textual content should be fulltext-indexed
 				// by calling IndexPaths.match(path)
-				if (idx == null || idx.match(currentPath)){     
+				if (index && (idx == null || idx.match(currentPath))){     
 	                boolean valore = (idx == null ? false : idx.preserveContent(currentPath));
 					textEngine.storeText(idx, (TextImpl) node, valore);
 				}	

@@ -65,6 +65,7 @@ public class Remove extends Modification {
             Node parent;
             DocumentImpl doc = null;
             Collection collection = null, prevCollection = null;
+            DocumentSet modifiedDocs = new DocumentSet();
             for (int i = 0; i < ql.length; i++) {
                 node = ql[i];
                 doc = (DocumentImpl) node.getOwnerDocument();
@@ -74,8 +75,9 @@ public class Remove extends Modification {
                                 "permission to remove document denied");
                 collection = doc.getCollection();
                 if (prevCollection != null && collection != prevCollection)
-                        doc.getBroker().saveCollection(prevCollection);
+                        broker.saveCollection(prevCollection);
                 doc.setIndexListener(listener);
+                modifiedDocs.add(doc);
                 parent = node.getParentNode();
                 if (parent.getNodeType() != Node.ELEMENT_NODE) {
                     LOG.debug("parent = " + parent.getNodeType() + "; " + parent.getNodeName());
@@ -88,7 +90,8 @@ public class Remove extends Modification {
                 doc.setLastModified(System.currentTimeMillis());
                 prevCollection = collection;
             }
-            if (doc != null) doc.getBroker().saveCollection(collection);
+            if (doc != null) broker.saveCollection(collection);
+            checkFragmentation(modifiedDocs);
             return ql.length;
         } finally {
             unlockDocuments();

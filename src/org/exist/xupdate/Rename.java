@@ -69,6 +69,7 @@ public class Rename extends Modification {
             NodeImpl[] ql = selectAndLock();
             DocumentImpl doc = null;
             Collection collection = null, prevCollection = null;
+            DocumentSet modifiedDocs = new DocumentSet();
             NodeImpl node;
             NodeImpl parent;
             IndexListener listener = new IndexListener(ql);
@@ -89,6 +90,7 @@ public class Rename extends Modification {
                         throw new PermissionDeniedException(
                                 "permission denied to update document");
                 doc.setIndexListener(listener);
+                modifiedDocs.add(doc);
                 parent = (NodeImpl) node.getParentNode();
                 switch (node.getNodeType()) {
                     case Node.ELEMENT_NODE:
@@ -112,6 +114,7 @@ public class Rename extends Modification {
                 prevCollection = collection;
             }
             if (doc != null) doc.getBroker().saveCollection(collection);
+            checkFragmentation(modifiedDocs);
         } finally {
             unlockDocuments();
         }

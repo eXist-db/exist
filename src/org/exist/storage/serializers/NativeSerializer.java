@@ -109,7 +109,7 @@ public class NativeSerializer extends Serializer {
     protected void serializeToSAX(DocumentImpl doc, boolean generateDocEvent)
             throws SAXException {
         long start = System.currentTimeMillis();
-        setDocument((DocumentImpl) doc);
+        setDocument(doc);
         NodeList children = doc.getChildNodes();
         if (generateDocEvent) contentHandler.startDocument();
         //contentHandler.startPrefixMapping("exist", EXIST_NS);

@@ -79,6 +79,7 @@ public class Insert extends Modification {
             NodeImpl parent;
             DocumentImpl doc = null;
             Collection collection = null, prevCollection = null;
+            DocumentSet modifiedDocs = new DocumentSet();
             int len = children.getLength();
             LOG.debug("found " + len + " nodes to insert");
             for (int i = 0; i < ql.length; i++) {
@@ -92,6 +93,7 @@ public class Insert extends Modification {
                         Permission.UPDATE))
                         throw new PermissionDeniedException(
                                 "permission to remove document denied");
+                modifiedDocs.add(doc);
                 parent = (NodeImpl) node.getParentNode();
                 switch (mode) {
                     case INSERT_BEFORE:
@@ -106,6 +108,7 @@ public class Insert extends Modification {
                 prevCollection = collection;
             }
             if (doc != null) doc.getBroker().saveCollection(collection);
+            checkFragmentation(modifiedDocs);
             return ql.length;
         } finally {
             unlockDocuments();

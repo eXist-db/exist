@@ -35,7 +35,6 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeIndexListener;
 import org.exist.dom.NodeSet;
-import org.exist.dom.XMLUtil;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.store.StorageAddress;
@@ -49,7 +48,6 @@ import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
-import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.NodeList;
 
 import antlr.RecognitionException;
@@ -199,6 +197,22 @@ public abstract class Modification {
 	    if(lockedDocuments == null)
 	        return;
 	    lockedDocuments.unlock(true);
+	}
+	
+	/**
+	 * Check if any of the modified documents needs defragmentation.
+	 * 
+	 * Defragmentation will take place if the number of split pages in the
+	 * document exceeds the limit defined in the configuration file.
+	 *  
+	 * @param docs
+	 */
+	protected void checkFragmentation(DocumentSet docs) {
+	    for(Iterator i = docs.iterator(); i.hasNext(); ) {
+	        DocumentImpl next = (DocumentImpl) i.next();
+	        if(next.getSplitCount() > broker.getFragmentationLimit())
+	            broker.defrag(next);
+	    }
 	}
 	
 	public String toString() {

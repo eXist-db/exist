@@ -78,6 +78,7 @@ public class Update extends Modification {
             ElementImpl parent;
             DocumentImpl doc = null;
             Collection collection = null, prevCollection = null;
+            DocumentSet modifiedDocs = new DocumentSet();
             for (int i = 0; i < ql.length; i++) {
                 node = ql[i];
                 if (node == null) {
@@ -86,6 +87,7 @@ public class Update extends Modification {
                 }
                 doc = (DocumentImpl) node.getOwnerDocument();
                 doc.setIndexListener(listener);
+                modifiedDocs.add(doc);
                 collection = doc.getCollection();
                 if (!doc.getPermissions().validate(broker.getUser(),
                         Permission.UPDATE))
@@ -136,6 +138,7 @@ public class Update extends Modification {
                 prevCollection = collection;
             }
             if (doc != null) doc.getBroker().saveCollection(collection);
+            checkFragmentation(modifiedDocs);
         } finally {
             unlockDocuments();
         }

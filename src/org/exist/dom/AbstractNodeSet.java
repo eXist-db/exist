@@ -441,7 +441,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	    final NodeSet result = new ExtArrayNodeSet();
 		final Iterator ia = al.iterator();
 		final Iterator ib = iterator();
-		final long start = System.currentTimeMillis();
+//		final long start = System.currentTimeMillis();
 		NodeProxy na = (NodeProxy) ia.next(), nb = (NodeProxy) ib.next();
 		// check if one of the node sets is empty
 		if(na == null || nb == null)
@@ -504,7 +504,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 				}
 			}
 		}
-		LOG.debug("quickSelect took " + (System.currentTimeMillis() - start));
+//		LOG.debug("quickSelect took " + (System.currentTimeMillis() - start));
 		return result;
 	}
 	
@@ -512,7 +512,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	    final NodeSet result = new ExtArrayNodeSet();
 		final Iterator ia = al.iterator();
 		final Iterator ib = iterator();
-		final long start = System.currentTimeMillis();
+//		final long start = System.currentTimeMillis();
 		NodeProxy na = (NodeProxy) ia.next(), nb = (NodeProxy) ib.next();
 		
 		// check if one of the node sets is empty
@@ -569,7 +569,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 				}
 			}
 		}
-		LOG.debug("quickSelect took " + (System.currentTimeMillis() - start));
+//		LOG.debug("quickSelect took " + (System.currentTimeMillis() - start));
 		return result;
 	}
 	
