@@ -108,7 +108,6 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
-import org.xmldb.api.base.ErrorCodes;
 
 public class ClientFrame extends JFrame
 		implements

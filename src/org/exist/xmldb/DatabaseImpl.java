@@ -140,7 +140,6 @@ public class DatabaseImpl implements Database {
             throw new XMLDBException( ErrorCodes.INVALID_DATABASE,
                 "collection " + collection +
                 " does not start with '" + selector + "'" );
-        String address = DEFAULT_HOST;
         String c = collection.substring( selector.length() );
         if(c.endsWith("/") && c.length() > 1)
             c = c.substring(0, c.length() - 1);
@@ -149,11 +148,11 @@ public class DatabaseImpl implements Database {
         	return getLocalCollection(user, password, c);
         }
         else if ( c.startsWith( "//" ) ) {
-            return getRemoteCollection(user, password, address, c);
+            return getRemoteCollection(user, password, c);
         }
         else
             throw new XMLDBException( ErrorCodes.INVALID_DATABASE,
-                "malformed url: " + address );
+                "malformed url: " + c );
     }
     
     /**
@@ -164,9 +163,10 @@ public class DatabaseImpl implements Database {
      * @return
      * @throws XMLDBException
      */
-    private Collection getRemoteCollection(String user, String password, String address, String c) throws XMLDBException {
+    private Collection getRemoteCollection(String user, String password, String c) throws XMLDBException {
         // use remote database via XML-RPC
         mode = REMOTE;
+        String address = DEFAULT_HOST;
         if ( user == null ) {
             user = "guest";
             password = "guest";
@@ -176,6 +176,8 @@ public class DatabaseImpl implements Database {
         int p = 0;
         if ( ( p = c.indexOf( "/db", 2 ) ) > -1 ) {
             address = "http://" + c.substring( 2, p );
+            if(address.charAt(address.length() - 1) == '/')
+            	address = address.substring(0, address.length() - 1);
             c = c.substring( p );
         }
         else

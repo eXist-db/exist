@@ -192,6 +192,7 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 				reader.setContentHandler(handler);
 				reader.parse(new InputSource(new StringReader(content)));
 			} catch (SAXException saxe) {
+				saxe.printStackTrace();
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
 			} catch (ParserConfigurationException pce) {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pce.getMessage(), pce);
@@ -206,7 +207,6 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 			} catch (IOException ioe) {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 			}
-
 	}
 
 	public String getDocumentId() throws XMLDBException {

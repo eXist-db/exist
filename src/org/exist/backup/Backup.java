@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *  $Id:
+ *  $Id$
  */
 package org.exist.backup;
 
@@ -63,6 +63,7 @@ public class Backup {
 		defaultOutputProperties.setProperty(OutputKeys.INDENT, "yes");
 		defaultOutputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
 		defaultOutputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+		
 	}
 	
 	public Backup(String user, String pass, String backupDir, String rootCollection) {
@@ -271,6 +272,7 @@ public class Backup {
 				backup(collection_, dialog_);
 				dialog_.setVisible(false);
 			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 	}

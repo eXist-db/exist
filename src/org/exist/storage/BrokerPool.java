@@ -95,7 +95,11 @@ public class BrokerPool {
 			instances.put(id, instance);
 			if(instances.size() == 1) {
 				LOG.debug("registering shutdown hook");
-				Runtime.getRuntime().addShutdownHook(shutdownThread);
+				try {
+					Runtime.getRuntime().addShutdownHook(shutdownThread);
+				} catch(IllegalArgumentException e) {
+					LOG.debug("shutdown hook already registered");
+				}
 			}
 		} else
 			LOG.warn("instance with id " + id + " already configured");
