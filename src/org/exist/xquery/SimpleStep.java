@@ -55,6 +55,7 @@ public class SimpleStep extends Step {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
 		NodeSet set = expression.eval(contextSequence).toNodeSet();
+
 		if(set.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		switch(axis) {

@@ -55,6 +55,20 @@ public class XPathQueryTest extends TestCase {
         "</ChildA>" +
 		"</RootElement>";
 
+	private final static String ids =
+	    "<!DOCTYPE test [" +
+	    "<!ELEMENT test (a*, b*)>" +
+	    "<!ELEMENT a EMPTY>" +
+	    "<!ELEMENT b (name)>" +
+	    "<!ELEMENT name (#PCDATA)>" +
+	    "<!ATTLIST a ref IDREF #IMPLIED>" +
+	    "<!ATTLIST b id ID #IMPLIED>]>" +
+	    "<test>" +
+	    "<a ref=\"id1\"/>" +
+	    "<a ref=\"id1\"/>" +
+	    "<b id=\"id1\"><name>one</name></b>" +
+	    "</test>";
+	
 	private Collection testCollection;
 	
 	public XPathQueryTest(String name) {
@@ -277,6 +291,23 @@ public class XPathQueryTest extends TestCase {
 			queryResource(service, "strings.xml", "//*[blah][not(@blah)]", 0);
 		} catch (XMLDBException e) {
 			System.out.println("testStrings(): XMLDBException: "+e);
+			fail(e.getMessage());
+		}
+	}
+	
+	public void testIds() {
+		try {
+			XPathQueryService service = 
+				storeXMLStringAndGetQueryService("ids.xml", ids);
+			
+			queryResource(service, "ids.xml", "//a/id(@ref)", 1);
+			queryResource(service, "ids.xml", "id(//a/@ref)", 1);
+			
+			ResourceSet result = queryResource(service, "ids.xml", "//a/id(@ref)/name", 1);
+			Resource r = result.getResource(0);
+			assertEquals("<name>one</name>", r.getContent().toString());
+		} catch (XMLDBException e) {
+			System.out.println("testIds(): XMLDBException: "+e);
 			fail(e.getMessage());
 		}
 	}

@@ -126,6 +126,13 @@ public class OrderedValueSequence extends AbstractSequence {
 		throw new XPathException("Operation not supported");
 	}
 
+	/* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#removeDuplicates()
+     */
+    public void removeDuplicates() {
+        // TODO: is this ever relevant?
+    }
+    
 	private class Entry implements Comparable {
 		
 		Item item;

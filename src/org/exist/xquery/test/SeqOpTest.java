@@ -172,10 +172,10 @@ public class SeqOpTest extends TestCase {
 	}
 
 	// TODO: currently fails because duplicate nodes are removed
-//	public void testInsertNodes4() throws XMLDBException {
-//		createDocument("foo", "<top><x><a/><b/></x><y><c/><d/></y></top>");
-//		assertSeq(new String[]{"<a/>", "<a/>", "<b/>", "<b/>"}, "insert-before(/top/x/*, 2, /top/x/*)");
-//	}
+	public void testInsertNodes4() throws XMLDBException {
+		createDocument("foo", "<top><x><a/><b/></x><y><c/><d/></y></top>");
+		assertSeq(new String[]{"<a/>", "<a/>", "<b/>", "<b/>"}, "insert-before(/top/x/*, 2, /top/x/*)");
+	}
 
 	public void testInsertMixed1() throws XMLDBException {
 		createDocument("foo", "<top><x><a/><b/></x><y><c/><d/></y></top>");
@@ -183,10 +183,10 @@ public class SeqOpTest extends TestCase {
 	}
 
 	// TODO: currently fails because duplicate nodes are removed
-//	public void testInsertMixed2() throws XMLDBException {
-//		createDocument("foo", "<top><x><a/><b/></x><y><c/><d/></y></top>");
-//		assertSeq(new String[]{"<a/>", "<a/>", "<b/>", "<b/>", "c"}, "insert-before((/top/x/*, 'c'), 2, /top/x/*)");
-//	}
+	public void testInsertMixed2() throws XMLDBException {
+		createDocument("foo", "<top><x><a/><b/></x><y><c/><d/></y></top>");
+		assertSeq(new String[]{"<a/>", "<a/>", "<b/>", "<b/>", "c"}, "insert-before((/top/x/*, 'c'), 2, /top/x/*)");
+	}
 
 	private void assertSeq(String[] expected, String q) throws XMLDBException {
 		ResourceSet rs = query.query(q);

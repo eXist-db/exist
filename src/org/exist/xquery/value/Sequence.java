@@ -91,10 +91,25 @@ public interface Sequence {
 	
 	/**
 	 * Returns the number of items contained in the sequence.
+	 * 
 	 * @return
 	 */
 	public int getLength();
 	
+	/**
+	 * Explicitely remove all duplicate nodes from this sequence.
+	 */
+	public void removeDuplicates();
+	
+	/**
+	 * Returns the cardinality of this sequence. The returned
+	 * value is a combination of flags as defined in
+	 * {@link org.exist.xquery.Cardinality}.
+	 * 
+	 * @see org.exist.xquery.Cardinality
+	 * 
+	 * @return
+	 */
 	public int getCardinality();
 	
 	/**
@@ -141,6 +156,12 @@ public interface Sequence {
 	 */
 	public NodeSet toNodeSet() throws XPathException;
 	
+	/**
+	 * Returns the set of documents from which the node items in this sequence
+	 * have been selected. This is for internal use only.
+	 * 
+	 * @return
+	 */
 	public DocumentSet getDocumentSet();
 	
 	/**
@@ -172,7 +193,7 @@ public interface Sequence {
 	public boolean isCached();
 	
 	/**
-	 * Indicates that the sequence  is the result of a previous operation
+	 * Indicates that the sequence is the result of a previous operation
 	 * and has not been recomputed.
 	 *  
 	 * @param cached

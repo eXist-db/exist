@@ -755,7 +755,7 @@ public class NodeProxy extends AbstractNodeSet implements NodeValue, Comparable 
 			return v.toJavaObject(target);
 		}
 	}
-
+    
 	private final static class SingleNodeIterator implements Iterator, SequenceIterator {
 
 		private boolean hasNext = true;

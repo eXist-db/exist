@@ -633,4 +633,11 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	public void setIsCached(boolean cached) {
 		// ignore
 	}
+	
+	/* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#removeDuplicates()
+     */
+    public void removeDuplicates() {
+        // do nothing: this is a single node
+    }
 }

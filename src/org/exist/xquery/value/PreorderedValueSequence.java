@@ -130,6 +130,13 @@ public class PreorderedValueSequence extends AbstractSequence {
 		return null;
 	}
 	
+	/* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#removeDuplicates()
+     */
+    public void removeDuplicates() {
+        // TODO: is this ever relevant?
+    }
+    
 	private void sort() {
 		Arrays.sort(nodes, new OrderedComparator());
 	}

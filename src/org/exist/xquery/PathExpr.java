@@ -147,6 +147,10 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             } else {
                 r = expr.eval(r);
             }
+            if(steps.size() > 1)
+                // remove duplicate nodes if this is a path 
+                // expression with more than one step
+                r.removeDuplicates();
         }
         return r;
     }

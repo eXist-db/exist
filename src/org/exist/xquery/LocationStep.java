@@ -179,6 +179,8 @@ public class LocationStep extends Step {
 		if(contextSequence instanceof NodeSet) {
 			cached = new CachedResult((NodeSet)contextSequence, temp);
 		}
+		// remove duplicate nodes
+		temp.removeDuplicates();
 		return
 			(predicates.size() == 0)
 				? temp
