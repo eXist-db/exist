@@ -236,7 +236,6 @@ public class ExtFulltext extends Function {
 		NodeSet result = hits[0];
 		if(result != null) {
 			for(int k = 1; k < hits.length; k++) {
-//				LOG.debug("hits: " + terms[k] + ": " + hits[k].getLength());
 				if(hits[k] != null)
 					result = (type == Constants.FULLTEXT_AND ? 
 							result.deepIntersection(hits[k]) : result.union(hits[k]));

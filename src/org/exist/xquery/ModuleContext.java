@@ -67,6 +67,10 @@ public class ModuleContext extends XQueryContext {
 		return parentContext.getBaseURI();
 	}
     
+    public void setBaseURI(String uri) {
+        parentContext.setBaseURI(uri);
+    }
+    
     /* (non-Javadoc)
      * @see org.exist.xquery.XQueryContext#getBroker()
      */

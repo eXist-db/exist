@@ -89,7 +89,6 @@ public class FunSubstringAfter extends CollatingFunction {
 			return StringValue.EMPTY_STRING;
 		Collator collator = getCollator(contextSequence, contextItem, 3);
 		int p = Collations.indexOf(collator, value, cmp);
-		LOG.debug("p = " + p);
 		if (p > -1)
 			return new StringValue(
 				p + cmp.length() < value.length() ? 

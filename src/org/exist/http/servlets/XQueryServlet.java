@@ -230,7 +230,6 @@ public class XQueryServlet extends HttpServlet {
 			XQueryService service = (XQueryService)
 				collection.getService("XQueryService", "1.0");
 			service.setProperty("base-uri", baseURI);
-            service.setProperty("base-collection", collection.getName());
 			service.setModuleLoadPath(moduleLoadPath);
 			String prefix = RequestModule.PREFIX;
 			service.setNamespace(prefix, RequestModule.NAMESPACE_URI);

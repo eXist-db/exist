@@ -1496,21 +1496,18 @@ public class InteractiveClient {
 			start = System.currentTimeMillis();
             mimeType = MimeTable.getInstance().getContentTypeFor(files[i].getName());
 			if(mimeType == null)
-				messageln("File " + files[i].getName() + " has an unknown " +
-				"suffix. Cannot determine file type.");
-			else {
-				document = current.createResource(files[i].getName(),
-                        mimeType.getXMLDBType());
-				message("storing document " + files[i].getName() + " (" + (i + 1)
-					+ " of " + files.length + ") ...");
-				document.setContent(files[i]);
-                ((EXistResource)document).setMimeType(mimeType.getName());
-				current.storeResource(document);
-				messageln("done.");
-				messageln("parsing " + files[i].length() + " bytes took "
-					+ (System.currentTimeMillis() - start) + "ms.\n");
-				bytes += files[i].length();
-			}
+                mimeType = MimeType.XML_TYPE;
+            document = current.createResource(files[i].getName(),
+                    mimeType.getXMLDBType());
+            message("storing document " + files[i].getName() + " (" + (i + 1)
+                    + " of " + files.length + ") ...");
+            document.setContent(files[i]);
+            ((EXistResource)document).setMimeType(mimeType.getName());
+            current.storeResource(document);
+            messageln("done.");
+            messageln("parsing " + files[i].length() + " bytes took "
+                    + (System.currentTimeMillis() - start) + "ms.\n");
+            bytes += files[i].length();
 		}
 		messageln("parsed " + bytes + " bytes in "
 				+ (System.currentTimeMillis() - start0) + "ms.");
