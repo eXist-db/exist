@@ -42,6 +42,9 @@ import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
 /**
+ * Tests XMLResource.getContentAsDOM() for resources retrieved from
+ * an XQuery.
+ * 
  * @author wolf
  */
 public class ContentAsDOMTest extends TestCase {
