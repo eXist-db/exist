@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<!--<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "docbookx.dtd">-->
+
+<book xmlns:ci="http://apache.org/cocoon/include/1.0">
+    
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <title>Open Source Native XML Database</title>
+        <author> 
+          <firstname>Wolfgang M.</firstname>
+          <surname>Meier</surname>
+          <affiliation>
+            <address format="linespecific">
+				<email>wolfgang@exist-db.org</email>
+            </address>
+          </affiliation>
+        </author>
+    </bookinfo>
+
+    <ci:include src="sidebar.xml"/>
+      
+    <chapter>
+		<title>Documentation</title>
+        
+        <unorderedlist>
+            <listitem>
+                <para><ulink href="xquery.xml">XQuery Docs <img src="resources/new.gif" border="0"/></ulink></para>
+            </listitem>
+            <listitem>
+                <para><ulink href="devguide.xml">Developer's Guide</ulink></para>
+            </listitem>
+            <listitem>
+                <para><ulink href="client.xml">Java Admin Client</ulink></para>
+            </listitem>
+            <listitem>
+                <para><ulink href="deployment.xml">Deployment</ulink></para>
+            </listitem>
+            <listitem>
+                <para><ulink href="security.xml">Security</ulink></para>
+            </listitem>
+            <listitem>
+                <para><ulink href="xinclude.xml">XInclude</ulink></para>
+            </listitem>
+            <listitem>
+                <para><ulink href="configuration.xml">Server Configuration</ulink></para>
+            </listitem>
+            <listitem>
+                <para><ulink href="ant-tasks.xml">Ant Tasks</ulink></para>
+            </listitem>
+            <listitem>
+                <para><ulink href="index.xml#articles">Articles</ulink></para>
+            </listitem>
+            <listitem>
+                <para><ulink href="changes.xml">Changes</ulink></para>
+            </listitem>
+            <listitem>
+                <para><ulink href="performance.xml">Performance Issues</ulink></para>
+            </listitem>
+            <listitem>
+                <para><ulink href="howtos.xml">Misc HowTos</ulink></para>
+            </listitem>
+        </unorderedlist>
+    </chapter>
+</book>
