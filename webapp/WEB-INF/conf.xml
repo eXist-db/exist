@@ -21,7 +21,7 @@
 				  file system page size.
        -->
        
-	   <db-connection database="native" files="/var/xml/data" 
+	   <db-connection database="native" files="data" 
 		   buffers="512" words_buffers="2048" collection_buffers="512" 
 		   elements_buffers="512" free_mem_min="10" 
 		   pageSize="4096">
