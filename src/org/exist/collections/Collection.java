@@ -719,22 +719,7 @@ implements Comparable, EntityResolver, Cacheable {
 			manageDocumentInformation(broker, name, oldDoc, document );
 			
 			// setup triggers
-			Trigger trigger = null;
-			if (triggersEnabled && !name.equals(COLLECTION_CONFIG_FILE)) {
-				if (triggersEnabled) {
-					CollectionConfiguration config = getConfiguration(broker);
-					if (config != null) {
-						if (oldDoc == null)
-							trigger = config
-									.getTrigger(Trigger.STORE_DOCUMENT_EVENT);
-						else
-							trigger = config
-									.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
-					}
-				}
-			} else
-				// set configuration to null if we are updating collection.xconf
-				configuration = null;
+			Trigger trigger = setupTriggers(broker, name, oldDoc);
 			Indexer indexer = new Indexer(broker);
 			indexer.setDocument(document);
 
@@ -936,22 +921,7 @@ implements Comparable, EntityResolver, Cacheable {
 			manageDocumentInformation(broker, name, oldDoc, document );
 
 			// setup triggers
-			Trigger trigger = null;
-			if (triggersEnabled && !name.equals(COLLECTION_CONFIG_FILE)) {
-				if (triggersEnabled) {
-					CollectionConfiguration config = getConfiguration(broker);
-					if (config != null) {
-						if (oldDoc == null)
-							trigger = config
-									.getTrigger(Trigger.STORE_DOCUMENT_EVENT);
-						else
-							trigger = config
-									.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
-					}
-				}
-			} else
-				// set configuration to null if we are updating collection.xconf
-				configuration = null;
+			Trigger trigger = setupTriggers(broker, name, oldDoc);
 			Indexer parser = new Indexer(broker);
 			parser.setDocument(document);
 
@@ -1032,7 +1002,7 @@ implements Comparable, EntityResolver, Cacheable {
 		    throw e;
 		} finally {
 			lock.release();
-		}
+		}//ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 
 		// reset the input source
 		try {
@@ -1099,23 +1069,7 @@ implements Comparable, EntityResolver, Cacheable {
 			document = new DocumentImpl(broker, name,	this);
 			manageDocumentInformation(broker, name, oldDoc, document );
 			
-			// setup triggers
-			Trigger trigger = null;
-			if (triggersEnabled && !name.equals(COLLECTION_CONFIG_FILE)) {
-				if (triggersEnabled) {
-					CollectionConfiguration config = getConfiguration(broker);
-					if (config != null) {
-						if (oldDoc == null)
-							trigger = config
-									.getTrigger(Trigger.STORE_DOCUMENT_EVENT);
-						else
-							trigger = config
-									.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
-					}
-				}
-			} else
-				// set configuration to null if we are updating collection.xconf
-				configuration = null;
+			Trigger trigger = setupTriggers(broker, name, oldDoc);
 			parser.setDocument(document);
 
 			// add observers to the indexer
@@ -1147,7 +1101,7 @@ implements Comparable, EntityResolver, Cacheable {
 			// first pass: parse the document to determine tree structure
 			LOG.debug("validating document " + name);
 			streamer.serialize(node, true);
-			document.setMaxDepth(document.getMaxDepth() + 1);
+			document.setMaxDepth(document.getMaxDepth() + 1);//ddddddddddddddddddd
 			document.calculateTreeLevelStartPoints();
 			// new document is valid: remove old document 
 			if (oldDoc != null) {
@@ -1181,7 +1135,7 @@ implements Comparable, EntityResolver, Cacheable {
 		    throw e;
 		} finally {
 			lock.release();
-		}
+		}//ffffffffffffffffffffffffffffffffffffffffffffffff
 		try {
 			// second pass: store the document
 		    if(LOG.isDebugEnabled())
@@ -1207,6 +1161,33 @@ implements Comparable, EntityResolver, Cacheable {
 		}
 		broker.deleteObservers();
 		return document;
+	}
+
+	/**
+	 * @param broker
+	 * @param name
+	 * @param oldDoc
+	 * @return
+	 */
+	private Trigger setupTriggers(DBBroker broker, String name, DocumentImpl oldDoc) {
+		// setup triggers
+		Trigger trigger = null;
+		if (triggersEnabled && !name.equals(COLLECTION_CONFIG_FILE)) {
+			if (triggersEnabled) {
+				CollectionConfiguration config = getConfiguration(broker);
+				if (config != null) {
+					if (oldDoc == null)
+						trigger = config
+								.getTrigger(Trigger.STORE_DOCUMENT_EVENT);
+					else
+						trigger = config
+								.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
+				}
+			}
+		} else
+			// set configuration to null if we are updating collection.xconf
+			configuration = null;
+		return trigger;
 	}
 
 	public BinaryDocument addBinaryResource(DBBroker broker,
