@@ -102,6 +102,16 @@ public class LongLinkedList {
 		return data;
     }
     
+	public String toString() {
+		StringBuffer buf = new StringBuffer();
+		ListItem next = first;
+		while( next != null ) {
+			buf.append(next.l).append(' ');
+			next = next.next;
+		}
+		return buf.toString();
+	}
+	
     public Iterator iterator() {
         return new LongLinkedListIterator();
     }

@@ -816,7 +816,7 @@ implements Comparable, EntityResolver, Cacheable {
 			}
 			broker.closeDocument();
 			broker.flush();
-			broker.checkTree(document);
+//			broker.checkTree(document);
 			LOG.debug("document stored.");
 			// if we are running in privileged mode (e.g. backup/restore)
 			// notify the SecurityManager about changes

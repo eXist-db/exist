@@ -774,7 +774,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 	}
 
-	private static class TermFrequencyList extends OrderedLongLinkedList {
+	private static class TermFrequencyList extends LongLinkedList {
 		
 		protected static class TermFreq extends LongLinkedList.ListItem {
 			
@@ -869,8 +869,9 @@ public class NativeTextEngine extends TextSearchEngine {
 				words[0].put(word, buf);
 			} else if (buf.getLast() == gid) {
 				buf.incLastTerm();
-			} else
+			} else {
 				buf.add(gid);
+			}
 		}
 
 		public void addAttribute(String word, long gid) {
@@ -1120,7 +1121,7 @@ public class NativeTextEngine extends TextSearchEngine {
 			String word;
 			TermFrequencyList idList;
 			TermFrequencyList.TermFreq id;
-			long[] ids;
+			TermFrequencyList.TermFreq[] ids;
 			byte[] data;
 			long prevId;
 			long delta;
@@ -1135,17 +1136,18 @@ public class NativeTextEngine extends TextSearchEngine {
 					os.writeByte(k == 0 ? TEXT_SECTION : ATTRIBUTE_SECTION);
 					os.writeInt(len);
 					prevId = 0;
-					for (Iterator j = idList.iterator(); j.hasNext();) {
-						id = ((TermFrequencyList.TermFreq) j.next());
-						delta = id.l - prevId;
+					ids = idList.toArray();
+					Arrays.sort(ids);
+					for (int m = 0; m < ids.length; m++) {
+						delta = ids[m].l - prevId;
 						if (delta < 0) {
 							LOG.debug("neg. delta: " + delta + " for " + word);
-							LOG.debug("id = " + id + "; prev = " + prevId);
+							LOG.debug("id = " + ids[m] + "; prev = " + prevId);
 						}
 						os.writeLong(delta);
 						if(termFreq)
-							os.writeInt(id.count);
-						prevId = id.l;
+							os.writeInt(ids[m].count);
+						prevId = ids[m].l;
 					}
 					flushWord(collectionId, word, os.data());
 					progress.setValue(count);
