@@ -1,8 +1,3 @@
-/*
- * Rename.java - May 1, 2003
- * 
- * @author wolf
- */
 package org.exist.xupdate;
 
 import org.exist.EXistException;

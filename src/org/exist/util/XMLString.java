@@ -185,10 +185,10 @@ public class XMLString implements CharSequence, Comparable {
 		return (ch == 0x20) || (ch == 0x09) || (ch == 0xD) || (ch == 0xA);
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#finalize()
+	/**
+	 * Release all resources hold by this XMLString.
 	 */
-	protected void finalize() throws Throwable {
+	public final void release() {
 		CharArrayPool.releaseCharArray(value_);
 		value_ = null;
 	}

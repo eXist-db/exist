@@ -184,7 +184,9 @@ public class XMLWriter {
 		throws TransformerException {
 		if (!declarationWritten)
 			writeDeclaration();
-		characters(new XMLString(ch, start, len));
+		XMLString s = new XMLString(ch, start, len);
+		characters(s);
+		s.release();
 	}
 
 	public void processingInstruction(String target, String data)

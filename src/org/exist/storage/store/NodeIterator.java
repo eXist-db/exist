@@ -34,11 +34,13 @@ public final class NodeIterator implements Iterator {
 	private long page;
 	private long startAddress = -1;
 	private Object lockKey;
+	private boolean useNodePool = false;
 
-	public NodeIterator(Object lock, DOMFile db, NodeProxy node)
+	public NodeIterator(Object lock, DOMFile db, NodeProxy node, boolean poolable)
 		throws BTreeException, IOException {
 		this.db = db;
 		this.doc = node.doc;
+		this.useNodePool = poolable;
 		if (-1 < node.getInternalAddress())
 			startAddress = node.getInternalAddress();
 		else
@@ -150,17 +152,17 @@ public final class NodeIterator implements Iterator {
 						final long overflow = ByteConversion.byteToLong(p.data, offset);
 						offset += 8;
 						final byte[] odata = db.getOverflowValue(overflow);
-						nextNode = NodeImpl.deserialize(odata, 0, odata.length, doc);
+						nextNode = NodeImpl.deserialize(odata, 0, odata.length, doc, useNodePool);
 					// normal node
 					} else {
-						nextNode = NodeImpl.deserialize(p.data, offset, l, doc);
+						nextNode = NodeImpl.deserialize(p.data, offset, l, doc, useNodePool);
 						offset += l;
 					}
 					nextNode.setInternalAddress(
 						StorageAddress.createPointer((int) page, ItemId.getId(lastTID))
 					);
 					nextNode.setOwnerDocument(doc);
-					// System.out.println("Next: " + nextNode.getNodeName() + " [" + page + "]");
+//					System.out.println("Next: " + nextNode.getNodeName() + " [" + page + "]");
 			    } while(nextNode == null);
 			}
 			return nextNode;

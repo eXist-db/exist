@@ -40,7 +40,7 @@
     </appender> 
 
     <category name="org.exist.xmldb" additivity="false">
-        <priority value="debug"/>
+		<priority value="debug"/>
         <appender-ref ref="console"/>
     </category>
 
@@ -52,12 +52,12 @@
     <!-- Axis produces a large amount of debugging output if
         priority is set to debug -->
     <category name="org.apache" additivity="false">
-        <priority value="info"/>
+		<priority value="info"/>
         <appender-ref ref="console"/> 
 	</category>
 
     <root>
-        <priority value="debug"/>
-        <appender-ref ref="console"/>
+		<priority value="debug"/>
+		<appender-ref ref="console"/>
     </root>
   </log4j:configuration>

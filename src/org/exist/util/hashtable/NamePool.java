@@ -74,7 +74,6 @@ public class NamePool extends AbstractHashtable {
 		int idx = hash(value) % tabSize;
 		if (idx < 0)
 			idx *= -1;
-//		System.out.println("adding " + value + " to " + idx + "; size: " + items);
 		int bucket = -1;
 		// look for an empty bucket
 		if (values[idx] == null) {

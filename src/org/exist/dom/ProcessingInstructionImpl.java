@@ -23,7 +23,7 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
     protected String data;
 
     public ProcessingInstructionImpl() {
-        super();
+        super(Node.PROCESSING_INSTRUCTION_NODE);
     }
 
     public ProcessingInstructionImpl( long gid ) {
@@ -64,6 +64,12 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
         this.target = target;
     }
 
+	/* (non-Javadoc)
+	 * @see org.w3c.dom.Node#getNodeName()
+	 */
+	public String getNodeName() {
+		return target;
+	}
 
     /**
      *  Gets the data attribute of the ProcessingInstructionImpl object
@@ -142,14 +148,7 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
         return d;
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  data  Description of the Parameter
-     *@return       Description of the Return Value
-     */
-    public static NodeImpl deserialize( byte[] data, int start, int len ) {
+    public static NodeImpl deserialize( byte[] data, int start, int len, boolean pooled ) {
         int l = ByteConversion.byteToInt( data, start + 1 );
         String target;
         String cdata;
@@ -160,7 +159,15 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
             target = new String( data, start + 5, l );
             cdata = new String( data, start + 5 + l, len - 5 - l );
         }
-        return new ProcessingInstructionImpl( 0, target, cdata );
+        ProcessingInstructionImpl pi;
+        if(pooled)
+            pi = (ProcessingInstructionImpl)
+				NodeObjectPool.getInstance().borrowNode(ProcessingInstructionImpl.class);
+        else
+            pi = new ProcessingInstructionImpl();
+        pi.target = target;
+        pi.data = cdata;
+        return pi;
     }
 
 }

@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
 import org.exist.util.hashtable.Int2ObjectHashMap;
+import org.exist.util.hashtable.NamePool;
 import org.exist.util.hashtable.Object2IntHashMap;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
@@ -45,6 +46,8 @@ public class SymbolTable {
 
 	protected Object2IntHashMap defaultMappings = new Object2IntHashMap(200);
 
+	protected QNamePool namePool = new QNamePool();
+	
 	protected short max = 0;
 	protected short nsMax = 0;
 	protected boolean changed = false;
@@ -55,6 +58,10 @@ public class SymbolTable {
 		this.file = file;
 	}
 
+	public synchronized QName getQName(String namespaceURI, String localName, String prefix) {
+	    return namePool.add(namespaceURI, localName, prefix);
+	}
+	
 	public synchronized short getSymbol(Element element) {
 		short id = (short) nameSymbols.get(element.getLocalName());
 		if (id > -1)

@@ -1,7 +1,7 @@
 
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2000,  Wolfgang Meier (wolfgang@exist-db.org)
+ *  Copyright (C) 2000-04,  Wolfgang Meier (wolfgang@exist-db.org)
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
- *  $Id:
+ *  $Id$
  */
 package org.exist.dom;
 
@@ -46,6 +46,10 @@ public class AttrImpl extends NodeImpl implements Attr {
     protected ElementImpl ownerElement = null;
     protected String value = null;
 
+    public AttrImpl() {
+    	super(Node.ATTRIBUTE_NODE);
+    }
+    
     public AttrImpl( long gid ) {
         super( Node.ATTRIBUTE_NODE, gid );
     }
@@ -55,7 +59,7 @@ public class AttrImpl extends NodeImpl implements Attr {
 		this.value = value;
     }
 
-    public static NodeImpl deserialize( byte[] data, int start, int len, DocumentImpl doc ) {
+    public static NodeImpl deserialize( byte[] data, int start, int len, DocumentImpl doc, boolean pooled ) {
     	int next = start;
         byte idSizeType = (byte) ( data[next] & 0x3 );
 		boolean hasNamespace = (data[next] & 0x10) == 0x10;
@@ -86,7 +90,13 @@ public class AttrImpl extends NodeImpl implements Attr {
                 new String( data, next,
                		len - (next - start));
         }
-        AttrImpl attr = new AttrImpl( new QName(name, namespace, prefix), value );
+        AttrImpl attr;
+        if(pooled)
+            attr = (AttrImpl)NodeObjectPool.getInstance().borrowNode(AttrImpl.class);
+        else
+            attr = new AttrImpl();
+        attr.nodeName = doc.getSymbols().getQName(namespace, name, prefix);
+        attr.value = value;
         attr.setType( attrType );
         return attr;
     }
@@ -206,6 +216,11 @@ public class AttrImpl extends NodeImpl implements Attr {
         }
         else
             return toString();
+    }
+    
+    public void clear() {
+        super.clear();
+        attributeType = CDATA; 
     }
 }
 

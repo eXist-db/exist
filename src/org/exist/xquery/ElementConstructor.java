@@ -88,7 +88,7 @@ public class ElementConstructor extends NodeConstructor {
 					}
 				}
 			}
-			// process the remaining attributes
+			// process the remaining attributesCharArr
 			for(Iterator i = attributes.iterator(); i.hasNext(); ) {
 				constructor = (AttributeConstructor)i.next();
 				if(!constructor.isNamespaceDeclaration()) {

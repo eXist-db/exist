@@ -62,17 +62,19 @@ public class EnclosedExpr extends PathExpr {
 			SequenceIterator i = result.iterate();
 			Item next = i.nextItem();
 			boolean readNext = true;
-			StringBuffer buf = new StringBuffer();
+			StringBuffer buf = null;
 			while (next != null) {
 				// if item is an atomic value, collect the string values of all
 				// following atomic values and seperate them by a space. 
 				if (Type.subTypeOf(next.getType(), Type.ATOMIC)) {
-					if (buf.length() > 0)
+				    if(buf == null)
+				        buf = new StringBuffer();
+					else if (buf.length() > 0)
 						buf.append(' ');
 					buf.append(next.getStringValue());
 					next = i.nextItem();
 				} else if (Type.subTypeOf(next.getType(), Type.NODE)) {
-					if (buf.length() > 0) {
+					if (buf != null && buf.length() > 0) {
 						receiver.characters(buf);
 						buf.setLength(0);
 					}
@@ -80,7 +82,7 @@ public class EnclosedExpr extends PathExpr {
 					next = i.nextItem();
 				}
 			}
-			if (buf.length() > 0)
+			if (buf != null && buf.length() > 0)
 				receiver.characters(buf);
 		} catch (SAXException e) {
 			throw new XPathException(getASTNode(),

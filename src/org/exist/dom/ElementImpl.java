@@ -70,9 +70,8 @@ public class ElementImpl extends NodeImpl implements Element {
 	protected long firstChild = -1;
 	protected Map namespaceMappings = null;
 
-	/**  Constructor for the ElementImpl object */
 	public ElementImpl() {
-		super();
+		super(Node.ELEMENT_NODE);
 	}
 
 	/**
@@ -121,7 +120,8 @@ public class ElementImpl extends NodeImpl implements Element {
 		byte[] data,
 		int start,
 		int len,
-		DocumentImpl doc) {
+		DocumentImpl doc,
+		boolean pooled) {
 		byte attrSizeType = (byte) ((data[start] & 0x0C) >> 0x2);
 		byte idSizeType = (byte) (data[start] & 0x03);
 		boolean hasNamespace = (data[start] & 0x10) == 0x10;
@@ -146,7 +146,12 @@ public class ElementImpl extends NodeImpl implements Element {
 
 		String name = doc.getSymbols().getName(id);
 		String namespace = nsId == 0 ? "" : doc.getSymbols().getNamespace(nsId);
-		ElementImpl node = new ElementImpl(0, new QName(name, namespace, prefix));
+		ElementImpl node;
+		if(pooled)
+		    node = (ElementImpl)NodeObjectPool.getInstance().borrowNode(ElementImpl.class);
+		else
+		    node = new ElementImpl();
+		node.nodeName = doc.getSymbols().getQName(namespace, name, prefix);
 		node.children = children;
 		node.attributes = attributes;
 		node.ownerDocument = doc;
@@ -167,10 +172,6 @@ public class ElementImpl extends NodeImpl implements Element {
 			}
 		}
 		return node;
-	}
-
-	public int getSymbol() {
-		return ownerDocument.getSymbols().getSymbol(this);
 	}
 
 	public void addNamespaceMapping(String prefix, String ns) {
@@ -424,34 +425,6 @@ public class ElementImpl extends NodeImpl implements Element {
 		}
 	}
 
-	/**
-	 * @see org.w3c.dom.Node#getNamespaceURI()
-	 */
-	//	public String getNamespaceURI() {
-	//		
-	//		if (nodeName != null && nodeName.indexOf(':') < 0 && declaresNamespacePrefixes()) {
-	//			// check for default namespaces
-	//			String ns;
-	//			for (Iterator i = prefixes.iterator(); i.hasNext();) {
-	//				ns = (String) i.next();
-	//				if (ns.startsWith("#"))
-	//					return ownerDocument.broker.getNamespaceURI(ns);
-	//			}
-	//		}
-	//		if (nodeName != null && nodeName.indexOf(':') > -1) {
-	//			String prefix = nodeName.substring(0, nodeName.indexOf(':'));
-	//			if (!prefix.equals("xml")) {
-	//				return ownerDocument.broker.getNamespaceURI(prefix);
-	//			}
-	//		}
-	//		return "";
-	//	}
-
-	/**
-	 *  Description of the Method
-	 *
-	 *@return    Description of the Return Value
-	 */
 	public boolean declaresNamespacePrefixes() {
 		return namespaceMappings != null && namespaceMappings.size() > 0;
 	}
@@ -611,35 +584,10 @@ public class ElementImpl extends NodeImpl implements Element {
 	}
 
 	/**
-	 * @see org.w3c.dom.Node#getNodeName()
-	 */
-	//	public String getNodeName() {
-	//		return nodeName;
-	//	}
-
-	/**
 	 * @see org.w3c.dom.Node#getNodeValue()
 	 */
 	public String getNodeValue() throws DOMException {
 		return null;
-		//        if ( !loaded )
-		//            loaded = ownerDocument.broker.elementWith( this );
-		//
-		//        StringBuffer buf = new StringBuffer();
-		//        long start = firstChildID();
-		//        Node child;
-		//        String childData;
-		//        for ( long i = start; i < start + children; i++ ) {
-		//            child = ownerDocument.getNode( i );
-		//            if ( child.getNodeType() == Node.TEXT_NODE ||
-		//                child.getNodeType() == Node.ELEMENT_NODE ) {
-		//                childData = child.getNodeValue();
-		//                if ( childData != null )
-		//                    buf.append( childData );
-		//
-		//            }
-		//        }
-		//        return buf.toString();
 	}
 
 	/**
@@ -711,22 +659,10 @@ public class ElementImpl extends NodeImpl implements Element {
 	public void removeAttributeNS(String namespaceURI, String name) throws DOMException {
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  oldAttr           Description of the Parameter
-	 *@return                   Description of the Return Value
-	 *@exception  DOMException  Description of the Exception
-	 */
 	public Attr removeAttributeNode(Attr oldAttr) throws DOMException {
 		return null;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@return    Description of the Return Value
-	 */
 	public byte[] serialize() {
 		try {
 			byte[] prefixData = null;
@@ -801,72 +737,29 @@ public class ElementImpl extends NodeImpl implements Element {
 		}
 	}
 
-	/**
-	 *  Sets the attribute attribute of the ElementImpl object
-	 *
-	 *@param  name              The new attribute value
-	 *@param  value             The new attribute value
-	 *@exception  DOMException  Description of the Exception
-	 */
 	public void setAttribute(String name, String value) throws DOMException {
 	}
 
-	/**
-	 *  Sets the attributeNS attribute of the ElementImpl object
-	 *
-	 *@param  namespaceURI      The new attributeNS value
-	 *@param  qualifiedName     The new attributeNS value
-	 *@param  value             The new attributeNS value
-	 *@exception  DOMException  Description of the Exception
-	 */
 	public void setAttributeNS(String namespaceURI, String qualifiedName, String value)
 		throws DOMException {
 	}
 
-	/**
-	 *  Sets the attributeNode attribute of the ElementImpl object
-	 *
-	 *@param  newAttr           The new attributeNode value
-	 *@return                   Description of the Return Value
-	 *@exception  DOMException  Description of the Exception
-	 */
 	public Attr setAttributeNode(Attr newAttr) throws DOMException {
 		return null;
 	}
 
-	/**
-	 *  Sets the attributeNodeNS attribute of the ElementImpl object
-	 *
-	 *@param  newAttr  The new attributeNodeNS value
-	 *@return          Description of the Return Value
-	 */
 	public Attr setAttributeNodeNS(Attr newAttr) {
 		return null;
 	}
 
-	/**
-	 *  Sets the childCount attribute of the ElementImpl object
-	 *
-	 *@param  count  The new childCount value
-	 */
 	public void setChildCount(int count) {
 		children = count;
 	}
 
-	/**
-	 *  Sets the nodeName attribute of the ElementImpl object
-	 *
-	 *@param  name  The new nodeName value
-	 */
 	public void setNodeName(QName name) {
 		nodeName = name;
 	}
 
-	/**
-	 *  Sets the prefixes attribute of the ElementImpl object
-	 *
-	 *@param  pfx  The new prefixes value
-	 */
 	public void setNamespaceMappings(Map map) {
 		namespaceMappings = new HashMap(map);
 		String ns;
@@ -884,15 +777,6 @@ public class ElementImpl extends NodeImpl implements Element {
 		return (String) namespaceMappings.get(prefix);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  contentHandler    Description of the Parameter
-	 *@param  lexicalHandler    Description of the Parameter
-	 *@param  first             Description of the Parameter
-	 *@param  prefixes          Description of the Parameter
-	 *@exception  SAXException  Description of the Exception
-	 */
 	public void toSAX(
 		ContentHandler contentHandler,
 		LexicalHandler lexicalHandler,

@@ -7,7 +7,7 @@ import org.w3c.dom.Node;
 class DocumentFragmentImpl extends NodeImpl implements DocumentFragment {
    
    public DocumentFragmentImpl() {
-      super();
+      super(Node.DOCUMENT_FRAGMENT_NODE);
    }
 
    public DocumentFragmentImpl(long gid) {
