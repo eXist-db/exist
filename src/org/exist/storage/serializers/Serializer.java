@@ -25,8 +25,6 @@ package org.exist.storage.serializers;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
@@ -113,7 +111,6 @@ public class Serializer implements XMLReader {
 	protected boolean createContainerElements = false;
 	
 	protected boolean processXSL = false;
-	protected boolean generateDocEvents = true;
 	
 	protected Properties outputProperties = new Properties();
 	
@@ -799,7 +796,7 @@ public class Serializer implements XMLReader {
 				setStylesheet((DocumentImpl) doc, stylesheet);
 		}
 		setXSLHandler();
-		serializeToSAX(doc, outputProperties.getProperty(GENERATE_DOC_EVENTS, "true").equals("true"));
+		serializeToSAX(doc, outputProperties.getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
 	}
 
 	/**
@@ -811,7 +808,7 @@ public class Serializer implements XMLReader {
 	 */
 	public void toSAX(Node n) throws SAXException {
 		setXSLHandler();
-		serializeToSAX(n, outputProperties.getProperty(GENERATE_DOC_EVENTS, "true").equals("true"));
+		serializeToSAX(n, outputProperties.getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
 	}
 
 	/**
@@ -823,7 +820,7 @@ public class Serializer implements XMLReader {
 	 */
 	public void toSAX(NodeProxy p) throws SAXException {
 		setXSLHandler();
-		serializeToSAX(p, outputProperties.getProperty(GENERATE_DOC_EVENTS, "true").equals("true"));
+		serializeToSAX(p, outputProperties.getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
 	}
 
 	private String hasXSLPi(Document doc) {
