@@ -64,11 +64,17 @@ public class CastExpression extends AbstractExpression {
 		Sequence seq = expression.eval(contextSequence, contextItem);
 		if(seq.getLength() == 0) {
 			if((cardinality & Cardinality.ZERO) == 0)
-				throw new XPathException("Type error: empty sequence is not allowed here");
+				throw new XPathException(getASTNode(), 
+						"Type error: empty sequence is not allowed here");
 			else
 				return Sequence.EMPTY_SEQUENCE;
 		}
-		return (AtomicValue)seq.itemAt(0).convertTo(requiredType);
+		try {
+			return (AtomicValue)seq.itemAt(0).convertTo(requiredType);
+		} catch(XPathException e) {
+			e.setASTNode(getASTNode());
+			throw e;
+		}
 	}
 
 	/* (non-Javadoc)

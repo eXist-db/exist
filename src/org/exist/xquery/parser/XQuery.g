@@ -567,7 +567,7 @@ parenthesizedExpr
 functionCall
 { String fnName= null; }
 :
-	fnName=q:qName LPAREN!
+	fnName=qName l:LPAREN!
 	{ 
         #functionCall = #[FUNCTION, fnName];
     }
@@ -575,7 +575,7 @@ functionCall
 		params:functionParameters
 		{ #functionCall= #(#[FUNCTION, fnName], #params); }
 	)?
-    { #functionCall.copyLexInfo(#q); }
+    { #functionCall.copyLexInfo(#l); }
 	RPAREN!
 	;
 
@@ -635,7 +635,7 @@ elementConstructor
 elementWithoutAttributes
 { String name= null; }
 :
-	LT name=qName
+	LT name=q:qName
 	(
 		(
 			SLASH! GT!
@@ -668,12 +668,13 @@ elementWithoutAttributes
 			}
 		)
 	)
+    { #elementWithoutAttributes.copyLexInfo(#q); }
 	;
 
 elementWithAttributes
 { String name= null; }
 :
-	LT! name=qName attrs:attributeList
+	LT! name=q:qName attrs:attributeList
 	(
 		(
 			SLASH! GT!
@@ -707,6 +708,7 @@ elementWithAttributes
 			}
 		)
 	)
+    { #elementWithAttributes.copyLexInfo(#q); }
 	;
 
 attributeList
@@ -720,11 +722,14 @@ attributeDef
 	lexer.parseStringLiterals= false;
 }
 :
-	name=qName! EQ! QUOT!
+	name=q:qName! EQ! QUOT!
 	{ lexer.inAttributeContent= true; }
 	value:attributeValue { lexer.inAttributeContent= false; }
 	QUOT! { lexer.parseStringLiterals= true; }
-	{ #attributeDef= #(#[ATTRIBUTE, name], #value); }
+	{ 
+        #attributeDef= #(#[ATTRIBUTE, name], #value);
+        #attributeDef.copyLexInfo(#q);
+    }
 	;
 
 attributeValue
@@ -1075,7 +1080,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		functionDecl [path]
 		|
 		#(
-			"import" 
+			i:"import" 
 			{ 
 				String modulePrefix = null;
 				String location = null;
@@ -1084,7 +1089,12 @@ throws PermissionDeniedException, EXistException, XPathException
 			moduleURI:STRING_LITERAL 
 			( at:STRING_LITERAL { location = at.getText(); } )?
 			{
-				context.importModule(moduleURI.getText(), modulePrefix, location);
+                try {
+				    context.importModule(moduleURI.getText(), modulePrefix, location);
+                } catch(XPathException xpe) {
+                    xpe.setASTNode(i);
+                    throw xpe;
+                }
 			}
 		)
 	)*
@@ -2240,6 +2250,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		e:ELEMENT
 		{
 			ElementConstructor c= new ElementConstructor(context, e.getText());
+            c.setASTNode(e);
 			step= c;
 		}
 		(
@@ -2247,6 +2258,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				attrName:ATTRIBUTE
 				{
 					AttributeConstructor attrib= new AttributeConstructor(context, attrName.getText());
+                    attrib.setASTNode(attrName);
 					c.addAttribute(attrib);
 				}
 				(
@@ -2277,6 +2289,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		pcdata:TEXT
 		{
 			TextConstructor text= new TextConstructor(context, pcdata.getText());
+            text.setASTNode(pcdata);
 			step= text;
 		}
 	)
@@ -2285,6 +2298,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		cdata:XML_COMMENT
 		{
 			CommentConstructor comment= new CommentConstructor(context, cdata.getText());
+            comment.setASTNode(cdata);
 			step= comment;
 		}
 	)
@@ -2293,12 +2307,16 @@ throws PermissionDeniedException, EXistException, XPathException
 		p:XML_PI
 		{
 			PIConstructor pi= new PIConstructor(context, p.getText());
+            pi.setASTNode(p);
 			step= pi;
 		}
 	)
 	|
 	#(
-		LCURLY { EnclosedExpr subexpr= new EnclosedExpr(context); }
+		l:LCURLY { 
+            EnclosedExpr subexpr= new EnclosedExpr(context); 
+            subexpr.setASTNode(l);
+        }
 		step=expr [subexpr]
 		{ step= subexpr; }
 	)
@@ -2466,7 +2484,7 @@ options {
 		|
 		'\r'
 		|
-		'\n'
+		'\n' { newline(); }
 		|
 		'\u0020'
 		|
@@ -2487,7 +2505,7 @@ options {
 	testLiterals=false;
 }
 :
-	( '\t' | '\r' | '\n' | '\u0020'..'\u003b' | '\u003d'..'\u007a' | '\u007c' | '\u007e'..'\uFFFD' )+
+	( '\t' | '\r' | '\n' { newline(); } | '\u0020'..'\u003b' | '\u003d'..'\u007a' | '\u007c' | '\u007e'..'\uFFFD' )+
 	;
 
 protected XML_COMMENT

@@ -83,7 +83,7 @@ public class EnclosedExpr extends PathExpr {
 			if (buf.length() > 0)
 				receiver.characters(buf);
 		} catch (SAXException e) {
-			throw new XPathException(
+			throw new XPathException(getASTNode(),
 				"Encountered SAX exception while serializing enclosed expression: "
 					+ pprint());
 		}

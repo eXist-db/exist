@@ -3586,6 +3586,9 @@ tryAgain:
 			case '\n':
 			{
 				match('\n');
+				if ( inputState.guessing==0 ) {
+					newline();
+				}
 				break;
 			}
 			case ' ':
@@ -3675,6 +3678,9 @@ tryAgain:
 			case '\n':
 			{
 				match('\n');
+				if ( inputState.guessing==0 ) {
+					newline();
+				}
 				break;
 			}
 			case ' ':  case '!':  case '"':  case '#':

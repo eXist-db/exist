@@ -59,7 +59,7 @@ public class XPathException extends Exception {
 		else {
 			StringBuffer buf = new StringBuffer();
 			buf.append(super.getMessage());
-			buf.append(" [line ");
+			buf.append(" [at line ");
 			buf.append(astNode.getLine());
 			buf.append(", column ");
 			buf.append(astNode.getColumn());
