@@ -25,6 +25,7 @@ package org.exist.xmldb;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.Service;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.XMLResource;
 
 /**
  * Execute XQuery expressions on the database.
@@ -46,6 +47,17 @@ public interface XQueryService extends Service {
 	 * @throws XMLDBException
 	 */
 	public ResourceSet query(String query) throws XMLDBException;
+	
+	/**
+	 * Process a query based on the result of a previous query.
+	 * The XMLResource contains the result received from a previous
+	 * query.
+	 * 
+	 * @param res an XMLResource as obtained from a previous query.
+	 * @param query the XPath query
+	 */
+	public ResourceSet query( XMLResource res, String query )
+	throws XMLDBException;
 	
 	/**
 	 * Compiles the specified XQuery and returns a handle to the compiled
