@@ -88,6 +88,10 @@ public class FunctionSignature {
 		return arguments != null ? arguments.length : 0;
 	}
 	
+	public FunctionId getFunctionId() {
+		return new FunctionId(name, getArgumentCount());
+	}
+	
 	public SequenceType getReturnType() {
 		return returnType;
 	}

@@ -107,24 +107,39 @@ public abstract class Function extends PathExpr {
 	public static Function createFunction(
 		XQueryContext context,
 		XQueryAST ast,
-		Class fclass) throws XPathException {
+		FunctionDef def) throws XPathException {
+		Class fclass = def.getImplementingClass();
+		if (def == null || fclass == null)
+			throw new XPathException(ast, "Class for function is null");
 		try {
-			if (fclass == null)
-				throw new XPathException(ast, "class for function is null");
-			Class constructorArgs[] = { XQueryContext.class };
-			Constructor construct = fclass.getConstructor(constructorArgs);
-			if (construct == null)
-				throw new XPathException(ast, "constructor not found");
 			Object initArgs[] = { context };
+			Class constructorArgs[] = { XQueryContext.class }; 
+			Constructor construct = null;
+			try {
+				construct = fclass.getConstructor(constructorArgs);
+			} catch(NoSuchMethodException e) {
+			}
+			// not found: check if the constructor takes two arguments
+			if (construct == null) {
+				constructorArgs = new Class[2];
+				constructorArgs[0] = XQueryContext.class;
+				constructorArgs[1] = FunctionSignature.class;
+				construct = fclass.getConstructor(constructorArgs);
+				if(construct == null)
+					throw new XPathException(ast, "Constructor not found");
+				initArgs = new Object[2];
+				initArgs[0] = context;
+				initArgs[1] = def.getSignature();
+			}
 			Object obj = construct.newInstance(initArgs);
 			if (obj instanceof Function) {
 				((Function)obj).setASTNode(ast);
 				return (Function) obj;
 			} else
-				throw new XPathException(ast, "function object does not implement interface function");
+				throw new XPathException(ast, "Function object does not implement interface function");
 		} catch (Exception e) {
 			LOG.debug(e.getMessage(), e);
-			throw new XPathException(ast, "function " + fclass.getName() + " not found");
+			throw new XPathException(ast, "Function implementation class " + fclass.getName() + " not found");
 		}
 	}
 
