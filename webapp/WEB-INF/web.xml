@@ -438,6 +438,11 @@
 	  <url-pattern>*.xql</url-pattern>
   </servlet-mapping>
   
+  <servlet-mapping>
+      <servlet-name>XQueryServlet</servlet-name>
+      <url-pattern>*.xqy</url-pattern>
+  </servlet-mapping>
+  
   <!-- Define where Xincon listens for WebDAV requests -->
   <!--servlet-mapping>
 		<servlet-name>xincon</servlet-name>
