@@ -215,6 +215,16 @@ public class DOMFile extends BTree implements Lockable {
 		return p;
 	}
 
+	public long addBinary(byte[] value) {
+		OverflowDOMPage overflow = new OverflowDOMPage();
+		overflow.write(value);
+		return overflow.getPageNum();
+	}
+	
+	public byte[] getBinary(long pageNum) {
+		return getOverflowValue(pageNum);
+	}
+	
 	/**
 	 * Insert a new node after the specified node.
 	 * 
@@ -517,6 +527,7 @@ public class DOMFile extends BTree implements Lockable {
 	protected void unlinkPages(Page page) throws IOException {
 		super.unlinkPages(page);
 	}
+	
 	/**
 	 *  Description of the Method
 	 *
@@ -768,7 +779,7 @@ public class DOMFile extends BTree implements Lockable {
 		}
 	}
 
-	protected void removeOverflowValue(long pnum) {
+	public void removeOverflowValue(long pnum) {
 		try {
 			OverflowDOMPage overflow = new OverflowDOMPage(pnum);
 			overflow.delete();
@@ -1615,7 +1626,6 @@ public class DOMFile extends BTree implements Lockable {
 		}
 
 		public void write(byte[] data) {
-			LOG.debug("writing overflow page " + firstPage.getPageNum());
 			try {
 				int remaining = data.length;
 				int chunkSize = fileHeader.getWorkSize();

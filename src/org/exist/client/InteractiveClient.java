@@ -30,6 +30,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -82,6 +83,7 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
@@ -118,7 +120,8 @@ public class InteractiveClient {
 	private final static int RECURSE_DIRS_OPT = 'd';
 	private final static int NO_GUI_OPT = 's';
 	private final static int TRACE_QUERIES_OPT = 'T';
-
+	private final static int OUTPUT_FILE_OPT = 'O'; 
+	
 	private final static CLOptionDescriptor OPTIONS[] =
 		new CLOptionDescriptor[] {
 			new CLOptionDescriptor(
@@ -204,6 +207,11 @@ public class InteractiveClient {
 				CLOptionDescriptor.ARGUMENT_REQUIRED,
 				RESULTS_OPT,
 				"max. number of query results to be displayed."),
+			new CLOptionDescriptor(
+				"output",
+				CLOptionDescriptor.ARGUMENT_REQUIRED,
+				OUTPUT_FILE_OPT,
+				"write output of command into given file (use with -x, -g)."),
 			new CLOptionDescriptor(
 				"option",
 				CLOptionDescriptor.ARGUMENTS_REQUIRED_2 | CLOptionDescriptor.DUPLICATES_ALLOWED,
@@ -559,15 +567,20 @@ public class InteractiveClient {
 					System.err.println("wrong number of arguments.");
 					return true;
 				}
-				XMLResource res = retrieve(args[1]);
+				Resource res = retrieve(args[1]);
 				// display document
 				if (res != null) {
+					String data;
+					if(res.getResourceType().equals("XMLResource"))
+						data = (String) res.getContent();
+					else
+						data = new String((byte[])res.getContent());
 					if (startGUI) {
 						frame.setEditable(false);
-						frame.display((String) res.getContent());
+						frame.display(data);
 						frame.setEditable(true);
 					} else {
-						String content = (String) res.getContent();
+						String content = data;
 						more(content);
 					}
 				}
@@ -670,6 +683,16 @@ public class InteractiveClient {
 				boolean r = parse(args[1]);
 				getResources();
 				return r;
+				
+			} else if (args[0].equalsIgnoreCase("blob")) {
+				// put a document or directory into the database
+				if (args.length < 2) {
+					 messageln("missing argument.");
+					 return true;
+				}
+				storeBinary(args[1]);
+				getResources();
+				
 			} else if (args[0].equalsIgnoreCase("rm")) {
 				// remove document
 				if (args.length < 2) {
@@ -1087,15 +1110,15 @@ public class InteractiveClient {
 		}
 	}
 
-	protected final XMLResource retrieve(String resource) throws XMLDBException {
+	protected final Resource retrieve(String resource) throws XMLDBException {
 		return retrieve(resource, properties.getProperty("indent"));
 	}
 
-	protected final XMLResource retrieve(String resource, String indent) throws XMLDBException {
+	protected final Resource retrieve(String resource, String indent) throws XMLDBException {
 		current.setProperty(OutputKeys.INDENT, indent);
 		current.setProperty(OutputKeys.ENCODING, properties.getProperty("encoding"));
 		current.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, properties.getProperty("expand-xincludes"));
-		XMLResource res = (XMLResource) current.getResource(resource);
+		Resource res =  current.getResource(resource);
 		if (res == null) {
 			messageln("document not found.");
 			return null;
@@ -1110,7 +1133,7 @@ public class InteractiveClient {
 			return;
 		}
 		Resource resources[];
-		XMLResource res = (XMLResource) collection.getResource(pattern);
+		Resource res = collection.getResource(pattern);
 		if (res == null)
 			resources = CollectionScanner.scan(collection, "", pattern);
 		else {
@@ -1119,7 +1142,7 @@ public class InteractiveClient {
 		}
 		Collection parent;
 		for (int i = 0; i < resources.length; i++) {
-			message("removing document " + ((XMLResource) resources[i]).getDocumentId() + " ...");
+			message("removing document " + resources[i].getId() + " ...");
 			parent = resources[i].getParentCollection();
 			parent.removeResource(resources[i]);
 			messageln("done.");
@@ -1151,6 +1174,15 @@ public class InteractiveClient {
 		messageln("done.");
 	}
 
+	private final void storeBinary(String fileName) throws XMLDBException {
+		File file = new File(fileName);
+		if(file.canRead()) {
+			BinaryResource resource = (BinaryResource)current.createResource(file.getName(), "BinaryResource");
+			resource.setContent(file);
+			current.storeResource(resource);
+		}
+	}
+	
 	private final File[] findFiles(String pattern) {
 		String pathSep = System.getProperty("file.separator", "/");
 		String baseDir = ".", globExpr = pattern;
@@ -1460,7 +1492,7 @@ public class InteractiveClient {
 	 *
 	 *@param  args  Description of the Parameter
 	 */
-	public void run(String args[]) {
+	public void run(String args[]) throws Exception {
 		// read properties
 		properties = new Properties(defaultProps);
 		try {
@@ -1508,6 +1540,7 @@ public class InteractiveClient {
 		String optionQueryFile = null;
 		String optionXUpdate = null;
 		String optionResource = null;
+		String optionOutputFile = null;
 		List optionalArgs = new ArrayList();
 		for (int i = 0; i < size; i++) {
 			option = (CLOption) opt.get(i);
@@ -1546,6 +1579,9 @@ public class InteractiveClient {
 					break;
 				case RESOURCE_OPT :
 					optionResource = option.getArgument();
+					break;
+				case OUTPUT_FILE_OPT :
+					optionOutputFile = option.getArgument();
 					break;
 				case PARSE_OPT :
 					doParse = true;
@@ -1716,9 +1752,21 @@ public class InteractiveClient {
 		}
 		if (optionGet != null) {
 			try {
-				XMLResource res = retrieve(optionGet);
-				if (res != null)
-					System.out.println(res.getContent());
+				Resource res = retrieve(optionGet);
+				if(res != null) {
+					String data;
+					if(res.getResourceType().equals("XMLResource")) {
+						if(optionOutputFile != null)
+							writeOutputFile(optionOutputFile, res.getContent());
+						else
+							System.out.println(res.getContent().toString());
+					} else {
+						if(optionOutputFile != null)
+							writeOutputFile(optionOutputFile, res.getContent());
+						else
+							System.out.println(new String((byte[]) res.getContent()));
+					}
+				}
 			} catch (XMLDBException e) {
 				System.err.println(
 					"XMLDBException while trying to retrieve document: " + e.getMessage());
@@ -1748,7 +1796,15 @@ public class InteractiveClient {
 						e.printStackTrace();
 					}
 			}
-		} else if (optionXpath != null) {
+		} else if (optionXpath != null || optionQueryFile != null) {
+			if(optionQueryFile != null) {
+				BufferedReader reader = new BufferedReader(new FileReader(optionQueryFile));
+				StringBuffer buf = new StringBuffer();
+				String line;
+				while((line = reader.readLine()) != null)
+					buf.append(line);
+				optionXpath = buf.toString();
+			}
 			// if no argument has been found, read query from stdin
 			if (optionXpath.equals("stdin")) {
 				try {
@@ -1756,7 +1812,7 @@ public class InteractiveClient {
 					StringBuffer buf = new StringBuffer();
 					String line;
 					while((line = stdin.readLine()) != null)
-						buf.append(line);
+						buf.append(line + '\n');
 					optionXpath = buf.toString();
 				} catch (IOException e) {
 					System.err.println("failed to read query from stdin");
@@ -1766,15 +1822,24 @@ public class InteractiveClient {
 			if (optionXpath != null) {
 				try {
 					ResourceSet result = find(optionXpath);
-					for (int i = 0; i < maxResults && i < result.getSize(); i++)
-						System.out.println(((Resource) result.getResource((long) i)).getContent());
+					if(maxResults <= 0)
+						maxResults = (int)result.getSize();
+					if(optionOutputFile == null) {
+						for (int i = 0; i < maxResults && i < result.getSize(); i++)
+								System.out.println(((Resource) result.getResource((long) i)).getContent());
+					} else {
+						FileWriter writer = new FileWriter(optionOutputFile, false);
+						for (int i = 0; i < maxResults && i < result.getSize(); i++)
+							writer.write(((Resource) result.getResource((long) i)).getContent().toString());
+						writer.close();
+					}
 				} catch (XMLDBException e) {
 					System.err.println("XMLDBException during query: " + e.getMessage());
 					e.printStackTrace();
 				}
 			}
-		} else if (optionQueryFile != null) {
-			testQuery(optionQueryFile);
+//		} else if (optionQueryFile != null) {
+//			testQuery(optionQueryFile);
 		} else if (optionXUpdate != null) {
 			try {
 				xupdate(optionResource, optionXUpdate);
@@ -1935,6 +2000,19 @@ public class InteractiveClient {
 		}
 	}
 
+	private static void writeOutputFile(String fileName, Object data) throws Exception {
+		File file = new File(fileName);
+		if(data instanceof byte[]) {
+			FileOutputStream os = new FileOutputStream(file);
+			os.write((byte[])data);
+			os.close();
+		} else {
+			FileWriter writer = new FileWriter(file);
+			writer.write(data.toString());
+			writer.close();
+		}
+	}
+	
 	private static String formatString(String s1, String s2, int width) {
 		StringBuffer buf = new StringBuffer(width);
 		if (s1.length() > width)

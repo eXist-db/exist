@@ -49,9 +49,12 @@ import org.exist.util.VariableByteOutputStream;
  */
 public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
+	public final static byte XML_FILE = 0;
+	public final static byte BINARY_FILE = 1;
+	
 	private NodeIndexListener listener = null;
 
-	private static Category LOG = Category.getInstance(DocumentImpl.class.getName());
+	protected final static Category LOG = Category.getInstance(DocumentImpl.class.getName());
 
 	protected DBBroker broker = null;
 
@@ -61,7 +64,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	protected LinkedList childList = new LinkedList();
 
 	// the collection this document belongs to
-	private Collection collection = null;
+	protected Collection collection = null;
 
 	// the document's id
 	protected int docId = -1;
@@ -73,13 +76,13 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	//protected long documentRootId = -1;
 
 	// the document's file name
-	private String fileName = null;
+	protected String fileName = null;
 
 	// the creation time of this document
-	private long created = 0;
+	protected long created = 0;
 	
 	// time of the last modification
-	private long lastModified = 0;
+	protected long lastModified = 0;
 	
 	// number of levels in this DOM tree
 	protected int maxDepth = 0;
@@ -171,13 +174,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			treeLevelStartPoints[i] = old.treeLevelStartPoints[i];
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  gid   Description of the Parameter
-	 *@param  type  Description of the Parameter
-	 *@return       Description of the Return Value
-	 */
+	public byte getResourceType() {
+		return XML_FILE;
+	}
+	
 	protected static NodeImpl createNode(long gid, short type) {
 		NodeImpl node;
 		switch (type) {
@@ -480,26 +480,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return false;
 	}
 
-	public void read(DataInput istream) throws IOException, EOFException {
-		fileName = istream.readUTF();
-		docId = istream.readInt();
-		children = istream.readInt();
-		maxDepth = istream.readInt();
-		short ocount = istream.readShort();
-		treeLevelOrder = new int[ocount];
-		for (int i = 0; i < ocount; i++)
-			treeLevelOrder[i] = istream.readInt();
-
-		short tcount = istream.readShort();
-		treeLevelStartPoints = new long[tcount];
-		for (int i = 0; i < tcount; i++)
-			treeLevelStartPoints[i] = istream.readLong();
-
-		docType = new DocumentTypeImpl();
-		((DocumentTypeImpl) docType).read(istream);
-		permissions.read(istream);
-	}
-
 	public void read(VariableByteInputStream istream) throws IOException, EOFException {
 		docId = istream.readInt();
 		fileName = collection.getName() + '/' + istream.readUTF();
@@ -599,32 +579,13 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public void setVersion(String version) {
 	}
 
-	public void write(DataOutput ostream) throws IOException {
-		ostream.writeUTF(fileName);
-		ostream.writeInt(docId);
-		ostream.writeInt(children);
-		ostream.writeInt(maxDepth);
-		ostream.writeShort(treeLevelOrder.length);
-		for (int i = 0; i < treeLevelOrder.length; i++)
-			ostream.writeInt(treeLevelOrder[i]);
-
-		ostream.writeShort(treeLevelStartPoints.length);
-		for (int i = 0; i < treeLevelStartPoints.length; i++)
-			ostream.writeLong(treeLevelStartPoints[i]);
-
-		((DocumentTypeImpl) docType).write(ostream);
-		permissions.write(ostream);
-		//symbols.write(ostream);
-	}
-
 	public void write(VariableByteOutputStream ostream) throws IOException {
+		ostream.writeByte(getResourceType());
 		ostream.writeInt(docId);
 		ostream.writeUTF(fileName.substring(collection.getName().length() + 1));
 		ostream.writeInt(children);
 		ostream.writeInt(StorageAddress.pageFromPointer(address));
 		ostream.writeShort(StorageAddress.tidFromPointer(address));
-		//System.out.println("doc = " + docId + "address = " + DOMFile.tidFromPointer(address));
-		//Thread.dumpStack();
 		ostream.writeInt(maxDepth);
 		for (int i = 0; i < maxDepth; i++) {
 			//System.out.println("k[" + i + "] = " + treeLevelOrder[i]);

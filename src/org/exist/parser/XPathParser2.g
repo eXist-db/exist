@@ -87,7 +87,7 @@ imaginaryTokenDefinitions
 	QNAME PREDICATE FLWOR PARENTHESIZED ABSOLUTE_SLASH ABSOLUTE_DSLASH 
 	WILDCARD PREFIX_WILDCARD FUNCTION UNARY_MINUS UNARY_PLUS XPOINTER 
 	XPOINTER_ID VARIABLE_REF VARIABLE_BINDING ELEMENT ATTRIBUTE TEXT
-	VERSION_DECL NAMESPACE_DECL DEF_NAMESPACE_DECL
+	VERSION_DECL NAMESPACE_DECL DEF_NAMESPACE_DECL GLOBAL_VAR
 	;
 
 xpointer
@@ -123,7 +123,9 @@ prolog
 		( 
 			( "declare" "namespace" ) => namespaceDecl 
 			| 
-			defaultNamespaceDecl ) SEMICOLON! 
+			( "declare" "default" ) => defaultNamespaceDecl 
+			| varDecl
+			) SEMICOLON! 
 	)*
 	;
 
@@ -147,6 +149,15 @@ defaultNamespaceDecl
 	"declare" "default" "element" "namespace" defu:STRING_LITERAL
 	{
 		#defaultNamespaceDecl = #(#[DEF_NAMESPACE_DECL, "defaultNamespaceDecl"], defu);
+	}
+	;
+
+varDecl
+{ String varName = null; }
+:
+	"declare" "variable" DOLLAR! varName=qName LCURLY ex:expr RCURLY
+	{
+		#varDecl = #(#[GLOBAL_VAR, varName], #ex);
 	}
 	;
 	
@@ -712,6 +723,14 @@ throws PermissionDeniedException, EXistException, XPathException:
 		#(DEF_NAMESPACE_DECL defu:STRING_LITERAL
 			{
 				context.declareNamespace("", defu.getText());
+			}
+		)
+		|
+		#(qname:GLOBAL_VAR { PathExpr enclosed = new PathExpr(context); }
+			expr[enclosed]
+			{
+				VariableDeclaration decl = new VariableDeclaration(context, qname.getText(), enclosed);
+				path.add(decl);
 			}
 		)
 	)*
@@ -1418,6 +1437,10 @@ protected XML_COMMENT_END : "-->" ;
 protected XML_PI_START : "<?" ;
 protected XML_PI_END : "?>" ;
 
+protected CHAR:
+	( '\t' | '\n' | '\r' | '\u0020'..'\u0039' | '\u003B'..'\uD7FF' | '\uE000'..'\uFFFD' )
+	;
+	
 protected BASECHAR
 options {
 	testLiterals=true;
@@ -2102,6 +2125,7 @@ protected DIGITS
 	( DIGIT )+
 	;
 
+
 protected HEX_DIGITS
 :
 	( '0'..'9' | 'a'..'f' | 'A'..'F' )+
@@ -2127,9 +2151,14 @@ options {
 
 protected WS
 :
-	( ' ' | '\t' | '\n' | '\r' )+
+	( ' ' | '\t' | '\n' { newline(); } | '\r' )+
 	;
 
+protected EXPR_COMMENT
+:
+	"(:" ( CHAR | ( ':' ~( ')' ) ) => ':' )* ":)"
+	;
+	
 protected INTEGER_LITERAL : DIGITS ;
 
 protected DECIMAL_LITERAL
@@ -2264,6 +2293,11 @@ NEXT_TOKEN
 			$setType(WS);
 		else
 			$setType(Token.SKIP);
+	}
+	| 
+	EXPR_COMMENT
+	{
+		$setType(Token.SKIP);
 	}
 	|
 	NCNAME { $setType(NCNAME); }
