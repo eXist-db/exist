@@ -134,7 +134,7 @@ public class NodeImpl implements Node, QNameable {
 		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
 	}
 
-	public Node appendChildren(NodeList nodes, int child) throws DOMException {
+	public void appendChildren(NodeList nodes, int child) throws DOMException {
 		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, 
 		        "Cannot append children to a node of type " + nodeType);
 	}
@@ -305,6 +305,7 @@ public class NodeImpl implements Node, QNameable {
 
 	public NodePath getPath() {
 		NodePath path = new NodePath();
+		path.addComponent(getQName());
 		NodeImpl parent = (NodeImpl)getParentNode();
 		while (parent != null && parent.getNodeType() != Node.DOCUMENT_NODE) {
 		    path.addComponent(parent.getQName());
@@ -390,11 +391,11 @@ public class NodeImpl implements Node, QNameable {
 		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
 	}
 
-	public Node insertAfter(NodeList nodes, Node refChild) throws DOMException {
+	public void insertAfter(NodeList nodes, Node refChild) throws DOMException {
 		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
 	}
 
-	public Node insertBefore(NodeList nodes, Node refChild) throws DOMException {
+	public void insertBefore(NodeList nodes, Node refChild) throws DOMException {
 		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
 	}
 	/**

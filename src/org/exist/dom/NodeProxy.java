@@ -277,7 +277,8 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	}
 
 	public Node getNode() {
-		return doc.getNode(this);
+		if (gid == -1 && nodeType == Node.DOCUMENT_NODE) return doc;
+		else return doc.getNode(this);
 	}
 	
 	public short getNodeType() {
