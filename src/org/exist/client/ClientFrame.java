@@ -799,11 +799,11 @@ public class ClientFrame extends JFrame {
 					try {
 						//final StringWriter writer = new StringWriter();
 						//transformer.setResult(new StreamResult(writer));
-						final XMLResource res = client.retrieve(resource.toString(), "yes");
-						//res.getContentAsSAX(view.getSerializer());
-						//res.getContentAsSAX(transformer);
-						//view.setText(writer.toString());
-						view.setText((String) res.getContent());
+						final Resource res = client.retrieve(resource.toString(), "yes");
+						if(res.getResourceType().equals("XMLResource"))
+							view.setText((String) res.getContent());
+						else
+							view.setText(new String((byte[])res.getContent()));
 					} catch (IllegalArgumentException e1) {
 						e1.printStackTrace();
 					} catch (XMLDBException e1) {
