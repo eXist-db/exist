@@ -48,12 +48,18 @@ public class IndexTerms extends BasicFunction {
     public final static FunctionSignature signature = new FunctionSignature(
             new QName("index-terms", TextModule.NAMESPACE_URI, TextModule.PREFIX),
             "This function can be used to collect some information on the distribution " +
-            "of index terms within a set of collections. For each distinct collection in $a " +
-            "and every term in the collection that starts with substring $b, " +
-            "the function $c is called with three arguments: 1) the term as found in the index, " +
-            "2) the overall frequency of the term within the collection, 3) the number of documents " +
-            "the term occurs in. The function pointer to be passed in the third argument can be " +
-            "created with the util:function function. The functions should have an arity of 3.",
+            "of index terms within a set of nodes. The set of nodes is specified in the first " +
+            "argument $a. The function returns term frequencies for all terms in the index found " +
+            "in descendants of the nodes in $a. The second argument $b specifies " +
+            "a start string. Only terms starting with the specified character sequence are returned. " +
+            "$c is a function reference, which points to a callback function that will be called " +
+            "for every term occurrence. $d defines the maximum number of terms that should be " +
+            "reported. The function reference for $c can be created with the util:function " +
+            "function. It can be an arbitrary user-defined function, but it should take exactly 2 arguments: " +
+            "1) the current term as found in the index as xs:string, 2) a sequence containing three int " +
+            "values: a) the overall frequency of the term within the node set, b) the number of distinct " +
+            "documents in the node set the term occurs in, c) the current position of the term in the whole " +
+            "list of terms returned.",
             new SequenceType[]{
                     new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
                     new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
