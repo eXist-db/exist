@@ -83,7 +83,7 @@ public class XQueryContext {
 	private final static Logger LOG = Logger.getLogger(XQueryContext.class);
 
 	// Static namespace/prefix mappings
-	private Map namespaces;
+	private HashMap namespaces;
 	
 	// Local in-scope namespace/prefix mappings in the current context
 	private HashMap inScopeNamespaces = new HashMap();
@@ -820,16 +820,30 @@ public class XQueryContext {
 	/**
 	 * Push all in-scope namespace declarations onto the stack.
 	 */
-	public void pushNamespaceContext() {
+	public void pushInScopeNamespaces() {
 		HashMap m = (HashMap) inScopeNamespaces.clone();
 		namespaceStack.push(inScopeNamespaces);
 		inScopeNamespaces = m;
 	}
 
-	public void popNamespaceContext() {
+	public void popInScopeNamespaces() {
 		inScopeNamespaces = (HashMap) namespaceStack.pop();
 	}
 
+	public void pushNamespaceContext() {
+		HashMap m = (HashMap) namespaces.clone();
+		HashMap p = (HashMap) prefixes.clone();
+		namespaceStack.push(namespaces);
+		namespaceStack.push(prefixes);
+		namespaces = m;
+		prefixes = p;
+	}
+	
+	public void popNamespaceContext() {
+		prefixes = (HashMap) namespaceStack.pop();
+		namespaces = (HashMap) namespaceStack.pop();
+	}
+	
 	/**
 	 * Returns the last variable on the local variable stack.
 	 * The current variable context can be restored by passing

@@ -35,7 +35,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 public abstract class RemoteDBTest extends TestCase {
     protected final static String URI = "xmldb:exist://localhost:8081/exist/xmlrpc";
 
-    private final static String COLLECTION_NAME = "unit-testing-collection";
+    private final static String COLLECTION_NAME = "unit-testing-collection-Città";
 
     public final static String DB_DRIVER = "org.exist.xmldb.DatabaseImpl";
 

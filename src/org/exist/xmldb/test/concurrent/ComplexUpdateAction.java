@@ -82,11 +82,11 @@ public class ComplexUpdateAction extends Action {
 			
 			update(col, sessionUpdate);
 			// The following update will fail
-//			String versionUpdate =
-//				"<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
-//				"<xu:update select=\"//USER-SESSION-DATA[1]/@version\">" + (i + 1) +
-//				"</xu:update></xu:modifications>";
-//			update(col, versionUpdate);
+			String versionUpdate =
+				"<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
+				"<xu:update select=\"//USER-SESSION-DATA[1]/@version\">" + (i + 1) +
+				"</xu:update></xu:modifications>";
+			update(col, versionUpdate);
 			update(col, statusUpdate);
 		}
 		return false;

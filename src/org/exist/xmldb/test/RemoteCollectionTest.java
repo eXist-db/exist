@@ -115,7 +115,7 @@ public class RemoteCollectionTest extends RemoteDBTest {
 	    assertEquals(0, binaryNames.size());
 	        
 	}
-
+	
     /**
      * @param xmlnames
      * @param string
