@@ -25,9 +25,18 @@ declare namespace util="http://exist-db.org/xquery/util";
             
                 <builtin-functions>
                 {
-                    for $f in util:builtin-functions()
+                    for $mod in util:registered-modules()
+					let $functions := util:registered-functions($mod)
+					order by $mod descending
                     return
-                        util:describe-function($f)
+						<module namespace="{$mod}">
+							<description>{util:get-module-description($mod)}</description>
+						{
+							for $f in $functions 
+							return
+                        		util:describe-function($f)
+						}
+						</module>
                 }
                 </builtin-functions>
 
