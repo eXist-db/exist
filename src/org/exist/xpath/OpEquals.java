@@ -244,6 +244,7 @@ public class OpEquals extends BinaryOp {
 			String cmp = right.eval(docs, context, null).getStringValue();
 			if (getLeft().returnsType() == Constants.TYPE_NODELIST && relation == Constants.EQ &&
 				nodes.hasIndex() && cmp.length() > 0) {
+				cmp = cmp.replace('%', '*');
 				// try to use a fulltext search expression to reduce the number
 				// of potential nodes to scan through
 				SimpleTokenizer tokenizer = new SimpleTokenizer();
@@ -251,7 +252,6 @@ public class OpEquals extends BinaryOp {
 				TextToken token;
 				String term;
 				boolean foundNumeric = false;
-				cmp = cmp.replace('%', '*');
 				// setup up an &= expression using the fulltext index
 				containsExpr = new FunContains(pool, Constants.FULLTEXT_AND);
 				for (int i = 0; i < 5 && (token = tokenizer.nextToken(true)) != null; i++) {

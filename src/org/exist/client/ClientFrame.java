@@ -28,9 +28,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.TreeSet;
 
@@ -535,6 +537,8 @@ public class ClientFrame extends JFrame {
 
 	private void removeAction(ActionEvent ev) {
 		int[] rows = fileman.getSelectedRows();
+		List v = new ArrayList(rows.length);
+		String cmd;
 		if (JOptionPane
 			.showConfirmDialog(
 				this,
@@ -544,14 +548,17 @@ public class ClientFrame extends JFrame {
 			== JOptionPane.YES_OPTION) {
 			for (int i = 0; i < rows.length; i++) {
 				Object resource = (Object) resources.getValueAt(rows[i], 3);
-				String cmd;
 				if (resource instanceof InteractiveClient.CollectionName)
 					cmd = "rmcol " + resource;
 				else
 					cmd = "rm " + resource;
-				display(cmd + "\n");
-				process.setAction(cmd);
+				v.add(cmd);
 			}
+		}
+		for(int i = 0; i < v.size(); i++) {
+			cmd = (String)v.get(i);
+			display(cmd + "\n");
+			process.setAction(cmd);
 		}
 	}
 
