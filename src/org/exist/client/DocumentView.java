@@ -67,7 +67,7 @@ class DocumentView extends JFrame {
 	protected Properties properties;
 	public DocumentView(Collection collection, Resource resource,
 			Properties properties) throws XMLDBException {
-		super("View Document");
+		super("View Document: " + collection.getName() +'/'+ resource.getId() );
 		this.collection = collection;
 		this.resource = resource;
 		this.properties = properties;
