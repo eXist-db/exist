@@ -68,6 +68,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
+ * Implements the WebDAV PROPFIND method.
+ * 
  * @author wolf
  */
 public class Propfind implements WebDAVMethod {
@@ -106,6 +108,21 @@ public class Propfind implements WebDAVMethod {
 	private final static QName STATUS_PROP = new QName("status", WebDAV.DAV_NS, PREFIX);
 	private final static QName COLLECTION_PROP = new QName("collection", WebDAV.DAV_NS, PREFIX);
 	
+	private final static QName[] DEFAULT_COLLECTION_PROPS = {
+	        DISPLAY_NAME_PROP,
+	        RESOURCE_TYPE_PROP,
+	        CREATION_DATE_PROP,
+	        LAST_MODIFIED_PROP
+	};
+	
+	private final static QName[] DEFAULT_RESOURCE_PROPS = {
+	        DISPLAY_NAME_PROP,
+	        RESOURCE_TYPE_PROP,
+	        CREATION_DATE_PROP,
+	        LAST_MODIFIED_PROP,
+	        CONTENT_TYPE_PROP
+	};
+	
 	private DocumentBuilderFactory docFactory;
 	private BrokerPool pool;
 	
@@ -130,43 +147,39 @@ public class Propfind implements WebDAVMethod {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}
-		if(resource != null && (!resource.getPermissions().validate(user, Permission.READ))) {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN);
-			return;
-		}
 		Document doc = parseRequestContent(request, response);
-		if(doc == null)
-			return;
-		Element propfind = doc.getDocumentElement();
-		if(!(propfind.getLocalName().equals("propfind") && 
-				propfind.getNamespaceURI().equals(WebDAV.DAV_NS))) {
-			LOG.debug(UNEXPECTED_ELEMENT_ERR + propfind.getNodeName());
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-					UNEXPECTED_ELEMENT_ERR + propfind.getNodeName());
-			return;
-		}
-		
 		int type = FIND_ALL_PROPERTIES;
 		DAVProperties searchedProperties = new DAVProperties();
-		NodeList childNodes = propfind.getChildNodes();
-		for(int i = 0; i < childNodes.getLength(); i++) {
-			Node currentNode = childNodes.item(i);
-			if(currentNode.getNodeType() == Node.ELEMENT_NODE) {
-				if(currentNode.getNamespaceURI().equals(WebDAV.DAV_NS)) {
-					if(currentNode.getLocalName().equals("prop")) {
-						type = FIND_BY_PROPERTY;
-						getPropertyNames(currentNode, searchedProperties);
+		if(doc != null) {	
+			Element propfind = doc.getDocumentElement();
+			if(!(propfind.getLocalName().equals("propfind") && 
+					propfind.getNamespaceURI().equals(WebDAV.DAV_NS))) {
+				LOG.debug(UNEXPECTED_ELEMENT_ERR + propfind.getNodeName());
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+						UNEXPECTED_ELEMENT_ERR + propfind.getNodeName());
+				return;
+			}
+			
+			NodeList childNodes = propfind.getChildNodes();
+			for(int i = 0; i < childNodes.getLength(); i++) {
+				Node currentNode = childNodes.item(i);
+				if(currentNode.getNodeType() == Node.ELEMENT_NODE) {
+					if(currentNode.getNamespaceURI().equals(WebDAV.DAV_NS)) {
+						if(currentNode.getLocalName().equals("prop")) {
+							type = FIND_BY_PROPERTY;
+							getPropertyNames(currentNode, searchedProperties);
+						}
+						if(currentNode.getLocalName().equals("allprop"))
+							type = FIND_ALL_PROPERTIES;
+						if(currentNode.getLocalName().equals("propname"))
+							type = FIND_PROPERTY_NAMES;
+					} else {
+						// Found an unknown element: return with 400 Bad Request
+						LOG.debug("Unexpected child: " + currentNode.getNodeName());
+						response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+								UNEXPECTED_ELEMENT_ERR + currentNode.getNodeName());
+						return;
 					}
-					if(currentNode.getLocalName().equals("allprop"))
-						type = FIND_ALL_PROPERTIES;
-					if(currentNode.getLocalName().equals("propname"))
-						type = FIND_PROPERTY_NAMES;
-				} else {
-					// Found an unknown element: return with 400 Bad Request
-					LOG.debug("Unexpected child: " + currentNode.getNodeName());
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-							UNEXPECTED_ELEMENT_ERR + currentNode.getNodeName());
-					return;
 				}
 			}
 		}
@@ -188,7 +201,8 @@ public class Propfind implements WebDAVMethod {
 					writeResourceProperties(user, searchedProperties, type, resource, serializer, servletPath);
 				else
 					writeCollectionProperties(user, searchedProperties, type, collection, serializer, servletPath, depth, 0);
-			}
+			} else if(type == FIND_PROPERTY_NAMES)
+			    writePropertyNames(collection, resource, serializer, servletPath);
 			
 			serializer.endElement(WebDAV.DAV_NS, "multistatus", "D:multistatus");
 			serializer.endPrefixMapping(PREFIX);
@@ -240,6 +254,12 @@ public class Propfind implements WebDAVMethod {
 			writeSimpleElement(CREATION_DATE_PROP, creationDateFormat.format(new Date(created)), serializer);
 		}
 		
+		if(shouldIncludeProperty(type, searchedProperties, LAST_MODIFIED_PROP)) {
+		    // for collections, the last modification date is the same as the creation date
+			long created = collection.getCreationTime();
+			writeSimpleElement(LAST_MODIFIED_PROP, modificationDateFormat.format(new Date(created)), serializer);
+		}
+		
 		serializer.endElement(WebDAV.DAV_NS, "prop", "D:prop");
 		writeSimpleElement(STATUS_PROP, "HTTP/1.1 200 OK", serializer);
 		
@@ -265,7 +285,7 @@ public class Propfind implements WebDAVMethod {
 			if(collection.getDocumentCount() > 0) {
 				DBBroker broker = null;
 				try {
-					broker = pool.get();
+					broker = pool.get(user);
 					for(Iterator i = collection.iterator(broker); i.hasNext(); ) {
 						DocumentImpl doc = (DocumentImpl)i.next();
 						writeResourceProperties(user, searchedProperties, type, doc, serializer, servletPath);
@@ -278,18 +298,17 @@ public class Propfind implements WebDAVMethod {
 			if(collection.getChildCollectionCount() > 0) {
 				for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
 					String child = (String)i.next();
-					Collection childCollection = null;
 					DBBroker broker = null;
 					try {
-						broker = pool.get();
-						childCollection = broker.getCollection(collection.getName() + '/' + child);
+						broker = pool.get(user);
+						Collection childCollection = broker.getCollection(collection.getName() + '/' + child);
+						if(childCollection != null)
+							writeCollectionProperties(user, searchedProperties, type, childCollection, serializer,
+								servletPath, maxDepth, currentDepth);
 					} catch (Exception e) {
 					} finally {
 						pool.release(broker);
 					}
-					if(childCollection != null)
-						writeCollectionProperties(user, searchedProperties, type, childCollection, serializer,
-							servletPath, maxDepth, currentDepth);
 				}
 			}
 		}
@@ -333,6 +352,10 @@ public class Propfind implements WebDAVMethod {
 			writeSimpleElement(LAST_MODIFIED_PROP, modificationDateFormat.format(new Date(modified)), serializer);
 		}
 		
+		if(shouldIncludeProperty(type, searchedProperties, CONTENT_LENGTH_PROP)) {
+		    writeSimpleElement(CONTENT_LENGTH_PROP, "0", serializer);
+		}
+		
 		if(shouldIncludeProperty(type, searchedProperties, CONTENT_TYPE_PROP)) {
 			if(resource.getResourceType() == DocumentImpl.XML_FILE)
 				writeSimpleElement(CONTENT_TYPE_PROP, WebDAV.XML_CONTENT, serializer);
@@ -359,6 +382,30 @@ public class Propfind implements WebDAVMethod {
 				serializer.endElement(WebDAV.DAV_NS, "propstat", "D:propstat");
 			}
 		}
+		serializer.endElement(WebDAV.DAV_NS, "response", "D:response");
+	}
+	
+	private void writePropertyNames(Collection collection, DocumentImpl resource, SAXSerializer serializer,
+	        String servletPath)
+	throws SAXException {
+	    AttributesImpl attrs = new AttributesImpl();
+	    serializer.startElement(WebDAV.DAV_NS, "response", "D:response", attrs);
+		// write D:href
+		serializer.startElement(WebDAV.DAV_NS, "href", "D:href", attrs);
+		String href = servletPath + (resource != null ? resource.getFileName() : collection.getName());
+		serializer.characters(href);
+		serializer.endElement(WebDAV.DAV_NS, "href", "D:href");
+		
+		serializer.startElement(WebDAV.DAV_NS, "propstat", "D:propstat", attrs);
+		serializer.startElement(WebDAV.DAV_NS, "prop", "D:prop", attrs);
+		QName[] defaults = resource == null ? DEFAULT_COLLECTION_PROPS : DEFAULT_RESOURCE_PROPS;
+	    for(int i = 0; i < defaults.length; i++) {
+	        writeEmptyElement(defaults[i], serializer);
+	    }
+	    serializer.endElement(WebDAV.DAV_NS, "prop", "D:prop");
+		writeSimpleElement(STATUS_PROP, "HTTP/1.1 200 OK", serializer);
+		
+		serializer.endElement(WebDAV.DAV_NS, "propstat", "D:propstat");
 		serializer.endElement(WebDAV.DAV_NS, "response", "D:response");
 	}
 	
@@ -414,8 +461,12 @@ public class Propfind implements WebDAVMethod {
 	
 	private Document parseRequestContent(HttpServletRequest request, HttpServletResponse response) 
 	throws ServletException, IOException {
+	    if(request.getContentLength() == 0)
+	        return null;
 		try {
 			String content = getRequestContent(request);
+			if(content.length() == 0)
+			    return null;
 			LOG.debug("request:\n" + content);
 			
 			DocumentBuilder docBuilder =docFactory.newDocumentBuilder();

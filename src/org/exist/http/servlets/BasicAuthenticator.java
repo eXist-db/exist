@@ -77,6 +77,5 @@ public class BasicAuthenticator implements Authenticator {
 	 */
 	public void sendChallenge(HttpServletRequest request,
 			HttpServletResponse response) throws IOException {
-		// TODO Auto-generated method stub
 	}
 }

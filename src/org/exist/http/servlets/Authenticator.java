@@ -28,13 +28,30 @@ import javax.servlet.http.HttpServletResponse;
 import org.exist.security.User;
 
 /**
+ * Interface for HTTP authentication methods.
+ * 
  * @author wolf
  */
 public interface Authenticator {
 	
+    /**
+     * Try to authenticate the user specified in the HTTP request.
+     * 
+     * @param request
+     * @param response
+     * @return
+     * @throws IOException
+     */
 	public User authenticate(HttpServletRequest request, HttpServletResponse response)
 	throws IOException;
 	
+	/**
+	 * Send an WWW-Authenticate header back to client.
+	 * 
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
 	public void sendChallenge(HttpServletRequest request,
 			HttpServletResponse response) throws IOException;
 }
