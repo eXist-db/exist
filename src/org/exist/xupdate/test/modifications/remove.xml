@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xu:modifications version="1.0" xmlns:xu="http://www.xmldb.org/xupdate">
+
+    <!-- remove an address -->
+    <xu:remove select="//address[city |= 'washing*']"/>
+    
+</xu:modifications> 
