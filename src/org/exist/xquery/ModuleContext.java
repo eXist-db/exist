@@ -3,6 +3,7 @@ package org.exist.xquery;
 import java.util.Iterator;
 
 import org.exist.dom.DocumentSet;
+import org.exist.storage.DBBroker;
 
 
 /**
@@ -26,7 +27,7 @@ public class ModuleContext extends XQueryContext {
 		moduleLoadPath = parentContext.moduleLoadPath;
 		loadDefaults();
 	}
-
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.XQueryContext#getStaticallyKnownDocuments()
 	 */
@@ -64,4 +65,11 @@ public class ModuleContext extends XQueryContext {
 	public String getBaseURI() {
 		return parentContext.getBaseURI();
 	}
+    
+    /* (non-Javadoc)
+     * @see org.exist.xquery.XQueryContext#getBroker()
+     */
+    public DBBroker getBroker() {
+        return parentContext.getBroker();
+    }
 }

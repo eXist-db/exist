@@ -28,7 +28,10 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 
 import org.exist.dom.BinaryDocument;
+import org.exist.dom.DocumentImpl;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.util.Lock;
 
 /**
  * Source implementation that reads from a binary resource
@@ -67,8 +70,21 @@ public class DBSource extends AbstractSource {
     /* (non-Javadoc)
      * @see org.exist.source.Source#isValid()
      */
-    public int isValid() {
-        return UNKNOWN;
+    public int isValid(DBBroker broker) {
+        DocumentImpl doc = null;
+        try {
+            doc = broker.openDocument(key, Lock.READ_LOCK);
+            if (doc == null)
+                return INVALID;
+            if (doc.getLastModified() > lastModified)
+                return INVALID;
+            return VALID;
+        } catch (PermissionDeniedException e) {
+            return INVALID;
+        } finally {
+            if (doc != null)
+                doc.getUpdateLock().release(Lock.READ_LOCK);
+        }
     }
 
     /* (non-Javadoc)

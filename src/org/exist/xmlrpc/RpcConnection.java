@@ -249,7 +249,7 @@ public class RpcConnection extends Thread {
 		Source source = new StringSource(xpath);
 		XQuery xquery = broker.getXQueryService();
 		XQueryPool pool = xquery.getXQueryPool();
-		CompiledXQuery compiled = pool.borrowCompiledXQuery(source);
+		CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
 		XQueryContext context;
 		if(compiled == null)
 		    context = xquery.newContext();
@@ -305,7 +305,7 @@ public class RpcConnection extends Thread {
 			Source source = new StringSource(query);
 			XQuery xquery = broker.getXQueryService();
 			XQueryPool pool = xquery.getXQueryPool();
-			CompiledXQuery compiled = pool.borrowCompiledXQuery(source);
+			CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
 			if(compiled == null)
 			    compiled = compile(user, broker, query, parameters);
 			StringWriter writer = new StringWriter();

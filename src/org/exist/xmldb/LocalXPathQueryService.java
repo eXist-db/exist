@@ -158,7 +158,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 				XQuery xquery = broker.getXQueryService();
 				XQueryPool pool = xquery.getXQueryPool();
 				XQueryContext context;
-				CompiledXQuery compiled = pool.borrowCompiledXQuery(source);
+				CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
 				if(compiled == null)
 				    context = xquery.newContext();
 				else

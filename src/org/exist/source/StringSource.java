@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
+import org.exist.storage.DBBroker;
+
 
 /**
  * A simple source object wrapping around a single string value.
@@ -53,7 +55,7 @@ public class StringSource extends AbstractSource {
     /* (non-Javadoc)
      * @see org.exist.source.Source#isValid()
      */
-    public int isValid() {
+    public int isValid(DBBroker broker) {
         return Source.VALID;
     }
 

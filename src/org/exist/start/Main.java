@@ -274,7 +274,7 @@ public class Main {
                 _classname = "org.exist.client.InteractiveClient";
                 _mode = "client";
             } else if (args[0].equals("standalone")) {
-                _classname = "org.exist.Server";
+                _classname = "org.exist.StandaloneServer";
                 _mode = "standalone";
             } else if (args[0].equals("backup")) {
                 _classname = "org.exist.backup.Main";

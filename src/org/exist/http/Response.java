@@ -25,6 +25,8 @@ package org.exist.http;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import javax.servlet.http.HttpServletResponse;
+
 
 public class Response {
 	
@@ -33,7 +35,7 @@ public class Response {
 		"Server: eXist\n" +
 		"Cache-control: no-cache\n";
 	
-	private int code = HttpServerConnection.HTTP_OK;
+	private int code = HttpServletResponse.SC_OK;
 	private String statusDesc = null;
 	private String content = null;
 	private byte[] binaryContent = null;

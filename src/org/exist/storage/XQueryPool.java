@@ -30,6 +30,7 @@ import org.exist.source.Source;
 import org.exist.util.Configuration;
 import org.exist.util.hashtable.Object2ObjectHashMap;
 import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.XQueryContext;
 
 /**
  * Global pool for pre-compiled XQuery expressions. Expressions are
@@ -106,12 +107,12 @@ public class XQueryPool extends Object2ObjectHashMap {
         timeoutCheck();
     }
 
-    public synchronized CompiledXQuery borrowCompiledXQuery(Source source) {
+    public synchronized CompiledXQuery borrowCompiledXQuery(DBBroker broker, Source source) {
         int idx = getIndex(source);
         if (idx < 0)
             return null;
         Source key = (Source) keys[idx];
-        int validity = key.isValid();
+        int validity = key.isValid(broker);
         if (validity == Source.UNKNOWN)
             validity = key.isValid(source);
         if (validity == Source.INVALID || validity == Source.UNKNOWN) {
@@ -122,7 +123,11 @@ public class XQueryPool extends Object2ObjectHashMap {
         }
         Stack stack = (Stack) values[idx];
         if (stack != null && !stack.isEmpty()) {
+            // now check if the compiled expression is valid
+            // it might become invalid if an imported module has changed.
             CompiledXQuery query = (CompiledXQuery) stack.pop();
+            XQueryContext context = query.getContext();
+            context.setBroker(broker);
             if (!query.isValid()) {
                 // the compiled query is no longer valid: one of the imported
                 // modules may have changed

@@ -29,8 +29,11 @@ import java.net.URL;
 import java.net.URLConnection;
 
 import org.apache.log4j.Logger;
+import org.exist.storage.DBBroker;
 
 /**
+ * A source implementation reading from an URL.
+ * 
  * @author wolf
  */
 public class URLSource extends AbstractSource {
@@ -73,7 +76,7 @@ public class URLSource extends AbstractSource {
 	/* (non-Javadoc)
 	 * @see org.exist.source.Source#isValid()
 	 */
-	public int isValid() {
+	public int isValid(DBBroker broker) {
 		long modified = getLastModification();
 		if(modified == 0 && modified > lastModified)
 			return INVALID;

@@ -28,8 +28,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
+import org.exist.storage.DBBroker;
+
 
 /**
+ * A source implementation reading from the file system.
+ * 
  * @author wolf
  */
 public class FileSource extends AbstractSource {
@@ -56,7 +60,7 @@ public class FileSource extends AbstractSource {
     /* (non-Javadoc)
      * @see org.exist.source.Source#isValid()
      */
-    public int isValid() {
+    public int isValid(DBBroker broker) {
         File f = new File(filePath);
         if(f.lastModified() > lastModified)
             return INVALID;

@@ -25,10 +25,7 @@ package org.exist.http.servlets;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.Reader;
-import java.io.StringWriter;
 import java.security.Principal;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -69,15 +66,25 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class EXistServlet extends HttpServlet {
 
+	public final static String DEFAULT_ENCODING = "UTF-8";
+	
 	private BrokerPool pool = null;
 	private User defaultUser = null;
-	private RESTServer server = new RESTServer();
+	
+	private RESTServer server;
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
 	 */
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
+		String formEncoding = config.getInitParameter("form-encoding");
+		if(formEncoding == null)
+			formEncoding = DEFAULT_ENCODING;
+		String containerEncoding = config.getInitParameter("container-encoding");
+		if(containerEncoding == null)
+			containerEncoding = DEFAULT_ENCODING;
+		server = new RESTServer(formEncoding, containerEncoding);
 		try {
 			if (BrokerPool.isConfigured()) {
 				this.log("Database already started. Skipping configuration ...");
@@ -124,11 +131,7 @@ public class EXistServlet extends HttpServlet {
 			return;
 		}
 		
-		String path = request.getPathInfo();
-		int p = path.lastIndexOf(';');
-		if (p > -1)
-			path = path.substring(0, p);
-		
+		String path = adjustPath(request);
 		ServletInputStream is = request.getInputStream();
 		int len = request.getContentLength();
 		// put may send a lot of data, so save it
@@ -148,8 +151,7 @@ public class EXistServlet extends HttpServlet {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			Response r = server.doPut(broker, tempFile, request.getContentType(), path);
-			writeResponse(r, response);
+			server.doPut(broker, tempFile, path, request, response);
 		} catch (BadRequestException e) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 		} catch (PermissionDeniedException e) {
@@ -159,7 +161,20 @@ public class EXistServlet extends HttpServlet {
 		} finally {
 			pool.release(broker);
 		}
+        tempFile.delete();
 	}
+
+    /**
+     * @param request
+     * @return
+     */
+    private String adjustPath(HttpServletRequest request) {
+        String path = request.getPathInfo();
+        int p = path.lastIndexOf(';');
+        if (p > -1)
+			path = path.substring(0, p);
+        return path;
+    }
 	
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
@@ -173,17 +188,11 @@ public class EXistServlet extends HttpServlet {
 			return;
 		}
 
-		String path = request.getPathInfo();
-		int p = path.lastIndexOf(';');
-		if (p > -1)
-			path = path.substring(0, p);
-
+		String path = adjustPath(request);
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			Map parameters = getParameters(request);
-			Response r = server.doGet(broker, parameters, path);
-			writeResponse(r, response);
+			server.doGet(broker, request, response, path);
 		} catch (BadRequestException e) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e
 					.getMessage());
@@ -213,16 +222,11 @@ public class EXistServlet extends HttpServlet {
 			return;
 		}
 
-		String path = request.getPathInfo();
-		int p = path.lastIndexOf(';');
-		if (p > -1)
-			path = path.substring(0, p);
-
+		String path = adjustPath(request);
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			Response r = server.doDelete(broker, path);
-			writeResponse(r, response);
+			server.doDelete(broker, path, response);
 		} catch (PermissionDeniedException e) {
 			response
 			.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
@@ -253,28 +257,13 @@ public class EXistServlet extends HttpServlet {
 		if(path == null)
 			path = "";
 		else {
-			int p = path.lastIndexOf(';');
-			if (p > -1)
-				path = path.substring(0, p);
+            path = adjustPath(request);
 		}
-		
-		String encoding = request.getCharacterEncoding();
-		if(encoding == null)
-			encoding = "UTF-8";
-		ServletInputStream is = request.getInputStream();
-		Reader  reader = new InputStreamReader(is, encoding);
-		StringWriter content = new StringWriter();
-		char ch[] = new char[4096];
-		int len = 0;
-		while((len = reader.read(ch)) > -1)
-			content.write(ch, 0, len);
-		String xml = content.toString();
 		
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			Response r = server.doPost(broker, xml, path);
-			writeResponse(r, response);
+			server.doPost(broker, request, response, path);
 		} catch (PermissionDeniedException e) {
 			response
 			.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
@@ -287,7 +276,6 @@ public class EXistServlet extends HttpServlet {
 			pool.release(broker);
 		}
 	}
-	
 	
     /* (non-Javadoc)
      * @see javax.servlet.GenericServlet#destroy()

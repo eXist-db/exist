@@ -25,8 +25,14 @@ package org.exist.source;
 import java.io.IOException;
 import java.io.Reader;
 
+import org.exist.storage.DBBroker;
+
 
 /**
+ * A general interface for access to external or internal sources.
+ * This is mainly used as an abstraction for loading XQuery scripts
+ * and modules, but can also be applied to other use cases.
+ * 
  * @author wolf
  */
 public interface Source {
@@ -35,16 +41,61 @@ public interface Source {
     public final static int INVALID = -1;
     public final static int UNKNOWN = 0;
     
+    /**
+     * Returns a unique key to identify the source, usually
+     * an URI.
+     * 
+     * @return
+     */
     public Object getKey();
     
-    public int isValid();
+    /**
+     * Is this source object still valid?
+     * 
+     * Returns {@link #UNKNOWN} if the validity of
+     * the source cannot be determined.
+     * 
+     * The {@link DBBroker} parameter is required by
+     * some implementations as they have to read
+     * resources from the database.
+     * 
+     * @param broker
+     * @return
+     */
+    public int isValid(DBBroker broker);
     
+    /**
+     * Checks if the source object is still valid
+     * by comparing it to another version of the
+     * same source. It depends on the concrete
+     * implementation how the sources are compared.
+     * 
+     * Use this method if {@link #isValid(DBBroker)}
+     * return {@link #UNKNOWN}.
+     * 
+     * @param other
+     * @return
+     */
     public int isValid(Source other);
     
+    /**
+     * Returns a {@link Reader} to read the contents
+     * of the source.
+     * 
+     * @return
+     * @throws IOException
+     */
     public Reader getReader() throws IOException;
     
     public String getContent() throws IOException;
     
+    /**
+     * Set a timestamp for this source. This is used
+     * by {@link org.exist.storage.XQueryPool} to
+     * check if a source has timed out.
+     * 
+     * @param timestamp
+     */
     public void setCacheTimestamp(long timestamp);
     
     public long getCacheTimestamp();

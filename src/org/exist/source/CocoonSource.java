@@ -30,8 +30,11 @@ import java.io.Reader;
 
 import org.apache.excalibur.source.Source;
 import org.apache.excalibur.source.SourceValidity;
+import org.exist.storage.DBBroker;
 
 /**
+ * A source that wraps around a Cocoon source object.
+ * 
  * @author wolf
  */
 public class CocoonSource extends AbstractSource {
@@ -58,7 +61,7 @@ public class CocoonSource extends AbstractSource {
      * 
      * @see org.exist.source.Source#isValid()
      */
-    public int isValid() {
+    public int isValid(DBBroker broker) {
         int valid = validity.isValid();
         switch (valid) {
             case SourceValidity.UNKNOWN:

@@ -1539,6 +1539,8 @@ public class InteractiveClient {
 					upload.setCurrentSize(files[i].length());
 					try {
                         mimeType = MimeTable.getInstance().getContentTypeFor(files[i].getName());
+                        if (mimeType == null)
+                        	mimeType = MimeType.BINARY_TYPE;
                         resourceType = mimeType.getType() == MimeType.XML ? "XMLResource" : "BinaryResource";
                         document = current.createResource(
                                 files[i].getName(), resourceType);
