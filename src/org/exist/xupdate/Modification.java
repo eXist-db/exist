@@ -63,6 +63,7 @@ public abstract class Modification {
 		throws PermissionDeniedException, EXistException, XPathException {
 		try {
 			StaticContext context = new StaticContext(broker);
+			context.setStaticallyKnownDocuments(docs);
 			XPathLexer2 lexer = new XPathLexer2(new StringReader(selectStmt));
 			XPathParser2 parser = new XPathParser2(lexer);
 			XPathTreeParser2 treeParser = new XPathTreeParser2(context);

@@ -27,6 +27,9 @@ import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.Type;
 
 /**
+ * Abstract base class for the XQuery/XPath combining operators "union", "intersect"
+ * and "except".
+ * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public abstract class CombiningExpression extends AbstractExpression {

@@ -55,9 +55,6 @@ import antlr.collections.AST;
  * 
  * @author Wolfgang Meier
  * 
- * TODO:
- *   xupdate:processing-instruction
- *   xupdate:comment
  */
 public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 
@@ -454,6 +451,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	private List processQuery(String select) throws SAXException {
 		try {
 			StaticContext context = new StaticContext(broker);
+			context.setStaticallyKnownDocuments(documentSet);
 			Map.Entry entry;
 			for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {
 				entry = (Map.Entry) i.next();
