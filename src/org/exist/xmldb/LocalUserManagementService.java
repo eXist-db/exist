@@ -257,6 +257,8 @@ public class LocalUserManagementService implements UserManagementService {
 
 	public void chown(User u, String group) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
+		if (!manager.hasUser(u.getName()))
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Unknown user");
 		if (!manager.hasAdminPrivileges(user))
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
@@ -291,6 +293,8 @@ public class LocalUserManagementService implements UserManagementService {
 	public void chown(Resource res, User u, String group)
 		throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
+		if (!manager.hasUser(u.getName()))
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Unknown user");
 		if (!manager.hasAdminPrivileges(user))
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
