@@ -9,6 +9,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.apache.xml.serialize.*;
 import org.exist.dom.ElementImpl;
+import org.exist.dom.NodeImpl;
 
 /**
  *  Retrieve a document from the repository. To run this example enter:
@@ -77,8 +78,7 @@ public class APIGet {
         Element root = (Element)res.getContentAsDOM();
 		NodeList children = root.getElementsByTagName("PERSONAE");
 		for(int i = 0; i < children.getLength(); i++) {
-			Node child = children.item(i);
-			System.out.println(child);
+			ElementImpl child = (ElementImpl)children.item(i);
 			ElementImpl elem = new ElementImpl("PERSONA");
 			child.appendChild(elem);
 			System.out.println(child);
