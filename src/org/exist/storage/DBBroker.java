@@ -478,7 +478,7 @@ public abstract class DBBroker extends Observable {
 	    store(node, currentPath, true);
 	}
 	
-	public abstract void endElement(final NodeImpl node, NodePath currentPath);
+	public abstract void endElement(final NodeImpl node, NodePath currentPath, String content);
 	
 	/**
 	 * Store a document (descriptor) into the database
@@ -639,7 +639,7 @@ public abstract class DBBroker extends Observable {
 		throw new RuntimeException("not implemented");
 	}
 
-	public void removeNode(final NodeImpl node, NodePath currentPath) {
+	public void removeNode(final NodeImpl node, NodePath currentPath, String content) {
 		throw new RuntimeException("not implemented");
 	}
 

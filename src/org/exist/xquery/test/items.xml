@@ -32,12 +32,14 @@
         <name>Racing Ski</name>
         <price>400.50</price>
         <stock>10</stock>
+        <mixed><span>un</span><span>explained</span></mixed>
     </item>
 	<item>
 		<itemno>6</itemno>
 		<name>Black Horse</name>
 		<price>3000.50</price>
 		<stock>-5</stock>
+		<mixed><span>ex</span><span><span>tern</span><span>al</span></span></mixed>
 	</item>
 	<item>
 		<itemno>7</itemno>

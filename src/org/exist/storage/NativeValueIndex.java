@@ -40,11 +40,11 @@ import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.ElementImpl;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.TextImpl;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
@@ -88,8 +88,8 @@ public class NativeValueIndex {
         this.db = valuesDb;
     }
     
-    public void storeText(ValueIndexSpec spec, TextImpl node) {
-        AtomicValue atomic = convertToAtomic(spec, node.getData());
+    public void storeElement(int xpathType, ElementImpl node, String content) {
+        AtomicValue atomic = convertToAtomic(xpathType, content);
         if(atomic == null)
             return;		// skip
         LongLinkedList buf;
@@ -103,7 +103,7 @@ public class NativeValueIndex {
     }
     
     public void storeAttribute(ValueIndexSpec spec, AttrImpl node) {
-        AtomicValue atomic = convertToAtomic(spec, node.getValue());
+        AtomicValue atomic = convertToAtomic(spec.getType(), node.getValue());
         if(atomic == null)
             return;		// skip
         LongLinkedList buf;
@@ -394,6 +394,7 @@ public class NativeValueIndex {
     }
     
     public void remove() {
+		LOG.debug(pending.size() + " nodes to remove");
         if (pending.size() == 0) return;
         Lock lock = db.getLock();
         Map.Entry entry;
@@ -592,21 +593,21 @@ public class NativeValueIndex {
         return indexOp;
     }
     
-    private AtomicValue convertToAtomic(ValueIndexSpec spec, String value) {
+    private AtomicValue convertToAtomic(int xpathType, String value) {
         final StringValue str = new StringValue(value);
         AtomicValue atomic = null;
-        if(Type.subTypeOf(spec.getType(), Type.STRING))
+        if(Type.subTypeOf(xpathType, Type.STRING))
             atomic = str;
         else {
             try {
-                atomic = str.convertTo(spec.getType());
+                atomic = str.convertTo(xpathType);
             } catch (XPathException e) {
                 LOG.warn("Node value: '" + value + "' cannot be converted to type " + 
-                        Type.getTypeName(spec.getType()));
+                        Type.getTypeName(xpathType));
             }
         }
         if(!(atomic instanceof Indexable)) {
-            LOG.warn("The specified type: " + Type.getTypeName(spec.getType()) +
+            LOG.warn("The specified type: " + Type.getTypeName(xpathType) +
                     " cannot be used as index key. It does not implement interface Indexable.");
             atomic = null;
         }
@@ -654,7 +655,8 @@ public class NativeValueIndex {
                 	NodeProxy current, parent;
                 	for (int j = 0; j < len; j++) {
                 		gid = gid + is.readLong();
-                		current = new NodeProxy(doc, gid, Node.TEXT_NODE);
+						
+                		current = new NodeProxy(doc, gid);
 						
                 		// if a context set is specified, we can directly check if the
                 		// matching text node is a descendant of one of the nodes

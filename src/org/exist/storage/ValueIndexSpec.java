@@ -63,6 +63,8 @@ public class ValueIndexSpec {
     // been fulltext indexed
     public final static int TEXT = 0x80;
     
+	public final static int RANGE_INDEX_MASK = 0x3F;
+	
     // Maps the type constants above to the corresponding
     // XPath atomic types
     private final static int[] xpathTypes = {
@@ -92,7 +94,7 @@ public class ValueIndexSpec {
      * @return
      */
     public final static int indexTypeToXPath(int type) {
-        return xpathTypes[type & 0x3F];
+        return xpathTypes[type & RANGE_INDEX_MASK];
     }
     
     /**
@@ -128,6 +130,10 @@ public class ValueIndexSpec {
         return indexTypes[type];
     }
     
+	public final static boolean hasRangeIndex(int type) {
+		return (type & RANGE_INDEX_MASK) > 0;
+	}
+	
     private NodePath path;
     private int type;
     

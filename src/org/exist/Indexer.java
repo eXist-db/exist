@@ -43,6 +43,7 @@ import org.exist.dom.QName;
 import org.exist.dom.TextImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
+import org.exist.storage.ValueIndexSpec;
 import org.exist.util.Configuration;
 import org.exist.util.FastStringBuffer;
 import org.exist.util.ProgressIndicator;
@@ -65,9 +66,7 @@ import org.xml.sax.ext.LexicalHandler;
  * @author wolf
  *
  */
-public class Indexer
-	extends Observable
-	implements ContentHandler, LexicalHandler, ErrorHandler {
+public class Indexer extends Observable implements ContentHandler, LexicalHandler, ErrorHandler {
 
 	private final static Logger LOG =
 		Logger.getLogger(Indexer.class);
@@ -87,7 +86,10 @@ public class Indexer
 	protected int normalize = XMLString.SUPPRESS_BOTH;
 	protected Map nsMappings = new HashMap();
 	protected Element rootNode;
+	
 	protected Stack stack = new Stack();
+	protected Stack nodeContentStack = new Stack();
+	
 	protected boolean privileged = false;
 	protected String ignorePrefix = null;
 	protected ProgressIndicator progress;
@@ -212,7 +214,7 @@ public class Indexer
 					text.setOwnerDocument(document);
 					last.appendChildInternal(text);
 					if (!validate)
-						broker.store(text, currentPath);
+						storeText();
 				}
 				charBuf.reset();
 			}
@@ -251,15 +253,20 @@ public class Indexer
 					text.setOwnerDocument(document);
 					last.appendChildInternal(text);
 					if (!validate)
-						broker.store(text, currentPath);
+						storeText();
 					text.clear();
 				}
 				charBuf.reset();
 			}
 			stack.pop();
 			
+			XMLString elemContent = null;
+			if (ValueIndexSpec.hasRangeIndex(last.getIndexType())) {
+				elemContent = (XMLString) nodeContentStack.pop();
+			}
+			
 			if (!validate)
-			    broker.endElement(last, currentPath);
+			    broker.endElement(last, currentPath, elemContent == null ? null : elemContent.toString());
 			
 			currentPath.removeLastComponent();
 			if (validate) {
@@ -327,7 +334,7 @@ public class Indexer
 					text.setOwnerDocument(document);
 					last.appendChildInternal(text);
 					if (!validate)
-						broker.store(text, currentPath);
+						storeText();
 					text.clear();
 				}
 				charBuf.reset();
@@ -427,12 +434,12 @@ public class Indexer
 				if(charBuf.isWhitespaceOnly()) {
 					if (suppressWSmixed) {
 						if(charBuf.length() > 0 && last.getChildCount() > 0) {
-						text.setData(charBuf);
-						text.setOwnerDocument(document);
-						last.appendChildInternal(text);
-						if (!validate)
-							broker.store(text, currentPath);
-						text.clear();
+							text.setData(charBuf);
+							text.setOwnerDocument(document);
+							last.appendChildInternal(text);
+							if (!validate)
+								storeText();
+							text.clear();
 					   }
 					}
 					
@@ -443,7 +450,7 @@ public class Indexer
 					text.setOwnerDocument(document);
 					last.appendChildInternal(text);
 					if (!validate)
-						broker.store(text, currentPath);
+						storeText();
 					text.clear();
 				}
 				charBuf.reset();
@@ -466,7 +473,7 @@ public class Indexer
 			currentPath.addComponent(qn);
 //			currentPath.append('/').append(qname);
 			if (!validate) {
-				broker.store(node, currentPath);
+				storeElement(node);
 			}
 		} else {
 			if (validate)
@@ -485,7 +492,7 @@ public class Indexer
 			currentPath.addComponent(qn);
 //			currentPath.append('/').append(qname);
 			if (!validate) {
-				broker.store(node, currentPath);
+				storeElement(node);
 			}
 			document.appendChild(node);
 		}
@@ -531,6 +538,24 @@ public class Indexer
 					notifyObservers(progress);
 				}
 			}
+		}
+	}
+
+	private void storeText() {
+		if (!nodeContentStack.isEmpty()) {
+			for (int i = 0; i < nodeContentStack.size(); i++) {
+				XMLString next = (XMLString) nodeContentStack.get(i);
+				next.append(charBuf);
+			}
+		}
+		broker.store(text, currentPath);
+	}
+
+	private void storeElement(ElementImpl node) {
+		broker.store(node, currentPath);
+		if (ValueIndexSpec.hasRangeIndex(node.getIndexType())) {
+			XMLString contentBuf = new XMLString();
+			nodeContentStack.push(contentBuf);
 		}
 	}
 
