@@ -23,13 +23,10 @@ package org.exist.storage.serializers;
 
 import java.io.StringReader;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
@@ -43,6 +40,7 @@ import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
@@ -242,10 +240,10 @@ public class XIncludeFilter implements Receiver {
 					if(Type.subTypeOf(seq.getItemType(), Type.NODE)) {
 						LOG.info("xpointer found: " + seq.getLength());
 						
-						NodeProxy proxy;
+						NodeValue node;
 						for (SequenceIterator i = seq.iterate(); i.hasNext();) {
-							proxy = (NodeProxy) i.nextItem();
-							serializer.serializeToReceiver(proxy, false);
+							node = (NodeValue) i.nextItem();
+							serializer.serializeToReceiver(node, false);
 						}
 					} else {
 						String val;
