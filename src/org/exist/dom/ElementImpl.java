@@ -65,7 +65,7 @@ public class ElementImpl extends NodeImpl implements Element {
 
 	protected int children = 0;
 	protected long firstChild = -1;
-	protected boolean loaded = false;
+	//protected boolean loaded = false;
 	protected ArrayList prefixes = null;
 
 	/**  Constructor for the ElementImpl object */
@@ -89,7 +89,6 @@ public class ElementImpl extends NodeImpl implements Element {
 	 */
 	public ElementImpl(String nodeName) {
 		super(Node.ELEMENT_NODE, nodeName);
-		loaded = true;
 	}
 
 	/**
@@ -100,7 +99,6 @@ public class ElementImpl extends NodeImpl implements Element {
 	 */
 	public ElementImpl(long gid, String nodeName) {
 		super(Node.ELEMENT_NODE, nodeName, gid);
-		loaded = true;
 	}
 
 	/**
@@ -112,7 +110,6 @@ public class ElementImpl extends NodeImpl implements Element {
 		super.clear();
 		firstChild = -1;
 		gid = 0;
-		loaded = false;
 		children = 0;
 		if (prefixes != null)
 			prefixes = null;
@@ -602,9 +599,6 @@ public class ElementImpl extends NodeImpl implements Element {
 	 * @see org.w3c.dom.Node#getNodeName()
 	 */
 	public String getNodeName() {
-		if (!loaded)
-			loaded = ownerDocument.broker.elementWith(this);
-
 		return nodeName;
 	}
 
@@ -637,9 +631,6 @@ public class ElementImpl extends NodeImpl implements Element {
 	 * @see org.w3c.dom.Element#getTagName()
 	 */
 	public String getTagName() {
-		if (!loaded)
-			loaded = ownerDocument.broker.elementWith(this);
-
 		return nodeName;
 	}
 
@@ -820,7 +811,6 @@ public class ElementImpl extends NodeImpl implements Element {
 	 *@param  name  The new nodeName value
 	 */
 	public void setNodeName(String name) {
-		loaded = true;
 		nodeName = name;
 	}
 
@@ -857,9 +847,6 @@ public class ElementImpl extends NodeImpl implements Element {
 		boolean first,
 		ArrayList prefixes)
 		throws SAXException {
-		if (!loaded)
-			loaded = ownerDocument.broker.elementWith(this);
-
 		NodeList childNodes = getChildNodes();
 		NodeImpl child = null;
 		DBBroker broker = ownerDocument.getBroker();
@@ -954,9 +941,6 @@ public class ElementImpl extends NodeImpl implements Element {
 	 * @return String
 	 */
 	public String toString(boolean top, ArrayList prefixes) {
-		if (!loaded)
-			loaded = ownerDocument.broker.elementWith(this);
-
 		DBBroker broker = ownerDocument.getBroker();
 		StringBuffer buf = new StringBuffer();
 		StringBuffer attributes = new StringBuffer();

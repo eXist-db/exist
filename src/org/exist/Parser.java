@@ -715,6 +715,15 @@ public class Parser
 				collection.removeDocument(document.getFileName());
 			throw e;
 		}
+		document.setMaxDepth(document.getMaxDepth() + 1);
+		try {
+			document.calculateTreeLevelStartPoints();
+		} catch (EXistException e1) {
+			throw new SAXException(
+				"the nesting-level of your document is too high. It "
+					+ "does not fit into the indexing-scheme. Please split the document into "
+					+ "several parts and try to reduce the nesting-level.");
+		}
 		// new document is valid: remove old document 
 		if (oldDoc != null) {
 			LOG.debug("removing old document " + oldDoc.getFileName());
