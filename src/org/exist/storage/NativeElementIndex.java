@@ -33,6 +33,7 @@ import org.dbxml.core.DBException;
 import org.dbxml.core.data.Value;
 import org.dbxml.core.filer.BTreeException;
 import org.dbxml.core.indexer.IndexQuery;
+import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -109,7 +110,7 @@ public class NativeElementIndex extends ElementIndex {
      */
     public NodeSet findElementsByTagName(byte type, DocumentSet docs,
             QName qname, NodeSelector selector) {
-//        		final long start = System.currentTimeMillis();
+//    	final long start = System.currentTimeMillis();
         final ExtArrayNodeSet result = new ExtArrayNodeSet(docs.getLength(),
                 256);
         final SymbolTable symbols = broker.getSymbols();
@@ -126,6 +127,8 @@ public class NativeElementIndex extends ElementIndex {
         final short nodeType = (type == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE
                 : Node.ELEMENT_NODE);
         final Lock lock = dbElement.getLock();
+//        StringBuffer debug = new StringBuffer();
+//        debug.append(qname.toString()).append(": ");
         for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
             collection = (Collection) i.next();
             collectionId = collection.getId();
@@ -137,71 +140,63 @@ public class NativeElementIndex extends ElementIndex {
                 nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
                 ref = new ElementValue((byte) type, collectionId, sym, nsSym);
             }
-            boolean exceptionOcurred = false;
             try {
-                lock.acquire(Lock.READ_LOCK);
-                is = dbElement.getAsStream(ref);
+            	lock.acquire(Lock.READ_LOCK);
+            	is = dbElement.getAsStream(ref);
+            	
+            	if (is == null) continue;
+            	while (is.available() > 0) {
+            		docId = is.readInt();
+            		len = is.readInt();
+            		if ((doc = docs.getDoc(docId)) == null) {
+            			is.skip(len * 4);
+            			continue;
+            		}
+            		gid = 0;
+            		for (int k = 0; k < len; k++) {
+            			gid = gid + is.readLong();
+            			if(selector == null)
+            				p = new NodeProxy(doc, gid, nodeType, StorageAddress.read(is));
+            			else {
+            				p = selector.match(doc, gid);
+            				if(p != null) {
+            					p.setInternalAddress(StorageAddress.read(is));
+            					p.setNodeType(nodeType);
+            				} else
+            					is.skip(3);
+            			}
+            			if(p != null) {
+//            				debug.append(StorageAddress.toString(p.getInternalAddress())).append(':');
+//            				debug.append(gid).append(' ');
+            				result.add(p, len);
+            			}
+            		}
+            	}
+            } catch (EOFException e) {
+            	//EOFExceptions are expected here
             } catch (LockException e) {
                 LOG.warn(
                         "findElementsByTagName(byte, DocumentSet, QName, NodeSelector) - "
                                 + "failed to acquire lock", e);
-                // jmv: dis = null;
-                exceptionOcurred = true;
             } catch (IOException e) {
                 LOG.warn(
                         "findElementsByTagName(byte, DocumentSet, QName, NodeSelector) - "
                                 + "io exception while reading elements for "
                                 + qname, e);
-                // jmv: dis = null;
-                exceptionOcurred = true;
             } finally {
                 lock.release();
             }
-            // jmv: if (dis == null)
-            // wolf: dis == null if no matching element has been found in the
-            // index
-            if (is == null || exceptionOcurred) continue;
-            try {
-                while (is.available() > 0) {
-                    docId = is.readInt();
-                    len = is.readInt();
-                    if ((doc = docs.getDoc(docId)) == null) {
-                        is.skip(len * 4);
-                        continue;
-                    }
-                    gid = 0;
-                    for (int k = 0; k < len; k++) {
-                        gid = gid + is.readLong();
-                        if(selector == null)
-                            p = new NodeProxy(doc, gid, nodeType, StorageAddress.read(is));
-                        else {
-                            p = selector.match(doc, gid);
-                            if(p != null) {
-                                p.setInternalAddress(StorageAddress.read(is));
-                                p.setNodeType(nodeType);
-                            } else
-                                is.skip(3);
-                        }
-                        if(p != null)
-                            result.add(p, len);
-                    }
-                }
-            } catch (EOFException e) {
-            } catch (IOException e) {
-                LOG.warn(
-                        "findElementsByTagName(byte, DocumentSet, QName, NodeSelector) - "
-                                + "unexpected io error", e);
-            }
         }
+//        LOG.debug(debug.toString());
         //		result.sort();
-//        				LOG.debug(
-//        					"found "
-//        						+ qname
-//        						+ ": "
-//        						+ result.getLength()
-//        						+ " in "
-//        						+ (System.currentTimeMillis() - start)
-//        						+ "ms.");
+//        LOG.debug(
+//        		"found "
+//        		+ qname
+//				+ ": "
+//				+ result.getLength()
+//				+ " in "
+//				+ (System.currentTimeMillis() - start)
+//				+ "ms.");
         return result;
     }
 
@@ -299,6 +294,94 @@ public class NativeElementIndex extends ElementIndex {
         }
     }
 
+    public void consistencyCheck(DocumentImpl doc) throws EXistException {
+    	short collectionId = doc.getCollection().getId();
+        Value ref = new ElementValue(collectionId);
+        IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+        Lock lock = dbElement.getLock();
+        try {
+            lock.acquire(Lock.WRITE_LOCK);
+            ArrayList elements = dbElement.findKeys(query);
+            
+            Value key;
+            Value value;
+            byte[] data;
+            // byte[] ndata;
+            VariableByteArrayInput is;
+            int len;
+            int docId;
+            long delta;
+            long address;
+            long gid;
+            long last = 0;
+            Node node;
+            short symbol;
+            String nodeName;
+            StringBuffer msg = new StringBuffer();
+            for (int i = 0; i < elements.size(); i++) {
+                key = (Value) elements.get(i);
+                value = dbElement.get(key);
+                data = value.getData();
+                symbol = ByteConversion.byteToShort(key.data(), key.start() + 3);
+                nodeName = broker.getSymbols().getName(symbol);
+                msg.setLength(0);
+                msg.append("Checking ").append(nodeName).append(": ");
+                
+                is = new VariableByteArrayInput(data);
+                try {
+                    while (is.available() > 0) {
+                        docId = is.readInt();
+                        len = is.readInt();
+                        if (docId == doc.getDocId()) {
+                            for (int j = 0; j < len; j++) {
+                                delta = is.readLong();
+                                gid = last + delta;
+                                last = gid;
+                                address = StorageAddress.read(is);
+                                node = broker.objectWith(new NodeProxy(doc, gid, address));
+                                if(node == null) {
+                                	throw new EXistException("Node " + gid + " in document " + doc.getFileName() + " not found.");
+                                }
+                                if(node.getNodeType() != Node.ELEMENT_NODE && node.getNodeType() != Node.ATTRIBUTE_NODE) {
+                                	LOG.warn("Node " + gid + " in document " + 
+                                			doc.getFileName() + " is not an element or attribute node.");
+                                	LOG.debug("Type = " + node.getNodeType() + "; name = " + node.getNodeName() +
+                                			"; value = " + node.getNodeValue());
+                                	throw new EXistException("Node " + gid + " in document " + 
+                                			doc.getFileName() + " is not an element or attribute node.");
+                                }
+                                if(!node.getLocalName().equals(nodeName)) {
+                                	LOG.warn("Node name does not correspond to index entry. Expected " + nodeName +
+                                			"; found " + node.getLocalName());
+                                }
+                                msg.append(StorageAddress.toString(address)).append(' ');
+                            }
+                        } else
+                        	is.skip(len * 4);
+                    }
+                } catch (EOFException e) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("removeDocument(String) - eof", e);
+                    }
+                } catch (IOException e) {
+                    LOG.warn("removeDocument(String) " + e.getMessage(), e);
+                }
+                LOG.debug(msg.toString());
+            }
+        } catch (LockException e) {
+            LOG.warn("removeDocument(String) - "
+                    + "could not acquire lock on elements", e);
+        } catch (TerminatedException e) {
+            LOG.warn("method terminated", e);
+        } catch (BTreeException e) {
+            LOG.warn(e.getMessage(), e);
+        } catch (IOException e) {
+            LOG.warn(e.getMessage(), e);
+        } finally {
+            lock.release();
+        }
+    }
+    
     public void dropIndex(DocumentImpl doc) throws ReadOnlyException {
         //	  drop element-index
         short collectionId = doc.getCollection().getId();

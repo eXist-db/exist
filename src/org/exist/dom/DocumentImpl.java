@@ -442,6 +442,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return fileName;
 	}
 
+	public String getName() {
+		return collection.getName() + '/' + fileName;
+	}
+	
 	private void checkAvail() {
 		if (!complete)
 			broker.readDocumentMetadata(this);
