@@ -57,6 +57,8 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
+import org.exist.util.MimeTable;
+import org.exist.util.MimeType;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SAXSerializerPool;
 import org.exist.xquery.CompiledXQuery;
@@ -479,10 +481,20 @@ public class RESTServer {
                     broker.saveCollection(collection);
                 }
                 String url = tempFile.toURI().toASCIIString();
-                if (contentType == null
-                        || contentType.equalsIgnoreCase("text/xml")) {
+                MimeType mime;
+                if (contentType != null)
+                    mime = MimeTable.getInstance().getContentType(contentType);
+                else {
+                    mime = MimeTable.getInstance().getContentTypeFor(docPath);
+                    if (mime != null)
+                        contentType = mime.getName();
+                }
+                if (mime == null)
+                    mime = MimeType.BINARY_TYPE;
+                
+                if (mime.isXMLType()) {
                     DocumentImpl doc = collection.addDocument(broker, docPath,
-                            new InputSource(url));
+                            new InputSource(url), contentType);
                     response = new Response();
                     response.setDescription("Document " + docPath + " stored.");
                 } else {

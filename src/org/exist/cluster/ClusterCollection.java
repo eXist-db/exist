@@ -1,18 +1,26 @@
 //$Id$
 package org.exist.cluster;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Observer;
+
 import org.exist.EXistException;
 import org.exist.Indexer;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
-import org.exist.start.*;
 import org.exist.storage.DBBroker;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
@@ -23,11 +31,6 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-
-import java.io.*;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Observer;
 
 
 /**
@@ -327,42 +330,42 @@ public final class ClusterCollection extends Collection {
         collection.store(broker, info, node, privileged);
     }
 
-    public DocumentImpl addDocument(DBBroker broker, String name, String data)
+    public DocumentImpl addDocument(DBBroker broker, String name, String data, String mimeType)
             throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException {
-        return collection.addDocument(broker, name, data);
+        return collection.addDocument(broker, name, data, mimeType);
     }
 
-    public DocumentImpl addDocument(DBBroker broker, String name, String data,
+    public DocumentImpl addDocument(DBBroker broker, String name, String data, String mimeType,
                                     boolean privileged) throws EXistException,
             PermissionDeniedException, TriggerException, SAXException,
             LockException {
-        return collection.addDocument(broker, name, data, privileged);
+        return collection.addDocument(broker, name, data, mimeType, privileged);
     }
 
     public DocumentImpl addDocument(DBBroker broker, String name,
-                                    InputSource source) throws EXistException, LockException,
+                                    InputSource source, String mimeType) throws EXistException, LockException,
             PermissionDeniedException, TriggerException, SAXException {
-        return collection.addDocument(broker, name, source);
+        return collection.addDocument(broker, name, source, mimeType);
     }
 
     public DocumentImpl addDocument(DBBroker broker, String name,
-                                    InputSource source, boolean privileged) throws EXistException,
+                                    InputSource source, String mimeType, boolean privileged) throws EXistException,
             PermissionDeniedException, SAXException, TriggerException,
             LockException {
-        return collection.addDocument(broker, name, source, privileged);
+        return collection.addDocument(broker, name, source, mimeType, privileged);
     }
 
-    public DocumentImpl addDocument(DBBroker broker, String name, Node node)
+    public DocumentImpl addDocument(DBBroker broker, String name, Node node, String mimeType)
             throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException {
-        return collection.addDocument(broker, name, node);
+        return collection.addDocument(broker, name, node, mimeType);
     }
 
-    public DocumentImpl addDocument(DBBroker broker, String name, Node node,
+    public DocumentImpl addDocument(DBBroker broker, String name, Node node, String mimeType,
                                     boolean privileged) throws EXistException, LockException,
             PermissionDeniedException, TriggerException, SAXException {
-        return collection.addDocument(broker, name, node, privileged);
+        return collection.addDocument(broker, name, node, mimeType, privileged);
     }
 
 

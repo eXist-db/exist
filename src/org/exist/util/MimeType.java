@@ -27,6 +27,9 @@ public class MimeType {
     public final static int XML = 0;
     public final static int BINARY = 1;
     
+    public final static MimeType BINARY_TYPE =
+        new MimeType("application/octet-stream", BINARY);
+    
     private String name;
     private String description;
     private int type = MimeType.XML;
@@ -49,7 +52,11 @@ public class MimeType {
     }
     
     public String getXMLDBType() {
-        return type == XML ? "XMLResource" : "BinaryResource";
+        return isXMLType() ? "XMLResource" : "BinaryResource";
+    }
+    
+    public boolean isXMLType() {
+        return type == XML;
     }
     
     public String toString() {

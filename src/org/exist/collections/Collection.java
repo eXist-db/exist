@@ -1028,13 +1028,13 @@ implements Comparable, EntityResolver, Cacheable {
 		return;
 	}
 	
-	public DocumentImpl addDocument(DBBroker broker, String name, String data)
+	public DocumentImpl addDocument(DBBroker broker, String name, String data, String mimeType)
 			throws EXistException, PermissionDeniedException, TriggerException,
 			SAXException, LockException {
-		return addDocument(broker, name, data, false);
+		return addDocument(broker, name, data, mimeType, false);
 	}
 
-	public DocumentImpl addDocument(DBBroker broker, String name, String data,
+	public DocumentImpl addDocument(DBBroker broker, String name, String data, String mimeType,
 			boolean privileged) throws EXistException,
 			PermissionDeniedException, TriggerException, SAXException,
 			LockException {
@@ -1070,6 +1070,7 @@ implements Comparable, EntityResolver, Cacheable {
 				throw new EXistException(e);
 			}
 
+            document.setMimeType(mimeType);
 			if(oldDoc == null) {
 				addDocument(broker, document);
 				broker.addDocument(this, document);
@@ -1289,13 +1290,13 @@ implements Comparable, EntityResolver, Cacheable {
 	}
 	
 	public DocumentImpl addDocument(DBBroker broker, String name,
-			InputSource source) throws EXistException, LockException,
+			InputSource source, String mimeType) throws EXistException, LockException,
 			PermissionDeniedException, TriggerException, SAXException {
-		return addDocument(broker, name, source, false);
+		return addDocument(broker, name, source, mimeType, false);
 	}
 
 	public DocumentImpl addDocument(DBBroker broker, String name,
-			InputSource source, boolean privileged) throws EXistException,
+			InputSource source, String mimeType, boolean privileged) throws EXistException,
 			PermissionDeniedException, SAXException, TriggerException,
 			LockException {
 		if (broker.isReadOnly())
@@ -1338,6 +1339,7 @@ implements Comparable, EntityResolver, Cacheable {
 				throw new EXistException(e);
 			}
 
+            document.setMimeType(mimeType);
 			if(oldDoc == null) {
 				addDocument(broker, document);
 				broker.addDocument(this, document);
@@ -1362,13 +1364,13 @@ implements Comparable, EntityResolver, Cacheable {
 		return document;
 	}
 
-	public DocumentImpl addDocument(DBBroker broker, String name, Node node)
+	public DocumentImpl addDocument(DBBroker broker, String name, Node node, String mimeType)
 			throws EXistException, PermissionDeniedException, TriggerException,
 			SAXException, LockException {
-		return addDocument(broker, name, node, false);
+		return addDocument(broker, name, node, mimeType, false);
 	}
 
-	public DocumentImpl addDocument(DBBroker broker, String name, Node node,
+	public DocumentImpl addDocument(DBBroker broker, String name, Node node, String mimeType,
 			boolean privileged) throws EXistException, LockException,
 			PermissionDeniedException, TriggerException, SAXException {
 		Indexer indexer = new Indexer(broker);
@@ -1450,6 +1452,7 @@ implements Comparable, EntityResolver, Cacheable {
 		        LOG.debug("storing document " + document.getFileName());
 			streamer.serialize(node, true);
 	
+            document.setMimeType(mimeType);
 			if(oldDoc == null) {
 				addDocument(broker, document);
 				broker.addDocument(this, document);
