@@ -49,6 +49,7 @@
             	<include name="thirdparty/"/>
             	<exclude name="**/CVS/"/>
             	<exclude name="**/*~"/>
+            	<exclude name="**/*.log"/>
             	<exclude name="samples/xupdate/**"/>
             </fileset>
             <fileset targetdir="$INSTALL_PATH/webapp" dir="webapp">
@@ -59,6 +60,7 @@
 				<exclude name="**/CVS/"/>
 				<exclude name="**/*~"/>
             </fileset>
+            <file src="installer/index.html" targetdir="$INSTALL_PATH"/>
             <fileset targetdir="$INSTALL_PATH/bin" dir="installer">
             	<include name="*.sh"/>
             	<include name="*.bat"/>
@@ -71,6 +73,7 @@
 			<parsable targetfile="$INSTALL_PATH/bin/client.bat"/>
 			<parsable targetfile="$INSTALL_PATH/bin/startup.bat"/>
 			<parsable targetfile="$INSTALL_PATH/bin/server.bat"/>
+			<parsable targetfile="$INSTALL_PATH/bin/launch_client.bat/>
 			<executable targetfile="$INSTALL_PATH/bin/backup.sh"
 				stage="never" os="unix"/>
 			<executable targetfile="$INSTALL_PATH/bin/client.sh"

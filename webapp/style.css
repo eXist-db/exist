@@ -64,13 +64,12 @@ body {
           }
 
           a, a:visited: {
-            color: #203cd8;
+            color: #2030dd;
             text-decoration: none;
           }
           
           a:hover, a:active {
-            color: black;
-            background-color: #66DDFF;
+            background-color: #66EEFF;
             text-decoration: none;
           }
           

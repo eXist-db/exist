@@ -23,10 +23,9 @@
             </definitionlist>
         </section>
         <section id="overview" title="Overview">
-            <p>eXist is an Open Source native XML database featuring pluggable
-                storage backends, efficient, index-based XPath query processing,
-                extensions for keyword search and tight integration with
-                existing XML development tools. The database is lightweight,
+            <p>eXist is an Open Source native XML database featuring efficient, 
+            	index-based XPath query processing, extensions for keyword search 
+            	and tight integration with existing XML development tools. The database is lightweight,
                 completely written in Java and may be easily deployed in a
                 number of ways, running either as a stand-alone server process,
                 inside a servlet-engine or directly embedded into an application.</p>
@@ -98,9 +97,9 @@
                 To get started, I suggest downloading the zip package, which does
                 also contain a ready-to-run webserver (Jetty).</p>
             <p>The distribution includes source code and all required third
-                party libraries. Java 2 is needed. The distribution has been
+                party libraries. Java version 1.4 or above is needed. The distribution has been
                 tested on Linux, Solaris and Windows 2000/ME with Suns JDK 1.4
-                and IBM JDK 1.3. If you experience any problems on other
+                and IBM JDK 1.4. If you experience any problems on other
                 operating systems, please send me a bug report.</p>
             <p>The current version is 0.9. For instructions on starting eXist,
                 read the <link href="quickstart.xml">Quick Start Guide</link>.</p>
@@ -129,13 +128,11 @@
                         existing servlet-engine like Tomcat or Jetty.</td>
                 </tr>
             </table>
-            <p>eXist is Open Source and it's absolutely free for everyone.
-                Nevertheless I (<link
-                    href="mailto:meier@ifs.tu-darmstadt.de">Wolfgang
-                Meier</link>) invested quite a lot of time into this project,
-                time for which I have not been paid. To encourage me to continue
-                development and as a sign that you appreciate my work, you may
-                want to donate something to me using the <em>PayPal</em> button below:</p>
+            <p>eXist is Open Source and free to everyone. However, you may consider to make a donation
+            for the enhancement and further development of the software. Just click the 
+            <emphasis>PayPal</emphasis> button below. Making a donation implies extra email-support by the
+            maintainer. Donations help to improve the quality of the software and to implement 
+            missing features.</p>
             <p>
                 <A HREF="https://www.paypal.com/affil/pal=sbhati%40web.de" target="_blank">
                     <IMG ALT="Donations via PayPal!" BORDER="0" SRC="http://images.paypal.com/images/lgo/logo3.gif"/>
@@ -151,10 +148,21 @@
         <section id="articles" title="Articles">
             <p>If you would like to know more about the internal workings of eXist, you may
                 read the following article:</p>
+                
+            <p><i>Wolfgang Meier</i>. <link href="http://exist-db.org/webdb.pdf">eXist: An 
+            Open Source Native XML Database</link>. 
+            In: Akmal B. Chaudri, Mario Jeckle, Erhard Rahm, Rainer Unland (Eds.): 
+            Web, Web-Services, and Database Systems. NODe 2002 Web- and Database-Related 
+            Workshops, Erfurt, Germany, October 2002. Springer LNCS Series, 2593.</p>
             
-            <p><i>Wolfgang Meier</i>. <link href="http://exist-db.org/webdb.pdf">eXist: An Open Source Native 
-            XML Database</link>. Paper presented at the 2nd Annual International Workshop on
-            Web and Databases, Net.ObjectDays 2002, Erfurt, Germany.</p>
+			<p>A chapter about eXist is also contained in the book:</p>
+			
+			<p>Akmal B. Chaudri, Awais Rashid, Roberto Zicari (Eds.): 
+			<link href="http://www.aw.com/catalog/academic/product/1,4096,0201844524,00.html">XML 
+			Data Management: Native XML and XML-Enabled Database Systems</link>. 
+			ISBN: 0-201-84452-4. Published by Addison Wesley Professional,
+			March, 2003.</p>
+			
         </section>
 		<section id="links" title="Links">
 			<p>Some links to other software packages which build upon or provide access to eXist:</p>
@@ -197,7 +205,7 @@
                 </tr>
                 <tr>
                     <td>Java:</td>
-                    <td>JDK 1.3/1.4</td>
+                    <td>JDK 1.4</td>
                 </tr>
                 <tr>
                     <td>Tested platforms:</td>
@@ -229,7 +237,7 @@
                 </tr>
                 <tr>
                     <td valign="top">Max. number of documents per collection:</td>
-                    <td>2<sup>15</sup> documents.</td>
+                    <td>2<sup>31</sup> documents.</td>
                 </tr>
                 <tr>
                     <td valign="top">Max. size per document:</td>
@@ -252,33 +260,15 @@
                 <varlistentry>
                     <term>XUpdate</term>
                     <listitem>
-                        <p>The basic model has been designed to provide
-                            efficient, index based retrieval. As a drawback,
-                            eXist does currently not support direct
-                            manipulations of the DOM tree like node insertions
-                            or removals. A document always has to be deleted or
-                            updated as a whole.</p>
-                        <p>This is clearly a major restriction for applications
-                            which need to directly manipulate the DOM tree. Such
-                            applications have to create a new document (as XSLT
-                            does) and insert this into the DB after all
-                            transformations are done. Documents should be kept
-                            small to easily reinsert them whenever they change.</p>
-                        <p>DOM manipulation methods and XUpdate are planned for
-                            one of the next releases. While updating the DOM is
-                            not a problem, keeping indexes in sync is a bit
-                            complicated. Version 0.9 already simplifies the
-                            generated index structures.</p>
+                        <p>We are currently working on XUpdate. It will 
+                        definitely be part of the 1.0 release.</p>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
                     <term>XPath Support</term>
                     <listitem>
                         <p>The XPath implementation still needs some work to be
-                            done. I decided to keep the current implementation
-                            rather than reimplementing everything (it looks like the
-                            new version of ANTLR will fix most Unicode related
-                            problems). I will work to add the missing functionality.</p>
+                            done. A new implementation is on its way.</p>
                     </listitem>
                 </varlistentry>
             </variablelist>

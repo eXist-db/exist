@@ -2025,7 +2025,6 @@ public class NativeBroker extends DBBroker {
 					|| doc.getTreeLevel(gid) > depth)
 					address = domDb.add(data);
 				else {
-					//LOG.debug("adding " + gid + " to dom.dbx");
 					address = domDb.put(new NodeRef(doc.getDocId(), gid), data);
 				}
 				if (address < 0)
@@ -2089,6 +2088,7 @@ public class NativeBroker extends DBBroker {
 		.run();
 
 	}
+	
 	public void sync() {
 		LOG.debug("syncing broker");
 		// uncomment this to get statistics on page buffer usage
@@ -2122,6 +2122,15 @@ public class NativeBroker extends DBBroker {
 		System.gc();
 	}
 
+	public void closeDocument() {
+		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+			public Object start() {
+				domDb.closeDocument();
+				return null;
+			}
+		}.run();
+	}
+	
 	public void update(final NodeImpl node) {
 		try {
 			final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();

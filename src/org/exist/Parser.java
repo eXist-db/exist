@@ -22,6 +22,7 @@
  * 
  */
 package org.exist;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +51,6 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
-import org.exist.storage.DOMFile;
 import org.exist.util.Configuration;
 import org.exist.util.DOMStreamer;
 import org.exist.util.FastStringBuffer;
@@ -955,6 +955,7 @@ public class Parser
 			parser.parse(src);
 			if(broker.getDatabaseType() == DBBroker.NATIVE)
 				broker.addDocument(collection, document);
+			broker.closeDocument();
 			broker.flush();
 			if (document.getFileName().equals("/db/system/users.xml") && privileged == false) {
 				// inform the security manager that system data has changed

@@ -24,11 +24,13 @@ public class User {
     private final static String NAME = "name";
     private final static String PASS = "password";
     private final static String USER_ID = "uid";
+    private final static String HOME = "home";
     
     private ArrayList groups = new ArrayList( 2 );
     private String password = null;
     private String user;
     private int uid = -1;
+    private String home = null;
 
 
     /**
@@ -87,6 +89,7 @@ public class User {
 			throw new DatabaseConfigurationException("illegal user id: " + 
 				userId + " for user " + user);
 		}
+		this.home = node.getAttribute( HOME );
         NodeList gl = node.getElementsByTagName( GROUP );
         Element group;
         for ( int i = 0; i < gl.getLength(); i++ ) {
@@ -204,11 +207,14 @@ public class User {
         if ( password != null ) {
             buf.append( " password=\"" );
             buf.append( password );
-            buf.append( "\">" );
+            buf.append( '"' );
         }
-        else
-            buf.append( ">" );
-
+		if( home != null ) {
+			buf.append(" home=\"" );
+			buf.append(home);
+			buf.append("\">");
+		} else
+			buf.append(">");
         String group;
         for ( Iterator i = groups.iterator(); i.hasNext();  ) {
             group = (String) i.next();
@@ -220,13 +226,6 @@ public class User {
         return buf.toString();
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  passwd  Description of the Parameter
-     *@return         Description of the Return Value
-     */
     public final boolean validate( String passwd ) {
         if ( password == null )
             return true;
@@ -237,6 +236,14 @@ public class User {
     
     protected void setUID(int uid) {
     	this.uid = uid;
+    }
+    
+    public void setHome(String homeCollection) {
+    	home = homeCollection;
+    }
+    
+    public String getHome() {
+    	return home;
     }
 }
 

@@ -67,12 +67,6 @@
         </item>
     </group>
     
-    <banner>
-        <item>
-            <link href="http://exist-db.org"><img alt="powered by eXist" border="0" src="resources/powered.gif"/></link>
-		</item>
-    </banner>
-    
 	<banner name="" empty="true">
       <item><link href="http://sourceforge.net/projects/exist"><img src="http://sourceforge.net/sflogo.php?group_id=17691&amp;type=4" width="125" height="37" border="0" alt="SourceForge Logo"/></link></item>
   </banner>

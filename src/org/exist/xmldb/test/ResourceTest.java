@@ -39,15 +39,13 @@ public class ResourceTest extends TestCase {
 
 	public void testReadResource() {
 		try {
-			Collection testCollection =
-				DatabaseManager.getCollection(URI + "/test");
+			Collection testCollection = DatabaseManager.getCollection(URI + "/test");
 			assertNotNull(testCollection);
 			String[] resources = testCollection.listResources();
 			assertEquals(resources.length, testCollection.getResourceCount());
 
 			System.out.println("reading " + resources[0]);
-			XMLResource doc =
-				(XMLResource) testCollection.getResource("test.xml");
+			XMLResource doc = (XMLResource) testCollection.getResource("test.xml");
 			assertNotNull(doc);
 
 			System.out.println("testing XMLResource.getContentAsSAX()");
@@ -66,12 +64,10 @@ public class ResourceTest extends TestCase {
 
 	public void testReadDOM() {
 		try {
-			Collection testCollection =
-				DatabaseManager.getCollection(URI + "/test");
+			Collection testCollection = DatabaseManager.getCollection(URI + "/test");
 			assertNotNull(testCollection);
 
-			XMLResource doc =
-				(XMLResource) testCollection.getResource("r_and_j.xml");
+			XMLResource doc = (XMLResource) testCollection.getResource("r_and_j.xml");
 			assertNotNull(doc);
 			Element elem = (Element) doc.getContentAsDOM();
 			assertNotNull(elem);
@@ -91,14 +87,11 @@ public class ResourceTest extends TestCase {
 
 	public void testSetContentAsSAX() {
 		try {
-			Collection testCollection =
-				DatabaseManager.getCollection(URI + "/test");
+			Collection testCollection = DatabaseManager.getCollection(URI + "/test");
 			assertNotNull(testCollection);
 
 			XMLResource doc =
-				(XMLResource) testCollection.createResource(
-					"test.xml",
-					"XMLResource");
+				(XMLResource) testCollection.createResource("test.xml", "XMLResource");
 			String xml =
 				"<test><title>Title</title>"
 					+ "<para>Paragraph1</para>"
@@ -120,14 +113,10 @@ public class ResourceTest extends TestCase {
 
 	public void testSetContentAsDOM() {
 		try {
-			Collection testCollection =
-				DatabaseManager.getCollection(URI + "/test");
+			Collection testCollection = DatabaseManager.getCollection(URI + "/test");
 			assertNotNull(testCollection);
 
-			XMLResource doc =
-				(XMLResource) testCollection.createResource(
-					"dom.xml",
-					"XMLResource");
+			XMLResource doc = (XMLResource) testCollection.createResource("dom.xml", "XMLResource");
 			String xml =
 				"<test><title>Title</title>"
 					+ "<para>Paragraph1</para>"
@@ -138,107 +127,86 @@ public class ResourceTest extends TestCase {
 			Document dom = builder.parse(new InputSource(new StringReader(xml)));
 			doc.setContentAsDOM(dom.getDocumentElement());
 			testCollection.storeResource(doc);
-		} catch(Exception e) {
+		} catch (Exception e) {
 			fail(e.getMessage());
 		}
 	}
 
- 	public void testAddRemove() {
- 
- 		try {
- 			final String resourceID = "addremove.xml";
- 
- 			XMLResource created = addResource(resourceID, xmlForTest());
- 			assertNotNull(created);
- 			// need to test documents xml structure			
- 
- 			XMLResource located = resourceForId(resourceID);
- 			assertNotNull(located);
- 			//assertEquals((String) created.getContent(), (String) located.getContent());
- 			
- 			removeDocument(resourceID);
- 			XMLResource locatedAfterRemove = resourceForId(resourceID);
- 			assertNull(locatedAfterRemove);
- 		}
- 		catch(Exception e)
- 		{
- 			fail(e.getMessage());
- 		}
- 	}
- 	
- 	private void removeDocument(String id) throws XMLDBException
- 	{
- 		XMLResource resource = resourceForId(id);
- 
- 		if (null != resource)
- 		{
- 			Collection collection = null;
- 			
- 			try
- 			{
- 				collection = DatabaseManager.getCollection(URI + "/test");
- 				collection.removeResource(resource);
- 			}
- 			finally
- 			{
- 				closeCollection(collection);
- 			}
- 		}
- 	}
- 	
- 	private XMLResource addResource(String id, String content) throws XMLDBException
- 	{
- 		Collection collection = null;
- 		XMLResource result = null;
- 			
- 		try
- 		{
- 			collection = DatabaseManager.getCollection(URI + "/test");
- 			result = (XMLResource) collection.createResource(id, XMLResource.RESOURCE_TYPE);
- 			result.setContent(content);
- 			collection.storeResource(result);
- 		}
- 		finally
- 		{
- 			closeCollection(collection);
- 		}
- 		
- 		return result;
- 	}	
- 	
- 	
- 	private XMLResource resourceForId(String id) throws XMLDBException
- 	{
- 		Collection collection = null;
- 		XMLResource result = null;
- 			
- 		try
- 		{
- 			collection = DatabaseManager.getCollection(URI + "/test");
- 			result = (XMLResource) collection.getResource(id);
- 		}
- 		finally
- 		{
- 			closeCollection(collection);
- 		}
- 		
- 		return result;
- 	}	
- 
- 
- 	private void closeCollection(Collection collection) throws XMLDBException
- 	{
- 		if (null != collection)
- 		{
- 			collection.close();
- 		}
- 	}
- 	
- 	private String xmlForTest()
- 	{
- 		return "<test><title>Title</title>"
- 			+ "<para>Paragraph1</para>"
- 			+ "<para>Paragraph2</para>"
- 			+ "</test>";
- 	}
+	public void testAddRemove() {
+		try {
+			final String resourceID = "addremove.xml";
+
+			XMLResource created = addResource(resourceID, xmlForTest());
+			assertNotNull(created);
+			// need to test documents xml structure			
+
+			XMLResource located = resourceForId(resourceID);
+			assertNotNull(located);
+			//assertEquals((String) created.getContent(), (String) located.getContent());
+
+			removeDocument(resourceID);
+			XMLResource locatedAfterRemove = resourceForId(resourceID);
+			assertNull(locatedAfterRemove);
+		} catch (Exception e) {
+			fail(e.getMessage());
+		}
+	}
+
+	private void removeDocument(String id) throws XMLDBException {
+		XMLResource resource = resourceForId(id);
+
+		if (null != resource) {
+			Collection collection = null;
+
+			try {
+				collection = DatabaseManager.getCollection(URI + "/test");
+				collection.removeResource(resource);
+			} finally {
+				closeCollection(collection);
+			}
+		}
+	}
+
+	private XMLResource addResource(String id, String content) throws XMLDBException {
+		Collection collection = null;
+		XMLResource result = null;
+
+		try {
+			collection = DatabaseManager.getCollection(URI + "/test");
+			result = (XMLResource) collection.createResource(id, XMLResource.RESOURCE_TYPE);
+			result.setContent(content);
+			collection.storeResource(result);
+		} finally {
+			closeCollection(collection);
+		}
+
+		return result;
+	}
+
+	private XMLResource resourceForId(String id) throws XMLDBException {
+		Collection collection = null;
+		XMLResource result = null;
+
+		try {
+			collection = DatabaseManager.getCollection(URI + "/test");
+			result = (XMLResource) collection.getResource(id);
+		} finally {
+			closeCollection(collection);
+		}
+
+		return result;
+	}
+
+	private void closeCollection(Collection collection) throws XMLDBException {
+		if (null != collection) {
+			collection.close();
+		}
+	}
+
+	private String xmlForTest() {
+		return "<test><title>Title</title>"
+			+ "<para>Paragraph1</para>"
+			+ "<para>Paragraph2</para>"
+			+ "</test>";
+	}
 }

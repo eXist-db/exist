@@ -36,7 +36,11 @@
             <map:transformer name="xinclude" src="org.apache.cocoon.transformation.XIncludeTransformer"/>
             <map:transformer name="cinclude" src="org.apache.cocoon.transformation.CIncludeTransformer"/>
             <map:transformer name="encodeURL" src="org.apache.cocoon.transformation.EncodeURLTransformer"/>
+            
+            
+            <!-- register eXist's XMLDBTransformer -->
    	  		<map:transformer name="xmldb" src="org.exist.cocoon.XMLDBTransformer"/>
+   	  		
         </map:transformers>
         <map:readers default="resource">
             <map:reader name="resource" src="org.apache.cocoon.reading.ResourceReader"/>
@@ -105,6 +109,8 @@
         </map:matchers>
         <map:actions>
             <map:action logger="sitemap.action.request" name="request" src="org.apache.cocoon.acting.RequestParamAction"/>
+            
+            <!-- Register eXist's XMLDBSessionLoginAction -->
             <map:action logger="sitemap.action.xmldb.login" name="xmldb-login" src="org.exist.cocoon.XMLDBSessionLoginAction"/>
         </map:actions>
     </map:components>

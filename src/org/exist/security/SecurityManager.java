@@ -68,6 +68,15 @@ public class SecurityManager {
 	private int nextUserId = 0;
 	private int nextGroupId = 0;
 
+	/**
+	 * Initialize the security manager.
+	 * 
+	 * Checks if the file /db/system/users.xml exists in the database.
+	 * If not, it is created with two default users: admin and guest.
+	 *  
+	 * @param pool
+	 * @param sysBroker
+	 */
 	public SecurityManager(BrokerPool pool, DBBroker sysBroker) {
 		this.pool = pool;
 		DBBroker broker = sysBroker;
@@ -113,11 +122,9 @@ public class SecurityManager {
 						} catch (NumberFormatException e) {
 						}
 						ul = next.getElementsByTagName("user");
-						LOG.debug("found " + ul.getLength() + " users");
 						for (int j = 0; j < ul.getLength(); j++) {
 							node = (Element) ul.item(j);
 							user = new User(node);
-							LOG.debug("registered user " + user.getName());
 							users.put(user.getUID(), user);
 						}
 					} else if (next.getTagName().equals("groups")) {
@@ -141,11 +148,6 @@ public class SecurityManager {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  name  Description of the Parameter
-	 */
 	public synchronized void deleteUser(String name) {
 		for (Iterator i = users.values().iterator(); i.hasNext();)
 			if (((User) i.next()).getName().equals(name))
@@ -161,12 +163,6 @@ public class SecurityManager {
 		}
 	}
 
-	/**
-	 *  Gets the user attribute of the SecurityManager object
-	 *
-	 *@param  name  Description of the Parameter
-	 *@return       The user value
-	 */
 	public synchronized User getUser(String name) {
 		User user;
 		for (Iterator i = users.values().iterator(); i.hasNext();) {
@@ -185,11 +181,6 @@ public class SecurityManager {
 		return user;
 	}
 	
-	/**
-	 *  Gets the users attribute of the SecurityManager object
-	 *
-	 *@return    The users value
-	 */
 	public synchronized User[] getUsers() {
 		User u[] = new User[users.size()];
 		int j = 0;
@@ -227,22 +218,10 @@ public class SecurityManager {
 		return (Group)groups.get(gid);
 	}
 	
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  user  Description of the Parameter
-	 *@return       Description of the Return Value
-	 */
 	public synchronized boolean hasAdminPrivileges(User user) {
 		return user.hasGroup(DBA_GROUP);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  name  Description of the Parameter
-	 *@return       Description of the Return Value
-	 */
 	public synchronized boolean hasUser(String name) {
 		User user;
 		for (Iterator i = users.values().iterator(); i.hasNext();) {
@@ -253,12 +232,6 @@ public class SecurityManager {
 		return false;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  broker              Description of the Parameter
-	 *@exception  EXistException  Description of the Exception
-	 */
 	public synchronized void save(DBBroker broker) throws EXistException {
 		LOG.debug("storing acl file");
 		StringBuffer buf = new StringBuffer();
@@ -299,11 +272,6 @@ public class SecurityManager {
 		broker.sync();
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  user  Description of the Parameter
-	 */
 	public synchronized void setUser(User user) {
 		if (user.getUID() < 0)
 			user.setUID(++nextUserId);
@@ -318,10 +286,23 @@ public class SecurityManager {
 		try {
 			broker = pool.get();
 			save(broker);
+			createUserHome(broker, user);
 		} catch (EXistException e) {
-			e.printStackTrace();
+			LOG.debug("error while creating user", e);
+		} catch (PermissionDeniedException e) {
+			LOG.debug("error while create home collection", e);
 		} finally {
 			pool.release(broker);
 		}
+	}
+	
+	private void createUserHome(DBBroker broker, User user) 
+	throws EXistException, PermissionDeniedException {
+		if(user.getHome() == null)
+			return;
+		Collection home = broker.getOrCreateCollection(user.getHome());
+		home.getPermissions().setOwner(user.getName());
+		home.getPermissions().setGroup(user.getPrimaryGroup());
+		broker.saveCollection(home);
 	}
 }
