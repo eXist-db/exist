@@ -359,7 +359,7 @@ declare namespace  xdb="http://exist-db.org/xquery/xmldb";
 declare namespace util="http://exist-db.org/xquery/util";
 
 xdb:register-database("org.exist.xmldb.DatabaseImpl", true()),
-let $root := xdb:collection("xdb:exist:///db", "admin", ""),
+let $root := xdb:collection("xmldb:exist:///db", "admin", ""),
     $out := xdb:create-collection($root, "output")
 for $rec in /rdf:RDF/* return
     xdb:store($out, concat(util:md5($rec/@rdf:about), ".xml"),
