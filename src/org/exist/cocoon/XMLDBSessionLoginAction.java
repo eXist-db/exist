@@ -49,6 +49,7 @@ public class XMLDBSessionLoginAction extends ServiceableAction
 
         // check user account and store it to the session
         if ( session.getAttribute( "user" ) == null ) {
+        	System.out.println("no user ");
             // try to read parameters from sitemap
             user = param.getParameter( "user", null );
             passwd = param.getParameter( "password", null );
@@ -79,11 +80,12 @@ public class XMLDBSessionLoginAction extends ServiceableAction
             // store user info to session
             session.setAttribute( "user", user );
             session.setAttribute( "password", passwd );
-        }
-        else {
+        } else {
             // retrieve user info from session
         	user = getSessionAttribute(session, "user");
         	passwd = getSessionAttribute(session, "password");
+        	if(user == null)
+        		return null;
         }
         // return data to the sitemap
         map.put( "user", user );

@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.memtree.NodeImpl;
 import org.exist.xquery.XPathException;
 
 /**
@@ -123,9 +124,13 @@ public class ValueSequence extends AbstractSequence {
 			NodeValue v;
 			for (int i = 0; i <= size; i++) {
 				v = (NodeValue)values[i];
-				if(v.getImplementationType() != NodeValue.PERSISTENT_NODE)
-					throw new XPathException("Cannot query constructed nodes.");
-				set.add((NodeProxy)v);
+				if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
+//					throw new XPathException("Cannot query constructed nodes.");
+					NodeSet p = ((NodeImpl)v).toNodeSet();
+					set.addAll(p);
+				} else {
+					set.add((NodeProxy)v);
+				}
 			}
 			return set;
 		} else

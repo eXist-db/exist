@@ -405,7 +405,7 @@ public class BrokerPool {
 		// create a first broker to initialize the security manager
 		createBroker();
 		DBBroker broker = (DBBroker) pool.peek();
-		broker.cleanUp();
+		broker.cleanUpAll();
 		secManager = new org.exist.security.SecurityManager(this, broker);
 		initializing = false;
 		
@@ -456,6 +456,7 @@ public class BrokerPool {
 	 */
 	public void sync(DBBroker broker, int syncEvent) {
 		broker.sync(syncEvent);
+		broker.cleanUp();
 	}
 
 	public synchronized void shutdown() {

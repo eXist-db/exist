@@ -131,7 +131,6 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 				ByteArrayOutputStream os = new ByteArrayOutputStream();
 		        int offset = ((Integer)table.get("offset")).intValue();
 		        data = (byte[])table.get("data");
-		        System.out.println("Received: " + data.length);
 		    	os.write(data);
 		        while(offset > 0) {
 		        	params.clear();
@@ -140,7 +139,6 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 		        	table = (Hashtable) parent.getClient().execute("getNextChunk", params);
 		        	offset = ((Integer)table.get("offset")).intValue();
 		        	data = (byte[])table.get("data");
-		        	System.out.println("Received: " + data.length);
 		        	os.write(data);
 		        }
 		        data = os.toByteArray();

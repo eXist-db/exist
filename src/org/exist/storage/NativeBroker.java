@@ -66,6 +66,7 @@ import org.exist.dom.XMLUtil;
 import org.exist.security.MD5;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
@@ -107,17 +108,18 @@ public class NativeBroker extends DBBroker {
 	
     private static final String TEMP_FRAGMENT_REMOVE_ERROR = "Could not remove temporary fragment";
 	private static final String TEMP_STORE_ERROR = "An error occurred while storing temporary data: ";
+	private static final String EXCEPTION_DURING_REINDEX = "exception during reindex";
+	private static final String DATABASE_IS_READ_ONLY = "database is read-only";
+	
 	/**
      * Log4J Logger for this class
      */
     private static final Logger LOG = Logger.getLogger(NativeBroker.class);
 
-	
+    private static final long TEMP_FRAGMENT_TIMEOUT = 300000;
+    
 	private static final String ROOT_COLLECTION = "/db";
-	private static final String TEMP_COLLECTION ="/db/_temp_";
-	
-	private static final String EXCEPTION_DURING_REINDEX = "exception during reindex";
-	private static final String DATABASE_IS_READ_ONLY = "database is read-only";
+	private static final String TEMP_COLLECTION ="/db/system/temp";
 	
 	/** default buffer size setting */
 	protected final static int BUFFERS = 256;
@@ -2403,6 +2405,7 @@ public class NativeBroker extends DBBroker {
 			}
 		}
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
+		final boolean isTemp = TEMP_COLLECTION.equals(doc.getCollection().getName());
 		final IndexPaths idx = (IndexPaths) idxPathMap.get(doc.getDoctype().getName());
 		final long gid = node.getGID();
 		if (gid < 0) {
@@ -2466,7 +2469,7 @@ public class NativeBroker extends DBBroker {
 				    } else
 				        indexAttribs = false;
 				}
-				if(indexAttribs)
+				if(indexAttribs && !isTemp)
 					textEngine.storeAttribute(idx, (AttrImpl) node);
 				// if the attribute has type ID, store the ID-value
 				// to the element index as well
@@ -2480,10 +2483,12 @@ public class NativeBroker extends DBBroker {
 			case Node.TEXT_NODE :
 				// check if this textual content should be fulltext-indexed
 				// by calling IndexPaths.match(path)
-				if (index && (idx == null || idx.match(currentPath))){     
-	                boolean valore = (idx == null ? false : idx.preserveContent(currentPath));
-					textEngine.storeText(idx, (TextImpl) node, valore);
-				}	
+				if (!isTemp) {
+					if (index && (idx == null || idx.match(currentPath))) {     
+		                boolean valore = (idx == null ? false : idx.preserveContent(currentPath));
+						textEngine.storeText(idx, (TextImpl) node, valore);
+					}
+				}
 				break;
 		}
 	}
@@ -2717,7 +2722,7 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 	
-	public void cleanUp() {
+	public void cleanUpAll() {
 		Collection temp = getCollection(TEMP_COLLECTION);
 		if(temp == null)
 			return;
@@ -2728,11 +2733,34 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 	
+	public void cleanUp() {
+		Collection temp = getCollection(TEMP_COLLECTION);
+		if(temp == null)
+			return;
+		long now = System.currentTimeMillis();
+		for(Iterator i = temp.iterator(this); i.hasNext(); ) {
+			DocumentImpl next = (DocumentImpl) i.next();
+			long modified = next.getLastModified();
+			if(now - modified > TEMP_FRAGMENT_TIMEOUT)
+				try {
+					temp.removeDocument(this, next.getFileName());
+				} catch (PermissionDeniedException e) {
+					LOG.warn("Failed to remove temporary fragment: " + e.getMessage(), e);
+				} catch (TriggerException e) {
+					LOG.warn("Failed to remove temporary fragment: " + e.getMessage(), e);
+				} catch (LockException e) {
+					LOG.warn("Failed to remove temporary fragment: " + e.getMessage(), e);
+				}
+		}
+	}
+	
 	private Collection createTempCollection() throws LockException, PermissionDeniedException {
+		User u = user;
 		Lock lock = null;
 		try {
 			lock = collectionsDb.getLock();
 			lock.acquire(Lock.WRITE_LOCK);
+			user = pool.getSecurityManager().getUser(SecurityManager.DBA_USER);
 			Collection temp = getOrCreateCollection(TEMP_COLLECTION);
 			temp.setPermissions(0777);
 			saveCollection(temp);
@@ -2740,6 +2768,7 @@ public class NativeBroker extends DBBroker {
 			return temp;
 		} finally {
 			lock.release();
+			user = u;
 		}
 	}
 	
