@@ -1771,9 +1771,16 @@ public class BFile extends BTree {
      */
     private final class SinglePage extends DataPage {
 
+    	// the raw working data of this page (without page header)
         byte[] data = null;
+        
+        // the low-level page
         Page page;
+        
+        // the page header
         BFilePageHeader ph;
+        
+        // table mapping record ids (tids) to offsets
         short[] offsets = null;
 
         public SinglePage() throws IOException {
@@ -1825,7 +1832,6 @@ public class BFile extends BTree {
         }
         
         private void readOffsets() throws IOException {
-//        	Arrays.fill(offsets, -1);
         	final int dlen = ph.getDataLength();
 		    for(short pos = 0; pos < dlen; ) {
 		    	short tid = ByteConversion.byteToShort(data, pos);

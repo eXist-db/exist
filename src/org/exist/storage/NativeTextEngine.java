@@ -74,9 +74,7 @@ import org.exist.util.ByteConversion;
 import org.exist.util.Configuration;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
-import org.exist.util.LongLinkedList;
 import org.exist.util.Occurrences;
-import org.exist.util.OrderedLongLinkedList;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.UTF8;
@@ -774,73 +772,6 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 	}
 
-	private static class TermFrequencyList extends LongLinkedList {
-		
-		protected static class TermFreq extends LongLinkedList.ListItem {
-			
-			int count = 1;
-			
-			public TermFreq(long l) {
-				super(l);
-			}
-			
-			public void increment() {
-				++count;
-			}
-		}
-		
-		/* (non-Javadoc)
-		 * @see org.exist.util.LongLinkedList#createListItem(long)
-		 */
-		protected ListItem createListItem(long l) {
-			return new TermFreq(l);
-		}
-		
-		public void incLastTerm() {
-			if(last != null)
-				((TermFreq)last).increment();
-		}
-		
-		public void setLastTermFreq(int freq) {
-			if(last != null)
-				((TermFreq)last).count = freq;
-		}
-		
-		public TermFreq[] toArray() {
-			TermFreq[] data = new TermFreq[count];
-			ListItem next = first;
-			int i = 0;
-			while( next != null ) {
-				data[i++] = (TermFreq)next;
-				next = next.next;
-			}
-			return data;
-		}
-	}
-
-	private final static class WordRef extends Value {
-
-		public WordRef(short collectionId) {
-			data = new byte[2];
-			ByteConversion.shortToByte(collectionId, data, 0);
-			len = 2;
-		}
-
-		public WordRef(short collectionId, String word) {
-			len = UTF8.encoded(word) + 2;
-			data = new byte[len];
-			ByteConversion.shortToByte(collectionId, data, 0);
-			UTF8.encode(word, data, 2);
-		}
-
-		/**
-		 * @see java.lang.Object#toString()
-		 */
-		public String toString() {
-			return ByteConversion.byteToShort(data, pos)
-					+ new String(data, pos, len);
-		}
-	}
 	/**
 	 * This inner class is responsible for actually storing the list of
 	 * occurrences.
@@ -1138,7 +1069,7 @@ public class NativeTextEngine extends TextSearchEngine {
 					prevId = 0;
 					ids = idList.toArray();
 					Arrays.sort(ids);
-					for (int m = 0; m < ids.length; m++) {
+					for (int m = 0; m < len; m++) {
 						delta = ids[m].l - prevId;
 						if (delta < 0) {
 							LOG.debug("neg. delta: " + delta + " for " + word);
@@ -1350,5 +1281,111 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 	}
 
+	private static class TermFrequencyList {
+		
+		protected static class TermFreq implements Comparable {
+			
+			long l;
+			int count = 1;
+			TermFreq next = null;
+			
+			public TermFreq(long l) {
+				this.l = l;
+			}
+			
+			public void increment() {
+				++count;
+			}
+			
+			public int compareTo(Object o) {
+				final TermFreq other = (TermFreq)o;
+				if(l == other.l)
+					return 0;
+				else
+					return l > other.l ? 1 : -1;
+			}
+		}
+		
+		private TermFreq first = null;
+		private TermFreq last = null;
+		private int count = 0;
+		
+		public void add( long l ) {
+			if(first == null) {
+				first = new TermFreq( l );
+				last = first;
+			} else {
+				TermFreq next = new TermFreq( l );
+				last.next = next;
+				last = next;
+			}
+			++count;
+		}
+		
+		public void incLastTerm() {
+			if(last != null)
+				((TermFreq)last).increment();
+		}
+		
+		public void setLastTermFreq(int freq) {
+			if(last != null)
+				((TermFreq)last).count = freq;
+		}
+		
+		public long getLast() {
+	    	if(last != null)
+	    		return last.l;
+	    	else
+	    		return -1;
+	    }
+		
+		public boolean contains(long l) {
+	    	TermFreq next = first;
+	    	while( next != null ) {
+	    		if(next.l == l)
+	    			return true;
+	    		next = next.next;
+	    	}
+	    	return false;
+	    }
+		
+		public int getSize() {
+			return count;
+		}
+		
+		public TermFreq[] toArray() {
+			TermFreq[] data = new TermFreq[count];
+			TermFreq next = first;
+			int i = 0;
+			while( next != null ) {
+				data[i++] = (TermFreq)next;
+				next = next.next;
+			}
+			return data;
+		}
+	}
 
+	private final static class WordRef extends Value {
+
+		public WordRef(short collectionId) {
+			data = new byte[2];
+			ByteConversion.shortToByte(collectionId, data, 0);
+			len = 2;
+		}
+
+		public WordRef(short collectionId, String word) {
+			len = UTF8.encoded(word) + 2;
+			data = new byte[len];
+			ByteConversion.shortToByte(collectionId, data, 0);
+			UTF8.encode(word, data, 2);
+		}
+
+		/**
+		 * @see java.lang.Object#toString()
+		 */
+		public String toString() {
+			return ByteConversion.byteToShort(data, pos)
+					+ new String(data, pos, len);
+		}
+	}
 }

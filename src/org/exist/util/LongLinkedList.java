@@ -11,6 +11,9 @@ public class LongLinkedList {
 		public ListItem next = null;
 		public ListItem prev = null;
         
+		public ListItem() {
+		}
+		
 		public ListItem( long l ) {
 			this.l = l;
 		}

@@ -1309,13 +1309,7 @@ public class DOMFile extends BTree implements Lockable {
         	rec.offset += 8;
         if (value.length < l) {
             // value is smaller than before
-            System.out.println(value.length + " < " + l + ": " + new String(value));
-            System.out.println(rec.page.page.getPageInfo() + "; offset = "
-                    + rec.offset + "; data-len = "
-                    + rec.page.getPageHeader().getDataLength()
-                    + "; previous-page = "
-                    + rec.page.getPageHeader().getPrevDataPage());
-            throw new RuntimeException("shrinked");
+            throw new IllegalStateException("shrinked");
         } else if (value.length > l) {
             throw new IllegalStateException("value too long: expected: "
                     + value.length + "; got: " + l);
@@ -1450,48 +1444,18 @@ public class DOMFile extends BTree implements Lockable {
             DOMPage page;
             int pos;
             short currentId, vlen;
-            int dlen;
-            outerLoop:
+            RecordPos rec;
             while (pageNr > -1) {
                 page = getCurrentPage(pageNr);
                 dataCache.add(page);
-                dlen = page.getPageHeader().getDataLength();
-                for (pos = 0; pos < dlen;) {
-                    currentId = ByteConversion.byteToShort(page.data, pos);
-                    if (ItemId.isLink(currentId)) {
-                        if (ItemId.getId(currentId) == targetId) {
-                            if(!skipLinks)
-                                return new RecordPos(pos + 2, page, currentId);
-                            long forwardLink = ByteConversion.byteToLong(page.data,
-                                    pos + 2);
-                            // load the link page
-                            pageNr = StorageAddress.pageFromPointer(forwardLink);
-                            targetId = StorageAddress.tidFromPointer(forwardLink);
-//                            LOG.debug("following link on " + StorageAddress.pageFromPointer(forwardLink) +
-//                            		" to page "
-//                                    + pageNr
-//                                    + "; tid="
-//                                    + targetId);
-                            continue outerLoop;
-                        } else {
-                            pos += 10;
-                        }
-                    } else if (ItemId.getId(currentId) == targetId)
-                        return new RecordPos(pos + 2, page, currentId);
-                    else {
-                        vlen = ByteConversion.byteToShort(page.data, pos + 2);
-                        if (ItemId.isRelocated(currentId)) {
-                            pos += vlen == OVERFLOW ? 20 : vlen + 12;
-                        } else
-                            pos += vlen == OVERFLOW ? 12 : vlen + 4;
-                    }
-                }
-                pageNr = page.getPageHeader().getNextDataPage();
-                if (pageNr == page.getPageNum()) {
-                    LOG.debug("circular link to next page on " + pageNr);
-                    return null;
-                }
-                LOG.debug(
+                rec = page.findRecord(targetId);
+                if(rec == null) {
+                	pageNr = page.getPageHeader().getNextDataPage();
+                	if (pageNr == page.getPageNum()) {
+                		LOG.debug("circular link to next page on " + pageNr);
+                		return null;
+                	}
+                	LOG.debug(
                 		owner.toString()
 						+ ": tid "
 						+ targetId
@@ -1499,6 +1463,22 @@ public class DOMFile extends BTree implements Lockable {
 						+ page.page.getPageInfo()
 						+ ". Loading "
 						+ pageNr + "; contents: " + debugPageContents(page));
+                } else if(rec.isLink) {
+                	if(!skipLinks)
+                		return rec;
+                	long forwardLink = ByteConversion.byteToLong(page.data,
+                			rec.offset);
+                	// load the link page
+                	pageNr = StorageAddress.pageFromPointer(forwardLink);
+                	targetId = StorageAddress.tidFromPointer(forwardLink);
+                	LOG.debug("following link on " + StorageAddress.pageFromPointer(forwardLink) +
+                			" to page "
+                			+ pageNr
+							+ "; tid="
+							+ targetId);
+                } else {
+                	return rec;
+                }
             }
             return null;
         }
@@ -1660,22 +1640,29 @@ public class DOMFile extends BTree implements Lockable {
 
     protected final class DOMPage implements Cacheable {
 
+    	// the raw working data (without page header) of this page 
         byte[] data;
-
+        
+        // the current size of the used data
         int len = 0;
-
+        
+        // the low-level page 
         Page page;
-
+        DOMFilePageHeader ph;
+        
+        // fields required by Cacheable
         int refCount = 0;
-
         int timestamp = 0;
-
+        
+        // has the page been saved or is it dirty?
         boolean saved = true;
-
+        
+        // set to true if the page has been removed from the cache
         boolean invalidated = false;
         
         public DOMPage() {
             page = createNewPage();
+            ph = (DOMFilePageHeader)page.getPageHeader();
 //         LOG.debug("Created new page: " + page.getPageNum());
             data = new byte[fileHeader.getWorkSize()];
             len = 0;
@@ -1696,6 +1683,35 @@ public class DOMFile extends BTree implements Lockable {
             load(page);
         }
 
+        public RecordPos findRecord(short targetId) {
+        	final int dlen = ph.getDataLength();
+        	short currentId;
+        	short vlen;
+        	RecordPos rec = null;
+            for (int pos = 0; pos < dlen;) {
+                currentId = ByteConversion.byteToShort(data, pos);
+                if (ItemId.isLink(currentId)) {
+                    if (ItemId.matches(currentId, targetId)) {
+                    	rec = new RecordPos(pos + 2, this, currentId);
+                    	rec.isLink = true;
+                    	break;
+                    } else {
+                        pos += 10;
+                    }
+                } else if (ItemId.matches(currentId, targetId)) {
+                    rec = new RecordPos(pos + 2, this, currentId);
+                    break;
+                } else {
+                    vlen = ByteConversion.byteToShort(data, pos + 2);
+                    if (ItemId.isRelocated(currentId)) {
+                        pos += vlen == OVERFLOW ? 20 : vlen + 12;
+                    } else
+                        pos += vlen == OVERFLOW ? 12 : vlen + 4;
+                }
+            }
+            return rec;
+        }
+        
         /*
          * (non-Javadoc)
          * 
@@ -1751,7 +1767,7 @@ public class DOMFile extends BTree implements Lockable {
         }
 
         public DOMFilePageHeader getPageHeader() {
-            return (DOMFilePageHeader) page.getPageHeader();
+            return ph;
         }
 
         public long getPageNum() {
@@ -1770,7 +1786,7 @@ public class DOMFile extends BTree implements Lockable {
         private void load(Page page) {
             try {
                 data = page.read();
-                DOMFilePageHeader ph = (DOMFilePageHeader) page.getPageHeader();
+                ph = (DOMFilePageHeader) page.getPageHeader();
                 len = ph.getDataLength();
                 if (data.length == 0) {
                     LOG
@@ -1784,11 +1800,10 @@ public class DOMFile extends BTree implements Lockable {
             }
             saved = true;
         }
-
+        
         public void write() {
             if (page == null) return;
             try {
-                DOMFilePageHeader ph = (DOMFilePageHeader) page.getPageHeader();
                 if (!ph.isDirty()) return;
                 ph.setDataLength(len);
                 writeValue(page, data);
@@ -1994,11 +2009,10 @@ public class DOMFile extends BTree implements Lockable {
 
     protected final static class RecordPos {
 
+    	DOMPage page = null;
         int offset = -1;
-
-        DOMPage page = null;
-
         short tid = 0;
+        boolean isLink = false;
 
         public RecordPos(int offset, DOMPage page, short tid) {
             this.offset = offset;
