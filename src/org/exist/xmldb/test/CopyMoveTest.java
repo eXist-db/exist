@@ -11,6 +11,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
 import junit.framework.TestCase;
+import junit.textui.TestRunner;
 
 
 public class CopyMoveTest extends TestCase {
@@ -18,6 +19,10 @@ public class CopyMoveTest extends TestCase {
 	private final static String URI = "xmldb:exist:///db";
 	private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 
+	public static void main(String[] args) {
+		TestRunner.run(CopyMoveTest.class);
+	}
+	
 	public CopyMoveTest(String name) {
 		super(name);
 	}
@@ -62,9 +67,11 @@ public class CopyMoveTest extends TestCase {
 	private Collection setupTestCollection() throws XMLDBException {
 		Collection root = DatabaseManager.getCollection(URI);
 		CollectionManagementService rootcms = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-		rootcms.removeCollection("test");
+		Collection c = root.getChildCollection("test");
+		if(c != null)
+			rootcms.removeCollection("test");
 		rootcms.createCollection("test");
-		Collection c = DatabaseManager.getCollection(URI+"/test");
+		c = DatabaseManager.getCollection(URI+"/test");
 		assertNotNull(c);
 		return c;
 	}

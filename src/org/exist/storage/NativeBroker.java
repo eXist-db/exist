@@ -1231,10 +1231,11 @@ public class NativeBroker extends DBBroker {
 	        }
 	        DocumentImpl newDoc = new DocumentImpl(this, newName, destination);
 	        newDoc.copyOf(doc);
+	        newDoc.setDocId(getNextDocId(destination));
 	        copyResource(doc, newDoc);
-	        flush();
-	        destination.addDocument(this, doc);
-	        saveCollection(destination);
+	        destination.addDocument(this, newDoc);
+	        updateDocument(newDoc);
+//	        saveCollection(destination);
 		} catch (TriggerException e) {
 			throw new PermissionDeniedException(e.getMessage());
 		} finally {
@@ -1243,7 +1244,8 @@ public class NativeBroker extends DBBroker {
 	}
 	
 	private void copyResource(DocumentImpl oldDoc, DocumentImpl newDoc) {
-		LOG.debug("Copying document " + oldDoc.getFileName() + " to " + newDoc.getCollection().getName());
+		LOG.debug("Copying document " + oldDoc.getFileName() + " to " + 
+				newDoc.getName());
 		final long start = System.currentTimeMillis();
 		Iterator iterator;
 		NodeList nodes = oldDoc.getChildNodes();
