@@ -220,11 +220,23 @@ public class BFile extends BTree {
         return -1;
     }
 
+    /**
+     * Close the BFile.
+     * 
+     * @throws DBException
+     * @return always true
+     */
     public boolean close() throws DBException {
         super.close();
         return true;
     }
 
+    /**
+     * Check, if key is contained in BFile.
+     * 
+     * @param key key to look for
+     * @return true, if key exists
+     */
     public boolean containsKey(Value key) {
         try {
             return findValue(key) != KEY_NOT_FOUND;
