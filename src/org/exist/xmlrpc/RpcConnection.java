@@ -255,7 +255,6 @@ public class RpcConnection extends Thread {
 		else
 		    context = compiled.getContext();
 		context.setBaseURI((String) parameters.get(RpcAPI.BASE_URI));
-		context.setBaseCollection((String) parameters.get(RpcAPI.BASE_COLLECTION));
 		Hashtable namespaces = (Hashtable)parameters.get(RpcAPI.NAMESPACES);
 		if(namespaces != null && namespaces.size() > 0) {
 			context.declareNamespaces(namespaces);
@@ -278,8 +277,8 @@ public class RpcConnection extends Thread {
 				d[j] = next;
 			}
 			context.setStaticallyKnownDocuments(d);
-		} else if(context.getBaseCollection() != null) {
-			context.setStaticallyKnownDocuments(new String[] { context.getBaseCollection() });
+		} else if(context.getBaseURI() != null) {
+			context.setStaticallyKnownDocuments(new String[] { context.getBaseURI() });
 		}
 		try {
 			if(compiled == null)

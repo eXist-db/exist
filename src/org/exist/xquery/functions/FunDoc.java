@@ -93,14 +93,9 @@ public class FunDoc extends Function {
 		if (path.length() == 0)
 			throw new XPathException(getASTNode(), "Invalid argument to fn:doc function: empty string is not allowed here.");
         
-        // if the path is an absolute URL that starts with the current base URI,
-        // we remove the base URI
-        if (path.startsWith(context.getBaseURI()))
-            path = path.substring(context.getBaseURI().length());
-        
-        // relative URL: add the current base collection
+        // relative URL: add the current base URI
 		if (path.charAt(0) != '/')
-			path = context.getBaseCollection() + '/' + path;
+            path = context.getBaseURI() + '/' + path;
         
 		// check if the loaded documents should remain locked
         boolean lockOnLoad = context.lockDocumentsOnLoad();
@@ -125,8 +120,10 @@ public class FunDoc extends Function {
 		try {
             // try to open the document and acquire a lock
 		    doc = (DocumentImpl) context.getBroker().openDocument(path, Lock.READ_LOCK);
-		    if(doc == null)
-		        return Sequence.EMPTY_SEQUENCE;
+		    if(doc == null) {
+//		        LOG.debug("Document " + path + " not found!");
+                return Sequence.EMPTY_SEQUENCE;
+            }
 		    if(!doc.getPermissions().validate(context.getUser(), Permission.READ)) {
                 doc.getUpdateLock().release(Lock.READ_LOCK);
                 doc = null;
@@ -135,7 +132,6 @@ public class FunDoc extends Function {
 			cachedPath = path;
 			cachedNode = new NodeProxy(doc, -1, Node.DOCUMENT_NODE);
             if(lockOnLoad) {
-                LOG.debug("Locking document: " + doc.getName());
                 // add the document to the list of locked documents
                 context.getLockedDocuments().add(doc);
             }

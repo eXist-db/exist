@@ -79,9 +79,6 @@ public class FunBaseURI extends BasicFunction {
         if (node.getImplementationType() == NodeValue.IN_MEMORY_NODE)
             return new AnyURIValue(context.getBaseURI());
         NodeProxy proxy = (NodeProxy) node;
-        String baseURI = context.getBaseURI();
-        if (baseURI.endsWith("/"))
-            baseURI = baseURI.substring(1);
-        return new AnyURIValue(baseURI + proxy.getDocument().getName());
+        return new AnyURIValue(proxy.getDocument().getName());
     }
 }

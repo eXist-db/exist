@@ -30,6 +30,9 @@ public class MimeType {
     public final static MimeType BINARY_TYPE =
         new MimeType("application/octet-stream", BINARY);
     
+    public final static MimeType XML_TYPE =
+        new MimeType("text/xml", XML);
+    
     private String name;
     private String description;
     private int type = MimeType.XML;
