@@ -20,6 +20,8 @@
  */
 package org.exist.xquery.value;
 
+import java.text.Collator;
+
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.memtree.DocumentBuilderReceiver;
@@ -47,10 +49,10 @@ public abstract class AtomicValue implements Item, Sequence {
 
 	public abstract AtomicValue convertTo(int requiredType) throws XPathException;
 
-	public abstract boolean compareTo(int operator, AtomicValue other)
+	public abstract boolean compareTo(Collator collator, int operator, AtomicValue other)
 		throws XPathException;
 
-	public abstract int compareTo(AtomicValue other) throws XPathException;
+	public abstract int compareTo(Collator collator, AtomicValue other) throws XPathException;
 
 	public abstract AtomicValue max(AtomicValue other) throws XPathException;
 
@@ -250,7 +252,7 @@ public abstract class AtomicValue implements Item, Sequence {
 		/* (non-Javadoc)
 		 * @see org.exist.xquery.value.AtomicValue#compareTo(java.lang.Object)
 		 */
-		public int compareTo(AtomicValue other) throws XPathException {
+		public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 			if (other instanceof EmptyValue)
 				return 0;
 			else
@@ -287,7 +289,7 @@ public abstract class AtomicValue implements Item, Sequence {
 		/* (non-Javadoc)
 		 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 		 */
-		public boolean compareTo(int operator, AtomicValue other) throws XPathException {
+		public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
 			throw new XPathException("Cannot compare operand to empty value");
 		}
 		

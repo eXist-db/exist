@@ -27,8 +27,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -44,6 +44,7 @@ import org.exist.dom.SymbolTable;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
+import org.exist.util.Collations;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
@@ -128,6 +129,9 @@ public class XQueryContext {
 	
 	private String defaultFunctionNamespace = Module.BUILTIN_FUNCTION_NS;
 
+	private String defaultCollation = Collations.CODEPOINT;
+	private Collator defaultCollator = null;
+	
 	/**
 	 * Set to true to enable XPath 1.0
 	 * backwards compatibility.
@@ -266,6 +270,29 @@ public class XQueryContext {
 		defaultFunctionNamespace = uri;
 	}
 
+	public void setDefaultCollation(String uri) throws XPathException {
+		if(uri.equals(Collations.CODEPOINT) || uri.equals(Collations.CODEPOINT_SHORT)) {
+			defaultCollation = Collations.CODEPOINT;
+			defaultCollator = null;
+		}
+		defaultCollator = Collations.getCollationFromURI(uri);
+		defaultCollation = uri;
+	}
+	
+	public String getDefaultCollation() {
+		return defaultCollation;
+	}
+	
+	public Collator getCollator(String uri) throws XPathException {
+		if(uri == null)
+			return defaultCollator;
+		return Collations.getCollationFromURI(uri);
+	}
+	
+	public Collator getDefaultCollator() {
+		return defaultCollator;
+	}
+	
 	/**
 	 * Return the namespace URI mapped to the registered prefix
 	 * or null if the prefix is not registered.

@@ -75,6 +75,7 @@ public class OrderedValueSequence extends AbstractSequence {
 	 * @see org.exist.xquery.value.Sequence#getLength()
 	 */
 	public int getLength() {
+		System.out.println("Length: " + count);
 		return (items == null) ? 0 : count;
 	}
 
@@ -170,7 +171,7 @@ public class OrderedValueSequence extends AbstractSequence {
 						else
 							cmp = -1;
 					} else
-						cmp = a.compareTo(b);
+						cmp = a.compareTo(orderSpecs[i].getCollator(), b);
 					if((orderSpecs[i].getModifiers() & OrderSpec.DESCENDING_ORDER) != 0)
 						cmp = cmp * -1;
 					if(cmp != 0)
@@ -197,8 +198,9 @@ public class OrderedValueSequence extends AbstractSequence {
 		 * @see org.exist.xquery.value.SequenceIterator#nextItem()
 		 */
 		public Item nextItem() {
-			if(pos < count)
+			if(pos < count) {
 				return items[pos++].item;
+			}
 			return null;
 		}
 	}

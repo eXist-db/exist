@@ -22,6 +22,8 @@
  */
 package org.exist.xquery.value;
 
+import java.text.Collator;
+
 import org.exist.dom.QName;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XQueryContext;
@@ -79,7 +81,7 @@ public class QNameValue extends AtomicValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 	 */
-	public boolean compareTo(int operator, AtomicValue other) throws XPathException {
+	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.QNAME) {
 			int cmp = qname.compareTo(((QNameValue) other).qname);
 			switch (operator) {
@@ -107,7 +109,7 @@ public class QNameValue extends AtomicValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
 	 */
-	public int compareTo(AtomicValue other) throws XPathException {
+	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.QNAME) {
 			return qname.compareTo(((QNameValue) other).qname);
 		} else

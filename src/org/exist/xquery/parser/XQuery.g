@@ -91,7 +91,8 @@ imaginaryTokenDefinitions
 :
 	QNAME PREDICATE FLWOR PARENTHESIZED ABSOLUTE_SLASH ABSOLUTE_DSLASH WILDCARD 
 	PREFIX_WILDCARD FUNCTION UNARY_MINUS UNARY_PLUS XPOINTER XPOINTER_ID VARIABLE_REF 
-	VARIABLE_BINDING ELEMENT ATTRIBUTE TEXT VERSION_DECL NAMESPACE_DECL DEF_NAMESPACE_DECL 
+	VARIABLE_BINDING ELEMENT ATTRIBUTE TEXT VERSION_DECL NAMESPACE_DECL 
+	DEF_NAMESPACE_DECL DEF_COLLATION_DECL
 	DEF_FUNCTION_NS_DECL GLOBAL_VAR FUNCTION_DECL PROLOG ATOMIC_TYPE MODULE ORDER_BY 
 	POSITIONAL_VAR BEFORE AFTER MODULE_DECL ATTRIBUTE_TEST COMP_ELEM_CONSTRUCTOR
 	COMP_ATTR_CONSTRUCTOR COMP_TEXT_CONSTRUCTOR COMP_COMMENT_CONSTRUCTOR
@@ -136,7 +137,7 @@ prolog
 			=> nd:namespaceDecl
 			|
 			( "declare" "default" )
-			=> dnd:defaultNamespaceDecl
+			=> dnd:defaultsDecl
 			|
 			( "declare" "function" )
 			=> fd:functionDecl
@@ -161,15 +162,18 @@ namespaceDecl
 	{ #namespaceDecl= #(#[NAMESPACE_DECL, prefix.getText()], uri); }
 	;
 
-defaultNamespaceDecl
+defaultsDecl
 :
 	"declare" "default"
 	(
 		"element" "namespace" defu:STRING_LITERAL
-		{ #defaultNamespaceDecl= #(#[DEF_NAMESPACE_DECL, "defaultNamespaceDecl"], defu); }
+		{ #defaultsDecl= #(#[DEF_NAMESPACE_DECL, "defaultNamespaceDecl"], defu); }
 		|
 		"function" "namespace" deff:STRING_LITERAL
-		{ #defaultNamespaceDecl= #(#[DEF_FUNCTION_NS_DECL, "defaultFunctionNSDecl"], deff); }
+		{ #defaultsDecl= #(#[DEF_FUNCTION_NS_DECL, "defaultFunctionNSDecl"], deff); }
+		|
+		"collation" defc:STRING_LITERAL
+		{ #defaultsDecl = #(#[DEF_COLLATION_DECL, "defaultCollationDecl"], defc); }
 	)
 	;
 
@@ -312,7 +316,7 @@ orderSpec : exprSingle orderModifier ;
 
 orderModifier
 :
-	( "ascending" | "descending" )? ( "empty" ( "greatest" | "least" ) )?
+	( "ascending" | "descending" )? ( "empty" ( "greatest" | "least" ) )? ( "collation" STRING_LITERAL )?
 	;
 
 quantifiedExpr:
@@ -1045,6 +1049,8 @@ reservedKeywords returns [String name]
 	"of" { name = "of"; }
 	|
 	"declare" { name = "declare"; }
+	|
+	"collation" { name = "collation"; }
 	;
 
 /**
@@ -1196,6 +1202,11 @@ throws PermissionDeniedException, EXistException, XPathException
 		#(
 			DEF_FUNCTION_NS_DECL deff:STRING_LITERAL
 			{ context.setDefaultFunctionNamespace(deff.getText()); }
+		)
+		|
+		#(
+			DEF_COLLATION_DECL defc:STRING_LITERAL
+			{ context.setDefaultCollation(defc.getText()); }
 		)
 		|
 		#(
@@ -1607,7 +1618,7 @@ throws PermissionDeniedException, EXistException, XPathException
 					{ PathExpr orderSpecExpr= new PathExpr(context); }
 					step=expr [orderSpecExpr]
 					{
-						OrderSpec orderSpec= new OrderSpec(orderSpecExpr);
+						OrderSpec orderSpec= new OrderSpec(context, orderSpecExpr);
 						int modifiers= 0;
 						orderBy.add(orderSpec);
 					}
@@ -1633,6 +1644,12 @@ throws PermissionDeniedException, EXistException, XPathException
 								orderSpec.setModifiers(modifiers);
 							}
 						)
+					)?
+					(
+						"collation" collURI:STRING_LITERAL
+						{
+							orderSpec.setCollation(collURI.getText());
+						}
 					)?
 				)+
 			)

@@ -22,6 +22,9 @@
  */
 package org.exist.xquery.value;
 
+import java.text.Collator;
+
+import org.exist.util.Collations;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
@@ -111,9 +114,9 @@ public class UntypedAtomicValue extends AtomicValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 	 */
-	public boolean compareTo(int operator, AtomicValue other) throws XPathException {
+	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.STRING)) {
-			int cmp = value.compareTo(other.getStringValue());
+			int cmp = Collations.compare(collator, value, other.getStringValue());
 			switch (operator) {
 				case Constants.EQ :
 					return cmp == 0;
@@ -139,8 +142,11 @@ public class UntypedAtomicValue extends AtomicValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
 	 */
-	public int compareTo(AtomicValue other) throws XPathException {
-		return value.compareTo(other.getStringValue());
+	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
+		if(collator == null)
+			return value.compareTo(other.getStringValue());
+		else
+			return collator.compare(value, other.getStringValue());
 	}
 
 	/* (non-Javadoc)

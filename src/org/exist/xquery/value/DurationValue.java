@@ -23,6 +23,8 @@
 
 package org.exist.xquery.value;
 
+import java.text.Collator;
+
 import org.exist.xquery.XPathException;
 
 /**
@@ -241,7 +243,7 @@ public class DurationValue extends ComputableValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 	 */
-	public boolean compareTo(int operator, AtomicValue other)
+	public boolean compareTo(Collator collator, int operator, AtomicValue other)
 		throws XPathException {
 		throw new XPathException("xs:duration values cannot be compared. Use xdt:yearMonthDuration or xdt:dayTimeDuration instead");
 	}
@@ -249,7 +251,7 @@ public class DurationValue extends ComputableValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
 	 */
-	public int compareTo(AtomicValue other) throws XPathException {
+	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 		throw new XPathException("xs:duration values cannot be compared. Use xdt:yearMonthDuration or xdt:dayTimeDuration instead");
 	}
 

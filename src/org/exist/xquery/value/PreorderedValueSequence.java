@@ -159,7 +159,7 @@ public class PreorderedValueSequence extends AbstractSequence {
 						else
 							cmp = -1;
 					} else
-						cmp = a.compareTo(b);
+						cmp = a.compareTo(orderSpecs[i].getCollator(), b);
 					if((orderSpecs[i].getModifiers() & OrderSpec.DESCENDING_ORDER) != 0)
 						cmp = cmp * -1;
 					if(cmp != 0)

@@ -23,6 +23,8 @@
 
 package org.exist.xquery.value;
 
+import java.text.Collator;
+
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
@@ -231,7 +233,7 @@ public class DayTimeDurationValue extends DurationValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 	 */
-	public boolean compareTo(int operator, AtomicValue other) throws XPathException {
+	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.DAY_TIME_DURATION) {
 			double v1 = getValue();
 			double v2 = ((DayTimeDurationValue)other).getValue();
@@ -260,7 +262,7 @@ public class DayTimeDurationValue extends DurationValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
 	 */
-	public int compareTo(AtomicValue other) throws XPathException {
+	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.DAY_TIME_DURATION) {
 			double v1 = getValue(); 
 			double v2 = ((DayTimeDurationValue)other).getValue();
@@ -281,9 +283,9 @@ public class DayTimeDurationValue extends DurationValue {
 	 */
 	public AtomicValue max(AtomicValue other) throws XPathException {
 		if (other.getType() == Type.DAY_TIME_DURATION)
-			return compareTo(other) > 0 ? this : other;
+			return compareTo(null, other) > 0 ? this : other;
 		else
-			return compareTo(other.convertTo(Type.DAY_TIME_DURATION)) > 0
+			return compareTo(null, other.convertTo(Type.DAY_TIME_DURATION)) > 0
 			? this
 			: other;
 	}
@@ -293,9 +295,9 @@ public class DayTimeDurationValue extends DurationValue {
 	 */
 	public AtomicValue min(AtomicValue other) throws XPathException {
 		if (other.getType() == Type.DAY_TIME_DURATION)
-			return compareTo(other) <  0 ? this : other;
+			return compareTo(null, other) <  0 ? this : other;
 		else
-			return compareTo(other.convertTo(Type.DAY_TIME_DURATION)) < 0
+			return compareTo(null, other.convertTo(Type.DAY_TIME_DURATION)) < 0
 			? this
 			: other;
 	}

@@ -22,6 +22,8 @@
  */
 package org.exist.xquery;
 
+import java.text.Collator;
+
 /**
  * An XQuery order specifier as specified in an "order by" clause.
  * 
@@ -35,18 +37,25 @@ public class OrderSpec {
 	public static final int EMPTY_GREATEST = 0;
 	public static final int EMPTY_LEAST = 4;
 	
+	private XQueryContext context;
 	private Expression expression;
 	private int modifiers = 0;
+	private Collator collator = null;
 	
 	/**
 	 * 
 	 */
-	public OrderSpec(Expression sortExpr) {
+	public OrderSpec(XQueryContext context, Expression sortExpr) {
 		this.expression = sortExpr;
+		this.context = context;
 	}
 
 	public void setModifiers(int modifiers) {
 		this.modifiers = modifiers;
+	}
+	
+	public void setCollation(String collationURI) throws XPathException {
+		this.collator = context.getCollator(collationURI);
 	}
 	
 	public Expression getSortExpression() {
@@ -55,6 +64,10 @@ public class OrderSpec {
 	
 	public int getModifiers() {
 		return modifiers;
+	}
+	
+	public Collator getCollator() {
+		return collator == null ? context.getDefaultCollator() : collator;
 	}
 	
 	public String toString() {
