@@ -138,16 +138,38 @@
 					</th>
 				</tr>
 				<tr>
-					<td colspan="2">
-						We started to release frequent development
-						snapshots. The snapshots reflect the current
-						state of development. You can find them in the
-						unstable package on the
-						<a
-							href="http://sourceforge.net/project/showfiles.php?group_id=17691">
-							Sourceforge file release system.
-						</a>
+				    <td>
+				    	<a href="http://prdownloads.sourceforge.net/exist/eXist-snapshot-20050314.jar">
+				    	eXist-snapshot-20050314.jar
+				    	</a>
+				   	</td>
+				   	<td>
+						Installer based on IzPack. Includes source. Run with
+						<tt>java -jar eXist-snapshot-XXXXXX.jar</tt>
+						.
 					</td>
+				</tr>
+				<tr>
+					<td colspan="2">
+						Development snapshots reflect the current state of development. They are
+						released on a regular basis whenever we think the CVS code is in a stable
+						state and important new features or bug fixes should be made available to
+						the community. The latest snapshot release can always be found on the 
+						<a href="http://sourceforge.net/project/showfiles.php?group_id=17691">
+						Sourceforge file release system</a>. Concerning installation, there's no 
+						difference to a stable release.
+					</td>
+				</tr>
+				<tr>
+				    <td colspan="2">
+				        Please note that development snapshots are not necessarily less stable than
+				        the latest "stable" release. Snapshots often contain important bug fixes 
+				        which are not yet available in the stable release. There's also a risk
+				        that new bugs or regressions were introduced. However, we try to keep
+				        the snapshots as stable as possible. New features, bugs or problems will be
+				        announced via the <link href="http://sourceforge.net/mail/?group_id=17691">mailing list
+				        </link> and the <link href="http://wiki.exist-db.org">Wiki</link>.
+				    </td>
 				</tr>
 				<tr>
 					<th align="left" colspan="2">Other tools</th>
@@ -171,36 +193,31 @@
 				</tr>
 			</table>
 		</section>
-		<section title="Mailing list" id="mailing">
+		<section title="Community Support" id="mailing">
+			<p>The primary medium for asking questions, getting help or posting bug reports
+			    or fixes is the project mailing list. To subscribe/unsubscribe
+			    visit the mailing lists page on sourceforge.</p>
+			    
 			<p>
-				There's a
 				<link
 					href="http://sourceforge.net/mail/?group_id=17691">
-					mailing list
+					http://sourceforge.net/mail/?group_id=17691
 				</link>
-				on sourceforge. If you are interested in using or
-				contributing to eXist, you are encouraged to join the
-				list.
 			</p>
 
 			<p>
-				The list is archived at
-				<a
+				The <b>list archive</b> can be found on the same page. However, most people
+				find <b>Gmane</b> more convenient:</p>
+			
+			<p>
+				<link
 					href="http://news.gmane.org/thread.php?group=gmane.text.xml.exist">
-					Gmane
-				</a>
-				.
+					http://news.gmane.org/thread.php?group=gmane.text.xml.exist
+				</link>
 			</p>
 
-			<p>The project also has an IRC channel at</p>
-
-			<p>
-				<b>#existdb@irc.freenode.net</b>
-			</p>
-
-			<p>
-				The channel is open for general discussion on eXist and
-				related subjects.
+			<p>The project also has an <b>IRC channel</b> <link href="irc://irc.freenode.net/existdb">#existdb</link>
+			at irc.freenode.net. The channel is open for general discussions on eXist and related subjects.
 			</p>
 
 		</section>
