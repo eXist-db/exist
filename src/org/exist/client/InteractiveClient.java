@@ -593,6 +593,33 @@ public class InteractiveClient {
 
 				nextInSet = 1;
 
+			} else if (args[0].equalsIgnoreCase("run")) {
+			    if (args.length < 2) {
+					messageln("please specify a query file.");
+					return true;
+				}
+			    try {
+                    BufferedReader reader = new BufferedReader(new FileReader(
+                            args[1]));
+                    StringBuffer buf = new StringBuffer();
+                    String nextLine;
+                    while ((nextLine = reader.readLine()) != null) {
+                        buf.append(nextLine);
+                        buf.append('\n');
+                    }
+                    args[1] = buf.toString();
+                    long start = System.currentTimeMillis();
+    				result = find(args[1]);
+    				if (result == null)
+    					messageln("nothing found");
+    				else
+    					messageln("found " + result.getSize() + " hits in "
+    							+ (System.currentTimeMillis() - start) + "ms.");
+
+    				nextInSet = 1;
+                } catch (Exception e) {
+                    messageln("An error occurred: " + e.getMessage());
+                }
 			} else if (args[0].equalsIgnoreCase("show")) {
 				// show search results
 				if (result == null) {
