@@ -227,20 +227,33 @@ public class GeneralComparison extends BinaryOp {
 		Sequence rs;
 		AtomicValue lv, rv;
 		Collator collator = getCollator(contextSequence);
-		for (Iterator i = nodes.iterator(); i.hasNext();) {
-			current = (NodeProxy) i.next();
-			c = current.getContext();
-			if(c == null)
-				throw new XPathException(getASTNode(), "Internal error: context node missing");
-			do {
+		if(contextSequence != null && contextSequence != Sequence.EMPTY_SEQUENCE) {
+			for (Iterator i = nodes.iterator(); i.hasNext();) {
+				current = (NodeProxy) i.next();
+				c = current.getContext();
+				if(c == null)
+					throw new XPathException(getASTNode(), "Internal error: context node missing");
+				do {
+					lv = current.atomize();
+					rs = getRight().eval(c.getNode().toSequence());
+					for (SequenceIterator si = rs.iterate(); si.hasNext();) {
+						if (compareValues(collator, lv, si.nextItem().atomize())) {
+							result.add(current);
+						}
+					}
+				} while ((c = c.getNextItem()) != null);
+			}
+		} else {
+		    for (Iterator i = nodes.iterator(); i.hasNext();) {
+				current = (NodeProxy) i.next();
 				lv = current.atomize();
-				rs = getRight().eval(c.getNode().toSequence());
+				rs = getRight().eval(null);
 				for (SequenceIterator si = rs.iterate(); si.hasNext();) {
 					if (compareValues(collator, lv, si.nextItem().atomize())) {
 						result.add(current);
 					}
 				}
-			} while ((c = c.getNextItem()) != null);
+		    }
 		}
 		return result;
 	}
@@ -255,7 +268,7 @@ public class GeneralComparison extends BinaryOp {
 		throws XPathException {
 		// if the context sequence hasn't changed we can return a cached result
 		if(cached != null && cached.isValid(contextSequence)) {
-//			LOG.debug("Returning cached result for " + pprint());
+//			LOG.debug("Returning cached result for " + ExpressionDumper.dump(this));
 			return cached.getResult();
 		}
 		//	evaluate left expression
