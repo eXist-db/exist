@@ -11,10 +11,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- *  Description of the Class
+ *  Represents a user within the database.
  *
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
- *@created    18. August 2002
  */
 public class User {
 

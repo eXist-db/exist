@@ -33,6 +33,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
 import org.exist.dom.SortedNodeSet;
 import org.exist.memtree.NodeImpl;
 import org.exist.xquery.parser.XQueryLexer;
@@ -1552,10 +1553,12 @@ public class RpcConnection extends Thread {
 			Occurrences occurrences[] = broker.scanIndexedElements(collection,
 					inclusive);
 			Vector result = new Vector(occurrences.length);
-			Vector temp;
 			for (int i = 0; i < occurrences.length; i++) {
-				temp = new Vector(2);
-				temp.addElement(occurrences[i].getTerm());
+				QName qname = (QName)occurrences[i].getTerm();
+				Vector temp = new Vector(4);
+				temp.addElement(qname.getLocalName());
+				temp.addElement(qname.getNamespaceURI());
+				temp.addElement(qname.getPrefix() == null ? "" : qname.getPrefix());
 				temp.addElement(new Integer(occurrences[i].getOccurrences()));
 				result.addElement(temp);
 			}
@@ -1581,7 +1584,7 @@ public class RpcConnection extends Thread {
 			Vector temp;
 			for (int i = 0; i < occurrences.length; i++) {
 				temp = new Vector(2);
-				temp.addElement(occurrences[i].getTerm());
+				temp.addElement(occurrences[i].getTerm().toString());
 				temp.addElement(new Integer(occurrences[i].getOccurrences()));
 				result.addElement(temp);
 			}

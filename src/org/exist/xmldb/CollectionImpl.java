@@ -20,5 +20,9 @@ public interface CollectionImpl extends Collection {
 	 * @return
 	 */
 	Date getCreationTime() throws XMLDBException;
+
+	/* Alternative methods, especially to be used from jsp */
+	public String[] getChildCollections() throws XMLDBException;
 	
+	public String[] getResources() throws XMLDBException;
 }

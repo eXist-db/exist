@@ -367,6 +367,10 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			collections[j] = (String) i.next();
 		return collections;
 	}
+	
+	public String[] getChildCollections() throws XMLDBException {
+		return listChildCollections();
+	}
 
 	public String[] listResources() throws XMLDBException {
 		if (!collection.getPermissions().validate(user, Permission.READ))
@@ -383,6 +387,10 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			resources[j] = (p < 0 ? resource : resource.substring(p + 1));
 		}
 		return resources;
+	}
+	
+	public String[] getResources() throws XMLDBException {
+		return listResources();
 	}
 
 	public void registerService(Service serv) throws XMLDBException {

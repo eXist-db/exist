@@ -273,6 +273,10 @@ public class RemoteCollection implements CollectionImpl {
 		return coll;
 	}
 
+	public String[] getChildCollections() throws XMLDBException {
+		return listChildCollections();
+	}
+	
 	public String[] listResources() throws XMLDBException {
 		if (childCollections == null)
 			readCollection();
@@ -283,6 +287,13 @@ public class RemoteCollection implements CollectionImpl {
 		return list;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.CollectionImpl#getResources()
+	 */
+	public String[] getResources() throws XMLDBException {
+		return listResources();
+	}
+	
 	private void readCollection() throws XMLDBException {
 		resources = new ArrayList();
 		childCollections = new HashMap();

@@ -147,7 +147,7 @@ public class SymbolTable {
 			return getNamespace((short)defaultMappings.get(prefix));
 		return null;
 	}
-
+	
 	public synchronized String[] defaultPrefixList() {
 		String[] prefixes = new String[defaultMappings.size()];
 		int i = 0;

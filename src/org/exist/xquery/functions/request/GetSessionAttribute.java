@@ -70,7 +70,7 @@ public class GetSessionAttribute extends Function {
 		
 		// session object is read from global variable $session
 		Variable var = myModule.resolveVariable(RequestModule.SESSION_VAR);
-		if(var.getValue() == null)
+		if(var == null || var.getValue() == null)
 			throw new XPathException("Session not set");
 		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
 			throw new XPathException("Variable $session is not bound to an Java object.");

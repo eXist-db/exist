@@ -33,14 +33,19 @@ import javax.servlet.http.HttpServletRequest;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class HttpRequestWrapper implements RequestWrapper {
-
+	
 	private HttpServletRequest request;
+	private String formEncoding = null;
+	private String containerEncoding = null;
 	
 	/**
 	 * 
 	 */
-	public HttpRequestWrapper(HttpServletRequest request) {
+	public HttpRequestWrapper(HttpServletRequest request, String formEncoding,
+			String containerEncoding) {
 		this.request = request;
+		this.formEncoding = formEncoding;
+		this.containerEncoding = containerEncoding;
 	}
 
 	/**
@@ -149,8 +154,22 @@ public class HttpRequestWrapper implements RequestWrapper {
 	 * @param arg0
 	 * @return
 	 */
-	public String getParameter(String arg0) {
-		return request.getParameter(arg0);
+	public String getParameter(String name) {
+		String value = request.getParameter(name);
+		if(formEncoding == null || value == null)
+			return value;
+		return decode(value);
+	}
+	
+	private String decode(String value) {
+		if(containerEncoding == null)
+			containerEncoding = "ISO-8859-1";
+		try {
+			byte[] bytes = value.getBytes(containerEncoding);
+			return new String(bytes, formEncoding);
+		} catch (UnsupportedEncodingException e) {
+			return value;
+		}
 	}
 
 	/**
@@ -164,8 +183,14 @@ public class HttpRequestWrapper implements RequestWrapper {
 	 * @param arg0
 	 * @return
 	 */
-	public String[] getParameterValues(String arg0) {
-		return request.getParameterValues(arg0);
+	public String[] getParameterValues(String key) {
+		String[] values = request.getParameterValues(key);
+		if(formEncoding == null || values == null)
+			return values;
+		for(int i = 0; i < values.length; i++) {
+			values[i] = decode(values[i]);
+		}
+		return values;
 	}
 
 	/**

@@ -50,7 +50,7 @@ if [ -n "$LD_LIBRARY_PATH" ]; then
 	OLD_LIBRARY_PATH="$LD_LIBRARY_PATH"
 fi
 # add lib/core to LD_LIBRARY_PATH for readline support
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$EXIST_HOME/lib/core"
+#export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$EXIST_HOME/lib/core"
 
 $JAVA_HOME/bin/java $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" client $*
 

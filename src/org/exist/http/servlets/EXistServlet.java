@@ -306,7 +306,6 @@ public class EXistServlet extends HttpServlet {
 	private void writeResponse(Response internal, HttpServletResponse response)
 			throws IOException {
 		if (internal.getResponseCode() != HttpServletResponse.SC_OK) {
-			System.out.println(internal.getDescription());
 			response.sendError(internal.getResponseCode(), internal
 					.getDescription());
 		} else {
