@@ -25,7 +25,6 @@ package org.exist.xquery.functions.transform;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
@@ -49,8 +48,8 @@ import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.DocumentBuilderReceiver;
+import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.xquery.BasicFunction;
@@ -63,6 +62,7 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -133,7 +133,6 @@ public class Transform extends BasicFunction {
 		DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
 		SAXResult result = new SAXResult(receiver);
 		handler.setResult(result);
-		
 		try {
 			handler.startDocument();
 			inputNode.toSAX(context.getBroker(), handler);
@@ -141,9 +140,14 @@ public class Transform extends BasicFunction {
 		} catch (SAXException e) {
 			throw new XPathException("SAX exception while transforming node: " + e.getMessage(), e);
 		}
-		Node first = builder.getDocument().getFirstChild();
+        ValueSequence seq = new ValueSequence();
+		Node next = builder.getDocument().getFirstChild();
+        while (next != null) {
+            seq.add((NodeValue) next);
+            next = next.getNextSibling();
+        }
 		context.popDocumentContext();
-		return (NodeValue)first;
+		return seq;
 	}
 
 	private void parseParameters(Node options, Transformer handler) throws XPathException {
