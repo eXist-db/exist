@@ -2413,10 +2413,10 @@ throws PermissionDeniedException, EXistException, XPathException
 			elementContent = new EnclosedExpr(context);
 			c.setContent(elementContent);
 			PathExpr qnamePathExpr = new PathExpr(context);
+			c.setNameExpr(qnamePathExpr);
 		}
 		
 		qnameExpr=expr [qnamePathExpr]
-		{ c.setNameExpr(qnameExpr); }
 		contentExpr=expr [elementContent]
 	)
 	|
@@ -2427,13 +2427,12 @@ throws PermissionDeniedException, EXistException, XPathException
             a.setASTNode(attr);
             step = a;
             PathExpr qnamePathExpr = new PathExpr(context);
+            a.setNameExpr(qnamePathExpr);
             elementContent = new PathExpr(context);
-            a.setValueExpr(elementContent);
+            a.setContentExpr(elementContent);
 		}
 		qnameExpr=expr [qnamePathExpr]
-		{ a.setNameExpr(qnameExpr); }
 		contentExpr=expr [elementContent]
-		{ elementContent.add(contentExpr); }
 	)
 	|
 	#(
@@ -2443,13 +2442,12 @@ throws PermissionDeniedException, EXistException, XPathException
             pd.setASTNode(pid);
             step = pd;
             PathExpr qnamePathExpr = new PathExpr(context);
+            pd.setNameExpr(qnamePathExpr);
             elementContent = new PathExpr(context);
             pd.setContentExpr(elementContent);
 		}
 		qnameExpr=expr [qnamePathExpr]
-		{ pd.setNameExpr(qnameExpr); }
 		contentExpr=expr [elementContent]
-		{ elementContent.add(contentExpr); }
 	)
 	|
 	// direct element constructor
@@ -2503,43 +2501,47 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	#(
 		t:COMP_TEXT_CONSTRUCTOR
-		contentExpr=expr [new PathExpr(context)]
-		{
-			DynamicTextConstructor text = new DynamicTextConstructor(context, contentExpr);
+		{ 
+			elementContent = new PathExpr(context);
+			DynamicTextConstructor text = new DynamicTextConstructor(context, elementContent);
 			text.setASTNode(t);
 			step= text;
 		}
+		contentExpr=expr [elementContent]
 	)
 	|
 	#(
 		tc:COMP_COMMENT_CONSTRUCTOR
-		contentExpr=expr [new PathExpr(context)]
 		{
-			DynamicCommentConstructor comment = new DynamicCommentConstructor(context, contentExpr);
+			elementContent = new PathExpr(context);
+			DynamicCommentConstructor comment = new DynamicCommentConstructor(context, elementContent);
 			comment.setASTNode(t);
 			step= comment;
 		}
+		contentExpr=expr [elementContent]
 	)
 	|
 	#(
 		prefix:COMP_NS_CONSTRUCTOR
-		contentExpr=expr [new PathExpr(context)]
 		{
+			elementContent = new PathExpr(context);
 			NamespaceConstructor ns = new NamespaceConstructor(context, prefix.getText());
-			ns.setURIExpression(contentExpr);
+			ns.setURIExpression(elementContent);
 			ns.setASTNode(t);
 			step= ns;
 		}
+		contentExpr=expr [elementContent]
 	)
 	|
 	#(
 		d:COMP_DOC_CONSTRUCTOR
-		contentExpr=expr [new PathExpr(context)]
 		{
-			DocumentConstructor doc = new DocumentConstructor(context, contentExpr);
+			elementContent = new PathExpr(context);
+			DocumentConstructor doc = new DocumentConstructor(context, elementContent);
 			doc.setASTNode(d);
 			step= doc;
 		}
+		contentExpr=expr [elementContent]
 	)
 	|
 	#(
