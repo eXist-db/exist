@@ -159,9 +159,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 	
 	public void setWriteLock(boolean locked) {
-		LOG.debug(
-				(locked ? "Locking" : "Unlocking") + 
-				" document " + getFileName());
 		this.writeLocked = locked;
 	}
 	

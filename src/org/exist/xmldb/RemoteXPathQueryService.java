@@ -4,6 +4,7 @@ package org.exist.xmldb;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.Vector;
 
 import org.apache.xmlrpc.XmlRpcException;
@@ -19,9 +20,11 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 
     protected RemoteCollection collection;
 	protected Hashtable namespaceMappings = new Hashtable(5);
-
+	protected Properties outputProperties = null;
+	
     public RemoteXPathQueryService( RemoteCollection collection ) {
         this.collection = collection;
+        this.outputProperties = new Properties(collection.properties);
     }
 
 	public ResourceSet query( String query ) throws XMLDBException {
@@ -33,7 +36,8 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
         	Hashtable optParams = new Hashtable();
             if(sortExpr != null)
             	optParams.put(RpcAPI.SORT_EXPR, sortExpr);
-            optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
+            if(namespaceMappings.size() > 0)
+            	optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
             optParams.put(RpcAPI.BASE_URI, collection.getPath());
 			Vector params = new Vector();
 			params.addElement(query.getBytes("UTF-8"));
@@ -43,7 +47,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
             int handle = -1;
             if(resources != null && resources.size() > 0)
             	handle = ((Integer)result.get("id")).intValue();
-            return new RemoteResourceSet( collection, resources, handle );
+            return new RemoteResourceSet( collection, outputProperties, resources, handle );
         } catch ( XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre );
         } catch ( IOException ioe ) {
@@ -75,7 +79,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 			int handle = -1;
 			if(resources != null && resources.size() > 0)
 				handle = ((Integer)result.get("id")).intValue();
-			return new RemoteResourceSet( collection, resources, handle );
+			return new RemoteResourceSet( collection, outputProperties, resources, handle );
         } catch ( XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre );
         } catch ( IOException ioe ) {
@@ -99,11 +103,11 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
     }
 
     public String getProperty( String property ) throws XMLDBException {
-    	return collection.getProperty(property);
+    	return outputProperties.getProperty(property);
     }
 
     public void setProperty( String property, String value ) throws XMLDBException {
-        collection.setProperty(property, value);
+        outputProperties.setProperty(property, value);
     }
 
     public void clearNamespaces() throws XMLDBException {

@@ -193,7 +193,7 @@ public class Serializer implements XMLReader {
 	}
 
 	public String getProperty(String key, String defaultValue) {
-		String value = outputProperties.getProperty(key);
+		String value = outputProperties.getProperty(key, defaultValue);
 		return value;
 	}
 	
@@ -788,7 +788,7 @@ public class Serializer implements XMLReader {
 		setXSLHandler();
 		serializeToSAX(
 			doc,
-			getProperty(GENERATE_DOC_EVENTS, "true").equals("true"));
+			getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
 	}
 
 	public void toSAX(NodeImpl n) throws SAXException {

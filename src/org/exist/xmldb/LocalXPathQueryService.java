@@ -3,6 +3,7 @@ package org.exist.xmldb;
 import java.io.StringReader;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
@@ -42,6 +43,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	protected TreeMap variableDecls = new TreeMap();
 	protected boolean xpathCompatible = true;
 	protected String moduleLoadPath = null;
+	protected Properties properties = null;
 	
 	public LocalXPathQueryService(
 		User user,
@@ -50,6 +52,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		this.user = user;
 		this.collection = collection;
 		this.brokerPool = pool;
+		this.properties = new Properties(collection.properties);
 	}
 
 	public void clearNamespaces() throws XMLDBException {
@@ -65,7 +68,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	}
 	
 	public String getProperty(String property) throws XMLDBException {
-		return collection.properties.getProperty(property);
+		return properties.getProperty(property);
 	}
 
 	public String getVersion() throws XMLDBException {
@@ -243,7 +246,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 					+ (System.currentTimeMillis() - start)
 					+ "ms.");
 			LocalResourceSet resultSet =
-				new LocalResourceSet(user, brokerPool, collection, result, sortExpr);
+				new LocalResourceSet(user, brokerPool, collection, properties, result, sortExpr);
 			expr.reset();
 			return resultSet;
 		} catch (XPathException e) {
@@ -279,7 +282,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	}
 
 	public void setProperty(String property, String value) throws XMLDBException {
-		collection.properties.setProperty(property, value);
+		properties.setProperty(property, value);
 	}
 
 	/* (non-Javadoc)

@@ -51,7 +51,7 @@ public class ClientTextArea extends JEditTextArea implements ActionListener {
 	private CutAction cut = new CutAction();
 	private PasteAction paste = new PasteAction();
 	
-	protected Font textFont = new Font("Monospaced", Font.PLAIN, 12);
+	protected Font textFont = new Font("Monospaced", Font.PLAIN, 10);
 	
 	public ClientTextArea(boolean editable, String mode) {
 		super();

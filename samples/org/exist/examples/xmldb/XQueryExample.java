@@ -66,7 +66,7 @@ public class XQueryExample {
             // set pretty-printing on
             service.setProperty( OutputKeys.INDENT, "yes" );
             service.setProperty( OutputKeys.ENCODING, "UTF-8" );
-
+            
             CompiledExpression compiled = service.compile( query );
             
             long start = System.currentTimeMillis();
