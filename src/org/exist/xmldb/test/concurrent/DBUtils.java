@@ -64,10 +64,12 @@ public class DBUtils {
         }
     }
 	
-	public static File generateXMLFile(String outputFile, int elementCnt, int attrCnt, String[] wordList) throws Exception {
-		File file = new File(outputFile);
+	public static File generateXMLFile(int elementCnt, int attrCnt, String[] wordList) throws Exception {
+		File file = File.createTempFile(Thread.currentThread().getName(), ".xml");
 		if(file.exists() && !file.canWrite())
-			throw new IllegalArgumentException("Cannot write to output file " + outputFile);
+			throw new IllegalArgumentException("Cannot write to output file " + file.getAbsolutePath());
+		
+		System.out.println("Generating XML file " + file.getAbsolutePath());
 		Writer writer = new BufferedWriter(new FileWriter(file));
 		
 		XMLGenerator gen = new XMLGenerator(elementCnt, attrCnt, 3, wordList);

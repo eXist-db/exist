@@ -21,6 +21,8 @@
 package org.exist.xmldb.test.concurrent;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.modules.CollectionManagementService;
@@ -34,60 +36,104 @@ import junit.framework.TestCase;
  */
 public abstract class ConcurrentTestBase extends TestCase {
 
-	protected String uri;
-	protected Collection root;
-	protected String testCol;
+	protected String rootColURI;
+	protected Collection rootCol;
+	protected String testColName;
+	protected Collection testCol;
 	
 	protected String[] wordList;
+	
+	protected List actions = new ArrayList(5);
 	
 	protected volatile boolean failed = false;
 	
 	/**
-	 * @param arg0
+	 * @param name the name of the test.
+	 * @param uri the XMLDB URI of the root collection.
+	 * @param testCollection the name of the collection that will be created for the test.
 	 */
 	public ConcurrentTestBase(String name, String uri, String testCollection) {
 		super(name);
-		this.uri = uri;
-		this.testCol = testCollection;
+		this.rootColURI = uri;
+		this.testColName = testCollection;
 	}
 
-	public abstract void testConcurrent() throws Exception;
+	/**
+	 * Add an {@link Action} to the list of actions that will be processed
+	 * concurrently. Should be called after {@link #setUp()}.
+	 * 
+	 * @param action the action.
+	 * @param repeat number of times the actions should be repeated.
+	 */
+	public void addAction(Action action, int repeat, long delay) {
+		actions.add(new Runner(action, repeat, delay));
+	}
+	
+	public Collection getTestCollection() {
+		return testCol;
+	}
+	
+	public void testConcurrent() throws Exception {
+		// start all threads
+		for(int i = 0; i < actions.size(); i++) {
+			Thread t = (Thread)actions.get(i);
+			t.start();
+		}
+		
+		// wait for threads to finish
+		try {
+			for(int i = 0; i < actions.size(); i++) {
+				Thread t = (Thread)actions.get(i);
+				t.join();
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		assertFalse(failed);
+	}
 	
 	/*
 	 * @see TestCase#setUp()
 	 */
 	protected void setUp() throws Exception {
-		root = DBUtils.setupDB(uri);
-		wordList = DBUtils.wordList(root);
-		File f = DBUtils.generateXMLFile("testdoc.xml", 1000, 10, wordList);
+		rootCol = DBUtils.setupDB(rootColURI);
+		
 
-		Collection c1 = root.getChildCollection(testCol);
-		if(c1 != null) {
-			CollectionManagementService mgr = DBUtils.getCollectionManagementService(root);
-			mgr.removeCollection(testCol);
+		testCol = rootCol.getChildCollection(testColName);
+		if(testCol != null) {
+			CollectionManagementService mgr = DBUtils.getCollectionManagementService(rootCol);
+			mgr.removeCollection(testColName);
 		}
 		
-		c1 = DBUtils.addCollection(root, testCol);
-		DBUtils.addXMLResource(c1, "R1.xml", f);
+		testCol = DBUtils.addCollection(rootCol, testColName);
+		assertNotNull(testCol);
 	}
 
 	/*
 	 * @see TestCase#tearDown()
 	 */
 	protected void tearDown() throws Exception {
-		DBUtils.removeCollection(root, testCol);
-		DBUtils.shutdownDB(uri);
+		DBUtils.removeCollection(rootCol, testColName);
+		DBUtils.shutdownDB(rootColURI);
 	}
 	
+	/**
+	 * Runs the specified Action a number of times.
+	 * 
+	 * @author wolf
+	 */
 	class Runner extends Thread {
 		
 		private Action action;
 		private int repeat;
+		private long delay = 0;
 		
-		public Runner(Action action, int repeat) {
+		public Runner(Action action, int repeat, long delay) {
 			super();
 			this.action = action;
 			this.repeat = repeat;
+			this.delay = delay;
 		}
 		
 		/* (non-Javadoc)
@@ -104,6 +150,10 @@ public abstract class ConcurrentTestBase extends TestCase {
 	                }
 
 	                failed = action.execute();
+	                if(delay > 0)
+	                	synchronized(this) {
+	                		wait(delay);
+	                	}
 	            }
 	        }
 	        catch (Exception e)

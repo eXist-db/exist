@@ -20,7 +20,8 @@
  */
 package org.exist.xmldb.test.concurrent;
 
-import org.xmldb.api.base.Collection;
+import java.io.File;
+
 
 /**
  * Test concurrent XUpdates on the same document.
@@ -31,33 +32,33 @@ public class ConcurrentXUpdateTest extends ConcurrentTestBase {
 
 	private final static String URI = "xmldb:exist:///db";
 	
-	private Collection root;
-	private String[] wordList;
-	
-	private volatile boolean failed = false;
-	
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(ConcurrentXUpdateTest.class);
 	}
 
+	private File tempFile;
+	
 	public ConcurrentXUpdateTest(String name) {
 		super(name, URI, "C1");
 	}
 	
-	public void testConcurrent() throws Exception {
-		Thread t1 = new Runner(new RemoveAppendAction(URI + "/C1", "R1.xml", wordList), 50);
-		Thread t2 = new Runner(new RemoveAppendAction(URI + "/C1", "R1.xml", wordList), 50);
+	protected void setUp() throws Exception {
+		super.setUp();
 		
-		t1.start();
-		t2.start();
+		String[] wordList = DBUtils.wordList(rootCol);
+		tempFile = DBUtils.generateXMLFile(1000, 10, wordList);
+		DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
 		
-		try {
-			t1.join();
-			t2.join();
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-		
-		assertFalse(failed);
+		addAction(new RemoveAppendAction(URI + "/C1", "R1.xml", wordList), 10, 500);
+		addAction(new RemoveAppendAction(URI + "/C1", "R1.xml", wordList), 10, 500);
+		addAction(new RetrieveResourceAction(URI + "/C1", "R1.xml"), 10, 1000);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.test.concurrent.ConcurrentTestBase#tearDown()
+	 */
+	protected void tearDown() throws Exception {
+		super.tearDown();
+		tempFile.delete();
 	}
 }
