@@ -44,7 +44,7 @@ declare function fn:order-expr($field as xs:string) as xs:string
 	else if ($field = "title") then
 		"dc:title, (dc:creator|dc:editor)[1]"
 	else
-		"dc:date, dc:title"
+		"dc:date descending, dc:title"
 };
 
 (: Assemble the query string :)
@@ -192,7 +192,8 @@ declare function fn:do-query() as element()+
 					fn:do-query(),
             		<p><small>Request served in 
 					{get-seconds-from-dayTimeDuration(current-time()-$start)}
-					seconds.</small></p>
+					seconds. <a href="source/biblio.xq">View Source</a>.
+					</small></p>
 				)
 			}
         </section>

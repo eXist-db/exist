@@ -22,10 +22,8 @@
  */
 package org.exist.xpath.value;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.util.FastQSort;
-import org.exist.xpath.Expression;
 import org.exist.xpath.OrderSpec;
 import org.exist.xpath.XPathException;
 
@@ -37,11 +35,9 @@ public class OrderedValueSequence extends AbstractSequence {
 	private OrderSpec orderSpecs[];
 	private Entry[] items = null;
 	private int count = 0;
-	private DocumentSet docs;
 	
-	public OrderedValueSequence(DocumentSet docs, OrderSpec orderSpecs[], int size) {
+	public OrderedValueSequence(OrderSpec orderSpecs[], int size) {
 		this.orderSpecs = orderSpecs;
-		this.docs = docs;
 		this.items = new Entry[size];
 	}
 	
@@ -118,7 +114,7 @@ public class OrderedValueSequence extends AbstractSequence {
 			this.item = item;
 			values = new AtomicValue[orderSpecs.length];
 			for(int i = 0; i < orderSpecs.length; i++) {
-				Sequence seq = orderSpecs[i].getSortExpression().eval(docs, null);
+				Sequence seq = orderSpecs[i].getSortExpression().eval(null);
 				values[i] = AtomicValue.EMPTY_VALUE;
 				if(seq.getLength() == 1) {
 					values[i] = seq.itemAt(0).atomize();

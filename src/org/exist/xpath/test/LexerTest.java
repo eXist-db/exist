@@ -113,7 +113,7 @@ public class LexerTest extends TestCase {
 			}
 
 			// execute the query
-			Sequence result = expr.eval(null, null, null);
+			Sequence result = expr.eval(null, null);
 
 			// check results
 			NodeSet resultSet = (NodeSet) result;

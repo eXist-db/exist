@@ -78,12 +78,11 @@ public class EvalFunction extends Function {
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
 		String expr = StringValue.expand(
-			getArgument(0).eval(docs, contextSequence, contextItem).getStringValue()
+			getArgument(0).eval(contextSequence, contextItem).getStringValue()
 		);
 		LOG.debug("eval: " + expr);
 		XPathLexer2 lexer = new XPathLexer2(new StringReader(expr));
@@ -106,7 +105,7 @@ public class EvalFunction extends Function {
 				throw new XPathException("error found while executing expression: " +
 					astParser.getErrorMessage(), astParser.getLastException());
 			}
-			Sequence sequence = path.eval(docs, null, null);
+			Sequence sequence = path.eval(null, null);
 			LOG.debug("found " + sequence.getLength());
 			return sequence;
 		} catch (RecognitionException e) {

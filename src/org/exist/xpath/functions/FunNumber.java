@@ -20,10 +20,10 @@
 
 package org.exist.xpath.functions;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
-import org.exist.xpath.*;
 import org.exist.xpath.Cardinality;
+import org.exist.xpath.Function;
+import org.exist.xpath.FunctionSignature;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.DoubleValue;
@@ -51,7 +51,6 @@ public class FunNumber extends Function {
 	}
 
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
@@ -59,7 +58,7 @@ public class FunNumber extends Function {
 			contextSequence = contextItem.toSequence();
 		Sequence arg = null;
 		if(getArgumentCount() == 1)
-			arg = getArgument(0).eval(docs, contextSequence);
+			arg = getArgument(0).eval(contextSequence);
 		else
 			arg = contextSequence;
 		if(arg.getLength() == 0)

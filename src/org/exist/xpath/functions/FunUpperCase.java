@@ -22,7 +22,6 @@
  */
 package org.exist.xpath.functions;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Function;
@@ -57,11 +56,11 @@ public class FunUpperCase extends Function {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem)
+	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
-		Sequence seq = getArgument(0).eval(docs, contextSequence);
+		Sequence seq = getArgument(0).eval(contextSequence);
 		if(seq.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		String value = seq.getStringValue();

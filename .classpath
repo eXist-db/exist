@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
     <classpathentry kind="src" path="src"/>
-    <classpathentry kind="src" path="samples"/>
     <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
     <classpathentry kind="lib" path="lib/core/ant.jar"/>
     <classpathentry kind="lib" path="lib/core/ant-junit.jar"/>
@@ -59,7 +58,9 @@
     <classpathentry kind="lib" path="lib/optional/xmldb-block.jar"/>
     <classpathentry kind="lib" path="lib/endorsed/xml-apis.jar"/>
     <classpathentry kind="lib" path="lib/core/commons-pool-1.1.jar"/>
-    <classpathentry kind="lib" path="lib/optional/jEdit-syntax.jar"/>
     <classpathentry kind="lib" path="lib/core/jEdit-syntax.jar" sourcepath="/jEdit-syntax"/>
+    <classpathentry kind="lib" path="Jetty-4.1.4/lib/org.mortbay.jetty.jar"/>
+    <classpathentry kind="lib" path="lib/endorsed/xalan-2.5.2.jar"/>
+    <classpathentry kind="lib" path="lib/endorsed/xercesImpl-2.5.0.jar"/>
     <classpathentry kind="output" path="build/classes"/>
 </classpath>

@@ -69,13 +69,13 @@ public class ExtNear extends ExtFulltext {
 		NodeSet nodes)
 		throws XPathException {
 		if(distance != null)
-			max_distance = ((IntegerValue)distance.eval(docs, nodes).convertTo(Type.INTEGER)).getInt();
+			max_distance = ((IntegerValue)distance.eval(nodes).convertTo(Type.INTEGER)).getInt();
 		try {
 			getSearchTerms(context, searchArg);
 		} catch (EXistException e) {
 			throw new XPathException(e.getMessage(), e);
 		}
-		NodeSet hits = processQuery(context, docs, nodes);
+		NodeSet hits = processQuery(context, nodes);
 		if (hits == null)
 			return Sequence.EMPTY_SEQUENCE;
 		//LOG.debug("scanning " + hits.getLength() + " matches ...");

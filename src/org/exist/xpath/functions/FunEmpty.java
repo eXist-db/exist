@@ -65,13 +65,12 @@ public class FunEmpty extends Function {
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
-		Sequence seq = getArgument(0).eval(docs, contextSequence, contextItem);
+		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
 		return seq.getLength() == 0 ? BooleanValue.TRUE : BooleanValue.FALSE;
 	}
 }

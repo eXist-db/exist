@@ -224,7 +224,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			}
 			LOG.info("query: " + expr.pprint());
 			long start = System.currentTimeMillis();
-			Sequence seq= expr.eval(null, null, null);
+			Sequence seq= expr.eval(null, null);
 
 			QueryResponseCollection[] collections = null;
 			if (seq.getItemType() == Type.NODE)

@@ -210,7 +210,7 @@ public class SortedNodeSet extends AbstractNodeSet {
 			StaticContext context) {
 			this.proxy = proxy;
 			try {
-				Sequence seq = expr.eval(ndocs, proxy);
+				Sequence seq = expr.eval(proxy);
 				StringBuffer buf = new StringBuffer();
 				OrderedLinkedList strings = new OrderedLinkedList();
 				Item item;

@@ -32,9 +32,9 @@ public class Union extends CombiningExpression {
         super(context, left, right);
     }
 	
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
-		Sequence lval = left.eval(docs, contextSequence, contextItem);
-		Sequence rval = right.eval(docs, contextSequence, contextItem);
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+		Sequence lval = left.eval(contextSequence, contextItem);
+		Sequence rval = right.eval(contextSequence, contextItem);
 		if(lval.getItemType() != Type.NODE || rval.getItemType() != Type.NODE)
 			throw new XPathException("union operand is not a node sequence");
         NodeSet result = ((NodeSet)lval).union((NodeSet)rval);

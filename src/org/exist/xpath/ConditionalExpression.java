@@ -64,15 +64,14 @@ public class ConditionalExpression extends AbstractExpression {
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		Sequence testSeq = testExpr.eval(docs, contextSequence, contextItem);
+		Sequence testSeq = testExpr.eval(contextSequence, contextItem);
 		if(testSeq.effectiveBooleanValue()) {
-			return thenExpr.eval(docs, contextSequence, contextItem);
+			return thenExpr.eval(contextSequence, contextItem);
 		} else {
-			return elseExpr.eval(docs, contextSequence, contextItem);
+			return elseExpr.eval(contextSequence, contextItem);
 		}
 	}
 

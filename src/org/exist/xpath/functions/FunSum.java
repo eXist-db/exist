@@ -56,11 +56,11 @@ public class FunSum extends Function {
 		super(context, signature);
     }
 
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 		Sequence zero = DoubleValue.ZERO;
 		if(getArgumentCount() == 2)
-			zero = getArgument(1).eval(docs, contextSequence, contextItem);
-		Sequence inner = getArgument(0).eval(docs, contextSequence, contextItem);
+			zero = getArgument(1).eval(contextSequence, contextItem);
+		Sequence inner = getArgument(0).eval(contextSequence, contextItem);
 		if(inner.getLength() == 0)
 			return zero;
 		

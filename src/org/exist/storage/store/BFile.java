@@ -1092,7 +1092,7 @@ public class BFile extends BTree {
 		/* (non-Javadoc)
 		 * @see org.exist.storage.cache.Cacheable#release()
 		 */
-		public void release() {
+		public void sync() {
 			if(isDirty()) {
 				try {
 					write();

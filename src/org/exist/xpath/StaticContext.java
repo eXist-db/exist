@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
 
+import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.dom.SymbolTable;
 import org.exist.memtree.MemTreeBuilder;
@@ -56,6 +57,8 @@ public class StaticContext {
 	private TreeMap globalVariables = new TreeMap();
 	private TreeMap variables = new TreeMap();
 	private Stack variableStack = new Stack();
+	
+	private DocumentSet staticDocuments = null;
 	
 	private DBBroker broker;
 	private String baseURI = "";
@@ -104,6 +107,12 @@ public class StaticContext {
 		namespaces.put(prefix, uri);
 	}
 
+	/**
+	 * Declare an in-scope namespace. This is called during query execution.
+	 * 
+	 * @param prefix
+	 * @param uri
+	 */
 	public void declareInScopeNamespace(String prefix, String uri) {
 		if (prefix == null || uri == null)
 			throw new IllegalArgumentException("null argument passed to declareNamespace");
@@ -116,6 +125,12 @@ public class StaticContext {
 		return defaultFunctionNamespace;
 	}
 	
+	/**
+	 * Set the default function namespace. By default, this
+	 * points to the namespace for XPath built-in functions.
+	 * 
+	 * @param uri
+	 */
 	public void setDefaultFunctionNamespace(String uri) {
 		defaultFunctionNamespace = uri;
 	}
@@ -190,6 +205,14 @@ public class StaticContext {
 		loadDefaults();
 	}
 
+	public void setStaticallyKnownDocuments(DocumentSet docs) {
+		staticDocuments = docs;
+	}
+	
+	public DocumentSet getStaticallyKnownDocuments() {
+		return staticDocuments;
+	}
+	
 	/**
 	 * Find the implementing class for a function name.
 	 * 
@@ -216,7 +239,8 @@ public class StaticContext {
 	}
 	
 	/**
-	 * Declare a variable.
+	 * Declare a variable. This is called by variable binding expressions like
+	 * "let" and "for".
 	 * 
 	 * @param var
 	 * @return
@@ -386,8 +410,8 @@ public class StaticContext {
 	 * Save the current context on top of a stack. 
 	 * 
 	 * Use {@link popContext()} to restore the current state.
-	 * This method saves the current in-scope namespace
-	 * definitions and variables.
+	 * This method saves the current in-scope variable
+	 * definitions.
 	 */
 	public void pushLocalContext(boolean emptyContext) {
 		variableStack.push(variables);
@@ -404,6 +428,12 @@ public class StaticContext {
 		variables = (TreeMap) variableStack.pop();
 	}
 
+	/**
+	 * Returns the current size of the stack. This is used to determine
+	 * where a variable has been declared.
+	 * 
+	 * @return
+	 */
 	public int getCurrentStackSize() {
 		return variableStack.size();
 	}

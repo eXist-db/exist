@@ -21,7 +21,6 @@
 
 package org.exist.xpath;
 
-import org.exist.dom.*;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 
@@ -61,7 +60,7 @@ public interface Expression {
 	 * @param contextItem a single item, taken from context. This defines the item,
 	 * the expression should work on.
 	 */
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException;
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException;
 
 	/**
 	 * Evaluate the expression represented by this object.
@@ -72,7 +71,7 @@ public interface Expression {
 	 * @param docs the set of documents all nodes belong to.
 	 * @param contextSet the node-set which defines the current context node-set.
 	 */
-	public Sequence eval(DocumentSet docs, Sequence contextSequence)
+	public Sequence eval(Sequence contextSequence)
 		throws XPathException;
 	
 	public void setPrimaryAxis(int axis);

@@ -49,14 +49,13 @@ public class FunFloor extends Function {
 	}
 
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
 		Sequence seq =
-			getArgument(0).eval(docs, contextSequence, contextItem);
+			getArgument(0).eval(contextSequence, contextItem);
 		if (seq.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		NumericValue value =

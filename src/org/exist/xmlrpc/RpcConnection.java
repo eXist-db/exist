@@ -182,6 +182,7 @@ public class RpcConnection extends Thread {
 			docs = broker.getAllDocuments(new DocumentSet());
 		StaticContext context = new StaticContext(broker);
 		context.setBaseURI(baseURI);
+		context.setStaticallyKnownDocuments(docs);
 		if (namespaces != null) {
 			Map.Entry entry;
 			for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {
@@ -211,7 +212,7 @@ public class RpcConnection extends Thread {
 		}
 		LOG.info("compiled: " + expr.pprint());
 		long start = System.currentTimeMillis();
-		Sequence result = expr.eval(docs, contextSet, null);
+		Sequence result = expr.eval(contextSet, null);
 		LOG.info("query took " + (System.currentTimeMillis() - start) + "ms.");
 		return result;
 	}

@@ -67,13 +67,12 @@ public class FunItemAt extends Function {
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		Sequence seq = getArgument(0).eval(docs, contextSequence, contextItem);
+		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
 		IntegerValue posArg = (IntegerValue)
-			getArgument(1).eval(docs, contextSequence, contextItem).convertTo(Type.INTEGER);
+			getArgument(1).eval(contextSequence, contextItem).convertTo(Type.INTEGER);
 		long pos = posArg.getValue();
 		if(pos < 1 || pos > seq.getLength())
 			throw new XPathException("Invalid position: " + pos);

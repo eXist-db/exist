@@ -67,20 +67,20 @@ public class FunTokenize extends FunMatches {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.AbstractExpression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence)
 	 */
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem)
+	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
-		Sequence stringArg = getArgument(0).eval(docs, contextSequence, contextItem);
+		Sequence stringArg = getArgument(0).eval(contextSequence, contextItem);
 		if (stringArg.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		String string = stringArg.getStringValue();
 		String pattern =
-			getArgument(1).eval(docs, contextSequence, contextItem).getStringValue();
+			getArgument(1).eval(contextSequence, contextItem).getStringValue();
 		int flags = 0;
 		if (getArgumentCount() == 3)
 			flags =
 				parseFlags(
 					getArgument(2)
-						.eval(docs, contextSequence, contextItem)
+						.eval(contextSequence, contextItem)
 						.getStringValue());
 		try {
 			if (prevPattern == null

@@ -35,13 +35,12 @@ public abstract class AbstractExpression implements Expression {
 		this.context = context;
 	}
 
-	public Sequence eval(DocumentSet docs, Sequence contextSequence)
+	public Sequence eval(Sequence contextSequence)
 		throws XPathException {
-		return eval(docs, contextSequence, null);
+		return eval(contextSequence, null);
 	}
 
 	public abstract Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException;

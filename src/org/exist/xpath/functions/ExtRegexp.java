@@ -22,16 +22,16 @@
  */
 package org.exist.xpath.functions;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
-import org.exist.xpath.*;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Constants;
 import org.exist.xpath.Dependency;
 import org.exist.xpath.Expression;
+import org.exist.xpath.Function;
+import org.exist.xpath.FunctionSignature;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
@@ -81,7 +81,6 @@ public class ExtRegexp extends Function {
 	}
 	
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
@@ -95,9 +94,9 @@ public class ExtRegexp extends Function {
 			NodeSet nodes =
 				path == null
 					? contextSequence.toNodeSet()
-					: path.eval(docs, contextSequence).toNodeSet();
-			String[] terms = getSearchTerms(context, docs, contextSequence);
-			return evalQuery(context, docs, nodes, terms);
+					: path.eval(contextSequence).toNodeSet();
+			String[] terms = getSearchTerms(context, contextSequence);
+			return evalQuery(context, nodes, terms);
 		} else {
 			Item current;
 			String arg;
@@ -108,15 +107,15 @@ public class ExtRegexp extends Function {
 				i.hasNext();
 				) {
 				current = i.nextItem();
-				String[] terms = getSearchTerms(context, docs, current.toSequence());
+				String[] terms = getSearchTerms(context, current.toSequence());
 				long start = System.currentTimeMillis();
 				nodes =
 					path == null
 						? contextSequence.toNodeSet()
 						: path
-							.eval(docs, current.toSequence())
+							.eval(current.toSequence())
 							.toNodeSet();
-				temp = evalQuery(context, docs, nodes, terms);
+				temp = evalQuery(context, nodes, terms);
 				result.addAll(temp);
 				LOG.debug(
 					"found "
@@ -133,7 +132,6 @@ public class ExtRegexp extends Function {
 	 */
 	public Sequence evalQuery(
 		StaticContext context,
-		DocumentSet docs,
 		NodeSet nodes,
 		String[] terms)
 		throws XPathException {
@@ -143,7 +141,7 @@ public class ExtRegexp extends Function {
 		for (int k = 0; k < terms.length; k++) {
 			hits =
 				context.getBroker().getTextEngine().getNodesContaining(
-					docs,
+					nodes.getDocumentSet(),
 					nodes,
 					terms[k],
 					DBBroker.MATCH_REGEXP);
@@ -153,15 +151,14 @@ public class ExtRegexp extends Function {
 		return hits;
 	}
 	
-	protected String[] getSearchTerms(StaticContext context, DocumentSet docs, 
-	Sequence contextSequence) throws XPathException {
+	protected String[] getSearchTerms(StaticContext context, Sequence contextSequence) throws XPathException {
 		if(getArgumentCount() < 2)
 			throw new XPathException("function requires at least 2 arguments");
 		String[] terms = new String[getArgumentCount() - 1];
 		Expression next;
 		for(int i = 1; i < getLength(); i++) {
 			next = getArgument(i);
-			terms[i - 1] = next.eval(docs, contextSequence).getStringValue();
+			terms[i - 1] = next.eval(contextSequence).getStringValue();
 		}
 		return terms;
 	}

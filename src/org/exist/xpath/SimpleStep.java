@@ -22,7 +22,6 @@
  */
 package org.exist.xpath;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
@@ -47,11 +46,11 @@ public class SimpleStep extends Step {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem)
+	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-		NodeSet set = expression.eval(docs, contextSequence).toNodeSet();
+		NodeSet set = expression.eval(contextSequence).toNodeSet();
 		LOG.debug("found " + set.getLength());
 		if(set.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;

@@ -25,15 +25,15 @@ package org.exist.xpath.functions;
 
 import java.util.Iterator;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.XMLUtil;
-import org.exist.xpath.*;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Dependency;
+import org.exist.xpath.Function;
+import org.exist.xpath.FunctionSignature;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
@@ -60,7 +60,6 @@ public class FunLang extends Function {
 	}
 
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
@@ -70,10 +69,10 @@ public class FunLang extends Function {
 			return Sequence.EMPTY_SEQUENCE;
 		String lang =
 			getArgument(0)
-				.eval(docs, contextSequence)
+				.eval(contextSequence)
 				.getStringValue();
 		QName qname = new QName("lang", context.getURIForPrefix("xml"), "xml");
-		NodeSet attribs = context.getBroker().getAttributesByName(docs, qname);
+		NodeSet attribs = context.getBroker().getAttributesByName(contextSequence.toNodeSet().getDocumentSet(), qname);
 		NodeSet temp = new ExtArrayNodeSet();
 		NodeProxy p;
 		String langValue;

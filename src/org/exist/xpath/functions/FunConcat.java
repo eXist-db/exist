@@ -26,10 +26,10 @@ package org.exist.xpath.functions;
 import java.util.Iterator;
 import java.util.List;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
-import org.exist.xpath.*;
 import org.exist.xpath.Cardinality;
+import org.exist.xpath.Function;
+import org.exist.xpath.FunctionSignature;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
@@ -70,14 +70,14 @@ public class FunConcat extends Function {
 		}
 	}
 	
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 		if(getArgumentCount() < 2)
 			throw new XPathException ("concat requires at least two arguments");
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
 		StringBuffer result = new StringBuffer();
 		for(int i = 0; i < getArgumentCount(); i++) {
-			result.append(getArgument(i).eval(docs, contextSequence).getStringValue());
+			result.append(getArgument(i).eval(contextSequence).getStringValue());
 		}
 		return new StringValue(result.toString());
 	}

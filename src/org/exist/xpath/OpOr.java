@@ -20,7 +20,6 @@
  */
 package org.exist.xpath;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.Item;
@@ -38,7 +37,7 @@ public class OpOr extends LogicalOp {
 		super(context);
 	}
 
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 		if (getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		if(contextItem != null)
@@ -47,15 +46,15 @@ public class OpOr extends LogicalOp {
 		Expression right = getRight();
 		if(Type.subTypeOf(left.returnsType(), Type.NODE) &&
 			Type.subTypeOf(right.returnsType(), Type.NODE)) {
-			NodeSet rl = left.eval(docs, contextSequence, null).toNodeSet();
+			NodeSet rl = left.eval(contextSequence, null).toNodeSet();
 			rl = rl.getContextNodes(inPredicate);
-			NodeSet rr = right.eval(docs, contextSequence, null).toNodeSet();
+			NodeSet rr = right.eval(contextSequence, null).toNodeSet();
 			rr = rr.getContextNodes(inPredicate);
 			rl = rl.union(rr);
 			return rl;
 		} else {
-			boolean ls = left.eval(docs, contextSequence).effectiveBooleanValue();
-			boolean rs = right.eval(docs, contextSequence).effectiveBooleanValue();
+			boolean ls = left.eval(contextSequence).effectiveBooleanValue();
+			boolean rs = right.eval(contextSequence).effectiveBooleanValue();
 			return ls || rs ? BooleanValue.TRUE : BooleanValue.FALSE;
 		}
 	}

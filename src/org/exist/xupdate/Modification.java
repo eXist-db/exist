@@ -82,7 +82,7 @@ public abstract class Modification {
 			LOG.info("modification select: " + expr.pprint());
 			long start = System.currentTimeMillis();
 
-			Sequence resultSeq = expr.eval(docs, null, null);
+			Sequence resultSeq = expr.eval(null, null);
 			if (resultSeq.getItemType() != Type.NODE)
 				throw new EXistException("select expression should evaluate to a" + "node-set");
 			NodeList set = (NodeList)resultSeq;

@@ -64,6 +64,16 @@ public class XQueryGenerator extends ServiceableGenerator {
 	
 	private Map cache = new HashMap();
 	
+	private class CachedExpression {
+		SourceValidity validity;
+		CompiledExpression expr;
+		
+		public CachedExpression(SourceValidity validity, CompiledExpression expr) {
+			this.validity = validity;
+			this.expr = expr;
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.apache.cocoon.generation.AbstractGenerator#setup(org.apache.cocoon.environment.SourceResolver, java.util.Map, java.lang.String, org.apache.avalon.framework.parameters.Parameters)
 	 */
@@ -81,17 +91,18 @@ public class XQueryGenerator extends ServiceableGenerator {
 		this.password = parameters.getParameter("password", "guest");
 		this.mapRequestParams = parameters.getParameterAsBoolean("use-request-parameters", false);
 		this.createSession = parameters.getParameterAsBoolean("create-session", true);
-		
-		String uri = inputSource.getURI();
-		synchronized(cache) {
-			if(cache.containsKey(uri)) {
-				SourceValidity validity = inputSource.getValidity();
-				if(validity.isValid() == SourceValidity.INVALID || validity.isValid() == SourceValidity.UNKNOWN)
-					cache.remove(uri);
-			}
-		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.apache.cocoon.generation.AbstractGenerator#recycle()
+	 */
+	public void recycle() {
+		if(resolver != null)
+			resolver.release(inputSource);
+		inputSource = null;
+		super.recycle();
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.apache.cocoon.generation.Generator#generate()
 	 */
@@ -116,15 +127,28 @@ public class XQueryGenerator extends ServiceableGenerator {
 			service.declareVariable("request", request);
 			service.declareVariable("session", session);
 			
-			CompiledExpression expr;
 			String uri = inputSource.getURI();
+			CompiledExpression expr;
+			CachedExpression cached;
 			synchronized(cache) {
-				expr = (CompiledExpression)cache.get(uri);
-				if(expr == null) {
+				cached = (CachedExpression)cache.get(uri);
+				if(cached != null) {
+					// check if source is valid or should be reloaded
+					int valid = cached.validity.isValid();
+					if(valid == SourceValidity.UNKNOWN)
+						valid = cached.validity.isValid(inputSource.getValidity());
+					if(valid != SourceValidity.VALID) {
+						cache.remove(uri);
+						cached = null;
+					}
+				}
+				if(cached == null) {
 					String xquery = readQuery();
 					expr = service.compile(xquery);
-					cache.put(uri, expr);
-				}
+					cached = new CachedExpression(inputSource.getValidity(), expr);
+					cache.put(uri, cached);
+				} else
+					expr = cached.expr;
 			}
 			if(mapRequestParams)
 				mapRequestParams(request, service);
@@ -141,6 +165,8 @@ public class XQueryGenerator extends ServiceableGenerator {
 			throw new ProcessingException("XMLDBException occurred: " + e.getMessage(), e);
 		}
 	}
+	
+	
 
 	private void mapRequestParams(Request request, XQueryService service) throws XMLDBException {
 		String param;

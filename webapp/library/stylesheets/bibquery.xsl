@@ -54,7 +54,7 @@
 	
 	<!-- build the XPath expression -->
 	<xsl:template name="build-query">
-		<xsl:text>document()//rdf:Description[</xsl:text>
+		<xsl:text>//rdf:Description[</xsl:text>
 		<xsl:call-template name="predicate-expression">
 			<xsl:with-param name="field">
 				<xsl:call-template name="get-field">

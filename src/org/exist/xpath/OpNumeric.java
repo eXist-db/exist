@@ -20,7 +20,6 @@
 
 package org.exist.xpath;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.storage.DBBroker;
 import org.exist.xpath.value.ComputableValue;
@@ -116,18 +115,17 @@ public class OpNumeric extends BinaryOp {
 	}
 
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
 		Sequence lseq =
-			getLeft().eval(docs, contextSequence);
+			getLeft().eval(contextSequence);
 		if(lseq.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		Sequence rseq =
-			getRight().eval(docs, contextSequence);
+			getRight().eval(contextSequence);
 		if(rseq.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		

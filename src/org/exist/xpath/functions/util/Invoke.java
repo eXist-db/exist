@@ -22,12 +22,9 @@
  */
 package org.exist.xpath.functions.util;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Vector;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Function;
@@ -63,10 +60,10 @@ public class Invoke extends Function {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Function#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 		JavaObjectValue value = (JavaObjectValue)
-			getArgument(0).eval(docs, contextSequence, contextItem).itemAt(0);
-		String methodName = getArgument(1).eval(docs, contextSequence, contextItem).getStringValue();
+			getArgument(0).eval(contextSequence, contextItem).itemAt(0);
+		String methodName = getArgument(1).eval(contextSequence, contextItem).getStringValue();
 		
 		Object obj = value.getObject();
 		Class clazz = obj.getClass();
@@ -77,14 +74,14 @@ public class Invoke extends Function {
 			if(method.getName().equals(methodName) && Modifier.isPublic(method.getModifiers())) {
 				Class parameters[] = method.getParameterTypes();
 				if(parameters.length == getArgumentCount() - 2) {
-					Object[] args = getArgs(docs, contextSequence, contextItem, parameters);
+					Object[] args = getArgs(contextSequence, contextItem, parameters);
 				}
 			}
 		}
 		return null;
 	}
 
-	private Object[] getArgs(DocumentSet docs, Sequence contextSequence, Item contextItem,
+	private Object[] getArgs(Sequence contextSequence, Item contextItem,
 		Class parameters[]) throws XPathException {
 		Object[] args = new Object[parameters.length];
 		Class param;
@@ -93,7 +90,7 @@ public class Invoke extends Function {
 		for(int i = 0; i < args.length; i++) {
 			param = parameters[i];
 			type = XPathUtil.javaClassToXPath(param);
-			seq = getArgument(i + 2).eval(docs, contextSequence, contextItem);
+			seq = getArgument(i + 2).eval(contextSequence, contextItem);
 		}
 		return null;
 	}

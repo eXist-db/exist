@@ -81,6 +81,8 @@ public interface NodeSet extends Sequence, NodeList {
 	 */
 	public boolean containsDoc(DocumentImpl doc);
 	
+	public DocumentSet getDocumentSet();
+	
 	/**
 	 * Add a new proxy object to the node set. Please note: node set
 	 * implementations may allow duplicates.
@@ -184,6 +186,7 @@ public interface NodeSet extends Sequence, NodeList {
 		long gid,
 		boolean directParent,
 		boolean includeSelf);
+		
 	/**
 	 * Check if node has an ancestor contained in this node set.
 	 *
@@ -200,6 +203,7 @@ public interface NodeSet extends Sequence, NodeList {
 		boolean directParent,
 		boolean includeSelf,
 		int level);
+		
 	/**
 	 * Get all children of the given parent node contained in this node set.
 	 * If mode is {@link #DESCENDANT}, the returned node set will contain
@@ -215,6 +219,7 @@ public interface NodeSet extends Sequence, NodeList {
 		NodeProxy parent,
 		int mode,
 		boolean rememberContext);
+		
 	/**
 	 * Check if any child nodes are found within this node set for a given
 	 * set of potential parent nodes.
@@ -229,6 +234,7 @@ public interface NodeSet extends Sequence, NodeList {
 	 * @return
 	 */
 	public NodeSet selectParentChild(NodeSet al, int mode);
+	
 	/**
 	 * Check if any child nodes are found within this node set for a given
 	 * set of potential parent nodes.
@@ -244,10 +250,12 @@ public interface NodeSet extends Sequence, NodeList {
 	 * list of each returned node (this is used to track matches for predicate evaluation)
 	 * @return
 	 */
+	
 	public NodeSet selectParentChild(
 		NodeSet al,
 		int mode,
 		boolean rememberContext);
+		
 	/**
 	 * Check if any descendant nodes are found within this node set for a given
 	 * set of potential ancestor nodes.
@@ -264,6 +272,7 @@ public interface NodeSet extends Sequence, NodeList {
 	public NodeSet selectAncestorDescendant(
 		NodeSet al,
 		int mode);
+		
 	/**
 	 * Check if any descendant nodes are found within this node set for a given
 	 * set of potential ancestor nodes.
@@ -283,6 +292,7 @@ public interface NodeSet extends Sequence, NodeList {
 		NodeSet al,
 		int mode,
 		boolean includeSelf);
+		
 	/**
 	 * Check if any descendant nodes are found within this node set for a given
 	 * set of potential ancestor nodes.
@@ -305,6 +315,7 @@ public interface NodeSet extends Sequence, NodeList {
 		int mode,
 		boolean includeSelf,
 		boolean rememberContext);
+		
 	/**
 	 * For a given set of potential ancestor nodes, return all ancestors
 	 * having descendants in this node set.
@@ -356,6 +367,7 @@ public interface NodeSet extends Sequence, NodeList {
 		DocumentImpl doc,
 		long gid,
 		boolean directParent);
+		
 	/**
 	 * Check if the node identified by its node id has an ancestor contained in this node set
 	 * and return the ancestor found.
@@ -372,6 +384,7 @@ public interface NodeSet extends Sequence, NodeList {
 		long gid,
 		boolean directParent,
 		boolean includeSelf);
+		
 	/**
 	 * Check if the node identified by its node id has an ancestor contained in this node set
 	 * and return the ancestor found.
@@ -389,6 +402,7 @@ public interface NodeSet extends Sequence, NodeList {
 		boolean directParent,
 		boolean includeSelf,
 		int level);
+		
 	/**
 	 * Check if the given node has an ancestor contained in this node set
 	 * and return the ancestor found.
@@ -420,6 +434,7 @@ public interface NodeSet extends Sequence, NodeList {
 	 * @return
 	 */
 	public boolean hasIndex();
+	
 	/**
 	 * Return a sub-range of this node set containing the range of nodes greater than or including
 	 * the lower node and smaller than or including the upper node.

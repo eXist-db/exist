@@ -66,7 +66,6 @@ public class GetSessionAttribute extends Function {
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
@@ -79,7 +78,7 @@ public class GetSessionAttribute extends Function {
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		
 		// get attribute name parameter
-		String attrib = getArgument(0).eval(docs, contextSequence, contextItem).getStringValue();
+		String attrib = getArgument(0).eval(contextSequence, contextItem).getStringValue();
 		
 		if(value.getObject() instanceof Session)
 			return cocoonSessionAttribute(attrib, (Session)value.getObject());

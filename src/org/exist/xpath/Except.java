@@ -43,10 +43,10 @@ public class Except extends CombiningExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.CombiningExpression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem)
+	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
-		Sequence lval = left.eval(docs, contextSequence, contextItem);
-		Sequence rval = right.eval(docs, contextSequence, contextItem);
+		Sequence lval = left.eval(contextSequence, contextItem);
+		Sequence rval = right.eval(contextSequence, contextItem);
 		if(lval.getItemType() != Type.NODE || rval.getItemType() != Type.NODE)
 			throw new XPathException("intersect operand is not a node sequence");
 		NodeSet result = ((NodeSet)lval).intersection((NodeSet)rval);

@@ -751,15 +751,6 @@ public class HttpServerConnection extends Thread {
 		return buf.toString();
 	}
 
-	/**
-	 * Description of the Method
-	 *
-	 * @param resultSet Description of the Parameter
-	 * @param howmany Description of the Parameter
-	 * @param start Description of the Parameter
-	 *
-	 * @return Description of the Return Value
-	 */
 	protected String printValues(Sequence resultSet, int howmany, int start) {
 		if (resultSet.getLength() == 0)
 			return formatErrorMsg("nothing found", OK);
@@ -1136,18 +1127,6 @@ public class HttpServerConnection extends Thread {
 		pool.release(this);
 	}
 
-	/**
-	 * Description of the Method
-	 *
-	 * @param query Description of the Parameter
-	 * @param howmany Description of the Parameter
-	 * @param start Description of the Parameter
-	 * @param printSummary Description of the Parameter
-	 * @param indent Description of the Parameter
-	 * @param stylesheet Description of the Parameter
-	 *
-	 * @return Description of the Return Value
-	 */
 	protected String search(
 		String query,
 		int howmany,
@@ -1184,7 +1163,7 @@ public class HttpServerConnection extends Thread {
 				return formatErrorMsg(parser.getErrorMessage(), SYNTAX_ERROR);
 
 			long startTime = System.currentTimeMillis();
-			Sequence resultSequence = expr.eval(null, null, null);
+			Sequence resultSequence = expr.eval(null, null);
 			long queryTime = System.currentTimeMillis() - startTime;
 			HttpServer.LOG.debug("evaluation took " + queryTime + "ms.");
 			startTime = System.currentTimeMillis();

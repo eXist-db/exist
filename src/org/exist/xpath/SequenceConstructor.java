@@ -57,14 +57,13 @@ public class SequenceConstructor extends AbstractExpression {
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
 		ValueSequence result = new ValueSequence();
 		Sequence temp;
 		for(Iterator i = expressions.iterator(); i.hasNext(); ) {
-			temp = ((Expression)i.next()).eval(docs, contextSequence, contextItem);
+			temp = ((Expression)i.next()).eval(contextSequence, contextItem);
 			result.addAll(temp);
 		}
 		return result;

@@ -26,7 +26,6 @@ import java.util.Iterator;
 import org.exist.dom.ArraySet;
 import org.exist.dom.ContextItem;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
@@ -66,7 +65,6 @@ public class Predicate extends PathExpr {
 	}
 	
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
@@ -84,7 +82,7 @@ public class Predicate extends PathExpr {
 		if (Type.subTypeOf(type, Type.NODE)) {
 			ExtArrayNodeSet result = new ExtArrayNodeSet();
 			NodeSet nodes =
-				super.eval(docs, contextSequence, null).toNodeSet();
+				super.eval(contextSequence, null).toNodeSet();
 			NodeProxy current;
 			ContextItem contextNode;
 			NodeProxy next;
@@ -122,7 +120,7 @@ public class Predicate extends PathExpr {
 			for(SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
 				Item item = i.nextItem();
 				context.setContextPosition(p);
-				Sequence innerSeq = inner.eval(docs, contextSequence, item);
+				Sequence innerSeq = inner.eval(contextSequence, item);
 				if(innerSeq.effectiveBooleanValue())
 					result.add(item);
 			}
@@ -138,7 +136,7 @@ public class Predicate extends PathExpr {
 				for(SequenceIterator i = contextSequence.iterate(); i.hasNext(); ) {
 					NodeProxy p = (NodeProxy) i.nextItem();
 					
-					Sequence innerSeq = inner.eval(docs, p);
+					Sequence innerSeq = inner.eval(p);
 					int level = p.doc.getTreeLevel(p.gid);
 					long pid = XMLUtil.getParentId(p.doc, p.gid, level);
 					if(pid == last && lastDoc != null && lastDoc.getDocId() == p.doc.getDocId())
@@ -158,7 +156,7 @@ public class Predicate extends PathExpr {
 				}
 				return result;
 			} else {
-				Sequence innerSeq = inner.eval(docs, contextSequence);
+				Sequence innerSeq = inner.eval(contextSequence);
 				ValueSequence result = new ValueSequence();
 				for(SequenceIterator i = innerSeq.iterate(); i.hasNext(); ) {
 					NumericValue v = (NumericValue)i.nextItem().convertTo(Type.NUMBER);

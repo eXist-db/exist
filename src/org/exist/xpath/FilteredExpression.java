@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.exist.dom.DocumentSet;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 
@@ -53,11 +52,11 @@ public class FilteredExpression extends AbstractExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem)
+	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-		Sequence seq = expression.eval(docs, contextSequence, contextItem);
+		Sequence seq = expression.eval(contextSequence, contextItem);
 		if (seq.getLength() == 0)
 			return seq;
 		setContext(seq);
@@ -65,7 +64,7 @@ public class FilteredExpression extends AbstractExpression {
 		Sequence result = seq;
 		for (Iterator i = predicates.iterator(); i.hasNext();) {
 			pred = (Predicate) i.next();
-			result = pred.eval(docs, result);
+			result = pred.eval(result);
 		}
 		return result;
 	}

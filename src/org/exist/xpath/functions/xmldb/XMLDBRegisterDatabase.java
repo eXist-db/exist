@@ -67,12 +67,11 @@ public class XMLDBRegisterDatabase extends Function {
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		String driverName = getArgument(0).eval(docs, contextSequence, contextItem).getStringValue();
-		boolean createDatabase = getArgument(1).eval(docs, contextSequence, contextItem).effectiveBooleanValue();
+		String driverName = getArgument(0).eval(contextSequence, contextItem).getStringValue();
+		boolean createDatabase = getArgument(1).eval(contextSequence, contextItem).effectiveBooleanValue();
 		try {
 			Class driver = Class.forName(driverName);
 			Database database = (Database)driver.newInstance();

@@ -67,7 +67,6 @@ public class FunNot extends Function {
 	}
 
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
@@ -84,7 +83,7 @@ public class FunNot extends Function {
 				}
 			// evaluate argument expression
 			Sequence argSeq =
-				arg.eval(docs, contextSequence, contextItem);
+				arg.eval(contextSequence, contextItem);
 			LOG.debug("not argument: " + argSeq.getLength());
 			NodeProxy parent;
 			long pid;
@@ -112,7 +111,7 @@ public class FunNot extends Function {
 			return result;
 		} else {
 			Sequence seq =
-				arg.eval(docs, contextSequence, contextItem);
+				arg.eval(contextSequence, contextItem);
 			return seq.effectiveBooleanValue() ? BooleanValue.TRUE : BooleanValue.FALSE;
 		}
 	}

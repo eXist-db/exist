@@ -97,7 +97,6 @@ public class ExtFulltext extends Function {
 	}
 
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
@@ -108,12 +107,12 @@ public class ExtFulltext extends Function {
 			NodeSet nodes =
 				path == null
 					? contextSequence.toNodeSet()
-					: path.eval(docs, contextSequence).toNodeSet();
+					: path.eval(contextSequence).toNodeSet();
 			String arg =
 				searchTerm
-					.eval(docs, contextSequence)
+					.eval(contextSequence)
 					.getStringValue();
-			return evalQuery(context, docs, arg, nodes);
+			return evalQuery(context, arg, nodes);
 		} else {
 			Item current;
 			String arg;
@@ -126,7 +125,7 @@ public class ExtFulltext extends Function {
 				nodes =
 					path == null
 						? contextSequence.toNodeSet()
-						: path.eval(docs, contextSequence).toNodeSet();
+						: path.eval(contextSequence).toNodeSet();
 				haveNodes = true;
 			}
 			for (SequenceIterator i = contextSequence.iterate();
@@ -135,7 +134,7 @@ public class ExtFulltext extends Function {
 				current = i.nextItem();
 				arg =
 					searchTerm
-						.eval(docs, current.toSequence())
+						.eval(current.toSequence())
 						.getStringValue();
 				long start = System.currentTimeMillis();
 				if (!haveNodes) {
@@ -143,10 +142,10 @@ public class ExtFulltext extends Function {
 						path == null
 							? contextSequence.toNodeSet()
 							: path
-								.eval(docs, current.toSequence())
+								.eval(current.toSequence())
 								.toNodeSet();
 				}
-				temp = evalQuery(context, docs, arg, nodes);
+				temp = evalQuery(context, arg, nodes);
 				result.addAll(temp);
 				LOG.debug(
 					"found "
@@ -162,7 +161,6 @@ public class ExtFulltext extends Function {
 
 	public Sequence evalQuery(
 		StaticContext context,
-		DocumentSet docs,
 		String searchArg,
 		NodeSet nodes)
 		throws XPathException {
@@ -171,7 +169,7 @@ public class ExtFulltext extends Function {
 		} catch (EXistException e) {
 			throw new XPathException(e.getMessage(), e);
 		}
-		NodeSet hits = processQuery(context, docs, nodes);
+		NodeSet hits = processQuery(context, nodes);
 
 		if (hits == null)
 			return NodeSet.EMPTY_SET;
@@ -203,7 +201,6 @@ public class ExtFulltext extends Function {
 
 	protected NodeSet processQuery(
 		StaticContext context,
-		DocumentSet in_docs,
 		NodeSet contextSet) {
 		if (terms == null)
 			throw new RuntimeException("no search terms");
@@ -211,7 +208,7 @@ public class ExtFulltext extends Function {
 		for (int k = 0; k < terms.length; k++) {
 			hits =
 				context.getBroker().getTextEngine().getNodesContaining(
-					in_docs,
+					contextSet.getDocumentSet(),
 					contextSet,
 					terms[k]);
 			if (type == Constants.FULLTEXT_AND)

@@ -32,11 +32,11 @@ import org.exist.xpath.value.SequenceIterator;
 import org.w3c.dom.Node;
 
 /**
- * A fast node set implementation, based on arrays to store nodes and an AVL tree to 
+ * A fast node set implementation, based on arrays to store nodes and a hash map to 
  * organize documents. 
  * 
  * The class uses arrays to store all nodes belonging to one document.
- * The AVL tree maps the document id to the array containing the nodes for the document.
+ * The hash map maps the document id to the array containing the nodes for the document.
  * Nodes are just appended to the array. No order is guaranteed and calls to get/contains may fail
  * although a node is present in the array (get/contains do a binary search and thus assume that
  * the set is sorted). Also, duplicates are allowed. If you have to ensure that calls to get/contains 
@@ -261,6 +261,25 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 		isSorted = true;
 	}
 
+	public DocumentSet getDocumentSet() {
+		if(!isSorted)
+			size = 0;
+		Part part;
+		DocumentSet ds = new DocumentSet();
+		for (Iterator i = map.valueIterator(); i.hasNext();) {
+			part = (Part) i.next();
+			if(!isSorted) {
+				part.sort();
+				size += part.removeDuplicates();
+			}
+			for(int j = 0; j < part.length; j++) {
+				ds.add(part.array[j].doc);
+			}
+		}
+		isSorted = true;
+		return ds;
+	}
+	
 	private final static class Part {
 
 		NodeProxy array[];

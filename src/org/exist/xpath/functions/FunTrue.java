@@ -47,7 +47,7 @@ public class FunTrue extends Function {
 		return Type.BOOLEAN;
 	}
 	
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) {
+	public Sequence eval(Sequence contextSequence, Item contextItem) {
 		return BooleanValue.FALSE;
 	}
 

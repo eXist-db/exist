@@ -20,10 +20,10 @@
 
 package org.exist.xpath.functions;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
-import org.exist.xpath.*;
 import org.exist.xpath.Cardinality;
+import org.exist.xpath.Function;
+import org.exist.xpath.FunctionSignature;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.IntegerValue;
@@ -50,11 +50,11 @@ public class FunStrLength extends Function {
 		super(context, signature);
 	}
 
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
 		if(getArgumentCount() == 1)
-			contextSequence = getArgument(0).eval(docs, contextSequence);
+			contextSequence = getArgument(0).eval(contextSequence);
 		String strval = contextSequence.getStringValue();
 		return new IntegerValue(strval.length());
 	}

@@ -46,11 +46,10 @@ public class DynamicCardinalityCheck extends AbstractExpression {
 	 * @see org.exist.xpath.Expression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
 	 */
 	public Sequence eval(
-		DocumentSet docs,
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		Sequence seq = expression.eval(docs, contextSequence, contextItem);
+		Sequence seq = expression.eval(contextSequence, contextItem);
 		int items = seq.getLength();
 		if(items > 0 && requiredCardinality == Cardinality.EMPTY)
 			throw new XPathException("Empty sequence expected; got " + items);

@@ -20,10 +20,10 @@
  */
 package org.exist.xpath.functions;
 
-import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
-import org.exist.xpath.*;
 import org.exist.xpath.Cardinality;
+import org.exist.xpath.Function;
+import org.exist.xpath.FunctionSignature;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.IntegerValue;
@@ -50,11 +50,11 @@ public class FunCount extends Function {
 		return Type.INTEGER;
     }
 	
-    public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
     	if(getArgumentCount() == 0)
     		return IntegerValue.ZERO;
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
-		return new IntegerValue(getArgument(0).eval(docs, contextSequence).getLength());
+		return new IntegerValue(getArgument(0).eval(contextSequence).getLength());
 	}
 }

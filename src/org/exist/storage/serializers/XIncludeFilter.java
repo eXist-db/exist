@@ -233,7 +233,7 @@ public class XIncludeFilter implements ContentHandler {
 					}
 					LOG.info("xpointer query: " + expr.pprint());
 					long start = System.currentTimeMillis();
-					Sequence seq = expr.eval(docs, null, null);
+					Sequence seq = expr.eval(null, null);
 					switch (seq.getItemType()) {
 						case Type.NODE :
 							NodeSet set = (NodeSet) seq;

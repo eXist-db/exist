@@ -96,7 +96,7 @@ public class LRUCache implements Cache {
 		Cacheable next;
 		for(Iterator i = stack.iterator(); i.hasNext(); ) {
 			next = (Cacheable)i.next();
-			next.release();
+			next.sync();
 		}
 	}
 
@@ -138,7 +138,7 @@ public class LRUCache implements Cache {
 		Cacheable first = (Cacheable)stack.removeFirst();
 		if(!stack.contains(first)) {
 			map.remove(first.getKey());
-			first.release();
+			first.sync();
 		}
 	}
 }
