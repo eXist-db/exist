@@ -48,10 +48,20 @@ public class FunNot extends Function {
 				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)},
 			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
 
+	private boolean inWhereClause = false;
+	
 	public FunNot(XQueryContext context) {
 		super(context, signature);
 	}
 
+	/* (non-Javadoc)
+     * @see org.exist.xquery.Function#analyze(org.exist.xquery.Expression, int)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+        super.analyze(parent, flags);
+        inWhereClause = (flags & IN_WHERE_CLAUSE) != 0;
+    }
+    
 	public int returnsType() {
 		return Type.subTypeOf(getArgument(0).returnsType(), Type.NODE)
 			? Type.NODE
@@ -79,13 +89,12 @@ public class FunNot extends Function {
 		if (Type.subTypeOf(arg.returnsType(), Type.NODE) &&
 			(arg.getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
 			if (contextSequence.getLength() == 0) {
-				// special treatment if the context sequence is empty:
+				// TODO: special treatment if the context sequence is empty:
 				// within a predicate, we just return the empty sequence
-				// otherwise evaluate the argument and return a boolean result
-// TODO: why do we need this special case here?			    
-//				if (inPredicate)
-//					return Sequence.EMPTY_SEQUENCE;
-//				else
+				// otherwise evaluate the argument and return a boolean result			    
+				if (inPredicate && !inWhereClause)
+					return Sequence.EMPTY_SEQUENCE;
+				else
 					return evalBoolean(contextSequence, contextItem, arg);
 			}
 			NodeSet result = new ExtArrayNodeSet();
