@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.exist.dom.QName;
 import org.exist.xquery.functions.ExtNear;
+import org.exist.xquery.functions.ExtPhrase;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.Type;
 
@@ -38,15 +39,6 @@ public class FunctionFactory {
 	 * functions. It also deals with constructor functions and
 	 * optimizes some function calls like starts-with, ends-with or
 	 * contains. 
-	 * 
-	 * @param pool
-	 * @param context
-	 * @param parent
-	 * @param fnName
-	 * @param params
-	 * @return
-	 * @throws EXistException
-	 * @throws PermissionDeniedException
 	 */
 	public static Expression createFunction(
 		XQueryContext context,
@@ -86,6 +78,20 @@ public class FunctionFactory {
 				step = near;
 			}
 	
+			// phrase(node-set, string)
+            if (local.equals("phrase")) {
+                if (params.size() < 2)
+                    throw new XPathException(ast, "Function phrase requires two arguments");
+                PathExpr p1 = (PathExpr) params.get(1);
+                if (p1.getLength() == 0)
+                    throw new XPathException(ast, "Second argument to phrase is empty");   
+                Expression e1 = p1.getExpression(0);
+                ExtPhrase phrase = new ExtPhrase(context);
+                phrase.setASTNode(ast);
+                phrase.addTerm(e1);
+                phrase.setPath((PathExpr) params.get(0));                                          step = phrase;
+            }
+			
 			// starts-with(node-set, string)
 			if (local.equals("starts-with")) {
 				if (params.size() < 2)
