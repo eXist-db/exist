@@ -751,14 +751,14 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 				throw new DOMException(
 					DOMException.INVALID_MODIFICATION_ERR,
 					"a node replacing the document root needs to be an element");
-			broker.removeNode(old, "/");
+			broker.removeNode(old, old.getPath());
 			broker.endRemove();
 			newNode.gid = old.gid;
 			broker.insertAfter(previous, newNode);
 			broker.index(newNode);
 			broker.flush();
 		} else {
-			broker.removeNode(old, "/");
+			broker.removeNode(old, old.getPath());
 			broker.endRemove();
 			newNode.gid = 0;
 			broker.insertAfter(previous, newNode);
