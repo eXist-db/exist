@@ -119,7 +119,8 @@ public class XmlRpcTest extends TestCase {
 	
 	public void testQuery() throws Exception {
 		Vector params = new Vector();
-		String query = "//para";
+		String query = 
+			"(::pragma exist:serialize indent=no::) //para";
 		params.addElement(query.getBytes("UTF-8"));
 		params.addElement(new Integer(10));
 		params.addElement(new Integer(1));

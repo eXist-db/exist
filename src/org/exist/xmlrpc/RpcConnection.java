@@ -80,6 +80,7 @@ import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SAXSerializerPool;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.PathExpr;
+import org.exist.xquery.Pragma;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
@@ -214,7 +215,7 @@ public class RpcConnection extends Thread {
 		return expr;
 	}
 
-	protected Sequence doQuery(User user, DBBroker broker, String xpath,
+	protected QueryResult doQuery(User user, DBBroker broker, String xpath,
 			DocumentSet docs, NodeSet contextSet, Hashtable parameters)
 			throws Exception {
 		String baseURI = (String) parameters.get(RpcAPI.BASE_URI);
@@ -253,28 +254,48 @@ public class RpcConnection extends Thread {
 		}
 		if(compiled == null)
 		    compiled = xquery.compile(context, source);
+		checkPragmas(context, parameters);
 		try {
 		    long start = System.currentTimeMillis();
 		    Sequence result = xquery.execute(compiled, contextSet);
 		    LOG.info("query took " + (System.currentTimeMillis() - start) + "ms.");
-		    return result;
+		    return new QueryResult(context, result);
 		} finally {
 		    pool.returnCompiledXQuery(source, compiled);
 		}
 	}
 
+	/**
+	 * Check if the XQuery contains pragmas that define serialization settings.
+	 * If yes, copy the corresponding settings to the current set of output properties.
+	 * 
+	 * @param context
+	 */
+	protected void checkPragmas(XQueryContext context, Hashtable parameters) throws XPathException {
+		Pragma pragma = context.getPragma(Pragma.SERIALIZE_QNAME);
+		if(pragma == null)
+			return;
+		String[] contents = pragma.tokenizeContents();
+		for(int i = 0; i < contents.length; i++) {
+			String[] pair = Pragma.parseKeyValuePair(contents[i]);
+			if(pair == null)
+				throw new XPathException("Unknown parameter found in " + pragma.getQName().toString() +
+						": '" + contents[i] + "'");
+			LOG.debug("Setting serialization property from pragma: " + pair[0] + " = " + pair[1]);
+			parameters.put(pair[0], pair[1]);
+		}
+	}
+	
 	public int executeQuery(User user, String xpath, Hashtable parameters) throws Exception {
 		long startTime = System.currentTimeMillis();
-		LOG.debug("query: " + xpath);
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			Sequence resultValue = doQuery(user, broker, xpath, null, null,
+			QueryResult result = doQuery(user, broker, xpath, null, null,
 					parameters);
-			QueryResult qr = new QueryResult(resultValue, (System
-					.currentTimeMillis() - startTime));
-			connectionPool.resultSets.put(qr.hashCode(), qr);
-			return qr.hashCode();
+			result.queryTime = System.currentTimeMillis() - startTime;
+			connectionPool.resultSets.put(result.hashCode(), result);
+			return result.hashCode();
 		} finally {
 			brokerPool.release(broker);
 		}
@@ -1171,13 +1192,13 @@ public class RpcConnection extends Thread {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			Sequence resultSeq = doQuery(user, broker, xpath, null, null, parameters);
-			if (resultSeq == null)
+			QueryResult qr = doQuery(user, broker, xpath, null, null, parameters);
+			if (qr == null)
 				return "<?xml version=\"1.0\"?>\n"
 						+ "<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" "
 						+ "hitCount=\"0\"/>";
 
-			result = printAll(broker, resultSeq, howmany, start, parameters,
+			result = printAll(broker, qr.result, howmany, start, parameters,
 					(System.currentTimeMillis() - startTime));
 		} finally {
 			brokerPool.release(broker);
@@ -1194,6 +1215,7 @@ public class RpcConnection extends Thread {
 		Vector result = new Vector();
 		NodeSet nodes = null;
 		DocumentSet docs = null;
+		QueryResult queryResult;
 		Sequence resultSeq = null;
 		DBBroker broker = null;
 		try {
@@ -1212,9 +1234,10 @@ public class RpcConnection extends Thread {
 				docs = new DocumentSet();
 				docs.add(node.getDocument());
 			}
-			resultSeq = doQuery(user, broker, xpath, docs, nodes, parameters);
-			if (resultSeq == null)
+			queryResult = doQuery(user, broker, xpath, docs, nodes, parameters);
+			if (queryResult == null)
 				return ret;
+			resultSeq = queryResult.result;
 			LOG.debug("found " + resultSeq.getLength());
 			
 			if (sortBy != null) {
@@ -1256,10 +1279,10 @@ public class RpcConnection extends Thread {
 		} finally {
 			brokerPool.release(broker);
 		}
-		QueryResult qr = new QueryResult(resultSeq,
-				(System.currentTimeMillis() - startTime));
-		connectionPool.resultSets.put(qr.hashCode(), qr);
-		ret.put("id", new Integer(qr.hashCode()));
+		queryResult.result = resultSeq;
+		queryResult.queryTime = (System.currentTimeMillis() - startTime);
+		connectionPool.resultSets.put(queryResult.hashCode(), queryResult);
+		ret.put("id", new Integer(queryResult.hashCode()));
 		ret.put("results", result);
 		return ret;
 	}
@@ -1370,6 +1393,7 @@ public class RpcConnection extends Thread {
 			    NodeValue nodeValue = (NodeValue)item;
 			    Serializer serializer = broker.getSerializer();
 				serializer.reset();
+				checkPragmas(qr.context, parameters);
 				serializer.setProperties(parameters);
 				return serializer.serialize(nodeValue);
 			} else {
@@ -1389,7 +1413,7 @@ public class RpcConnection extends Thread {
 			if (qr == null)
 				throw new EXistException("result set unknown or timed out");
 			qr.timestamp = System.currentTimeMillis();
-			
+			checkPragmas(qr.context, parameters);
 			Serializer serializer = broker.getSerializer();
 			serializer.reset();
 			serializer.setProperties(parameters);
@@ -1687,10 +1711,10 @@ public class RpcConnection extends Thread {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			Sequence resultSeq = doQuery(user, broker, xpath, null, null, null);
-			if (resultSeq == null)
+			QueryResult qr = doQuery(user, broker, xpath, null, null, null);
+			if (qr == null)
 				return new Hashtable();
-			NodeList resultSet = (NodeList) resultSeq;
+			NodeList resultSet = (NodeList) qr.result;
 			HashMap map = new HashMap();
 			HashMap doctypes = new HashMap();
 			NodeProxy p;
