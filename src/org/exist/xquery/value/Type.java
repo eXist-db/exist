@@ -308,7 +308,7 @@ public class Type {
 			return true;
 		if (supertype == ITEM || supertype == ANY_TYPE)
 			return true;
-		if (subtype == ITEM || subtype == EMPTY)
+		if (subtype == ITEM || subtype == EMPTY || subtype == ANY_TYPE)
 			return false;
 		if (!typeHierarchy.containsKey(subtype))
 			throw new IllegalArgumentException(
