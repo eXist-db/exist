@@ -72,6 +72,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
+import org.exist.storage.DataBackup;
 import org.exist.util.Configuration;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
@@ -689,6 +690,11 @@ public class RpcConnection extends Thread {
 		return true;
 	}
 
+    public boolean dataBackup(User user, String dest ) {
+		brokerPool.triggerSystemTask( new DataBackup(dest));		
+		return true;
+	}
+	
 	public Vector getDocumentListing(User user) throws EXistException {
 		DBBroker broker = null;
 		try {
