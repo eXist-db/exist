@@ -46,8 +46,7 @@ public class Head implements WebDAVMethod {
 			HttpServletResponse response, Collection collection,
 			DocumentImpl resource) throws ServletException, IOException {
 		if(resource == null) {
-			// GET is not available on collections
-			response.sendError(HttpServletResponse.SC_FORBIDDEN, "GET is not available on collections");
+			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
 		String contentType;
