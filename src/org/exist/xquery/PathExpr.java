@@ -21,8 +21,9 @@
 package org.exist.xquery;
 
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
@@ -49,7 +50,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     protected boolean keepVirtual = false;
 
-    protected LinkedList steps = new LinkedList();
+    protected List steps = new ArrayList();
 
     protected boolean inPredicate = false;
 
@@ -98,7 +99,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      * @param pred
      */
     public void addPredicate(Predicate pred) {
-        Expression e = (Expression) steps.getLast();
+        Expression e = (Expression) steps.get(steps.size() - 1);
         if (e instanceof Step) ((Step) e).addPredicate(pred);
     }
 
@@ -107,8 +108,13 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      */
     public void analyze(Expression parent, int flags) throws XPathException {
     	inPredicate = (flags & IN_PREDICATE) > 0;
-        for (Iterator iter = steps.iterator(); iter.hasNext();) {
-            Expression expr = (Expression) iter.next();
+        for (int i = 0; i < steps.size(); i++) {
+        	if(i == 1)
+        		// if this is a sequence of steps, the IN_PREDICATE flag
+        		// is only passed to the first step, so it has to be removed
+        		// for subsequent steps
+        		flags = flags & (~IN_PREDICATE);
+            Expression expr = (Expression) steps.get(i);
             expr.analyze(this, flags);
         }
     }
@@ -123,7 +129,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             r = Sequence.EMPTY_SEQUENCE;
         }
         DocumentSet contextDocs = null;
-        Expression expr = (Expression) steps.getFirst();
+        Expression expr = (Expression) steps.get(0);
         if (expr instanceof VariableReference) {
             Variable var = ((VariableReference) expr).getVariable();
             if (var != null) {
@@ -181,7 +187,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     public Expression getLastExpression() {
         if (steps.size() == 0) return null;
-        return (Expression) steps.getLast();
+        return (Expression) steps.get(steps.size() - 1);
     }
 
     public int getLength() {
@@ -210,7 +216,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     
     public int returnsType() {
         if (steps.size() == 0) return Type.NODE;
-        int rtype = ((Expression) steps.getLast()).returnsType();
+        int rtype = ((Expression) steps.get(steps.size() - 1)).returnsType();
         return rtype;
     }
 
@@ -228,17 +234,12 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         }
         return deps;
     }
-	
-    public void setFirstExpression(Expression s) {
-        steps.addFirst(s);
-    }
 
     public void replaceLastExpression(Expression s) {
         if (steps.size() == 0)
             return;
         else {
-            steps.removeLast();
-            steps.addLast(s);
+        	steps.set(steps.size() - 1, s);
         }
     }
 
