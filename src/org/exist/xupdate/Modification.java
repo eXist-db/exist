@@ -142,7 +142,7 @@ public abstract class Modification {
 			long start = System.currentTimeMillis();
 
 			Sequence resultSeq = expr.eval(null, null);
-			if (!Type.subTypeOf(resultSeq.getItemType(), Type.NODE))
+			if (!(resultSeq.getLength() == 0 || Type.subTypeOf(resultSeq.getItemType(), Type.NODE)))
 				throw new EXistException("select expression should evaluate to a node-set; got " +
 				        Type.getTypeName(resultSeq.getItemType()));
 			LOG.debug("found " + resultSeq.getLength() + " for select: " + selectStmt);

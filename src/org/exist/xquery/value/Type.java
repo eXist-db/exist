@@ -297,7 +297,7 @@ public class Type {
 	public final static boolean subTypeOf(int subtype, int supertype) {
 		if (subtype == supertype)
 			return true;
-		if (supertype == ITEM)
+		if (supertype == ITEM || supertype == ANY_TYPE)
 			return true;
 		if (subtype == ITEM || subtype == EMPTY)
 			return false;
