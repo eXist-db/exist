@@ -328,8 +328,8 @@ class UserDialog extends JFrame {
 			user.addGroup((String) groupsModel.elementAt(i));
 		try {
 			service.addUser(user);
+			client.reloadCollection();
 			userModel.reload();
-			client.getResources();
 		} catch (XMLDBException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage());
 		}
@@ -358,18 +358,14 @@ class UserDialog extends JFrame {
 			user.addGroup((String) groupsModel.elementAt(i));
 		try {
 			service.updateUser(user);
+			String myUser = client.properties.getProperty("user", "admin");
+			if(name.equals(myUser)) {
+				client.properties.setProperty("password", pass1);
+				client.reloadCollection();
+			}
 			userModel.reload();
 		} catch (XMLDBException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage());
-		}
-		String myUser = client.properties.getProperty("user", "admin");
-		if(name.equals(myUser)) {
-			client.properties.setProperty("password", pass1);
-			try {
-				client.getResources();
-			} catch (XMLDBException e) {
-				JOptionPane.showMessageDialog(this, e.getMessage());
-			}
 		}
 	}
 	
@@ -384,6 +380,7 @@ class UserDialog extends JFrame {
 			User user = userModel.users[selected[i]];
 			try {
 				service.removeUser(user);
+				client.reloadCollection();
 				userModel.reload();
 			} catch (XMLDBException e) {
 				JOptionPane.showMessageDialog(this, e.getMessage());
