@@ -127,7 +127,7 @@ public class BooleanValue extends AtomicValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
 	 */
-	public AtomicValue max(AtomicValue other) throws XPathException {
+	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.BOOLEAN) {
 			boolean otherValue = ((BooleanValue) other).value;
 			return value && (!otherValue) ? this : other;
@@ -137,7 +137,7 @@ public class BooleanValue extends AtomicValue {
 					+ Type.getTypeName(other.getType()));
 	}
 
-	public AtomicValue min(AtomicValue other) throws XPathException {
+	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.BOOLEAN) {
 			boolean otherValue = ((BooleanValue) other).value;
 			return (!value) && otherValue ? this : other;

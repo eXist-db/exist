@@ -288,7 +288,7 @@ public class GeneralComparison extends BinaryOp {
 			cmp = cmpCopy;
 		}
 		// now compare the input node set to the search expression
-		return context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp);
+		return context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp, context.getDefaultCollator());
 	}
 
 	/**
@@ -332,11 +332,11 @@ public class GeneralComparison extends BinaryOp {
 //					lv.getStringValue() + Constants.OPS[relation] + rv.getStringValue());
 			switch(truncation) {
 				case Constants.TRUNC_RIGHT:
-					return lv.startsWith(rv);
+					return lv.startsWith(context.getDefaultCollator(), rv);
 				case Constants.TRUNC_LEFT:
-					return lv.endsWith(rv);
+					return lv.endsWith(context.getDefaultCollator(), rv);
 				case Constants.TRUNC_BOTH:
-					return lv.contains(rv);
+					return lv.contains(context.getDefaultCollator(), rv);
 				default:
 					return lv.compareTo(context.getDefaultCollator(), relation, rv);
 			}

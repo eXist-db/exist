@@ -22,6 +22,7 @@ package org.exist.xquery.value;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.Collator;
 
 import org.exist.xquery.XPathException;
 
@@ -390,11 +391,11 @@ public class IntegerValue extends NumericValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.NumericValue#max(org.exist.xquery.value.AtomicValue)
 	 */
-	public AtomicValue max(AtomicValue other) throws XPathException {
+	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
 			return new IntegerValue( value.max( ((IntegerValue) other).value) );
 	}
 
-	public AtomicValue min(AtomicValue other) throws XPathException {
+	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
 		return new IntegerValue( value.min( ((IntegerValue) other).value) );
 	}
 

@@ -84,11 +84,11 @@ public class JavaObjectValue extends AtomicValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
 	 */
-	public AtomicValue max(AtomicValue other) throws XPathException {
+	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
 		throw new XPathException("Invalid argument to aggregate function: cannot compare Java objects");
 	}
 
-	public AtomicValue min(AtomicValue other) throws XPathException {
+	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
 		throw new XPathException("Invalid argument to aggregate function: cannot compare Java objects");
 	}
 

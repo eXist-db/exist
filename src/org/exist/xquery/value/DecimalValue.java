@@ -24,6 +24,7 @@
 package org.exist.xquery.value;
 
 import java.math.BigDecimal;
+import java.text.Collator;
 
 import org.exist.xquery.XPathException;
 
@@ -208,7 +209,7 @@ public class DecimalValue extends NumericValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.NumericValue#max(org.exist.xquery.value.AtomicValue)
 	 */
-	public AtomicValue max(AtomicValue other) throws XPathException {
+	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.DECIMAL) {
 			return new DecimalValue(value.max(((DecimalValue) other).value));
 		} else
@@ -216,7 +217,7 @@ public class DecimalValue extends NumericValue {
 				value.max(((DecimalValue) other.convertTo(Type.DECIMAL)).value));
 	}
 
-	public AtomicValue min(AtomicValue other) throws XPathException {
+	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.DECIMAL) {
 			return new DecimalValue(value.min(((DecimalValue) other).value));
 		} else {

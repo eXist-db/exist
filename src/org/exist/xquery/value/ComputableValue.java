@@ -54,12 +54,12 @@ public abstract class ComputableValue extends AtomicValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
 	 */
-	public abstract AtomicValue max(AtomicValue other) throws XPathException;
+	public abstract AtomicValue max(Collator collator, AtomicValue other) throws XPathException;
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#min(org.exist.xquery.value.AtomicValue)
 	 */
-	public abstract AtomicValue min(AtomicValue other) throws XPathException;
+	public abstract AtomicValue min(Collator collator, AtomicValue other) throws XPathException;
 	
 	public abstract ComputableValue minus(ComputableValue other) throws XPathException;
 	public abstract ComputableValue plus(ComputableValue other) throws XPathException;

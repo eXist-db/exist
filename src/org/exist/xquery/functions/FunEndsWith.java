@@ -21,6 +21,7 @@
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
+import org.exist.util.Collations;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
@@ -62,7 +63,7 @@ public class FunEndsWith extends Function {
 		Sequence s2 = getArgument(1).eval(contextSequence);
 		if (s1.getLength() == 0 || s2.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
-		if (s1.getStringValue().endsWith(s2.getStringValue()))
+		if (Collations.endsWith(context.getDefaultCollator(), s1.getStringValue(), s2.getStringValue()))
 			return BooleanValue.TRUE;
 		else
 			return BooleanValue.FALSE;

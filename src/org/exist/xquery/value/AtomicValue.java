@@ -54,21 +54,21 @@ public abstract class AtomicValue implements Item, Sequence {
 
 	public abstract int compareTo(Collator collator, AtomicValue other) throws XPathException;
 
-	public abstract AtomicValue max(AtomicValue other) throws XPathException;
+	public abstract AtomicValue max(Collator collator, AtomicValue other) throws XPathException;
 
-	public abstract AtomicValue min(AtomicValue other) throws XPathException;
+	public abstract AtomicValue min(Collator collator, AtomicValue other) throws XPathException;
 
-	public boolean startsWith(AtomicValue other) throws XPathException {
+	public boolean startsWith(Collator collator, AtomicValue other) throws XPathException {
 		throw new XPathException("Cannot call starts-with on value of type " + 
 				Type.getTypeName(getType()));
 	}
 	
-	public boolean endsWith(AtomicValue other) throws XPathException {
+	public boolean endsWith(Collator collator, AtomicValue other) throws XPathException {
 		throw new XPathException("Cannot call ends-with on value of type " + 
 				Type.getTypeName(getType()));
 	}
 	
-	public boolean contains(AtomicValue other) throws XPathException {
+	public boolean contains(Collator collator, AtomicValue other) throws XPathException {
 		throw new XPathException("Cannot call contains on value of type " + 
 				Type.getTypeName(getType()));
 	}
@@ -276,7 +276,7 @@ public abstract class AtomicValue implements Item, Sequence {
 		/* (non-Javadoc)
 		 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
 		 */
-		public AtomicValue max(AtomicValue other) throws XPathException {
+		public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
 			return this;
 		}
 
@@ -296,7 +296,7 @@ public abstract class AtomicValue implements Item, Sequence {
 		/* (non-Javadoc)
 		 * @see org.exist.xquery.value.AtomicValue#min(org.exist.xquery.value.AtomicValue)
 		 */
-		public AtomicValue min(AtomicValue other) throws XPathException {
+		public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
 			return this;
 		}
 
