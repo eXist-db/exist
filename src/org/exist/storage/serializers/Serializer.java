@@ -697,10 +697,12 @@ public abstract class Serializer implements XMLReader {
 			} else {
 				// if stylesheet is relative, add path to the
 				// current collection
-				URI base = URI.create(doc.getCollection().getName() + "/");
-				URI uri = URI.create(stylesheet);
-				stylesheet = base.resolve(uri).toString();
-
+				if(doc != null) {
+					URI base = URI.create(doc.getCollection().getName() + "/");
+					URI uri = URI.create(stylesheet);
+					stylesheet = base.resolve(uri).toString();
+				}
+				
 				// load stylesheet from eXist
 				DocumentImpl xsl = null;
 				try {
