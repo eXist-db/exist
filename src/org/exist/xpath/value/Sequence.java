@@ -24,11 +24,19 @@ import org.exist.xpath.XPathException;
 
 public interface Sequence {
 	
+	public final static Sequence EMPTY_SEQUENCE = new EmptySequence();
+	
+	public void add(Item item) throws XPathException;
+	
 	public int getItemType();
 	
 	public SequenceIterator iterate();
 	
 	public int getLength();
 	
+	public Item itemAt(int pos);
+	
 	public AtomicValue convertTo(int requiredType) throws XPathException;
+	
+	public String getStringValue();
 }

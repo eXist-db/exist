@@ -20,6 +20,8 @@
  */
 package org.exist.xpath.value;
 
+import org.exist.xpath.XPathException;
+
 public class EmptySequence extends AbstractSequence {
 
 	/* (non-Javadoc)
@@ -43,4 +45,23 @@ public class EmptySequence extends AbstractSequence {
 		return 0;
 	}
 
+	public Item itemAt(int pos) {
+		return null;
+	}
+	
+	public void add(Item item) throws XPathException {
+		throw new XPathException("cannot add an item to an empty sequence");
+	}
+	
+	public AtomicValue convertTo(int requiredType) throws XPathException {
+		System.out.println("hello");
+		switch(requiredType) {
+			case Type.BOOLEAN:
+				return new BooleanValue(false);
+			case Type.STRING:
+				return new StringValue("");
+			default:
+				throw new XPathException("cannot convert empty sequence to " + requiredType);
+		}
+	}
 }

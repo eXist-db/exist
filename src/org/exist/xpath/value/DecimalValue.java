@@ -22,7 +22,7 @@ package org.exist.xpath.value;
 
 import org.exist.xpath.XPathException;
 
-public class DecimalValue extends AtomicValue {
+public class DecimalValue extends NumericValue {
 
 	private double value;
 	
@@ -52,6 +52,14 @@ public class DecimalValue extends AtomicValue {
 		return Double.toString(value);
 	}
 
+	public double getValue() {
+		return value;
+	}
+	
+	public Item itemAt(int pos) {
+		return pos == 0 ? this : null;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.AtomicValue#convertTo(int)
 	 */
@@ -72,5 +80,29 @@ public class DecimalValue extends AtomicValue {
 				throw new XPathException("cannot convert decimal value '" + value + "' into " + requiredType);
 		}
 	}
-
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#getDouble()
+	 */
+	public double getDouble() throws XPathException {
+		return value;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#getInt()
+	 */
+	public int getInt() throws XPathException {
+		return (int)value;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#getLong()
+	 */
+	public long getLong() throws XPathException {
+		return (long)value;
+	}
+	
+	public void setValue(double val) {
+		value = val;
+	}
 }
