@@ -31,6 +31,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.VirtualNodeSet;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -116,28 +117,32 @@ public abstract class BindingExpression extends AbstractExpression {
 			Type.subTypeOf(contextSequence.getItemType(), Type.NODE))) {
 			// if the where expression returns a node set, check the context
 			// node of each node in the set
-			NodeSet temp = whereExpr.eval(contextSequence).toNodeSet();
+			NodeSet contextSet = contextSequence.toNodeSet();
+			boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;
+			NodeSet nodes = whereExpr.eval(contextSequence).toNodeSet();
 			NodeProxy current;
 			ContextItem contextNode;
 			NodeProxy next;
 			DocumentImpl lastDoc = null;
 			int count = 0, sizeHint = -1;
 			NodeSet result = new ExtArrayNodeSet();
-			for (Iterator i = temp.iterator(); i.hasNext(); count++) {
+			for (Iterator i = nodes.iterator(); i.hasNext(); count++) {
 				current = (NodeProxy) i.next();
-				if (lastDoc == null || current.doc != lastDoc) {
+				if(lastDoc == null || current.doc != lastDoc) {
 					lastDoc = current.doc;
-					sizeHint = temp.getSizeHint(lastDoc);
+					sizeHint = nodes.getSizeHint(lastDoc);
 				}
 				contextNode = current.getContext();
 				if (contextNode == null) {
-					throw new XPathException("Internal evaluation error: context node is missing!");
+					throw new XPathException("Internal evaluation error: context node is missing for node " +
+						current.gid + "!");
 				}
 				while (contextNode != null) {
 					next = contextNode.getNode();
-					next.addMatches(current);
-					if (!result.contains(next))
+					if(contextIsVirtual || contextSet.contains(next)) {
+						next.addMatches(current);
 						result.add(next, sizeHint);
+					}
 					contextNode = contextNode.getNextItem();
 				}
 			}
