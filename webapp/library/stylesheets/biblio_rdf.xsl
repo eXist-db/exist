@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="ISO-8859-1"?>
 
 <!-- Format query results for display -->
 
@@ -9,7 +9,7 @@
   xmlns:dc="http://purl.org/dc/elements/1.1/"
   xmlns:x="http://exist.sourceforge.net/dc-ext"
   xmlns:java="http://xml.apache.org/xslt/java"
-  xmlns:xmldb="http://exist-db/transformer/1.0"
+  xmlns:xmldb="http://exist-db.org/transformer/1.0"
   version="1.0">	
 	
   <xsl:include href="context://stylesheets/doc2html-2.xsl"/>

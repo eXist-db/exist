@@ -6,7 +6,7 @@
   xmlns:sidebar="http://exist-db.org/NS/sidebar"
   version="1.0">
 
-  <!-- Parameter f?r die anzuzeigende Seite -->
+  <!-- used by multi-form pages -->
   <xsl:param name="page"/>
 
   <xsl:variable name="showpage">
