@@ -52,4 +52,9 @@ public class AnyNodeTest implements NodeTest {
 		return "node()";
 	}
 
+    /* (non-Javadoc)
+     * @see org.exist.xquery.NodeTest#setType(int)
+     */
+    public void setType(int nodeType) {
+    }
 }
