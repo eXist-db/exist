@@ -27,6 +27,8 @@ import javax.xml.parsers.SAXParserFactory;
 import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
 /**
@@ -76,11 +78,17 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
 		saxFactory.setNamespaceAware(true);
 		try {
 			saxFactory.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
-			saxFactory.setFeature("http://apache.org/xml/features/validation/dynamic",
-					validation == VALIDATION_AUTO);
-			saxFactory.setFeature("http://apache.org/xml/features/validation/schema",
-					validation == VALIDATION_AUTO
-							|| validation == VALIDATION_ENABLED);
+			try {
+				saxFactory.setFeature("http://apache.org/xml/features/validation/dynamic",
+						validation == VALIDATION_AUTO);
+				saxFactory.setFeature("http://apache.org/xml/features/validation/schema",
+						validation == VALIDATION_AUTO
+								|| validation == VALIDATION_ENABLED);
+			} catch (SAXNotRecognizedException e1) {
+				// ignore: feature only recognized by xerces
+			} catch (SAXNotSupportedException e1) {
+				// ignore: feature only recognized by xerces
+			}
 			SAXParser sax = saxFactory.newSAXParser();
 			XMLReader parser = sax.getXMLReader();
 			return parser;
