@@ -35,6 +35,7 @@ import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.http.webdav.WebDAV;
 import org.exist.http.webdav.WebDAVMethod;
+import org.exist.security.Permission;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -62,6 +63,10 @@ public class Get implements WebDAVMethod {
 			// GET is not available on collections
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "GET is not available on collections");
 			return;
+		}
+		if(!resource.getPermissions().validate(user, Permission.READ)) {
+		    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Not allowed to read resource");
+		    return;
 		}
 		String contentType;
 		if(resource.getResourceType() == DocumentImpl.XML_FILE)

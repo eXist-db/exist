@@ -25,6 +25,7 @@ package org.exist.xquery.functions;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
@@ -110,6 +111,8 @@ public class FunDoc extends Function {
 		    DocumentImpl doc = (DocumentImpl) context.getBroker().getDocument(path);
 		    if(doc == null)
 		        return Sequence.EMPTY_SEQUENCE;
+		    if(!doc.getPermissions().validate(context.getUser(), Permission.READ))
+			    throw new XPathException(getASTNode(), "Insufficient privileges to read resource " + path);
 		    // wait for currently pending updates
 		    dlock = doc.getUpdateLock();
 		    dlock.acquire(Lock.READ_LOCK);

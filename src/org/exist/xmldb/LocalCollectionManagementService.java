@@ -24,6 +24,7 @@ package org.exist.xmldb;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;

@@ -11,6 +11,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.XMLUtil;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
@@ -176,6 +177,8 @@ public class XIncludeFilter implements ContentHandler {
 			DocumentImpl doc = null;
 			try {
 				doc = (DocumentImpl) serializer.broker.getDocument(docName);
+				if(!doc.getPermissions().validate(serializer.broker.getUser(), Permission.READ))
+					throw new PermissionDeniedException("Permission denied to read xincluded resource");
 			} catch (PermissionDeniedException e) {
 				LOG.warn("permission denied", e);
 				throw new SAXException(e);

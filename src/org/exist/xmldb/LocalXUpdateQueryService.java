@@ -60,7 +60,7 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 		try {
 			broker = pool.get(user);
 			if (resource == null) {
-				docs = c.allDocs(broker, docs, true);
+				docs = c.allDocs(broker, docs, true, true);
 			} else {
 				DocumentImpl doc = c.getDocument(broker, resource);
 				docs.add(doc);

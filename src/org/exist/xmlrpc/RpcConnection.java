@@ -220,7 +220,7 @@ public class RpcConnection extends Thread {
 			else {
 				docs = new DocumentSet();
 				Collection root = broker.getCollection(baseURI);
-				root.allDocs(broker, docs, true);
+				root.allDocs(broker, docs, true, true);
 			}
 		}
 		Source source = new StringSource(xpath);
@@ -437,11 +437,15 @@ public class RpcConnection extends Thread {
 				LOG.debug("collection " + collName + " not found!");
 				return null;
 			}
+			if(!collection.getPermissions().validate(user, Permission.READ))
+			    throw new PermissionDeniedException("Insufficient privileges to read resource");
 			doc = collection.getDocumentWithLock(broker, docName);
 			if (doc == null) {
 				LOG.debug("document " + name + " not found!");
 				throw new EXistException("document not found");
 			}
+			if(!doc.getPermissions().validate(user, Permission.READ))
+			    throw new PermissionDeniedException("Insufficient privileges to read resource " + docName);
 			Serializer serializer = broker.getSerializer();
 
 			if (parametri != null) {
@@ -539,6 +543,8 @@ public class RpcConnection extends Thread {
 			if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
 				throw new EXistException("Document " + name
 						+ " is not a binary resource");
+			if(!doc.getPermissions().validate(user, Permission.READ))
+			    throw new PermissionDeniedException("Insufficient privileges to read resource");
 			return broker.getBinaryResourceData((BinaryDocument) doc);
 		} finally {
 			brokerPool.release(broker);
@@ -556,7 +562,7 @@ public class RpcConnection extends Thread {
 				throw new EXistException("collection " + collectionName
 						+ " not found");
 			DocumentSet docs = collection.allDocs(broker, new DocumentSet(),
-					true);
+					true, true);
 			XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
 			Modification modifications[] = processor.parse(new InputSource(
 					new StringReader(xupdate)));
@@ -581,9 +587,11 @@ public class RpcConnection extends Thread {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			Document doc = broker.getDocument(resource);
+			DocumentImpl doc = (DocumentImpl)broker.getDocument(resource);
 			if (doc == null)
 				throw new EXistException("document " + resource + " not found");
+			if(!doc.getPermissions().validate(user, Permission.READ))
+			    throw new PermissionDeniedException("Insufficient privileges to read resource");
 			DocumentSet docs = new DocumentSet();
 			docs.add(doc);
 			XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
@@ -1573,6 +1581,8 @@ public class RpcConnection extends Thread {
 		try {
 			broker = brokerPool.get(user);
 			DocumentImpl doc = (DocumentImpl) broker.getDocument(path);
+			if(!doc.getPermissions().validate(user, Permission.READ))
+			    throw new PermissionDeniedException("Insufficient privileges to read resource");
 			if (doc == null)
 				throw new EXistException("Resource " + path + " not found");
 			User u = doc.getUserLock();

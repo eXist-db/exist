@@ -31,11 +31,12 @@ import java.util.Date;
 
 import org.exist.EXistException;
 import org.exist.dom.BinaryDocument;
+import org.exist.dom.DocumentImpl;
 import org.exist.security.Permission;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.util.LockException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
@@ -50,7 +51,6 @@ public class LocalBinaryResource implements BinaryResource, EXistResource {
 	protected BrokerPool pool;
 	protected LocalCollection parent;
 	protected String docId;
-	protected BinaryDocument blob = null;
 	protected byte[] rawData = null;
 	
 	/**
@@ -65,21 +65,12 @@ public class LocalBinaryResource implements BinaryResource, EXistResource {
 			docId = docId.substring(docId.lastIndexOf('/') + 1);
 		this.docId = docId;
 	}
-
-	public LocalBinaryResource(User user, BrokerPool pool, LocalCollection collection, BinaryDocument blob) {
-		this(user, pool, collection, blob.getFileName());
-		this.blob = blob;
-	}
 	
 	/* (non-Javadoc)
 	 * @see org.xmldb.api.base.Resource#getParentCollection()
 	 */
 	public Collection getParentCollection() throws XMLDBException {
 		return parent;
-	}
-
-	public BinaryDocument getBlob() {
-		return blob;
 	}
 	
 	/* (non-Javadoc)
@@ -100,15 +91,21 @@ public class LocalBinaryResource implements BinaryResource, EXistResource {
 	 * @see org.xmldb.api.base.Resource#getContent()
 	 */
 	public Object getContent() throws XMLDBException {
-		if(rawData == null && blob != null) {
+		if(rawData == null) {
 			DBBroker broker = null;
+			BinaryDocument blob = null;
 			try {
 				broker = pool.get(user);
+				blob = getDocument(broker, true);
+				if(!blob.getPermissions().validate(user, Permission.READ))
+				    throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
+				    	"Permission denied to read resource");
 				rawData = broker.getBinaryResourceData(blob);
 			} catch(EXistException e) {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 					"error while loading binary resource " + getId(), e);
 			} finally {
+			    parent.getCollection().releaseDocument(blob);
 				pool.release(broker);
 			}
 		}
@@ -156,8 +153,7 @@ public class LocalBinaryResource implements BinaryResource, EXistResource {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			if (blob == null)
-				getDocument(broker);
+			BinaryDocument blob = getDocument(broker, false);
 			if (!blob.getPermissions().validate(user, Permission.READ))
 				throw new XMLDBException(
 						ErrorCodes.PERMISSION_DENIED,
@@ -177,8 +173,7 @@ public class LocalBinaryResource implements BinaryResource, EXistResource {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			if (blob == null)
-				getDocument(broker);
+			BinaryDocument blob = getDocument(broker, false);
 			if (!blob.getPermissions().validate(user, Permission.READ))
 				throw new XMLDBException(
 						ErrorCodes.PERMISSION_DENIED,
@@ -194,21 +189,35 @@ public class LocalBinaryResource implements BinaryResource, EXistResource {
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.EXistResource#getPermissions()
 	 */
-	public Permission getPermissions() {
-		return blob != null ? blob.getPermissions() : null;
+	public Permission getPermissions() throws XMLDBException {
+	    DBBroker broker = null;
+	    try {
+	        broker = pool.get(user);
+		    DocumentImpl document = getDocument(broker, false);
+			return document != null ? document.getPermissions() : null;
+	    } catch (EXistException e) {
+            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
+        } finally {
+	        pool.release(broker);
+	    }
 	}
 
-	protected void getDocument(DBBroker broker) throws XMLDBException {
-		if (blob != null)
-			return;
-		try {
-			String path =
-				(parent.getPath().equals("/") ? '/' + docId : parent.getPath() + '/' + docId);
-			blob = (BinaryDocument) broker.getDocument(path);
-			if (blob == null)
-				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE);
-		} catch (PermissionDeniedException e) {
-			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e);
-		}
+	protected BinaryDocument getDocument(DBBroker broker, boolean lock) throws XMLDBException {
+	    DocumentImpl document = null;
+	    if(lock)
+            try {
+                document = parent.getCollection().getDocumentWithLock(broker, docId);
+            } catch (LockException e) {
+                throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
+                        "Failed to acquire lock on document " + docId);
+            }
+        else
+	        document = parent.getCollection().getDocument(broker, docId);
+	    if (document == null)
+	        throw new XMLDBException(ErrorCodes.INVALID_RESOURCE);
+	    if (document.getResourceType() != DocumentImpl.BINARY_FILE)
+	        throw new XMLDBException(ErrorCodes.WRONG_CONTENT_TYPE, "Document " + docId + 
+	                " is not a binary resource");
+	    return (BinaryDocument)document;
 	}
 }

@@ -11,6 +11,7 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
@@ -19,7 +20,6 @@ import org.exist.util.LockException;
 import org.exist.xquery.XPathException;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
-import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -203,7 +203,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 				throw new RemoteException(
 					"collection " + collectionName + " not found");
 			DocumentSet docs =
-				collection.allDocs(broker, new DocumentSet(), true);
+				collection.allDocs(broker, new DocumentSet(), true, true);
 			XUpdateProcessor processor =
 				new XUpdateProcessor(broker, docs);
 			Modification modifications[] =
@@ -245,10 +245,12 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		Session session = getSession(sessionId);
 		try {
 			broker = pool.get(session.getUser());
-			Document doc = broker.getDocument(documentName);
+			DocumentImpl doc = (DocumentImpl)broker.getDocument(documentName);
 			if (doc == null)
 				throw new RemoteException(
 					"document " + documentName + " not found");
+			if(!doc.getPermissions().validate(broker.getUser(), Permission.READ))
+				throw new RemoteException("Not allowed to read resource");
 			DocumentSet docs = new DocumentSet();
 			docs.add(doc);
 			XUpdateProcessor processor =

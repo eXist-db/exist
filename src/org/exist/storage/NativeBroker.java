@@ -334,7 +334,7 @@ public class NativeBroker extends DBBroker {
 	public DocumentSet getAllDocuments(DocumentSet docs) {
 		long start = System.currentTimeMillis();
 		Collection root = getCollection(ROOT_COLLECTION);
-		root.allDocs(this, docs, true);
+		root.allDocs(this, docs, true, false);
         if (LOG.isDebugEnabled()) {
             LOG.debug("getAllDocuments(DocumentSet) - end - "
                 + "loading "
@@ -513,8 +513,8 @@ public class NativeBroker extends DBBroker {
 			LOG.debug("document " + fileName + " not found!");
 			return null;
 		}
-		if (!doc.getPermissions().validate(user, Permission.READ))
-			throw new PermissionDeniedException("not allowed to read document");
+//		if (!doc.getPermissions().validate(user, Permission.READ))
+//			throw new PermissionDeniedException("not allowed to read document");
 		return doc;
 	}
 
@@ -540,7 +540,7 @@ public class NativeBroker extends DBBroker {
 			LOG.debug("collection " + collection + " not found");
 			return docs;
 		}
-		docs = root.allDocs(this, docs, inclusive);
+		docs = root.allDocs(this, docs, inclusive, false);
 		LOG.debug(
 			"loading "
 				+ docs.getLength()
@@ -1902,6 +1902,9 @@ public class NativeBroker extends DBBroker {
 			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
 	    Collection collection = doc.getCollection();
 	    if(!collection.getPermissions().validate(user, Permission.WRITE))
+	        throw new PermissionDeniedException("Insufficient privileges to move resource " +
+	                doc.getFileName());
+	    if(!doc.getPermissions().validate(user, Permission.WRITE))
 	        throw new PermissionDeniedException("Insufficient privileges to move resource " +
 	                doc.getFileName());
 	    if(newName == null) {

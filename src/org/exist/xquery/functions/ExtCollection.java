@@ -26,13 +26,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
-import org.exist.security.PermissionDeniedException;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.xquery.Cardinality;
@@ -100,12 +100,8 @@ public class ExtCollection extends Function {
 		DocumentSet docs = new DocumentSet();
 		for (int i = 0; i < args.size(); i++) {
 			String next = (String)args.get(i);
-			try {
-				context.getBroker().getDocumentsByCollection(next, docs, includeSubCollections);
-			} catch (PermissionDeniedException e) {
-				throw new XPathException(
-					"Permission denied: unable to load document " + next);
-			}
+		    Collection coll = context.getBroker().getCollection(next);
+		    coll.allDocs(context.getBroker(), docs, includeSubCollections, true);
 		}
 		NodeSet result = new ExtArrayNodeSet(docs.getLength(), 1);
 		Lock dlock;

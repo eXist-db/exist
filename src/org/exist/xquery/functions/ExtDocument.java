@@ -31,6 +31,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.LockException;
 import org.exist.xquery.Cardinality;
@@ -124,6 +125,8 @@ public class ExtDocument extends Function {
 					try {
 						DocumentImpl doc = (DocumentImpl) context.getBroker().getDocument(next);
 						if(doc != null) {
+						    if(!doc.getPermissions().validate(context.getUser(), Permission.READ))
+							    throw new XPathException("Insufficient privileges to read resource " + next);
 							docs.add(doc);
 						}
 					} catch (PermissionDeniedException e) {

@@ -51,6 +51,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.XMLUtil;
 import org.exist.memtree.Receiver;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
@@ -312,7 +313,8 @@ public abstract class Serializer implements XMLReader {
 				throw new SAXException("document " + systemId + " not found in database");
 			else
 				LOG.debug("serializing " + doc.getFileName());
-
+			if(!doc.getPermissions().validate(broker.getUser(), Permission.READ))
+				throw new PermissionDeniedException("Not allowed to read resource");
 			serializeToSAX(doc, true);
 		} catch (PermissionDeniedException e) {
 			throw new SAXException("permission denied");
@@ -708,6 +710,11 @@ public abstract class Serializer implements XMLReader {
 				LOG.debug("stylesheet not found");
 				return;
 			}
+			if(!xsl.getPermissions().validate(broker.getUser(), Permission.READ)) {
+			    LOG.debug("Permission denied to read stylesheet doc.");
+			    return;
+			}
+				
 			if (xsl.getCollection() != null) {
 				factory.setURIResolver(
 					new InternalURIResolver(xsl.getCollection().getName()));
