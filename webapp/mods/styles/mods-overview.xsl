@@ -9,129 +9,103 @@
     xmlns:java="http://xml.apache.org/xslt/java"
     version="1.0">
     
+    <xsl:include href="mods-common.xsl"/>
+    
     <xsl:template match="items">
-        <div>
-            <table class="overview" cellspacing="0">
-                <xsl:call-template name="navigation">
-                    <xsl:with-param name="position" select="'top'"/>
-                </xsl:call-template>
-                <xsl:apply-templates/>
-                <xsl:call-template name="navigation">
-                    <xsl:with-param name="position" select="'bottom'"/>
-                </xsl:call-template>
-            </table>
-            
-            <div class="blog_shadow"/>
+        <div id="content">
+            <form action="overview.xq" method="GET">
+                <div id="navigation">
+                    <table cellspacing="0">
+                        <tr>
+                            <td width="60">Display:</td>
+                            <td width="60">
+                                <select name="howmany" onChange="form.submit()">
+                                    <option>10</option>
+                                    <option selected="true">50</option>
+                                    <option>100</option>
+                                </select>
+                            </td>
+                            <td/>
+                            <td width="60">Order by:</td>
+                            <td align="right" width="60">
+                                <select name="order" onChange="form.submit()">
+                                    <option>Date</option>
+                                    <option value="title">Title</option>
+                                    <option value="creator">Creator</option>
+                                </select>
+                            </td>
+                            <input type="hidden" name="start" value="{@start}"/>
+                        </tr>
+                        <tr>
+                            <td align="left" class="navbar" colspan="2">
+                                <xsl:if test="@start &gt; 1">
+                                    <a href="?start={@start - @max}&amp;howmany={@max}&amp;view={@view}">&lt;&lt; previous</a>
+                                </xsl:if>
+                            </td>
+                            <td align="center" class="navbar">
+                                Showing hits <xsl:value-of select="@start"/> to 
+                                <xsl:value-of select="@next - 1"/> of
+                                <xsl:value-of select="@hits"/>
+                            </td>
+                            <td align="right" class="navbar" colspan="2">
+                                <xsl:if test="@next &lt;= @hits">
+                                    <a href="?start={@next}&amp;howmany={@max}&amp;view={@view}">more &gt;&gt;</a>
+                                </xsl:if>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <xsl:apply-templates select="item"/>
+            </form>
         </div>
     </xsl:template>
     
-    <xsl:template name="navigation">
-        <xsl:param name="position"/>
-        <tr class="result-head">
-            <th class="nav{$position}" width="15%"> 
-                <xsl:if test="@start &gt; 1">
-                    <a class="mods" href="?start={@start - @max}&amp;max={@max}">
-                        &lt;&lt; Previous
-                    </a>
-                </xsl:if>
-            </th>
-            <th class="nav{$position}" width="70%" colspan="2">
-                Displaying items <xsl:value-of select="@start"/> to <xsl:value-of select="@next - 1"/>
-                (total: <xsl:value-of select="@hits"/>)<br/>
-                <span class="icondesc">
-                    [<a class="mods" href="{@chiba}&amp;submitsave={java:java.net.URLEncoder.encode('store.xq')}">
-                        Create New
-                    </a>]
-                </span>
-            </th>
-            <th class="nav{$position}" width="15%">
-                <xsl:if test="number(@next) &lt; @hits">
-                    <a class="mods" href="?start={@next}&amp;max={@max}">
-                        Next &gt;&gt;
-                    </a>
-                </xsl:if>
-            </th>
-        </tr>
-        <xsl:if test="$position='top'">
-            <tr class="result-head">
-                <th class="table-head" width="15%"></th>
-                <th class="table-head" width="20%">
-                    <a class="mods"
-                        href="?order=creator&amp;start={@start}&amp;max={@max}">Creator/Editor</a>
-                </th>
-                <th class="table-head" width="50%">
-                    <a class="mods"
-                        href="?order=title&amp;start={@start}&amp;max={@max}">Title</a>
-                </th>
-                <th class="table-head" width="15%">
-                    <a class="mods"
-                        href="?order=date&amp;start={@start}&amp;max={@max}">Date</a>
-                </th>
-            </tr>
-        </xsl:if>
-    </xsl:template>
-    
     <xsl:template match="item">
-        <tr>
-            <xsl:choose>
-                <xsl:when test="position() mod 2 = 0">
-                    <xsl:attribute name="class">row-1</xsl:attribute>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:attribute name="class">row-2</xsl:attribute>
-                </xsl:otherwise>
-            </xsl:choose>
-            <td class="overview">
-                <a href="{@chiba}&amp;instance=/chiba/exist/{@collection}/{@doc}&amp;submitsave=store.xq?document={@doc}">
-                    <img src="images/edit.gif"/>
-                </a>
-                <a href="?action=remove&amp;doc={java:java.net.URLEncoder.encode(@doc)}&amp;collection={java:java.net.URLEncoder.encode(@collection)}"><img src="images/delete.gif"/></a>
-            </td>
-            <td class="overview">
-                <xsl:apply-templates select="m:name"/>
-            </td>
-            <td class="overview">
-                <a class="mods"
-                    href="?start={../@start + position() - 1}&amp;display=details&amp;max={../@max}">
-                    <xsl:apply-templates select="m:titleInfo"/>
-                </a>
-            </td>
-            <td class="overview">
-                <xsl:choose>
-                    <xsl:when test="m:copyrightDate">
-                        <xsl:value-of select="m:copyrightDate"/>
-                    </xsl:when>
-                    <xsl:when test="m:dateIssued[@type='marc']">
-                        <xsl:value-of select="m:dateIssued[@type='marc']"/>
-                    </xsl:when>
-                    <xsl:when test="m:dateIssued">
-                        <xsl:value-of select="m:dateIssued"/>
-                    </xsl:when>
-		    <xsl:when test="m:date">
-		      <xsl:value-of select="m:date"/>
-		    </xsl:when>
-                </xsl:choose>
-            </td>
-        </tr>
-    </xsl:template>
-    
-    <xsl:template match="m:titleInfo[not(@type)]">
-        <xsl:for-each select="m:nonSort|m:title">
-            <xsl:value-of select="."/><xsl:text> </xsl:text>
-        </xsl:for-each>
-    </xsl:template>
-    
-    <xsl:template match="m:name">
-        <xsl:choose>
-            <xsl:when test="m:namePart[not(@type)]">
-                <xsl:apply-templates select="m:namePart[not(@type)]"/>
-            </xsl:when>
-            <xsl:when test="m:namePart[@type='family']">
-                <xsl:apply-templates select="m:namePart[@type='family']"/>
-                <xsl:text>, </xsl:text>
-                <xsl:apply-templates select="m:namePart[@type='given']"/>
-            </xsl:when>
-        </xsl:choose>
+        <div class="record">
+            <table width="100%">
+                <tr>
+                    <td class="actionhead">
+                        <a href="?start={@pos}&amp;howmany={../@max}&amp;view=details">Details</a>
+                        <xsl:text> | </xsl:text>
+                        <xsl:if test="m:location/m:url">
+                            <a href="{m:location/m:url}">View Document</a>
+                        </xsl:if>
+                    </td>
+                    <td class="xmllink">
+                        <a target="_new" href="../xmldb/{../@collection}/{@doc}">
+                            <img src="images/xml_rss.gif"/>
+                        </a>
+                    </td>
+                </tr>
+            </table>
+            <p class="citation">
+                <input type="checkbox" class="mark"/>
+                <xsl:apply-templates select="m:titleInfo"/>
+            </p>
+            <xsl:if test="m:name">
+                <p class="keywords">
+                    <span class="heading">By: </span>
+                    <xsl:apply-templates select="m:name"/>
+                </p>
+            </xsl:if>
+            <xsl:if test="m:originInfo/m:publisher">
+                <p class="keywords">
+                    <span class="heading">Published By: </span>
+                    <xsl:apply-templates select="m:originInfo/m:publisher"/>
+                </p>
+            </xsl:if>
+            <xsl:if test="m:subject">
+                <p class="keywords">
+                    <span class="heading">Topics: </span>
+                    <xsl:apply-templates select="m:subject/m:topic|m:subject/m:geographic"/>
+                </p>
+            </xsl:if>
+            <xsl:apply-templates select="m:abstract"/>
+            <xsl:apply-templates select="m:typeOfResource"/>
+            <xsl:apply-templates select="m:identifier"/>
+            <xsl:apply-templates select="m:originInfo"/>
+            <xsl:apply-templates select="m:physicalDescription"/>
+        </div>
     </xsl:template>
     
     <xsl:template match="p">
@@ -141,4 +115,14 @@
     <xsl:template match="exist:match">
 	    <span class="hit"><xsl:apply-templates/></span>
     </xsl:template>
+    
+    <xsl:template name="display-link">
+        <xsl:param name="url"/>
+        <a href="{$url}">View Document</a>
+    </xsl:template>
+    
+    <xsl:template match="@*|node()" priority="-1">
+        <xsl:copy><xsl:apply-templates select="@*|node()"/></xsl:copy>
+    </xsl:template>
+    
 </xsl:stylesheet>

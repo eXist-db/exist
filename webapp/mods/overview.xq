@@ -26,7 +26,7 @@ declare function b:remove($user, $pass) as element()
 					xmldb:collection(concat("xmldb:exist://", $path), $user,
                     $pass)
 			return
-				xmldb:remove-resource($collection, $doc)
+				xmldb:remove($collection, $doc)
 		)
 };
 
@@ -69,16 +69,14 @@ declare function b:displayOverview($recs as item()*, $user) as element()
         $end := if ($start + $max - 1 < $count) then $start + $max - 1 else $count
     return
         <items start="{$start}" hits="{$count}" next="{$end + 1}" max="{$max}"
-            chiba="{request:encode-url($c:chiba)}"
-            collection="{b:getUserHome($user)}">
+            collection="{b:getUserHome($user)}" view="overview">
             {
                 for $p in $start to $end
                 let $m := item-at($recs, $p)
                 return
-                    <item doc="{util:document-name($m)}"
-						chiba="{request:encode-url($c:chiba)}">
-                        { c:displayItem($m) }
-                    </item>
+                <item pos="{$p}" doc="{util:document-name($m)}">
+                    { c:displayItem($m) }
+                </item>
             }
         </items>
 };
@@ -90,16 +88,18 @@ declare function b:displayDetails($recs as item()*, $user) as element()
         $start := xs:int(request:request-parameter("start", "1")),
         $hit := item-at($recs, $start)
     return
-        <items hits="{$count}" start="{$start}" 
+        <items hits="{$count}" start="{$start}" view="details"
             next="{$start + 1}" max="{$max}"
             collection="{b:getUserHome($user)}">
-            {$hit}
+            <item pos="{$start}" doc="{util:document-name($hit)}">
+                {$hit/*}
+            </item>
         </items>
 };
 
 declare function b:display($recs as item()*, $user) as element()
 {
-    let $display := request:request-parameter("display", "overview")
+    let $display := request:request-parameter("view", "overview")
     return
         if($display eq "details") then
             b:displayDetails($recs, $user)
