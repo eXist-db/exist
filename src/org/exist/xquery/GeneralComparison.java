@@ -63,6 +63,8 @@ public class GeneralComparison extends BinaryOp {
 
 	protected Expression collationArg = null;
 	
+	protected boolean inWhereClause = false;
+	
 	public GeneralComparison(XQueryContext context, int relation) {
 		this(context, relation, Constants.TRUNC_NONE);
 	}
@@ -98,10 +100,17 @@ public class GeneralComparison extends BinaryOp {
 	}
 
 	/* (non-Javadoc)
+     * @see org.exist.xquery.BinaryOp#analyze(org.exist.xquery.Expression, int)
+     */
+    public void analyze(Expression parent, int flags) throws XPathException {
+        super.analyze(parent, flags);
+        inWhereClause = (flags & IN_WHERE_CLAUSE) != 0; 
+    }
+    
+	/* (non-Javadoc)
 	 * @see org.exist.xquery.BinaryOp#returnsType()
 	 */
 	public int returnsType() {
-		// TODO: Assumes that context sequence is a node set
 		if (inPredicate && (getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
 			/* If one argument is a node set we directly
 			 * return the matching nodes from the context set. This works
@@ -117,20 +126,20 @@ public class GeneralComparison extends BinaryOp {
 	 * @see org.exist.xquery.AbstractExpression#getDependencies()
 	 */
 	public int getDependencies() {
-		int leftDeps = getLeft().getDependencies();
-//		int rightDeps = getRight().getDependencies();
+		final int leftDeps = getLeft().getDependencies();
+		
 		// left expression returns node set
-		if (Type.subTypeOf(getLeft().returnsType(), Type.NODE)
+		if (Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
 			//	and does not depend on the context item
-			&& (leftDeps & Dependency.CONTEXT_ITEM) == 0)
-//			&& (rightDeps & Dependency.LOCAL_VARS) == 0)
+			(leftDeps & Dependency.CONTEXT_ITEM) == 0 &&
+			(!inWhereClause || (leftDeps & Dependency.CONTEXT_VARS) == 0))
 		{
 			return Dependency.CONTEXT_SET;
-		} else {
+		} else { 
 			return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
 		}
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
@@ -293,10 +302,9 @@ public class GeneralComparison extends BinaryOp {
 		
 		DocumentSet docs = nodes.getDocumentSet();
 		NodeSet result = null;
-		
+		Item key = rightSeq.itemAt(0).atomize();
 	    if(!hasMixedContent && indexType != Type.ITEM) {
 	        // we have a range index defined on the nodes in this sequence
-	        Item key = rightSeq.itemAt(0).atomize();
 	        if(truncation != Constants.TRUNC_NONE) {
 	        	// truncation is only possible on strings
 	        	key = key.convertTo(Type.STRING);
@@ -323,24 +331,26 @@ public class GeneralComparison extends BinaryOp {
 				}
 	        } else
 	            return nodeSetCompare(nodes, contextSequence);
+	    } else if (key.getType() == Type.ATOMIC || Type.subTypeOf(key.getType(), Type.STRING)) {
+	        if (!hasMixedContent && relation == Constants.EQ 
+	            && nodes.hasTextIndex()) {
 	        
-	    } else if (!hasMixedContent && relation == Constants.EQ && nodes.hasTextIndex()) {
-	        
-	        // we can use the fulltext index
-	        String cmp = getComparisonString(rightSeq);
-	        if(cmp.length() < NativeTextEngine.MAX_WORD_LENGTH)
-	            nodes = useFulltextIndex(cmp, nodes, docs);
-	        // now compare the input node set to the search expression
-			result =
-				context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp, getCollator(contextSequence));
-			
-		} else if(Type.subTypeOf(rightSeq.getItemType(), Type.STRING) ||
-		        rightSeq.getItemType() == Type.ATOMIC) {
-		    
-		    // no usable index found. Fall back to a sequential scan of the nodes
-		    result =
-				context.getBroker().getNodesEqualTo(nodes, docs, relation, getComparisonString(rightSeq), 
-				        getCollator(contextSequence));
+		        // we can use the fulltext index
+		        String cmp = getComparisonString(rightSeq);
+		        if(cmp.length() < NativeTextEngine.MAX_WORD_LENGTH)
+		            nodes = useFulltextIndex(cmp, nodes, docs);
+		        
+		        // now compare the input node set to the search expression
+				result =
+					context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp, getCollator(contextSequence));
+	
+			} else {
+			    
+			    // no usable index found. Fall back to a sequential scan of the nodes
+			    result =
+					context.getBroker().getNodesEqualTo(nodes, docs, relation, getComparisonString(rightSeq), 
+					        getCollator(contextSequence));
+			}
 		} else {
 		    
 		    // no usable index found. Fall back to nodeSetCompare
@@ -350,8 +360,8 @@ public class GeneralComparison extends BinaryOp {
 		// can this result be cached? Don't cache if the result depends on local variables.
 		boolean canCache = 
 		    contextSequence instanceof NodeSet &&
-	        (getRight().getDependencies() & Dependency.LOCAL_VARS) == 0 &&
-	        (getLeft().getDependencies() & Dependency.LOCAL_VARS) == 0;
+	        (getRight().getDependencies() & Dependency.VARS) == 0 &&
+	        (getLeft().getDependencies() & Dependency.VARS) == 0;
 		if(canCache)
 			cached = new CachedResult((NodeSet)contextSequence, result);
 		return result;

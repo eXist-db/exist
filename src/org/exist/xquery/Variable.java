@@ -80,7 +80,7 @@ public class Variable {
 //			return Dependency.CONTEXT_SET + Dependency.LOCAL_VARS;
 		
 		if(context.getCurrentStackSize() > positionInStack)
-			return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+			return Dependency.CONTEXT_SET + Dependency.CONTEXT_VARS;
 		else
 			return Dependency.CONTEXT_SET + Dependency.LOCAL_VARS;
 	}
