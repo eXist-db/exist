@@ -214,7 +214,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			j = 0;
 			int p;
 			String resource;
-			for (Iterator i = collection.iterator(); i.hasNext(); j++) {
+			for (Iterator i = collection.iterator(broker); i.hasNext(); j++) {
 				resource = ((DocumentImpl) i.next()).getFileName();
 				p = resource.lastIndexOf('/');
 				resources[j] = p < 0 ? resource : resource.substring(p + 1);

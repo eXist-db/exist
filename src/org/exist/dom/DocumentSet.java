@@ -27,6 +27,8 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Category;
 import org.exist.collections.*;
+import org.exist.security.Permission;
+import org.exist.storage.DBBroker;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -99,11 +101,11 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 	 * 
 	 * @param docs
 	 */
-	public void addAll(java.util.Collection docs) {
+	public void addAll(DBBroker broker, java.util.Collection docs) {
 		DocumentImpl doc;
 		for(Iterator i = docs.iterator(); i.hasNext(); ) {
 			doc = (DocumentImpl)i.next();
-			if(!doc.isLockedForWrite())
+			if((broker == null || doc.getPermissions().validate(broker.getUser(), Permission.READ)) && (!doc.isLockedForWrite()))
 				put(doc.getDocId(), doc);
 		}
 	}

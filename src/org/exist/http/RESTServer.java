@@ -122,6 +122,7 @@ public class RESTServer {
 	
 	public Response doGet(DBBroker broker, Map parameters, String path) 
 	throws BadRequestException, PermissionDeniedException, NotFoundException {
+		LOG.debug("user = " + broker.getUser().getName());
 		int howmany = 10;
 		int start = 1;
 		boolean summary = false;
@@ -171,9 +172,12 @@ public class RESTServer {
 				DocumentImpl d = (DocumentImpl) broker.getDocument(path);
 				if (d == null) {
 					Collection collection = broker.getCollection(path);
-					if(collection != null)
-						response = new Response(printCollection(broker, collection));
-					else {
+					if(collection != null) {
+						if(!collection.getPermissions().validate(broker.getUser(), Permission.READ))
+							throw new PermissionDeniedException("Not allowed to read collection");
+						else
+							response = new Response(printCollection(broker, collection));
+					} else {
 						throw new NotFoundException("Document " + path + " not found");
 					}
 				} else {
@@ -489,35 +493,39 @@ public class RESTServer {
 				Collection childCollection = broker.getCollection(collection
 						.getName()
 						+ '/' + child);
-				attrs.clear();
-				attrs.addAttribute("", "name", "name", "CDATA", child);
-
-				attrs.addAttribute("", "created", "created", "CDATA",
-						dateFormat.format(new Date(childCollection
-								.getCreationTime())));
-				printPermissions(attrs, childCollection.getPermissions());
-				serializer.startElement(NS, "collection", "exist:collection",
-						attrs);
-				serializer.endElement(NS, "collection", "exist:collection");
+				if(childCollection.getPermissions().validate(broker.getUser(), Permission.READ)) {
+					attrs.clear();
+					attrs.addAttribute("", "name", "name", "CDATA", child);
+	
+					attrs.addAttribute("", "created", "created", "CDATA",
+							dateFormat.format(new Date(childCollection
+									.getCreationTime())));
+					printPermissions(attrs, childCollection.getPermissions());
+					serializer.startElement(NS, "collection", "exist:collection",
+							attrs);
+					serializer.endElement(NS, "collection", "exist:collection");
+				}
 			}
 
-			for (Iterator i = collection.iterator(); i.hasNext(); ) {
+			for (Iterator i = collection.iterator(broker); i.hasNext(); ) {
 				DocumentImpl doc = (DocumentImpl) i.next();
-				String resource = doc.getFileName();
-				int p = resource.lastIndexOf('/');
-				attrs.clear();
-				attrs.addAttribute("", "name", "name", "CDATA", p < 0
-						? resource
-						: resource.substring(p + 1));
-				attrs.addAttribute("", "created", "created", "CDATA",
-						dateFormat.format(new Date(doc.getCreated())));
-				attrs.addAttribute("", "last-modified", "last-modified",
-						"CDATA", dateFormat.format(new Date(doc
-								.getLastModified())));
-				printPermissions(attrs, doc.getPermissions());
-				serializer
-						.startElement(NS, "resource", "exist:resource", attrs);
-				serializer.endElement(NS, "resource", "exist:resource");
+				if(doc.getPermissions().validate(broker.getUser(), Permission.READ)) {
+					String resource = doc.getFileName();
+					int p = resource.lastIndexOf('/');
+					attrs.clear();
+					attrs.addAttribute("", "name", "name", "CDATA", p < 0
+							? resource
+							: resource.substring(p + 1));
+					attrs.addAttribute("", "created", "created", "CDATA",
+							dateFormat.format(new Date(doc.getCreated())));
+					attrs.addAttribute("", "last-modified", "last-modified",
+							"CDATA", dateFormat.format(new Date(doc
+									.getLastModified())));
+					printPermissions(attrs, doc.getPermissions());
+					serializer
+							.startElement(NS, "resource", "exist:resource", attrs);
+					serializer.endElement(NS, "resource", "exist:resource");
+				}
 			}
 
 			serializer.endElement(NS, "collection", "exist:collection");

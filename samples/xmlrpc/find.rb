@@ -5,7 +5,7 @@ require "xmlrpc/client"
 # of items from the generated result set.
 #
 query = <<END
-for \$speech in //SPEECH[LINE &= 'tear*']
+for \$speech in //SPEECH[LINE &= \$query]
 order by \$speech/SPEAKER[1]
 return
     \$speech
@@ -15,7 +15,10 @@ client = XMLRPC::Client.new("localhost", "/exist/xmlrpc", 8080)
 
 puts "Query: #{query}"
 
-outputOptions = { "encoding" => "UTF-8", "indent" => "yes" }
+vars = { "query" => "adrian*" }
+outputOptions = { "encoding" => "UTF-8", "indent" => "yes",
+	"variables" => vars
+}
 
 begin
   result = client.call("query", query, 20, 1, outputOptions)
