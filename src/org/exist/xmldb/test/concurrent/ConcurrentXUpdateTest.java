@@ -51,7 +51,7 @@ public class ConcurrentXUpdateTest extends ConcurrentTestBase {
 		
 		addAction(new RemoveAppendAction(URI + "/C1", "R1.xml", wordList), 10, 500);
 		addAction(new RemoveAppendAction(URI + "/C1", "R1.xml", wordList), 10, 500);
-		addAction(new RetrieveResourceAction(URI + "/C1", "R1.xml"), 10, 1000);
+		addAction(new RetrieveResourceAction(URI + "/C1", "R1.xml"), 10, 2000);
 	}
 	
 	/* (non-Javadoc)

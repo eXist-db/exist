@@ -31,9 +31,11 @@ import org.exist.xmldb.IndexQueryService;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
+import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
+import org.xmldb.api.modules.XPathQueryService;
 
 /**
  * Static utility methods used by the tests.
@@ -72,7 +74,7 @@ public class DBUtils {
 		System.out.println("Generating XML file " + file.getAbsolutePath());
 		Writer writer = new BufferedWriter(new FileWriter(file));
 		
-		XMLGenerator gen = new XMLGenerator(elementCnt, attrCnt, 3, wordList);
+		XMLGenerator gen = new XMLGenerator(elementCnt, attrCnt, 2, wordList);
 		gen.generateXML(writer);
 		writer.close();
 		return file;
@@ -106,6 +108,20 @@ public class DBUtils {
 		col.storeResource(res);
 	}
 	
+	public static ResourceSet query(Collection collection, String xpath)
+	throws XMLDBException
+	{
+		XPathQueryService service = getQueryService(collection);
+		return service.query(xpath);
+	}
+	
+	public static XPathQueryService getQueryService(Collection collection)
+	throws XMLDBException
+	{
+		return (XPathQueryService) collection.getService(
+				"XPathQueryService", "1.0");
+	}
+
 	public static String[] wordList(Collection root) throws XMLDBException {
 		IndexQueryService service = (IndexQueryService)
 		root.getService("IndexQueryService", "1.0");
