@@ -1031,7 +1031,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		                                os.writeInt(docId);
 		                                os.writeByte(section);
 		                                os.writeInt(len);
-		                                is.copyTo(os, len);
+		                                is.copyTo(os, termFreq ? len * 2 : len);
 		                            } else {
 		                                // copy nodes to new list
 		                                gid = 0;
