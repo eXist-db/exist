@@ -278,8 +278,8 @@ public class RpcConnection extends Thread {
 				d[j] = next;
 			}
 			context.setStaticallyKnownDocuments(d);
-		} else if(baseURI != null) {
-			context.setStaticallyKnownDocuments(new String[] { baseURI });
+		} else if(context.getBaseCollection() != null) {
+			context.setStaticallyKnownDocuments(new String[] { context.getBaseCollection() });
 		}
 		try {
 			if(compiled == null)
