@@ -80,6 +80,8 @@ public class Main implements WrapperListener {
 	 * @see org.tanukisoftware.wrapper.WrapperListener#stop(int)
 	 */
 	public int stop(int exitCode) {
+		// wait up to 1 minute
+		WrapperManager.signalStopping(60000);
 		try {
 			Method method = klazz.getDeclaredMethod("shutdown", new Class[0]);
 			method.invoke(app, new Object[0]);
