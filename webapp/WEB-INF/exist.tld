@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE taglib PUBLIC "-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.2//EN"
+  "http://java.sun.com/dtd/web-jsptaglibrary_1_2.dtd">
+
+<taglib>
+    <tlib-version>1.0</tlib-version>
+    <jsp-version>1.2</jsp-version>
+    <short-name>eXist</short-name>
+    <uri>http://exist-db.org/exist.tld</uri>
+
+    <tag>
+        <name>collection</name>
+        <tag-class>org.exist.jsp.CollectionTag</tag-class>
+        <tei-class>org.exist.jsp.CollectionTagInfo</tei-class>
+        <attribute>
+            <name>var</name>
+            <required>yes</required>
+        </attribute> 
+        <attribute>
+            <name>uri</name>
+            <required>yes</required>
+        </attribute>
+        <attribute>
+            <name>user</name>
+            <required>no</required>
+        </attribute>
+        <attribute>
+            <name>password</name>
+            <required>no</required>
+        </attribute>
+    </tag>
+
+</taglib>
