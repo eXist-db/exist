@@ -75,6 +75,7 @@ public class Predicate extends PathExpr {
         Expression inner = getExpression(0);
         if(inner == null)
             return;
+        super.analyze(this, flags);
         int type = inner.returnsType();
         // Case 1: predicate expression returns a node set. Check the returned node set
 		// against the context set and return all nodes from the context, for which the
@@ -90,9 +91,11 @@ public class Predicate extends PathExpr {
 		// Case 3: predicate expression evaluates to a boolean.
 		} else
 		    executionMode = BOOLEAN;
-		if(executionMode == BOOLEAN)
+		if(executionMode == BOOLEAN) {
 		    flags |= SINGLE_STEP_EXECUTION;
-		super.analyze(parent, flags);
+		    // need to re-analyze:
+		    super.analyze(parent, flags);
+		}
     }
     
 	public Sequence evalPredicate(
