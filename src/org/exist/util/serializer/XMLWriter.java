@@ -62,7 +62,7 @@ public class XMLWriter {
 		Arrays.fill(textSpecialChars, false);
 		textSpecialChars['<'] = true;
 		textSpecialChars['>'] = true;
-		textSpecialChars['\r'] = true;
+//		textSpecialChars['\r'] = true;
 		textSpecialChars['&'] = true;
 		
 		attrSpecialChars = new boolean[128];
