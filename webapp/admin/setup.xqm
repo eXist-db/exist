@@ -27,10 +27,13 @@ declare function setup:main() as element() {
 };
 
 declare function setup:importLocal() as element()+ {
-    let $home := 
-            concat(
-                util:system-property("exist.home"), util:system-property("file.separator"),
-                "samples")
+	let $home := util:system-property("exist.home"),
+		$pathSep := util:system-property("file.separator"),
+		$dir :=
+			if(ends-with($home, "WEB-INF")) then
+				concat(substring-before($home, "WEB-INF"), "samples")
+			else
+				concat($home, $pathSep, "samples")
     return (
         setup:page2(),
         <div class="process">
@@ -39,20 +42,20 @@ declare function setup:importLocal() as element()+ {
             {
                 setup:create-collection("/db", "shakespeare"),
                 setup:create-collection("/db/shakespeare", "plays"),
-                setup:store-files("/db/shakespeare/plays", $home, 
+                setup:store-files("/db/shakespeare/plays", $dir, 
                     ( "shakespeare/*.xml", "shakespeare/*.xsl" ),
                     "text/xml"
                 ),
-                setup:store-files("/db/shakespeare/plays", $home,
+                setup:store-files("/db/shakespeare/plays", $dir,
                     "shakespeare/*.css", "text/css"),
                 setup:create-collection("/db", "xinclude"),
-                setup:store-files("/db/xinclude", $home, 
+                setup:store-files("/db/xinclude", $dir, 
                     ( "xinclude/*.xsl", "xinclude/*.xml"), "text/xml"),
                 setup:create-collection("/db", "library"),
-                setup:store-files("/db/library", $home, "*.rdf", "text/xml"),
+                setup:store-files("/db/library", $dir, "*.rdf", "text/xml"),
                 setup:create-collection("/db", "mods"),
-                setup:store-files("/db/mods", $home, "mods/*.xml", "text/xml"),
-                setup:store-files("/db", $home, "*.xml", "text/xml")
+                setup:store-files("/db/mods", $dir, "mods/*.xml", "text/xml"),
+                setup:store-files("/db", $dir, "*.xml", "text/xml")
             }
             </ul>
         </div>

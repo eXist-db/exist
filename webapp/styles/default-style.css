@@ -25,6 +25,9 @@ table p {
 
 #top {
     margin-bottom: 5px;
+    display: block;
+    overflow: visible;
+    height: 180px;
 }
 
 #top #menubar {
