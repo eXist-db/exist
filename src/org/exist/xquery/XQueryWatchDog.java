@@ -59,6 +59,8 @@ public class XQueryWatchDog {
             Object option = conf.getProperty("db-connection.watchdog.query-timeout");
             if(option != null)
                 timeout = ((Long)option).longValue();
+            if(timeout <= 0)
+                timeout = Long.MAX_VALUE;
             option = conf.getProperty("db-connection.watchdog.output-size-limit");
             if(option != null)
                 maxNodesLimit = ((Integer)option).intValue();
