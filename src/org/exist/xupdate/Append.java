@@ -71,15 +71,18 @@ public class Append extends Modification {
 	        NodeImpl ql[] = selectAndLock();
 			IndexListener listener = new IndexListener(ql);
 			Collection collection = null, prevCollection = null;
-			DocumentImpl doc = null, prevDoc = null;
+			DocumentImpl doc = null;
+			DocumentSet modifiedDocs = new DocumentSet();
 			NodeImpl node;
 			for(int i = 0; i < ql.length; i++) {
 				node = ql[i];
 				doc = (DocumentImpl) node.getOwnerDocument();
 				doc.setIndexListener(listener);
+				modifiedDocs.add(doc);
 				collection = doc.getCollection();
-				if (prevCollection != null && collection != prevCollection)
-					doc.getBroker().saveCollection(prevCollection);
+				if (prevCollection != null && collection != prevCollection) {
+					broker.saveCollection(prevCollection);
+				}
 				if (!doc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
 					throw new PermissionDeniedException("permission to update document denied");
                 node.appendChildren(children, child);
@@ -88,7 +91,8 @@ public class Append extends Modification {
 				prevCollection = collection;
 			}
 			if (doc != null)
-				doc.getBroker().saveCollection(collection);
+				broker.saveCollection(collection);
+			checkFragmentation(modifiedDocs);
 			return ql.length;
 	    } finally {
 	        // release all acquired locks

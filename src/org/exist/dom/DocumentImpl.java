@@ -95,7 +95,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	// the number of data pages occupied by this document
 	protected int pageCount = 0;
 	
-//	protected transient int splitCount = 0;
+	protected transient int splitCount = 0;
 	
 	// number of levels in this DOM tree
 	protected int maxDepth = 0;
@@ -105,9 +105,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	protected transient int reindex = -1;
 
 	protected Permission permissions = new Permission(0754);
-
-	// storage address for the document metadata
-//	protected long address = -1;
 
 	// arity of the tree at every level
 	protected int treeLevelOrder[] = new int[15];
@@ -906,9 +903,31 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	    --pageCount;
 	}
 	
+	/**
+	 * Returns the estimated size of the data in this document.
+	 * 
+	 * As an estimation, the number of pages occupied by the document
+	 * is multiplied with the current page size.
+	 * 
+	 * @return
+	 */
 	public int getContentLength() {
 	    checkAvail();
 	    return pageCount * broker.getPageSize();
+	}
+	
+	/**
+	 * Returns the number of pages currently occupied by this document.
+	 * 
+	 * @return
+	 */
+	public int getPageCount() {
+	    checkAvail();
+	    return pageCount;
+	}
+	
+	public void setPageCount(int count) {
+	    pageCount = count;
 	}
 	
 	private void resizeChildList() {
@@ -918,15 +937,15 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	    childList = newChildList;
 	}
 	
-//	public void incSplitCount() {
-//		splitCount++;
-//	}
-//	
-//	public int getSplitCount() {
-//		return splitCount;
-//	}
-//	
-//	public void setSplitCount(int count) {
-//		splitCount = count;
-//	}
+	public void incSplitCount() {
+		splitCount++;
+	}
+	
+	public int getSplitCount() {
+		return splitCount;
+	}
+	
+	public void setSplitCount(int count) {
+		splitCount = count;
+	}
 }

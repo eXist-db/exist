@@ -502,6 +502,8 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 				return Type.PROCESSING_INSTRUCTION;
 			case Node.COMMENT_NODE :
 				return Type.COMMENT;
+			case Node.DOCUMENT_NODE:
+			    return Type.DOCUMENT;
 			default :
 				return Type.NODE; // unknown type
 		}

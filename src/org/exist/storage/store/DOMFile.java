@@ -417,6 +417,8 @@ public class DOMFile extends BTree implements Lockable {
      * @param rec
      */
     private RecordPos splitDataPage(DocumentImpl doc, RecordPos rec) {
+        if(currentDocument != null)
+            currentDocument.incSplitCount();
         // check if a split is really required
         boolean requireSplit = false;
         for (int pos = rec.offset; pos < rec.page.len;) {
@@ -595,10 +597,6 @@ public class DOMFile extends BTree implements Lockable {
         rec.page.getPageHeader().setDataLength(rec.page.len);
         rec.page.getPageHeader().setRecordCount(countRecordsInPage(rec.page));
         rec.offset = rec.page.len;
-//        if(currentDocument != null) {
-//        	currentDocument.incSplitCount();
-//        	System.out.println(currentDocument.getFileName() + " split: " + currentDocument.getSplitCount());
-//        }
         return rec;
     }
 
