@@ -44,9 +44,10 @@ import org.dbxml.core.indexer.IndexQuery;
 import org.exist.util.ByteConversion;
 import org.exist.util.IndexCallback;
 import org.exist.util.Lock;
+import org.exist.util.LockException;
 import org.exist.util.OrderedLinkedList;
 import org.exist.util.ReadOnlyException;
-import org.exist.util.SimpleTimeOutLock;
+import org.exist.util.ReentrantReadWriteLock;
 
 /**
  *  Data store for variable size values.
@@ -87,7 +88,7 @@ public class BFile extends BTree {
 	protected BFileHeader fileHeader;
 	protected int minFree;
 	protected ClockPageBuffer pages;
-	protected Lock lock = new SimpleTimeOutLock();
+	protected Lock lock = new ReentrantReadWriteLock();
 	public int fixedKeyLen = -1;
 
 	/**  Constructor for the BFile object */
@@ -1961,10 +1962,17 @@ public class BFile extends BTree {
 					offset = 0;
 					return -1;
 				}
-				nextPage = (SinglePage) getDataPage(next);
-				pageLen = nextPage.ph.getDataLength();
-				offset = 0;
-				pages.add(nextPage);
+				try {
+					lock.acquire(Lock.READ_LOCK);
+					nextPage = (SinglePage) getDataPage(next);
+					pageLen = nextPage.ph.getDataLength();
+					offset = 0;
+					pages.add(nextPage);
+				} catch (LockException e) {
+					throw new IOException("failed to acquire a read lock on " + getFile().getName());
+				} finally {
+					lock.release();
+				}
 			}
 			return (int) (nextPage.data[offset++] & 0xFF);
 		}

@@ -929,17 +929,27 @@ public class InteractiveClient {
 			BufferedReader reader = new BufferedReader(new FileReader(f));
 			String line;
 			ArrayList queries = new ArrayList(10);
-			QueryThread thread = null;
+			QueryThread threads[] = new QueryThread[PARALLEL_THREADS];
 			while ((line = reader.readLine()) != null)
 				queries.add(line);
 			for (int i = 0; i < PARALLEL_THREADS; i++) {
-				thread = new QueryThread(queries);
-				thread.setName("QueryThread" + i);
-				thread.start();
+				threads[i] = new QueryThread(queries);
+				threads[i].setName("QueryThread" + i);
+				threads[i].start();
 			}
-			try {
-				thread.join();
-			} catch (InterruptedException e) {
+			for(int i = 0; i < PARALLEL_THREADS; i++)
+				try {
+					threads[i].join();
+				} catch (InterruptedException e) {
+				}
+			String results[];
+			for(int i = 0; i < PARALLEL_THREADS; i++) {
+				System.out.println(threads[i].getName());
+				System.out.println("---------------------------------------------------------------");
+				results = threads[i].results;
+				for(int j = 0; j < results.length; j++)
+					System.out.println(results[j]);
+				System.out.println();
 			}
 		} catch (FileNotFoundException e) {
 			System.err.println("ERROR: " + e);
@@ -951,7 +961,8 @@ public class InteractiveClient {
 	private class QueryThread extends Thread {
 
 		ArrayList queries;
-
+		String[] results = new String[10];
+		
 		public QueryThread(ArrayList queries) {
 			this.queries = queries;
 		}
@@ -969,11 +980,14 @@ public class InteractiveClient {
 				service.setProperty("encoding", properties.getProperty("encoding"));
 				Random r = new Random(System.currentTimeMillis());
 				String query;
+				long s0;
 				for (int i = 0; i < 10; i++) {
+					s0 = System.currentTimeMillis();
 					query = (String) queries.get(r.nextInt(queries.size()));
 					System.out.println(getName() + " query: " + query);
 					ResourceSet result = service.query(query);
-					System.out.println(getName() + " found: " + result.getSize());
+					results[i] = query + ": found " + result.getSize() + " in " +
+						(System.currentTimeMillis() - s0) + "ms.";
 				}
 			} catch (XMLDBException e) {
 				System.err.println("ERROR: " + e.getMessage());

@@ -82,21 +82,21 @@ public class AttrImpl extends NodeImpl implements Attr {
      *@param  doc   Description of the Parameter
      *@return       Description of the Return Value
      */
-    public static NodeImpl deserialize( byte[] data, DocumentImpl doc ) {
-        byte idSizeType = (byte) ( data[0] & 0x3 );
-        short id = (short) Signatures.read( idSizeType, data, 1 );
-        int attrType = (int)( ( data[0] & 0x4 ) >> 0x2);
+    public static NodeImpl deserialize( byte[] data, int start, int len, DocumentImpl doc ) {
+        byte idSizeType = (byte) ( data[start] & 0x3 );
+        short id = (short) Signatures.read( idSizeType, data, start + 1 );
+        int attrType = (int)( ( data[start] & 0x4 ) >> 0x2);
         String name = doc.getSymbols().getName( id );
         String value;
         try {
             value =
-                new String( data, 1 + Signatures.getLength( idSizeType ),
-                data.length - 1 - Signatures.getLength( idSizeType ),
+                new String( data, start + 1 + Signatures.getLength( idSizeType ),
+                len - 1 - Signatures.getLength( idSizeType ),
                 "UTF-8" );
         } catch ( UnsupportedEncodingException uee ) {
             value =
-                new String( data, 1 + idSizeType,
-                data.length - 1 - idSizeType );
+                new String( data, start + 1 + idSizeType,
+                len - 1 - idSizeType );
         }
         AttrImpl attr = new AttrImpl( name, value );
         attr.setType( attrType );

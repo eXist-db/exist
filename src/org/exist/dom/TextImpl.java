@@ -94,22 +94,13 @@ public class TextImpl extends CharacterDataImpl implements Text {
         super( Node.TEXT_NODE, data, start, howmany );
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  data  Description of the Parameter
-     *@return       Description of the Return Value
-     */
-    public static NodeImpl deserialize( byte[] data ) {
-        TextImpl text = new TextImpl( 0 );
-        String s;
+    public static NodeImpl deserialize( byte[] data, int start, int len ) {
+        final TextImpl text = new TextImpl( 0 );
         try {
-            s = new String( data, 1, data.length - 1, "UTF-8" );
+            text.appendData(new String( data, start + 1, len - 1, "UTF-8" ));
         } catch ( UnsupportedEncodingException uee ) {
-            s = new String( data, 1, data.length - 1 );
+            text.appendData(new String( data, start + 1, len - 1 ));
         }
-        text.appendData( s );
         return text;
     }
 

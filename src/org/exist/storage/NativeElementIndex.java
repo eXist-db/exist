@@ -105,14 +105,13 @@ public class NativeElementIndex extends ElementIndex {
 				ref = new NativeBroker.ElementValue(collectionId, sym);
 				// try to retrieve old index entry for the element
 				try {
-					lock.acquire(this, Lock.READ_LOCK);
-					lock.enter(this);
+					lock.acquire(Lock.READ_LOCK);
 					val = dbElement.get(ref);
 				} catch (LockException e) {
 					LOG.error("could not acquire lock for index on " + elementName);
 					return;
 				} finally {
-					lock.release(this);
+					lock.release();
 				}
 				os = new VariableByteOutputStream();
 				oldList.clear();
@@ -188,8 +187,7 @@ public class NativeElementIndex extends ElementIndex {
 				}
 				data = os.toByteArray();
 				try {
-					lock.acquire(this, Lock.WRITE_LOCK);
-					lock.enter(this);
+					lock.acquire(Lock.WRITE_LOCK);
 					if (val == null)
 						dbElement.put(ref, data);
 					else
@@ -197,7 +195,7 @@ public class NativeElementIndex extends ElementIndex {
 				} catch (LockException e) {
 					LOG.error("could not acquire lock on elements", e);
 				} finally {
-					lock.release(this);
+					lock.release();
 				}
 			}
 		} catch (ReadOnlyException e) {
@@ -234,14 +232,13 @@ public class NativeElementIndex extends ElementIndex {
 				ref = new NativeBroker.ElementValue(collectionId, sym);
 				// try to retrieve old index entry for the element
 				try {
-					lock.acquire(this, Lock.READ_LOCK);
-					lock.enter(this);
+					lock.acquire(Lock.READ_LOCK);
 					val = dbElement.get(ref);
 				} catch (LockException e) {
 					LOG.error("could not acquire lock for index on " + elementName);
 					return;
 				} finally {
-					lock.release(this);
+					lock.release();
 				}
 				os = new VariableByteOutputStream();
 				newList.clear();
@@ -306,8 +303,7 @@ public class NativeElementIndex extends ElementIndex {
 				}
 				data = os.toByteArray();
 				try {
-					lock.acquire(this, Lock.WRITE_LOCK);
-					lock.enter(this);
+					lock.acquire(Lock.WRITE_LOCK);
 					if (val == null)
 						dbElement.put(ref, data);
 					else
@@ -315,7 +311,7 @@ public class NativeElementIndex extends ElementIndex {
 				} catch (LockException e) {
 					LOG.error("could not acquire lock on elements", e);
 				} finally {
-					lock.release(this);
+					lock.release();
 				}
 			}
 		} catch (ReadOnlyException e) {
@@ -378,8 +374,7 @@ public class NativeElementIndex extends ElementIndex {
 				short sym = NativeBroker.getSymbols().getSymbol(elementName);
 				ref = new NativeBroker.ElementValue(collectionId, sym);
 				try {
-					lock.acquire(this, Lock.WRITE_LOCK);
-					lock.enter(this);
+					lock.acquire(Lock.WRITE_LOCK);
 					if (dbElement.append(ref, data) < 0) {
 						LOG.warn("could not save index for element " + elementName);
 						continue;
@@ -387,7 +382,7 @@ public class NativeElementIndex extends ElementIndex {
 				} catch (LockException e) {
 					LOG.error("could not acquire lock on elements", e);
 				} finally {
-					lock.release(this);
+					lock.release();
 				}
 				progress.setValue(count);
 				setChanged();
@@ -433,8 +428,7 @@ public class NativeElementIndex extends ElementIndex {
 	public void sync() {
 		Lock lock = dbElement.getLock();
 		try {
-			lock.acquire(this, Lock.WRITE_LOCK);
-			lock.enter(this);
+			lock.acquire(Lock.WRITE_LOCK);
 			try {
 				dbElement.flush();
 			} catch (DBException dbe) {
@@ -443,7 +437,7 @@ public class NativeElementIndex extends ElementIndex {
 		} catch (LockException e) {
 			LOG.warn("could not acquire lock for elements", e);
 		} finally {
-			lock.release(this);
+			lock.release();
 		}
 	}
 }

@@ -77,6 +77,7 @@ import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
 import org.exist.util.XMLUtil;
 import org.exist.xpath.Constants;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
@@ -327,8 +328,7 @@ public class NativeBroker extends DBBroker {
 			ref = new ElementValue(collectionId);
 			query = new IndexQuery(null, IndexQuery.TRUNC_RIGHT, ref);
 			try {
-				lock.acquire(this);
-				lock.enter(this);
+				lock.acquire();
 				values = elementsDb.findEntries(query);
 				for (Iterator j = values.iterator(); j.hasNext();) {
 					val = (Value[]) j.next();
@@ -362,7 +362,7 @@ public class NativeBroker extends DBBroker {
 			} catch (LockException e) {
 				LOG.warn("failed to acquire lock", e);
 			} finally {
-				lock.release(this);
+				lock.release();
 			}
 		}
 		Occurrences[] result = new Occurrences[map.size()];
@@ -405,8 +405,7 @@ public class NativeBroker extends DBBroker {
 			sym = NativeBroker.getSymbols().getSymbol(tagName);
 			ref = new ElementValue(collectionId, sym);
 			try {
-				lock.acquire(this);
-				lock.enter(this);
+				lock.acquire(Lock.READ_LOCK);
 				dis = elementsDb.getAsStream(ref);
 				//val = elementsDb.get(ref);
 			} catch (LockException e) {
@@ -414,12 +413,12 @@ public class NativeBroker extends DBBroker {
 				dis = null;
 				//val = null;
 			} finally {
-				lock.release(this);
+				lock.release();
 			}
 			if (dis == null)
 				continue;
 			//data = val.getData();
-			//is = new VariableByteInputStream(val.data(), val.start(), val.length());
+			//is = new VariableByteInputStream(data);
 			is = new VariableByteInputStream(dis);
 			try {
 				while (is.available() > 0) {
@@ -652,11 +651,6 @@ public class NativeBroker extends DBBroker {
 		return symbols;
 	}
 
-	public Iterator getDOMIterator(DocumentImpl doc) {
-		domDb.setOwnerObject(this);
-		return domDb.iterator(doc, doc.getAddress());
-	}
-
 	/**
 	 *  Gets the dOMIterator attribute of the NativeBroker object
 	 *
@@ -664,27 +658,28 @@ public class NativeBroker extends DBBroker {
 	 *@return        The dOMIterator value
 	 */
 	public Iterator getDOMIterator(NodeProxy proxy) {
-		domDb.setOwnerObject(this);
-		if (-1 < proxy.getInternalAddress())
-			return domDb.iterator(proxy.doc, proxy.getInternalAddress());
-		else {
-			LOG.debug("no address found for " + proxy.gid);
-			return domDb.iterator(proxy.doc, proxy);
+		try {
+			return new DOMFileIterator(this, domDb, proxy);
+		} catch (BTreeException e) {
+			LOG.debug("failed to create DOM iterator", e);
+		} catch (IOException e) {
+			LOG.debug("failed to create DOM iterator", e);
 		}
+		return null;
 	}
 
-	/**
-	 *  Gets the dOMIterator attribute of the NativeBroker object
-	 *
-	 *@param  doc  Description of the Parameter
-	 *@param  gid  Description of the Parameter
-	 *@return      The dOMIterator value
-	 */
-	public Iterator getDOMIterator(Document doc, long gid) {
+	public Iterator getNodeIterator(NodeProxy proxy) {
 		domDb.setOwnerObject(this);
-		return domDb.iterator((DocumentImpl) doc, new NodeProxy((DocumentImpl) doc, gid));
+		try {
+			return new NodeIterator(this, domDb, proxy);
+		} catch (BTreeException e) {
+			LOG.debug("failed to create node iterator", e);
+		} catch (IOException e) {
+			LOG.debug("failed to create node iterator", e);
+		}
+		return null;
 	}
-
+	
 	/**
 	 *  Gets the databaseType attribute of the NativeBroker object
 	 *
@@ -1006,8 +1001,7 @@ public class NativeBroker extends DBBroker {
 		final Lock lock = domDb.getLock();
 		// try to acquire a lock on the file
 		try {
-			lock.acquire(this, Lock.WRITE_LOCK);
-			lock.enter(this);
+			lock.acquire(Lock.WRITE_LOCK);
 			domDb.setOwnerObject(this);
 			ArrayList nodes = domDb.findKeys(query);
 			long gid;
@@ -1033,7 +1027,7 @@ public class NativeBroker extends DBBroker {
 			e.printStackTrace();
 			return;
 		} finally {
-			lock.release(this);
+			lock.release();
 		}
 		Iterator iterator;
 		if (node == null) {
@@ -1041,12 +1035,12 @@ public class NativeBroker extends DBBroker {
 			NodeImpl n;
 			for (int i = 0; i < nodes.getLength(); i++) {
 				n = (NodeImpl) nodes.item(i);
-				iterator = getDOMIterator(new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
+				iterator = getNodeIterator(new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
 				iterator.next();
 				scanNodes(iterator, n, "");
 			}
 		} else {
-			iterator = getDOMIterator(new NodeProxy(doc, node.getGID(), node.getInternalAddress()));
+			iterator = getNodeIterator(new NodeProxy(doc, node.getGID(), node.getInternalAddress()));
 			iterator.next();
 			scanNodes(iterator, node, node.getPath());
 		}
@@ -1145,47 +1139,14 @@ public class NativeBroker extends DBBroker {
 			Value value;
 			NodeImpl child;
 			for (long gid = firstChildId; gid < lastChildId; gid++) {
-				value = (Value) iterator.next();
-				child = NodeImpl.deserialize(value.getData(), doc);
+				//value = (Value) iterator.next();
+				//child = NodeImpl.deserialize(value.data(), value.start(), value.length(), doc);
+				child = (NodeImpl) iterator.next();
 				child.setGID(gid);
-				child.setOwnerDocument(doc);
-				child.setInternalAddress(value.getAddress());
+				//child.setOwnerDocument(doc);
+				//child.setInternalAddress(value.getAddress());
 				scanNodes(iterator, child, currentPath);
 			}
-		}
-	}
-
-	/**
-	 *  Gets the nodeValue attribute of the NativeBroker object
-	 *
-	 *@param  node  Description of the Parameter
-	 *@return       The nodeValue value
-	 */
-	public String getNodeValue(NodeImpl node) {
-		switch (node.getNodeType()) {
-			case Node.ELEMENT_NODE :
-				if (node.getChildCount() > 0) {
-					long firstChild = node.firstChildID();
-					NodeProxy proxy =
-						new NodeProxy((DocumentImpl) node.getOwnerDocument(), firstChild,
-							node.getInternalAddress());
-					Iterator domIterator = getDOMIterator(proxy);
-					ByteArrayOutputStream buf = new ByteArrayOutputStream(12);
-					getNodeValue(buf, domIterator);
-					byte[] data = buf.toByteArray();
-					String value;
-					try {
-						value = new String(data, 0, data.length, "UTF-8");
-					} catch (UnsupportedEncodingException uee) {
-						value = new String(data, 0, data.length);
-					}
-					return value;
-				} else
-					return "";
-			case Node.TEXT_NODE :
-				return ((Text) node).getData();
-			default :
-				return "";
 		}
 	}
 
@@ -1195,75 +1156,12 @@ public class NativeBroker extends DBBroker {
 	 *@param  proxy  Description of the Parameter
 	 *@return        The nodeValue value
 	 */
-	public String getNodeValue(NodeProxy proxy) {
-		Iterator domIterator = getDOMIterator(proxy);
-		ByteArrayOutputStream buf = new ByteArrayOutputStream(12);
-		getNodeValue(buf, domIterator);
-		byte[] data = buf.toByteArray();
-		String value;
-		try {
-			value = new String(data, 0, data.length, "UTF-8");
-		} catch (UnsupportedEncodingException uee) {
-			value = new String(data, 0, data.length);
-		}
-		return value;
-	}
-
-	/**
-	 *  Gets the nodeValue attribute of the NativeBroker object
-	 *
-	 *@param  buf          Description of the Parameter
-	 *@param  domIterator  Description of the Parameter
-	 */
-	protected void getNodeValue(ByteArrayOutputStream buf, Iterator domIterator) {
-		getNodeValue(buf, domIterator, true);
-	}
-
-	/**
-	 *  Gets the nodeValue attribute of the NativeBroker object
-	 *
-	 *@param  buf          Description of the Parameter
-	 *@param  domIterator  Description of the Parameter
-	 *@param  firstNode    Description of the Parameter
-	 */
-	protected void getNodeValue(
-		ByteArrayOutputStream buf,
-		Iterator domIterator,
-		boolean firstNode) {
-		try {
-			final Value value = (Value) domIterator.next();
-			if (value == null)
-				return;
-			//byte[] data = value.getData();
-			final short type = Signatures.getType(value.get(0));
-			String val;
-			switch (type) {
-				case Node.ELEMENT_NODE :
-					final int children = ByteConversion.byteToInt(value.data(), value.start() + 1);
-					for (int i = 0; i < children; i++)
-						getNodeValue(buf, domIterator, false);
-
-					break;
-				case Node.TEXT_NODE :
-					if (buf.size() > 0)
-						buf.write((byte) ' ');
-					value.streamTo(buf, 1);
-					break;
-				case Node.ATTRIBUTE_NODE :
-					// use attribute value only if the
-					// context node is an attribute (if this is
-					// the top level call of this method)
-					if (firstNode) {
-						final byte idSizeType = (byte) (value.get(0) & 0x3);
-						value.streamTo(
-							buf,
-							1 + Signatures.getLength(idSizeType),
-							value.getLength() - 1 - Signatures.getLength(idSizeType));
-					}
+	public String getNodeValue(final NodeProxy proxy) {
+		return (String) new DOMTransaction(this, domDb, Lock.READ_LOCK) {
+			public Object start() {
+				return domDb.getNodeValue(proxy);
 			}
-		} catch (IOException e) {
-			LOG.warn(e);
-		}
+		}.run();
 	}
 
 	/**
@@ -1449,7 +1347,8 @@ public class NativeBroker extends DBBroker {
 					Thread.dumpStack();
 					return null;
 				}
-				NodeImpl node = NodeImpl.deserialize(val.getData(), (DocumentImpl) doc);
+				NodeImpl node = NodeImpl.deserialize(val.getData(), 0, val.getLength(), 
+					(DocumentImpl) doc);
 				node.setGID(gid);
 				node.setOwnerDocument(doc);
 				node.setInternalAddress(val.getAddress());
@@ -1568,13 +1467,12 @@ public class NativeBroker extends DBBroker {
 			IndexQuery query = new IndexQuery(null, IndexQuery.TRUNC_RIGHT, ref);
 			Lock lock = elementsDb.getLock();
 			try {
-				lock.acquire(this, Lock.WRITE_LOCK);
-				lock.enter(this);
+				lock.acquire(Lock.WRITE_LOCK);
 				elementsDb.removeAll(query);
 			} catch (LockException e) {
 				LOG.error("could not acquire lock on elements index", e);
 			} finally {
-				lock.release(this);
+				lock.release();
 			}
 			elementPool.clear();
 
@@ -1590,7 +1488,7 @@ public class NativeBroker extends DBBroker {
 						NodeImpl node;
 						for (int j = 0; j < children.getLength(); j++) {
 							node = (NodeImpl) children.item(j);
-							Iterator k = getDOMIterator(doc, node.getGID());
+							Iterator k = getDOMIterator(new NodeProxy(doc, node.getGID(), node.getInternalAddress()));
 							removeNodes(k);
 						}
 						return null;
@@ -1668,8 +1566,7 @@ public class NativeBroker extends DBBroker {
 			IndexQuery query = new IndexQuery(null, IndexQuery.TRUNC_RIGHT, ref);
 			Lock lock = elementsDb.getLock();
 			try {
-				lock.acquire(this, Lock.WRITE_LOCK);
-				lock.enter(this);
+				lock.acquire(Lock.WRITE_LOCK);
 				ArrayList elements = elementsDb.findKeys(query);
 				LOG.debug("found " + elements.size() + " elements.");
 
@@ -1730,7 +1627,7 @@ public class NativeBroker extends DBBroker {
 			} catch (LockException e) {
 				LOG.warn("could not acquire lock on elements", e);
 			} finally {
-				lock.release(this);
+				lock.release();
 			}
 			elementPool.clear();
 
@@ -1743,7 +1640,7 @@ public class NativeBroker extends DBBroker {
 					NodeImpl node;
 					for (int i = 0; i < children.getLength(); i++) {
 						node = (NodeImpl) children.item(i);
-						Iterator j = getDOMIterator(doc, node.getGID());
+						Iterator j = getDOMIterator(new NodeProxy(doc, node.getGID(), node.getInternalAddress()));
 						removeNodes(j);
 					}
 					return null;
@@ -1785,15 +1682,14 @@ public class NativeBroker extends DBBroker {
 
 	private void removeNodes(Iterator domIterator) {
 		final Value next = (Value) domIterator.next();
-		final byte[] data = next.getData();
-		final short type = Signatures.getType(data[0]);
+		final byte[] data = next.data();
+		final short type = Signatures.getType(data[next.start()]);
 		switch (type) {
 			case Node.ELEMENT_NODE :
-				int children = ByteConversion.byteToInt(data, 1);
+				int children = ByteConversion.byteToInt(data, next.start() + 1);
 				domIterator.remove();
 				for (int i = 0; i < children; i++)
 					removeNodes(domIterator);
-
 				break;
 			default :
 				domIterator.remove();
@@ -1971,7 +1867,7 @@ public class NativeBroker extends DBBroker {
 		ArraySet resultNodeSet = new ArraySet(context.getLength());
 		NodeProxy p;
 		String content;
-		ByteArrayOutputStream buf = new ByteArrayOutputStream(12);
+		StringBuffer buf = new StringBuffer(128);
 		byte[] data;
 		long filePos;
 		int offset;
@@ -1988,17 +1884,22 @@ public class NativeBroker extends DBBroker {
 			}
 		for (Iterator i = context.iterator(); i.hasNext();) {
 			p = (NodeProxy) i.next();
-			if (domIterator == null)
-				domIterator = getDOMIterator(p);
-			else
-				 ((DOMFile.DOMFileIterator) domIterator).setTo(p);
-			buf.reset();
-			getNodeValue(buf, domIterator, true);
-			data = buf.toByteArray();
+//			if (domIterator == null)
+//				domIterator = getNodeIterator(p);
+//			else
+//				 ((NodeIterator) domIterator).setTo(p);
+//			buf.setLength(0);
+//			getNodeValue(buf, domIterator, true);
+//			content = buf.toString();
 			try {
-				content = new String(data, 0, data.length, "UTF-8");
-			} catch (UnsupportedEncodingException uee) {
-				content = new String(data, 0, data.length);
+				domDb.setOwnerObject(this);
+				domDb.getLock().acquire(Lock.READ_LOCK);
+				content = domDb.getNodeValue(p);
+			} catch (LockException e) {
+				LOG.warn("failed to acquire read lock on dom.dbx");
+				continue;
+			} finally {
+				domDb.getLock().release();
 			}
 			if (isCaseSensitive())
 				cmp = content;

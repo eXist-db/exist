@@ -7,11 +7,6 @@
 <web-app>
   <display-name>eXist Server</display-name>
   <description>eXist Server Setup</description>
-
-	<servlet>
-		<servlet-name>eXist Database Statistics</servlet-name>
-		<jsp-file>/status/status.jsp</jsp-file>
-	</servlet>
 	
   <!-- RpcServlet provides XML-RPC access to eXist -->
   <servlet>
@@ -299,11 +294,7 @@
   </servlet>
 
   <!-- Servlet mappings -->
-  <servlet-mapping>
-    <servlet-name>eXist Database Statistics</servlet-name>
-  	<url-pattern>/status</url-pattern>
-  </servlet-mapping>
-  
+
   <servlet-mapping>
     <servlet-name>org.exist.xmlrpc.RpcServlet</servlet-name>
     <url-pattern>/xmlrpc</url-pattern>

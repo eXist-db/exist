@@ -208,6 +208,9 @@ public abstract class DBBroker extends Observable {
         throw new RuntimeException( "not implemented for this storage backend" );
     }
 
+	public Iterator getNodeIterator( NodeProxy proxy ) {
+		throw new RuntimeException( "not implemented for this storage backend" );
+	}
 
     /**
      *  return the type of database this broker is connected to.

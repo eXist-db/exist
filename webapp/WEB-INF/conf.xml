@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <exist>
+	
   <!-- db-connection describes settings for the different 
           storage backends. For the relational backend, these
           are mostly JDBC settings. Adjust them according to 
@@ -14,7 +15,6 @@
           values are recognized:
           
           mysql                     selects the relational backend
-          oracle                   
           postgresql             
           native                     pure Java native backend
   
@@ -27,8 +27,6 @@
           - driver:      name of the jdbc-driver
           - url:         jdbc-url
           - database:    database backend being used
-          - serviceName: service-name of the oracle-database
-       	              (normally not needed)
           - encoding:    character encoding used to write character
               data to temporary files. This depends on the character
               handling capabilities of your rdbms and the settings of
@@ -52,8 +50,8 @@
        -->
        
 	   <db-connection database="native" files="data" 
-		   buffers="1024" words_buffers="12288" collection_buffers="1024" 
-		   elements_buffers="2048" free_mem_min="10" 
+		   buffers="1024" words_buffers="32768" collection_buffers="2048" 
+		   elements_buffers="8192" free_mem_min="10" 
 		   pageSize="4096">
 
 		   <!-- Settings for the database connection pool
@@ -64,7 +62,7 @@
 				- min: minimum number of connections to keep alive.
 				- max: maximum number of connections allowed.
 		   -->
-	  	   <pool min="1" max="15" idle-time="900"/>
+		   <pool min="1" max="15" sync-period="240000"/>
 	   </db-connection>
 	
   <!-- sample db-connection for MySQL --> 
@@ -89,27 +87,6 @@
   />
   -->
   
-  <!-- sample db-connection for Oracle -->
-  <!--
-  <db-connection driver="oracle.jdbc.driver.OracleDriver"
-		url = "jdbc:oracle:thin:@localhost:1521:vibsoz"
-		user="vibsoz"
-		password="vibsoz"
-		database="oracle"
-		serviceName="vibsoz"
-	    encoding="UTF8"
-  />
-  -->
-
-  <!-- sample db-connection for Berkeley DB
-
-       - files:		the directory where the dbm-files are stored
-	   - cacheSize: size in bytes of the dbm environment cache
-  -->
-  <!--
-  <db-connection database="dbm" files="data" cacheSize="8000000"/>
-  -->
-  
   <!-- settings for the serializer
 
        - enable-xinclude: should the database expand xinclude tags?
@@ -118,7 +95,8 @@
 	   - indent: should the serializer pretty-print (indent) xml?
   -->
   <serializer enable-xinclude="true" enable-xsl="false"
-	  indent="false" match-tagging="true" add-exist-id="false"/>
+	  indent="false" add-exist-id="false" match-tagging-elements="true"
+	  match-tagging-attributes="false"/>
   
   <!-- settings for the indexer
        Attributes:
@@ -152,7 +130,8 @@
   <indexer batchLoad="true" tmpDir="tmp"
 	  stemming="false" controls="ctl" caseSensitive="false"
 	  suppress-whitespace="both" index-depth="1"
-	  tokenizer="org.exist.storage.analysis.SimpleTokenizer">
+	  tokenizer="org.exist.storage.analysis.SimpleTokenizer"
+	  validation="false">
 
     <!-- where's the file containing a list of stopwords to be ignored
          by the parser. -->
@@ -172,9 +151,6 @@
 	     Every element matching the path expression will have it's
 	     textual content indexed. This is also valid for all of
 	     it's descendants.
-
-		 Note: these setting have no effect when using the native
-		 backend.
 		 
 		 Attributes:
 		 	- doctype  the doctype for which this definition should be used.
@@ -197,13 +173,24 @@
 		<exclude path="//url"/>
 		<exclude path="//volume"/>
 	</index>
+	
+	<!--index doctype="PLAY" default="all">
+		<exclude path="//LINE"/>
+	</index-->
 
 	<index attributes="true" alphanum="true" doctype="movie" default="all">
 		<exclude path="//@id"/>
 	</index>
 
+	<index attributes="false" doctype="species" default="all" alphanum="true"/>
+
+	<index attributes="true" doctype="sptr" default="all" alphanum="true">
+		<exclude path="//sequence"/>
+		<exclude path="//dbReference"/>
+	</index>
+	
     <entity-resolver>
-		<catalog file="catalog"/>
+		<catalog file="webapp/WEB-INF/catalog"/>
     </entity-resolver>
   </indexer>
   
@@ -232,7 +219,7 @@
 
     <!-- file appenders -->
     <appender name="exist.core" class="org.apache.log4j.RollingFileAppender">
-		<param name="File" value="logs/exist.log"/>
+	    <param name="File" value="logs/exist.log"/>
 	  <param name="MaximumFileSize" value="500000"/>
       <layout class="org.apache.log4j.PatternLayout">
         <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m\n"/>
@@ -253,20 +240,15 @@
     </appender>
     
     <root>
-		<appender-ref ref="exist.core"/>
+		<appender-ref ref="console"/>
 		<priority value="debug"/>
     </root>
 
     <category name="org.exist.xmldb" additivity="false">
 		<appender-ref ref="exist.xmldb"/>
-		<priority value="warn"/>
+		<priority value="debug"/>
     </category>
-
-	<category name="org.apache.axis" additivity="false">
-		<priority value="warn"/>
-		<appender-ref ref="console"/>
-	</category>
-
+    
     <!--
     <category name="exist.http">
       <appender-ref ref="A1"/>

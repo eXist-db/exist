@@ -149,7 +149,7 @@ public class NativeSerializer extends Serializer {
 					(DocumentImpl) n.getOwnerDocument(),
 					n.getGID(),
 					n.getInternalAddress());
-			Iterator domIter = broker.getDOMIterator(p);
+			Iterator domIter = broker.getNodeIterator(p);
 			domIter.next();
 			serializeToSAX(
 				n,
@@ -210,7 +210,7 @@ public class NativeSerializer extends Serializer {
 		contentHandler.startPrefixMapping(
 			"exist",
 			EXIST_NS);
-		Iterator domIter = broker.getDOMIterator(p);
+		Iterator domIter = broker.getNodeIterator(p);
 		serializeToSAX(null, domIter, p.doc, p.gid, true, p.matches);
 		contentHandler.endPrefixMapping("exist");
 		if (generateDocEvents)
@@ -274,11 +274,12 @@ public class NativeSerializer extends Serializer {
 		throws SAXException {
 		setDocument(doc);
 		if (node == null) {
-			Value value = (Value) iter.next();
-			if (value != null) {
-				node = NodeImpl.deserialize(value.getData(), doc);
-				node.setOwnerDocument(doc);
-			}
+			//Value value = (Value) iter.next();
+			//if (value != null) {
+			//	node = NodeImpl.deserialize(value.getData(), 0, value.length(), doc);
+			//	node.setOwnerDocument(doc);
+			//}
+			node = (NodeImpl) iter.next();
 		}
 		if (node == null)
 			return;
@@ -310,9 +311,10 @@ public class NativeSerializer extends Serializer {
 				if (children > 0)
 					gid = XMLUtil.getFirstChildId(doc, gid);
 				while (count < children) {
-					Value value = (Value) iter.next();
-					child = NodeImpl.deserialize(value.getData(), doc);
-					child.setOwnerDocument(doc);
+					//Value value = (Value) iter.next();
+					//child = NodeImpl.deserialize(value.data(), value.start(), value.length(), doc);
+					//child.setOwnerDocument(doc);
+					child = (NodeImpl)iter.next();
 					if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
 						if((highlightMatches & TAG_ATTRIBUTE_MATCHES) > 0)
 							cdata = processText(((AttrImpl) child).getValue(), gid, matches);
@@ -373,9 +375,10 @@ public class NativeSerializer extends Serializer {
 						prefixes,
 						matches);
 					if (++count < children) {
-						Value value = (Value) iter.next();
-						child = NodeImpl.deserialize(value.getData(), doc);
-						child.setOwnerDocument(doc);
+						//Value value = (Value) iter.next();
+						//child = NodeImpl.deserialize(value.data(), value.start(), value.length(), doc);
+						//child.setOwnerDocument(doc);
+						child = (NodeImpl)iter.next();
 					} else
 						break;
 				}

@@ -123,12 +123,13 @@ public class ElementImpl extends NodeImpl implements Element {
 	 *@param  doc   Description of the Parameter
 	 *@return       Description of the Return Value
 	 */
-	public static NodeImpl deserialize(byte[] data, DocumentImpl doc) {
-		byte attrSizeType = (byte) ((data[0] & 0x0C) >> 0x2);
-		byte idSizeType = (byte) (data[0] & 0x03);
-		int children = ByteConversion.byteToInt(data, 1);
-		short attributes = (short) Signatures.read(attrSizeType, data, 5);
-		int next = 5 + Signatures.getLength(attrSizeType);
+	public static NodeImpl deserialize(byte[] data, int start, int len, DocumentImpl doc) {
+		byte attrSizeType = (byte) ((data[start] & 0x0C) >> 0x2);
+		byte idSizeType = (byte) (data[start] & 0x03);
+		int children = ByteConversion.byteToInt(data, start + 1);
+		short attributes = (short) Signatures.read(attrSizeType, data, start + 5);
+		int next = start + 5 + Signatures.getLength(attrSizeType);
+		int end = start + len;
 		short id = (short) Signatures.read(idSizeType, data, next);
 		String name = doc.getSymbols().getName(id);
 		ElementImpl node = new ElementImpl(0, name);
@@ -136,9 +137,9 @@ public class ElementImpl extends NodeImpl implements Element {
 		node.attributes = attributes;
 		node.ownerDocument = doc;
 		next += Signatures.getLength(idSizeType);
-		if (data.length > next) {
-			byte[] pfxData = new byte[data.length - next];
-			System.arraycopy(data, next, pfxData, 0, data.length - next);
+		if (end > next) {
+			byte[] pfxData = new byte[end - next];
+			System.arraycopy(data, next, pfxData, 0, end - next);
 			ByteArrayInputStream bin = new ByteArrayInputStream(pfxData);
 			DataInputStream in = new DataInputStream(bin);
 			try {

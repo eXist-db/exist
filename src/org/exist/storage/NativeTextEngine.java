@@ -329,8 +329,7 @@ public class NativeTextEngine extends TextSearchEngine {
 
 				ref = new WordRef(collectionId, term);
 				try {
-					lock.acquire(this);
-					lock.enter(this);
+					lock.acquire();
 					//value = dbWords.get(ref);
 					dis = dbWords.getAsStream(ref);
 				} catch (LockException e) {
@@ -338,7 +337,7 @@ public class NativeTextEngine extends TextSearchEngine {
 					//value = null;
 					dis = null;
 				} finally {
-					lock.release(this);
+					lock.release();
 				}
 				if (dis == null) {
 					continue;
@@ -437,8 +436,7 @@ public class NativeTextEngine extends TextSearchEngine {
 
 				IndexQuery query = new IndexQuery(null, IndexQuery.TRUNC_RIGHT, ref);
 				try {
-					lock.acquire(this);
-					lock.enter(this);
+					lock.acquire();
 					try {
 						dbWords.query(query, cb);
 					} catch (IOException ioe) {
@@ -449,7 +447,7 @@ public class NativeTextEngine extends TextSearchEngine {
 				} catch (LockException e) {
 					LOG.debug(e);
 				} finally {
-					lock.release(this);
+					lock.release();
 				}
 			}
 			LOG.debug(
@@ -495,8 +493,7 @@ public class NativeTextEngine extends TextSearchEngine {
 					new WordRef(collectionId, start),
 					new WordRef(collectionId, end));
 			try {
-				lock.acquire(this);
-				lock.enter(this);
+				lock.acquire();
 				values = dbWords.findEntries(query);
 				for (Iterator j = values.iterator(); j.hasNext();) {
 					val = (Value[]) j.next();
@@ -524,7 +521,7 @@ public class NativeTextEngine extends TextSearchEngine {
 			} catch (BTreeException e) {
 				LOG.warn("error while reading words", e);
 			} finally {
-				lock.release(this);
+				lock.release();
 			}
 		}
 		Occurrences[] result = new Occurrences[map.size()];
@@ -540,14 +537,13 @@ public class NativeTextEngine extends TextSearchEngine {
 		Lock lock = dbWords.getLock();
 		try {
 			try {
-				lock.acquire(this, Lock.WRITE_LOCK);
-				lock.enter(this);
+				lock.acquire(Lock.WRITE_LOCK);
 				dbWords.flush();
 			} catch (LockException e) {
 				LOG.warn("could not acquire lock on words db", e);
 				return;
 			} finally {
-				lock.release(this);
+				lock.release();
 			}
 			LOG.debug("removing words ...");
 			WordRef ref = new WordRef(collection.getId());
@@ -555,15 +551,14 @@ public class NativeTextEngine extends TextSearchEngine {
 
 			ArrayList entries = null;
 			try {
-				lock.acquire(this, Lock.WRITE_LOCK);
-				lock.enter(this);
+				lock.acquire(Lock.WRITE_LOCK);
 				dbWords.removeAll(query);
 				//entries = dbWords.findKeys(query);
 			} catch (LockException e) {
 				LOG.warn("could not acquire lock on words db", e);
 				entries = null;
 			} finally {
-				lock.release(this);
+				lock.release();
 			}
 //			if (entries == null) {
 //				LOG.error("could not remove collection");
@@ -608,7 +603,7 @@ public class NativeTextEngine extends TextSearchEngine {
 			NodeImpl node;
 			for (int i = 0; i < children.getLength(); i++) {
 				node = (NodeImpl) children.item(i);
-				Iterator j = broker.getDOMIterator(doc, node.getGID());
+				Iterator j = broker.getDOMIterator(new NodeProxy(doc, node.getGID(), node.getInternalAddress()));
 				collect(words, j);
 			}
 			String word;
@@ -628,14 +623,13 @@ public class NativeTextEngine extends TextSearchEngine {
 				word = (String) iter.next();
 				ref = new WordRef(collectionId, word);
 				try {
-					lock.acquire(this, Lock.READ_LOCK);
-					lock.enter(this);
+					lock.acquire(Lock.READ_LOCK);
 					val = dbWords.get(ref);
 				} catch (LockException e) {
 					LOG.warn("could not acquire lock on words db", e);
 					val = null;
 				} finally {
-					lock.release(this);
+					lock.release();
 				}
 				if (val == null)
 					continue;
@@ -667,8 +661,7 @@ public class NativeTextEngine extends TextSearchEngine {
 				}
 				if (changed) {
 					try {
-						lock.acquire(this, Lock.WRITE_LOCK);
-						lock.enter(this);
+						lock.acquire(Lock.WRITE_LOCK);
 						ndata = os.toByteArray();
 						if (ndata.length == 0) {
 							dbWords.remove(ref);
@@ -679,7 +672,7 @@ public class NativeTextEngine extends TextSearchEngine {
 					} catch (LockException e) {
 						LOG.warn("could not acquire lock on words db", e);
 					} finally {
-						lock.release(this);
+						lock.release();
 					}
 				}
 			}
@@ -742,8 +735,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		dbWords.printStatistics();
 		Lock lock = dbWords.getLock();
 		try {
-			lock.acquire(this, Lock.WRITE_LOCK);
-			lock.enter(this);
+			lock.acquire(Lock.WRITE_LOCK);
 			try {
 				dbWords.flush();
 			} catch (DBException dbe) {
@@ -752,7 +744,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		} catch (LockException e) {
 			LOG.warn("could not acquire lock on words db", e);
 		} finally {
-			lock.release(this);
+			lock.release();
 		}
 	}
 
@@ -878,13 +870,12 @@ public class NativeTextEngine extends TextSearchEngine {
 				idList = (LongLinkedList) entry.getValue();
 				ref = new WordRef(collectionId, word);
 				try {
-					lock.acquire(this, Lock.READ_LOCK);
-					lock.enter(this);
+					lock.acquire(Lock.READ_LOCK);
 					val = dbWords.get(ref);
 				} catch (LockException e) {
 					LOG.error("could not acquire lock on index for '" + word + "'");
 				} finally {
-					lock.release(this);
+					lock.release();
 				}
 				os.clear();
 				newList = new LongLinkedList();
@@ -942,8 +933,7 @@ public class NativeTextEngine extends TextSearchEngine {
 				}
 				data = os.toByteArray();
 				try {
-					lock.acquire(this, Lock.WRITE_LOCK);
-					lock.enter(this);
+					lock.acquire(Lock.WRITE_LOCK);
 					try {
 						if (val == null)
 							dbWords.put(ref, data);
@@ -954,7 +944,7 @@ public class NativeTextEngine extends TextSearchEngine {
 				} catch (LockException e) {
 					LOG.warn("could not acquire lock", e);
 				} finally {
-					lock.release(this);
+					lock.release();
 				}
 			}
 			words.clear();
@@ -982,13 +972,12 @@ public class NativeTextEngine extends TextSearchEngine {
 				idList = (LongLinkedList) entry.getValue();
 				ref = new WordRef(collectionId, word);
 				try {
-					lock.acquire(this, Lock.READ_LOCK);
-					lock.enter(this);
+					lock.acquire(Lock.READ_LOCK);
 					val = dbWords.get(ref);
 				} catch (LockException e) {
 					LOG.error("could not acquire lock on index for '" + word + "'");
 				} finally {
-					lock.release(this);
+					lock.release();
 				}
 				os.clear();
 				if (val != null) {
@@ -1052,8 +1041,7 @@ public class NativeTextEngine extends TextSearchEngine {
 				}
 				data = os.toByteArray();
 				try {
-					lock.acquire(this, Lock.WRITE_LOCK);
-					lock.enter(this);
+					lock.acquire(Lock.WRITE_LOCK);
 					try {
 						if (val == null)
 							dbWords.put(ref, data);
@@ -1064,7 +1052,7 @@ public class NativeTextEngine extends TextSearchEngine {
 				} catch (LockException e) {
 					LOG.warn("could not acquire lock", e);
 				} finally {
-					lock.release(this);
+					lock.release();
 				}
 			}
 			//words = new TreeMap();
@@ -1123,8 +1111,7 @@ public class NativeTextEngine extends TextSearchEngine {
 			reusableWordRef.set(collectionId, word);
 			Lock lock = dbWords.getLock();
 			try {
-				lock.acquire(this, Lock.WRITE_LOCK);
-				lock.enter(this);
+				lock.acquire(Lock.WRITE_LOCK);
 				try {
 					dbWords.append(reusableWordRef, data);
 				} catch (ReadOnlyException e) {
@@ -1132,7 +1119,7 @@ public class NativeTextEngine extends TextSearchEngine {
 			} catch (LockException e) {
 				LOG.warn("could not acquire lock", e);
 			} finally {
-				lock.release(this);
+				lock.release();
 			}
 		}
 
