@@ -93,6 +93,7 @@ public class CollectionCache extends LRDCache {
     	final Collection col = (Collection) item;
         super.remove(item);
         names.remove(col.getName());
-        pool.getConfigurationManager().invalidate(col.getName());
+        if(pool.getConfigurationManager() != null) // might be null during db initialization
+            pool.getConfigurationManager().invalidate(col.getName());
     }
 }
