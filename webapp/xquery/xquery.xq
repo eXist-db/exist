@@ -59,7 +59,7 @@ declare function f:get-query-history() as element()*
    	
     <header>
         <logo src="logo.jpg"/>
-        <title>Open Source XML Database</title>
+        <title>Open Source Native XML Database</title>
 	    <author email="wolfgang@exist-db.org">Wolfgang M. Meier</author>
         <style href="styles/xquery.css"/>
     </header>    
