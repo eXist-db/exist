@@ -1406,8 +1406,8 @@ public class DOMFile extends BTree implements Lockable {
 	        rec.offset += len + 2;
 	        for (int i = 0; i < children; i++) {
 	        	getNodeValue(os, rec, false);
-	        	if (children - attributes > 1)
-	        		os.write((byte) ' ');
+//	        	if (children - attributes > 1)
+//	        		os.write((byte) ' ');
 	        }
 	        return;
         case Node.TEXT_NODE:

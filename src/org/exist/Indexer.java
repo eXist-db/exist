@@ -238,9 +238,6 @@ public class Indexer
 	}
 
 	public void endElement(String namespace, String name, String qname) {
-		//		if(namespace != null && namespace.length() > 0 &&
-		//			qname.indexOf(':') < 0)
-		//			qname = '#' + namespace + ':' + qname;
 		final ElementImpl last = (ElementImpl) stack.peek();
 		if (last.getNodeName().equals(qname)) {
 			if (charBuf != null && charBuf.length() > 0) {
@@ -261,20 +258,18 @@ public class Indexer
 			}
 			stack.pop();
 			
-//			currentPath = removeLastPathComponent(currentPath);
+			broker.endElement(last, currentPath);
+			
 			currentPath.removeLastComponent();
-//			currentPath.delete(
-//				currentPath.lastIndexOf("/"),
-//				currentPath.length());
-			//				currentPath.substring(0, currentPath.lastIndexOf('/'));
 			if (validate) {
 				if (document.getTreeLevelOrder(level) < last.getChildCount()) {
 					document.setTreeLevelOrder(level, last.getChildCount());
 				}
 			} else {
 				document.setOwnerDocument(document);
-				if (last.getChildCount() > 0)
+				if (last.getChildCount() > 0) {
 					broker.update(last);
+				}
 			}
 			level--;
 			if (last != rootNode) {

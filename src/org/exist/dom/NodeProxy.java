@@ -285,7 +285,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	}
 
 	public String getNodeValue() {
-		return StringValue.collapseWhitespace(doc.getBroker().getNodeValue(this));
+		return doc.getBroker().getNodeValue(this);
 	}
 
 	public String toString() {
@@ -333,6 +333,12 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		);
 	}
 
+	public boolean hasMixedContent() {
+	    return ValueIndexSpec.hasMixedContent(
+	            StorageAddress.indexTypeFromPointer(internalAddress)
+	    );
+	}
+	
 	public Match getMatches() {
 		return match;
 	}

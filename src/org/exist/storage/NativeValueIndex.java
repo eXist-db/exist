@@ -24,8 +24,8 @@ package org.exist.storage;
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -37,21 +37,23 @@ import org.dbxml.core.filer.BTreeException;
 import org.dbxml.core.indexer.IndexQuery;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.TextImpl;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.store.BFile;
 import org.exist.util.ByteConversion;
-import org.exist.util.FastQSort;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
+import org.exist.util.LongLinkedList;
 import org.exist.util.ReadOnlyException;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
@@ -59,9 +61,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
-import org.w3c.dom.Text;
 
 /**
  * Maintains an index on typed node values.
@@ -88,32 +88,32 @@ public class NativeValueIndex {
         this.db = valuesDb;
     }
     
-    public void storeText(ValueIndexSpec spec, Text node, NodeProxy proxy) {
+    public void storeText(ValueIndexSpec spec, TextImpl node) {
         AtomicValue atomic = convertToAtomic(spec, node.getData());
         if(atomic == null)
             return;		// skip
-        ArrayList buf;
+        LongLinkedList buf;
         if (pending.containsKey(atomic))
-            buf = (ArrayList) pending.get(atomic);
+            buf = (LongLinkedList) pending.get(atomic);
         else {
-            buf = new ArrayList(50);
+            buf = new LongLinkedList();
             pending.put(atomic, buf);
         }
-        buf.add(proxy);
+        buf.add(node.getGID());
     }
     
-    public void storeAttribute(ValueIndexSpec spec, Attr node, NodeProxy proxy) {
+    public void storeAttribute(ValueIndexSpec spec, AttrImpl node) {
         AtomicValue atomic = convertToAtomic(spec, node.getValue());
         if(atomic == null)
             return;		// skip
-        ArrayList buf;
+        LongLinkedList buf;
         if (pending.containsKey(atomic))
-            buf = (ArrayList) pending.get(atomic);
+            buf = (LongLinkedList) pending.get(atomic);
         else {
-            buf = new ArrayList(50);
+            buf = new LongLinkedList();
             pending.put(atomic, buf);
         }
-        buf.add(proxy);
+        buf.add(node.getGID());
     }
     
     public void setDocument(DocumentImpl document) {
@@ -122,13 +122,12 @@ public class NativeValueIndex {
     
     public void flush() {
         if (pending.size() == 0) return;
-        NodeProxy proxy;
         Indexable indexable;
-        ArrayList idList;
+        LongLinkedList idList;
+        long ids[];
         int len;
         Value ref;
         Map.Entry entry;
-        // get collection id for this collection
         long prevId;
         long cid;
         short collectionId = doc.getCollection().getId();
@@ -137,17 +136,17 @@ public class NativeValueIndex {
             for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
                 entry = (Map.Entry) i.next();
                 indexable = (Indexable) entry.getKey();
-                idList = (ArrayList) entry.getValue();
+                idList = (LongLinkedList) entry.getValue();
                 os.clear();
-                FastQSort.sort(idList, 0, idList.size() - 1);
-                len = idList.size();
+                ids = idList.getData();
+                Arrays.sort(ids);
+                len = ids.length;
                 os.writeInt(doc.getDocId());
                 os.writeInt(len);
                 prevId = 0;
                 for (int j = 0; j < len; j++) {
-                    proxy = (NodeProxy) idList.get(j);
-                    cid = proxy.gid - prevId;
-                    prevId = proxy.gid;
+                    cid = ids[j] - prevId;
+                    prevId = ids[j];
                     os.writeLong(cid);
                 }
                 ref = new Value(indexable.serialize(collectionId));
@@ -305,8 +304,7 @@ public class NativeValueIndex {
         Lock lock = db.getLock();
         Map.Entry entry;
         Indexable indexable;
-        List oldList = new ArrayList(), idList;
-        NodeProxy p;
+        LongLinkedList oldList, idList;
         VariableByteInput is = null;
         int len, docId;
         byte[] data;
@@ -315,12 +313,13 @@ public class NativeValueIndex {
         short sym, nsSym;
         short collectionId = oldDoc.getCollection().getId();
         long gid, prevId, cid, address;
+        long ids[];
         try {
             // iterate through elements
             for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
                 entry = (Map.Entry) i.next();
                 indexable = (Indexable) entry.getKey();
-                idList = (ArrayList) entry.getValue();
+                idList = (LongLinkedList) entry.getValue();
                 ref = new Value(indexable.serialize(collectionId));
                 
                 // try to retrieve old index entry for the element
@@ -328,7 +327,7 @@ public class NativeValueIndex {
                     lock.acquire(Lock.WRITE_LOCK);
                     is = db.getAsStream(ref);
                     os.clear();
-                    oldList.clear();
+                    oldList = new LongLinkedList();
                     if (is != null) {
                         // add old entries to the new list
                         try {
@@ -349,11 +348,11 @@ public class NativeValueIndex {
                                         if (node == null
                                                 && oldDoc.getTreeLevel(gid) < oldDoc
                                                 .reindexRequired()) {
-                                            idList.add(new NodeProxy(oldDoc, gid));
+                                            idList.add(gid);
                                         } else if (node != null
                                                 && (!XMLUtil.isDescendant(oldDoc,
                                                         node.getGID(), gid))) {
-                                            oldList.add(new NodeProxy(oldDoc, gid));
+                                            oldList.add(gid);
                                         }
                                     }
                                 }
@@ -363,17 +362,17 @@ public class NativeValueIndex {
                             LOG.error("io-error while updating index for value", e);
                         }
                     }
-                    if (node != null) idList.addAll(oldList);
                     // write out the updated list
-                    FastQSort.sort(idList, 0, idList.size() - 1);
-                    len = idList.size();
+                    ids = idList.getData();
+	                Arrays.sort(ids);
+	                len = ids.length;
+
                     os.writeInt(doc.getDocId());
                     os.writeInt(len);
                     prevId = 0;
                     for (int j = 0; j < len; j++) {
-                        p = (NodeProxy) idList.get(j);
-                        cid = p.gid - prevId;
-                        prevId = p.gid;
+                        cid = ids[j] - prevId;
+                        prevId = ids[j];
                         os.writeLong(cid);
                     }
                     if (is == null)
@@ -403,8 +402,8 @@ public class NativeValueIndex {
         Lock lock = db.getLock();
         Map.Entry entry;
         Indexable indexable;
-        List newList = new ArrayList(), idList;
-        NodeProxy p;
+        LongLinkedList newList, idList;
+        long[] ids;
         VariableByteArrayInput is;
         int len, docId;
         byte[] data;
@@ -420,12 +419,12 @@ public class NativeValueIndex {
                     lock.acquire(Lock.WRITE_LOCK);
                     entry = (Map.Entry) i.next();
                     indexable = (Indexable) entry.getKey();
-                    idList = (ArrayList) entry.getValue();
+                    idList = (LongLinkedList) entry.getValue();
                     ref = new Value(indexable.serialize(collectionId));
                     
                     val = db.get(ref);
                     os.clear();
-                    newList.clear();
+                    newList = new LongLinkedList();
                     if (val != null) {
                         // add old entries to the new list
                         data = val.getData();
@@ -451,8 +450,8 @@ public class NativeValueIndex {
                                         delta = is.readLong();
                                         gid = last + delta;
                                         last = gid;
-                                        if (!containsNode(idList, gid)) {
-                                            newList.add(new NodeProxy(doc, gid));
+                                        if (!idList.contains(gid)) {
+                                            newList.add(gid);
                                         }
                                     }
                                 }
@@ -465,15 +464,16 @@ public class NativeValueIndex {
                         }
                     }
                     // write out the updated list
-                    FastQSort.sort(newList, 0, newList.size() - 1);
-                    len = newList.size();
+                    ids = idList.getData();
+	                Arrays.sort(ids);
+	                len = ids.length;
+                    
                     os.writeInt(doc.getDocId());
                     os.writeInt(len);
                     last = 0;
                     for (int j = 0; j < len; j++) {
-                        p = (NodeProxy) newList.get(j);
-                        delta = p.gid - last;
-                        last = p.gid;
+                        delta = ids[j] - last;
+                        last = ids[j];
                         os.writeLong(delta);
                     }
                     if (val == null) {
@@ -491,12 +491,6 @@ public class NativeValueIndex {
             LOG.warn("database is read only");
         }
         pending.clear();
-    }
-    
-    private final static boolean containsNode(List list, long gid) {
-        for (int i = 0; i < list.size(); i++)
-            if (((NodeProxy) list.get(i)).gid == gid) return true;
-        return false;
     }
     
     public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, Indexable value) 

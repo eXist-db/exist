@@ -478,6 +478,8 @@ public abstract class DBBroker extends Observable {
 	    store(node, currentPath, true);
 	}
 	
+	public abstract void endElement(final NodeImpl node, NodePath currentPath);
+	
 	/**
 	 * Store a document (descriptor) into the database
      * (all metadata information which is returned by 

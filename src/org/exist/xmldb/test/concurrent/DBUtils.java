@@ -77,7 +77,7 @@ public class DBUtils {
 		System.out.println("Generating XML file " + file.getAbsolutePath());
 		Writer writer = new BufferedWriter(new FileWriter(file));
 		
-		XMLGenerator gen = new XMLGenerator(elementCnt, attrCnt, 2, wordList);
+		XMLGenerator gen = new XMLGenerator(elementCnt, attrCnt, 3, wordList);
 		gen.generateXML(writer);
 		writer.close();
 		return file;

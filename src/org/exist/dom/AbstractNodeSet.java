@@ -49,6 +49,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	private int indexType = Type.ANY_TYPE;
 	
 	private boolean hasTextIndex = false;
+	private boolean hasMixedContent = false;
 	
 	private boolean isCached = false;
 	
@@ -695,6 +696,9 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 */
 	public int getIndexType() {
 		if(indexType == Type.ANY_TYPE) {
+		    hasTextIndex = true;
+		    hasMixedContent = false;
+		    
 		    int type;
 		    NodeProxy p;
 			for (Iterator i = iterator(); i.hasNext();) {
@@ -704,8 +708,12 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 				    indexType = type;
 				else if(indexType != type) {
 				    indexType = Type.ITEM;
-				    break;
 				}
+				if(!p.hasTextIndex()) {
+				    hasTextIndex = false;
+				}
+				if(p.hasMixedContent())
+				    hasMixedContent = true;
 			}
 		}
 		return indexType;
@@ -713,15 +721,23 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	
 	public boolean hasTextIndex() {
 	    if(indexType == Type.ANY_TYPE) {
-		    int type;
-		    NodeProxy p;
-			for (Iterator i = iterator(); i.hasNext();) {
-			    p = (NodeProxy) i.next();
-			    hasTextIndex = p.hasTextIndex();
-			    if(!hasTextIndex)
-			        break;
-			}
+	        getIndexType();
+//		    int type;
+//		    NodeProxy p;
+//			for (Iterator i = iterator(); i.hasNext();) {
+//			    p = (NodeProxy) i.next();
+//			    hasTextIndex = p.hasTextIndex();
+//			    if(!hasTextIndex)
+//			        break;
+//			}
 		}
 	    return hasTextIndex;
+	}
+	
+	public boolean hasMixedContent() {
+	    if(indexType == Type.ANY_TYPE) {
+	        getIndexType();
+	    }
+	    return hasMixedContent;
 	}
 }

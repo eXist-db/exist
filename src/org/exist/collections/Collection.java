@@ -92,8 +92,6 @@ implements Comparable, EntityResolver, Cacheable {
 
 	private final static Logger LOG = Logger.getLogger(Collection.class);
 
-	public final static String COLLECTION_CONFIG_FILE = "collection.xconf";
-
 	private final static int VALIDATION_ENABLED = 0;
 	private final static int VALIDATION_AUTO = 1;
 	private final static int VALIDATION_DISABLED = 2;
@@ -691,7 +689,7 @@ implements Comparable, EntityResolver, Cacheable {
 		try {
 			lock.acquire(Lock.READ_LOCK);
 			Trigger trigger = null;
-			if (!docname.equals(COLLECTION_CONFIG_FILE)) {
+			if (!docname.equals(CollectionConfiguration.COLLECTION_CONFIG_FILE)) {
 				if (triggersEnabled) {
 					CollectionConfiguration config = getConfiguration(broker);
 					if (config != null)
@@ -1475,7 +1473,7 @@ implements Comparable, EntityResolver, Cacheable {
 	 */
 	private Trigger setupTriggers(DBBroker broker, String name, DocumentImpl oldDoc) {
 		Trigger trigger = null;
-		if (name.equals(COLLECTION_CONFIG_FILE)) {
+		if (name.equals(CollectionConfiguration.COLLECTION_CONFIG_FILE)) {
 		    // set configuration to null if we are updating collection.xconf
 			configuration = null;
 			collectionConfEnabled = false;
@@ -1624,8 +1622,8 @@ implements Comparable, EntityResolver, Cacheable {
 	}
 
 	private CollectionConfiguration readCollectionConfiguration(DBBroker broker) {
-		if (hasDocument(COLLECTION_CONFIG_FILE)) {			
-		    DocumentImpl doc = getDocument(broker, COLLECTION_CONFIG_FILE);
+		if (hasDocument(CollectionConfiguration.COLLECTION_CONFIG_FILE)) {			
+		    DocumentImpl doc = getDocument(broker, CollectionConfiguration.COLLECTION_CONFIG_FILE);
 		    if(doc == null) {
 		        LOG.warn("collection.xconf exists but could not be loaded");
 		        return null;
@@ -1635,7 +1633,7 @@ implements Comparable, EntityResolver, Cacheable {
 			try {
 				return new CollectionConfiguration(broker, this, doc);
 			} catch (CollectionConfigurationException e) {
-				LOG.warn("Failed to load collection configuration " + e.getMessage());
+				LOG.warn("Failed to load collection configuration " + e.getMessage(), e);
 			} finally {
 				triggersEnabled = true;
 			}

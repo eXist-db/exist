@@ -1,6 +1,5 @@
 package org.exist.xquery.test;
 
-import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -400,6 +399,10 @@ public class XPathQueryTest extends TestCase {
 
 			result = service.queryResource("namespaces.xml", "//*:comment");
 			assertEquals(1, result.getSize());
+			
+			result = service.queryResource("namespaces.xml", "namespace-uri(//t:test)");
+			assertEquals(1, result.getSize());
+			assertEquals(result.getResource(0).getContent(), "http://www.foo.com");
 		} catch (XMLDBException e) {
 			fail(e.getMessage());
 		}

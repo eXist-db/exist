@@ -293,6 +293,8 @@ public interface NodeSet extends Sequence, NodeList {
 	
 	public boolean hasTextIndex();
 	
+	public boolean hasMixedContent();
+	
 	/**
 	 * Return a sub-range of this node set containing the range of nodes greater than or including
 	 * the lower node and smaller than or including the upper node.
