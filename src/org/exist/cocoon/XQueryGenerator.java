@@ -154,12 +154,15 @@ public class XQueryGenerator extends ServiceableGenerator {
 		Response response = ObjectModelHelper.getResponse(objectModel);
 		Context context = ObjectModelHelper.getContext(objectModel);
 		Session session = request.getSession(createSession);
-		String baseURI = request.getRequestURI();
-		int p = baseURI.lastIndexOf('/');
-		if (p > -1)
-			baseURI = baseURI.substring(0, p);
-		baseURI = context.getRealPath(baseURI.substring(request
-				.getContextPath().length()));
+		
+		final String servletPath = request.getServletPath();
+		final String pathInfo = request.getPathInfo();
+		StringBuffer baseURIBuffer = new StringBuffer(servletPath);
+		if (pathInfo != null) baseURIBuffer.append(pathInfo);
+		int p = baseURIBuffer.lastIndexOf("/");
+		if (p > -1)  baseURIBuffer.delete(p,baseURIBuffer.length());            
+		final String baseURI = context.getRealPath(baseURIBuffer.toString());
+		
 		String user = null;
 		String password = null;
 		// check if user and password can be read from the session
