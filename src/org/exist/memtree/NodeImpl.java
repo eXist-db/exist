@@ -62,14 +62,14 @@ public class NodeImpl implements Node, NodeValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NodeValue#getImplementation()
+	 * @see org.exist.xquery.value.NodeValue#getImplementation()
 	 */
 	public int getImplementationType() {
 		return NodeValue.IN_MEMORY_NODE;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NodeValue#getNode()
+	 * @see org.exist.xquery.value.NodeValue#getNode()
 	 */
 	public Node getNode() {
 		return this;
@@ -159,7 +159,7 @@ public class NodeImpl implements Node, NodeValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NodeValue#equals(org.exist.xpath.value.NodeValue)
+	 * @see org.exist.xquery.value.NodeValue#equals(org.exist.xquery.value.NodeValue)
 	 */
 	public boolean equals(NodeValue other) throws XPathException {
 		if (other.getImplementationType() != NodeValue.IN_MEMORY_NODE)
@@ -168,7 +168,7 @@ public class NodeImpl implements Node, NodeValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NodeValue#after(org.exist.xpath.value.NodeValue)
+	 * @see org.exist.xquery.value.NodeValue#after(org.exist.xquery.value.NodeValue)
 	 */
 	public boolean after(NodeValue other) throws XPathException {
 		if (other.getImplementationType() != NodeValue.IN_MEMORY_NODE)
@@ -177,7 +177,7 @@ public class NodeImpl implements Node, NodeValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NodeValue#before(org.exist.xpath.value.NodeValue)
+	 * @see org.exist.xquery.value.NodeValue#before(org.exist.xquery.value.NodeValue)
 	 */
 	public boolean before(NodeValue other) throws XPathException {
 		if (other.getImplementationType() != NodeValue.IN_MEMORY_NODE)
@@ -237,6 +237,10 @@ public class NodeImpl implements Node, NodeValue {
 		return document;
 	}
 
+	public DocumentImpl getDocument() {
+	    return document;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#insertBefore(org.w3c.dom.Node, org.w3c.dom.Node)
 	 */
@@ -340,7 +344,7 @@ public class NodeImpl implements Node, NodeValue {
 	 */
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#getType()
+	 * @see org.exist.xquery.value.Item#getType()
 	 */
 	public int getType() {
 		int type = getNodeType();
@@ -363,7 +367,7 @@ public class NodeImpl implements Node, NodeValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#getStringValue()
+	 * @see org.exist.xquery.value.Item#getStringValue()
 	 */
 	public String getStringValue() {
 		int level = document.treeLevel[nodeNumber];
@@ -384,21 +388,21 @@ public class NodeImpl implements Node, NodeValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#toSequence()
+	 * @see org.exist.xquery.value.Item#toSequence()
 	 */
 	public Sequence toSequence() {
 		return this;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#convertTo(int)
+	 * @see org.exist.xquery.value.Item#convertTo(int)
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		return new StringValue(getStringValue()).convertTo(requiredType);
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#atomize()
+	 * @see org.exist.xquery.value.Item#atomize()
 	 */
 	public AtomicValue atomize() throws XPathException {
 		return new StringValue(getStringValue());
@@ -409,40 +413,40 @@ public class NodeImpl implements Node, NodeValue {
 	 */
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#add(org.exist.xpath.value.Item)
+	 * @see org.exist.xquery.value.Sequence#add(org.exist.xquery.value.Item)
 	 */
 	public void add(Item item) throws XPathException {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#addAll(org.exist.xpath.value.Sequence)
+	 * @see org.exist.xquery.value.Sequence#addAll(org.exist.xquery.value.Sequence)
 	 */
 	public void addAll(Sequence other) throws XPathException {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#getItemType()
+	 * @see org.exist.xquery.value.Sequence#getItemType()
 	 */
 	public int getItemType() {
 		return Type.NODE;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#iterate()
+	 * @see org.exist.xquery.value.Sequence#iterate()
 	 */
 	public SequenceIterator iterate() {
 		return new SingleNodeIterator(this);
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#unorderedIterator()
+	 * @see org.exist.xquery.value.Sequence#unorderedIterator()
 	 */
 	public SequenceIterator unorderedIterator() {
 		return new SingleNodeIterator(this);
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#getLength()
+	 * @see org.exist.xquery.value.Sequence#getLength()
 	 */
 	public int getLength() {
 		return 1;
@@ -457,21 +461,21 @@ public class NodeImpl implements Node, NodeValue {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#itemAt(int)
+	 * @see org.exist.xquery.value.Sequence#itemAt(int)
 	 */
 	public Item itemAt(int pos) {
 		return pos == 0 ? this : null;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#effectiveBooleanValue()
+	 * @see org.exist.xquery.value.Sequence#effectiveBooleanValue()
 	 */
 	public boolean effectiveBooleanValue() throws XPathException {
 		return true;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#toNodeSet()
+	 * @see org.exist.xquery.value.Sequence#toNodeSet()
 	 */
 	public NodeSet toNodeSet() throws XPathException {
 		return null;
@@ -486,14 +490,14 @@ public class NodeImpl implements Node, NodeValue {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.exist.xpath.value.SequenceIterator#hasNext()
+		 * @see org.exist.xquery.value.SequenceIterator#hasNext()
 		 */
 		public boolean hasNext() {
 			return node != null;
 		}
 
 		/* (non-Javadoc)
-		 * @see org.exist.xpath.value.SequenceIterator#nextItem()
+		 * @see org.exist.xquery.value.SequenceIterator#nextItem()
 		 */
 		public Item nextItem() {
 			NodeImpl next = node;
@@ -504,7 +508,7 @@ public class NodeImpl implements Node, NodeValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#toSAX(org.exist.storage.DBBroker, org.xml.sax.ContentHandler)
+	 * @see org.exist.xquery.value.Item#toSAX(org.exist.storage.DBBroker, org.xml.sax.ContentHandler)
 	 */
 	public void toSAX(DBBroker broker, ContentHandler handler) throws SAXException {
 	    DOMStreamer streamer = null;
@@ -529,7 +533,7 @@ public class NodeImpl implements Node, NodeValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#conversionPreference(java.lang.Class)
+	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
 	 */
 	public int conversionPreference(Class javaClass) {
 		if (javaClass.isAssignableFrom(NodeImpl.class))
@@ -561,7 +565,7 @@ public class NodeImpl implements Node, NodeValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#toJavaObject(java.lang.Class)
+	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 	 */
 	public Object toJavaObject(Class target) throws XPathException {
 		if (target.isAssignableFrom(NodeImpl.class))
@@ -577,7 +581,7 @@ public class NodeImpl implements Node, NodeValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#setSelfAsContext()
+	 * @see org.exist.xquery.value.Sequence#setSelfAsContext()
 	 */
 	public void setSelfAsContext() {
 	}

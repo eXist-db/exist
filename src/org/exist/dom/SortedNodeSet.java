@@ -193,7 +193,7 @@ public class SortedNodeSet extends AbstractNodeSet {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.exist.xpath.value.SequenceIterator#nextItem()
+		 * @see org.exist.xquery.value.SequenceIterator#nextItem()
 		 */
 		public Item nextItem() {
 			if (!pi.hasNext())

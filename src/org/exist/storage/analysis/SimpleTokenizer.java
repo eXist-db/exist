@@ -53,7 +53,7 @@ public class SimpleTokenizer implements Tokenizer {
 					ch = LA(1);
 				}
 				break;
-			} else if (Character.isLetter(ch) || nonBreakingChar(ch) || (allowWildcards && isWildcard(ch))) {
+			} else if (Character.isLetter(ch) || is_mark(ch) || nonBreakingChar(ch) || (allowWildcards && isWildcard(ch))) {
 				token.consumeNext();
 				consume();
 				ch = LA(1);
@@ -118,7 +118,7 @@ public class SimpleTokenizer implements Tokenizer {
 		char ch = LA(1);
 		if (ch == (char) - 1)
 			return eof();
-		if (Character.isLetter(ch) || nonBreakingChar(ch)
+		if (Character.isLetter(ch) || is_mark(ch) || nonBreakingChar(ch)
 			|| singleCharToken(ch) 
 			|| (wildcards && isWildcard(ch))) {
 			token = alpha(null, wildcards);
@@ -339,6 +339,10 @@ public class SimpleTokenizer implements Tokenizer {
 			// Hangul Syllables
 			(ch >= '\uAC00' && ch <= '\uD7A3');
 	}
+	
+	private final boolean is_mark(char ch) {
+        return (ch > '\u093d' && ch < '\u094c');
+    }
 	
 	public static void main(String args[]) {
 		String t1 = "\u30A8\u30FB\u31A1\uACFF\u2FAA\u312A\u3045";

@@ -28,7 +28,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
 
 /**
- * An abstract implementation of {@link org.exist.xpath.value.Sequence} with
+ * An abstract implementation of {@link org.exist.xquery.value.Sequence} with
  * default implementations for some methods.
  */
 public abstract class AbstractSequence implements Sequence {
@@ -79,7 +79,7 @@ public abstract class AbstractSequence implements Sequence {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#add(org.exist.xpath.value.Item)
+	 * @see org.exist.xquery.value.Sequence#add(org.exist.xquery.value.Item)
 	 */
 	public abstract void add(Item item) throws XPathException;
 
@@ -89,12 +89,12 @@ public abstract class AbstractSequence implements Sequence {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#itemAt(int)
+	 * @see org.exist.xquery.value.Sequence#itemAt(int)
 	 */
 	public abstract Item itemAt(int pos);
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#effectiveBooleanValue()
+	 * @see org.exist.xquery.value.Sequence#effectiveBooleanValue()
 	 */
 	public boolean effectiveBooleanValue() throws XPathException {
 		int len = getLength();
@@ -114,7 +114,7 @@ public abstract class AbstractSequence implements Sequence {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#conversionPreference(java.lang.Class)
+	 * @see org.exist.xquery.value.Sequence#conversionPreference(java.lang.Class)
 	 */
 	public int conversionPreference(Class javaClass) {
 		if(javaClass.isAssignableFrom(Sequence.class))
@@ -131,7 +131,7 @@ public abstract class AbstractSequence implements Sequence {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#toJavaObject(java.lang.Class)
+	 * @see org.exist.xquery.value.Sequence#toJavaObject(java.lang.Class)
 	 */
 	public Object toJavaObject(Class target) throws XPathException {
 		if(target.isAssignableFrom(Sequence.class))

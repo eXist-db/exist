@@ -193,7 +193,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery, Comp
     }
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#getDependencies()
+	 * @see org.exist.xquery.AbstractExpression#getDependencies()
 	 */
 	public int getDependencies() {
 		Expression next;
@@ -245,7 +245,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery, Comp
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#setInPredicate(boolean)
+	 * @see org.exist.xquery.Expression#setInPredicate(boolean)
 	 */
 	public void setInPredicate(boolean inPredicate) {
 		this.inPredicate = inPredicate;
@@ -254,7 +254,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery, Comp
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#setPrimaryAxis(int)
+	 * @see org.exist.xquery.AbstractExpression#setPrimaryAxis(int)
 	 */
 	public void setPrimaryAxis(int axis) {
 		if(steps.size() > 0)
@@ -262,7 +262,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery, Comp
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#resetState()
+	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
 	public void resetState() {
 		for(Iterator i = steps.iterator(); i.hasNext(); ) {

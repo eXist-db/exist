@@ -246,12 +246,8 @@ public class Indexer
 				}
 			} else {
 				document.setOwnerDocument(document);
-				if (broker.getDatabaseType() == DBBroker.DBM
-					|| broker.getDatabaseType() == DBBroker.NATIVE) {
-					if (last.getChildCount() > 0)
-						broker.update(last);
-				} else
-					broker.store(last, currentPath);
+				if (last.getChildCount() > 0)
+					broker.update(last);
 			}
 			level--;
 			if (last != rootNode) {

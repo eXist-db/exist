@@ -39,9 +39,9 @@ import org.exist.xquery.value.Type;
  * will be created for each function call. Subclasses <b>have</b> to
  * provide a function signature to the constructor.
  * 
- * User-defined functions extend class {@link org.exist.xpath.UserDefinedFunction},
+ * User-defined functions extend class {@link org.exist.xquery.UserDefinedFunction},
  * which is again a subclass of Function. They will not be called directly, but through a
- * {@link org.exist.xpath.FunctionCall} object, which checks the type and cardinality of
+ * {@link org.exist.xquery.FunctionCall} object, which checks the type and cardinality of
  * all arguments and takes care that the current execution context is saved properly.
  * 
  * @author wolf
@@ -94,7 +94,7 @@ public abstract class Function extends PathExpr {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.PathExpr#returnsType()
+	 * @see org.exist.xquery.PathExpr#returnsType()
 	 */
 	public int returnsType() {
 		if(mySignature.getReturnType() == null)
@@ -104,7 +104,7 @@ public abstract class Function extends PathExpr {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#getCardinality()
+	 * @see org.exist.xquery.AbstractExpression#getCardinality()
 	 */
 	public int getCardinality() {
 		if(mySignature.getReturnType() == null)
@@ -337,7 +337,7 @@ public abstract class Function extends PathExpr {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#getDependencies()
+	 * @see org.exist.xquery.AbstractExpression#getDependencies()
 	 */
 	public int getDependencies() {
 		return Dependency.CONTEXT_ITEM | Dependency.CONTEXT_SET;

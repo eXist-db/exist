@@ -28,8 +28,8 @@ import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
 
 /**
- * Abstract base class for an {@link org.exist.xpath.InternalModule}. 
- * The constructor expects an array of {@link org.exist.xpath.FunctionDef}.
+ * Abstract base class for an {@link org.exist.xquery.InternalModule}. 
+ * The constructor expects an array of {@link org.exist.xquery.FunctionDef}.
  * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
@@ -52,24 +52,24 @@ public abstract class AbstractInternalModule implements InternalModule {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Module#isInternalModule()
+	 * @see org.exist.xquery.Module#isInternalModule()
 	 */
 	public boolean isInternalModule() {
 		return true;
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Module#getNamespaceURI()
+	 * @see org.exist.xquery.Module#getNamespaceURI()
 	 */
 	public abstract String getNamespaceURI();
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Module#getDefaultPrefix()
+	 * @see org.exist.xquery.Module#getDefaultPrefix()
 	 */
 	public abstract String getDefaultPrefix();
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Module#listFunctions()
+	 * @see org.exist.xquery.Module#listFunctions()
 	 */
 	public FunctionSignature[] listFunctions() {
 		FunctionSignature signatures[] = new FunctionSignature[mFunctions.length];
@@ -86,7 +86,7 @@ public abstract class AbstractInternalModule implements InternalModule {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Module#getClassForFunction(org.exist.dom.QName)
+	 * @see org.exist.xquery.Module#getClassForFunction(org.exist.dom.QName)
 	 */
 	public Class getClassForFunction(QName qname) {
 		FunctionDef def = (FunctionDef)mFunctionMap.get(qname);
@@ -107,7 +107,7 @@ public abstract class AbstractInternalModule implements InternalModule {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Module#resolveVariable(org.exist.dom.QName)
+	 * @see org.exist.xquery.Module#resolveVariable(org.exist.dom.QName)
 	 */
 	public Variable resolveVariable(QName qname) throws XPathException {
 		return (Variable)mGlobalVariables.get(qname);

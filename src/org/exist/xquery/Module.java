@@ -31,10 +31,10 @@ import org.exist.dom.QName;
  * in the module's namespace.
  * 
  * Modules can be either internal or external: internal modules are collections of Java
- * classes, each being a subclass of {@link org.exist.xpath.Function}. External modules
+ * classes, each being a subclass of {@link org.exist.xquery.Function}. External modules
  * are defined by the XQuery "module" directive and can be loaded with "import module".
  * 
- * Modules are dynamically loaded by class {@link org.exist.xpath.XQueryContext}, either
+ * Modules are dynamically loaded by class {@link org.exist.xquery.XQueryContext}, either
  * during the initialization phase of the query engine (for the standard library modules) or
  * upon an "import module" directive. 
  * 

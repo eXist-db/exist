@@ -27,7 +27,6 @@ import java.util.Arrays;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.xquery.XQueryContext;
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 

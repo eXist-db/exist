@@ -720,7 +720,7 @@ public class ArraySet extends AbstractNodeSet {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.exist.xpath.value.SequenceIterator#nextItem()
+		 * @see org.exist.xquery.value.SequenceIterator#nextItem()
 		 */
 		public Item nextItem() {
 			return (pos < counter) ? nodes[pos++] : null;

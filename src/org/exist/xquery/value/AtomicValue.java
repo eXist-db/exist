@@ -33,14 +33,14 @@ public abstract class AtomicValue implements Item, Sequence {
 	public final static AtomicValue EMPTY_VALUE = new EmptyValue();
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#getType()
+	 * @see org.exist.xquery.value.Item#getType()
 	 */
 	public int getType() {
 		return Type.ATOMIC;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#getStringValue()
+	 * @see org.exist.xquery.value.Item#getStringValue()
 	 */
 	public abstract String getStringValue() throws XPathException;
 
@@ -71,7 +71,7 @@ public abstract class AtomicValue implements Item, Sequence {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#getLength()
+	 * @see org.exist.xquery.value.Sequence#getLength()
 	 */
 	public int getLength() {
 		return 1;
@@ -82,7 +82,7 @@ public abstract class AtomicValue implements Item, Sequence {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#iterate()
+	 * @see org.exist.xquery.value.Sequence#iterate()
 	 */
 	public SequenceIterator iterate() {
 		return new SingleItemIterator(this);
@@ -93,28 +93,28 @@ public abstract class AtomicValue implements Item, Sequence {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#getItemType()
+	 * @see org.exist.xquery.value.Sequence#getItemType()
 	 */
 	public int getItemType() {
 		return getType();
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#itemAt(int)
+	 * @see org.exist.xquery.value.Sequence#itemAt(int)
 	 */
 	public Item itemAt(int pos) {
 		return pos > 0 ? null : this;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#toSequence()
+	 * @see org.exist.xquery.value.Item#toSequence()
 	 */
 	public Sequence toSequence() {
 		return this;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#toSAX(org.exist.storage.DBBroker, org.xml.sax.ContentHandler)
+	 * @see org.exist.xquery.value.Item#toSAX(org.exist.storage.DBBroker, org.xml.sax.ContentHandler)
 	 */
 	public void toSAX(DBBroker broker, ContentHandler handler) throws SAXException {
 		try {
@@ -135,7 +135,7 @@ public abstract class AtomicValue implements Item, Sequence {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#add(org.exist.xpath.value.Item)
+	 * @see org.exist.xquery.value.Sequence#add(org.exist.xquery.value.Item)
 	 */
 	public void add(Item item) throws XPathException {
 	}
@@ -144,21 +144,21 @@ public abstract class AtomicValue implements Item, Sequence {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#atomize()
+	 * @see org.exist.xquery.value.Item#atomize()
 	 */
 	public AtomicValue atomize() throws XPathException {
 		return this;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#effectiveBooleanValue()
+	 * @see org.exist.xquery.value.Item#effectiveBooleanValue()
 	 */
 	public boolean effectiveBooleanValue() throws XPathException {
 		return getStringValue().length() > 0;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#toNodeSet()
+	 * @see org.exist.xquery.value.Sequence#toNodeSet()
 	 */
 	public NodeSet toNodeSet() throws XPathException {
 		throw new XPathException(
@@ -176,14 +176,14 @@ public abstract class AtomicValue implements Item, Sequence {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#conversionPreference(java.lang.Class)
+	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
 	 */
 	public int conversionPreference(Class javaClass) {
 		return Integer.MAX_VALUE;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#toJavaObject(java.lang.Class)
+	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 	 */
 	public Object toJavaObject(Class target) throws XPathException {
 		throw new XPathException(
@@ -202,7 +202,7 @@ public abstract class AtomicValue implements Item, Sequence {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#setSelfAsContext()
+	 * @see org.exist.xquery.value.Sequence#setSelfAsContext()
 	 */
 	public void setSelfAsContext() {
 	}
@@ -210,21 +210,21 @@ public abstract class AtomicValue implements Item, Sequence {
 	private final static class EmptyValue extends AtomicValue {
 
 		/* (non-Javadoc)
-		 * @see org.exist.xpath.value.AtomicValue#getStringValue()
+		 * @see org.exist.xquery.value.AtomicValue#getStringValue()
 		 */
 		public String getStringValue() {
 			return "";
 		}
 
 		/* (non-Javadoc)
-		 * @see org.exist.xpath.value.AtomicValue#convertTo(int)
+		 * @see org.exist.xquery.value.AtomicValue#convertTo(int)
 		 */
 		public AtomicValue convertTo(int requiredType) throws XPathException {
 			throw new XPathException("cannot convert empty value to " + requiredType);
 		}
 
 		/* (non-Javadoc)
-		 * @see org.exist.xpath.value.AtomicValue#compareTo(java.lang.Object)
+		 * @see org.exist.xquery.value.AtomicValue#compareTo(java.lang.Object)
 		 */
 		public int compareTo(AtomicValue other) throws XPathException {
 			if (other instanceof EmptyValue)
@@ -234,55 +234,55 @@ public abstract class AtomicValue implements Item, Sequence {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.exist.xpath.value.AtomicValue#itemAt(int)
+		 * @see org.exist.xquery.value.AtomicValue#itemAt(int)
 		 */
 		public Item itemAt(int pos) {
 			return null;
 		}
 
 		/* (non-Javadoc)
-		 * @see org.exist.xpath.value.Item#toSequence()
+		 * @see org.exist.xquery.value.Item#toSequence()
 		 */
 		public Sequence toSequence() {
 			return this;
 		}
 
 		/* (non-Javadoc)
-		 * @see org.exist.xpath.value.AtomicValue#max(org.exist.xpath.value.AtomicValue)
+		 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
 		 */
 		public AtomicValue max(AtomicValue other) throws XPathException {
 			return this;
 		}
 
 		/* (non-Javadoc)
-		 * @see org.exist.xpath.value.Sequence#add(org.exist.xpath.value.Item)
+		 * @see org.exist.xquery.value.Sequence#add(org.exist.xquery.value.Item)
 		 */
 		public void add(Item item) throws XPathException {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.exist.xpath.value.AtomicValue#compareTo(int, org.exist.xpath.value.AtomicValue)
+		 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 		 */
 		public boolean compareTo(int operator, AtomicValue other) throws XPathException {
 			throw new XPathException("Cannot compare operand to empty value");
 		}
 		
 		/* (non-Javadoc)
-		 * @see org.exist.xpath.value.AtomicValue#min(org.exist.xpath.value.AtomicValue)
+		 * @see org.exist.xquery.value.AtomicValue#min(org.exist.xquery.value.AtomicValue)
 		 */
 		public AtomicValue min(AtomicValue other) throws XPathException {
 			return this;
 		}
 
 		/* (non-Javadoc)
-		 * @see org.exist.xpath.value.Item#conversionPreference(java.lang.Class)
+		 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
 		 */
 		public int conversionPreference(Class javaClass) {
 			return Integer.MAX_VALUE;
 		}
 
 		/* (non-Javadoc)
-		 * @see org.exist.xpath.value.Item#toJavaObject(java.lang.Class)
+		 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 		 */
 		public Object toJavaObject(Class target) throws XPathException {
 			throw new XPathException(

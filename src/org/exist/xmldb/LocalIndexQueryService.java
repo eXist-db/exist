@@ -25,6 +25,25 @@ public class LocalIndexQueryService implements IndexQueryService {
 		this.parent = parent;
 	}
 
+	
+    /* (non-Javadoc)
+     * @see org.exist.xmldb.IndexQueryService#reindexCollection()
+     */
+    public void reindexCollection() throws XMLDBException {
+        DBBroker broker = null;
+        try {
+            broker = pool.get(user);
+            broker.reindex(parent.getCollection().getName());
+            broker.sync();
+        } catch (PermissionDeniedException e) {
+            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
+        } catch (EXistException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        } finally {
+            pool.release(broker);
+        }
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.IndexQueryService#getIndexedElements(boolean)
 	 */

@@ -30,32 +30,32 @@ import org.exist.xquery.XPathException;
 public abstract class ComputableValue extends AtomicValue {
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#getStringValue()
+	 * @see org.exist.xquery.value.Sequence#getStringValue()
 	 */
 	public abstract String getStringValue() throws XPathException;
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#convertTo(int)
+	 * @see org.exist.xquery.value.Sequence#convertTo(int)
 	 */
 	public abstract AtomicValue convertTo(int requiredType) throws XPathException;
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#compareTo(int, org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 	 */
 	public abstract boolean compareTo(int operator, AtomicValue other) throws XPathException;
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#compareTo(org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
 	 */
 	public abstract int compareTo(AtomicValue other) throws XPathException;
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#max(org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
 	 */
 	public abstract AtomicValue max(AtomicValue other) throws XPathException;
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#min(org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#min(org.exist.xquery.value.AtomicValue)
 	 */
 	public abstract AtomicValue min(AtomicValue other) throws XPathException;
 	

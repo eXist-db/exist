@@ -85,13 +85,13 @@ public class CompareDocuments {
                     System.err.print("@");
                 default:
             }
-            System.err.print(node1 + "[" + node1.getNodeType() + "] <==> "); 
+            System.err.print(node1 + "[" + node1.getChildNodes().getLength() + "] <==> "); 
             switch (node2.getNodeType()) {
                 case Node.ATTRIBUTE_NODE:
                     System.err.print("@");
                 default:
             }
-            System.err.println(node2 + "[" + node2.getNodeType() + "]");
+            System.err.println(node2 + "[" + node2.getChildNodes().getLength() + "]");
         }
         if (node1.getNodeType()!=node2.getNodeType()) {
             throw new Exception("different node types ("+
@@ -128,7 +128,7 @@ public class CompareDocuments {
         NodeList list1 = node1.getChildNodes();
         NodeList list2 = node2.getChildNodes();
         if (list1.getLength()!=list2.getLength()) {
-            throw new Exception("different child node counts(" +
+            throw new Exception("different child node counts for node " + node1.getNodeName() + " (" +
                     list1.getLength() + "!=" + list2.getLength() + ")...");
         }
 /*

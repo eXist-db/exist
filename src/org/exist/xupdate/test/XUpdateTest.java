@@ -92,6 +92,7 @@ public class XUpdateTest {
 		removeWhiteSpace(referenceXML);
         
 		//compare
+		System.out.println("\n");
         new CompareDocuments().compare(referenceXML, xupdateResult);
         
 		removeDocument();

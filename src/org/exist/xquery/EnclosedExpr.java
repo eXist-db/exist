@@ -33,7 +33,7 @@ import org.xml.sax.SAXException;
 /**
  * Represents an enclosed expression <code>{expr}</code> inside element
  * content. Enclosed expressions within attribute values are processed by
- * {@link org.exist.xpath.AttributeConstructor}.
+ * {@link org.exist.xquery.AttributeConstructor}.
  *  
  * @author Wolfgang Meier <wolfgang@exist-db.org>
  */
@@ -47,7 +47,7 @@ public class EnclosedExpr extends PathExpr {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#eval(org.exist.xpath.StaticContext, org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence)
+	 * @see org.exist.xquery.AbstractExpression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
@@ -100,7 +100,7 @@ public class EnclosedExpr extends PathExpr {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.PathExpr#pprint()
+	 * @see org.exist.xquery.PathExpr#pprint()
 	 */
 	public String pprint() {
 		return '{' + super.pprint() + '}';

@@ -46,7 +46,6 @@
 
             <map:match pattern="process.xq">
 				<map:generate src="process.xq" type="xquery">
-					<map:parameter name="expand-xincludes" value="true"/>
 				</map:generate>
                 <map:transform type="xinclude"/>
                 <map:transform src="context://stylesheets/doc2html-2.xsl"/>

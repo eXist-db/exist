@@ -12,28 +12,28 @@ import org.w3c.dom.Node;
 public class AnyNodeTest implements NodeTest {
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.NodeTest#getName()
+	 * @see org.exist.xquery.NodeTest#getName()
 	 */
 	public QName getName() {
 		return null;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.NodeTest#isWildcardTest()
+	 * @see org.exist.xquery.NodeTest#isWildcardTest()
 	 */
 	public boolean isWildcardTest() {
 		return true;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.NodeTest#matches(org.w3c.dom.Node)
+	 * @see org.exist.xquery.NodeTest#matches(org.w3c.dom.Node)
 	 */
 	public boolean matches(Node node) {
 		return true;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.NodeTest#matches(org.exist.dom.NodeProxy)
+	 * @see org.exist.xquery.NodeTest#matches(org.exist.dom.NodeProxy)
 	 */
 	public boolean matches(NodeProxy proxy) {
 		return true;

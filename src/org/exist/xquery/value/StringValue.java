@@ -90,14 +90,14 @@ public class StringValue extends AtomicValue {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#getType()
+	 * @see org.exist.xquery.value.AtomicValue#getType()
 	 */
 	public int getType() {
 		return Type.STRING;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#getStringValue()
+	 * @see org.exist.xquery.value.Item#getStringValue()
 	 */
 	public String getStringValue() {
 		return value;
@@ -108,7 +108,7 @@ public class StringValue extends AtomicValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#convertTo(int)
+	 * @see org.exist.xquery.value.AtomicValue#convertTo(int)
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		switch (requiredType) {
@@ -229,7 +229,7 @@ public class StringValue extends AtomicValue {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#compareTo(int, org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 	 */
 	public boolean compareTo(int operator, AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.STRING)) {
@@ -284,7 +284,7 @@ public class StringValue extends AtomicValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#compareTo(org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
 	 */
 	public int compareTo(AtomicValue other) throws XPathException {
 		return value.compareTo(other.getStringValue());
@@ -315,7 +315,7 @@ public class StringValue extends AtomicValue {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#effectiveBooleanValue()
+	 * @see org.exist.xquery.value.AtomicValue#effectiveBooleanValue()
 	 */
 	public boolean effectiveBooleanValue() throws XPathException {
 		return value.length() > 0;
@@ -445,7 +445,7 @@ public class StringValue extends AtomicValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#max(org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
 	 */
 	public AtomicValue max(AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.STRING))

@@ -399,7 +399,10 @@ public class BFile extends BTree {
     public VariableByteInput getAsStream(Value key) throws IOException {
         try {
             final long p = findValue(key);
-            if (p == KEY_NOT_FOUND) return null;
+            if (p == KEY_NOT_FOUND) {
+                LOG.debug("key not found");
+                return null;
+            }
             final long pnum = StorageAddress.pageFromPointer(p);
             final DataPage page = getDataPage(pnum);
             switch (page.getPageHeader().getStatus()) {

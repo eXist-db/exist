@@ -166,6 +166,11 @@ public class XQueryContext {
 			prefix = "";
 		if(uri == null)
 			uri = "";
+		final String prevURI = (String)namespaces.get(prefix);
+		// remove any namespace URI that has been previously declared
+		// for the prefix
+		if(prevURI != null)
+		    prefixes.remove(prevURI);
 		namespaces.put(prefix, uri);
 		prefixes.put(uri, prefix);
 	}
@@ -373,7 +378,7 @@ public class XQueryContext {
 				LOG.warn(
 					"failed to load module. "
 						+ moduleClass
-						+ " is not an instance of org.exist.xpath.Module.");
+						+ " is not an instance of org.exist.xquery.Module.");
 				return;
 			}
 			Module module = (Module) mClass.newInstance();
@@ -579,7 +584,7 @@ public class XQueryContext {
 		}
 		return builder;
 	}
-
+	
 	/* Methods delegated to the watchdog */
 	
 	public void proceed() throws TerminatedException {

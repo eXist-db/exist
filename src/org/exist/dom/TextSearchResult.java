@@ -213,7 +213,7 @@ public class TextSearchResult extends AbstractNodeSet {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#itemAt(int)
+	 * @see org.exist.xquery.value.Sequence#itemAt(int)
 	 */
 	public Item itemAt(int pos) {
 		return null;

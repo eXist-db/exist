@@ -30,6 +30,9 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.dbxml.core.DBException;
 import org.dbxml.core.data.Value;
+import org.dbxml.core.filer.BTreeException;
+import org.dbxml.core.indexer.IndexQuery;
+import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
@@ -72,6 +75,25 @@ public class NativeElementIndex extends ElementIndex {
 		buf.add(proxy);
 	}
 
+	public void dropIndex(Collection collection) {
+	    LOG.debug("removing elements ...");
+	    Value ref = new ElementValue(collection.getId());
+		IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+		Lock lock = dbElement.getLock();
+		try {
+			lock.acquire(Lock.WRITE_LOCK);
+			dbElement.removeAll(query);
+		} catch (LockException e) {
+			LOG.error("could not acquire lock on elements index", e);
+		} catch (BTreeException e) {
+            LOG.warn(e.getMessage(), e);
+        } catch (IOException e) {
+            LOG.warn(e.getMessage(), e);
+        } finally {
+			lock.release();
+		}
+	}
+	
 	public void reindex(DocumentImpl oldDoc, NodeImpl node) {
 		if (elementIds.size() == 0)
 			return;

@@ -57,14 +57,14 @@ public class ModuleImpl extends AbstractInternalModule {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Module#getNamespaceURI()
+	 * @see org.exist.xquery.Module#getNamespaceURI()
 	 */
 	public String getNamespaceURI() {
 		return NAMESPACE_URI;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Module#getDefaultPrefix()
+	 * @see org.exist.xquery.Module#getDefaultPrefix()
 	 */
 	public String getDefaultPrefix() {
 		return PREFIX;

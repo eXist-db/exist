@@ -59,7 +59,7 @@ public abstract class Step extends AbstractExpression {
     }
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#setPrimaryAxis(int)
+	 * @see org.exist.xquery.AbstractExpression#setPrimaryAxis(int)
 	 */
 	public void setPrimaryAxis(int axis) {
 		this.axis = axis;
@@ -101,7 +101,7 @@ public abstract class Step extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#resetState()
+	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
 	public void resetState() {
 		for (Iterator i = predicates.iterator(); i.hasNext();) {

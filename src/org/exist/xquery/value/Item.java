@@ -28,7 +28,7 @@ import org.xml.sax.SAXException;
 
 /**
  * This class represents an item in a sequence as defined by the XPath 2.0 specification.
- * Every item is either an {@link org.exist.xpath.value.AtomicValue atomic value} or
+ * Every item is either an {@link org.exist.xquery.value.AtomicValue atomic value} or
  * a {@link org.exist.dom.NodeProxy node}.
  * 
  * @author wolf

@@ -82,7 +82,7 @@ public interface Expression {
 	 * The static return type of the expression.
 	 *
 	 * This method should return one of the type constants defined in class 
-	 * {@link org.exist.xpath.value.Type}. If the return type cannot be determined
+	 * {@link org.exist.xquery.value.Type}. If the return type cannot be determined
 	 * statically, return Type.ITEM.
 	 */
 	public int returnsType();

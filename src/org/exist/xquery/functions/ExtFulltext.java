@@ -186,7 +186,7 @@ public class ExtFulltext extends Function {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.functions.Function#getDependencies()
+	 * @see org.exist.xquery.functions.Function#getDependencies()
 	 */
 	public int getDependencies() {
 		int deps = Dependency.NO_DEPENDENCY;
@@ -234,7 +234,7 @@ public class ExtFulltext extends Function {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#setInPredicate(boolean)
+	 * @see org.exist.xquery.Expression#setInPredicate(boolean)
 	 */
 	public void setInPredicate(boolean inPredicate) {
 		if (path != null)
@@ -242,7 +242,7 @@ public class ExtFulltext extends Function {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.PathExpr#resetState()
+	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
 	public void resetState() {
 		path.resetState();

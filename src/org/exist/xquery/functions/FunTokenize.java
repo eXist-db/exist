@@ -64,7 +64,7 @@ public class FunTokenize extends FunMatches {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence)
+	 * @see org.exist.xquery.AbstractExpression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {

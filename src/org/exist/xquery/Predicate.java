@@ -49,7 +49,7 @@ public class Predicate extends PathExpr {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.PathExpr#getDependencies()
+	 * @see org.exist.xquery.PathExpr#getDependencies()
 	 */
 	public int getDependencies() {
 		if(getLength() == 1) {

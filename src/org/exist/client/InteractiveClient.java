@@ -131,6 +131,7 @@ public class InteractiveClient {
 	private final static int NO_GUI_OPT = 's';
 	private final static int TRACE_QUERIES_OPT = 'T';
 	private final static int OUTPUT_FILE_OPT = 'O';
+	private final static int REINDEX_OPT = 'i';
 
 	private final static CLOptionDescriptor OPTIONS[] = new CLOptionDescriptor[]{
 			new CLOptionDescriptor("help",
@@ -214,7 +215,11 @@ public class InteractiveClient {
 					"don't start client with GUI. Just use the shell."),
 			new CLOptionDescriptor("trace",
 					CLOptionDescriptor.ARGUMENT_REQUIRED, TRACE_QUERIES_OPT,
-					"log queries to the file specified by the argument (for debugging).")};
+					"log queries to the file specified by the argument (for debugging)."),
+			new CLOptionDescriptor("reindex",
+					CLOptionDescriptor.ARGUMENT_DISALLOWED, REINDEX_OPT,
+					"reindex the collection specified in the collection argument -c")
+			};
 
 	// ANSI colors for ls display
 	private final static String ANSI_BLUE = "\033[0;34m";
@@ -1211,6 +1216,14 @@ public class InteractiveClient {
 		messageln("done.");
 	}
 
+	private final void reindex() throws XMLDBException {
+	    IndexQueryService service = (IndexQueryService) 
+	    	current.getService("IndexQueryService", "1.0");
+	    message("reindexing collection " + current.getName());
+	    service.reindexCollection();
+	    messageln("done.");
+	}
+	
 	private final void storeBinary(String fileName) throws XMLDBException {
 		File file = new File(fileName);
 		if (file.canRead()) {
@@ -1603,6 +1616,7 @@ public class InteractiveClient {
 		boolean interactive = true;
 		boolean foundCollection = false;
 		boolean doParse = false;
+		boolean doReindex = false;
 		String optionRemove = null;
 		String optionGet = null;
 		String optionMkcol = null;
@@ -1728,6 +1742,10 @@ public class InteractiveClient {
 					} catch (IOException e) {
 					}
 					break;
+				case REINDEX_OPT :
+				    doReindex = true;
+				    interactive = false;
+				    break;
 				case CLOption.TEXT_ARGUMENT :
 					optionalArgs.add(option.getArgument());
 					break;
@@ -1814,6 +1832,20 @@ public class InteractiveClient {
 		}
 
 		// process command-line actions
+		if (doReindex) {
+		    if(!foundCollection) {
+		        System.err.println("Please specify target collection with --collection");
+		        shutdown(false);
+				return;
+		    }
+		    try {
+		        reindex();
+		    } catch (XMLDBException e) {
+				System.err.println("XMLDBException while removing collection: "
+						+ getExceptionMessage(e));
+				e.printStackTrace();
+			}
+		}
 		if (optionRmcol != null) {
 			if (!foundCollection) {
 				System.err

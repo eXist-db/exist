@@ -104,7 +104,7 @@ public class IntegerValue extends NumericValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#getType()
+	 * @see org.exist.xquery.value.AtomicValue#getType()
 	 */
 	public int getType() {
 		return type;
@@ -123,14 +123,14 @@ public class IntegerValue extends NumericValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#getStringValue()
+	 * @see org.exist.xquery.value.Item#getStringValue()
 	 */
 	public String getStringValue() {
 		return Long.toString(value);
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#convertTo(int)
+	 * @see org.exist.xquery.value.AtomicValue#convertTo(int)
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		switch (requiredType) {
@@ -167,56 +167,56 @@ public class IntegerValue extends NumericValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NumericValue#getInt()
+	 * @see org.exist.xquery.value.NumericValue#getInt()
 	 */
 	public int getInt() throws XPathException {
 		return (int) value;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NumericValue#getLong()
+	 * @see org.exist.xquery.value.NumericValue#getLong()
 	 */
 	public long getLong() throws XPathException {
 		return value;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NumericValue#getDouble()
+	 * @see org.exist.xquery.value.NumericValue#getDouble()
 	 */
 	public double getDouble() throws XPathException {
 		return (double) value;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#effectiveBooleanValue()
+	 * @see org.exist.xquery.value.AtomicValue#effectiveBooleanValue()
 	 */
 	public boolean effectiveBooleanValue() throws XPathException {
 		return value != 0;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NumericValue#ceiling()
+	 * @see org.exist.xquery.value.NumericValue#ceiling()
 	 */
 	public NumericValue ceiling() throws XPathException {
 		return this;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NumericValue#floor()
+	 * @see org.exist.xquery.value.NumericValue#floor()
 	 */
 	public NumericValue floor() throws XPathException {
 		return this;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NumericValue#round()
+	 * @see org.exist.xquery.value.NumericValue#round()
 	 */
 	public NumericValue round() throws XPathException {
 		return this;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NumericValue#minus(org.exist.xpath.value.NumericValue)
+	 * @see org.exist.xquery.value.NumericValue#minus(org.exist.xquery.value.NumericValue)
 	 */
 	public ComputableValue minus(ComputableValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.INTEGER))
@@ -226,7 +226,7 @@ public class IntegerValue extends NumericValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NumericValue#plus(org.exist.xpath.value.NumericValue)
+	 * @see org.exist.xquery.value.NumericValue#plus(org.exist.xquery.value.NumericValue)
 	 */
 	public ComputableValue plus(ComputableValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.INTEGER))
@@ -236,7 +236,7 @@ public class IntegerValue extends NumericValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NumericValue#mult(org.exist.xpath.value.NumericValue)
+	 * @see org.exist.xquery.value.NumericValue#mult(org.exist.xquery.value.NumericValue)
 	 */
 	public ComputableValue mult(ComputableValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.INTEGER))
@@ -246,7 +246,7 @@ public class IntegerValue extends NumericValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NumericValue#div(org.exist.xpath.value.NumericValue)
+	 * @see org.exist.xquery.value.NumericValue#div(org.exist.xquery.value.NumericValue)
 	 */
 	public ComputableValue div(ComputableValue other) throws XPathException {
 		if (other instanceof IntegerValue) {
@@ -270,7 +270,7 @@ public class IntegerValue extends NumericValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NumericValue#mod(org.exist.xpath.value.NumericValue)
+	 * @see org.exist.xquery.value.NumericValue#mod(org.exist.xquery.value.NumericValue)
 	 */
 	public NumericValue mod(NumericValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.INTEGER)) {
@@ -283,21 +283,21 @@ public class IntegerValue extends NumericValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NumericValue#unaryMinus()
+	 * @see org.exist.xquery.value.NumericValue#unaryMinus()
 	 */
 	public NumericValue negate() throws XPathException {
 		return new IntegerValue(-value);
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NumericValue#abs()
+	 * @see org.exist.xquery.value.NumericValue#abs()
 	 */
 	public NumericValue abs() throws XPathException {
 		return new IntegerValue(Math.abs(value), type);
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.NumericValue#max(org.exist.xpath.value.AtomicValue)
+	 * @see org.exist.xquery.value.NumericValue#max(org.exist.xquery.value.AtomicValue)
 	 */
 	public AtomicValue max(AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.INTEGER))
@@ -316,7 +316,7 @@ public class IntegerValue extends NumericValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#conversionPreference(java.lang.Class)
+	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
 	 */
 	public int conversionPreference(Class javaClass) {
 		if(javaClass.isAssignableFrom(IntegerValue.class)) return 0;
@@ -334,7 +334,7 @@ public class IntegerValue extends NumericValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#toJavaObject(java.lang.Class)
+	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 	 */
 	public Object toJavaObject(Class target) throws XPathException {
 		if(target.isAssignableFrom(IntegerValue.class)) 

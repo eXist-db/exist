@@ -65,7 +65,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Sequence#itemAt(int)
+	 * @see org.exist.xquery.value.Sequence#itemAt(int)
 	 */
 	public Item itemAt(int pos) {
 		throw new RuntimeException("unsupported method: itemAt");
@@ -416,7 +416,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.exist.xpath.value.SequenceIterator#nextItem()
+		 * @see org.exist.xquery.value.SequenceIterator#nextItem()
 		 */
 		public Item nextItem() {
 			Node currentNode = (Node) nodes.peek();

@@ -19,7 +19,7 @@ public class NameTest extends TypeTest {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.NodeTest#matches(org.exist.dom.NodeProxy)
+	 * @see org.exist.xquery.NodeTest#matches(org.exist.dom.NodeProxy)
 	 */
 	public boolean matches(NodeProxy proxy) {
 		Node node = null;
@@ -53,7 +53,7 @@ public class NameTest extends TypeTest {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.NodeTest#isWildcardTest()
+	 * @see org.exist.xquery.NodeTest#isWildcardTest()
 	 */
 	public boolean isWildcardTest() {
 		return nodeName.getLocalName() == null || nodeName.getNamespaceURI() == null;
