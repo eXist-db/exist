@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfigurationManager;
+import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.sync.SyncDaemon;
@@ -491,6 +492,7 @@ public class BrokerPool {
 	 */
 	public void sync(DBBroker broker, int syncEvent) {
 		broker.sync(syncEvent);
+		broker.setUser(SecurityManager.SYSTEM_USER);
 		broker.cleanUp();
 	}
 

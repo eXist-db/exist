@@ -290,7 +290,7 @@ public class NativeBroker extends DBBroker {
 			valueIndex = new NativeValueIndex(this, valuesDb);
 			xmlSerializer = new NativeSerializer(this, config);
 			elementIndex = new NativeElementIndex(this, elementsDb);
-			user = new User("admin", null, "dba");
+			user = SecurityManager.SYSTEM_USER;
 			if(pool.isInitializing())
 				getOrCreateCollection(ROOT_COLLECTION);
 		} catch (DBException e) {
