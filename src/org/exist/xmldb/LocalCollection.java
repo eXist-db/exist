@@ -48,6 +48,7 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.storage.sync.Sync;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.xml.sax.InputSource;
@@ -203,7 +204,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			DBBroker broker = null;
 			try {
 				broker = brokerPool.get(user);
-				broker.sync();
+				broker.sync(Sync.MAJOR_SYNC);
 			} catch (EXistException e) {
 				throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
 			} finally {
