@@ -22,9 +22,6 @@
  */
 package org.exist.dom;
 
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Node;
-
 /**
  * A node with a QName, i.e. an element or attribute.
  * 
