@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.dom.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
@@ -44,19 +45,16 @@ public class Remove extends Modification {
 		IndexListener listener = new IndexListener(qr);
 		NodeImpl node;
 		Node parent;
-		DocumentImpl doc;
+		DocumentImpl doc = null;
+		Collection collection = null, prevCollection = null;
 		for (Iterator i = qr.iterator(); i.hasNext();) {
 			node = (NodeImpl) i.next();
 			doc = (DocumentImpl) node.getOwnerDocument();
-			if (!doc
-				.getCollection()
-				.getPermissions()
-				.validate(user, Permission.UPDATE))
-				throw new PermissionDeniedException(
-					"write access to collection denied; user="
-						+ user.getName());
 			if (!doc.getPermissions().validate(user, Permission.UPDATE))
 				throw new PermissionDeniedException("permission to remove document denied");
+			collection = doc.getCollection();
+			if(prevCollection != null && collection != prevCollection)
+				doc.getBroker().saveCollection(prevCollection);
 			doc.setIndexListener(listener);
 			parent = node.getParentNode();
 			if (parent.getNodeType() != Node.ELEMENT_NODE) {
@@ -64,7 +62,10 @@ public class Remove extends Modification {
 			} else
 				parent.removeChild(node);
 			doc.clearIndexListener();
+			prevCollection = collection;
 		}
+		if(doc != null)
+			doc.getBroker().saveCollection(collection);
 		return qr.size();
 	}
 

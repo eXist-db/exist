@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!-- XSP logicsheet for eXist. This logicsheet is based on the XML:DB
      API. It should basically work with other database products implementing
@@ -9,8 +9,8 @@
     xmlns:xsp="http://apache.org/xsp"
     xmlns:xmldb="http://exist-db.org/xmldb/1.0"
     xmlns:xsp-session="http://apache.org/xsp/session/2.0"
-    create-session="true"
     version="1.0"
+    create-session="true"
 >
     <xsl:variable name="namespace-uri">http://exist-db.org/xmldb/1.0</xsl:variable>
     <xsl:variable name="prefix">xmldb</xsl:variable>

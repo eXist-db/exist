@@ -40,7 +40,6 @@ public class Retrieve {
 
 		// get the collection
 		Collection col = DatabaseManager.getCollection(URI + collection);
-		col.setProperty("pretty", "true");
 		col.setProperty("encoding", "ISO-8859-1");
 		XMLResource res = (XMLResource)col.getResource(args[1]);
 		if(res == null)

@@ -17,7 +17,7 @@ public class ResourceSetImpl implements ResourceSet {
 
     protected CollectionImpl collection;
     protected String encoding = "UTF-8";
-    protected int indentXML = 1;
+    protected int indentXML = 0;
     protected int handle = -1;
     protected Vector resources;
 

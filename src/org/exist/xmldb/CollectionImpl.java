@@ -44,7 +44,7 @@ import org.xmldb.api.base.*;
 public class CollectionImpl implements Collection {
 	protected HashMap childCollections = null;
 	protected String encoding = "UTF-8";
-	protected int indentXML = 1;
+	protected int indentXML = 0;
 	protected String name;
 
 	protected CollectionImpl parent = null;
@@ -81,6 +81,15 @@ public class CollectionImpl implements Collection {
 	}
 
 	public void close() throws XMLDBException {
+		try {
+			rpcClient.execute("sync", new Vector());
+		} catch(XmlRpcException e) {
+			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR,
+				"failed to close collection", e);
+		} catch(IOException e) {
+			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR,
+				"failed to close collection", e);
+		}
 	}
 
 	public String createId() throws XMLDBException {

@@ -35,6 +35,7 @@ import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.PushbackInputStream;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -94,7 +95,7 @@ public class InteractiveClient {
 	private final static int CONFIG_OPT = 'C';
 	private final static int PARSE_OPT = 'p';
 	private final static int COLLECTION_OPT = 'c';
-    private final static int RESOURCE_OPT = 'f';
+	private final static int RESOURCE_OPT = 'f';
 	private final static int REMOVE_OPT = 'r';
 	private final static int GET_OPT = 'g';
 	private final static int MKCOL_OPT = 'm';
@@ -104,7 +105,7 @@ public class InteractiveClient {
 	private final static int RESULTS_OPT = 'n';
 	private final static int VERBOSE_OPT = 'v';
 	private final static int QUERY_FILE_OPT = 'F';
-    private final static int XUPDATE_OPT = 'X';
+	private final static int XUPDATE_OPT = 'X';
 	private final static int THREADS_OPT = 't';
 	private final static int RECURSE_DIRS_OPT = 'd';
 
@@ -161,13 +162,13 @@ public class InteractiveClient {
 				CLOptionDescriptor.ARGUMENT_REQUIRED,
 				COLLECTION_OPT,
 				"set target collection."),
-            new CLOptionDescriptor(
-                "resource",
-                CLOptionDescriptor.ARGUMENT_REQUIRED,
-                RESOURCE_OPT,
-                "specify a resource contained in the current collection. " +
-                "Use in conjunction with -X to specify the resource to " +
-                "update."),
+			new CLOptionDescriptor(
+				"resource",
+				CLOptionDescriptor.ARGUMENT_REQUIRED,
+				RESOURCE_OPT,
+				"specify a resource contained in the current collection. "
+					+ "Use in conjunction with -X to specify the resource to "
+					+ "update."),
 			new CLOptionDescriptor(
 				"get",
 				CLOptionDescriptor.ARGUMENT_REQUIRED,
@@ -195,8 +196,7 @@ public class InteractiveClient {
 				"max. number of query results to be displayed."),
 			new CLOptionDescriptor(
 				"option",
-				CLOptionDescriptor.ARGUMENTS_REQUIRED_2
-					| CLOptionDescriptor.DUPLICATES_ALLOWED,
+				CLOptionDescriptor.ARGUMENTS_REQUIRED_2 | CLOptionDescriptor.DUPLICATES_ALLOWED,
 				OPTION_OPT,
 				"specify extra options: property=value. For available properties see "
 					+ "client.properties."),
@@ -215,13 +215,12 @@ public class InteractiveClient {
 				CLOptionDescriptor.ARGUMENT_DISALLOWED,
 				RECURSE_DIRS_OPT,
 				"recurse into subdirectories during index?"),
-            new CLOptionDescriptor(
-                "xupdate",
-                CLOptionDescriptor.ARGUMENT_REQUIRED,
-                XUPDATE_OPT,
-                "process xupdate commands. Commands are read from the " +
-                "file specified in the argument.")
-    };
+			new CLOptionDescriptor(
+				"xupdate",
+				CLOptionDescriptor.ARGUMENT_REQUIRED,
+				XUPDATE_OPT,
+				"process xupdate commands. Commands are read from the "
+					+ "file specified in the argument.")};
 
 	// ANSI colors for ls display
 	private final static String ANSI_BLUE = "\033[0;34m";
@@ -240,12 +239,14 @@ public class InteractiveClient {
 		defaultProps.setProperty("driver", driver);
 		defaultProps.setProperty("uri", URI);
 		defaultProps.setProperty("editor", EDIT_CMD);
-		defaultProps.setProperty("indent", "true");
+		defaultProps.setProperty("indent", "false");
 		defaultProps.setProperty("encoding", ENCODING);
 		defaultProps.setProperty("user", USER);
 		defaultProps.setProperty("colors", "false");
 		defaultProps.setProperty("permissions", "false");
 		defaultProps.setProperty("expand-xincludes", "true");
+		defaultProps.setProperty("match-tagging-elements", "true");
+		defaultProps.setProperty("match-tagging-attributes", "false");
 	}
 
 	protected static String driver = "org.exist.xmldb.DatabaseImpl";
@@ -272,42 +273,28 @@ public class InteractiveClient {
 		System.out.println("--- general commands ---");
 		System.out.println("ls                   list collection contents");
 		System.out.println("cd [collection|..]   change current collection");
+		System.out.println("put [file pattern] upload file or directory" + " to the database");
 		System.out.println(
-			"put [file pattern] upload file or directory" + " to the database");
-		System.out.println(
-			"mkcol collection     create new sub-collection in "
-				+ "current collection");
-		System.out.println(
-			"rm document          remove document from current "
-				+ "collection");
+			"mkcol collection     create new sub-collection in " + "current collection");
+		System.out.println("rm document          remove document from current " + "collection");
 		System.out.println("rmcol collection     remove collection");
-		System.out.println(
-			"set [key=value]      set property. Calling set without ");
-		System.out.println(
-			"                     argument shows current settings.");
+		System.out.println("set [key=value]      set property. Calling set without ");
+		System.out.println("                     argument shows current settings.");
 		System.out.println("\n--- search commands ---");
-		System.out.println(
-			"find xpath-expr      execute the given XPath expression.");
-		System.out.println(
-			"show [position]      display query result value at position.");
-		System.out.println(
-			"\n--- user management (may require dba rights) ---");
+		System.out.println("find xpath-expr      execute the given XPath expression.");
+		System.out.println("show [position]      display query result value at position.");
+		System.out.println("\n--- user management (may require dba rights) ---");
 		System.out.println("users                list existing users.");
 		System.out.println("adduser username     create a new user.");
 		System.out.println("passwd username      change password for user. ");
 		System.out.println("chown user group [resource]");
-		System.out.println(
-			"                     change resource ownership. chown without");
-		System.out.println(
-			"                     resource changes ownership of the current");
+		System.out.println("                     change resource ownership. chown without");
+		System.out.println("                     resource changes ownership of the current");
 		System.out.println("                     collection.");
 		System.out.println("chmod [resource] permissions");
-		System.out.println(
-			"                     change resource permissions. Format:");
-		System.out.println(
-			"                     [user|group|other]=[+|-][read|write|update].");
-		System.out.println(
-			"                     chmod without resource changes permissions for");
+		System.out.println("                     change resource permissions. Format:");
+		System.out.println("                     [user|group|other]=[+|-][read|write|update].");
+		System.out.println("                     chmod without resource changes permissions for");
 		System.out.println("                     the current collection.");
 		System.out.println("quit                 quit the program");
 	}
@@ -336,9 +323,7 @@ public class InteractiveClient {
 		Database database = (Database) cl.newInstance();
 		database.setProperty("create-database", "true");
 		if (properties.containsKey("configuration"))
-			database.setProperty(
-				"configuration",
-				properties.getProperty("configuration"));
+			database.setProperty("configuration", properties.getProperty("configuration"));
 		DatabaseManager.registerDatabase(database);
 		current =
 			DatabaseManager.getCollection(
@@ -356,9 +341,7 @@ public class InteractiveClient {
 		if (current == null)
 			return;
 		UserManagementService mgtService =
-			(UserManagementService) current.getService(
-				"UserManagementService",
-				"1.0");
+			(UserManagementService) current.getService("UserManagementService", "1.0");
 		String childCollections[] = current.listChildCollections();
 		String childResources[] = current.listResources();
 		Permission perms[] = null;
@@ -379,8 +362,7 @@ public class InteractiveClient {
 							+ childCollections[i]
 							+ ANSI_WHITE;
 				else
-					resources[i] =
-						'd' + perms[i].toString() + '\t' + childCollections[i];
+					resources[i] = 'd' + perms[i].toString() + '\t' + childCollections[i];
 			} else
 				resources[i] = childCollections[i];
 			completitions.add(childCollections[i]);
@@ -390,10 +372,8 @@ public class InteractiveClient {
 		Resource res;
 		for (int j = 0; j < childResources.length; i++, j++) {
 			res = current.getResource(childResources[j]);
-			if (properties.getProperty("permissions").equals("true")
-				&& j < perms.length) {
-				resources[i] =
-					'-' + perms[j].toString() + '\t' + childResources[j];
+			if (properties.getProperty("permissions").equals("true") && j < perms.length) {
+				resources[i] = '-' + perms[j].toString() + '\t' + childResources[j];
 			} else
 				resources[i] = childResources[j];
 			completitions.add(childResources[j]);
@@ -462,9 +442,7 @@ public class InteractiveClient {
 					for (int i = 0; i < resources.length; i++) {
 						buf = new StringBuffer();
 						int k = 0;
-						for (int j = 0;
-							i < resources.length && j < 5;
-							i++, j++) {
+						for (int j = 0; i < resources.length && j < 5; i++, j++) {
 							buf.append(resources[i] + '\t');
 							k = j;
 						}
@@ -557,7 +535,7 @@ public class InteractiveClient {
 					if (args.length > 2)
 						count = Integer.parseInt(args[2]);
 
-					final int s = (int)result.getSize();
+					final int s = (int) result.getSize();
 					if (start < 1 || start > s) {
 						System.err.println("start offset out of range");
 						return true;
@@ -654,9 +632,7 @@ public class InteractiveClient {
 				}
 				try {
 					UserManagementService mgtService =
-						(UserManagementService) current.getService(
-							"UserManagementService",
-							"1.0");
+						(UserManagementService) current.getService("UserManagementService", "1.0");
 
 					String p1;
 					String p2;
@@ -666,8 +642,7 @@ public class InteractiveClient {
 						if (p1.equals(p2))
 							break;
 						else
-							System.out.println(
-								"\nentered passwords differ. Try again...");
+							System.out.println("\nentered passwords differ. Try again...");
 
 					}
 					User user = new User(args[1], p1);
@@ -689,9 +664,7 @@ public class InteractiveClient {
 				}
 			} else if (args[0].equalsIgnoreCase("users")) {
 				UserManagementService mgtService =
-					(UserManagementService) current.getService(
-						"UserManagementService",
-						"1.0");
+					(UserManagementService) current.getService("UserManagementService", "1.0");
 				User users[] = mgtService.getUsers();
 				System.out.println("User\t\tGroups");
 				System.out.println("-----------------------------------------");
@@ -712,9 +685,7 @@ public class InteractiveClient {
 				}
 				try {
 					UserManagementService mgtService =
-						(UserManagementService) current.getService(
-							"UserManagementService",
-							"1.0");
+						(UserManagementService) current.getService("UserManagementService", "1.0");
 					User user = mgtService.getUser(args[1]);
 					if (user == null) {
 						System.out.println("no such user.");
@@ -728,8 +699,7 @@ public class InteractiveClient {
 						if (p1.equals(p2))
 							break;
 						else
-							System.out.println(
-								"\nentered passwords differ. Try again...");
+							System.out.println("\nentered passwords differ. Try again...");
 
 					}
 					user.setPassword(p1);
@@ -739,11 +709,11 @@ public class InteractiveClient {
 					System.err.println("ERROR: " + e.getMessage());
 					System.err.println("CAUSED BY: " + e.getCause().getMessage());
 					e.printStackTrace();
-				} catch(Exception e) {
+				} catch (Exception e) {
 					System.err.println("ERROR: " + e.getMessage());
 					e.printStackTrace();
 				}
- 			} else if (args[0].equalsIgnoreCase("chmod")) {
+			} else if (args[0].equalsIgnoreCase("chmod")) {
 				if (args.length < 2) {
 					System.out.println("Usage: chmod [resource] mode");
 					return true;
@@ -763,20 +733,15 @@ public class InteractiveClient {
 									"1.0");
 							mgtService.chmod(r, args[2]);
 						} else
-							System.err.println(
-								"Resource " + args[1] + " not found.");
+							System.err.println("Resource " + args[1] + " not found.");
 					} else {
 						UserManagementService mgtService =
-							(UserManagementService) temp.getService(
-								"UserManagementService",
-								"1.0");
+							(UserManagementService) temp.getService("UserManagementService", "1.0");
 						mgtService.chmod(args[2]);
 					}
 				} else {
 					UserManagementService mgtService =
-						(UserManagementService) current.getService(
-							"UserManagementService",
-							"1.0");
+						(UserManagementService) current.getService("UserManagementService", "1.0");
 					mgtService.chmod(args[1]);
 				}
 				// re-read current collection
@@ -793,15 +758,13 @@ public class InteractiveClient {
 				}
 
 				Collection temp;
-                if(args.length == 4) 
-                    temp = current.getChildCollection(args[3]);
-                else
-                    temp = current;
+				if (args.length == 4)
+					temp = current.getChildCollection(args[3]);
+				else
+					temp = current;
 				if (temp != null) {
 					UserManagementService mgtService =
-						(UserManagementService) temp.getService(
-							"UserManagementService",
-							"1.0");
+						(UserManagementService) temp.getService("UserManagementService", "1.0");
 					User u = mgtService.getUser(args[1]);
 					if (u == null) {
 						System.out.println("unknown user");
@@ -815,9 +778,7 @@ public class InteractiveClient {
 				Resource res = current.getResource(args[3]);
 				if (res != null) {
 					UserManagementService mgtService =
-						(UserManagementService) current.getService(
-							"UserManagementService",
-							"1.0");
+						(UserManagementService) current.getService("UserManagementService", "1.0");
 					User u = mgtService.getUser(args[1]);
 					if (u == null) {
 						System.out.println("unknown user");
@@ -828,53 +789,47 @@ public class InteractiveClient {
 					return true;
 				}
 				System.err.println("Resource " + args[3] + " not found.");
-				
+
 			} else if (args[0].equalsIgnoreCase("elements")) {
-				System.out.println("Element occurrences in collection " +
-					current.getName());
-				System.out.println("--------------------------------------------" +
-					"-----------");
-				IndexQueryService service = (IndexQueryService)
-					current.getService("IndexQueryService", "1.0");
+				System.out.println("Element occurrences in collection " + current.getName());
+				System.out.println("--------------------------------------------" + "-----------");
+				IndexQueryService service =
+					(IndexQueryService) current.getService("IndexQueryService", "1.0");
 				Occurrences[] elements = service.getIndexedElements(true);
 				for (int i = 0; i < elements.length; i++) {
 					System.out.println(
-						formatString(elements[i].getTerm(), 
+						formatString(
+							elements[i].getTerm(),
 							Integer.toString(elements[i].getOccurrences()),
-							50)
-					);
+							50));
 				}
 				return true;
-				
+
 			} else if (args[0].equalsIgnoreCase("terms")) {
-				if(args.length < 3) {
+				if (args.length < 3) {
 					System.out.println("Usage: terms sequence-start sequence-end");
 					return true;
 				}
-				IndexQueryService service = (IndexQueryService)
-					current.getService("IndexQueryService", "1.0");
+				IndexQueryService service =
+					(IndexQueryService) current.getService("IndexQueryService", "1.0");
 				Occurrences[] terms = service.scanIndexTerms(args[1], args[2], true);
-				System.out.println("Element occurrences in collection " +
-					current.getName());
-				System.out.println("--------------------------------------------" +
-					"-----------");
+				System.out.println("Element occurrences in collection " + current.getName());
+				System.out.println("--------------------------------------------" + "-----------");
 				for (int i = 0; i < terms.length; i++) {
 					System.out.println(
-						formatString(terms[i].getTerm(),
+						formatString(
+							terms[i].getTerm(),
 							Integer.toString(terms[i].getOccurrences()),
-							50)
-					);
+							50));
 				}
 			} else if (args[0].equalsIgnoreCase("set")) {
 				if (args.length == 1)
 					properties.list(System.out);
 				else
 					try {
-						StringTokenizer tok =
-							new StringTokenizer(args[1], "= ");
+						StringTokenizer tok = new StringTokenizer(args[1], "= ");
 						if (tok.countTokens() < 2) {
-							System.err.println(
-								"please specify a key=value pair");
+							System.err.println("please specify a key=value pair");
 							return true;
 						}
 						String key = tok.nextToken();
@@ -885,16 +840,29 @@ public class InteractiveClient {
 					} catch (Exception e) {
 						System.err.println("Exception: " + e.getMessage());
 					}
-			} else if (args[0].equalsIgnoreCase("shutdown")) {
-				DatabaseInstanceManager mgr =
-					(DatabaseInstanceManager) current.getService(
-						"DatabaseInstanceManager",
-						"1.0");
-				if (mgr == null) {
-					System.err.println("service is not available");
-					return true;
+			} else if(args[0].equalsIgnoreCase("xupdate")) {
+				String lastLine, command = "";
+				try {
+					while(true) {
+						lastLine = Readline.readline("| ");
+						if(lastLine == null || lastLine.length() == 0)
+							break;
+						command += lastLine;
+					}
+				} catch (EOFException e) {
+				} catch (UnsupportedEncodingException e) {
+				} catch (IOException e) {
 				}
-				mgr.shutdown();
+				String xupdate = "<xu:modifications version=\"1.0\" " +
+					"xmlns:xu=\"http://www.xmldb.org/xupdate\">" + command +
+					"</xu:modifications>";
+				XUpdateQueryService service =
+					(XUpdateQueryService) current.getService("XUpdateQueryService", "1.0");
+				long mods = service.update(xupdate);
+				System.out.println(mods + " modifications processed.");
+				
+			} else if (args[0].equalsIgnoreCase("shutdown")) {
+				shutdown();
 				return true;
 			} else if (args[0].equalsIgnoreCase("help") || args[0].equals("?"))
 				displayHelp();
@@ -908,20 +876,30 @@ public class InteractiveClient {
 			return true;
 		} catch (XMLDBException xde) {
 			//xde.printStackTrace();
-			/*System.err.println(
-				"XMLDBException: "
-					+ xde.getMessage()
-					+ " ["
-					+ xde.errorCode
-					+ "]");*/
+			System.err.println("XMLDBException: " + xde.getMessage() + " [" + xde.errorCode + "]");
 			return true;
+		}
+	}
+
+	private final void shutdown() {
+		System.out.println("shutting down database...");
+		try {
+			DatabaseInstanceManager mgr =
+				(DatabaseInstanceManager) current.getService("DatabaseInstanceManager", "1.0");
+			if (mgr == null) {
+				System.err.println("service is not available");
+			} else
+				mgr.shutdown();
+		} catch (XMLDBException e) {
+			System.err.println("database shutdown failed: ");
+			e.printStackTrace();
 		}
 	}
 
 	private final ResourceSet find(String xpath) throws XMLDBException {
 		String sortBy = null;
 		int p = xpath.indexOf(" sort by ");
-		if(p > -1) {
+		if (p > -1) {
 			String xp = xpath.substring(0, p);
 			sortBy = xpath.substring(p + " sort by ".length());
 			xpath = xp;
@@ -932,8 +910,13 @@ public class InteractiveClient {
 			(XPathQueryServiceImpl) current.getService("XPathQueryService", "1.0");
 		service.setProperty("pretty", properties.getProperty("indent"));
 		service.setProperty("encoding", properties.getProperty("encoding"));
-		return (sortBy == null) ? service.query(xpath) :
-			service.query(xpath, sortBy);
+		service.setProperty(
+			"match-tagging-elements",
+			properties.getProperty("match-tagging-elements"));
+		service.setProperty(
+			"match-tagging-attributes",
+			properties.getProperty("match-tagging-attributes"));
+		return (sortBy == null) ? service.query(xpath) : service.query(xpath, sortBy);
 	}
 
 	private final void testQuery(String queryFile) {
@@ -981,21 +964,16 @@ public class InteractiveClient {
 						properties.getProperty("user"),
 						properties.getProperty("password"));
 				XPathQueryService service =
-					(XPathQueryService) current.getService(
-						"XPathQueryService",
-						"1.0");
+					(XPathQueryService) current.getService("XPathQueryService", "1.0");
 				service.setProperty("pretty", "true");
-				service.setProperty(
-					"encoding",
-					properties.getProperty("encoding"));
+				service.setProperty("encoding", properties.getProperty("encoding"));
 				Random r = new Random(System.currentTimeMillis());
 				String query;
 				for (int i = 0; i < 10; i++) {
 					query = (String) queries.get(r.nextInt(queries.size()));
 					System.out.println(getName() + " query: " + query);
 					ResourceSet result = service.query(query);
-					System.out.println(
-						getName() + " found: " + result.getSize());
+					System.out.println(getName() + " found: " + result.getSize());
 				}
 			} catch (XMLDBException e) {
 				System.err.println("ERROR: " + e.getMessage());
@@ -1007,9 +985,7 @@ public class InteractiveClient {
 	private final String retrieve(String resource) throws XMLDBException {
 		current.setProperty("pretty", properties.getProperty("indent"));
 		current.setProperty("encoding", properties.getProperty("encoding"));
-		current.setProperty(
-			"expand-xincludes",
-			properties.getProperty("expand-xincludes"));
+		current.setProperty("expand-xincludes", properties.getProperty("expand-xincludes"));
 		XMLResource res = (XMLResource) current.getResource(resource);
 		if (res == null) {
 			System.err.println("document not found.");
@@ -1021,8 +997,7 @@ public class InteractiveClient {
 	private final void remove(String pattern) throws XMLDBException {
 		Collection collection = current;
 		if (pattern.startsWith("/")) {
-			System.err.println(
-				"path pattern should be relative to current collection");
+			System.err.println("path pattern should be relative to current collection");
 			return;
 		}
 		Resource resources[];
@@ -1035,40 +1010,34 @@ public class InteractiveClient {
 		}
 		Collection parent;
 		for (int i = 0; i < resources.length; i++) {
-			message(
-				"removing document "
-					+ ((XMLResource) resources[i]).getDocumentId()
-					+ " ...");
+			message("removing document " + ((XMLResource) resources[i]).getDocumentId() + " ...");
 			parent = resources[i].getParentCollection();
 			parent.removeResource(resources[i]);
 			messageln("done.");
 		}
 	}
 
-    private final void xupdate(String resource, String filename)
-    throws XMLDBException, IOException {
-        File file = new File(filename);
-        if(!(file.exists() && file.canRead())) {
-            System.out.println("cannot read file " + filename);
-            return;
-        }   
-        String commands = XMLUtil.readFile(file, "UTF-8");
-        XUpdateQueryService service = (XUpdateQueryService)
-            current.getService("XUpdateQueryService", "1.0");
-        long modifications = 0;
-        if(resource == null)
-            modifications = service.update(commands);
-        else
-            modifications = service.updateResource(resource, commands);
-        System.out.println(modifications + " modifications processed " +
-            "successfully.");
-    }
-    
+	private final void xupdate(String resource, String filename)
+		throws XMLDBException, IOException {
+		File file = new File(filename);
+		if (!(file.exists() && file.canRead())) {
+			System.out.println("cannot read file " + filename);
+			return;
+		}
+		String commands = XMLUtil.readFile(file, "UTF-8");
+		XUpdateQueryService service =
+			(XUpdateQueryService) current.getService("XUpdateQueryService", "1.0");
+		long modifications = 0;
+		if (resource == null)
+			modifications = service.update(commands);
+		else
+			modifications = service.updateResource(resource, commands);
+		System.out.println(modifications + " modifications processed " + "successfully.");
+	}
+
 	private final void rmcol(String collection) throws XMLDBException {
 		CollectionManagementService mgtService =
-			(CollectionManagementService) current.getService(
-				"CollectionManagementService",
-				"1.0");
+			(CollectionManagementService) current.getService("CollectionManagementService", "1.0");
 		message("removing collection " + collection + " ...");
 		mgtService.removeCollection(collection);
 		messageln("done.");
@@ -1089,10 +1058,7 @@ public class InteractiveClient {
 		return dir.listFiles((FileFilter) new GlobFilenameFilter(globExpr));
 	}
 
-	private final boolean findRecursive(
-		Collection collection,
-		File dir,
-		String base) {
+	private final boolean findRecursive(Collection collection, File dir, String base) {
 		File temp[] = dir.listFiles();
 		if (collection instanceof Observable && verbose) {
 			ProgressObserver observer = new ProgressObserver();
@@ -1106,14 +1072,11 @@ public class InteractiveClient {
 			next = base + '/' + temp[i].getName();
 			try {
 				if (temp[i].isDirectory()) {
-					System.out.println("entering directory " + 
-                        temp[i].getAbsolutePath());
+					System.out.println("entering directory " + temp[i].getAbsolutePath());
 					c = collection.getChildCollection(temp[i].getName());
 					if (c == null) {
 						mgtService =
-							(
-								CollectionManagementService) collection
-									.getService(
+							(CollectionManagementService) collection.getService(
 								"CollectionManagementService",
 								"1.0");
 						c = mgtService.createCollection(temp[i].getName());
@@ -1124,37 +1087,35 @@ public class InteractiveClient {
 					long start1 = System.currentTimeMillis();
 					message(
 						"storing document "
-							+ temp[i].getName() + " ("
-                            + i + " of " + temp.length + ") "
+							+ temp[i].getName()
+							+ " ("
+							+ i
+							+ " of "
+							+ temp.length
+							+ ") "
 							+ "...");
 					document =
-						(XMLResource) collection.createResource(
-							temp[i].getName(),
-							"XMLResource");
+						(XMLResource) collection.createResource(temp[i].getName(), "XMLResource");
 					document.setContent(temp[i]);
 					collection.storeResource(document);
 					++filesCount;
 					messageln(
 						" "
-						+ temp[i].length()
-						+ " bytes in "
-						+ (System.currentTimeMillis() - start1)
-						+ "ms.");
+							+ temp[i].length()
+							+ " bytes in "
+							+ (System.currentTimeMillis() - start1)
+							+ "ms.");
 
 				}
 			} catch (XMLDBException e) {
-				System.err.println(
-					"could not parse file " + temp[i].getAbsolutePath());
+				System.err.println("could not parse file " + temp[i].getAbsolutePath());
 			}
 		}
 		return true;
 	}
 
 	private final boolean parse(String fileName) throws XMLDBException {
-		fileName =
-			fileName.replace('/', File.separatorChar).replace(
-				'\\',
-				File.separatorChar);
+		fileName = fileName.replace('/', File.separatorChar).replace('\\', File.separatorChar);
 		File file = new File(fileName);
 		XMLResource document;
 		String xml;
@@ -1164,12 +1125,15 @@ public class InteractiveClient {
 				if (recurseDirs) {
 					filesCount = 0;
 					long start = System.currentTimeMillis();
-					boolean result = 
-						findRecursive(current, file, path);
-					System.out.println("storing " + filesCount + " files took " + 
-						((System.currentTimeMillis() - start) / 1000) + "sec.");
-                    return result;
-                } else
+					boolean result = findRecursive(current, file, path);
+					System.out.println(
+						"storing "
+							+ filesCount
+							+ " files took "
+							+ ((System.currentTimeMillis() - start) / 1000)
+							+ "sec.");
+					return result;
+				} else
 					files = file.listFiles(new XMLFilenameFilter());
 			} else {
 				files = new File[1];
@@ -1187,10 +1151,7 @@ public class InteractiveClient {
 		long bytes = 0;
 		for (int i = 0; i < files.length; i++) {
 			start = System.currentTimeMillis();
-			document =
-				(XMLResource) current.createResource(
-					files[i].getName(),
-					"XMLResource");
+			document = (XMLResource) current.createResource(files[i].getName(), "XMLResource");
 			message(
 				"storing document "
 					+ files[i].getName()
@@ -1210,12 +1171,7 @@ public class InteractiveClient {
 					+ "ms.\n");
 			bytes += files[i].length();
 		}
-		messageln(
-			"parsed "
-				+ bytes
-				+ " bytes in "
-				+ (System.currentTimeMillis() - start0)
-				+ "ms.");
+		messageln("parsed " + bytes + " bytes in " + (System.currentTimeMillis() - start0) + "ms.");
 		return true;
 	}
 
@@ -1311,17 +1267,13 @@ public class InteractiveClient {
 			else
 				propFile =
 					new File(
-						home
-							+ System.getProperty("file.separator", "/")
-							+ "client.properties");
+						home + System.getProperty("file.separator", "/") + "client.properties");
 
 			InputStream pin;
 			if (propFile.canRead())
 				pin = new FileInputStream(propFile);
 			else
-				pin =
-					InteractiveClient.class.getResourceAsStream(
-						"client.properties");
+				pin = InteractiveClient.class.getResourceAsStream("client.properties");
 
 			if (pin != null)
 				properties.load(pin);
@@ -1349,8 +1301,8 @@ public class InteractiveClient {
 		String optionRmcol = null;
 		String optionXpath = null;
 		String optionQueryFile = null;
-        String optionXUpdate = null;
-        String optionResource = null;
+		String optionXUpdate = null;
+		String optionResource = null;
 		List optionalArgs = new ArrayList();
 		for (int i = 0; i < size; i++) {
 			option = (CLOption) opt.get(i);
@@ -1376,17 +1328,15 @@ public class InteractiveClient {
 					needPasswd = false;
 					break;
 				case CONFIG_OPT :
-					properties.setProperty(
-						"configuration",
-						option.getArgument());
+					properties.setProperty("configuration", option.getArgument());
 					break;
 				case COLLECTION_OPT :
 					path = option.getArgument();
 					foundCollection = true;
 					break;
-                case RESOURCE_OPT :
-                    optionResource = option.getArgument();
-                    break;
+				case RESOURCE_OPT :
+					optionResource = option.getArgument();
+					break;
 				case PARSE_OPT :
 					doParse = true;
 					if (option.getArgumentCount() == 1)
@@ -1410,10 +1360,7 @@ public class InteractiveClient {
 					foundCollection = true;
 					break;
 				case FIND_OPT :
-					optionXpath =
-						(option.getArgumentCount() == 1
-							? option.getArgument()
-							: "stdin");
+					optionXpath = (option.getArgumentCount() == 1 ? option.getArgument() : "stdin");
 					break;
 				case RESULTS_OPT :
 					try {
@@ -1424,24 +1371,21 @@ public class InteractiveClient {
 					}
 					break;
 				case OPTION_OPT :
-					properties.setProperty(
-						option.getArgument(0),
-						option.getArgument(1));
+					properties.setProperty(option.getArgument(0), option.getArgument(1));
 					break;
 				case QUERY_FILE_OPT :
 					optionQueryFile = option.getArgument();
 					break;
 				case THREADS_OPT :
 					try {
-						PARALLEL_THREADS =
-							Integer.parseInt(option.getArgument());
+						PARALLEL_THREADS = Integer.parseInt(option.getArgument());
 					} catch (NumberFormatException e) {
 						System.err.println("parameter -t needs a valid number");
 					}
 					break;
-                case XUPDATE_OPT :
-                    optionXUpdate = option.getArgument();
-                    break;
+				case XUPDATE_OPT :
+					optionXUpdate = option.getArgument();
+					break;
 				case CLOption.TEXT_ARGUMENT :
 					optionalArgs.add(option.getArgument());
 					break;
@@ -1451,9 +1395,7 @@ public class InteractiveClient {
 		// prompt for password if needed
 		if (needPasswd)
 			try {
-				properties.setProperty(
-					"password",
-					Readline.readline("password: "));
+				properties.setProperty("password", Readline.readline("password: "));
 			} catch (Exception e) {
 			}
 
@@ -1466,10 +1408,8 @@ public class InteractiveClient {
 		} catch (UnsatisfiedLinkError ule) {
 			if (!quiet) {
 				System.out.println("GNU Readline not found. Using System.in.");
-				System.out.println(
-					"If GNU Readline is available on your system,");
-				System.out.println(
-					"add directory ./lib to your LD_LIBRARY_PATH");
+				System.out.println("If GNU Readline is available on your system,");
+				System.out.println("add directory ./lib to your LD_LIBRARY_PATH");
 			}
 		}
 		Readline.initReadline("exist");
@@ -1507,17 +1447,14 @@ public class InteractiveClient {
 		// process command-line actions
 		if (optionRmcol != null) {
 			if (!foundCollection) {
-				System.err.println(
-					"Please specify target collection with --collection");
-				return;
-			}
-			try {
-				rmcol(optionRmcol);
-			} catch (XMLDBException e) {
-				System.err.println(
-					"XMLDBException while removing collection: "
-						+ e.getMessage());
-				e.printStackTrace();
+				System.err.println("Please specify target collection with --collection");
+			} else {
+				try {
+					rmcol(optionRmcol);
+				} catch (XMLDBException e) {
+					System.err.println("XMLDBException while removing collection: " + e.getMessage());
+					e.printStackTrace();
+				}
 			}
 			interactive = false;
 		}
@@ -1525,8 +1462,7 @@ public class InteractiveClient {
 			try {
 				mkcol(optionMkcol);
 			} catch (XMLDBException e) {
-				System.err.println(
-					"XMLDBException during mkcol: " + e.getMessage());
+				System.err.println("XMLDBException during mkcol: " + e.getMessage());
 				e.printStackTrace();
 			}
 			interactive = false;
@@ -1536,124 +1472,117 @@ public class InteractiveClient {
 				System.out.println(retrieve(optionGet));
 			} catch (XMLDBException e) {
 				System.err.println(
-					"XMLDBException while trying to retrieve document: "
-						+ e.getMessage());
+					"XMLDBException while trying to retrieve document: " + e.getMessage());
 				e.printStackTrace();
 			}
-			return;
+			interactive = false;
 		} else if (optionRemove != null) {
 			if (!foundCollection) {
-				System.err.println(
-					"Please specify target collection with --collection");
-				return;
-			}
-			try {
-				remove(optionRemove);
-			} catch (XMLDBException e) {
-				System.out.println(
-					"XMLDBException during parse: " + e.getMessage());
-				e.printStackTrace();
-			}
-			return;
-		} else if (doParse) {
-			if (!foundCollection) {
-				System.err.println(
-					"Please specify target collection with --collection");
-				return;
-			}
-			for (Iterator i = optionalArgs.iterator(); i.hasNext();)
+				System.err.println("Please specify target collection with --collection");
+			} else {
 				try {
-					parse((String) i.next());
+					remove(optionRemove);
 				} catch (XMLDBException e) {
-					System.out.println(
-						"XMLDBException during parse: " + e.getMessage());
+					System.out.println("XMLDBException during parse: " + e.getMessage());
 					e.printStackTrace();
 				}
-			return;
+			}
+			interactive = false;
+		} else if (doParse) {
+			if (!foundCollection) {
+				System.err.println("Please specify target collection with --collection");
+			} else {
+				for (Iterator i = optionalArgs.iterator(); i.hasNext();)
+					try {
+						parse((String) i.next());
+					} catch (XMLDBException e) {
+						System.out.println("XMLDBException during parse: " + e.getMessage());
+						e.printStackTrace();
+					}
+			}
+			interactive = false;
 		} else if (optionXpath != null) {
 			// if no argument has been found, read query from stdin
 			if (optionXpath.equals("stdin")) {
 				try {
-					BufferedReader stdin =
-						new BufferedReader(new InputStreamReader(System.in));
+					BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
 					optionXpath = stdin.readLine();
 				} catch (IOException e) {
 					System.err.println("failed to read query from stdin");
-					return;
+					optionXpath = null;
 				}
 			}
-			try {
-				ResourceSet result = find(optionXpath);
-				for (int i = 0; i < maxResults && i < result.getSize(); i++)
-					System.out.println(
-						((Resource) result.getResource((long) i)).getContent());
-			} catch (XMLDBException e) {
-				System.err.println(
-					"XMLDBException during query: " + e.getMessage());
-				e.printStackTrace();
+			if(optionXpath != null) {
+				try {
+					ResourceSet result = find(optionXpath);
+					for (int i = 0; i < maxResults && i < result.getSize(); i++)
+						System.out.println(((Resource) result.getResource((long) i)).getContent());
+				} catch (XMLDBException e) {
+					System.err.println("XMLDBException during query: " + e.getMessage());
+					e.printStackTrace();
+				}
 			}
-			return;
+			interactive = false;
 		} else if (optionQueryFile != null) {
 			testQuery(optionQueryFile);
+			interactive = false;
 		} else if (optionXUpdate != null) {
-            try {
+			try {
 				xupdate(optionResource, optionXUpdate);
 			} catch (XMLDBException e) {
-                System.err.println("XMLDBException during xupdate: " +
-                    e.getMessage());
+				System.err.println("XMLDBException during xupdate: " + e.getMessage());
 			} catch (IOException e) {
-                System.err.println("IOException during xupdate: " +
-                    e.getMessage());
+				System.err.println("IOException during xupdate: " + e.getMessage());
 			}
-        }
-		//if (!interactive)
-		//	return;
-
-		// enter interactive mode
-		try {
-			getResources();
-		} catch (XMLDBException e1) {
-			System.out.println("XMLDBException while retrieving collection " +
-				"contents: " + e1.getMessage());
-			e1.getCause().printStackTrace();			
+			interactive = false;
 		}
-		messageln("\ntype help or ? for help.");
-		String line;
-		boolean cont = true;
-		while (cont)
+		
+		if(interactive) {
+			// enter interactive mode
 			try {
-				if (properties.getProperty("colors").equals("true"))
-					line =
-						Readline.readline(
-							ANSI_CYAN + "exist:" + path + ">" + ANSI_WHITE);
-				else
-					line = Readline.readline("exist:" + path + ">");
-				if (line != null)
-					cont = process(line);
-
-			} catch (EOFException e) {
-				break;
-			} catch (IOException ioe) {
-				System.err.println(ioe);
+				getResources();
+			} catch (XMLDBException e1) {
+				System.out.println(
+					"XMLDBException while retrieving collection " + "contents: " + e1.getMessage());
+				e1.getCause().printStackTrace();
 			}
-
-		try {
-			Readline.writeHistoryFile(history.getAbsolutePath());
-		} catch (Exception e) {
+			messageln("\ntype help or ? for help.");
+			String line;
+			boolean cont = true;
+			while (cont)
+				try {
+					if (properties.getProperty("colors").equals("true"))
+						line = Readline.readline(ANSI_CYAN + "exist:" + path + ">" + ANSI_WHITE);
+					else
+						line = Readline.readline("exist:" + path + ">");
+					if (line != null)
+						cont = process(line);
+	
+				} catch (EOFException e) {
+					break;
+				} catch (IOException ioe) {
+					System.err.println(ioe);
+				}
+	
+			try {
+				Readline.writeHistoryFile(history.getAbsolutePath());
+			} catch (Exception e) {
+			}
+			Readline.cleanup();
+			messageln("quit.");
 		}
-		Readline.cleanup();
-		messageln("quit.");
+		// in local-mode: shutdown the db
+		if(current.getClass().getName().equals("org.exist.xmldb.LocalCollection"))
+			shutdown();
 	}
 
 	private final void printUsage() {
-		System.out.println(
-			"Usage: java " + InteractiveClient.class.getName() + " [options]");
+		System.out.println("Usage: java " + InteractiveClient.class.getName() + " [options]");
 		System.out.println(CLUtil.describeOptions(OPTIONS).toString());
 	}
 
 	public static final void printNotice() {
-		System.out.println(
-			"eXist version 0.9, Copyright (C) 2003 Wolfgang Meier");
+		System.out.println("eXist version 0.9, Copyright (C) 2003 Wolfgang Meier");
 		System.out.println("eXist comes with ABSOLUTELY NO WARRANTY.");
 		System.out.println(
 			"This is free software, and you are welcome to "
@@ -1711,14 +1640,14 @@ public class InteractiveClient {
 			lastObservable = o;
 		}
 	}
-	
+
 	private static String formatString(String s1, String s2, int width) {
 		StringBuffer buf = new StringBuffer(width);
-		if(s1.length() > width)
+		if (s1.length() > width)
 			s1 = s1.substring(0, width - 1);
 		buf.append(s1);
 		int fill = width - (s1.length() + s2.length());
-		for(int i = 0; i < fill; i++)
+		for (int i = 0; i < fill; i++)
 			buf.append(' ');
 		buf.append(s2);
 		return buf.toString();

@@ -37,7 +37,7 @@
 	</xu:insert-after>
 
 	<!-- add email before phone -->
-	<xu:insert-before select="//address[last-name |= 'useless']/phone">
+	<xu:insert-before select="//address[last-name |= 'useless']/city">
 		<xu:element name="email">
 			<xu:attribute name="type">home</xu:attribute>
 			<xu:text>useless@home.com</xu:text>
@@ -45,7 +45,7 @@
 	</xu:insert-before>
 	
 	<!-- remove an address -->
-	<xu:remove select="//address[city |= 'washing*']"/>
+	<!--xu:remove select="//address[city |= 'washing*']"/-->
 	
 	<!-- update a node value -->
 	<xu:update select="//address[last-name |= 'useless']/first-name/text()">

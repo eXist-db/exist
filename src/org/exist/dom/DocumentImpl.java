@@ -24,6 +24,7 @@ package org.exist.dom;
 import java.io.*;
 
 import org.apache.log4j.Category;
+import org.exist.EXistException;
 import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.SecurityManager;
@@ -45,8 +46,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	private NodeIndexListener listener = null;
 
-	private static Category LOG =
-		Category.getInstance(DocumentImpl.class.getName());
+	private static Category LOG = Category.getInstance(DocumentImpl.class.getName());
 
 	protected DBBroker broker = null;
 
@@ -87,7 +87,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	// has document-metadata been loaded?
 	private boolean complete = true;
-	
+
 	/**
 	 *  Constructor for the DocumentImpl object
 	 *
@@ -129,10 +129,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 *@param  fileName    Description of the Parameter
 	 *@param  collection  Description of the Parameter
 	 */
-	public DocumentImpl(
-		DBBroker broker,
-		String fileName,
-		Collection collection) {
+	public DocumentImpl(DBBroker broker, String fileName, Collection collection) {
 		super(Node.DOCUMENT_NODE, 0);
 		this.broker = broker;
 		this.fileName = fileName;
@@ -237,15 +234,15 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 */
 	public void appendChild(NodeImpl child, boolean validate) throws DOMException {
 		++children;
-		if(!validate)
+		if (!validate)
 			child.setGID(children);
-		if(child.getNodeType() == Node.ELEMENT_NODE)
+		if (child.getNodeType() == Node.ELEMENT_NODE)
 			setDocumentElement(children);
 		treeLevelOrder[0] = children;
 	}
 
 	/**  Description of the Method */
-	public void calculateTreeLevelStartPoints() {
+	public void calculateTreeLevelStartPoints() throws EXistException {
 		treeLevelStartPoints = new long[maxDepth + 1];
 		// we know the start point of the root element (which is always 1)
 		// and the start point of the first non-root node (children + 1)
@@ -253,12 +250,17 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		treeLevelStartPoints[1] = children + 1;
 		for (int i = 1; i < maxDepth; i++) {
 			treeLevelStartPoints[i + 1] =
-				(treeLevelStartPoints[i] - treeLevelStartPoints[i - 1])
-					* treeLevelOrder[i]
+				(treeLevelStartPoints[i] - treeLevelStartPoints[i - 1]) * treeLevelOrder[i]
 					+ treeLevelStartPoints[i];
+			checkRange(i);
 		}
 	}
 
+	private void checkRange(int level) throws EXistException {
+		if(treeLevelStartPoints[level] < 0 || treeLevelStartPoints[level + 1] < 0)
+			throw new EXistException("index out of range");
+	}
+	
 	/**
 	 *  Description of the Method
 	 *
@@ -297,8 +299,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 *@return                   Description of the Return Value
 	 *@exception  DOMException  Description of the Exception
 	 */
-	public Attr createAttributeNS(String namespaceURI, String qualifiedName)
-		throws DOMException {
+	public Attr createAttributeNS(String namespaceURI, String qualifiedName) throws DOMException {
 		return createAttribute(qualifiedName);
 	}
 
@@ -354,8 +355,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 *@return                   Description of the Return Value
 	 *@exception  DOMException  Description of the Exception
 	 */
-	public Element createElementNS(String namespaceURI, String qualifiedName)
-		throws DOMException {
+	public Element createElementNS(String namespaceURI, String qualifiedName) throws DOMException {
 		return createElement(qualifiedName);
 	}
 
@@ -366,8 +366,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 *@return                   Description of the Return Value
 	 *@exception  DOMException  Description of the Exception
 	 */
-	public EntityReference createEntityReference(String name)
-		throws DOMException {
+	public EntityReference createEntityReference(String name) throws DOMException {
 		return null;
 	}
 
@@ -379,9 +378,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 *@return                   Description of the Return Value
 	 *@exception  DOMException  Description of the Exception
 	 */
-	public ProcessingInstruction createProcessingInstruction(
-		String target,
-		String data)
+	public ProcessingInstruction createProcessingInstruction(String target, String data)
 		throws DOMException {
 		return null;
 	}
@@ -413,16 +410,16 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		context.add(root);
 		NodeSet temp = (NodeSet) broker.findElementsByTagName(docs, tagName);
 		return temp.getDescendants(context, NodeSet.DESCENDANT);
-//		NodeProxy p;
-//		for (Iterator iter = temp.iterator(); iter.hasNext();) {
-//			p = (NodeProxy) iter.next();
-//			if (context.nodeHasParent(p.doc, p.gid, true)) {
-//				LOG.debug("adding " + p.doc.getDocId() + ":" + p.gid);
-//				result.add(p);
-//			} else
-//				LOG.debug("skipping " + p.doc.getDocId() + ":" + p.gid);
-//		}
-//		return result;
+		//		NodeProxy p;
+		//		for (Iterator iter = temp.iterator(); iter.hasNext();) {
+		//			p = (NodeProxy) iter.next();
+		//			if (context.nodeHasParent(p.doc, p.gid, true)) {
+		//				LOG.debug("adding " + p.doc.getDocId() + ":" + p.gid);
+		//				result.add(p);
+		//			} else
+		//				LOG.debug("skipping " + p.doc.getDocId() + ":" + p.gid);
+		//		}
+		//		return result;
 	}
 
 	/**
@@ -543,9 +540,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 *@param  localName     Description of the Parameter
 	 *@return               The elementsByTagNameNS value
 	 */
-	public NodeList getElementsByTagNameNS(
-		String namespaceURI,
-		String localName) {
+	public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
 		return null;
 	}
 
@@ -569,11 +564,11 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	private void checkAvail() {
-		if(!complete)
+		if (!complete)
 			broker.readDocumentMetadata(this);
 		complete = true;
 	}
-	
+
 	/**
 	 *  Gets the implementation attribute of the DocumentImpl object
 	 *
@@ -679,8 +674,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public int getTreeLevelOrder(long gid) {
 		int order = 0;
 		for (int i = 0; i < maxDepth; i++)
-			if (gid >= treeLevelStartPoints[i]
-				&& gid < treeLevelStartPoints[i + 1]) {
+			if (gid >= treeLevelStartPoints[i] && gid < treeLevelStartPoints[i + 1]) {
 				order = treeLevelOrder[i];
 				break;
 			}
@@ -704,8 +698,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 *@return                   Description of the Return Value
 	 *@exception  DOMException  Description of the Exception
 	 */
-	public Node importNode(Node importedNode, boolean deep)
-		throws DOMException {
+	public Node importNode(Node importedNode, boolean deep) throws DOMException {
 		return null;
 	}
 
@@ -747,8 +740,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		permissions.read(istream);
 	}
 
-	public void read(VariableByteInputStream istream)
-		throws IOException, EOFException {
+	public void read(VariableByteInputStream istream) throws IOException, EOFException {
 		docId = istream.readInt();
 		fileName = collection.getName() + '/' + istream.readUTF();
 		children = istream.readInt();
@@ -762,7 +754,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		final int uid = istream.readInt();
 		final int gid = istream.readInt();
 		final int perm = (istream.readByte() & 0777);
-		if(secman == null) {
+		if (secman == null) {
 			permissions.setOwner(SecurityManager.DBA_USER);
 			permissions.setGroup(SecurityManager.DBA_GROUP);
 		} else {
@@ -770,7 +762,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			permissions.setGroup(secman.getGroup(gid).getName());
 		}
 		permissions.setPermissions(perm);
-		calculateTreeLevelStartPoints();
+		try {
+			calculateTreeLevelStartPoints();
+		} catch (EXistException e) {
+		}
 		complete = false;
 	}
 
@@ -886,7 +881,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		for (int i = 0; i < maxDepth; i++)
 			ostream.writeInt(treeLevelOrder[i]);
 		SecurityManager secman = broker.getBrokerPool().getSecurityManager();
-		if(secman == null) {
+		if (secman == null) {
 			ostream.writeInt(1);
 			ostream.writeInt(1);
 		} else {
@@ -895,26 +890,26 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			ostream.writeInt(user.getUID());
 			ostream.writeInt(group.getId());
 		}
-		ostream.writeByte((byte)permissions.getPermissions());
+		ostream.writeByte((byte) permissions.getPermissions());
 	}
 
 	public int reindexRequired() {
 		return reindex;
 	}
-	
+
 	public byte[] serialize() {
 		VariableByteOutputStream ostream = new VariableByteOutputStream();
 		try {
 			//ostream.writeUTF(fileName.substring(collection.getName().length() + 1));
 			ostream.writeLong(documentRootId);
 			((DocumentTypeImpl) docType).write(ostream);
-		} catch(IOException e) {
+		} catch (IOException e) {
 			LOG.warn("io error while writing document data", e);
 			return null;
 		}
 		return ostream.toByteArray();
 	}
-	
+
 	public void deserialize(byte[] data) {
 		VariableByteInputStream istream = new VariableByteInputStream(data);
 		try {
@@ -923,32 +918,56 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			documentRootId = istream.readLong();
 			docType = new DocumentTypeImpl();
 			((DocumentTypeImpl) docType).read(istream);
-		} catch(IOException e) {
+		} catch (IOException e) {
 			LOG.warn("io error while writing document data", e);
 		}
 	}
-	
+
 	public void setReindexRequired(int level) {
 		this.reindex = level;
 	}
-	
+
 	public void setIndexListener(NodeIndexListener listener) {
 		this.listener = listener;
 	}
-	
+
 	public NodeIndexListener getIndexListener() {
 		return listener;
 	}
-	
+
 	public void clearIndexListener() {
 		listener = null;
 	}
-	
+
 	public void setAddress(long address) {
 		this.address = address;
 	}
-	
+
 	public long getAddress() {
 		return address;
 	}
+
+	public long getInternalAddress() {
+		return address;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeImpl#updateChild(org.w3c.dom.Node, org.w3c.dom.Node)
+	 */
+	public void updateChild(Node oldChild, Node newChild) throws DOMException {
+		NodeImpl old = (NodeImpl) oldChild;
+		NodeImpl newNode = (NodeImpl) newChild;
+		NodeImpl previous = (NodeImpl) old.getPreviousSibling();
+		if (previous == null)
+			previous = this;
+		else
+			previous = getLastNode(previous);
+		broker.removeNode(old, "/");
+		broker.endRemove();
+		newNode.gid = old.gid;
+		broker.insertAfter(previous, newNode);
+		broker.index(newNode);
+		broker.flush();
+	}
+
 }

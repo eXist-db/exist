@@ -28,6 +28,7 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -171,8 +172,6 @@ public class NativeTextEngine extends TextSearchEngine {
 
 	public void close() {
 		try {
-			flush();
-			sync();
 			dbWords.close();
 		} catch (DBException dbe) {
 			LOG.debug(dbe);
@@ -314,6 +313,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		Collection collection;
 		short collectionId;
 		VariableByteInputStream is;
+		//InputStream dis = null;
 		NodeProxy p;
 		Lock lock = dbWords.getLock();
 		for (int i = 0; i < expr.length; i++) {
@@ -332,9 +332,11 @@ public class NativeTextEngine extends TextSearchEngine {
 					lock.acquire(this);
 					lock.enter(this);
 					value = dbWords.get(ref);
+					//dis = dbWords.getAsStream(ref);
 				} catch (LockException e) {
 					LOG.warn("could not acquire lock on words db", e);
 					value = null;
+					//dis = null;
 				} finally {
 					lock.release(this);
 				}
@@ -363,6 +365,7 @@ public class NativeTextEngine extends TextSearchEngine {
 						}
 					}
 				} catch (EOFException e) {
+				} catch (IOException e) {
 				}
 			}
 			//( (ArraySet) result[i] ).setIsSorted( true );
@@ -554,33 +557,34 @@ public class NativeTextEngine extends TextSearchEngine {
 			try {
 				lock.acquire(this, Lock.WRITE_LOCK);
 				lock.enter(this);
-				entries = dbWords.findKeys(query);
+				dbWords.removeAll(query);
+				//entries = dbWords.findKeys(query);
 			} catch (LockException e) {
 				LOG.warn("could not acquire lock on words db", e);
 				entries = null;
 			} finally {
 				lock.release(this);
 			}
-			if (entries == null) {
-				LOG.error("could not remove collection");
-				return;
-			}
-			LOG.debug("found " + entries.size() + " words.");
-			Value val;
-			for (Iterator i = entries.iterator(); i.hasNext();) {
-				val = (Value) i.next();
-				try {
-					lock.acquire(this, Lock.WRITE_LOCK);
-					lock.enter(this);
-					//dbWords.remove(val);
-					dbWords.remove(val.getAddress());
-					dbWords.removeValue(val);
-				} catch (LockException e) {
-					LOG.warn("could not acquire lock on words db", e);
-				} finally {
-					lock.release(this);
-				}
-			}
+//			if (entries == null) {
+//				LOG.error("could not remove collection");
+//				return;
+//			}
+//			LOG.debug("found " + entries.size() + " words.");
+//			Value val;
+//			for (Iterator i = entries.iterator(); i.hasNext();) {
+//				val = (Value) i.next();
+//				try {
+//					lock.acquire(this, Lock.WRITE_LOCK);
+//					lock.enter(this);
+//					//dbWords.remove(val);
+//					dbWords.remove(val.getAddress());
+//					dbWords.removeValue(val);
+//				} catch (LockException e) {
+//					LOG.warn("could not acquire lock on words db", e);
+//				} finally {
+//					lock.release(this);
+//				}
+//			}
 			LOG.debug("removed words index");
 		} catch (BTreeException bte) {
 			LOG.debug(bte);
@@ -588,8 +592,6 @@ public class NativeTextEngine extends TextSearchEngine {
 			LOG.debug(ioe);
 		} catch (DBException dbe) {
 			LOG.warn(dbe);
-		} catch (ReadOnlyException e) {
-			LOG.warn("database is read-only");
 		}
 	}
 
@@ -661,6 +663,7 @@ public class NativeTextEngine extends TextSearchEngine {
 						}
 					}
 				} catch (EOFException e) {
+				} catch (IOException e) {
 				}
 				if (changed) {
 					try {
@@ -851,6 +854,8 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 
 		public void remove() {
+			if(doc == null)
+				return;
 			final short collectionId = doc.getCollection().getId();
 			int len, docId;
 			Map.Entry entry;
@@ -915,6 +920,8 @@ public class NativeTextEngine extends TextSearchEngine {
 						}
 					} catch (EOFException e) {
 						LOG.error("end-of-file while reading index entry for " + word);
+					} catch (IOException e) {
+						LOG.error("io-error while reading index entry for " + word);
 					}
 				}
 				ids = newList.getData();
@@ -1022,7 +1029,9 @@ public class NativeTextEngine extends TextSearchEngine {
 							}
 						}
 					} catch (EOFException e) {
-						LOG.error("end-of-file while reading index entry for " + word);
+						LOG.error("end-of-file while reading index entry for " + word, e);
+					} catch (IOException e) {
+						LOG.error("io-error while reading index entry for " + word, e);
 					}
 				}
 				ids = idList.getData();
@@ -1187,7 +1196,9 @@ public class NativeTextEngine extends TextSearchEngine {
 						}
 					}
 				} catch (EOFException e) {
-					LOG.warn(e);
+					LOG.warn("eof while reading index", e);
+				} catch (IOException e) {
+					LOG.warn("io error while reading index", e);
 				}
 			}
 			return true;

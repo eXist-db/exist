@@ -139,11 +139,10 @@ public class DatabaseAdminServlet extends HttpServlet {
     }
 
 
-    public void destroy() {
+    /*public void destroy() {
     	this.log("starting database shutdown ...");
-		if ( BrokerPool.isConfigured() )
-	    	BrokerPool.stopAll();
-    }
+	    BrokerPool.stopAll();
+    }*/
 
     private void startup() throws ServletException {
         if ( configuration == null )

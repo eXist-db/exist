@@ -60,12 +60,17 @@ public class DatabaseImpl implements Database {
 
     protected final static String DEFAULT_HOST = "localhost:8081";
     protected final static String DEFAULT_NAME = "exist";
+    
+    protected final static int LOCAL = 0;
+    protected final static int REMOTE = 1;
+    
     protected boolean autoCreate = false;
     protected String configuration = null;
     protected String dbName = DEFAULT_NAME;
     protected String selector = dbName + ':'; 
     protected XmlRpcClient rpcClient;
-
+	protected int mode = 0;
+	
     public DatabaseImpl() {
         try {
             XmlRpc.setEncoding( "UTF-8" );
@@ -102,7 +107,6 @@ public class DatabaseImpl implements Database {
      *@exception  XMLDBException  Description of the Exception
      */
     private void configure() throws XMLDBException {
-        //String pathSep = System.getProperty( "file.separator", "/" );
         String home, file = "conf.xml";
         if(configuration == null) {
         	home = System.getProperty( "exist.home" );
@@ -110,9 +114,10 @@ public class DatabaseImpl implements Database {
             	home = System.getProperty( "user.dir" );
         } else {
         	File f = new File(configuration);
-        	home = f.getParent();
+        	home = f.getParentFile().getAbsolutePath();
         	file = f.getName();
         }
+		System.out.println("configuring " + dbName + " using " + home + '/' + file);
         try {
             Configuration config = new Configuration( file, home );
             BrokerPool.configure( dbName, 1, 5, config );
@@ -132,8 +137,9 @@ public class DatabaseImpl implements Database {
         String c = collection.substring( selector.length() );
         Collection current = null;
         if ( c.startsWith( "///" ) ) {
+        	mode = LOCAL;
             // use local database instance
-            if ( !BrokerPool.isConfigured() ) {
+            if ( !BrokerPool.isConfigured( dbName ) ) {
                 if ( autoCreate )
                     configure();
                 else
@@ -180,6 +186,7 @@ public class DatabaseImpl implements Database {
         }
         else if ( c.startsWith( "//" ) ) {
             // use remote database via XML-RPC
+            mode = REMOTE;
             if ( user == null ) {
                 user = "guest";
                 password = "guest";
@@ -217,7 +224,7 @@ public class DatabaseImpl implements Database {
     public String getName() throws XMLDBException {
         return dbName;
     }
-
+	
     public String getProperty( String property ) throws XMLDBException {
         if ( property.equals( "create-database" ) )
             return new Boolean( autoCreate ).toString();
@@ -231,10 +238,22 @@ public class DatabaseImpl implements Database {
     public void setProperty( String property, String value ) throws XMLDBException {
         if ( property.equals( "create-database" ) )
             autoCreate = value.equals( "true" );
-		if ( property.equals( "database-id" ) )
+		if ( property.equals( "database-id" ) ) {
 			dbName = value;
+			selector = dbName + ':';
+		}
 		if ( property.equals( "configuration" ) )
 			configuration = value;
     }
+    
+	/* (non-Javadoc)
+	 * @see java.lang.Object#finalize()
+	 */
+	protected void finalize() throws Throwable {
+		if(mode == LOCAL && autoCreate)
+			// cleanly shut down the database
+			BrokerPool.stop(dbName);
+	}
+
 }
 

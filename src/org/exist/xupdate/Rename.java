@@ -5,6 +5,7 @@
  */
 package org.exist.xupdate;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -37,14 +38,15 @@ public class Rename extends Modification {
 	 * @see org.exist.xupdate.Modification#process(org.exist.dom.DocumentSet)
 	 */
 	public long process() throws PermissionDeniedException, EXistException {
-		List qr = select(docs);
+		ArrayList qr = select(docs);
 		NodeList children = content.getChildNodes();
 		if (qr == null || children.getLength() == 0)
 			return 0;
 		DocumentImpl doc;
 		Collection collection;
 		NodeImpl node;
-		ElementImpl parent;
+		NodeImpl parent;
+		IndexListener listener = new IndexListener(qr);
 		String newName = children.item(0).getNodeValue();
 		int modificationCount = 0;
 		for (Iterator i = qr.iterator(); i.hasNext();) {
@@ -56,7 +58,8 @@ public class Rename extends Modification {
 					"write access to collection denied; user=" + user.getName());
 			if (!doc.getPermissions().validate(user, Permission.UPDATE))
 				throw new PermissionDeniedException("permission denied to update document");
-			parent = (ElementImpl)node.getParentNode();
+			doc.setIndexListener(listener);
+			parent = (NodeImpl)node.getParentNode();
 			switch(node.getNodeType()) {
 				case Node.ELEMENT_NODE :
 					((ElementImpl)node).setNodeName(newName);
@@ -69,6 +72,7 @@ public class Rename extends Modification {
 					modificationCount++;
 					break;
 			}
+			doc.clearIndexListener();
 		}
 		return modificationCount;
 	}

@@ -134,7 +134,7 @@ public class Predicate extends PathExpr {
                     e_gid = f_gid + doc.getTreeLevelOrder( level );
 
                     count = 1;
-                    set = ( (ArraySet) context ).getRange( doc, f_gid, e_gid );
+                    set = context.getRange( doc, f_gid, e_gid );
                     for ( Iterator j = set.iterator(); j.hasNext(); count++ ) {
                         n = (NodeProxy) j.next();
                         if ( count == pos ) {

@@ -314,6 +314,7 @@ public class Configuration implements ErrorHandler {
 								+ df.getAbsolutePath());
 
 					config.put("db-connection.data-dir", df.getAbsolutePath());
+					LOG.debug("data directory = " + df.getAbsolutePath());
 				}
 
 				if (cacheSize != null)
@@ -376,7 +377,7 @@ public class Configuration implements ErrorHandler {
 					Element pool = (Element)poolConf.item(0);
 					String min = pool.getAttribute("min");
 					String max = pool.getAttribute("max");
-					String idle = pool.getAttribute("idle");
+					String sync = pool.getAttribute("sync-period");
 					if(min != null)
 						try {
 							config.put("db-connection.pool.min",
@@ -389,10 +390,10 @@ public class Configuration implements ErrorHandler {
 								new Integer(max));
 						} catch(NumberFormatException e) {
 						}
-					if(idle != null)
+					if(sync!= null)
 						try {
-							config.put("db-connection.pool.idle",
-								new Integer(idle));
+							config.put("db-connection.pool.sync-period",
+								new Long(sync));
 						} catch(NumberFormatException e) {
 						}
 				}
@@ -414,9 +415,12 @@ public class Configuration implements ErrorHandler {
                 String internalId = serializer.getAttribute("add-exist-id");
                 if(internalId != null)
                     config.put("serialization.add-exist-id", internalId);
-                String matchTagging = serializer.getAttribute("match-tagging");
-                if(matchTagging != null)
-                	config.put("serialization.match-tagging", matchTagging);
+                String tagElementMatches = serializer.getAttribute("match-tagging-elements");
+                if(tagElementMatches != null)
+                	config.put("serialization.match-tagging-elements", tagElementMatches);
+                String tagAttributeMatches = serializer.getAttribute("match-tagging-attributes");
+                if(tagAttributeMatches != null)
+                	config.put("serialization.match-tagging-attributes", tagAttributeMatches);
 			}
 			
 			NodeList log4j = doc.getElementsByTagName("log4j:configuration");

@@ -23,6 +23,7 @@ package org.exist.util;
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
 /**
@@ -31,28 +32,37 @@ import java.io.UnsupportedEncodingException;
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
  *@created    21. September 2002
  */
-public class VariableByteInputStream extends ByteArrayInputStream {
+public class VariableByteInputStream {
 
+	private InputStream is;
 	/**
 	 *  Constructor for the VariableByteInputStream object
 	 *
 	 *@param  data  Description of the Parameter
 	 */
 	public VariableByteInputStream(byte[] data) {
-		super(data);
+		is = new ByteArrayInputStream(data);
 	}
 
 	public VariableByteInputStream(byte[] data, int offset, int length) {
-		super(data, offset, length);
+		is = new ByteArrayInputStream(data, offset, length);
+	}
+	
+	public VariableByteInputStream(InputStream stream) {
+		this.is = stream;
 	}
 
-	public byte readByte() {
-		return (byte) read();
+	public void read(byte[] data, int offset, int len) throws IOException {
+		is.read(data, offset, len);
+	}
+	
+	public byte readByte() throws IOException {
+		return (byte) is.read();
 	}
 
-	public short readShort() throws EOFException {
+	public short readShort() throws IOException, EOFException {
 		try {
-			return (short) VariableByteCoding.decode(this);
+			return (short) VariableByteCoding.decode(is);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new EOFException();
 		}
@@ -63,9 +73,9 @@ public class VariableByteInputStream extends ByteArrayInputStream {
 	 *
 	 *@return    Description of the Return Value
 	 */
-	public int readInt() throws EOFException {
+	public int readInt() throws EOFException, IOException {
 		try {
-			return (int) VariableByteCoding.decode(this);
+			return (int) VariableByteCoding.decode(is);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new EOFException();
 		}
@@ -76,9 +86,9 @@ public class VariableByteInputStream extends ByteArrayInputStream {
 	 *
 	 *@return    Description of the Return Value
 	 */
-	public long readLong() throws EOFException {
+	public long readLong() throws EOFException, IOException {
 		try {
-			return VariableByteCoding.decode(this);
+			return VariableByteCoding.decode(is);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new EOFException();
 		}
@@ -87,7 +97,7 @@ public class VariableByteInputStream extends ByteArrayInputStream {
 	public String readUTF() throws IOException, EOFException {
 		int len = readInt();
 		byte data[] = new byte[len];
-		read(data);
+		is.read(data);
 		String s;
 		try {
 			s = new String(data, "UTF-8");
@@ -102,12 +112,16 @@ public class VariableByteInputStream extends ByteArrayInputStream {
 	 *
 	 *@param  count  Description of the Parameter
 	 */
-	public void skip(int count) {
-		for (int i = 0; i < count && available() > 0; i++)
-			VariableByteCoding.decode(this);
+	public void skip(int count) throws IOException {
+		for (int i = 0; i < count && is.available() > 0; i++)
+			VariableByteCoding.decode(is);
 	}
 
-	public void copyTo(VariableByteOutputStream os) {
-		VariableByteCoding.copyTo(this, os.buf);
+	public int available() throws IOException {
+		return is.available();
+	}
+	
+	public void copyTo(VariableByteOutputStream os) throws IOException {
+		VariableByteCoding.copyTo(is, os.buf);
 	}
 }

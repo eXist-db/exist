@@ -1,19 +1,21 @@
 
 package org.exist.xmldb;
 
-import org.xmldb.api.base.*;
-import org.xmldb.api.modules.*;
-
+import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Vector;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import org.apache.xmlrpc.*;
+
+import org.apache.xmlrpc.XmlRpcException;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.ErrorCodes;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.XMLResource;
 
 
 public class RemoteXPathQueryService implements XPathQueryServiceImpl {
 
-    protected int indentXML = 1;
+    protected int indentXML = 0;
     protected String encoding = "UTF-8";
     protected CollectionImpl collection;
 

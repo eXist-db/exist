@@ -135,8 +135,6 @@ public final class NodeProxy implements Comparable, Cloneable {
     }
     
     public int compareTo( Object other ) {
-		if ( other == null )
-			throw new NullPointerException( "cannot compare null values" );
 		final NodeProxy p = (NodeProxy) other;
 		if ( doc.docId == p.doc.docId ) {
 			if ( gid == p.gid )

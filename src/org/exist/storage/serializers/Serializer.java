@@ -64,6 +64,12 @@ public class Serializer implements XMLReader {
 
 	public final static String EXIST_NS = "http://exist.sourceforge.net/NS/exist";
 	 
+	// constants to configure the highlighting of matches in text and attributes
+	public final static int TAG_NONE = 0x0;
+	public final static int TAG_ELEMENT_MATCHES = 0x1;
+	public final static int TAG_ATTRIBUTE_MATCHES = 0x2;
+	public final static int TAG_BOTH = 0x4;
+	
     protected DBBroker broker;
     protected String encoding = "ISO-8859-1";
     private EntityResolver entityResolver = null;
@@ -73,7 +79,7 @@ public class Serializer implements XMLReader {
     protected boolean createContainerElements = true;
 	protected boolean processXInclude = true;
 	protected boolean processXSL = false;
-	protected boolean highlightMatches = true;
+	protected int highlightMatches = TAG_ELEMENT_MATCHES;
     protected Templates templates = null;
     protected TransformerHandler xslHandler = null;
 	protected XIncludeFilter xinclude;
@@ -106,10 +112,14 @@ public class Serializer implements XMLReader {
         if(option != null)
         	indent = option.equalsIgnoreCase("true");
         option = 
-        	(String)config.getProperty("serialization.match-tagging");
+        	(String)config.getProperty("serialization.match-tagging-elements");
         if(option != null)
-        	highlightMatches = option.equalsIgnoreCase("true");
-        LOG.debug("highlight-matches = " + highlightMatches);
+        	highlightMatches = option.equalsIgnoreCase("true") ? TAG_ELEMENT_MATCHES : TAG_NONE;
+        option =
+        	(String)config.getProperty("serialization.match-tagging-attributes");
+        if(option != null && option.equalsIgnoreCase("true"))
+        	highlightMatches = highlightMatches | TAG_ATTRIBUTE_MATCHES;
+       	LOG.debug("match-tagging = " + highlightMatches);
     }
 
 
@@ -870,8 +880,8 @@ public class Serializer implements XMLReader {
         this.createContainerElements = createContainerElements;
     }
 
-	public void setHighlightMatches(boolean highlight) {
-		this.highlightMatches = highlight;
+	public void setHighlightMatches(int mode) {
+		highlightMatches = mode;
 	}
 }
 

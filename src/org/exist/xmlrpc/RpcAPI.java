@@ -44,6 +44,8 @@ public interface RpcAPI {
 	 */
 	public boolean shutdown(User user) throws PermissionDeniedException;
 
+	public boolean sync(User user);
+	 
     /**
      *  retrieve document by name. XML content is indented if prettyPrint is set
      *  to >=0. Use supplied encoding for output. This method is provided to

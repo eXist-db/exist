@@ -337,6 +337,18 @@ public class RpcConnection extends Thread {
 		}
 	}
 
+	public boolean sync() {
+		DBBroker broker = null;
+		try {
+			broker = brokerPool.get();
+			broker.sync();
+		} catch(EXistException e) {
+		} finally {
+			brokerPool.release(broker);
+		}
+		return true;
+	}
+	
 	/**
 	 *  Gets the documentListing attribute of the RpcConnection object
 	 *
@@ -345,8 +357,9 @@ public class RpcConnection extends Thread {
 	 *@exception  EXistException  Description of the Exception
 	 */
 	public Vector getDocumentListing(User user) throws EXistException {
-		DBBroker broker = brokerPool.get();
+		DBBroker broker = null;
 		try {
+			broker = brokerPool.get();
 			DocumentSet docs = broker.getAllDocuments();
 			String names[] = docs.getNames();
 			Vector vec = new Vector();
@@ -370,8 +383,9 @@ public class RpcConnection extends Thread {
 	 */
 	public Vector getDocumentListing(User user, String name)
 		throws EXistException, PermissionDeniedException {
-		DBBroker broker = brokerPool.get();
+		DBBroker broker = null;
 		try {
+			broker = brokerPool.get();
 			if (!name.startsWith("/"))
 				name = '/' + name;
 			if (!name.startsWith("/db"))
@@ -975,6 +989,7 @@ public class RpcConnection extends Thread {
 	 */
 	public String retrieve(User user, int resultId, int num, boolean prettyPrint, String encoding)
 		throws Exception {
+		System.out.println("pretty-print = " + prettyPrint);
 		DBBroker broker = brokerPool.get();
 		try {
 			QueryResult qr = (QueryResult) connectionPool.resultSets.get(resultId);

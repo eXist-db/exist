@@ -3,6 +3,7 @@ package org.exist.util.test;
 import junit.framework.TestCase;
 
 import java.io.EOFException;
+import java.io.IOException;
 import java.util.Random;
 
 import org.exist.util.VariableByteInputStream;
@@ -51,6 +52,8 @@ public class VariableByteStreamTest extends TestCase {
 				assertEquals(l, longValues[j]);
 			}
 		} catch (EOFException e) {
+			fail("Exception: " + e);
+		} catch(IOException e) {
 			fail("Exception: " + e);
 		}
 	}

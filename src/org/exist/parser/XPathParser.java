@@ -1,4 +1,4 @@
-// $ANTLR 2.7.2rc2 (20030105): "XPathParser.g" -> "XPathParser.java"$
+// $ANTLR : "XPathParser.g" -> "XPathParser.java"$
 
 	package org.exist.parser;
 	
@@ -195,20 +195,19 @@ public XPathParser(ParserSharedInputState state) {
 			case STAR:
 			case INT:
 			case LITERAL_text:
-			case SLASH:
-			case DSLASH:
-			case 32:
-			case 33:
+			case 29:
+			case 30:
 			case LITERAL_contains:
 			case LITERAL_match:
 			case LITERAL_near:
-			case FUNC:
-			case ATTRIB:
+			case NCNAME:
+			case SLASH:
+			case DSLASH:
+			case AT:
 			case ATTRIB_STAR:
 			case LITERAL_node:
 			case PARENT:
 			case SELF:
-			case NCNAME:
 			case LITERAL_ancestor:
 			{
 				or_expr(expr);
@@ -311,7 +310,7 @@ public XPathParser(ParserSharedInputState state) {
 				
 			}
 			{
-			_loop31:
+			_loop941:
 			do {
 				if ((LA(1)==COMMA)) {
 					match(COMMA);
@@ -332,7 +331,7 @@ public XPathParser(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop31;
+					break _loop941;
 				}
 				
 			} while (true);
@@ -367,7 +366,7 @@ public XPathParser(ParserSharedInputState state) {
 				
 			}
 			{
-			_loop33:
+			_loop943:
 			do {
 				if ((LA(1)==COMMA)) {
 					match(COMMA);
@@ -388,7 +387,7 @@ public XPathParser(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop33;
+					break _loop943;
 				}
 				
 			} while (true);
@@ -404,10 +403,10 @@ public XPathParser(ParserSharedInputState state) {
 			break;
 		}
 		default:
-			boolean synPredMatched27 = false;
+			boolean synPredMatched937 = false;
 			if (((LA(1)==LITERAL_document) && (LA(2)==LPAREN))) {
-				int _m27 = mark();
-				synPredMatched27 = true;
+				int _m937 = mark();
+				synPredMatched937 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -417,12 +416,12 @@ public XPathParser(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched27 = false;
+					synPredMatched937 = false;
 				}
-				rewind(_m27);
+				rewind(_m937);
 				inputState.guessing--;
 			}
-			if ( synPredMatched27 ) {
+			if ( synPredMatched937 ) {
 				match(LITERAL_document);
 				match(LPAREN);
 				match(STAR);
@@ -469,7 +468,7 @@ public XPathParser(ParserSharedInputState state) {
 						
 				}
 				{
-				_loop29:
+				_loop939:
 				do {
 					if ((LA(1)==COMMA)) {
 						match(COMMA);
@@ -494,7 +493,7 @@ public XPathParser(ParserSharedInputState state) {
 						}
 					}
 					else {
-						break _loop29;
+						break _loop939;
 					}
 					
 				} while (true);
@@ -520,7 +519,7 @@ public XPathParser(ParserSharedInputState state) {
 		
 		and_expr(left);
 		{
-		_loop7:
+		_loop917:
 		do {
 			if ((LA(1)==LITERAL_or)) {
 				match(LITERAL_or);
@@ -539,7 +538,7 @@ public XPathParser(ParserSharedInputState state) {
 				}
 			}
 			else {
-				break _loop7;
+				break _loop917;
 			}
 			
 		} while (true);
@@ -590,20 +589,19 @@ public XPathParser(ParserSharedInputState state) {
 			case STAR:
 			case INT:
 			case LITERAL_text:
-			case SLASH:
-			case DSLASH:
-			case 32:
-			case 33:
+			case 29:
+			case 30:
 			case LITERAL_contains:
 			case LITERAL_match:
 			case LITERAL_near:
-			case FUNC:
-			case ATTRIB:
+			case NCNAME:
+			case SLASH:
+			case DSLASH:
+			case AT:
 			case ATTRIB_STAR:
 			case LITERAL_node:
 			case PARENT:
 			case SELF:
-			case NCNAME:
 			case LITERAL_ancestor:
 			{
 				or_expr(exprIn);
@@ -648,7 +646,7 @@ public XPathParser(ParserSharedInputState state) {
 		
 		equality_expr(left);
 		{
-		_loop10:
+		_loop920:
 		do {
 			if ((LA(1)==LITERAL_and)) {
 				match(LITERAL_and);
@@ -667,7 +665,7 @@ public XPathParser(ParserSharedInputState state) {
 				}
 			}
 			else {
-				break _loop10;
+				break _loop920;
 			}
 			
 		} while (true);
@@ -950,7 +948,7 @@ public XPathParser(ParserSharedInputState state) {
 		
 		pathexpr(left);
 		{
-		_loop24:
+		_loop934:
 		do {
 			if ((LA(1)==PLUS)) {
 				if ( inputState.guessing==0 ) {
@@ -960,7 +958,7 @@ public XPathParser(ParserSharedInputState state) {
 				pathexpr(right);
 			}
 			else {
-				break _loop24;
+				break _loop934;
 			}
 			
 		} while (true);
@@ -1028,28 +1026,72 @@ public XPathParser(ParserSharedInputState state) {
 		PathExpr expr
 	) throws RecognitionException, TokenStreamException, PermissionDeniedException,EXistException {
 		
-		Expression result = null;
+		
+			Expression result = null;
+			PathExpr path = null;
 		
 		
+		switch ( LA(1)) {
+		case CONST:
+		case STAR:
+		case INT:
+		case LITERAL_text:
+		case 29:
+		case 30:
+		case LITERAL_contains:
+		case LITERAL_match:
+		case LITERAL_near:
+		case NCNAME:
+		case SLASH:
+		case DSLASH:
+		case AT:
+		case ATTRIB_STAR:
+		case LITERAL_node:
+		case PARENT:
+		case SELF:
+		case LITERAL_ancestor:
 		{
-		int _cnt36=0;
-		_loop36:
-		do {
-			if ((_tokenSet_0.member(LA(1)))) {
-				result=regularexpr(expr);
-				if ( inputState.guessing==0 ) {
-					
-							if(result instanceof Step && ((Step)result).getAxis() == -1)
-								((Step)result).setAxis(Constants.CHILD_AXIS);
+			{
+			int _cnt946=0;
+			_loop946:
+			do {
+				if ((_tokenSet_0.member(LA(1)))) {
+					result=regularexpr(expr);
+					if ( inputState.guessing==0 ) {
 						
+								if(result instanceof Step && ((Step)result).getAxis() == -1)
+									((Step)result).setAxis(Constants.CHILD_AXIS);
+							
+					}
 				}
+				else {
+					if ( _cnt946>=1 ) { break _loop946; } else {throw new NoViableAltException(LT(1), getFilename());}
+				}
+				
+				_cnt946++;
+			} while (true);
 			}
-			else {
-				if ( _cnt36>=1 ) { break _loop36; } else {throw new NoViableAltException(LT(1), getFilename());}
+			break;
+		}
+		case LPAREN:
+		{
+			match(LPAREN);
+			if ( inputState.guessing==0 ) {
+				path = new PathExpr(pool);
 			}
-			
-			_cnt36++;
-		} while (true);
+			or_expr(path);
+			match(RPAREN);
+			if ( inputState.guessing==0 ) {
+				
+						expr.addPath(path);
+					
+			}
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltException(LT(1), getFilename());
+		}
 		}
 	}
 	
@@ -1075,7 +1117,7 @@ public XPathParser(ParserSharedInputState state) {
 				
 			}
 			{
-			_loop53:
+			_loop962:
 			do {
 				if ((LA(1)==LPPAREN)) {
 					pred=predicate(expr);
@@ -1086,30 +1128,28 @@ public XPathParser(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop53;
+					break _loop962;
 				}
 				
 			} while (true);
 			}
 			break;
 		}
-		case LPAREN:
 		case CONST:
 		case STAR:
 		case INT:
 		case LITERAL_text:
-		case 32:
-		case 33:
+		case 29:
+		case 30:
 		case LITERAL_contains:
 		case LITERAL_match:
 		case LITERAL_near:
-		case FUNC:
-		case ATTRIB:
+		case NCNAME:
+		case AT:
 		case ATTRIB_STAR:
 		case LITERAL_node:
 		case PARENT:
 		case SELF:
-		case NCNAME:
 		{
 			result=step(expr);
 			if ( inputState.guessing==0 ) {
@@ -1119,7 +1159,7 @@ public XPathParser(ParserSharedInputState state) {
 				
 			}
 			{
-			_loop55:
+			_loop964:
 			do {
 				if ((LA(1)==LPPAREN)) {
 					pred=predicate(expr);
@@ -1130,7 +1170,7 @@ public XPathParser(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop55;
+					break _loop964;
 				}
 				
 			} while (true);
@@ -1182,17 +1222,6 @@ public XPathParser(ParserSharedInputState state) {
 		
 		
 		switch ( LA(1)) {
-		case LITERAL_text:
-		case 32:
-		case 33:
-		case LITERAL_contains:
-		case LITERAL_match:
-		case LITERAL_near:
-		case FUNC:
-		{
-			step=function_call(expr);
-			break;
-		}
 		case CONST:
 		{
 			l = LT(1);
@@ -1213,21 +1242,6 @@ public XPathParser(ParserSharedInputState state) {
 				
 						step = new IntNumber(Double.parseDouble(i.getText()));
 						expr.add(step);
-					
-			}
-			break;
-		}
-		case LPAREN:
-		{
-			match(LPAREN);
-			if ( inputState.guessing==0 ) {
-				path = new PathExpr(pool);
-			}
-			or_expr(path);
-			match(RPAREN);
-			if ( inputState.guessing==0 ) {
-				
-						expr.addPath(path);
 					
 			}
 			break;
@@ -1263,9 +1277,22 @@ public XPathParser(ParserSharedInputState state) {
 		
 		
 		switch ( LA(1)) {
-		case 32:
+		case LITERAL_text:
 		{
-			match(32);
+			match(LITERAL_text);
+			match(LPAREN);
+			match(RPAREN);
+			if ( inputState.guessing==0 ) {
+				
+							step = new LocationStep(pool, -1, new TypeTest(Constants.TEXT_NODE));
+							expr.add(step);
+					
+			}
+			break;
+		}
+		case 29:
+		{
+			match(29);
 			match(LPAREN);
 			or_expr(path);
 			match(COMMA);
@@ -1286,9 +1313,9 @@ public XPathParser(ParserSharedInputState state) {
 			}
 			break;
 		}
-		case 33:
+		case 30:
 		{
-			match(33);
+			match(30);
 			match(LPAREN);
 			or_expr(path);
 			match(COMMA);
@@ -1330,254 +1357,148 @@ public XPathParser(ParserSharedInputState state) {
 			}
 			break;
 		}
+		case LITERAL_match:
+		{
+			match(LITERAL_match);
+			match(LPAREN);
+			or_expr(path);
+			match(COMMA);
+			l3 = LT(1);
+			match(CONST);
+			match(RPAREN);
+			if ( inputState.guessing==0 ) {
+				
+				if(path.returnsType() == Constants.TYPE_NODELIST) {
+						step = new OpEquals(pool, path, new Literal(l3.getText()), 
+				Constants.REGEXP);
+				expr.add(step);
+					     }
+					
+			}
+			break;
+		}
+		case LITERAL_near:
+		{
+			match(LITERAL_near);
+			match(LPAREN);
+			or_expr(path);
+			match(COMMA);
+			l4 = LT(1);
+			match(CONST);
+			{
+			switch ( LA(1)) {
+			case COMMA:
+			{
+				match(COMMA);
+				i = LT(1);
+				match(INT);
+				if ( inputState.guessing==0 ) {
+					distance = Integer.parseInt(i.getText());
+				}
+				break;
+			}
+			case RPAREN:
+			{
+				break;
+			}
+			default:
+			{
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			}
+			}
+			match(RPAREN);
+			if ( inputState.guessing==0 ) {
+				
+				FunNear near = new FunNear(pool);
+				near.setDistance(distance);
+				near.setPath(path);
+					    DBBroker broker = null;
+					    try {
+					      broker = pool.get();
+				Tokenizer tok = broker.getTextEngine().getTokenizer();
+				tok.setText(l4.getText());
+				org.exist.storage.analysis.TextToken token;
+				String next;
+				while((token = tok.nextToken(true)) != null) {
+				next = token.getText();
+				near.addTerm(next);
+				}
+					     } finally {
+					       pool.release(broker);
+					     }
+				expr.addPath(near);
+					
+			}
+			break;
+		}
 		default:
-			if ((LA(1)==LITERAL_text) && (LA(2)==LPAREN)) {
-				match(LITERAL_text);
-				match(LPAREN);
-				match(RPAREN);
-				if ( inputState.guessing==0 ) {
-					
-								step = new LocationStep(pool, -1, new TypeTest(Constants.TEXT_NODE));
-								expr.add(step);
-						
-				}
-			}
-			else if ((LA(1)==LITERAL_text) && (_tokenSet_1.member(LA(2)))) {
-				match(LITERAL_text);
-				{
-				switch ( LA(1)) {
-				case SLASH:
-				{
-					match(SLASH);
-					break;
-				}
-				case DSLASH:
-				{
-					match(DSLASH);
-					break;
-				}
-				case EOF:
-				{
-					match(Token.EOF_TYPE);
-					break;
-				}
-				case LPPAREN:
-				{
-					match(LPPAREN);
-					break;
-				}
-				default:
-				{
-					throw new NoViableAltException(LT(1), getFilename());
-				}
-				}
-				}
-				if ( inputState.guessing==0 ) {
-					
-							step = new LocationStep( pool, -1,
-								new NameTest("text"));
-							expr.add(step);
-						
-				}
-			}
-			else if ((LA(1)==LITERAL_match) && (LA(2)==LPAREN)) {
-				match(LITERAL_match);
-				match(LPAREN);
-				or_expr(path);
-				match(COMMA);
-				l3 = LT(1);
-				match(CONST);
-				match(RPAREN);
-				if ( inputState.guessing==0 ) {
-					
-					if(path.returnsType() == Constants.TYPE_NODELIST) {
-							step = new OpEquals(pool, path, new Literal(l3.getText()), 
-					Constants.REGEXP);
-					expr.add(step);
-						     }
-						
-				}
-			}
-			else if ((LA(1)==LITERAL_match) && (_tokenSet_1.member(LA(2)))) {
-				match(LITERAL_match);
-				{
-				switch ( LA(1)) {
-				case SLASH:
-				{
-					match(SLASH);
-					break;
-				}
-				case DSLASH:
-				{
-					match(DSLASH);
-					break;
-				}
-				case EOF:
-				{
-					match(Token.EOF_TYPE);
-					break;
-				}
-				case LPPAREN:
-				{
-					match(LPPAREN);
-					break;
-				}
-				default:
-				{
-					throw new NoViableAltException(LT(1), getFilename());
-				}
-				}
-				}
-				if ( inputState.guessing==0 ) {
-					
-							step = new LocationStep( pool, -1,
-								new NameTest("match"));
-							expr.add(step);
-						
-				}
-			}
-			else if ((LA(1)==LITERAL_near) && (LA(2)==LPAREN)) {
-				match(LITERAL_near);
-				match(LPAREN);
-				or_expr(path);
-				match(COMMA);
-				l4 = LT(1);
-				match(CONST);
-				{
-				switch ( LA(1)) {
-				case COMMA:
-				{
-					match(COMMA);
-					i = LT(1);
-					match(INT);
-					if ( inputState.guessing==0 ) {
-						distance = Integer.parseInt(i.getText());
+			boolean synPredMatched951 = false;
+			if (((LA(1)==NCNAME) && (LA(2)==LPAREN))) {
+				int _m951 = mark();
+				synPredMatched951 = true;
+				inputState.guessing++;
+				try {
+					{
+					match(NCNAME);
+					match(LPAREN);
+					match(RPAREN);
 					}
-					break;
 				}
-				case RPAREN:
-				{
-					break;
+				catch (RecognitionException pe) {
+					synPredMatched951 = false;
 				}
-				default:
-				{
-					throw new NoViableAltException(LT(1), getFilename());
-				}
-				}
-				}
+				rewind(_m951);
+				inputState.guessing--;
+			}
+			if ( synPredMatched951 ) {
+				f1 = LT(1);
+				match(NCNAME);
+				if (!( env.hasFunction(f1.getText()) ))
+				  throw new SemanticException(" env.hasFunction(f1.getText()) ");
+				match(LPAREN);
 				match(RPAREN);
 				if ( inputState.guessing==0 ) {
 					
-					FunNear near = new FunNear(pool);
-					near.setDistance(distance);
-					near.setPath(path);
-						    DBBroker broker = null;
-						    try {
-						      broker = pool.get();
-					Tokenizer tok = broker.getTextEngine().getTokenizer();
-					tok.setText(l4.getText());
-					org.exist.storage.analysis.TextToken token;
-					String next;
-					while((token = tok.nextToken(true)) != null) {
-					next = token.getText();
-					near.addTerm(next);
-					}
-						     } finally {
-						       pool.release(broker);
-						     }
-					expr.addPath(near);
-						
-				}
-			}
-			else if ((LA(1)==LITERAL_near) && (_tokenSet_1.member(LA(2)))) {
-				match(LITERAL_near);
-				{
-				switch ( LA(1)) {
-				case SLASH:
-				{
-					match(SLASH);
-					break;
-				}
-				case DSLASH:
-				{
-					match(DSLASH);
-					break;
-				}
-				case EOF:
-				{
-					match(Token.EOF_TYPE);
-					break;
-				}
-				case LPPAREN:
-				{
-					match(LPPAREN);
-					break;
-				}
-				default:
-				{
-					throw new NoViableAltException(LT(1), getFilename());
-				}
-				}
-				}
-				if ( inputState.guessing==0 ) {
-					
-							step = new LocationStep( pool, -1,
-								new NameTest("text"));
-							expr.add(step);
+							fun = Function.createFunction(pool, env.getFunction(f1.getText()));
+							expr.addPath(fun);
 						
 				}
 			}
 			else {
-				boolean synPredMatched44 = false;
-				if (((LA(1)==FUNC) && (LA(2)==LPAREN))) {
-					int _m44 = mark();
-					synPredMatched44 = true;
+				boolean synPredMatched953 = false;
+				if (((LA(1)==NCNAME) && (LA(2)==LPAREN))) {
+					int _m953 = mark();
+					synPredMatched953 = true;
 					inputState.guessing++;
 					try {
 						{
-						match(FUNC);
+						match(NCNAME);
 						match(LPAREN);
-						match(RPAREN);
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched44 = false;
+						synPredMatched953 = false;
 					}
-					rewind(_m44);
+					rewind(_m953);
 					inputState.guessing--;
 				}
-				if ( synPredMatched44 ) {
-					f1 = LT(1);
-					match(FUNC);
-					if (!( env.hasFunction(f1.getText()) ))
-					  throw new SemanticException(" env.hasFunction(f1.getText()) ");
-					match(LPAREN);
-					match(RPAREN);
-					if ( inputState.guessing==0 ) {
-						
-								fun = Function.createFunction(pool, env.getFunction(f1.getText()));
-								expr.addPath(fun);
-							
-					}
-				}
-				else if ((LA(1)==FUNC) && (LA(2)==LPAREN)) {
+				if ( synPredMatched953 ) {
 					f2 = LT(1);
-					match(FUNC);
-					if (!( env.hasFunction(f2.getText()) ))
-					  throw new SemanticException(" env.hasFunction(f2.getText()) ");
+					match(NCNAME);
+					match(LPAREN);
 					if ( inputState.guessing==0 ) {
 						
 								fun = Function.createFunction(pool, env.getFunction(f2.getText()));
 								expr.addPath(fun);
 							
 					}
-					match(LPAREN);
 					or_expr(arg1);
 					if ( inputState.guessing==0 ) {
 						fun.addArgument(arg1);
 					}
 					{
-					_loop46:
+					_loop955:
 					do {
 						if ((LA(1)==COMMA)) {
 							match(COMMA);
@@ -1590,7 +1511,7 @@ public XPathParser(ParserSharedInputState state) {
 							}
 						}
 						else {
-							break _loop46;
+							break _loop955;
 						}
 						
 					} while (true);
@@ -1623,7 +1544,7 @@ public XPathParser(ParserSharedInputState state) {
 			fun.addArgument(arg1);
 		}
 		{
-		_loop50:
+		_loop959:
 		do {
 			if ((LA(1)==COMMA)) {
 				match(COMMA);
@@ -1636,7 +1557,7 @@ public XPathParser(ParserSharedInputState state) {
 				}
 			}
 			else {
-				break _loop50;
+				break _loop959;
 			}
 			
 		} while (true);
@@ -1666,23 +1587,23 @@ public XPathParser(ParserSharedInputState state) {
 	) throws RecognitionException, TokenStreamException, PermissionDeniedException,EXistException {
 		Expression step;
 		
-		Token  attr = null;
 		Token  any = null;
 		Token  anyAttr = null;
 		step = null; 
 		String qn;
+		String attr;
 		
 		
 		switch ( LA(1)) {
-		case ATTRIB:
+		case AT:
 		{
-			attr = LT(1);
-			match(ATTRIB);
+			match(AT);
+			attr=qname();
 			if ( inputState.guessing==0 ) {
 				
 							step = new LocationStep(pool,
 								Constants.ATTRIBUTE_AXIS,
-								new NameTest(attr.getText()));
+								new NameTest(attr));
 							expr.add(step);
 					
 			}
@@ -1753,34 +1674,26 @@ public XPathParser(ParserSharedInputState state) {
 			}
 			break;
 		}
-		case NCNAME:
-		{
-			qn=qname();
-			if ( inputState.guessing==0 ) {
-				
-							step = new LocationStep( pool, -1,
-								new NameTest(qn));
-							expr.add(step);
-					
-			}
-			break;
-		}
-		case LPAREN:
 		case CONST:
 		case INT:
-		case LITERAL_text:
-		case 32:
-		case 33:
-		case LITERAL_contains:
-		case LITERAL_match:
-		case LITERAL_near:
-		case FUNC:
 		{
 			step=primary_expr(expr);
 			break;
 		}
 		default:
-		{
+			if (((LA(1) >= LITERAL_text && LA(1) <= NCNAME)) && (LA(2)==LPAREN)) {
+				step=function_call(expr);
+			}
+			else if ((_tokenSet_1.member(LA(1))) && (_tokenSet_2.member(LA(2)))) {
+				qn=qname();
+				if ( inputState.guessing==0 ) {
+					
+								step = new LocationStep( pool, -1, new NameTest(qn));
+								expr.add(step);
+						
+				}
+			}
+		else {
 			throw new NoViableAltException(LT(1), getFilename());
 		}
 		}
@@ -1811,67 +1724,115 @@ public XPathParser(ParserSharedInputState state) {
 			name = null;
 		
 		
-		n1 = LT(1);
-		match(NCNAME);
-		if ( inputState.guessing==0 ) {
-			name = n1.getText();
-		}
-		{
 		switch ( LA(1)) {
-		case COLON:
+		case NCNAME:
 		{
-			match(COLON);
-			n2 = LT(1);
+			n1 = LT(1);
 			match(NCNAME);
 			if ( inputState.guessing==0 ) {
-				name = name + ':' + n2.getText();
+				name = n1.getText();
+			}
+			{
+			switch ( LA(1)) {
+			case COLON:
+			{
+				match(COLON);
+				n2 = LT(1);
+				match(NCNAME);
+				if ( inputState.guessing==0 ) {
+					name = name + ':' + n2.getText();
+				}
+				break;
+			}
+			case EOF:
+			case RPAREN:
+			case LITERAL_or:
+			case LITERAL_and:
+			case CONST:
+			case ANDEQ:
+			case OREQ:
+			case EQ:
+			case NEQ:
+			case UNION:
+			case LT:
+			case GT:
+			case LTEQ:
+			case GTEQ:
+			case PLUS:
+			case STAR:
+			case COMMA:
+			case INT:
+			case LITERAL_text:
+			case 29:
+			case 30:
+			case LITERAL_contains:
+			case LITERAL_match:
+			case LITERAL_near:
+			case NCNAME:
+			case SLASH:
+			case DSLASH:
+			case AT:
+			case ATTRIB_STAR:
+			case LITERAL_node:
+			case PARENT:
+			case SELF:
+			case LITERAL_ancestor:
+			case LPPAREN:
+			case RPPAREN:
+			{
+				break;
+			}
+			default:
+			{
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			}
 			}
 			break;
 		}
-		case EOF:
-		case LPAREN:
-		case RPAREN:
-		case LITERAL_or:
-		case LITERAL_and:
-		case CONST:
-		case ANDEQ:
-		case OREQ:
-		case EQ:
-		case NEQ:
-		case UNION:
-		case LT:
-		case GT:
-		case LTEQ:
-		case GTEQ:
-		case PLUS:
-		case STAR:
-		case COMMA:
-		case INT:
 		case LITERAL_text:
-		case SLASH:
-		case DSLASH:
-		case LPPAREN:
-		case 32:
-		case 33:
-		case LITERAL_contains:
-		case LITERAL_match:
-		case LITERAL_near:
-		case FUNC:
-		case ATTRIB:
-		case ATTRIB_STAR:
-		case LITERAL_node:
-		case PARENT:
-		case SELF:
-		case NCNAME:
-		case LITERAL_ancestor:
-		case RPPAREN:
 		{
+			match(LITERAL_text);
+			if ( inputState.guessing==0 ) {
+				name = "text";
+			}
+			break;
+		}
+		case LITERAL_contains:
+		{
+			match(LITERAL_contains);
+			if ( inputState.guessing==0 ) {
+				name = "contains";
+			}
+			break;
+		}
+		case 29:
+		{
+			match(29);
+			if ( inputState.guessing==0 ) {
+				name = "starts-with";
+			}
+			break;
+		}
+		case 30:
+		{
+			match(30);
+			if ( inputState.guessing==0 ) {
+				name = "ends-with";
+			}
+			break;
+		}
+		case LITERAL_near:
+		{
+			match(LITERAL_near);
+			if ( inputState.guessing==0 ) {
+				name = "near";
+			}
 			break;
 		}
 		default:
 		{
 			throw new NoViableAltException(LT(1), getFilename());
-		}
 		}
 		}
 		return name;
@@ -1908,23 +1869,22 @@ public XPathParser(ParserSharedInputState state) {
 		"\"xcollection\"",
 		"INT",
 		"\"text\"",
-		"SLASH",
-		"DSLASH",
-		"LPPAREN",
 		"\"starts-with\"",
 		"\"ends-with\"",
 		"\"contains\"",
 		"\"match\"",
 		"\"near\"",
-		"FUNC",
-		"ATTRIB",
+		"NCNAME",
+		"SLASH",
+		"DSLASH",
+		"AT",
 		"ATTRIB_STAR",
 		"\"node\"",
 		"PARENT",
 		"SELF",
-		"NCNAME",
 		"COLON",
 		"\"ancestor\"",
+		"LPPAREN",
 		"RPPAREN",
 		"WS",
 		"BASECHAR",
@@ -1936,14 +1896,19 @@ public XPathParser(ParserSharedInputState state) {
 	};
 	
 	private static final long[] mk_tokenSet_0() {
-		long[] data = { 52774284821536L, 0L};
+		long[] data = { 13194013705216L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
 	private static final long[] mk_tokenSet_1() {
-		long[] data = { 3758096386L, 0L};
+		long[] data = { 29796335616L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
+	private static final long[] mk_tokenSet_2() {
+		long[] data = { 70368637222722L, 0L};
+		return data;
+	}
+	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
 	
 	}

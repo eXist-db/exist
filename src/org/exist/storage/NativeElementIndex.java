@@ -21,6 +21,7 @@
 package org.exist.storage;
 
 import java.io.EOFException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -164,6 +165,8 @@ public class NativeElementIndex extends ElementIndex {
 						}
 					} catch (EOFException e) {
 						LOG.error("end-of-file while updating index for element " + elementName);
+					} catch (IOException e) {
+						LOG.error("io-error while updating index for element " + elementName);
 					}
 				}
 				if (node != null)
@@ -282,6 +285,8 @@ public class NativeElementIndex extends ElementIndex {
 						}
 					} catch (EOFException e) {
 						LOG.error("end-of-file while updating index for element " + elementName);
+					} catch (IOException e) {
+						LOG.error("io-error while updating index for element " + elementName);
 					}
 				}
 				// write out the updated list
