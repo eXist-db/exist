@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLConnection;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
@@ -98,8 +99,12 @@ public class Put implements WebDAVMethod {
 				}
 			} else
 				path = path.substring(collection.getName().length() + 1);
+			if(contentType == null) {
+			    contentType = URLConnection.guessContentTypeFromName(path);
+			}
 			LOG.debug("storing document " + path + "; content-type = " + contentType);
-			if(contentType == null || contentType.equalsIgnoreCase("text/xml")) {
+			if(contentType == null || contentType.equalsIgnoreCase("text/xml") ||
+			        contentType.equals("application/xml")) {
 				DocumentImpl doc = collection.addDocument(broker, path,
 						new InputSource(url));
 			} else {

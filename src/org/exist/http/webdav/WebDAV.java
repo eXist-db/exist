@@ -90,7 +90,7 @@ public class WebDAV {
 		supportedMethods.put("PROPFIND", new Propfind(pool));
 		supportedMethods.put("PUT", new Put(pool));
 		supportedMethods.put("DELETE", new Delete(pool));
-		
+		supportedMethods.put("MKCOL", new Mkcol(pool));
 		digestAuth = new DigestAuthenticator(pool);
 		basicAuth = new BasicAuthenticator(pool);
 	}
