@@ -44,6 +44,11 @@
         <appender-ref ref="console"/>
     </category>
 
+	<category name="org.mortbay" additivity="false">
+		<priority value="info"/>
+		<appender-ref ref="console"/>
+	</category>
+
     <category name="httpclient" additivity="false">
         <priority value="info"/>
 		<appender-ref ref="console"/>
