@@ -11,7 +11,7 @@ public class Search {
 
     public static void main(String args[]) throws Exception {
     	
-    	String query = "document(*)//character[.//reading &= 'チョウ']";
+    	String query = "document()//character[.//reading &= 'チョウ']";
     	if(args.length > 0)
     		query = args[0];
     		

@@ -44,7 +44,10 @@ public class SimpleTokenizer implements Tokenizer {
 		// consume letters
 		char ch = LA(1);
 		while (ch != (char) - 1) {
-			if (Character.isLetter(ch) || (allowWildcards && isWildcard(ch))) {
+			if (ch == '\\' && isWildcard(LA(2))) {
+				System.out.println("found \\*");
+				break;
+			} else if (Character.isLetter(ch) || (allowWildcards && isWildcard(ch))) {
 				token.consumeNext();
 				consume();
 				ch = LA(1);
@@ -61,7 +64,7 @@ public class SimpleTokenizer implements Tokenizer {
 	}
 
 	private final static boolean isWildcard(char ch) {
-		if (ch == '?' || ch == '*' || ch == '[' || ch == ']' || ch == '\\')
+		if (ch == '?' || ch == '*' || ch == '[' || ch == ']')
 			return true;
 		return false;
 	}
@@ -117,6 +120,10 @@ public class SimpleTokenizer implements Tokenizer {
 
 		if (token == null)
 			switch (ch) {
+				case '\\':
+					if(isWildcard(LA(2))) {
+						consume();
+					}
 				case '*' :
 				case ',' :
 				case '-' :
@@ -203,6 +210,7 @@ public class SimpleTokenizer implements Tokenizer {
 					return token;
 				case TextToken.ALPHANUM :
 					switch (LA1) {
+						case '/' :
 						case '*' :
 						case ',' :
 						case '-' :

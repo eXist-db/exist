@@ -404,7 +404,7 @@ public class HttpServerConnection extends Thread {
                         if ( ( name != null ) && ( name.length(  ) > 0 ) )
                             query = "document(\"" + name + "\")" + query;
                         else
-                            query = "document(*)" + query;
+                            query = "document()" + query;
                     }
                 }
 

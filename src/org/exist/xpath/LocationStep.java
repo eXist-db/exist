@@ -104,6 +104,8 @@ public class LocationStep extends Step {
 				temp = getParents(context, documents, contextSet);
 				break;
 			case Constants.ATTRIBUTE_AXIS :
+			// combines /descendant-or-self::node()/attribute:*
+			case Constants.DESCENDANT_ATTRIBUTE_AXIS:
 				temp = getAttributes(context, documents, contextSet);
 				break;
 			case Constants.PRECEDING_SIBLING_AXIS :
@@ -137,7 +139,11 @@ public class LocationStep extends Step {
 					pool.release(broker);
 				}
 			}
-			result = ((ArraySet) buf).getChildren(contextSet, ArraySet.DESCENDANT, inPredicate);
+			if(axis ==  Constants.DESCENDANT_ATTRIBUTE_AXIS)
+				result = ((ArraySet) buf).getDescendants(contextSet, ArraySet.DESCENDANT, inPredicate);
+			else
+				result = ((ArraySet) buf).getChildren(contextSet, ArraySet.DESCENDANT, inPredicate);
+			
 			LOG.debug("found " + result.getLength() + " attributes");
 			//		} else {
 			//				Node n;

@@ -247,7 +247,8 @@ public class OpEquals extends BinaryOp {
 			String cmp = right.eval(context, docs, contextSet).getStringValue();
 			if (getLeft().returnsType() == Constants.TYPE_NODELIST && relation == Constants.EQ &&
 				nodes.hasIndex() && cmp.length() > 0) {
-				cmp = cmp.replace('%', '*');
+				String cmpCopy = cmp;
+				cmp = maskWildcards(cmp);
 				// try to use a fulltext search expression to reduce the number
 				// of potential nodes to scan through
 				SimpleTokenizer tokenizer = new SimpleTokenizer();
@@ -267,12 +268,12 @@ public class OpEquals extends BinaryOp {
 				// fulltext index.
 				if(foundNumeric)
 					foundNumeric = checkArgumentTypes(docs);
-				if(!foundNumeric) {
+				if((!foundNumeric) && containsExpr.countTerms() > 0) {
 					// all elements are indexed: use the fulltext index
 					Value temp = containsExpr.eval(context, docs, nodes, null);
 					nodes = (NodeSet) temp.getNodeList();
 				}
-				cmp = cmp.replace('*', '%');
+				cmp = cmpCopy;
 			}
 			// now compare the input node set to the search expression
 			DBBroker broker = null;
@@ -335,6 +336,24 @@ public class OpEquals extends BinaryOp {
 		return new ValueNodeSet(result);
 	}
 
+	private String maskWildcards(String expr) {
+		StringBuffer buf = new StringBuffer();
+		char ch;
+		for(int i = 0; i < expr.length(); i++) {
+			ch = expr.charAt(i);
+			switch(ch) {
+				case '*' :
+					buf.append("\\*");
+					break;
+				case '%' :
+					buf.append('*');
+					break;
+				default :
+					buf.append(ch);
+			}
+		}
+		return buf.toString();
+	}
 	private boolean checkArgumentTypes(DocumentSet docs) throws XPathException {
 		DBBroker broker = null;
 		try {

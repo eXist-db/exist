@@ -468,7 +468,7 @@
             <action name="Native backend">Due to bad page headers, database
                 files got damaged sometimes during updates/removal.</action>
             <action name="XPath">XPath expressions including the document's root
-                element did not work correctly, e.g. document(*)/PLAY did not
+                element did not work correctly, e.g. document()/PLAY did not
                 yield any results.</action>
         </topic>
     </release>

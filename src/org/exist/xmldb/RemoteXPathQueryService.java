@@ -33,7 +33,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
         if ( !( query.startsWith( "document(" ) || query.startsWith( "collection(" ) ||
         	query.startsWith("xcollection("))) {
             if ( collection.getName().equals( "/" ) )
-                query = "document(*)" + query;
+                query = "document()" + query;
             else
                 query = "collection('" + collection.getPath() + "')" + query;
         }

@@ -58,4 +58,11 @@ public class NameTest extends TypeTest {
 		return nodeName.getLocalName() == null || nodeName.getNamespaceURI() == null;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		return nodeName.toString();
+	}
+
 }

@@ -1,7 +1,10 @@
 package org.exist.storage.serializers;
 
 import java.io.StringReader;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentImpl;
@@ -41,6 +44,7 @@ public class XIncludeFilter implements ContentHandler {
 	private ContentHandler contentHandler;
 	private Serializer serializer;
 	private DocumentImpl document = null;
+	private HashMap namespaces = new HashMap(10);
 
 	public XIncludeFilter(Serializer serializer, ContentHandler contentHandler) {
 		this.contentHandler = contentHandler;
@@ -90,6 +94,7 @@ public class XIncludeFilter implements ContentHandler {
 	 * @see org.xml.sax.ContentHandler#endPrefixMapping(java.lang.String)
 	 */
 	public void endPrefixMapping(String prefix) throws SAXException {
+		namespaces.remove(prefix);
 		contentHandler.endPrefixMapping(prefix);
 	}
 
@@ -206,6 +211,12 @@ public class XIncludeFilter implements ContentHandler {
 					}
 					BrokerPool pool = serializer.broker.getBrokerPool();
 					StaticContext context = new StaticContext(serializer.getUser());
+					xpointer = checkNamespaces(context, xpointer);
+					Map.Entry entry;
+					for(Iterator i = namespaces.entrySet().iterator(); i.hasNext(); ) {
+						entry = (Map.Entry)i.next();
+						context.declareNamespace((String)entry.getKey(), (String)entry.getValue());
+					}
 					XPathLexer2 lexer = new XPathLexer2(new StringReader(xpointer));
 					XPathParser2 parser = new XPathParser2(lexer);
 					XPathTreeParser2 treeParser = new XPathTreeParser2(pool, context);
@@ -272,7 +283,37 @@ public class XIncludeFilter implements ContentHandler {
 	 * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String, java.lang.String)
 	 */
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
+		namespaces.put(prefix, uri);
 		contentHandler.startPrefixMapping(prefix, uri);
 	}
 
+	/**
+	 * Process xmlns() schema. We process these here, because namespace mappings should
+	 * already been known when parsing the xpointer() expression.
+	 * 
+	 * @param context
+	 * @param xpointer
+	 * @return
+	 * @throws XPathException
+	 */
+	private String checkNamespaces(StaticContext context, String xpointer) throws XPathException {
+		int p0 = -1;
+		while((p0 = xpointer.indexOf("xmlns(")) > -1) {
+			if(p0 < 0)
+				return xpointer;
+			int p1 = xpointer.indexOf(')', p0 + 6);
+			if(p1 < 0)
+				throw new XPathException("expected ) for xmlns()");
+			String mapping = xpointer.substring(p0 + 6, p1);
+			xpointer = xpointer.substring(0, p0) + xpointer.substring(p1 + 1);
+			StringTokenizer tok = new StringTokenizer(mapping, "= \t\n");
+			if(tok.countTokens() < 2)
+				throw new XPathException("expected prefix=namespace mapping in " + mapping);
+			String prefix = tok.nextToken();
+			String namespaceURI = tok.nextToken();
+			System.out.println(prefix + " == " + namespaceURI);
+			context.declareNamespace(prefix, namespaceURI);
+		}
+		return xpointer;
+	}
 }

@@ -518,8 +518,14 @@ throws PermissionDeniedException, EXistException
 			}
 		( step=pathExpr[path]
 			{
-				if(step instanceof LocationStep)
-					((LocationStep)step).setAxis(Constants.DESCENDANT_AXIS);
+				if(step instanceof LocationStep) {
+					LocationStep s = (LocationStep)step;
+					if(s.getAxis() == Constants.ATTRIBUTE_AXIS)
+						// combines descendant-or-self::node()/attribute:*
+						s.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
+					else
+						s.setAxis(Constants.DESCENDANT_AXIS);
+				}
 			}
 		)? 
 	)
@@ -667,8 +673,13 @@ throws PermissionDeniedException, EXistException
 	| #(DSLASH step=pathExpr[path] 
 		( rightStep=pathExpr[path]
 			{
-				if(rightStep instanceof LocationStep)
-					((LocationStep)rightStep).setAxis(Constants.DESCENDANT_SELF_AXIS);
+				if(rightStep instanceof LocationStep) {
+					LocationStep rs = (LocationStep)rightStep;
+					if(rs.getAxis() == Constants.ATTRIBUTE_AXIS)
+						rs.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
+					else
+						rs.setAxis(Constants.DESCENDANT_SELF_AXIS);
+				}
 			}
 		)?
 	)

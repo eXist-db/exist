@@ -21,11 +21,12 @@
  */
 package org.exist.dom;
 
-import org.exist.xpath.*;
-import org.exist.storage.*;
-import org.exist.util.XMLUtil;
-import org.dbxml.core.data.Value;
 import java.util.Iterator;
+
+import org.dbxml.core.data.Value;
+import org.exist.util.XMLUtil;
+import org.exist.xpath.Constants;
+import org.exist.xpath.NodeTest;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -133,7 +134,7 @@ public class VirtualNodeSet extends NodeSet {
 		// is pid member of the context set?
 		parent = context.get(node.doc, pid);
 
-		if (parent != null && test.matches(node)) {
+		if (parent != null && test.matches(first)) {
 			if (useSelfAsContext && inPredicate)
 				node.addContextNode(node);
 			else if (inPredicate)
@@ -224,7 +225,8 @@ public class VirtualNodeSet extends NodeSet {
 				*/
 				// -- inserted by Timo Boehme --
 				NodeProxy docElemProxy = new NodeProxy(proxy.getDoc(), 1);
-				result.add(docElemProxy);
+				if(test.matches(docElemProxy))
+					result.add(docElemProxy);
 				if (axis == Constants.DESCENDANT_AXIS || axis == Constants.DESCENDANT_SELF_AXIS) {
 					domIter = docElemProxy.doc.getBroker().getNodeIterator(docElemProxy);
 					NodeImpl node = (NodeImpl) domIter.next();
@@ -290,8 +292,7 @@ public class VirtualNodeSet extends NodeSet {
 					} else if (axis == Constants.ATTRIBUTE_AXIS)
 						return;
 				}
-				if(axis == Constants.DESCENDANT_AXIS || axis == Constants.DESCENDANT_SELF_AXIS)
-					addChildren(contextNode, result, child, iter, recursions + 1);
+				addChildren(contextNode, result, child, iter, recursions + 1);
 			}
 		}
 	}
@@ -299,8 +300,6 @@ public class VirtualNodeSet extends NodeSet {
 	private final void realize() {
 		if (realSet != null)
 			return;
-		System.out.println("realize");
-				Thread.dumpStack();
 		realSet = getNodes();
 	}
 

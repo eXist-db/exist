@@ -83,7 +83,15 @@
             <synopsis>&lt;xi:include href="/db/shakespeare#xpointer(//SPEECH[near(LINE, 'cursed spite')])"/&gt;</synopsis>
             <xml-source>
                 <xi:include href="/db/shakespeare#xpointer(//SPEECH[near(LINE, 'cursed spite')])"/>
-            </xml-source>
+			</xml-source>
+
+			<para>Test namespaces: all namespace/prefix mappings declared in
+				the source document are passed to the query context. 
+				Alternatively, you may declare mappings with xmlns().</para>
+			<xml-source>
+				<xi:include
+					href="disclaimer.xml#xpointer(//comment:comment)xmlns(t=http://nop.com)xmlns(comment=http://test.org)"/>
+			</xml-source>
         </section>
     </chapter>
 </book>

@@ -364,6 +364,9 @@ public class NativeBroker extends DBBroker {
 			} catch (LockException e) {
 				LOG.warn("failed to acquire lock", e);
 				dis = null;
+			} catch (IOException e) {
+				LOG.warn("io exception while reading elements for " + qname, e);
+				dis = null;
 			} finally {
 				lock.release();
 			}
@@ -496,10 +499,14 @@ public class NativeBroker extends DBBroker {
 				return collection;
 			}
 			collection = new Collection(this, name);
-			if (addr < 0) {
-				dis = collectionsDb.getAsStream(key);
-			} else {
-				dis = collectionsDb.getAsStream(addr);
+			try {
+				if (addr < 0) {
+					dis = collectionsDb.getAsStream(key);
+				} else {
+					dis = collectionsDb.getAsStream(addr);
+				}
+			} catch (IOException ioe) {
+				LOG.warn(ioe.getMessage(), ioe);
 			}
 			if (dis == null)
 				return null;
@@ -1104,6 +1111,7 @@ public class NativeBroker extends DBBroker {
 				Value val = domDb.get(new NodeProxy((DocumentImpl) doc, gid));
 				if (val == null) {
 					LOG.debug("node " + gid + " not found!");
+					//throw new RuntimeException("node " + gid + " not found");
 					return null;
 				}
 				NodeImpl node =

@@ -419,7 +419,7 @@ public class NodeImpl implements Node {
 			(pid - ownerDocument.getLevelStartPoint(level - 1))
 				* ownerDocument.getTreeLevelOrder(level)
 				+ ownerDocument.getLevelStartPoint(level);
-		if (gid < firstChildId + ownerDocument.getTreeLevelOrder(level))
+		if (gid < firstChildId + ownerDocument.getTreeLevelOrder(level) - 1)
 			return ownerDocument.getNode(gid + 1);
 		return null;
 	}

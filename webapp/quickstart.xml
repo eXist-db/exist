@@ -180,14 +180,14 @@ jar xfv ../exist.war]]></screen>
       <title>Querying documents</title>
       <para>The interactive client understands the <command moreinfo="none">find</command> command to send XPath queries to the server. Alternatively you may use the web-based interace at <ulink url="http://localhost:8080/exist/xquery.xsp"> http://localhost:8080/exist/xquery.xsp</ulink>.</para>
       <para>For example, to find all SPEECH elements where Juliet talks about love to her Romeo you may use:</para>
-      <synopsis format="linespecific">document(*)//SPEECH[SPEAKER &amp;= 'juliet' and . &amp;= 'love romeo']</synopsis>
+      <synopsis format="linespecific">document()//SPEECH[SPEAKER &amp;= 'juliet' and . &amp;= 'love romeo']</synopsis>
       <para>For more information on the extended XPath query syntax supported by eXist, please refer to the <ulink url="xpath.xml">XPath HowTo</ulink>.</para>
       <para>The interactive client will just print out the number of hits for your query. Use the <command moreinfo="none">show</command> command to view results:</para>
       <example>
         <title>Querying</title>
         <screen format="linespecific"><![CDATA[
-        exist:/db>find document(*)//SPEECH[SPEAKER &='juliet' and . &= 'love romeo']
-        document(*)//SPEECH[SPEAKER &='juliet' and . &= 'love romeo']
+        exist:/db>find document()//SPEECH[SPEAKER &='juliet' and . &= 'love romeo']
+        document()//SPEECH[SPEAKER &='juliet' and . &= 'love romeo']
         found 6 hits.
         exist:/db/library>show
         <SPEECH exist:id="41669"
@@ -204,7 +204,7 @@ jar xfv ../exist.war]]></screen>
             ]]></screen>
       </example>
       <para>You can also pass your queries on the command-line, but you have to take care that parameters are correctly parsed by the shell. For example, on Linux I pass the query through standard input:</para>
-      <synopsis format="linespecific">echo "document(*)//SPEECH[SPEAKER&amp;='juliet' and .&amp;='love romeo']" | bin/client.sh -x</synopsis>
+      <synopsis format="linespecific">echo "document()//SPEECH[SPEAKER&amp;='juliet' and .&amp;='love romeo']" | bin/client.sh -x</synopsis>
     </section>
     <section>
       <title>Sample pages</title>

@@ -293,19 +293,19 @@
                 may use the web-based interace at <a href="http://localhost:8080/exist/xquery.xsp"> http://localhost:8080/exist/xquery.xsp</a>.</p>
             <p>For example, to find all SPEECH elements where Juliet talks
                 about love to her Romeo you may use:</p>
-            <div class="synopsis">document(*)//SPEECH[SPEAKER &amp;= 'juliet' and . &amp;= 'love romeo']</div>
+            <div class="synopsis">document()//SPEECH[SPEAKER &amp;= 'juliet' and . &amp;= 'love romeo']</div>
             <p>For more information on the extended XPath query syntax
                 supported by eXist, please refer to the <a href="xpath.html">XPath HowTo</a>.</p>
             <p>The interactive client will just print out the number of hits
                 for your query. Use the <span class="command">show</span> command to view results:</p>
             <div class="example"><div class="example_title">Example: Querying</div>
                 
-                <div class="screen"><br />        exist:/db&gt;find document(*)//SPEECH[SPEAKER &amp;='juliet' and . &amp;= 'love romeo']<br />        document(*)//SPEECH[SPEAKER &amp;='juliet' and . &amp;= 'love romeo']<br />        found 6 hits.<br />        exist:/db/library&gt;show<br />        &lt;SPEECH exist:id="41669"<br />            exist:source="/db/shakespeare/plays/r_and_j.xml" <br />            xmlns:exist="http://exist.sourceforge.net/NS/exist"&gt;<br />            &lt;SPEAKER&gt;JULIET&lt;/SPEAKER&gt;<br />            &lt;LINE&gt;O Romeo, Romeo! wherefore art thou Romeo?&lt;/LINE&gt;<br />            &lt;LINE&gt;Deny thy father and refuse thy name;&lt;/LINE&gt;<br />            &lt;LINE&gt;Or, if thou wilt not, be but sworn my love,&lt;/LINE&gt;<br />            &lt;LINE&gt;And I&amp;apos;ll no longer be a Capulet.&lt;/LINE&gt;<br />        &lt;/SPEECH&gt;<br />        displayed items 1 to 1 of 6<br />        exist:/db/library&gt;<br />            </div>
+                <div class="screen"><br />        exist:/db&gt;find document()//SPEECH[SPEAKER &amp;='juliet' and . &amp;= 'love romeo']<br />        document()//SPEECH[SPEAKER &amp;='juliet' and . &amp;= 'love romeo']<br />        found 6 hits.<br />        exist:/db/library&gt;show<br />        &lt;SPEECH exist:id="41669"<br />            exist:source="/db/shakespeare/plays/r_and_j.xml" <br />            xmlns:exist="http://exist.sourceforge.net/NS/exist"&gt;<br />            &lt;SPEAKER&gt;JULIET&lt;/SPEAKER&gt;<br />            &lt;LINE&gt;O Romeo, Romeo! wherefore art thou Romeo?&lt;/LINE&gt;<br />            &lt;LINE&gt;Deny thy father and refuse thy name;&lt;/LINE&gt;<br />            &lt;LINE&gt;Or, if thou wilt not, be but sworn my love,&lt;/LINE&gt;<br />            &lt;LINE&gt;And I&amp;apos;ll no longer be a Capulet.&lt;/LINE&gt;<br />        &lt;/SPEECH&gt;<br />        displayed items 1 to 1 of 6<br />        exist:/db/library&gt;<br />            </div>
 			</div>
 			<p>You can also pass your queries on the command-line, but you have to take care that
 				parameters are correctly parsed by the shell. For example, on Linux I pass the query
 				through standard input:</p>
-			<div class="synopsis">echo "document(*)//SPEECH[SPEAKER&amp;='juliet' and .&amp;='love romeo']" | bin/client.sh -x</div>
+			<div class="synopsis">echo "document()//SPEECH[SPEAKER&amp;='juliet' and .&amp;='love romeo']" | bin/client.sh -x</div>
 		<a name="N4002AA" />
             <h2>8. Sample pages</h2>
             <p>Now that we have added some files to the database, you may

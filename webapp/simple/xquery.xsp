@@ -116,7 +116,7 @@
 			<li><code>collection('/db/shakespeare/plays')//SPEECH[SPEAKER &amp;= 'witch' and near(., 'fenny snake')]</code></li>
 			<li><code>//SPEECH[LINE &amp;= 'corruption' and ancestor::SCENE/TITLE &amp;= 'closet']</code></li>
             <li><code>document('/db/shakespeare/plays/much_ado.xml')//ACT[TITLE='ACT I']/SCENE[1]</code></li>
-            <li><code>document(*)//SPEECH[starts-with(SPEAKER, 'LORD')]</code></li>
+            <li><code>document()//SPEECH[starts-with(SPEAKER, 'LORD')]</code></li>
             <li><code>document('/db/shakespeare/plays/r_and_j.xml')//ACT[1]/SCENE[1]</code></li>
             <li><code>//SPEECH[LINE &amp;= 'cursed spite' and SPEAKER &amp;='HAMLET']</code></li>
             <li><code>//rdf:Description[near(dc:creator, 'Luhmann Niklas')]</code></li>

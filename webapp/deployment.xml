@@ -61,7 +61,7 @@
       <section>
         <title>HTTP Support in the Stand-Alone Server</title>
         <para>The XML-RPC methods exposed by the server are explained in the <ulink url="devguide.xml">Developer's Guide</ulink>. Since the server speaks HTTP as well as XML-RPC, you may also query eXist by a simple HTTP GET, POST or PUT request.</para>
-        <para>To try this, simply browse to <ulink url="http://localhost:8088/?_xpath=document(*)//SPEECH[SPEAKER%26='juliet']">http://localhost:8088/?_xpath=document(*)//SPEECH[SPEAKER%26="juliet"]</ulink> with your favorite browser. Please note that the results are delivered as XML, so what you see depends on the capability of your browser to display XML. MS Internet Explorer presents you a nicely highlighted XML page. Netscape will probably prompt you for some action.</para>
+        <para>To try this, simply browse to <ulink url="http://localhost:8088/?_xpath=document()//SPEECH[SPEAKER%26='juliet']">http://localhost:8088/?_xpath=document()//SPEECH[SPEAKER%26="juliet"]</ulink> with your favorite browser. Please note that the results are delivered as XML, so what you see depends on the capability of your browser to display XML. MS Internet Explorer presents you a nicely highlighted XML page. Netscape will probably prompt you for some action.</para>
         <para>The server has three modes of operation, corresponding to the HTTP requests GET, POST and PUT.</para>
         <section>
           <title>GET requests</title>
@@ -116,7 +116,7 @@
             <title>XML-formatted query-request</title>
             <programlisting format="linespecific"><![CDATA[
         <exist:request xmlns:exist="http://exist.sourceforge.net/NS/exist">
-          <query>document(*)//* &amp;="love"</query>
+          <query>document()//* &amp;="love"</query>
           <display indent="true" howmany="20" start="1"/>
         </exist:request>]]></programlisting>
           </example>

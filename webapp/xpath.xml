@@ -30,7 +30,7 @@
       <title>Specifying the Input Document Set</title>
       <para>A database may contain an unlimited set of collections and documents. If you use the XML:DB API to query the db, only the documents in the current XML:DB collection are processed by default. However, there are two additional XPath functions to change this behavior: <command moreinfo="none">document()</command> and <command moreinfo="none">collection()</command>.</para>
       <para><command moreinfo="none">document()</command> accepts a single document path, a list of document paths, or a wildcard as parameters. The wildcard (*) selects all documents currently stored in the database. Some examples:</para>
-      <synopsis format="linespecific">document(*)//SPEAKER</synopsis>
+      <synopsis format="linespecific">document()//SPEAKER</synopsis>
       <synopsis format="linespecific">document('/db/test/abc.xml', '/db/test/def.xml')//title</synopsis>
       <para>The <command moreinfo="none">collection()</command> function specifies the collection whose documents are to be included into query evaluation. By default, documents found in sub-collections of the specified collection are included. This means that for three collections, <filename moreinfo="none">/db/test</filename>, <filename moreinfo="none">/db/test/abc</filename> and <filename moreinfo="none">/db/test/def</filename>, <command moreinfo="none">collection('/db/test')</command> will include all resources found in <filename moreinfo="none">/db/test</filename>, <filename moreinfo="none">/db/test/abc</filename> and <filename moreinfo="none">/db/test/def</filename>. You may use the <command moreinfo="none">xcollection()</command> function to change this behavior, e.g.</para>
       <synopsis format="linespecific">xcollection('/db/test')//title</synopsis>
@@ -68,11 +68,11 @@
         <para>Both operators accept simple wildcards in the keyword string. A <command moreinfo="none">?</command> matches zero or one character, <command moreinfo="none">*</command> matches zero or more characters. A character range <command moreinfo="none">[abc]</command> matches any of the characters in the range. You may use a backslash to escape wildcard characters.</para>
         <para>To match more complex patterns, full regular expression syntax is supported through additional functions, which will be described below.</para>
         <para>Please note that there is an important semantic difference between the two expressions:</para>
-        <synopsis format="linespecific">document(*)//SPEECH[LINE &amp;= "cursed spite"]</synopsis>
+        <synopsis format="linespecific">document()//SPEECH[LINE &amp;= "cursed spite"]</synopsis>
         <para>and</para>
-        <synopsis format="linespecific">document(*)//SPEECH[LINE &amp;= "cursed" and LINE &amp;="spite"]</synopsis>
+        <synopsis format="linespecific">document()//SPEECH[LINE &amp;= "cursed" and LINE &amp;="spite"]</synopsis>
         <para>The first expression selects all distinct LINE nodes that contain both terms. The second one selects all context nodes (SPEECH) that have line children containing either or both of the terms. The second expression is supposed to yield more results than the first one. To make both expressions select nearly the same nodes, you would have to change the first one into</para>
-        <synopsis format="linespecific">document(*)//SPEECH[. &amp;= "cursed spite"]</synopsis>
+        <synopsis format="linespecific">document()//SPEECH[. &amp;= "cursed spite"]</synopsis>
         <para>(but this will also include, say SPEAKER or STAGEDIR children of the SPEECH parent)</para>
       </section>
       <section>
@@ -80,7 +80,7 @@
         <para>As shown above, the <command moreinfo="none">near()</command> function behaves quite similar to the <command moreinfo="none">&amp;=</command> operator, but it additionally pays attention to the order of search terms and their distance in the source document. The syntax is:</para>
         <synopsis format="linespecific">near(node-list, 'string of keywords' [, max-distance])</synopsis>
         <para>The functions measures the distance between two search terms by counting the words in between them. A maximum distance of 1 is assumed by default, which means that the search terms should occur next to each other. Other values may be specified in the optional third argument, e.g.:</para>
-        <synopsis format="linespecific">document(*)//SPEECH[near(., 'love marriage', 25)</synopsis>
+        <synopsis format="linespecific">document()//SPEECH[near(., 'love marriage', 25)</synopsis>
         <para>will return any SPEECH elements containing the words "love" and "marriage" and less than 25 words between them.</para>
         <para>Like <command moreinfo="none">&amp;=</command>, <command moreinfo="none">near()</command> accepts wildcards in the keyword string. As well, punctuation and whitespace will be skipped according to the default tokenization rules.</para>
       </section>

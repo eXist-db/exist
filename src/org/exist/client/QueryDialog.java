@@ -164,7 +164,7 @@ public class QueryDialog extends JFrame {
 				|| xpath.startsWith("xcollection("))) {
 				String collname = (String) collections.getSelectedItem();
 				if (collname.equals("*"))
-					xpath = "document(*)" + xpath;
+					xpath = "document()" + xpath;
 				else
 					xpath = "collection(\"" + collname + "\")" + xpath;
 			}
