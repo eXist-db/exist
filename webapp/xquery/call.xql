@@ -34,23 +34,37 @@ declare function f:table-row($a, $b) {
 	</tr>
 };
 
-<body>
-	<p>The sum of numbers 1 to 4 is:</p>
-	<p>{seq:apply(util:function("f:plus", 2), 1 to 4)}</p>
-
-	<p>The product of numbers 1 to 4 is:</p>
-	<p>{seq:apply(util:function("f:product", 2), 1 to 4)}</p>
-
-	<p>Adding the elements of sequences (4, 7, 6) and (10, 15, 8) element-wise:</p> 
-	<p>{seq:map(util:function("f:plus", 2), (4, 7, 6), (10, 15, 8))}</p>
-
-	<p>Generating a table from the elements of sequences: (1, 2, 3) and
-	("Franz", "Klaus", "Erwin"):</p>
-
-	<table>
-		{seq:map(util:function("f:table-row", 2), 1 to 3, ("Franz", "Klaus", "Erwin"))}
-	</table>
-
-	<p>Filter out all items greater than 10:</p>
-	<p>{seq:filter(util:function("f:remove", 1), (8, 15, 7, 19, 22, 5))}</p>
-</body>
+<html>
+    <head>
+        <title>Higher-order Functions</title>
+    </head>
+    <body>
+        <h3>Calculate the sum of numbers 1 to 4:</h3>
+        <pre>seq:apply(util:function("f:plus", 2), 1 to 4)</pre>
+        <p>Result:</p>
+    	<p>{seq:apply(util:function("f:plus", 2), 1 to 4)}</p>
+    
+        <h3>Calculate the product of numbers 1 to 4:</h3>
+        <pre>seq:apply(util:function("f:product", 2), 1 to 4)</pre>
+    	<p>Result:</p>
+    	<p>{seq:apply(util:function("f:product", 2), 1 to 4)}</p>
+    
+        <h3>Adding the elements of sequences (4, 7, 6) and (10, 15, 8) element-wise:</h3>
+        <pre>seq:map(util:function("f:plus", 2), (4, 7, 6), (10, 15, 8))</pre>
+    	<p>Result:</p> 
+    	<p>{seq:map(util:function("f:plus", 2), (4, 7, 6), (10, 15, 8))}</p>
+    
+    	<h3>Generating a table from the elements of sequences: (1, 2, 3) and
+    	("Franz", "Klaus", "Erwin"):</h3>
+    	<pre>seq:map(util:function("f:table-row", 2), 1 to 3, ("Franz", "Klaus", "Erwin"))</pre>
+        <p>Result:</p>
+    	<table>
+    		{seq:map(util:function("f:table-row", 2), 1 to 3, ("Franz", "Klaus", "Erwin"))}
+    	</table>
+    
+    	<h3>Filter out all items greater than 10:</h3>
+    	<pre>seq:filter(util:function("f:remove", 1), (8, 15, 7, 19, 22, 5))</pre>
+    	<p>Result:</p>
+    	<p>{seq:filter(util:function("f:remove", 1), (8, 15, 7, 19, 22, 5))}</p>
+    </body>
+</html>
