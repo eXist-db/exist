@@ -285,6 +285,10 @@ public class StandaloneServer {
                 + "for details read the license file.\n");
     }
     
+    public void shutdown() {
+		BrokerPool.stopAll(false);
+	}
+    
     class ShutdownListenerImpl implements ShutdownListener {
 
         public void shutdown(String dbname, int remainingInstances) {
