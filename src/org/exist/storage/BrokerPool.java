@@ -317,7 +317,7 @@ public class BrokerPool {
 		DBBroker broker = BrokerFactory.getInstance(this, conf);
 		//Thread.dumpStack();
 		LOG.debug(
-			"database " + instanceId + ": creating new instance of " + broker.getClass().getName());
+			"database " + instanceId + ": created new instance of " + broker.getClass().getName());
 		pool.push(broker);
 		brokers++;
 		broker.setId(broker.getClass().getName() + '_' + brokers);
@@ -402,11 +402,15 @@ public class BrokerPool {
 	protected void initialize() throws EXistException {
 		LOG.debug("initializing database " + instanceId);
 		initializing = true;
-		for (int i = 0; i < min; i++)
-			createBroker();
-		initializing = false;
+		// create a first broker to initialize the security manager
+		createBroker();
 		DBBroker broker = (DBBroker) pool.peek();
 		secManager = new org.exist.security.SecurityManager(this, broker);
+		initializing = false;
+		
+		// now create remaining brokers
+		for (int i = 1; i < min; i++)
+			createBroker();
 		LOG.debug("database engine " + instanceId + " initialized.");
 	}
 

@@ -147,6 +147,7 @@ public class RESTServer {
 				outputProperties.setProperty(EXistOutputKeys.STYLESHEET, stylesheet);
 		} else
             outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
+		LOG.debug("stylesheet = " + stylesheet);
 		String encoding;
 		if((encoding = (String) parameters.get("_encoding")) !=null)
 			outputProperties.setProperty(OutputKeys.ENCODING, encoding);
@@ -593,10 +594,6 @@ public class RESTServer {
 			howmany = 0;
 		Serializer serializer = broker.getSerializer();
 		serializer.reset();
-		String stylesheet = outputProperties
-				.getProperty(EXistOutputKeys.STYLESHEET);
-		if (stylesheet != null)
-			serializer.setStylesheet(stylesheet);
 		SAXSerializer sax = null;
 		try {
 			StringWriter writer = new StringWriter();
@@ -605,6 +602,7 @@ public class RESTServer {
 			sax.setOutputProperties(outputProperties);
 			serializer.setProperties(outputProperties);
 			serializer.setSAXHandlers(sax, sax);
+			LOG.debug(outputProperties.getProperty(EXistOutputKeys.STYLESHEET));
 			
 			AttributesImpl attrs = new AttributesImpl();
 			attrs.addAttribute("", "hits", "hits", "CDATA", Integer.toString(rlen));
@@ -625,8 +623,7 @@ public class RESTServer {
 					LOG.debug("item " + i + " not found");
 					continue;
 				}
-				if (item.getType() == Type.ELEMENT || item.getType() == Type.COMMENT ||
-					item.getType() == Type.PROCESSING_INSTRUCTION) {
+				if (Type.subTypeOf(item.getType(), Type.NODE)) {
 					NodeValue node = (NodeValue) item;
 					serializer.toSAX(node);
 				} else {

@@ -184,6 +184,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	    treeLevelStartPoints = other.treeLevelStartPoints;
 	    internalAddress = -1;
 	    lastModified = other.getLastModified();
+	    // reset pageCount: will be updated during storage
+	    pageCount = 0;
 	}
 	
 	public void copyChildren(DocumentImpl other) {

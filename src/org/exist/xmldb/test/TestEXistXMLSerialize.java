@@ -35,6 +35,21 @@ import org.xmldb.api.modules.XMLResource;
  */
 public class TestEXistXMLSerialize extends TestCase{
 
+	private final static String XML_DATA =
+    	"<test>" +
+    	"<para>ääööüüÄÄÖÖÜÜßß</para>" +
+		"<para>\uC5F4\uB2E8\uACC4</para>" +
+    	"</test>";
+    
+    private final static String XSL_DATA =
+    	"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" " +
+    	"version=\"1.0\">" +
+		"<xsl:param name=\"testparam\"/>" +
+		"<xsl:template match=\"test\"><test><xsl:apply-templates/></test></xsl:template>" +
+		"<xsl:template match=\"para\">" +
+		"<p><xsl:value-of select=\"$testparam\"/>: <xsl:apply-templates/></p></xsl:template>" +
+		"</xsl:stylesheet>";
+    
     /** Creates a new instance of TestEXistXMLSerialize */
     public TestEXistXMLSerialize(String name) {
         super(name);
@@ -154,6 +169,31 @@ public class TestEXistXMLSerialize extends TestCase{
     	StringWriter writer = new StringWriter();
     	Properties outputProperties = new Properties();
     	outputProperties.setProperty("indent", "yes");
+    	SAXSerializer serializer = new SAXSerializer(writer, outputProperties);
+    	resource.getContentAsSAX(serializer);
+    	
+    	System.out.println("Using org.exist.util.serializer.SAXSerializer");
+    	System.out.println("---------------------");
+    	System.out.println(writer.toString());
+    	System.out.println("---------------------");
+    }
+    
+    public void testSerialize5() throws Exception {
+    	XMLResource resource = (XMLResource) c.createResource("test.xml", "XMLResource");
+    	resource.setContent(XML_DATA);
+    	System.out.println("Storing resource: "+resource.getId( ));
+    	c.storeResource(resource);
+    	
+    	XMLResource style = (XMLResource) c.createResource("test.xsl", "XMLResource");
+    	style.setContent(XSL_DATA);
+    	System.out.println("Storing resource: "+style.getId( ));
+    	c.storeResource(style);
+    	
+    	Properties outputProperties = new Properties();
+    	outputProperties.setProperty("indent", "yes");
+    	c.setProperty("stylesheet", "test.xsl");
+    	c.setProperty("stylesheet-param.testparam", "TEST");
+    	StringWriter writer = new StringWriter();
     	SAXSerializer serializer = new SAXSerializer(writer, outputProperties);
     	resource.getContentAsSAX(serializer);
     	

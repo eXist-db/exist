@@ -483,11 +483,11 @@ public abstract class Serializer implements XMLReader {
 			if(property.startsWith(EXistOutputKeys.STYLESHEET_PARAM)) {
 				String value = outputProperties.getProperty(property);
 				property = property.substring(EXistOutputKeys.STYLESHEET_PARAM.length() + 1);
-				LOG.debug(property + " = " + value);
 				xslHandler.getTransformer().setParameter(property, value);
 			}
 		}
 	}
+	
 	public void setStylesheet(String stylesheet) {
 		setStylesheet(null, stylesheet);
 	}
@@ -508,14 +508,12 @@ public abstract class Serializer implements XMLReader {
 			if (stylesheet.indexOf(":") > -1) {
 				StreamSource source = new StreamSource(stylesheet);
 				templates = factory.newTemplates(source);
-				// read stylesheet from the database
+			// read stylesheet from the database
 			} else {
 				// if stylesheet is relative, add path to the
 				// current collection
-				if(doc != null) {
-					URI base = URI.create(doc.getCollection().getName() + "/");
-					URI uri = URI.create(stylesheet);
-					stylesheet = base.resolve(uri).toString();
+				if(doc != null && !stylesheet.startsWith("/")) {
+					stylesheet = doc.getCollection().getName() + '/' + stylesheet;
 				}
 				
 				// load stylesheet from eXist
@@ -586,10 +584,16 @@ public abstract class Serializer implements XMLReader {
 					EXistOutputKeys.EXPAND_XINCLUDES,
 					"yes").equals(
 					"yes");
-			if (processXInclude)
-				result.setHandler((ContentHandler)xinclude.getReceiver());
-			else
-				result.setHandler((ContentHandler)receiver);
+			ReceiverToSAX filter;
+			if (processXInclude) {
+				filter = (ReceiverToSAX)xinclude.getReceiver();
+			} else {
+				filter = (ReceiverToSAX) receiver;
+			}
+			result.setHandler(filter.getContentHandler());
+			result.setLexicalHandler(filter.getLexicalHandler());
+			filter.setLexicalHandler(xslHandler);
+			filter.setContentHandler(xslHandler);
 			xslHandler.setResult(result);
 			if (processXInclude) {
 				xinclude.setReceiver(new ReceiverToSAX(xslHandler));
