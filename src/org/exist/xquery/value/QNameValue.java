@@ -56,6 +56,7 @@ public class QNameValue extends AtomicValue {
 			if (prefix == null)
 				throw new XPathException(
 					"namespace " + qname.getNamespaceURI() + " is not defined");
+			qname.setPrefix(prefix);
 	    }
 		return qname.toString();
 	}
