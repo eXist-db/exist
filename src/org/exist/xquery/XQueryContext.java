@@ -116,7 +116,7 @@ public class XQueryContext {
 	 */
 	private DocumentSet staticDocuments = null;
 	
-	private DBBroker broker;
+	protected DBBroker broker;
 
 	private String baseURI = "";
 
@@ -156,12 +156,16 @@ public class XQueryContext {
 	 */
 	private boolean exclusive = false;
 	
-	public XQueryContext(DBBroker broker) {
-		this.broker = broker;
+	protected XQueryContext() {
 		this.watchdog = new XQueryWatchDog(this);
-		loadDefaults();
 		builder = new MemTreeBuilder(this);
 		builder.startDocument();
+	}
+	
+	public XQueryContext(DBBroker broker) {
+		this();
+		this.broker = broker;
+		loadDefaults();
 	}
 	
 	/**
@@ -402,7 +406,7 @@ public class XQueryContext {
 	 * @param moduleClass
 	 */
 	public Module loadBuiltInModule(String namespaceURI, String moduleClass) {
-		Module module = (Module)modules.get(namespaceURI);
+		Module module = getModule(namespaceURI);
 		if (module != null) {
 			LOG.debug("module " + namespaceURI + " is already present");
 			return module;
@@ -541,7 +545,7 @@ public class XQueryContext {
 	public Variable resolveVariable(QName qname) throws XPathException {
 		Variable var;
 		// first, check if the variable is declared in a module
-		Module module = (Module) modules.get(qname.getNamespaceURI());
+		Module module = getModule(qname.getNamespaceURI());
 		if(module != null) {
 			var = module.resolveVariable(qname);
 			if(var != null)
@@ -769,7 +773,7 @@ public class XQueryContext {
 	 */
 	public void importModule(String namespaceURI, String prefix, String location)
 		throws XPathException {
-		Module module = (Module)modules.get(namespaceURI);
+		Module module = getModule(namespaceURI);
 		if(module != null) {
 			LOG.debug("Module " + namespaceURI + " already present.");
 		} else {
@@ -888,7 +892,7 @@ public class XQueryContext {
 	 * Load the default prefix/namespace mappings table and set up
 	 * internal functions.
 	 */
-	private void loadDefaults() {
+	protected void loadDefaults() {
 		SymbolTable syms = broker.getSymbols();
 		String[] pfx = syms.defaultPrefixList();
 		namespaces = new HashMap(pfx.length);

@@ -1196,7 +1196,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			{
 				VariableDeclaration decl= new VariableDeclaration(context, qname.getText(), enclosed);
 				decl.setSequenceType(type);
-                decl.setASTNode(e);
+				decl.setASTNode(e);
 				path.add(decl);
 				if(myModule != null) {
 					QName qn = QName.parse(context, qname.getText());
