@@ -20,7 +20,6 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.serializer.DOMSerializer;
-import org.exist.util.serializer.DOMSerializerPool;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.util.serializer.DOMStreamerPool;
 import org.exist.util.serializer.SAXSerializer;
@@ -73,19 +72,14 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 
 		// Case 1: content is an external DOM node
 		else if (root != null && !(root instanceof NodeValue)) {
-			DOMSerializer serializer = DOMSerializerPool.getInstance()
-					.borrowDOMSerializer();
+            StringWriter writer = new StringWriter();
+			DOMSerializer serializer = new DOMSerializer(writer, getProperties());
 			try {
-				StringWriter writer = new StringWriter();
-				serializer.setOutputProperties(getProperties());
-				serializer.setWriter(writer);
 				serializer.serialize(root);
 				content = writer.toString();
 			} catch (TransformerException e) {
 				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e
 						.getMessage(), e);
-			} finally {
-				DOMSerializerPool.getInstance().returnDOMSerializer(serializer);
 			}
 			return content;
 
