@@ -198,4 +198,12 @@ public abstract class AbstractSequence implements Sequence {
 	public void setIsCached(boolean cached) {
 		// ignore by default
 	}
+    
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#isPersistentSet()
+     */
+    public boolean isPersistentSet() {
+        // always return false by default
+        return false;
+    }
 }

@@ -1038,4 +1038,12 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		}
 
 	}
+
+    
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#isPersistentSet()
+     */
+    public boolean isPersistentSet() {
+        return true;
+    }
 }

@@ -237,6 +237,13 @@ public abstract class AtomicValue implements Item, Sequence {
 	public void setSelfAsContext() {
 	}
 	
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#isPersistentSet()
+     */
+    public boolean isPersistentSet() {
+        return false;
+    }
+    
 	private final static class EmptyValue extends AtomicValue {
 
 		/* (non-Javadoc)

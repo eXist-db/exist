@@ -146,6 +146,21 @@ public class ValueSequence extends AbstractSequence {
 				" a node set. Item type is " + Type.getTypeName(itemType));
 	}
 	
+    public boolean isPersistentSet() {
+        if(size == -1)
+            return true;
+        if(itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.NODE)) {
+            NodeValue v;
+            for (int i = 0; i <= size; i++) {
+                v = (NodeValue)values[i];
+                if(v.getImplementationType() != NodeValue.PERSISTENT_NODE)
+                    return false;
+            }
+            return true;
+        }
+        return false;
+    }
+    
 	private void ensureCapacity() {
 		if(size == values.length) {
 			int newSize = (size * 3) / 2;

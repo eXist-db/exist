@@ -1993,7 +1993,6 @@ public class NativeBroker extends DBBroker {
                     + "removing document "
                     + document.getDocId()
                     + " ...");
-                Thread.dumpStack();
             }
 
 			elementIndex.dropIndex(document);

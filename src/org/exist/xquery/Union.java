@@ -21,11 +21,11 @@
 package org.exist.xquery;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.NodeSet;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 public class Union extends CombiningExpression {
 
@@ -44,10 +44,16 @@ public class Union extends CombiningExpression {
 		if(rval.getLength() == 0)
 		    return lval;
 		if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
-			throw new XPathException("union operand is not a node sequence");
-        NodeSet result = lval.toNodeSet().union(rval.toNodeSet());
-//        LOG.debug("Union took " + (System.currentTimeMillis() - start));
-		return result;
+			throw new XPathException(getASTNode(), "union operand is not a node sequence");
+        boolean convertToNodeSet = lval.isPersistentSet() && rval.isPersistentSet();
+        if (convertToNodeSet) {
+            return lval.toNodeSet().union(rval.toNodeSet());
+        } else {
+            ValueSequence result = new ValueSequence();
+            result.addAll(lval);
+            result.addAll(rval);
+            return result;
+        }
 	}
 	
 	/* (non-Javadoc)

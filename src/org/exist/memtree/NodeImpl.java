@@ -729,4 +729,11 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 		// maybe TODO - new DOM interfaces - Java 5.0
 		return null;
 	}
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#isPersistentSet()
+     */
+    public boolean isPersistentSet() {
+        return false;
+    }
 }

@@ -36,6 +36,7 @@ import org.exist.collections.Collection;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.SAXAdapter;
 import org.exist.security.SecurityManager;
+import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
@@ -94,9 +95,10 @@ public class DOMIndexerTest extends TestCase {
     public void testIndexer() throws Exception {
         DocumentImpl doc = parse(XML);
         BrokerPool pool = BrokerPool.getInstance();
+        User user = pool.getSecurityManager().getUser(SecurityManager.GUEST_USER);
         DBBroker broker = null;
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(user);
             org.exist.dom.DocumentImpl targetDoc = broker.storeTemporaryDoc(doc);
             System.out.println("testIndexer(): " + targetDoc.printTreeLevelOrder());
             
@@ -110,9 +112,10 @@ public class DOMIndexerTest extends TestCase {
     
     public void testStore() throws Exception {
         BrokerPool pool = BrokerPool.getInstance();
+        User user = pool.getSecurityManager().getUser(SecurityManager.GUEST_USER);
         DBBroker broker = null;
         try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
+            broker = pool.get(user);
             Collection collection = broker.getOrCreateCollection("/db/test");
             org.exist.dom.DocumentImpl doc = 
                 collection.addDocument(broker, "test.xml", XML, "text/xml");
