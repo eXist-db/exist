@@ -101,7 +101,7 @@ public class NodeImpl implements Node {
 			case Node.COMMENT_NODE :
 				return CommentImpl.deserialize(data, start, len, pooled);
 			default :
-				LOG.debug("not implemented");
+				LOG.debug("Unknown node type: " + type);
 				return null;
 		}
 	}

@@ -130,7 +130,7 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
             } while ((more & 0x200) > 0);
         }
     }
-
+    
     public void skip(int count) throws IOException {
         for (int i = 0; i < count; i++) {
             while (position < end && (data[position++] & 0200) > 0)

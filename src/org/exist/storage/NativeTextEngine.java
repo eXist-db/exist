@@ -867,86 +867,78 @@ public class NativeTextEngine extends TextSearchEngine {
 					idList = (LongLinkedList) entry.getValue();
 					ref = new WordRef(collectionId, word);
 					try {
-						lock.acquire(Lock.READ_LOCK);
-						val = dbWords.get(ref);
+					    lock.acquire(Lock.WRITE_LOCK);
+					    val = dbWords.get(ref);
+					    os.clear();
+					    newList = new LongLinkedList();
+					    if (val != null) {
+					        // add old entries to the new list
+					        data = val.getData();
+					        is = new VariableByteArrayInput(data);
+					        try {
+					            while (is.available() > 0) {
+					                docId = is.readInt();
+					                section = is.readByte();
+					                len = is.readInt();
+					                if (docId == doc.getDocId() || section != k) {
+					                    // copy data to new buffer; skip
+					                    // removed nodes
+					                    last = 0;
+					                    for (int j = 0; j < len; j++) {
+					                        delta = is.readLong();
+					                        last = last + delta;
+					                        if (!idList.contains(last))
+					                            newList.add(last);
+					                    }
+					                } else {
+					                    // section belongs to another document:
+					                    // copy data to new buffer
+					                    os.writeInt(docId);
+					                    os.writeByte(section);
+					                    os.writeInt(len);
+					                    for (int j = 0; j < len; j++)
+					                        is.copyTo(os);
+					                }
+					            }
+					        } catch (EOFException e) {
+					            LOG
+					            .error("end-of-file while reading index entry for "
+					                    + word);
+					        } catch (IOException e) {
+					            LOG.error("io-error while reading index entry for "
+					                    + word);
+					        }
+					    }
+					    ids = newList.getData();
+					    //i.remove();
+					    Arrays.sort(ids);
+					    len = ids.length;
+					    os.writeInt(doc.getDocId());
+					    os.writeByte(k == 0 ? TEXT_SECTION : ATTRIBUTE_SECTION);
+					    os.writeInt(len);
+					    last = 0;
+					    for (int j = 0; j < len; j++) {
+					        delta = ids[j] - last;
+					        if (delta < 0) {
+					            LOG.debug("neg. delta: " + delta + " for " + word);
+					            LOG.debug("id = " + ids[j] + "; prev = " + last);
+					        }
+					        os.writeLong(delta);
+					        last = ids[j];
+					    }
+					    try {
+					        if (val == null)
+					            dbWords.put(ref, os.data());
+					        else
+					            dbWords
+					            .update(val.getAddress(), ref, os
+					                    .data());
+					    } catch (ReadOnlyException e) {
+					    }
 					} catch (LockException e) {
-						LOG.error("could not acquire lock on index for '"
-								+ word + "'");
-					} finally {
-						lock.release();
-					}
-					os.clear();
-					newList = new LongLinkedList();
-					if (val != null) {
-						// add old entries to the new list
-						data = val.getData();
-						is = new VariableByteArrayInput(data);
-						try {
-							while (is.available() > 0) {
-								docId = is.readInt();
-								section = is.readByte();
-								len = is.readInt();
-								if (docId == doc.getDocId() || section != k) {
-									// copy data to new buffer; skip
-									// removed nodes
-									last = 0;
-									for (int j = 0; j < len; j++) {
-										delta = is.readLong();
-										last = last + delta;
-										if (!idList.contains(last))
-											newList.add(last);
-									}
-								} else {
-									// section belongs to another document:
-									// copy data to new buffer
-									os.writeInt(docId);
-									os.writeByte(section);
-									os.writeInt(len);
-									for (int j = 0; j < len; j++)
-										is.copyTo(os);
-								}
-							}
-						} catch (EOFException e) {
-							LOG
-									.error("end-of-file while reading index entry for "
-											+ word);
-						} catch (IOException e) {
-							LOG.error("io-error while reading index entry for "
-									+ word);
-						}
-					}
-					ids = newList.getData();
-					//i.remove();
-					Arrays.sort(ids);
-					len = ids.length;
-					os.writeInt(doc.getDocId());
-					os.writeByte(k == 0 ? TEXT_SECTION : ATTRIBUTE_SECTION);
-					os.writeInt(len);
-					last = 0;
-					for (int j = 0; j < len; j++) {
-						delta = ids[j] - last;
-						if (delta < 0) {
-							LOG.debug("neg. delta: " + delta + " for " + word);
-							LOG.debug("id = " + ids[j] + "; prev = " + last);
-						}
-						os.writeLong(delta);
-						last = ids[j];
-					}
-					try {
-						lock.acquire(Lock.WRITE_LOCK);
-						try {
-							if (val == null)
-								dbWords.put(ref, os.data());
-							else
-								dbWords
-										.update(val.getAddress(), ref, os
-												.data());
-						} catch (ReadOnlyException e) {
-						}
-					} catch (LockException e) {
-						LOG.warn("could not acquire lock", e);
-					} finally {
-						lock.release();
+					    LOG.warn("could not acquire lock", e);
+                    } finally {
+					    lock.release();
 					}
 				}
 				words[k].clear();
