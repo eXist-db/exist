@@ -31,24 +31,33 @@ import java.util.TreeMap;
 import org.apache.log4j.Logger;
 import org.dbxml.core.DBException;
 import org.dbxml.core.data.Value;
+import org.dbxml.core.filer.BTreeCallback;
 import org.dbxml.core.filer.BTreeException;
 import org.dbxml.core.indexer.IndexQuery;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
 import org.exist.storage.io.VariableByteArrayInput;
+import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.store.BFile;
-import org.exist.storage.store.StorageAddress;
+import org.exist.util.ByteConversion;
 import org.exist.util.FastQSort;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
+import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
 /**
@@ -90,6 +99,20 @@ public class NativeValueIndex {
         buf.add(proxy);
     }
     
+    public void storeAttribute(ValueIndexSpec spec, Attr node, NodeProxy proxy) {
+        AtomicValue atomic = convertToAtomic(spec, node.getValue());
+        if(atomic == null)
+            return;		// skip
+        ArrayList buf;
+        if (pending.containsKey(atomic))
+            buf = (ArrayList) pending.get(atomic);
+        else {
+            buf = new ArrayList(50);
+            pending.put(atomic, buf);
+        }
+        buf.add(proxy);
+    }
+    
     public void setDocument(DocumentImpl document) {
         this.doc = document;
     }
@@ -112,6 +135,12 @@ public class NativeValueIndex {
                 entry = (Map.Entry) i.next();
                 indexable = (Indexable) entry.getKey();
                 idList = (ArrayList) entry.getValue();
+                try {
+                    LOG.debug("Writing " + ((AtomicValue)indexable).getStringValue() + ": " + idList.size());
+                } catch (XPathException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
                 os.clear();
                 FastQSort.sort(idList, 0, idList.size() - 1);
                 len = idList.size();
@@ -123,7 +152,6 @@ public class NativeValueIndex {
                     cid = proxy.gid - prevId;
                     prevId = proxy.gid;
                     os.writeLong(cid);
-                    StorageAddress.write(proxy.getInternalAddress(), os);
                 }
                 ref = new Value(indexable.serialize(collectionId));
                 try {
@@ -232,16 +260,16 @@ public class NativeValueIndex {
                             // copy data to new buffer
                             os.writeInt(docId);
                             os.writeInt(len);
+                            LOG.debug("Copying " + len);
                             for (int j = 0; j < len; j++) {
                                 delta = is.readLong();
-                                address = StorageAddress.read(is);
                                 os.writeLong(delta);
-                                StorageAddress.write(address, os);
                             }
                         } else {
                             changed = true;
+                            LOG.debug("Skipping " + len);
                             // skip
-                            is.skip(len * 4);
+                            is.skip(len);
                         }
                     }
                 } catch (EOFException e) {
@@ -273,8 +301,63 @@ public class NativeValueIndex {
         }
     }
     
+    public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, Indexable value) 
+    throws TerminatedException {
+        int idxOp = checkRelationOp(relation);        
+        NodeSet result = new ExtArrayNodeSet();
+        SearchCallback callback = new SearchCallback(docs, contextSet, result);
+        Lock lock = db.getLock();
+        for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
+			Collection collection = (Collection) iter.next();
+			short collectionId = collection.getId();
+			byte[] key = value.serialize(collectionId);
+			IndexQuery query = new IndexQuery(idxOp, new Value(key));
+			try {
+				lock.acquire();
+				try {
+					db.query(query, callback);
+				} catch (IOException ioe) {
+					LOG.debug(ioe);
+				} catch (BTreeException bte) {
+					LOG.debug(bte);
+				}
+			} catch (LockException e) {
+				LOG.debug(e);
+			} finally {
+				lock.release();
+			}
+        }
+        return result;
+    }
+    
+    private int checkRelationOp(int relation) {
+        int indexOp;
+        switch(relation) {
+        	case Constants.LT:
+        	    indexOp = IndexQuery.LT;
+        		break;
+        	case Constants.LTEQ:
+        	    indexOp = IndexQuery.LEQ;
+        		break;
+        	case Constants.GT:
+        	    indexOp = IndexQuery.GT;
+        		break;
+        	case Constants.GTEQ:
+        	    indexOp = IndexQuery.GEQ;
+        		break;
+        	case Constants.NEQ:
+        	    indexOp = IndexQuery.NEQ;
+        		break;
+        	case Constants.EQ:
+        	default:
+        	    indexOp = IndexQuery.EQ;
+        		break;
+        }
+        return indexOp;
+    }
+    
     private AtomicValue convertToAtomic(ValueIndexSpec spec, String value) {
-        StringValue str = new StringValue(value);
+        final StringValue str = new StringValue(value);
         AtomicValue atomic = null;
         if(Type.subTypeOf(spec.getType(), Type.STRING))
             atomic = str;
@@ -292,5 +375,97 @@ public class NativeValueIndex {
             atomic = null;
         }
         return atomic;        
+    }
+    
+    private class SearchCallback implements BTreeCallback {
+        
+        DocumentSet docs;
+        NodeSet contextSet;
+        NodeSet result;
+        
+        public SearchCallback(DocumentSet docs, NodeSet contextSet, NodeSet result) {
+            this.docs = docs;
+            this.contextSet = contextSet;
+            this.result = result;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.dbxml.core.filer.BTreeCallback#indexInfo(org.dbxml.core.data.Value, long)
+         */
+        public boolean indexInfo(Value value, long pointer)
+                throws TerminatedException {
+            VariableByteInput is = null;
+			try {
+				is = db.getAsStream(pointer);
+			} catch (IOException ioe) {
+				LOG.warn(ioe.getMessage(), ioe);
+			}
+			if (is == null)
+				return true;
+			try {
+                int sizeHint = -1;
+                while (is.available() > 0) {
+                	int docId = is.readInt();
+                	int len = is.readInt();
+                	if ((doc = docs.getDoc(docId)) == null
+                			|| (contextSet != null && !contextSet.containsDoc(doc))) {
+                		is.skip(len);
+                		continue;
+                	}
+                	if (contextSet != null)
+                		sizeHint = contextSet.getSizeHint(doc);
+                	long gid = 0;
+                	NodeProxy current, parent;
+                	for (int j = 0; j < len; j++) {
+                		gid = gid + is.readLong();
+                		current = new NodeProxy(doc, gid, Node.TEXT_NODE);
+                		
+                		// if a context set is specified, we can directly check if the
+                		// matching text node is a descendant of one of the nodes
+                		// in the context set.
+                		if (contextSet != null) {
+                			parent = contextSet.parentWithChild(current, false, true, -1);
+                			if (parent != null) {
+                				result.add(parent, sizeHint);
+                			}
+                		// otherwise, we add all text nodes without check
+                		} else {
+                			result.add(current, sizeHint);
+                		}
+                	}
+                }
+			} catch (EOFException e) {
+			    // EOF is expected here
+            } catch (IOException e) {
+                LOG.warn("io error while reading index", e);
+            }
+            return false;
+        }
+    }
+    
+    public static void main(String args[]) {
+        byte[] d = ByteConversion.longToByte(56473);
+        System.out.print(56473 + " = ");
+        for(int i = 0; i < d.length; i++)
+            System.out.print(Integer.toHexString(d[i] & 0xFF) + " ");
+        System.out.println();
+        d = ByteConversion.longToByte(774663);
+        System.out.print(774663 + " = ");
+        for(int i = 0; i < d.length; i++)
+            System.out.print(Integer.toHexString(d[i] & 0xFF) + " ");
+        System.out.println();
+        Value v1 = new Value(new IntegerValue(56473).serialize((short)2));
+        Value v2 = new Value(new IntegerValue(774663).serialize((short)2));
+        d = v1.getData();
+        System.out.print("v1 = ");
+        for(int i = 0; i < d.length; i++)
+            System.out.print(Integer.toHexString(d[i] & 0xFF) + " ");
+        System.out.println();
+        d = v2.getData();
+        System.out.print("v2 = ");
+        for(int i = 0; i < d.length; i++)
+            System.out.print(Integer.toHexString(d[i] & 0xFF) + " ");
+        System.out.println();
+        System.out.println(v1.compareTo(v2));
     }
 }

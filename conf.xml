@@ -174,10 +174,24 @@
 			<fulltext default="none" attributes="false"/>
 		</index>
 
-		<index doctype="test">
+		<index doctype="items">
+			<fulltext default="none"/>
+			<create path="//item/itemno" type="xs:integer"/>
+			<create path="//item/name" type="xs:string"/>
+			<create path="//item/stock" type="xs:integer"/>
+			<create path="//item/price" type="xs:float"/>
+		</index>
+
+		<index doctype="modsCollection">
 			<fulltext default="none" attributes="false"/>
-			<create path="//year" type="xs:long"/>
-			<create path="//key" type="xs:string"/>
+			<create path="//mods/@ID" type="xs:string"/>
+		</index>
+
+		<index doctype="PLAY">
+			<fulltext default="all" attributes="true">
+				<exclude path="//SPEAKER"/>
+			</fulltext>
+			<create path="//SPEAKER" type="xs:string"/>
 		</index>
 
 		<index doctype="dblp">

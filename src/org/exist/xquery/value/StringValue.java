@@ -477,22 +477,27 @@ public class StringValue extends AtomicValue implements Indexable {
      */
     public int compareTo(Object o) {
         AtomicValue other = (AtomicValue)o;
-        if(other.getType() == Type.STRING) {
-            return value.compareTo(((StringValue) other).value);
-        } else if(type < other.getType())
-            return -1;
+        if(Type.subTypeOf(other.getType(), Type.STRING))
+            return value.compareTo(((StringValue)other).value);
         else
-            return 1;
+            return getType() > other.getType() ? 1 : -1;
     }
     
     /* (non-Javadoc)
      * @see org.exist.storage.Indexable#serialize(short)
      */
     public byte[] serialize(short collectionId) {
-		byte[] data = new byte[UTF8.encoded(value) + 3];
+		final byte[] data = new byte[UTF8.encoded(value) + 3];
 		ByteConversion.shortToByte(collectionId, data, 0);
 		data[2] = (byte) type;	// TODO: cast to byte is not safe
 		UTF8.encode(value, data, 3);
 		return data;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.storage.Indexable#deserialize(byte[])
+     */
+    public void deserialize(byte[] data) {
+        value = new String(data, 3, data.length - 3);
     }
 }

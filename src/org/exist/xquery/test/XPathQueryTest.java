@@ -1,5 +1,6 @@
 package org.exist.xquery.test;
 
+import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -264,7 +265,7 @@ public class XPathQueryTest extends TestCase {
 			fail(e.getMessage());
 		}
 	}
-	
+
 	public void testNot() {
 		try {
 			XPathQueryService service = 
@@ -379,7 +380,7 @@ public class XPathQueryTest extends TestCase {
 				"1.0");
 		return service;
 	}
-
+	
 	public void testNamespaces() {
 		try {
 			XPathQueryService service = 

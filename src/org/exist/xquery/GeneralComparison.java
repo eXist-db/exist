@@ -33,6 +33,7 @@ import org.exist.dom.NodeSet;
 import org.exist.storage.FulltextIndexSpec;
 import org.exist.storage.IndexConfiguration;
 import org.exist.storage.IndexSpec;
+import org.exist.storage.Indexable;
 import org.exist.storage.NativeTextEngine;
 import org.exist.storage.analysis.SimpleTokenizer;
 import org.exist.storage.analysis.TextToken;
@@ -146,13 +147,10 @@ public class GeneralComparison extends BinaryOp {
 		 * operand.
 		 */
 		if (inPredicate) {
-			if((getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
-				int rtype = getRight().returnsType();
+			if((getDependencies() & Dependency.CONTEXT_ITEM) == 0 &&
+			        Type.subTypeOf(getLeft().returnsType(), Type.NODE)) {
 				// if the right operand is static, we can use the fulltext index
 				if ((getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0
-					&& (Type.subTypeOf(rtype, Type.STRING)
-						|| Type.subTypeOf(rtype, Type.NODE)
-						|| rtype == Type.ATOMIC)
 					&& (getRight().getCardinality() & Cardinality.MANY) == 0) {
 					// lookup search terms in the fulltext index
 					result = quickNodeSetCompare(contextSequence);
@@ -252,70 +250,49 @@ public class GeneralComparison extends BinaryOp {
 		}
 		//	evaluate left expression
 		NodeSet nodes = (NodeSet) getLeft().eval(contextSequence);
+		// get the type of a possible index
+		int indexType = nodes.getIndexType();
+		
 		if(nodes.getLength() < 2)
-			// fall back to nodeSetCompare
+			// fall back to nodeSetCompare if we just have to check a single node
 			return nodeSetCompare(nodes, contextSequence);
+		
+		// evaluate right expression
 		Sequence rightSeq = getRight().eval(contextSequence);
-		String cmp = rightSeq.getStringValue();
-		if (rightSeq.getLength() > 1 ||
-				cmp.length() > NativeTextEngine.MAX_WORD_LENGTH)
+
+		if (rightSeq.getLength() > 1)
 			// fall back to nodeSetCompare
 			return nodeSetCompare(nodes, contextSequence);
-//		LOG.debug("quick compare: " + cmp.length());
+		
 		DocumentSet docs = nodes.getDocumentSet();
-		switch(truncation) {
-			case Constants.TRUNC_RIGHT:
-				cmp = cmp + '%';
-				break;
-			case Constants.TRUNC_LEFT:
-				cmp = '%' + cmp;
-				break;
-			case Constants.TRUNC_BOTH:
-				cmp = '%' + cmp + '%';
+		NodeSet result = null;
+	    if(indexType != Type.ITEM && indexType != Type.IDX_FULLTEXT) {
+	        Item key;
+	        if(Type.subTypeOf(rightSeq.getItemType(), Type.STRING))
+	            key = new StringValue(getComparisonString(rightSeq));
+	        else
+	            key = rightSeq.itemAt(0);
+	        if(key instanceof Indexable) {
+	            if(Type.subTypeOf(indexType, Type.NUMBER) &&
+	                    Type.subTypeOf(key.getType(), Type.NUMBER))
+	                key = key.convertTo(indexType);
+	            if(!Type.subTypeOf(key.getType(), indexType))
+	                return nodeSetCompare(nodes, contextSequence);
+//	            LOG.debug("Using value index");
+	            result = context.getBroker().getValueIndex().find(relation, docs, nodes, (Indexable)key);
+	        }
+	    } else if (relation == Constants.EQ
+				&& indexType == Type.IDX_FULLTEXT) {
+	        String cmp = getComparisonString(rightSeq);
+	        if(cmp.length() < NativeTextEngine.MAX_WORD_LENGTH)
+	            nodes = useFulltextIndex(cmp, nodes, docs);
+	        // now compare the input node set to the search expression
+			Collator collator = getCollator(contextSequence);
+			result =
+				context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp, collator);
 		}
-		if (getLeft().returnsType() == Type.NODE
-			&& relation == Constants.EQ
-			&& nodes.hasIndex()
-			&& cmp.length() > 0) {
-			String cmpCopy = cmp;
-			cmp = maskWildcards(cmp);
-			// try to use a fulltext search expression to reduce the number
-			// of potential nodes to scan through
-			SimpleTokenizer tokenizer = new SimpleTokenizer();
-			tokenizer.setText(cmp);
-			TextToken token;
-			String term;
-			boolean foundNumeric = false;
-			// setup up an &= expression using the fulltext index
-			ExtFulltext containsExpr = new ExtFulltext(context, Constants.FULLTEXT_AND);
-			containsExpr.setASTNode(getASTNode());
-			// disable default match highlighting
-			int oldFlags = context.getBroker().getTextEngine().getTrackMatches();
-			context.getBroker().getTextEngine().setTrackMatches(Serializer.TAG_NONE);
-			
-			int i = 0;
-			for (; i < 5 && (token = tokenizer.nextToken(true)) != null; i++) {
-				// remember if we find an alphanumeric token
-				if (token.getType() == TextToken.ALPHANUM)
-					foundNumeric = true;
-			}
-			// check if all elements are indexed. If not, we can't use the
-			// fulltext index.
-			if (foundNumeric)
-				foundNumeric = checkArgumentTypes(context, docs);
-			if ((!foundNumeric) && i > 0) {
-				// all elements are indexed: use the fulltext index
-				containsExpr.addTerm(new LiteralValue(context, new StringValue(cmp)));
-				nodes = (NodeSet) containsExpr.eval(nodes, null);
-			}
-			context.getBroker().getTextEngine().setTrackMatches(oldFlags);
-			cmp = cmpCopy;
-		}
-		// now compare the input node set to the search expression
-		Collator collator = getCollator(contextSequence);
-		NodeSet result =
-			context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp, collator);
-		// can this result be cached?
+		
+		// can this result be cached? Don't cache if the result depends on local variables.
 		boolean canCache = 
 		    contextSequence instanceof NodeSet &&
 	        (getRight().getDependencies() & Dependency.LOCAL_VARS) == 0 &&
@@ -325,6 +302,64 @@ public class GeneralComparison extends BinaryOp {
 		return result;
 	}
 
+	/**
+     * @param rightSeq
+     * @return
+     * @throws XPathException
+     */
+    private String getComparisonString(Sequence rightSeq) throws XPathException {
+        String cmp = rightSeq.getStringValue();
+        switch(truncation) {
+			case Constants.TRUNC_RIGHT:
+				cmp = cmp + '%';
+				break;
+			case Constants.TRUNC_LEFT:
+				cmp = '%' + cmp;
+				break;
+			case Constants.TRUNC_BOTH:
+				cmp = '%' + cmp + '%';
+		}
+        return cmp;
+    }
+
+    protected NodeSet useFulltextIndex(String cmp, NodeSet nodes, DocumentSet docs) throws XPathException {
+//	    LOG.debug("Using fulltext index for expression " + ExpressionDumper.dump(this));
+	    String cmpCopy = cmp;
+		cmp = maskWildcards(cmp);
+		// try to use a fulltext search expression to reduce the number
+		// of potential nodes to scan through
+		SimpleTokenizer tokenizer = new SimpleTokenizer();
+		tokenizer.setText(cmp);
+		TextToken token;
+		String term;
+		boolean foundNumeric = false;
+		// setup up an &= expression using the fulltext index
+		ExtFulltext containsExpr = new ExtFulltext(context, Constants.FULLTEXT_AND);
+		containsExpr.setASTNode(getASTNode());
+		// disable default match highlighting
+		int oldFlags = context.getBroker().getTextEngine().getTrackMatches();
+		context.getBroker().getTextEngine().setTrackMatches(Serializer.TAG_NONE);
+		
+		int i = 0;
+		for (; i < 5 && (token = tokenizer.nextToken(true)) != null; i++) {
+			// remember if we find an alphanumeric token
+			if (token.getType() == TextToken.ALPHANUM)
+				foundNumeric = true;
+		}
+		// check if all elements are indexed. If not, we can't use the
+		// fulltext index.
+		if (foundNumeric)
+			foundNumeric = checkArgumentTypes(context, docs);
+		if ((!foundNumeric) && i > 0) {
+			// all elements are indexed: use the fulltext index
+			containsExpr.addTerm(new LiteralValue(context, new StringValue(cmp)));
+			nodes = (NodeSet) containsExpr.eval(nodes, null);
+		}
+		context.getBroker().getTextEngine().setTrackMatches(oldFlags);
+		cmp = cmpCopy;
+		return nodes;
+	}
+	
 	/**
 	 * Cast the atomic operands into a comparable type
 	 * and compare them.

@@ -24,6 +24,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.Collator;
 
+import org.exist.storage.Indexable;
+import org.exist.util.ByteConversion;
 import org.exist.xquery.XPathException;
 
 /** [Definition:]   integer is �derived� from decimal by fixing the value of �fractionDigits� to be 0. 
@@ -32,7 +34,7 @@ import org.exist.xquery.XPathException;
  * The �base type� of integer is decimal.
  * cf http://www.w3.org/TR/xmlschema-2/#integer 
  */
-public class IntegerValue extends NumericValue {
+public class IntegerValue extends NumericValue implements Indexable {
 
 	public final static IntegerValue ZERO = new IntegerValue(0);
 	private static final BigInteger ZERO_BIGINTEGER = new BigInteger("0");
@@ -239,6 +241,8 @@ public class IntegerValue extends NumericValue {
 				return new IntegerValue(value, requiredType);
 			case Type.DOUBLE :
 				return new DoubleValue(value.doubleValue());
+			case Type.FLOAT:
+			    return new FloatValue(value.floatValue());
 			case Type.STRING :
 				return new StringValue(getStringValue());
 			case Type.BOOLEAN :
@@ -457,4 +461,36 @@ public class IntegerValue extends NumericValue {
 		throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) +
 			" to Java object of type " + target.getName());
 	}
+	
+	/* (non-Javadoc)
+     * @see org.exist.storage.Indexable#serialize(short)
+     */
+    public byte[] serialize(short collectionId) {
+        long l = value.longValue() - Long.MIN_VALUE;
+        byte[] data = new byte[11];
+		ByteConversion.shortToByte(collectionId, data, 0);
+		data[2] = (byte) Type.INTEGER;
+		ByteConversion.longToByte(l, data, 3);
+		return data;
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.storage.Indexable#deserialize(byte[])
+     */
+    public void deserialize(byte[] data) {
+        long l = ByteConversion.byteToLong(data, 3);
+        type = data[2];
+        value = BigInteger.valueOf(l);
+    }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    public int compareTo(Object o) {
+        final AtomicValue other = (AtomicValue)o;
+        if(Type.subTypeOf(other.getType(), Type.INTEGER))
+            return value.compareTo(((IntegerValue)other).value);
+        else
+            return getType() > other.getType() ? 1 : -1;
+    }
 }

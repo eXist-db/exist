@@ -26,6 +26,7 @@ import java.util.Iterator;
 
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.NodeList;
 
 /**
@@ -279,12 +280,16 @@ public interface NodeSet extends Sequence, NodeList {
 	public NodeSet getParents(boolean rememberContext);
 	
 	/**
-	 * Returns true if all nodes in this node set are included in
-	 * the fulltext index.
+	 * If all nodes in this set have an index, returns the common
+	 * supertype used to build the index, e.g. xs:integer or xs:string.
+	 * If the nodes have different index types or no node has been indexed,
+	 * returns {@link Type#ITEM}.
 	 * 
+	 * @see org.exist.xquery.GeneralComparison
+	 * @see org.exist.xquery.ValueComparison
 	 * @return
 	 */
-	public boolean hasIndex();
+	public int getIndexType();
 	
 	/**
 	 * Return a sub-range of this node set containing the range of nodes greater than or including

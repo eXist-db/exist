@@ -8,7 +8,14 @@ import org.exist.storage.io.VariableByteOutputStream;
 
 /**
  * Represents a (virtual) storage address in the paged file, consisting
- * of page number, offset (tuple id) and flags.
+ * of page number, tuple id and type indicator.
+ * 
+ * The format of a storage address is as follows:
+ * 
+ * <pre>
+ * | page    | type | tid |
+ * | 1 2 3 4 | 5 6   | 7 8 |
+ * </pre>
  */
 public class StorageAddress {
 	
@@ -28,7 +35,7 @@ public class StorageAddress {
 	}
 
 	/**
-	 *  Get the tid (tuple id) from a virtual address
+	 *  Get the tid (tuple id) from a virtual address.
 	 *
 	 *@param  pointer  
 	 *@return          the tid encoded in this address
@@ -38,7 +45,7 @@ public class StorageAddress {
 	}
 
 	/**
-	 *  Get the page from a virtual address
+	 *  Get the page from a virtual address.
 	 *
 	 *@param  pointer  
 	 *@return          the page encoded in this address
@@ -47,10 +54,30 @@ public class StorageAddress {
 		return (int) ((pointer >>> 32) & 0xFFFFFFFFL);
 	}
 
-	public final static short flagsFromPointer(long pointer) {
+	/**
+	 * Get the type indicator from a virtual address.
+	 * 
+	 * Returns a short corresponding to the type constants defined
+	 * in {@link org.exist.xquery.value.Type}.
+	 * 
+	 * @param pointer
+	 * @return
+	 */
+	public final static short indexTypeFromPointer(long pointer) {
 		return (short) ((pointer >>> 16) & 0xFFFFL);
 	}
 
+	public final static long setIndexType(long pointer, short type) {
+	    return pointer | ((long)(type << 16) & 0xFFFF0000L);
+	}
+	/**
+	 * Returns true if the page number and tid of the two storage
+	 * addresses is equal. The type indicator is ignored.
+	 * 
+	 * @param p0
+	 * @param p1
+	 * @return
+	 */
 	public final static boolean equals(long p0, long p1) {
 		return ((p0 & 0xFFFFFFFF0000FFFFL) == (p1 & 0xFFFFFFFF0000FFFFL));
 	}
@@ -58,7 +85,7 @@ public class StorageAddress {
 	public final static void write(long pointer, VariableByteOutputStream os) {
 		os.writeInt(pageFromPointer(pointer));
 		os.writeShort(tidFromPointer(pointer));
-		os.writeShort(flagsFromPointer(pointer));
+		os.writeShort(indexTypeFromPointer(pointer));
 	}
 	
 	public final static long read(VariableByteInput is) throws IOException, EOFException {
