@@ -3,6 +3,8 @@
 :)
 xquery version "1.0";
 
+(::pragma exist:output-size-limit -1 ::)
+
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 
 declare namespace f="urn:my-functions";
