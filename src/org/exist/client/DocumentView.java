@@ -112,8 +112,12 @@ class DocumentView extends JFrame {
 		JButton button = new JButton(new ImageIcon(url));
 		button.setToolTipText("Export to file.");
 		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				export();
+			public void actionPerformed(ActionEvent e)  {
+			try {
+				export() ;
+			} catch (XMLDBException u) {
+				u.printStackTrace();
+			}
 			}
 		});
 		toolbar.add(button);
@@ -185,12 +189,13 @@ class DocumentView extends JFrame {
 			}
 		}.start();
 	}
-	private void export() {
+	private void export() throws XMLDBException {
 		String workDir = properties.getProperty("working-dir", System
 				.getProperty("user.dir"));
 		JFileChooser chooser = new JFileChooser(workDir);
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		chooser.setSelectedFile(new File(resource.getId())); 
 		if (chooser.showDialog(this, "Select file for export") == JFileChooser.APPROVE_OPTION) {
 			File file = chooser.getSelectedFile();
 			if (file.exists()
