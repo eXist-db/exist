@@ -1293,7 +1293,8 @@ public class ElementImpl extends NamedNode implements Element {
         ownerDocument.broker.insertAfter(previous, newNode);
         NodePath path = newNode.getPath();
         ownerDocument.broker.index(newNode, path);
-        ownerDocument.broker.endElement(newNode, path, null);
+		if (newNode.getNodeType() == Node.ELEMENT_NODE)
+			ownerDocument.broker.endElement(newNode, path, null);
         ownerDocument.broker.flush();
     }
 
