@@ -1167,8 +1167,9 @@ public class NativeBroker extends DBBroker {
 				case Node.TEXT_NODE :
 					// check if this textual content should be fulltext-indexed
 					// by calling IndexPaths.match(path)
-					if (idx == null || idx.match(currentPath))
-						textEngine.storeText(idx, (TextImpl) node, false);
+					if (idx == null || idx.match(currentPath)){
+						boolean valore = (idx == null ? false : idx.preserveContent(currentPath));
+						textEngine.storeText(idx, (TextImpl) node, valore);}
 					break;
 			}
 		}
