@@ -13,15 +13,51 @@
     
     <xsl:template match="items">
         <div id="content">
+            <div id="navigation">
+                <form action="overview.xq" method="GET">
+                    <table>
+                        <tr>
+                            <th align="left">Display:</th>
+                            <th align="right">Order by:</th>
+                        </tr>
+                        <tr>
+                            <td align="left">
+                                <select name="howmany" onChange="form.submit()">
+                                    <option>10</option>
+                                    <option selected="true">50</option>
+                                    <option>100</option>
+                                </select>
+                            </td>
+                            <td align="right">
+                                <select name="order" onChange="form.submit()">
+                                    <option>Date</option>
+                                    <option value="title">Title</option>
+                                    <option value="creator">Creator</option>
+                                </select>
+                            </td>
+                            <input type="hidden" name="start" value="{@start}"/>
+                        </tr>
+                        <tr>
+                            <td align="left">
+                                <xsl:if test="@start &gt; 1">
+                                    <a href="?start={@start - @max}&amp;howmany={@max}">&lt;&lt; previous</a>
+                                </xsl:if>
+                            </td>
+                            <td align="right">
+                                <xsl:if test="@next &lt;= @hits">
+                                    <a href="?start={@next}&amp;howmany={@max}">more &gt;&gt;</a>
+                                </xsl:if>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
             <xsl:apply-templates select="item"/>
         </div>
     </xsl:template>
     
     <xsl:template match="item">
         <div class="record">
-            <a href="{@chiba}&amp;instance=/chiba/exist{../@collection}/{@doc}&amp;submitsave=store.xq?document={@doc}">
-                <img src="images/edit.gif"/>
-            </a>
             <a href="?action=remove&amp;doc={java:java.net.URLEncoder.encode(@doc)}&amp;collection={java:java.net.URLEncoder.encode(../@collection)}"><img src="images/delete.gif"/></a>
             <p class="citation">
                 <input type="checkbox" class="mark" value="N1"/>
@@ -31,10 +67,12 @@
                 <span class="heading">By: </span>
                 <xsl:apply-templates select="m:name"/>
             </p>
-            <p class="keywords">
-                <span class="heading">Topics: </span>
-                <xsl:apply-templates select="m:subject/m:topic|m:subject/m:geographic"/>
-            </p>
+            <xsl:if test="m:subject">
+                <p class="keywords">
+                    <span class="heading">Topics: </span>
+                    <xsl:apply-templates select="m:subject/m:topic|m:subject/m:geographic"/>
+                </p>
+            </xsl:if>
             <xsl:apply-templates select="m:abstract"/>
         </div>
     </xsl:template>

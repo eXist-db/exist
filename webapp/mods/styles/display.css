@@ -1,0 +1,13 @@
+@import url(default-style.css);
+
+#navigation {
+    background: #ddd;
+    margin: 10px;
+    padding: 10px;
+    width: 457px;
+}
+
+#navigation table {
+    width: 100%;
+    font-size: 8pt;
+}
