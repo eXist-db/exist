@@ -810,8 +810,20 @@ public class XQueryContext {
 		baseURI = uri;
 	}
 
+	/**
+	 * Set the path to a base directory where modules should
+	 * be loaded from. Relative module paths will be resolved against
+	 * this directory. The property is usually set by the XQueryServlet or
+	 * XQueryGenerator, but can also be specified manually. 
+	 * 
+	 * @param path
+	 */
 	public void setModuleLoadPath(String path) {
 		this.moduleLoadPath = path;
+	}
+	
+	public String getModuleLoadPath() {
+		return moduleLoadPath;
 	}
 	
 	/**

@@ -47,9 +47,11 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
 /**
+ * Various functions to get information about users.
+ * 
  * @author wolf
  */
-public class XMLDBExistsUser extends BasicFunction {
+public class XMLDBUserAccess extends BasicFunction {
 
 	public final static FunctionSignature fnExistsUser = new FunctionSignature(
 			new QName("exists-user", XMLDBModule.NAMESPACE_URI,
@@ -83,7 +85,7 @@ public class XMLDBExistsUser extends BasicFunction {
 	 * @param context
 	 * @param signature
 	 */
-	public XMLDBExistsUser(XQueryContext context, FunctionSignature signature) {
+	public XMLDBUserAccess(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
