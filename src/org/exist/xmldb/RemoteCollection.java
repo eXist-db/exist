@@ -311,6 +311,8 @@ public class RemoteCollection implements CollectionImpl {
 			RemoteBinaryResource r = new RemoteBinaryResource(this, docName);
 			r.setContentLength(contentLen);
 			r.setPermissions(perm);
+            if (hash.containsKey("mime-type"))
+                r.setMimeType((String) hash.get("mime-type"));
 			return r;
 		}
 	}

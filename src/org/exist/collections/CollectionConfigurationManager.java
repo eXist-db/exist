@@ -30,7 +30,7 @@ import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.SecurityManager;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.sync.Sync;
 import org.exist.util.Lock;
@@ -50,17 +50,25 @@ public class CollectionConfigurationManager {
 	private static final Logger LOG = Logger.getLogger(CollectionConfigurationManager.class);
 	
     public final static String CONFIG_COLLECTION = "/db/system/config";
-    
-    private SecurityManager secman;
-
+	
+	private BrokerPool pool;
+	
     private Map cache = new TreeMap();
     
     public CollectionConfigurationManager(DBBroker broker) throws EXistException {
-        this.secman = broker.getBrokerPool().getSecurityManager();
+		this.pool = broker.getBrokerPool();
 		checkConfigCollection(broker);
     }
     
-    public synchronized void addConfiguration(DBBroker broker, Collection collection, String config) 
+	/**
+	 * Add a new collection configuration. The XML document is passed as a string.
+	 * 
+	 * @param broker
+	 * @param collection the collection to which the configuration applies.
+	 * @param config the xconf document as a string.
+	 * @throws CollectionConfigurationException
+	 */
+    public void addConfiguration(DBBroker broker, Collection collection, String config) 
     throws CollectionConfigurationException {
     	try {
 			String path = CONFIG_COLLECTION + collection.getName();
@@ -97,7 +105,7 @@ public class CollectionConfigurationManager {
      * @return
      * @throws CollectionConfigurationException
      */
-    protected synchronized CollectionConfiguration getConfiguration(DBBroker broker, 
+    protected CollectionConfiguration getConfiguration(DBBroker broker, 
             Collection collection) throws CollectionConfigurationException {
     	LOG.debug("Reading config for " + collection.getName());
     	CollectionConfiguration conf = new CollectionConfiguration(collection);
@@ -126,7 +134,12 @@ public class CollectionConfigurationManager {
     		}
     		p = path.indexOf('/', p + 1);
 	    }
-    	cache.put(collection.getName(), conf);
+		// we synchronize on the global CollectionCache to avoid deadlocks.
+		// the calling code does mostly already hold a lock on CollectionCache.
+		CollectionCache collectionCache = pool.getCollectionsCache();
+		synchronized (collectionCache) {
+			cache.put(collection.getName(), conf);
+		}
         return conf;
     }
     
@@ -136,21 +149,26 @@ public class CollectionConfigurationManager {
      * 
      * @param collectionPath
      */
-    protected synchronized void invalidateAll(String collectionPath) {
+    protected void invalidateAll(String collectionPath) {
         if (!collectionPath.startsWith(CONFIG_COLLECTION))
     		return;
     	collectionPath = collectionPath.substring(CONFIG_COLLECTION.length());
-    	Map.Entry next;
-    	CollectionConfiguration config;
-    	for(Iterator i = cache.entrySet().iterator(); i.hasNext(); ) {
-    		next = (Map.Entry) i.next();
-    		if(next.getKey().toString().startsWith(collectionPath)) {
-    			config = (CollectionConfiguration) next.getValue();
-    			if (config != null)
-    				config.getCollection().invalidateConfiguration();
-    			i.remove();
-    		}
-    	}
+		// we synchronize on the global CollectionCache to avoid deadlocks.
+		// the calling code does mostly already hold a lock on CollectionCache.
+		CollectionCache collectionCache = pool.getCollectionsCache();
+		synchronized (collectionCache) {
+	    	Map.Entry next;
+	    	CollectionConfiguration config;
+	    	for(Iterator i = cache.entrySet().iterator(); i.hasNext(); ) {
+	    		next = (Map.Entry) i.next();
+	    		if(next.getKey().toString().startsWith(collectionPath)) {
+	    			config = (CollectionConfiguration) next.getValue();
+	    			if (config != null)
+	    				config.getCollection().invalidateConfiguration();
+	    			i.remove();
+	    		}
+	    	}
+		}
     }
     
     /**
@@ -159,17 +177,26 @@ public class CollectionConfigurationManager {
      * 
      * @param collectionPath
      */
-    protected synchronized void invalidate(String collectionPath) {
+    protected void invalidate(String collectionPath) {
     	if (!collectionPath.startsWith(CONFIG_COLLECTION))
     		return;
     	collectionPath = collectionPath.substring(CONFIG_COLLECTION.length());
-    	CollectionConfiguration config = (CollectionConfiguration) cache.get(collectionPath);
-    	if (config != null) {
-    		config.getCollection().invalidateConfiguration();
-    		cache.remove(config);
-    	}
+		CollectionCache collectionCache = pool.getCollectionsCache();
+		synchronized (collectionCache) {
+	    	CollectionConfiguration config = (CollectionConfiguration) cache.get(collectionPath);
+	    	if (config != null) {
+	    		config.getCollection().invalidateConfiguration();
+	    		cache.remove(config);
+	    	}
+		}
     }
     
+	/**
+	 * Check if the config collection exists below /db/system. If not, create it.
+	 * 
+	 * @param broker
+	 * @throws EXistException
+	 */
     private void checkConfigCollection(DBBroker broker) throws EXistException {
     	try {
     		Collection root = broker.getCollection(CONFIG_COLLECTION);
