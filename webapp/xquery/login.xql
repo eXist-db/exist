@@ -1,7 +1,7 @@
 xquery version "1.0";
 
 declare namespace request="http://exist-db.org/xquery/request";
-declare namespace xmldb="http://exist-db.org/xquery/xmldb";
+declare namespace xdb="http://exist-db.org/xquery/xmldb";
 
 declare variable $database-uri as xs:string { "xmldb:exist:///db" };
 declare variable $redirect-uri as xs:anyURI { xs:anyURI("session.xql") };
@@ -9,7 +9,7 @@ declare variable $redirect-uri as xs:anyURI { xs:anyURI("session.xql") };
 declare function local:login($user as xs:string) as element()?
 {
     let $pass := request:request-parameter("pass", ""),
-        $login := xmldb:authenticate($database-uri, $user, $pass)
+        $login := xdb:authenticate($database-uri, $user, $pass)
     return
         if ($login) then ( 
             request:set-session-attribute("user", $user),
