@@ -868,6 +868,28 @@ public class RpcServer implements RpcAPI {
             pool.release(con);
         }
     }
+    
+     public Hashtable execute(User user, String path, Hashtable parameters) throws EXistException,
+            PermissionDeniedException {
+    	RpcConnection con = pool.get();
+
+        byte[] doc = getBinaryResource(user,path);
+        String xpath = null; 
+        try {
+            xpath = new String(doc, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new EXistException("failed to decode xpath expression");
+        }  	
+    	    	
+    	try {
+            return con.execute(user, xpath, parameters);
+        } catch (Exception e) {
+            handleException(e);
+            return null;
+        } finally {
+            pool.release(con);
+        }
+    }
 
     public String printDiagnostics(User user, String query, Hashtable parameters) 
     throws PermissionDeniedException, EXistException {
