@@ -423,6 +423,13 @@ public interface NodeSet extends Sequence, NodeList {
 	 */
 	public NodeSet intersection(NodeSet other);
 	
+	/**
+	 * Return a new node set, containing all nodes in this node set that
+	 * are contained or have descendants in the other node set.
+	 * 
+	 * @param other
+	 * @return
+	 */
 	public NodeSet deepIntersection(NodeSet other);
 	
 	/**

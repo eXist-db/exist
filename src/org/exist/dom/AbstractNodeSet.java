@@ -363,6 +363,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * the set of descendant nodes (descendant-or-self axis)
 	 * @param rememberContext if true, add the matching nodes to the context node
 	 * list of each returned node (this is used to track matches for predicate evaluation)
+	 * 
 	 * @return
 	 */
 	public NodeSet selectAncestorDescendant(
@@ -423,94 +424,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		//						+ (System.currentTimeMillis() - start));
 		return result;
 	}
-
-	/**
-	 * TODO: This method is rubbish. It can't work this way if descendants occur on 
-	 * different levels in the dom tree.
-	 * 
-	 * Fast ancestor descendant join based on two iterators. This method is
-	 * selected if the ancestor set is fixed, i.e. the selection step did not contain
-	 * any wildcards.
-	 * 
-	 * @param al
-	 * @param mode
-	 * @param rememberContext
-	 * @return
-	 */
-//	private NodeSet quickSelectAncestorDescendant(NodeSet al, int mode, boolean includeSelf, boolean rememberContext) {
-//	    final NodeSet result = new ExtArrayNodeSet();
-//		final Iterator ia = al.iterator();
-//		final Iterator ib = iterator();
-////		final long start = System.currentTimeMillis();
-//		NodeProxy na = (NodeProxy) ia.next(), nb = (NodeProxy) ib.next();
-//		// check if one of the node sets is empty
-//		if(na == null || nb == null)
-//		    return result;
-//		
-//		long pa, pb;
-//		while (true) {
-//			// first, try to find nodes belonging to the same doc
-//			if (na.doc.getDocId() < nb.doc.getDocId()) {
-//				if (ia.hasNext())
-//					na = (NodeProxy) ia.next();
-//				else
-//					break;
-//			} else if (na.doc.getDocId() > nb.doc.getDocId()) {
-//				if (ib.hasNext())
-//					nb = (NodeProxy) ib.next();
-//				else
-//					break;
-//			} else {
-//			    // same document
-//			    pa = na.gid; 
-//			    pb = nb.gid;
-//			    int la = na.doc.getTreeLevel(pa);
-//				int lb = nb.doc.getTreeLevel(pb);
-//				boolean foundSelf = la == lb;
-//				while (lb> la) {
-//					pb = XMLUtil.getParentId(nb.doc, pb, lb--);
-//					System.out.println(pb);
-//				}
-//				System.out.println("Comparing " + pa + " -> " + pb + " (" + nb.gid + ") " +
-//						XMLUtil.getParentId(nb.doc, pb));
-//				if (pa < pb) {
-//					if (ia.hasNext())
-//						na = (NodeProxy) ia.next();
-//					else
-//						break;
-//				} else if (pa > pb) {
-//					if (ib.hasNext())
-//						nb = (NodeProxy) ib.next();
-//					else if(ia.hasNext())
-//						na = (NodeProxy) ia.next();
-//					else
-//						break;
-//				} else {
-//				    if(!foundSelf || includeSelf) {
-//				        if(mode == NodeSet.DESCENDANT) {
-//				            if (rememberContext)
-//				                nb.addContextNode(na);
-//				            else
-//				                nb.copyContext(na);
-//				            result.add(nb);
-//				        } else {
-//				            if (rememberContext)
-//				                na.addContextNode(nb);
-//				            else
-//				                na.copyContext(nb);
-//				            result.add(na);
-//				        }
-//				    }
-//				    if (ib.hasNext())
-//						nb = (NodeProxy) ib.next();
-//					else
-//						break;
-//				}
-//			}
-//		}
-////		LOG.debug("quickSelect took " + (System.currentTimeMillis() - start));
-//		return result;
-//	}
 	
 	private NodeSet quickSelectParentChild(NodeSet al, int mode, boolean rememberContext) {
 	    final NodeSet result = new ExtArrayNodeSet();
@@ -539,9 +452,9 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 			    // same document
 			    pa = na.gid;
 			    pb = nb.gid;
-//			    System.out.println(pa + " -> " + pb);
+			    System.out.println(pa + " -> " + pb);
 				pb = XMLUtil.getParentId(nb.getDocument(), pb, nb.getDocument().getTreeLevel(pb));
-//				System.out.println("comparing " + pa + " -> " + pb);
+				System.out.println("comparing " + pa + " -> " + pb);
 				if(pa == pb) {
 				    if(mode == NodeSet.DESCENDANT) {
 				        if (rememberContext)

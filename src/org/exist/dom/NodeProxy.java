@@ -70,6 +70,12 @@ public class NodeProxy extends AbstractNodeSet implements NodeValue, Comparable 
 	public long gid = 0;
 
 	/**
+	 * The internal storage address of the node in the
+	 * dom.dbx node store. This field is optional.
+	 */
+	private long internalAddress = -1;
+	
+	/**
 	 * The type of this node (as defined by DOM), if known, -1 if
 	 * unknown.
 	 */
@@ -84,8 +90,6 @@ public class NodeProxy extends AbstractNodeSet implements NodeValue, Comparable 
 	public Match match = null;
 
 	private ContextItem context = null;
-	
-	private long internalAddress = -1;
 	
 	public NodeProxy() {
 	}
@@ -153,6 +157,8 @@ public class NodeProxy extends AbstractNodeSet implements NodeValue, Comparable 
 	}
 
 	public int compareTo(Object other) {
+		if(!(other instanceof NodeProxy))
+			return 1;
 		final NodeProxy p = (NodeProxy) other;
 		if (doc.docId == p.doc.docId) {
 			if (gid == p.gid)
@@ -495,7 +501,41 @@ public class NodeProxy extends AbstractNodeSet implements NodeValue, Comparable 
 	public ContextItem getContext() {
 		return context;
 	}
-
+	
+	public NodeProxy parentWithChild(
+			DocumentImpl otherDoc,
+			long otherId,
+			boolean directParent,
+			boolean includeSelf,
+			int level) {
+		if(otherDoc.getDocId() != doc.getDocId())
+			return null;
+		if(includeSelf && otherId == gid)
+			return this;
+		if (level < 0)
+			level = doc.getTreeLevel(otherId);
+		while (otherId > 0) {
+			otherId = XMLUtil.getParentId(doc, otherId, level);
+			if(otherId == gid)
+				return this;
+			else if (directParent)
+				return null;
+			else
+				--level;
+		}
+		return null;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.dom.AbstractNodeSet#getRange(org.exist.dom.DocumentImpl, long, long)
+	 */
+	public NodeSet getRange(DocumentImpl document, long lower, long upper) {
+		if(doc.getDocId() == document.getDocId()
+				&& gid >= lower && gid <= upper)
+			return this;
+		return NodeSet.EMPTY_SET;
+	}
+	
 	//	methods of interface Item
 
 	/* (non-Javadoc)

@@ -53,6 +53,7 @@ public class VirtualNodeSet extends AbstractNodeSetBase {
 	protected NodeTest test;
 	protected NodeSet context;
 	protected NodeSet realSet = null;
+	protected boolean realSetIsComplete = false;
 	protected boolean inPredicate = false;
 	protected boolean useSelfAsContext = false;
 
@@ -203,6 +204,7 @@ public class VirtualNodeSet extends AbstractNodeSetBase {
 		if (realSet == null)
 			realSet = new ExtArrayNodeSet(256);
 		realSet.add(p);
+		realSetIsComplete = false;
 	}
 
 	public NodeProxy parentWithChild(
@@ -327,9 +329,10 @@ public class VirtualNodeSet extends AbstractNodeSetBase {
 	}
 
 	private final void realize() {
-		//if (realSet != null)
-		//	return;
+		if (realSet != null && realSetIsComplete)
+			return;
 		realSet = getNodes();
+		realSetIsComplete = true;
 	}
 
 	public void setSelfIsContext() {
