@@ -104,8 +104,6 @@ public class ForExpr extends BindingExpression {
 		
 		if(whereExpr != null) {
 			whereExpr.setInPredicate(true);
-			if(!(in.isCached() || fastOrderBy))
-				setContext(in);
 		}
 		
 		// See if we can process the "where" clause in a single step (instead of
@@ -119,8 +117,12 @@ public class ForExpr extends BindingExpression {
 		
 		// If possible, apply the where expression ahead of the iteration
 		if(fastExec) {
-			LOG.debug("fast evaluation mode");
+			LOG.debug("single-step where-clause evaluation selected");
+			if(!in.isCached())
+				setContext(in);
 			in = applyWhereExpression(in);
+			if(!in.isCached())
+				clearContext(in);
 		}
 		
 		// PreorderedValueSequence applies the order specs to all items
@@ -170,6 +172,8 @@ public class ForExpr extends BindingExpression {
 				if(contextItem instanceof NodeProxy)
 					((NodeProxy)contextItem).addContextNode((NodeProxy)contextItem);
 				Sequence bool = applyWhereExpression(null);
+				if(contextItem instanceof NodeProxy)
+					((NodeProxy)contextItem).clearContext();
 				// if where returned false, continue
 				if(!bool.effectiveBooleanValue())
 					continue;
@@ -236,6 +240,15 @@ public class ForExpr extends BindingExpression {
 			next = i.nextItem();
 			if (next instanceof NodeProxy)
 				 ((NodeProxy) next).addContextNode((NodeProxy) next);
+		}
+	}
+	
+	public final static void clearContext(Sequence seq) {
+		Item next;
+		for (SequenceIterator i = seq.unorderedIterator(); i.hasNext();) {
+			next = i.nextItem();
+			if (next instanceof NodeProxy)
+				 ((NodeProxy)next).clearContext();
 		}
 	}
 }

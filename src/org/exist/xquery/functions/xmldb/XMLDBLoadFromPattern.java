@@ -75,7 +75,9 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
 				"The collection can be either specified as a simple collection path, " +
 				"an XMLDB URI, or a collection object as returned by the collection or " +
 				"create-collection functions. The function returns a sequence of all document paths added " +
-				"to the db. These can be directly passed to fn:doc() to retrieve the document.",
+				"to the db. These can be directly passed to fn:doc() to retrieve the document. The final argument $d is used to specify a mime-type.  If the mime-type " +
+				"is something other than 'text/xml' or 'application/xml', the resource will be stored as " +
+				"a binary resource.",
 				new SequenceType[] {
 					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
