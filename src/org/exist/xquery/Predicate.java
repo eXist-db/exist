@@ -124,7 +124,7 @@ public class Predicate extends PathExpr {
 				Item item = i.nextItem();
 				context.setContextPosition(p);
 				Sequence innerSeq = inner.eval(contextSequence, item);
-				LOG.debug("innerSeq = " + innerSeq.effectiveBooleanValue());
+//				LOG.debug("innerSeq = " + innerSeq.effectiveBooleanValue());
 				if(innerSeq.effectiveBooleanValue())
 					result.add(item);
 			}
