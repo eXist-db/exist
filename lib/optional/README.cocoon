@@ -1,7 +1,7 @@
 Most of the jars in this directory are required for Axis (which provides
 SOAP access) and Cocoon.
 
-The included Cocoon version is 2.1.3. It has been built with the
+The included Cocoon version is 2.1.4. It has been built with the
 following blocks:
 
 databases

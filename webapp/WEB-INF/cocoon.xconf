@@ -53,33 +53,38 @@
       |  following elements:
       |
       |    reload-scripts (boolean value, default false):
-      |
-      |       whether to check if the scripts source files are
-      |       modified. Checking for modification is an expensive
-      |       operation, so leave it disabled in a production
-      |       environment. If not present it is assumed to be "false". When
-      |       "true" *all* script files are checked for modification on
-      |       each function invocation done using <map:call
-      |       function="...">, but not more frequent than the value of
-      |       "check-time" (see below).
+      |       whether to check if the scripts source files are modified.
+      |       Checking for modification is an expensive operation, so leave
+      |       it disabled in a production environment. If not present it is
+      |       assumed to be "false". When "true" *all* script files are
+      |       checked for modification on each function invocation done using
+      |       <map:call function="...">, but not more frequent than the value
+      |       of "check-time" (see below).
       |
       |    check-time (long value, default 1000):
-      |
-      |       time in miliseconds between the checks for the last
-      |       modification date of script files.
+      |       time in miliseconds between the checks for the last modification
+      |       date of script files.
       |
       |    debugger (boolean value, default false):
-      |
-      |       whether support for the JavaScript debugger should be enabled
-      |       in the control flow.
+      |       whether support for the JavaScript debugger should be enabled in
+      |       the control flow.
       +-->
-  <flow-interpreters default="JavaScript" logger="flow">
-    <component-instance class="org.apache.cocoon.components.flow.javascript.JavaScriptInterpreter" name="JavaScript">
-      <load-on-startup>resource://org/apache/cocoon/components/flow/javascript/system.js</load-on-startup>
+  <flow-interpreters default="javascript" logger="flow">
+    <!-- FOM (Flow Object Model) -->
+    <component-instance class="org.apache.cocoon.components.flow.javascript.fom.FOM_JavaScriptInterpreter" name="javascript">
+      <load-on-startup>resource://org/apache/cocoon/components/flow/javascript/fom/fom_system.js</load-on-startup>
       <reload-scripts>true</reload-scripts>
       <check-time>4000</check-time>
       <!--  <debugger>enabled</debugger> -->  <!-- JavaScript Debugger support -->
     </component-instance>
+    <!-- (Deprecated) Original
+    <component-instance name="JavaScript" class="org.apache.cocoon.components.flow.javascript.JavaScriptInterpreter">
+      <load-on-startup>resource://org/apache/cocoon/components/flow/javascript/system.js</load-on-startup>
+      <reload-scripts>true</reload-scripts>
+      <check-time>4000</check-time>
+      <debugger>enabled</debugger>
+    </component-instance>
+    -->
   </flow-interpreters>
 
   <!--+
@@ -152,13 +157,39 @@
     <component-instance class="org.apache.cocoon.components.modules.input.DateMetaInputModule" logger="core.modules.input" name="datemeta"/>
     <component-instance class="org.apache.cocoon.components.modules.input.JXPathMetaModule" logger="core.modules.input" name="jxpath"/>
     <component-instance class="org.apache.cocoon.components.modules.input.SimpleMappingMetaModule" logger="core.modules.input" name="simplemap"/>
+    <component-instance class="org.apache.cocoon.components.modules.input.LocateResource" logger="core.modules.input" name="locate"/>
     <component-instance class="org.apache.cocoon.components.modules.input.ChainMetaModule" logger="core.modules.input" name="chain">
       <input-module name="request-param"/>
       <input-module name="request-attr"/>
       <input-module name="session-attr"/>
       <input-module name="defaults"/>
     </component-instance>
+    <component-instance class="org.apache.cocoon.components.modules.input.PropertiesFileModule" logger="core.modules.input" name="cocoon-properties">
+      <file src="resource://org/apache/cocoon/cocoon.properties"/>
+    </component-instance>
+    
+    <!-- The 'defaults', 'myxml' and 'slashdot' input modules are used
+         in the samples -->
+    <component-instance class="org.apache.cocoon.components.modules.input.DefaultsModule" logger="core.modules.input" name="defaults">
+      <values>
+        <skin>defaultSkin</skin>
+        <base-url>http://localhost:8080/cocoon</base-url>
+      </values>
+    </component-instance>
 
+    <component-instance class="org.apache.cocoon.components.modules.input.XMLFileModule" logger="core.modules.xml" name="myxml">
+      <file src="context:///samples/modules/forrestconf.xml"/>
+    </component-instance>
+    <component-instance class="org.apache.cocoon.components.modules.input.XMLFileModule" logger="core.modules.xml" name="slashdot">
+      <file src="http://slashdot.org/slashdot.rss"/>
+    </component-instance>
+
+  <!--..... Start configuration from 'db-modules-input' -->
+
+
+      <component-instance class="org.apache.cocoon.components.modules.input.CollectionMetaModule" logger="core.modules.input" name="collection"/>
+
+<!--..... End configuration from 'db-modules-input' -->
 </input-modules>
 
   <!--+
@@ -197,25 +228,30 @@
     <component-instance class="org.apache.excalibur.source.impl.ResourceSourceFactory" name="resource"/>
     <component-instance class="org.apache.cocoon.components.source.impl.ContextSourceFactory" name="context"/>
     <component-instance class="org.apache.cocoon.components.source.impl.SitemapSourceFactory" name="cocoon"/>
+    <!-- The "file:" protocol is modifiable (can be written to) and traversable (directory structures
+         can be crawled). -->
+    <component-instance class="org.apache.excalibur.source.impl.FileSourceFactory" name="file"/>
+    <component-instance class="org.apache.cocoon.components.source.impl.PartSourceFactory" name="upload"/>
     <!-- the "*" protocol handles all uri schemes that are not explicitely specified. This includes all
-         JDK standard protocols, with special handling of the "file:" protocol which is modifiable
-         (can be written to) and traversable (directory structures can be crawled). -->
+         JDK standard protocols. -->
     <component-instance class="org.apache.excalibur.source.impl.URLSourceFactory" name="*"/>
-  
+  <!--..... Start configuration from 'blob' -->
+
+
+    <!-- blob pseudo protocol -->
+    <component-instance class="org.apache.cocoon.components.source.impl.BlobSourceFactory" name="blob"/>
+
+<!--..... End configuration from 'blob' -->
+<!--..... Start configuration from 'xmldb' -->
+
 
     <!-- xmldb pseudo protocol -->
     <component-instance class="org.apache.cocoon.components.source.impl.XMLDBSourceFactory" name="xmldb">
-    
-        <!--#######################################################-->
-        <!-- XMLDB driver for eXist                                                                         -->
-        <!--#######################################################-->
-        <driver class="org.exist.xmldb.DatabaseImpl" type="exist"/>
-        
-        <!-- Xindice driver -->
-        <!--driver class="org.apache.xindice.client.xmldb.DatabaseImpl" type="xindice"/-->
+		<!-- Add here other XML:DB compliant databases drivers -->
+		<driver class="org.exist.xmldb.DatabaseImpl" type="exist"/>
     </component-instance>
 
-
+<!--..... End configuration from 'xmldb' -->
 </source-factories>
   <!--+
       | Entity resolution catalogs
@@ -260,11 +296,10 @@
   <!--+
       | XML Parser
       |
-      | The default parser used in Apache Cocoon is
-      | org.apache.excalibur.xml.impl.JaxpParser. Apache Cocoon requires a
-      | JAXP 1.1 parser.
-      | If you have problems because your servlet environment uses its own
-      | parser not conforming to JAXP 1.1 try using the alternative
+      | Apache Cocoon requires a JAXP 1.1 parser. The default parser is
+      | org.apache.excalibur.xml.impl.JaxpParser. 
+      | Note: If you have problems because your servlet environment uses its
+      | own parser not conforming to JAXP 1.1 try using the alternative
       | XercesParser instead of the JaxpParser. To activate the XercesParser,
       | change the class attribute to
       |   class="org.apache.excalibur.xml.impl.XercesParser"
@@ -272,16 +307,16 @@
       | probably on the startup of your servlet engine like this:
       | -Dorg.apache.excalibur.xml.sax.SAXParser=org.apache.excalibur.xml.impl.XercesParser
       |
-      | Configuration for the JaxpParser (not the XercesParser!):
-      | - validate (boolean, default = false): This parameter causes the parser
-      |     to be a validating parser.
-      |     XML validation is only being used for the documentation build.
+      | Configuration parameters for the JaxpParser (not the XercesParser!):
+      | - validate (boolean, default = false): should the parser validate
+      |     parsed documents?
+      |     Note: XML validation is only being used for the documentation build.
       |     (If you are going to use it elsewhere, then do so with caution.)
       |     You really should have validated all of your XML documents already,
       |     according to their proper DTD or schema. Do not expect Cocoon
       |     to do it.
       | - namespace-prefixes (boolean, default = false) : do we want
-      |     namespaces declarations also as 'xmlns:' attributes ?
+      |     namespaces declarations also as 'xmlns:' attributes?
       |     Note : setting this to true confuses some XSL processors
       |     (e.g. Saxon).
       | - stop-on-warning (boolean, default = true) : should the parser
@@ -293,29 +328,28 @@
       |     Note : even if this parameter is true, parsers are not recycled
       |     in case of parsing errors : some parsers (e.g. Xerces) do not like
       |     to be reused after failure.
-      | - sax-parser-factory (string) : the name of the SAXParserFactory
-      |     implementation class to be used instead of using the standard
-      |     JAXP mechanism (SAXParserFactory.newInstance()). This allows to
-      |     choose unambiguously the JAXP implementation to be used when
-      |     several of them are available in the classpath.
-      | - document-builder-factory (string) : the name of the
+      | - sax-parser-factory (string, optional) : the name of the
+      |     SAXParserFactory implementation class to be used instead of using
+      |     the standard JAXP mechanism (SAXParserFactory.newInstance()). This
+      |     allows to choose unambiguously the JAXP implementation to be used
+      |     when several of them are available in the classpath.
+      | - document-builder-factory (string, optional) : the name of the
       |     DocumentBuilderFactory implementation to be used (similar to
       |     sax-parser-factory for DOM).
+      | - drop-dtd-comments : should comment() events from DTD's be dropped?
+      |     Note: Since this implementation does not support the DeclHandler
+      |     interface anyway, it is quite useless to only have the comments
+      |     from DTD. And the comment events from the internal DTD subset
+      |     would appear in the serialized output again.
       +-->
-  <xml-parser class="org.apache.excalibur.xml.impl.JaxpParser" logger="core.xml-parser" 
-  	pool-grow="4" pool-max="32" pool-min="8">
+  <xml-parser class="org.apache.excalibur.xml.impl.JaxpParser" logger="core.xml-parser" pool-grow="4" pool-max="32" pool-min="8">
     <parameter name="validate" value="false"/>
-    <parameter name="namespace-prefixes" value="true"/>
+    <parameter name="namespace-prefixes" value="false"/>
     <parameter name="stop-on-warning" value="true"/>
-    <parameter name="stop-on-recoverable-error" value="false"/>
+    <parameter name="stop-on-recoverable-error" value="true"/>
     <parameter name="reuse-parsers" value="false"/>
-    <!--parameter name="sax-parser-factory" value="???"/-->
-    <!--parameter name="document-builder-factory" value="???"/-->
-    <!-- drop-dtd-comments: causes all comment events originating from DTD
-         comments to be dropped right after parsing -->
     <parameter name="drop-dtd-comments" value="true"/>
   </xml-parser>
-
 
   <!--+
       | XSLT Processor
@@ -334,7 +368,7 @@
       |            enable it on one xslt-processor, enable it on all.
       +-->
   <xslt-processor logger="core.xslt-processor">
-     <parameter name="use-store" value="false"/>
+     <parameter name="use-store" value="true"/>
      <parameter name="incremental-processing" value="false"/>
   </xslt-processor>
 
@@ -344,7 +378,7 @@
       | <transformer-factory>org.apache.xalan.processor.TransformerFactoryImpl</transformer-factory>
       +-->
   <component class="org.apache.excalibur.xml.xslt.XSLTProcessorImpl" logger="core.xslt-processor" role="org.apache.excalibur.xml.xslt.XSLTProcessor/xsltc">
-     <parameter name="use-store" value="false"/>
+     <parameter name="use-store" value="true"/>
      <parameter name="transformer-factory" value="org.apache.xalan.xsltc.trax.TransformerFactoryImpl"/>
   </component>
   
@@ -352,7 +386,7 @@
       | Xalan XSLT Processor
       +-->
   <component class="org.apache.excalibur.xml.xslt.XSLTProcessorImpl" logger="core.xslt-processor" role="org.apache.excalibur.xml.xslt.XSLTProcessor/xalan">
-     <parameter name="use-store" value="false"/>
+     <parameter name="use-store" value="true"/>
      <parameter name="incremental-processing" value="false"/>
      <parameter name="transformer-factory" value="org.apache.xalan.processor.TransformerFactoryImpl"/>
   </component>
@@ -363,13 +397,13 @@
       |  <parameter name="transformer-factory" value="com.icl.saxon.TransformerFactoryImpl"/>
       | For new (7.x?) Saxon use:
       |  <parameter name="transformer-factory" value="net.sf.saxon.TransformerFactoryImpl"/>
-  -->
   <component logger="core.xslt-processor"
              role="org.apache.excalibur.xml.xslt.XSLTProcessor/saxon"
              class="org.apache.excalibur.xml.xslt.XSLTProcessorImpl">
-     <parameter name="use-store" value="false"/>
-     <parameter name="transformer-factory" value="net.sf.saxon.TransformerFactoryImpl"/>
+     <parameter name="use-store" value="true"/>
+     <parameter name="transformer-factory" value="com.icl.saxon.TransformerFactoryImpl"/>
   </component>
+  +-->
 
   <!-- Xpath Processor: -->
   <xpath-processor class="org.apache.excalibur.xml.xpath.XPathProcessorImpl" logger="core.xpath-processor"/>
@@ -383,23 +417,34 @@
 
   <!--+
       | Transient Store: holds objects that don't have to survive shutdown
+      |
+      | Common configuration parameters:
+      | maxobjects: Indicates how many objects will be hold in the cache.
+      |    When the number of maxobjects has been reached. The last object
+      |    in the cache will be thrown out.
       +-->
   <transient-store logger="core.store.transient">
-
-     <!--+
-         | Indicates how many objects will be hold in the cache.
-         | When the number of maxobjects has been reached. The last object
-         | in the cache will be thrown out.
-         +-->
      <parameter name="maxobjects" value="100"/>
-
-     <!-- Turns swapping of the objects into persistent cache on and off. -->
-     <parameter name="use-persistent-cache" value="true"/>
   </transient-store>
+  
+  <!--+
+      | Store: generic store. The default implementation is an in-memory store
+      | backed by the persistent store (see below). This forms a two-stage
+      | cache composed of a fast in-memory MRU front-end and a persistent
+      | back-end storing less used objects.
+      |
+      | Common configuration parameters:
+      | maxobjects: Indicates how many objects will be hold in the cache.
+      |    When the number of maxobjects has been reached. The last object
+      |    in the cache will be thrown out.
+      +-->
+  <store logger="core.store">
+     <parameter name="maxobjects" value="100"/>
+  </store>
 
   <!--+
       | Persistent Store: holds objects that have to survive shutdown.
-      | WARNING: FilesystemStore is broken. Cocoon uses DefaultStore based
+      | WARNING: FilesystemStore is broken. Cocoon uses DefaultPersistentStore based
       | on the Avalon Excalibur JispStore instead.
       |
       | Common configuration parameters:
@@ -415,7 +460,7 @@
       |  indexfile: Name of the index file to use. Defaults to cocoon.idx
       |  order: FIXME: put description here.
       +-->
-  <persistent-store class="org.apache.cocoon.components.store.impl.DefaultStore" logger="core.store.persistent">
+  <persistent-store logger="core.store.persistent">
     <parameter name="use-cache-directory" value="true"/>
     <parameter name="order" value="2701"/>
   </persistent-store>
@@ -423,32 +468,43 @@
   <!--+
       | Store Janitor: the store garbage collector and memory usage controller.
       |
-      | Be careful with the heapsize and freememory parameters. Wrong values
-      | can cause high cpu usage. Example configuration:
+      | WARNING: Be careful with the heapsize and freememory parameters.
+      |           Wrong values can cause high cpu usage.
+      |
+      | Example configuration:
       | Jvm settings:
       |    -Xmx200000000
       | store-janitor settings:
       |    <parameter name="freememory" value="5000000"/>
-      |    <parameter name="heapsize" value="150000000"/>
+      |    <parameter name="heapsize" value="196000000"/>
       |
       | It is recommended to have heapsize equal to -Xmx, especially on Sun's
       | JVM which are unable to shrink its heap once it grows above minimum.
       | Freememory should be greater than amount of memory necessary for normal
       | application operation.
+      | BUT: The heap size of the memory of the JVM is a little bit less than
+      |      the value you specify for -Xmx, so you have to set the heapsize
+      |      for the store janitor to a value which is lower (2% less seems
+      |      to be a working value).
       +-->
   <store-janitor logger="core.store.janitor">
      <!-- How much free memory shall be available in the jvm -->
-     <parameter name="freememory" value="1000000"/>
+     <parameter name="freememory" value="2048000"/>
      <!-- Indicates the limit of the jvm memory consumption. The default max
-          heapsize for Sun's JVM is 64Mb -->
-     <parameter name="heapsize" value="67108864"/>
+          heapsize for Sun's JVM is (almost) 64Mb -->
+     <parameter name="heapsize" value="66600000"/>
      <!-- How often shall the cleanup thread check memory -->
      <parameter name="cleanupthreadinterval" value="10"/>
+     <!-- Experimental adaptive algorithm for cleanup interval
+     <parameter name="adaptivethreadinterval" value="true"/>
+     -->
      <!-- Indicates the thread priority of the cleanup thread -->
      <parameter name="threadpriority" value="5"/>
      <!-- How much percent of the elements of each registered Store
           shall be removed when low on memory. Default 10% -->
      <parameter name="percent_to_free" value="10"/>
+     <!-- Invoke the garbage collector when low memory is reached -->
+     <parameter name="invokegc" value="false"/>
   </store-janitor>
 
 <!-- ========================= Protocol Handlers =========================== -->
@@ -466,7 +522,7 @@
       +-->
   <i18n-bundles logger="core.i18n-bundles">
     <catalogue-name>messages</catalogue-name>
-    <catalogue-location>i18n/translations</catalogue-location>
+    <catalogue-location>context://samples/i18n/translations</catalogue-location>
     <cache-at-startup>true</cache-at-startup>
   </i18n-bundles>
 
@@ -507,10 +563,10 @@
       <!--+
           | Specifies which Java compiler to use. Possible variants are:
           |
-          |  - Javac: the java compiler that comes with JDK
-          |  - Pizza: the Pizza java compiler
-          |  - Jikes: the Jikes java compiler
           |  - EclipseJavaCompiler: the Eclipse JTD java compiler
+          |  - Javac: the java compiler that comes with JDK
+          |  - Jikes: the Jikes java compiler
+          |  - Pizza: the Pizza java compiler
           |
           | NOTE: the Eclipse JTD is the only java compiler that is capable
           |       of imports classes thru the context classloader. All other
@@ -519,10 +575,10 @@
           |       time. It is *HIGHLY* suggested that you use this compiler
           |       or you might experience problems in some servlet containers.
           +-->
-      <!--parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.Javac"/-->
-      <parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.Pizza"/>
+		  <parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.EclipseJavaCompiler"/>
+	  <!--parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.Javac"/-->
       <!--parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.Jikes"/-->
-      <!--parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.EclipseJavaCompiler"/-->
+	  <!--parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.Pizza"/-->
 
     </java-language>
 
@@ -531,7 +587,7 @@
   </programming-languages>
 
   <!--+
-      | Logisheets
+      | Logicsheets
       |
       | This section defines the XSP logicsheets. A logicsheet is a special
       | XSLT stylesheet used to translate user-defined dynamic markup into
@@ -657,7 +713,8 @@
           <parameter name="uri" value="http://apache.org/cocoon/xsp/input/1.0"/>
           <parameter name="href" value="resource://org/apache/cocoon/components/language/markup/xsp/java/input.xsl"/>
         </builtin-logicsheet>
-      
+      <!--..... Start configuration from 'esql' -->
+
 
         <!-- The ESQL logicsheet is an XSP logicsheet that performs sql queries and 
              serializes their results as XML. This allows you to work with data from a 
@@ -668,14 +725,13 @@
           <parameter name="href" value="resource://org/apache/cocoon/components/language/markup/xsp/java/esql.xsl"/>
         </builtin-logicsheet>
 
-        <!--#######################################################-->
-        <!-- eXist's xmldb logicsheet                                                                        -->
-        <!--#######################################################-->
-        <builtin-logicsheet>
-            <parameter name="prefix" value="xdb"/>
-            <parameter name="uri" value="http://exist-db.org/xmldb/1.0"/>
-            <parameter name="href" value="resource://org/exist/xmldb.xsl"/>
-        </builtin-logicsheet>
+		<builtin-logicsheet>
+			<parameter name="prefix" value="xdb"/>
+			<parameter name="uri" value="http://exist-db.org/xmldb/1.0"/>
+			<parameter name="href" value="resource://org/exist/xmldb.xsl"/>
+		</builtin-logicsheet>
+
+<!--..... End configuration from 'esql' -->
 </target-language>
 
       <!--+
@@ -748,35 +804,54 @@
                value="http://localhost:8080/cocoon/samples/cinclude/loader"/>
     -->
  </component>
+<!--..... Start configuration from 'datasources' -->
 
-  <!--+
-      | URL Factory
-      |
-      | The url factory adds special url protocols to the system, they are then
-      | available inside Cocoon, e.g. as a source argument for one of the sitemap
-      | components.
-      |
-      | THIS COMPONENT IS DEPRECATED AND SHOULD NOT BE USED ANYMORE
-      +-->
-  <url-factory logger="core.url-factory">
-    <!-- Allows access to resources available from the ClassLoader, using getResource() method. -->
-    <protocol class="org.apache.cocoon.components.url.ResourceURLFactory" name="resource"/>
-  </url-factory>
+  <datasources>
+    <jdbc logger="core.datasources.personnel" name="personnel">
+      <!--
+          If you have an Oracle database, and are using the the
+      pool-controller below, you should add the attribute
+      "oradb" and set it to true.
 
-  <!--+
-      | Source Handler
-      |
-      | The source handler adds special url protocols to the system, they are
-      | then available inside Cocoon, e.g. as a source argument for one of the
-      | sitemap components.
-      |
-      | THIS COMPONENT IS DEPRECATED AND SHOULD NOT BE USED ANYMORE
-      +-->
-  <source-handler logger="core.source-handler">
-    <!-- file protocol : this is a WriteableSource -->
-    <protocol class="org.apache.cocoon.components.source.FileSourceFactory" name="file"/>
-    <!-- Allows access to resources available from the servlet context, using getResource() method. -->
-    <protocol class="org.apache.cocoon.components.source.ContextSourceFactory" name="context"/>
-  </source-handler>
-  
+      <pool-controller min="5" max="10" oradb="true"/>
+
+      That way the test to see if the server has disconnected
+      the JdbcConnection will function properly.
+      -->
+      <pool-controller max="10" min="5"/>
+      <!--
+          If you need to ensure an autocommit is set to true or
+      false, then create the "auto-commit" element below.
+
+      <auto-commit>false</auto-commit>
+
+      The default is true.
+      -->
+      <dburl>jdbc:hsqldb:hsql://localhost:9002</dburl>
+      <user>sa</user>
+      <password/>
+    </jdbc>
+  </datasources>
+<!--..... End configuration from 'datasources' -->
+<!--..... Start configuration from 'db-modules' -->
+
+   <!-- =============== Database Modules ==================== -->
+   
+   <autoincrement-modules>
+      <component-instance class="org.apache.cocoon.components.modules.database.HsqlIdentityAutoIncrementModule" logger="core.modules.auto" name="auto"/>
+<!--
+      Choose the one suitable for your DBMS. You *can* have more than
+      one at a time, but they need to have different names. You then
+      need to specify explicitly, which one to use in your descriptor
+      file.
+
+      <component-instance logger="core.modules.auto" name="auto" class="org.apache.cocoon.components.modules.database.ManualAutoIncrementModule"/>
+      <component-instance logger="core.modules.auto" name="auto" class="org.apache.cocoon.components.modules.database.IfxSerialAutoIncrementModule"/>
+      <component-instance logger="core.modules.auto" name="auto" class="org.apache.cocoon.components.modules.database.McKoiSequenceModule"/>
+      <component-instance logger="core.modules.auto" name="auto" class="org.apache.cocoon.components.modules.database.MysqlAutoIncrementModule"/>
+      <component-instance logger="core.modules.auto" name="auto" class="org.apache.cocoon.components.modules.database.PgsqlAutoIncrementModule"/>
+      <component-instance logger="core.modules.auto" name="auto" class="org.apache.cocoon.components.modules.database.SQLServerIdentityAutoIncrementModule"/>
+-->
+   </autoincrement-modules>
+<!--..... End configuration from 'db-modules' -->
 </cocoon>

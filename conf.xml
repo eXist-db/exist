@@ -73,7 +73,22 @@
     <serializer enable-xinclude="yes" enable-xsl="no"
 		indent="yes" add-exist-id="none" match-tagging-elements="yes"
         match-tagging-attributes="no"/>
-  
+
+	<!-- During XUpdates, the database needs to do a partial reindex of the
+	document whenever the internal node-id structure has changed. Reindex
+	runs can occur quite frequently and slow down the XUpdate process.
+
+	Frequent reindex runs can be avoided by leaving some space between the
+	numeric identifiers assigned to every node. Future insertions will first
+	fill up these spare identifiers, so no reindex is required.
+
+	The "growth-factor" attribute determines the number of spare ids to be
+	inserted whenever the node id scheme is recomputed after an XUpdate.
+	Increase the setting to have less reindex runs. However, you have to
+	be aware that leaving spare ids also limits the maximum size of a 
+	document that can be indexed. -->
+	<xupdate growth-factor="20"/>
+
     <!-- 
         Settings for the indexer:
         - suppress-whitespace
@@ -136,10 +151,9 @@
 	    		retrieving queryb results or for some types of XPath subexpressions, like
 	    		equality comparisons.
         -->
-        <index doctype="users" default="none" attributes="false">
+        <index doctype="auth" default="none" attributes="false">
 		</index>
-		<index doctype="PLAY" default="all">
-		</index>
+
 		<index doctype="dblp" attributes="true" alphanum="true" default="all">
 			<exclude path="//@mdate"/>
 			<exclude path="//ee"/>
@@ -147,7 +161,15 @@
 			<exclude path="//cdrom"/>
 			<exclude path="//url"/>
 		</index>
-        
+
+		<index doctype="movie" attributes="true" default="all">
+			<exclude path="//@subtype"/>
+			<exclude path="//@id"/>
+			<exclude path="//@name"/>
+			<exclude path="//@type"/>
+			<exclude path="//@creditorder"/>
+		</index>
+
         <!-- Specify the location of one or more catalog files.
         Catalogs are used to resolve external entities in XML documents.
         -->
