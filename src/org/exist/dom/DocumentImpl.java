@@ -542,6 +542,13 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		return order;
 	}
 
+	/* (non-Javadoc)
+     * @see org.w3c.dom.Node#getParentNode()
+     */
+    public Node getParentNode() {
+        return null;
+    }
+    
 	public String getVersion() {
 		return "";
 	}
