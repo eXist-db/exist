@@ -328,11 +328,15 @@ public class IntegerValue extends NumericValue implements Indexable {
 	 * @see org.exist.xquery.value.NumericValue#mult(org.exist.xquery.value.NumericValue)
 	 */
 	public ComputableValue mult(ComputableValue other) throws XPathException {
-		if (Type.subTypeOf(other.getType(), Type.INTEGER))
-			// return new IntegerValue(value * ((IntegerValue) other).value, type);
-			return new IntegerValue( value.multiply( ((IntegerValue) other).value ), type );
-		else
-			return ((ComputableValue) convertTo(other.getType())).mult(other);
+		switch(other.getType()) {
+			case Type.INTEGER:
+				return new IntegerValue( value.multiply( ((IntegerValue) other).value ), type );
+			case Type.DAY_TIME_DURATION:
+			case Type.YEAR_MONTH_DURATION:
+				return other.mult(this);
+			default:
+				return ((ComputableValue) convertTo(other.getType())).mult(other);
+		}
 	}
 
 	/** The div operator performs floating-point division according to IEEE 754.

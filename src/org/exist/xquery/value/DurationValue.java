@@ -30,7 +30,7 @@ import org.exist.xquery.XPathException;
 /**
  * @author wolf
  */
-public class DurationValue extends ComputableValue {
+public class DurationValue extends ComputableValue implements Cloneable {
 
 	public final static int YEAR = 0;
 	public final static int MONTH = 1;
@@ -163,6 +163,20 @@ public class DurationValue extends ComputableValue {
 			}
 			p++;
 		}
+	}
+	
+	public Object clone() {
+		try {
+			return super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public DurationValue negate() {
+		DurationValue result = (DurationValue) clone();
+		result.negative = !result.negative;
+		return result;
 	}
 	
 	/* (non-Javadoc)

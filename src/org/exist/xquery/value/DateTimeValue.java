@@ -299,31 +299,34 @@ public class DateTimeValue extends AbstractDateTimeValue {
 	 * @see org.exist.xquery.value.ComputableValue#minus(org.exist.xquery.value.ComputableValue)
 	 */
 	public ComputableValue minus(ComputableValue other) throws XPathException {
-		// TODO Auto-generated method stub
-		return null;
+		switch(other.getType()) {
+			case Type.DATE_TIME:
+				return new DayTimeDurationValue(date.getTime() - ((DateTimeValue) other).date.getTime());
+			case Type.YEAR_MONTH_DURATION:
+				return ((YearMonthDurationValue) other).negate().plus(this);
+			case Type.DAY_TIME_DURATION:
+				return ((DayTimeDurationValue) other).negate().plus(this);
+			default:
+				throw new XPathException(
+						"Operand to minus should be of type xs:dateTime, xdt:dayTimeDuration or xdt:yearMonthDuration; got: "
+							+ Type.getTypeName(other.getType()));
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.ComputableValue#plus(org.exist.xquery.value.ComputableValue)
 	 */
 	public ComputableValue plus(ComputableValue other) throws XPathException {
-		// TODO Auto-generated method stub
-		return null;
+		switch(other.getType()) {
+			case Type.YEAR_MONTH_DURATION:
+				return other.plus(this);
+			case Type.DAY_TIME_DURATION:
+				return other.plus(this);
+			default:
+				throw new XPathException(
+						"Operand to plus should be of type xdt:dayTimeDuration or xdt:yearMonthDuration; got: "
+							+ Type.getTypeName(other.getType()));
+		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.ComputableValue#mult(org.exist.xquery.value.ComputableValue)
-	 */
-	public ComputableValue mult(ComputableValue other) throws XPathException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.ComputableValue#div(org.exist.xquery.value.ComputableValue)
-	 */
-	public ComputableValue div(ComputableValue other) throws XPathException {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

@@ -24,6 +24,8 @@
 package org.exist.xquery.value;
 
 import java.text.Collator;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
@@ -45,6 +47,7 @@ public class YearMonthDurationValue extends DurationValue {
 	public YearMonthDurationValue(DurationValue other) {
 		this.year = other.year;
 		this.month = other.month;
+		this.negative = other.negative;
 	}
 
 	public YearMonthDurationValue(String str) throws XPathException {
@@ -265,11 +268,14 @@ public class YearMonthDurationValue extends DurationValue {
 	public ComputableValue plus(ComputableValue other) throws XPathException {
 		switch (other.getType()) {
 			case Type.YEAR_MONTH_DURATION :
-				return new YearMonthDurationValue(
-					getValue() + ((YearMonthDurationValue) other).getValue());
+				return new YearMonthDurationValue(getValue() + ((YearMonthDurationValue) other).getValue());
 			case Type.DATE :
-				return ((DateValue) other).plus(this);
-			default :
+			case Type.DATE_TIME:
+				int tzOffset = ((AbstractDateTimeValue) other).tzOffset;
+				GregorianCalendar ncal = (GregorianCalendar) ((AbstractDateTimeValue) other).calendar.clone();
+				ncal.add(Calendar.MONTH, getValue());
+				return other.getType() == Type.DATE ? new DateValue(ncal, tzOffset) : new DateTimeValue(ncal, tzOffset);
+			default:
 				throw new XPathException(
 					"Operand to plus should be of type xdt:yearMonthDuration, xs:date, "
 						+ "or xs:dateTime; got: "
@@ -282,11 +288,31 @@ public class YearMonthDurationValue extends DurationValue {
 			case Type.YEAR_MONTH_DURATION :
 				return new YearMonthDurationValue(
 					getValue() - ((YearMonthDurationValue) other).getValue());
-			default :
+			default:
 				throw new XPathException(
 					"Operand to plus should be of type xdt:yearMonthDuration, xs:date, "
 						+ "or xs:dateTime; got: "
 						+ Type.getTypeName(other.getType()));
 		}
+	}
+	
+	public ComputableValue div(ComputableValue other) throws XPathException {
+		if (other.getType() == Type.YEAR_MONTH_DURATION) {
+			return new IntegerValue(getValue()).div(new IntegerValue(((YearMonthDurationValue) other).getValue()));
+		} else if (Type.subTypeOf(other.getType(), Type.NUMBER)) {
+			return new YearMonthDurationValue(((NumericValue) new IntegerValue(getValue()).div(other)).round().getInt());
+		} else
+			throw new XPathException(
+					"Operand to div should be of xdt:yearMonthDuration or numeric type; got: "
+						+ Type.getTypeName(other.getType()));
+	}
+	
+	public ComputableValue mult(ComputableValue other) throws XPathException {
+		if (Type.subTypeOf(other.getType(), Type.NUMBER)) {
+			return new YearMonthDurationValue(((NumericValue) new IntegerValue(getValue()).mult(other)).round().getInt());
+		} else
+			throw new XPathException(
+					"Operand to mult should be of numeric type; got: "
+						+ Type.getTypeName(other.getType()));
 	}
 }

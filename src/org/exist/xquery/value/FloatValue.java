@@ -174,10 +174,15 @@ public class FloatValue extends NumericValue implements Indexable {
 	 * @see org.exist.xquery.value.NumericValue#mult(org.exist.xquery.value.NumericValue)
 	 */
 	public ComputableValue mult(ComputableValue other) throws XPathException {
-		if (Type.subTypeOf(other.getType(), Type.FLOAT))
-			return new FloatValue(value * ((FloatValue) other).value);
-		else
-			return mult((ComputableValue) other.convertTo(getType()));
+		switch(other.getType()) {
+			case Type.FLOAT:
+				return new FloatValue(value * ((FloatValue) other).value);
+			case Type.DAY_TIME_DURATION:
+			case Type.YEAR_MONTH_DURATION:
+				return other.mult(this);
+			default:
+				return mult((ComputableValue) other.convertTo(getType()));
+		}
 	}
 
 	/* (non-Javadoc)

@@ -39,6 +39,7 @@ public class DayTimeDurationValue extends DurationValue {
 		this.minute = other.minute;
 		this.second = other.second;
 		this.millisecond = other.millisecond;
+		this.negative = other.negative;
 	}
 
 	public DayTimeDurationValue(long millis) {
@@ -306,19 +307,19 @@ public class DayTimeDurationValue extends DurationValue {
 	 * @see org.exist.xquery.value.DurationValue#plus(org.exist.xquery.value.ComputableValue)
 	 */
 	public ComputableValue plus(ComputableValue other) throws XPathException {
-		long delta;
 		switch(other.getType()) {
 			case Type.DAY_TIME_DURATION:
 				return new DayTimeDurationValue(getValueInMilliseconds() + ((DayTimeDurationValue)other).getValueInMilliseconds());
 			case Type.TIME:
-				delta = getValueInMilliseconds() + ((TimeValue)other).calendar.getTimeInMillis();
-				return new TimeValue(delta, ((TimeValue)other).tzOffset);
 			case Type.DATE_TIME:
-				delta = getValueInMilliseconds() + ((DateTimeValue)other).calendar.getTimeInMillis();
-				return new DateTimeValue(delta, ((DateTimeValue)other).tzOffset);
 			case Type.DATE:
-				delta = getValueInMilliseconds() + ((DateValue)other).calendar.getTimeInMillis();
-				return new DateTimeValue(delta, ((DateValue)other).tzOffset);
+				long delta = getValueInMilliseconds() + ((AbstractDateTimeValue) other).calendar.getTimeInMillis();
+				int tzOffset = ((AbstractDateTimeValue) other).tzOffset;
+				switch(other.getType()) {
+					case Type.TIME: return new TimeValue(delta, tzOffset);
+					case Type.DATE_TIME: return new DateTimeValue(delta, tzOffset);
+					case Type.DATE: return new DateValue(delta, tzOffset);
+				}
 			default:
 				throw new XPathException("Operand to plus should be of type xdt:dayTimeDuration, xs:time, " +
 					"xs:date or xs:dateTime; got: " +
@@ -336,4 +337,25 @@ public class DayTimeDurationValue extends DurationValue {
 			throw new XPathException("Operand to minus should be of type xdt:dayTimeDuration; got: " +
 				Type.getTypeName(other.getType()));
 	}
+	
+	public ComputableValue div(ComputableValue other) throws XPathException {
+		if (other.getType() == Type.DAY_TIME_DURATION) {
+			return new DecimalValue(getValue()).div(new DecimalValue(((DayTimeDurationValue) other).getValue()));
+		} else if (Type.subTypeOf(other.getType(), Type.NUMBER)) {
+			return new DayTimeDurationValue(((NumericValue) new DecimalValue(getValue()*1000).div(other)).round().getInt());
+		} else
+			throw new XPathException(
+					"Operand to div should be of xdt:dayTimeDuration or numeric type; got: "
+						+ Type.getTypeName(other.getType()));
+	}
+	
+	public ComputableValue mult(ComputableValue other) throws XPathException {
+		if (Type.subTypeOf(other.getType(), Type.NUMBER)) {
+			return new DayTimeDurationValue(((NumericValue) new DecimalValue(getValue()*1000).mult(other)).round().getInt());
+		} else
+			throw new XPathException(
+					"Operand to mult should be of numeric type; got: "
+						+ Type.getTypeName(other.getType()));
+	}
+
 }

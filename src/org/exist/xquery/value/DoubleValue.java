@@ -255,10 +255,15 @@ public class DoubleValue extends NumericValue implements Indexable {
 	 * @see org.exist.xquery.value.NumericValue#mult(org.exist.xquery.value.NumericValue)
 	 */
 	public ComputableValue mult(ComputableValue other) throws XPathException {
-		if (Type.subTypeOf(other.getType(), Type.DOUBLE))
-			return new DoubleValue(value * ((DoubleValue) other).value);
-		else
-			return ((ComputableValue) convertTo(other.getType())).mult(other);
+		switch(other.getType()) {
+			case Type.DOUBLE:
+				return new DoubleValue(value * ((DoubleValue) other).value);
+			case Type.DAY_TIME_DURATION:
+			case Type.YEAR_MONTH_DURATION:
+				return other.mult(this);
+			default:
+				return ((ComputableValue) convertTo(other.getType())).mult(other);
+		}
 	}
 
 	/* (non-Javadoc)

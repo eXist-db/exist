@@ -43,8 +43,8 @@ public class AttributeUpdateAction extends RemoveAppendAction {
 		XUpdateQueryService service = (XUpdateQueryService)
 			col.getService("XUpdateQueryService", "1.0");
 		int attrSize = rand.nextInt(5);
-		String xupdate = XUPDATE_START + xmlGenerator.generateText(attrSize) + XUPDATE_END;
 		for (int i = 0; i < 10; i++) {
+			String xupdate = XUPDATE_START + xmlGenerator.generateText(attrSize) + XUPDATE_END;
 			long mods = service.update(xupdate);
 			System.out.println(Thread.currentThread().getName() + ": " + mods + " attributes updated ...");
 		}
