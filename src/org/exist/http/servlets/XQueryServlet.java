@@ -242,6 +242,10 @@ public class XQueryServlet extends HttpServlet {
 
 			Source source = new FileSource(f, encoding, true);
 			ResourceSet result = service.execute(source);
+			String mediaType = service.getProperty(OutputKeys.MEDIA_TYPE);
+			if (mediaType != null) {
+				response.setContentType(mediaType + "; charset=" + formEncoding);
+			}
 			for(ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
 				Resource res = i.nextResource();
 				output.println(res.getContent().toString());
