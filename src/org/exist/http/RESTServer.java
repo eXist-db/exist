@@ -104,18 +104,8 @@ public class RESTServer {
 
 	private final static DateFormat dateFormat = new SimpleDateFormat(
 			"MMM d, yyyy hh:mm:ss");
-
-	protected DocumentBuilder docBuilder = null;
 	
 	public RESTServer() {
-		DocumentBuilderFactory docFactory = DocumentBuilderFactory
-		.newInstance();
-		docFactory.setNamespaceAware(true);
-		try {
-			docBuilder = docFactory.newDocumentBuilder();
-		} catch (ParserConfigurationException e) {
-			LOG.warn(e);
-		}
 	}
 	
 	public Response doGet(DBBroker broker, Map parameters, String path) 
@@ -215,6 +205,16 @@ public class RESTServer {
 		Response response = null;
 		try {
 			InputSource src = new InputSource(new StringReader(content));
+			DocumentBuilderFactory docFactory = DocumentBuilderFactory
+			.newInstance();
+			docFactory.setNamespaceAware(true);
+			DocumentBuilder docBuilder = null;
+			try {
+				docBuilder = docFactory.newDocumentBuilder();
+			} catch (ParserConfigurationException e) {
+				LOG.warn(e);
+				throw new BadRequestException(e.getMessage());
+			}
 			Document doc = docBuilder.parse(src);
 			Element root = doc.getDocumentElement();
 			if(root.getNamespaceURI().equals(NS)) {
