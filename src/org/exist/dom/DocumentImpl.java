@@ -694,7 +694,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public void deserialize(byte[] data) {
 		VariableByteArrayInput istream = new VariableByteArrayInput(data);
 		try {
-		    byte signature = istream.readByte();
+//		    byte signature = istream.readByte();
 //		    if(signature != DOCUMENT_NODE_SIGNATURE) {
 //		        LOG.error("Could not read document metadata for document " + fileName +
 //		                " ( " + docId + "): not a metadata node.");
