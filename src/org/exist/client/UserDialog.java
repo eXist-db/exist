@@ -353,6 +353,7 @@ class UserDialog extends JFrame {
 		}
 		
 		user.setPassword(pass1);
+		System.out.println("Pass = " + user.getPassword());
 		user.setHome(homedir.getText());
 		for (int i = 0; i < groupsModel.size(); i++)
 			user.addGroup((String) groupsModel.elementAt(i));

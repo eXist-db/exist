@@ -232,6 +232,14 @@ public class SAXSerializer implements ContentHandler, LexicalHandler {
 			throw new SAXException(e.getMessage(), e);
 		}
 	}
+	
+	public void characters(CharSequence seq) throws SAXException {
+		try {
+			receiver.characters(seq);
+		} catch (TransformerException e) {
+			throw new SAXException(e.getMessage(), e);
+		}
+	}
 
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#ignorableWhitespace(char[], int, int)

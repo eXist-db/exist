@@ -150,7 +150,7 @@
     <!-- Create jar file          										   -->
     <!-- =================================================================== -->
     <target name="jar" depends="compile">
-        <copy file="${src}/CatalogManager.properties" todir="${build.classes}"/>
+		<copy file="${src}/CatalogManager.properties" todir="${build.classes}"/>
 	    <copy todir="${build.classes}/org/exist/client">
 		    <fileset dir="${src}/org/exist/client">
 			    <include name="icons/**.png"/>
@@ -167,7 +167,8 @@
         <copy file="${src}/org/exist/xmldb2.xsl" 
 			todir="${build.classes}/org/exist"/>
         <copy file="${src}/org/exist/start/MANIFEST.MF" todir="${build.classes}/org/exist/start"/>
-        <copy file="${src}/org/exist/start/start.config" todir="${build.classes}/org/exist/start"/>
+		<copy file="${src}/org/exist/start/start.config" todir="${build.classes}/org/exist/start"/>
+		<copy file="${src}/org/exist/security/security.properties" todir="${build.classes}/org/exist/security"/>
 
         <echo message="Creating exist.jar ..."/>
         <jar basedir="${build.classes}" compress="true" jarfile="exist.jar">
@@ -197,6 +198,21 @@
         </jar>
     </target>
 
+	<target name="standalone" depends="jar">
+		<echo message="Creating exist-standalone.jar ..."/>
+		<jar basedir="${build.classes}" compress="true" 
+			jarfile="exist-standalone.jar">
+       		<exclude name="org/exist/start/**"/>
+            <exclude name="org/exist/soap/**"/>
+            <exclude name="org/exist/ant/**"/>
+            <exclude name="org/exist/http/servlets/**"/>
+            <exclude name="org/exist/xquery/functions/request/**"/>
+            <exclude name="org/exist/cocoon/**"/>
+			<exclude name="org/exist/*.xsl"/>
+			<exclude name="org/exist/client/**"/>
+			<exclude name="org/exist/backup/**"/>
+		</jar>
+	</target>
     <!-- ================================================================== -->
     <!-- Build all                                                                                                                                        -->
     <!-- ================================================================== -->

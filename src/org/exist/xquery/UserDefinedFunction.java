@@ -41,7 +41,7 @@ public class UserDefinedFunction extends Function {
 	
 	private Sequence[] currentArguments = null;
 	
-	private boolean isReset = true;
+	private boolean isReset = false;
 	
 	public UserDefinedFunction(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
@@ -80,8 +80,8 @@ public class UserDefinedFunction extends Function {
 			var.setValue(currentArguments[j]);
 			context.declareVariable(var);
 		}
-		isReset = false;
-		return body.eval(contextSequence, contextItem);
+		Sequence result = body.eval(contextSequence, contextItem);
+		return result;
 	}
 	
 	/* (non-Javadoc)
@@ -114,10 +114,10 @@ public class UserDefinedFunction extends Function {
 	 * @see org.exist.xpath.PathExpr#resetState()
 	 */
 	public void resetState() {
-		if(isReset)
-			return;
-		isReset = true;
-		body.resetState();
-		
+		if(!isReset) {
+			isReset = true;
+			body.resetState();
+			isReset = false;
+		}
 	}
 }

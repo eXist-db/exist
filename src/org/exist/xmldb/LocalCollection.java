@@ -23,6 +23,8 @@
  */
 package org.exist.xmldb;
 
+import java.net.URI;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -482,7 +484,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			}
 			DocumentImpl newDoc;
 			if (res.file != null) {
-				String uri = res.file.toURI().toASCIIString();
+				String uri = new URI(res.file.toURL().toString()).toASCIIString();
 				newDoc =
 					collection.addDocument(
 						broker,

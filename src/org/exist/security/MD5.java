@@ -4,27 +4,15 @@ package org.exist.security;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
 
-/**
- *  Description of the Class
- *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    20. August 2002
- */
 public class MD5 {
 
     private static String[] hex = {"0", "1", "2", "3", "4", "5", "6", "7",
             "8", "9", "a", "b", "c", "d", "e", "f"};
 
-    private static final Category LOG = Category.getInstance(MD5.class.getName());
+    private static final Logger LOG = Logger.getLogger(MD5.class);
 
-    /**
-     *  Description of the Method
-     *
-     *@param  passwd  Description of the Parameter
-     *@return         Description of the Return Value
-     */
     public static String md( String passwd ) {
         MessageDigest md5 = null;
         String digest = passwd;
@@ -55,12 +43,6 @@ public class MD5 {
     }
 
 
-    /**
-     *  Description of the Method
-     *
-     *@param  b  Description of the Parameter
-     *@return    Description of the Return Value
-     */
     public static String byteArrayToHex( byte[] b ) {
         StringBuffer buf = new StringBuffer( b.length * 2 );
         for ( int i = 0; i < b.length; i++ ) {

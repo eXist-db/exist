@@ -1,8 +1,10 @@
 
 package org.exist.security;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Properties;
 
 import org.exist.util.DatabaseConfigurationException;
 
@@ -25,13 +27,37 @@ public class User {
     private final static String PASS = "password";
     private final static String USER_ID = "uid";
     private final static String HOME = "home";
-    
+
+    public final static int PLAIN_ENCODING = 0;
+	public final static int SIMPLE_MD5_ENCODING = 1;
+	public final static int MD5_ENCODING = 2;
+	
+	public static int PASSWORD_ENCODING;
+	
+	static {
+		Properties props = new Properties(); 
+		try {
+			props.load(
+					User.class.getClassLoader().getResourceAsStream("org/exist/security/security.properties")
+			);
+		} catch (IOException e) {
+		}
+		String encoding = props.getProperty("passwords.encoding", "md5");
+		if(encoding != null) {
+			if(encoding.equalsIgnoreCase("plain"))
+				PASSWORD_ENCODING = PLAIN_ENCODING;
+			else if(encoding.equalsIgnoreCase("md5"))
+				PASSWORD_ENCODING = MD5_ENCODING;
+			else
+				PASSWORD_ENCODING = SIMPLE_MD5_ENCODING;
+		}
+	}
+	
     private ArrayList groups = new ArrayList( 2 );
     private String password = null;
     private String user;
     private int uid = -1;
     private String home = null;
-
 
     /**
      *  Create a new user with name and password
@@ -179,7 +205,7 @@ public class User {
      *@param  passwd  The new password value
      */
     public final void setPassword( String passwd ) {
-        this.password = ( passwd == null ? null : MD5.md( passwd ) );
+        this.password = ( passwd == null ? null : digest( passwd ) );
     }
 
 
@@ -192,12 +218,18 @@ public class User {
         this.password = ( passwd == null ) ? null : passwd;
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@return    Description of the Return Value
-     */
+    public final String digest(String passwd) {
+    	switch(PASSWORD_ENCODING) {
+    		case PLAIN_ENCODING:
+    			return passwd;
+    		case MD5_ENCODING:
+    			return MD5.md(user + ":exist:" + passwd);
+    		default:
+    			return MD5.md(passwd);
+    	}
+    	
+    }
+    
     public final String toString() {
         StringBuffer buf = new StringBuffer();
         buf.append( "<user name=\"" );
@@ -233,7 +265,7 @@ public class User {
             return true;
         if ( passwd == null )
             return false;
-        return MD5.md( passwd ).equals( password );
+        return digest( passwd ).equals( password );
     }
     
     public void setUID(int uid) {

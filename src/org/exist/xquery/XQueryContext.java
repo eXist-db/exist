@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -129,11 +130,21 @@ public class XQueryContext {
 	private MemTreeBuilder builder = null;
 	private Stack fragmentStack = new Stack();
 
+	private Expression rootExpression;
+	
 	public XQueryContext(DBBroker broker) {
 		this.broker = broker;
 		loadDefaults();
 	}
 
+	public void setRootExpression(Expression expr) {
+		this.rootExpression = expr;
+	}
+	
+	public Expression getRootExpression() {
+		return rootExpression;
+	}
+	
 	/**
 	 * Declare a user-defined prefix/namespace mapping.
 	 * 
@@ -699,7 +710,10 @@ public class XQueryContext {
 				if(!f.canRead())
 					throw new XPathException("cannot read module source from file at " + f.getAbsolutePath());
 			}
-			location = f.toURI().toASCIIString();
+			try {
+				location = new URI(f.toURL().toString()).toASCIIString();
+			} catch (Exception e1) {
+			}
 		}
 		LOG.debug("Loading module from " + location);
 		InputStreamReader reader;

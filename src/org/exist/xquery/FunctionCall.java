@@ -110,7 +110,8 @@ public class FunctionCall extends Function {
 			Sequence returnSeq = expression.eval(contextSequence, contextItem);
 			return returnSeq;
 		} catch(XPathException e) {
-			e.setASTNode(getASTNode());
+			if(e.getASTNode() == null)
+				e.setASTNode(getASTNode());
 			throw e;
 		} finally {
 			context.popLocalContext();

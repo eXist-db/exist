@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -868,7 +870,12 @@ public class RpcConnection extends Thread {
 					throw new PermissionDeniedException(
 							"Old document exists and overwrite is not allowed");
 			}
-			String uri = file.toURI().toASCIIString();
+			String uri;
+			try {
+				uri = new URI(file.toURL().toString()).toASCIIString();
+			} catch (Exception e) {
+				uri = file.getAbsolutePath();
+			}
 			collection.addDocument(broker, docName, new InputSource(uri));
 		} finally {
 			brokerPool.release(broker);
@@ -921,7 +928,7 @@ public class RpcConnection extends Thread {
 		}
 		if (!file.canWrite())
 			throw new EXistException("cannot write to file " + fileName);
-		FileOutputStream os = new FileOutputStream(file, true);
+		FileOutputStream os = new FileOutputStream(file.getAbsolutePath(), true);
 		os.write(chunk, 0, length);
 		os.close();
 		return fileName;
