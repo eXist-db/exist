@@ -20,9 +20,10 @@
  */
 package org.exist.storage;
 
+import it.unimi.dsi.fastUtil.Object2ObjectOpenHashMap;
+
 import java.util.ArrayList;
 import java.util.Iterator;
-
 import org.exist.util.FastStringBuffer;
 
 
@@ -36,6 +37,11 @@ import org.exist.util.FastStringBuffer;
  * @author Wolfgang Meier
  */
 public class IndexPaths {
+	
+	private final static Object2ObjectOpenHashMap cache =
+		new Object2ObjectOpenHashMap();
+	private final static int MAX_CACHE_SIZE = 64;
+	
     protected ArrayList includePath;
     protected ArrayList excludePath;
     protected boolean includeByDefault = true;
@@ -43,8 +49,6 @@ public class IndexPaths {
     protected boolean includeAlphaNum = true;
 	protected int depth = 1;
 	private FastStringBuffer token = new FastStringBuffer();
-	private ArrayList tempArray = new ArrayList();
-	private String temp[] = null;
 	
     /**
      * Constructor for the IndexPaths object
@@ -196,7 +200,13 @@ public class IndexPaths {
      * @return Description of the Return Value
      */
     private final ArrayList tokenize( String path ) {
-        tempArray.clear();
+    	ArrayList temp;
+    	synchronized(cache) {
+    		temp = (ArrayList)cache.get(path);
+    		if(temp != null)
+    			return temp;
+    	}
+    	temp = new ArrayList();
         String next;
        	token.reset();
         int pos = 0;
@@ -209,9 +219,9 @@ public class IndexPaths {
                 next = token.toString();
                 token.reset();
                 if ( next.length(  ) > 0 )
-                    tempArray.add( next );
+                    temp.add( next );
                 if ( path.charAt( ++pos ) == '/' )
-                    tempArray.add( "*" );
+                    temp.add( "*" );
                 break;
 
             default:
@@ -220,10 +230,12 @@ public class IndexPaths {
             }
         }
         if ( token.length() > 0 )
-            tempArray.add( token.toString() );
-
-        //String[] result = new String[tempArray.size()];
-        //tempArray.toArray( result );
-        return tempArray;
+            temp.add( token.toString() );
+        synchronized(cache) {
+        	if(cache.size() == MAX_CACHE_SIZE)
+        		cache.clear();
+        	cache.put(path, temp);
+        }
+        return temp;
     }
 }

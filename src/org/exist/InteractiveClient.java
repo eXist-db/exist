@@ -674,6 +674,7 @@ public class InteractiveClient {
 					System.out.println("user " + user + " created.");
 				} catch (Exception e) {
 					System.out.println("ERROR: " + e.getMessage());
+					e.printStackTrace();
 				}
 			} else if (args[0].equalsIgnoreCase("users")) {
 				UserManagementService mgtService =
@@ -1099,8 +1100,6 @@ public class InteractiveClient {
 						"storing document "
 							+ temp[i].getName() + " ("
                             + i + " of " + temp.length + ") "
-							+ " to "
-							+ next
 							+ "...");
 					document =
 						(XMLResource) collection.createResource(
@@ -1111,11 +1110,11 @@ public class InteractiveClient {
 					bytesCount += temp[i].length();
 					++filesCount;
 					messageln(
-						"stored "
-							+ temp[i].length()
-							+ " bytes in "
-							+ (System.currentTimeMillis() - start1)
-							+ "ms.");
+						" "
+						+ temp[i].length()
+						+ " bytes in "
+						+ (System.currentTimeMillis() - start1)
+						+ "ms.");
 
 				}
 			} catch (XMLDBException e) {
@@ -1144,8 +1143,8 @@ public class InteractiveClient {
 					boolean result = 
 						findRecursive(current, file, path);
 					System.out.println("storing " + filesCount + " files (" +
-						(bytesCount / 1024) + "K) took " + 
-						(System.currentTimeMillis() - start) + "ms.");
+						bytesCount + "K) took " + 
+						((System.currentTimeMillis() - start) / 1000) + "sec.");
                     return result;
                 } else
 					files = file.listFiles(new XMLFilenameFilter());

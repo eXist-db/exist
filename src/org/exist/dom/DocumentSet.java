@@ -1,4 +1,6 @@
-/* eXist xml document repository and xpath implementation
+/* 
+ * eXist Open Source Native XML Database
+ * 
  * Copyright (C) 2000,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
  *
  * This program is free software; you can redistribute it and/or
@@ -18,180 +20,194 @@
 
 package org.exist.dom;
 
-import java.util.TreeMap;
+import it.unimi.dsi.fastUtil.Int2ObjectAVLTreeMap;
+import it.unimi.dsi.fastUtil.ObjectAVLTreeSet;
+
 import java.util.ArrayList;
-import java.util.TreeSet;
-import java.util.Iterator;
 import java.util.Arrays;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
+import java.util.Iterator;
+
 import org.apache.log4j.Category;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
-public class DocumentSet extends TreeMap implements NodeList {
+/**
+ * Manages a set of documents.
+ * 
+ * This class implements the NodeList interface for a collection of documents.
+ * It also contains methods to retrieve the collections these documents
+ * belong to.
+ * 
+ * @author wolf
+ */
+public class DocumentSet extends Int2ObjectAVLTreeMap implements NodeList {
 
-    protected static Category LOG = Category.getInstance(DocumentSet.class.getName());
-    protected ArrayList list = new ArrayList();
-    protected boolean allDocuments = false;
-    protected TreeSet collections = new TreeSet();
+	private final static Category LOG =
+		Category.getInstance(DocumentSet.class.getName());
+	private ArrayList list = null;
+	private boolean allDocuments = false;
+	private ObjectAVLTreeSet collections = new ObjectAVLTreeSet();
 
-    public DocumentSet() {
-        super();
-    }
-
-    public void setAllDocuments(boolean all) { allDocuments = all; }
-
-    public boolean hasAllDocuments() { return allDocuments; }
-
-    public void add(DocumentImpl doc) {
-        Integer docId = new Integer(doc.docId);
-        if(containsKey(docId))
-            return;
-        put(docId, doc);
-        list.add(doc);
-	if(doc.getCollection() != null && 
-	   (!collections.contains(doc.getCollection())))
-	    collections.add(doc.getCollection());
-    }
-
-    public void add(Node node) {
-        if(!(node instanceof DocumentImpl))
-            throw new RuntimeException("wrong implementation");
-        add((DocumentImpl)node);
-    }
-
-    public void addAll(NodeList other) {
-        for(int i = 0; i < other.getLength(); i++)
-            add(other.item(i));
-    }
-
-    public Iterator iterator() {
-        return values().iterator();
-    }
-
-    public Iterator getCollectionIterator() {
-	return collections.iterator();
-    }
-
-    public int getLength() {
-        return size();
-    }
-
-    public Node item(int pos) {
-	return (Node)list.get( pos );
-    }
-
-    /*
-    public boolean contains(int docId) {
-        return containsKey(docId);
-        //return containsKey(new Integer(docId));
-    }
-    */
-
-    public DocumentImpl getDoc(int docId) {
-        return (DocumentImpl)get(new Integer(docId));
-    }
-
-    public String[] getNames() {
-	String result[] = new String[list.size()];
-	DocumentImpl d;
-	int j = 0;
-	for(Iterator i = list.iterator(); i.hasNext(); j++) {
-	    d = (DocumentImpl)i.next();
-	    result[j] = d.getFileName();
+	public DocumentSet() {
+		super();
 	}
-	Arrays.sort(result);
-	return result;
-    }
 
-    public DocumentSet intersection(DocumentSet other) {
-        DocumentSet r = new DocumentSet();
-        DocumentImpl d;
-	Integer docId;
-        for(Iterator i = list.iterator(); i.hasNext(); ) {
-            d = (DocumentImpl)i.next();
-	    docId = new Integer(d.docId);
-            if(other.containsKey(docId))
-                r.add(d);
-        }
-        for(Iterator i = other.list.iterator(); i.hasNext(); ) {
-            d = (DocumentImpl)i.next();
-	    docId = new Integer(d.docId);
-            if(containsKey(docId) && (!r.containsKey(docId)))
-                r.add(d);
-        }
-        return r;
-    }
-    
-    public DocumentSet union(DocumentSet other) {
-        DocumentSet result = new DocumentSet();
-        result.addAll(other);
-        DocumentImpl d;
-	Integer docId;
-        for(Iterator i = list.iterator(); i.hasNext(); ) {
-            d = (DocumentImpl)i.next();
-	    docId = new Integer(d.docId);
-            if(!result.containsKey(docId))
-                result.add(d);
-        }
-        return result;
-    }
-    
-    public boolean contains(DocumentSet other) {
-        if(other.list.size() > list.size())
-            return false;
-        DocumentImpl d;
-        boolean equal = false;
-        for(Iterator i = other.list.iterator(); i.hasNext(); ) {
-            d = (DocumentImpl)i.next();
-            if(containsKey(new Integer(d.docId)))
-                equal = true;
-            else
-                equal = false;
-        }
-        return equal;
-    }
-
-    public boolean contains(int id) {
-	return containsKey(new Integer(id));
-    }
-
-    public int getMinDocId() {
-	int min = -1;
-	DocumentImpl d;
-	for(Iterator i = list.iterator(); i.hasNext(); ) {
-	    d = (DocumentImpl)i.next();
-	    if(min < 0)
-		min = d.getDocId();
-	    else if(d.getDocId() < min)
-		min = d.getDocId();
+	public void setAllDocuments(boolean all) {
+		allDocuments = all;
 	}
-	return min;
-    }
 
-    public int getMaxDocId() {
-	int max = -1;
-	DocumentImpl d;
-	for(Iterator i = list.iterator(); i.hasNext(); ) {
-	    d = (DocumentImpl)i.next();
-	    if(d.getDocId() > max)
-		max = d.getDocId();
+	public boolean hasAllDocuments() {
+		return allDocuments;
 	}
-	return max;
-    }
 
-    public boolean equals(Object other) {
-        DocumentSet o = (DocumentSet)other;
-        if(list.size() != o.list.size())
-            return false;
-        DocumentImpl d;
-        boolean equal = false;
-        for(Iterator i = list.iterator(); i.hasNext(); ) {
-            d = (DocumentImpl)i.next();
-            if(o.containsKey(new Integer(d.docId)))
-                equal = true;
-            else
-                equal = false;
-        }
-        return equal;
-    }
+	public void add(DocumentImpl doc) {
+		final int docId = doc.getDocId();
+		if (containsKey(docId))
+			return;
+		put(docId, doc);
+		if (list != null)
+			list.add(doc);
+		if (doc.getCollection() != null
+			&& (!collections.contains(doc.getCollection())))
+			collections.add(doc.getCollection());
+	}
+
+	public void add(Node node) {
+		if (!(node instanceof DocumentImpl))
+			throw new RuntimeException("wrong implementation");
+		add((DocumentImpl) node);
+	}
+
+	public void addAll(NodeList other) {
+		for (int i = 0; i < other.getLength(); i++)
+			add(other.item(i));
+	}
+	
+	public Iterator iterator() {
+		return values().iterator();
+	}
+
+	public Iterator getCollectionIterator() {
+		return collections.iterator();
+	}
+
+	public int getLength() {
+		return size();
+	}
+
+	public Node item(int pos) {
+		if (list == null)
+			list = new ArrayList(values());
+		return (Node) list.get(pos);
+	}
+
+	/*
+	public boolean contains(int docId) {
+	    return containsKey(docId);
+	    //return containsKey(new Integer(docId));
+	}
+	*/
+
+	public DocumentImpl getDoc(int docId) {
+		return (DocumentImpl) get(docId);
+	}
+
+	public String[] getNames() {
+		String result[] = new String[size()];
+		DocumentImpl d;
+		int j = 0;
+		for (Iterator i = iterator(); i.hasNext(); j++) {
+			d = (DocumentImpl) i.next();
+			result[j] = d.getFileName();
+		}
+		Arrays.sort(result);
+		return result;
+	}
+
+	public DocumentSet intersection(DocumentSet other) {
+		DocumentSet r = new DocumentSet();
+		DocumentImpl d;
+		for (Iterator i = iterator(); i.hasNext();) {
+			d = (DocumentImpl) i.next();
+			if (other.containsKey(d.docId))
+				r.add(d);
+		}
+		for (Iterator i = other.iterator(); i.hasNext();) {
+			d = (DocumentImpl) i.next();
+			if (containsKey(d.docId) && (!r.containsKey(d.docId)))
+				r.add(d);
+		}
+		return r;
+	}
+
+	public DocumentSet union(DocumentSet other) {
+		DocumentSet result = new DocumentSet();
+		result.addAll(other);
+		DocumentImpl d;
+		for (Iterator i = iterator(); i.hasNext();) {
+			d = (DocumentImpl) i.next();
+			if (!result.containsKey(d.docId))
+				result.add(d);
+		}
+		return result;
+	}
+
+	public boolean contains(DocumentSet other) {
+		if (other.size() > size())
+			return false;
+		DocumentImpl d;
+		boolean equal = false;
+		for (Iterator i = other.iterator(); i.hasNext();) {
+			d = (DocumentImpl) i.next();
+			if (containsKey(new Integer(d.docId)))
+				equal = true;
+			else
+				equal = false;
+		}
+		return equal;
+	}
+
+	public boolean contains(int id) {
+		return containsKey(id);
+	}
+
+	public int getMinDocId() {
+		int min = -1;
+		DocumentImpl d;
+		for (Iterator i = iterator(); i.hasNext();) {
+			d = (DocumentImpl) i.next();
+			if (min < 0)
+				min = d.getDocId();
+			else if (d.getDocId() < min)
+				min = d.getDocId();
+		}
+		return min;
+	}
+
+	public int getMaxDocId() {
+		int max = -1;
+		DocumentImpl d;
+		for (Iterator i = iterator(); i.hasNext();) {
+			d = (DocumentImpl) i.next();
+			if (d.getDocId() > max)
+				max = d.getDocId();
+		}
+		return max;
+	}
+
+	public boolean equals(Object other) {
+		DocumentSet o = (DocumentSet) other;
+		if (size() != o.size())
+			return false;
+		DocumentImpl d;
+		boolean equal = false;
+		for (Iterator i = iterator(); i.hasNext();) {
+			d = (DocumentImpl) i.next();
+			if (o.containsKey(d.docId))
+				equal = true;
+			else
+				equal = false;
+		}
+		return equal;
+	}
 }

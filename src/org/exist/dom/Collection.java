@@ -28,12 +28,14 @@ import java.io.DataOutput;
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.TreeMap;
 import org.apache.log4j.Category;
+import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.User;
+import org.exist.security.SecurityManager;
 import org.exist.storage.*;
 import org.exist.util.SyntaxException;
 import org.exist.util.VariableByteInputStream;
@@ -44,9 +46,9 @@ public class Collection implements Comparable {
 	protected static Category LOG =
 		Category.getInstance(Collection.class.getName());
 	private DBBroker broker;
-
+	private int refCount = 0;
 	private short collectionId = -1;
-	private TreeMap documents = new TreeMap();
+	private LinkedList documents = new LinkedList();
 	private String name;
 	private Permission permissions = new Permission(0755);
 	private ArrayList subcollections = new ArrayList();
@@ -89,7 +91,19 @@ public class Collection implements Comparable {
 	public void addDocument(User user, DocumentImpl doc) {
 		if (doc.getDocId() < 0)
 			doc.setDocId(broker.getNextDocId(this));
-		documents.put(doc.getFileName(), doc);
+		//documents.put(doc.getFileName(), doc);
+		documents.add(doc);
+	}
+
+	public void renameDocument(String oldName, String newName) {
+		DocumentImpl doc;
+		for (Iterator i = documents.iterator(); i.hasNext();) {
+			doc = (DocumentImpl) i.next();
+			if (doc.getFileName().equals(oldName)) {
+				doc.setFileName(newName);
+				return;
+			}
+		}
 	}
 
 	/**
@@ -129,7 +143,7 @@ public class Collection implements Comparable {
 		allDocs(user, docs);
 		return docs;
 	}
-	
+
 	private DocumentSet allDocs(User user, DocumentSet docs) {
 		Collection child;
 		String childName;
@@ -144,12 +158,12 @@ public class Collection implements Comparable {
 		}
 		return docs;
 	}
-	
+
 	public void getDocuments(DocumentSet set) {
-		for(Iterator i = documents.values().iterator(); i.hasNext(); )
-			set.add((DocumentImpl)i.next());
+		for (Iterator i = documents.iterator(); i.hasNext();)
+			set.add((DocumentImpl) i.next());
 	}
-	
+
 	/**
 	 *  Description of the Method
 	 *
@@ -188,7 +202,15 @@ public class Collection implements Comparable {
 	 *@return       The document value
 	 */
 	public DocumentImpl getDocument(String name) {
-		return (DocumentImpl) documents.get(name);
+		//return (DocumentImpl) documents.get(name);
+		//return null;
+		DocumentImpl doc;
+		for (Iterator i = documents.iterator(); i.hasNext();) {
+			doc = (DocumentImpl) i.next();
+			if (doc.getFileName().equals(name))
+				return doc;
+		}
+		return null;
 	}
 
 	/**
@@ -258,7 +280,7 @@ public class Collection implements Comparable {
 	 *@return       Description of the Return Value
 	 */
 	public boolean hasDocument(String name) {
-		return documents.containsKey(name);
+		return getDocument(name) != null;
 	}
 
 	/**
@@ -277,7 +299,7 @@ public class Collection implements Comparable {
 	 *@return    Description of the Return Value
 	 */
 	public Iterator iterator() {
-		return documents.values().iterator();
+		return documents.iterator();
 	}
 
 	/**
@@ -306,13 +328,24 @@ public class Collection implements Comparable {
 
 	public void read(VariableByteInputStream istream) throws IOException {
 		collectionId = istream.readShort();
-		name = istream.readUTF();
 		final int collLen = istream.readInt();
 		for (int i = 0; i < collLen; i++) {
 			final String sub = istream.readUTF();
 			subcollections.add(sub);
 		}
-		permissions.read(istream);
+		final SecurityManager secman =
+			broker.getBrokerPool().getSecurityManager();
+		final int uid = istream.readInt();
+		final int gid = istream.readInt();
+		final int perm = istream.readByte();
+		if (secman == null) {
+			permissions.setOwner(SecurityManager.DBA_USER);
+			permissions.setGroup(SecurityManager.DBA_GROUP);
+		} else {
+			permissions.setOwner(secman.getUser(uid));
+			permissions.setGroup(secman.getGroup(gid).getName());
+		}
+		permissions.setPermissions(perm);
 		try {
 			while (true) {
 				final DocumentImpl doc = new DocumentImpl(broker, this);
@@ -338,30 +371,14 @@ public class Collection implements Comparable {
 	 *@param  name  Description of the Parameter
 	 */
 	public void removeDocument(String name) {
-		DocumentImpl doc = (DocumentImpl) documents.remove(name);
-		if (doc == null) {
-			LOG.debug("could not remove document " + name);
-			return;
+		DocumentImpl doc;
+		for (Iterator i = documents.iterator(); i.hasNext();) {
+			doc = (DocumentImpl) i.next();
+			if (doc.getFileName().equals(name)) {
+				i.remove();
+				return;
+			}
 		}
-	}
-
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  oldName  Description of the Parameter
-	 *@param  newName  Description of the Parameter
-	 *@return          Description of the Return Value
-	 */
-	public boolean renameDocument(String oldName, String newName) {
-		DocumentImpl doc = getDocument(oldName);
-		if (doc == null) {
-			LOG.debug("document " + oldName + " not found");
-			return false;
-		}
-		doc.setFileName(newName);
-		documents.remove(oldName);
-		documents.put(newName, doc);
-		return true;
 	}
 
 	/**
@@ -401,6 +418,10 @@ public class Collection implements Comparable {
 		permissions.setPermissions(mode);
 	}
 
+	public void setPermissions(Permission permissions) {
+		this.permissions = permissions;
+	}
+	
 	/**
 	 *  Description of the Method
 	 *
@@ -426,14 +447,41 @@ public class Collection implements Comparable {
 
 	public void write(VariableByteOutputStream ostream) throws IOException {
 		ostream.writeShort(collectionId);
-		ostream.writeUTF(name);
 		ostream.writeInt(subcollections.size());
 		for (Iterator i = collectionIterator(); i.hasNext();)
 			ostream.writeUTF((String) i.next());
-		permissions.write(ostream);
+		org.exist.security.SecurityManager secman =
+			broker.getBrokerPool().getSecurityManager();
+		if (secman == null) {
+			ostream.writeInt(1);
+			ostream.writeInt(1);
+		} else {
+			User user = secman.getUser(permissions.getOwner());
+			Group group = secman.getGroup(permissions.getOwnerGroup());
+			ostream.writeInt(user.getUID());
+			ostream.writeInt(group.getId());
+		}
+		ostream.writeByte((byte) permissions.getPermissions());
+		DocumentImpl doc;
 		for (Iterator i = iterator(); i.hasNext();) {
-			final DocumentImpl doc = (DocumentImpl) i.next();
+			doc = (DocumentImpl) i.next();
 			doc.write(ostream);
 		}
+	}
+
+	public void incRefCount() {
+		--refCount;
+	}
+
+	public void decRefCount() {
+		--refCount;
+	}
+
+	public void setRefCount(int initialCount) {
+		refCount = initialCount;
+	}
+
+	public int getRefCount() {
+		return refCount;
 	}
 }
