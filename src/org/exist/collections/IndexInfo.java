@@ -43,7 +43,7 @@ public class IndexInfo {
 		this.indexer = indexer;
 	}
 	
-	protected Indexer getIndexer() {
+	public Indexer getIndexer() {
 		return indexer;
 	}
 	
