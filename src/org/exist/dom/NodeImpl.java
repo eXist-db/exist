@@ -292,11 +292,7 @@ public class NodeImpl implements Node, QNameable {
 	 *@return    The parentGID value
 	 */
 	public long getParentGID() {
-		int level = ownerDocument.getTreeLevel(gid);
-		return (gid - ownerDocument.getLevelStartPoint(level))
-			/ ownerDocument.getTreeLevelOrder(level)
-			+ ownerDocument.getLevelStartPoint(level - 1);
-		//return (gid - 2) / ownerDocument.getOrder() + 1;
+	    return XMLUtil.getParentId(ownerDocument, gid);
 	}
 
 	/**
@@ -304,7 +300,7 @@ public class NodeImpl implements Node, QNameable {
 	 */
 	public Node getParentNode() {
 		long pid = getParentGID();
-		return pid < 0 ? ownerDocument : ownerDocument.getNode(pid);
+		return pid < 0 ? null : ownerDocument.getNode(pid);
 	}
 
 	public NodePath getPath() {
