@@ -58,8 +58,13 @@ public class ConcurrentResourceTest extends ConcurrentTestBase {
 		Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
 		DBUtils.addXMLResource(c1, "R1.xml", ReplaceResourceAction.XML);
 		
-		addAction(new ReplaceResourceAction(URI + "/C1/C1-C2", "R1.xml"), 1000, 0, 0);
-		addAction(new RetrieveResourceAction(URI + "/C1/C1-C2", "R1.xml"), 500, 1000, 0);
+        String query0 = "//user[email = 'sam@email.com']";
+        String query1 = "distinct-values(//user/@id)";
+        
+		addAction(new ReplaceResourceAction(URI + "/C1/C1-C2", "R1.xml"), 1000, 0, 500);
+		addAction(new RetrieveResourceAction(URI + "/C1/C1-C2", "R1.xml"), 1500, 1000, 500);
+        addAction(new XQueryAction(URI + "/C1", "R1.xml", query0), 500, 1000, 500);
+        addAction(new XQueryAction(URI + "/C1", "R1.xml", query1), 500, 1000, 500);
 	}
 	
 	/* (non-Javadoc)
