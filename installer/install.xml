@@ -1,7 +1,7 @@
 <installation version="1.0">
     <info>
         <appname>eXist</appname>
-		<appversion>20040525-dev</appversion>
+		<appversion>20040803-dev</appversion>
         <authors>
 			<author email="wolfgang@exist-db.org" 
 				name="Wolfgang Meier"/>
@@ -39,6 +39,7 @@
                 <include name="conf.xml"/>
                 <include name="log4j.xml"/>
                 <include name="build.xml"/>
+				<include name="build.properties"/>
             	<include name="LICENSE"/>
             	<include name="README"/>
 				<include name="exist.jar"/>
@@ -62,7 +63,6 @@
             	<exclude name="**/*.dbx"/>
             	<exclude name="**/*.log*"/>
 				<exclude name="api/**"/>
-				<exclude name="bin/**"/>
 				<exclude name="**/CVS/"/>
 				<exclude name="**/*~"/>
 				<exclude name="resources/*.jpg"/>
