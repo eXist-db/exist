@@ -22,16 +22,21 @@ package org.exist;
  *  $Id$
  */
 
-import org.apache.xmlrpc.*;
-import org.exist.http.*;
-import org.exist.storage.*;
-import org.exist.util.*;
-import org.exist.xmldb.*;
-import org.exist.xmlrpc.*;
-import org.apache.avalon.excalibur.cli.*;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import org.apache.avalon.excalibur.cli.CLArgsParser;
+import org.apache.avalon.excalibur.cli.CLOption;
+import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
+import org.apache.avalon.excalibur.cli.CLUtil;
+import org.apache.xmlrpc.WebServer;
+import org.apache.xmlrpc.XmlRpc;
+import org.exist.http.HttpServer;
+import org.exist.storage.BrokerPool;
+import org.exist.util.Configuration;
+import org.exist.xmldb.ShutdownListener;
+import org.exist.xmlrpc.AuthenticatedHandler;
 
 /**
  *  Main class to start the stand-alone server. By default,
@@ -73,7 +78,7 @@ public class Server {
      *@exception  Exception  Description of the Exception
      */
     public static void main( String args[] ) throws Exception {
-        InteractiveClient.printNotice();
+        printNotice();
 		CLArgsParser optParser = new CLArgsParser( args, OPTIONS );
 		if(optParser.getErrorString() != null) {
 			System.err.println( "ERROR: " + optParser.getErrorString());
@@ -148,6 +153,14 @@ public class Server {
 		System.out.println(CLUtil.describeOptions(OPTIONS).toString());
     }
     
+    public static void printNotice() {
+		System.out.println("eXist version 1.0, Copyright (C) 2004 Wolfgang Meier");
+		System.out.println("eXist comes with ABSOLUTELY NO WARRANTY.");
+		System.out.println("This is free software, and you are welcome to "
+				+ "redistribute it\nunder certain conditions; "
+				+ "for details read the license file.\n");
+	}
+	
     static class ShutdownListenerImpl implements ShutdownListener {
 
 		public void shutdown(String dbname, int remainingInstances) {
