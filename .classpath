@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+    <classpathentry kind="src" path="src"/>
+    <classpathentry exported="true" kind="var" path="JRE_LIB" sourcepath="JRE_SRC"/>
+    <classpathentry kind="var" path="JRE_SRC"/>
+    <classpathentry kind="lib" path="lib/core/ant.jar"/>
+    <classpathentry kind="lib" path="lib/core/antlr.jar"/>
+    <classpathentry kind="lib" path="lib/core/ant-optional.jar"/>
+    <classpathentry kind="lib" path="lib/core/axis.jar"/>
+    <classpathentry kind="lib" path="lib/core/clutil.jar"/>
+    <classpathentry kind="lib" path="lib/core/getopt.jar"/>
+    <classpathentry kind="lib" path="lib/core/jakarta-oro-2.0.6.jar"/>
+    <classpathentry kind="lib" path="lib/core/javax.servlet.jar"/>
+    <classpathentry kind="lib" path="lib/core/jaxrpc.jar"/>
+    <classpathentry kind="lib" path="lib/core/junit.jar"/>
+    <classpathentry kind="lib" path="lib/core/libreadline-java.jar"/>
+    <classpathentry kind="lib" path="lib/core/log4j.jar"/>
+    <classpathentry kind="lib" path="lib/core/mysql.jar"/>
+    <classpathentry kind="lib" path="lib/core/resolver-20020130.jar"/>
+    <classpathentry kind="lib" path="lib/core/tt-bytecode.jar"/>
+    <classpathentry kind="lib" path="lib/core/wsdl4j.jar"/>
+    <classpathentry kind="lib" path="lib/core/xalan-2.3.1.jar"/>
+    <classpathentry kind="lib" path="lib/core/xercesImpl.jar"/>
+    <classpathentry kind="lib" path="lib/core/xml-apis.jar"/>
+    <classpathentry kind="lib" path="lib/core/xmldb.jar" sourcepath="/home/wolf/Java/xmldb/"/>
+    <classpathentry kind="lib" path="lib/core/xmlrpc-1.1.jar"/>
+    <classpathentry kind="lib" path="lib/optional/cocoon-2.0.3.jar" sourcepath="/home/wolf/Devel/Sandbox/xml-cocoon2/src/java/"/>
+    <classpathentry kind="lib" path="lib/core/excalibur-cli-1.0.jar"/>
+    <classpathentry kind="lib" path="lib/core/fastUtil-2.50.jar"/>
+    <classpathentry kind="output" path="classes"/>
+</classpath>
