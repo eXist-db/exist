@@ -957,6 +957,8 @@ throws PermissionDeniedException, EXistException, XPathException
 		{
 			QName qname= QName.parse(context, qn.getText());
 			test= new NameTest(Type.ELEMENT, qname);
+			if (axis == Constants.ATTRIBUTE_AXIS)
+				test.setType(Type.ATTRIBUTE);
 		}
 		|
 		#( PREFIX_WILDCARD nc1:NCNAME )
@@ -964,6 +966,8 @@ throws PermissionDeniedException, EXistException, XPathException
 			QName qname= new QName(nc1.getText(), null, null);
 			qname.setNamespaceURI(null);
 			test= new NameTest(Type.ELEMENT, qname);
+			if (axis == Constants.ATTRIBUTE_AXIS)
+				test.setType(Type.ATTRIBUTE);
 		}
 		|
 		#( nc:NCNAME WILDCARD )
@@ -971,19 +975,38 @@ throws PermissionDeniedException, EXistException, XPathException
 			String namespaceURI= context.getURIForPrefix(nc.getText());
 			QName qname= new QName(null, namespaceURI, nc.getText());
 			test= new NameTest(Type.ELEMENT, qname);
+			if (axis == Constants.ATTRIBUTE_AXIS)
+				test.setType(Type.ATTRIBUTE);
 		}
 		|
 		WILDCARD
-		{ test= new TypeTest(Type.ELEMENT); }
+		{ 
+			if (axis == Constants.ATTRIBUTE_AXIS)
+				test= new TypeTest(Type.ATTRIBUTE);
+			else
+				test= new TypeTest(Type.ELEMENT);
+		}
 		|
-		"node"
-		{ test= new AnyNodeTest(); }
+		n:"node"
+		{
+			if (axis == Constants.ATTRIBUTE_AXIS)
+				throw new XPathException(n, "Cannot test for node() on the attribute axis");
+			test= new AnyNodeTest(); 
+		}
 		|
 		"text"
-		{ test= new TypeTest(Type.TEXT); }
+		{
+			if (axis == Constants.ATTRIBUTE_AXIS)
+				throw new XPathException(n, "Cannot test for text() on the attribute axis"); 
+			test= new TypeTest(Type.TEXT); 
+		}
 		|
 		#( "element"
-			{ test= new TypeTest(Type.ELEMENT); }
+			{
+				if (axis == Constants.ATTRIBUTE_AXIS)
+					throw new XPathException(n, "Cannot test for element() on the attribute axis"); 
+				test= new TypeTest(Type.ELEMENT); 
+			}
 			(
 				qn2:QNAME 
 				{ 
@@ -1010,7 +1033,11 @@ throws PermissionDeniedException, EXistException, XPathException
 		)
 		|
 		"comment"
-		{ test= new TypeTest(Type.COMMENT); }
+		{
+			if (axis == Constants.ATTRIBUTE_AXIS)
+				throw new XPathException(n, "Cannot test for comment() on the attribute axis");
+			test= new TypeTest(Type.COMMENT); 
+		}
 		|
 		"document-node"
 		{ test= new TypeTest(Type.DOCUMENT); }

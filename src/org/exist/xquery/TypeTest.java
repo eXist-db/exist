@@ -15,9 +15,13 @@ public class TypeTest implements NodeTest {
 	protected int nodeType = 0;
 	
 	public TypeTest(int nodeType) {
-		this.nodeType = nodeType;
+		setType(nodeType);
 	}
 
+	public void setType(int nodeType) {
+	    this.nodeType = nodeType;
+	}
+	
 	public QName getName() {
 		return null;
 	}

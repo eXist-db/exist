@@ -7,6 +7,7 @@ package org.exist.xquery;
 
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
 public class AnyNodeTest implements NodeTest {
@@ -29,14 +30,19 @@ public class AnyNodeTest implements NodeTest {
 	 * @see org.exist.xquery.NodeTest#matches(org.w3c.dom.Node)
 	 */
 	public boolean matches(Node node) {
-		return true;
+	    return (node.getNodeType() != Node.ATTRIBUTE_NODE);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.NodeTest#matches(org.exist.dom.NodeProxy)
 	 */
 	public boolean matches(NodeProxy proxy) {
-		return true;
+	    int type = proxy.getType();
+		if (type == Type.ITEM || type == Type.NODE) {
+			Node node = proxy.getNode();
+			return matches(node);
+		} else
+			return type != Node.ATTRIBUTE_NODE;
 	}
 
 	/* (non-Javadoc)

@@ -6,6 +6,8 @@ import org.w3c.dom.Node;
 
 public interface NodeTest {
 
+    public void setType(int nodeType);
+    
 	public boolean matches(NodeProxy proxy);
 
 	public boolean matches(Node node);
