@@ -152,6 +152,21 @@ public class DecimalValue extends NumericValue {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.NumericValue#round(org.exist.xquery.value.IntegerValue)
+	 */
+	public NumericValue round(IntegerValue precision) throws XPathException {
+		int pre = precision.getInt();
+		if ( pre >= 0 ) 
+			return new DecimalValue(value.setScale(pre, BigDecimal.ROUND_HALF_EVEN));
+		else 
+			return new DecimalValue(
+						value.movePointRight(pre).
+						setScale(0, BigDecimal.ROUND_HALF_EVEN).
+						movePointLeft(pre));
+	}
+
+	
+	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.NumericValue#minus(org.exist.xquery.value.NumericValue)
 	 */
 	public ComputableValue minus(ComputableValue other) throws XPathException {

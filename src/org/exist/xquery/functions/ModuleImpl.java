@@ -119,6 +119,8 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(FunRoot.signatures[0], FunRoot.class),
 		new FunctionDef(FunRoot.signatures[1], FunRoot.class),
 		new FunctionDef(FunRound.signature, FunRound.class),
+		new FunctionDef(FunRoundHalfToEven.signatures[0], FunRoundHalfToEven.class),
+		new FunctionDef(FunRoundHalfToEven.signatures[1], FunRoundHalfToEven.class),
 		new FunctionDef(FunStartsWith.signature, FunStartsWith.class),
 		new FunctionDef(FunString.signatures[0], FunString.class),
 		new FunctionDef(FunString.signatures[1], FunString.class),
