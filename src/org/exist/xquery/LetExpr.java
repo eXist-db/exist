@@ -54,7 +54,7 @@ public class LetExpr extends BindingExpression {
 		
 		inputSequence.analyze(this, flags);
 		if(whereExpr != null) {
-		    whereExpr.analyze(this, flags | IN_PREDICATE);
+		    whereExpr.analyze(this, flags | IN_PREDICATE | IN_WHERE_CLAUSE);
 		}
 		if(returnExpr instanceof BindingExpression) {
 		    ((BindingExpression)returnExpr).analyze(this, flags, orderBy);
