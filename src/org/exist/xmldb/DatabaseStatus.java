@@ -2,8 +2,7 @@ package org.exist.xmldb;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.IndexStats;
-import org.exist.storage.store.BFile;
-import org.exist.storage.store.DOMFile;
+import org.exist.storage.report.Statistics;
 import org.exist.util.Configuration;
 
 import java.util.Map;
@@ -34,19 +33,7 @@ public class DatabaseStatus {
 		availableBrokers = pool.available();
 		maxBrokers = pool.getMax();
 		
-		// generate index statistics
-		BFile db = (BFile) conf.getProperty("db-connection.elements");
-		if(db != null) 
-			indexStats.put("elements.dbx", new IndexStats(db));
-		db = (BFile) conf.getProperty("db-connection.collections");
-		if(db != null)
-			indexStats.put("collections.dbx", new IndexStats(db));
-		db = (BFile) conf.getProperty("db-connection.words");
-		if(db != null)
-			indexStats.put("words.dbx", new IndexStats(db));
-		DOMFile dom = (DOMFile) conf.getProperty("db-connection.dom");
-		if(dom != null)
-			indexStats.put("dom.dbx", new IndexStats(dom));
+		Statistics.generateIndexStatistics(conf, indexStats);
 	}
 	
 	/**
