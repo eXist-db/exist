@@ -89,7 +89,7 @@
 	Increase the setting to have less reindex runs. However, you have to
 	be aware that leaving spare ids also limits the maximum size of a 
 	document that can be indexed. -->
-	<xupdate growth-factor="20" allowed-fragmentation="10"/>
+	<xupdate growth-factor="20" allowed-fragmentation="20"/>
 
     <!-- 
         Settings for the indexer:
