@@ -27,6 +27,7 @@ import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.value.EmptySequence;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -53,6 +54,8 @@ public class FunLocalName extends Function {
 	
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         Node n = null;
+  		if ((contextSequence == null) && (contextItem == null))
+  		  return new EmptySequence();
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
         if(getArgumentCount() > 0) {
