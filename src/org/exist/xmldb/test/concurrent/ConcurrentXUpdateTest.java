@@ -46,7 +46,7 @@ public class ConcurrentXUpdateTest extends ConcurrentTestBase {
 		super.setUp();
 		
 		String[] wordList = DBUtils.wordList(rootCol);
-		tempFile = DBUtils.generateXMLFile(1000, 10, wordList);
+		tempFile = DBUtils.generateXMLFile(500, 10, wordList);
 		DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
 		
 		addAction(new RemoveAppendAction(URI + "/C1", "R1.xml", wordList), 10, 500);

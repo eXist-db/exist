@@ -84,6 +84,7 @@ import org.exist.util.ProgressIndicator;
 import org.exist.util.XMLFilenameFilter;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SAXSerializerPool;
+import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.UserManagementService;
@@ -577,11 +578,19 @@ public class InteractiveClient {
 					messageln("no such collection.");
 				}
 				getResources();
+			} else if (args[0].equalsIgnoreCase("cp")) {
+				if (args.length != 3) {
+					messageln("cp requires two arguments.");
+					return true;
+				}
+				copy(args[1], args[2]);
+				getResources();
+				
 			} else if (args[0].equalsIgnoreCase("edit")) {
 			    if (args.length == 2) {
 					editResource(args[1]);
 			    } else {
-			      messageln("Please give a resource name.");
+			      messageln("Please specify a resource.");
 			    }
 			} else if (args[0].equalsIgnoreCase("get")) {
 				if (args.length < 2) {
@@ -1326,6 +1335,31 @@ public class InteractiveClient {
 		messageln("done.");
 	}
 
+	private final void copy(String source, String destination) throws XMLDBException {
+		CollectionManagementServiceImpl mgtService = (CollectionManagementServiceImpl) 
+			current.getService("CollectionManagementService", "1.0");
+		String destName = null;
+		Collection destCol = resolveCollection(destination);
+		if(destCol == null) {
+			int p = destination.lastIndexOf('/');
+			if(p < 0) {
+				destName = destination;
+				destination = current.getName();
+			} else {
+				destName = destination.substring(p + 1);
+				destination = destination.substring(0, p);
+			}
+		}
+		Resource srcDoc = resolveResource(source);
+		if(srcDoc != null) {
+			String resourcePath = srcDoc.getParentCollection().getName() + '/' + srcDoc.getId();
+			messageln("Copying resource " + resourcePath + " to " + destination);
+			mgtService.copyResource(resourcePath, destination, destName);
+		} else
+			messageln("Copying collection " + source + " to " + destination);
+			mgtService.copy(source, destination, destName);
+	}
+	
 	private final void reindex() throws XMLDBException {
 	    IndexQueryService service = (IndexQueryService) 
 	    	current.getService("IndexQueryService", "1.0");
@@ -2299,6 +2333,30 @@ public class InteractiveClient {
 		}
 	}
 
+	private Collection resolveCollection(String path) throws XMLDBException {
+		return DatabaseManager.getCollection(properties.getProperty("uri")
+				+ path, properties.getProperty("user"), properties.getProperty("password"));
+	}
+	
+	private Resource resolveResource(String path) throws XMLDBException {
+		String collectionPath;
+		String resourceName = path;
+		int p = path.lastIndexOf('/');
+		if(p < 0) {
+			collectionPath = current.getName();
+		} else {
+			collectionPath = path.substring(0, p);
+			resourceName = path.substring(p + 1);
+		}
+		Collection collection = resolveCollection(collectionPath);
+		if(collection == null) {
+			messageln("Collection " + collectionPath + " not found.");
+			return null;
+		}
+		messageln("Locating resource " + resourceName + " in collection " + collection.getName());
+		return collection.getResource(resourceName);
+	}
+	
 	private String[] splitProperty(String key) {
 		String value = properties.getProperty(key);
 		if(value == null)
@@ -2360,7 +2418,7 @@ public class InteractiveClient {
 		if (data instanceof byte[]) {
 			os.write((byte[]) data);
 			os.close();
-} else {
+		} else {
 			OutputStreamWriter writer = new OutputStreamWriter(os, Charset
 					.forName(properties.getProperty("encoding")));
 			writer.write(data.toString());

@@ -39,6 +39,8 @@ public class ReceiverToSAX implements Receiver {
 	private ContentHandler contentHandler;
 	private LexicalHandler lexicalHandler = null;
 	
+	private char[] charBuf = new char[2048];
+	
 	/**
 	 * 
 	 */
@@ -107,7 +109,14 @@ public class ReceiverToSAX implements Receiver {
 	 * @see org.exist.util.serializer.Receiver#characters(java.lang.CharSequence)
 	 */
 	public void characters(CharSequence seq) throws SAXException {
-		contentHandler.characters(seq.toString().toCharArray(), 0, seq.length());
+		int len = seq.length();
+		if(len < charBuf.length) {
+			for (int i = 0; i < len; i++)
+				charBuf[i] = seq.charAt(i);
+			contentHandler.characters(charBuf, 0, len);
+		} else {
+			contentHandler.characters(seq.toString().toCharArray(), 0, seq.length());
+		}
 	}
 
 	/* (non-Javadoc)
