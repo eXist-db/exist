@@ -35,13 +35,13 @@ declare function browse:main($user as xs:string, $passwd as xs:string) as elemen
                         <td/>
                     </tr>
                     
-                    <tr>
+                    <!--tr>
                         <td><input type="submit" name="action" value="Store"/></td>
                         <td>Path to file on server:<br/>
                         <input type="text" name="uri" size="40"/></td>
                         <td>Store as:<br/>
                         <input type="text" name="name" size="20"/></td>
-                    </tr>
+                    </tr-->
                     <tr>
                         <td><input type="submit" name="action" value="Upload"/></td>
                         <td><input type="file" size="40" name="upload"/></td>

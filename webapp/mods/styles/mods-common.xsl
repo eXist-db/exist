@@ -84,7 +84,7 @@
     
     <xsl:template match="m:dateCreated">
         <p class="keywords">
-            <span class="heading">Topics: </span>
+            <span class="heading">Created: </span>
             <xsl:value-of select="text()"/>
         </p>
     </xsl:template>

@@ -45,7 +45,7 @@ declare function admin:main($credentials as xs:string*) as element() {
     if(not($credentials)) then
         admin:display-login-form()
     else
-        admin:panel(item-at($credentials, 1), item-at($credentials, 2))
+        admin:panel($credentials[1], $credentials[2])
 };
 
 (:  Display the login form. :)
@@ -121,7 +121,7 @@ request:create-session,
 let $logout := request:request-parameter("logout", ()),
     $s := if($logout) then request:invalidate-session() else request:create-session(),
     $credentials := admin:login(),
-    $user := if($credentials) then item-at($credentials, 1) else "not logged in"
+    $user := if($credentials) then $credentials[1] else "not logged in"
 return
 <html>
     <head>
@@ -138,6 +138,7 @@ return
             <div class="guide">
                 <div class="guide-title">Select a Page</div>
                 <ul>
+                    <li><a href="..">Home</a></li>
                     <li><a href="{request:encode-url(request:request-uri())}?panel=status">System Status</a></li>
                     <li><a href="{request:encode-url(request:request-uri())}?panel=browse">Browse Collections</a></li>
                     <li><a href="{request:encode-url(request:request-uri())}?panel=users">Manage Users</a></li>

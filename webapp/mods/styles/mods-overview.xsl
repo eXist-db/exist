@@ -12,50 +12,54 @@
     <xsl:include href="mods-common.xsl"/>
     
     <xsl:template match="items">
-            <form action="overview.xq" method="GET">
-                <div id="navigation">
-                    <table cellspacing="0">
-                        <tr>
-                            <td width="60">Display:</td>
-                            <td width="60">
-                                <select name="howmany" onChange="form.submit()">
-                                    <option>10</option>
-                                    <option selected="true">50</option>
-                                    <option>100</option>
-                                </select>
-                            </td>
-                            <td/>
-                            <td width="60">Order by:</td>
-                            <td align="right" width="60">
-                                <select name="order" onChange="form.submit()">
-                                    <option>Date</option>
-                                    <option value="title">Title</option>
-                                    <option value="creator">Creator</option>
-                                </select>
-                            </td>
-                            <input type="hidden" name="start" value="{@start}"/>
-                        </tr>
-                        <tr>
-                            <td align="left" class="navbar" colspan="2">
-                                <xsl:if test="@start &gt; 1">
-                                    <a href="?start={@start - @max}&amp;howmany={@max}&amp;view={@view}">&lt;&lt; previous</a>
-                                </xsl:if>
-                            </td>
-                            <td align="center" class="navbar">
-                                Showing hits <xsl:value-of select="@start"/> to 
-                                <xsl:value-of select="@next - 1"/> of
-                                <xsl:value-of select="@hits"/>
-                            </td>
-                            <td align="right" class="navbar" colspan="2">
-                                <xsl:if test="@next &lt;= @hits">
-                                    <a href="?start={@next}&amp;howmany={@max}&amp;view={@view}">more &gt;&gt;</a>
-                                </xsl:if>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-                <xsl:apply-templates select="item"/>
-            </form>
+        <form action="mods.xq" method="GET">
+            <div id="navigation">
+                <table cellspacing="0">
+                    <tr>
+                        <td width="60">Display:</td>
+                        <td width="60">
+                            <select name="howmany" onChange="form.submit()">
+                                <option>10</option>
+                                <option selected="true">50</option>
+                                <option>100</option>
+                            </select>
+                        </td>
+                        <td align="center">
+                            <xsl:if test="@view='details'">
+                                <a href="?start={@start}&amp;howmany={@max}&amp;view=overview">Short View</a>
+                            </xsl:if>
+                        </td>
+                        <td width="60">Order by:</td>
+                        <td align="right" width="60">
+                            <select name="order" onChange="form.submit()">
+                                <option>Date</option>
+                                <option value="title">Title</option>
+                                <option value="creator">Creator</option>
+                            </select>
+                        </td>
+                        <input type="hidden" name="start" value="{@start}"/>
+                    </tr>
+                    <tr>
+                        <td align="left" class="navbar" colspan="2">
+                            <xsl:if test="@start &gt; 1">
+                                <a href="?start={@start - @max}&amp;howmany={@max}&amp;view={@view}">&lt;&lt; previous</a>
+                            </xsl:if>
+                        </td>
+                        <td align="center" class="navbar">
+                            Showing hits <xsl:value-of select="@start"/> to 
+                            <xsl:value-of select="@next - 1"/> of
+                            <xsl:value-of select="@hits"/>
+                        </td>
+                        <td align="right" class="navbar" colspan="2">
+                            <xsl:if test="@next &lt;= @hits">
+                                <a href="?start={@next}&amp;howmany={@max}&amp;view={@view}">more &gt;&gt;</a>
+                            </xsl:if>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <xsl:apply-templates select="item"/>
+        </form>
     </xsl:template>
     
     <xsl:template match="item">
@@ -63,8 +67,10 @@
             <table width="100%">
                 <tr>
                     <td class="actionhead">
-                        <a href="?start={@pos}&amp;howmany={../@max}&amp;view=details">Details</a>
-                        <xsl:text> | </xsl:text>
+                        <xsl:if test="../@view='overview'">
+                            <a href="?start={@pos}&amp;howmany={../@max}&amp;view=details">Details</a>
+                            <xsl:text> | </xsl:text>
+                        </xsl:if>
                         <xsl:if test="m:location/m:url">
                             <a href="{m:location/m:url}">View Document</a>
                         </xsl:if>

@@ -47,6 +47,18 @@ declare function b:queryField($field as xs:string) as xs:string
 		"."
 };
 
+declare function b:operand($field, $terms) as xs:string
+{
+    let $mode := request:request-parameter("mode", "all")
+    return
+        if($mode eq "any") then
+            concat($field, " |= '", $terms, "'")
+        else if($mode eq "near") then
+            concat("near(", $field, ", '", $terms, "')")
+        else
+            concat($field, " &amp;= '", $terms, "'")
+};
+
 (: Create an XPath expression for the current field and search terms :)
 declare function b:createXPath($collection as xs:string, $term1 as xs:string?) 
 as xs:string
@@ -54,8 +66,7 @@ as xs:string
     let $field1 := request:request-parameter("field1", "any"),
         $queryPart :=
             if($term1) then
-                concat("collection('", $collection, "')//m:mods[", b:queryField($field1),
-                    " &amp;= '", $term1, "'")
+                concat("collection('", $collection, "')//m:mods[", b:operand(b:queryField($field1), $term1))
             else
                 concat("collection('", $collection, "')//m:mods"),
         $l := util:log("debug", ("Part: ", $term1)),
@@ -65,8 +76,7 @@ as xs:string
             let $field2 := request:request-parameter("field2", "any"),
                 $op := request:request-parameter("op", "and")
             return
-                concat($queryPart, " ", $op, " ", b:queryField($field2), " &amp;= '",
-                    $term2, "']")
+                concat($queryPart, " ", $op, " ", b:operand(b:queryField($field2), $term2), "]")
         else if($term1) then
             concat($queryPart, "]")
         else
@@ -213,10 +223,12 @@ return
             <img src="logo.jpg" title="eXist"/>
             <table id="menubar">
                 <tr>
-                    <td id="header">Open Source XML Database</td>
+                    <td id="header">MODS Example</td>
                     <td>
-                        <a href="http://wiki.exist-db.org">News/Wiki</a>
+                        <a href="index.xml">Home</a>
                         <a href="index.xml#download">Download</a>
+                        <a href="http://wiki.exist-db.org">Wiki</a>
+                        <a href="examples.xml">Demo</a>
                     </td>
                 </tr>
             </table>

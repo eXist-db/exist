@@ -75,4 +75,71 @@
    <dev-notes>PHP, Sablotron XSLT, Javascript</dev-notes>
    <submitter>mailto:ocelma@iua.upf.es</submitter>
   </application>
+  
+  <application>
+    <dc:creator>SozioNet Project, Darmstadt University of Technology, Dpt. of Sociology</dc:creator>
+    <dc:identifier>http://www.sozionet.org</dc:identifier>
+    <dc:title>SozioNet</dc:title>
+    <dc:subject>social science</dc:subject>
+    <dc:subject>metadata creation</dc:subject>
+    <dc:subject>metadata harvesting</dc:subject>
+    <dc:description>Inspired by successful projects like MathNet or SOSIG, SozioNet provides access to freely 
+    available web resources with relevance to social science. It is based on a network of social science institutions 
+    and scientists, to agree on and establish common metadata standards, and to provide a general infrastructure 
+    for metadata creation, harvesting and retrieval. All SozioNet components, including the user interface for 
+    metadata creation and the harvesting framework, are entirely based on XML and rely on eXist as 
+    storage backend.</dc:description>
+    <dc:format>Web application</dc:format>
+    <feature-used>XQuery</feature-used>
+    <feature-used>Cocoon</feature-used>
+    <production-site>http://www.sozionet.org</production-site>
+    <status>production</status>
+    <third-party-feature-used>Cocoon XMLForms</third-party-feature-used>
+    <third-party-feature-used>Apache Avalon</third-party-feature-used>
+    <datatype-stored>RDF</datatype-stored>
+    <datatype-stored targetnamespace="http://purl.org/dc/elements/1.1/">Dublin Core</datatype-stored>
+    <datatype-stored>OWL</datatype-stored>
+    <datatype-stored>MODS</datatype-stored>
+    <dev-notes>The query interface served as 
+    a testbed for eXist's XQuery implementation. It is itself completely written in XQuery.</dev-notes>
+  </application>
+  
+  <application>
+    <dc:title>Weblounge</dc:title>
+    <dc:identifier>http://www.o2it.ch/products/weblounge</dc:identifier>
+    <dc:description>Weblounge provides a highly scalable, multilingual web content management system, featuring 
+    eXist as its powerful storage backend. Thanks to eXist's extensive support of xml, xquery and xupdate, the 
+    system is capable of easily exporting its data, providing unlimited undo steps while editing and offering 
+    webdav access to the files repository, again using eXist as the backing storage for the dav properties.</dc:description>
+    <dc:creator>O2 IT Engineering</dc:creator>
+    <dc:rights>Copyright by O2 IT Engineering</dc:rights>
+    <dev-site>http://www.o2it.ch</dev-site>
+  </application>
+  
+  <application>
+    <dc:title>MyCoRe</dc:title>
+    <dc:description>
+        MyCoRe is an Open Source project for the development of Digital Library and archive solutions 
+        (or, put more generally, "Content Repositories" >> CoRe). In the MyCoRe project a group of universities is 
+        working on the development of a shared software core for such applications. This core will be adjustable to 
+        local requirements and easy to modify. This is expressed by the "My" in MyCoRe, which represents the local 
+        adaptability. On the basis of this core which will be available under the open source GNU General Public License, 
+        specific local applications will emerge at the participating institutes. The technical base of the system is 
+        formed of Java class libraries, XML technology and the database backend IBM Content Manager and IBM DB2 
+        or an native XML Database System (eXist) and a relational database system such as MySQl or Postgresql.
+    </dc:description>
+    <dc:subject>metadata</dc:subject>
+    <dc:subject>internal filesystem</dc:subject>
+    <dc:subject>hierarchical classification system</dc:subject>
+    <dc:subject>workflow</dc:subject>
+    <dc:subject>workbasket</dc:subject>
+    <dc:subject>distributed search</dc:subject>
+    <dc:subject>OAI</dc:subject>
+    <dc:subject>Z39.50</dc:subject>
+    <dc:format>Web application</dc:format>
+    <dc:identifier>http://www.mycore.de</dc:identifier>
+    <dc:creator>MyCoRe Project</dc:creator>
+    <dc:rights>GPL</dc:rights>
+    <demo-site>http://mycoresample.rz.uni-greifswald.de/docportal/</demo-site>
+  </application>
 </applications>

@@ -1,0 +1,14 @@
+@import url(default-style.css);
+
+#details {
+    margin-left: 25px;
+}
+
+.heading {
+    font-style: bold;
+    padding-right: 15px;
+}
+
+.highlight {
+    font-style: italic;
+}
