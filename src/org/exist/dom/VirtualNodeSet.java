@@ -122,6 +122,9 @@ public class VirtualNodeSet extends NodeSet {
 		// if this is the first call to this method, remember the first parent node
 		// and re-evaluate the method
 		if(first == null) {
+			if(pid < 0)
+				// given node was already document element -> no parent
+				return null;
 			first = new NodeProxy(node.doc, pid, Node.ELEMENT_NODE);
 			// Timo Boehme: we need a real parent (child from context)
 			return getFirstParent(first, first, false, directParent, recursions + 1);
@@ -137,8 +140,7 @@ public class VirtualNodeSet extends NodeSet {
 				node.addContextNode(parent);
 			else
 				node.copyContext(parent);
-		    // Timo Boehme: we return the ancestor which is child of context
-			System.out.println("found: " + node.gid + ": " + inPredicate); 
+		    // Timo Boehme: we return the ancestor which is child of context 
 			return node;
 		} else if (pid < 0)
 			// no matching node has been found in the context
