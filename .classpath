@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="tools/wrapper/src"/>
 	<classpathentry kind="src" path="samples"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/core/antlr.jar"/>
@@ -8,7 +9,6 @@
 	<classpathentry kind="lib" path="lib/core/libreadline-java.jar"/>
 	<classpathentry kind="lib" path="lib/core/resolver-20030708.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmldb.jar"/>
-	<classpathentry kind="lib" path="lib/core/xmlrpc-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/axis-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/axis-ant.jar"/>
 	<classpathentry kind="lib" path="lib/optional/axis-jaxrpc-1.1.jar"/>
@@ -27,8 +27,6 @@
 	<classpathentry kind="lib" path="lib/optional/excalibur-naming-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/excalibur-pool-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/excalibur-util-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/optional/jakarta-regexp-1.3.jar"/>
-	<classpathentry kind="lib" path="lib/optional/jisp-2.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/wsdl4j-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xml-apis.jar"/>
 	<classpathentry kind="lib" path="lib/core/commons-pool-1.1.jar"/>
@@ -41,7 +39,6 @@
 	<classpathentry kind="lib" path="lib/optional/cocoon-xmldb-block.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-collections-3.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-jexl-1.0-beta-1-20040113.jar"/>
-	<classpathentry kind="lib" path="lib/optional/xml-commons-resolver-1.1.jar"/>
 	<classpathentry kind="lib" path="/home/wolf/Java/jakarta-tomcat-5.0.19/common/lib/jmx.jar"/>
 	<classpathentry kind="lib" path="/home/wolf/Java/jakarta-tomcat-5.0.19/common/lib/catalina.jar"/>
 	<classpathentry kind="lib" path="lib/core/jakarta-oro-2.0.8.jar"/>
@@ -66,7 +63,14 @@
 	<classpathentry kind="lib" path="lib/optional/jcs-1.0-dev-20040516.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jdtcore-2.1.3.jar"/>
 	<classpathentry kind="lib" path="lib/optional/logkit-1.2.2.jar"/>
-	<classpathentry kind="lib" path="lib/optional/pizza-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/util.concurrent-1.3.3.jar"/>
+	<classpathentry kind="lib" path="lib/core/xml-commons-resolver-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/core/xmlrpc-1.2-patched.jar"/>
+	<classpathentry kind="lib" path="lib/optional/castor-0.9.5-xml.jar"/>
+	<classpathentry kind="lib" path="lib/optional/isorelax.jar"/>
+	<classpathentry kind="lib" path="lib/optional/msv.jar"/>
+	<classpathentry kind="lib" path="lib/optional/xsdlib.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/org.mortbay.jetty.jar"/>
+	<classpathentry kind="lib" path="tools/wrapper/lib/wrapper.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
