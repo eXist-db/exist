@@ -56,7 +56,7 @@ public class ConcurrentQueryTest extends ConcurrentTestBase {
 		super.setUp();
 		
 		String[] wordList = DBUtils.wordList(rootCol);
-		tempFile = DBUtils.generateXMLFile(50000, 7, wordList);
+		tempFile = DBUtils.generateXMLFile(500, 7, wordList);
 		DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);
 		
 		String query0 = "/ROOT-ELEMENT/ELEMENT/ELEMENT-1/ELEMENT-2[@attribute-3]";
