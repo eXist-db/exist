@@ -64,7 +64,7 @@ public class XPathUtil {
         if (obj instanceof Sequence)
             return (Sequence) obj;
         else if (obj instanceof String)
-            return new StringValue((String) obj);
+            return new StringValue((String) obj).expand();
         else if (obj instanceof Boolean)
             return BooleanValue.valueOf(((Boolean) obj).booleanValue());
         else if (obj instanceof Float)
