@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sidebar title="Navigation" xmlns="http://exist-db.org/NS/sidebar">
+    <group href="index.xml" name="Home"/>
+    <group name="Documentation">
+        <item id="features">
+            <link href="/exist/features.xml">Features</link>
+        </item>
+        <item>
+            <link href="/exist/changes.xml">Changes</link>
+        </item>
+        <item>
+            <link href="/exist/quickstart.xml">Quick Start</link>
+        </item>
+        <item>
+            <link href="/exist/deployment.xml">Deployment</link>
+        </item>
+        <item>
+            <link href="/exist/security.xml">Security</link>
+        </item>
+        <item>
+            <link href="/exist/xinclude.xml">XInclude</link>
+        </item>
+        <item>
+            <link href="/exist/configuration.xml">Server Configuration</link>
+        </item>
+        <item>
+            <link href="/exist/devguide.xml">Developer's Guide</link>
+        </item>
+        <item>
+            <link href="/exist/index.xml#articles">Articles</link>
+        </item>
+        <item>
+            <link href="/exist/api/index.html">Javadocs</link>
+        </item>
+    </group>
+    <group name="HowTo">
+        <item>
+            <link href="/exist/xpath.xml">XPath HowTo</link>
+        </item>
+        <item>
+            <link href="/exist/performance.xml">Performance HowTo</link>
+        </item>
+        <item>
+            <link href="/exist/howtos.xml">Misc HowTos</link>
+        </item>
+    </group>
+    <group name="Examples">
+        <item>
+            <link href="squery.xsp?cname=%2Fdb%2Fshakespeare%2Fplays">XML search engine (Shakespeare)</link>
+        </item>
+        <item>
+            <link href="squery-foc.xsp?cname=%2Fdb%2Ffoc">XML search engine (Flora of China)</link>
+        </item>
+        <item>
+            <link href="/exist/xquery.xsp">Query interface</link>
+        </item>
+        <item>
+            <link href="/exist/biblio.xml">Library</link>
+        </item>
+        <item>
+            <link href="/exist/xmldb/db/">Cocoon + XML:DB</link>
+        </item>
+        <item>
+            <link href="/exist/xmldb/db/xinclude/xinclude.xml">XInclude</link>
+        </item>
+    </group>
+    <group name="Administration">
+        <item>
+            <link href="xadmin.xsp">Admin Interface</link>
+        </item>
+        <item>
+            <link href="/exist/admin">Server Status</link>
+        </item>
+    </group>
+    
+    <banner>
+        <item>
+            <link href="http://exist-db.org">
+                <img alt="powered by eXist" border="0" src="resources/powered.gif"/>
+            </link>
+        </item>
+    </banner>
+    <!--
+     <group name="" empty="true">
+      <item>
+        <link href="http://sourceforge.net/projects/exist">
+          <img src="http://sourceforge.net/sflogo.php?group_id=17691&amp;type=1" width="88" height="33" border="0" alt="SourceForge Logo"/>
+        </link>
+      </item>
+    </group>
+    -->
+</sidebar>

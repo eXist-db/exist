@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- 
+Copyright J.M. Vanel 2003 - under GNU public licence 
+jmvanel@free.fr 
+
+Worldwide Botanical Knowledge Base 
+http://wwbota.free.fr/
+$Header$
+-->
+<!-- XSP page for highlighting query strings in the response - outputs an XSLT stylesheet
+-->
+<xsp:page language="java"
+  xmlns:xsp="http://apache.org/xsp"
+  xmlns:xsp-request="http://apache.org/xsp/request/2.0"
+  xmlns:xsp-session="http://apache.org/xsp/session/2.0"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  >
+
+<xsp:structure>
+        <xsp:include>java.util.Vector</xsp:include>
+        <xsp:include>wwbota.xmldb.core.Query</xsp:include>
+        <xsp:include>wwbota.xmldb.core.Criterium</xsp:include>
+        <xsp:include>java.util.Iterator</xsp:include>
+</xsp:structure>
+
+  <xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:t="http://wwbota.free.fr/taxonomy"
+  >
+
+    <xsp:logic>
+      String queryString = <xsp-request:get-parameter name="squery" default=""/>;
+      String XPathQueryString = <xsp-request:get-parameter name="query" default=""/>;
+      Query q = wwbota.xmldb.core.Database.createQuery();
+      if ( queryString == null ) queryString = "";
+      q.setPlainQuery( queryString, new StringBuffer());
+      Query q1 = q;
+
+      if ( true ) {
+/****** // Alternate mechanism using the session:
+      // NOTE: using the built-in logicsheet doesn't work for Objects:
+      // Vector queries = (Vector) xsp-session:get-attribute name="queries";
+      Vector queries = (Vector)session.getAttribute ("queries");
+      if ( queries != null ) {
+        int last = (queries.size())-1;
+        Query q1= (Query)queries.get(last);
+**********/
+        StringBuffer buf = new StringBuffer();
+        Iterator it = q1.getCriteriums().iterator();
+        String match = "tr/*"; // "t:f";
+        while ( it.hasNext() ) {
+          Criterium crit = (Criterium)(it.next());
+          match = crit.getXPathGlobalMatch();
+          if ( ! match.equals("") ) {
+          <xsl:template>
+            <xsp:attribute name="match"><xsp:expr>match</xsp:expr></xsp:attribute>
+            <xsl:copy>
+              <xsl:copy-of select="@*" />
+              <xsl:attribute name="highlight" ><xsp:expr>crit.getProperty().getValue()</xsp:expr></xsl:attribute> 
+              <xsp:logic>
+                <xsl:attribute name="class" >highlight-container</xsl:attribute> 
+                <xsl:apply-templates select='node()' mode='highlight' >
+                  <xsl:with-param name='contains' ><xsp:expr>crit.getProperty().getValue()</xsp:expr></xsl:with-param>
+                </xsl:apply-templates>
+              </xsp:logic>
+            </xsl:copy>
+          </xsl:template>
+          }
+        }
+      } else {
+        <xsp:comment> No queries object in session!  </xsp:comment>
+      }
+    </xsp:logic>
+
+    <xsl:template match="@*|node()">
+      <xsl:copy>
+	      <xsl:apply-templates select="node()|@*"/>
+      </xsl:copy>      
+    </xsl:template>
+
+
+    <xsl:template match='node()' mode='highlight' >
+       <xsl:param name='contains' />
+       <!--
+       <xsl:comment>
+             squery: <xsp:expr> queryString </xsp:expr>
+             ; XPathQueryString: <xsp:expr> XPathQueryString </xsp:expr>
+       </xsl:comment>
+       -->
+       <xsl:copy>
+         <xsl:copy-of select="@*" />
+         <xsl:attribute name="class" >highlight-container</xsl:attribute>
+         <xsl:attribute name="highlight" ><xsl:value-of select="$contains" /></xsl:attribute>
+         <xsl:apply-templates select='node()' mode='highlight' >
+           <xsl:with-param name='contains' ><xsl:value-of select="$contains" /></xsl:with-param>
+         </xsl:apply-templates>
+         <!-- <xsl:copy-of select="node()" /> -->
+       </xsl:copy>
+    </xsl:template>
+
+  </xsl:stylesheet>        
+</xsp:page>

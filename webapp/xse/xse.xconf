@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--  Worldwide Botanical Knowledge Base search engine configuration file
+<xse:config xmlns:xse="http://wwbota.free.fr/xse" >
+  <xse:collection path="/db/shakespeare/plays"
+	XPathPrefix="//SCENE" 
+	RubricXPath="SCENE/*"
+	stylesheet="stylesheets/db/shakespeare/plays/"
+	hintPage="stylesheets/db/shakespeare/plays/"
+	unitDocumentName="scene"
+  />
+  <xse:collection path="/db/foc"
+	XPathPrefix="/flora/table/tr" 
+	RubricXPath="tr[@*[local-name()='source']] / td / *"
+	stylesheet="stylesheets/db/foc/"
+	hintPage="stylesheets/db/foc/"
+	unitDocumentName="taxon"
+  />
+</xse:config>
+-->
+<test>
+<a>tttt</a>
+<b>tttt</b>
+</test>
