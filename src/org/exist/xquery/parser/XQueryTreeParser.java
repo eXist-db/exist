@@ -4560,10 +4560,10 @@ public XQueryTreeParser() {
 						elementContent = new EnclosedExpr(context);
 						c.setContent(elementContent);
 						PathExpr qnamePathExpr = new PathExpr(context);
+						c.setNameExpr(qnamePathExpr);
 					
 			qnameExpr=expr(_t,qnamePathExpr);
 			_t = _retTree;
-			c.setNameExpr(qnameExpr);
 			contentExpr=expr(_t,elementContent);
 			_t = _retTree;
 			_t = __t434;
@@ -4581,15 +4581,14 @@ public XQueryTreeParser() {
 			a.setASTNode(attr);
 			step = a;
 			PathExpr qnamePathExpr = new PathExpr(context);
+			a.setNameExpr(qnamePathExpr);
 			elementContent = new PathExpr(context);
-			a.setValueExpr(elementContent);
+			a.setContentExpr(elementContent);
 					
 			qnameExpr=expr(_t,qnamePathExpr);
 			_t = _retTree;
-			a.setNameExpr(qnameExpr);
 			contentExpr=expr(_t,elementContent);
 			_t = _retTree;
-			elementContent.add(contentExpr);
 			_t = __t435;
 			_t = _t.getNextSibling();
 			break;
@@ -4605,15 +4604,14 @@ public XQueryTreeParser() {
 			pd.setASTNode(pid);
 			step = pd;
 			PathExpr qnamePathExpr = new PathExpr(context);
+			pd.setNameExpr(qnamePathExpr);
 			elementContent = new PathExpr(context);
 			pd.setContentExpr(elementContent);
 					
 			qnameExpr=expr(_t,qnamePathExpr);
 			_t = _retTree;
-			pd.setNameExpr(qnameExpr);
 			contentExpr=expr(_t,elementContent);
 			_t = _retTree;
-			elementContent.add(contentExpr);
 			_t = __t436;
 			_t = _t.getNextSibling();
 			break;
@@ -4734,13 +4732,14 @@ public XQueryTreeParser() {
 			t = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,COMP_TEXT_CONSTRUCTOR);
 			_t = _t.getFirstChild();
-			contentExpr=expr(_t,new PathExpr(context));
-			_t = _retTree;
 			
-						DynamicTextConstructor text = new DynamicTextConstructor(context, contentExpr);
+						elementContent = new PathExpr(context);
+						DynamicTextConstructor text = new DynamicTextConstructor(context, elementContent);
 						text.setASTNode(t);
 						step= text;
 					
+			contentExpr=expr(_t,elementContent);
+			_t = _retTree;
 			_t = __t447;
 			_t = _t.getNextSibling();
 			break;
@@ -4751,13 +4750,14 @@ public XQueryTreeParser() {
 			tc = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,COMP_COMMENT_CONSTRUCTOR);
 			_t = _t.getFirstChild();
-			contentExpr=expr(_t,new PathExpr(context));
-			_t = _retTree;
 			
-						DynamicCommentConstructor comment = new DynamicCommentConstructor(context, contentExpr);
+						elementContent = new PathExpr(context);
+						DynamicCommentConstructor comment = new DynamicCommentConstructor(context, elementContent);
 						comment.setASTNode(t);
 						step= comment;
 					
+			contentExpr=expr(_t,elementContent);
+			_t = _retTree;
 			_t = __t448;
 			_t = _t.getNextSibling();
 			break;
@@ -4768,14 +4768,15 @@ public XQueryTreeParser() {
 			prefix = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,COMP_NS_CONSTRUCTOR);
 			_t = _t.getFirstChild();
-			contentExpr=expr(_t,new PathExpr(context));
-			_t = _retTree;
 			
+						elementContent = new PathExpr(context);
 						NamespaceConstructor ns = new NamespaceConstructor(context, prefix.getText());
-						ns.setURIExpression(contentExpr);
+						ns.setURIExpression(elementContent);
 						ns.setASTNode(t);
 						step= ns;
 					
+			contentExpr=expr(_t,elementContent);
+			_t = _retTree;
 			_t = __t449;
 			_t = _t.getNextSibling();
 			break;
@@ -4786,13 +4787,14 @@ public XQueryTreeParser() {
 			d = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,COMP_DOC_CONSTRUCTOR);
 			_t = _t.getFirstChild();
-			contentExpr=expr(_t,new PathExpr(context));
-			_t = _retTree;
 			
-						DocumentConstructor doc = new DocumentConstructor(context, contentExpr);
+						elementContent = new PathExpr(context);
+						DocumentConstructor doc = new DocumentConstructor(context, elementContent);
 						doc.setASTNode(d);
 						step= doc;
 					
+			contentExpr=expr(_t,elementContent);
+			_t = _retTree;
 			_t = __t450;
 			_t = _t.getNextSibling();
 			break;
