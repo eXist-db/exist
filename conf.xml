@@ -49,7 +49,7 @@
 				  file system page size.
        -->
        
-	   <db-connection database="native" files="webapp/WEB-INF/data" 
+	   <db-connection database="native" files="/var/xml/" 
 		   buffers="1024" words_buffers="32768" collection_buffers="2048" 
 		   elements_buffers="8192" free_mem_min="10" 
 		   pageSize="4096">
@@ -240,7 +240,7 @@
     </appender>
     
     <root>
-		<appender-ref ref="exist.core"/>
+		<appender-ref ref="console"/>
 		<priority value="debug"/>
     </root>
 

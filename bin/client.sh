@@ -41,7 +41,7 @@ SAXFACTORY=org.apache.xerces.jaxp.SAXParserFactoryImpl
 
 # set java options
 if [ -z "$JAVA_OPTIONS" ]; then
-    export JAVA_OPTIONS="-Xms256000k -Xmx512000k -Djavax.xml.parsers.SAXParserFactory=$SAXFACTORY -Dfile.encoding=ISO-8859-1"
+    export JAVA_OPTIONS="-Xms128000k -Xmx512000k -Djavax.xml.parsers.SAXParserFactory=$SAXFACTORY -Dfile.encoding=ISO-8859-1"
 fi
 
 # save LD_LIBRARY_PATH

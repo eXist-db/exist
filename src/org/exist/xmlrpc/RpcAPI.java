@@ -518,6 +518,24 @@ public interface RpcAPI {
     boolean parse( User user, String xml, String docName )
          throws EXistException, PermissionDeniedException;
 
+	String upload(User user, byte[] chunk, int length)
+		throws EXistException, PermissionDeniedException;
+			
+	String upload(User user, String file, byte[] chunk, int length)
+		throws EXistException, PermissionDeniedException;
+
+	/**
+	 * Parse a file previously uploaded with upload.
+	 * 
+	 * The temporary file will be removed.
+	 * 
+	 * @param user
+	 * @param localFile
+	 * @throws EXistException
+	 * @throws IOException
+	 */
+	public boolean parseLocal(User user, String localFile, String docName, boolean replace)
+		throws EXistException, PermissionDeniedException, SAXException;
 
     /**
      *  remove a document from the repository.

@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<!--
-Connected to jdbc:odbc:flora
-Driver       JDBC-ODBC Bridge (ODBCJT32.DLL)
-Version      1.2001 (03.50.3428.00)
--->
 
     <flora xmlns:t="http://wwbota.free.fr/taxonomy" region="China">
       <t:taxon id="10042" publication_id="12395" rubric="12021">

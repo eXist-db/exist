@@ -206,9 +206,8 @@ public class LocationStep extends Step {
 		return context.getParents();
 	}
 
-	public DocumentSet preselect(DocumentSet in_docs) {
-		DocumentSet out_docs = super.preselect(in_docs);
-		return out_docs;
+	public DocumentSet preselect(DocumentSet inDocs) {
+		return super.preselect(inDocs);
 	}
 
 	public void setKeepVirtual(boolean virtual) {

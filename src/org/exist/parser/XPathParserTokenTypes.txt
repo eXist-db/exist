@@ -1,9 +1,9 @@
-// $ANTLR : XPathParser.g -> XPathParserTokenTypes.txt$
+// $ANTLR 2.7.2rc2 (20030105): XPathParser.g -> XPathParserTokenTypes.txt$
 XPathParser    // output token vocab name
 LITERAL_xpointer="xpointer"=4
 LPAREN=5
 RPAREN=6
-ID=7
+NCNAME=7
 LITERAL_or="or"=8
 LITERAL_and="and"=9
 CONST=10
@@ -30,22 +30,21 @@ LITERAL_text="text"=28
 LITERAL_contains="contains"=31
 LITERAL_match="match"=32
 LITERAL_near="near"=33
-NCNAME=34
-SLASH=35
-DSLASH=36
-AT=37
-ATTRIB_STAR=38
-LITERAL_node="node"=39
-PARENT=40
-SELF=41
-COLON=42
-LITERAL_ancestor="ancestor"=43
-LPPAREN=44
-RPPAREN=45
-WS=46
-BASECHAR=47
-IDEOGRAPHIC=48
-DIGIT=49
-NMSTART=50
-NMCHAR=51
-VARIABLE=52
+SLASH=34
+DSLASH=35
+AT=36
+ATTRIB_STAR=37
+LITERAL_node="node"=38
+PARENT=39
+SELF=40
+COLON=41
+LITERAL_ancestor="ancestor"=42
+LPPAREN=43
+RPPAREN=44
+WS=45
+BASECHAR=46
+IDEOGRAPHIC=47
+DIGIT=48
+NMSTART=49
+NMCHAR=50
+VARIABLE=51

@@ -23,6 +23,7 @@ package org.exist.xmlrpc;
 
 import it.unimi.dsi.fastutil.Int2ObjectOpenHashMap;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
@@ -447,9 +448,7 @@ public class RpcServer implements RpcAPI {
 
 	private void handleException(Exception e) throws EXistException, PermissionDeniedException {
 		LOG.debug(e.getMessage());
-		StringWriter sw = new StringWriter();
-		e.printStackTrace(new PrintWriter(sw));
-		LOG.error(sw.toString());
+		LOG.error(e);
 		if (e instanceof EXistException)
 			throw (EXistException) e;
 		else if (e instanceof PermissionDeniedException)
@@ -550,6 +549,49 @@ public class RpcServer implements RpcAPI {
 		} catch (Exception e) {
 			handleException(e);
 			return false;
+		} finally {
+			con.synchronize();
+			pool.release(con);
+		}
+	}
+
+	/**
+	 * Parse a file previously uploaded with upload.
+	 * 
+	 * The temporary file will be removed.
+	 * 
+	 * @param user
+	 * @param localFile
+	 * @throws EXistException
+	 * @throws IOException
+	 */
+	public boolean parseLocal(User user, String localFile, String docName, boolean replace)
+		throws EXistException, PermissionDeniedException, SAXException {
+		RpcConnection con = pool.get();
+		try {
+			return con.parseLocal(user, localFile, docName, replace);
+		} catch (Exception e) {
+			handleException(e);
+			return false;
+		} finally {
+			con.synchronize();
+			pool.release(con);
+		}
+	}
+
+	public String upload(User user, byte[] data, int length)
+		throws EXistException, PermissionDeniedException {
+		return upload(user, null, data, length);
+	}
+
+	public String upload(User user, String file, byte[] data, int length)
+		throws EXistException, PermissionDeniedException {
+		RpcConnection con = pool.get();
+		try {
+			return con.upload(user, data, length, file);
+		} catch (Exception e) {
+			handleException(e);
+			return null;
 		} finally {
 			con.synchronize();
 			pool.release(con);
@@ -1210,7 +1252,7 @@ public class RpcServer implements RpcAPI {
 			return false;
 		}
 	}
-	
+
 	public boolean sync(User user) {
 		RpcConnection con = null;
 		try {

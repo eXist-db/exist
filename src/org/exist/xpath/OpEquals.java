@@ -1,7 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
  * 
- * 	Copyright (C) 2000, Wolfgang M. Meier (meier@ifs. tu- darmstadt. de)
+ *  Copyright (C) 2000, Wolfgang M. Meier (meier@ifs. tu- darmstadt. de)
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -18,13 +18,20 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 package org.exist.xpath;
-import java.util.Iterator;
-import org.apache.log4j.Category;
-import org.exist.*;
-import org.exist.dom.*;
-import org.exist.storage.*;
 
-import org.w3c.dom.NodeList;
+import java.util.Iterator;
+
+import org.apache.log4j.Category;
+import org.exist.EXistException;
+import org.exist.dom.ArraySet;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.IndexPaths;
+import org.exist.storage.analysis.SimpleTokenizer;
+import org.exist.storage.analysis.TextToken;
 
 /**
  *  compare two operands by =, <, > etc..
@@ -38,7 +45,9 @@ public class OpEquals extends BinaryOp {
 
     protected int relation = Constants.EQ;
     protected NodeSet temp = null;
-
+    
+    // in some cases, we use a fulltext expression to preselect nodes
+	protected FunContains containsExpr = null;
 
     /**
      *  Constructor for the OpEquals object
@@ -228,11 +237,13 @@ public class OpEquals extends BinaryOp {
                                     NodeSet context, NodeProxy node ) {
         NodeSet result = new ArraySet( 100 );
         if ( right.returnsType() == Constants.TYPE_STRING ) {
-            String cmp = right.eval( docs, context, null ).getStringValue();
-            cmp = cmp.replace( '*', '%' );
             // evaluate left expression
-            NodeSet nodes;
-            nodes = (NodeSet) left.eval( docs, context, null ).getNodeList();
+            NodeSet nodes = (NodeSet) left.eval( docs, context, null ).getNodeList();
+            String cmp = right.eval( docs, context, null ).getStringValue().replace( '*', '%' );
+            if(containsExpr != null) {
+				Value temp = containsExpr.eval(docs, nodes, null);
+				nodes = (NodeSet)temp.getNodeList();
+            }
             // get a list of all nodes equal to ...
             DBBroker broker = null;
             try {
@@ -347,7 +358,23 @@ public class OpEquals extends BinaryOp {
      *@return          Description of the Return Value
      */
     public DocumentSet preselect( DocumentSet in_docs ) {
-        return in_docs;
+    	// use the fulltext index if one operand is a literal and the
+    	// relation is =
+//		if(getLeft().returnsType() == Constants.TYPE_NODELIST &&
+//			getRight() instanceof Literal && 
+//			relation == Constants.EQ) {
+//			String cmp = ((Literal)getRight()).literalValue;
+//			SimpleTokenizer tokenizer = new SimpleTokenizer();
+//			tokenizer.setText(cmp);
+//			TextToken token;
+//			String term;
+//			containsExpr = new FunContains(pool, Constants.FULLTEXT_AND);
+//			for(int i = 0; i < 5 && (token = tokenizer.nextToken()) != null; i++) {
+//				containsExpr.addTerm(token.getText());
+//			}
+//			return containsExpr.preselect( in_docs );
+//		} else
+        	return in_docs;
     }
 
 

@@ -1245,8 +1245,8 @@ public class BFile extends BTree {
 		 *@param  dis              Description of the Parameter
 		 *@exception  IOException  Description of the Exception
 		 */
-		public BFilePageHeader(DataInputStream dis) throws IOException {
-			super(dis);
+		public BFilePageHeader(byte[] data, int offset) throws IOException {
+			super(data, offset);
 		}
 
 		/**  Description of the Method */
@@ -1315,13 +1315,18 @@ public class BFile extends BTree {
 		 *@param  dis              Description of the Parameter
 		 *@exception  IOException  Description of the Exception
 		 */
-		public void read(DataInputStream dis) throws IOException {
-			super.read(dis);
-			records = dis.readShort();
-			dataLen = dis.readInt();
-			nextTID = dis.readShort();
-			nextInChain = dis.readLong();
-			lastInChain = dis.readLong();
+		public int read(byte[] data, int offset) throws IOException {
+			offset = super.read(data, offset);
+			records = ByteConversion.byteToShort(data, offset);
+			offset += 2;
+			dataLen = ByteConversion.byteToInt(data, offset);
+			offset += 4;
+			nextTID = ByteConversion.byteToShort(data, offset);
+			offset += 2;
+			nextInChain = ByteConversion.byteToLong(data, offset);
+			offset += 8;
+			lastInChain = ByteConversion.byteToLong(data, offset);
+			return offset + 8;
 		}
 
 		/**
@@ -1375,13 +1380,18 @@ public class BFile extends BTree {
 		 *@param  dos              Description of the Parameter
 		 *@exception  IOException  Description of the Exception
 		 */
-		public void write(DataOutputStream dos) throws IOException {
-			super.write(dos);
-			dos.writeShort(records);
-			dos.writeInt(dataLen);
-			dos.writeShort(nextTID);
-			dos.writeLong(nextInChain);
-			dos.writeLong(lastInChain);
+		public int write(byte[] data, int offset) throws IOException {
+			offset = super.write(data, offset);
+			ByteConversion.shortToByte(records, data, offset);
+			offset += 2;
+			ByteConversion.intToByte(dataLen, data, offset);
+			offset += 4;
+			ByteConversion.shortToByte(nextTID, data, offset);
+			offset += 2;
+			ByteConversion.longToByte(nextInChain, data, offset);
+			offset += 8;
+			ByteConversion.longToByte(lastInChain, data, offset);
+			return offset + 8;
 		}
 	}
 

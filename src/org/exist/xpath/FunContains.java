@@ -73,7 +73,8 @@ public class FunContains extends Function {
 	}
 
 	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
-		NodeSet nodes = (NodeSet) path.eval(docs, context, null).getNodeList();
+		NodeSet nodes = path == null ? context :
+			(NodeSet) path.eval(docs, context, null).getNodeList();
 		if (hits == null)
 			processQuery(docs);
 		long pid;

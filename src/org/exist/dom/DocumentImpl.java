@@ -252,7 +252,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			treeLevelStartPoints[i + 1] =
 				(treeLevelStartPoints[i] - treeLevelStartPoints[i - 1]) * treeLevelOrder[i]
 					+ treeLevelStartPoints[i];
-			System.out.println(treeLevelStartPoints[i + 1]);
+			//System.out.println(treeLevelStartPoints[i + 1] + "; k = " + treeLevelOrder[i]);
 		}
 	}
 
@@ -878,8 +878,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		//System.out.println("doc = " + docId + "address = " + DOMFile.tidFromPointer(address));
 		//Thread.dumpStack();
 		ostream.writeInt(maxDepth);
-		for (int i = 0; i < maxDepth; i++)
+		for (int i = 0; i < maxDepth; i++) {
+			//System.out.println("k[" + i + "] = " + treeLevelOrder[i]);
 			ostream.writeInt(treeLevelOrder[i]);
+		}
 		SecurityManager secman = broker.getBrokerPool().getSecurityManager();
 		if (secman == null) {
 			ostream.writeInt(1);

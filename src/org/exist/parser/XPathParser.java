@@ -1,4 +1,4 @@
-// $ANTLR : "XPathParser.g" -> "XPathParser.java"$
+// $ANTLR 2.7.2rc2 (20030105): "XPathParser.g" -> "XPathParser.java"$
 
 	package org.exist.parser;
 	
@@ -144,10 +144,10 @@ public XPathParser(ParserSharedInputState state) {
 			match(Token.EOF_TYPE);
 			break;
 		}
-		case ID:
+		case NCNAME:
 		{
 			id = LT(1);
-			match(ID);
+			match(NCNAME);
 			match(Token.EOF_TYPE);
 			if ( inputState.guessing==0 ) {
 				
@@ -191,6 +191,7 @@ public XPathParser(ParserSharedInputState state) {
 				break;
 			}
 			case LPAREN:
+			case NCNAME:
 			case CONST:
 			case STAR:
 			case INT:
@@ -200,7 +201,6 @@ public XPathParser(ParserSharedInputState state) {
 			case LITERAL_contains:
 			case LITERAL_match:
 			case LITERAL_near:
-			case NCNAME:
 			case SLASH:
 			case DSLASH:
 			case AT:
@@ -310,7 +310,7 @@ public XPathParser(ParserSharedInputState state) {
 				
 			}
 			{
-			_loop941:
+			_loop31:
 			do {
 				if ((LA(1)==COMMA)) {
 					match(COMMA);
@@ -331,7 +331,7 @@ public XPathParser(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop941;
+					break _loop31;
 				}
 				
 			} while (true);
@@ -366,7 +366,7 @@ public XPathParser(ParserSharedInputState state) {
 				
 			}
 			{
-			_loop943:
+			_loop33:
 			do {
 				if ((LA(1)==COMMA)) {
 					match(COMMA);
@@ -387,7 +387,7 @@ public XPathParser(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop943;
+					break _loop33;
 				}
 				
 			} while (true);
@@ -403,10 +403,10 @@ public XPathParser(ParserSharedInputState state) {
 			break;
 		}
 		default:
-			boolean synPredMatched937 = false;
+			boolean synPredMatched27 = false;
 			if (((LA(1)==LITERAL_document) && (LA(2)==LPAREN))) {
-				int _m937 = mark();
-				synPredMatched937 = true;
+				int _m27 = mark();
+				synPredMatched27 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -416,12 +416,12 @@ public XPathParser(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched937 = false;
+					synPredMatched27 = false;
 				}
-				rewind(_m937);
+				rewind(_m27);
 				inputState.guessing--;
 			}
-			if ( synPredMatched937 ) {
+			if ( synPredMatched27 ) {
 				match(LITERAL_document);
 				match(LPAREN);
 				match(STAR);
@@ -468,7 +468,7 @@ public XPathParser(ParserSharedInputState state) {
 						
 				}
 				{
-				_loop939:
+				_loop29:
 				do {
 					if ((LA(1)==COMMA)) {
 						match(COMMA);
@@ -493,7 +493,7 @@ public XPathParser(ParserSharedInputState state) {
 						}
 					}
 					else {
-						break _loop939;
+						break _loop29;
 					}
 					
 				} while (true);
@@ -519,7 +519,7 @@ public XPathParser(ParserSharedInputState state) {
 		
 		and_expr(left);
 		{
-		_loop917:
+		_loop7:
 		do {
 			if ((LA(1)==LITERAL_or)) {
 				match(LITERAL_or);
@@ -538,7 +538,7 @@ public XPathParser(ParserSharedInputState state) {
 				}
 			}
 			else {
-				break _loop917;
+				break _loop7;
 			}
 			
 		} while (true);
@@ -585,6 +585,7 @@ public XPathParser(ParserSharedInputState state) {
 				break;
 			}
 			case LPAREN:
+			case NCNAME:
 			case CONST:
 			case STAR:
 			case INT:
@@ -594,7 +595,6 @@ public XPathParser(ParserSharedInputState state) {
 			case LITERAL_contains:
 			case LITERAL_match:
 			case LITERAL_near:
-			case NCNAME:
 			case SLASH:
 			case DSLASH:
 			case AT:
@@ -646,7 +646,7 @@ public XPathParser(ParserSharedInputState state) {
 		
 		equality_expr(left);
 		{
-		_loop920:
+		_loop10:
 		do {
 			if ((LA(1)==LITERAL_and)) {
 				match(LITERAL_and);
@@ -665,7 +665,7 @@ public XPathParser(ParserSharedInputState state) {
 				}
 			}
 			else {
-				break _loop920;
+				break _loop10;
 			}
 			
 		} while (true);
@@ -948,7 +948,7 @@ public XPathParser(ParserSharedInputState state) {
 		
 		pathexpr(left);
 		{
-		_loop934:
+		_loop24:
 		do {
 			if ((LA(1)==PLUS)) {
 				if ( inputState.guessing==0 ) {
@@ -958,7 +958,7 @@ public XPathParser(ParserSharedInputState state) {
 				pathexpr(right);
 			}
 			else {
-				break _loop934;
+				break _loop24;
 			}
 			
 		} while (true);
@@ -1032,6 +1032,7 @@ public XPathParser(ParserSharedInputState state) {
 		
 		
 		switch ( LA(1)) {
+		case NCNAME:
 		case CONST:
 		case STAR:
 		case INT:
@@ -1041,7 +1042,6 @@ public XPathParser(ParserSharedInputState state) {
 		case LITERAL_contains:
 		case LITERAL_match:
 		case LITERAL_near:
-		case NCNAME:
 		case SLASH:
 		case DSLASH:
 		case AT:
@@ -1052,8 +1052,8 @@ public XPathParser(ParserSharedInputState state) {
 		case LITERAL_ancestor:
 		{
 			{
-			int _cnt946=0;
-			_loop946:
+			int _cnt36=0;
+			_loop36:
 			do {
 				if ((_tokenSet_0.member(LA(1)))) {
 					result=regularexpr(expr);
@@ -1065,10 +1065,10 @@ public XPathParser(ParserSharedInputState state) {
 					}
 				}
 				else {
-					if ( _cnt946>=1 ) { break _loop946; } else {throw new NoViableAltException(LT(1), getFilename());}
+					if ( _cnt36>=1 ) { break _loop36; } else {throw new NoViableAltException(LT(1), getFilename());}
 				}
 				
-				_cnt946++;
+				_cnt36++;
 			} while (true);
 			}
 			break;
@@ -1117,7 +1117,7 @@ public XPathParser(ParserSharedInputState state) {
 				
 			}
 			{
-			_loop962:
+			_loop52:
 			do {
 				if ((LA(1)==LPPAREN)) {
 					pred=predicate(expr);
@@ -1128,13 +1128,14 @@ public XPathParser(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop962;
+					break _loop52;
 				}
 				
 			} while (true);
 			}
 			break;
 		}
+		case NCNAME:
 		case CONST:
 		case STAR:
 		case INT:
@@ -1144,7 +1145,6 @@ public XPathParser(ParserSharedInputState state) {
 		case LITERAL_contains:
 		case LITERAL_match:
 		case LITERAL_near:
-		case NCNAME:
 		case AT:
 		case ATTRIB_STAR:
 		case LITERAL_node:
@@ -1159,7 +1159,7 @@ public XPathParser(ParserSharedInputState state) {
 				
 			}
 			{
-			_loop964:
+			_loop54:
 			do {
 				if ((LA(1)==LPPAREN)) {
 					pred=predicate(expr);
@@ -1170,7 +1170,7 @@ public XPathParser(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop964;
+					break _loop54;
 				}
 				
 			} while (true);
@@ -1433,10 +1433,10 @@ public XPathParser(ParserSharedInputState state) {
 			break;
 		}
 		default:
-			boolean synPredMatched951 = false;
+			boolean synPredMatched41 = false;
 			if (((LA(1)==NCNAME) && (LA(2)==LPAREN))) {
-				int _m951 = mark();
-				synPredMatched951 = true;
+				int _m41 = mark();
+				synPredMatched41 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -1446,12 +1446,12 @@ public XPathParser(ParserSharedInputState state) {
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched951 = false;
+					synPredMatched41 = false;
 				}
-				rewind(_m951);
+				rewind(_m41);
 				inputState.guessing--;
 			}
-			if ( synPredMatched951 ) {
+			if ( synPredMatched41 ) {
 				f1 = LT(1);
 				match(NCNAME);
 				if (!( env.hasFunction(f1.getText()) ))
@@ -1466,10 +1466,10 @@ public XPathParser(ParserSharedInputState state) {
 				}
 			}
 			else {
-				boolean synPredMatched953 = false;
+				boolean synPredMatched43 = false;
 				if (((LA(1)==NCNAME) && (LA(2)==LPAREN))) {
-					int _m953 = mark();
-					synPredMatched953 = true;
+					int _m43 = mark();
+					synPredMatched43 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -1478,12 +1478,12 @@ public XPathParser(ParserSharedInputState state) {
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched953 = false;
+						synPredMatched43 = false;
 					}
-					rewind(_m953);
+					rewind(_m43);
 					inputState.guessing--;
 				}
-				if ( synPredMatched953 ) {
+				if ( synPredMatched43 ) {
 					f2 = LT(1);
 					match(NCNAME);
 					match(LPAREN);
@@ -1498,7 +1498,7 @@ public XPathParser(ParserSharedInputState state) {
 						fun.addArgument(arg1);
 					}
 					{
-					_loop955:
+					_loop45:
 					do {
 						if ((LA(1)==COMMA)) {
 							match(COMMA);
@@ -1511,7 +1511,7 @@ public XPathParser(ParserSharedInputState state) {
 							}
 						}
 						else {
-							break _loop955;
+							break _loop45;
 						}
 						
 					} while (true);
@@ -1544,7 +1544,7 @@ public XPathParser(ParserSharedInputState state) {
 			fun.addArgument(arg1);
 		}
 		{
-		_loop959:
+		_loop49:
 		do {
 			if ((LA(1)==COMMA)) {
 				match(COMMA);
@@ -1557,7 +1557,7 @@ public XPathParser(ParserSharedInputState state) {
 				}
 			}
 			else {
-				break _loop959;
+				break _loop49;
 			}
 			
 		} while (true);
@@ -1681,10 +1681,10 @@ public XPathParser(ParserSharedInputState state) {
 			break;
 		}
 		default:
-			if (((LA(1) >= LITERAL_text && LA(1) <= NCNAME)) && (LA(2)==LPAREN)) {
+			if ((_tokenSet_1.member(LA(1))) && (LA(2)==LPAREN)) {
 				step=function_call(expr);
 			}
-			else if ((_tokenSet_1.member(LA(1))) && (_tokenSet_2.member(LA(2)))) {
+			else if ((_tokenSet_2.member(LA(1))) && (_tokenSet_3.member(LA(2)))) {
 				qn=qname();
 				if ( inputState.guessing==0 ) {
 					
@@ -1746,6 +1746,7 @@ public XPathParser(ParserSharedInputState state) {
 			}
 			case EOF:
 			case RPAREN:
+			case NCNAME:
 			case LITERAL_or:
 			case LITERAL_and:
 			case CONST:
@@ -1768,7 +1769,6 @@ public XPathParser(ParserSharedInputState state) {
 			case LITERAL_contains:
 			case LITERAL_match:
 			case LITERAL_near:
-			case NCNAME:
 			case SLASH:
 			case DSLASH:
 			case AT:
@@ -1847,7 +1847,7 @@ public XPathParser(ParserSharedInputState state) {
 		"\"xpointer\"",
 		"LPAREN",
 		"RPAREN",
-		"ID",
+		"NCNAME",
 		"\"or\"",
 		"\"and\"",
 		"CONST",
@@ -1874,7 +1874,6 @@ public XPathParser(ParserSharedInputState state) {
 		"\"contains\"",
 		"\"match\"",
 		"\"near\"",
-		"NCNAME",
 		"SLASH",
 		"DSLASH",
 		"AT",
@@ -1896,19 +1895,24 @@ public XPathParser(ParserSharedInputState state) {
 	};
 	
 	private static final long[] mk_tokenSet_0() {
-		long[] data = { 13194013705216L, 0L};
+		long[] data = { 6596943938688L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
 	private static final long[] mk_tokenSet_1() {
-		long[] data = { 29796335616L, 0L};
+		long[] data = { 16911433856L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
 	private static final long[] mk_tokenSet_2() {
-		long[] data = { 70368637222722L, 0L};
+		long[] data = { 12616466560L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
+	private static final long[] mk_tokenSet_3() {
+		long[] data = { 35184265134018L, 0L};
+		return data;
+	}
+	public static final BitSet _tokenSet_3 = new BitSet(mk_tokenSet_3());
 	
 	}

@@ -1,6 +1,6 @@
 
 /*
- *  eXist xml document repository and xpath implementation
+ *  eXist Native XML Database
  *  Copyright (C) 2000,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  *  This library is free software; you can redistribute it and/or

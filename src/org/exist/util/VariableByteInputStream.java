@@ -114,7 +114,8 @@ public class VariableByteInputStream {
 	 */
 	public void skip(int count) throws IOException {
 		for (int i = 0; i < count && is.available() > 0; i++)
-			VariableByteCoding.decode(is);
+			//VariableByteCoding.decode(is);
+			VariableByteCoding.skipNext(is);
 	}
 
 	public int available() throws IOException {

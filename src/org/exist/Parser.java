@@ -331,8 +331,9 @@ public class Parser
 			currentPath.delete(currentPath.lastIndexOf("/"), currentPath.length());
 			//				currentPath.substring(0, currentPath.lastIndexOf('/'));
 			if (validate) {
-				if (document.getTreeLevelOrder(level) < last.getChildCount())
+				if (document.getTreeLevelOrder(level) < last.getChildCount()) {
 					document.setTreeLevelOrder(level, last.getChildCount() + SPARSE_IDENTIFIERS);
+				}
 			} else {
 				document.setOwnerDocument(document);
 				if (broker.getDatabaseType() == DBBroker.DBM
@@ -867,9 +868,8 @@ public class Parser
 		}
 
 		level++;
-		if (document.getMaxDepth() < level)
+		if (document.getMaxDepth() < level) 
 			document.setMaxDepth(level);
-
 		int attrLength = attributes.getLength();
 		String attrQName;
 		String attrPrefix;

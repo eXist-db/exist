@@ -1,20 +1,23 @@
 package org.exist.xmldb;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.util.Vector;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
 import org.apache.cocoon.components.parser.Parser;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 import org.apache.xmlrpc.XmlRpcException;
+import org.exist.util.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -29,7 +32,6 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
-import org.exist.util.XMLUtil;
 
 public class XMLResourceImpl implements XMLResource {
 	/**
@@ -45,9 +47,9 @@ public class XMLResourceImpl implements XMLResource {
 	protected CollectionImpl parent;
 	protected boolean saxDocEvents = true;
 	protected String content = null;
+	protected File file = null;
 
-	public XMLResourceImpl(CollectionImpl parent, String docId, String id) 
-	throws XMLDBException {
+	public XMLResourceImpl(CollectionImpl parent, String docId, String id) throws XMLDBException {
 		this(parent, -1, -1, docId, id, 0, "UTF-8");
 	}
 
@@ -58,7 +60,8 @@ public class XMLResourceImpl implements XMLResource {
 		String docId,
 		String id,
 		int indent,
-		String encoding) throws XMLDBException {
+		String encoding)
+		throws XMLDBException {
 		this.handle = handle;
 		this.pos = pos;
 		this.parent = parent;
@@ -75,8 +78,10 @@ public class XMLResourceImpl implements XMLResource {
 	}
 
 	public Object getContent() throws XMLDBException {
-		if (content != null) 
+		if (content != null)
 			return content;
+		if (file != null)
+			return file;
 		byte[] data = null;
 		if (id == null) {
 			Vector params = new Vector();
@@ -84,18 +89,11 @@ public class XMLResourceImpl implements XMLResource {
 			params.addElement(encoding);
 			params.addElement(new Integer(indent));
 			try {
-				data =
-					(byte[]) parent.getClient().execute("getDocument", params);
+				data = (byte[]) parent.getClient().execute("getDocument", params);
 			} catch (XmlRpcException xre) {
-				throw new XMLDBException(
-					ErrorCodes.INVALID_RESOURCE,
-					xre.getMessage(),
-					xre);
+				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
 			} catch (IOException ioe) {
-				throw new XMLDBException(
-					ErrorCodes.VENDOR_ERROR,
-					ioe.getMessage(),
-					ioe);
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 			}
 		} else {
 			Vector params = new Vector();
@@ -106,15 +104,9 @@ public class XMLResourceImpl implements XMLResource {
 			try {
 				data = (byte[]) parent.getClient().execute("retrieve", params);
 			} catch (XmlRpcException xre) {
-				throw new XMLDBException(
-					ErrorCodes.INVALID_RESOURCE,
-					xre.getMessage(),
-					xre);
+				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
 			} catch (IOException ioe) {
-				throw new XMLDBException(
-					ErrorCodes.VENDOR_ERROR,
-					ioe.getMessage(),
-					ioe);
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 			}
 		}
 		try {
@@ -128,21 +120,18 @@ public class XMLResourceImpl implements XMLResource {
 	public Node getContentAsDOM() throws XMLDBException {
 		if (content == null)
 			getContent();
-
+		// content can be a file
+		if (file != null)
+			readContent();
 		try {
-			DocumentBuilderFactory factory =
-				DocumentBuilderFactory.newInstance();
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			factory.setNamespaceAware(true);
 			factory.setValidating(false);
 			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document doc =
-				builder.parse(new InputSource(new StringReader(content)));
+			Document doc = builder.parse(new InputSource(new StringReader(content)));
 			return doc.getDocumentElement();
 		} catch (SAXException saxe) {
-			throw new XMLDBException(
-				ErrorCodes.VENDOR_ERROR,
-				saxe.getMessage(),
-				saxe);
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
 		} catch (ParserConfigurationException pce) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pce.getMessage(), pce);
 		} catch (IOException ioe) {
@@ -153,6 +142,9 @@ public class XMLResourceImpl implements XMLResource {
 	public void getContentAsSAX(ContentHandler handler) throws XMLDBException {
 		if (content == null)
 			getContent();
+		//		content can be a file
+		if (file != null)
+			readContent();
 		if (cocoonParser == null) {
 			SAXParserFactory saxFactory = SAXParserFactory.newInstance();
 			saxFactory.setNamespaceAware(true);
@@ -163,35 +155,20 @@ public class XMLResourceImpl implements XMLResource {
 				reader.setContentHandler(handler);
 				reader.parse(new InputSource(new StringReader(content)));
 			} catch (SAXException saxe) {
-				throw new XMLDBException(
-					ErrorCodes.VENDOR_ERROR,
-					saxe.getMessage(),
-					saxe);
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
 			} catch (ParserConfigurationException pce) {
-				throw new XMLDBException(
-					ErrorCodes.VENDOR_ERROR,
-					pce.getMessage(),
-					pce);
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pce.getMessage(), pce);
 			} catch (IOException ioe) {
-				throw new XMLDBException(
-					ErrorCodes.VENDOR_ERROR,
-					ioe.getMessage(),
-					ioe);
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 			}
 		} else
 			try {
 				cocoonParser.setContentHandler(handler);
 				cocoonParser.parse(new InputSource(new StringReader(content)));
 			} catch (SAXException saxe) {
-				throw new XMLDBException(
-					ErrorCodes.VENDOR_ERROR,
-					saxe.getMessage(),
-					saxe);
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
 			} catch (IOException ioe) {
-				throw new XMLDBException(
-					ErrorCodes.VENDOR_ERROR,
-					ioe.getMessage(),
-					ioe);
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 			}
 
 	}
@@ -223,14 +200,7 @@ public class XMLResourceImpl implements XMLResource {
 
 	public void setContent(Object value) throws XMLDBException {
 		if (value instanceof File) {
-			try {
-				content = XMLUtil.readFile((File) value);
-			} catch (IOException e) {
-				throw new XMLDBException(
-					ErrorCodes.VENDOR_ERROR,
-					"could not retrieve document contents: " + e.getMessage(),
-					e);
-			}
+			file = (File)value;
 		} else
 			content = value.toString();
 	}
@@ -240,23 +210,22 @@ public class XMLResourceImpl implements XMLResource {
 		OutputFormat format = new OutputFormat("xml", "UTF-8", false);
 		XMLSerializer xmlout = new XMLSerializer(sout, format);
 		try {
-			switch(root.getNodeType()) {
-				case Node.ELEMENT_NODE:
-					xmlout.serialize((Element)root);
+			switch (root.getNodeType()) {
+				case Node.ELEMENT_NODE :
+					xmlout.serialize((Element) root);
 					break;
-				case Node.DOCUMENT_FRAGMENT_NODE:
-					xmlout.serialize((DocumentFragment)root);
+				case Node.DOCUMENT_FRAGMENT_NODE :
+					xmlout.serialize((DocumentFragment) root);
 					break;
-				case Node.DOCUMENT_NODE:
-					xmlout.serialize((Document)root);
+				case Node.DOCUMENT_NODE :
+					xmlout.serialize((Document) root);
 					break;
-				default:
-					throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
-						"invalid node type");
+				default :
+					throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "invalid node type");
 			}
 			content = sout.toString();
 		} catch (IOException ioe) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(),ioe);
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 		}
 	}
 
@@ -290,6 +259,7 @@ public class XMLResourceImpl implements XMLResource {
 			content = writer.toString();
 		}
 	}
+	
 	/* (non-Javadoc)
 	 * @see org.xmldb.api.modules.XMLResource#getSAXFeature(java.lang.String)
 	 */
@@ -305,4 +275,23 @@ public class XMLResourceImpl implements XMLResource {
 		throws SAXNotRecognizedException, SAXNotSupportedException {
 	}
 
+	/**
+	 * Force content to be loaded into mem
+	 * 
+	 * @throws XMLDBException
+	 */
+	protected void readContent() throws XMLDBException {
+		if(file != null) {
+			if(!file.canRead())
+				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, 
+					"failed to read resource content from file " + file.getAbsolutePath());
+			try {
+				content = XMLUtil.readFile(file);
+				file = null;
+			} catch(IOException e) {
+				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, 
+					"failed to read resource content from file " + file.getAbsolutePath(), e);
+			}
+		}
+	}
 }

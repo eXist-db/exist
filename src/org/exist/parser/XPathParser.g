@@ -118,7 +118,7 @@ options {
 xpointer [PathExpr exprIn]
 	throws PermissionDeniedException, EXistException:
 	"xpointer" LPAREN xpointer_expr[exprIn] RPAREN EOF
-	| id:ID EOF {
+	| id:NCNAME EOF {
 		exprIn.setDocumentSet(includeDocs);
 		Function idf = new FunId(pool);
 		idf.addArgument(new Literal(id.getText()));

@@ -173,7 +173,7 @@
             <classpath>
 				<path refid="classpath.core"/>
             </classpath>
-			<arg value="-traceParser"/>
+			<!--arg value="-traceParser"/-->
             <arg value="XPathParser.g"/>
         </java>
     </target>

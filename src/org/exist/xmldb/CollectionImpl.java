@@ -23,16 +23,27 @@
  */
 package org.exist.xmldb;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Vector;
-import org.apache.xmlrpc.*;
-import org.xmldb.api.base.*;
+
+import org.apache.xmlrpc.XmlRpcClient;
+import org.apache.xmlrpc.XmlRpcException;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.ErrorCodes;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.Service;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * A remote implementation of the Collection interface. This 
@@ -42,13 +53,18 @@ import org.xmldb.api.base.*;
  * @author wolf
  */
 public class CollectionImpl implements Collection {
-	protected HashMap childCollections = null;
+	// max size of a resource to be send to the server
+	// if the resource exceeds this limit, the data is split into
+	// junks and uploaded to the server via the update() call
+	private static final int MAX_CHUNK_LENGTH = 512000;
+	
+	protected Map childCollections = null;
 	protected String encoding = "UTF-8";
 	protected int indentXML = 0;
 	protected String name;
 
 	protected CollectionImpl parent = null;
-	protected ArrayList resources = null;
+	protected List resources = null;
 	protected XmlRpcClient rpcClient = null;
 	protected boolean saxDocumentEvents = true;
 
@@ -83,12 +99,10 @@ public class CollectionImpl implements Collection {
 	public void close() throws XMLDBException {
 		try {
 			rpcClient.execute("sync", new Vector());
-		} catch(XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR,
-				"failed to close collection", e);
-		} catch(IOException e) {
-			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR,
-				"failed to close collection", e);
+		} catch (XmlRpcException e) {
+			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "failed to close collection", e);
+		} catch (IOException e) {
+			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "failed to close collection", e);
 		}
 	}
 
@@ -114,10 +128,8 @@ public class CollectionImpl implements Collection {
 	}
 
 	public Resource createResource(String id, String type) throws XMLDBException {
-		if (id == null)
-			id = createId();
-
-		XMLResourceImpl r = new XMLResourceImpl(this, -1, -1, id, null, indentXML, encoding);
+		String newId = id == null ? createId() : id;
+		XMLResourceImpl r = new XMLResourceImpl(this, -1, -1, newId, null, indentXML, encoding);
 		r.setSAXDocEvents(this.saxDocumentEvents);
 		return r;
 	}
@@ -290,6 +302,7 @@ public class CollectionImpl implements Collection {
 					new CollectionImpl(rpcClient, this, null, getPath() + '/' + childName);
 				addChildCollection(child);
 			} catch (XMLDBException e) {
+				// do nothing
 			}
 		}
 	}
@@ -299,12 +312,14 @@ public class CollectionImpl implements Collection {
 	}
 
 	public void removeChildCollection(String name) throws XMLDBException {
-		if(childCollections == null)
+		if (childCollections == null)
 			readCollection();
 		childCollections.remove(getPath() + '/' + name);
 	}
 
 	public void removeResource(Resource res) throws XMLDBException {
+		if (resources == null)
+			readCollection();
 		if (!resources.contains(res.getId()))
 			throw new XMLDBException(
 				ErrorCodes.INVALID_RESOURCE,
@@ -335,10 +350,29 @@ public class CollectionImpl implements Collection {
 	}
 
 	public void storeResource(Resource res) throws XMLDBException {
-		if(resources == null)
+		if (resources == null)
 			readCollection();
 		resources.remove(res.getId());
-		long start = System.currentTimeMillis();
+		Object content = res.getContent();
+		if (content instanceof File) {
+			File file = (File) content;
+			if (!file.canRead())
+				throw new XMLDBException(
+					ErrorCodes.INVALID_RESOURCE,
+					"failed to read resource from file " + file.getAbsolutePath());
+			if(file.length() < MAX_CHUNK_LENGTH)
+				((XMLResourceImpl)res).readContent();
+			else {
+				uploadAndStore(res);
+				addResource(res.getId());
+				return;
+			}
+		}
+		store(res);
+		addResource(res.getId());
+	}
+
+	private void store(Resource res) throws XMLDBException {
 		String data = (String) res.getContent();
 		byte[] bdata = null;
 		try {
@@ -357,6 +391,38 @@ public class CollectionImpl implements Collection {
 		} catch (IOException ioe) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 		}
-		addResource(res.getId());
+	}
+	
+	private void uploadAndStore(Resource res) throws XMLDBException {
+		File file = (File)res.getContent();
+		byte[] chunk = new byte[MAX_CHUNK_LENGTH];
+		try {
+			FileInputStream is = new FileInputStream(file);
+			int len;
+			String fileName = null;
+			Vector params;
+			while((len = is.read(chunk)) > -1) {
+				params = new Vector();
+				if(fileName != null)
+					params.addElement(fileName);
+				params.addElement(chunk);
+				params.addElement(new Integer(len));
+				fileName = (String)rpcClient.execute("upload", params);
+			}
+			params = new Vector();
+			params.addElement(fileName);
+			params.addElement(getPath() + '/' + res.getId());
+			params.addElement(new Boolean(true));
+			rpcClient.execute("parseLocal", params);
+		} catch (FileNotFoundException e) {
+			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE,
+				"could not read resource from file " + file.getAbsolutePath(), e);
+		} catch (IOException e) {
+			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE,
+				"failed to read resource from file " + file.getAbsolutePath(), e);
+		} catch (XmlRpcException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
+				"networking error", e);
+		}
 	}
 }
