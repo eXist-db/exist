@@ -1,82 +1,38 @@
 /*
- * StatusGenerator.java - May 17, 2003
- * 
- * @author wolf
+ * Created on 5 sept. 2004
+$Id$
  */
-package org.exist.cocoon;
+package org.exist.storage.report;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Locale;
+import java.util.Iterator;
 
-import org.apache.cocoon.ProcessingException;
-import org.apache.cocoon.generation.AbstractGenerator;
-import org.exist.storage.report.XMLStatistics;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.BufferStats;
+import org.exist.storage.store.BFile;
+import org.exist.storage.store.DOMFile;
+import org.exist.util.Configuration;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-/**
- * A Cocoon Generator which generates status information about running database instances,
- * buffer usage and the like.
- * 
- */
-public class StatusGenerator extends AbstractGenerator {
 
+/** generate statistics about the XML storage - 
+ * used by {@link org.apache.cocoon.generation.StatusGenerator}
+ * @author jmv
+ */
+public class XMLStatistics {
 	public final static String NAMESPACE = "http://exist.sourceforge.net/generators/status";
 	public final static String PREFIX = "status";
-	XMLStatistics stats;
-	
-	public StatusGenerator() {
-		super();
-		stats = new XMLStatistics(contentHandler);
-	}
+	public ContentHandler contentHandler;
 
 	/**
-	 * @see org.apache.cocoon.generation.Generator#generate()
+	 * @param contentHandler
 	 */
-	public void generate() throws IOException, SAXException, ProcessingException {
-		stats.setContentHandler(contentHandler);
-		this.contentHandler.startDocument();
-		this.contentHandler.startPrefixMapping(PREFIX, NAMESPACE);
-		this.contentHandler.startElement(NAMESPACE, "status", PREFIX + ":status", new AttributesImpl());
-		genVMStatus();
-		stats.genInstanceStatus();
-		this.contentHandler.endElement(NAMESPACE, "status", PREFIX + ":status");
-		this.contentHandler.endPrefixMapping(PREFIX);
-		this.contentHandler.endDocument();
+	public XMLStatistics(ContentHandler contentHandler) {
+		this.contentHandler = contentHandler;
 	}
-	
-	private void genVMStatus() throws SAXException {
-		AttributesImpl atts = new AttributesImpl();
-		this.contentHandler.startElement(NAMESPACE, "system", PREFIX + ":system", atts);
-		
-		this.contentHandler.startElement(NAMESPACE, "memory", PREFIX + ":memory", atts);
-		addValue("total", String.valueOf(Runtime.getRuntime().totalMemory()));
-		addValue("free", String.valueOf(Runtime.getRuntime().freeMemory()));
-		addValue("max", String.valueOf(Runtime.getRuntime().maxMemory()));
-		this.contentHandler.endElement(NAMESPACE, "memory", PREFIX + ":memory");
-		
-		this.contentHandler.startElement(NAMESPACE, "jvm", PREFIX + ":jvm", atts);
-		addValue("version", System.getProperty("java.version"));
-		addValue("vendor", System.getProperty("java.vendor"));
-		
-		Locale locale = Locale.getDefault();
-		addValue("locale", locale.toString());
-		
-		InputStreamReader is = new InputStreamReader(System.in);
-		addValue("charset", is.getEncoding());
-		this.contentHandler.endElement(NAMESPACE, "jvm", PREFIX + ":jvm");
-		
-		this.contentHandler.startElement(NAMESPACE, "os", PREFIX + ":os", atts);
-		addValue("name", System.getProperty("os.name"));
-		addValue("architecture", System.getProperty("os.arch"));
-		addValue("version", System.getProperty("os.version"));
-		this.contentHandler.endElement(NAMESPACE, "os", PREFIX + ":os");
-		
-		this.contentHandler.endElement(NAMESPACE, "system", PREFIX + ":system");
-	}
-	/* ===================
-	private void genInstanceStatus() throws SAXException {
+
+	public void genInstanceStatus() throws SAXException {
 		AttributesImpl atts = new AttributesImpl();
 		atts.addAttribute("", "default", "default", "CDATA", BrokerPool.DEFAULT_INSTANCE);
 		this.contentHandler.startElement(NAMESPACE, "database-instances", 
@@ -149,20 +105,19 @@ public class StatusGenerator extends AbstractGenerator {
 		this.contentHandler.endElement(NAMESPACE, "file", PREFIX + ":file");
 	}
 	
-	private void addValue(String elem, String value) throws SAXException {
+	public void addValue(String elem, String value) throws SAXException {
 		AttributesImpl atts = new AttributesImpl();
 		this.contentHandler.startElement(NAMESPACE, elem, PREFIX + ':' + elem, atts);
 		this.contentHandler.characters(value.toCharArray(), 0, value.length());
 		this.contentHandler.endElement(NAMESPACE, elem, PREFIX + ':' + elem);
 	}
-*/
 
 	/**
-	 * @param elem
-	 * @param value
-	 * @throws SAXException
+	 * @param contentHandler
 	 */
-	private void addValue(String elem, String value) throws SAXException {
-		stats.addValue(elem, value);		
+	public void setContentHandler(ContentHandler contentHandler) {
+		this.contentHandler = contentHandler;
+		
 	}
+
 }
