@@ -82,73 +82,124 @@ public class Predicate extends PathExpr {
 		// against the context set and return all nodes from the context, for which the
 		// predicate expression returns a non-empty sequence.
 		if (Type.subTypeOf(type, Type.NODE)) {
-			ExtArrayNodeSet result = new ExtArrayNodeSet();
-			NodeSet contextSet = contextSequence.toNodeSet();
-			boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;
-			
-			NodeSet nodes =
-				super.eval(contextSequence, null).toNodeSet();
-			
-			/* if the predicate expression returns results from the cache
-			 * we can also return the cached result. 
-			 */
-			if(cached != null && cached.isValid(contextSequence) && nodes.isCached())
-				return cached.getResult();
-			
-			NodeProxy current;
-			ContextItem contextNode;
-			NodeProxy next;
-			DocumentImpl lastDoc = null;
-			int count = 0, sizeHint = -1;
-			for (Iterator i = nodes.iterator(); i.hasNext(); count++) {
-				current = (NodeProxy) i.next();
-				if(lastDoc == null || current.getDocument() != lastDoc) {
-					lastDoc = current.getDocument();
-					sizeHint = nodes.getSizeHint(lastDoc);
-				}
-				contextNode = current.getContext();
-				if (contextNode == null) {
-					throw new XPathException("Internal evaluation error: context node is missing for node " +
-						current.gid + "!");
-				}
-				while (contextNode != null) {
-					next = contextNode.getNode();
-					if(contextIsVirtual || contextSet.contains(next)) {
-						next.addMatches(current);
-						result.add(next, sizeHint);
-					}
-					contextNode = contextNode.getNextItem();
-				}
-			}
-			if(contextSequence instanceof NodeSet)
-				cached = new CachedResult((NodeSet)contextSequence, result);
-			return result;
-		
-		// Case 2: predicate expression returns a boolean. Call the
-		// predicate expression for each item in the context. Add the item
-		// to the result if the predicate expression yields true.
-		} else if (
-			Type.subTypeOf(type, Type.BOOLEAN)) {
-			Sequence result = new ValueSequence();
-			int p = 0;
-			context.setContextPosition(0);
-			for(SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
-				Item item = i.nextItem();
-				context.setContextPosition(p);
-				Sequence innerSeq = inner.eval(contextSequence, item);
-//				LOG.debug("innerSeq = " + innerSeq.effectiveBooleanValue());
-				if(innerSeq.effectiveBooleanValue())
-					result.add(item);
-			}
-			return result;
-			
-		// Case 3: predicate expression returns a number. Call the predicate
-		// expression once for each item in the context set.
+			if((inner.getDependencies() & Dependency.CONTEXT_ITEM) == 0)
+				return selectByNodeSet(contextSequence);
+			else
+				return evalBoolean(contextSequence, inner);
+		// Case 2: predicate expression returns a number.
 		} else if (Type.subTypeOf(type, Type.NUMBER)) {
-			if(Type.subTypeOf(contextSequence.getItemType(), Type.NODE) && outerSequence != null &&
-				outerSequence.getLength() > 0) {
-				Sequence result = new ArraySet(100);
-				NodeSet contextSet = contextSequence.toNodeSet();
+			return selectByPosition(outerSequence, contextSequence, mode, inner);
+		// Case 3: predicate expression evaluates to a boolean.
+		} else
+			return evalBoolean(contextSequence, inner);
+	}
+
+	/**
+	 * @param contextSequence
+	 * @param inner
+	 * @return
+	 * @throws XPathException
+	 */
+	private Sequence evalBoolean(Sequence contextSequence, Expression inner) throws XPathException {
+		LOG.debug("evalBoolean");
+		Sequence result = new ValueSequence();
+		int p = 0;
+		context.setContextPosition(0);
+		for(SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
+			Item item = i.nextItem();
+			context.setContextPosition(p);
+			Sequence innerSeq = inner.eval(contextSequence, item);
+//				LOG.debug("innerSeq = " + innerSeq.effectiveBooleanValue());
+			if(innerSeq.effectiveBooleanValue())
+				result.add(item);
+		}
+		return result;
+	}
+
+	/**
+	 * @param contextSequence
+	 * @return
+	 * @throws XPathException
+	 */
+	private Sequence selectByNodeSet(Sequence contextSequence) throws XPathException {
+		ExtArrayNodeSet result = new ExtArrayNodeSet();
+		NodeSet contextSet = contextSequence.toNodeSet();
+		boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;
+		
+		NodeSet nodes =
+			super.eval(contextSequence, null).toNodeSet();
+		
+		/* if the predicate expression returns results from the cache
+		 * we can also return the cached result. 
+		 */
+		if(cached != null && cached.isValid(contextSequence) && nodes.isCached())
+			return cached.getResult();
+		
+		NodeProxy current;
+		ContextItem contextNode;
+		NodeProxy next;
+		DocumentImpl lastDoc = null;
+		int count = 0, sizeHint = -1;
+		for (Iterator i = nodes.iterator(); i.hasNext(); count++) {
+			current = (NodeProxy) i.next();
+			if(lastDoc == null || current.getDocument() != lastDoc) {
+				lastDoc = current.getDocument();
+				sizeHint = nodes.getSizeHint(lastDoc);
+			}
+			contextNode = current.getContext();
+			if (contextNode == null) {
+				throw new XPathException("Internal evaluation error: context node is missing for node " +
+					current.gid + "!");
+			}
+			while (contextNode != null) {
+				next = contextNode.getNode();
+				if(contextIsVirtual || contextSet.contains(next)) {
+					next.addMatches(current);
+					result.add(next, sizeHint);
+				}
+				contextNode = contextNode.getNextItem();
+			}
+		}
+		if(contextSequence instanceof NodeSet)
+			cached = new CachedResult((NodeSet)contextSequence, result);
+		return result;
+	}
+
+	/**
+	 * @param outerSequence
+	 * @param contextSequence
+	 * @param mode
+	 * @param inner
+	 * @return
+	 * @throws XPathException
+	 */
+	private Sequence selectByPosition(Sequence outerSequence, Sequence contextSequence, int mode, Expression inner) throws XPathException {
+		if(Type.subTypeOf(contextSequence.getItemType(), Type.NODE) && outerSequence != null &&
+			outerSequence.getLength() > 0) {
+			Sequence result = new ArraySet(100);
+			NodeSet contextSet = contextSequence.toNodeSet();
+			boolean reverseAxis = isReverseAxis(mode);
+			if(!(reverseAxis || mode == Constants.FOLLOWING_SIBLING_AXIS 
+					|| mode == Constants.SELF_AXIS)) {
+				Sequence ancestors = contextSet.selectAncestorDescendant(outerSequence.toNodeSet(),
+						NodeSet.ANCESTOR, true, true);
+				for(SequenceIterator i = ancestors.iterate(); i.hasNext(); ) {
+					Item item = i.nextItem();
+				    NodeProxy p = (NodeProxy)item;
+				    Sequence innerSeq = inner.eval(contextSequence);
+				    for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {
+				        Item next = j.nextItem();
+				        NumericValue v = (NumericValue)next.convertTo(Type.NUMBER);
+				        ContextItem contextNode = p.getContext();
+				        int count = 0;
+				        while(contextNode != null) {
+				        	if(++count == v.getInt())
+				        		result.add(contextNode.getNode());
+				        	contextNode = contextNode.getNextItem();
+				        }
+				    }
+				}
+			} else {
 				for(SequenceIterator i = outerSequence.iterate(); i.hasNext(); ) {
 				    Item item = i.nextItem();
 				    NodeProxy p = (NodeProxy)item;
@@ -174,7 +225,6 @@ public class Predicate extends PathExpr {
 				    	    temp = contextSet.selectAncestorDescendant(p, NodeSet.DESCENDANT);
 				    		break;
 				    }
-				    boolean reverseAxis = isReverseAxis(mode);
 				    Sequence innerSeq = inner.eval(contextSequence);
 				    for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {
 				        Item next = j.nextItem();
@@ -184,21 +234,19 @@ public class Predicate extends PathExpr {
 				            result.add(temp.itemAt(pos));
 				    }
 				}
-				return result;
-			} else {
-				Sequence innerSeq = inner.eval(contextSequence);
-				ValueSequence result = new ValueSequence();
-				for(SequenceIterator i = innerSeq.iterate(); i.hasNext(); ) {
-					NumericValue v = (NumericValue)i.nextItem().convertTo(Type.NUMBER);
-					int pos = v.getInt() - 1;
-					if(pos < contextSequence.getLength() && pos > -1)
-						result.add(contextSequence.itemAt(pos));
-				}
-				return result;
 			}
-		} else
-			LOG.debug("unable to determine return type of predicate expression");
-		return Sequence.EMPTY_SEQUENCE;
+			return result;
+		} else {
+			Sequence innerSeq = inner.eval(contextSequence);
+			ValueSequence result = new ValueSequence();
+			for(SequenceIterator i = innerSeq.iterate(); i.hasNext(); ) {
+				NumericValue v = (NumericValue)i.nextItem().convertTo(Type.NUMBER);
+				int pos = v.getInt() - 1;
+				if(pos < contextSequence.getLength() && pos > -1)
+					result.add(contextSequence.itemAt(pos));
+			}
+			return result;
+		}
 	}
 
 	public final static boolean isReverseAxis(int axis) {

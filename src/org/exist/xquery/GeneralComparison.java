@@ -117,8 +117,7 @@ public class GeneralComparison extends BinaryOp {
 		int rightDeps = getRight().getDependencies();
 		// left expression returns node set
 		if (Type.subTypeOf(getLeft().returnsType(), Type.NODE)
-			//	and has no dependency on global vars
-			&& (leftDeps & Dependency.LOCAL_VARS) == 0
+//			&& (leftDeps & Dependency.LOCAL_VARS) == 0
 			//	and does not depend on the context item
 			&& (leftDeps & Dependency.CONTEXT_ITEM) == 0
 			&& (rightDeps & Dependency.LOCAL_VARS) == 0)
@@ -135,6 +134,8 @@ public class GeneralComparison extends BinaryOp {
 	public Sequence eval(Sequence contextSequence, Item contextItem)
 		throws XPathException {
 //        long start = System.currentTimeMillis();
+		if(contextItem != null)
+			contextSequence = contextItem.toSequence();
         Sequence result = null;
 		/* 
 		 * If we are inside a predicate and one of the arguments is a node set, 
@@ -178,8 +179,10 @@ public class GeneralComparison extends BinaryOp {
 			rv = rs.itemAt(0).atomize();
 			return BooleanValue.valueOf(compareValues(collator, lv, rv));
 		} else {
+			LOG.debug("left: " + ls.getLength() + "; right: " + rs.getLength());
 			for (SequenceIterator i1 = ls.iterate(); i1.hasNext();) {
 				lv = i1.nextItem().atomize();
+				LOG.debug("left: " + lv.getStringValue());
 				if (rs.getLength() == 1
 					&& compareValues(collator, lv, rs.itemAt(0).atomize()))
 					return BooleanValue.TRUE;

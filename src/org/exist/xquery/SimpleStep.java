@@ -27,6 +27,10 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
 /**
+ * Represents a primary expression in a simple path step like
+ * foo//$x. The class is mainly used to wrap variable references inside
+ * a path expression.
+ * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class SimpleStep extends Step {
@@ -51,7 +55,6 @@ public class SimpleStep extends Step {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
 		NodeSet set = expression.eval(contextSequence).toNodeSet();
-		LOG.debug("found " + set.getLength());
 		if(set.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		switch(axis) {

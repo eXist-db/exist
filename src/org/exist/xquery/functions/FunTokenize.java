@@ -97,8 +97,10 @@ public class FunTokenize extends FunMatches {
 		try {
 			if (prevPattern == null
 				|| (!pattern.equals(prevPattern))
-				|| flags != prevFlags)
+				|| flags != prevFlags) {
+				LOG.debug("Compiling pattern " + pattern);
 				pat = compiler.compile(pattern, flags);
+			}
 			prevPattern = pattern;
 			prevFlags = flags;
 			List result = new ArrayList(10);

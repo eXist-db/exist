@@ -155,7 +155,14 @@ xpath
 //	exception catch [RecognitionException e]
 //	{ handleException(e); }
 
-module : ( "module" "namespace" ) => libraryModule | mainModule;
+module : 
+	( ( "xquery" "version" ) => v:versionDecl SEMICOLON! )?
+	(
+		( "module" "namespace" ) => libraryModule 
+		| 
+		mainModule
+	)
+	;
 
 mainModule : prolog queryBody ;
 
@@ -169,55 +176,61 @@ moduleDecl:
 	;
 	
 prolog
+{ boolean inSetters = true; }
 :
-	( ( XQUERY VERSION ) => v:version SEMICOLON! )?
 	(
 		(
-			( "declare" "namespace" )
-			=> nd:namespaceDecl
+			( "import" "module" ) => moduleImport
 			|
-			( "declare" "default" )
-			=> dnd:defaultsDecl
+			( "declare" ( "default" | "xmlspace" ) ) =>
+			setter
+			{
+				if(!inSetters)
+					throw new TokenStreamException("Default declarations have to come first");
+			}
+			|
+			( "declare" "namespace" )
+			=> namespaceDecl { inSetters = false; }
 			|
 			( "declare" "function" )
-			=> fd:functionDecl
+			=> functionDecl { inSetters = false; }
 			|
 			( "declare" "variable" )
-			=> varDecl
-			|
-			( "declare" "xmlspace" )
-			=> xmlSpaceDecl
-			|
-			moduleImport
+			=> varDecl { inSetters = false; }
 		)
 		SEMICOLON!
 	)*
 	;
 
-version
+versionDecl
 :
-	XQUERY VERSION v:STRING_LITERAL { #version= #(#[VERSION_DECL, v.getText()]); }
+	"xquery" "version" v:STRING_LITERAL { #versionDecl = #(#[VERSION_DECL, v.getText()]); }
 	;
 
+setter:
+	(
+		( "declare" "default" ) =>
+		"declare"! "default"!
+		(
+			"collation"! defc:STRING_LITERAL
+			{ #setter = #(#[DEF_COLLATION_DECL, "defaultCollationDecl"], defc); }
+			|
+			"element"! "namespace"! defu:STRING_LITERAL
+			{ #setter= #(#[DEF_NAMESPACE_DECL, "defaultNamespaceDecl"], defu); }
+			|
+			"function"! "namespace"! deff:STRING_LITERAL
+			{ #setter= #(#[DEF_FUNCTION_NS_DECL, "defaultFunctionNSDecl"], deff); }
+		)
+		|
+		( "declare" "xmlspace" ) =>
+		"declare"! "xmlspace"^ ( "preserve" | "strip" )
+	)
+	;
+	
 namespaceDecl
 :
 	"declare" "namespace" prefix:NCNAME EQ! uri:STRING_LITERAL
 	{ #namespaceDecl= #(#[NAMESPACE_DECL, prefix.getText()], uri); }
-	;
-
-defaultsDecl
-:
-	"declare" "default"
-	(
-		"element" "namespace" defu:STRING_LITERAL
-		{ #defaultsDecl= #(#[DEF_NAMESPACE_DECL, "defaultNamespaceDecl"], defu); }
-		|
-		"function" "namespace" deff:STRING_LITERAL
-		{ #defaultsDecl= #(#[DEF_FUNCTION_NS_DECL, "defaultFunctionNSDecl"], deff); }
-		|
-		"collation" defc:STRING_LITERAL
-		{ #defaultsDecl = #(#[DEF_COLLATION_DECL, "defaultCollationDecl"], defc); }
-	)
 	;
 
 varDecl
@@ -229,10 +242,6 @@ varDecl
         #varDecl= #(#[GLOBAL_VAR, varName], #varDecl);
         #varDecl.copyLexInfo(#decl);
     }
-	;
-
-xmlSpaceDecl:
-	"declare"! "xmlspace"^ ( "preserve" | "strip" )
 	;
 	
 moduleImport
@@ -1071,9 +1080,9 @@ reservedKeywords returns [String name]
 	|
 	"empty" { name= "empty"; }
 	|
-	VERSION { name= "version"; }
+	"version" { name= "version"; }
 	|
-	XQUERY { name= "xquery"; }
+	"xquery" { name= "xquery"; }
 	|
 	"variable" { name= "variable"; }
 	|
@@ -1146,14 +1155,9 @@ class XQueryLexer extends Lexer;
 options {
 	k = 4;
 	testLiterals = false;
-	charVocabulary = '\u0003'..'\uffff';
+	charVocabulary = '\u0003'..'\uFFFE';
 	codeGenBitsetTestThreshold = 20;
 	exportVocab=XQuery;
-}
-
-tokens {
-	XQUERY = "xquery";
-	VERSION = "version";
 }
 
 {
@@ -1378,6 +1382,11 @@ options {
 	XML_PI_START! NCNAME ' ' ( ~ ( '?' ) | ( '?' ~ ( '>' ) ) => '?' )+
 	;
 
+/**
+ * Main method that decides which token to return next.
+ * We need this as many things depend on the current
+ * context.
+ */
 NEXT_TOKEN
 options {
 	testLiterals = false;
@@ -1443,8 +1452,9 @@ options {
 	{ parseStringLiterals }?
 	STRING_LITERAL { $setType(STRING_LITERAL); }
 	|
-	( '.' '.' )
-	=> PARENT { $setType(PARENT); }
+	( '.' '.' ) =>
+	{ !(inAttributeContent || inElementContent) }?
+	PARENT { $setType(PARENT); }
 	|
     ( '.' INTEGER_LITERAL ( 'e' | 'E' ) )
 	=> DECIMAL_LITERAL { $setType(DECIMAL_LITERAL); }
@@ -1467,6 +1477,7 @@ options {
 	|
 	SLASH { $setType(SLASH); }
 	|
+	{ !(inAttributeContent || inElementContent) }?
 	DSLASH { $setType(DSLASH); }
 	|
 	COLON { $setType(COLON); }
@@ -1497,18 +1508,22 @@ options {
 	|
 	DOLLAR { $setType(DOLLAR); }
 	|
+	{ !(inAttributeContent || inElementContent) }?
 	OREQ { $setType(OREQ); }
 	|
+	{ !(inAttributeContent || inElementContent) }?
 	ANDEQ { $setType(ANDEQ); }
 	|
 	EQ { $setType(EQ); }
 	|
+	{ !(inAttributeContent || inElementContent) }?
 	NEQ { $setType(NEQ); }
 	|
 	XML_COMMENT_END { $setType(XML_COMMENT_END); }
 	|
 	GT { $setType(GT); }
 	|
+	{ !(inAttributeContent || inElementContent) }?
 	GTEQ { $setType(GTEQ); }
 	|
 	XML_PI_END { $setType(XML_PI_END); }
@@ -1516,7 +1531,7 @@ options {
 
 protected CHAR
 :
-	( '\t' | '\n' | '\r' | '\u0020'..'\u0039' | '\u003B'..'\uD7FF' | '\uE000'..'\uFFFD' )
+	( '\t' | '\n' { newline(); } | '\r' | '\u0020'..'\u0039' | '\u003B'..'\uD7FF' | '\uE000'..'\uFFFD' )
 	;
 
 protected BASECHAR

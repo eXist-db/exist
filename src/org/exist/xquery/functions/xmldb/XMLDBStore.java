@@ -23,6 +23,11 @@
 package org.exist.xquery.functions.xmldb;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -32,6 +37,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -54,10 +60,10 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			"The collection can be either specified as a simple collection path, " +
 			"an XMLDB URI, or a collection object as returned by the collection or " +
 			"create-collection functions. The second argument is the name of the new " +
-			"resource. The third argument is either a node, a string or an xs:anyURI. " +
+			"resource. The third argument is either a node, an xs:string, a Java file object or an xs:anyURI. " +
 			"A node will be serialized to SAX. It becomes the root node of the new " +
 			"document. If the argument is of type xs:anyURI, the resource is loaded " +
-			"from that URI. Currently, the URI should point to a file on the server.",
+			"from that URI.",
 			new SequenceType[] {
 				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
@@ -85,12 +91,15 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			args[2].itemAt(0);
 
 		try {
-			if(Type.subTypeOf(item.getType(), Type.ANY_URI)) {
+			if(Type.subTypeOf(item.getType(), Type.JAVA_OBJECT)) {
+				Object obj = ((JavaObjectValue)item).getObject();
+				if(!(obj instanceof File))
+					throw new XPathException(getASTNode(), "Passed java object should be a File");
+				loadFromFile(collection, (File)obj, docName);
+			}else if(Type.subTypeOf(item.getType(), Type.ANY_URI)) {
 				try {
 					URI uri = new URI(item.getStringValue());
-					if("file".equals(uri.getScheme())) {
-						loadFromFile(collection, uri, docName);
-					}
+					loadFromURI(collection, uri, docName);
 				} catch (URISyntaxException e) {
 					throw new XPathException(getASTNode(), "Invalid URI: " + item.getStringValue(), e);
 				}
@@ -121,19 +130,48 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 		return Sequence.EMPTY_SEQUENCE;
 	}
 	
-	private void loadFromFile(Collection collection, URI uri, String docName) throws XPathException {
-		String path = uri.getPath();
-		File file = new File(path);
-		if(!file.canRead())
-			throw new XPathException(getASTNode(), "Cannot read path: " + path);
+	private void loadFromURI(Collection collection, URI uri, String docName) throws XPathException {
+		if("file".equals(uri.getScheme())) {
+			String path = uri.getPath();
+			File file = new File(path);
+			if(!file.canRead())
+				throw new XPathException(getASTNode(), "Cannot read path: " + path);
+			loadFromFile(collection, file, docName);
+		} else {
+			try {
+				File temp = File.createTempFile("exist", ".xml");
+				temp.deleteOnExit();
+				OutputStream os = new FileOutputStream(temp);
+				InputStream is = uri.toURL().openStream();
+				byte[] data = new byte[1024];
+				int read = 0;
+				while((read = is.read(data)) > -1) {
+					os.write(data, 0, read);
+				}
+				is.close();
+				loadFromFile(collection, temp, docName);
+				temp.delete();
+			} catch (MalformedURLException e) {
+				throw new XPathException(getASTNode(), "Malformed URL: " + uri.toString(), e);
+			} catch (IOException e) {
+				throw new XPathException(getASTNode(), "IOException while reading from URL: " +
+						uri.toString(), e);
+			}
+		}
+	}
+	
+	private void loadFromFile(Collection collection, File file, String docName) throws XPathException {
 		if(file.isFile()) {
+			if(docName == null)
+				docName = file.getName();
 			try {
 				XMLResource resource =
 					(XMLResource) collection.createResource(docName, "XMLResource");
 				resource.setContent(file);
 				collection.storeResource(resource);
 			} catch (XMLDBException e) {
-				throw new XPathException(getASTNode(), "Could not store file " + path + ": " + e.getMessage(), e);
+				throw new XPathException(getASTNode(), "Could not store file " + file.getAbsolutePath() + 
+						": " + e.getMessage(), e);
 			}
 		}
 	}

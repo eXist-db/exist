@@ -20,41 +20,53 @@
  */
 package org.exist.xquery.value;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.xquery.XPathException;
 
+/**
+ * A sequence that may contain a mixture of atomic values and nodes.
+ * 
+ * @author wolf
+ */
 public class ValueSequence extends AbstractSequence {
 
-	List values;
+	private final static int INITIAL_SIZE = 64;
+	
+	private Item[] values;
+	private int size = -1;
 	
 	// used to keep track of the type of added items.
 	// will be Type.ANY_TYPE if the type is unknown
 	// and Type.ITEM if there are items of mixed type.
-	int itemType = Type.ANY_TYPE;
+	private int itemType = Type.ANY_TYPE;
+	
+	private boolean noDuplicates = false;
 	
 	public ValueSequence() {
-		values = new ArrayList();
+		values = new Item[INITIAL_SIZE];
 	}
 	
 	public ValueSequence(Sequence otherSequence) {
-		this();
+		values = new Item[otherSequence.getLength()];
 		addAll(otherSequence);
 	}
 	
 	public void add(Item item) {
-		values.add(item);
+		++size;
+		ensureCapacity();
+		values[size] = item;
 		if(itemType == item.getType())
 			return;
 		else if(itemType == Type.ANY_TYPE)
 			itemType = item.getType();
 		else
 			itemType = Type.getCommonSuperType(item.getType(), itemType);
+		noDuplicates = false;
 	}
 	
 	public void addAll(Sequence otherSequence) {
@@ -73,38 +85,41 @@ public class ValueSequence extends AbstractSequence {
 	 * @see org.exist.xquery.value.Sequence#iterate()
 	 */
 	public SequenceIterator iterate() {
-		return new ValueSequenceIterator(values.iterator());
+		removeDuplicates();
+		return new ValueSequenceIterator();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AbstractSequence#unorderedIterator()
 	 */
 	public SequenceIterator unorderedIterator() {
-		return new ValueSequenceIterator(values.iterator());
+		removeDuplicates();
+		return new ValueSequenceIterator();
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#getLength()
 	 */
 	public int getLength() {
-		return values.size();
+		removeDuplicates();
+		return size + 1;
 	}
 
 	public Item itemAt(int pos) {
-		return (Item)values.get(pos);
+		return values[pos];
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#toNodeSet()
 	 */
 	public NodeSet toNodeSet() throws XPathException {
-		if(values.size() == 0)
+		if(size == -1)
 			return NodeSet.EMPTY_SET;
-		if(Type.subTypeOf(itemType, Type.NODE)) {
+		if(itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.NODE)) {
 			NodeSet set = new ExtArrayNodeSet();
 			NodeValue v;
-			for(Iterator i = values.iterator(); i.hasNext(); ) {
-				v = (NodeValue)i.next();
+			for (int i = 0; i <= size; i++) {
+				v = (NodeValue)values[i];
 				if(v.getImplementationType() != NodeValue.PERSISTENT_NODE)
 					throw new XPathException("Cannot query constructed nodes.");
 				set.add((NodeProxy)v);
@@ -115,27 +130,64 @@ public class ValueSequence extends AbstractSequence {
 				" a node set. Item type is " + Type.getTypeName(itemType));
 	}
 	
+	private void ensureCapacity() {
+		if(size == values.length) {
+			int newSize = (size * 3) / 2;
+			Item newValues[] = new Item[newSize];
+			System.arraycopy(values, 0, newValues, 0, size);
+			values = newValues;
+		}
+	}
+	
+	private void removeDuplicates() {
+		if(noDuplicates)
+			return;
+		if(itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.ATOMIC))
+			return;
+		// check if the sequence contains nodes
+		boolean hasNodes = false;
+		for(int i = 0; i <= size; i++) {
+			if(Type.subTypeOf(values[i].getType(), Type.NODE))
+				hasNodes = true;
+		}
+		if(!hasNodes)
+			return;
+		Set nodes = new TreeSet();
+		int j = 0;
+		for (int i = 0; i <= size; i++) {
+			if(Type.subTypeOf(values[i].getType(), Type.NODE)) {
+				if(!nodes.contains(values[i])) {
+					Item item = values[i];
+					values[j++] = item;
+					nodes.add(item);
+				}
+			} else
+				values[j++] = values[i];
+		}
+		size = j - 1;
+		noDuplicates = true;
+	}
+	
 	private class ValueSequenceIterator implements SequenceIterator {
 		
-		private Iterator iter;
+		private int pos = 0;
 		
-		public ValueSequenceIterator(Iterator iterator) {
-			iter = iterator;
+		public ValueSequenceIterator() {
 		}
 		
 		/* (non-Javadoc)
 		 * @see org.exist.xquery.value.SequenceIterator#hasNext()
 		 */
 		public boolean hasNext() {
-			return iter.hasNext();
+			return pos <= size;
 		}
 		
 		/* (non-Javadoc)
 		 * @see org.exist.xquery.value.SequenceIterator#nextItem()
 		 */
 		public Item nextItem() {
-			if(iter.hasNext())
-				return (Item)iter.next();
+			if(pos <= size)
+				return values[pos++];
 			return null;
 		}
 	}
