@@ -19,8 +19,8 @@ import org.xmldb.api.modules.XPathQueryService;
 
 public class XPathQueryTest extends TestCase {
 
-	private final static String URI = "xmldb:exist://localhost:8081/db";
-
+	private final static String URI = "xmldb:exist:///db";
+	
 	private final static String nested =
 		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 			+ "<test><c></c><b><c><b></b></c></b><b></b><c></c></test>";
@@ -56,9 +56,9 @@ public class XPathQueryTest extends TestCase {
 		"</RootElement>";
 
 	private Collection testCollection;
-
-	public XPathQueryTest(String arg0) {
-		super(arg0);
+	
+	public XPathQueryTest(String name) {
+		super(name);
 	}
 
 	protected void setUp() {
