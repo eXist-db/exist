@@ -34,12 +34,27 @@ import org.exist.dom.DocumentImpl;
 import org.exist.security.User;
 
 /**
+ * Interface for all WebDAV methods.
+ * 
  * @author wolf
  */
 public interface WebDAVMethod {
 	
 	final static Logger LOG = Logger.getLogger(WebDAVMethod.class);
 	
+	/**
+	 * Process a WebDAV request. The collection and resource parameters
+	 * are set to the corresponding objects selected by the request path.
+	 * The user parameter represents a valid database user.
+	 * 
+	 * @param user
+	 * @param request
+	 * @param response
+	 * @param collection
+	 * @param resource
+	 * @throws ServletException
+	 * @throws IOException
+	 */
 	void process(User user, HttpServletRequest request, HttpServletResponse response, 
 			Collection collection, DocumentImpl resource) 
 	throws ServletException, IOException;

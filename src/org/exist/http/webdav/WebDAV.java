@@ -23,8 +23,6 @@
 package org.exist.http.webdav;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.servlet.ServletException;
@@ -39,8 +37,6 @@ import org.exist.dom.DocumentImpl;
 import org.exist.http.servlets.Authenticator;
 import org.exist.http.servlets.BasicAuthenticator;
 import org.exist.http.servlets.DigestAuthenticator;
-import org.exist.http.webdav.methods.*;
-import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
@@ -48,6 +44,8 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 
 /**
+ * The main class for processing WebDAV requests.
+ * 
  * @author wolf
  */
 public class WebDAV {
@@ -74,7 +72,6 @@ public class WebDAV {
 	private final static Logger LOG = Logger.getLogger(WebDAV.class);
 	
 	private Authenticator digestAuth, basicAuth;
-	private Map supportedMethods = new HashMap();
 	private BrokerPool pool;
 	
 	public WebDAV() throws ServletException {
@@ -84,26 +81,29 @@ public class WebDAV {
 			throw new ServletException("Error found while initializing database: " + e.getMessage(), e);
 		}
 		
-		supportedMethods.put("OPTIONS", new Options());
-		supportedMethods.put("GET", new Get(pool));
-		supportedMethods.put("HEAD", new Head());
-		supportedMethods.put("PROPFIND", new Propfind(pool));
-		supportedMethods.put("PUT", new Put(pool));
-		supportedMethods.put("DELETE", new Delete(pool));
-		supportedMethods.put("MKCOL", new Mkcol(pool));
 		digestAuth = new DigestAuthenticator(pool);
 		basicAuth = new BasicAuthenticator(pool);
 	}
 	
+	/**
+	 * Process a WebDAV request. The request is delegated to the corresponding
+	 * {@link WebDAVMethod} after authenticating the user.
+	 * 
+	 * @param request
+	 * @param response
+	 * @throws ServletException
+	 * @throws IOException
+	 */
 	public void process(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
 		User user = authenticate(request, response);
 		if(user == null)
 			return;
-		
 		String path = request.getPathInfo();
-		if(path == null || path.length() == 0 || path.equals("/"))
-			path = "/db";
+		if(path == null || path.length() == 0 || path.equals("/")) {
+			response.sendRedirect(request.getRequestURI() + "/db");
+			return;
+		}
 		if(path.endsWith("/"))
 			path = path.substring(0, path.length() - 1);
 		LOG.debug("path = " + path + "; method = " + request.getMethod());
@@ -121,7 +121,7 @@ public class WebDAV {
 				if(resource != null)
 					collection = resource.getCollection();
 			}
-			method = (WebDAVMethod)supportedMethods.get(request.getMethod());
+			method = WebDAVMethodFactory.create(request.getMethod(), pool);
 			if(method == null) {
 				response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
 						"Method is not supported: " + request.getMethod());

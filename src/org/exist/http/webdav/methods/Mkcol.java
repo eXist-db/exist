@@ -71,7 +71,7 @@ public class Mkcol implements WebDAVMethod {
         }
         String path = request.getPathInfo();
         if(path == null || path.equals("")) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+            response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
                     "no path specified");
             return;
         }
@@ -91,7 +91,7 @@ public class Mkcol implements WebDAVMethod {
             broker.saveCollection(created);
             broker.flush();
             LOG.debug("created collection " + path);
-            response.sendError(HttpServletResponse.SC_CREATED);
+            response.setStatus(HttpServletResponse.SC_CREATED);
         } catch(EXistException e) {
             throw new ServletException("Database error: " + e.getMessage(), e);
         } catch (PermissionDeniedException e) {

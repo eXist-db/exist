@@ -62,10 +62,10 @@ public class Delete implements WebDAVMethod {
 		}
 		DBBroker broker = null;
 		try {
-			broker = pool.get();
-			if(resource == null)
+			broker = pool.get(user);
+			if(resource == null) {
 				broker.removeCollection(collection.getName());
-			else {
+			} else {
 				String path = resource.getFileName();
 				int p = path.lastIndexOf('/');
 				String docName = path.substring(p + 1);
@@ -85,5 +85,6 @@ public class Delete implements WebDAVMethod {
 		} finally {
 			pool.release(broker);
 		}
+		response.setStatus(HttpServletResponse.SC_NO_CONTENT);
 	}
 }

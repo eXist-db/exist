@@ -33,6 +33,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.exist.http.webdav.WebDAV;
 
+/**
+ * Provides a WebDAV interface to the database. All WebDAV requests
+ * are delegated to the {@link org.exist.http.webdav.WebDAV} class.
+ * 
+ * @author wolf
+ */
 public class WebDAVServlet extends HttpServlet {
 	
 	private WebDAV webdav;

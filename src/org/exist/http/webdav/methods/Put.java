@@ -78,7 +78,7 @@ public class Put implements WebDAVMethod {
 		String path = request.getPathInfo();
 		DBBroker broker = null;
 		try {
-			broker = pool.get();
+			broker = pool.get(user);
 			if(collection == null) {
 				if(path == null)
 					path = "";

@@ -23,7 +23,9 @@
 package org.exist.http.servlets;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,6 +36,8 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 
 /**
+ * An Authenticator that uses MD5 Digest Authentication.
+ * 
  * @author wolf
  */
 public class DigestAuthenticator implements Authenticator {
@@ -141,7 +145,10 @@ public class DigestAuthenticator implements Authenticator {
         
         public boolean check(String credentials) throws IOException
         {
-            try{
+            if(credentials == null)
+                // no password set for the user: return true
+                return true;
+            try {
                 MessageDigest md = MessageDigest.getInstance("MD5");
 
                 // calc A2 digest
@@ -160,11 +167,13 @@ public class DigestAuthenticator implements Authenticator {
                 byte[] digest=md.digest();
                 
                 // check digest
-                System.out.println(MD5.byteArrayToHex(digest) + " = " + response);
                 return (MD5.byteArrayToHex(digest).equalsIgnoreCase(response));
-            } catch (Exception e) {
-            	throw new IOException("Internal error while checking digest");
+            } catch (NoSuchAlgorithmException e) {
+                throw new RuntimeException("MD5 not supported");
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException("Encoding not supported");
             }
+            
         }
 	}
 }
