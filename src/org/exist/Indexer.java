@@ -138,7 +138,7 @@ public class Indexer
 		}
 		
 		Boolean temp;
-		if ((temp = (Boolean) config.getProperty("indexer.suppress-whitespace-mixed-content"))
+		if ((temp = (Boolean) config.getProperty("indexer.preserve-whitespace-mixed-content"))
 			!= null)
 			suppressWSmixed = temp.booleanValue();
 	}
