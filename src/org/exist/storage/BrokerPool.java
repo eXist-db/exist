@@ -324,7 +324,7 @@ public class BrokerPool {
 			return;
 		broker.decReferenceCount();
 		if(broker.getReferenceCount() > 0) {
-			LOG.debug("Broker still has references. Keep it.");
+			// broker still has references. Keep it
 			return;  
 		}
 		threads.remove(Thread.currentThread());

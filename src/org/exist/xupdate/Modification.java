@@ -79,7 +79,6 @@ public abstract class Modification {
 			if (treeParser.foundErrors()) {
 				throw new RuntimeException(treeParser.getErrorMessage());
 			}
-			LOG.info("modification select: " + expr.pprint());
 			long start = System.currentTimeMillis();
 
 			Sequence resultSeq = expr.eval(null, null);
@@ -131,8 +130,9 @@ public abstract class Modification {
 		public void nodeChanged(NodeImpl node) {
 			final long address = node.getInternalAddress();
 			for (int i = 0; i < nodes.length; i++) {
-				if (StorageAddress.equals(nodes[i].getInternalAddress(), address))
+				if (StorageAddress.equals(nodes[i].getInternalAddress(), address)) {
 					nodes[i] = node;
+				}
 			}
 		}
 

@@ -1005,6 +1005,7 @@ xpointer [PathExpr path]
 	{ handleException(e); }
 
 xpath [PathExpr path]
+{ context.setRootExpression(path); }
 :
 	module [path]
 	{

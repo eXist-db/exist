@@ -925,7 +925,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 
 		public void reindex(DocumentImpl oldDoc, NodeImpl node) {
-			final short collectionId = doc.getCollection().getId();
+			final short collectionId = oldDoc.getCollection().getId();
 			int len, docId;
 			Map.Entry entry;
 			String word;

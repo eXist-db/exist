@@ -116,7 +116,8 @@ public final class NodeIterator implements Iterator {
 						// load next page in chain
 						long nextPage = ph.getNextDataPage();
 						if (nextPage < 0) {
-							LOG.debug("bad link to next " + p.page.getPageInfo());
+							LOG.debug("bad link to next " + p.page.getPageInfo() + "; previous: " +
+									ph.getPrevDataPage());
 							return null;
 						}
 						page = nextPage;
@@ -126,13 +127,14 @@ public final class NodeIterator implements Iterator {
 					}
 					// extract the tid
 					lastTID = ByteConversion.byteToShort(p.data, offset);
-					if(ItemId.getId(lastTID) < 0)
-					    LOG.debug("tid < 0: " + lastTID + " at "+ p.page.getPageInfo());
 					offset += 2;
 					//	check if this is just a link to a relocated node
 					if(ItemId.isLink(lastTID)) {
 						// skip this
+						long link = ByteConversion.byteToLong(p.data, offset);
 						offset += 8;
+						//System.out.println("skipping link on p " + page + " -> " + 
+						//		StorageAddress.pageFromPointer(link));
 						continue;
 					}
 					// read data length
@@ -158,6 +160,7 @@ public final class NodeIterator implements Iterator {
 						StorageAddress.createPointer((int) page, ItemId.getId(lastTID))
 					);
 					nextNode.setOwnerDocument(doc);
+					// System.out.println("Next: " + nextNode.getNodeName() + " [" + page + "]");
 			    } while(nextNode == null);
 			}
 			return nextNode;

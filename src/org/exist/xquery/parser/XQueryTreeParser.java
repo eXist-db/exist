@@ -1985,6 +1985,7 @@ public XQueryTreeParser() {
 	) throws RecognitionException {
 		
 		org.exist.xquery.parser.XQueryAST xpath_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		context.setRootExpression(path);
 		
 		try {      // for error handling
 			module(_t,path);

@@ -142,6 +142,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		this.fileName = old.fileName;
 		this.ownerDocument = this;
 		this.collection = old.collection;
+		if(old.collection == null)
+			throw new RuntimeException("Collection == null");
 		this.children = old.children;
 		this.maxDepth = old.maxDepth;
 		this.docId = old.docId;

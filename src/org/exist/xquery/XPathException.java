@@ -46,8 +46,11 @@ public class XPathException extends Exception {
 	}
 	
 	public void setASTNode(XQueryAST ast) {
-		System.out.println(ast);
 		this.astNode = ast;
+	}
+	
+	public XQueryAST getASTNode() {
+		return astNode;
 	}
 	
 	/* (non-Javadoc)

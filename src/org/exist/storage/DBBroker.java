@@ -90,7 +90,7 @@ public abstract class DBBroker extends Observable {
 			try {
 				VariableByteOutputStream os = new VariableByteOutputStream(256);
 				symbols.write(os);
-				FileOutputStream fos = new FileOutputStream(symbols.getFile(), false);
+				FileOutputStream fos = new FileOutputStream(symbols.getFile().getAbsolutePath(), false);
 				fos.write(os.toByteArray());
 				fos.close();
 			} catch (FileNotFoundException e) {

@@ -205,7 +205,7 @@ public class HttpServerConnection extends RESTServer implements Runnable {
 		msg.append("Content-Length: ");
 		msg.append(content.length());
 		msg.append("\n\n");
-		msg.append(content);
+		msg.append(content.toString());
 		try {
 			LOG.warn("BAD_REQUEST");
 			DataOutputStream out = new DataOutputStream(

@@ -955,8 +955,8 @@ public class NativeBroker extends DBBroker {
 			return;
 		}
 		oldDoc.setReindexRequired(idxLevel);
-		if (node == null)
-			LOG.debug("reindexing level " + idxLevel + " of document " + doc.getDocId());
+//		if (node == null)
+//			LOG.debug("reindexing level " + idxLevel + " of document " + doc.getDocId());
 		final long start = System.currentTimeMillis();
 		// remove all old index keys from the btree
 		Value ref = new NodeRef(doc.getDocId());
@@ -1135,6 +1135,9 @@ public class NativeBroker extends DBBroker {
 			NodeImpl child;
 			for (long gid = firstChildId; gid < lastChildId; gid++) {
 				child = (NodeImpl) iterator.next();
+				if(child == null)
+					LOG.debug("child " + gid + " not found for node: " + node.getNodeName() +
+							"; last = " + lastChildId + "; children = " + node.getChildCount());
 				child.setGID(gid);
 				scanNodes(iterator, child, currentPath);
 			}
@@ -1885,7 +1888,7 @@ public class NativeBroker extends DBBroker {
 				//LOG.info(
 				//	"total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
 				flush();
-				//System.gc();
+				System.gc();
 				LOG.info(
 					"total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
 			}

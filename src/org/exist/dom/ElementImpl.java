@@ -1054,11 +1054,11 @@ public class ElementImpl extends NodeImpl implements Element {
 			}
 		}
 		if (attributes.length() > 0)
-			buf.append(attributes);
+			buf.append(attributes.toString());
 
 		if (childNodes.getLength() > 0) {
 			buf.append(">");
-			buf.append(children);
+			buf.append(children.toString());
 			buf.append("</");
 			buf.append(nodeName);
 			buf.append(">");
@@ -1176,9 +1176,16 @@ public class ElementImpl extends NodeImpl implements Element {
 		final DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
 		// remove old child nodes
 		NodeList nodes = getChildNodes();
-		NodeImpl child;
-		for (int i = 0; i < nodes.getLength(); i++) {
-			child = (NodeImpl) nodes.item(i);
+		NodeImpl child, last = this;
+		long firstChildId = firstChildID();
+		int i = nodes.getLength();
+		for ( ; i > 0; i--) {
+			child = (NodeImpl) nodes.item(i - 1);
+			if(child.getNodeType() == Node.ATTRIBUTE_NODE) {
+				firstChildId = child.gid + 1;
+				last = child;
+				break;
+			}
 			removeAll(
 				child,
 				child.getNodeType() == Node.ELEMENT_NODE
@@ -1186,9 +1193,9 @@ public class ElementImpl extends NodeImpl implements Element {
 					: path);
 		}
 		ownerDocument.broker.endRemove();
-		children = 0;
+		children = i;
 		// append new content
-		appendChildren(firstChildID(), this, newContent, true);
+		appendChildren(firstChildId, last, newContent, true);
 		ownerDocument.broker.update(this);
 		// reindex if required
 		ownerDocument.broker.reindex(prevDoc, ownerDocument, null);

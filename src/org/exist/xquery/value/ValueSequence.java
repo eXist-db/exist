@@ -98,6 +98,8 @@ public class ValueSequence extends AbstractSequence {
 	 * @see org.exist.xpath.value.Sequence#toNodeSet()
 	 */
 	public NodeSet toNodeSet() throws XPathException {
+		if(values.size() == 0)
+			return NodeSet.EMPTY_SET;
 		if(Type.subTypeOf(itemType, Type.NODE)) {
 			NodeSet set = new ExtArrayNodeSet();
 			NodeValue v;

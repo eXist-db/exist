@@ -28,6 +28,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -337,10 +339,15 @@ public class RESTServer {
 					collection = broker.getOrCreateCollection(collectionName);
 					broker.saveCollection(collection);
 				}
-				URL url = tempFile.toURL();
+				String url;
+				try {
+					url = new URI(tempFile.toURL().toString()).toASCIIString();
+				} catch (URISyntaxException e1) {
+					url = tempFile.toString();
+				}
 				if(contentType == null || contentType.equalsIgnoreCase("text/xml")) {
 					DocumentImpl doc = collection.addDocument(broker, docPath,
-							new InputSource(url.toString()));
+							new InputSource(url));
 					response = new Response();
 					response.setDescription("Document " + docPath + " stored.");
 				} else {

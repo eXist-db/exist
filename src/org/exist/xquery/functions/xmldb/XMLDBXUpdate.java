@@ -108,6 +108,7 @@ public class XMLDBXUpdate extends BasicFunction {
 			throw new XPathException(getASTNode(), "Exception while processing xupdate: "
 					+ e.getMessage(), e);
 		}
+		context.getRootExpression().resetState();
 		return new IntegerValue(modifications);
 	}
 

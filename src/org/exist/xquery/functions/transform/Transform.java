@@ -25,6 +25,7 @@ package org.exist.xquery.functions.transform;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
@@ -167,12 +168,18 @@ public class Transform extends BasicFunction {
 		if(stylesheet.indexOf(':') < 0) {
 			File f = new File(stylesheet);
 			if(f.canRead())
-				stylesheet = f.toURI().toASCIIString();
+				try {
+					stylesheet = new URI(f.toURL().toString()).toASCIIString();
+				} catch (Exception e1) {
+				}
 			else {
 				stylesheet = context.getBaseURI() + File.separatorChar + stylesheet;
 				f = new File(stylesheet);
 				if(f.canRead())
-					stylesheet = f.toURI().toASCIIString();
+					try {
+						stylesheet = f.toURL().toString();
+					} catch (MalformedURLException e2) {
+					}
 			}
 		}
 		int p = stylesheet.lastIndexOf('/');

@@ -928,17 +928,24 @@ public class BFile extends BTree {
 
 		public void write(java.io.RandomAccessFile raf) throws IOException {
 			// does the free-space list fit into the file header?
+			int skip = 0;
 			if (freeList.size() > MAX_FREE_LIST_LEN) {
 				LOG.debug("removing " + (freeList.size() - MAX_FREE_LIST_LEN) + " free pages.");
 				// no: remove some smaller entries to make it fit
-				for (int i = 0; i < freeList.size() - MAX_FREE_LIST_LEN; i++)
-					freeList.removeFirst();
+				skip = freeList.size() - MAX_FREE_LIST_LEN;
+//				for (int i = 0; i < freeList.size() - MAX_FREE_LIST_LEN; i++)
+//					freeList.removeFirst();
 			}
 			super.write(raf);
 			raf.writeLong(lastDataPage);
-			raf.writeInt(freeList.size());
+			raf.writeInt(freeList.size() - skip);
 			FreeSpace freeSpace;
-			for (Iterator i = freeList.iterator(); i.hasNext();) {
+			Iterator i = freeList.iterator();
+			// skip
+			for(int j = 0; j < skip && i.hasNext(); j++) {
+				i.next();
+			}
+			while (i.hasNext()) {
 				freeSpace = (FreeSpace) i.next();
 				raf.writeLong(freeSpace.getPage());
 				raf.writeInt(freeSpace.getFree());

@@ -25,7 +25,7 @@ package org.exist.security;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -59,16 +59,16 @@ public class SecurityManager {
 	public final static String GUEST_GROUP = "guest";
 	public final static String GUEST_USER = "guest";
 	public final static String SYSTEM = "/db/system";
-
-	private final static Category LOG =
-		Category.getInstance(SecurityManager.class.getName());
+	
+	private final static Logger LOG =
+		Logger.getLogger(SecurityManager.class);
 
 	private BrokerPool pool;
 	private Int2ObjectHashMap groups = new Int2ObjectHashMap(65);
 	private Int2ObjectHashMap users = new Int2ObjectHashMap(65);
 	private int nextUserId = 0;
 	private int nextGroupId = 0;
-
+	
 	private BrokerPool brokerPool;
 
 	/**
@@ -82,8 +82,8 @@ public class SecurityManager {
 	 */
 	public SecurityManager(BrokerPool pool, DBBroker sysBroker) {
 		this.pool = pool;
+		
 		DBBroker broker = sysBroker;
-
 		try {
 			Collection sysCollection = broker.getCollection(SYSTEM);
 			if (sysCollection == null) {

@@ -47,7 +47,7 @@
             - min: minimum number of connections to keep alive.
             - max: maximum number of connections allowed.
         -->
-        <pool min="1" max="20" sync-period="300000"/>
+		<pool min="1" max="20" sync-period="300000"/>
     </db-connection>
 	   
     <!-- Default settings for the serializer. Most of these can be changed
@@ -102,7 +102,7 @@
             equality comparisons.
     -->
     <indexer stemming="no" caseSensitive="no" suppress-whitespace="both" 
-        index-depth="1" tokenizer="org.exist.storage.analysis.SimpleTokenizer" 
+		index-depth="1" tokenizer="org.exist.storage.analysis.SimpleTokenizer" 
 		validation="no">
         
 		<!-- where's the file containing a list of stopwords to be ignored
