@@ -62,7 +62,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	public Node getFirstChild() {
 		short level = document.treeLevel[nodeNumber];
 		int nextNode = nodeNumber + 1;
-		if (document.treeLevel[nextNode] > level) {
+		if (nextNode < document.size && document.treeLevel[nextNode] > level) {
 			return document.getNode(nextNode);
 		} else
 			return null;
