@@ -64,4 +64,8 @@ public class OrderSpec {
 		buf.append((modifiers & DESCENDING_ORDER) == 0 ? "ascending" : "descending");
 		return buf.toString();
 	}
+	
+	public void resetState() {
+	    expression.resetState();
+	}
 }

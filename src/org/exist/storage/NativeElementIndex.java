@@ -556,10 +556,9 @@ public class NativeElementIndex extends ElementIndex {
                                         gid = last + delta;
                                         last = gid;
                                         address = StorageAddress.read(is);
-                                        if (!containsNode(idList, gid)) {
+                                        if (!containsNode(idList, gid))
                                             newList.add(new NodeProxy(doc, gid,
                                                     address));
-                                        }
                                     }
                                 }
                             }

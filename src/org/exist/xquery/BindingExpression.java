@@ -190,5 +190,10 @@ public abstract class BindingExpression extends AbstractExpression {
 		inputSequence.resetState();
 		if(whereExpr != null) whereExpr.resetState();
 		returnExpr.resetState();
+		if(orderSpecs != null) {
+		    for(int i = 0; i < orderSpecs.length; i++) {
+		        orderSpecs[i].resetState();
+		    }
+		}
 	}
 }

@@ -262,8 +262,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		if (!(al instanceof VirtualNodeSet)) {
 		    if(al.getLength() == 1)
 		        return hasChildrenInSet(al.get(0), mode, rememberContext);
-//		    else
-//		        return quickSelectParentChild(al, mode, rememberContext);
+		    else
+		        return quickSelectParentChild(al, mode, rememberContext);
 		}
 		NodeProxy n, p;
 		//		long start = System.currentTimeMillis();
