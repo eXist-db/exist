@@ -22,7 +22,7 @@ declare function sort:orderExpr($field as xs:string) as xs:string
 if ($field = "creator") then
 "sort:orderByName($m)"
 else if ($field = "title") then
-"$m/m:titleInfo[1]/m:title[1]"
+"$m/mods:titleInfo[1]/mods:title[1]"
 else
-"$m/m:originInfo/m:dateCreated[1] descending"
+"$m/mods:originInfo/mods:dateCreated[1] descending"
 };

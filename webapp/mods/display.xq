@@ -5,7 +5,7 @@ declare namespace mods="http://www.loc.gov/mods/v3";
 declare function display:record-short($num as xs:int, 
     $rec as element(), $expanded as xs:boolean) as element() {
     <tr class="record-short" id="r_{$num}">
-        <td><input type="checkbox" name="rec" value="{$num}"/></td>
+        <td><input type="checkbox" name="r" value="{$num}"/></td>
         <td class="names">{display:names($rec/mods:name)}</td>
         <td class="year">{display:year($rec)}</td> 
         <td>{display:titles($rec)}</td>
@@ -191,7 +191,6 @@ declare function display:navigation($hits as xs:int, $start as xs:int, $next as 
     $max as xs:int, $preload as xs:boolean) as element() {
     <div id="navigation">
         <h3>Showing hits {$start} to {$next - 1} of {$hits}</h3>
-        <form action="biblio.xq" method="GET">
             <ul>
                 <li>
                 {
@@ -214,7 +213,7 @@ declare function display:navigation($hits as xs:int, $start as xs:int, $next as 
                     </a>
                 </li>
                 <li>
-                    Display:
+                    <label for="howmany">Display: </label>
                     <select name="howmany" onChange="form.submit()">
                     {
                         for $i in (10, 50, 100)
@@ -233,24 +232,32 @@ declare function display:navigation($hits as xs:int, $start as xs:int, $next as 
                     <a href="javascript:toggleCheckboxes()">Mark all</a>
                 </li>
             </ul>
+            <ul>
+                <li>
+                    <input type="submit" name="action" value="Remove"/></li>
+                <li>
+                    <input type="submit" name="action" value="Export"/>
+                    <label for="format">Format: </label>
+                    <select id="format" name="format">
+                        <option>MODS</option>
+                    </select>
+                </li>
+            </ul>
             {
                 if ($start > 1) then
-                    <div>
-                        <a id="link-prev" href="?start={$start - $max}&amp;howmany={$max}">
-                            &lt;&lt; previous
-                        </a>
-                    </div>
+                    <a id="link-prev" href="?start={$start - $max}&amp;howmany={$max}">
+                        &lt;&lt; previous
+                    </a>
                 else ()
             }
             {
-                    if ($next <= $hits) then
-                        <a id="link-next" href="?start={$next}&amp;howmany={$max}">
-                            more &gt;&gt;
-                        </a>
-                    else
-                        ()
+                if ($next <= $hits) then
+                    <a id="link-next" href="?start={$next}&amp;howmany={$max}">
+                        more &gt;&gt;
+                    </a>
+                else
+                    ()
             }
             <input type="hidden" name="start" value="{$start}"/>
-        </form>
     </div>
 };
