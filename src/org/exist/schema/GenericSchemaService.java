@@ -470,8 +470,23 @@ public abstract class GenericSchemaService implements SchemaService {
   protected XPathQueryService getXQueryService() throws XMLDBException {
     if (queryService == null)
       queryService = (XPathQueryService) getSchemasCollection().getService("XPathQueryService", "1.0");
-    ;
+    
     return queryService;
   }
-
+  
+  private void deleteIndex() throws XMLDBException {
+    Resource index = getSchemasCollection().getResource(INDEX_RESOURCE_NAME);
+    getSchemasCollection().removeResource(index);
+  }
+  public void rebuildIndex() throws XMLDBException {
+    deleteIndex();
+    
+    Collection collection = getSchemasCollection();
+    String[] resourceNames = collection.listResources();
+    for (int i = 0; i < resourceNames.length; i++) {
+      XMLResource schema = (XMLResource) collection.getResource((resourceNames[i]));
+      String targetNamespace = findTargetNamespace((String) schema.getContent());
+      addToIndex(targetNamespace, resourceNames[i]);
+    }
+  }
 }

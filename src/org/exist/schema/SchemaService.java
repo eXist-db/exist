@@ -25,4 +25,11 @@ public interface SchemaService extends Service, SchemaAccess {
 	 * @throws XMLDBException
 	 */
 	void registerTransientSchema(String schema) throws XMLDBException;
+	/**
+	 * Delete and recreate the index file based on the schema resources stored in the 
+	 * /db/system/schema collection
+	 * @throws XMLDBException
+	 */
+	void rebuildIndex() throws XMLDBException;
+
 }
