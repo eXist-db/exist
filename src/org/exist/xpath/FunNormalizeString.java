@@ -1,6 +1,6 @@
 /*
  * NativeBroker.java - eXist Open Source Native XML Database
- * Copyright (C) 2001 Wolfgang M. Meier
+ * Copyright (C) 2001-03 Wolfgang M. Meier
  * meier@ifs.tu-darmstadt.de
  * http://exist.sourceforge.net
  *
@@ -21,6 +21,8 @@
 
 package org.exist.xpath;
 
+import java.util.StringTokenizer;
+
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
@@ -31,10 +33,10 @@ import org.exist.storage.BrokerPool;
  * xpath-library function: string(object)
  *
  */
-public class FunSubstring extends Function {
+public class FunNormalizeString extends Function {
 	
-	public FunSubstring(BrokerPool pool) {
-		super(pool, "substring");
+	public FunNormalizeString(BrokerPool pool) {
+		super(pool, "normalize-space");
 	}
 
 	public int returnsType() {
@@ -43,27 +45,21 @@ public class FunSubstring extends Function {
 		
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
 		NodeProxy contextNode) {
-		if(getArgumentCount() < 2)
-			throw new IllegalArgumentException("substring requires at least two arguments");
-		Expression arg0 = getArgument(0);
-		Expression arg1 = getArgument(1);
-		Expression arg2 = null;
-		if(getArgumentCount() > 2)
-			arg2 = getArgument(2);
-
-		if(contextNode != null) {
+		if(contextNode != null)
 			contextSet = new SingleNodeSet(contextNode);
+		String value;
+		if(getArgumentCount() == 0)
+			value = contextSet.getLength() > 0 ? contextSet.get(0).getNodeValue() : "";
+		else
+			value = getArgument(0).eval(context, docs, contextSet).getStringValue();
+		StringBuffer result = new StringBuffer();
+		if(value.length() > 0) {
+			StringTokenizer tok = new StringTokenizer(value);
+			while (tok.hasMoreTokens()) {
+				result.append(tok.nextToken());
+				if(tok.hasMoreTokens()) result.append(' ');
+			}
 		}
-		int start = (int)arg1.eval(context, docs, contextSet).getNumericValue();
-		int length = 1;
-		if(arg2 != null)
-			length = (int)arg2.eval(context, docs, contextSet, contextNode).getNumericValue();
-		if(start <= 0 || length < 0)
-			throw new IllegalArgumentException("Illegal start or length argument");
-		Value nodes = arg0.eval(context, docs, contextSet);
-		String result = nodes.getStringValue();
-		if(start < 0 || --start + length >= result.length())
-			return new ValueString("");
-		return new ValueString((length > 0) ? result.substring(start, start + length) : result.substring(start));
+		return new ValueString(result.toString());
 	}
 }

@@ -15,17 +15,15 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
-import org.exist.EXistException;
 import org.exist.dom.DocumentSet;
-import org.exist.parser.XPathLexer;
-import org.exist.parser.XPathParser;
-import org.exist.security.PermissionDeniedException;
+import org.exist.parser.XPathLexer2;
+import org.exist.parser.XPathParser2;
+import org.exist.parser.XPathTreeParser2;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.util.FastStringBuffer;
 import org.exist.util.XMLUtil;
 import org.exist.xpath.PathExpr;
-import org.exist.xpath.RootNode;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.Value;
 import org.w3c.dom.Attr;
@@ -47,6 +45,7 @@ import org.xml.sax.ext.LexicalHandler;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
+import antlr.collections.AST;
 
 /**
  * XUpdateProcessor.java
@@ -81,8 +80,8 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	/**
 	 * Constructor for XUpdateProcessor.
 	 */
-	public XUpdateProcessor(BrokerPool pool, User user,
-		DocumentSet docs) throws ParserConfigurationException {
+	public XUpdateProcessor(BrokerPool pool, User user, DocumentSet docs)
+		throws ParserConfigurationException {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setNamespaceAware(true);
 		factory.setValidating(false);
@@ -233,7 +232,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				String name = atts.getValue("name");
 				if (name == null)
 					throw new SAXException("element requires a name attribute");
-				Element elem = doc.createElement(name);
+				Element elem = doc.createElementNS("", name);
 				if (stack.isEmpty()) {
 					fragment.appendChild(elem);
 				} else {
@@ -245,7 +244,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				String name = atts.getValue("name");
 				if (name == null)
 					throw new SAXException("attribute requires a name attribute");
-				Attr attrib = doc.createAttribute(name);
+				Attr attrib = doc.createAttributeNS("", name);
 				if (stack.isEmpty())
 					fragment.appendChild(attrib);
 				else {
@@ -254,24 +253,24 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				}
 				inAttribute = true;
 				currentNode = attrib;
-			
-			// process value-of
-			} else if(localName.equals("value-of")) {
+
+				// process value-of
+			} else if (localName.equals("value-of")) {
 				select = atts.getValue("select");
-				if(select == null)
+				if (select == null)
 					throw new SAXException("value-of requires a select attribute");
 				List nodes;
-				if(select.startsWith("$")) {
-					nodes = (List)variables.get(select);
-					if(nodes == null)
+				if (select.startsWith("$")) {
+					nodes = (List) variables.get(select);
+					if (nodes == null)
 						throw new SAXException("variable " + select + " not found");
 				} else
 					nodes = processQuery(select);
 				LOG.debug("found " + nodes.size() + " nodes for value-of");
 				Node node;
-				for(Iterator i = nodes.iterator(); i.hasNext(); ) {
-					node = XMLUtil.copyNode(doc, (Node)i.next());
-					if(stack.isEmpty())
+				for (Iterator i = nodes.iterator(); i.hasNext();) {
+					node = XMLUtil.copyNode(doc, (Node) i.next());
+					if (stack.isEmpty())
 						fragment.appendChild(node);
 					else {
 						Element last = (Element) stack.peek();
@@ -372,7 +371,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			}
 			charBuf.setLength(0);
 		}
-		if(inModification) {
+		if (inModification) {
 			ProcessingInstruction pi = doc.createProcessingInstruction(target, data);
 			if (stack.isEmpty()) {
 				fragment.appendChild(pi);
@@ -395,18 +394,26 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		LOG.debug("found " + result.size() + " for variable " + name);
 		variables.put('$' + name, result);
 	}
-	
+
 	private List processQuery(String select) throws SAXException {
 		try {
-			XPathLexer lexer = new XPathLexer(new StringReader(select));
-			XPathParser parser = new XPathParser(pool, user, lexer);
-			StaticContext context = new StaticContext();
+			StaticContext context = new StaticContext(user);
+			XPathLexer2 lexer = new XPathLexer2(new StringReader(select));
+			XPathParser2 parser = new XPathParser2(lexer);
+			XPathTreeParser2 treeParser = new XPathTreeParser2(pool, context);
+			parser.xpath();
+			if (parser.foundErrors()) {
+				throw new SAXException(parser.getErrorMessage());
+			}
+
+			AST ast = parser.getAST();
+			LOG.debug("generated AST: " + ast.toStringTree());
+
 			PathExpr expr = new PathExpr(pool);
-			RootNode root = new RootNode(pool);
-			expr.add(root);
-			parser.expr(expr);
-			if (parser.foundErrors())
-				throw new SAXException(parser.getErrorMsg());
+			treeParser.xpath(ast, expr);
+			if (treeParser.foundErrors()) {
+				throw new SAXException(treeParser.getErrorMessage());
+			}
 			DocumentSet ndocs = expr.preselect(documentSet);
 			if (ndocs.getLength() == 0)
 				return new ArrayList(1);
@@ -426,41 +433,36 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		} catch (TokenStreamException e) {
 			LOG.warn("error while creating variable", e);
 			throw new SAXException(e);
-		} catch (PermissionDeniedException e) {
-			LOG.warn("error while creating variable", e);
-			throw new SAXException(e);
-		} catch (EXistException e) {
-			LOG.warn("error while creating variable", e);
-			throw new SAXException(e);
 		}
 	}
+
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ext.LexicalHandler#comment(char[], int, int)
 	 */
 	public void comment(char[] ch, int start, int length) throws SAXException {
 		if (inModification && charBuf.length() > 0) {
-					final String normalized = charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
-					if (normalized.length() > 0) {
-						Text text = doc.createTextNode(normalized);
-						if (stack.isEmpty()) {
-							LOG.debug("appending text to fragment: " + text.getData());
-							fragment.appendChild(text);
-						} else {
-							Element last = (Element) stack.peek();
-							last.appendChild(text);
-						}
-					}
-					charBuf.setLength(0);
+			final String normalized = charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+			if (normalized.length() > 0) {
+				Text text = doc.createTextNode(normalized);
+				if (stack.isEmpty()) {
+					LOG.debug("appending text to fragment: " + text.getData());
+					fragment.appendChild(text);
+				} else {
+					Element last = (Element) stack.peek();
+					last.appendChild(text);
 				}
-				if(inModification) {
-					Comment comment = doc.createComment(new String(ch, start, length));
-					if (stack.isEmpty()) {
-						fragment.appendChild(comment);
-					} else {
-						Element last = (Element) stack.peek();
-						last.appendChild(comment);
-					}
-				}
+			}
+			charBuf.setLength(0);
+		}
+		if (inModification) {
+			Comment comment = doc.createComment(new String(ch, start, length));
+			if (stack.isEmpty()) {
+				fragment.appendChild(comment);
+			} else {
+				Element last = (Element) stack.peek();
+				last.appendChild(comment);
+			}
+		}
 	}
 
 	/* (non-Javadoc)

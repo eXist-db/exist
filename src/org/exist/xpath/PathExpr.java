@@ -87,16 +87,20 @@ public class PathExpr extends AbstractExpression {
             set = (NodeSet) r.getNodeList();
             expr = (Expression) iter.next();
             if ( expr.returnsType() != Constants.TYPE_NODELIST ) {
-                if ( expr instanceof Literal || expr instanceof IntNumber )
-                    return expr.eval( context, docs, set, null );
-                values = new ValueSet();
-                for ( Iterator iter2 = set.iterator(); iter2.hasNext();  ) {
-                	current = (NodeProxy)iter2.next();
-                    values.add( expr.eval( context, docs, set, current ) );
-                }
-                return values;
-            }
-            r = expr.eval( context, docs, set );
+				if(set.getLength() == 0)
+                    r = expr.eval( context, docs, null, null );
+                else {
+                	values = new ValueSet();
+	                for ( Iterator iter2 = set.iterator(); iter2.hasNext();  ) {
+	                	current = (NodeProxy)iter2.next();
+	                    values.add( expr.eval( context, docs, set, current ) );
+	                }
+	                r = values;
+            	}
+            	if(!(r instanceof ValueSet))
+            		r = new ValueSet(r);
+            } else
+            	r = expr.eval( context, docs, set );
         }
         return r;
     }
@@ -151,6 +155,18 @@ public class PathExpr extends AbstractExpression {
     public void setFirstExpression( Expression s ) {
         steps.addFirst( s );
     }
+    
+    public String getLiteralValue() {
+    	if(steps.size() == 0)
+    		return "";
+    	Expression next = (Expression)steps.get(0);
+    	if(next instanceof Literal)
+    		return ((Literal)next).getLiteral();
+    	if(next instanceof PathExpr)
+    		return ((PathExpr)next).getLiteralValue();
+    	return "";
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#setInPredicate(boolean)
 	 */

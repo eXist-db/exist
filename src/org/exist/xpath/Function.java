@@ -95,7 +95,6 @@ public abstract class Function extends PathExpr {
     public void addArgument( Expression expr ) {
         if ( expr == null )
             return;
-        System.out.println( "adding " + expr.pprint() );
         steps.add( expr );
     }
 

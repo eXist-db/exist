@@ -48,6 +48,10 @@ public class Literal extends AbstractExpression {
 		return literalValue;
 	}
 	
+	public void setLiteral(String value) {
+		literalValue = value;
+	}
+	
 	public String pprint() {
 		StringBuffer buf = new StringBuffer();
 		buf.append('\'');

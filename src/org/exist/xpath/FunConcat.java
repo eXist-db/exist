@@ -1,6 +1,6 @@
 /*
  * NativeBroker.java - eXist Open Source Native XML Database
- * Copyright (C) 2001 Wolfgang M. Meier
+ * Copyright (C) 2001-03 Wolfgang M. Meier
  * meier@ifs.tu-darmstadt.de
  * http://exist.sourceforge.net
  *
@@ -31,10 +31,10 @@ import org.exist.storage.BrokerPool;
  * xpath-library function: string(object)
  *
  */
-public class FunSubstring extends Function {
+public class FunConcat extends Function {
 	
-	public FunSubstring(BrokerPool pool) {
-		super(pool, "substring");
+	public FunConcat(BrokerPool pool) {
+		super(pool, "concat");
 	}
 
 	public int returnsType() {
@@ -44,26 +44,15 @@ public class FunSubstring extends Function {
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
 		NodeProxy contextNode) {
 		if(getArgumentCount() < 2)
-			throw new IllegalArgumentException("substring requires at least two arguments");
-		Expression arg0 = getArgument(0);
-		Expression arg1 = getArgument(1);
-		Expression arg2 = null;
-		if(getArgumentCount() > 2)
-			arg2 = getArgument(2);
-
-		if(contextNode != null) {
+			throw new IllegalArgumentException("concat requires at least two arguments");
+		if(contextNode != null)
 			contextSet = new SingleNodeSet(contextNode);
+		StringBuffer result = new StringBuffer();
+		Expression arg;
+		for(int i = 0; i < getArgumentCount(); i++) {
+			arg = getArgument(i);
+			result.append(arg.eval(context, docs, contextSet).getStringValue());
 		}
-		int start = (int)arg1.eval(context, docs, contextSet).getNumericValue();
-		int length = 1;
-		if(arg2 != null)
-			length = (int)arg2.eval(context, docs, contextSet, contextNode).getNumericValue();
-		if(start <= 0 || length < 0)
-			throw new IllegalArgumentException("Illegal start or length argument");
-		Value nodes = arg0.eval(context, docs, contextSet);
-		String result = nodes.getStringValue();
-		if(start < 0 || --start + length >= result.length())
-			return new ValueString("");
-		return new ValueString((length > 0) ? result.substring(start, start + length) : result.substring(start));
+		return new ValueString(result.toString());
 	}
 }

@@ -18,8 +18,9 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.parser.XPathLexer;
-import org.exist.parser.XPathParser;
+import org.exist.parser.XPathLexer2;
+import org.exist.parser.XPathParser2;
+import org.exist.parser.XPathTreeParser2;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -33,6 +34,8 @@ import org.exist.xpath.Value;
 import org.exist.xpath.ValueSet;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import antlr.collections.AST;
 
 /**
  *  Description of the Class
@@ -148,15 +151,15 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			serializer.setProperties(props);
 
 			return serializer.serialize(document);
-			
-//			if (xml != null)
-//				try {
-//					return xml.getBytes("UTF-8");
-//				} catch (java.io.UnsupportedEncodingException e) {
-//					return xml.getBytes();
-//				}
-//
-//			return null;
+
+			//			if (xml != null)
+			//				try {
+			//					return xml.getBytes("UTF-8");
+			//				} catch (java.io.UnsupportedEncodingException e) {
+			//					return xml.getBytes();
+			//				}
+			//
+			//			return null;
 		} catch (SAXException saxe) {
 			saxe.printStackTrace();
 			throw new RemoteException(saxe.getMessage());
@@ -232,15 +235,25 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		QueryResponse resp = new QueryResponse();
 		resp.setHits(0);
 		try {
-			XPathLexer lexer = new XPathLexer(new StringReader(query));
-			XPathParser parser = new XPathParser(pool, session.getUser(), lexer);
-			StaticContext context = new StaticContext();
+			StaticContext context = new StaticContext(session.getUser());
+			XPathLexer2 lexer = new XPathLexer2(new StringReader(query));
+			XPathParser2 parser = new XPathParser2(lexer);
+			XPathTreeParser2 treeParser = new XPathTreeParser2(pool, context);
+			parser.xpath();
+			if (parser.foundErrors()) {
+				throw new RemoteException(parser.getErrorMessage());
+			}
+
+			AST ast = parser.getAST();
+			LOG.debug("generated AST: " + ast.toStringTree());
+
 			PathExpr expr = new PathExpr(pool);
-			parser.expr(expr);
+			treeParser.xpath(ast, expr);
+			if (treeParser.foundErrors()) {
+				throw new EXistException(treeParser.getErrorMessage());
+			}
 			LOG.info("query: " + expr.pprint());
 			long start = System.currentTimeMillis();
-			if (parser.foundErrors())
-				throw new RemoteException(parser.getErrorMsg());
 			DocumentSet ndocs = expr.preselect();
 			if (ndocs.getLength() == 0)
 				return resp;

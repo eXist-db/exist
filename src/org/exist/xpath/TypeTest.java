@@ -1,38 +1,24 @@
 package org.exist.xpath;
 
 import org.exist.dom.NodeProxy;
+import org.exist.dom.QName;
 import org.w3c.dom.Node;
 
-public class TypeTest extends NodeTest {
+public class TypeTest implements NodeTest {
 
 	protected int nodeType = 0;
-
-	public static TypeTest ANY_TYPE = new TypeTest(Constants.NODE_TYPE);
-
+	
 	public TypeTest(int nodeType) {
-		super(NodeTest.TYPE_TEST);
 		this.nodeType = nodeType;
 	}
 
-	public int getNodeType() {
-		return nodeType;
+	public QName getName() {
+		return null;
 	}
-
-	public boolean isOfType(NodeProxy proxy, short type) {
-		if (getNodeType() == Constants.NODE_TYPE)
-			return true;
-		if (type == Constants.TYPE_UNKNOWN) {
-			Node node = proxy.doc.getNode(proxy);
-			if (node == null)
-				return false;
-			type = node.getNodeType();
-		}
-		return isOfType(type);
-	}
-
-	public boolean isOfType(short type) {
+	
+	protected boolean isOfType(short type) {
 		int domType;
-		switch (getNodeType()) {
+		switch (nodeType) {
 			case Constants.ELEMENT_NODE :
 				domType = Node.ELEMENT_NODE;
 				break;
@@ -52,4 +38,29 @@ public class TypeTest extends NodeTest {
 	public String toString() {
 		return Constants.NODETYPES[nodeType] + "()";
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.NodeTest#matches(org.exist.dom.NodeProxy)
+	 */
+	public boolean matches(NodeProxy proxy) {
+		if(proxy.nodeType == Constants.TYPE_UNKNOWN) {
+			Node node = proxy.getNode();
+			return matches(node);
+		} else
+			return isOfType(proxy.nodeType);
+	}
+	
+	public boolean matches(Node other) {
+		if(other == null)
+			return false;
+		return isOfType(other.getNodeType());
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.NodeTest#isWildcardTest()
+	 */
+	public boolean isWildcardTest() {
+		return true;
+	}
+
 }

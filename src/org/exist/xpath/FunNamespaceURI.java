@@ -28,13 +28,13 @@ import org.exist.storage.BrokerPool;
 import org.w3c.dom.Node;
 
 /**
- * xpath-library function: string(object)
+ * xpath-library function: local-name(object)
  *
  */
-public class FunName extends Function {
+public class FunNamespaceURI extends Function {
 
-    public FunName(BrokerPool pool) {
-        super(pool, "name");
+    public FunNamespaceURI(BrokerPool pool) {
+        super(pool, "namespace-uri");
     }
 	
     public int returnsType() {
@@ -57,9 +57,9 @@ public class FunName extends Function {
         if(n != null) {
 	        switch(n.getNodeType()) {
 	        	case Node.ELEMENT_NODE:
-	            	return new ValueString(n.getNodeName());
+	            	return new ValueString(n.getNamespaceURI());
 	        	case Node.ATTRIBUTE_NODE:
-	            	return new ValueString(n.getNodeName());
+	            	return new ValueString(n.getNamespaceURI());
 	        	default:
 	            	return new ValueString("");
 	        }

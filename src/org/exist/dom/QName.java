@@ -22,6 +22,8 @@
  */
 package org.exist.dom;
 
+import org.exist.xpath.StaticContext;
+
 public class QName implements Comparable {
 	
 	public final static QName TEXT_QNAME = new QName("#text", "", null);
@@ -55,7 +57,7 @@ public class QName implements Comparable {
 	}
 	
 	public boolean needsNamespaceDecl() {
-		return namespaceURI_.length() > 0;
+		return namespaceURI_ != null && namespaceURI_.length() > 0;
 	}
 	
 	public String getPrefix() {
@@ -78,7 +80,13 @@ public class QName implements Comparable {
 	 */
 	public int compareTo(Object o) {
 		QName other = (QName)o;
-		int c = namespaceURI_.compareTo(other.namespaceURI_);
+		int c;
+		if(namespaceURI_ == null)
+			c = other.namespaceURI_ == null ? 0 : -1;
+		else if(other.namespaceURI_ == null)
+			c = 1;
+		else
+			c = namespaceURI_.compareTo(other.namespaceURI_);
 		return c == 0 ? localName_.compareTo(other.localName_) : c;
 	}
 	
@@ -102,7 +110,14 @@ public class QName implements Comparable {
 		return qname.substring(p + 1);
 	}
 	
-	public static QName parse(String qname) {
-		return new QName(extractLocalName(qname), "", extractPrefix(qname));
+	public static QName parse(StaticContext context, String qname) {
+		String prefix = extractPrefix(qname);
+		String namespaceURI = "";
+		if(prefix != null) {
+			namespaceURI = context.getURIForPrefix(prefix);
+			if(namespaceURI == null)
+				throw new IllegalArgumentException("No namespace defined for prefix " + prefix);
+		}
+		return new QName(extractLocalName(qname), namespaceURI, prefix);
 	}
 }

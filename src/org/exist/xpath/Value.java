@@ -42,6 +42,10 @@ public abstract class Value {
 
 	public abstract String getStringValue();
 	
+	public String getStringValueConcat() {
+		return getStringValue();
+	}
+	
 	public abstract double getNumericValue();
 	
 	public abstract boolean getBooleanValue();

@@ -96,7 +96,7 @@ public class NativeElementIndex extends ElementIndex {
 		byte[] data;
 		Value ref;
 		Value val;
-		short sym;
+		short sym, nsSym;
 		short collectionId = oldDoc.getCollection().getId();
 		long delta, last, gid, address;
 		try {
@@ -105,8 +105,9 @@ public class NativeElementIndex extends ElementIndex {
 				entry = (Map.Entry) i.next();
 				idList = (ArrayList) entry.getValue();
 				qname = (QName) entry.getKey();
-				sym = NativeBroker.getSymbols().getSymbol(qname.getLocalName());
-				ref = new NativeBroker.ElementValue(collectionId, sym);
+				sym = DBBroker.getSymbols().getSymbol(qname.getLocalName());
+				nsSym = DBBroker.getSymbols().getNSSymbol(qname.getNamespaceURI());
+				ref = new NativeBroker.ElementValue(collectionId, sym, nsSym);
 				// try to retrieve old index entry for the element
 				try {
 					lock.acquire(Lock.READ_LOCK);
@@ -201,7 +202,7 @@ public class NativeElementIndex extends ElementIndex {
 			return;
 		Lock lock = dbElement.getLock();
 		Map.Entry entry;
-		String elementName;
+		QName qname;
 		List newList = new ArrayList(), idList;
 		NodeProxy p;
 		VariableByteInputStream is;
@@ -209,7 +210,7 @@ public class NativeElementIndex extends ElementIndex {
 		byte[] data;
 		Value ref;
 		Value val;
-		short sym;
+		short sym, nsSym;
 		short collectionId = doc.getCollection().getId();
 		long delta, last, gid, address;
 		try {
@@ -217,15 +218,16 @@ public class NativeElementIndex extends ElementIndex {
 			for (Iterator i = elementIds.entrySet().iterator(); i.hasNext();) {
 				entry = (Map.Entry) i.next();
 				idList = (ArrayList) entry.getValue();
-				elementName = (String) entry.getKey();
-				sym = NativeBroker.getSymbols().getSymbol(elementName);
-				ref = new NativeBroker.ElementValue(collectionId, sym);
+				qname = (QName) entry.getKey();
+				sym = DBBroker.getSymbols().getSymbol(qname.getLocalName());
+				nsSym = DBBroker.getSymbols().getNSSymbol(qname.getNamespaceURI());
+				ref = new NativeBroker.ElementValue(collectionId, sym, nsSym);
 				// try to retrieve old index entry for the element
 				try {
 					lock.acquire(Lock.READ_LOCK);
 					val = dbElement.get(ref);
 				} catch (LockException e) {
-					LOG.error("could not acquire lock for index on " + elementName);
+					LOG.error("could not acquire lock for index on " + qname);
 					return;
 				} finally {
 					lock.release();
@@ -264,9 +266,9 @@ public class NativeElementIndex extends ElementIndex {
 							}
 						}
 					} catch (EOFException e) {
-						LOG.error("end-of-file while updating index for element " + elementName);
+						LOG.error("end-of-file while updating index for element " + qname);
 					} catch (IOException e) {
-						LOG.error("io-error while updating index for element " + elementName);
+						LOG.error("io-error while updating index for element " + qname);
 					}
 				}
 				// write out the updated list

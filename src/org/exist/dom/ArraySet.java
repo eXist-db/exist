@@ -276,11 +276,12 @@ public class ArraySet extends NodeSet {
 	}
 
 	public ArraySet getChildren(NodeSet ancestors, int mode, boolean rememberContext) {
-		if (!(ancestors instanceof ArraySet)) 
+		if (!(ancestors instanceof ArraySet))
 			return super.getChildren(ancestors, mode, rememberContext);
 		ArraySet al = (ArraySet) ancestors;
-		if (al.counter == 0)
+		if (al.counter == 0 || counter == 0) {
 			return new ArraySet(1);
+		}
 		//long start = System.currentTimeMillis();
 		sort();
 		al.sort();
@@ -290,7 +291,6 @@ public class ArraySet extends NodeSet {
 			dl = copyNodeSet(al, this);
 		} else
 			dl = nodes;
-
 		final ArraySet result = new ArraySet(al.counter);
 		int ax = 0;
 		int dx = 0;
@@ -301,14 +301,14 @@ public class ArraySet extends NodeSet {
 			while(dl[dx] == null && ++dx < dlen);
 			if(dx == dlen)
 				break;
-			//          System.out.println(
-			//              dl[dx].doc.getDocId()
-			//                  + ":"
-			//                  + dl[dx].gid
-			//                  + " = "
-			//                  + al.nodes[ax].doc.getDocId()
-			//                  + ':'
-			//                  + al.nodes[ax].gid);
+//			          System.out.println(
+//			              dl[dx].doc.getDocId()
+//			                  + ":"
+//			                  + dl[dx].gid
+//			                  + " = "
+//			                  + al.nodes[ax].doc.getDocId()
+//			                  + ':'
+//			                  + al.nodes[ax].gid);
 			cmp = dl[dx].compareTo(al.nodes[ax]);
 			if (cmp > 0) {
 				if (ax < al.counter - 1)
@@ -551,7 +551,7 @@ public class ArraySet extends NodeSet {
 			return null;
 		sort();
 		NodeProxy p = nodes[pos];
-		return p.doc.getNode(p);
+		return p.getNode();
 	}
 
 	public Iterator iterator() {

@@ -72,7 +72,7 @@ public class RootNode extends Step {
      *@return    Description of the Return Value
      */
     public String pprint() {
-        return "/";
+        return "ROOT";
     }
 }
 

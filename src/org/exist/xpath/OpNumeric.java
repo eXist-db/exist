@@ -23,6 +23,7 @@ import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.SingleNodeSet;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.w3c.dom.NodeList;
@@ -66,26 +67,12 @@ public class OpNumeric extends BinaryOp {
     }
 
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy node) {
-		if(getLeft().returnsType() == Constants.TYPE_NODELIST) {
-			DocumentSet dset = new DocumentSet();
-			NodeSet set = new ArraySet(1);
-			set.add(node);
-			dset.add(node.doc);
-			ValueSet result = new ValueSet();
-			double rvalue, val;
-			NodeList args = getLeft().eval(context, dset, set, node).getNodeList();
-			rvalue = getRight().eval(context, dset, set, node).getNumericValue();
-			for(int i = 0; i < args.getLength(); i++) {
-				try {
-					val = applyOperator(Double.parseDouble(args.item(i).getNodeValue()), rvalue);
-					if(val != Double.NaN)
-						result.add(new ValueNumber(val));
-				} catch(NumberFormatException nfe) {
-				}
-			}
-			return result;
-		}
-		return new ValueNumber(Double.NaN);
+		if(node != null)
+			contextSet = new SingleNodeSet(node);
+		double lvalue = getLeft().eval(context, docs, contextSet).getNumericValue();
+		double rvalue = getRight().eval(context, docs, contextSet).getNumericValue();
+		double result = applyOperator(lvalue, rvalue);
+		return new ValueNumber(result);
 	}
 
 	public double applyOperator(double left, double right) {
@@ -100,6 +87,8 @@ public class OpNumeric extends BinaryOp {
 			return left * right;
 		case Constants.DIV:
 			return left / right;
+		case Constants.MOD:
+			return left % right;
 		default:
 			return Double.NaN;
 		}

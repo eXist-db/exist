@@ -31,8 +31,9 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.SortedNodeSet;
-import org.exist.parser.XPathLexer;
-import org.exist.parser.XPathParser;
+import org.exist.parser.XPathLexer2;
+import org.exist.parser.XPathParser2;
+import org.exist.parser.XPathTreeParser2;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -56,6 +57,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import antlr.collections.AST;
 
 /**
 	 *  Description of the Class
@@ -161,23 +164,37 @@ public class RpcConnection extends Thread {
 	 *@return                Description of the Return Value
 	 *@exception  Exception  Description of the Exception
 	 */
-	protected Value doQuery(User user, String xpath, DocumentSet docs, NodeSet contextSet,
+	protected Value doQuery(
+		User user,
+		String xpath,
+		DocumentSet docs,
+		NodeSet contextSet,
 		Hashtable namespaces)
 		throws Exception {
-		StaticContext context = new StaticContext();
+		StaticContext context = new StaticContext(user);
 		Map.Entry entry;
-		for(Iterator i = namespaces.entrySet().iterator(); i.hasNext(); ) {
-			entry = (Map.Entry)i.next();
-			context.declareNamespace((String)entry.getKey(), (String)entry.getValue());
+		for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {
+			entry = (Map.Entry) i.next();
+			context.declareNamespace((String) entry.getKey(), (String) entry.getValue());
 		}
-		XPathLexer lexer = new XPathLexer(new StringReader(xpath));
-		XPathParser parser = new XPathParser(brokerPool, user, lexer);
+		XPathLexer2 lexer = new XPathLexer2(new StringReader(xpath));
+		XPathParser2 parser = new XPathParser2(lexer);
+		XPathTreeParser2 treeParser = new XPathTreeParser2(brokerPool, context);
+		parser.xpath();
+		if (parser.foundErrors()) {
+			throw new EXistException(parser.getErrorMessage());
+		}
+
+		AST ast = parser.getAST();
+		LOG.debug("generated AST: " + ast.toStringTree());
+
 		PathExpr expr = new PathExpr(brokerPool);
-		parser.expr(expr);
+		treeParser.xpath(ast, expr);
+		if (treeParser.foundErrors()) {
+			throw new EXistException(treeParser.getErrorMessage());
+		}
 		LOG.info("query: " + xpath);
 		long start = System.currentTimeMillis();
-		if (parser.foundErrors())
-			throw new EXistException(parser.getErrorMsg());
 		DocumentSet ndocs = (docs == null ? expr.preselect() : expr.preselect(docs));
 		if (ndocs.getLength() == 0)
 			return null;
@@ -583,28 +600,28 @@ public class RpcConnection extends Thread {
 	}
 
 	public Vector getTimestamps(User user, String documentPath)
-			throws PermissionDeniedException, EXistException {
-			DBBroker broker = null;
-			try {
-				broker = brokerPool.get();
-				if (!documentPath.startsWith("/"))
-					documentPath = '/' + documentPath;
-				if (!documentPath.startsWith("/db"))
-					documentPath = "/db" + documentPath;
-				DocumentImpl doc = (DocumentImpl) broker.getDocument(user, documentPath);
-				if (doc == null) {
-					LOG.debug("document " + documentPath + " not found!");
-					throw new EXistException("document not found");
-				}
-				Vector vector = new Vector(2);
-				vector.addElement(new Date(doc.getCreated()));
-				vector.addElement(new Date(doc.getLastModified()));
-				return vector;
-			} finally {
-				brokerPool.release(broker);
+		throws PermissionDeniedException, EXistException {
+		DBBroker broker = null;
+		try {
+			broker = brokerPool.get();
+			if (!documentPath.startsWith("/"))
+				documentPath = '/' + documentPath;
+			if (!documentPath.startsWith("/db"))
+				documentPath = "/db" + documentPath;
+			DocumentImpl doc = (DocumentImpl) broker.getDocument(user, documentPath);
+			if (doc == null) {
+				LOG.debug("document " + documentPath + " not found!");
+				throw new EXistException("document not found");
 			}
+			Vector vector = new Vector(2);
+			vector.addElement(new Date(doc.getCreated()));
+			vector.addElement(new Date(doc.getLastModified()));
+			return vector;
+		} finally {
+			brokerPool.release(broker);
 		}
-		
+	}
+
 	/**
 	 *  Gets the permissions attribute of the RpcConnection object
 	 *
@@ -777,11 +794,7 @@ public class RpcConnection extends Thread {
 		return serializer.serialize((NodeSet) resultSet, start, howmany, queryTime);
 	}
 
-	protected String printValues(
-		ValueSet resultSet,
-		int howmany,
-		int start,
-		boolean prettyPrint)
+	protected String printValues(ValueSet resultSet, int howmany, int start, boolean prettyPrint)
 		throws Exception {
 		if (resultSet.getLength() == 0)
 			return "<?xml version=\"1.0\"?>\n"
@@ -960,7 +973,12 @@ public class RpcConnection extends Thread {
 		return result;
 	}
 
-	public Hashtable queryP(User user, String xpath, String docName, String s_id, String sortBy,
+	public Hashtable queryP(
+		User user,
+		String xpath,
+		String docName,
+		String s_id,
+		String sortBy,
 		Hashtable namespaces)
 		throws Exception {
 		long startTime = System.currentTimeMillis();

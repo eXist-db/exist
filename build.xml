@@ -199,6 +199,18 @@
         </java>
     </target>
     
+    <target depends="prepare" name="antlr2">
+    	<java classname="antlr.Tool" dir="${src}/org/exist/parser" fork="true">
+    		<classpath>
+    			<path refid="classpath.core"/>
+    		</classpath>
+			<!--arg value="-traceParser"/-->
+    		<arg value="XPathParser2.g"/>
+    	</java>
+    </target>
+    
+    <target depends="antlr2,jar" name="xpath2"/>
+    
     <!-- ================================================================== -->
     <!-- Create samples                                                     -->
     <!-- ================================================================== -->

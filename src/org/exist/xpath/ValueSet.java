@@ -1,6 +1,6 @@
 
-/* eXist xml document repository and xpath implementation
- * Copyright (C) 2000-01,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
+/* eXist Native XML Database
+ * Copyright (C) 2000-03,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -27,83 +27,83 @@ import org.exist.*;
 import org.exist.dom.*;
 
 public class ValueSet extends Value {
-   
-    protected ArrayList list = new ArrayList();
-    
-    public ValueSet() {
-	super(Value.isValueSet);
-    }
-    
-    public ValueSet(Value value) {
-	super(Value.isValueSet);
-	list.add(value);
-    }
-    
-    public int getType() {
-	return type;
-    } 
-    
-    public void add(Value value) {
-	if(value.getType() == Value.isValueSet) {
-	    for(Iterator i = ((ValueSet)value).iterator(); i.hasNext(); )
-		list.add(i.next());
-	} else	
-	    list.add(value);
-    }
-    
-    public Value get(int pos) {
-	return (Value)list.get(pos);
-    }
-    
-    public int getLength() {
-	return list.size();
-    }
 
-    public NodeList getNodeList() {
-	if(list.size() < 1)
-	    return new ArraySet(1);
-	return ((Value)list.get(0)).getNodeList();
-    }
-    
-    public String getStringValue() {
-	if(list.size() < 1)
-	    return "";
-	return ((Value)list.get(0)).getStringValue();
-    }
-    
-    public double getNumericValue() {
-	if(list.size() < 1)
-	    return Double.NaN;
-	return ((Value)list.get(0)).getNumericValue();
-    }
-    
-    public boolean getBooleanValue() {
-	if(list.size() < 1)
-	    return false;
-	return ((Value)list.get(0)).getBooleanValue();
-    }
-    
-    public ValueSet getValueSet() {
-	return this;
-    }
-    
-    public Iterator iterator() {
-	return new ValueSetIterator();
-    }
-    
-    public class ValueSetIterator implements Iterator {
-	
-	protected int pos = 0;
-	
-	public boolean hasNext() {
-	    return (pos < list.size()) ? true : false;
+	protected ArrayList list = new ArrayList();
+
+	public ValueSet() {
+		super(Value.isValueSet);
 	}
-	
-	public Object next() {
-	    return hasNext() ? list.get(pos++) : null;
+
+	public ValueSet(Value value) {
+		super(Value.isValueSet);
+		list.add(value);
 	}
-	
-	public void remove() {
+
+	public int getType() {
+		return type;
 	}
-    }
+
+	public void add(Value value) {
+		if (value.getType() == Value.isValueSet) {
+			for (Iterator i = ((ValueSet) value).iterator(); i.hasNext();)
+				list.add(i.next());
+		} else
+			list.add(value);
+	}
+
+	public Value get(int pos) {
+		return (Value) list.get(pos);
+	}
+
+	public int getLength() {
+		return list.size();
+	}
+
+	public NodeList getNodeList() {
+		if (list.size() < 1)
+			return new ArraySet(1);
+		return ((Value) list.get(0)).getNodeList();
+	}
+
+	public String getStringValue() {
+		if (list.size() < 1)
+			return "";
+		return ((Value) list.get(0)).getStringValue();
+	}
+
+	public double getNumericValue() {
+		if (list.size() < 1)
+			return Double.NaN;
+		return ((Value) list.get(0)).getNumericValue();
+	}
+
+	public boolean getBooleanValue() {
+		if (list.size() < 1)
+			return false;
+		return ((Value) list.get(0)).getBooleanValue();
+	}
+
+	public ValueSet getValueSet() {
+		return this;
+	}
+
+	public Iterator iterator() {
+		return new ValueSetIterator();
+	}
+
+	public class ValueSetIterator implements Iterator {
+
+		protected int pos = 0;
+
+		public boolean hasNext() {
+			return (pos < list.size()) ? true : false;
+		}
+
+		public Object next() {
+			return hasNext() ? list.get(pos++) : null;
+		}
+
+		public void remove() {
+		}
+	}
 }

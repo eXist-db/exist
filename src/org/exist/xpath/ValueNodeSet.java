@@ -58,7 +58,14 @@ public class ValueNodeSet extends Value {
         return Double.NaN;
     }
 
-    public String getStringValue() {
+	public String getStringValue() {
+		if(nodes.getLength() == 0)
+			return "";
+		NodeProxy p = nodes.get( 0 );
+		return p.getNodeValue();
+	}
+	
+    public String getStringValueConcat() {
         StringBuffer val = new StringBuffer();
         for ( int i = 0; i < nodes.getLength(); i++ ) {
             NodeProxy p = nodes.get( i );
@@ -70,5 +77,6 @@ public class ValueNodeSet extends Value {
     public void setValue(NodeSet value) {
     	nodes = value;
     }
+
 }
 

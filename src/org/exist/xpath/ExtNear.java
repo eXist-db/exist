@@ -46,18 +46,14 @@ import org.exist.storage.analysis.Tokenizer;
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
  *@created    July 31, 2002
  */
-public class FunNear extends FunContains {
+public class ExtNear extends ExtFulltext {
 
-	private static Logger LOG = Logger.getLogger(FunNear.class);
+	private static Logger LOG = Logger.getLogger(ExtNear.class);
 	private int max_distance = 1;
 	private PatternCompiler globCompiler = new GlobCompiler();
 
-	public FunNear(BrokerPool pool) {
+	public ExtNear(BrokerPool pool) {
 		super(pool, Constants.FULLTEXT_AND);
-	}
-
-	public FunNear(BrokerPool pool, PathExpr path, String arg) {
-		super(pool, path, arg);
 	}
 
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 

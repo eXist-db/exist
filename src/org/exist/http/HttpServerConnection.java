@@ -51,8 +51,9 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.parser.XPathLexer;
-import org.exist.parser.XPathParser;
+import org.exist.parser.XPathLexer2;
+import org.exist.parser.XPathParser2;
+import org.exist.parser.XPathTreeParser2;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
@@ -72,6 +73,8 @@ import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+
+import antlr.collections.AST;
 
 
 /**
@@ -103,7 +106,6 @@ public class HttpServerConnection extends Thread {
     protected DBBroker broker = null;
     protected Configuration config;
     protected DocumentBuilder docBuilder = null;
-    protected XPathParser parser;
     protected HttpServer.ConnectionPool pool;
     protected SAXParser sax = null;
     protected Socket sock = null;
@@ -1141,17 +1143,28 @@ public class HttpServerConnection extends Thread {
         String result = null;
 
         try {
-            XPathLexer lexer = new XPathLexer( new StringReader( query ) );
-            StaticContext context = new StaticContext();
-            DocumentSet docs = new DocumentSet(  );
-            parser = new XPathParser( broker.getBrokerPool(), user, lexer );
+        	StaticContext context = new StaticContext(user);
+			XPathLexer2 lexer = new XPathLexer2(new StringReader(query));
+			XPathParser2 parser = new XPathParser2(lexer);
+			XPathTreeParser2 treeParser = new XPathTreeParser2(broker.getBrokerPool(), context);
+			parser.xpath();
+						if(parser.foundErrors()) {
+							return formatErrorMsg( parser.getErrorMessage(  ), SYNTAX_ERROR );
+						}
 
-            PathExpr expr = new PathExpr( broker.getBrokerPool() );
-            parser.expr( expr );
-            HttpServer.LOG.info( "query: " + expr.pprint(  ) );
+						AST ast = parser.getAST();
+						HttpServer.LOG.debug("generated AST: " + ast.toStringTree());
+			
+						PathExpr expr = new PathExpr(broker.getBrokerPool());
+						treeParser.xpath(ast, expr);
+						if(treeParser.foundErrors()) {
+								return formatErrorMsg( treeParser.getErrorMessage(  ), SYNTAX_ERROR );
+						}
+						
+						HttpServer.LOG.info("query: " + expr.pprint());
 
             if ( parser.foundErrors(  ) )
-                return formatErrorMsg( parser.getErrorMsg(  ), SYNTAX_ERROR );
+                return formatErrorMsg( parser.getErrorMessage(  ), SYNTAX_ERROR );
 
             long startTime = System.currentTimeMillis(  );
             DocumentSet ndocs = expr.preselect(  );

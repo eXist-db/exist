@@ -1091,10 +1091,16 @@ public class DOMFile extends BTree implements Lockable {
 				// if this is the first call to the method
 				if (firstCall) {
 					final byte idSizeType = (byte) (data[offset] & 0x3);
+					final boolean hasNamespace = (data[offset] & 0x10) == 0x10;
+					int next = Signatures.getLength(idSizeType) + 1;
+					if(hasNamespace) {
+						next += 2; // skip namespace id
+						final short prefixLen = ByteConversion.byteToShort(data, offset + next);
+						next += prefixLen + 2; // skip prefix
+					}
 					os.write(
 						rec.page.data,
-						rec.offset + 1 + Signatures.getLength(idSizeType),
-						len - 1 - Signatures.getLength(idSizeType));
+						offset + next, len - next);
 				}
 				break;
 		}

@@ -1,0 +1,39 @@
+// $ANTLR : "XPathParser2.g" -> "XPathLexer2.java"$
+
+public interface XPathLexer2TokenTypes {
+	int EOF = 1;
+	int NULL_TREE_LOOKAHEAD = 3;
+	int WS = 4;
+	int CONST = 5;
+	int SLASH = 6;
+	int DSLASH = 7;
+	int COLON = 8;
+	int STAR = 9;
+	int COMMA = 10;
+	int LPPAREN = 11;
+	int RPPAREN = 12;
+	int LPAREN = 13;
+	int RPAREN = 14;
+	int SELF = 15;
+	int PARENT = 16;
+	int UNION = 17;
+	int PLUS = 18;
+	int AT = 19;
+	int BASECHAR = 20;
+	int IDEOGRAPHIC = 21;
+	int DIGIT = 22;
+	int NMSTART = 23;
+	int NMCHAR = 24;
+	int NCNAME = 25;
+	int INT = 26;
+	int VARIABLE = 27;
+	int ATTRIB_STAR = 28;
+	int ANDEQ = 29;
+	int OREQ = 30;
+	int EQ = 31;
+	int NEQ = 32;
+	int LT = 33;
+	int GT = 34;
+	int LTEQ = 35;
+	int GTEQ = 36;
+}

@@ -59,7 +59,7 @@ public abstract class Step extends AbstractExpression {
 
     public String pprint() {
         StringBuffer buf = new StringBuffer();
-        if ( axis > 0 )
+        if ( axis > -1 )
             buf.append( Constants.AXISSPECIFIERS[axis] );
         buf.append( "::" );
         if ( test != null )

@@ -30,7 +30,6 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
 import org.exist.dom.SingleNodeSet;
 import org.exist.dom.VirtualNodeSet;
 import org.exist.storage.BrokerPool;
@@ -125,54 +124,38 @@ public class LocationStep extends Step {
 		DocumentSet documents,
 		NodeSet contextSet) {
 		NodeSet result;
-		switch (test.getType()) {
-			case NodeTest.TYPE_TEST :
-				result = new VirtualNodeSet(axis, (TypeTest) test, contextSet);
-				((VirtualNodeSet) result).setInPredicate(inPredicate);
-				break;
-			case NodeTest.NAME_TEST :
-				if (buf == null) {
-					DBBroker broker = null;
-					try {
-						broker = pool.get();
-						QName qname = QName.parse(test.getName());
-						if (qname.getPrefix() != null) {
-							String namespaceURI = context.getURIForPrefix(qname.getPrefix());
-							if (namespaceURI == null)
-								throw new IllegalArgumentException(
-									"no namespace defined for prefix " + qname.getPrefix());
-							LOG.debug(
-								"using namespace \""
-									+ namespaceURI
-									+ "\" for prefix "
-									+ qname.getPrefix());
-							qname.setNamespaceURI(namespaceURI);
-						}
-						buf = (NodeSet) broker.getAttributesByName(documents, qname);
-					} catch (EXistException e) {
-						LOG.debug("exception while retrieving elements", e);
-					} finally {
-						pool.release(broker);
-					}
+		if (test.isWildcardTest()) {
+			result = new VirtualNodeSet(axis, test, contextSet);
+			((VirtualNodeSet) result).setInPredicate(inPredicate);
+		} else {
+			if (buf == null) {
+				DBBroker broker = null;
+				try {
+					broker = pool.get();
+					buf = (NodeSet) broker.getAttributesByName(documents, test.getName());
+				} catch (EXistException e) {
+					LOG.debug("exception while retrieving elements", e);
+				} finally {
+					pool.release(broker);
 				}
-				result = ((ArraySet) buf).getChildren(contextSet, ArraySet.DESCENDANT, inPredicate);
-				LOG.debug("found " + result.getLength() + " attributes");
-				break;
-			default :
-				Node n;
-				Node attr;
-				NamedNodeMap map;
-				result = new ArraySet(contextSet.getLength());
-				for (int i = 0; i < contextSet.getLength(); i++) {
-					n = contextSet.item(i);
-					if (n.getNodeType() == Node.ELEMENT_NODE) {
-						map = ((Element) n).getAttributes();
-						for (int j = 0; j < map.getLength(); j++) {
-							attr = map.item(j);
-							result.add(attr);
-						}
-					}
-				}
+			}
+			result = ((ArraySet) buf).getChildren(contextSet, ArraySet.DESCENDANT, inPredicate);
+			LOG.debug("found " + result.getLength() + " attributes");
+			//		} else {
+			//				Node n;
+			//				Node attr;
+			//				NamedNodeMap map;
+			//				result = new ArraySet(contextSet.getLength());
+			//				for (int i = 0; i < contextSet.getLength(); i++) {
+			//					n = contextSet.item(i);
+			//					if (n.getNodeType() == Node.ELEMENT_NODE) {
+			//						map = ((Element) n).getAttributes();
+			//						for (int j = 0; j < map.getLength(); j++) {
+			//							attr = map.item(j);
+			//							result.add(attr);
+			//						}
+			//					}
+			//				}
 		}
 		return result;
 	}
@@ -181,9 +164,9 @@ public class LocationStep extends Step {
 		StaticContext context,
 		DocumentSet documents,
 		NodeSet contextSet) {
-		if (test.getType() == NodeTest.TYPE_TEST) {
+		if (test.isWildcardTest()) {
 			// test is one out of *, text(), node()
-			VirtualNodeSet vset = new VirtualNodeSet(axis, (TypeTest) test, contextSet);
+			VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextSet);
 			vset.setInPredicate(inPredicate);
 			return vset;
 		} else {
@@ -191,20 +174,7 @@ public class LocationStep extends Step {
 			try {
 				broker = pool.get();
 				if (buf == null) {
-					QName qname = QName.parse(test.getName());
-					if (qname.getPrefix() != null) {
-						String namespaceURI = context.getURIForPrefix(qname.getPrefix());
-						if (namespaceURI == null)
-							throw new IllegalArgumentException(
-								"no namespace defined for prefix " + qname.getPrefix());
-						LOG.debug(
-							"using namespace \""
-								+ namespaceURI
-								+ "\" for prefix "
-								+ qname.getPrefix());
-						qname.setNamespaceURI(namespaceURI);
-					}
-					buf = (NodeSet) broker.findElementsByTagName(documents, qname);
+					buf = (NodeSet) broker.findElementsByTagName(documents, test.getName());
 				}
 				return buf.getChildren(contextSet, ArraySet.DESCENDANT, inPredicate);
 			} catch (EXistException e) {
@@ -220,25 +190,12 @@ public class LocationStep extends Step {
 		StaticContext context,
 		DocumentSet documents,
 		NodeSet contextSet) {
-		if (test.getType() == NodeTest.NAME_TEST) {
+		if (!test.isWildcardTest()) {
 			DBBroker broker = null;
 			try {
 				broker = pool.get();
 				if (buf == null) {
-					QName qname = QName.parse(test.getName());
-					if (qname.getPrefix() != null) {
-						String namespaceURI = context.getURIForPrefix(qname.getPrefix());
-						if (namespaceURI == null)
-							throw new IllegalArgumentException(
-								"no namespace defined for prefix " + qname.getPrefix());
-						LOG.debug(
-							"using namespace \""
-								+ namespaceURI
-								+ "\" for prefix "
-								+ qname.getPrefix());
-						qname.setNamespaceURI(namespaceURI);
-					}
-					buf = (NodeSet) broker.findElementsByTagName(documents, qname);
+					buf = (NodeSet) broker.findElementsByTagName(documents, test.getName());
 				}
 				return buf.getDescendants(
 					contextSet,
@@ -253,7 +210,7 @@ public class LocationStep extends Step {
 				pool.release(broker);
 			}
 		} else {
-			VirtualNodeSet vset = new VirtualNodeSet(axis, (TypeTest) test, contextSet);
+			VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextSet);
 			vset.setInPredicate(inPredicate);
 			return vset;
 		}
@@ -263,25 +220,12 @@ public class LocationStep extends Step {
 		StaticContext context,
 		DocumentSet documents,
 		NodeSet contextSet) {
-		if (test.getType() == NodeTest.NAME_TEST) {
+		if (!test.isWildcardTest()) {
 			DBBroker broker = null;
 			try {
 				broker = pool.get();
 				if (buf == null) {
-					QName qname = QName.parse(test.getName());
-					if (qname.getPrefix() != null) {
-						String namespaceURI = context.getURIForPrefix(qname.getPrefix());
-						if (namespaceURI == null)
-							throw new IllegalArgumentException(
-								"no namespace defined for prefix " + qname.getPrefix());
-						LOG.debug(
-							"using namespace \""
-								+ namespaceURI
-								+ "\" for prefix "
-								+ qname.getPrefix());
-						qname.setNamespaceURI(namespaceURI);
-					}
-					buf = (NodeSet) broker.findElementsByTagName(documents, qname);
+					buf = (NodeSet) broker.findElementsByTagName(documents, test.getName());
 				}
 				return contextSet.getSiblings(
 					buf,
@@ -302,7 +246,7 @@ public class LocationStep extends Step {
 				p = (NodeProxy) i.next();
 				n = (NodeImpl) p.getNode();
 				while ((n = getNextSibling(n)) != null) {
-					if (((TypeTest) test).isOfType(n.getNodeType()))
+					if (test.matches(n))
 						result.add(
 							new NodeProxy(
 								(DocumentImpl) n.getOwnerDocument(),
@@ -327,25 +271,12 @@ public class LocationStep extends Step {
 		StaticContext context,
 		DocumentSet documents,
 		NodeSet contextSet) {
-		if (test.getType() == NodeTest.NAME_TEST) {
+		if (!test.isWildcardTest()) {
 			DBBroker broker = null;
 			try {
 				broker = pool.get();
 				if (buf == null) {
-					QName qname = QName.parse(test.getName());
-					if (qname.getPrefix() != null) {
-						String namespaceURI = context.getURIForPrefix(qname.getPrefix());
-						if (namespaceURI == null)
-							throw new IllegalArgumentException(
-								"no namespace defined for prefix " + qname.getPrefix());
-						LOG.debug(
-							"using namespace \""
-								+ namespaceURI
-								+ "\" for prefix "
-								+ qname.getPrefix());
-						qname.setNamespaceURI(namespaceURI);
-					}
-					buf = (NodeSet) broker.findElementsByTagName(documents, qname);
+					buf = (NodeSet) broker.findElementsByTagName(documents, test.getName());
 				}
 				NodeSet r =
 					contextSet.getAncestors(
@@ -365,11 +296,11 @@ public class LocationStep extends Step {
 			NodeProxy p;
 			for (Iterator i = contextSet.iterator(); i.hasNext();) {
 				p = (NodeProxy) i.next();
-				if (axis == Constants.ANCESTOR_SELF_AXIS
-					&& ((TypeTest) test).isOfType(p, p.nodeType))
+				if (axis == Constants.ANCESTOR_SELF_AXIS && test.matches(p))
 					result.add(new NodeProxy(p.doc, p.gid, p.internalAddress));
 				while ((p.gid = XMLUtil.getParentId(p.doc, p.gid)) > 0) {
-					if (((TypeTest) test).isOfType(p, Node.ELEMENT_NODE))
+					p.nodeType = Node.ELEMENT_NODE;
+					if (test.matches(p))
 						result.add(new NodeProxy(p.doc, p.gid));
 				}
 			}

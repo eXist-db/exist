@@ -451,6 +451,7 @@ public class NativeBroker extends DBBroker {
 	 */
 	public NodeSet getAttributesByName(DocumentSet docs, QName qname) {
 		qname.setLocalName("@" + qname.getLocalName());
+		LOG.debug("searching attrib " + qname.getLocalName());
 		NodeSet result = findElementsByTagName(docs, qname);
 		LOG.debug("found " + result.getLength() + " matching attributes");
 		return result;
@@ -983,6 +984,8 @@ public class NativeBroker extends DBBroker {
 			truncation =
 				(truncation == Constants.TRUNC_LEFT) ? Constants.TRUNC_BOTH : Constants.TRUNC_RIGHT;
 		}
+		if(!isCaseSensitive())
+			expr = expr.toLowerCase();
 		NodeSet result = scanSequential(context, docs, relation, truncation, expr);
 		LOG.debug(
 			"searching "
@@ -1616,7 +1619,6 @@ public class NativeBroker extends DBBroker {
 				cmp = content;
 			else {
 				cmp = content.toLowerCase();
-				expr = expr.toLowerCase();
 			}
 			//System.out.println("context = " + p.gid + "; context-length = " + 
 			//	(p.getContext() == null ? -1 : p.getContext().getSize()));
@@ -1739,6 +1741,7 @@ public class NativeBroker extends DBBroker {
 				// to the element index as well
 				if (((AttrImpl) node).getType() == AttrImpl.ID) {
 					qname = new QName("&" + ((AttrImpl) node).getValue(), "", null);
+					LOG.debug("found ID: " + qname.getLocalName());
 					elementIndex.addRow(qname, tempProxy);
 				}
 				break;
