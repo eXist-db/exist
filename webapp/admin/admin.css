@@ -122,6 +122,7 @@ body {
 .panel .actions {
     margin-top: 15px;
     font-size: smaller;
+    width: 100%;
 }
 
 .actions td {
@@ -136,4 +137,15 @@ body {
 
 .actions input {
     font-size: smaller;
+}
+
+.error {
+    border: 1px solid #AA0000;
+    padding: 10px;
+}
+
+.logout {
+    text-align: right;
+    font-size: small;
+    margin-top: 60px;
 }

@@ -97,6 +97,7 @@
         <mkdir dir="${build}"/>
         <mkdir dir="${build.classes}"/>
 		<mkdir dir="${jetty.dir}/logs"/>
+    	<mkdir dir="${jetty.dir}/work"/>
         <tstamp/>
 		<filter token="version" value="${project.version}-${DSTAMP}"/>
 		<copy file="${src.webapp}/header.xml.tmpl" tofile="${src.webapp}/header.xml" filtering="true"/>
@@ -266,7 +267,7 @@
 	<!-- ================================================================== -->
 	<!-- Rebuild all                                                        -->
 	<!-- ================================================================== -->
-	<target name="rebuild" depends="clean,jar"/>
+	<target name="rebuild" depends="clean,all"/>
 
     <!-- ================================================================== -->
     <!-- Run JUnit tests                                                    -->
@@ -413,6 +414,9 @@ Running tests on remote database
     <!-- Cleanup                                                            -->
     <!-- ================================================================== -->
     <target name="clean">
+    	<echo message="-------------------------"/>
+        <echo message="Cleaning"/>
+        <echo message="-------------------------"/>
         <delete dir="${build}"/>
         <delete quiet="true">
             <fileset dir="log" includes="*"/>
@@ -425,9 +429,10 @@ Running tests on remote database
 		<delete file="exist-optional.jar"/>
 		<delete file="start.jar"/>
         <delete dir="${dist}"/>
+    	<ant antfile="build.xml" dir="tools/wrapper" target="clean"/>
     </target>
 
-<!-- ============================================================ -->
+	<!-- ============================================================ -->
     <!-- Axis SOAP                                                    -->
     <!-- ============================================================ -->
     <target name="wsdl2java">

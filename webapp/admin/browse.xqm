@@ -4,16 +4,18 @@ declare namespace request="http://exist-db.org/xquery/request";
 declare namespace xdb="http://exist-db.org/xquery/xmldb";
 declare namespace util="http://exist-db.org/xquery/util";
 
-declare function browse:main() as element() {
+import module namespace date="http://exist-db.org/xquery/admin-interface/date" at "dates.xqm";
+
+declare function browse:main($user as xs:string, $passwd as xs:string) as element() {
     let $colName := request:request-parameter("collection", "/db"),
-        $collection := xdb:collection($colName, "admin", "")
+        $collection := xdb:collection($colName, $user, $passwd)
     return
         <div class="panel">
             {
                 browse:process-action($collection)
             }
             <div class="panel-head">Browsing Collection: {$colName}</div>
-            <form method="GET">
+            <form method="POST" enctype="multipart/form-data">
                 {
                     browse:display-collection($collection)
                 }
@@ -29,9 +31,15 @@ declare function browse:main() as element() {
                     
                     <tr>
                         <td><input type="submit" name="action" value="Store"/></td>
-                        <td>Path to file or directory on server:<br/>
+                        <td>Path to file on server:<br/>
                         <input type="text" name="uri" size="40"/></td>
-                        <td>Document name:<br/>
+                        <td>Store as:<br/>
+                        <input type="text" name="name" size="20"/></td>
+                    </tr>
+                    <tr>
+                        <td><input type="submit" name="action" value="Upload"/></td>
+                        <td><input type="file" size="40" name="upload"/></td>
+                        <td>Store as:<br/>
                         <input type="text" name="name" size="20"/></td>
                     </tr>
                 </table>
@@ -45,14 +53,39 @@ declare function browse:main() as element() {
 declare function browse:process-action($collection as object) as element()* {
     let $action := request:request-parameter("action", ())
     return
-        if($action eq "Remove Selected") then
-            browse:remove()
-        else if($action eq "Create Collection") then
-            browse:create-collection($collection)
-        else if($action eq "Store") then
-            browse:store($collection)
-        else
-            ()
+        util:catch("java.lang.Exception",
+            if($action eq "Remove Selected") then
+                browse:remove()
+            else if($action eq "Create Collection") then
+                browse:create-collection($collection)
+            else if($action eq "Store") then
+                browse:store($collection)
+            else if($action eq "Upload") then
+                browse:upload($collection)
+            else
+                (),
+            <div class="error">
+                An error occurred while processing the action:<br/>
+                {$util:exception-message}
+            </div>
+        )
+};
+
+declare function browse:upload($collection as object) as element() {
+    let $name := request:request-parameter("name", ()),
+        $docName := 
+            if($name) then $name 
+            else request:get-uploaded-file-name("upload"),
+        $file := request:get-uploaded-file("upload")
+    return
+        <div class="process">
+            <ul>
+            <li>Storing uploaded content to: {$docName}</li>
+                {
+                    xdb:store($collection, $docName, $file)
+                }
+            </ul>
+        </div>
 };
 
 declare function browse:store($collection as object) as element() {
@@ -115,7 +148,7 @@ declare function browse:create-collection($parent as object) as element() {
 };
 
 declare function browse:display-collection($collection as object) 
-as element {
+as element() {
     let $colName := util:collection-name($collection)
     return
         <table cellpadding="5" id="browse">
@@ -158,7 +191,7 @@ as element()* {
             <td class="perm">{xdb:permissions-to-string(xdb:get-permissions($path))}</td>
             <td>{xdb:get-owner($path)}</td>
             <td>{xdb:get-group($path)}</td>
-            <td>{$created}</td>
+            <td>{date:format-dateTime($created)}</td>
             <td/>
         </tr>
 };
@@ -175,7 +208,7 @@ as element()* {
             <td class="perm">{xdb:permissions-to-string(xdb:get-permissions($collection, $child))}</td>
             <td>{xdb:get-owner($collection, $child)}</td>
             <td>{xdb:get-group($collection, $child)}</td>
-            <td>{xdb:created($collection, $child)}</td>
+            <td>{date:format-dateTime(xdb:created($collection, $child))}</td>
             <td>{xdb:document-has-lock($collection, $child)}</td>
         </tr>
 };
