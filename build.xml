@@ -279,12 +279,11 @@
 			<fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
         </delete>
 		<mkdir dir="${junit.reports}"/>
-
-		<echo>
-------------------------------------------
-Running tests on a local database instance
-------------------------------------------
-		</echo>
+        
+        <echo message="------------------------------------------"/>
+        <echo message="Running tests on a local database instance"/>
+        <echo message="------------------------------------------"/>
+		
         <junit haltonfailure="yes" printsummary="yes" 
         	showoutput="${junit.output}">
         	<classpath refid="classpath.core"/>
@@ -314,11 +313,9 @@ Running tests on a local database instance
         <delete failonerror="false">
 			<fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
         </delete>
-		<echo>
------------------
-Concurrency tests
------------------
-		</echo>
+        <echo message="-----------------"/>
+        <echo message="Concurrency tests"/>
+        <echo message="-----------------"/>
         <junit haltonfailure="yes" printsummary="on" 
         	showoutput="${junit.output}" fork="no">
         	<classpath refid="classpath.core"/>
@@ -348,12 +345,9 @@ Concurrency tests
 		    <classpath refid="classpath.core"/>
 		</typedef>
 		<mkdir dir="${junit.reports}"/>
-
-		<echo>
---------------------------------
-Running tests on remote database
---------------------------------
-		</echo>
+        <echo message="--------------------------------"/>
+        <echo message="Running tests on remote database"/>
+        <echo message="--------------------------------"/>
 		<junit haltonfailure="yes" printsummary="yes" 
 			showoutput="${junit.output}">
 	       	<classpath refid="classpath.core"/>
@@ -512,59 +506,54 @@ Running tests on remote database
     <target depends="jar" name="webapps">
         <delete dir="dist"/>
 		<mkdir dir="${webapp.dir}"/>
-		<mkdir dir="${webapp.dir}/samples"/>
-		<mkdir dir="${webapp.dir}/WEB-INF/data"/>
-		<mkdir dir="${webapp.dir}/WEB-INF/logs"/>
-        <copy todir="${webapp.dir}">
-	    	<fileset dir="webapp">
-                <exclude name="**/*~"/>
-				<exclude name="WEB-INF/data/*"/>
-				<exclude name="**/*.log"/>
-            </fileset>
-		</copy>
-		<copy todir="${webapp.dir}">
-			<fileset dir=".">
-				<include name="start.jar"/>
-				<include name="examples.jar"/>
-			</fileset>
-		</copy>
-        <copy todir="${webapp.dir}/WEB-INF">
-            <fileset dir=".">
-                <include name="client.properties"/>
-                <include name="backup.properties"/>
-            </fileset>
-        </copy>
-        <copy todir="${webapp.dir}/samples">
-            <fileset dir="samples">
-                <exclude name="**/*~"/>
-                <exclude name="xupdate/**"/>
-                <exclude name="test.xml"/>
-                <exclude name="**/.*"/>
-            </fileset>
-        </copy>
-        <chmod file="${webapp.dir}/bin/client.sh" perm="+x"/>
-        <copy todir="${webapp.dir}/WEB-INF/lib">
-            <fileset dir=".">
-                <include name="exist.jar"/>
-				<include name="exist-optional.jar"/>
-            </fileset>
-	    	<fileset dir="${lib.core}">
-				<include name="*"/>
-	    	</fileset>
-	    	<fileset dir="${lib.optional}">
-				<include name="*.jar"/>
-        	</fileset>
-			<fileset dir="${lib.endorsed}">
-				<include name="*.jar"/>
-			</fileset>
-        </copy>
+		<mkdir dir="webapp/WEB-INF/data"/>
+		<mkdir dir="webapp/WEB-INF/logs"/>
+        <chmod file="webapp/bin/client.sh" perm="+x"/>
     </target>
 
 	<!-- ================================================================== -->
 	<!-- Create .war file                                                   -->
 	<!-- ================================================================== -->
     <target name="dist-war" depends="webapps">
-	    <jar basedir="${webapp.dir}" jarfile="${dist}/${project.name}-${project.version}.war"/>
+        <war basedir="${webapp.dir}"
+            destfile="${dist}/${project.name}-${project.version}.war"
+            webxml="webapp\WEB-INF\web.xml">
+            <lib dir=".">
+                <include name="exist.jar"/>
+                <include name="exist-optional.jar"/>
+            </lib>
+            <lib dir="${lib.core}">
+                <include name="*"/>
+                <exclude name="javax.servlet.jar"/>
+            </lib>
+            <lib dir="${lib.optional}">
+                <include name="*.jar"/>
+            </lib>
+            <lib dir="${lib.endorsed}">
+                <include name="*.jar"/>
+            </lib>
+            <webinf dir=".">
+                <include name="client.properties"/>
+                <include name="backup.properties"/>
+            </webinf>
+            <fileset dir="webapp">
+                <exclude name="**/*~"/>
+                <exclude name="WEB-INF/web.xml"/>
+                <exclude name="WEB-INF/data/*"/>
+                <exclude name="**/*.log"/>
+            </fileset>
+            <fileset dir=".">
+                <include name="start.jar"/>
+                <include name="examples.jar"/>
+            </fileset>
+            <fileset dir=".">
+                <include name="samples/**"/>
+                <exclude name="samples/**/*~"/>
+                <exclude name="samples/xupdate/**"/>
+                <exclude name="samples/test.xml"/>
+                <exclude name="samples/**/.*"/>
+            </fileset>
+        </war>
     </target>
     
     <!-- ================================================================== -->
@@ -585,7 +574,6 @@ Running tests on remote database
 		<mkdir dir="${dist.dir}/lib/endorsed"/>
 		<mkdir dir="${dist.dir}/tools"/>
 		<mkdir dir="${dist.dir}/tools/lib"/>
-        <mkdir dir="${dist.dir}/${jetty.dir}"/>
 		<mkdir dir="${jetty.dir}/logs"/>
         <mkdir dir="${jetty.dir}/work"/>
         <mkdir dir="${dist.dir}/webapp"/>
@@ -612,9 +600,7 @@ Running tests on remote database
 				<include name="examples.jar"/>
 				<include name="start.jar"/>
                 <include name="stopword"/>
-				<include name="client.properties"/>
-				<include name="build.properties"/>
-				<include name="backup.properties"/>
+				<include name="*.properties"/>
                 <include name="*.jpg"/>
 				<include name="*.css"/>
             </fileset>
@@ -641,17 +627,12 @@ Running tests on remote database
 		<copy todir="${dist.dir}/lib/endorsed">
 			<fileset dir="${lib.endorsed}"/>
 		</copy>
-		<copy todir="${dist.dir}/tools/lib">
-			<fileset dir="tools/lib"/>
+		<copy todir="${dist.dir}/tools">
+			<fileset dir="tools">
+				<exclude name="**/work/**/*"/>
+				<exclude name="**/logs/*"/>
+			</fileset>
 		</copy>
-        <copy todir="${dist.dir}/${jetty.dir}">
-            <fileset dir="./${jetty.dir}">
-                <exclude name="work/**/*"/>
-                <exclude name="logs/*"/>
-				<exclude name="**/*~"/>
-				<exclude name=".*"/>
-            </fileset>
-        </copy>
         <copy todir="${dist.dir}/webapp">
             <fileset dir="./webapp">
                 <exclude name="**/*.dbx"/>
@@ -685,6 +666,11 @@ Running tests on remote database
                 <include name="**/*.pl"/>
             </fileset>
         </chmod>
+		<chmod perm="+x">
+			<fileset dir="${dist.dir}/tools/wrapper/bin">
+				<include name="wrapper"/>
+			</fileset>
+		</chmod>
     </target>
     
     <!-- ================================================================== -->
@@ -723,6 +709,8 @@ Running tests on remote database
 			classname="com.izforge.izpack.ant.IzPackTask"/>
 		<tstamp/>
 		<delete dir="${jetty.dir}/work/Jetty__8080__exist"/>
+		<touch file="webapp/WEB-INF/logs/exist.log"/>
+		<touch file="webapp/WEB-INF/logs/xmldb.log"/>
 		<copy file="installer/install.xml.tmpl" tofile="installer/install.xml" filtering="true"/>
 		<echo message="Calling IzPack to create installer ..."/>
 		<izpack input="installer/install.xml"
