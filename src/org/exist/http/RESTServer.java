@@ -30,7 +30,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -50,19 +49,20 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.xquery.parser.XQueryLexer;
-import org.exist.xquery.parser.XQueryParser;
-import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.source.Source;
+import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
+import org.exist.storage.XQueryPool;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.LockException;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SAXSerializerPool;
-import org.exist.xquery.PathExpr;
+import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
@@ -78,10 +78,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
-
-import antlr.RecognitionException;
-import antlr.TokenStreamException;
-import antlr.collections.AST;
 
 /**
  * 
@@ -430,7 +426,6 @@ public class RESTServer {
 	throws BadRequestException, PermissionDeniedException {
 		String result = null;
 		try {
-			XQueryContext context = new XQueryContext(broker);
 			DocumentSet docs = new DocumentSet();
 			Collection collection = broker.getCollection(path);
 			if (collection != null) {
@@ -442,36 +437,34 @@ public class RESTServer {
 				else
 					broker.getAllDocuments(docs);
 			}
+			Source source = new StringSource(query);
+			XQuery xquery = broker.getXQueryService();
+			XQueryPool pool = xquery.getXQueryPool();
+			CompiledXQuery compiled = pool.borrowCompiledXQuery(source);
+			XQueryContext context;
+			if(compiled == null)
+			    context = xquery.newContext();
+			else
+			    context = compiled.getContext();
 			context.setStaticallyKnownDocuments(docs);
-			XQueryLexer lexer = new XQueryLexer(new StringReader(query));
-			XQueryParser parser = new XQueryParser(lexer);
-			XQueryTreeParser treeParser = new XQueryTreeParser(context);
-			parser.xpath();
-			if (parser.foundErrors()) {
-				throw new BadRequestException(parser.getErrorMessage());
+
+			if(compiled == null)
+			    compiled = xquery.compile(context, source);
+			try {
+			    long startTime = System.currentTimeMillis();
+			    Sequence resultSequence = xquery.execute(compiled, null);
+			    long queryTime = System.currentTimeMillis() - startTime;
+				LOG.debug("Found " + resultSequence.getLength() + " in " + queryTime + "ms.");
+				return printResults(broker, resultSequence, howmany, start,
+						queryTime, outputProperties);
+			} finally {
+			    pool.returnCompiledXQuery(source, compiled);
 			}
-			AST ast = parser.getAST();
-			PathExpr expr = new PathExpr(context);
-			treeParser.xpath(ast, expr);
-			if (treeParser.foundErrors()) {
-				throw new BadRequestException(treeParser.getErrorMessage());
-			}
-			LOG.info("query: " + expr.pprint());
-			if (parser.foundErrors())
-				throw new BadRequestException(parser.getErrorMessage());
-			long startTime = System.currentTimeMillis();
-			Sequence resultSequence = expr.eval(null, null);
-			long queryTime = System.currentTimeMillis() - startTime;
-			LOG.debug("Found " + resultSequence.getLength() + " in " + queryTime + "ms.");
-			return printResults(broker, resultSequence, howmany, start,
-					queryTime, outputProperties);
-		} catch (RecognitionException e) {
-			throw new BadRequestException(e.getMessage(), e);
-		} catch (TokenStreamException e) {
-			throw new BadRequestException(e.getMessage(), e);
 		} catch (XPathException e) {
 			throw new BadRequestException(e.getMessage(), e);
-		}
+		} catch (IOException e) {
+		    throw new BadRequestException(e.getMessage(), e);
+        }
 	}
 	
 	protected String printCollection(DBBroker broker, Collection collection) {
