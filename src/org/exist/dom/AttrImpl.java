@@ -139,7 +139,7 @@ public class AttrImpl extends NamedNode implements Attr {
         final byte idSizeType = Signatures.getSizeType( id );
 		int prefixLen = 0;
 		if (nodeName.needsNamespaceDecl()) {
-			prefixLen = nodeName.getPrefix().length() > 0 ?
+			prefixLen = nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0 ?
 				UTF8.encoded(nodeName.getPrefix()) : 0;
 		}
 		final byte[] data = ByteArrayPool.getByteArray(UTF8.encoded(value) +
@@ -160,7 +160,7 @@ public class AttrImpl extends NamedNode implements Attr {
         	pos += 2;
 			ByteConversion.shortToByte((short)prefixLen, data, pos);
 			pos += 2;
-			if(nodeName.getPrefix().length() > 0)
+			if(nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0)
 				UTF8.encode(nodeName.getPrefix(), data, pos);
 			pos += prefixLen;
         }
