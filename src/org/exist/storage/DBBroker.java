@@ -170,7 +170,7 @@ public abstract class DBBroker extends Observable {
 		    xupdateGrowthFactor = 1;
 		if ((docFragmentationLimit = config.getInteger("xupdate.fragmentation")) < 0)
 		    docFragmentationLimit = 50;
-		
+		LOG.debug("fragmentation = " + docFragmentationLimit);		
 		this.pool = pool;
 		xqueryService = new XQuery(this);
 	}

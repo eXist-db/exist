@@ -135,7 +135,8 @@ public class NodeImpl implements Node {
 	}
 
 	public Node appendChildren(NodeList nodes, int child) throws DOMException {
-		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented");
+		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, 
+		        "Cannot append children to a node of type " + nodeType);
 	}
 
 	/**

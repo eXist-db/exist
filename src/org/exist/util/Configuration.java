@@ -414,6 +414,9 @@ public class Configuration implements ErrorHandler {
 			    if(growth != null) {
 			        config.put("xupdate.growth-factor", new Integer(growth));
 			    }
+				String fragmentation = xupdate.getAttribute("allowed-fragmentation");
+				if(fragmentation != null)
+					config.put("xupdate.fragmentation", new Integer(fragmentation));
 			}
 		} catch (SAXException e) {
 			LOG.warn("error while reading config file: " + file, e);

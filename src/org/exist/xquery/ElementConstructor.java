@@ -28,26 +28,36 @@ import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.StringValue;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
- * Constructor for element nodes.
+ * Constructor for element nodes. This class handles both, direct and dynamic
+ * element constructors.
  * 
  * @author wolf
  */
 public class ElementConstructor extends NodeConstructor {
 
-	private String qname;
+	private Expression qnameExpr;
 	private PathExpr content = null;
 	private AttributeConstructor attributes[] = null;
 	
+	public ElementConstructor(XQueryContext context) {
+	    super(context);
+	}
+	
 	public ElementConstructor(XQueryContext context, String qname) {
 		super(context);
-		this.qname = qname;
+		this.qnameExpr = new LiteralValue(context, new StringValue(qname));
 	}
 	
 	public void setContent(PathExpr path) {
 		this.content = path;
+	}
+	
+	public void setNameExpr(Expression expr) {
+	    this.qnameExpr = new Atomize(context, expr);
 	}
 	
 	public void addAttribute(AttributeConstructor attr) {
@@ -105,7 +115,11 @@ public class ElementConstructor extends NodeConstructor {
 		context.proceed(this, builder);
 		
 		// create the element
-		QName qn = QName.parse(context, qname);
+		Sequence qnameSeq = qnameExpr.eval(contextSequence, contextItem);
+		if(qnameSeq.getLength() != 1)
+		    throw new XPathException("Type error: the node name should evaluate to a single string");
+		QName qn = QName.parse(context, qnameSeq.getStringValue());
+		
 		int nodeNr = builder.startElement(qn, attrs);
 		// process element contents
 		if(content != null) {
@@ -122,7 +136,7 @@ public class ElementConstructor extends NodeConstructor {
 	 */
 	public String pprint() {
 		StringBuffer buf = new StringBuffer();
-		buf.append('<').append(qname);
+		buf.append('<').append(qnameExpr.pprint());
 		if(attributes != null) {
 			AttributeConstructor attr;
 			for(int i = 0; i < attributes.length; i++) {
@@ -135,7 +149,7 @@ public class ElementConstructor extends NodeConstructor {
 		else {
 			buf.append('>');
 			buf.append(content.pprint());
-			buf.append("</").append(qname.toString()).append('>');
+			buf.append("</").append(qnameExpr.pprint()).append('>');
 		}
 		return buf.toString();
 	}
