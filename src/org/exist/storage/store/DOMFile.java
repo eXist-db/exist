@@ -49,7 +49,6 @@ import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRUCache;
 import org.exist.util.ByteConversion;
 import org.exist.util.Lock;
-import org.exist.util.LockException;
 import org.exist.util.Lockable;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.ReentrantReadWriteLock;
@@ -336,11 +335,11 @@ public class DOMFile extends BTree implements Lockable {
         int dataLen = rec.page.getPageHeader().getDataLength();
         // insert in the middle of the page?
         if (rec.offset < dataLen) {
-            if (dataLen + value.length + 4 < fileHeader.getWorkSize()) {
-//                LOG
-//                        .debug("copying data in page " + rec.page.getPageNum() + "; " + rec.page.page.hashCode()
+            if (dataLen + value.length + 4 < fileHeader.getWorkSize() &&
+            		rec.page.getPageHeader().hasRoom()) {
+//                LOG.debug("copying data in page " + rec.page.getPageNum()
 //                                + "; offset = " + rec.offset + "; dataLen = "
-//                                + dataLen);
+//                                + dataLen + "; valueLen = " + value.length);
                 // new value fits into the page
                 int end = rec.offset + value.length + 4;
                 System.arraycopy(rec.page.data, rec.offset, rec.page.data, end,
@@ -350,7 +349,8 @@ public class DOMFile extends BTree implements Lockable {
             } else {
                 // doesn't fit: split the page
                 rec = splitDataPage(doc, rec);
-                if (rec.offset + value.length + 4 > fileHeader.getWorkSize()) {
+                if (rec.offset + value.length + 4 > fileHeader.getWorkSize() ||
+                		!rec.page.getPageHeader().hasRoom()) {
                     // still not enough free space: create a new page
                     DOMPage newPage = new DOMPage();
                     LOG.debug("creating additional page: " + newPage.getPageNum());
@@ -372,7 +372,8 @@ public class DOMFile extends BTree implements Lockable {
                     dataLen = rec.offset;
                 }
             }
-        } else if (dataLen + value.length + 4 > fileHeader.getWorkSize()) {
+        } else if (dataLen + value.length + 4 > fileHeader.getWorkSize() ||
+        		!rec.page.getPageHeader().hasRoom()) {
             // does value fit into page?
             DOMPage newPage = new DOMPage();
             LOG.debug("creating new page: " + newPage.getPageNum());
@@ -399,16 +400,19 @@ public class DOMFile extends BTree implements Lockable {
         }
         // write the data
         short tid = rec.page.getPageHeader().getNextTID();
-//        LOG.debug("inserting " + new String(value) + " to " + rec.page.page.getPageInfo() + "; " + tid);
+        // writing tid
         ByteConversion.shortToByte((short) tid, rec.page.data, rec.offset);
         rec.offset += 2;
+        // writing value length
         ByteConversion.shortToByte(isOverflow ? 0 : (short) value.length,
                 rec.page.data, rec.offset);
         rec.offset += 2;
+        // writing data
         System.arraycopy(value, 0, rec.page.data, rec.offset, value.length);
         rec.offset += value.length;
         rec.page.getPageHeader().incRecordCount();
         rec.page.setDirty(true);
+//        LOG.debug(debugPageContents(rec.page));
         dataCache.add(rec.page);
         return StorageAddress.createPointer((int) rec.page.getPageNum(), tid);
     }
@@ -459,7 +463,7 @@ public class DOMFile extends BTree implements Lockable {
         // create a first split page
         DOMPage firstSplitPage = new DOMPage();
         DOMPage nextSplitPage = firstSplitPage;
-        nextSplitPage.getPageHeader().setNextTID((short)(rec.page.getPageHeader().getNextTID() - 1));
+        nextSplitPage.getPageHeader().setNextTID((short)(rec.page.getPageHeader().getCurrentTID()));
         short tid, currentId, currentLen, realLen;
         long backLink;
         short splitRecordCount = 0;
@@ -659,24 +663,30 @@ public class DOMFile extends BTree implements Lockable {
     public String debugPageContents(DOMPage page) {
     	StringBuffer buf = new StringBuffer();
     	buf.append("Page " + page.getPageNum() + ": ");
-            short count = 0;
-            short currentId, vlen;
-            int dlen = page.getPageHeader().getDataLength();
-            for (int pos = 0; pos < dlen; count++) {
-                currentId = ByteConversion.byteToShort(page.data, pos);
-                buf.append(ItemId.getId(currentId) + " ");
-                if (ItemId.isLink(currentId)) {
-                        pos += 10;
-                } else {
-                    vlen = ByteConversion.byteToShort(page.data, pos + 2);
-                    if (ItemId.isRelocated(currentId)) {
-                        pos += vlen == OVERFLOW ? 20 : vlen + 12;
-                    } else
-                        pos += vlen == OVERFLOW ? 12 : vlen + 4;
-                }
-            }
-            buf.append("; records in page: " + count);
-            return buf.toString();
+    	short count = 0;
+    	short currentId, vlen;
+    	int dlen = page.getPageHeader().getDataLength();
+    	for (int pos = 0; pos < dlen; count++) {
+    		currentId = ByteConversion.byteToShort(page.data, pos);
+    		buf.append(ItemId.getId(currentId) + "[" + pos);
+    		if (ItemId.isLink(currentId)) {
+    			buf.append(':').append(10).append("] ");
+    			pos += 10;
+    		} else {
+    			vlen = ByteConversion.byteToShort(page.data, pos + 2);
+    			if(vlen < 0) {
+    				LOG.warn("Illegal length: " + vlen);
+    				return buf.toString();
+    			}
+    			buf.append(':').append(vlen).append("] ");
+    			if (ItemId.isRelocated(currentId)) {
+    				pos += vlen == OVERFLOW ? 20 : vlen + 12;
+    			} else
+    				pos += vlen == OVERFLOW ? 12 : vlen + 4;
+    		}
+    	}
+    	buf.append("; records in page: " + count);
+    	return buf.toString();
     }
     
     public boolean close() throws DBException {
@@ -1142,8 +1152,10 @@ public class DOMFile extends BTree implements Lockable {
             LOG.debug("removing page " + rec.page.getPageNum());
             removePage(rec.page);
             rec.page = null;
-        } else
+        } else {
+        	rec.page.cleanUp();
             dataCache.add(rec.page);
+        }
     }
  
     /**
@@ -1572,13 +1584,20 @@ public class DOMFile extends BTree implements Lockable {
             --records;
         }
 
+        public short getCurrentTID() {
+        	return tid;
+        }
+        
         public short getNextTID() {
-            if (++tid == 0x5FFF)
-                    throw new RuntimeException(
-                            "TID limit reached in dom.dbx!!!!!!!!!!!!!!!!!!!!!!!");
+            if (++tid == ItemId.ID_MASK)
+            	throw new RuntimeException("no spare ids on page");
             return tid;
         }
 
+        public boolean hasRoom() {
+        	return tid < ItemId.MAX_ID;
+        }
+        
         public void setNextTID(short tid) {
             this.tid = tid;
         }
@@ -1700,8 +1719,8 @@ public class DOMFile extends BTree implements Lockable {
         	RecordPos rec = null;
         	byte flags;
             for (int pos = 0; pos < dlen;) {
-            	currentId = (short) ( ( data[pos] & 0xff ) + ( ( data[pos + 1] & 0xff ) << 8 ) );
-//                currentId = ByteConversion.byteToShort(data, pos);
+//            	currentId = (short) ( ( data[pos] & 0xff ) + ( ( data[pos + 1] & 0xff ) << 8 ) );
+                currentId = ByteConversion.byteToShort(data, pos);
                 flags = ItemId.getFlags(currentId);
                 if (ItemId.matches(currentId, targetId)) {
                 	if ((flags & ItemId.LINK_FLAG) != 0) {
@@ -1714,8 +1733,12 @@ public class DOMFile extends BTree implements Lockable {
                 } else if ((flags & ItemId.LINK_FLAG) != 0){
                 	pos += 10;
                 } else {
-                	vlen = (short) ( ( data[pos + 2] & 0xff ) + ( ( data[pos + 3] & 0xff ) << 8 ) );
-//                    vlen = ByteConversion.byteToShort(data, pos + 2);
+//                	vlen = (short) ( ( data[pos + 2] & 0xff ) + ( ( data[pos + 3] & 0xff ) << 8 ) );
+                    vlen = ByteConversion.byteToShort(data, pos + 2);
+                    if(vlen < 0) {
+                    	LOG.warn("page = " + page.getPageNum() + "; pos = " + pos + "; vlen = " + vlen + "; tid = " + currentId +
+                    			"; target = " + targetId);
+                    }
                     if ((flags & ItemId.RELOCATED_FLAG) != 0) {
                     	pos += vlen + 12;
                     } else {
@@ -1867,6 +1890,34 @@ public class DOMFile extends BTree implements Lockable {
         
         public boolean isInvalidated() {
         	return invalidated;
+        }
+        
+        /**
+         * Walk through the page after records have been removed.
+         * Remember the next spare id that can be used for following
+         * insertions. 
+         */
+        public void cleanUp() {
+        	final int dlen = ph.getDataLength();
+        	if(dlen > 256)
+        		return;
+        	short currentId, vlen;
+        	short maxTID = 0;
+        	for (int pos = 0; pos < dlen; ) {
+        		currentId = ByteConversion.byteToShort(data, pos);
+        		if(currentId > maxTID)
+        			maxTID = currentId;
+        		if (ItemId.isLink(currentId)) {
+        			pos += 10;
+        		} else {
+        			vlen = ByteConversion.byteToShort(data, pos + 2);
+        			if (ItemId.isRelocated(currentId)) {
+        				pos += vlen == OVERFLOW ? 20 : vlen + 12;
+        			} else
+        				pos += vlen == OVERFLOW ? 12 : vlen + 4;
+        		}
+        	}
+        	ph.setNextTID(maxTID);
         }
     }
 

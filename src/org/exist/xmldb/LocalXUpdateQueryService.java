@@ -64,6 +64,8 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 				docs = c.allDocs(broker, docs, true, true);
 			} else {
 				DocumentImpl doc = c.getDocument(broker, resource);
+				if(doc == null)
+					throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource not found: " + resource);
 				docs.add(doc);
 			}
 			if(processor == null)
@@ -99,7 +101,8 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 			e.printStackTrace();
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} finally {
-			processor.reset();
+			if(processor != null)
+				processor.reset();
 			pool.release(broker);
 		}
 	}

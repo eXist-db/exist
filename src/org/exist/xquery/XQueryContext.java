@@ -426,6 +426,7 @@ public class XQueryContext {
 					} else {
 						collection = broker.openCollection(staticDocumentPaths[i], Lock.READ_LOCK);
 						if(collection != null) {
+							LOG.debug("reading collection " + staticDocumentPaths[i]);
 							collection.allDocs(broker, staticDocuments, true, true);
 							collection.release();
 						}
