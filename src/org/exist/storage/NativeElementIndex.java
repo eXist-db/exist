@@ -427,8 +427,7 @@ public class NativeElementIndex extends ElementIndex {
 
             Value key;
             Value value;
-            byte[] data;
-            VariableByteArrayInput is;
+            VariableByteInput is;
             VariableByteOutputStream os;
             int len;
             int docId;
@@ -437,9 +436,7 @@ public class NativeElementIndex extends ElementIndex {
             boolean changed;
             for (int i = 0; i < elements.size(); i++) {
                 key = (Value) elements.get(i);
-                value = dbElement.get(key);
-                data = value.getData();
-                is = new VariableByteArrayInput(data);
+                is = dbElement.getAsStream(key);
                 os = new VariableByteOutputStream();
                 changed = false;
                 try {
@@ -450,12 +447,7 @@ public class NativeElementIndex extends ElementIndex {
                             // copy data to new buffer
                             os.writeInt(docId);
                             os.writeInt(len);
-                            for (int j = 0; j < len; j++) {
-                                delta = is.readLong();
-                                address = StorageAddress.read(is);
-                                os.writeLong(delta);
-                                StorageAddress.write(address, os);
-                            }
+                            is.copyTo(os, len * 4);
                         } else {
                             changed = true;
                             // skip
@@ -463,9 +455,7 @@ public class NativeElementIndex extends ElementIndex {
                         }
                     }
                 } catch (EOFException e) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("removeDocument(String) - eof", e);
-                    }
+                    // EOF is expected here
                 } catch (IOException e) {
                     LOG.warn("removeDocument(String) " + e.getMessage(), e);
                 }
