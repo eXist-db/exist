@@ -23,6 +23,8 @@
 package org.exist.xquery.functions.util;
 
 import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
@@ -65,15 +67,21 @@ public class BuiltinFunctions extends Function {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
+		Set set = new TreeSet();
 		ValueSequence resultSeq = new ValueSequence();
 		for(Iterator i = context.getModules(); i.hasNext(); ) {
 			Module module = (Module)i.next();
 			FunctionSignature signatures[] = module.listFunctions();
+			// add to set to remove duplicate QName's
 			for(int j = 0; j < signatures.length; j++) {
 				QName qname = signatures[j].getName();
-				QNameValue value = new QNameValue(context, qname);
-				resultSeq.add(value);
+				set.add(qname);
 			}
+			for(Iterator it = set.iterator(); it.hasNext(); ) {
+				QName qname = (QName)it.next();
+				resultSeq.add(new QNameValue(context, qname));
+			}
+			set.clear();
 		}
 		return resultSeq;
 	}

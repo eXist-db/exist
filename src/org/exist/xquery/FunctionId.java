@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-03 Wolfgang M. Meier
+ *  Copyright (C) 2001-04 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -25,22 +25,36 @@ package org.exist.xquery;
 import org.exist.dom.QName;
 
 /**
- * Defines an internal module implemented in Java. The class maintains a collection of 
- * Java classes each being a subclass of {@link org.exist.xquery.Function}. For internal
- * modules, a new function object is created from its class for each function reference in the
- * XQuery script.
- * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author wolf
  */
-public interface InternalModule extends Module {
+public class FunctionId implements Comparable {
 
-	/**
-	 * Returns the implementing class for the function identified
-	 * by qname or null if it is not defined. Called by
-	 * {@link FunctionFactory}.
-	 * 
-	 * @param qname
-	 * @return
+	private QName qname;
+	private int argCount;
+	
+	public FunctionId(QName qname, int arguments) {
+		this.qname = qname;
+		this.argCount = arguments;
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
-	public FunctionDef getFunctionDef(QName qname, int argCount);	
+	public int compareTo(Object o) {
+		final FunctionId other = (FunctionId)o;
+		final int cmp = qname.compareTo(other.qname);
+		if(cmp == 0) {
+			if(argCount == other.argCount)
+				return 0;
+			else if(argCount > other.argCount)
+				return 1;
+			else
+				return -1;
+		} else
+			return cmp;
+	}
+	
+	public String toString() {
+		return qname.toString() + '/' + argCount;
+	}
 }

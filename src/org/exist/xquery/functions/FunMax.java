@@ -22,13 +22,14 @@
  */
 package org.exist.xquery.functions;
 
+import java.text.Collator;
+
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.Item;
@@ -43,21 +44,36 @@ import org.exist.xquery.value.Type;
  */
 public class FunMax extends Function {
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("max", Module.BUILTIN_FUNCTION_NS),
-			"Selects an item from the input sequence $a whose value " +
-			"is greater than or equal to the value of every other item in the " +
-			"input sequence.",
-			new SequenceType[] {
-				 new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)},
-			new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE), true /* overloaded=true jmv */ );
-					
+	public final static FunctionSignature signatures[] = {
+			new FunctionSignature(
+					new QName("max", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+					"Selects an item from the input sequence $a whose value " +
+					"is greater than or equal to the value of every other item in the " +
+					"input sequence.",
+					new SequenceType[] {
+							new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)
+					},
+					new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE)
+			),
+			new FunctionSignature(
+					new QName("max", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+					"Selects an item from the input sequence $a whose value " +
+					"is greater than or equal to the value of every other item in the " +
+					"input sequence. The collation URI specified in $b will be used for " +
+					"string comparisons.",
+					new SequenceType[] {
+							new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE),
+							new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+					},
+					new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE)
+			)
+	};
+
 	/**
 	 * @param context
 	 * @param signature
 	 */
-	public FunMax(XQueryContext context) {
+	public FunMax(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -69,6 +85,12 @@ public class FunMax extends Function {
 		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
 		if(arg.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
+		Collator collator;
+		if(getSignature().getArgumentCount() == 2) {
+			String collationURI = getArgument(1).eval(contextSequence, contextItem).getStringValue();
+			collator = context.getCollator(collationURI);
+		} else
+			collator = context.getDefaultCollator();
 		SequenceIterator iter = arg.iterate();
 		AtomicValue max = (AtomicValue)iter.nextItem();
 		if(max.getType() == Type.ATOMIC)
@@ -82,9 +104,8 @@ public class FunMax extends Function {
 				((NumericValue)current).isNaN())
 				return DoubleValue.NaN;
 				
-			max = max.max(context.getDefaultCollator(), current);
+			max = max.max(collator, current);
 		}
 		return max;
 	}
-
 }

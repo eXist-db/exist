@@ -23,6 +23,8 @@
 package org.exist.xquery;
 
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.TreeMap;
 
 import org.exist.dom.QName;
@@ -95,11 +97,13 @@ public class ExternalModuleImpl implements ExternalModule {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Module#getSignatureForFunction(org.exist.dom.QName)
 	 */
-	public FunctionSignature getSignatureForFunction(QName qname) {
+	public Iterator getSignaturesForFunction(QName qname) {
+		List list = new LinkedList();
 		UserDefinedFunction func = (UserDefinedFunction) mFunctionMap.get(qname);
-		if (func != null)
-			return func.getSignature();
-		return null;
+		if (func != null) {
+			list.add(func.getSignature());
+		}
+		return list.iterator();
 	}
 
 	/* (non-Javadoc)

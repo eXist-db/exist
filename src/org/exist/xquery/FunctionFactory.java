@@ -149,11 +149,11 @@ public class FunctionFactory {
 			if(module != null) {
 				if(module.isInternalModule()) {
 					// for internal modules: create a new function instance from the class
-					Class clazz = ((InternalModule)module).getClassForFunction(qname);
-					if (clazz == null)
+					FunctionDef def = ((InternalModule)module).getFunctionDef(qname, params.size());
+					if (def == null)
 						throw new XPathException(ast, "function " + qname.toString() + " ( namespace-uri = " + 
 							qname.getNamespaceURI() + ") is not defined");
-					Function func = Function.createFunction(context, ast, clazz);
+					Function func = Function.createFunction(context, ast, def );
 					func.setArguments(params);
 					func.setParent(parent);
 					step = func;

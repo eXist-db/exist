@@ -22,6 +22,8 @@
  */
 package org.exist.xquery;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
@@ -47,7 +49,7 @@ public abstract class AbstractInternalModule implements InternalModule {
 		mFunctions = functions;
 		for(int i = 0; i < functions.length; i++) {
 			FunctionSignature signature = functions[i].getSignature();
-			mFunctionMap.put(signature.getName(), functions[i]);
+			mFunctionMap.put(signature.getFunctionId(), functions[i]);
 		}
 	}
 
@@ -81,21 +83,22 @@ public abstract class AbstractInternalModule implements InternalModule {
 		return signatures;
 	}
 
-	public FunctionSignature getSignatureForFunction(QName qname) {
-		FunctionDef def = (FunctionDef)mFunctionMap.get(qname);
-		if(def != null)
-			return def.getSignature();
-		return null;
+	public Iterator getSignaturesForFunction(QName qname) {
+		ArrayList signatures = new ArrayList(2);
+		for(int i = 0; i < mFunctions.length; i++) {
+			FunctionSignature signature = mFunctions[i].getSignature();
+			if(signature.getName().compareTo(qname) == 0)
+				signatures.add(signature);
+		}
+		return signatures.iterator();
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Module#getClassForFunction(org.exist.dom.QName)
 	 */
-	public Class getClassForFunction(QName qname) {
-		FunctionDef def = (FunctionDef)mFunctionMap.get(qname);
-		if(def != null)
-			return def.getImplementingClass();
-		return null;
+	public FunctionDef getFunctionDef(QName qname, int argCount) {
+		final FunctionId id = new FunctionId(qname, argCount);
+		return (FunctionDef)mFunctionMap.get(id);
 	}
 	
 	public Variable declareVariable(QName qname, Object value) throws XPathException {

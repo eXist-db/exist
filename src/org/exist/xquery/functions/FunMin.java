@@ -22,6 +22,8 @@
  */
 package org.exist.xquery.functions;
 
+import java.text.Collator;
+
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
@@ -43,19 +45,32 @@ import org.exist.xquery.value.Type;
  */
 public class FunMin extends Function {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("min", Module.BUILTIN_FUNCTION_NS),
 			"Selects an item from the input sequence $a whose value is less than or equal to " +
 			"the value of every other item in the input sequence.",
 			new SequenceType[] { new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)},
-			new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE), true /* overloaded=true jmv */ );
+			new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE)
+		),
+		new FunctionSignature(
+			new QName("min", Module.BUILTIN_FUNCTION_NS),
+			"Selects an item from the input sequence $a whose value is less than or equal to " +
+			"the value of every other item in the input sequence. The collation specified in $b is " +
+			"used for string comparisons.",
+			new SequenceType[] { 
+				new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			},
+			new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE)
+		)
+	};
 
 	/**
 	 * @param context
 	 * @param signature
 	 */
-	public FunMin(XQueryContext context) {
+	public FunMin(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -67,6 +82,11 @@ public class FunMin extends Function {
 		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
 		if (arg.getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
+		Collator collator;
+		if(getSignature().getArgumentCount() == 2)
+			collator = context.getCollator(getArgument(1).eval(contextSequence, contextItem).getStringValue());
+		else
+			collator = context.getDefaultCollator();
 		SequenceIterator iter = arg.iterate();
 		AtomicValue min = (AtomicValue) iter.nextItem();
 		AtomicValue current;
@@ -78,7 +98,7 @@ public class FunMin extends Function {
 				&& ((NumericValue) current).isNaN())
 				return DoubleValue.NaN;
 
-			min = min.min(context.getDefaultCollator(), current);
+			min = min.min(collator, current);
 		}
 		return min;
 	}

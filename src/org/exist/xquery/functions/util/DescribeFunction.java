@@ -22,6 +22,8 @@
  */
 package org.exist.xquery.functions.util;
 
+import java.util.Iterator;
+
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
@@ -69,32 +71,49 @@ public class DescribeFunction extends Function {
 		String fname = getArgument(0).eval(contextSequence, contextItem).getStringValue();
 		QName qname = QName.parse(context, fname, context.getDefaultFunctionNamespace());
 		String uri = qname.getNamespaceURI();
+		
+		MemTreeBuilder builder = context.getDocumentBuilder();
+		AttributesImpl attribs = new AttributesImpl();
+		attribs.addAttribute("", "name", "name", "CDATA", qname.toString());
+		attribs.addAttribute("", "module", "module", "CDATA", uri);
+		int nodeNr = builder.startElement("", "function", "function", attribs);
+		
 		FunctionSignature signature;
 		Module module = context.getModule(uri);
 		if(module != null) {
-			signature = module.getSignatureForFunction(qname);
+			Iterator i = module.getSignaturesForFunction(qname);
+			while(i.hasNext()) {
+				signature = (FunctionSignature) i.next();
+				writeSignature(signature, builder);
+			}
 		} else {
 			UserDefinedFunction func = context.resolveFunction(qname);
 			signature = func.getSignature();
+			writeSignature(signature, builder);
 		}
-		if(signature == null || signature.getName() == null)
-			throw new XPathException("Invalid function signature for " + qname.getLocalName());
-		MemTreeBuilder builder = context.getDocumentBuilder();
+		builder.endElement();
+		return ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
+	}
+
+	/**
+	 * @param signature
+	 * @param builder
+	 * @param attribs
+	 */
+	private void writeSignature(FunctionSignature signature, MemTreeBuilder builder) {
 		AttributesImpl attribs = new AttributesImpl();
-		attribs.addAttribute("", "name", "name", "CDATA", signature.getName().toString());
-		attribs.addAttribute("", "module", "module", "CDATA", signature.getName().getNamespaceURI());
-		int nodeNr = builder.startElement("", "function", "function", attribs);
+		attribs.addAttribute("", "arguments", "arguments", "CDATA", Integer.toString(signature.getArgumentCount()));
+		builder.startElement("", "prototype", "prototype", attribs);
 		attribs.clear();
+		builder.startElement("", "signature", "signature", attribs);
+		builder.characters(signature.toString());
+		builder.endElement();
 		if(signature.getDescription() != null) {
 			builder.startElement("", "description", "description", attribs);
 			builder.characters(signature.getDescription());
 			builder.endElement();
 		}
-		builder.startElement("", "signature", "signature", attribs);
-		builder.characters(signature.toString());
 		builder.endElement();
-		builder.endElement();
-		return ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
 	}
 
 }
