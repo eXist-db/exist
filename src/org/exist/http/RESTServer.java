@@ -309,13 +309,15 @@ public class RESTServer {
 
                         if (stylesheet != null) {
                             serializer.setStylesheet(resource, stylesheet);
-                            response.setContentType("text/html");
                         }
                         try {
                             serializer.setProperties(outputProperties);
-                            if (serializer.isStylesheetApplied())
+							String output = serializer.serialize(resource);
+							if (serializer.isStylesheetApplied()) {
                                 response.setContentType("text/html");
-                            writeResponse(response, serializer.serialize(resource), encoding);
+                            } else 
+								response.setContentType(resource.getMimeType());
+                            writeResponse(response, output, encoding);
                         } catch (SAXException saxe) {
                             LOG.warn(saxe);
                             throw new BadRequestException(
