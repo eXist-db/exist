@@ -59,5 +59,6 @@
 	<classpathentry kind="lib" path="tools/lib/junit.jar"/>
 	<classpathentry kind="lib" path="lib/core/javax.servlet.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xerces-2.6.1.jar"/>
+	<classpathentry kind="lib" path="/home/wolf/Java/jakarta-tomcat-5.0.19/server/lib/catalina.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

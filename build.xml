@@ -30,8 +30,11 @@
 	<property name="jvmarg" value="-Xmx128000k -Xms32000k -Djetty.home=${jetty.dir} -Dexist.home=${basedir}"/>
 	<property name="xmldb.src" value="undefined"/> 
 	
-    <property name="dist.dir" value="${dist}/${project.name}-${project.version}"/>
+	<property name="dist.dir" value="${dist}/${project.name}-${project.version}"/>
+
 	<available file="${xmldb.src}" type="dir" property="has.xmldb.src"/>
+	
+	<available file="${catalina.home}/server/lib" property="catalina.present"/>
 
     <path id="classpath.core">
         <fileset dir="${lib.core}">
@@ -48,7 +51,7 @@
         </fileset>
         <pathelement path="exist.jar"/>
 		<pathelement path="exist-optional.jar"/>
-        <pathelement path="${java.class.path}"/>
+		<pathelement path="${java.class.path}"/>
     </path>
 
 	<path id="classpath.jetty">
@@ -97,13 +100,36 @@
         <javac debug="${build.debug}" deprecation="${build.deprecation}" 
 			destdir="${build.classes}" encoding="UTF-8"
 			optimize="${build.optimize}" srcdir="${src}" target="1.4">
+			<include name="org/**"/>
+			<exclude name="org/exist/http/realm/**"/>
             <classpath>
                 <path refid="classpath.core"/>
 				<path refid="classpath.jetty"/>
             </classpath>
         </javac>
     </target>
-    
+
+	<!-- =================================================================== -->
+	<!-- Compile the Tomcat realm                                            -->
+    <!-- =================================================================== -->
+	<target name="compile-tomcat-realm" if="catalina.present">
+		<echo message="Compiling Tomcat Realm"/>
+		<javac debug="${build.debug}" deprecation="${build.deprecation}" 
+			destdir="${build.classes}" encoding="UTF-8"
+			optimize="${build.optimize}" srcdir="${src}" target="1.4">
+			<include name="org/exist/http/realm/**"/>
+			<classpath>
+				<path refid="classpath.core"/>
+				<fileset dir="${catalina.home}/server/lib">
+					<include name="*.jar"/>
+				</fileset>
+				<fileset dir="${catalina.home}/common/lib">
+					<include name="*.jar"/>
+				</fileset>
+			</classpath>
+		</javac>
+	</target>
+
     <!-- =================================================================== -->
     <!-- Run antlr parser generator										   -->
     <!-- needs antlr distribution-directory in the classpath				   -->
@@ -149,7 +175,7 @@
     <!-- =================================================================== -->
     <!-- Create jar file          										   -->
     <!-- =================================================================== -->
-    <target name="jar" depends="compile">
+    <target name="jar" depends="compile, compile-tomcat-realm">
 		<copy file="${src}/CatalogManager.properties" todir="${build.classes}"/>
 	    <copy todir="${build.classes}/org/exist/client">
 		    <fileset dir="${src}/org/exist/client">

@@ -165,12 +165,14 @@ public class DatabaseImpl implements Database {
             }
             if ( user != null ) {
                 u = pool.getSecurityManager().getUser( user );
-                if ( u == null )
-                    throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
+                if ( u == null ) {
+                	throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
                         "user " + user + " does not exist" );
-                if ( !u.validate( password ) )
-                    throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
+                }
+                if ( !u.validate( password ) ) {
+                	throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
                         "invalid password" );
+                }
             }
             try {
                 current = new LocalCollection( u, pool, c.substring( 2 ) );
