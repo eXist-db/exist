@@ -31,7 +31,10 @@ public class BooleanValue extends AtomicValue {
 	}
 	
 	public BooleanValue(String stringValue) {
-		value = stringValue.equalsIgnoreCase("true");
+		if(stringValue == null || stringValue.length() == 0)
+			value = false;
+		else
+			value = true;
 	}
 	
 	/* (non-Javadoc)
@@ -65,5 +68,9 @@ public class BooleanValue extends AtomicValue {
 			default:
 				throw new XPathException("cannot convert boolean '" + value + "' to " + requiredType);
 		}
+	}
+	
+	public boolean getValue() {
+		return value;
 	}
 }

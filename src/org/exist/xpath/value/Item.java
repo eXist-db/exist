@@ -20,10 +20,15 @@
  */
 package org.exist.xpath.value;
 
+import org.exist.xpath.XPathException;
+
 public interface Item {
 
 	public int getType();
 	
 	public String getStringValue();
 	
+	public Sequence toSequence();
+	
+	public AtomicValue convertTo(int requiredType) throws XPathException;
 }

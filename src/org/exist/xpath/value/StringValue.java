@@ -44,6 +44,10 @@ public class StringValue extends AtomicValue {
 		return value;
 	}
 
+	public Item itemAt(int pos) {
+		return pos == 0 ? this : null;
+	}
+		
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.AtomicValue#convertTo(int)
 	 */
@@ -55,6 +59,9 @@ public class StringValue extends AtomicValue {
 				return this;
 			case Type.BOOLEAN:
 				return new BooleanValue(value);
+			case Type.DECIMAL:
+			case Type.NUMBER:
+				return new DecimalValue(value);
 			case Type.INTEGER:
 				return new IntegerValue(value);
 			default:

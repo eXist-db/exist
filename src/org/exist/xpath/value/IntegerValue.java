@@ -22,7 +22,7 @@ package org.exist.xpath.value;
 
 import org.exist.xpath.XPathException;
 
-public class IntegerValue extends AtomicValue {
+public class IntegerValue extends NumericValue {
 
 	private long value;
 	
@@ -43,6 +43,14 @@ public class IntegerValue extends AtomicValue {
 	 */
 	public int getType() {
 		return Type.INTEGER;
+	}
+	
+	public Item itemAt(int pos) {
+		return pos == 0 ? this : null;
+	}
+	
+	public long getValue() {
+		return value;
 	}
 	
 	/* (non-Javadoc)
@@ -73,4 +81,24 @@ public class IntegerValue extends AtomicValue {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#getInt()
+	 */
+	public int getInt() throws XPathException {
+		return (int)value;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#getLong()
+	 */
+	public long getLong() throws XPathException {
+		return value;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#getDouble()
+	 */
+	public double getDouble() throws XPathException {
+		return (double)value;
+	}
 }

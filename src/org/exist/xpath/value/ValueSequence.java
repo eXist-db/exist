@@ -67,6 +67,10 @@ public class ValueSequence extends AbstractSequence {
 		return values.size();
 	}
 
+	public Item itemAt(int pos) {
+		return (Item)values.get(pos);
+	}
+	
 	private class ValueSequenceIterator implements SequenceIterator {
 		
 		private Iterator iter;

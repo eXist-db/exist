@@ -32,11 +32,18 @@ public abstract class AbstractSequence implements Sequence {
 	
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		if(getLength() == 0)
-			return AtomicValue.EMPTY_VALUE;
+			return AtomicValue.EMPTY_VALUE.convertTo(requiredType);
 		Item first = iterate().nextItem();
 		if(Type.subTypeOf(first.getType(), Type.ATOMIC))
 			return ((AtomicValue)first).convertTo(requiredType);
 		else
 			return new StringValue(first.getStringValue()).convertTo(requiredType);
+	}
+	
+	public String getStringValue() {
+		if(getLength() == 0)
+			return "";
+		Item first = iterate().nextItem();
+		return first.getStringValue();
 	}
 }

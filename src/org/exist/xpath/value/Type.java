@@ -24,6 +24,17 @@ import it.unimi.dsi.fastutil.Int2IntRBTreeMap;
 
 public class Type {
 
+	public final static String[] NODETYPES = {
+		"node",
+		"element",
+		"attribute",
+		"text",
+		"processing-instruction",
+		"comment",
+		"document",
+		"namespace"
+	};
+						   
 	public static final int NODE = -1;
 	
 	public final static int ELEMENT = 1;
@@ -50,7 +61,7 @@ public class Type {
 	
 	private final static Int2IntRBTreeMap typeHierarchy = new Int2IntRBTreeMap();
 	
-	{
+	static {
 		defineSubType(ITEM, NODE);
 		defineSubType(NODE, ELEMENT);
 		defineSubType(NODE, TEXT);
@@ -76,12 +87,15 @@ public class Type {
 	}
 	
 	public final static boolean subTypeOf(int subtype, int supertype) {
+		
 		if(subtype == supertype)
 			return true;
 		if(supertype == ITEM)
 			return true;
 		if(subtype == ITEM || subtype == EMPTY)
 			return false;
+		if(!typeHierarchy.containsKey(subtype))
+			throw new IllegalArgumentException("type " + subtype + " is not a valid type");
 		return subTypeOf(typeHierarchy.get(subtype), supertype);
 	}
 }
