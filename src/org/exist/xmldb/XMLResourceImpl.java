@@ -37,14 +37,15 @@ public class XMLResourceImpl implements XMLResource {
 	 */
 	private Parser cocoonParser = null;
 	protected String encoding = "UTF-8";
-	protected String id, docId;
+	protected String id, documentName, path = null;
 	protected int indent = -1;
 
 	protected CollectionImpl parent;
 	protected boolean saxDocEvents = true;
 	protected String content = null;
 
-	public XMLResourceImpl(CollectionImpl parent, String docId, String id) {
+	public XMLResourceImpl(CollectionImpl parent, String docId, String id) 
+	throws XMLDBException {
 		this(parent, docId, id, 1, "UTF-8");
 	}
 
@@ -53,21 +54,23 @@ public class XMLResourceImpl implements XMLResource {
 		String docId,
 		String id,
 		int indent,
-		String encoding) {
+		String encoding) throws XMLDBException {
 		this.parent = parent;
 		this.id = id;
 		int p;
-		if (docId != null && (p = docId.lastIndexOf('/')) > -1)
-			docId = docId.substring(p + 1);
-
-		this.docId = docId;
+		if (docId != null && (p = docId.lastIndexOf('/')) > -1) {
+			path = docId;
+			documentName = docId.substring(p + 1);
+		} else {
+			path = parent.getPath() + '/' + docId;
+			documentName = docId;
+		}
 		this.indent = indent;
 	}
 
 	public Object getContent() throws XMLDBException {
 		if (content != null) 
 			return content;
-		String path = parent.getPath() + '/' + docId;
 		byte[] data = null;
 		if (id == null) {
 			Vector params = new Vector();
@@ -188,11 +191,11 @@ public class XMLResourceImpl implements XMLResource {
 	}
 
 	public String getDocumentId() throws XMLDBException {
-		return docId;
+		return documentName;
 	}
 
 	public String getId() throws XMLDBException {
-		return (id == null) ? docId : docId + '_' + id;
+		return (id == null) ? documentName : documentName + '_' + id;
 	}
 
 	public Collection getParentCollection() throws XMLDBException {

@@ -512,55 +512,57 @@ public class NativeBroker extends DBBroker {
 	 */
 	public DocumentSet getAllDocuments(User user) {
 		long start = System.currentTimeMillis();
-		DocumentSet docs = new DocumentSet();
-		try {
-			ArrayList collList = null;
-			synchronized (collectionsDb) {
-				collList = collectionsDb.getEntries();
-			}
-			if (collList == null)
-				return docs;
-
-			Value val;
-			Value[] entry;
-			byte[] data;
-			VariableByteInputStream istream;
-			DocumentImpl doc;
-			Collection collection;
-			String collName;
-			for (int i = 0; i < collList.size(); i++) {
-				entry = (Value[]) collList.get(i);
-				collName = entry[0].toString();
-				if (collName.startsWith("__"))
-					continue;
-				collection = collections.get(collName);
-				if(collection == null) {
-					val = entry[1];
-					data = val.getData();
-					istream = new VariableByteInputStream(data);
-					collection = new Collection(this, collName);
-					collection.read(istream);
-				}
-				if (collection
-					.getPermissions()
-					.validate(user, Permission.READ))
-					for (Iterator iter = collection.iterator();
-						iter.hasNext();
-						) {
-						doc = (DocumentImpl) iter.next();
-						if (doc
-							.getPermissions()
-							.validate(user, Permission.READ)) {
-							docs.add(doc);
-						}
-					}
-
-			}
-		} catch (BTreeException dbe) {
-			LOG.error(dbe);
-		} catch (IOException ioe) {
-			LOG.debug(ioe);
-		}
+		Collection root = getCollection("/db");
+		DocumentSet docs = root.allDocs(user);
+		
+//		try {
+//			ArrayList collList = null;
+//			synchronized (collectionsDb) {
+//				collList = collectionsDb.getEntries();
+//			}
+//			if (collList == null)
+//				return docs;
+//
+//			Value val;
+//			Value[] entry;
+//			byte[] data;
+//			VariableByteInputStream istream;
+//			DocumentImpl doc;
+//			Collection collection;
+//			String collName;
+//			for (int i = 0; i < collList.size(); i++) {
+//				entry = (Value[]) collList.get(i);
+//				collName = entry[0].toString();
+//				if (collName.startsWith("__"))
+//					continue;
+//				collection = collections.get(collName);
+//				if(collection == null) {
+//					val = entry[1];
+//					data = val.getData();
+//					istream = new VariableByteInputStream(data);
+//					collection = new Collection(this, collName);
+//					collection.read(istream);
+//				}
+//				if (collection
+//					.getPermissions()
+//					.validate(user, Permission.READ))
+//					for (Iterator iter = collection.iterator();
+//						iter.hasNext();
+//						) {
+//						doc = (DocumentImpl) iter.next();
+//						if (doc
+//							.getPermissions()
+//							.validate(user, Permission.READ)) {
+//							docs.add(doc);
+//						}
+//					}
+//
+//			}
+//		} catch (BTreeException dbe) {
+//			LOG.error(dbe);
+//		} catch (IOException ioe) {
+//			LOG.debug(ioe);
+//		}
 		LOG.debug(
 			"loading "
 				+ docs.getLength()
@@ -592,7 +594,7 @@ public class NativeBroker extends DBBroker {
 	 *@return       The collection value
 	 */
 	public Collection getCollection(String name) {
-		//        final long start = System.currentTimeMillis();
+		final long start = System.currentTimeMillis();
 		name = normalizeCollectionName(name);
 		if (name.length() > 0 && name.charAt(0) != '/')
 			name = "/" + name;
@@ -627,8 +629,8 @@ public class NativeBroker extends DBBroker {
 			return null;
 		}
 		collections.add(collection);
-		//        LOG.debug("loading collection " + name + " took " +
-		//            (System.currentTimeMillis() - start) + "ms.");
+		LOG.debug("loading collection " + name + " took " +
+		         (System.currentTimeMillis() - start) + "ms.");
 		return collection;
 	}
 
@@ -2207,6 +2209,7 @@ public class NativeBroker extends DBBroker {
 	}
 
 	public void readDocumentMetadata(final DocumentImpl doc) {
+		LOG.debug("reading collection metadata for " + doc.getDocId());
 		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
 			public Object start() throws ReadOnlyException {
 				final Value val = domDb.get(doc.getAddress());

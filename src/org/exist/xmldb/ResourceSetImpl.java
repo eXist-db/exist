@@ -121,11 +121,8 @@ public class ResourceSetImpl implements ResourceSet {
             String doc = (String) v.elementAt( 0 );
             String s_id = (String) v.elementAt( 1 );
 
-            String docColl = doc.substring( 0, doc.lastIndexOf( '/' ) );
-            CollectionImpl temp = (CollectionImpl)
-                DatabaseImpl.readCollection( docColl, collection.getClient(), null );
             XMLResource res =
-                new XMLResourceImpl( temp, doc, s_id, indentXML, encoding );
+                new XMLResourceImpl( collection, doc, s_id, indentXML, encoding );
             return res;
         }
         else if ( resources.elementAt( (int) pos ) instanceof Resource )
