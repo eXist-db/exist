@@ -118,7 +118,7 @@ public class DOMFile extends BTree implements Lockable {
 
     private DocumentImpl currentDocument = null;
     
-    public DOMFile(int buffers, int dataBuffers) {
+    protected DOMFile(int buffers, int dataBuffers) {
         super(buffers);
         lock = new ReentrantReadWriteLock("dom.dbx");
         fileHeader = (DOMFileHeader) getFileHeader();
