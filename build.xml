@@ -256,13 +256,19 @@
     <!-- ================================================================== -->
     <!-- Run JUnit tests                                                    -->
 	<!-- ================================================================== -->
-	<target name="test" depends="test-local,test-remote"/>
+	<target name="test" depends="test-local,test-concurrent,test-remote"/>
 
     <target name="test-local" depends="jar">
         <delete failonerror="false">
 			<fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
         </delete>
-    	<mkdir dir="${junit.reports}"/>
+		<mkdir dir="${junit.reports}"/>
+
+		<echo>
+------------------------------------------
+Running tests on a local database instance
+------------------------------------------
+		</echo>
         <junit haltonfailure="yes" printsummary="yes" 
         	showoutput="${junit.output}">
         	<classpath refid="classpath.core"/>
@@ -271,6 +277,9 @@
 				todir="${junit.reports}">
 			</test>
 			<test fork="yes" name="org.exist.xupdate.test.AllTests" todir="${junit.reports}"/>
+			<!-- Execute all other tests except those that have to be called
+				 manually.
+		    -->
             <batchtest fork="yes" todir="${junit.reports}">
                 <fileset dir="${src}">
                     <include name="**/test/*.java"/>
@@ -278,11 +287,22 @@
 					<exclude name="**/xupdate/test/*.java"/>
 					<exclude name="**/xquery/test/*.java"/>
 					<exclude name="**/xmlrpc/test/*.java"/>
+					<exclude name="**/http/test/*.java"/>
                 </fileset>
             </batchtest>
         </junit>
     </target>
-    
+
+	<target name="test-concurrent">
+		<echo>
+-----------------
+Concurrency tests
+-----------------
+		</echo>
+		<test fork="yes" name="org.exist.xmldb.test.concurrent.AllTests"
+			todir="${junit.reports}"/>
+	</target>
+	
 	<target name="start-server">
 		<echo>Starting stand-alone database server...
 		</echo>
@@ -302,8 +322,12 @@
 		    <classpath refid="classpath.core"/>
 		</typedef>
 		<mkdir dir="${junit.reports}"/>
-		
-		<echo message="Running tests ..."/>
+
+		<echo>
+--------------------------------
+Running tests on remote database
+--------------------------------
+		</echo>
 		<junit haltonfailure="yes" printsummary="yes" 
 			showoutput="${junit.output}">
 	       	<classpath refid="classpath.core"/>
@@ -314,6 +338,8 @@
 			<test fork="yes" name="org.exist.xmldb.test.RemoteTests"
 				todir="${junit.reports}">
 			</test>
+			<test fork="yes" name="org.exist.http.test.RESTServiceTest"
+				todir="${junit.reports}"/>
 		</junit>
 
 		<echo message="Shutting down the server ..."/>
