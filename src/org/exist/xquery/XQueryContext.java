@@ -166,7 +166,6 @@ public class XQueryContext {
 	}
 
 	public void declareNamespaces(Map namespaceMap) {
-		this.namespaces = namespaceMap;
 		Map.Entry entry;
 		String prefix, uri;
 		for(Iterator i = namespaceMap.entrySet().iterator(); i.hasNext(); ) {
@@ -177,7 +176,8 @@ public class XQueryContext {
 				prefix = "";
 			if(uri == null)
 				uri = "";
-			prefixes.put(prefix, uri);
+            namespaces.put(prefix, uri);
+			prefixes.put(uri, prefix);
 		}
 	}
 	
