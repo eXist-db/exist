@@ -202,7 +202,7 @@ public class VirtualNodeSet extends NodeSet {
 				node.setOwnerDocument(proxy.doc);
 				node.setGID(proxy.gid);
 				node.setInternalAddress(value.getAddress());
-				addChildren(result, node, domIter, recursive);
+				addChildren(result, node, proxy, domIter, recursive);
 			} else {
 				p = proxy.getNode();
 				if (p == null)
@@ -216,25 +216,31 @@ public class VirtualNodeSet extends NodeSet {
 	private final void addChildren(
 		NodeSet result,
 		NodeImpl node,
+		NodeProxy proxy,
 		Iterator iter,
 		boolean recursive) {
 		if (node.hasChildNodes()) {
+			NodeImpl child;
+			Value value;
+			NodeProxy p;
 			for (int i = 0; i < node.getChildCount(); i++) {
-				Value value = (Value) iter.next();
-				NodeImpl child =
+				value = (Value) iter.next();
+				child =
 					NodeImpl.deserialize(
 						value.getData(),
 						(DocumentImpl) node.getOwnerDocument());
 				child.setOwnerDocument(node.getOwnerDocument());
 				child.setGID(node.firstChildID() + i);
 				child.setInternalAddress(value.getAddress());
+				p = new NodeProxy(child.ownerDocument, child.gid, 
+					child.getNodeType(), child.internalAddress);
+				p.matches = proxy.matches;
 				if (isOfType(child.getNodeType(), test)) {
-					//					System.out.println("found " + child.getGID());
-					result.add(child);
+					result.add(p);
 				} else if (axis == Constants.ATTRIBUTE_AXIS)
 					return;
 				if (recursive)
-					addChildren(result, child, iter, recursive);
+					addChildren(result, child, p, iter, recursive);
 			}
 		}
 	}

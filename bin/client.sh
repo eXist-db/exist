@@ -32,8 +32,7 @@ SAXFACTORY=org.apache.xerces.jaxp.SAXParserFactoryImpl
 LOCALCLASSPATH=$CLASSPATH:$LOCALCLASSPATH
 
 if [ -z "$JAVA_OPTS" ]; then
-	#JAVA_OPTS="-Xms16000k -Xmx512000k"
-	JAVA_OPTS=
+	JAVA_OPTS="-Xms128000k -Xmx512000k"
 fi
 
 #PROF=-Xrundrmem:file=drmem.log,debug=0

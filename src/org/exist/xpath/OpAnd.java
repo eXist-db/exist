@@ -81,7 +81,10 @@ public class OpAnd extends BinaryOp {
 		   l = (NodeProxy)i.next();
 		   parent =
 			   parents.parentWithChild(l.doc, l.getGID(), false, true);
-		   if(parent != null) result.add(parent);
+		   if(parent != null) { 
+		   		parent.addMatches(l.matches);
+		   		result.add(parent);
+		   }
 	   }
 	   return result;
    }

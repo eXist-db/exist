@@ -34,7 +34,9 @@
     <html>
       <head>
         <link rel="stylesheet" type="text/css" href="{$css}"/>
-
+		<xsl:if test="header/style">
+        	<xsl:copy-of select="header/style"/>
+        </xsl:if>
         <title><xsl:value-of select="header/title/text()"/></title>
       </head>
 

@@ -426,9 +426,11 @@ public class ArraySet extends NodeSet {
 			else {
 				switch (mode) {
 					case ANCESTOR :
+						dl[dx].addMatches(al.nodes[ax].matches);
 						result.add(dl[dx]);
 						break;
 					case DESCENDANT :
+						nodes[dx].addMatches(al.nodes[ax].matches);
 						result.add(nodes[dx]);
 						break;
 				}
@@ -533,9 +535,11 @@ public class ArraySet extends NodeSet {
 					// found a matching node
 					switch (mode) {
 						case ANCESTOR :
+							dl[dx].addMatches(al.nodes[ax].matches);
 							result.add(dl[dx]);
 							break;
 						case DESCENDANT :
+							nodes[dx].addMatches(al.nodes[ax].matches);
 							result.add(nodes[dx]);
 							break;
 					}

@@ -306,6 +306,15 @@ public final class NodeProxy implements Comparable, Cloneable {
 		return clone;
 	}
 
+	public boolean hasMatch(Match match) {
+		if(match == null || matches == null)
+			return false;
+		for(int i = 0; i < matches.length; i++)
+			if(matches[i].equals(match))
+				return true;
+		return false;
+	}
+	
 	public void addMatch(Match match) {
 		Match m[] = new Match[(matches == null ? 1 : matches.length + 1)];
 		m[0] = match;
@@ -314,14 +323,12 @@ public final class NodeProxy implements Comparable, Cloneable {
 		matches = m;
 	}
 	
-	public void addMatches(Match ms[]) {
-		if(ms == null || ms.length == 0)
+	public void addMatches(Match m[]) {
+		if(m == null || m.length == 0)
 			return;
-		Match m[] = new Match[matches == null ? ms.length : matches.length + ms.length];
-		System.arraycopy(ms, 0, m, 0, ms.length);
-		if(matches != null)
-			System.arraycopy(matches, 0, m, ms.length, matches.length);
-		matches = m;
+		for(int i = 0; i < m.length; i++)
+			if(!hasMatch(m[i]))
+				addMatch(m[i]);
 	}
 	
 	public String printMatches() {

@@ -5,7 +5,7 @@
 <document xmlns:ci="http://apache.org/cocoon/include/1.0">
   
    <!-- include header -->
-   <ci:include src="header.xml"/>
+   <ci:include src="context://header.xml"/>
        
    <!-- include sidebar -->
    <ci:include src="sidebar.xml"/>
@@ -20,7 +20,7 @@
    <p>The sample collection contains 71098 book description (in RDF/XML)
    taken from our local university library.</p>
    
-   <form action="rdf_pbib.xsp" method="POST">
+   <form action="bibquery.xml" method="GET">
          
      <table width="90%" cellpadding="5" cellspacing="0" border="0">
        <tr bgcolor="#0b88e8">
@@ -34,7 +34,6 @@
 		   <font color="#ffffff">interpret as</font>
 		 </th>
 		 <th width="20%" align="left">
-           <img src="resources/void.gif"/>
 		 </th>
        </tr>
        <tr>
@@ -79,6 +78,7 @@
 	     </td>
 		 <td width="20%" align="left">
 		   <select name="mode2" size="1">
+		   	 <option value="near">near</option>
 		     <option value="exact">exact match</option>
 			 <option value="contains" selected="true">word list</option>
 		   </select>

@@ -19,11 +19,11 @@
            }
        }
     </xsp:logic>
-          
+   
     <document xmlns:ci="http://apache.org/cocoon/include/1.0">
-
+    
     <!-- include header -->
-    <ci:include src="header.xml"/>
+    <ci:include src="context://header.xml"/>
 
     <!-- include sidebar -->
     <ci:include src="sidebar.xml"/>

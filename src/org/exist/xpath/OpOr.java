@@ -77,7 +77,10 @@ public class OpOr extends BinaryOp {
         for(Iterator i = child.iterator(); i.hasNext(); ) {
             l = (NodeProxy)i.next();
             parent = parents.parentWithChild(l.doc, l.getGID(), true, true);
-            if(parent != null) result.add(parent);
+            if(parent != null) {
+            	parent.addMatches(l.matches); 
+            	result.add(parent);
+            }
         }
         return result;
     }

@@ -53,7 +53,7 @@
        
 	   <db-connection database="native" files="webapp/WEB-INF/data" 
 		   buffers="1024" words_buffers="32768" collection_buffers="1024" 
-		   elements_buffers="4096" free_mem_min="-1" 
+		   elements_buffers="4096" free_mem_min="10" 
 		   pageSize="4096">
 
 		   <!-- Settings for the database connection pool
@@ -172,9 +172,6 @@
 	     Every element matching the path expression will have it's
 	     textual content indexed. This is also valid for all of
 	     it's descendants.
-
-		 Note: these setting have no effect when using the native
-		 backend.
 		 
 		 Attributes:
 		 	- doctype  the doctype for which this definition should be used.
