@@ -1,0 +1,124 @@
+<!-- XML DTD "mondial.dtd":
+  (Wolfgang May, may@informatik.uni-freiburg.de, March 2000)
+  a hierarchical DTD for the MONDIAL database,
+  containing e.g.,
+  - scalar reference attributes (city/capital)
+  - multivalued reference attributes (organization/member/country)
+  - cross-references in both directions (organization/member/country,
+    country/memberships)
+  - a "boolean"/flag attribute: city/is_country_cap
+  - reference attributes with more than one target class
+    (river/to, references rivers, lakes, and seas) -->
+
+<!ELEMENT mondial (country*,continent*,organization*,
+                   mountain*,(sea*,river*,lake*,desert*,island*)*)> 
+<!ELEMENT country (name,population?,
+                   population_growth?,infant_mortality?,
+                   gdp_total?,gdp_agri?,gdp_ind?,gdp_serv?,
+                   inflation?,indep_date?,government?,encompassed*,
+                   ethnicgroups*,religions*,languages*,border*,
+                   province*,city*)>
+<!ATTLIST country car_code ID #IMPLIED
+                  area CDATA #IMPLIED
+                  capital IDREF #IMPLIED
+                  memberships IDREFS #IMPLIED>
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT area (#PCDATA)>
+<!ELEMENT population (#PCDATA)>
+<!-- note that population is also a subelement of city -->
+<!ATTLIST population year CDATA #IMPLIED>
+<!ELEMENT population_growth (#PCDATA)>
+<!ELEMENT infant_mortality (#PCDATA)>
+<!ELEMENT gdp_total (#PCDATA)>
+<!ELEMENT gdp_ind (#PCDATA)>
+<!ELEMENT gdp_agri (#PCDATA)>
+<!ELEMENT gdp_serv (#PCDATA)>
+<!ELEMENT inflation (#PCDATA)>
+<!ELEMENT indep_date (#PCDATA)>
+<!ELEMENT government (#PCDATA)>
+<!ELEMENT encompassed EMPTY>
+<!ATTLIST encompassed continent IDREF #REQUIRED
+                      percentage CDATA #REQUIRED>
+<!ELEMENT ethnicgroups (#PCDATA)>
+<!ATTLIST ethnicgroups percentage CDATA #REQUIRED>
+<!ELEMENT religions (#PCDATA)>
+<!ATTLIST religions percentage CDATA #REQUIRED>
+<!ELEMENT languages (#PCDATA)>
+<!ATTLIST languages percentage CDATA #REQUIRED>
+<!ELEMENT border EMPTY>
+<!ATTLIST border country IDREF #REQUIRED
+                 length CDATA #REQUIRED
+                 justice IDREF 'org-UN'>
+
+<!ELEMENT province (name,area?,population,city*)>
+<!ATTLIST province id ID #REQUIRED
+                   country IDREF #REQUIRED
+                   capital IDREF #IMPLIED>
+
+<!ELEMENT city (name,longitude?,latitude?,
+                population*,located_at*)>
+<!ATTLIST city id ID #REQUIRED
+               is_country_cap CDATA #IMPLIED
+               is_state_cap CDATA #IMPLIED
+               country IDREF #REQUIRED
+               province IDREF #IMPLIED>
+<!ELEMENT longitude (#PCDATA)>
+<!ELEMENT latitude (#PCDATA)>
+<!ELEMENT located_at EMPTY>
+<!ATTLIST located_at watertype (river|sea|lake) #REQUIRED
+                     river IDREFS #IMPLIED
+                     sea IDREFS #IMPLIED
+                     lake IDREFS #IMPLIED>
+
+<!ELEMENT organization (name,abbrev,established?,members*)>
+<!ATTLIST organization id ID #REQUIRED
+                       headq IDREF #IMPLIED>
+<!ELEMENT abbrev (#PCDATA)>
+<!ELEMENT established (#PCDATA)>
+<!ELEMENT members EMPTY>
+<!ATTLIST members type CDATA #REQUIRED
+                 country IDREFS #REQUIRED>
+
+<!ELEMENT continent (name,area)>
+<!ATTLIST continent id ID #REQUIRED>
+
+<!ELEMENT river (to*,located*,length?,name)>
+<!ATTLIST river id ID #REQUIRED
+                country IDREFS #IMPLIED>
+
+<!ELEMENT length (#PCDATA)>
+<!ELEMENT to EMPTY>
+<!ATTLIST to watertype (river|sea|lake) #REQUIRED
+             water IDREF #REQUIRED>
+
+<!ELEMENT located EMPTY>
+<!ATTLIST located country IDREF #REQUIRED
+                  province IDREFS #IMPLIED>
+
+<!ELEMENT lake (located*,name,area?,depth?)>
+<!ATTLIST lake id ID #REQUIRED
+               country IDREFS #IMPLIED>
+<!ELEMENT depth (#PCDATA)>
+
+<!ELEMENT sea (located*,name,area?,depth?,bordering*)>
+<!ATTLIST sea id ID #REQUIRED
+              country IDREFS #IMPLIED
+              bordering IDREFS #IMPLIED>
+
+<!ELEMENT desert (located*,name,area?)>
+<!ATTLIST desert id ID #REQUIRED
+                 country IDREFS #IMPLIED
+                 climate NMTOKENS #FIXED 'dry aride'
+                 temperature NMTOKEN 'hot'
+                 ground (sand|boulders|rocks|snow) 'sand'>
+
+<!ELEMENT island (located*,name,area?,longitude?,latitude?)>
+<!ATTLIST island id ID #REQUIRED
+                 country IDREFS #IMPLIED>
+
+<!ELEMENT mountain (located*,name,longitude?,latitude?,height?)>
+<!ATTLIST mountain id ID #REQUIRED
+                   country IDREFS #IMPLIED>
+<!ELEMENT height (#PCDATA)>
+
+<!ELEMENT bordering (#PCDATA)>

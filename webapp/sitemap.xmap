@@ -27,9 +27,9 @@
       | consumes these events and produces a byte stream.
       | 
       | Some things to note here: each generator has a unique name, this
-      | name is mapped to a java class, one name is declared as default
-      | generator. In addition each generator may have additional
-      | configurations as child elements.
+      | name is mapped to a java class, one name is declared as the default
+      | generator. Each generator may have additional configurations as
+      | child elements.
       | 
       | Additional attributes are targeted at the component manager. The optional
       | "label" attribute is relevant for the view concept below. The optional
@@ -45,26 +45,29 @@
       | generators by using different names. No configuration options are
       | shared between these instances, however.
       | 
-      | All components follow this schema.
+      | All components follow this scheme.
       +-->
-        <map:generators default="file">
-            <map:generator label="content,data" logger="sitemap.generator.file" name="file" pool-grow="4" pool-max="32" pool-min="8" src="org.apache.cocoon.generation.FileGenerator"/>
-            <map:generator label="content,data" logger="sitemap.generator.serverpages" name="serverpages" pool-grow="2" pool-max="32" pool-min="4" src="org.apache.cocoon.generation.ServerPagesGenerator"/>
-            <map:generator label="content,data" logger="sitemap.generator.directory" name="directory" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.generation.DirectoryGenerator"/>
-            <map:generator label="content,data" logger="sitemap.generator.imagedirectory" name="imagedirectory" src="org.apache.cocoon.generation.ImageDirectoryGenerator"/>
-            <map:generator label="data" logger="sitemap.generator.request" name="request" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.generation.RequestGenerator"/>
-            <map:generator label="content,data" logger="sitemap.generator.stream" name="stream" pool-grow="2" pool-max="16" pool-min="1" src="org.apache.cocoon.generation.StreamGenerator"/>
-            <map:generator label="data" logger="sitemap.generator.status" name="status" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.generation.StatusGenerator"/>
-            <!--map:generator label="data" logger="sitemap.generator.proxy" name="proxy" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.generation.WebServiceProxyGenerator"/-->
+  <map:generators default="file">
+    <map:generator label="content" logger="sitemap.generator.file" name="file" pool-grow="4" pool-max="32" pool-min="8" src="org.apache.cocoon.generation.FileGenerator"/>
+    <map:generator label="content" logger="sitemap.generator.directory" name="directory" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.generation.DirectoryGenerator"/>
+    <map:generator label="content" logger="sitemap.generator.xpathdirectory" name="xpathdirectory" src="org.apache.cocoon.generation.XPathDirectoryGenerator"/>
+    <map:generator label="content" logger="sitemap.generator.imagedirectory" name="imagedirectory" src="org.apache.cocoon.generation.ImageDirectoryGenerator"/>
+    <map:generator label="content" logger="sitemap.generator.mp3directory" name="mp3directory" src="org.apache.cocoon.generation.MP3DirectoryGenerator"/>
+    <map:generator label="content" logger="sitemap.generator.request" name="request" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.generation.RequestGenerator"/>
+    <map:generator label="content" logger="sitemap.generator.stream" name="stream" pool-grow="2" pool-max="16" pool-min="1" src="org.apache.cocoon.generation.StreamGenerator"/>
+    <map:generator label="content" logger="sitemap.generator.status" name="status" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.generation.StatusGenerator"/>
+    <map:generator label="content" logger="sitemap.generator.jx" name="jx" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.generation.JXTemplateGenerator"/>
     <!-- The notifying generator can only be used in a <handle-errors> section : it produces an XML
          representation of the exception that caused the error handler to be executed -->
-            <map:generator name="notifying" src="org.apache.cocoon.sitemap.NotifyingGenerator"/>
-            
-            <!--#######################################################-->
-            <!-- Status generator for eXist                                                                     -->
-            <!--#######################################################-->
-            <map:generator label="content,data" name="exist-status" src="org.exist.cocoon.StatusGenerator"/>
-        </map:generators>
+    <map:generator name="notifying" src="org.apache.cocoon.sitemap.NotifyingGenerator"/>
+  
+    <map:generator label="content" logger="sitemap.generator.serverpages" name="serverpages" pool-grow="2" pool-max="32" pool-min="4" src="org.apache.cocoon.generation.ServerPagesGenerator"/>
+    
+	<!--#######################################################-->
+    <!-- Status generator for eXist                            -->
+    <!--#######################################################-->
+    <map:generator label="content,data" name="exist-status" src="org.exist.cocoon.StatusGenerator"/>
+</map:generators>
 
   <!--+
       | Transformers can be placed inside the pipeline between the generator
@@ -74,102 +77,127 @@
       | The "xslt" transformer is an example of a component with additional
       | configuration.
       +-->
-        <map:transformers default="xalan">
+  <map:transformers default="xslt">
 
-    <!-- NOTE: XSLTC is now the default processor. If you use Xalan extensions, use the "xalan" transformer. -->
-            <map:transformer logger="sitemap.transformer.xslt" name="xslt" pool-grow="2" pool-max="32" pool-min="8" src="org.apache.cocoon.transformation.TraxTransformer">
-                <use-request-parameters>false</use-request-parameters>
-                <use-session-parameters>false</use-session-parameters>
-                <use-cookie-parameters>false</use-cookie-parameters>
-                <xslt-processor-role>xsltc</xslt-processor-role>
-            </map:transformer>
+    <!-- NOTE: This is the default XSLT processor. -->
+    <map:transformer logger="sitemap.transformer.xslt" name="xslt" pool-grow="2" pool-max="32" pool-min="8" src="org.apache.cocoon.transformation.TraxTransformer">
+      <use-request-parameters>false</use-request-parameters>
+      <use-session-parameters>false</use-session-parameters>
+      <use-cookie-parameters>false</use-cookie-parameters>
+      <xslt-processor-role>xalan</xslt-processor-role>
+      <check-includes>true</check-includes>
+    </map:transformer>
 
-    <!-- NOTE: This used to be the default XSLT processor. The default now is XSLTC -->
-            <map:transformer logger="sitemap.transformer.xalan" name="xalan" pool-grow="2" pool-max="32" pool-min="8" src="org.apache.cocoon.transformation.TraxTransformer">
-                <use-request-parameters>false</use-request-parameters>
-                <use-session-parameters>false</use-session-parameters>
-                <use-cookie-parameters>false</use-cookie-parameters>
-                <xslt-processor-role>xalan</xslt-processor-role>
-            </map:transformer>
-			
-            <map:transformer logger="sitemap.transformer.saxon" name="saxon" pool-grow="2" pool-max="32" pool-min="8" src="org.apache.cocoon.transformation.TraxTransformer">
-                <use-request-parameters>false</use-request-parameters>
-                <use-session-parameters>false</use-session-parameters>
-                <use-cookie-parameters>false</use-cookie-parameters>
-                <xslt-processor-role>saxon</xslt-processor-role>
-            </map:transformer>
+    <!-- NOTE: This is the same as the default processor but with a different name (for compatibility) -->
+    <map:transformer logger="sitemap.transformer.xalan" name="xalan" pool-grow="2" pool-max="32" pool-min="8" src="org.apache.cocoon.transformation.TraxTransformer">
+      <use-request-parameters>false</use-request-parameters>
+      <use-session-parameters>false</use-session-parameters>
+      <use-cookie-parameters>false</use-cookie-parameters>
+      <xslt-processor-role>xalan</xslt-processor-role>
+      <check-includes>true</check-includes>
+    </map:transformer>
 
-            <map:transformer logger="sitemap.transformer.xinclude" name="xinclude" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.transformation.XIncludeTransformer"/>
-            <map:transformer logger="sitemap.transformer.cinclude" name="cinclude" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.transformation.CIncludeTransformer"/>
-            <map:transformer logger="sitemap.transformer.encodeURL" name="encodeURL" src="org.apache.cocoon.transformation.EncodeURLTransformer"/>
-            <map:transformer logger="sitemap.transformer.write-source" name="write-source" src="org.apache.cocoon.transformation.SourceWritingTransformer"/>
-            <map:transformer logger="sitemap.transformer.jpath" name="jpath" src="org.apache.cocoon.transformation.JPathTransformer"/>
-            <map:transformer logger="sitemap.transformer.filter" name="filter" src="org.apache.cocoon.transformation.FilterTransformer"/>
-            <map:transformer logger="sitemap.transformer.writeDOMsession" name="writeDOMsession" src="org.apache.cocoon.transformation.WriteDOMSessionTransformer"/>
-            <map:transformer logger="sitemap.transformer.readDOMsession" name="readDOMsession" src="org.apache.cocoon.transformation.ReadDOMSessionTransformer"/>
-            <map:transformer logger="sitemap.transformer.log" name="log" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.transformation.LogTransformer"/>
+    <!-- NOTE: You can also try XSLTC as the default processor. If you use Xalan extensions, use the "xalan" transformer. -->
+    <map:transformer logger="sitemap.transformer.xsltc" name="xsltc" pool-grow="2" pool-max="32" pool-min="8" src="org.apache.cocoon.transformation.TraxTransformer">
+      <use-request-parameters>false</use-request-parameters>
+      <use-session-parameters>false</use-session-parameters>
+      <use-cookie-parameters>false</use-cookie-parameters>
+      <xslt-processor-role>xsltc</xslt-processor-role>
+      <check-includes>true</check-includes>
+    </map:transformer>
 
-            <map:transformer logger="sitemap.transformer.sql" name="sql" src="org.apache.cocoon.transformation.SQLTransformer"/>
+    <map:transformer logger="sitemap.transformer.xinclude" name="xinclude" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.transformation.XIncludeTransformer"/>
+    <map:transformer logger="sitemap.transformer.cinclude" name="cinclude" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.transformation.CIncludeTransformer"/>
+    <map:transformer logger="sitemap.transformer.encodeURL" name="encodeURL" src="org.apache.cocoon.transformation.EncodeURLTransformer"/>
+    <map:transformer logger="sitemap.transformer.write-source" name="write-source" src="org.apache.cocoon.transformation.SourceWritingTransformer"/>
+    <map:transformer logger="sitemap.transformer.jpath" name="jpath" src="org.apache.cocoon.transformation.JPathTransformer"/>
+    <map:transformer logger="sitemap.transformer.filter" name="filter" src="org.apache.cocoon.transformation.FilterTransformer"/>
+    <map:transformer logger="sitemap.transformer.writeDOMsession" name="writeDOMsession" src="org.apache.cocoon.transformation.WriteDOMSessionTransformer"/>
+    <map:transformer logger="sitemap.transformer.readDOMsession" name="readDOMsession" src="org.apache.cocoon.transformation.ReadDOMSessionTransformer"/>
+    <map:transformer logger="sitemap.transformer.log" name="log" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.transformation.LogTransformer"/>
+    <map:transformer logger="sitemap.transformer.jx" name="jx" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.transformation.JXTemplateTransformer"/>
+    <map:transformer logger="sitemap.transformer.paginate" name="paginate" src="org.apache.cocoon.transformation.pagination.Paginator"/>
+  
 
-            <!--#######################################################-->
-            <!-- eXist's XMLDBTransformer                                                                   -->
-            <!--#######################################################-->
-            <map:transformer name="xmldb" src="org.exist.cocoon.XMLDBTransformer"/>
-        </map:transformers>
+   <map:transformer logger="sitemap.transformer.sql" name="sql" src="org.apache.cocoon.transformation.SQLTransformer"/>
+
+
+
+    <map:transformer logger="sitemap.transformer.xmldb" name="xmldb" src="org.apache.cocoon.transformation.XMLDBTransformer">
+      <!-- Driver class (optional). Uncomment if you want XMLDBTransformer
+           to create and register XML:DB database. Keep commented out if
+           database created somewhere else (for example, by XML:DB source factory)
+      <driver>org.apache.xindice.client.xmldb.embed.DatabaseImpl</driver>
+      -->
+      <base>xmldb:xindice-embed:///db</base>
+    </map:transformer>
+    
+	<!--#######################################################-->
+    <!-- eXist's XMLDBTransformer                              -->
+    <!--#######################################################-->
+    <map:transformer name="xmldb" src="org.exist.cocoon.XMLDBTransformer"/>
+</map:transformers>
 
   <!--+
       | Serializers consume SAX events and produce a character stream. Every
       | pipeline needs to be terminated by a serializer.
       +-->
-        <map:serializers default="html">
-            <map:serializer logger="sitemap.serializer.links" name="links" src="org.apache.cocoon.serialization.LinkSerializer"/>
-            <map:serializer logger="sitemap.serializer.xml" mime-type="text/xml" name="xml" src="org.apache.cocoon.serialization.XMLSerializer"/>
-            <map:serializer logger="sitemap.serializer.html" mime-type="text/html" name="html" pool-grow="4" pool-max="32" pool-min="4" src="org.apache.cocoon.serialization.HTMLSerializer">
-                <buffer-size>1024</buffer-size>
-            </map:serializer>
-            <map:serializer logger="sitemap.serializer.wml" mime-type="text/vnd.wap.wml" name="wml" src="org.apache.cocoon.serialization.XMLSerializer">
-                <doctype-public>-//WAPFORUM//DTD WML 1.1//EN</doctype-public>
-                <doctype-system>http://www.wapforum.org/DTD/wml_1.1.xml</doctype-system>
-                <encoding>ASCII</encoding>
-                <omit-xml-declaration>yes</omit-xml-declaration>
-            </map:serializer>
-            <map:serializer logger="sitemap.serializer.svgxml" mime-type="image/svg+xml" name="svgxml" src="org.apache.cocoon.serialization.XMLSerializer">
-                <doctype-public>-//W3C//DTD SVG 1.0//EN</doctype-public>
-                <doctype-system>http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd</doctype-system>
-            </map:serializer>
-            <map:serializer logger="sitemap.serializer.xhtml" mime-type="text/html" name="xhtml" pool-grow="2" pool-max="64" pool-min="2" src="org.apache.cocoon.serialization.XMLSerializer">
+  <map:serializers default="html">
+    <map:serializer logger="sitemap.serializer.links" name="links" src="org.apache.cocoon.serialization.LinkSerializer"/>
+    <map:serializer logger="sitemap.serializer.xml" mime-type="text/xml" name="xml" src="org.apache.cocoon.serialization.XMLSerializer"/>
+    <map:serializer logger="sitemap.serializer.html" mime-type="text/html" name="html" pool-grow="4" pool-max="32" pool-min="4" src="org.apache.cocoon.serialization.HTMLSerializer">
+      <doctype-public>-//W3C//DTD HTML 4.01 Transitional//EN</doctype-public>
+      <doctype-system>http://www.w3.org/TR/html4/loose.dtd</doctype-system>
+    </map:serializer>
+    <map:serializer logger="sitemap.serializer.wml" mime-type="text/vnd.wap.wml" name="wml" src="org.apache.cocoon.serialization.XMLSerializer">
+     <doctype-public>-//WAPFORUM//DTD WML 1.1//EN</doctype-public>
+     <doctype-system>http://www.wapforum.org/DTD/wml_1.1.xml</doctype-system>
+     <encoding>ASCII</encoding>
+     <omit-xml-declaration>yes</omit-xml-declaration>
+    </map:serializer>
+    <map:serializer logger="sitemap.serializer.chtml" mime-type="text/html" name="chtml" src="org.apache.cocoon.serialization.HTMLSerializer">
+     <!--+ Compact HTML for Small Information Appliances,
+         | based on http://www.w3.org/TR/1998/NOTE-compactHTML-19980209/
+         + -->
+     <doctype-public>-//W3C//DTD Compact HTML 1.0 Draft//EN</doctype-public>
+    </map:serializer>
+    <map:serializer logger="sitemap.serializer.svgxml" mime-type="image/svg+xml" name="svgxml" src="org.apache.cocoon.serialization.XMLSerializer">
+     <doctype-public>-//W3C//DTD SVG 1.0//EN</doctype-public>
+     <doctype-system>http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd</doctype-system>
+    </map:serializer>
+    <map:serializer logger="sitemap.serializer.xhtml" mime-type="text/html" name="xhtml" pool-grow="2" pool-max="64" pool-min="2" src="org.apache.cocoon.serialization.XMLSerializer">
       <!--+
           | You can choose from Strict, Transitional, or Frameset XHTML.
-          | For Strict XHTML, set doctype to:
+          | For Strict XHTML set doctype to:
           |   <doctype-public>-//W3C//DTD XHTML 1.0 Strict//EN</doctype-public>
           |   <doctype-system>http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd</doctype-system>
-          | For Transitional XHTML, set doctype to:
+          | For Transitional XHTML set doctype to:
           |   <doctype-public>-//W3C//DTD XHTML 1.0 Transitional//EN</doctype-public>
           |   <doctype-system>http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd</doctype-system>
-          | For Frameset XHTML, set doctype to:
+          | For Frameset XHTML set doctype to:
           |   <doctype-public>-//W3C//DTD XHTML 1.0 Frameset//EN</doctype-public>
           |   <doctype-system>http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd</doctype-system>
           |
           | Default XHTML doctype in Cocoon is XHTML Strict. If you want to use more than one
-          | XHTML DTD simulteneously, you can define several XHTML serializers.
+          | XHTML DTD simultaneously, you can define several XHTML serializers.
           +-->
-                <doctype-public>-//W3C//DTD XHTML 1.0 Strict//EN</doctype-public>
-                <doctype-system>http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd</doctype-system>
-                <encoding>UTF-8</encoding>
-            </map:serializer>
-            <map:serializer logger="sitemap.serializer.xhtml" mime-type="text/html" name="xhtml11" pool-grow="2" pool-max="64" pool-min="2" src="org.apache.cocoon.serialization.XMLSerializer">
-                <doctype-public>-//W3C//DTD XHTML 1.1//EN</doctype-public>
-                <doctype-system>http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd</doctype-system>
-                <encoding>UTF-8</encoding>
-            </map:serializer>
-            <map:serializer logger="sitemap.serializer.text" mime-type="text/plain" name="text" src="org.apache.cocoon.serialization.TextSerializer"/>
-            <map:serializer logger="sitemap.serializer.vrml" mime-type="model/vrml" name="vrml" src="org.apache.cocoon.serialization.TextSerializer"/>
-            <map:serializer logger="sitemap.serializer.zip" mime-type="application/zip" name="zip" src="org.apache.cocoon.serialization.ZipArchiveSerializer"/>
-            <map:serializer logger="sitemap.serializer.sxw" mime-type="application/vnd.sun.xml.writer" name="sxw" src="org.apache.cocoon.serialization.ZipArchiveSerializer"/>
-            <map:serializer logger="sitemap.serializer.sxc" mime-type="application/vnd.sun.xml.calc" name="sxc" src="org.apache.cocoon.serialization.ZipArchiveSerializer"/>
-            <map:serializer logger="sitemap.serializer.sxd" mime-type="application/vnd.sun.xml.draw" name="sxd" src="org.apache.cocoon.serialization.ZipArchiveSerializer"/>
-            <map:serializer logger="sitemap.serializer.sxi" mime-type="application/vnd.sun.xml.impress" name="sxi" src="org.apache.cocoon.serialization.ZipArchiveSerializer"/>
-        </map:serializers>
+      <doctype-public>-//W3C//DTD XHTML 1.0 Strict//EN</doctype-public>
+      <doctype-system>http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd</doctype-system>
+      <encoding>UTF-8</encoding>
+    </map:serializer>
+    <map:serializer logger="sitemap.serializer.xhtml" mime-type="application/xhtml+xml" name="xhtml11" pool-grow="2" pool-max="64" pool-min="2" src="org.apache.cocoon.serialization.XMLSerializer">
+      <doctype-public>-//W3C//DTD XHTML 1.1//EN</doctype-public>
+      <doctype-system>http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd</doctype-system>
+      <encoding>UTF-8</encoding>
+    </map:serializer>   
+    <map:serializer logger="sitemap.serializer.text" mime-type="text/plain" name="text" src="org.apache.cocoon.serialization.TextSerializer"/>
+    <map:serializer logger="sitemap.serializer.vrml" mime-type="model/vrml" name="vrml" src="org.apache.cocoon.serialization.TextSerializer"/>
+    <map:serializer logger="sitemap.serializer.zip" mime-type="application/zip" name="zip" src="org.apache.cocoon.serialization.ZipArchiveSerializer"/>
+    <map:serializer logger="sitemap.serializer.sxw" mime-type="application/vnd.sun.xml.writer" name="sxw" src="org.apache.cocoon.serialization.ZipArchiveSerializer"/>
+    <map:serializer logger="sitemap.serializer.sxc" mime-type="application/vnd.sun.xml.calc" name="sxc" src="org.apache.cocoon.serialization.ZipArchiveSerializer"/>
+    <map:serializer logger="sitemap.serializer.sxd" mime-type="application/vnd.sun.xml.draw" name="sxd" src="org.apache.cocoon.serialization.ZipArchiveSerializer"/>
+    <map:serializer logger="sitemap.serializer.sxi" mime-type="application/vnd.sun.xml.impress" name="sxi" src="org.apache.cocoon.serialization.ZipArchiveSerializer"/>
+  </map:serializers>
 
   <!--+
       | Readers circumvent the XML oriented SAX pipeline model, think of a reader
@@ -177,9 +205,10 @@
       | contain any generator, transformer or serializer in addition to a
       | reader. They are useful for delivering binary content like images.
       +-->
-        <map:readers default="resource">
-            <map:reader logger="sitemap.reader.resource" name="resource" pool-max="32" src="org.apache.cocoon.reading.ResourceReader"/>
-        </map:readers>
+  <map:readers default="resource">
+    <map:reader logger="sitemap.reader.resource" name="resource" pool-max="32" src="org.apache.cocoon.reading.ResourceReader"/>
+    <map:reader logger="sitemap.reader.image" name="image" src="org.apache.cocoon.reading.ImageReader"/>
+  </map:readers>
 
   <!--+
       | Matchers are executed during pipeline setup. They decide if a
@@ -189,48 +218,51 @@
       | a matcher has a generator as well as a serializer. This is not a
       | necessity, matchers can be nested while chaining does not work.
       +-->
-        <map:matchers default="wildcard">
-            <map:matcher logger="sitemap.matcher.wildcard" name="wildcard" src="org.apache.cocoon.matching.WildcardURIMatcher"/>
-            <map:matcher logger="sitemap.matcher.regexp" name="regexp" src="org.apache.cocoon.matching.RegexpURIMatcher"/>
-            <map:matcher logger="sitemap.matcher.request-parameter" name="request-parameter" src="org.apache.cocoon.matching.RequestParameterMatcher"/>
-            <map:matcher logger="sitemap.matcher.cookie" name="cookie" src="org.apache.cocoon.matching.CookieMatcher"/>
-            <map:matcher logger="sitemap.matcher.header" name="header" src="org.apache.cocoon.matching.HeaderMatcher"/>
-            <map:matcher logger="sitemap.matcher.parameter" name="parameter" src="org.apache.cocoon.matching.ParameterMatcher"/>
-            <map:matcher logger="sitemap.matcher.sessionstate" name="sessionstate" src="org.apache.cocoon.matching.WildcardSessionAttributeMatcher">
-                <attribute-name>org.apache.cocoon.SessionState</attribute-name>
-            </map:matcher>
-            <map:matcher logger="sitemap.matcher.referer-match" name="referer-match" src="org.apache.cocoon.matching.WildcardHeaderMatcher">
-                <header-name>referer</header-name>
-            </map:matcher>
-        </map:matchers>
+  <map:matchers default="wildcard">
+    <map:matcher logger="sitemap.matcher.wildcard" name="wildcard" src="org.apache.cocoon.matching.WildcardURIMatcher"/>
+    <map:matcher logger="sitemap.matcher.regexp" name="regexp" src="org.apache.cocoon.matching.RegexpURIMatcher"/>
+    <map:matcher logger="sitemap.matcher.request-parameter" name="request-parameter" src="org.apache.cocoon.matching.RequestParameterMatcher"/>
+    <map:matcher logger="sitemap.matcher.cookie" name="cookie" src="org.apache.cocoon.matching.CookieMatcher"/>
+    <map:matcher logger="sitemap.matcher.header" name="header" src="org.apache.cocoon.matching.HeaderMatcher"/>
+    <map:matcher logger="sitemap.matcher.parameter" name="parameter" src="org.apache.cocoon.matching.ParameterMatcher"/>
+    <map:matcher logger="sitemap.matcher.sessionstate" name="sessionstate" src="org.apache.cocoon.matching.WildcardSessionAttributeMatcher">
+      <attribute-name>org.apache.cocoon.SessionState</attribute-name>
+    </map:matcher>
+    <map:matcher logger="sitemap.matcher.referer-match" name="referer-match" src="org.apache.cocoon.matching.WildcardHeaderMatcher">
+      <header-name>referer</header-name>
+    </map:matcher>
+    <map:matcher name="mount-table" src="org.apache.cocoon.matching.MountTableMatcher">
+      <map:parameter name="ignore-missing-tables" value="true"/>
+    </map:matcher>
+  </map:matchers>
 
   <!--+
       | Selectors are executed during pipeline setup. They can be used to
       | determine which pipeline fragments should be combined. They are best
       | compared with a java switch statement.
       +-->
-        <map:selectors default="browser">
-            <map:selector logger="sitemap.selector.browser" name="browser" src="org.apache.cocoon.selection.BrowserSelector">
+  <map:selectors default="browser">
+   <map:selector logger="sitemap.selector.browser" name="browser" src="org.apache.cocoon.selection.BrowserSelector">
     <!--+
         | NOTE: The appearance indicates the search order. This is very important since
         |       some words may be found in more than one browser description. (MSIE is
         |       presented as "Mozilla/4.0 (Compatible; MSIE 4.01; ...")
         +-->
-                <browser name="explorer" useragent="MSIE"/>
-                <browser name="pocketexplorer" useragent="MSPIE"/>
-                <browser name="handweb" useragent="HandHTTP"/>
-                <browser name="avantgo" useragent="AvantGo"/>
-                <browser name="imode" useragent="DoCoMo"/>
-                <browser name="opera" useragent="Opera"/>
-                <browser name="lynx" useragent="Lynx"/>
-                <browser name="java" useragent="Java"/>
-                <browser name="wap" useragent="Nokia"/>
-                <browser name="wap" useragent="UP"/>
-                <browser name="wap" useragent="Wapalizer"/>
-                <browser name="mozilla5" useragent="Mozilla/5"/>
-                <browser name="mozilla5" useragent="Netscape6/"/>
-                <browser name="netscape" useragent="Mozilla"/>
-            </map:selector>
+    <browser name="explorer" useragent="MSIE"/>
+    <browser name="pocketexplorer" useragent="MSPIE"/>
+    <browser name="handweb" useragent="HandHTTP"/>
+    <browser name="avantgo" useragent="AvantGo"/>
+    <browser name="imode" useragent="DoCoMo"/>
+    <browser name="opera" useragent="Opera"/>
+    <browser name="lynx" useragent="Lynx"/>
+    <browser name="java" useragent="Java"/>
+    <browser name="wap" useragent="Nokia"/>
+    <browser name="wap" useragent="UP"/>
+    <browser name="wap" useragent="Wapalizer"/>
+    <browser name="mozilla5" useragent="Mozilla/5"/>
+    <browser name="mozilla5" useragent="Netscape6/"/>
+    <browser name="netscape" useragent="Mozilla"/>
+   </map:selector>
    
    <!--+
        | Exception selector : used in <map:handle> errors to build different pipelines
@@ -239,28 +271,34 @@
        | which is used in the <map:when> tests.
        | An exception can also be "unrolled", meaning that cascaded exception will be checked.
        +-->
-            <map:selector logger="sitemap.selector.exception" name="exception" src="org.apache.cocoon.selection.ExceptionSelector">
-                <exception class="org.apache.cocoon.ResourceNotFoundException" name="not-found"/>
-                <exception class="org.apache.cocoon.components.flow.InvalidContinuationException" name="invalid-continuation"/>
+   <map:selector logger="sitemap.selector.exception" name="exception" src="org.apache.cocoon.selection.ExceptionSelector">
+     <exception class="org.apache.cocoon.ResourceNotFoundException" name="not-found"/>
+     <exception class="org.apache.cocoon.components.flow.InvalidContinuationException" name="invalid-continuation"/>
      <!-- The statement below tells the selector to unroll as much exceptions as possible -->
-                <exception class="java.lang.Throwable" unroll="true"/>
-            </map:selector>
+     <exception class="java.lang.Throwable" unroll="true"/>
+   </map:selector>
 
-
-            <map:selector logger="sitemap.selector.request-parameter" name="request-parameter" src="org.apache.cocoon.selection.RequestParameterSelector">
+   <map:selector logger="sitemap.selector.request-method" name="request-method" src="org.apache.cocoon.selection.RequestMethodSelector"/>
+   <map:selector logger="sitemap.selector.resource-exists" name="resource-exists" src="org.apache.cocoon.selection.ResourceExistsSelector"/>
+   <map:selector logger="sitemap.selector.request-parameter" name="request-parameter" src="org.apache.cocoon.selection.RequestParameterSelector">
     <!-- Define now which request parameter to use; or do it later,
          when using this selector, via "parameter-name" parameter.
     <parameter-name>myparam</parameter-name> 
-    --></map:selector>
-            <map:selector logger="sitemap.selector.request-attribute" name="request-attribute" src="org.apache.cocoon.selection.RequestAttributeSelector">
-    <!-- <attribute-name>myparam</attribute-name> --></map:selector>
-            <map:selector logger="sitemap.selector.session-attribute" name="session-attribute" src="org.apache.cocoon.selection.SessionAttributeSelector">
-    <!-- <attribute-name>myparam</attribute-name> --></map:selector>
-            <map:selector logger="sitemap.selector.parameter" name="parameter" src="org.apache.cocoon.selection.ParameterSelector"/>
-            <map:selector logger="sitemap.selector.header" name="header" src="org.apache.cocoon.selection.HeaderSelector">
-    <!-- <header-name>myparam</header-name> --></map:selector>
-            <map:selector logger="sitemap.selector.host" name="host" src="org.apache.cocoon.selection.HostSelector"/>
-        </map:selectors>
+    -->
+   </map:selector>
+   <map:selector logger="sitemap.selector.request-attribute" name="request-attribute" src="org.apache.cocoon.selection.RequestAttributeSelector">
+    <!-- <attribute-name>myparam</attribute-name> -->
+   </map:selector>
+   <map:selector logger="sitemap.selector.session-attribute" name="session-attribute" src="org.apache.cocoon.selection.SessionAttributeSelector">
+    <!-- <attribute-name>myparam</attribute-name> -->
+   </map:selector>
+   <map:selector logger="sitemap.selector.parameter" name="parameter" src="org.apache.cocoon.selection.ParameterSelector"/>
+   <map:selector logger="sitemap.selector.header" name="header" src="org.apache.cocoon.selection.HeaderSelector">
+    <!-- <header-name>myparam</header-name> -->
+   </map:selector>
+   <map:selector logger="sitemap.selector.host" name="host" src="org.apache.cocoon.selection.HostSelector"/>
+   <map:selector logger="sitemap.selector.simple" name="simple" src="org.apache.cocoon.selection.SimpleSelector"/>
+  </map:selectors>
 
   <!--+
       | Actions are executed during pipeline setup. Their purpose is to
@@ -271,23 +309,29 @@
       | nested inside the action element is executed, otherwise, it's skipped
       | entirely and execution proceeds from the element right below the action.
       +-->
-        <map:actions>
-            <map:action logger="sitemap.action.request" name="request" src="org.apache.cocoon.acting.RequestParamAction"/>
-            <map:action logger="sitemap.action.form-validator" name="form-validator" src="org.apache.cocoon.acting.FormValidatorAction"/>
-            <map:action logger="sitemap.action.session-state" name="session-state" src="org.apache.cocoon.acting.SessionStateAction"/>
-            <map:action logger="sitemap.action.session-isvalid" name="session-isvalid" src="org.apache.cocoon.acting.SessionIsValidAction"/>
-            <map:action logger="sitemap.action.resource-exists" name="resource-exists" src="org.apache.cocoon.acting.ResourceExistsAction"/>
-            <map:action logger="sitemap.action.set-header" name="set-header" src="org.apache.cocoon.acting.HttpHeaderAction"/>
-            <map:action logger="sitemap.action.clear-cache" name="clear-cache" src="org.apache.cocoon.acting.ClearCacheAction"/>
-            <map:action logger="sitemap.action.clear-persistent-store" name="clear-persistent-store" src="org.apache.cocoon.acting.ClearPersistentStoreAction"/>
+  <map:actions>
+   <map:action logger="sitemap.action.request" name="request" src="org.apache.cocoon.acting.RequestParamAction"/>
+   <map:action logger="sitemap.action.requestParamExists" name="req-params" src="org.apache.cocoon.acting.RequestParameterExistsAction"/>
+   <map:action logger="sitemap.action.form-validator" name="form-validator" src="org.apache.cocoon.acting.FormValidatorAction"/>
+   <map:action logger="sitemap.action.session-state" name="session-state" src="org.apache.cocoon.acting.SessionStateAction"/>
+   <map:action logger="sitemap.action.session-isvalid" name="session-isvalid" src="org.apache.cocoon.acting.SessionIsValidAction"/>
+   <map:action logger="sitemap.action.session-validator" name="session-validator" src="org.apache.cocoon.acting.SessionValidatorAction"/>
+   <map:action logger="sitemap.action.session-invalidator" name="session-invalidator" src="org.apache.cocoon.acting.SessionInvalidatorAction"/>
+   <map:action logger="sitemap.action.resource-exists" name="resource-exists" src="org.apache.cocoon.acting.ResourceExistsAction"/>
+   <map:action logger="sitemap.action.set-header" name="set-header" src="org.apache.cocoon.acting.HttpHeaderAction"/>
+   <map:action logger="sitemap.action.clear-cache" name="clear-cache" src="org.apache.cocoon.acting.ClearCacheAction"/>
+   <map:action logger="sitemap.action.clear-persistent-store" name="clear-persistent-store" src="org.apache.cocoon.acting.ClearPersistentStoreAction"/>
+   <map:action logger="sitemap.action.locale" name="locale" src="org.apache.cocoon.acting.LocaleAction"/>
+  
+   <map:action logger="sitemap.action.serverpages" name="serverpages" pool-grow="2" pool-max="32" pool-min="4" src="org.apache.cocoon.acting.ServerPagesAction"/>
 
-            <!--#######################################################-->
-            <!-- Register eXist's XMLDBSessionLoginAction                                           -->
-            <!--#######################################################-->
-            <map:action logger="sitemap.action.xmldb.login" name="xmldb-login" src="org.exist.cocoon.XMLDBSessionLoginAction"/>
-            <map:action logger="sitemap.action.xmldb.shutdown"
-                    name="xmldb-shutdown" src="org.exist.cocoon.ShutdownAction"/>
-        </map:actions>
+   <!--#######################################################-->
+   <!-- Register eXist's XMLDBSessionLoginAction              -->
+   <!--#######################################################-->
+   <map:action logger="sitemap.action.xmldb.login" name="xmldb-login" src="org.exist.cocoon.XMLDBSessionLoginAction"/>
+   <map:action logger="sitemap.action.xmldb.shutdown" name="xmldb-shutdown"
+		src="org.exist.cocoon.ShutdownAction"/>
+</map:actions>
 
   <!--+
       | The different pipe implementations
@@ -326,13 +370,31 @@
       | manually indicate that certain pipeline-components should be considered as
       | cache points.
       +-->
-        <map:pipes default="caching">
-            <map:pipe name="caching" src="org.apache.cocoon.components.pipeline.impl.CachingProcessingPipeline"/>
-            <map:pipe name="caching-point" src="org.apache.cocoon.components.pipeline.impl.CachingPointProcessingPipeline">
-                <autoCachingPoint>On</autoCachingPoint>
-            </map:pipe>
-            <map:pipe name="noncaching" src="org.apache.cocoon.components.pipeline.impl.NonCachingProcessingPipeline"/>
-        </map:pipes>
+   <map:pipes default="caching">
+     <map:pipe name="caching" src="org.apache.cocoon.components.pipeline.impl.CachingProcessingPipeline">
+       <!--+
+           | If not specified, the value of the outputBufferSize parameter is -1.
+           | This will cause Cocoon to buffer all output until processing has finished
+           | before sending it to the client. This has the advantage that in case
+           | an error occurs during the processing of the SAX-pipeline, Cocoon is still
+           | able to reset the response and send an error page instead. Otherwise the
+           | error page will be appended to the output already send to the client. 
+           | If you are generating larger pages, it might be benificial to enable
+           | this parameter, so that output is gradually send to the client as it
+           | is being generated.
+           | For more granularity, you can also supply this parameter to
+           | individual map:pipeline elements (using map:parameter syntax).
+           +-->
+       <!-- parameter name="outputBufferSize" value="8192"/ -->
+     </map:pipe>
+     <map:pipe name="caching-point" src="org.apache.cocoon.components.pipeline.impl.CachingPointProcessingPipeline">
+       <parameter name="autoCachingPoint" value="On"/>
+       <!-- parameter name="outputBufferSize" value="8192"/ -->
+     </map:pipe>
+     <map:pipe name="noncaching" src="org.apache.cocoon.components.pipeline.impl.NonCachingProcessingPipeline">
+       <!-- parameter name="outputBufferSize" value="8192"/ -->
+     </map:pipe>
+   </map:pipes>
 
     </map:components>
 
@@ -469,6 +531,10 @@
                 <map:transform src="stylesheets/db2html.xsl"/>
                 <map:serialize type="html"/>
             </map:match> 
+
+			<map:match pattern="xmldb/db/xinclude/**.jpg">
+				<map:read type="image" src="xmldb:exist:///db/xinclude/{1}.jpg"/>
+			</map:match>
 
             <!-- apply stylesheet shakes.xsl to all XML documents -->
             <!-- in xmldb-collection /db/shakespeare/plays -->
