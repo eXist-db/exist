@@ -270,11 +270,14 @@ public abstract class Modification {
 		 * @see org.exist.dom.NodeIndexListener#nodeChanged(long, long)
 		 */
 		public void nodeChanged(long oldAddress, long newAddress) {
-			for (int i = 0; i < nodes.length; i++) {
-				if (StorageAddress.equals(nodes[i].getInternalAddress(), oldAddress)) {
-					nodes[i].setInternalAddress(newAddress);
-				}
-			}
+			// Ignore the address change
+			// TODO: is this really save?
+			
+//			for (int i = 0; i < nodes.length; i++) {
+//				if (StorageAddress.equals(nodes[i].getInternalAddress(), oldAddress)) {
+//					nodes[i].setInternalAddress(newAddress);
+//				}
+//			}
 
 		}
 
