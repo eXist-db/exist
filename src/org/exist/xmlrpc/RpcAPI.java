@@ -23,6 +23,7 @@ package org.exist.xmlrpc;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Vector;
+import java.io.IOException;
 
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
@@ -669,4 +670,10 @@ public interface RpcAPI {
 		
 	boolean copyCollection(User user, String name, String namedest)
 	    throws PermissionDeniedException, EXistException;
+
+	Vector getDocumentChunk(User user, String name, Hashtable parameters)
+	throws EXistException, PermissionDeniedException, IOException;
+	
+	byte[] getDocumentChunk(User user, String name, int start, int stop)
+	throws EXistException, PermissionDeniedException, IOException;
 }

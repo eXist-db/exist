@@ -76,6 +76,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import antlr.collections.AST;
+import java.io.RandomAccessFile;
 
 /**
  * This class implements the actual methods defined by
@@ -1765,4 +1766,21 @@ public class RpcConnection extends Thread {
 		}
 	}
 
+//	FIXME: Check it for possible security hole. Check name.
+	public byte[] getDocumentChunk(User user, String name, int start, int len)
+			throws EXistException, PermissionDeniedException, IOException {
+		File file = new File(System.getProperty("java.io.tmpdir")
+				+ File.separator + name);
+		if (!file.canRead())
+			throw new EXistException("unable to read file " + name);
+		if (file.length() < start+len)
+			throw new EXistException("address too big " + name);
+		byte buffer[] = new byte[len];
+		RandomAccessFile os = new RandomAccessFile(file.getAbsolutePath(), "r");
+		LOG.debug("Read from: " + start + " to: " + (start + len));
+		os.seek(start);
+		int reada = os.read(buffer);
+		os.close();
+		return buffer;
+	}
 }
