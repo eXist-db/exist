@@ -92,6 +92,7 @@ public class FunContains extends Function {
 					parent = nodes.parentWithChild(current, false, true);
 					if (parent != null) {
 						if(temp.contains(parent)) {
+							parent = temp.get(parent);
 							parent.addMatches(current.matches);
 						} else {
 							parent.addMatches(current.matches);

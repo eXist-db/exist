@@ -80,6 +80,7 @@ public abstract class NodeSet implements NodeList {
     public abstract int getLength();
     public abstract Node item(int pos);
     public abstract NodeProxy get(int pos);
+    public abstract NodeProxy get(NodeProxy p);
     public abstract NodeProxy get(DocumentImpl doc, long nodeId);
 
     //public abstract int getLast();
