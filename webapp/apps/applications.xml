@@ -1,0 +1,14 @@
+<applications>
+ <application open-source='yes'>
+   <name>Botanical Database</name>
+   <domain>biology, taxonomy, botany</domain>
+   <description> Search engine for Flora of China descriptions.
+     Aims at being a computer-aided identification tool for specimens.
+   </description>
+   <author>J.M. Vanel - http://jmvanel.free.fr/ </author>
+   <production-site> http://jmvanel.free.fr/protea.html</production-site>
+   <dev-site> http://wwbota.free.fr/</dev-site>
+   <dev-notes> XSP pages, XSLT styles, java classes interpretating user input and generating XQuery </dev-notes>
+   <institution> Worldwide Botanical Knowledge </institution>
+ </application>
+</applications>
