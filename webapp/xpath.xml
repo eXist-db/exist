@@ -12,7 +12,7 @@
       <firstname>Wolfgang M.</firstname>
       <surname>Meier</surname>
       <affiliation>
-        <address format="linespecific"> <email>meier@ifs.tu-darmstadt.de</email> </address>
+		  <address format="linespecific"> <email>wolfgang@exist-db.org</email> </address>
       </affiliation>
     </author>
   </bookinfo>

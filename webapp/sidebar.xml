@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sidebar title="Navigation" xmlns="http://exist-db.org/NS/sidebar">
     <group href="index.xml" name="Home"/>
+	<group name="Donations" href="donations.xml"/>
     <group name="Documentation">
         <item id="features">
             <link href="features.xml">Features</link>
@@ -10,6 +11,9 @@
         </item>
         <item>
             <link href="quickstart.xml">Quick Start</link>
+        </item>
+        <item>
+        	<link href="client.xml">Command-Line Client</link>
         </item>
         <item>
             <link href="deployment.xml">Deployment</link>
@@ -25,9 +29,6 @@
         </item>
         <item>
             <link href="devguide.xml">Developer's Guide</link>
-        </item>
-        <item>
-        	<link href="client.xml">Command-Line Client</link>
         </item>
         <item>
             <link href="index.xml#articles">Articles</link>
@@ -46,7 +47,7 @@
         <item>
             <link href="howtos.xml">Misc HowTos</link>
         </item>
-    </group>
+	</group>
     <group name="Examples">
         <item>
             <link href="simple/xquery.xsp">Query interface</link>

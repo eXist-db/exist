@@ -3,5 +3,5 @@
 <header>
     <logo src="logo.jpg"/>
     <title>Open Source XML Database</title>
-    <author email="meier@ifs.tu-darmstadt.de">Wolfgang M. Meier</author>
+	<author email="wolfgang@exist-db.org">Wolfgang M. Meier</author>
 </header>

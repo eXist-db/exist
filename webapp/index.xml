@@ -6,7 +6,19 @@
     <ci:include src="sidebar.xml"/>
     <body>
         <section title="News">
-            <definitionlist>
+			<definitionlist>
+				<definition>
+					<term>
+						<b>August 8, 2003</b>
+					</term>
+					<def>0.9.2 is out! This is the first official release with support for
+						XUpdate. Also, much effort has been invested to ensure
+						that East Asian character encodings are correctly processed by the database
+						as well as the query engine. Further changes include: important missing 
+						parts of the XPath spec have been implemented, more synchronization and
+						database corruption bugs have been fixed and interfaces improved.
+					</def>
+				</definition>
             	<definition>
             		<term>
             			<b>April 7, 2003</b>
@@ -20,19 +32,6 @@
             		and an IzPack-based installer. For a complete list of changes see 
             		<link href="changes.xml">changes.xml</link>.</def>
             	</definition>
-                <definition>
-                    <term>
-						<b>January 14, 2003</b>
-                    </term>
-					<def>Version 0.9 is out! This release fixes some of the remaining weak points of eXist,
-						namely indexing performance and scalability. Storing more than 
-						just a few megabytes into a single database collection is no longer a 
-						problem, index files consume less disk space and indexing speed
-						improved by an order of magnitude. New features include support
-						for user authentication, access control and basic XInclude on
-						the server. Version 0.9 also includes a lot of bug-fixes.
-					</def>
-                </definition>
             </definitionlist>
         </section>
         <section id="overview" title="Overview">
@@ -98,21 +97,22 @@
             </table>
         </section>
         <section id="download" title="Download">
-            <p>eXist is released to the public under the <link
+			<p>eXist is released to the public under the terms of the <link
                     href="http://www.gnu.org/copyleft/lesser.html">GNU
-                LGPL</link> license.</p>
-            <p>eXist may be downloaded either as a zip package containing the
+					LGPL</link> license.</p>
+			<p>eXist may be downloaded either as a package containing the
                 complete distribution or as a web application archive
                 (war-file). Download the war-file if you want to install eXist
-                into an existing servlet-engine or write your own web application. 
-                To get started, I suggest downloading the zip package, which does
-                also contain a ready-to-run webserver (Jetty).</p>
+				into an existing servlet-engine or write your own web 
+				application. To get started, we suggest downloading the 
+				installer or the zip package. Both contain a ready-to-run
+				webserver (Jetty).</p>
             <p>The distribution includes source code and all required third
                 party libraries. Java version 1.4 or above is needed. The distribution has been
                 tested on Linux, Solaris and Windows 2000/ME with Suns JDK 1.4
                 and IBM JDK 1.4. If you experience any problems on other
                 operating systems, please send me a bug report.</p>
-            <p>The current version is 0.9. For instructions on starting eXist,
+            <p>The current version is 0.9.2. For instructions on starting eXist,
                 read the <link href="quickstart.xml">Quick Start Guide</link>.</p>
             <table cellpadding="5" cellspacing="5">
                 <tr>
@@ -120,47 +120,48 @@
                 </tr>
                 <tr>
                     <td>
-                        <a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.1-install.jar">eXist-0.9.1-install.jar</a>
+						<a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.2-install.jar">eXist-0.9.2-install.jar</a>
                     </td>
-                    <td>Installer based on IzPack. Run with <tt>java -jar eXist-0.9.1-install.jar</tt>.</td>
+					<td>Installer based on IzPack. Run with <tt>java -jar eXist-0.9.2-install.jar</tt>.</td>
                 </tr>
                 <tr>
                     <td>
-                        <a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.1.tar.gz">eXist-0.9.1.tar.gz</a>
+						<a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.2.tar.gz">eXist-0.9.2.tar.gz</a>
                     </td>
                     <td>Distribution including source code and required
                         third-party libraries. Packed with tar and gzip.</td>
                 </tr>
                 <tr>
                     <td>
-                        <a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.1.zip">eXist-0.9.1.zip</a>
+						<a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.2.zip">eXist-0.9.2.zip</a>
                     </td>
                     <td>Distribution packed with ZIP.</td>
                 </tr>
                 <tr>
                     <td>
-                        <a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.1.war">eXist-0.9.1.war</a>
+						<a href="http://prdownloads.sourceforge.net/exist/eXist-0.9.2.war">eXist-0.9.2.war</a>
                     </td>
                     <td>Web application archive, ready to be installed into an
                         existing servlet-engine like Tomcat or Jetty.</td>
-                </tr>
-            </table>
-            <p>eXist is Open Source and free to everyone. However, you may consider to make a donation
-            for the enhancement and further development of the software. Just click the 
-            <emphasis>PayPal</emphasis> button below. Making a donation implies extra email-support by the
-            maintainer. Donations help to improve the quality of the software and to implement 
-            missing features.</p>
-            <p>
-                <A HREF="https://www.paypal.com/affil/pal=sbhati%40web.de" target="_blank">
-                    <IMG ALT="Donations via PayPal!" BORDER="0" SRC="http://images.paypal.com/images/lgo/logo3.gif"/>
-                </A>
-            </p>
+				</tr>
+				<tr>
+					<th align="left" colspan="2">Development Snapshots</th>
+				</tr>
+				<tr>
+					<td colspan="2">We started to release frequent development 
+					snapshots. The snapshots reflect the current state of 
+					development. You can find them in the unstable package on 
+					the <a href="http://sourceforge.net/project/showfiles.php?group_id=17691">Sourceforge file release system.</a></td>
+				</tr>
+			</table>
         </section>
         <section title="Mailing list">
-            <p>There's also a <link
+			<p>There's a <link
                     href="http://sourceforge.net/mail/?group_id=17691">mailing
                 list</link> on sourceforge. If you are interested in using or
-                contributing to eXist, you are encouraged to join the list.</p>
+			contributing to eXist, you are encouraged to join the list.</p>
+
+			<p>The list is archived at <a href="http://news.gmane.org/thread.php?group=gmane.text.xml.exist">Gmane</a>.</p>
         </section>
         <section id="articles" title="Articles">
             <p>If you would like to know more about the internal workings of eXist, you may
@@ -222,11 +223,11 @@
                 </tr>
                 <tr>
                     <td>Java:</td>
-                    <td>JDK 1.4</td>
+					<td>JDK >1.4</td>
                 </tr>
                 <tr>
                     <td>Tested platforms:</td>
-                    <td>Linux (SuSE 7.1, Mandrake 8.2/9.0), Solaris 8, Windows 2000/ME</td>
+					<td>Linux (SuSE 7.1, Mandrake 9.1), Solaris 8, Windows 2000/XP</td>
                 </tr>
             </table>
             <table border="0" cellpadding="5" cellspacing="5">
@@ -249,7 +250,7 @@
                     </th>
                 </tr>
                 <tr>
-                    <td valign="top">Max. number of documents per collection:</td>
+					<td valign="top">Max. number of documents in the database:</td>
                     <td>2<sup>31</sup> documents.</td>
                 </tr>
                 <tr>
@@ -264,7 +265,9 @@
                         level of the tree's node hierarchy. Thus, the long
                         identifiers are normally more than sufficient to index
                         large documents, because only a few identifiers are
-                        wasted for the balancing. However, there are some documents
+						wasted for the balancing. 
+						
+						However, there are some documents
                         with a very irregular structure,
                         which cannot be mapped into the internal identifer scheme. Such
                         documents have to be split into smaller, logical parts.</td>
@@ -294,7 +297,17 @@
                         <p>The XPath implementation still needs some work to be
                             done. A new implementation is on its way.</p>
                     </listitem>
-                </varlistentry>
+				</varlistentry>
+				<varlistentry>
+					<term>Stored procedures/Constraints</term>
+					<listitem>
+						<p>I would like to enhance the pre- and postprocessing
+						features of eXist, probably by using concepts similar
+						to Cocoon. Each collection could have a collection
+						configuration document, which defines how to process
+						documents.</p>
+					</listitem>
+				</varlistentry>
             </variablelist>
         </section>
     </body>
