@@ -94,6 +94,17 @@ public class Collations {
 	            }
 				return getCollationFromParams(lang, strength, decomposition);
 			}
+		} else if(uri.startsWith("java:")) {
+			// java class specified: this should be a subclass of java.text.RuleBasedCollator
+			uri = uri.substring("java:".length());
+			try {
+				Class collatorClass = Class.forName(uri);
+				if(!Collator.class.isAssignableFrom(collatorClass))
+					throw new XPathException("The specified collator class is not a subclass of java.text.Collator");
+				return (Collator)collatorClass.newInstance();
+			} catch (Exception e) {
+				throw new XPathException("The specified collator class " + uri + " could not be found", e);
+			}
 		} else
 			// unknown collation
 			return null;
