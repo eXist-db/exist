@@ -56,6 +56,10 @@ public class RpcServlet extends HttpServlet {
         super.init( config );
         if ( !BrokerPool.isConfigured() )
             throw new ServletException( "database is not running" );
+        boolean enableDebug = false;
+        String param = config.getInitParameter("debug");
+        if(param != null)
+        	enableDebug = param.equalsIgnoreCase("true");
         try {
         	BrokerPool pool = BrokerPool.getInstance();
             Configuration conf = pool.getConfiguration();
@@ -63,7 +67,7 @@ public class RpcServlet extends HttpServlet {
             AuthenticatedHandler rpcserv = new AuthenticatedHandler( conf );
             //RpcServer rpcserv = new RpcServer( conf );
             xmlrpc.addHandler( "$default", rpcserv );
-            XmlRpc.setDebug( false );
+            XmlRpc.setDebug( enableDebug );
             XmlRpc.setEncoding( "UTF-8" );
         } catch (EXistException e) {
         	throw new ServletException( e );
