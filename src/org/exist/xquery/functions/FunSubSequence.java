@@ -45,7 +45,7 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class FunSubSequence extends Function {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("subsequence", Module.BUILTIN_FUNCTION_NS),
 			"Returns a subsequence of the values in the first argument sequence, " +
@@ -57,13 +57,28 @@ public class FunSubSequence extends Function {
 				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
 				 new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)
 			},
-			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
-			true);
+			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+		),
+		new FunctionSignature(
+			new QName("subsequence", Module.BUILTIN_FUNCTION_NS),
+			"Returns a subsequence of the values in the first argument sequence, " +
+			"starting at the position indicated by the value of the second argument and " +
+			"including the number of items indicated by the value of the optional third" +
+			"argument. If the third argument is missing, all items up to the end of the " +
+			"sequence are included.",
+			new SequenceType[] {
+				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
+				 new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE),
+				 new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)
+			},
+			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+		)
+	};
 			
 	/**
 	 * @param context
 	 */
-	public FunSubSequence(XQueryContext context) {
+	public FunSubSequence(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -86,7 +101,7 @@ public class FunSubSequence extends Function {
 		if(start >= seq.getLength())
 			return Sequence.EMPTY_SEQUENCE;
 		int length = -1;
-		if(getArgumentCount() == 3)
+		if(getSignature().getArgumentCount() == 3)
 			length =
 				((DoubleValue)getArgument(2).eval(contextSequence, contextItem).convertTo(Type.DOUBLE)).getInt();
 		 if(length < 0 || length > seq.getLength() - start)

@@ -39,22 +39,28 @@ import org.exist.xquery.value.Type;
  */
 public class FunStrLength extends Function {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
+		new FunctionSignature(
+				new QName("string-length", Module.BUILTIN_FUNCTION_NS),
+				new SequenceType[0],
+				new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE)
+		),
 		new FunctionSignature(
 			new QName("string-length", Module.BUILTIN_FUNCTION_NS),
 			new SequenceType[] {
 				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
-			new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE),
-			true);
+			new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE)
+		)
+	};
 			
-	public FunStrLength(XQueryContext context) {
+	public FunStrLength(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
-		if(getArgumentCount() == 1)
+		if(getSignature().getArgumentCount() == 1)
 			contextSequence = getArgument(0).eval(contextSequence);
 		String strval = contextSequence.getStringValue();
 		return new IntegerValue(strval.length());

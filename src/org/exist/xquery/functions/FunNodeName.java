@@ -39,10 +39,9 @@ import org.w3c.dom.Node;
 
 
 /**
+ * Implements the fn:node-name library function.
+ * 
  * @author wolf
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
 public class FunNodeName extends Function {
 
@@ -53,8 +52,7 @@ public class FunNodeName extends Function {
 			"of nodes it returns the empty sequence. If $a is the empty sequence, the " +
 			"empty sequence is returned.",
 			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
-			new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE),
-			true);
+			new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE));
     
     /**
      * @param context
@@ -70,14 +68,9 @@ public class FunNodeName extends Function {
         
         if(contextItem != null)
             contextSequence = contextItem.toSequence();
-        if(getArgumentCount() > 0) {
-            NodeSet result = getArgument(0).eval(contextSequence).toNodeSet();
-            if(result.getLength() > 0)
-                n = result.item(0);
-        } else {
-            if(contextSequence != null && contextSequence.getLength() > 0 && contextSequence.getItemType() == Type.NODE)
-                n = ((NodeSet)contextSequence).item(0);
-        }
+        NodeSet result = getArgument(0).eval(contextSequence).toNodeSet();
+        if(result.getLength() > 0)
+        	n = result.item(0);
         if(n != null) {
             switch(n.getNodeType()) {
                 case Node.ELEMENT_NODE:

@@ -42,14 +42,20 @@ import org.w3c.dom.Node;
  */
 public class FunLocalName extends Function {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
+		new FunctionSignature(
+			new QName("local-name", Module.BUILTIN_FUNCTION_NS),
+			new SequenceType[0],
+			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+		),
 		new FunctionSignature(
 			new QName("local-name", Module.BUILTIN_FUNCTION_NS),
 			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-			true);
+			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+		)
+	};
 
-    public FunLocalName(XQueryContext context) {
+    public FunLocalName(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
 	
@@ -59,7 +65,7 @@ public class FunLocalName extends Function {
   		  return new EmptySequence();
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
-        if(getArgumentCount() > 0) {
+        if(getSignature().getArgumentCount() > 0) {
             NodeSet result = getArgument(0).eval(contextSequence).toNodeSet();
             if(result.getLength() > 0)
             	n = result.item(0);

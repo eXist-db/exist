@@ -36,7 +36,7 @@ public class FunctionId implements Comparable {
 		this.qname = qname;
 		this.argCount = arguments;
 	}
-	
+	 
 	/* (non-Javadoc)
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
@@ -44,7 +44,7 @@ public class FunctionId implements Comparable {
 		final FunctionId other = (FunctionId)o;
 		final int cmp = qname.compareTo(other.qname);
 		if(cmp == 0) {
-			if(argCount == other.argCount)
+			if(argCount == other.argCount || argCount == -1 || other.argCount == -1)
 				return 0;
 			else if(argCount > other.argCount)
 				return 1;
