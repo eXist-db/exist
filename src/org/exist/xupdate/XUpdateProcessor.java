@@ -327,7 +327,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				if (name == null)
 					throw new SAXException("element requires a name attribute");
 				int p = name.indexOf(':');
-				String namespace = "";
+				String namespace = null;
 				String prefix = "";
 				if (p > -1) {
 					prefix = name.substring(0, p);
@@ -364,7 +364,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				if (name == null)
 					throw new SAXException("attribute requires a name attribute");
 				int p = name.indexOf(':');
-				String namespace = "";
+				String namespace = null;
 				if (p > -1) {
 					String prefix = name.substring(0, p);
 					if (name.length() == p + 1)
