@@ -42,6 +42,7 @@ public class ElementConstructor extends NodeConstructor {
 	private Expression qnameExpr;
 	private PathExpr content = null;
 	private AttributeConstructor attributes[] = null;
+	private QName namespaceDecls[] = null;
 	
 	public ElementConstructor(XQueryContext context) {
 	    super(context);
@@ -61,7 +62,9 @@ public class ElementConstructor extends NodeConstructor {
 	}
 	
 	public void addAttribute(AttributeConstructor attr) {
-		if(attributes == null) {
+		if(attr.isNamespaceDeclaration()) {
+			addNamespaceDecl(QName.extractLocalName(attr.getQName()), attr.getLiteralValue());
+		} else	if(attributes == null) {
 			attributes = new AttributeConstructor[1];
 			attributes[0] = attr;
 		} else {
@@ -69,6 +72,18 @@ public class ElementConstructor extends NodeConstructor {
 		    System.arraycopy(attributes, 0, natts, 0, attributes.length);
 		    natts[attributes.length] = attr;
 		    attributes = natts;
+		}
+	}
+	
+	public void addNamespaceDecl(String prefix, String uri) {
+		if(namespaceDecls == null) {
+			namespaceDecls = new QName[1];
+			namespaceDecls[0] = new QName(prefix, uri, "xmlns");
+		} else {
+			QName decls[] = new QName[namespaceDecls.length + 1];
+			System.arraycopy(namespaceDecls, 0, decls, 0, namespaceDecls.length);
+			decls[namespaceDecls.length] = new QName(prefix, uri, "xmlns");
+			namespaceDecls = decls;
 		}
 	}
 	
@@ -81,6 +96,12 @@ public class ElementConstructor extends NodeConstructor {
 		throws XPathException {
 		context.pushNamespaceContext();
 		MemTreeBuilder builder = context.getDocumentBuilder();
+		// declare namespaces
+		if(namespaceDecls != null) {
+			for(int i = 0; i < namespaceDecls.length; i++) {
+				context.declareInScopeNamespace(namespaceDecls[i].getLocalName(), namespaceDecls[i].getNamespaceURI());
+			}
+		}
 		// process attributes
 		AttributesImpl attrs = new AttributesImpl();
 		if(attributes != null) {
@@ -104,12 +125,10 @@ public class ElementConstructor extends NodeConstructor {
 			for(int i = 0; i < attributes.length; i++) {
 			    context.proceed(this, builder);
 				constructor = (AttributeConstructor)attributes[i];
-				if(!constructor.isNamespaceDeclaration()) {
-					attrValues = constructor.eval(contextSequence, contextItem);
-					attrQName = QName.parse(context, constructor.getQName());
-					attrs.addAttribute(attrQName.getNamespaceURI(), attrQName.getLocalName(),
+				attrValues = constructor.eval(contextSequence, contextItem);
+				attrQName = QName.parse(context, constructor.getQName());
+				attrs.addAttribute(attrQName.getNamespaceURI(), attrQName.getLocalName(),
 						attrQName.toString(), "CDATA", attrValues.getStringValue());
-				}
 			}
 		}
 		context.proceed(this, builder);
@@ -121,6 +140,11 @@ public class ElementConstructor extends NodeConstructor {
 		QName qn = QName.parse(context, qnameSeq.getStringValue());
 		
 		int nodeNr = builder.startElement(qn, attrs);
+		if(namespaceDecls != null) {
+			for(int i = 0; i < namespaceDecls.length; i++) {
+				builder.namespaceNode(namespaceDecls[i]);
+			}
+		}
 		// process element contents
 		if(content != null) {
 			content.eval(contextSequence, contextItem);
@@ -130,7 +154,7 @@ public class ElementConstructor extends NodeConstructor {
 		context.popNamespaceContext();
 		return node;
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#pprint()
 	 */

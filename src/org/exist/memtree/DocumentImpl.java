@@ -22,12 +22,10 @@ package org.exist.memtree;
 
 import java.util.Arrays;
 
-import org.apache.xerces.dom.AttrNSImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.util.hashtable.NamePool;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Type;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
@@ -59,12 +57,16 @@ public class DocumentImpl extends NodeImpl implements Document {
 
     protected NamePool namePool = new NamePool();
 
+    // holds the node type of a node
     protected short[] nodeKind = null;
 
+    // the tree level of a node
     protected short[] treeLevel;
 
+    // the node number of the next sibling
     protected int[] next;
 
+    // pointer into the namePool
     protected int[] nodeName;
 
     protected int[] alpha;
@@ -75,6 +77,7 @@ public class DocumentImpl extends NodeImpl implements Document {
 
     protected int nextChar = 0;
 
+    // attributes
     protected int[] attrName;
 
     protected int[] attrParent;
@@ -83,10 +86,19 @@ public class DocumentImpl extends NodeImpl implements Document {
 
     protected int nextAttr = 0;
 
+    // namespaces
+    protected int[] namespaceParent;
+    
+    protected int[] namespaceCode;
+    
+    protected int nextNamespace = 0;
+    
+    // the current number of nodes in the doc
     protected int size = 1;
 
     protected int documentRootNode = -1;
 
+    // reference nodes (link to an external, persistent document fragment)
     protected NodeProxy references[];
 
     protected int nextRef = 0;
@@ -115,6 +127,9 @@ public class DocumentImpl extends NodeImpl implements Document {
         attrParent = new int[ATTR_SIZE];
         attrValue = new String[ATTR_SIZE];
 
+        namespaceCode = new int[5];
+        namespaceParent = new int[5];
+        
         references = new NodeProxy[REF_SIZE];
 
         treeLevel[0] = 0;
@@ -194,6 +209,15 @@ public class DocumentImpl extends NodeImpl implements Document {
         return nextAttr++;
     }
 
+    public int addNamespace(int nodeNr, QName qname) {
+    	if(nodeKind == null) init();
+    	if(nextNamespace == namespaceCode.length) growNamespaces();
+    	namespaceCode[nextNamespace] = namePool.add(qname);
+    	namespaceParent[nextNamespace] = nodeNr;
+    	if(alphaLen[nodeNr] < 0) alphaLen[nodeNr] = nextNamespace;
+    	return nextNamespace++;
+    }
+    
     public int getLastNode() {
         return size - 1;
     }
@@ -253,8 +277,25 @@ public class DocumentImpl extends NodeImpl implements Document {
         references = newReferences;
     }
 
+    private void growNamespaces() {
+    	int size = namespaceCode.length;
+    	int newSize = (size * 3) / 2;
+    	
+    	int[] newCodes = new int[newSize];
+    	System.arraycopy(namespaceCode, 0, newCodes, 0, size);
+    	namespaceCode = newCodes;
+    	
+    	int[] newParents = new int[newSize];
+    	System.arraycopy(namespaceParent, 0, newParents, 0, size);
+    	namespaceParent = newParents;
+    }
+    
     public NodeImpl getAttribute(int nodeNr) throws DOMException {
         return new AttributeImpl(this, nodeNr);
+    }
+    
+    public NodeImpl getNamespaceNode(int nodeNr) throws DOMException {
+    	return new NamespaceNode(this, nodeNr);
     }
     
     public NodeImpl getNode(int nodeNr) throws DOMException {
@@ -279,9 +320,6 @@ public class DocumentImpl extends NodeImpl implements Document {
             case NodeImpl.REFERENCE_NODE:
                 node = new ReferenceNode(this, nodeNr);
                 break;
-            case NodeImpl.NAMESPACE_NODE:
-                node = new NamespaceNode(this, nodeNr);
-            	break;
             default:
                 throw new DOMException(DOMException.NOT_FOUND_ERR,
                         "node not found");
@@ -548,6 +586,19 @@ public class DocumentImpl extends NodeImpl implements Document {
                         ++attr;
                     }
                 }
+                int ns = document.alphaLen[nr];
+                if (-1 < ns) {
+                	XQueryContext context = receiver.getContext();
+                	while (ns < document.nextNamespace
+                			&& document.namespaceParent[ns] == nr) {
+                		QName nsQName = (QName) document.namePool
+                        	.get(document.namespaceCode[ns]);
+                		System.out.println("copying namespace node " + nsQName);
+                		receiver.addNamespaceNode(nsQName);
+                		context.declareInScopeNamespace(nsQName.getLocalName(), nsQName.getNamespaceURI());
+                		++ns;
+                	}
+                }
                 break;
             case Node.TEXT_NODE:
                 receiver.characters(document.characters, document.alpha[nr],
@@ -571,13 +622,6 @@ public class DocumentImpl extends NodeImpl implements Document {
                 receiver
                         .addReferenceNode(document.references[document.alpha[nr]]);
                 break;
-            case NodeImpl.NAMESPACE_NODE:
-                XQueryContext context = receiver.getContext();
-            	QName prefix = (QName) document.namePool.get(document.nodeName[nr]);
-            	String uri = new String(document.characters,
-                    document.alpha[nr], document.alphaLen[nr]);
-            	context.declareInScopeNamespace(prefix.getLocalName(), uri);
-            	break;
         }
     }
     

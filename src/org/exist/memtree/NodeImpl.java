@@ -92,12 +92,15 @@ public class NodeImpl implements Node, NodeValue {
 		switch (getNodeType()) {
 			case Node.DOCUMENT_NODE :
 				return "#document";
-			case Node.ATTRIBUTE_NODE :
 			case Node.ELEMENT_NODE :
 			case Node.PROCESSING_INSTRUCTION_NODE :
 				QName qn = (QName)
 					document.namePool.get(document.nodeName[nodeNumber]);
 				return qn.toString();
+			case Node.ATTRIBUTE_NODE:
+				return document.namePool.get(document.attrName[nodeNumber]).toString();
+			case NodeImpl.NAMESPACE_NODE:
+				return document.namePool.get(document.namespaceCode[nodeNumber]).toString();
 			case Node.TEXT_NODE :
 				return "#text";
 			default :

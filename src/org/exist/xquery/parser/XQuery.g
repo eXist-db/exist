@@ -662,8 +662,6 @@ computedConstructor
 	compXmlPI
 	|
 	compXmlComment
-	|
-	compNSConstructor
 	;
 
 compElemConstructor
@@ -672,13 +670,27 @@ compElemConstructor
 }
 :
 	( "element" LCURLY ) =>
-	"element"! LCURLY! e1:expr RCURLY! LCURLY! e2:expr RCURLY!
+	"element"! LCURLY! expr RCURLY! LCURLY! compElemBody RCURLY!
 	{ #compElemConstructor = #(#[COMP_ELEM_CONSTRUCTOR], #compElemConstructor); }
 	|
-	"element"! qn=qName LCURLY! e3:expr RCURLY!
+	"element"! qn=qName LCURLY! e3:compElemBody RCURLY!
 	{ #compElemConstructor = #(#[COMP_ELEM_CONSTRUCTOR, qn], #[STRING_LITERAL, qn], #e3); }
 	;
 
+compElemBody
+:
+	( 
+		( "namespace" ncnameOrKeyword LCURLY ) => localNamespaceDecl 
+		| 
+		exprSingle 
+	)
+	( COMMA! (
+		( "namespace" ncnameOrKeyword LCURLY ) => localNamespaceDecl 
+		| 
+		exprSingle ) 
+	)*
+	;
+	
 compAttrConstructor
 {
 	String qn;
@@ -723,13 +735,13 @@ compXmlComment
 	{ #compXmlComment = #(#[COMP_COMMENT_CONSTRUCTOR, "comment"], #e); }
 	;
 
-compNSConstructor
+localNamespaceDecl
 {
-	String qn = null;
+	String nc = null;
 }
 :
-	"namespace" qn=qName LCURLY! e:expr RCURLY!
-	{ #compNSConstructor = #(#[COMP_NS_CONSTRUCTOR, qn], #e); }
+	"namespace"! nc=ncnameOrKeyword LCURLY! l:STRING_LITERAL RCURLY!
+	{ #localNamespaceDecl = #(#[COMP_NS_CONSTRUCTOR, nc], #l); }
 	;
 
 elementConstructor
@@ -2410,7 +2422,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		qn:COMP_ELEM_CONSTRUCTOR
 		{
 			ElementConstructor c= new ElementConstructor(context);
-            c.setASTNode(qn);
+			c.setASTNode(qn);
 			step= c;
 			elementContent = new EnclosedExpr(context);
 			c.setContent(elementContent);
@@ -2419,7 +2431,14 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
 		
 		qnameExpr=expr [qnamePathExpr]
-		contentExpr=expr [elementContent]
+		(
+			#( prefix:COMP_NS_CONSTRUCTOR uri:STRING_LITERAL )
+			{
+				c.addNamespaceDecl(prefix.getText(), uri.getText());
+			}
+			|
+			contentExpr=expr[elementContent]
+		)*
 	)
 	|
 	#(
@@ -2457,7 +2476,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		e:ELEMENT
 		{
 			ElementConstructor c= new ElementConstructor(context, e.getText());
-            c.setASTNode(e);
+			c.setASTNode(e);
 			step= c;
 		}
 		(
@@ -2466,7 +2485,6 @@ throws PermissionDeniedException, EXistException, XPathException
 				{
 					AttributeConstructor attrib= new AttributeConstructor(context, attrName.getText());
                     attrib.setASTNode(attrName);
-					c.addAttribute(attrib);
 				}
 				(
 					attrVal:ATTRIBUTE_CONTENT
@@ -2478,6 +2496,7 @@ throws PermissionDeniedException, EXistException, XPathException
 						{ attrib.addEnclosedExpr(enclosed); }
 					)
 				)+
+				{ c.addAttribute(attrib); }
 			)
 		)*
 		(
@@ -2519,18 +2538,6 @@ throws PermissionDeniedException, EXistException, XPathException
 			DynamicCommentConstructor comment = new DynamicCommentConstructor(context, elementContent);
 			comment.setASTNode(t);
 			step= comment;
-		}
-		contentExpr=expr [elementContent]
-	)
-	|
-	#(
-		prefix:COMP_NS_CONSTRUCTOR
-		{
-			elementContent = new PathExpr(context);
-			NamespaceConstructor ns = new NamespaceConstructor(context, prefix.getText());
-			ns.setURIExpression(elementContent);
-			ns.setASTNode(t);
-			step= ns;
 		}
 		contentExpr=expr [elementContent]
 	)

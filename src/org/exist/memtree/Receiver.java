@@ -126,6 +126,10 @@ public class Receiver implements ContentHandler, LexicalHandler {
 	    builder.addReferenceNode(proxy);
 	}
 	
+	public void addNamespaceNode(QName qname) throws SAXException {
+		builder.namespaceNode(qname);
+	}
+	
 	public void characters(CharSequence seq) throws SAXException {
 		builder.characters(seq);
 	}
