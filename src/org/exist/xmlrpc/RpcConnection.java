@@ -54,6 +54,7 @@ import org.exist.xpath.PathExpr;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
+import org.exist.xpath.value.NodeValue;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.Type;
@@ -339,7 +340,6 @@ public class RpcConnection extends Thread {
 
 			serializer.setProperty(OutputKeys.ENCODING, encoding);
 			serializer.setProperty(OutputKeys.INDENT, prettyPrint);
-
 			if (stylesheet != null) {
 				if (!stylesheet.startsWith("/")) {
 					// make path relative to current collection
@@ -798,10 +798,11 @@ public class RpcConnection extends Thread {
 			Collection collection = broker.getCollection(collectionName);
 			if (collection == null)
 				throw new EXistException("Collection " + collectionName + " not found");
+			String uri = file.toURI().toASCIIString();
 			collection.addDocument(
 				broker,
 				docName,
-				new InputSource(file.getAbsolutePath()));
+				new InputSource(uri));
 		} finally {
 			brokerPool.release(broker);
 		}
@@ -1092,7 +1093,7 @@ public class RpcConnection extends Thread {
 						next = i.nextItem();
 						if (Type.subTypeOf(next.getType(), Type.NODE)) {
 							entry = new Vector();
-							if (next instanceof NodeProxy) {
+							if (((NodeValue)next).getImplementationType() == NodeValue.PERSISTENT_NODE) {
 								p = (NodeProxy) next;
 								entry.addElement(p.doc.getFileName());
 								entry.addElement(Long.toString(p.getGID()));

@@ -99,6 +99,7 @@ public class Backup {
 		if (current == null)
 			return;
 		current.setProperty(OutputKeys.ENCODING, "UTF-8");
+		current.setProperty(OutputKeys.INDENT, "no");
 		current.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
 
 		// get resources and permissions

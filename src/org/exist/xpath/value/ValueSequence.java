@@ -93,8 +93,12 @@ public class ValueSequence extends AbstractSequence {
 	public NodeSet toNodeSet() throws XPathException {
 		if(Type.subTypeOf(itemType, Type.NODE)) {
 			NodeSet set = new ExtArrayNodeSet();
+			NodeValue v;
 			for(Iterator i = values.iterator(); i.hasNext(); ) {
-				set.add((NodeProxy)i.next());
+				v = (NodeValue)i.next();
+				if(v.getImplementationType() != NodeValue.PERSISTENT_NODE)
+					throw new XPathException("Cannot query constructed nodes.");
+				set.add((NodeProxy)v);
 			}
 			return set;
 		} else

@@ -36,6 +36,7 @@ import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.OutputStreamWriter;
 import java.io.PushbackInputStream;
+import java.io.StreamTokenizer;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
@@ -519,13 +520,26 @@ public class InteractiveClient {
 			args[0]= "find";
 			args[1]= line.substring(5);
 		} else {
-			StringTokenizer tok= new StringTokenizer(line, " ");
-			args= new String[tok.countTokens()];
-			if (args.length == 0)
-				return true;
+			StreamTokenizer tok = new StreamTokenizer(new StringReader(line));
+			tok.wordChars(0x21, 0x7FFF);
+			tok.quoteChar('"');
+			tok.whitespaceChars(0x20, 0x20);
+
+			List argList = new ArrayList(3);
 			int i= 0;
-			while (tok.hasMoreTokens())
-				args[i++]= tok.nextToken();
+			int token;
+			try {
+				while ((token = tok.nextToken()) != StreamTokenizer.TT_EOF ) {
+					if(token == StreamTokenizer.TT_WORD || token == '"') {
+						argList.add(tok.sval);
+					}
+				}
+			} catch (IOException e) {
+				System.err.println("Could not parse command line.");
+				return true;
+			}
+			args = new String[argList.size()];
+			argList.toArray(args);
 		}
 		String newPath= path;
 		try {
@@ -1557,6 +1571,7 @@ public class InteractiveClient {
 	}
 
 	private final void mkcol(String collPath) throws XMLDBException {
+		System.out.println("creating " + collPath);
 		if (collPath.startsWith("/db"))
 			collPath= collPath.substring("/db".length());
 		CollectionManagementService mgtService;

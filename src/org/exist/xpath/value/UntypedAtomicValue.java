@@ -1,21 +1,23 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
- *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public License
+ *  Copyright (C) 2001-03 Wolfgang M. Meier
+ *  wolfgang@exist-db.org
+ *  http://exist.sourceforge.net
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *
- *  This library is distributed in the hope that it will be useful,
+ *  
+ *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
- *
- *  You should have received a copy of the GNU Library General Public License
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- * 
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
  *  $Id$
  */
 package org.exist.xpath.value;
@@ -23,43 +25,41 @@ package org.exist.xpath.value;
 import org.exist.xpath.Constants;
 import org.exist.xpath.XPathException;
 
-public class StringValue extends AtomicValue {
+/**
+ * @author Wolfgang Meier (wolfgang@exist-db.org)
+ */
+public class UntypedAtomicValue extends AtomicValue {
 
-	public final static StringValue EMPTY_STRING = new StringValue("");
+	private String value;
 
-	protected String value;
-
-	public StringValue(String stringValue) {
-		value = stringValue;
+	public UntypedAtomicValue(String value) {
+		this.value = value;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.AtomicValue#getType()
 	 */
 	public int getType() {
-		return Type.STRING;
+		return Type.ATOMIC;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.Item#getStringValue()
+	 * @see org.exist.xpath.value.Sequence#getStringValue()
 	 */
-	public String getStringValue() {
+	public String getStringValue() throws XPathException {
 		return value;
 	}
 
-	public Item itemAt(int pos) {
-		return pos == 0 ? this : null;
-	}
-
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#convertTo(int)
+	 * @see org.exist.xpath.value.Sequence#convertTo(int)
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		switch (requiredType) {
 			case Type.ATOMIC :
 			case Type.ITEM :
-			case Type.STRING :
 				return this;
+			case Type.STRING :
+				return new StringValue(value);
 			case Type.BOOLEAN :
 				if (value.equals("0") || value.equals("false"))
 					return BooleanValue.FALSE;
@@ -87,17 +87,17 @@ public class StringValue extends AtomicValue {
 			case Type.UNSIGNED_SHORT :
 			case Type.UNSIGNED_BYTE :
 				return new IntegerValue(value, requiredType);
-			case Type.DATE_TIME:
+			case Type.DATE_TIME :
 				return new DateTimeValue(value);
-			case Type.TIME:
+			case Type.TIME :
 				return new TimeValue(value);
-			case Type.DATE:
+			case Type.DATE :
 				return new DateValue(value);
-			case Type.DURATION:
+			case Type.DURATION :
 				return new DurationValue(value);
-			case Type.YEAR_MONTH_DURATION:
+			case Type.YEAR_MONTH_DURATION :
 				return new YearMonthDurationValue(value);
-			case Type.DAY_TIME_DURATION:
+			case Type.DAY_TIME_DURATION :
 				return new DayTimeDurationValue(value);
 			default :
 				throw new XPathException(
@@ -131,7 +131,9 @@ public class StringValue extends AtomicValue {
 					throw new XPathException("Type error: cannot apply operand to string value");
 			}
 		}
-		throw new XPathException("Type error: operands are not comparable; expected xs:string; got " + Type.getTypeName(other.getType()));
+		throw new XPathException(
+			"Type error: operands are not comparable; expected xs:string; got "
+				+ Type.getTypeName(other.getType()));
 	}
 
 	/* (non-Javadoc)
@@ -142,102 +144,27 @@ public class StringValue extends AtomicValue {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.value.AtomicValue#effectiveBooleanValue()
-	 */
-	public boolean effectiveBooleanValue() throws XPathException {
-		return value.length() > 0;
-	}
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	public String toString() {
-		return value;
-	}
-
-	public final static String expand(CharSequence seq) throws XPathException {
-		StringBuffer buf = new StringBuffer(seq.length());
-		StringBuffer entityRef = null;
-		char ch;
-		for (int i = 0; i < seq.length(); i++) {
-			ch = seq.charAt(i);
-			switch (ch) {
-				case '&' :
-					if (entityRef == null)
-						entityRef = new StringBuffer();
-					else
-						entityRef.setLength(0);
-					boolean found = false;
-					for (int j = i + 1; j < seq.length(); j++) {
-						ch = seq.charAt(j);
-						if (ch != ';')
-							entityRef.append(ch);
-						else {
-							found = true;
-							i = j;
-							break;
-						}
-					}
-					if (found) {
-						buf.append(expandEntity(entityRef.toString()));
-					} else {
-						buf.append('&');
-					}
-					break;
-				default :
-					buf.append(ch);
-			}
-		}
-		return buf.toString();
-	}
-
-	private final static char expandEntity(String buf) throws XPathException {
-		if (buf.equals("amp"))
-			return '&';
-		else if (buf.equals("lt"))
-			return '<';
-		else if (buf.equals("gt"))
-			return '>';
-		else if (buf.equals("quot"))
-			return '"';
-		else if (buf.equals("apos"))
-			return '\'';
-		else if (buf.length() > 1 && buf.charAt(0) == '#')
-			return expandCharRef(buf.substring(1));
-		else
-			throw new XPathException("Unknown entity reference: " + buf);
-	}
-
-	private final static char expandCharRef(String buf) throws XPathException {
-		try {
-			if (buf.length() > 1 && buf.charAt(0) == 'x') {
-				// Hex
-				return (char) Integer.parseInt(buf.substring(1), 16);
-			} else
-				return (char) Integer.parseInt(buf);
-		} catch (NumberFormatException e) {
-			throw new XPathException("Unknown character reference: " + buf);
-		}
-	}
-
-	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.AtomicValue#max(org.exist.xpath.value.AtomicValue)
 	 */
 	public AtomicValue max(AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.STRING))
 			return value.compareTo(((StringValue) other).value) > 0 ? this : other;
 		else
-			return value.compareTo(((StringValue) other.convertTo(getType())).value) > 0
+			return value.compareTo(((StringValue) other.convertTo(Type.STRING)).value) > 0
 				? this
 				: other;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.AtomicValue#min(org.exist.xpath.value.AtomicValue)
+	 */
 	public AtomicValue min(AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.STRING))
 			return value.compareTo(((StringValue) other).value) < 0 ? this : other;
 		else
-			return value.compareTo(((StringValue) other.convertTo(getType())).value) < 0
+			return value.compareTo(((StringValue) other.convertTo(Type.STRING)).value) < 0
 				? this
 				: other;
 	}
+
 }

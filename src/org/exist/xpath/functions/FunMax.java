@@ -70,6 +70,8 @@ public class FunMax extends Function {
 			return Sequence.EMPTY_SEQUENCE;
 		SequenceIterator iter = arg.iterate();
 		AtomicValue max = (AtomicValue)iter.nextItem();
+		if(max.getType() == Type.ATOMIC)
+			max = max.convertTo(Type.DOUBLE);
 		AtomicValue current;
 		while(iter.hasNext()) {
 			current = (AtomicValue)iter.nextItem();

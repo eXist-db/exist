@@ -468,13 +468,14 @@ public class LocalCollection extends Observable implements CollectionImpl {
 				collection.addObserver(observer);
 			}
 			DocumentImpl newDoc;
-			if (res.file != null)
+			if (res.file != null) {
+				String uri = res.file.toURI().toASCIIString();
 				newDoc =
 					collection.addDocument(
 						broker,
 						name,
-						new InputSource(res.file.getAbsolutePath()));
-			else if (res.root != null)
+						new InputSource(uri));
+			} else if (res.root != null)
 				newDoc = collection.addDocument(broker, name, res.root);
 			else
 				newDoc = collection.addDocument(broker, name, res.content);

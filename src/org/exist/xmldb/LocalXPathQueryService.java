@@ -154,7 +154,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		try {
 			broker = brokerPool.get(user);
 			StaticContext context = new StaticContext(broker);
-			context.setBaseURI(collection.getPath());
+			context.setBaseURI(collection.properties.getProperty("base-uri", collection.getPath()));
 
 			Map.Entry entry;
 			// declare namespace/prefix mappings
