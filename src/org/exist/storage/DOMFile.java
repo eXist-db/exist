@@ -570,6 +570,11 @@ public class DOMFile extends BTree implements Lockable {
 		super.printStatistics();
 		buffer.printStatistics();
 	}
+	
+	public BufferStats getDataBufferStats() {
+		return new BufferStats(buffer.blockBuffers,
+			buffer.map.size(), buffer.hits, buffer.misses);
+	}
 
 	/**
 	 *  Retrieve a node by key

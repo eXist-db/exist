@@ -680,6 +680,9 @@ public interface RpcAPI {
                      Vector groups, String home )
          throws EXistException, PermissionDeniedException;
 
+	boolean setUser( User user, String name, String passwd,
+		Vector groups )
+		throws EXistException, PermissionDeniedException;
 
     boolean setPermissions( User user, String resource, String permissions )
         throws EXistException, PermissionDeniedException;

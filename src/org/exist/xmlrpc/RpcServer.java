@@ -1152,9 +1152,18 @@ public class RpcServer implements RpcAPI {
 		try {
 			con = pool.get();
 			return con.setUser(user, name, password, groups, home);
+		} catch(Exception e) {
+			handleException(e);
+			return false;
 		} finally {
 			pool.release(con);
 		}
+	}
+	
+	public boolean setUser(User user, String name, String password, 
+		Vector groups)
+		throws EXistException, PermissionDeniedException {
+		return setUser(user, name, password, groups, null);
 	}
 
 	public boolean shutdown(User user) throws PermissionDeniedException {

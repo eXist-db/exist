@@ -79,4 +79,12 @@ public class DatabaseInstanceManagerImpl implements DatabaseInstanceManager {
 	public void setProperty(String arg0, String arg1) throws XMLDBException {
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.DatabaseInstanceManager#getConfiguration()
+	 */
+	public DatabaseStatus getStatus() throws XMLDBException {
+		throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED,
+			"this method is not available for remote connections");
+	}
+
 }

@@ -725,10 +725,15 @@ public class InteractiveClient {
 					user.setPassword(p1);
 					mgtService.updateUser(user);
 					properties.setProperty("password", p1);
-				} catch (Exception e) {
+				} catch (XMLDBException e) {
 					System.err.println("ERROR: " + e.getMessage());
+					System.err.println("CAUSED BY: " + e.getCause().getMessage());
+					e.printStackTrace();
+				} catch(Exception e) {
+					System.err.println("ERROR: " + e.getMessage());
+					e.printStackTrace();
 				}
-			} else if (args[0].equalsIgnoreCase("chmod")) {
+ 			} else if (args[0].equalsIgnoreCase("chmod")) {
 				if (args.length < 2) {
 					System.out.println("Usage: chmod [resource] mode");
 					return true;

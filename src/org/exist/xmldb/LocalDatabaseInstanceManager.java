@@ -27,11 +27,15 @@ public class LocalDatabaseInstanceManager implements DatabaseInstanceManager {
 	public void shutdown() throws XMLDBException {
 		if(!user.hasGroup("dba"))
 			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, 
-				"only users in group dba may " +
+				"only users in group dba may " +				
 				"shut down the database");
 		pool.shutdown();
 	}
-	
+
+	public DatabaseStatus getStatus() throws XMLDBException {
+		return new DatabaseStatus(pool);
+	}
+
 	/**
 	 * @see org.xmldb.api.base.Service#getName()
 	 */

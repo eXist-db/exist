@@ -8,6 +8,11 @@
   <display-name>eXist Server</display-name>
   <description>eXist Server Setup</description>
 
+	<servlet>
+		<servlet-name>Status</servlet-name>
+		<jsp-file>/status/status.jsp</jsp-file>
+	</servlet>
+	
   <!-- RpcServlet provides XML-RPC access to eXist -->
   <servlet>
     <servlet-name>org.exist.xmlrpc.RpcServlet</servlet-name>
@@ -296,6 +301,11 @@
 
   <!-- Servlet mappings -->
   <servlet-mapping>
+  	<servlet-name>Status</servlet-name>
+  	<url-pattern>/status</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
     <servlet-name>org.exist.xmlrpc.RpcServlet</servlet-name>
     <url-pattern>/xmlrpc</url-pattern>
   </servlet-mapping>
@@ -345,10 +355,11 @@
     Some servlet engines (Tomcat) have defaults which are not overriden
     by '/' mapping, but must be overriden explicitly.
   -->
-  <servlet-mapping>
+  <!--servlet-mapping>
     <servlet-name>Cocoon2</servlet-name>
     <url-pattern>*.jsp</url-pattern>
-  </servlet-mapping>
+  </servlet-mapping-->
+  
   <!--
     Some servlet engines (WebLogic) have defaults which are not overriden
     by '/' mapping, but must be overriden explicitly.

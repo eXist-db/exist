@@ -119,6 +119,10 @@
 				node occurring between elements could lead to a wrong
 				assignment of identifiers.
 			</action>
+			<action name="Selective Indexing">
+				The selective inclusion/exclusion of specified document-parts
+				from the fulltext-indexing did not work properly. Fixed.
+			</action>
 		</topic>
 	</release>
     <release version="0.9">

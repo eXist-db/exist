@@ -414,6 +414,11 @@ public class BFile extends BTree {
 		return true;
 	}
 
+	public BufferStats getDataBufferStats() {
+		return new BufferStats(pages.getBuffers(), 
+			pages.getUsedBuffers(), pages.getHits(), pages.getFails());
+	}
+	
 	public void printStatistics() {
 		super.printStatistics();
 		StringBuffer buf = new StringBuffer();

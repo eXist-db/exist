@@ -82,7 +82,7 @@ public class FunContains extends Function {
 		NodeSet temp = null;
 		long start = System.currentTimeMillis();
 		for (int j = 0; j < hits.length; j++) {
-			temp = new ArraySet(100);
+			temp = new ArraySet(200);
 			for (int k = 0; k < hits[j].length; k++) {
 				if (hits[j][k] == null)
 					continue;

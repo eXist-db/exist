@@ -490,7 +490,8 @@ public class RpcConnection extends Thread {
 		for (Iterator i = u.getGroups(); i.hasNext();)
 			groups.addElement(i.next());
 		tab.put("groups", groups);
-		tab.put("home", u.getHome());
+		if(u.getHome() != null)
+			tab.put("home", u.getHome());
 		return tab;
 	}
 
@@ -504,7 +505,8 @@ public class RpcConnection extends Thread {
 			for (Iterator j = users[i].getGroups(); j.hasNext();)
 				groups.addElement(j.next());
 			tab.put("groups", groups);
-			tab.put("home", users[i].getHome());
+			if(users[i].getHome() != null)
+				tab.put("home", users[i].getHome());
 			r.addElement(tab);
 		}
 		return r;

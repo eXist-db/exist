@@ -66,7 +66,10 @@
             <link href="xadmin.xsp">Admin Interface</link>
         </item>
         <item>
-            <link href="/exist/admin">Server Status</link>
+            <link href="/exist/admin">Server Status Servlet</link>
+        </item>
+        <item>
+        	<link href="/exist/status">Server Statistics</link>
         </item>
     </group>
     
