@@ -55,6 +55,9 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	protected File file = null;
 	protected Node root = null;
 	protected AtomicValue value = null;
+	
+	protected Date datecreated= null;
+	protected Date datemodified= null;
 
 	public LocalXMLResource(User user, BrokerPool pool, LocalCollection parent,
 			String did) throws XMLDBException {
