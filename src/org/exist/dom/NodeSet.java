@@ -364,7 +364,19 @@ public interface NodeSet extends Sequence, NodeList {
 		boolean directParent,
 		boolean includeSelf,
 		int level);
-		
+	
+	/**
+	 * Return all nodes contained in this node set that are ancestors of the node
+	 * identified by doc and gid.
+	 *  
+	 */
+	public NodeSet ancestorsForChild(
+			DocumentImpl doc,
+			long gid,
+			boolean directParent,
+			boolean includeSelf,
+			int level);
+	
 	/**
 	 * Return a new node set containing the parent nodes of all nodes in the 
 	 * current set.
