@@ -9,6 +9,8 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.dom.ArraySet;
+import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeIndexListener;
@@ -17,6 +19,7 @@ import org.exist.parser.XPathParser;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
+import org.exist.util.StorageAddress;
 import org.exist.util.XMLUtil;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.RootNode;
@@ -81,7 +84,7 @@ public abstract class Modification {
                 throw new EXistException("select expression should evaluate to a" +
                     "node-set");
             NodeList set = resultValue.getNodeList();
-            TreeSet out = new TreeSet(new NodeComparator());
+            ArrayList out = new ArrayList(set.getLength());
             for(int i = 0; i < set.getLength(); i++) {
             	out.add(set.item(i));
             }
@@ -127,14 +130,23 @@ public abstract class Modification {
 		public void nodeChanged(NodeImpl node) {
 			final long address = node.getInternalAddress();
 			for(int i = 0; i < nodes.length; i++) {
-				if(nodes[i].getInternalAddress() == address) {
-//					System.out.println("setting " + current.getGID() +
-//						" -> " + node.getGID());
-					nodes[i].setGID(node.getGID());
-				}
+				if(StorageAddress.equals(nodes[i].getInternalAddress(), address))
+					nodes[i] = node;
 			}
 		}
 	
+		/* (non-Javadoc)
+		 * @see org.exist.dom.NodeIndexListener#nodeChanged(long, long)
+		 */
+		public void nodeChanged(long oldAddress, long newAddress) {
+			for(int i = 0; i < nodes.length; i++) {
+				if(StorageAddress.equals(nodes[i].getInternalAddress(), oldAddress)) {
+					nodes[i].setInternalAddress(newAddress);
+				}
+			}
+
+		}
+
 	}
 	
 	final static class NodeComparator implements Comparator {

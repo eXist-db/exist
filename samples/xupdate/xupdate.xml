@@ -56,4 +56,8 @@
 	<xu:update select="//address[lname |= 'jekyll']/email/@type">
 		home
 	</xu:update>
+
+	<xu:insert-after select="//address">
+		<xu:element name="test">Test it</xu:element>
+	</xu:insert-after>
 </xu:modifications>

@@ -22,17 +22,29 @@
  */
 package org.exist.storage.serializers;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 
 import org.apache.oro.text.perl.Perl5Util;
-import org.dbxml.core.data.Value;
-import org.exist.dom.*;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.CommentImpl;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.Match;
+import org.exist.dom.NodeImpl;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.ProcessingInstructionImpl;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.XMLUtil;
-import org.w3c.dom.*;
-import org.xml.sax.*;
-import org.xml.sax.helpers.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 
 /**
  *  Description of the Class
@@ -111,7 +123,7 @@ public class NativeSerializer extends Serializer {
 			p = (NodeProxy) iter.next();
 			if (p == null)
 				continue;
-			domIter = broker.getDOMIterator(p);
+			domIter = broker.getNodeIterator(p);
 			if (domIter == null)
 				continue;
 			serializeToSAX(null, domIter, p.doc, p.gid, true, p.matches);

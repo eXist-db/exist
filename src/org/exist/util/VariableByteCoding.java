@@ -66,7 +66,7 @@ public class VariableByteCoding {
 	}
 	
 	public final static void copyTo(InputStream in, FastByteBuffer out) throws IOException {
-		long more;
+		int more;
 		do {
 			more = in.read();
 			out.append((byte) more);
@@ -74,6 +74,18 @@ public class VariableByteCoding {
 		} while (more > 0);
 	}
 
+	public final static void copyTo(InputStream in, FastByteBuffer out, int count) 
+	throws IOException {
+		int more;
+		for(int i = 0; i < count; i++) {
+			do {
+				more = in.read();
+				out.append((byte) more);
+				more &= 0200;
+			} while (more > 0);
+		}
+	}
+	
 	/**
 	 *  Encode a long integer to a variable-byte encoded
 	 * sequence of bytes.

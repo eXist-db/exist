@@ -1009,7 +1009,7 @@ public class NativeBroker extends DBBroker {
 		if (node == null)
 			LOG.debug("reindexing level " + idxLevel + " of document " + doc.getDocId());
 		final long start = System.currentTimeMillis();
-		// remove dom index
+		// remove old dom index
 		Value ref = new NodeRef(doc.getDocId());
 		final IndexQuery query = new IndexQuery(null, IndexQuery.TRUNC_RIGHT, ref);
 		final Lock lock = domDb.getLock();
@@ -1017,7 +1017,7 @@ public class NativeBroker extends DBBroker {
 		try {
 			lock.acquire(Lock.WRITE_LOCK);
 			domDb.setOwnerObject(this);
-			ArrayList nodes = domDb.findKeys(query);
+			final ArrayList nodes = domDb.findKeys(query);
 			long gid;
 			for (Iterator i = nodes.iterator(); i.hasNext();) {
 				ref = (Value) i.next();
@@ -1031,18 +1031,18 @@ public class NativeBroker extends DBBroker {
 						domDb.removeValue(ref);
 				}
 			}
-			//domDb.flush();
 		} catch (DBException e) {
 			LOG.warn("db error during reindex", e);
 		} catch (IOException e) {
 			LOG.warn("io error during reindex", e);
 		} catch (LockException e) {
 			// timed out
-			e.printStackTrace();
+			LOG.warn("lock timed out during reindex", e);
 			return;
 		} finally {
 			lock.release();
 		}
+		// reindex the nodes
 		Iterator iterator;
 		if (node == null) {
 			NodeList nodes = doc.getChildNodes();
@@ -1103,10 +1103,12 @@ public class NativeBroker extends DBBroker {
 			switch (nodeType) {
 				case Node.ELEMENT_NODE :
 					// save element by calling ElementIndex
+					tempProxy.setHasIndex(idx == null || idx.match(currentPath));
 					elementIndex.setDocument(doc);
 					elementIndex.addRow(nodeName, tempProxy);
 					break;
 				case Node.ATTRIBUTE_NODE :
+					tempProxy.setHasIndex(idx == null || idx.match(currentPath));
 					elementIndex.setDocument(doc);
 					elementIndex.addRow("@" + nodeName, tempProxy);
 					// check if attribute value should be fulltext-indexed
@@ -1117,7 +1119,6 @@ public class NativeBroker extends DBBroker {
 					// if the attribute has type ID, store the ID-value
 					// to the element index as well
 					if (((AttrImpl) node).getType() == AttrImpl.ID) {
-						LOG.debug("storing ID");
 						elementIndex.addRow("&" + ((AttrImpl) node).getValue(), tempProxy);
 					}
 					break;
@@ -1136,8 +1137,9 @@ public class NativeBroker extends DBBroker {
 			currentPath = currentPath + '/' + node.getNodeName();
 		reindex(node, currentPath);
 		if (node.hasChildNodes()) {
+			final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 			final long firstChildId =
-				XMLUtil.getFirstChildId((DocumentImpl) node.getOwnerDocument(), node.getGID());
+				XMLUtil.getFirstChildId(doc, node.getGID());
 			if (firstChildId < 0) {
 				LOG.fatal(
 					"no child found: expected = "
@@ -1149,17 +1151,12 @@ public class NativeBroker extends DBBroker {
 				throw new IllegalStateException("wrong node id");
 			}
 			final long lastChildId = firstChildId + node.getChildCount();
-			final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 			long p;
 			Value value;
 			NodeImpl child;
 			for (long gid = firstChildId; gid < lastChildId; gid++) {
-				//value = (Value) iterator.next();
-				//child = NodeImpl.deserialize(value.data(), value.start(), value.length(), doc);
 				child = (NodeImpl) iterator.next();
 				child.setGID(gid);
-				//child.setOwnerDocument(doc);
-				//child.setInternalAddress(value.getAddress());
 				scanNodes(iterator, child, currentPath);
 			}
 		}
@@ -2185,18 +2182,18 @@ public class NativeBroker extends DBBroker {
 
 	public void insertAfter(final NodeImpl previous, final NodeImpl node) {
 		final byte data[] = node.serialize();
+		final DocumentImpl doc = (DocumentImpl)previous.getOwnerDocument();
 		new DOMTransaction(this, domDb) {
 			public Object start() {
 				long address = previous.getInternalAddress();
-				//				LOG.debug("inserting new child after " + address);
 				if (address > -1)
-					address = domDb.insertAfter(address, data);
+					address = domDb.insertAfter(doc, address, data);
 				else {
 					NodeRef ref =
 						new NodeRef(
-							((DocumentImpl) previous.getOwnerDocument()).getDocId(),
+							doc.getDocId(),
 							previous.getGID());
-					address = domDb.insertAfter(ref, data);
+					address = domDb.insertAfter(doc, ref, data);
 				}
 				node.setInternalAddress(address);
 				return null;

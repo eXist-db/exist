@@ -56,6 +56,18 @@ public class StorageAddress {
 		return (short) ((pointer >>> 16) & 0xFFFFL);
 	}
 
+	public final static boolean equals(long p0, long p1) {
+		return ((p0 & 0xFFFFFFFF0000FFFFL) == (p1 & 0xFFFFFFFF0000FFFFL));
+	}
+
+//	public final static boolean equals(long p0, long p1) {
+//		if(pageFromPointer(p0) != pageFromPointer(p1))
+//			return false;
+//		if(tidFromPointer(p0) != tidFromPointer(p1))
+//			return false;
+//		return true;
+//	}
+	
 	public final static void write(long pointer, VariableByteOutputStream os) {
 		os.writeInt(StorageAddress.pageFromPointer(pointer));
 		os.writeShort(StorageAddress.tidFromPointer(pointer));
@@ -64,5 +76,9 @@ public class StorageAddress {
 	
 	public final static long read(VariableByteInputStream is) throws IOException, EOFException {
 		return createPointer(is.readInt(), is.readShort(), is.readShort());
+	}
+	
+	public final static String toString(long pointer) {
+		return pageFromPointer(pointer) + ":" + tidFromPointer(pointer);
 	}
 }

@@ -13,7 +13,7 @@
         <company>Null-Devices</company>
         <city>Washington</city>
     </address>
-    <address>
+    <address rating="99">
         <fname>Boris</fname>
         <lname>Becker</lname>
         <company>Null-Devices</company>

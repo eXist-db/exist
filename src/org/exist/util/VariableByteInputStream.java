@@ -34,35 +34,43 @@ import java.io.UnsupportedEncodingException;
  */
 public class VariableByteInputStream {
 
-	private InputStream is;
+	private InputStream is_ = null;
+	
+	public VariableByteInputStream() {
+	}
+	
 	/**
 	 *  Constructor for the VariableByteInputStream object
 	 *
 	 *@param  data  Description of the Parameter
 	 */
 	public VariableByteInputStream(byte[] data) {
-		is = new ByteArrayInputStream(data);
+		is_ = new ByteArrayInputStream(data);
 	}
 
 	public VariableByteInputStream(byte[] data, int offset, int length) {
-		is = new ByteArrayInputStream(data, offset, length);
+		is_ = new ByteArrayInputStream(data, offset, length);
 	}
 	
 	public VariableByteInputStream(InputStream stream) {
-		this.is = stream;
+		this.is_ = stream;
 	}
 
+	public void setInputStream(InputStream stream) {
+		is_ = stream;
+	}
+	
 	public void read(byte[] data, int offset, int len) throws IOException {
-		is.read(data, offset, len);
+		is_.read(data, offset, len);
 	}
 	
 	public byte readByte() throws IOException {
-		return (byte) is.read();
+		return (byte) is_.read();
 	}
 
 	public short readShort() throws IOException, EOFException {
 		try {
-			return (short) VariableByteCoding.decode(is);
+			return (short) VariableByteCoding.decode(is_);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new EOFException();
 		}
@@ -75,7 +83,7 @@ public class VariableByteInputStream {
 	 */
 	public int readInt() throws EOFException, IOException {
 		try {
-			return (int) VariableByteCoding.decode(is);
+			return (int) VariableByteCoding.decode(is_);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new EOFException();
 		}
@@ -88,20 +96,20 @@ public class VariableByteInputStream {
 	 */
 	public long readLong() throws EOFException, IOException {
 		try {
-			return VariableByteCoding.decode(is);
+			return VariableByteCoding.decode(is_);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new EOFException();
 		}
 	}
 
 	public long readFixedLong() throws IOException {
-		return VariableByteCoding.decodeFixed(is);
+		return VariableByteCoding.decodeFixed(is_);
 	}
 	
 	public String readUTF() throws IOException, EOFException {
 		int len = readInt();
 		byte data[] = new byte[len];
-		is.read(data);
+		is_.read(data);
 		String s;
 		try {
 			s = new String(data, "UTF-8");
@@ -117,16 +125,20 @@ public class VariableByteInputStream {
 	 *@param  count  Description of the Parameter
 	 */
 	public void skip(int count) throws IOException {
-		for (int i = 0; i < count && is.available() > 0; i++)
+		for (int i = 0; i < count && is_.available() > 0; i++)
 			//VariableByteCoding.decode(is);
-			VariableByteCoding.skipNext(is);
+			VariableByteCoding.skipNext(is_);
 	}
 
 	public int available() throws IOException {
-		return is.available();
+		return is_.available();
 	}
 	
 	public void copyTo(VariableByteOutputStream os) throws IOException {
-		VariableByteCoding.copyTo(is, os.buf);
+		VariableByteCoding.copyTo(is_, os.buf);
+	}
+	
+	public void copyTo(VariableByteOutputStream os, int count) throws IOException {
+		VariableByteCoding.copyTo(is_, os.buf, count);
 	}
 }

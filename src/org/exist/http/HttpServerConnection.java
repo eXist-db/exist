@@ -1211,8 +1211,7 @@ public class HttpServerConnection extends Thread {
                 broker.setRetrvMode( RelationalBroker.SINGLE );
             }
         } catch ( Exception e ) {
-            HttpServer.LOG.debug( e.toString(  ) );
-            e.printStackTrace(  );
+            HttpServer.LOG.debug( e.toString(  ), e );
             result = formatErrorMsg( e.toString(  ), UNKNOWN_ERROR );
         }
 

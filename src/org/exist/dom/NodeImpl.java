@@ -31,6 +31,8 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import java.util.ArrayList;
+import java.util.Iterator;
+
 import org.exist.storage.*;
 
 /**
@@ -612,11 +614,33 @@ public class NodeImpl implements Node {
 	}
 
 	protected NodeImpl getLastNode(NodeImpl node) {
-		if (node.getNodeType() == Node.ELEMENT_NODE)
-			return node.getChildCount() == 0 ? node : getLastNode((NodeImpl) node.getLastChild());
-		else
+		final NodeProxy p = new NodeProxy(ownerDocument, node.gid, node.internalAddress);
+		Iterator iterator = 
+			ownerDocument.getBroker().getNodeIterator(p);
+		iterator.next();
+		return getLastNode(iterator, node);
+	}
+	
+	protected NodeImpl getLastNode(Iterator iterator, NodeImpl node) {
+		if(node.hasChildNodes()) {
+			final long firstChild = node.firstChildID();
+			final long lastChild = firstChild + node.getChildCount();
+			NodeImpl next = null;
+			for(long gid = firstChild; gid < lastChild; gid++) { 
+				next = (NodeImpl)iterator.next();
+				next.setGID(gid);
+				next = getLastNode(iterator, next);
+			}
+			return next;
+		} else
 			return node;
 	}
+//	protected NodeImpl getLastNode(NodeImpl node) {
+//		if (node.getNodeType() == Node.ELEMENT_NODE)
+//			return node.getChildCount() == 0 ? node : getLastNode((NodeImpl) node.getLastChild());
+//		else
+//			return node;
+//	}
 
 	/**
 		 * Update a child node. This method will only update the child node
