@@ -7,7 +7,7 @@ declare namespace b="http://exist-db.org/bibliography";
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace xsl="http://exist-db.org/xquery/transform";
 declare namespace util="http://exist-db.org/xquery/util";
-declare namespace xmldb="http://exist-db.org/xquery/xmldb";
+declare namespace xdb="http://exist-db.org/xquery/xmldb";
 
 import module namespace c="http://exist-db.org/modules/mods-config"
 at "config.xqm";
@@ -23,10 +23,10 @@ declare function b:remove($user, $pass) as element()
 		else (
 			<p>Removing document {$doc} from collection {$path}.</p>,
 			let $collection :=
-					xmldb:collection(concat("xmldb:exist://", $path), $user,
+					xdb:collection(concat("xmldb:exist://", $path), $user,
                     $pass)
 			return
-				xmldb:remove($collection, $doc)
+				xdb:remove($collection, $doc)
 		)
 };
 
@@ -48,20 +48,32 @@ declare function b:queryField($field as xs:string) as xs:string
 };
 
 (: Create an XPath expression for the current field and search terms :)
-declare function b:createXPath($user as xs:string, $terms as xs:string) 
+declare function b:createXPath($collection as xs:string, $term1 as xs:string?) 
 as xs:string
 {
-    let $home := b:getUserHome($user),
-        $field := request:request-parameter("field", "any")
+    let $field1 := request:request-parameter("field1", "any"),
+        $queryPart :=
+            if($term1) then
+                concat("collection('", $collection, "')//m:mods[", b:queryField($field1),
+                    " &amp;= '", $term1, "'")
+            else
+                concat("collection('", $collection, "')//m:mods"),
+        $l := util:log("debug", ("Part: ", $term1)),
+        $term2 := request:request-parameter("term2", ())
     return
-        if(empty($terms) or $terms eq "") then
-            concat("collection('", $home, "')//m:mods")
+        if($term2) then
+            let $field2 := request:request-parameter("field2", "any"),
+                $op := request:request-parameter("op", "and")
+            return
+                concat($queryPart, " ", $op, " ", b:queryField($field2), " &amp;= '",
+                    $term2, "']")
+        else if($term1) then
+            concat($queryPart, "]")
         else
-            concat("collection('", $home, "')//m:mods[", b:queryField($field),
-                " &amp;= '", $terms, "']")
+            $queryPart
 };
 
-declare function b:displayOverview($recs as item()*, $user) as element()
+declare function b:displayOverview($recs as item()*, $collection) as element()
 {
     let $count := count($recs),
         $max := request:request-parameter("howmany", "5") cast as xs:int,
@@ -69,7 +81,7 @@ declare function b:displayOverview($recs as item()*, $user) as element()
         $end := if ($start + $max - 1 < $count) then $start + $max - 1 else $count
     return
         <items start="{$start}" hits="{$count}" next="{$end + 1}" max="{$max}"
-            collection="{b:getUserHome($user)}" view="overview">
+            collection="{$collection}" view="overview">
             {
                 for $p in $start to $end
                 let $m := item-at($recs, $p)
@@ -81,7 +93,7 @@ declare function b:displayOverview($recs as item()*, $user) as element()
         </items>
 };
 
-declare function b:displayDetails($recs as item()*, $user) as element()
+declare function b:displayDetails($recs as item()*, $collection) as element()
 {
     let $count := count($recs),
         $max := xs:int(request:request-parameter("howmany", "5")),
@@ -90,21 +102,21 @@ declare function b:displayDetails($recs as item()*, $user) as element()
     return
         <items hits="{$count}" start="{$start}" view="details"
             next="{$start + 1}" max="{$max}"
-            collection="{b:getUserHome($user)}">
+            collection="{collection}">
             <item pos="{$start}" doc="{util:document-name($hit)}">
                 {$hit/*}
             </item>
         </items>
 };
 
-declare function b:display($recs as item()*, $user) as element()
+declare function b:display($recs as item()*, $collection) as element()
 {
     let $display := request:request-parameter("view", "overview")
     return
         if($display eq "details") then
-            b:displayDetails($recs, $user)
+            b:displayDetails($recs, $collection)
         else
-            b:displayOverview($recs, $user)
+            b:displayOverview($recs, $collection)
 };
 
 declare function b:buildQuery($xpath as xs:string, $order as xs:string) as xs:string
@@ -117,73 +129,83 @@ declare function b:buildQuery($xpath as xs:string, $order as xs:string) as xs:st
             for $m in ", $xpath, " order by ", $orderExpr, " return $m")
 };
 
-declare function b:reorder($order as xs:string, $user as xs:string) as element()+
+declare function b:reorder($order as xs:string, $collection as xs:string) as element()+
 {
     let $xpath := request:get-session-attribute("query"),
         $recs := util:eval(b:buildQuery($xpath, $order)),
         $x := request:set-session-attribute("cache", $recs)
     return
-        b:display($recs, $user)
+        b:display($recs, $collection)
 };
 
-declare function b:query($user as xs:string) as element()+
+declare function b:query($collection as xs:string) as element()+
 {
-    let $start := request:request-parameter("start", ()),
+    let $simpleQuery := boolean(request:request-parameter("query", ())),
+        $start := request:request-parameter("start", ()),
         $cached := request:get-session-attribute("cache"),
         $orderby := request:request-parameter("order", ""),
-        $terms := request:request-parameter("query", ())
+        $term1 :=
+            if($simpleQuery) then
+                request:request-parameter("query", ())
+            else
+                request:request-parameter("term1", ())
     return
         (: if parameter "start" is not set, execute a new query :)
         if(empty($start) or empty($cached)) then
-	        let $xpath := b:createXPath($user, $terms), 
+	        let $xpath := b:createXPath($collection, $term1),
+                $l := util:log("debug", ("Query: ", $xpath)),
 		        $recs := util:eval(b:buildQuery($xpath, $orderby)),
                 $x := request:set-session-attribute("query", $xpath),
                 $r := request:set-session-attribute("cache", $recs)
 	        return
-		        b:display($recs, $user)
+		        b:display($recs, $collection)
         (: redisplay previous query results :)
         else if($orderby != "") then
-            b:reorder($orderby, $user)
+            b:reorder($orderby, $collection)
         else (
             util:log("debug", ("Reading from cache: start = ", $start)),
-            b:display($cached, $user)
+            b:display($cached, $collection)
         )
 };
 
-declare function b:getUserHome($user as xs:string?) as xs:string?
-{
-    let $collection := request:get-session-attribute("collection")
-    return
-        if($collection) then
-            $collection
-        else
-            let $home := string(doc("/db/system/users.xml")//user[@name =
-                         	$user]/@home)
-            return (
-                request:set-session-attribute("collection", $home),
-                $home
-            )
-};
-
-declare function b:main()
+declare function b:main($user as xs:string, $collection as xs:string)
 as element()+
 {
-    let $action := request:request-parameter("action", ""),
-        $user := request:get-session-attribute("user"),
-        $pass := request:get-session-attribute("password")
-    return
-        (
+    let $action := request:request-parameter("action", "")
+    return (
         util:log("debug", "checking action"),
         if($action eq "remove") then
             b:remove($user, $pass)
         else
             util:log("debug", "no action"),
-        b:query($user))
+        b:query($collection)
+    )
 };
 
+declare function b:get-collection($user) as xs:string {
+    let $colParam := request:request-parameter("collection", ())
+    return
+        if($colParam) then
+            let $collection :=
+                    if($colParam eq "_home_") then
+                        xdb:get-user-home($user)
+                    else
+                        $colParam,
+                $s := request:set-session-attribute("modscol", $collection)
+            return
+                $collection
+        else
+            request:get-session-attribute("modscol")
+};
+
+let $user := request:get-session-attribute("user"),
+    $pass := request:get-session-attribute("password"),
+    $url := request:encode-url(request:request-uri()),
+    $collection := b:get-collection($user)
+return
 <html>
     <head>
-        <title>Bibliography Overview</title>
+        <title>MODS Example</title>
         <link href="{$c:css}" type="text/css" rel="stylesheet"/>
     </head>
     <body>
@@ -200,9 +222,19 @@ as element()+
             </table>
         </div>
 
-        { c:sidebar(request:encode-url(request:request-uri())) }        
-
-		<!-- Process action if specified -->
-        { b:main() }
+        <!-- include the sidebar -->
+        { c:sidebar($url, $user, $collection) }
+        
+        <div id="content">
+            <!-- call the main function to process the query -->
+            { 
+                let $displayForm := request:request-parameter("show-form", ())
+                return
+                    if($displayForm) then
+                        c:query-form($url, $collection)
+                    else
+                        b:main($user, $collection) 
+            }
+        </div>
     </body>
 </html>
