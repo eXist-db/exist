@@ -1,0 +1,505 @@
+/*
+ *  Parser.java - eXist Open Source Native XML Database
+ *  Copyright (C) 2001-03 Wolfgang M. Meier
+ *  meier@ifs.tu-darmstadt.de
+ *  http://exist.sourceforge.net
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * 
+ *  $Id$
+ * 
+ */
+package org.exist;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Stack;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.apache.log4j.Category;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.CommentImpl;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentTypeImpl;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.ProcessingInstructionImpl;
+import org.exist.dom.QName;
+import org.exist.dom.TextImpl;
+import org.exist.storage.DBBroker;
+import org.exist.util.FastStringBuffer;
+import org.exist.util.ProgressIndicator;
+import org.exist.util.XMLString;
+import org.w3c.dom.Element;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.ext.LexicalHandler;
+
+/**
+ * Parser parses a given input document via SAX and stores it to
+ * the database. It automatically handles index-creation.
+ * 
+ * @author wolf
+ *
+ */
+public class Indexer
+	extends Observable
+	implements ContentHandler, LexicalHandler, ErrorHandler {
+
+	private final static Category LOG =
+		Category.getInstance(Parser.class.getName());
+
+	protected DBBroker broker = null;
+	protected XMLString charBuf = new XMLString();
+	protected int currentLine = 0;
+	protected StringBuffer currentPath = new StringBuffer();
+	protected DocumentImpl document = null;
+	protected boolean insideDTD = false;
+	protected boolean validate = false;
+	protected int level = 0;
+	protected Locator locator = null;
+	protected int normalize = XMLString.SUPPRESS_BOTH;
+	protected Map nsMappings = new HashMap();
+	protected Element rootNode;
+	protected Stack stack = new Stack();
+	protected boolean privileged = false;
+	protected String ignorePrefix = null;
+	protected ProgressIndicator progress;
+
+	// reusable fields
+	private TextImpl text = new TextImpl();
+	private Stack usedElements = new Stack();
+	private FastStringBuffer temp = new FastStringBuffer();
+
+	/**
+	 *  Create a new parser using the given database broker and
+	 * user to store the document.
+	 *
+	 *@param  broker              
+	 *@param  user                user identity
+	 *@param  replace             replace existing documents?
+	 *@exception  EXistException  
+	 */
+	public Indexer(DBBroker broker) throws EXistException {
+		this(broker, false);
+	}
+
+	/**
+	 *  Create a new parser using the given database broker and
+	 * user to store the document.
+	 *
+	 *@param  broker              
+	 *@param  user                user identity
+	 *@param  replace             replace existing documents?
+	 *@param  privileged		  used by the security manager to
+	 *							  indicate that it needs privileged
+	 *                            access to the db.
+	 *@exception  EXistException  
+	 */
+	public Indexer(DBBroker broker, boolean priv) throws EXistException {
+		this.broker = broker;
+		this.privileged = priv;
+	}
+
+	public void setBroker(DBBroker broker) {
+		this.broker = broker;
+	}
+
+	public void setValidating(boolean validate) {
+		this.validate = validate;
+	}
+
+	public void setDocument(DocumentImpl doc) {
+		document = doc;
+		// reset internal fields
+		level = 0;
+		currentPath.setLength(0);
+		stack = new Stack();
+		nsMappings.clear();
+		rootNode = null;
+	}
+
+	public void characters(char[] ch, int start, int length) {
+		if (length <= 0)
+			return;
+		if (charBuf != null) {
+			charBuf.append(ch, start, length);
+		} else {
+			charBuf = new XMLString(ch, start, length);
+		}
+	}
+
+	public void comment(char[] ch, int start, int length) {
+		if (insideDTD)
+			return;
+		CommentImpl comment = new CommentImpl(ch, start, length);
+		comment.setOwnerDocument(document);
+		if (stack.empty()) {
+			if (!validate)
+				broker.store(comment, currentPath.toString());
+			document.appendChild(comment);
+		} else {
+			ElementImpl last = (ElementImpl) stack.peek();
+			if (charBuf != null && charBuf.length() > 0) {
+				final XMLString normalized = charBuf.normalize(normalize);
+				if (normalized.length() > 0) {
+					//TextImpl text =
+					//    new TextImpl( normalized );
+					text.setData(normalized);
+					text.setOwnerDocument(document);
+					last.appendChildInternal(text);
+					if (!validate)
+						broker.store(text, currentPath.toString());
+				}
+				charBuf.reset();
+			}
+			last.appendChildInternal(comment);
+			if (!validate)
+				broker.store(comment, currentPath.toString());
+		}
+	}
+
+	public void endCDATA() {
+	}
+
+	public void endDTD() {
+		insideDTD = false;
+	}
+
+	public void endDocument() {
+		if(!validate) {
+			progress.finish();
+			setChanged();
+			notifyObservers(progress);
+		}
+	}
+
+	public void endElement(String namespace, String name, String qname) {
+		//		if(namespace != null && namespace.length() > 0 &&
+		//			qname.indexOf(':') < 0)
+		//			qname = '#' + namespace + ':' + qname;
+		final ElementImpl last = (ElementImpl) stack.peek();
+		if (last.getNodeName().equals(qname)) {
+			if (charBuf != null && charBuf.length() > 0) {
+				final XMLString normalized = charBuf.normalize(normalize);
+				if (normalized.length() > 0) {
+					text.setData(normalized);
+					text.setOwnerDocument(document);
+					last.appendChildInternal(text);
+					if (!validate)
+						broker.store(text, currentPath);
+					text.clear();
+				}
+				charBuf.reset();
+			}
+			stack.pop();
+			currentPath.delete(
+				currentPath.lastIndexOf("/"),
+				currentPath.length());
+			//				currentPath.substring(0, currentPath.lastIndexOf('/'));
+			if (validate) {
+				if (document.getTreeLevelOrder(level) < last.getChildCount()) {
+					document.setTreeLevelOrder(level, last.getChildCount());
+				}
+			} else {
+				document.setOwnerDocument(document);
+				if (broker.getDatabaseType() == DBBroker.DBM
+					|| broker.getDatabaseType() == DBBroker.NATIVE) {
+					if (last.getChildCount() > 0)
+						broker.update(last);
+				} else
+					broker.store(last, currentPath.toString());
+			}
+			level--;
+			if (last != rootNode) {
+				last.clear();
+				usedElements.push(last);
+			}
+		}
+	}
+
+	public void endEntity(String name) {
+	}
+
+	public void endPrefixMapping(String prefix) {
+		if (ignorePrefix != null && prefix.equals(ignorePrefix)) {
+			ignorePrefix = null;
+		} else {
+			nsMappings.remove(prefix);
+		}
+	}
+
+	public void error(SAXParseException e) throws SAXException {
+		LOG.debug("error at line " + e.getLineNumber(), e);
+		throw new SAXException(
+			"error at line " + e.getLineNumber() + ": " + e.getMessage(),
+			e);
+	}
+
+	public void fatalError(SAXParseException e) throws SAXException {
+		LOG.debug("fatal error at line " + e.getLineNumber(), e);
+		throw new SAXException(
+			"fatal error at line " + e.getLineNumber() + ": " + e.getMessage(),
+			e);
+	}
+
+	public void ignorableWhitespace(char[] ch, int start, int length) {
+	}
+
+	public void processingInstruction(String target, String data) {
+		ProcessingInstructionImpl pi =
+			new ProcessingInstructionImpl(0, target, data);
+		pi.setOwnerDocument(document);
+		if (stack.isEmpty()) {
+			if (!validate)
+				broker.store(pi, currentPath);
+			document.appendChild(pi);
+		} else {
+			ElementImpl last = (ElementImpl) stack.peek();
+			if (charBuf != null && charBuf.length() > 0) {
+				XMLString normalized = charBuf.normalize(normalize);
+				if (normalized.length() > 0) {
+					//TextImpl text =
+					//    new TextImpl( normalized );
+					text.setData(normalized);
+					text.setOwnerDocument(document);
+					last.appendChildInternal(text);
+					if (!validate)
+						broker.store(text, currentPath);
+					text.clear();
+				}
+				charBuf.reset();
+			}
+			last.appendChildInternal(pi);
+			if (!validate)
+				broker.store(pi, currentPath);
+		}
+	}
+
+	public void setDocumentLocator(Locator locator) {
+		this.locator = locator;
+	}
+
+	/**
+	 *  set SAX parser feature. This method will catch (and ignore) exceptions
+	 *  if the used parser does not support a feature.
+	 *
+	 *@param  factory  
+	 *@param  feature  
+	 *@param  value    
+	 */
+	private void setFeature(
+		SAXParserFactory factory,
+		String feature,
+		boolean value) {
+		try {
+			factory.setFeature(feature, value);
+		} catch (SAXNotRecognizedException e) {
+			LOG.warn(e);
+		} catch (SAXNotSupportedException snse) {
+			LOG.warn(snse);
+		} catch (ParserConfigurationException pce) {
+			LOG.warn(pce);
+		}
+	}
+
+	public void skippedEntity(String name) {
+	}
+
+	public void startCDATA() {
+	}
+
+	// Methods of interface LexicalHandler
+	// used to determine Doctype
+
+	public void startDTD(String name, String publicId, String systemId) {
+		DocumentTypeImpl docType =
+			new DocumentTypeImpl(name, publicId, systemId);
+		document.setDocumentType(docType);
+		insideDTD = true;
+	}
+
+	public void startDocument() {
+		if (!validate) {
+			progress = new ProgressIndicator(currentLine, 100);
+			if (document.getDoctype() == null) {
+				// we don't know the doctype
+				// set it to the root node's tag name
+				final DocumentTypeImpl dt =
+					new DocumentTypeImpl(
+						rootNode.getTagName(),
+						null,
+						document.getFileName());
+				document.setDocumentType(dt);
+			}
+			document.setChildCount(0);
+		}
+	}
+
+	public void startElement(
+		String namespace,
+		String name,
+		String qname,
+		Attributes attributes) {
+		// calculate number of real attributes:
+		// don't store namespace declarations
+		int attrLength = attributes.getLength();
+		String attrQName;
+		String attrNS;
+		for (int i = 0; i < attributes.getLength(); i++) {
+			attrNS = attributes.getURI(i);
+			attrQName = attributes.getQName(i);
+			if (attrQName.startsWith("xmlns")
+				|| attrNS.equals("http://exist.sourceforge.net/NS/exist"))
+				--attrLength;
+		}
+
+		ElementImpl last = null;
+		ElementImpl node = null;
+		int p = qname.indexOf(':');
+		String prefix = p > -1 ? qname.substring(0, p) : "";
+		QName qn = new QName(name, namespace, prefix);
+		if (!stack.empty()) {
+			last = (ElementImpl) stack.peek();
+			if (charBuf != null && charBuf.length() > 0) {
+				// mixed element content: don't normalize the text node, just check
+				// if there is any text at all
+				final XMLString normalized = charBuf.normalize(normalize);
+				if (normalized.length() > 0) {
+					text.setData(charBuf);
+					text.setOwnerDocument(document);
+					last.appendChildInternal(text);
+					if (!validate)
+						broker.store(text, currentPath);
+					text.clear();
+				}
+				charBuf.reset();
+			}
+			if (!usedElements.isEmpty()) {
+				node = (ElementImpl) usedElements.pop();
+				node.setNodeName(qn);
+			} else
+				node = new ElementImpl(qn);
+			last.appendChildInternal(node);
+
+			node.setOwnerDocument(document);
+			node.setAttributes((short) attrLength);
+			if (nsMappings != null && nsMappings.size() > 0) {
+				node.setNamespaceMappings(nsMappings);
+				nsMappings.clear();
+			}
+
+			stack.push(node);
+			currentPath.append('/').append(qname);
+			if (!validate) {
+				broker.store(node, currentPath);
+			}
+		} else {
+			if (validate)
+				node = new ElementImpl(0, qn);
+			else
+				node = new ElementImpl(1, qn);
+			rootNode = node;
+			node.setOwnerDocument(document);
+			node.setAttributes((short) attrLength);
+			if (nsMappings != null && nsMappings.size() > 0) {
+				node.setNamespaceMappings(nsMappings);
+				nsMappings.clear();
+			}
+
+			stack.push(node);
+			currentPath.append('/').append(qname);
+			if (!validate) {
+				broker.store(node, currentPath);
+			}
+			document.appendChild(node);
+		}
+
+		level++;
+		if (document.getMaxDepth() < level)
+			document.setMaxDepth(level);
+
+		String attrPrefix;
+		String attrLocalName;
+		for (int i = 0; i < attributes.getLength(); i++) {
+			attrNS = attributes.getURI(i);
+			attrLocalName = attributes.getLocalName(i);
+			attrQName = attributes.getQName(i);
+			// skip xmlns-attributes and attributes in eXist's namespace
+			if (attrQName.startsWith("xmlns")
+				|| attrNS.equals("http://exist.sourceforge.net/NS/exist"))
+				--attrLength;
+			else {
+				p = attrQName.indexOf(':');
+				attrPrefix = (p > -1) ? attrQName.substring(0, p) : null;
+				final AttrImpl attr =
+					new AttrImpl(
+						new QName(attrLocalName, attrNS, attrPrefix),
+						attributes.getValue(i));
+				attr.setOwnerDocument(document);
+				if (attributes.getType(i).equals("ID"))
+					attr.setType(AttrImpl.ID);
+				node.appendChildInternal(attr);
+				if (!validate)
+					broker.store(attr, currentPath);
+			}
+		}
+		if (attrLength > 0)
+			node.setAttributes((short) attrLength);
+		// notify observers about progress every 100 lines
+		if(locator != null) {
+			currentLine = locator.getLineNumber();
+			if (!validate) {
+				progress.setValue(currentLine);
+				if (progress.changed()) {
+					setChanged();
+					notifyObservers(progress);
+				}
+			}
+		}
+	}
+
+	public void startEntity(String name) {
+	}
+
+	public void startPrefixMapping(String prefix, String uri) {
+		// skip the eXist namespace
+		if (uri.equals("http://exist.sourceforge.net/NS/exist")) {
+			ignorePrefix = prefix;
+			return;
+		}
+		nsMappings.put(prefix, uri);
+	}
+
+	public void prepareForStore() {
+
+	}
+
+	public void warning(SAXParseException e) throws SAXException {
+		LOG.debug("warning at line " + e.getLineNumber(), e);
+		throw new SAXException(
+			"warning at line " + e.getLineNumber() + ": " + e.getMessage(),
+			e);
+	}
+
+}
