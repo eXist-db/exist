@@ -50,7 +50,9 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.XQueryService;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.request.RequestModule;
+import org.exist.xquery.value.Item;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -208,10 +210,10 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 		String password = null;
 		// check if user and password can be read from the session
 		if (session != null && request.isRequestedSessionIdValid()) {
-		    Object userObj = session.getAttribute("user");
-		    Object passObj = session.getAttribute("password");
-			user = userObj == null ? null : String.valueOf(userObj);
-			password = passObj == null ? null : String.valueOf(passObj);
+            String actualUser = getSessionAttribute(session, "user");
+            String actualPass = getSessionAttribute(session, "password");
+			user = actualUser == null ? null : String.valueOf(actualUser);
+			password = actualPass == null ? null : String.valueOf(actualPass);
 		}
 		if (user == null)
 			user = defaultUser;
@@ -270,6 +272,19 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 		}
 	}
 
+    private String getSessionAttribute(Session session, String attribute) {
+        Object obj = session.getAttribute(attribute);
+        if(obj == null)
+            return null;
+        if(obj instanceof Item)
+            try {
+                return ((Item)obj).getStringValue();
+            } catch (XPathException e) {
+                return null;
+            }
+        return obj.toString();
+    }
+    
 	/**
 	 * @see org.apache.avalon.framework.configuration.Configurable#configure(org.apache.avalon.framework.configuration.Configuration)
 	 */
