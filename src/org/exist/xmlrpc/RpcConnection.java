@@ -354,23 +354,21 @@ public class RpcConnection extends Thread {
 		}
 	}
 
-	Hashtable describeResource(User user, String resourceName)
+	public Hashtable describeResource(User user, String resourceName)
 		throws EXistException, PermissionDeniedException {
 	    DBBroker broker = brokerPool.get(user);
 	    DocumentImpl doc = null;
+	    Hashtable hash = new Hashtable(5);
 		try {
 		    doc = (DocumentImpl) broker.openDocument(resourceName, Lock.READ_LOCK);
 			if (doc == null) {
 				LOG.debug("document " + resourceName + " not found!");
-				throw new EXistException("document not found");
+				return hash;
 			}
 			if (!doc.getCollection().getPermissions().validate(user, Permission.READ)) {
 				throw new PermissionDeniedException("Not allowed to read collection");
 			}
-			Hashtable desc = new Hashtable();
-			Vector collections = new Vector();
 			Permission perms = doc.getPermissions();
-			Hashtable hash = new Hashtable(5);
 			hash.put("name", resourceName);
 			hash.put("owner", perms.getOwner());
 			hash.put("group", perms.getOwnerGroup());
