@@ -47,7 +47,6 @@ import org.exist.storage.Signatures;
 import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.ClockCache;
-import org.exist.storage.cache.LRDCache;
 import org.exist.util.ByteConversion;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
@@ -790,6 +789,7 @@ public class DOMFile extends BTree implements Lockable {
                 } catch (BTreeException bte) {
                 }
             } while (parentPointer == KEY_NOT_FOUND);
+            	
             final long firstChildId = XMLUtil.getFirstChildId(doc, id);
             final Iterator iter = new NodeIterator(lock, this, node.doc,
                     parentPointer);
@@ -1217,8 +1217,8 @@ public class DOMFile extends BTree implements Lockable {
     
     public String debugPages(DocumentImpl doc) {
     	StringBuffer buf = new StringBuffer();
-    	buf.append("Pages used by ").append(doc.getFileName());
-    	buf.append(':');
+    	buf.append("Pages used by ").append(doc.getName());
+    	buf.append("; docId ").append(doc.getDocId()).append(':');
     	long pnum = StorageAddress.pageFromPointer(((NodeImpl)doc.getFirstChild()).getInternalAddress());
         while(-1 < pnum) {
             DOMPage page = getCurrentPage(pnum);
@@ -1489,14 +1489,14 @@ public class DOMFile extends BTree implements Lockable {
                     LOG.debug("circular link to next page on " + pageNr);
                     return null;
                 }
-//                LOG.debug(
-//                		owner.toString()
-//						+ ": tid "
-//						+ targetId
-//						+ " not found on "
-//						+ page.page.getPageInfo()
-//						+ ". Loading "
-//						+ pageNr + "; contents: " + debugPageContents(page));
+                LOG.debug(
+                		owner.toString()
+						+ ": tid "
+						+ targetId
+						+ " not found on "
+						+ page.page.getPageInfo()
+						+ ". Loading "
+						+ pageNr + "; contents: " + debugPageContents(page));
             }
             return null;
         }

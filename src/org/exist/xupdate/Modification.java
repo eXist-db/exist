@@ -207,11 +207,12 @@ public abstract class Modification {
 	 *  
 	 * @param docs
 	 */
-	protected void checkFragmentation(DocumentSet docs) {
+	protected void checkFragmentation(DocumentSet docs) throws EXistException {
 	    for(Iterator i = docs.iterator(); i.hasNext(); ) {
 	        DocumentImpl next = (DocumentImpl) i.next();
 	        if(next.getSplitCount() > broker.getFragmentationLimit())
 	            broker.defrag(next);
+	        broker.consistencyCheck(next);
 	    }
 	}
 	

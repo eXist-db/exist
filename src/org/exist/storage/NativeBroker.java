@@ -1334,6 +1334,14 @@ public class NativeBroker extends DBBroker {
 		    currentPath.removeLastComponent();
 	}
 	
+	public void consistencyCheck(DocumentImpl doc) throws EXistException {
+		if(xupdateConsistencyChecks) {
+			LOG.debug("Checking document " + doc.getFileName());
+			checkTree(doc);
+			elementIndex.consistencyCheck(doc);
+		}
+	}
+	
 	public void checkTree(final DocumentImpl doc) {
 		LOG.debug("Checking DOM tree for document " + doc.getFileName());
 		new DOMTransaction(this, domDb, Lock.READ_LOCK) {
@@ -1586,11 +1594,12 @@ public class NativeBroker extends DBBroker {
 			public Object start() {
 				Value val = domDb.get(p.getInternalAddress());
 				if (val == null) {
-					LOG.debug("Node " + p.gid + " not found in document " +
-					        p.doc.getCollection().getName() + '/' + p.doc.getFileName());
+					LOG.debug("Node " + p.gid + " not found in document " + p.doc.getName() +
+							"; docId = " + p.doc.getDocId());
 					LOG.debug(domDb.debugPages(p.doc));
 					Thread.dumpStack();
-					return objectWith(p.doc, p.gid);
+					return null;
+//					return objectWith(p.doc, p.gid); // retry?
 				}
 				NodeImpl node =
 					NodeImpl.deserialize(

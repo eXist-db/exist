@@ -421,6 +421,10 @@ public class Configuration implements ErrorHandler {
 				String fragmentation = xupdate.getAttribute("allowed-fragmentation");
 				if(fragmentation != null)
 					config.put("xupdate.fragmentation", new Integer(fragmentation));
+				
+				String consistencyCheck = xupdate.getAttribute("enable-consistency-checks");
+				if(consistencyCheck != null)
+					config.put("xupdate.consistency-checks", Boolean.valueOf(consistencyCheck.equals("yes")));
 			}
 		} catch (SAXException e) {
 			LOG.warn("error while reading config file: " + file, e);

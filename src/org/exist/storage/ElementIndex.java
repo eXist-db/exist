@@ -21,7 +21,6 @@ package org.exist.storage;
 import java.util.Observable;
 import java.util.TreeMap;
 
-import org.apache.log4j.Category;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -40,7 +39,6 @@ public abstract class ElementIndex extends Observable {
     protected TreeMap elementIds = new TreeMap();
     protected DocumentImpl doc;
     protected Configuration config;
-    private static Category LOG = Category.getInstance(ElementIndex.class.getName());
 
     public ElementIndex(DBBroker broker, Configuration config) {
         this.broker = broker;

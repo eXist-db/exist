@@ -93,6 +93,8 @@ public abstract class DBBroker extends Observable {
 	
 	protected int docFragmentationLimit = 25;
 	
+	protected boolean xupdateConsistencyChecks = false;
+	
 	protected String id;
 	
 	/**
@@ -172,6 +174,9 @@ public abstract class DBBroker extends Observable {
 		    xupdateGrowthFactor = 1;
 		if ((docFragmentationLimit = config.getInteger("xupdate.fragmentation")) < 0)
 		    docFragmentationLimit = 50;
+		if ((temp = (Boolean) config.getProperty("xupdate.consistency-checks")) != null)
+			xupdateConsistencyChecks = temp.booleanValue();
+		
 		LOG.debug("fragmentation = " + docFragmentationLimit);		
 		this.pool = pool;
 		xqueryService = new XQuery(this);
@@ -519,6 +524,8 @@ public abstract class DBBroker extends Observable {
 	 */
 	public abstract void checkTree(DocumentImpl doc);
 	
+	public abstract void consistencyCheck(DocumentImpl doc) throws EXistException;
+	
 	public void sync() {
 		/*
 		 *  do nothing
@@ -602,6 +609,10 @@ public abstract class DBBroker extends Observable {
 	
 	public int getFragmentationLimit() {
 	    return docFragmentationLimit;
+	}
+	
+	public boolean consistencyChecksEnabled() {
+		return xupdateConsistencyChecks;
 	}
 	
 	public abstract int getPageSize();
