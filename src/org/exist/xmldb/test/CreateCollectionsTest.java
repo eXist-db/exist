@@ -1,6 +1,8 @@
 package org.exist.xmldb.test;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -133,6 +135,12 @@ public class CreateCollectionsTest extends TestCase {
 					directory + File.separatorChar + fileToRemove),
 				testCollection);
 
+			byte[] data = storeBinaryResourceFromFile( new File( "../webapp/logo.jpg"), testCollection);
+			Object content = testCollection.getResource("logo.jpg").getContent();
+			byte[] dataStored = (byte[])content;
+			assertTrue("After storing binary resource, data out==data in", 
+					Arrays.equals(dataStored, data) );
+			
 		} catch (XMLDBException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -161,6 +169,32 @@ public class CreateCollectionsTest extends TestCase {
 		return res;
 	}
 
+	private byte[] storeBinaryResourceFromFile(
+			File file,
+			Collection testCollection)
+			throws XMLDBException, IOException {
+			System.out.println("storing " + file.getAbsolutePath());
+
+			Resource res =
+				(BinaryResource) testCollection.createResource(
+					file.getName(),
+					"BinaryResource" );
+			assertNotNull("store binary Resource From File", res);
+			
+			// Get an array of bytes from the file:
+			 FileInputStream istr = new FileInputStream(file); 
+			 BufferedInputStream bstr = new BufferedInputStream( istr ); // promote
+			 int size = (int) file.length();  // get the file size (in bytes)
+			 byte[] data = new byte[size]; // allocate byte array of right size
+			 bstr.read( data, 0, size );   // read into byte array
+			 bstr.close();
+			 
+			res.setContent(data);
+			testCollection.storeResource(res);
+			System.out.println("stored " + file.getAbsolutePath());
+			return data;
+		}
+	
 	public void testMultipleCreates() {
 		try {
         	Collection rootColl = DatabaseManager.getCollection("xmldb:exist:///db");
