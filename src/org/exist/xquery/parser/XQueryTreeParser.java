@@ -3153,7 +3153,7 @@ public XQueryTreeParser() {
 			org.exist.xquery.parser.XQueryAST tmp47_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_text);
 			_t = _t.getFirstChild();
-			type.setPrimaryType(Type.ITEM);
+			type.setPrimaryType(Type.TEXT);
 			_t = __t53;
 			_t = _t.getNextSibling();
 			break;
