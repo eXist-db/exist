@@ -22,6 +22,9 @@
  */
 package org.exist.xquery.functions.util;
 
+import java.io.IOException;
+import java.util.Properties;
+
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
@@ -43,8 +46,8 @@ public class ExistVersion extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("eXist-version", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Return the eXist version.",
-			null,
+			"Returns the version of eXist running this query.",
+			FunctionSignature.NO_ARGS,
 			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
 
 	public ExistVersion(XQueryContext context) {
@@ -55,11 +58,16 @@ public class ExistVersion extends Function {
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		{
-		
-		return new StringValue("1.0 beta rc2");
+			Sequence contextSequence,
+			Item contextItem)
+	{
+		Properties sysProperties = new Properties();
+		try {
+			sysProperties.load(ExistVersion.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
+		} catch (IOException e) {
+			LOG.debug("Unable to load system.properties from class loader");
+		}
+		return new StringValue(sysProperties.getProperty("product-version", "unknown version"));
 	}
 
 }

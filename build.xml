@@ -194,6 +194,8 @@
     <!-- Create jar file          										   -->
     <!-- =================================================================== -->
     <target name="jar" depends="compile, compile-tomcat-realm">
+		<filter token="version" value="${project.version}"/>
+		<filter token="build" value="${DSTAMP}"/>
 		<copy file="${src}/CatalogManager.properties" todir="${build.classes}"/>
 	    <copy todir="${build.classes}/org/exist/client">
 		    <fileset dir="${src}/org/exist/client">
@@ -210,8 +212,12 @@
 			todir="${build.classes}/org/exist"/>
         <copy file="${src}/org/exist/xmldb2.xsl" 
 			todir="${build.classes}/org/exist"/>
-		<copy file="${src}/org/exist/start/start.config" todir="${build.classes}/org/exist/start"/>
-		<copy file="${src}/org/exist/security/security.properties" todir="${build.classes}/org/exist/security"/>
+		<copy file="${src}/org/exist/start/start.config" 
+			todir="${build.classes}/org/exist/start"/>
+		<copy file="${src}/org/exist/security/security.properties" 
+			todir="${build.classes}/org/exist/security"/>
+		<copy file="${src}/org/exist/system.properties" 
+			todir="${build.classes}/org/exist" filtering="true"/>
 
         <echo message="Creating exist.jar ..."/>
         <jar basedir="${build.classes}" compress="true" jarfile="exist.jar">
@@ -322,6 +328,7 @@ Concurrency tests
         </delete>
 		<java classname="org.exist.Server">
             <classpath refid="classpath.core"/>
+			<!--arg value="-d"/-->	
         </java>
 		<echo>Server started.</echo>
 	</target>
@@ -357,33 +364,44 @@ Running tests on remote database
 		<xmldb:shutdown xmlns:xmldb="http://exist-db.org/ant"
 			uri="xmldb:exist://localhost:8081/db"
 			user="admin" password=""/>
+		<sleep seconds="10"/>
 	</target>
 	
     <!-- ================================================================== -->
     <!-- Create javadoc                                                     -->
     <!-- ================================================================== -->
     <target depends="prepare" name="javadocs">
+		<mkdir dir="${build.src}"/>
+		<antcall target="copy-xapi"/>
+
 		<!--delete dir="webapp/api"/>
 		<mkdir dir="webapp/api"/-->
 		<echo message="Generating Javadocs ..."/>
-		<echo message="XMLDB: ${xmldb.src}"/>
+		<echo message="XMLDB: ${xmldb.src} ${has.xmldb.src}"/>
         <javadoc bottom="Copyright (C) Wolfgang Meier. All rights reserved."
 			destdir="webapp/api" doctitle="eXist Javadocs"
 			noindex="true" notree="true" access="public"
-			packagenames="org.exist.*">
-			<fileset dir="${src}" defaultexcludes="yes">
-				<include name="org/exist/**/*.java"/>
-			</fileset>
-			<fileset dir="${xmldb.src}">
-				<include if="${has.xmldb.src}" 
-					name="org/**/*.java"/>
-			</fileset>
+			source="1.4">
+			<packageset dir="${src}">
+				<include name="org/**"/>
+			</packageset>
+			<packageset dir="${build.src}">
+				<include name="org/**"/>
+			</packageset>
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
         </javadoc>
+		<delete dir="${build.src}"/>
     </target>
     
+	<target name="copy-xapi" if="has.xmldb.src">
+		<echo message="Copying XML:DB API sources ..."/>
+		<copy todir="${build.src}">
+			<fileset dir="${xmldb.src}"/>
+		</copy>
+	</target>
+
     <!-- ================================================================== -->
     <!-- Cleanup                                                            -->
     <!-- ================================================================== -->

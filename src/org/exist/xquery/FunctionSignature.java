@@ -39,7 +39,16 @@ public class FunctionSignature {
 	 */
 	public final static SequenceType DEFAULT_TYPE =
 		new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE);
-		
+	
+	/**
+	 * Empty array to specify if a function doesn't take any arguments.
+	 */
+	public final static SequenceType[] NO_ARGS = new SequenceType[0];
+	
+	public final static SequenceType[] singleArgument(SequenceType arg) {
+		return new SequenceType[] { arg };
+	}
+	
 	private QName name;
 	private SequenceType[] arguments;
 	private SequenceType returnType;
