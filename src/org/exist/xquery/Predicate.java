@@ -106,6 +106,9 @@ public class Predicate extends PathExpr {
 		Expression inner = getExpression(0);
 		if (inner == null)
 			return Sequence.EMPTY_SEQUENCE;
+        if(Type.subTypeOf(inner.returnsType(), Type.NUMBER) &&
+                executionMode == BOOLEAN)
+            executionMode = POSITIONAL;
 		switch(executionMode) {
 			case NODE:
 			    return selectByNodeSet(contextSequence);
