@@ -31,7 +31,6 @@ import org.apache.oro.text.regex.PatternCompiler;
 import org.apache.oro.text.regex.PatternMatcher;
 import org.apache.oro.text.regex.Perl5Matcher;
 import org.exist.EXistException;
-import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
@@ -40,8 +39,8 @@ import org.exist.storage.analysis.TextToken;
 import org.exist.storage.analysis.Tokenizer;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
@@ -81,7 +80,7 @@ public class ExtNear extends ExtFulltext {
 				
 		boolean hasWildcards = false;
 		for(int i = 0; i < terms.length; i++) {
-			hasWildcards =
+			hasWildcards |=
 				NativeTextEngine.containsWildcards(terms[i]);
 		}
 		return hasWildcards
@@ -117,9 +116,8 @@ public class ExtNear extends ExtFulltext {
 					j = 0;
 					term = terms[j];
 					distance = -1;
-					continue;
-				}
-				if (word.equalsIgnoreCase(term)) {
+					
+				} else if (word.equalsIgnoreCase(term)) {
 					distance = 0;
 					j++;
 					if (j == terms.length) {
@@ -131,9 +129,9 @@ public class ExtNear extends ExtFulltext {
 
 				} else if (j > 0 && word.equalsIgnoreCase(terms[0])) {
 					// first search term found: start again
-					j = 0;
+					j = 1;
 					term = terms[j];
-					distance = -1;
+					distance = 0 ;
 					continue;
 				} else if (-1 < distance)
 					++distance;
@@ -201,9 +199,9 @@ public class ExtNear extends ExtFulltext {
 
 				} else if (j > 0 && matcher.matches(word, patterns[0])) {
 					// first search term found: start again
-					j = 0;
+					j = 1;
 					term = patterns[j];
-					distance = -1;
+					distance = 0;
 					continue;
 				} else if (-1 < distance)
 					++distance;
