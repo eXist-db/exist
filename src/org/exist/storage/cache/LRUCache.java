@@ -23,6 +23,7 @@
 package org.exist.storage.cache;
 
 import org.exist.util.hashtable.SequencedLongHashMap;
+import org.exist.util.sanity.SanityCheck;
 
 /**
  * A simple cache implementing a Last Recently Used policy. This
@@ -59,6 +60,9 @@ public class LRUCache implements Cache {
 	 * @see org.exist.storage.cache.Cache#add(org.exist.storage.cache.Cacheable)
 	 */
 	public void add(Cacheable item) {
+        String clazz = item.getClass().getName();
+        if(clazz.startsWith("org.exist.storage.store.BFile$OverflowPage"))
+            SanityCheck.TRACE(clazz);
 		if(map.size() == max) {
 			removeOne(item);
 		}
