@@ -455,7 +455,7 @@ public class BrokerPool {
 					syncRequired = false;
 				}
 				if (waitingTask != null) {
-					runSystemTask();
+					runSystemTask(broker);
 				}
 			}
 			this.notifyAll();
@@ -466,9 +466,10 @@ public class BrokerPool {
 	 * Executes a waiting maintenance task. The database will be stopped
 	 * during its execution.
 	 */
-	private void runSystemTask() {
+	private void runSystemTask(DBBroker broker) {
 		try {
-			waitingTask.execute(this);
+			sync(broker, Sync.MAJOR_SYNC);
+			waitingTask.execute(broker);
 		} catch(EXistException e) {
 			LOG.warn("System maintenance task reported error: " + e.getMessage(), e);
 		} finally {
@@ -587,8 +588,10 @@ public class BrokerPool {
 			if(pool.size() == 0)
 				return;
 			waitingTask = task;
-			if(pool.size() == brokers)
-				runSystemTask();
+			if(pool.size() == brokers) {
+				DBBroker broker = (DBBroker) pool.peek();
+				runSystemTask(broker);
+			}
 		}
 	}
 	
