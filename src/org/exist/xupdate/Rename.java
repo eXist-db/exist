@@ -38,8 +38,8 @@ public class Rename extends Modification {
 		NodeList children = content.getChildNodes();
 		if (qr == null || children.getLength() == 0)
 			return 0;
-		DocumentImpl doc;
-		Collection collection;
+		DocumentImpl doc = null;
+		Collection collection = null, prevCollection = null;
 		NodeImpl node;
 		NodeImpl parent;
 		IndexListener listener = new IndexListener(qr);
@@ -49,13 +49,14 @@ public class Rename extends Modification {
 			node = qr[i];
 			doc = (DocumentImpl) node.getOwnerDocument();
 			collection = doc.getCollection();
+			if (prevCollection != null && collection != prevCollection)
+				doc.getBroker().saveCollection(prevCollection);
 			if (!collection.getPermissions().validate(user, Permission.UPDATE))
 				throw new PermissionDeniedException(
 					"write access to collection denied; user=" + user.getName());
 			if (!doc.getPermissions().validate(user, Permission.UPDATE))
 				throw new PermissionDeniedException("permission denied to update document");
 			doc.setIndexListener(listener);
-			System.out.println("renaming node " + node.getGID());
 			parent = (NodeImpl)node.getParentNode();
 			switch(node.getNodeType()) {
 				case Node.ELEMENT_NODE :
@@ -71,8 +72,12 @@ public class Rename extends Modification {
 				default :
 					throw new EXistException("unsupported node-type");
 			}
+			prevCollection = collection;
 			doc.clearIndexListener();
+			doc.setLastModified(System.currentTimeMillis());
 		}
+		if (doc != null)
+			doc.getBroker().saveCollection(collection);
 		return modificationCount;
 	}
 

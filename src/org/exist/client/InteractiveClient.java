@@ -238,8 +238,7 @@ public class InteractiveClient {
 				"trace",
 				CLOptionDescriptor.ARGUMENT_REQUIRED,
 				TRACE_QUERIES_OPT,
-				"log queries to the file specified by the argument (for debugging).")
-		};
+				"log queries to the file specified by the argument (for debugging).")};
 
 	// ANSI colors for ls display
 	private final static String ANSI_BLUE = "\033[0;34m";
@@ -702,6 +701,10 @@ public class InteractiveClient {
 					System.err.println("Usage: adduser name");
 					return true;
 				}
+				if (startGUI) {
+					messageln("command not supported in GUI mode. Please use the \"Edit users\" menu option.");
+					return true;
+				}
 				try {
 					UserManagementService mgtService =
 						(UserManagementService) current.getService("UserManagementService", "1.0");
@@ -753,6 +756,10 @@ public class InteractiveClient {
 					System.out.println();
 				}
 			} else if (args[0].equalsIgnoreCase("passwd")) {
+				if (startGUI) {
+					messageln("command not supported in GUI mode. Please use the \"Edit users\" menu option.");
+					return true;
+				}
 				if (args.length < 2) {
 					System.out.println("Usage: passwd username");
 					return true;
@@ -892,6 +899,10 @@ public class InteractiveClient {
 							50));
 				}
 			} else if (args[0].equalsIgnoreCase("xupdate")) {
+				if (startGUI) {
+					messageln("command not supported in GUI mode.");
+					return true;
+				}
 				String lastLine, command = "";
 				try {
 					while (true) {
@@ -961,7 +972,7 @@ public class InteractiveClient {
 	}
 
 	private final ResourceSet find(String xpath) throws XMLDBException {
-		if(traceWriter != null)
+		if (traceWriter != null)
 			try {
 				traceWriter.write("<query>");
 				traceWriter.write(xpath);
@@ -1546,7 +1557,8 @@ public class InteractiveClient {
 					String traceFile = option.getArgument();
 					File f = new File(traceFile);
 					try {
-						traceWriter = new OutputStreamWriter(new FileOutputStream(f, false), "UTF-8");
+						traceWriter =
+							new OutputStreamWriter(new FileOutputStream(f, false), "UTF-8");
 						traceWriter.write("<?xml version=\"1.0\"?>\r\n");
 						traceWriter.write("<query-log>\r\n");
 					} catch (UnsupportedEncodingException e1) {
@@ -1722,8 +1734,8 @@ public class InteractiveClient {
 		if (interactive) {
 			if (startGUI) {
 				frame = new ClientFrame(this, path, properties);
-							frame.setLocation(100, 100);
-							frame.setSize(500, 450);
+				frame.setLocation(100, 100);
+				frame.setSize(500, 450);
 				frame.setVisible(true);
 			}
 			// enter interactive mode
@@ -1775,7 +1787,7 @@ public class InteractiveClient {
 	}
 
 	protected final void shutdown(boolean force) {
-		if(traceWriter != null)
+		if (traceWriter != null)
 			try {
 				traceWriter.write("</query-log>");
 				traceWriter.close();
