@@ -25,9 +25,10 @@ package org.exist.storage;
 
 import org.exist.EXistException;
 import org.exist.util.Configuration;
+import java.util.zip.ZipOutputStream;
+import java.util.zip.ZipEntry; 
+import java.io.File;
 import java.io.*;
-
-
 
 public class DataBackup implements SystemTask {
 
@@ -41,41 +42,52 @@ public class DataBackup implements SystemTask {
 		
 		String dataDir = (String) config.getProperty("db-connection.data-dir");
 		System.out.println("Backup the data file into " + this.dest);
-		try {			
-			copy(dataDir + File.separatorChar + "dom.dbx",
-					this.dest + File.separatorChar + "dom.dbx");
-			copy(dataDir + File.separatorChar +"symbols.dbx",
-					this.dest + File.separatorChar +"symbols.dbx");
-			copy(dataDir + File.separatorChar + "collections.dbx",
-					this.dest + File.separatorChar +"collections.dbx");
-			copy(dataDir + File.separatorChar +"elements.dbx",
-					this.dest + File.separatorChar +"elements.dbx");
-			copy(dataDir + File.separatorChar +"words.dbx",
-					this.dest + File.separatorChar +"words.dbx");			
+
+		String[] filenames = new String[]{dataDir + File.separatorChar + "dom.dbx",
+				dataDir + File.separatorChar +"symbols.dbx",
+				dataDir + File.separatorChar + "collections.dbx",
+				dataDir + File.separatorChar +"elements.dbx",
+				dataDir + File.separatorChar +"words.dbx"
+				};
+		try {
+			compressFiles(filenames, this.dest);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
-	 boolean copy(String src, String dst) throws IOException {
-		File src1 = new File(src);
-		File dst1 = new File(dst);
-		try {
-			InputStream fis = new FileInputStream(src);
-			OutputStream fos = new FileOutputStream(dst);
-			byte[] buffer = new byte[1000];
-			int len = 0;
-			while ((len = fis.read(buffer)) > 0) {
-				fos.write(buffer, 0, len);
-			}
-			fis.close();
-			fos.close();
-		} catch (FileNotFoundException fnf) {
-			System.out.println("file not found" + fnf.getMessage());
-		}
-		return true;
-	}
 
-	
+	 void compressFiles(String[] filenames, String filename) throws IOException {
+	    
+	    // Create a buffer for reading the files
+	    byte[] buf = new byte[1024];
+	    
+	    try {
+	        // Create the ZIP file
+	        String outFilename = filename;
+	        ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFilename));
+	    
+	        // Compress the files
+	        for (int i=0; i<filenames.length; i++) {
+	            FileInputStream in = new FileInputStream(filenames[i]);
+	    
+	            // Add ZIP entry to output stream.
+	            out.putNextEntry(new ZipEntry(filenames[i]));
+	    
+	            // Transfer bytes from the file to the ZIP file
+	            int len;
+	            while ((len = in.read(buf)) > 0) {
+	                out.write(buf, 0, len);
+	            }
+	    
+	            // Complete the entry
+	            out.closeEntry();
+	            in.close();
+	        }
+	    
+	        // Complete the ZIP file
+	        out.close();
+	    } catch (IOException e) {
+	    }
+	 }
 }
 
