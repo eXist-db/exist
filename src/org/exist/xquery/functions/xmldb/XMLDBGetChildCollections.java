@@ -69,12 +69,15 @@ public class XMLDBGetChildCollections extends BasicFunction {
 	
 		ValueSequence r = new ValueSequence();	
 		String child;
-			for (Iterator i = collection.collectionIterator(); i.hasNext(); ) 
-			{
-				child = (String) i.next();
-				r.add(new StringValue(child));
-			}
-		
+		if (collection != null) {
+			throw new XPathException(getASTNode(), "Collection " + collectionURI + " does not exist");
+		}
+		for (Iterator i = collection.collectionIterator(); i.hasNext(); ) 
+		{
+			child = (String) i.next();
+			r.add(new StringValue(child));
+		}
+
 		return r;
 	}
 
