@@ -234,37 +234,33 @@ public class VirtualNodeSet extends AbstractNodeSet {
 
 	private final NodeSet getNodes() {
 		ExtArrayNodeSet result = new ExtArrayNodeSet();
-		Node p, c;
 		NodeProxy proxy;
-		NodeList cl;
 		Iterator domIter;
 		for (Iterator i = context.iterator(); i.hasNext();) {
 			proxy = (NodeProxy) i.next();
 			if (proxy.gid < 0) {
-				/* // commented out by Timo Boehme (document element is already part of virtual node set (not parent!))
-								proxy.gid = proxy.doc.getDocumentElementId();
-				*/
 				if(proxy.getDocument().getResourceType() == DocumentImpl.BINARY_FILE)
 					// skip binary resources
 					continue;
-				// -- inserted by Timo Boehme --
-				NodeProxy docElemProxy =
-					new NodeProxy(proxy.getDocument(), 1, Node.ELEMENT_NODE);
-				docElemProxy.setInternalAddress(proxy.getDocument().getFirstChildAddress());
-				if (test.matches(docElemProxy))
-					result.add(docElemProxy);
-				if (axis == Constants.DESCENDANT_AXIS
-					|| axis == Constants.DESCENDANT_SELF_AXIS
-					|| axis == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
-					domIter = docElemProxy.getDocument().getBroker().getNodeIterator(docElemProxy);
-					NodeImpl node = (NodeImpl) domIter.next();
-					node.setOwnerDocument(docElemProxy.getDocument());
-					node.setGID(docElemProxy.gid);
-					docElemProxy.setMatches(proxy.getMatches());
-					addChildren(docElemProxy, result, node, domIter, 0);
-				}
+				NodeList cl = proxy.getDocument().getChildNodes();
+                for (int j = 0; j < cl.getLength(); j++) {
+                    NodeImpl node = (NodeImpl) cl.item(j);
+    				NodeProxy docElemProxy =
+    					new NodeProxy(proxy.getDocument(), node.getGID(), node.getNodeType());
+    				docElemProxy.setInternalAddress(node.getInternalAddress());
+    				if (test.matches(docElemProxy))
+    					result.add(docElemProxy);
+    				if (node.getNodeType() == Node.ELEMENT_NODE &&
+                        (axis == Constants.DESCENDANT_AXIS
+    					|| axis == Constants.DESCENDANT_SELF_AXIS
+    					|| axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)) {
+    					domIter = docElemProxy.getDocument().getBroker().getNodeIterator(docElemProxy);
+                        domIter.next();
+    					docElemProxy.setMatches(proxy.getMatches());
+    					addChildren(docElemProxy, result, node, domIter, 0);
+    				}
+                }
 				continue;
-				// -- end of insertion --
 			} else {
 				if(axis == Constants.SELF_AXIS && test.matches(proxy)) {
 					if(inPredicate)

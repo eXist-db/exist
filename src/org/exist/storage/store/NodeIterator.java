@@ -12,6 +12,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.util.ByteConversion;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
+import org.exist.util.sanity.SanityCheck;
 
 /**
  * Class NodeIterator is used to iterate over nodes in the DOM storage.
@@ -122,7 +123,7 @@ public final class NodeIterator implements Iterator {
 						// load next page in chain
 						long nextPage = ph.getNextDataPage();
 						if (nextPage < 0) {
-							LOG.debug("bad link to next " + p.page.getPageInfo() + "; previous: " +
+                            SanityCheck.TRACE("bad link to next " + p.page.getPageInfo() + "; previous: " +
 									ph.getPrevDataPage() + "; offset = " + offset + "; lastTID = " + lastTID);
 							return null;
 						}
@@ -174,7 +175,7 @@ public final class NodeIterator implements Iterator {
 						offset += l;
 					}
 					if(nextNode == null) {
-					    LOG.warn("illegal node on page " + p.getPageNum() + "; tid = " + ItemId.getId(lastTID) +
+					    SanityCheck.TRACE("illegal node on page " + p.getPageNum() + "; tid = " + ItemId.getId(lastTID) +
 					            "; next = " + p.getPageHeader().getNextDataPage() + "; prev = " + 
 					            p.getPageHeader().getPrevDataPage() + "; offset = " + (offset - l) +
 					            "; len = " + p.getPageHeader().getDataLength());

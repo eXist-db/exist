@@ -391,7 +391,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		}
 		return list;
 	}
-
+    
 	protected Node getPreviousSibling(NodeImpl node) {
 		NodeList cl = getChildNodes();
 		NodeImpl next;
