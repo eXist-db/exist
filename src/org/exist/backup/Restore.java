@@ -122,9 +122,8 @@ public class Restore extends DefaultHandler {
 		} else {
 			while(!stack.isEmpty()) {
 				contents = (File) stack.pop();
-				String sysId = contents.toURL().toString();
-				InputSource is = new InputSource(new FileInputStream(contents));
-				is.setSystemId(sysId);
+				String sysId = contents.toURI().toASCIIString();
+				InputSource is = new InputSource(sysId);
 				is.setEncoding("UTF-8");
 				System.out.println("restoring " + sysId);
 				reader.parse(is);

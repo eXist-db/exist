@@ -1051,13 +1051,7 @@ public class RpcConnection extends Thread {
 						throw new PermissionDeniedException(
 								"Old document exists and overwrite is not allowed");
 				}
-				String uri;
-				try {
-					uri = new URI(file.toURL().toString()).toASCIIString();
-				} catch (Exception e) {
-					uri = file.getAbsolutePath();
-				}
-				source = new InputSource(uri);
+				source = new InputSource(file.toURI().toASCIIString());
 				info = collection.validate(broker, docName, source);
 			} finally {
 				if(collection != null)
