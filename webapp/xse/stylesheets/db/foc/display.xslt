@@ -89,8 +89,13 @@
   </xsl:template>
 
   <xsl:template match="*[local-name()='rank_id']" mode="wwbota-classic" >
-    rank_id:  <xsl:value-of select='.'/>; 
+    <!-- rank_id:  <xsl:value-of select='.'/>; -->
+    <xsl:choose>
+      <xsl:when test=". = '125' "> <span style="color:brown" class='rank_id' > - Family </span>; </xsl:when>
+      <xsl:when test=". = '135' "> <span style="color:brown" class='rank_id' > - Genus </span>; </xsl:when>
+    </xsl:choose>
   </xsl:template>
+
   <xsl:template match="*[local-name()='taxon_date']" mode="wwbota-classic" >
     taxon date:  <xsl:value-of select='.'/>; 
   </xsl:template>
