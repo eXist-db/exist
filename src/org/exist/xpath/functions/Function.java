@@ -30,7 +30,6 @@ import org.exist.dom.QName;
 import org.exist.xpath.AtomicToString;
 import org.exist.xpath.Atomize;
 import org.exist.xpath.Cardinality;
-import org.exist.xpath.CastExpression;
 import org.exist.xpath.Dependency;
 import org.exist.xpath.DynamicCardinalityCheck;
 import org.exist.xpath.DynamicTypeCheck;
@@ -48,42 +47,41 @@ public abstract class Function extends PathExpr {
 
 	public final static String BUILTIN_FUNCTION_NS =
 		"http://www.w3.org/2003/05/xpath-functions";
+	
+	public final static String XMLDB_FUNCTION_NS =
+		"http://exist-db.org/xquery/xmldb";
 
-	private FunctionSignature signature;
+	public final static String UTIL_FUNCTION_NS =
+		"http://exist-db.org/xquery/util";
+		
+	private FunctionSignature mySignature;
 
 	public Function(StaticContext context, FunctionSignature signature) {
 		super(context);
-		this.signature = signature;
-	}
-
-	public Function(StaticContext context) {
-		super(context);
+		this.mySignature = signature;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.PathExpr#returnsType()
 	 */
 	public int returnsType() {
-		return signature.getReturnType().getPrimaryType();
+		return mySignature.getReturnType().getPrimaryType();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.AbstractExpression#getCardinality()
 	 */
 	public int getCardinality() {
-		return signature.getReturnType().getCardinality();
+		return mySignature.getReturnType().getCardinality();
 	}
 
 	public static Function createFunction(
 		StaticContext context,
-		String clazzName) {
+		Class fclass) {
 		try {
-			if (clazzName == null)
-				throw new RuntimeException("insufficient arguments");
-			Class constructorArgs[] = { StaticContext.class };
-			Class fclass = Class.forName(clazzName);
 			if (fclass == null)
-				throw new RuntimeException("class not found");
+				throw new RuntimeException("class for function is null");
+			Class constructorArgs[] = { StaticContext.class };
 			Constructor construct = fclass.getConstructor(constructorArgs);
 			if (construct == null)
 				throw new RuntimeException("constructor not found");
@@ -96,19 +94,19 @@ public abstract class Function extends PathExpr {
 		} catch (Exception e) {
 			LOG.debug(e.getMessage(), e);
 			e.printStackTrace();
-			throw new RuntimeException("function " + clazzName + " not found");
+			throw new RuntimeException("function " + fclass.getName() + " not found");
 		}
 	}
 
 	public void setArguments(List arguments) throws XPathException {
-		SequenceType[] argumentTypes = signature.getArgumentTypes();
-		if ((!signature.isOverloaded())
-			&& arguments.size() != signature.getArgumentCount())
+		SequenceType[] argumentTypes = mySignature.getArgumentTypes();
+		if ((!mySignature.isOverloaded())
+			&& arguments.size() != mySignature.getArgumentCount())
 			throw new XPathException(
 				"number of arguments to function "
 					+ getName()
 					+ " doesn't match function signature (expected "
-					+ signature.getArgumentCount()
+					+ mySignature.getArgumentCount()
 					+ ", got "
 					+ arguments.size()
 					+ ')');
@@ -220,11 +218,11 @@ public abstract class Function extends PathExpr {
 	}
 
 	public QName getName() {
-		return signature.getName();
+		return mySignature.getName();
 	}
 
 	public FunctionSignature getSignature() {
-		return signature;
+		return mySignature;
 	}
 
 	/* (non-Javadoc)

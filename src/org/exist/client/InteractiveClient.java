@@ -1801,8 +1801,10 @@ public class InteractiveClient {
 				BufferedReader reader = new BufferedReader(new FileReader(optionQueryFile));
 				StringBuffer buf = new StringBuffer();
 				String line;
-				while((line = reader.readLine()) != null)
+				while((line = reader.readLine()) != null) {
 					buf.append(line);
+					buf.append('\n');
+				}
 				optionXpath = buf.toString();
 			}
 			// if no argument has been found, read query from stdin

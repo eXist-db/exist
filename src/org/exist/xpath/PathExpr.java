@@ -74,7 +74,7 @@ public class PathExpr extends AbstractExpression {
 
     public Sequence eval( DocumentSet docs, Sequence contextSequence, 
     	Item contextItem) throws XPathException {
-        if ( docs.getLength() == 0 )
+        if ( steps.size() == 0 || docs.getLength() == 0 )
             return Sequence.EMPTY_SEQUENCE;
         Sequence r;
         if ( contextSequence != null )
@@ -82,7 +82,6 @@ public class PathExpr extends AbstractExpression {
         else {
 			r = Sequence.EMPTY_SEQUENCE;
         }
-            
         
         NodeSet set;
 		Item current;

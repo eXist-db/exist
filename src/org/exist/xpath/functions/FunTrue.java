@@ -32,7 +32,7 @@ import org.exist.xpath.value.Type;
 
 public class FunTrue extends Function {
 
-	private final static FunctionSignature signature =
+	public final static FunctionSignature signature =
 			new FunctionSignature(
 				new QName("true", BUILTIN_FUNCTION_NS),
 				null,
