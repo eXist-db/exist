@@ -81,7 +81,6 @@ public final class DOMFileIterator implements Iterator {
 				if(gotoNextPosition()) {
 					db.getPageBuffer().add(p);
 					final DOMFilePageHeader ph = p.getPageHeader();
-					lock.release();
 					if (offset < ph.getDataLength())
 						return true;
 					else if (ph.getNextDataPage() < 0)
