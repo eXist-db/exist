@@ -518,6 +518,10 @@ public class XQueryContext {
 		return broker;
 	}
 
+	public void setBroker(DBBroker broker) {
+		this.broker = broker;
+	}
+	
 	/**
 	 * Get the user which executes the current query.
 	 * 

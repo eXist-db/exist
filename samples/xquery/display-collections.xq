@@ -18,11 +18,8 @@ as element()?
 			<resources count="{count($resources)}">
 				{
 					for $r in $resources
-                    let $d := document(concat(coll:get-name($collection), "/", $r))
 					return
-						<resource name="{$r}">
-                            {$d}
-                        </resource>
+						<resource name="{$r}"/>
 				}
 			</resources>
 		else

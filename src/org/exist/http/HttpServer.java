@@ -234,7 +234,7 @@ public class HttpServer extends Thread {
 
 
     private static void printNotice() {
-        System.out.println( "eXist version 0.9.2, Copyright (C) 2001 Wolfgang M. Meier" );
+        System.out.println( "eXist version 1.0beta1, Copyright (C) 2001 Wolfgang M. Meier" );
         System.out.println( "eXist comes with ABSOLUTELY NO WARRANTY." );
         System.out.println(
                 "This is free software, and you are welcome to " +
