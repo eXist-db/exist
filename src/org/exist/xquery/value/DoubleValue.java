@@ -365,8 +365,6 @@ public class DoubleValue extends NumericValue {
 			return getStringValue();
 		else if (target == Boolean.class)
 			return Boolean.valueOf(effectiveBooleanValue());
-		else if (target == Object.class)
-			return new Double(value);
 
 		throw new XPathException(
 			"cannot convert value of type "
