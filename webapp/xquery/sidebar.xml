@@ -1,53 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sidebar title="Navigation" xmlns="http://exist-db.org/NS/sidebar">
     <toolbar>
-        <link href="index.xml">Home</link>
-        <link href="index.xml#download">Download</link>
+		<link href="../index.xml">Home</link>
+		<link href="../index.xml#download">Download</link>
         <link href="http://wiki.exist-db.org">Wiki</link>
-        <link href="examples.xml">Demo</link>
+		<link href="../examples.xml">Demo</link>
     </toolbar>
     <group name="Documentation">
         <item id="features">
-            <link href="facts.xml">Feature Sheet</link>
+			<link href="../facts.xml">Feature Sheet</link>
         </item>
         <item>
-            <link href="quickstart.xml">Quick Start</link>
+			<link href="../quickstart.xml">Quick Start</link>
         </item>
         <item>
-            <link href="xquery.xml">XQuery Docs <img src="resources/new.gif" border="0"/></link>
+			<link href="../xquery.xml">XQuery Docs <img src="resources/new.gif" border="0"/></link>
         </item>
         <item>
-            <link href="devguide.xml">Developer's Guide</link>
+			<link href="../devguide.xml">Developer's Guide</link>
         </item>
         <item>
-			<link href="client.xml">Java Admin Client</link>
+			<link href="../client.xml">Java Admin Client</link>
         </item>
         <item>
-            <link href="deployment.xml">Deployment</link>
+			<link href="../deployment.xml">Deployment</link>
         </item>
         <item>
-            <link href="security.xml">Security</link>
+			<link href="../security.xml">Security</link>
         </item>
 		<item>
-            <link href="xinclude.xml">XInclude</link>
+			<link href="../xinclude.xml">XInclude</link>
 		</item>
         <item>
-            <link href="configuration.xml">Server Configuration</link>
+			<link href="../configuration.xml">Server Configuration</link>
         </item>
         <item>
-            <link href="ant-tasks.xml">Ant Tasks</link>
+			<link href="../ant-tasks.xml">Ant Tasks</link>
         </item>
         <item>
-            <link href="index.xml#articles">Articles</link>
+			<link href="../index.xml#articles">Articles</link>
         </item>
         <item>
-            <link href="changes.xml">Changes</link>
+			<link href="../changes.xml">Changes</link>
         </item>
         <item>
-            <link href="performance.xml">Performance Issues</link>
+			<link href="../performance.xml">Performance Issues</link>
         </item>
         <item>
-            <link href="howtos.xml">Misc HowTos</link>
+			<link href="../howtos.xml">Misc HowTos</link>
         </item>
         <!--item>
             <link href="design.xml">Design</link>
@@ -58,7 +58,7 @@
             <link href="http://wiki.exist-db.org/space/Roadmap">Roadmap</link>
         </item>
         <item>
-            <link href="api/index.html">Javadocs</link>
+			<link href="../api/index.html">Javadocs</link>
         </item>
         <item>
             <link href="http://sourceforge.net/tracker/?group_id=17691&amp;atid=117691">
@@ -68,30 +68,30 @@
     </group>
     <group name="Examples">
         <item>
-            <link href="examples.xml">All Examples <img src="resources/new.gif" border="0"/></link>
+			<link href="../examples.xml">All Examples <img src="resources/new.gif" border="0"/></link>
         </item>
         <item>
-            <link href="xquery/acronyms.xq">XML Acronyms</link>
+			<link href="acronyms.xq">XML Acronyms</link>
         </item>
         <item>
-            <link href="xquery/biblio.xml">Library</link>
+            <link href="biblio.xml">Library</link>
         </item>
         <item>
-            <link href="xquery/xquery.xq">Basic XQuery Interface</link>
+            <link href="xquery.xq">Basic XQuery Interface</link>
         </item>
         <item>
-            <link href="xmldb/db/">Cocoon + XML:DB</link>
+			<link href="../xmldb/db/">Cocoon + XML:DB</link>
         </item>
         <item>
-            <link href="xmldb/db/xinclude/xinclude.xml">XInclude</link>
+			<link href="../xmldb/db/xinclude/xinclude.xml">XInclude</link>
         </item> 
     </group>
     <group name="Administration">
         <item>
-            <link href="xadmin.xsp">Admin Interface</link>
+			<link href="../xadmin.xsp">Admin Interface</link>
         </item>
         <item>
-			<link href="status">Server Status</link>
+			<link href="../status">Server Status</link>
         </item>
     </group>
     
