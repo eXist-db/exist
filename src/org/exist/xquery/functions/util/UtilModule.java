@@ -22,8 +22,11 @@
  */
 package org.exist.xquery.functions.util;
 
+import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.StringValue;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -54,8 +57,15 @@ public class UtilModule extends AbstractInternalModule {
 		new FunctionDef(SystemProperty.signature, SystemProperty.class)
 	};
 	
-	public UtilModule() {
+	public final static QName EXCEPTION_QNAME = 
+	    new QName("exception", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
+    public final static QName EXCEPTION_MESSAGE_QNAME = 
+        new QName("exception-message", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
+    
+	public UtilModule() throws XPathException {
 		super(functions);
+		declareVariable(EXCEPTION_QNAME, null);
+        declareVariable(EXCEPTION_MESSAGE_QNAME, null);
 	}
 
 	/* (non-Javadoc)

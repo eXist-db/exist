@@ -25,6 +25,7 @@ package org.exist.xquery.functions.request;
 import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+import org.exist.xquery.XPathException;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -56,8 +57,12 @@ public class RequestModule extends AbstractInternalModule {
 		new FunctionDef(SetCurrentUser.signature, SetCurrentUser.class)
 	};
 	
-	public RequestModule() {
+	public RequestModule() throws XPathException {
 		super(functions);
+		// predefined module global variables:
+		declareVariable(REQUEST_VAR, null);
+		declareVariable(RESPONSE_VAR, null);
+		declareVariable(SESSION_VAR, null);
 	}
 
 	/* (non-Javadoc)
