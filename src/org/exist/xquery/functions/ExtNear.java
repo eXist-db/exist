@@ -117,7 +117,8 @@ public class ExtNear extends ExtFulltext {
 					term = terms[j];
 					distance = -1;
 					
-				} else if (word.equalsIgnoreCase(term)) {
+				} // that else would cause some words to be ignored in the matching
+				if (word.equalsIgnoreCase(term)) {
 					distance = 0;
 					j++;
 					if (j == terms.length) {
@@ -133,7 +134,8 @@ public class ExtNear extends ExtFulltext {
 					term = terms[j];
 					distance = 0 ;
 					continue;
-				} else if (-1 < distance)
+				} // that else MAY cause the distance count to be off by one but i'm not sure
+				if (-1 < distance)
 					++distance;
 
 			}
