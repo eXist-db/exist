@@ -91,7 +91,7 @@ public class Classpath {
         return cp.toString();
     }
     
-    public ClassLoader getClassLoader() {
+    public ClassLoader getClassLoader(ClassLoader parent) {
         int cnt = _elements.size();
         URL[] urls = new URL[cnt];
         for (int i=0; i < cnt; i++) {
@@ -100,7 +100,8 @@ public class Classpath {
             } catch (MalformedURLException e) {}
         }
         
-        ClassLoader parent = Thread.currentThread().getContextClassLoader();
+        if (parent == null)
+        	parent = Thread.currentThread().getContextClassLoader();
         if (parent == null) {
             parent = Classpath.class.getClassLoader();
         }

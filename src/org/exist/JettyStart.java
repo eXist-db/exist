@@ -41,10 +41,20 @@ import org.xmldb.api.base.Database;
 public class JettyStart {
 
 	public static void main(String[] args) {
+		JettyStart start = new JettyStart();
+		start.run(args);
+	}
+	
+	public JettyStart() {
+	}
+	
+	public void  run(String[] args) {
 		if (args.length == 0) {
 			System.out.println("No configuration file specified!");
 			return;
 		}
+		
+		boolean registerShutdownHook = Boolean.getBoolean("exist.register-shutdown-hook");
 		
 		// configure database
 		String home = System.getProperty("exist.home");
@@ -52,6 +62,10 @@ public class JettyStart {
 			home = System.getProperty("user.dir");
 		System.out.println("Configuring eXist from " + home + File.separatorChar + "conf.xml");
 		try {
+			// we register our own shutdown hook
+			BrokerPool.setRegisterShutdownHook(false);
+			
+			// configure the database instance
 			Configuration config = new Configuration("conf.xml", home);
 			BrokerPool.configure(1, 5, config);
 			
@@ -72,28 +86,34 @@ public class JettyStart {
 			BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl(server));
 			server.start();
 
-			// register a shutdown hook for the server
-			Thread hook = new Thread() {
-				public void run() {
-					setName("Shutdown");
-					BrokerPool.stopAll(true);
-					try {
-						server.stop();
-					} catch (InterruptedException e) {
+			if (registerShutdownHook) {
+				// register a shutdown hook for the server
+				Thread hook = new Thread() {
+					public void run() {
+						setName("Shutdown");
+						BrokerPool.stopAll(true);
+						try {
+							server.stop();
+						} catch (InterruptedException e) {
+						}
+						try {
+							Thread.sleep(1000);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 					}
-					try {
-						Thread.sleep(1000);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			};
-			Runtime.getRuntime().addShutdownHook(hook);
+				};
+				Runtime.getRuntime().addShutdownHook(hook);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
+	public void shutdown() {
+		BrokerPool.stopAll(false);
+	}
+	
 	/**
 	 * This class gets called after the database received a shutdown request.
 	 *  

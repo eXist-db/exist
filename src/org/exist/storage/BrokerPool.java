@@ -60,6 +60,8 @@ public class BrokerPool {
 	
 	private static long timeOut = 30000L;
 	
+	private static boolean registerShutdownHook = true;
+	
 	private final static ShutdownThread shutdownThread = new ShutdownThread();
 	
 	//	size of the internal buffer for collection objects
@@ -67,6 +69,19 @@ public class BrokerPool {
 	
 	public final static String DEFAULT_INSTANCE = "exist";
 
+	/**
+	 * Should a shutdown hook be registered with the JVM? If set to true, method
+	 * {@link #configure(String, int, int, Configuration)} will register a shutdown thread
+	 * which takes care to shut down the database if the application receives a kill or term
+	 * signal. However, this is unnecessary if the calling application has already registered
+	 * a shutdown hook.
+	 *  
+	 * @param register
+	 */
+	public final static void setRegisterShutdownHook(boolean register) {
+		registerShutdownHook = register;
+	}
+	
 	public final static void configure(int minBrokers, int maxBrokers, Configuration config)
 		throws EXistException {
 		configure(DEFAULT_INSTANCE, minBrokers, maxBrokers, config);
@@ -94,11 +109,13 @@ public class BrokerPool {
 			instance = new BrokerPool(id, minBrokers, maxBrokers, config);
 			instances.put(id, instance);
 			if(instances.size() == 1) {
-				LOG.debug("registering shutdown hook");
-				try {
-					Runtime.getRuntime().addShutdownHook(shutdownThread);
-				} catch(IllegalArgumentException e) {
-					LOG.debug("shutdown hook already registered");
+				if(registerShutdownHook) {
+					LOG.debug("registering shutdown hook");
+					try {
+						Runtime.getRuntime().addShutdownHook(shutdownThread);
+					} catch(IllegalArgumentException e) {
+						LOG.debug("shutdown hook already registered");
+					}
 				}
 			}
 		} else

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ======================================================================= -->
+<!-- Compile the wrapper class to start eXist as a service                   -->
+<!-- ======================================================================= -->
+<project basedir="." default="compile" name="eXistWrapper">
+
+    <property name="src" value="./src"/>
+    <property name="lib" value="./lib"/>
+    <property name="classes" value="./classes"/>
+	<property name="conf" value="./conf"/>
+	<property name="bin" value="./bin"/>
+	<property name="logs" value="./logs"/>
+	<property name="server.dir" value="../.."/>
+	
+    <property name="build.compiler" value="modern"/>
+    
+    <path id="classpath.wrapper">
+    	<pathelement path="${lib}/wrapper.jar"/>
+    	<pathelement path="${server.dir}/start.jar"/>
+    	<pathelement path="${server.dir}/exist.jar"/>
+    </path>
+    
+    <!-- =================================================================== -->
+    <!-- Prepare the build                                                   -->
+    <!-- =================================================================== -->
+    <target name="prepare">
+    	<echo message="--------------------------------------------------"/>
+        <echo message="Setting up Java Service Wrapper"/>
+        <echo message="--------------------------------------------------"/>
+        
+        <mkdir dir="${classes}"/>
+	    <delete dir="${logs}"/>
+		<mkdir dir="${logs}"/>
+        <tstamp/>
+    	
+    	<filter token="app.name" value="eXist"/>
+    	<filter token="app.long.name" value="eXist Native XML Database"/>
+    	<filter token="app.description" value="eXist Database Server"/>
+    	<filter token="jetty.dir" value="${jetty.dir}"/>
+    	<filter token="java.vm" value="java"/>
+    	<copy file="${conf}/wrapper.conf.in" tofile="${conf}/wrapper.conf" filtering="true"/>
+    	<filter token="java.vm" value="$JAVA_HOME/bin/java"/>
+    	<copy file="${conf}/wrapper.conf.in" tofile="${conf}/wrapper.conf.install" filtering="true"/>
+    	<copy file="${bin}/exist.sh.in" tofile="${bin}/exist.sh" filtering="true"/>
+    	<chmod file="${bin}/exist.sh" perm="+x"/>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Compiles the source code                                            -->
+    <!-- =================================================================== -->
+    <target depends="prepare" name="compile">
+        <javac debug="${build.debug}" deprecation="${build.deprecation}" 
+			destdir="${classes}" encoding="UTF-8"
+			optimize="${build.optimize}" srcdir="${src}" 
+        	source="1.4">
+			<!-- jmv target="1.4" -->
+            <classpath>
+            	<path refid="classpath.wrapper"/>
+            </classpath>
+        </javac>
+    </target>
+</project>
