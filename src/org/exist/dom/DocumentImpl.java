@@ -258,12 +258,26 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 				(treeLevelStartPoints[i] - treeLevelStartPoints[i - 1]) * treeLevelOrder[i]
 					+ treeLevelStartPoints[i];
 			if(treeLevelStartPoints[i + 1] > 0x6fffffffffffffffL ||
-				treeLevelStartPoints[i + 1] < 0)
-				throw new EXistException("the document is too complex/irregularily structured " +
-					"to be mapped into eXist's numbering scheme");
+				treeLevelStartPoints[i + 1] < 0) {
+				throw new EXistException("The document is too complex/irregularily structured " +
+					"to be mapped into eXist's numbering scheme. Number of children per level of the " +
+					"tree: " + printTreeLevelOrder());
+			}
 		}
 	}
 
+	public String printTreeLevelOrder() {
+		StringBuffer buf = new StringBuffer();
+		buf.append("[ ");
+		for(int i = 0; i < maxDepth; i++) {
+			if(i > 0)
+				buf.append(", ");
+			buf.append(treeLevelOrder[i]);
+		}
+		buf.append(" ]");
+		return buf.toString();
+	}
+	
 	public final int compareTo(Object other) {
 		final long otherId = ((DocumentImpl)other).docId;
 		if (otherId == docId)
@@ -721,7 +735,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			if(istream.available() > 0)
 			    pageCount = istream.readInt();
 		} catch (IOException e) {
-			LOG.warn("io error while reading document data for document " + fileName, e);
+			LOG.warn("IO error while reading document data for document " + fileName, e);
+			LOG.warn("Document address is " + StorageAddress.toString(getAddress()));
 		}
 	}
 

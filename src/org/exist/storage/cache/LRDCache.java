@@ -100,7 +100,7 @@ public class LRDCache extends GClockCache {
 				rd =
 					old.getReferenceCount()
 						/ (double)(totalReferences - old.getTimestamp());
-				if (minRd < 0 || rd < minRd) {
+				if ((minRd < 0 || rd < minRd) && old.allowUnload()) {
 					minRd = rd;
 					bucket = i;
 				}

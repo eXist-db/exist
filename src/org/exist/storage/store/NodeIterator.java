@@ -212,6 +212,8 @@ public final class NodeIterator implements Iterator {
 			node = null;
 		} else if (-1 < startAddress) {
 			final DOMFile.RecordPos rec = db.findRecord(startAddress);
+			if(rec == null)
+				throw new IOException("Node not found at specified address.");
 			page = rec.page.getPageNum();
 			offset = rec.offset - 2;
 			p = rec.page;

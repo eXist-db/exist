@@ -218,6 +218,7 @@ public class DOMStreamer {
 				}
 				break;
 			default :
+				System.out.println("Found node: " + node.getNodeType());
 				break;
 		}
 	}
