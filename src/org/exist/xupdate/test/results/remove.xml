@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<addressbook xmlns:exist="http://exist.sourceforge.net/NS/exist">
+<addressbook>
     <address>
         <fname>John</fname>
         <lname>Jekyll</lname>

@@ -20,10 +20,14 @@
  */
 package org.exist.xpath.value;
 
+import org.exist.xpath.Constants;
 import org.exist.xpath.XPathException;
 
 public class BooleanValue extends AtomicValue {
 
+	public final static BooleanValue TRUE = new BooleanValue(true);
+	public final static BooleanValue FALSE = new BooleanValue(false);
+	
 	private boolean value;
 	
 	public BooleanValue(boolean bool) {
@@ -68,6 +72,42 @@ public class BooleanValue extends AtomicValue {
 			default:
 				throw new XPathException("cannot convert boolean '" + value + "' to " + requiredType);
 		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.AtomicValue#compareTo(int, org.exist.xpath.value.AtomicValue)
+	 */
+	public boolean compareTo(int operator, AtomicValue other)
+		throws XPathException {
+		if(Type.subTypeOf(other.getType(), Type.BOOLEAN)) {
+			boolean otherVal = ((BooleanValue)other).getValue();
+			switch(operator) {
+				case Constants.EQ:
+					return value == otherVal;
+				case Constants.NEQ:
+					return value != otherVal;
+				default:
+					throw new XPathException("Type error: cannot apply this operator to a boolean value");
+			}
+		}
+		throw new XPathException("Type error: cannot convert operand to boolean");
+	}
+	
+	public int compareTo(AtomicValue other) throws XPathException {
+		boolean otherVal = other.effectiveBooleanValue();
+		if(otherVal == value)
+			return 0;
+		else if(value)
+			return 1;
+		else
+			return -1;
+	}
+		
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.AtomicValue#effectiveBooleanValue()
+	 */
+	public boolean effectiveBooleanValue() throws XPathException {
+		return value;
 	}
 	
 	public boolean getValue() {

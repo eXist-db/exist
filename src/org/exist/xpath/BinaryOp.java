@@ -36,7 +36,14 @@ public abstract class BinaryOp extends PathExpr {
 
   public Expression getLeft() { return getExpression(0); }
   public Expression getRight() { return getExpression(1); }
-
+  
+  public void setLeft(Expression expr) {
+  	steps.add(0, expr);
+  }
+  public void setRight(Expression expr) {
+  	steps.add(1, expr);
+  }
+  
   public abstract DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException;
   public abstract Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
   	Item contextItem) throws XPathException;

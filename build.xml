@@ -93,6 +93,7 @@
                 <path refid="classpath.core"/>
             </classpath>
         </available>
+		<mkdir dir="${jetty.dir}/logs"/>
     </target>
     
     <!-- =================================================================== -->
@@ -204,7 +205,8 @@
     		<classpath>
     			<path refid="classpath.core"/>
     		</classpath>
-			<!--arg value="-traceParser"/-->
+			<!--arg value="-traceLexer"/-->
+			<arg value="-html"/>
     		<arg value="XPathParser2.g"/>
     	</java>
     </target>

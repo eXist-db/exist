@@ -1138,10 +1138,13 @@ public class DOMFile extends BTree implements Lockable {
 		switch (type) {
 			case Node.ELEMENT_NODE :
 				final int children = ByteConversion.byteToInt(data, offset + 1);
+				final byte attrSizeType = (byte) ((data[offset] & 0x0C) >> 0x2);
+				final short attributes = (short) Signatures.read(attrSizeType, data, offset + 5);
+				
 				rec.offset += len + 2;
 				for (int i = 0; i < children; i++) {
 					getNodeValue(os, rec, false);
-					if(children > 1)
+					if(children - attributes > 1)
 						os.write((byte)0x20);
 				}
 				return;

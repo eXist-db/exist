@@ -22,6 +22,10 @@ package org.exist.xpath.value;
 
 import org.exist.xpath.XPathException;
 
+/**
+ * An abstract implementation of {@link org.exist.xpath.value.Sequence} with
+ * default implementations for some methods.
+ */
 public abstract class AbstractSequence implements Sequence {
 
 	public abstract int getItemType();
@@ -45,5 +49,27 @@ public abstract class AbstractSequence implements Sequence {
 			return "";
 		Item first = iterate().nextItem();
 		return first.getStringValue();
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Sequence#add(org.exist.xpath.value.Item)
+	 */
+	public abstract void add(Item item) throws XPathException;
+
+	public void addAll(Sequence other) throws XPathException {
+		for(SequenceIterator i = other.iterate(); i.hasNext(); )
+			add(i.nextItem());
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Sequence#itemAt(int)
+	 */
+	public abstract Item itemAt(int pos);
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Sequence#effectiveBooleanValue()
+	 */
+	public boolean effectiveBooleanValue() throws XPathException {
+		return getLength() > 0;
 	}
 }

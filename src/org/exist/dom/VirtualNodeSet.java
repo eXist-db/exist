@@ -183,7 +183,7 @@ public class VirtualNodeSet extends NodeSet {
 
 	private void addInternal(NodeProxy p) {
 		if (realSet == null)
-			realSet = new ArraySet(100);
+			realSet = new ExtArrayNodeSet(100);
 
 		if (!realSet.contains(p))
 			realSet.add(p);
@@ -299,7 +299,6 @@ public class VirtualNodeSet extends NodeSet {
 	private final void realize() {
 		if (realSet != null)
 			return;
-		Thread.dumpStack();
 		realSet = getNodes();
 	}
 

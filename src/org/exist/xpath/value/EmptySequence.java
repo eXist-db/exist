@@ -20,6 +20,7 @@
  */
 package org.exist.xpath.value;
 
+import org.exist.dom.NodeSet;
 import org.exist.xpath.XPathException;
 
 public class EmptySequence extends AbstractSequence {
@@ -63,5 +64,12 @@ public class EmptySequence extends AbstractSequence {
 			default:
 				throw new XPathException("cannot convert empty sequence to " + requiredType);
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Sequence#toNodeSet()
+	 */
+	public NodeSet toNodeSet() throws XPathException {
+		return NodeSet.EMPTY_SET;
 	}
 }

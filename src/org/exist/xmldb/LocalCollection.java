@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Properties;
 import java.util.Random;
 import java.util.TreeMap;
 
@@ -70,7 +71,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 
     protected BrokerPool brokerPool = null;
     protected org.exist.collections.Collection collection = null;
-    protected Map properties = new TreeMap();
+    protected Properties properties = new Properties();
     protected LocalCollection parent = null;
     protected User user = null;
 	protected ArrayList observers = new ArrayList(1);
@@ -272,7 +273,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 
 
     public String getProperty( String property ) throws XMLDBException {
-    	return (String)properties.get(property);
+    	return properties.getProperty(property);
     }
 
 
@@ -421,7 +422,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 
     public void setProperty( String property,
                              String value ) throws XMLDBException {
-        properties.put(property, value);
+        properties.setProperty(property, value);
     }
 
 	public void storeResource( Resource resource ) throws XMLDBException {
@@ -439,13 +440,15 @@ public class LocalCollection extends Observable implements CollectionImpl {
 					observer = (Observer)i.next();
 					collection.addObserver( observer );
 				}
+				DocumentImpl newDoc;
 				if(res.file != null)
-					collection.addDocument(broker, name, 
+					newDoc = collection.addDocument(broker, name, 
 						new InputSource(res.file.getAbsolutePath()));
 				else if(res.root != null)
-					collection.addDocument(broker, name, res.root);
+					newDoc = collection.addDocument(broker, name, res.root);
 				else
-					collection.addDocument(broker, name, res.content);
+					newDoc = collection.addDocument(broker, name, res.content);
+				res.document = newDoc;
 				//broker.flush();
 			} catch ( Exception e ) {
 				e.printStackTrace();

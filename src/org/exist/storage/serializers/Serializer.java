@@ -1,8 +1,8 @@
 /*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2001 Wolfgang M. Meier
- *  meier@ifs.tu-darmstadt.de
- *  http://exist.sourceforge.net
+ *  wolfgang@exist-db.org
+ *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
- *  $Id:
+ *  $Id$
  */
 package org.exist.storage.serializers;
 
@@ -26,7 +26,9 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
@@ -41,8 +43,6 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
@@ -52,6 +52,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
+import org.exist.util.serializer.SAXSerializer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -90,7 +91,8 @@ public class Serializer implements XMLReader {
 
 	protected final static Logger LOG = Logger.getLogger(Serializer.class);
 
-	public final static String EXIST_NS = "http://exist.sourceforge.net/NS/exist";
+	public final static String EXIST_NS =
+		"http://exist.sourceforge.net/NS/exist";
 
 	// constants to configure the highlighting of matches in text and attributes
 	public final static int TAG_NONE = 0x0;
@@ -98,23 +100,22 @@ public class Serializer implements XMLReader {
 	public final static int TAG_ATTRIBUTE_MATCHES = 0x2;
 	public final static int TAG_BOTH = 0x4;
 
-	public final static String PRETTY_PRINT = "pretty";
 	public final static String GENERATE_DOC_EVENTS = "sax-document-events";
 	public final static String ENCODING = "encoding";
-	public final static String EXPAND_XINCLUDES = "expand-xincludes";
-	public final static String HIGHLIGHT_MATCHES = "highlight-matches";
 
 	protected DBBroker broker;
-	protected String encoding = "ISO-8859-1";
+	protected String encoding = "UTF-8";
 	private EntityResolver entityResolver = null;
 	private ErrorHandler errorHandler = null;
 	protected TransformerFactory factory;
-	protected boolean indent = false;
+
 	protected boolean createContainerElements = false;
-	protected boolean processXInclude = true;
+	
 	protected boolean processXSL = false;
 	protected boolean generateDocEvents = true;
-	protected int highlightMatches = TAG_ELEMENT_MATCHES;
+	
+	protected Properties outputProperties = new Properties();
+	
 	protected Templates templates = null;
 	protected TransformerHandler xslHandler = null;
 	protected XIncludeFilter xinclude;
@@ -139,46 +140,57 @@ public class Serializer implements XMLReader {
 			processXSL = option.equalsIgnoreCase("true");
 		option = (String) config.getProperty("serialization.enable-xinclude");
 		if (option != null)
-			processXInclude = option.equalsIgnoreCase("true");
+			outputProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, option);
 		option = (String) config.getProperty("serialization.indent");
 		if (option != null)
-			indent = option.equalsIgnoreCase("true");
-		option = (String) config.getProperty("serialization.match-tagging-elements");
-		if (option != null)
-			highlightMatches = option.equalsIgnoreCase("true") ? TAG_ELEMENT_MATCHES : TAG_NONE;
-		option = (String) config.getProperty("serialization.match-tagging-attributes");
-		if (option != null && option.equalsIgnoreCase("true"))
-			highlightMatches = highlightMatches | TAG_ATTRIBUTE_MATCHES;
-		LOG.debug("match-tagging = " + highlightMatches);
+			outputProperties.setProperty(OutputKeys.INDENT, option);
+			
+		boolean tagElements = true, tagAttributes = false;
+		if((option = (String) config.getProperty("serialization.match-tagging-elements")) != null)
+			tagElements = option.equals("true");
+		if((option = (String) config.getProperty("serialization.match-tagging-attributes")) != null)
+			tagAttributes = option.equals("true");
+		if(tagElements && tagAttributes)
+			option = "both";
+		else if(tagElements)
+			option = "elements";
+		else if(tagAttributes)
+			option = "attributes";
+		else
+			option = "none";
+		outputProperties.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, option);
 	}
 
-	public void setProperties(Map properties) {
+	public void setProperties(Properties properties) throws SAXNotRecognizedException, SAXNotSupportedException {
 		if (properties == null)
 			return;
 		Map.Entry entry;
 		for (Iterator i = properties.entrySet().iterator(); i.hasNext();) {
 			entry = (Map.Entry) i.next();
-			if (entry.getKey().equals(PRETTY_PRINT))
-				indent = entry.getValue().equals("true");
-			else if (entry.getKey().equals(ENCODING))
-				encoding = (String) entry.getValue();
-			else if (entry.getKey().equals(EXPAND_XINCLUDES))
-				processXInclude = entry.getValue().equals("true");
-			else if (entry.getKey().equals(HIGHLIGHT_MATCHES)) {
-				String tagging = (String) entry.getValue();
-				if(tagging == null || tagging.equals("none")) 
-					highlightMatches = TAG_NONE;
-				else if (tagging.equals("both"))
-					highlightMatches = TAG_BOTH;
-				else if (tagging.equals("elements"))
-					highlightMatches = TAG_ELEMENT_MATCHES;
-				else if (tagging.equals("attributes"))
-					highlightMatches = TAG_ATTRIBUTE_MATCHES;
-			} else if (entry.getKey().equals(GENERATE_DOC_EVENTS))
-				generateDocEvents = entry.getValue().equals("true");
+			setProperty((String)entry.getKey(), entry.getValue());
 		}
 	}
 
+	public void setProperty(String prop, Object value) 
+	throws SAXNotRecognizedException, SAXNotSupportedException {
+		if (prop.equals("http://xml.org/sax/properties/lexical-handler")) {
+			lexicalHandler = (LexicalHandler) value;
+		} else
+			outputProperties.setProperty(prop, (String)value);
+	}
+
+	protected int getHighlightingMode() {
+		String option = outputProperties.getProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
+		if(option.equals("both"))
+			return TAG_BOTH;
+		else if(option.equals("elements"))
+			return TAG_ELEMENT_MATCHES;
+		else if(option.equals("attributes"))
+			return TAG_ATTRIBUTE_MATCHES;
+		else
+			return TAG_NONE;
+	}
+	
 	/**
 	 *  If an XSL stylesheet is present, plug it into
 	 *  the chain.
@@ -189,7 +201,7 @@ public class Serializer implements XMLReader {
 		StringWriter sout = new StringWriter();
 		StreamResult result = new StreamResult(sout);
 		xslHandler.setResult(result);
-		if (processXInclude)
+		if (outputProperties.getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes").equals("yes"))
 			xinclude.setContentHandler(xslHandler);
 		else
 			contentHandler = xslHandler;
@@ -312,7 +324,8 @@ public class Serializer implements XMLReader {
 			// try to load document from eXist
 			DocumentImpl doc = (DocumentImpl) broker.getDocument(systemId);
 			if (doc == null)
-				throw new SAXException("document " + systemId + " not found in database");
+				throw new SAXException(
+					"document " + systemId + " not found in database");
 			else
 				LOG.debug("serializing " + doc.getFileName());
 
@@ -341,7 +354,8 @@ public class Serializer implements XMLReader {
 	 *@return                   Description of the Return Value
 	 *@exception  SAXException  Description of the Exception
 	 */
-	public String serialize(NodeSet set, int start, int howmany) throws SAXException {
+	public String serialize(NodeSet set, int start, int howmany)
+		throws SAXException {
 		return serialize(set, start, howmany, 0);
 	}
 
@@ -355,7 +369,11 @@ public class Serializer implements XMLReader {
 	 *@return                   Description of the Return Value
 	 *@exception  SAXException  Description of the Exception
 	 */
-	public String serialize(NodeSet set, int start, int howmany, long queryTime)
+	public String serialize(
+		NodeSet set,
+		int start,
+		int howmany,
+		long queryTime)
 		throws SAXException {
 		StringWriter out;
 		if (templates != null)
@@ -432,7 +450,8 @@ public class Serializer implements XMLReader {
 	 *@param  generateDocEvent  Description of the Parameter
 	 *@exception  SAXException  Description of the Exception
 	 */
-	protected void serializeToSAX(Document doc, boolean generateDocEvent) throws SAXException {
+	protected void serializeToSAX(Document doc, boolean generateDocEvent)
+		throws SAXException {
 		long startTime = System.currentTimeMillis();
 		setDocument((DocumentImpl) doc);
 		NodeList children = doc.getChildNodes();
@@ -441,13 +460,18 @@ public class Serializer implements XMLReader {
 
 		contentHandler.startPrefixMapping("exist", EXIST_NS);
 		for (int i = 0; i < children.getLength(); i++)
-			 ((NodeImpl) children.item(i)).toSAX(contentHandler, lexicalHandler, false);
+			((NodeImpl) children.item(i)).toSAX(
+				contentHandler,
+				lexicalHandler,
+				false);
 
 		contentHandler.endPrefixMapping("exist");
 		if (generateDocEvent)
 			contentHandler.endDocument();
 
-		LOG.debug("serializing document took " + (System.currentTimeMillis() - startTime));
+		LOG.debug(
+			"serializing document took "
+				+ (System.currentTimeMillis() - startTime));
 	}
 
 	/**
@@ -459,7 +483,11 @@ public class Serializer implements XMLReader {
 	 *@param  queryTime         Description of the Parameter
 	 *@exception  SAXException  Description of the Exception
 	 */
-	protected void serializeToSAX(NodeSet set, int start, int howmany, long queryTime)
+	protected void serializeToSAX(
+		NodeSet set,
+		int start,
+		int howmany,
+		long queryTime)
 		throws SAXException {
 		NodeImpl n;
 		long startTime = System.currentTimeMillis();
@@ -473,10 +501,21 @@ public class Serializer implements XMLReader {
 			"CDATA",
 			Integer.toString(set.getLength()));
 		if (queryTime >= 0)
-			attribs.addAttribute("", "queryTime", "queryTime", "CDATA", Long.toString(queryTime));
+			attribs.addAttribute(
+				"",
+				"queryTime",
+				"queryTime",
+				"CDATA",
+				Long.toString(queryTime));
 
-		contentHandler.startElement(EXIST_NS, "result", "exist:result", attribs);
-		for (int i = start - 1; i < start + howmany - 1 && i < set.getLength(); i++) {
+		contentHandler.startElement(
+			EXIST_NS,
+			"result",
+			"exist:result",
+			attribs);
+		for (int i = start - 1;
+			i < start + howmany - 1 && i < set.getLength();
+			i++) {
 			n = (NodeImpl) set.item(i);
 			setDocument((DocumentImpl) n.getOwnerDocument());
 			if (n != null)
@@ -495,7 +534,8 @@ public class Serializer implements XMLReader {
 	 *@param  generateDocEvents  Description of the Parameter
 	 *@exception  SAXException   Description of the Exception
 	 */
-	protected void serializeToSAX(Node n, boolean generateDocEvents) throws SAXException {
+	protected void serializeToSAX(Node n, boolean generateDocEvents)
+		throws SAXException {
 		if (generateDocEvents)
 			contentHandler.startDocument();
 
@@ -515,7 +555,8 @@ public class Serializer implements XMLReader {
 	 *@param  generateDocEvents  Description of the Parameter
 	 *@exception  SAXException   Description of the Exception
 	 */
-	protected void serializeToSAX(NodeProxy p, boolean generateDocEvents) throws SAXException {
+	protected void serializeToSAX(NodeProxy p, boolean generateDocEvents)
+		throws SAXException {
 		Node n = p.getNode();
 		if (n != null)
 			serializeToSAX(n, generateDocEvents);
@@ -528,7 +569,7 @@ public class Serializer implements XMLReader {
 	 *@param  contentHandler  The new contentHandler value
 	 */
 	public void setContentHandler(ContentHandler handler) {
-		if (processXInclude) {
+		if (outputProperties.getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes").equals("yes")) {
 			xinclude.setContentHandler(handler);
 			contentHandler = xinclude;
 		} else
@@ -595,35 +636,21 @@ public class Serializer implements XMLReader {
 	 */
 	protected StringWriter setPrettyPrinter(boolean xmlDecl) {
 		StringWriter sout = new StringWriter();
-		OutputFormat format = new OutputFormat("xml", encoding, false);
-		format.setOmitXMLDeclaration(!xmlDecl);
-		format.setOmitComments(false);
-		if (indent) {
-			format.setIndenting(true);
-			format.setPreserveSpace(false);
-			format.setLineWidth(60);
-		} else
-			format.setPreserveSpace(true);
-		XMLSerializer xmlout = new XMLSerializer(sout, format);
+//		OutputFormat format = new OutputFormat("xml", encoding, false);
+//		format.setOmitXMLDeclaration(!xmlDecl);
+//		format.setOmitComments(false);
+//		if (indent) {
+//			format.setIndenting(true);
+//			format.setPreserveSpace(false);
+//			format.setLineWidth(60);
+//		} else
+//			format.setPreserveSpace(true);
+//		XMLSerializer xmlout = new XMLSerializer(sout, format);
+		outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, xmlDecl ? "no" : "yes");
+		SAXSerializer xmlout = new SAXSerializer(sout, outputProperties);
 		setContentHandler(xmlout);
 		setLexicalHandler(xmlout);
 		return sout;
-	}
-
-	/**
-	 *  Sets the property attribute of the Serializer object
-	 *
-	 *@param  name                           The new property value
-	 *@param  value                          The new property value
-	 *@exception  SAXNotRecognizedException  Description of the Exception
-	 *@exception  SAXNotSupportedException   Description of the Exception
-	 */
-	public void setProperty(String name, Object value)
-		throws SAXNotRecognizedException, SAXNotSupportedException {
-		if (name.equals("http://xml.org/sax/properties/lexical-handler"))
-			lexicalHandler = (LexicalHandler) value;
-
-		throw new SAXNotRecognizedException(name);
 	}
 
 	public void setStylesheet(String stylesheet) {
@@ -656,22 +683,26 @@ public class Serializer implements XMLReader {
 					// if stylesheet is relative, add path to the
 					// current collection
 					if (stylesheet.indexOf('/') < 0 && doc != null)
-						stylesheet = doc.getCollection().getName() + '/' + stylesheet;
+						stylesheet =
+							doc.getCollection().getName() + '/' + stylesheet;
 
 					// load stylesheet from eXist
-					DocumentImpl xsl = (DocumentImpl) broker.getDocument(stylesheet);
+					DocumentImpl xsl =
+						(DocumentImpl) broker.getDocument(stylesheet);
 					if (xsl == null) {
 						LOG.debug("stylesheet not found");
 						return;
 					}
 					if (xsl.getCollection() != null)
 						factory.setURIResolver(
-							new InternalURIResolver(xsl.getCollection().getName()));
+							new InternalURIResolver(
+								xsl.getCollection().getName()));
 
 					// save handlers
 					ContentHandler oldHandler = contentHandler;
 					LexicalHandler oldLexical = lexicalHandler;
-					SAXSource source = new SAXSource(this, new InputSource(stylesheet));
+					SAXSource source =
+						new SAXSource(this, new InputSource(stylesheet));
 					// compile stylesheet
 					templates = factory.newTemplates(source);
 					// restore handlers
@@ -683,8 +714,12 @@ public class Serializer implements XMLReader {
 					return;
 				}
 
-			LOG.debug("compiling stylesheet took " + (System.currentTimeMillis() - start));
-			xslHandler = ((SAXTransformerFactory) factory).newTransformerHandler(templates);
+			LOG.debug(
+				"compiling stylesheet took "
+					+ (System.currentTimeMillis() - start));
+			xslHandler =
+				((SAXTransformerFactory) factory).newTransformerHandler(
+					templates);
 		} catch (TransformerConfigurationException e) {
 			LOG.debug("error compiling stylesheet", e);
 			return;
@@ -698,6 +733,8 @@ public class Serializer implements XMLReader {
 		if (xslHandler != null) {
 			SAXResult result = new SAXResult();
 			result.setLexicalHandler(lexicalHandler);
+			boolean processXInclude = 
+				outputProperties.getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes").equals("yes");
 			if (processXInclude)
 				result.setHandler(xinclude.getContentHandler());
 			else
@@ -719,7 +756,8 @@ public class Serializer implements XMLReader {
 	 *@param  howmany           Description of the Parameter
 	 *@exception  SAXException  Description of the Exception
 	 */
-	public void toSAX(NodeSet set, int start, int howmany) throws SAXException {
+	public void toSAX(NodeSet set, int start, int howmany)
+		throws SAXException {
 		toSAX(set, start, howmany, 0);
 	}
 
@@ -732,7 +770,8 @@ public class Serializer implements XMLReader {
 	 *@param  queryTime         Description of the Parameter
 	 *@exception  SAXException  Description of the Exception
 	 */
-	public void toSAX(NodeSet set, int start, int howmany, long queryTime) throws SAXException {
+	public void toSAX(NodeSet set, int start, int howmany, long queryTime)
+		throws SAXException {
 		setXSLHandler();
 		serializeToSAX(set, start, howmany, queryTime);
 	}
@@ -751,7 +790,7 @@ public class Serializer implements XMLReader {
 				setStylesheet((DocumentImpl) doc, stylesheet);
 		}
 		setXSLHandler();
-		serializeToSAX(doc, generateDocEvents);
+		serializeToSAX(doc, outputProperties.getProperty(GENERATE_DOC_EVENTS, "true").equals("true"));
 	}
 
 	/**
@@ -763,7 +802,7 @@ public class Serializer implements XMLReader {
 	 */
 	public void toSAX(Node n) throws SAXException {
 		setXSLHandler();
-		serializeToSAX(n, generateDocEvents);
+		serializeToSAX(n, outputProperties.getProperty(GENERATE_DOC_EVENTS, "true").equals("true"));
 	}
 
 	/**
@@ -775,7 +814,7 @@ public class Serializer implements XMLReader {
 	 */
 	public void toSAX(NodeProxy p) throws SAXException {
 		setXSLHandler();
-		serializeToSAX(p, generateDocEvents);
+		serializeToSAX(p, outputProperties.getProperty(GENERATE_DOC_EVENTS, "true").equals("true"));
 	}
 
 	private String hasXSLPi(Document doc) {
@@ -785,7 +824,8 @@ public class Serializer implements XMLReader {
 		for (int i = 0; i < docChildren.getLength(); i++) {
 			node = docChildren.item(i);
 			if (node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE
-				&& ((ProcessingInstruction) node).getTarget().equals("xml-stylesheet")) {
+				&& ((ProcessingInstruction) node).getTarget().equals(
+					"xml-stylesheet")) {
 				// found <?xml-stylesheet?>
 				xsl = ((ProcessingInstruction) node).getData();
 				type = XMLUtil.parseValue(xsl, "type");
@@ -829,12 +869,16 @@ public class Serializer implements XMLReader {
 		 *@return                           Description of the Return Value
 		 *@exception  TransformerException  Description of the Exception
 		 */
-		public Source resolve(String href, String base) throws TransformerException {
+		public Source resolve(String href, String base)
+			throws TransformerException {
 			if (href.indexOf(':') > -1)
 				// href is an URL pointing to an external resource
 				return null;
 			if ((!href.startsWith("/")) && collectionId != null)
-				href = (collectionId.equals("/") ? '/' + href : collectionId + '/' + href);
+				href =
+					(collectionId.equals("/")
+						? '/' + href
+						: collectionId + '/' + href);
 
 			LOG.debug("resolving stylesheet ref " + href);
 			Serializer serializer = broker.newSerializer();

@@ -1,5 +1,7 @@
 package org.exist.examples.xmldb;
 
+import javax.xml.transform.OutputKeys;
+
 import org.exist.xmldb.XPathQueryServiceImpl;
 import org.xmldb.api.*;
 import org.xmldb.api.base.*;
@@ -40,8 +42,8 @@ public class SortExample {
             XPathQueryServiceImpl service = (XPathQueryServiceImpl) 
             	col.getService( "XPathQueryService", "1.0" );
             // set pretty-printing on
-            service.setProperty( "pretty", "true" );
-            service.setProperty( "encoding", "ISO-8859-1" );
+            service.setProperty( OutputKeys.INDENT, "yes" );
+            service.setProperty( OutputKeys.ENCODING, "ISO-8859-1" );
             // execute query and get results in ResourceSet
             ResourceSet result = service.query( query, sortBy );
             // create iterator

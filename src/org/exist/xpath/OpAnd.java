@@ -21,8 +21,8 @@
 
 package org.exist.xpath;
 
-import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeSet;
 import org.exist.xpath.value.BooleanValue;
 import org.exist.xpath.value.Item;
@@ -69,7 +69,7 @@ public class OpAnd extends BinaryOp {
 		} else {
 			Sequence result;
 			if(Type.subTypeOf(contextSequence.getItemType(), Type.NODE))
-				result = new ArraySet(contextSequence.getLength());
+				result = new ExtArrayNodeSet();
 			else
 				result = new ValueSequence();
 			Item item;

@@ -23,6 +23,7 @@ package org.exist.dom;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.exist.util.Range;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.AbstractSequence;
 import org.exist.xpath.value.Item;
@@ -33,16 +34,12 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * Base class for all node set implementations returned by most
- * xpath expressions. It implements NodeList plus some additional
- * methods needed by the xpath engine.
- *
- * There are three classes extending NodeSet: NodeIDSet, ArraySet
- * and VirtualNodeSet. Depending on the context each of these
- * implementations has its advantages and drawbacks. ArraySet
- * uses a sorted array and binary search, while NodeIDSet is based
- * on a HashSet. VirtualNodeSet is specifically used for steps like
- * descendant::* etc..
+ * Abstract base class for all node set implementations. A node set is a special type of sequence,
+ * which contains only nodes. Class NodeSet thus implements the {@link org.exist.xpath.value.Sequence} 
+ * as well as the DOM {@link org.w3c.dom.NodeList} interfaces.
+ * 
+ * Please note that a node set may or may not contain duplicate nodes. Some implementations
+ * (e.g. {@link org.exist.dom.ExtArrayNodeSet}) remove duplicates when sorting the set.
  */
 public abstract class NodeSet extends AbstractSequence implements NodeList {
 
@@ -53,8 +50,18 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 	public final static int PRECEDING = 2;
 	public final static int FOLLOWING = 3;
 
+	/**
+	 * Constant representing an empty node set.
+	 */
 	public static NodeSet EMPTY_SET = new EmptyNodeSet();
 
+	/**
+	 * Return an iterator on the nodes in this list. The iterator returns nodes
+	 * according to the internal ordering of nodes (i.e. level first), not in document-
+	 * order.
+	 * 
+	 * @return
+	 */
 	public abstract Iterator iterator();
 
 	/* (non-Javadoc)
@@ -69,9 +76,31 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 		return Type.NODE;
 	}
 
+	/**
+	 * Check if this node set contains a node matching the given
+	 * document and node-id.
+	 * 
+	 * @param doc
+	 * @param nodeId
+	 * @return
+	 */
 	public abstract boolean contains(DocumentImpl doc, long nodeId);
+	
+	/**
+	 * Check if this node set contains a node matching the document and
+	 * node-id of the given NodeProxy object.
+	 * 
+	 * @param proxy
+	 * @return
+	 */
 	public abstract boolean contains(NodeProxy proxy);
 
+	/**
+	 * Check if this node set contains nodes belonging to the given document.
+	 * 
+	 * @param doc
+	 * @return
+	 */
 	public boolean containsDoc(DocumentImpl doc) {
 		return true;
 	}
@@ -96,36 +125,102 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 		add(proxy);
 	}
 
+	/**
+	 * Add a sequence item to the node set. The item has to be
+	 * a subtype of node.
+	 */
 	public void add(Item item) throws XPathException {
 		if (!Type.subTypeOf(item.getType(), Type.NODE))
 			throw new XPathException("item has wrong type");
 		add((NodeProxy) item);
 	}
 
+	/**
+	 * Add all items from the given sequence to the node set. All items
+	 * have to be a subtype of node.
+	 * 
+	 * @param other
+	 * @throws XPathException
+	 */
 	public void addAll(Sequence other) throws XPathException {
-		if (other.getItemType() != Type.NODE)
+		if (!Type.subTypeOf(other.getItemType(), Type.NODE))
 			throw new XPathException("sequence argument is not a node sequence");
 		for (SequenceIterator i = other.iterate(); i.hasNext();) {
 			add((NodeProxy) i.nextItem());
 		}
 	}
 
+	/**
+	 * Add all nodes from the given node set.
+	 * 
+	 * @param other
+	 */
 	public abstract void addAll(NodeSet other);
 
+	/**
+	 * Remove a node. By default, this method throws a
+	 * RuntimeException.
+	 * 
+	 * @param node
+	 */
 	public void remove(NodeProxy node) {
-		throw new RuntimeException("not implemented");
+		throw new RuntimeException("remove not implemented for class " + getClass().getName());
 	}
 
+	/**
+	 * Return the number of nodes contained in this node set.
+	 */
 	public abstract int getLength();
+	
 	public abstract Node item(int pos);
+	
+	/**
+	 * Get the node at position pos within this node set.
+	 * @param pos
+	 * @return
+	 */
 	public abstract NodeProxy get(int pos);
+	
+	/**
+	 * Get a node from this node set matching the document and node id of
+	 * the given NodeProxy.
+	 *  
+	 * @param p
+	 * @return
+	 */
 	public abstract NodeProxy get(NodeProxy p);
+	
+	/**
+	 * Get a node from this node set matching the document and node id.
+	 * 
+	 * @param doc
+	 * @param nodeId
+	 * @return
+	 */
 	public abstract NodeProxy get(DocumentImpl doc, long nodeId);
 
+	/**
+	 * Check if node has an ancestor contained in this node set.
+	 *
+	 * If directParent is true, only immediate ancestors (parents) are considered.
+	 * Otherwise the method will call itself recursively for all the node's
+	 * parents.
+	 *
+	 */
 	public NodeProxy nodeHasParent(NodeProxy p, boolean directParent) {
 		return nodeHasParent(p.doc, p.gid, directParent, false);
 	}
 
+	/**
+	 * Check if node has an ancestor contained in this node set.
+	 *
+	 * If directParent is true, only immediate ancestors (parents) are considered.
+	 * Otherwise the method will call itself recursively for all the node's
+	 * parents.
+	 *
+	 * If includeSelf is true, the method returns also true if
+	 * the node itself is contained in the node set.
+	 */
 	public NodeProxy nodeHasParent(
 		NodeProxy p,
 		boolean directParent,
@@ -133,6 +228,16 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 		return nodeHasParent(p.doc, p.gid, directParent, includeSelf);
 	}
 
+	/**
+	 * Check if the node identified by its node id has an ancestor contained in this node set.
+	 *
+	 * If directParent is true, only immediate ancestors (parents) are considered.
+	 * Otherwise the method will call itself recursively for all the node's
+	 * parents.
+	 *
+	 * If includeSelf is true, the method returns also true if
+	 * the node itself is contained in the node set.
+	 */
 	public NodeProxy nodeHasParent(
 		DocumentImpl doc,
 		long gid,
@@ -142,10 +247,10 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 	}
 
 	/**
-	 * Check if node has a parent contained in this node set.
+	 * Check if node has an ancestor contained in this node set.
 	 *
-	 * If directParent is true, only immediate ancestors are considered.
-	 * Otherwise the method will call itself recursively for the node's
+	 * If directParent is true, only immediate ancestors (parents) are considered.
+	 * Otherwise the method will call itself recursively for all the node's
 	 * parents.
 	 *
 	 * If includeSelf is true, the method returns also true if
@@ -176,25 +281,75 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 		return null;
 	}
 
-	public NodeSet getChildren(NodeSet al, int mode) {
-		return getChildren(al, mode, false);
+	/**
+	 * Get all children of the given parent node contained in this node set.
+	 * If mode is {@link #DESCENDANT}, the returned node set will contain
+	 * all children found in this node set. If mode is {@link #ANCESTOR},
+	 * the parent itself will be returned if it has child nodes in this set.
+	 * 
+	 * @param parent
+	 * @param mode
+	 * @param rememberContext
+	 * @return
+	 */
+	public NodeSet hasChildrenInSet(
+		NodeProxy parent,
+		int mode,
+		boolean rememberContext) {
+		Range range = XMLUtil.getChildRange(parent.doc, parent.gid);
+		return getRange(parent.doc, range.getStart(), range.getEnd());
 	}
 
-	public NodeSet getChildren(NodeSet al, int mode, boolean rememberContext) {
+	/**
+	 * Check if any child nodes are found within this node set for a given
+	 * set of potential parent nodes.
+	 * 
+	 * If mode is {@link #DESCENDANT}, the returned node set will contain
+	 * all child nodes found in this node set for each parent node. If mode is
+	 * {@link #ANCESTOR}, the returned set will contain those parent nodes,
+	 * for which children have been found.
+	 *  
+	 * @param al a node set containing potential parent nodes
+	 * @param mode selection mode
+	 * @return
+	 */
+	public NodeSet selectParentChild(NodeSet al, int mode) {
+		return selectParentChild(al, mode, false);
+	}
+
+	/**
+	 * Check if any child nodes are found within this node set for a given
+	 * set of potential parent nodes.
+	 * 
+	 * If mode is {@link #DESCENDANT}, the returned node set will contain
+	 * all child nodes found in this node set for each parent node. If mode is
+	 * {@link #ANCESTOR}, the returned set will contain those parent nodes,
+	 * for which children have been found.
+	 *  
+	 * @param al a node set containing potential parent nodes
+	 * @param mode selection mode
+	 * @param rememberContext if true, add the matching nodes to the context node
+	 * list of each returned node (this is used to track matches for predicate evaluation)
+	 * @return
+	 */
+	public NodeSet selectParentChild(NodeSet al, int mode, boolean rememberContext) {
+		if (al.getLength() == 1) {
+			return hasChildrenInSet(al.get(0), mode, rememberContext);
+		}
 		NodeProxy n, p;
 //		long start = System.currentTimeMillis();
 		ExtArrayNodeSet result = new ExtArrayNodeSet();
 		DocumentImpl lastDoc = null;
 		int sizeHint = -1;
 		switch (mode) {
-			case DESCENDANT :
+			case NodeSet.DESCENDANT :
 				for (Iterator i = iterator(); i.hasNext();) {
 					n = (NodeProxy) i.next();
 					if (lastDoc == null || n.doc != lastDoc) {
 						lastDoc = n.doc;
 						sizeHint = getSizeHint(lastDoc);
 					}
-					if ((p = al.nodeHasParent(n.doc, n.gid, true, false, -1))
+					if ((p = al.parentWithChild(n.doc, n.gid, true, false, -1))
 						!= null) {
 						if (rememberContext)
 							n.addContextNode(p);
@@ -204,15 +359,15 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 					}
 				}
 				break;
-			case ANCESTOR :
+			case NodeSet.ANCESTOR :
 				for (Iterator i = iterator(); i.hasNext();) {
 					n = (NodeProxy) i.next();
 					if (lastDoc == null || n.doc != lastDoc) {
 						lastDoc = n.doc;
 						sizeHint = al.getSizeHint(lastDoc);
 					}
-					p = al.parentWithChild(n.doc, n.gid, true, false, -1);
-					if (p != null) {
+					if ((p = al.parentWithChild(n.doc, n.gid, true, false, -1))
+						!= null) {
 						if (rememberContext)
 							p.addContextNode(n);
 						else
@@ -222,33 +377,69 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 				}
 				break;
 		}
-//		LOG.debug(
-//			"getChildren found "
-//				+ result.getLength()
-//				+ " in "
-//				+ (System.currentTimeMillis() - start));
+//				LOG.debug(
+//					"getChildren found "
+//						+ result.getLength()
+//						+ " in "
+//						+ (System.currentTimeMillis() - start));
 		result.sort();
 		return result;
 	}
 
-	public NodeSet getDescendants(NodeSet al, int mode) {
-		return getDescendants(al, mode, false);
-	}
-
-	public NodeSet getDescendants(NodeSet al, int mode, boolean includeSelf) {
-		return getDescendants(al, mode, includeSelf, false);
+	/**
+	 * Check if any descendant nodes are found within this node set for a given
+	 * set of potential ancestor nodes.
+	 * 
+	 * If mode is {@link #DESCENDANT}, the returned node set will contain
+	 * all descendant nodes found in this node set for each ancestor. If mode is
+	 * {@link #ANCESTOR}, the returned set will contain those ancestor nodes,
+	 * for which descendants have been found.
+	 *  
+	 * @param al a node set containing potential parent nodes
+	 * @param mode selection mode
+	 * @return
+	 */
+	public NodeSet selectAncestorDescendant(NodeSet al, int mode) {
+		return selectAncestorDescendant(al, mode, false);
 	}
 
 	/**
-	 *  For a given set of potential ancestor nodes, get the
-	 * descendants in this node set
-	 *
-	 *@param  al    node set containing potential ancestors
-	 *@param  mode  determines if either the ancestor or the descendant
-	 * nodes should be returned. Possible values are ANCESTOR or DESCENDANT.
-	 *@return
+	 * Check if any descendant nodes are found within this node set for a given
+	 * set of potential ancestor nodes.
+	 * 
+	 * If mode is {@link #DESCENDANT}, the returned node set will contain
+	 * all descendant nodes found in this node set for each ancestor. If mode is
+	 * {@link #ANCESTOR}, the returned set will contain those ancestor nodes,
+	 * for which descendants have been found.
+	 *  
+	 * @param al a node set containing potential parent nodes
+	 * @param mode selection mode
+	 * @param includeSelf if true, check if the ancestor node itself is contained in
+	 * the set of descendant nodes (descendant-or-self axis)
+	 * @return
 	 */
-	public NodeSet getDescendants(
+	public NodeSet selectAncestorDescendant(NodeSet al, int mode, boolean includeSelf) {
+		return selectAncestorDescendant(al, mode, includeSelf, false);
+	}
+
+	/**
+	 * Check if any descendant nodes are found within this node set for a given
+	 * set of potential ancestor nodes.
+	 * 
+	 * If mode is {@link #DESCENDANT}, the returned node set will contain
+	 * all descendant nodes found in this node set for each ancestor. If mode is
+	 * {@link #ANCESTOR}, the returned set will contain those ancestor nodes,
+	 * for which descendants have been found.
+	 *  
+	 * @param al a node set containing potential parent nodes
+	 * @param mode selection mode
+	 * @param includeSelf if true, check if the ancestor node itself is contained in
+	 * the set of descendant nodes (descendant-or-self axis)
+	 * @param rememberContext if true, add the matching nodes to the context node
+	 * list of each returned node (this is used to track matches for predicate evaluation)
+	 * @return
+	 */
+	public NodeSet selectAncestorDescendant(
 		NodeSet al,
 		int mode,
 		boolean includeSelf,
@@ -267,7 +458,7 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 						lastDoc = n.doc;
 						sizeHint = getSizeHint(lastDoc);
 					}
-					if ((p = al.nodeHasParent(n.doc, n.gid, false, false, -1))
+					if ((p = al.parentWithChild(n.doc, n.gid, false, false, -1))
 						!= null) {
 						if (rememberContext)
 							n.addContextNode(p);
@@ -297,32 +488,34 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 				break;
 		}
 		//result.sort();
-//		LOG.debug(
-//			"getDescendants found "
-//				+ result.getLength()
-//				+ " in "
-//				+ (System.currentTimeMillis() - start));
+//				LOG.debug(
+//					"getDescendants found "
+//						+ result.getLength()
+//						+ " in "
+//						+ (System.currentTimeMillis() - start));
 		return result;
 	}
 
 	/**
-		 *  For a given set of potential ancestor nodes, get the
-		 * descendants in this node set
-		 *
-		 *@param  al    node set containing potential ancestors
-		 *@param  mode  determines if either the ancestor or the descendant
-		 * nodes should be returned. Possible values are ANCESTOR or DESCENDANT.
-		 *@return
-		 */
-	public NodeSet getAncestors(
+	 * For a given set of potential ancestor nodes, return all ancestors
+	 * having descendants in this node set.
+	 *
+	 *@param  al    node set containing potential ancestors
+	 * @param includeSelf if true, check if the ancestor node itself is contained
+	 * in this node set (ancestor-or-self axis)
+	 * @param rememberContext if true, add the matching nodes to the context node
+	 * list of each returned node (this is used to track matches for predicate evaluation)
+	 *@return
+	 */
+	public NodeSet selectAncestors(
 		NodeSet al,
 		boolean includeSelf,
 		boolean rememberContext) {
 		NodeProxy n, p, temp;
-		ArraySet result = new ArraySet(al.getLength());
+		NodeSet result = new ExtArrayNodeSet();
 		for (Iterator i = iterator(); i.hasNext();) {
 			n = (NodeProxy) i.next();
-			p = al.parentWithChild(n.doc, n.gid, false);
+			p = al.parentWithChild(n.doc, n.gid, false, includeSelf);
 			if (p != null) {
 				if ((temp = result.get(p)) == null) {
 					if (rememberContext)
@@ -340,16 +533,18 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 	/**
 	 * Select all nodes from the passed node set, which
 	 * are preceding or following siblings of the nodes in
-	 * this set.
+	 * this set. If mode is {@link #FOLLOWING}, only nodes following
+	 * the context node are selected. {@link #PRECEDING} selects
+	 * preceding nodes.
 	 * 
 	 * @param siblings a node set containing potential siblings
 	 * @param mode either FOLLOWING or PRECEDING
 	 * @return
 	 */
-	public NodeSet getSiblings(NodeSet siblings, int mode) {
+	public NodeSet selectSiblings(NodeSet siblings, int mode) {
 		if (siblings.getLength() == 0 || getLength() == 0)
 			return NodeSet.EMPTY_SET;
-		ArraySet result = new ArraySet(getLength());
+		NodeSet result = new ExtArrayNodeSet();
 		Iterator ia = iterator();
 		Iterator ib = siblings.iterator();
 		NodeProxy na = (NodeProxy) ia.next(), nb = (NodeProxy) ib.next();
@@ -394,7 +589,7 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 						if (ib.hasNext())
 							nb = (NodeProxy) ib.next();
 					} else if (nb.gid > na.gid) {
-						// found a following sibling
+						// found a following sibling						
 						if (mode == FOLLOWING)
 							result.add(nb);
 						if (ib.hasNext())
@@ -411,9 +606,39 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 	}
 
 	/**
-	 * Search for a node contained in this node set, which is an
-	 * ancestor of the argument node.
-	 * If directParent is true, only immediate ancestors are considered.
+	 * Get all the sibling nodes of the specified node in the current set.
+	 * 
+	 * @param doc the node's owner document
+	 * @param gid the node's internal id
+	 * @return
+	 */
+	public NodeSet getSiblings(DocumentImpl doc, long gid) {
+		int level = doc.getTreeLevel(gid);
+		// get parents id
+		long pid =
+			(gid - doc.getLevelStartPoint(level))
+				/ doc.getTreeLevelOrder(level)
+				+ doc.getLevelStartPoint(level - 1);
+		// get first childs id
+		long f_gid =
+			(pid - doc.getLevelStartPoint(level - 1))
+				* doc.getTreeLevelOrder(level)
+				+ doc.getLevelStartPoint(level);
+		// get last childs id
+		long e_gid = f_gid + doc.getTreeLevelOrder(level);
+		// get all nodes between first and last childs id
+		NodeSet set = getRange(doc, f_gid, e_gid);
+		return set;
+	}
+
+	/**
+	 * Check if the node identified by its node id has an ancestor contained in this node set
+	 * and return the ancestor found.
+	 *
+	 * If directParent is true, only immediate ancestors (parents) are considered.
+	 * Otherwise the method will call itself recursively for all the node's
+	 * parents.
+	 *
 	 */
 	public NodeProxy parentWithChild(
 		DocumentImpl doc,
@@ -422,6 +647,17 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 		return parentWithChild(doc, gid, directParent, false, -1);
 	}
 
+	/**
+	 * Check if the node identified by its node id has an ancestor contained in this node set
+	 * and return the ancestor found.
+	 *
+	 * If directParent is true, only immediate ancestors (parents) are considered.
+	 * Otherwise the method will call itself recursively for all the node's
+	 * parents.
+	 *
+	 * If includeSelf is true, the method returns also true if
+	 * the node itself is contained in the node set.
+	 */
 	public NodeProxy parentWithChild(
 		DocumentImpl doc,
 		long gid,
@@ -431,10 +667,14 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 	}
 
 	/**
-	 * Search for a node contained in this node set, which is an
-	 * ancestor of the argument node.
-	 * If directParent is true, only immediate ancestors are considered.
-	 * If includeSelf is true, the method returns true even if
+	 * Check if the node identified by its node id has an ancestor contained in this node set
+	 * and return the ancestor found.
+	 *
+	 * If directParent is true, only immediate ancestors (parents) are considered.
+	 * Otherwise the method will call itself recursively for all the node's
+	 * parents.
+	 *
+	 * If includeSelf is true, the method returns also true if
 	 * the node itself is contained in the node set.
 	 */
 	public NodeProxy parentWithChild(
@@ -468,6 +708,17 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 		return null;
 	}
 
+	/**
+	 * Check if the given node has an ancestor contained in this node set
+	 * and return the ancestor found.
+	 *
+	 * If directParent is true, only immediate ancestors (parents) are considered.
+	 * Otherwise the method will call itself recursively for all the node's
+	 * parents.
+	 *
+	 * If includeSelf is true, the method returns also true if
+	 * the node itself is contained in the node set.
+	 */
 	public NodeProxy parentWithChild(
 		NodeProxy proxy,
 		boolean directParent,
@@ -481,8 +732,13 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 			level);
 	}
 
+	/**
+	 * Return a new node set containing the parent nodes of all nodes in the 
+	 * current set.
+	 * @return
+	 */
 	public NodeSet getParents() {
-		ArraySet parents = new ArraySet(getLength());
+		NodeSet parents = new ExtArrayNodeSet();
 		NodeProxy p;
 		long pid;
 		for (Iterator i = iterator(); i.hasNext();) {
@@ -495,6 +751,12 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 		return parents;
 	}
 
+	/**
+	 * Returns true if all nodes in this node set are included in
+	 * the fulltext index.
+	 * 
+	 * @return
+	 */
 	public boolean hasIndex() {
 		for (Iterator i = iterator(); i.hasNext();) {
 			if (!((NodeProxy) i.next()).hasIndex())
@@ -503,21 +765,40 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 		return true;
 	}
 
+	/**
+	 * Return a sub-range of this node set containing the range of nodes greater than or including
+	 * the lower node and smaller than or including the upper node.
+	 * 
+	 * @param doc
+	 * @param lower
+	 * @param upper
+	 * @return
+	 */
 	public NodeSet getRange(DocumentImpl doc, long lower, long upper) {
-		NodeProxy p;
-		ArraySet result = new ArraySet(5);
-		for (Iterator i = iterator(); i.hasNext();) {
-			p = (NodeProxy) i.next();
-			if (p.doc.docId == doc.docId && p.gid >= lower && p.gid <= upper)
-				result.add(p);
-		}
-		return result;
+		throw new RuntimeException(
+			"getRange is not valid for class " + getClass().getName());
 	}
 
+	/**
+	 * Get a hint about how many nodes in this node set belong to the 
+	 * specified document. This is just used for allocating new node sets.
+	 * The information does not need to be exact. -1 is returned if the
+	 * size cannot be determined (the default).
+	 * 
+	 * @param doc
+	 * @return
+	 */
 	public int getSizeHint(DocumentImpl doc) {
 		return -1;
 	}
 
+	/**
+	 * Return a new node set, which represents the intersection of the current
+	 * node set with the given node set.
+	 * 
+	 * @param other
+	 * @return
+	 */
 	public NodeSet intersection(NodeSet other) {
 		long start = System.currentTimeMillis();
 		AVLTreeNodeSet r = new AVLTreeNodeSet();
@@ -540,6 +821,13 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 		return r;
 	}
 
+	/**
+	 * Return a new node set which represents the union of the
+	 * current node set and the given node set.
+	 * 
+	 * @param other
+	 * @return
+	 */
 	public NodeSet union(NodeSet other) {
 		long start = System.currentTimeMillis();
 		ArraySet result = new ArraySet(getLength() + other.getLength());
@@ -556,6 +844,14 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 		return result;
 	}
 
+	/**
+	 * Return a new node set containing all the context nodes associated
+	 * with the nodes in this set.
+	 * 
+	 * @param contextNodes
+	 * @param rememberContext
+	 * @return
+	 */
 	public NodeSet getContextNodes(
 		NodeSet contextNodes,
 		boolean rememberContext) {
@@ -581,5 +877,14 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 			}
 		}
 		return result;
+	}
+	
+	/**
+	 * Always returns this.
+	 * 
+	 * @see org.exist.xpath.value.Sequence#toNodeSet()
+	 */
+	public NodeSet toNodeSet() throws XPathException {
+		return this;
 	}
 }

@@ -298,11 +298,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	protected NodeList findElementsByTagName(NodeImpl root, QName qname) {
 		DocumentSet docs = new DocumentSet();
 		docs.add(this);
-		NodeSet context = new ArraySet(1);
-		NodeSet result = new ArraySet(100);
-		context.add(new NodeProxy(root));
 		NodeSet temp = (NodeSet) broker.findElementsByTagName(docs, qname);
-		return temp.getDescendants(context, NodeSet.DESCENDANT);
+		return temp.selectAncestorDescendant(new NodeProxy(root), NodeSet.DESCENDANT);
 	}
 
 	public int getChildCount() {

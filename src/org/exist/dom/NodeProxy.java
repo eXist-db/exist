@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ *  Copyright (C) 2001-03,  Wolfgang M. Meier (wolfgang@exist-db.org)
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -21,32 +21,65 @@
 package org.exist.dom;
 
 import java.util.Comparator;
+import java.util.Iterator;
 
+import org.exist.storage.DBBroker;
+import org.exist.storage.serializers.Serializer;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.AtomicValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.StringValue;
 import org.exist.xpath.value.Type;
 import org.w3c.dom.Node;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
 
 /**
- *  Placeholder class for any DOM-node. NodeProxy stores a node's unique id and
- *  the document a node belongs to. eXist will always try to use a NodeProxy
- *  instead of the actual node. Using a NodeProxy is much cheaper than loading
- *  the actual node from the database. All sets of type NodeSet operate on
- *  NodeProxys. NodeProxy implements Comparable, which is needed by all
- *  node-sets. To convert a NodeProxy to a real node, simply call getNode().
+ * Placeholder class for DOM nodes. 
+ * 
+ * NodeProxy is an internal proxy class, acting as a placeholder for all types of XML nodes
+ * during query processing. NodeProxy just stores the node's unique id and the document it belongs to. 
+ * Query processing deals with these proxys most of the time. Using a NodeProxy is much cheaper 
+ * than loading the actual node from the database. The real DOM node is only loaded,
+ * if further information is required for the evaluation of an XPath expression. To obtain 
+ * the real node for a proxy, simply call {@link #getNode()}. 
+ * 
+ * All sets of type NodeSet operate on NodeProxys. A node set is a special type of 
+ * sequence, so NodeProxy does also implement {@link org.exist.xpath.value.Item} and
+ * can thus be an item in a sequence. Since, according to XPath 2, a single node is also 
+ * a sequence, NodeProxy does itself extend NodeSet. It thus represents a node set containing
+ * just one, single node.
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    22. Juli 2002
+ *@author     Wolfgang Meier <wolfgang@exist-db.org>
  */
-public final class NodeProxy implements Item, Comparable {
+public final class NodeProxy extends NodeSet implements Item, Comparable {
 
+	/**
+	 * The owner document of this node.
+	 */
 	public DocumentImpl doc = null;
+
+	/**
+	 * The unique internal node id.
+	 */
 	public long gid = 0;
+
+	/**
+	 * The type of this node (as defined by DOM), if known, -1 if
+	 * unknown.
+	 */
 	public short nodeType = -1;
+
+	/**
+	 * The first {@link Match} object associated with this node.
+	 * Match objects are used to track fulltext hits throughout query processing.
+	 * 
+	 * Matches are stored as a linked list.
+	 */
 	public Match match = null;
+
 	private ContextItem context = null;
 	private long internalAddress = -1;
 
@@ -301,6 +334,24 @@ public final class NodeProxy implements Item, Comparable {
 		System.out.println();
 	}
 
+	/**
+	 * Add a node to the list of context nodes for this node.
+	 * 
+	 * NodeProxy internally stores the context nodes of the XPath context, for which 
+	 * this node has been selected during a previous processing step.
+	 * 
+	 * Since eXist tries to process many expressions in one, single processing step,
+	 * the context information is required to resolve predicate expressions. For
+	 * example, for an expression like //SCENE[SPEECH/SPEAKER='HAMLET'],
+	 * we have to remember the SCENE nodes for which the equality expression
+	 * in the predicate was true.  Thus, when evaluating the step SCENE[SPEECH], the
+	 * SCENE nodes become context items of the SPEECH nodes and this context
+	 * information is preserved through all following steps.
+	 * 
+	 * To process the predicate expression, {@link org.exist.xpath.Predicate} will take the
+	 * context nodes returned by the filter expression and compare them to its context
+	 * node set.
+	 */
 	public void addContextNode(NodeProxy node) {
 		if (context == null) {
 			context = new ContextItem(node);
@@ -355,7 +406,7 @@ public final class NodeProxy implements Item, Comparable {
 	 * @see org.exist.xpath.value.Item#toSequence()
 	 */
 	public Sequence toSequence() {
-		return new SingleNodeSet(this);
+		return this;
 	}
 
 	/* (non-Javadoc)
@@ -370,5 +421,144 @@ public final class NodeProxy implements Item, Comparable {
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		return new StringValue(getNodeValue()).convertTo(requiredType);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Item#atomize()
+	 */
+	public AtomicValue atomize() throws XPathException {
+		return new StringValue(getNodeValue());
+	}
+	
+	/* -----------------------------------------------*
+	 * Methods of class NodeSet
+	 * -----------------------------------------------*/
+
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#iterator()
+	 */
+	public Iterator iterator() {
+		return new SingleNodeIterator(this);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#iterate()
+	 */
+	public SequenceIterator iterate() {
+		return new SingleNodeIterator(this);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#contains(org.exist.dom.DocumentImpl, long)
+	 */
+	public boolean contains(DocumentImpl doc, long nodeId) {
+		return this.doc.getDocId() == doc.getDocId() && this.gid == nodeId;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#contains(org.exist.dom.NodeProxy)
+	 */
+	public boolean contains(NodeProxy proxy) {
+		return doc.getDocId() == proxy.doc.getDocId() && gid == proxy.gid;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#addAll(org.exist.dom.NodeSet)
+	 */
+	public void addAll(NodeSet other) {
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#add(org.exist.dom.NodeProxy)
+	 */
+	public void add(NodeProxy proxy) {
+	}
+
+	/* (non-Javadoc)
+	 * @see org.w3c.dom.NodeList#getLength()
+	 */
+	public int getLength() {
+		return 1;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.w3c.dom.NodeList#item(int)
+	 */
+	public Node item(int pos) {
+		return pos > 0 ? null : getNode();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Sequence#itemAt(int)
+	 */
+	public Item itemAt(int pos) {
+		return pos > 0 ? null : this;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#get(int)
+	 */
+	public NodeProxy get(int pos) {
+		return pos > 0 ? null : this;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#get(org.exist.dom.NodeProxy)
+	 */
+	public NodeProxy get(NodeProxy p) {
+		return contains(p) ? this : null;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#get(org.exist.dom.DocumentImpl, long)
+	 */
+	public NodeProxy get(DocumentImpl doc, long nodeId) {
+		return contains(doc, nodeId) ? this : null;
+	}
+
+	public void toSAX(DBBroker broker, ContentHandler handler) throws SAXException {
+		Serializer serializer = broker.getSerializer();
+		serializer.setContentHandler(handler);
+		serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
+		serializer.toSAX(this);
+	}
+	
+	private final static class SingleNodeIterator
+		implements Iterator, SequenceIterator {
+
+		private boolean hasNext = true;
+		private NodeProxy node;
+
+		public SingleNodeIterator(NodeProxy node) {
+			this.node = node;
+		}
+
+		public boolean hasNext() {
+			return hasNext;
+		}
+
+		public Object next() {
+			if (hasNext) {
+				hasNext = false;
+				return node;
+			} else
+				return null;
+		}
+
+		public void remove() {
+			throw new RuntimeException("not supported");
+		}
+
+		/* (non-Javadoc)
+		 * @see org.exist.xpath.value.SequenceIterator#nextItem()
+		 */
+		public Item nextItem() {
+			if (hasNext) {
+				hasNext = false;
+				return node;
+			} else
+				return null;
+		}
+
 	}
 }

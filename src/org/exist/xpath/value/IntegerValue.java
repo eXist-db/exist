@@ -24,6 +24,8 @@ import org.exist.xpath.XPathException;
 
 public class IntegerValue extends NumericValue {
 
+	public final static IntegerValue ZERO = new IntegerValue(0);
+	
 	private long value;
 	
 	public IntegerValue(long value) {
@@ -71,7 +73,8 @@ public class IntegerValue extends NumericValue {
 			case Type.ITEM:
 				return this;
 			case Type.DECIMAL:
-				return new DecimalValue(value);
+			case Type.DOUBLE:
+				return new DoubleValue(value);
 			case Type.STRING:
 				return new StringValue(getStringValue());
 			case Type.BOOLEAN:
@@ -100,5 +103,12 @@ public class IntegerValue extends NumericValue {
 	 */
 	public double getDouble() throws XPathException {
 		return (double)value;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.AtomicValue#effectiveBooleanValue()
+	 */
+	public boolean effectiveBooleanValue() throws XPathException {
+		return value != 0;
 	}
 }

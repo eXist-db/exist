@@ -23,7 +23,7 @@ package org.exist.xpath;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.storage.DBBroker;
-import org.exist.xpath.value.DecimalValue;
+import org.exist.xpath.value.DoubleValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.Type;
@@ -69,11 +69,11 @@ public class OpNumeric extends BinaryOp {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
 		double lvalue = 
-			((DecimalValue)getLeft().eval(context, docs, contextSequence).convertTo(Type.DECIMAL)).getDouble();
+			((DoubleValue)getLeft().eval(context, docs, contextSequence).convertTo(Type.DECIMAL)).getDouble();
 		double rvalue = 
-			((DecimalValue)getRight().eval(context, docs, contextSequence).convertTo(Type.DECIMAL)).getDouble();
+			((DoubleValue)getRight().eval(context, docs, contextSequence).convertTo(Type.DECIMAL)).getDouble();
 		double result = applyOperator(lvalue, rvalue);
-		return new DecimalValue(result);
+		return new DoubleValue(result);
 	}
 
 	public double applyOperator(double left, double right) {

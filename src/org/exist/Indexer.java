@@ -57,8 +57,8 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.ext.LexicalHandler;
 
 /**
- * Parser parses a given input document via SAX and stores it to
- * the database. It automatically handles index-creation.
+ * Parses a given input document via SAX, stores it to
+ * the database and handles index-creation.
  * 
  * @author wolf
  *

@@ -26,8 +26,10 @@ import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 
 /**
- * This is the base interface implemented by all classes which are part
- * of an xpath-expression.
+ * Base interface implemented by all classes which are part
+ * of an XPath expression. The main method is 
+ * {@link #eval(StaticContext, DocumentSet, Sequence, Item)}. Please
+ * read the description there.
  */
 public interface Expression {
 
@@ -35,15 +37,28 @@ public interface Expression {
 	 * Evaluate the expression represented by this object.
 	 *
 	 * Depending on the context in which this expression is executed,
-	 * either context, node or both of them may be set. An implementing
-	 * class should know how to handle this. Most classes only expect 
-	 * context to contain a list of nodes which represents the current
-	 * context of this expression.
+	 * either the context sequence, the context item or both of them may 
+	 * be set. An implementing class should know how to handle this.
+	 * 
+	 * The general contract is as follows: if the {@link Dependency#CONTEXT_ITEM}
+	 * bit is set in the bit field returned by {@link #getDependencies()}, the eval method will
+	 * be called once for every item in the context sequence. The <b>contextItem</b>
+	 * parameter will be set to the current item. Otherwise, the eval method will only be called
+	 * once for the whole context sequence and <b>contextItem</b> will be null.
+	 * 
+	 * eXist tries to process the entire context set in one, single step whenever
+	 * possible. Thus, most classes only expect context to contain a list of 
+	 * nodes which represents the current context of the expression. 
+	 * 
+	 * The position() function in XPath is an example for an expression,
+	 * which requires both, context sequence and context item to be set.
 	 *
+	 * The context sequence might be a node set, a sequence of atomic values or a single
+	 * node or atomic value. 
 	 * @param context the static xpath context
 	 * @param docs the set of documents all nodes belong to.
-	 * @param contextSet the node-set which defines the current context node-set.
-	 * @param node a single node, taken from context. This defines the node,
+	 * @param contextSequence the current context sequence.
+	 * @param contextItem a single item, taken from context. This defines the item,
 	 * the expression should work on.
 	 */
 	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
@@ -52,11 +67,8 @@ public interface Expression {
 	/**
 	 * Evaluate the expression represented by this object.
 	 *
-	 * Depending on the context in which this expression is executed,
-	 * either context, node or both of them may be set. An implementing
-	 * class should know how to handle this. Most classes only expect 
-	 * context to contain a list of nodes which represents the current
-	 * context of this expression.
+	 * An overloaded method which just passes the context sequence. Depending on the
+	 * expression context.
 	 *
 	 * @param context the static xpath context
 	 * @param docs the set of documents all nodes belong to.
@@ -77,13 +89,22 @@ public interface Expression {
 	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException;
 
 	/**
-	 * The type of value, this expression returns.
+	 * The static return type of the expression.
 	 *
-	 * Depending on the type of expression, this method should
-	 * return one of the constants defined in class Constants, e.g.
-	 * TYPE_NODELIST, TYPE_STRING, TYPE_NUM, TYPE_BOOL.
+	 * This method should return one of the type constants defined in class 
+	 * {@link org.exist.xpath.value.Type}. If the return type cannot be determined
+	 * statically, return Type.ITEM.
 	 */
 	public int returnsType();
+	
+	/**
+	 * Returns a set of bit-flags, indicating some of the parameters
+	 * on which this expression depends. The flags are defined in
+	 * {@link Dependency}.
+	 * 
+	 * @return
+	 */
+	public int getDependencies();
 	
 	/**
 	 * This method is called to inform the expression object that
@@ -100,5 +121,4 @@ public interface Expression {
 	 * displayed to the user.
 	 */
 	public String pprint();
-	
 }

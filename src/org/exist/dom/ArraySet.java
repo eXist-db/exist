@@ -24,11 +24,9 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.exist.util.FastQSort;
-import org.exist.util.Range;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.SequenceIterator;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 public class ArraySet extends NodeSet {
 
@@ -275,109 +273,12 @@ public class ArraySet extends NodeSet {
 		return get(pos);
 	}
 
-	public NodeSet getSiblings(DocumentImpl doc, long gid) {
-		int level = doc.getTreeLevel(gid);
-		// get parents id
-		long pid =
-			(gid - doc.getLevelStartPoint(level))
-				/ doc.getTreeLevelOrder(level)
-				+ doc.getLevelStartPoint(level - 1);
-		// get first childs id
-		long f_gid =
-			(pid - doc.getLevelStartPoint(level - 1))
-				* doc.getTreeLevelOrder(level)
-				+ doc.getLevelStartPoint(level);
-		// get last childs id
-		long e_gid = f_gid + doc.getTreeLevelOrder(level);
-		// get all nodes between first and last childs id
-		NodeSet set = getRange(doc, f_gid, e_gid);
-		return set;
-	}
-
-	private void getChildrenTopDown(
-		ArraySet result,
-		NodeProxy ancestor,
-		NodeProxy lower,
-		NodeProxy upper,
-		int mode,
-		boolean rememberContext) {
-		int low = 0;
-		int high = counter - 1;
-		int mid = 0;
-		int max = high;
-		int cmp;
-		while (low <= high) {
-			mid = (low + high) / 2;
-			cmp = nodes[mid].compareTo(lower);
-			if (cmp == 0)
-				break;
-			if (cmp > 0)
-				high = mid - 1;
-			else
-				low = mid + 1;
-		}
-		while (mid > 0 && nodes[mid].compareTo(lower) >= 0)
-			mid--;
-		if (nodes[mid] == null || nodes[mid].compareTo(lower) < 0)
-			mid++;
-		while (mid <= max
-			&& (nodes[mid] == null || nodes[mid].compareTo(upper) <= 0)) {
-			switch (mode) {
-				case DESCENDANT :
-					nodes[mid].addMatches(ancestor.match);
-					if (rememberContext)
-						nodes[mid].addContextNode(ancestor);
-					else
-						nodes[mid].copyContext(ancestor);
-					result.add(nodes[mid]);
-					break;
-				case ANCESTOR :
-					ancestor.addMatches(nodes[mid].match);
-					if (rememberContext)
-						ancestor.addContextNode(nodes[mid]);
-					else
-						ancestor.copyContext(nodes[mid]);
-					result.add(ancestor);
-					break;
-			}
-			mid++;
-		}
-	}
-
-	public ArraySet getChildrenTopDown(
-		NodeSet ancestors,
-		int mode,
-		boolean rememberContext) {
-		sort();
-		NodeProxy p;
-		Range range;
-		ArraySet result = new ArraySet(50);
-		Iterator i = ancestors.iterator();
-		if (i == null)
-			return result;
-		while (i.hasNext()) {
-			p = (NodeProxy) i.next();
-			range = XMLUtil.getChildRange(p.doc, p.gid);
-			getChildrenTopDown(
-				result,
-				p,
-				new NodeProxy(p.doc, range.getStart()),
-				new NodeProxy(p.doc, range.getEnd()),
-				mode,
-				rememberContext);
-		}
-		return result;
-	}
-
 	public NodeSet getChildrenX(
 		NodeSet ancestors,
 		int mode,
 		boolean rememberContext) {
-		if (!(ancestors instanceof VirtualNodeSet)
-			&& ancestors.getLength() < CHOOSE_TOP_DOWN_MAX)
-			return getChildrenTopDown(ancestors, mode, rememberContext);
 		if (!(ancestors instanceof ArraySet))
-			return super.getChildren(ancestors, mode, rememberContext);
+			return super.selectParentChild(ancestors, mode, rememberContext);
 		ArraySet al = (ArraySet) ancestors;
 		if (al.counter == 0 || counter == 0) {
 			return new ArraySet(1);
@@ -450,15 +351,15 @@ public class ArraySet extends NodeSet {
 		return result;
 	}
 
-	public NodeSet getDescendants(NodeSet other, int mode) {
-		return getDescendants(other, mode, false);
+	public NodeSet selectAncestorDescendant(NodeSet other, int mode) {
+		return selectAncestorDescendant(other, mode, false);
 	}
 
-	public NodeSet getDescendants(
+	public NodeSet selectAncestorDescendant(
 		NodeSet other,
 		int mode,
 		boolean includeSelf) {
-		return getDescendants(other, mode, includeSelf, false);
+		return selectAncestorDescendant(other, mode, includeSelf, false);
 	}
 
 	/**
@@ -477,7 +378,7 @@ public class ArraySet extends NodeSet {
 		//		if (other.getLength() < CHOOSE_TOP_DOWN_MAX)
 		//			return getDescendantsTopDown(other, mode, rememberContext);
 		if (!(other instanceof ArraySet))
-			return super.getDescendants(
+			return super.selectAncestorDescendant(
 				other,
 				mode,
 				includeSelf,
@@ -574,12 +475,12 @@ public class ArraySet extends NodeSet {
 		 *@param  mode  Description of the Parameter
 		 *@return       The descendants value
 		 */
-	public NodeSet getAncestors(
+	public NodeSet selectAncestors(
 		NodeSet other,
 		boolean includeSelf,
 		boolean rememberContext) {
 		if (!(other instanceof ArraySet))
-			return super.getAncestors(other, includeSelf, rememberContext);
+			return super.selectAncestors(other, includeSelf, rememberContext);
 		ArraySet al = (ArraySet) other;
 		if (al.counter == 0 || counter == 0)
 			return new ArraySet(1);

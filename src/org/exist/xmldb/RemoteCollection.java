@@ -19,7 +19,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:
+ *  $Id$
  */
 package org.exist.xmldb;
 
@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Vector;
+
+import javax.xml.transform.OutputKeys;
 
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
@@ -169,9 +171,9 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public String getProperty(String property) throws XMLDBException {
-		if (property.equals("pretty"))
-			return (indentXML == 1) ? "true" : "false";
-		if (property.equals("encoding"))
+		if (property.equals(OutputKeys.INDENT))
+			return (indentXML == 1) ? "yes" : "no";
+		if (property.equals(OutputKeys.ENCODING))
 			return encoding;
 		if (property.equals("sax-document-events"))
 			return saxDocumentEvents ? "true" : "false";
@@ -373,10 +375,10 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public void setProperty(String property, String value) throws XMLDBException {
-		if (property.equals("pretty"))
-			indentXML = (value.equals("true") ? 1 : -1);
+		if (property.equals(OutputKeys.INDENT))
+			indentXML = (value.equals("yes") ? 1 : -1);
 
-		if (property.equals("encoding"))
+		if (property.equals(OutputKeys.ENCODING))
 			encoding = value;
 
 		if (property.equals("sax-document-events"))

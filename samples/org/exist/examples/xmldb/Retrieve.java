@@ -1,5 +1,8 @@
 package org.exist.examples.xmldb;
 
+import javax.xml.transform.OutputKeys;
+
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -40,8 +43,8 @@ public class Retrieve {
 
 		// get the collection
 		Collection col = DatabaseManager.getCollection(URI + collection);
-		col.setProperty("pretty", "false");
-		col.setProperty("expand-xincludes", "false");
+		col.setProperty(OutputKeys.INDENT, "no");
+		col.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
 		XMLResource res = (XMLResource)col.getResource(args[1]);
 		if(res == null)
 			System.out.println("document not found!");

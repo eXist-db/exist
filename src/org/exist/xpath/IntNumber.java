@@ -21,7 +21,7 @@
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.xpath.value.DecimalValue;
+import org.exist.xpath.value.DoubleValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.Type;
@@ -38,13 +38,20 @@ public class IntNumber extends AbstractExpression {
 		return Type.DOUBLE;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#getDependencies()
+	 */
+	public int getDependencies() {
+		return Dependency.NO_DEPENDENCY; // fixed value
+	}
+	
 	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) {
 		return in_docs;
 	}
 
 	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
 		Item contextItem) throws XPathException {
-		return new DecimalValue(dValue);
+		return new DoubleValue(dValue);
 	}
 
 	public String pprint() {

@@ -30,10 +30,10 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 
 import javax.swing.JFrame;
+import javax.xml.transform.OutputKeys;
 
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
 import org.exist.security.Permission;
+import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.UserManagementService;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -90,7 +90,7 @@ public class Backup {
 		throws XMLDBException, IOException, SAXException {
 		if (current == null)
 			return;
-		current.setProperty("encoding", "UTF-8");
+		current.setProperty(OutputKeys.ENCODING, "UTF-8");
 
 		// get resources and permissions
 		String[] resources = current.listResources();
@@ -119,9 +119,8 @@ public class Backup {
 				new OutputStreamWriter(
 					new FileOutputStream(path + '/' + "__contents__.xml"),
 					"UTF-8"));
-		OutputFormat format = new OutputFormat("xml", "UTF-8", false);
 		// serializer writes to __contents__.xml
-		XMLSerializer serializer = new XMLSerializer(contents, format);
+		SAXSerializer serializer = new SAXSerializer(contents, null);
 		serializer.startDocument();
 		serializer.startPrefixMapping("", NS);
 		// write <collection> element
@@ -141,7 +140,7 @@ public class Backup {
 		XMLResource resource;
 		FileOutputStream os;
 		BufferedWriter writer;
-		XMLSerializer contentSerializer;
+		SAXSerializer contentSerializer;
 		for (int i = 0; i < resources.length; i++) {
 			resource = (XMLResource) current.getResource(resources[i]);
 			file = new File(path);
@@ -159,7 +158,7 @@ public class Backup {
 						new FileOutputStream(path + '/' + resources[i]),
 						"UTF-8"));
 			// write resource to contentSerializer
-			contentSerializer = new XMLSerializer(writer, format);
+			contentSerializer = new SAXSerializer(writer, null);
 			resource.getContentAsSAX(contentSerializer);
 			writer.close();
 			// store permissions

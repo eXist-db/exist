@@ -56,6 +56,13 @@ public class Literal extends AbstractExpression {
 		literalValue = value;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#getDependencies()
+	 */
+	public int getDependencies() {
+		return Dependency.NO_DEPENDENCY;	// fixed value
+	}
+	
 	public String pprint() {
 		StringBuffer buf = new StringBuffer();
 		buf.append('\'');
