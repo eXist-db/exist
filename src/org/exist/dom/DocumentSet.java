@@ -103,7 +103,8 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 		DocumentImpl doc;
 		for(Iterator i = docs.iterator(); i.hasNext(); ) {
 			doc = (DocumentImpl)i.next();
-			put(doc.getDocId(), doc);
+			if(!doc.isLockedForWrite())
+				put(doc.getDocId(), doc);
 		}
 	}
 

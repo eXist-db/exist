@@ -32,6 +32,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.text.PlainDocument;
 
+import org.jedit.syntax.DefaultInputHandler;
 import org.jedit.syntax.InputHandler;
 import org.jedit.syntax.JEditTextArea;
 import org.jedit.syntax.SyntaxDocument;
@@ -45,6 +46,10 @@ public class ClientTextArea extends JEditTextArea implements ActionListener {
 	public final static String CUT = "Cut";
 	public final static String COPY = "Copy";
 	public final static String PASTE = "Paste";
+	
+	private CopyAction copy = new CopyAction();
+	private CutAction cut = new CutAction();
+	private PasteAction paste = new PasteAction();
 	
 	protected Font textFont = new Font("Monospaced", Font.PLAIN, 12);
 	
@@ -61,9 +66,9 @@ public class ClientTextArea extends JEditTextArea implements ActionListener {
 		setElectricScroll(2);
 		
 		popup = new JPopupMenu("Edit Menu");
-		popup.add(new JMenuItem(CUT)).addActionListener(this);
-		popup.add(new JMenuItem(COPY)).addActionListener(this);
-		popup.add(new JMenuItem(PASTE)).addActionListener(this);
+		popup.add(new JMenuItem(CUT)).addActionListener(cut);
+		popup.add(new JMenuItem(COPY)).addActionListener(copy);
+		popup.add(new JMenuItem(PASTE)).addActionListener(paste);
 		
 		if(mode.equals("XML"))
 			setTokenMarker(new XMLTokenMarker());
@@ -78,19 +83,12 @@ public class ClientTextArea extends JEditTextArea implements ActionListener {
 		painter.setEOLMarkersPainted(true);
 		painter.setBracketHighlightEnabled(true);
 		
-		InputHandler inputHandler = getInputHandler();
-		inputHandler.addKeyBinding("C+c",
-				new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						copy();
-					}
-		});
-		inputHandler.addKeyBinding("C+v",
-				new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				paste();
-			}
-		});
+		InputHandler inputHandler = new DefaultInputHandler();
+		inputHandler.addDefaultKeyBindings();
+		inputHandler.addKeyBinding("C+c", copy);
+		inputHandler.addKeyBinding("C+v", paste);
+		inputHandler.addKeyBinding("C+x", cut);
+		setInputHandler(inputHandler);
 	}
 	
 	/* (non-Javadoc)
@@ -104,5 +102,36 @@ public class ClientTextArea extends JEditTextArea implements ActionListener {
 			copy();
 		else if(cmd.equals(PASTE))
 			paste();
+		else
+			System.out.println("event: " + cmd);
+	}
+	
+	private class CopyAction implements ActionListener {
+		
+		/* (non-Javadoc)
+		 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+		 */
+		public void actionPerformed(ActionEvent e) {
+			copy();
+		}
+	}
+	
+	private class PasteAction implements ActionListener {
+		
+		/* (non-Javadoc)
+		 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+		 */
+		public void actionPerformed(ActionEvent e) {
+			paste();
+		}
+	}
+	
+	private class CutAction implements ActionListener {
+		/* (non-Javadoc)
+		 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+		 */
+		public void actionPerformed(ActionEvent e) {
+			cut();
+		}
 	}
 }

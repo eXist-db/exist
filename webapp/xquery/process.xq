@@ -21,7 +21,8 @@ as element()+
             $start := request:request-parameter("start", "1") cast as xs:int,
             $end := if ($start + $howmany le $count) then $start + $howmany - 1 else $count
         return (
-            <table class="display" border="0" cellspacing="0" cellpadding="4">
+            <table class="display" border="0" width="100%"
+                cellspacing="0" cellpadding="4">
                 <tr>
                     <td colspan="3" align="center">
                         &lt;<a href="xquery.xq">New Query</a>&gt;

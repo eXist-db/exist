@@ -5,11 +5,11 @@
 	<shortcut name="eXist Database Startup" target="$INSTALL_PATH/bin/startup.bat"
 		description="eXist Database Startup" programGroup="yes"
         desktop="yes" iconFile="$INSTALL_PATH/icon.bmp"/>
-	<shortcut name="eXist Local Homepage" target="$INSTALL_PATH/index.html"
+	<shortcut name="eXist Documentation" target="$INSTALL_PATH/index.html"
 		description="The local homepage of the server" programGroup="yes"
-        desktop="no"/>
+        desktop="yes"/>
 	<shortcut name="eXist Client Shell"
-		target="$INSTALL_PATH/bin/client.bat"
+        target="$INSTALL_PATH/bin/client.bat"
 		description="Start the command-line client" programGroup="yes"
         desktop="yes"/>
 	<shortcut name="Database Shutdown"

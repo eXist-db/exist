@@ -44,7 +44,6 @@ import org.exist.util.VariableByteOutputStream;
 public class BinaryDocument extends DocumentImpl {
 
 	public final static byte DATA = -1;
-	public final static byte XQUERY = 0;
 	
 	private long pageNr = -1;
 	
@@ -56,6 +55,10 @@ public class BinaryDocument extends DocumentImpl {
 
 	public BinaryDocument(DBBroker broker, String docName, Collection collection) {
 		super(broker, docName, collection);
+	}
+	
+	public void setSignature(byte signature) {
+		this.signature = signature;
 	}
 	
 	/* (non-Javadoc)

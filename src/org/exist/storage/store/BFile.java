@@ -1104,6 +1104,10 @@ public class BFile extends BTree {
 			return !saved;
 		}
 
+		public boolean allowUnload() {
+			return true;
+		}
+		
 		public abstract void setData(byte[] buf);
 
 		public abstract SinglePage getFirstPage();

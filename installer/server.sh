@@ -40,7 +40,7 @@ fi
 LANG=en_US.UTF-8
 
 if [ -z "$JAVA_OPTIONS" ]; then
-    export JAVA_OPTIONS="-Xms64000k -Xmx256000k -Dfile.encoding=UTF-8"
+    export JAVA_OPTIONS="-Xms16000k -Xmx256000k -Dfile.encoding=UTF-8"
 fi
 
 $JAVA_CMD $JAVA_OPTIONS $OPTIONS \

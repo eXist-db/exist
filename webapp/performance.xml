@@ -38,8 +38,7 @@
                 <synopsis>bin/client.sh -l</synopsis>
                 
                 <para>Please note that you should stop any running server before starting
-                    the client in local mode (or make sure that the server is not writing
-                    any data).</para>
+                    the client in local mode.</para>
                     
                 <para>The embedded XML:DB driver uses SAX to parse the XML files. Since the
                     file content is not loaded into memory, there should be no limit to the 
@@ -50,33 +49,20 @@
                     is directly forwarded to the indexer.</para>
             </section>
             <section>
-                <title>Find a Compromise Between Collection Size and Number of
-                Collections in the DB</title>
+                <title>Collection Size</title>
                 
-                <para> Indexing performance is affected by a number of factors:
-                    First of all, eXist manages its indexes internally by
-                    collection, not by document, i.e. it will store all index
-                    entries for a given element, attribute or word to the same
-                    entry in the B+-tree. This makes index lookups very fast
-                    though managing the index gets a bit more difficult. eXist
-                    uses several tricks to handle this, for example, it simply
-                    appends new entries to the B+-tree value without loading the
-                    entire value into memory.</para>
-                    
-                <para>However, there will always be some performance limit if
-                    collections grow large (&gt; 100,000 documents). It is thus recommended to split
-                    large collections into several sub-collections. Splitting
-                    collections has not much impact on query formulation: eXist
-                    is able to process an XPath query over multiple
-                    sub-collections (see <ulink href="xpath.xml">XPath
-                    HowTo</ulink>).</para>
-                <para>On the other hand, loading several hundred thousand documents
-                from thousand different collections is equally bad with respect to
-                query performance. You thus have to find a good compromise between
-                the collection size and the number of collections in the database.
-                The data should be organized into no more than a few dozen top-level
-                collections.</para> 
+                <para>For previous versions of eXist, we recommended to split
+                large collections into several sub-collections. This does no
+                longer apply to recent releases. eXist can now well handle
+                collections with a few thousand files in it.</para>
+                
+                <para>You should still think about splitting a collection if it
+                contains more than, let's say, 10,000 files. However, too many
+                collections make the database slow. So please don't create
+                thousands of sub-collections. Reading collection metadata is 
+                expensive and has a bad impact on query performance.</para>
             </section>
+            
             <section>
                 <title>Restrict Fulltext-Indexing</title>
                 <para>Another alternative is to exclude some parts of your
@@ -282,7 +268,7 @@ return
                 <title>Increase index-depth</title>
                 <para>If you are connected to a remote server via XMLRPC and retrieving results
                     takes too much time, consider increasing the <option>index-depth</option>
-                    in the <sgmltag>indexer</sgmltag> section of the configuration file. The
+                    in the <sgmltag>indexer</sgmltag> section of the server configuration file. The
                     meaning of this setting is explained in the <ulink href="configuration.xml">
                     configuration guide</ulink>.</para>
                 <para>By default, the parameter is set to 1. If your documents are highly

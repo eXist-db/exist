@@ -218,7 +218,7 @@
                     <include name="**/test/*.java"/>
                     <exclude name="**/xmldb/test/*.java"/>
 					<exclude name="**/xupdate/test/*.java"/>
-					<exclude name="**/xpath/test/*.java"/>
+					<exclude name="**/xquery/test/*.java"/>
                 </fileset>
             </batchtest>
         </junit>

@@ -24,18 +24,13 @@ package org.exist.client;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.HeadlessException;
 import java.awt.Insets;
-import java.awt.datatransfer.Transferable;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -98,6 +93,7 @@ import org.exist.backup.Backup;
 import org.exist.backup.CreateBackupDialog;
 import org.exist.backup.Restore;
 import org.exist.security.Permission;
+import org.exist.security.User;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.EXistResource;
@@ -114,8 +110,7 @@ public class ClientFrame extends JFrame
 			WindowFocusListener,
 			KeyListener,
 			ActionListener,
-			MouseListener,
-			DropTargetListener {
+			MouseListener {
 
 	public final static String CUT = "Cut";
 	public final static String COPY = "Copy";
@@ -190,7 +185,7 @@ public class ClientFrame extends JFrame
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					client.getResources();
+					client.reloadCollection();
 				} catch (XMLDBException e1) {
 				}
 			}
@@ -827,7 +822,7 @@ public class ClientFrame extends JFrame
 						new File(restoreFile), properties.getProperty("uri",
 								"xmldb:exist://"));
 				restore.restore(true, this);
-				client.getResources();
+				client.reloadCollection();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -899,7 +894,7 @@ public class ClientFrame extends JFrame
 						service.setPermissions(res, dialog.permissions);
 					}
 				}
-				client.getResources();
+				client.reloadCollection();
 			}
 		} catch (XMLDBException e) {
 			showErrorMessage("XMLDB Exception: " + e.getMessage(), e);
@@ -973,10 +968,13 @@ public class ClientFrame extends JFrame
 				int row = fileman.getSelectedRow();
 				final Object resource = (Object) resources.getValueAt(row, 3);
 				if (resource instanceof InteractiveClient.CollectionName) {
+					// cd into collection
 					String command = "cd \"" + resource + '"';
 					display(command + "\n");
 					process.setAction(command);
 				} else {
+					// open a document for editing
+					ClientFrame.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					try {
 						final Resource res = client.retrieve(resource
 								.toString(), properties.getProperty(
@@ -984,16 +982,30 @@ public class ClientFrame extends JFrame
 						DocumentView view = new DocumentView(client
 								.getCollection(), res, properties);
 						view.setSize(new Dimension(640, 400));
-						view.setVisible(true);
 						if (res.getResourceType().equals("XMLResource"))
 							view.setText((String) res.getContent());
 						else
 							view.setText(new String((byte[]) res.getContent()));
-					} catch (IllegalArgumentException e1) {
-						e1.printStackTrace();
-					} catch (XMLDBException e1) {
-						e1.printStackTrace();
+						
+						// lock the resource for editing
+						UserManagementService service = (UserManagementService)
+							client.current.getService("UserManagementService", "1.0");
+						User user = service.getUser(properties.getProperty("user"));
+						try {
+							service.lockResource(res, user);
+						} catch(XMLDBException ex) {
+							System.out.println(ex.getMessage());
+							JOptionPane.showMessageDialog(ClientFrame.this,
+								"Resource is either locked by other user or cannot be locked. Opening read-only.");
+							view.setReadOnly();
+						}
+						view.setVisible(true);
+					} catch (IllegalArgumentException ex) {
+						showErrorMessage("Illegal argument: " + ex.getMessage(), ex);
+					} catch (XMLDBException ex) {
+						showErrorMessage("XMLDB error: " + ex.getMessage(), ex);
 					}
+					ClientFrame.this.setCursor(Cursor.getDefaultCursor());
 				}
 			}
 		}
@@ -1123,11 +1135,16 @@ public class ClientFrame extends JFrame
 
 	public static void showErrorMessage(String message, Throwable t) {
 		JScrollPane scroll = null;
+		JTextArea msgArea = new JTextArea(message);
+		msgArea.setBorder(BorderFactory.createTitledBorder("Message:"));
+		msgArea.setEditable(false);
+		msgArea.setBackground(null);
 		if (t != null) {
 			StringWriter out = new StringWriter();
 			PrintWriter writer = new PrintWriter(out);
 			t.printStackTrace(writer);
 			JTextArea stacktrace = new JTextArea(out.toString(), 20, 50);
+			stacktrace.setBackground(null);
 			stacktrace.setEditable(false);
 			scroll = new JScrollPane(stacktrace);
 			scroll.setPreferredSize(new Dimension(250, 300));
@@ -1135,7 +1152,7 @@ public class ClientFrame extends JFrame
 					.createTitledBorder("Exception Stacktrace:"));
 		}
 		JOptionPane optionPane = new JOptionPane();
-		optionPane.setMessage(new Object[]{message, scroll});
+		optionPane.setMessage(new Object[]{msgArea, scroll});
 		optionPane.setMessageType(JOptionPane.ERROR_MESSAGE);
 		JDialog dialog = optionPane.createDialog(null, "Error");
 		dialog.pack();
@@ -1204,51 +1221,6 @@ public class ClientFrame extends JFrame
 		if (e.isPopupTrigger()) {
 			shellPopup.show((Component) e.getSource(), e.getX(), e.getY());
 		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.dnd.DropTargetListener#dragEnter(java.awt.dnd.DropTargetDragEvent)
-	 */
-	public void dragEnter(DropTargetDragEvent dtde) {
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.dnd.DropTargetListener#dragOver(java.awt.dnd.DropTargetDragEvent)
-	 */
-	public void dragOver(DropTargetDragEvent dtde) {
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.dnd.DropTargetListener#dropActionChanged(java.awt.dnd.DropTargetDragEvent)
-	 */
-	public void dropActionChanged(DropTargetDragEvent dtde) {
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.dnd.DropTargetListener#drop(java.awt.dnd.DropTargetDropEvent)
-	 */
-	public void drop(DropTargetDropEvent dtde) {
-		Transferable transferable = dtde.getTransferable();
-		System.out.println("dropped!");
-		dtde.acceptDrop(DnDConstants.ACTION_COPY);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.dnd.DropTargetListener#dragExit(java.awt.dnd.DropTargetEvent)
-	 */
-	public void dragExit(DropTargetEvent dte) {
-		// TODO Auto-generated method stub
-
 	}
 
 	static class LoginPanel extends JPanel {

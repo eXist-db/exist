@@ -96,4 +96,14 @@ public interface Cacheable {
 	 * to disk.
 	 */
 	public void sync();
+	
+	/**
+	 * Is it safe to unload the Cacheable from the cache?
+	 * 
+	 * Called before an object is actually removed. Return
+	 * false to avoid being removed.
+	 * 
+	 * @return
+	 */
+	public boolean allowUnload();
 }

@@ -10,18 +10,18 @@
 
             <category name="System Requirements">
 
-                <topic name="Java Version"><p>JDK &gt; 1.4</p></topic>
+                <topic name="Java Version"><p>JDK &gt; 1.4.</p></topic>
 
                 <topic name="Supported Platforms">
                     
                     <p>Platform independent. Tested
-                        on Linux (Mandrake), Windows 2000/XP</p>
+                        on Linux (Mandrake), Windows 2000/XP/XP Server Edition</p>
                 
                 </topic>
 
                 <topic name="Required Software">
                     
-                    <p>Java only. A web server (Jetty) and Cocoon are
+                    <p>None. A web server (Jetty) and Cocoon are
                     included in the distribution, but eXist can also run without
                     them.</p>
 
@@ -109,7 +109,7 @@
                 <topic name="Backup/Restore">
 
                     <p>Backup/restore functionality is provided via Java admin
-                        client. Allows full restore of a database including
+                        client or Ant scripts. Allows full restore of a database including
                         user/group permissions.</p>
                 </topic>
 
@@ -123,6 +123,10 @@
                         extensions (to support fulltext search). Queries may span
                         any possible combination of collections or documents.</p>
 
+                    <p>According to the Bumblebee XQuery test harness, 92% of all use
+                    cases are passed (excluding the "strong" use cases, which are
+                    currently beyond eXist's scope).</p>
+                    
                     <p>Older code based on XPath should be compatible
                     with the XQuery engine, though some aspects (e.g. the rules for
                     automatic type conversions) have changed.</p>
@@ -190,7 +194,8 @@
                 <topic name="HTTP/REST">
 
 					<p>eXist offers a REST-style web service API for simple access 
-                    via HTTP. Running in a servlet context, the REST functionality
+                    via HTTP. This is in general the fastest way to access the
+                    database. Running in a servlet context, the REST functionality
                     is provided through the EXistServlet. In stand-alone mode, the
                     database has its own, built-in web server.</p>
                 </topic>
@@ -198,7 +203,8 @@
                 <topic name="XML-RPC">
 
                     <p>XML-RPC is the preferred protocol and used by the XML:DB
-                        API drivers.</p>
+                        API drivers. Provides full access to all database 
+                        functions.</p>
 
                 </topic>
 

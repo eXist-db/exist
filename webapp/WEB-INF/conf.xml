@@ -145,12 +145,6 @@
 			<exclude path="//cdrom"/>
 			<exclude path="//url"/>
 		</index>
-		<index attributes="false" doctype="species" default="all" 
-			alphanum="true"/>
-		<index attributes="true" doctype="sptr" default="all" alphanum="true">
-			<exclude path="//sequence"/>
-			<exclude path="//dbReference"/>
-		</index>
         
         <!-- Specify the location of one or more catalog files.
         Catalogs are used to resolve external entities in XML documents.

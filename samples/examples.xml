@@ -68,6 +68,13 @@ return
         </result>]]></code>
     </query>
     <query>
+        <description>List all organizations Germany is a member of</description>
+        <code><![CDATA[
+    (:  This script accesses the mondial database, which can be
+        found at http://dbis.informatik.uni-goettingen.de/Mondial/ :)
+        id(/mondial/country[@car_code="D"]/@memberships)]]></code>
+    </query>
+    <query>
     	<description>Find spanish provinces and their cities</description>
 	<code><![CDATA[xquery version "1.0";
 (:  This script accesses the mondial database, which can be

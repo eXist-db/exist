@@ -273,8 +273,8 @@ public class Main {
 				System.arraycopy(args, 1, nargs, 0, args.length - 1);
 			args = nargs;
 		} else {
-			_classname = "org.exist.JettyStart";
-			_mode = "jetty";
+			_classname = "org.exist.client.InteractiveClient";
+			_mode = "client";
 		}
 		
 		if(_debug) {

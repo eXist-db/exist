@@ -209,6 +209,10 @@
     <em><xsl:apply-templates/></em>
 </xsl:template>
 
+<xsl:template match="emphasis">
+    <span class="emphasis"><xsl:apply-templates/></span>
+</xsl:template>
+
 <xsl:template match="preserve">
   <pre><xsl:apply-templates/></pre>
 </xsl:template>
@@ -318,7 +322,7 @@
    <xsl:apply-templates/>
   </ul>
  </xsl:template>
-
+    
  <xsl:template match="b|em">
  	<xsl:copy>
  		<xsl:apply-templates/>

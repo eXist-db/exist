@@ -45,7 +45,6 @@ import org.exist.util.VariableByteOutputStream;
  *  Represents a persistent document object in the database.
  *
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
- *@created    21. Mai 2002
  */
 public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
@@ -104,12 +103,11 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	// has document-metadata been loaded?
 	private boolean complete = true;
 
-	/**
-	 *  Constructor for the DocumentImpl object
-	 *
-	 *@param  broker      Description of the Parameter
-	 *@param  collection  Description of the Parameter
-	 */
+	// true while a write operation is in progress
+	private boolean writeLocked = false;
+	
+	private User lockOwner = null;
+	
 	public DocumentImpl(DBBroker broker, Collection collection) {
 		super(Node.DOCUMENT_NODE, 0);
 		this.broker = broker;
@@ -118,33 +116,15 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		treeLevelOrder[0] = 1;
 	}
 
-	/**
-	 *  Constructor for the DocumentImpl object
-	 *
-	 *@param  broker  Description of the Parameter
-	 */
 	public DocumentImpl(DBBroker broker) {
 		this(broker, null, null);
 	}
 
-	/**
-	 *  Constructor for the DocumentImpl object
-	 *
-	 *@param  broker    Description of the Parameter
-	 *@param  fileName  Description of the Parameter
-	 */
 	public DocumentImpl(DBBroker broker, String fileName) {
 		this(broker, null, null);
 		this.fileName = fileName;
 	}
 
-	/**
-	 *  Constructor for the DocumentImpl object
-	 *
-	 *@param  broker      Description of the Parameter
-	 *@param  fileName    Description of the Parameter
-	 *@param  collection  Description of the Parameter
-	 */
 	public DocumentImpl(DBBroker broker, String fileName, Collection collection) {
 		super(Node.DOCUMENT_NODE, 0);
 		this.broker = broker;
@@ -176,6 +156,17 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	public byte getResourceType() {
 		return XML_FILE;
+	}
+	
+	public void setWriteLock(boolean locked) {
+		LOG.debug(
+				(locked ? "Locking" : "Unlocking") + 
+				" document " + getFileName());
+		this.writeLocked = locked;
+	}
+	
+	public boolean isLockedForWrite() {
+		return writeLocked;
 	}
 	
 	protected static NodeImpl createNode(long gid, short type) {
@@ -515,6 +506,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			permissions.setGroup(secman.getGroup(gid).getName());
 		}
 		permissions.setPermissions(perm);
+		final int lockId = istream.readInt();
+		lockOwner = (lockId > 0 ? secman.getUser(lockId) : null);
+		
 		try {
 			calculateTreeLevelStartPoints();
 		} catch (EXistException e) {
@@ -567,6 +561,14 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		}
 	}
 
+	public void setUserLock(User user) {
+		lockOwner = user;
+	}
+	
+	public User getUserLock() {
+		return lockOwner;
+	}
+	
 	public void setPermissions(int mode) {
 		permissions.setPermissions(mode);
 	}
@@ -615,6 +617,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			ostream.writeInt(group.getId());
 		}
 		ostream.writeByte((byte) permissions.getPermissions());
+		if(lockOwner != null)
+			ostream.writeInt(lockOwner.getUID());
+		else
+			ostream.writeInt(0);
 	}
 
 	public int reindexRequired() {

@@ -9,6 +9,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.util.LockException;
 import org.exist.util.SyntaxException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -84,10 +85,10 @@ public class LocalUserManagementService implements UserManagementService {
 				"you are not the owner of this collection");
 		org.exist.collections.Collection coll =
 			((LocalCollection) child).getCollection();
-		coll.setPermissions(perm);
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
+			coll.setPermissions(perm);
 			broker.saveCollection(coll);
 			broker.flush();
 		} catch (EXistException e) {
@@ -100,6 +101,11 @@ public class LocalUserManagementService implements UserManagementService {
 				ErrorCodes.PERMISSION_DENIED,
 				e.getMessage(),
 				e);
+		} catch (LockException e) {
+			throw new XMLDBException(
+					ErrorCodes.VENDOR_ERROR,
+					"Failed to acquire lock on collections.dbx",
+					e);
 		} finally {
 			pool.release(broker);
 		}
@@ -118,6 +124,11 @@ public class LocalUserManagementService implements UserManagementService {
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
 				e.getMessage(),
+				e);
+		} catch (LockException e) {
+			throw new XMLDBException(
+				ErrorCodes.VENDOR_ERROR,
+				"Failed to acquire lock on collections.dbx",
 				e);
 		}
 		DBBroker broker = null;
@@ -193,6 +204,11 @@ public class LocalUserManagementService implements UserManagementService {
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				e.getMessage(),
+				e);
+		} catch (LockException e) {
+			throw new XMLDBException(
+				ErrorCodes.VENDOR_ERROR,
+				"Failed to acquire lock on collections.dbx",
 				e);
 		} finally {
 			pool.release(broker);
@@ -300,6 +316,76 @@ public class LocalUserManagementService implements UserManagementService {
 			}
 	}
 
+	public void lockResource(Resource res, User u) throws XMLDBException {
+		DocumentImpl doc;
+		if(res.getResourceType().equals("XMLResource"))
+			doc = ((LocalXMLResource) res).getDocument();
+		else
+			doc = ((LocalBinaryResource) res).getBlob();
+		if (!doc.getPermissions().validate(user, Permission.UPDATE))
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, 
+					"User is not allowed to lock resource " + res.getId());
+		org.exist.security.SecurityManager manager = pool.getSecurityManager();
+		if(!(user.equals(u) || manager.hasAdminPrivileges(user))) {
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
+					"User " + user.getName() + " is not allowed to lock resource for " +
+					"user " + u.getName());
+		}
+		User lockOwner = doc.getUserLock();
+		if(lockOwner != null) {
+			if(lockOwner.equals(u))
+				return;
+			else if(!manager.hasAdminPrivileges(user))
+				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
+						"Resource is already locked by user " + lockOwner.getName());
+		}
+		DBBroker broker = null;
+		try {
+			broker = pool.get(user);
+			doc.setUserLock(u);
+			broker.saveCollection(doc.getCollection());
+		} catch (PermissionDeniedException e) {
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
+					e.getMessage(), e);
+		} catch (EXistException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
+					e.getMessage(), e);
+		} finally {
+			pool.release(broker);
+		}
+	}
+	
+	public void unlockResource(Resource res) throws XMLDBException {
+		DocumentImpl doc;
+		if(res.getResourceType().equals("XMLResource"))
+			doc = ((LocalXMLResource) res).getDocument();
+		else
+			doc = ((LocalBinaryResource) res).getBlob();
+		if (!doc.getPermissions().validate(user, Permission.UPDATE))
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, 
+					"User is not allowed to lock resource " + res.getId());
+		org.exist.security.SecurityManager manager = pool.getSecurityManager();
+		User lockOwner = doc.getUserLock();
+		if(lockOwner != null && !(lockOwner.equals(user) || manager.hasAdminPrivileges(user))) {
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
+					"Resource is already locked by user " + lockOwner.getName());
+		}
+		DBBroker broker = null;
+		try {
+			broker = pool.get(user);
+			doc.setUserLock(null);
+			broker.saveCollection(doc.getCollection());
+		} catch (PermissionDeniedException e) {
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
+					e.getMessage(), e);
+		} catch (EXistException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
+					e.getMessage(), e);
+		} finally {
+			pool.release(broker);
+		}
+	}
+	
 	public String getName() {
 		return "UserManagementService";
 	}

@@ -157,12 +157,17 @@ case $action in
         done
         ;;
     query)
-        if [ ! -f $query ]
+        if [ $queryFile = '-' ]
         then
-            echo "Unable to read query file $query"
-            exit 1
+            query=`cat <&0`
+        else
+            if [ ! -f $queryFile ]
+            then
+                echo "Unable to read query file $queryFile"
+                exit 1
+            fi
+            query=`cat $queryFile`
         fi
-        query=`cat $queryFile`
         request=`cat <<END
 <?xml version="1.0" encoding="UTF-8"?> \
 <query xmlns="http://exist.sourceforge.net/NS/exist" \

@@ -26,14 +26,14 @@
 	        </map:match>
 	            
 	        <map:match pattern="bibquery.xml">
-	        	<map:generate src="bibquery.xml"/>
+                <map:generate src="bibquery.xml"/>
 	        	<map:transform src="stylesheets/bibquery.xsl">
 	        		<map:parameter name="use-request-parameters" value="true"/>
 	        	</map:transform>
 	        	<map:transform type="xmldb" label="xmldb">
 	        		<map:parameter name="user" value="guest"/>
 	        		<map:parameter name="password" value="guest"/>
-	        	</map:transform>
+                </map:transform>
 				<map:transform type="xinclude"/>
 				<map:transform src="stylesheets/biblio_rdf.xsl"/>
 				<map:serialize encoding="UTF-8" type="html"/>

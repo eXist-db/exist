@@ -24,6 +24,8 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -48,15 +50,19 @@ import javax.swing.border.BevelBorder;
 import org.exist.storage.ElementIndex;
 import org.exist.storage.TextSearchEngine;
 import org.exist.util.ProgressIndicator;
+import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
 class DocumentView extends JFrame {
 
-	protected ClientTextArea text;
 	protected Resource resource;
 	protected Collection collection;
+	protected boolean readOnly = false;
+
+	protected ClientTextArea text;
+	protected JButton saveButton;
 	protected JTextField statusMessage;
 	protected JProgressBar progress;
 	protected JPopupMenu popup;
@@ -71,25 +77,50 @@ class DocumentView extends JFrame {
 
 		getContentPane().setLayout(new BorderLayout());
 		setupComponents();
+		
+		addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent ev) {
+				close();
+			}
+		});
+		
 		pack();
 	}
 
+	public void setReadOnly() {
+		text.setEditable(false);
+		saveButton.setEnabled(false);
+		readOnly = true;
+	}
+	
+	private void close() {
+		if(readOnly)
+			return;
+		try {
+			UserManagementService service = (UserManagementService)
+				collection.getService("UserManagementService", "1.0");
+			service.unlockResource(resource);
+		} catch (XMLDBException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	private void setupComponents() throws XMLDBException {
 		JToolBar toolbar = new JToolBar();
 
 		URL url = getClass().getResource("icons/Save24.gif");
-		JButton button = new JButton(new ImageIcon(url));
-		button
+		saveButton = new JButton(new ImageIcon(url));
+		saveButton
 				.setToolTipText("Store the modified data back into the database.");
-		button.addActionListener(new ActionListener() {
+		saveButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				save();
 			}
 		});
-		toolbar.add(button);
+		toolbar.add(saveButton);
 
 		url = getClass().getResource("icons/Export24.gif");
-		button = new JButton(new ImageIcon(url));
+		JButton button = new JButton(new ImageIcon(url));
 		button.setToolTipText("Export to file.");
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

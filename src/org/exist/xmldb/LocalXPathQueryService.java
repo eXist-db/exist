@@ -244,6 +244,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 					+ "ms.");
 			LocalResourceSet resultSet =
 				new LocalResourceSet(user, brokerPool, collection, result, sortExpr);
+			expr.reset();
 			return resultSet;
 		} catch (XPathException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);

@@ -1388,6 +1388,13 @@ public class DOMFile extends BTree implements Lockable {
 		}
 
 		/* (non-Javadoc)
+		 * @see org.exist.storage.cache.Cacheable#allowUnload()
+		 */
+		public boolean allowUnload() {
+			return true;
+		}
+		
+		/* (non-Javadoc)
 		 * @see java.lang.Object#equals(java.lang.Object)
 		 */
 		public boolean equals(Object obj) {

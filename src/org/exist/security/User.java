@@ -248,5 +248,13 @@ public class User {
     public String getHome() {
     	return home;
     }
+    
+    /* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	public boolean equals(Object obj) {
+		User other = (User)obj;
+		return uid == other.uid;
+	}
 }
 

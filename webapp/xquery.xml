@@ -23,10 +23,10 @@
 
             <para>eXist implements the current XQuery working draft as of
                 November, 2003 with the exception of the XML Schema related
-                features. Also, computed node constructors, some functions, and
-                operator combinations still have to be implemented. Apart from
-                that, eXist passes most of the official XQuery use cases (except two). 
-                Please have a look at the list of missing features below.</para>
+                features. Currently, eXist passes most of the official XQuery 
+                use cases. According to the Bumblebee XQuery test harness, 92% of all use
+                cases are passed (excluding the "strong" use cases, which are
+                currently beyond eXist's scope).</para>
 
             <para>The XQuery engine is a complete rewrite and replaces the old
                 XPath engine. Older code based on XPath should be compatible
@@ -37,7 +37,8 @@
                 pass an XQuery expression wherever you used to pass an XPath
                 query.</para>
 
-            <para>Currently, the following features are missing:</para>
+            <para>Basically, eXist implements all features described in the
+            XQuery specification, except the following:</para>
 
             <itemizedlist>
                 <listitem>Unrecognized keywords: 
@@ -55,7 +56,7 @@
                 <listitem>Computed node constructors are not supported. Normal
                     node constructors are fully supported.</listitem>
 
-                <listitem>Specifying another collation than the default is not
+                <listitem>Collations: specifying another collation than the default is not
                     possible.</listitem>
 
                 <listitem>The atomic types xs:gYear, xs:gMonth etc. are not
