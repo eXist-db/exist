@@ -620,6 +620,33 @@ public class RpcServer implements RpcAPI {
             pool.release(con);
         }
     }
+    
+    /**
+     * does a document called <code>name</code> exist in the repository?
+     * 
+     * @param name
+     *                   Description of the Parameter
+     * @param user
+     *                   Description of the Parameter
+     * @return Description of the Return Value
+     * @exception EXistException
+     *                        Description of the Exception
+     * @exception PermissionDeniedException
+     *                        Description of the Exception
+     */
+    public boolean hasCollection(User user, String name) throws EXistException,
+            PermissionDeniedException {
+        RpcConnection con = pool.get();
+        try {
+            return con.hasCollection(user, name);
+        } catch (Exception e) {
+            handleException(e);
+            return false;
+        } finally {
+            pool.release(con);
+        }
+    }
+    
 
     public int getResourceCount(User user, String collectionName)
 	throws EXistException, PermissionDeniedException {
