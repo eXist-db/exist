@@ -10,7 +10,7 @@ import module namespace util="http://exist-db.org/xquery/util";
 declare function seq:map($func as function, $seqA as item()*, $seqB as item()*) 
 as item()* {
 	if(count($seqA) != count($seqB)) then
-		error("The sequences passed to f:map should have equal length.")
+		error("The sequences passed to seq:map should have equal length.")
 	else
     	for $a at $i in $seqA
     	let $b := $seqB[$i]
@@ -22,16 +22,11 @@ as item()* {
 	the sequence is (1, 2, 3), $func will be called with arguments
 	(1, 2) and (3, 3).
 :)
-declare function seq:apply($func as function, $seq as item()*) 
-as item()* {
-	seq:applyA($func, remove($seq, 1), $seq[1])
-};
-
-declare function seq:applyA($func as function, $seq as item()*, $start as item()) {
+declare function seq:fold($func as function, $seq as item()*, $start as item()) {
 	if(empty($seq)) then
 		$start
 	else
-		seq:applyA($func, remove($seq, 1), util:call($func, $start, $seq[1]))
+		seq:fold($func, remove($seq, 1), util:call($func, $start, $seq[1]))
 };
 
 (:	Filters the passed sequence by calling $func for every

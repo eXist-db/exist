@@ -4,9 +4,9 @@
     loader.
     
     Higher-order functions are functions which take other functions
-    as arguments. Three examples are shown here: apply, map and filter.
+    as arguments. Three examples are shown here: fold, map and filter.
     
-    These functions are the XQuery equivalents of functions known from 
+    These functions are the (basic) XQuery equivalents of functions known from 
     the standard library of the Scheme programming language.
 :)
 
@@ -40,14 +40,14 @@ declare function f:table-row($a, $b) {
     </head>
     <body>
         <h3>Calculate the sum of numbers 1 to 4:</h3>
-        <pre>seq:apply(util:function("f:plus", 2), 1 to 4)</pre>
+        <pre>seq:fold(util:function("f:plus", 2), 1 to 4, 0)</pre>
         <p>Result:</p>
-    	<p>{seq:apply(util:function("f:plus", 2), 1 to 4)}</p>
+    	<p>{seq:fold(util:function("f:plus", 2), 1 to 4, 0)}</p>
     
         <h3>Calculate the product of numbers 1 to 4:</h3>
-        <pre>seq:apply(util:function("f:product", 2), 1 to 4)</pre>
+        <pre>seq:fold(util:function("f:product", 2), 1 to 4, 1)</pre>
     	<p>Result:</p>
-    	<p>{seq:apply(util:function("f:product", 2), 1 to 4)}</p>
+    	<p>{seq:fold(util:function("f:product", 2), 1 to 4, 1)}</p>
     
         <h3>Adding the elements of sequences (4, 7, 6) and (10, 15, 8) element-wise:</h3>
         <pre>seq:map(util:function("f:plus", 2), (4, 7, 6), (10, 15, 8))</pre>
