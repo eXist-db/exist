@@ -120,8 +120,7 @@
     -->
     <indexer stemming="no" caseSensitive="no" suppress-whitespace="both" 
 	index-depth="1" tokenizer="org.exist.storage.analysis.SimpleTokenizer"
-	track-term-freq="no"
-	validation="no">
+	track-term-freq="yes" validation="no">
         
 		<!-- where's the file containing a list of stopwords to be ignored
          by the parser. -->
