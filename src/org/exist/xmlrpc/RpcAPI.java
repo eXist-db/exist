@@ -622,6 +622,9 @@ public interface RpcAPI {
 	
 	public boolean unlockResource(User user, String path) 
 	throws EXistException, PermissionDeniedException;
+
+	public String hasUserLock(User user, String path)
+	throws EXistException, PermissionDeniedException;
 	
 	Hashtable getUser(User user, String name) throws EXistException, PermissionDeniedException;
 

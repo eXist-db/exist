@@ -1357,6 +1357,20 @@ public class RpcConnection extends Thread {
 		}
 	}
 	
+	public String hasUserLock(User user, String path) throws Exception {
+		DBBroker broker = null;
+		try {
+			broker = brokerPool.get(user);
+			DocumentImpl doc = (DocumentImpl) broker.getDocument(path);
+			if (doc == null)
+				throw new EXistException("Resource " + path + " not found");
+			User u = doc.getUserLock();
+			return u == null ? "" : u.getName();
+		} finally {
+			brokerPool.release(broker);
+		}
+	}
+	
 	public boolean unlockResource(User user, String path) throws Exception {
 		DBBroker broker = null;
 		try {
