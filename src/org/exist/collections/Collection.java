@@ -49,7 +49,6 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.QName;
 import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -124,6 +123,7 @@ implements Comparable, EntityResolver, Cacheable {
 	private List observers = null;
 
 	private CollectionConfiguration configuration = null;
+	
 	private boolean collectionConfEnabled = true;
 	private boolean triggersEnabled = true;
 
@@ -696,8 +696,12 @@ implements Comparable, EntityResolver, Cacheable {
 						trigger = config
 								.getTrigger(Trigger.REMOVE_DOCUMENT_EVENT);
 				}
-			} else
-				configuration = null;
+			} else {
+				// we remove a collection.xconf configuration file: tell the configuration manager to
+				// reload the configuration.
+				CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
+				confMgr.invalidateAll(getName());
+			}
 			DocumentImpl doc = getDocument(broker, docname);
 			if (doc == null)
 				return;
@@ -1474,8 +1478,9 @@ implements Comparable, EntityResolver, Cacheable {
 	private Trigger setupTriggers(DBBroker broker, String name, DocumentImpl oldDoc) {
 		Trigger trigger = null;
 		if (name.equals(CollectionConfiguration.COLLECTION_CONFIG_FILE)) {
-		    // set configuration to null if we are updating collection.xconf
-			configuration = null;
+		    // we are updating collection.xconf. Notify configuration manager
+			CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
+			confMgr.invalidateAll(getName());
 			collectionConfEnabled = false;
 		} else {
 		    collectionConfEnabled = true;
@@ -1490,6 +1495,8 @@ implements Comparable, EntityResolver, Cacheable {
 							trigger = config
 									.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
 					}
+					if(trigger != null)
+					    LOG.debug("Using trigger: " + trigger.getClass().getName());
 				}
 			}
 		}
@@ -1606,39 +1613,17 @@ implements Comparable, EntityResolver, Cacheable {
 	private CollectionConfiguration getConfiguration(DBBroker broker) {
 	    if (!collectionConfEnabled)
 	        return null;
-		if (configuration == null)
-			configuration = readCollectionConfiguration(broker);
-		
-//		if (configuration == null)
-//		{			
-//			String recursiv = parentHasDoc(broker,getName(), COLLECTION_CONFIG_FILE );
-//			if (!(recursiv == null)) {
-//				LOG.debug (" -->Try to use conf from "+recursiv);
-//				configuration = broker.getCollection( recursiv).readCollectionConfiguration(broker);
-//			}		
-//		}
-		
-		return configuration;
-	}
-
-	private CollectionConfiguration readCollectionConfiguration(DBBroker broker) {
-		if (hasDocument(CollectionConfiguration.COLLECTION_CONFIG_FILE)) {			
-		    DocumentImpl doc = getDocument(broker, CollectionConfiguration.COLLECTION_CONFIG_FILE);
-		    if(doc == null) {
-		        LOG.warn("collection.xconf exists but could not be loaded");
-		        return null;
-		    }
-			LOG.debug("found collection.xconf");
-			triggersEnabled = false;
-			try {
-				return new CollectionConfiguration(broker, this, doc);
-			} catch (CollectionConfigurationException e) {
-				LOG.warn("Failed to load collection configuration " + e.getMessage(), e);
-			} finally {
-				triggersEnabled = true;
-			}
+	    if (configuration != null)
+	    	return configuration;
+		if (!"/db/system".equals(name)) {
+		    CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
+		    try {
+                configuration = manager.getConfiguration(broker, this);
+            } catch (CollectionConfigurationException e) {
+                LOG.warn("Failed to load collection configuration for " + getName(), e);
+            }
 		}
-		return null;
+		return configuration;
 	}
 
 	/**
@@ -1650,6 +1635,10 @@ implements Comparable, EntityResolver, Cacheable {
 	 */
 	public void setConfigEnabled(boolean enabled) {
 	    collectionConfEnabled = enabled;
+	}
+	
+	public void invalidateConfiguration() {
+		configuration = null;
 	}
 	
 	/**
@@ -1847,39 +1836,6 @@ implements Comparable, EntityResolver, Cacheable {
         buf.append("]");
         return buf.toString();
     }
-    
-	public String getParentPathGen(String col) {
-		if (col.equals("/db"))
-			return null;
-		String col1 = (col.lastIndexOf("/") < 1 ? "/db" : col.substring(0,
-				col.lastIndexOf("/")));
-		return col1;
-	}
-    
-	public String parentHasDoc(DBBroker broker, String col, String document) {
-		Collection collection = null;
-		String col2 = "";
-		String result = null;
-		boolean test = true;
-		CollectionCache cache = broker.getBrokerPool().getCollectionsCache();
-		synchronized (cache) {
-			while (test) {
-				col = getParentPathGen(col);
-				if (col == null)
-					test = false;
-				else {
-					collection = broker.getCollection(col);
-	//				collection = broker.openCollection(col, Lock.READ_LOCK);
-					if (collection.hasDocument(document)) {
-						result = col;
-						test = false;
-					}
-	//				collection.release();
-				}
-			}
-		}
-		return result;		
-	}
 
 	public IndexSpec getIdxConf(DBBroker broker) {
 	    CollectionConfiguration conf = getConfiguration(broker);

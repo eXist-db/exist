@@ -1,6 +1,6 @@
 <collection xmlns="http://exist-db.org/collection-config/1.0">
 	<index xmlns:x="http://www.foo.com">
-		<fulltext default="none">
+		<fulltext default="all">
 			<include path="//item/name"/>
 			<include path="//item/mixed"/>
 		</fulltext>

@@ -2669,8 +2669,9 @@ public class NativeBroker extends DBBroker {
 		}
 		if(ftIdx == null || currentPath == null || ftIdx.match(currentPath))
 		    indexType |= ValueIndexSpec.TEXT;
-		if(node.getChildCount() > 1)
+		if(node.getChildCount() - node.getAttributesCount() > 1) {
 		    indexType |= ValueIndexSpec.MIXED_CONTENT;
+		}
 		tempProxy.setIndexType(indexType);
 		
 		node.getQName().setNameType(ElementValue.ELEMENT);

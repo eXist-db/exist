@@ -23,6 +23,7 @@ package org.exist.xquery.test;
 
 import java.io.File;
 
+import org.exist.xmldb.IndexQueryService;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -41,6 +42,22 @@ public class ValueIndexTest extends TestCase {
 
     private final static String URI = "xmldb:exist:///db";
 
+    private final static String CONFIG =
+    	"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" + 
+    	"	<index xmlns:x=\"http://www.foo.com\">" + 
+    	"		<fulltext default=\"all\">" + 
+    	"			<include path=\"//item/name\"/>" + 
+    	"			<include path=\"//item/mixed\"/>" + 
+    	"		</fulltext>" + 
+    	"		<create path=\"//item/itemno\" type=\"xs:integer\"/>" + 
+    	"		<create path=\"//item/name\" type=\"xs:string\"/>" + 
+    	"		<create path=\"//item/stock\" type=\"xs:integer\"/>" + 
+    	"		<create path=\"//item/price\" type=\"xs:double\"/>" + 
+    	"		<create path=\"//item/prices/@specialprice\" type=\"xs:boolean\"/>" + 
+    	"		<create path=\"//item/x:rating\" type=\"xs:double\"/>" + 
+    	"	</index>" + 
+    	"</collection>";
+    
     private Collection testCollection;
 
     protected void setUp() {
@@ -56,7 +73,10 @@ public class ValueIndexTest extends TestCase {
                     .getService("CollectionManagementService", "1.0");
             testCollection = service.createCollection("test");
             assertNotNull(testCollection);
-            storeXMLFileAndGetQueryService("collection.xconf", "src/org/exist/xquery/test/collection.xconf");
+            
+            IndexQueryService idxConf = (IndexQueryService)
+				testCollection.getService("IndexQueryService", "1.0");
+            idxConf.configureCollection(CONFIG);
         } catch (ClassNotFoundException e) {
         } catch (InstantiationException e) {
         } catch (IllegalAccessException e) {

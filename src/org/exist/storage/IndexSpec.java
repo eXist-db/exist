@@ -48,15 +48,23 @@ public class IndexSpec {
     private ValueIndexSpec specs[] = null;
     
     public IndexSpec(Element index) throws DatabaseConfigurationException {
-    	Map namespaces = getNamespaceMap(index);
-
+        read(index);
+    }
+    
+    /**
+     * @param index
+     * @param namespaces
+     * @throws DatabaseConfigurationException
+     */
+    public void read(Element index) throws DatabaseConfigurationException {
+        Map namespaces = getNamespaceMap(index);
         NodeList cl = index.getChildNodes();
         for(int i = 0; i < cl.getLength(); i++) {
             Node node = cl.item(i);
             if(node.getNodeType() == Node.ELEMENT_NODE) {
 	            if(FULLTEXT_ELEMENT.equals(node.getLocalName())) {
-	                if(ftSpec != null)
-	                    throw new DatabaseConfigurationException("Only one fulltext section is allowed per index");
+//	                if(ftSpec != null)
+//	                    throw new DatabaseConfigurationException("Only one fulltext section is allowed per index");
 	                ftSpec = new FulltextIndexSpec(namespaces, (Element)node);
 	            } else if(CREATE_ELEMENT.equals(node.getLocalName())) {
 	                Element elem = (Element) node;
@@ -68,7 +76,7 @@ public class IndexSpec {
             }
         }
     }
-    
+
     public FulltextIndexSpec getFulltextIndexSpec() {
         return ftSpec;
     }
@@ -110,6 +118,7 @@ public class IndexSpec {
         NamedNodeMap attrs = elem.getAttributes();
         for(int i = 0; i < attrs.getLength(); i++) {
             Attr attr = (Attr) attrs.item(i);
+            LOG.debug(attr.getName());
             if(attr.getPrefix() != null && attr.getPrefix().equals("xmlns")) {
                 map.put(attr.getLocalName(), attr.getValue());
             }

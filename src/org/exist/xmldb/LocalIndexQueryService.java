@@ -22,6 +22,8 @@
 package org.exist.xmldb;
 
 import org.exist.EXistException;
+import org.exist.collections.CollectionConfigurationException;
+import org.exist.collections.CollectionConfigurationManager;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
@@ -87,6 +89,25 @@ public class LocalIndexQueryService implements IndexQueryService {
         }
     }
     
+    /* (non-Javadoc)
+	 * @see org.exist.xmldb.IndexQueryService#configure(java.lang.String)
+	 */
+	public void configureCollection(String configData) throws XMLDBException {
+		DBBroker broker = null;
+        try {
+            broker = pool.get(user);
+            CollectionConfigurationManager mgr = pool.getConfigurationManager();
+            mgr.addConfiguration(broker, parent.getCollection(), configData);
+            System.out.println("Added config for collection " + parent.getCollection().getName());
+        } catch (CollectionConfigurationException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		} catch (EXistException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		} finally {
+            pool.release(broker);
+        }
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.IndexQueryService#getIndexedElements(boolean)
 	 */

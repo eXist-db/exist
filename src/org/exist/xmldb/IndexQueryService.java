@@ -33,6 +33,8 @@ import org.xmldb.api.base.XMLDBException;
  */
 public interface IndexQueryService extends Service {
 
+	public void configureCollection(String configData) throws XMLDBException;
+	
     /**
      * Reindex the current collection, i.e. the collection from which
      * this service has been retrieved.
