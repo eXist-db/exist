@@ -39,8 +39,7 @@ public abstract class DOMTransaction {
         try {
             // try to acquire a lock on the file
             try {
-                lock.acquire( ownerObject, mode );
-                lock.enter( ownerObject );
+                lock.acquire( mode );
             } catch( LockException e ) {
                 // timed out
                 e.printStackTrace();
@@ -50,7 +49,7 @@ public abstract class DOMTransaction {
             return start();
     	} catch( ReadOnlyException e ) {
         } finally {
-			lock.release( ownerObject );
+			lock.release();
         }
         return null;
     }

@@ -159,16 +159,16 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
      *@param  data  Description of the Parameter
      *@return       Description of the Return Value
      */
-    public static NodeImpl deserialize( byte[] data ) {
-        int l = ByteConversion.byteToInt( data, 1 );
+    public static NodeImpl deserialize( byte[] data, int start, int len ) {
+        int l = ByteConversion.byteToInt( data, start + 1 );
         String target;
         String cdata;
         try {
-            target = new String( data, 5, l, "UTF-8" );
-            cdata = new String( data, 5 + l, data.length - 5 - l, "UTF-8" );
+            target = new String( data, start + 5, l, "UTF-8" );
+            cdata = new String( data, start + 5 + l, len - 5 - l, "UTF-8" );
         } catch ( UnsupportedEncodingException uee ) {
-            target = new String( data, 5, l );
-            cdata = new String( data, 5 + l, data.length - 5 - l );
+            target = new String( data, start + 5, l );
+            cdata = new String( data, start + 5 + l, len - 5 - l );
         }
         return new ProcessingInstructionImpl( 0, target, cdata );
     }

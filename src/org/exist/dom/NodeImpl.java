@@ -121,26 +121,25 @@ public class NodeImpl implements Node {
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Deserialize a node from a byte array.
 	 *
 	 *@param  data  Description of the Parameter
 	 *@param  doc   Description of the Parameter
 	 *@return       Description of the Return Value
 	 */
-	public static NodeImpl deserialize(byte[] data, DocumentImpl doc) {
-		//short type = (short)data[0];
-		short type = Signatures.getType(data[0]);
+	public static NodeImpl deserialize(byte[] data, int start, int len, DocumentImpl doc) {
+		short type = Signatures.getType(data[start]);
 		switch (type) {
 			case Node.TEXT_NODE :
-				return TextImpl.deserialize(data);
+				return TextImpl.deserialize(data, start, len);
 			case Node.ELEMENT_NODE :
-				return ElementImpl.deserialize(data, doc);
+				return ElementImpl.deserialize(data, start, len, doc);
 			case Node.ATTRIBUTE_NODE :
-				return AttrImpl.deserialize(data, doc);
+				return AttrImpl.deserialize(data, start, len, doc);
 			case Node.PROCESSING_INSTRUCTION_NODE :
-				return ProcessingInstructionImpl.deserialize(data);
+				return ProcessingInstructionImpl.deserialize(data, start, len);
 			case Node.COMMENT_NODE :
-				return CommentImpl.deserialize(data);
+				return CommentImpl.deserialize(data, start, len);
 			default :
 				LOG.debug("not implemented");
 				return null;

@@ -23,6 +23,7 @@
             <map:generator label="content,data" name="jsp" src="org.apache.cocoon.generation.JspGenerator"/>
             <map:generator label="content,data" name="stream" src="org.apache.cocoon.generation.StreamGenerator"/>
             <map:generator label="content,data" name="html" src="org.apache.cocoon.generation.HTMLGenerator"/>
+            <map:generator label="content,data" name="exist-status" src="org.exist.cocoon.StatusGenerator"/>
         </map:generators>
         <map:transformers default="xslt">
             <map:transformer name="xslt" src="org.apache.cocoon.transformation.TraxTransformer">
@@ -323,7 +324,15 @@
            		<map:mount check-reload="yes" src="examples/sitemap.xmap"
            			uri-prefix="examples"/>
            	</map:match>
-           	
+
+			<map:match pattern="status">
+				<map:generate type="exist-status"/>
+				<map:transform src="stylesheets/status.xsl">
+					<map:parameter name="use-request-parameters" value="true"/>
+				</map:transform>
+				<map:serialize type="html"/>
+			</map:match>
+			
             <map:match pattern="changes.xml">
                 <map:generate src="changes.xml"/>
                 <map:transform src="stylesheets/changes.xsl"/>

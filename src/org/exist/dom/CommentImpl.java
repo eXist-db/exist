@@ -125,12 +125,12 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
      *@param  data  Description of the Parameter
      *@return       Description of the Return Value
      */
-    public static NodeImpl deserialize( byte[] data ) {
+    public static NodeImpl deserialize( byte[] data, int start, int len ) {
         String cdata;
         try {
-            cdata = new String( data, 1, data.length - 1, "UTF-8" );
+            cdata = new String( data, start + 1, len - 1, "UTF-8" );
         } catch ( UnsupportedEncodingException uee ) {
-            cdata = new String( data, 1, data.length - 1 );
+            cdata = new String( data, start + 1, len - 1 );
         }
         CommentImpl comment = new CommentImpl( 0 );
         comment.appendData( cdata );

@@ -84,7 +84,7 @@ public class VirtualNodeSet extends NodeSet {
 		NodeProxy parent = context.get(node.doc, pid);
 		if (parent != null)
 			return first == null ? parent : first;
-		else if (node.gid < 0)
+		else if (pid < 0)
 			return null;
 		else if (axis == Constants.CHILD_AXIS && recursions == 1)
 			return null;
@@ -196,13 +196,10 @@ public class VirtualNodeSet extends NodeSet {
 			if (proxy.gid < 0)
 				proxy.gid = proxy.doc.getDocumentElementId();
 			if (proxy.getBrokerType() == DBBroker.NATIVE) {
-				domIter = proxy.doc.getBroker().getDOMIterator(proxy);
-				Value value = (Value) domIter.next();
-				NodeImpl node =
-					NodeImpl.deserialize(value.getData(), proxy.doc);
+				domIter = proxy.doc.getBroker().getNodeIterator(proxy);
+				NodeImpl node = (NodeImpl)domIter.next();
 				node.setOwnerDocument(proxy.doc);
 				node.setGID(proxy.gid);
-				node.setInternalAddress(value.getAddress());
 				addChildren(result, node, proxy, domIter, recursive);
 			} else {
 				p = proxy.getNode();
@@ -225,14 +222,9 @@ public class VirtualNodeSet extends NodeSet {
 			Value value;
 			NodeProxy p;
 			for (int i = 0; i < node.getChildCount(); i++) {
-				value = (Value) iter.next();
-				child =
-					NodeImpl.deserialize(
-						value.getData(),
-						(DocumentImpl) node.getOwnerDocument());
+				child = (NodeImpl)iter.next();
 				child.setOwnerDocument(node.getOwnerDocument());
 				child.setGID(node.firstChildID() + i);
-				child.setInternalAddress(value.getAddress());
 				p = new NodeProxy(child.ownerDocument, child.gid, 
 					child.getNodeType(), child.internalAddress);
 				p.matches = proxy.matches;

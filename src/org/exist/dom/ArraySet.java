@@ -274,6 +274,7 @@ public class ArraySet extends NodeSet {
 	 *@return         Description of the Return Value
 	 */
 	public boolean contains(DocumentImpl doc, long nodeId) {
+		sort();
 		NodeProxy p = new NodeProxy(doc, nodeId);
 		return contains(p);
 	}
@@ -297,6 +298,7 @@ public class ArraySet extends NodeSet {
 	 *@return         Description of the Return Value
 	 */
 	public NodeProxy get(DocumentImpl doc, long nodeId) {
+		sort();
 		int pos = search(nodes, 0, counter - 1, new NodeProxy(doc, nodeId));
 		if (pos < 0) {
 			return null;
@@ -305,6 +307,7 @@ public class ArraySet extends NodeSet {
 	}
 
 	public NodeProxy get(NodeProxy p) {
+		sort();
 		int pos = search(nodes, 0, counter - 1, p);
 		if (pos < 0)
 			return null;
@@ -735,7 +738,7 @@ public class ArraySet extends NodeSet {
 		//this.sorted = sorted;
 	}
 
-	public void sort() {
+	public final void sort() {
 		if (this.sorted || counter < 2)
 			return;
 		//quickSort(nodes, 0, counter - 1);

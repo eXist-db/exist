@@ -1,4 +1,5 @@
-/* eXist xml document repository and xpath implementation
+/* eXist Native XML Database
+ * 
  * Copyright (C) 2000,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
@@ -109,7 +110,7 @@ public class NodeIDSet extends NodeSet {
 
 	public NodeProxy get(NodeProxy p) {
 		NodeProxy n;
-		for(Iterator i = set.iterator(); i.hasNext(); ) {
+		for(Iterator i = list.iterator(); i.hasNext(); ) {
 			n = (NodeProxy)i.next();
 			if(n.compareTo(p) == 0)
 				return n;

@@ -78,7 +78,6 @@ public class BrokerPool {
 			instances.put(id, instance);
 		} else
 			LOG.warn("instance with id " + id + " already configured");
-
 	}
 
 	public final static boolean isConfigured(String id) {
@@ -110,6 +109,10 @@ public class BrokerPool {
 		return getInstance(DEFAULT_INSTANCE);
 	}
 
+	public final static Iterator getInstances() {
+		return instances.values().iterator();
+	}
+	
 	/**
 	 *  Shutdown running brokers. After calling this method, the BrokerPool is
 	 *  no longer configured. You have to configure it again by calling
@@ -225,7 +228,7 @@ public class BrokerPool {
 			throw new EXistException("database instance is not available");
 		if (pool.isEmpty()) {
 			if (brokers < max)
-				return createBroker();
+				createBroker();
 			else
 				while (pool.isEmpty()) {
 					LOG.debug("waiting for broker instance to become available");
@@ -286,6 +289,10 @@ public class BrokerPool {
 	public void release(DBBroker broker) {
 		if (broker == null)
 			return;
+		if(pool.contains(broker)) {
+			Thread.dumpStack();
+			return;
+		}
 		synchronized(this) {
 			pool.push(broker);
 			if(syncRequired && pool.size() == brokers) {

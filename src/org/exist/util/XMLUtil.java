@@ -253,17 +253,10 @@ public class XMLUtil {
 		return (gid - doc.getLevelStartPoint(level)) * order + doc.getLevelStartPoint(level + 1);
 	}
 
-	/**
-	 *  Gets the parentId attribute of the XMLUtil class
-	 *
-	 *@param  doc  Description of the Parameter
-	 *@param  gid  Description of the Parameter
-	 *@return      The parentId value
-	 */
 	public final static long getParentId(DocumentImpl doc, long gid) {
 		final int level = doc.getTreeLevel(gid);
 		if (level < 0) {
-			System.out.println("unable to determine level");
+			System.out.println("unable to determine level for " + gid);
 			return -1;
 		}
 		return (gid - doc.getLevelStartPoint(level)) / doc.getTreeLevelOrder(level)
