@@ -60,7 +60,8 @@ public class Head extends AbstractWebDAVMethod {
 			broker = pool.get();
 			collection = broker.openCollection(path, Lock.READ_LOCK);
 			if(collection != null) {
-				response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "GET is not available on collections");
+                response.setContentLength(0);
+                response.addDateHeader("Last-Modified", collection.getCreationTime());
 				return;
 			}
 			resource = broker.openDocument(path, Lock.READ_LOCK);
