@@ -347,7 +347,7 @@ public class QueryDialog extends JFrame {
 			properties.setProperty("working-dir", selectedDir.getAbsolutePath());
 			File file = chooser.getSelectedFile();
 			if(file.exists() && (!file.canWrite()))
-				JOptionPane.showMessageDialog(this, "Can not write query to file " + file.getAbsolutePath(),
+				JOptionPane.showMessageDialog(this, "Can not write " +fileCategory+ " to file " + file.getAbsolutePath(),
 						"Error", JOptionPane.ERROR_MESSAGE);
 			if(file.exists() &&
 				JOptionPane.showConfirmDialog(this, "File exists. Overwrite?", "Overwrite?", 
