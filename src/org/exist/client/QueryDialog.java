@@ -424,7 +424,7 @@ public class QueryDialog extends JFrame {
 				resultDisplay.setCaretPosition(0);
 				resultDisplay.scrollToCaret();
 				statusMessage.setText("Found " + result.getSize() + " items.");
-			} catch (XMLDBException e) {
+			} catch (Throwable e) {
 				ClientFrame.showErrorMessage(
 						"An exception occurred during query execution: "
 						+ InteractiveClient.getExceptionMessage(e), e);
