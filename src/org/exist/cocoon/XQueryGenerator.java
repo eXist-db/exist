@@ -52,6 +52,7 @@ import org.exist.xquery.functions.request.RequestModule;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
@@ -78,6 +79,8 @@ import org.xmldb.api.modules.XMLResource;
  */
 public class XQueryGenerator extends ServiceableGenerator {
 
+	public final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
+	
 	private Source inputSource = null;
 	private Map objectModel = null;
 	private boolean createSession = false;
@@ -140,6 +143,14 @@ public class XQueryGenerator extends ServiceableGenerator {
 				this.optionalParameters.put(param, parameters
 						.getParameter(param, ""));
 			}
+		}
+		try {
+			Class driver = Class.forName(DRIVER);
+			Database database = (Database)driver.newInstance();
+			database.setProperty("create-database", "true");
+			DatabaseManager.registerDatabase(database);
+		} catch(Exception e) {
+			throw new ProcessingException("Failed to initialize database driver: " + e.getMessage(), e);
 		}
 	}
 
