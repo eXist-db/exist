@@ -243,6 +243,7 @@
         <delete failonerror="false">
 		<fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
         </delete>
+    	<mkdir dir="${junit.reports}"/>
         <junit haltonfailure="yes" printsummary="yes" 
         	showoutput="${junit.output}">
         	<classpath refid="classpath.core"/>
