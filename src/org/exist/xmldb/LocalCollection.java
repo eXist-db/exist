@@ -92,7 +92,7 @@ public class LocalCollection extends Observable implements Collection {
         this.user = user;
         this.parent = parent;
         this.brokerPool = brokerPool;
-	load(name);
+		load(name);
     }
 
     private void load(String name) throws XMLDBException {
