@@ -727,23 +727,41 @@ PLUS	:		'+'
 		;
 
 protected
-CHAR 
-options { testLiterals=true; }   
-	:       ('a'..'z' | 'A'..'Z' | '-' | '%' | '_')
-        ;
-
-protected
-DIGIT	:	('0'..'9')
-		;
-
-protected
-ID
+BASECHAR 
 options { testLiterals=true; }
-		:	CHAR (CHAR | DIGIT | '.' | ':')*
+	:	('\u0041'..'\u005a' | '\u0061'..'\u007a' |
+		'\u00c0'..'\u00d6' | '\u00d8'..'\u00f6' |
+		'\u00f8'..'\u00ff')
 	;
 
 protected
-FUNC:	CHAR (CHAR | DIGIT)*
+IDEOGRAPHIC	: ('\u4e00'..'\u9fa5' | '\u3007' | '\u3021'..'\u3029')
+	;
+
+protected
+DIGIT	:	('\u0030'..'\u0039')
+		;
+		
+protected
+NMSTART :	(BASECHAR | '_')
+	;
+	
+protected
+NMCHAR	:	(BASECHAR | DIGIT | '.' | '-' | '_' )
+	;
+
+protected
+NCNAME	:	NMSTART (NMCHAR)*
+	;
+	
+protected
+ID
+options { testLiterals=true; }
+	:	NMSTART (NMCHAR)*
+	;
+
+protected
+FUNC:	NCNAME
 		;
 
 ID_OR_FUNC  
