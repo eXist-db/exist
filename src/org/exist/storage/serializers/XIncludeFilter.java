@@ -209,6 +209,7 @@ public class XIncludeFilter implements ContentHandler {
 						docs.add(doc);
 					}
 					StaticContext context = new StaticContext(serializer.broker);
+					context.setStaticallyKnownDocuments(docs);
 					xpointer = checkNamespaces(context, xpointer);
 					Map.Entry entry;
 					for(Iterator i = namespaces.entrySet().iterator(); i.hasNext(); ) {
