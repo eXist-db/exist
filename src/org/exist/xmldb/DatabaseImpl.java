@@ -23,6 +23,7 @@ package org.exist.xmldb;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.util.HashMap;
 import java.util.StringTokenizer;
 
 import org.apache.xmlrpc.XmlRpc;
@@ -68,7 +69,9 @@ public class DatabaseImpl implements Database {
     protected String configuration = null;
     protected String dbName = DEFAULT_NAME;
     protected String selector = dbName + ':'; 
-    protected XmlRpcClient rpcClient;
+    //protected XmlRpcClient rpcClient;
+    private HashMap rpcClients = new HashMap();
+
     protected ShutdownListener shutdown = null;
 	protected int mode = 0;
 	
@@ -143,86 +146,136 @@ public class DatabaseImpl implements Database {
             c = c.substring(0, c.length() - 1);
         Collection current = null;
         if ( c.startsWith( "///" ) ) {
-        	mode = LOCAL;
-            // use local database instance
-            if ( !BrokerPool.isConfigured( dbName ) ) {
-                if ( autoCreate )
-                    configure();
-                else
-                    throw new XMLDBException( ErrorCodes.COLLECTION_CLOSED,
-                        "local database server not running" );
-            }
-            BrokerPool pool;
-            try {
-                pool = BrokerPool.getInstance( dbName );
-            } catch ( EXistException e ) {
-                throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                    "db not correctly initialized",
-                    e );
-            }
-            User u = null;
-            if ( user == null ) {
-                user = "guest";
-                password = "guest";
-            }
-            if ( user != null ) {
-                u = pool.getSecurityManager().getUser( user );
-                if ( u == null ) {
-                	throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
-                        "user " + user + " does not exist" );
-                }
-                if ( !u.validate( password ) ) {
-                	throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
-                        "invalid password" );
-                }
-            }
-            try {
-                current = new LocalCollection( u, pool, c.substring( 2 ) );
-                return ( current != null )
-                     ? current : null;
-            } catch ( XMLDBException e ) {
-                switch ( e.errorCode ) {
-                    case ErrorCodes.NO_SUCH_RESOURCE:
-                    case ErrorCodes.NO_SUCH_COLLECTION:
-                    case ErrorCodes.INVALID_COLLECTION:
-                    case ErrorCodes.INVALID_RESOURCE:
-                        return null;
-                    default:
-                        throw e;
-                }
-            }
+        	return getLocalCollection(user, password, c);
         }
         else if ( c.startsWith( "//" ) ) {
-            // use remote database via XML-RPC
-            mode = REMOTE;
-            if ( user == null ) {
-                user = "guest";
-                password = "guest";
-            } else if(password == null)
-                password = "";
-            // try to figure out server address
-            int p = 0;
-            if ( ( p = c.indexOf( "/db", 2 ) ) > -1 ) {
-                address = "http://" + c.substring( 2, p );
-                c = c.substring( p );
-            }
-            else
-                throw new XMLDBException( ErrorCodes.INVALID_DATABASE,
-                    "malformed url: " + address );
-            if ( rpcClient == null )
-                try {
-                    rpcClient = new XmlRpcClient( address );
-                } catch ( MalformedURLException e ) {
-                    throw new XMLDBException( ErrorCodes.INVALID_DATABASE,
-                        "malformed url: " + address,
-                        e );
-                }
-            rpcClient.setBasicAuthentication( user, password );
-            return readCollection( c, rpcClient, address );
+            return getRemoteCollection(user, password, address, c);
         }
         else
             throw new XMLDBException( ErrorCodes.INVALID_DATABASE,
                 "malformed url: " + address );
+    }
+    
+    /**
+     * @param user
+     * @param password
+     * @param address
+     * @param c
+     * @return
+     * @throws XMLDBException
+     */
+    private Collection getRemoteCollection(String user, String password, String address, String c) throws XMLDBException {
+        // use remote database via XML-RPC
+        mode = REMOTE;
+        if ( user == null ) {
+            user = "guest";
+            password = "guest";
+        } else if(password == null)
+            password = "";
+        // try to figure out server address
+        int p = 0;
+        if ( ( p = c.indexOf( "/db", 2 ) ) > -1 ) {
+            address = "http://" + c.substring( 2, p );
+            c = c.substring( p );
+        }
+        else
+            throw new XMLDBException( ErrorCodes.INVALID_DATABASE,
+                "malformed url: " + address );
+        XmlRpcClient rpcClient = getRpcClient(user, password, address);
+        return readCollection( c, rpcClient, address );
+    }
+
+    /**
+     * @param user
+     * @param c
+     * @return
+     * @throws XMLDBException
+     */
+    private Collection getLocalCollection(String user, String password, String c) throws XMLDBException {
+        Collection current;
+        mode = LOCAL;
+        // use local database instance
+        if ( !BrokerPool.isConfigured( dbName ) ) {
+            if ( autoCreate )
+                configure();
+            else
+                throw new XMLDBException( ErrorCodes.COLLECTION_CLOSED,
+                    "local database server not running" );
+        }
+        BrokerPool pool;
+        try {
+            pool = BrokerPool.getInstance( dbName );
+        } catch ( EXistException e ) {
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
+                "db not correctly initialized",
+                e );
+        }
+        User u = getUser(user, password, pool);
+        try {
+            current = new LocalCollection( u, pool, c.substring( 2 ) );
+            return ( current != null )
+                 ? current : null;
+        } catch ( XMLDBException e ) {
+            switch ( e.errorCode ) {
+                case ErrorCodes.NO_SUCH_RESOURCE:
+                case ErrorCodes.NO_SUCH_COLLECTION:
+                case ErrorCodes.INVALID_COLLECTION:
+                case ErrorCodes.INVALID_RESOURCE:
+                    return null;
+                default:
+                    throw e;
+            }
+        }
+    }
+
+    /**
+     * @param user
+     * @param pool
+     * @return the User object corresponding to the username in <code>user</code>
+     * @throws XMLDBException
+     */
+    private User getUser(String user, String password, BrokerPool pool) throws XMLDBException {
+        User u = null;
+        if ( user == null ) {
+            user = "guest";
+            password = "guest";
+        }
+        if ( user != null ) {
+            u = pool.getSecurityManager().getUser( user );
+            if ( u == null ) {
+            	throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
+                    "user " + user + " does not exist" );
+            }
+            if ( !u.validate( password ) ) {
+            	throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
+                    "invalid password" );
+            }
+        }
+        return u;
+    }
+
+    /**
+     * RpcClients are cached by address+user. The password is transparently changed.
+     * @param user
+     * @param password
+     * @param address
+     * @throws XMLDBException
+     */
+    private XmlRpcClient getRpcClient(String user, String password, String address) throws XMLDBException {
+        String key = user + "@" + address;
+        XmlRpcClient client = (XmlRpcClient) rpcClients.get(key);
+        if ( client == null ) {
+            try {
+                client = new XmlRpcClient( address );
+            } catch ( MalformedURLException e ) {
+                throw new XMLDBException( ErrorCodes.INVALID_DATABASE, "malformed url: " + address, e );
+            }
+            if (client != null)
+                rpcClients.put(key, client);
+        }
+        if (client != null)
+            client.setBasicAuthentication(user, password);
+        return client;
     }
 
     public String getConformanceLevel() throws XMLDBException {
