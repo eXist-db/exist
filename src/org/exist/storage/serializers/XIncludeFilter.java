@@ -193,7 +193,6 @@ public class XIncludeFilter implements Receiver {
 			if (p < 0 && document != null)
 				docName = document.getCollection().getName() + '/' + docName;
 			// retrieve the document
-			LOG.debug("loading " + docName);
 			DocumentImpl doc = null;
 			try {
 				doc = (DocumentImpl) serializer.broker.getDocument(docName);
@@ -217,6 +216,7 @@ public class XIncludeFilter implements Receiver {
 				// process the xpointer
 				try {
 					XQueryContext context = new XQueryContext(serializer.broker);
+                    LOG.debug(docName);
 					if(doc != null)
 						context.setStaticallyKnownDocuments(new String[] { doc.getName() } );
 					else

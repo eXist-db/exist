@@ -1586,10 +1586,10 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 	
-	public String getNodeValue(final NodeProxy proxy) {
+	public String getNodeValue(final NodeProxy proxy, final boolean addWhitespace) {
 		return (String) new DOMTransaction(this, domDb, Lock.READ_LOCK) {
 			public Object start() {
-				return domDb.getNodeValue(proxy);
+				return domDb.getNodeValue(proxy, addWhitespace);
 			}
 		}
 		.run();
@@ -2455,7 +2455,7 @@ public class NativeBroker extends DBBroker {
 			try {
 				domDb.getLock().acquire(Lock.READ_LOCK);
 				domDb.setOwnerObject(this);
-				content = domDb.getNodeValue(p);
+				content = domDb.getNodeValue(p, false);
 			} catch (LockException e) {
 				LOG.warn("failed to acquire read lock on dom.dbx");
 				continue;

@@ -1333,7 +1333,7 @@ public class DOMFile extends BTree implements Lockable {
      * @param proxy
      * @return
      */
-    public String getNodeValue(NodeProxy proxy) {
+    public String getNodeValue(NodeProxy proxy, boolean addWhitespace) {
         try {
             long address = proxy.getInternalAddress();
             if (address < 0) address = findValue(this, proxy);
@@ -1345,7 +1345,7 @@ public class DOMFile extends BTree implements Lockable {
                 throw new RuntimeException("Node data could not be found for node " + proxy.gid);
             }
             final ByteArrayOutputStream os = new ByteArrayOutputStream();
-            getNodeValue(os, rec, true);
+            getNodeValue(os, rec, true, addWhitespace);
             final byte[] data = os.toByteArray();
             String value;
             try {
@@ -1363,7 +1363,7 @@ public class DOMFile extends BTree implements Lockable {
     }
 
     private void getNodeValue(ByteArrayOutputStream os, RecordPos rec,
-            boolean firstCall) {
+            boolean firstCall, boolean addWhitespace) {
     	boolean foundNext = false;
     	do {
 	        if (rec.offset > rec.page.getPageHeader().getDataLength()) {
@@ -1403,11 +1403,12 @@ public class DOMFile extends BTree implements Lockable {
 	        final byte attrSizeType = (byte) ((data[readOffset] & 0x0C) >> 0x2);
 	        final short attributes = (short) Signatures.read(attrSizeType,
 	        		data, readOffset + 5);
+            final boolean extraWhitespace = addWhitespace && children - attributes > 1;
 	        rec.offset += len + 2;
 	        for (int i = 0; i < children; i++) {
-	        	getNodeValue(os, rec, false);
-//	        	if (children - attributes > 1)
-//	        		os.write((byte) ' ');
+	        	getNodeValue(os, rec, false, addWhitespace);
+	        	if (extraWhitespace)
+	        		os.write((byte) ' ');
 	        }
 	        return;
         case Node.TEXT_NODE:
