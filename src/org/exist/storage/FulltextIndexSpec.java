@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 
@@ -40,6 +41,15 @@ import org.w3c.dom.NodeList;
  */
 public class FulltextIndexSpec {
 	
+    private static final String PATH_ATTRIB = "path";
+    private static final String PRESERVE_CONTENT_ELEMENT = "preserveContent";
+    private static final String EXCLUDE_INTERFACE = "exclude";
+    private static final String INCLUDE_ELEMENT = "include";
+    private static final String INDEX_DEPTH_ATTRIB = "index-depth";
+    private static final String ALPHANUM_ATTRIB = "alphanum";
+    private static final String ATTRIBUTES_ATTRIB = "attributes";
+    private static final String DEFAULT_ATTRIB = "default";
+    
     private final static Logger LOG = Logger.getLogger(FulltextIndexSpec.class);
     
     protected ArrayList includePath;
@@ -67,18 +77,18 @@ public class FulltextIndexSpec {
 
     public FulltextIndexSpec(Map namespaces, Element node) {
         this(true);
-        String def = node.getAttribute("default");
+        String def = node.getAttribute(DEFAULT_ATTRIB);
         if(def != null && def.length() > 0)
             includeByDefault = def.equals("all");
-        String indexAttributes = node.getAttribute("attributes");
+        String indexAttributes = node.getAttribute(ATTRIBUTES_ATTRIB);
 		if (indexAttributes != null && indexAttributes.length() > 0)
 			setIncludeAttributes(indexAttributes.equals("true"));
 
-		String indexAlphaNum = node.getAttribute("alphanum");
+		String indexAlphaNum = node.getAttribute(ALPHANUM_ATTRIB);
 		if (indexAlphaNum != null && indexAlphaNum.length() > 0)
 			setIncludeAlphaNum(indexAlphaNum.equals("true"));
 
-		String indexDepth = node.getAttribute("index-depth");
+		String indexDepth = node.getAttribute(INDEX_DEPTH_ATTRIB);
 		if (indexDepth != null && indexDepth.length() > 0)
 			try {
 				int depth = Integer.parseInt(indexDepth);
@@ -86,25 +96,22 @@ public class FulltextIndexSpec {
 			} catch (NumberFormatException e) {
 			}
 
-		NodeList include = node.getElementsByTagName("include");
+		// check paths to include/exclude
+		NodeList children = node.getChildNodes();
 		String ps;
-		for (int j = 0; j < include.getLength(); j++) {
-			ps = ((Element) include.item(j)).getAttribute("path");
-			addInclude(namespaces, ps);
-		}
-		
-		NodeList exclude = node.getElementsByTagName("exclude");
-
-		for (int j = 0; j < exclude.getLength(); j++) {
-			ps = ((Element) exclude.item(j)).getAttribute("path");
-			addExclude(namespaces, ps);
-		}
-
-		NodeList preserveContent = node.getElementsByTagName("preserveContent");
-
-		for (int j = 0; j < preserveContent.getLength(); j++) {
-			ps = ((Element) preserveContent.item(j)).getAttribute("path");
-			addpreserveContent(namespaces, ps);
+		Node next;
+		for(int j = 0; j < children.getLength(); j++) {
+		    next = children.item(j);
+		    if(INCLUDE_ELEMENT.equals(next.getLocalName())) {
+		        ps = ((Element) next).getAttribute(PATH_ATTRIB);
+		        addInclude(namespaces, ps);
+		    } else if(EXCLUDE_INTERFACE.equals(next.getLocalName())) {
+		        ps = ((Element) next).getAttribute(PATH_ATTRIB);
+		        addExclude(namespaces, ps);
+		    } else if(PRESERVE_CONTENT_ELEMENT.equals(next.getLocalName())) {
+		        ps = ((Element) next).getAttribute(PATH_ATTRIB);
+		        addpreserveContent(namespaces, ps);
+		    }
 		}
     }
     

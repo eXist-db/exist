@@ -495,12 +495,6 @@ public class NativeValueIndex {
     
     public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, Indexable value) 
     throws TerminatedException {
-    	try {
-			LOG.debug("Searching " + ((AtomicValue)value).getStringValue());
-		} catch (XPathException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
         int idxOp =  checkRelationOp(relation);
         NodeSet result = new ExtArrayNodeSet();
         SearchCallback callback = new SearchCallback(docs, contextSet, result);

@@ -167,4 +167,12 @@ public class RemoteIndexQueryService implements IndexQueryService {
 	public void setProperty(String name, String value) throws XMLDBException {
 	}
 
+
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.IndexQueryService#configureCollection(java.lang.String)
+	 */
+	public void configureCollection(String configData) throws XMLDBException {
+		throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED, "Method is not yet implemented");		
+	}
+
 }

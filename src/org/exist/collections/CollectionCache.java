@@ -1,5 +1,6 @@
 package org.exist.collections;
 
+import org.exist.storage.BrokerPool;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRDCache;
 import org.exist.util.Lock;
@@ -16,10 +17,12 @@ import org.exist.util.hashtable.Object2LongHashMap;
 public class CollectionCache extends LRDCache {
 
 	private Object2LongHashMap names;
-
-	public CollectionCache(int blockBuffers) {
+	private BrokerPool pool;
+	
+	public CollectionCache(BrokerPool pool, int blockBuffers) {
 		super(blockBuffers);
-		names = new Object2LongHashMap(blockBuffers);
+		this.names = new Object2LongHashMap(blockBuffers);
+		this.pool = pool;
 	}
 	
 	public void add(Collection collection) {
@@ -76,6 +79,7 @@ public class CollectionCache extends LRDCache {
 		}
 		old = (Collection)items[bucket];
 		if (old != null) {
+			pool.getConfigurationManager().invalidate(old.getName());
 			map.remove(old.getKey());
 			names.remove(old.getName());
 			old.sync();
@@ -86,7 +90,9 @@ public class CollectionCache extends LRDCache {
 	}
 
     public void remove(Cacheable item) {
+    	final Collection col = (Collection) item;
         super.remove(item);
-        names.remove(((Collection)item).getName());
+        names.remove(col.getName());
+        pool.getConfigurationManager().invalidate(col.getName());
     }
 }

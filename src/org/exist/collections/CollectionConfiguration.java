@@ -35,7 +35,9 @@ import org.w3c.dom.NodeList;
 
 public class CollectionConfiguration {
 
-    private final static String NAMESPACE = "http://exist-db.org/collection-config/1.0";
+	public final static String COLLECTION_CONFIG_FILE = "collection.xconf";
+	
+    public final static String NAMESPACE = "http://exist-db.org/collection-config/1.0";
     
 	private final static String ROOT_ELEMENT = "collection";
 	private final static String TRIGGERS_ELEMENT = "triggers";
@@ -51,14 +53,30 @@ public class CollectionConfiguration {
 	
 	private IndexSpec indexSpec = null;
 
-    public final static String COLLECTION_CONFIG_FILE = "collection.xconf";
+	private Collection collection;
 	
-	public CollectionConfiguration(DBBroker broker, Collection parent, Document doc) 
+    public CollectionConfiguration(Collection collection) {
+    	this.collection = collection;
+    }
+    
+	public CollectionConfiguration(DBBroker broker, Collection collection, Document doc) 
     throws CollectionConfigurationException {
-		Element root = doc.getDocumentElement();
+		this.collection = collection;
+		read(broker, doc);
+	}
+	
+	/**
+     * @param broker
+     * @param collection
+     * @param doc
+     * @throws CollectionConfigurationException
+     */
+    protected void read(DBBroker broker, Document doc) throws CollectionConfigurationException {
+        Element root = doc.getDocumentElement();
 		if(!(NAMESPACE.equals(root.getNamespaceURI()) &&
 			ROOT_ELEMENT.equals(root.getLocalName())))
-			throw new CollectionConfigurationException("Wrong document root for collection.xmap");
+			throw new CollectionConfigurationException("Wrong document root for collection configuration. " +
+					"The root element should be " + ROOT_ELEMENT + " in namespace " + NAMESPACE);
 		NodeList childNodes = root.getChildNodes();
 		Node node;
 		for(int i = 0; i < childNodes.getLength(); i++) {
@@ -69,24 +87,28 @@ public class CollectionConfiguration {
 					for(int j = 0; j < triggers.getLength(); j++) {
 						node = triggers.item(j);
 						if(node.getNodeType() == Node.ELEMENT_NODE)
-							createTrigger(broker, parent, (Element)node);
+							createTrigger(broker, (Element)node);
 					}
 			    } else if(INDEX_ELEMENT.equals(node.getLocalName())) {
-			    	if(indexSpec != null)
-			    		throw new CollectionConfigurationException("More than one <index> element found");
 			        Element elem = (Element) node;
-			        IndexSpec spec;
                     try {
-                        indexSpec = new IndexSpec(elem);
+                        if(indexSpec == null)
+                            indexSpec = new IndexSpec(elem);
+                        else
+                            indexSpec.read(elem);
                     } catch (DatabaseConfigurationException e) {
                         throw new CollectionConfigurationException(e.getMessage(), e);
                     }
 			    }
 			}
 		}
-	}
-	
-	public IndexSpec getIndexConfiguration() {
+    }
+
+    public Collection getCollection() {
+    	return collection;
+    }
+    
+    public IndexSpec getIndexConfiguration() {
         return indexSpec;
     }
 	
@@ -94,7 +116,7 @@ public class CollectionConfiguration {
 		return triggers[eventType];
 	}
 	
-	private void createTrigger(DBBroker broker, Collection parent, Element node) 
+	private void createTrigger(DBBroker broker, Element node) 
     throws CollectionConfigurationException {
 		String eventAttr = node.getAttribute(EVENT_ATTRIBUTE);
 		if(eventAttr == null)
@@ -109,17 +131,17 @@ public class CollectionConfiguration {
 			event = tok.nextToken();
 			System.out.println("Registering trigger " + classAttr + " for event " + event);
 			if(event.equalsIgnoreCase("store")) {
-				triggers[Trigger.STORE_DOCUMENT_EVENT] = instantiate(broker, parent, node, classAttr);
+				triggers[Trigger.STORE_DOCUMENT_EVENT] = instantiate(broker, node, classAttr);
 			} else if(event.equalsIgnoreCase("update")) {
-				triggers[Trigger.UPDATE_DOCUMENT_EVENT] = instantiate(broker, parent, node, classAttr);
+				triggers[Trigger.UPDATE_DOCUMENT_EVENT] = instantiate(broker, node, classAttr);
 			} else if(event.equalsIgnoreCase("remove")) {
-				triggers[Trigger.REMOVE_DOCUMENT_EVENT] = instantiate(broker, parent, node, classAttr);
+				triggers[Trigger.REMOVE_DOCUMENT_EVENT] = instantiate(broker, node, classAttr);
 			} else
 				throw new CollectionConfigurationException("unknown event type '" + event + "'");
 		}
 	}
 	
-	private Trigger instantiate(DBBroker broker, Collection parent, Element node, String classname) 
+	private Trigger instantiate(DBBroker broker, Element node, String classname) 
     throws CollectionConfigurationException {
 		try {
 			Class clazz = Class.forName(classname);
@@ -145,7 +167,7 @@ public class CollectionConfiguration {
 					parameters.put(name, value);
 				}
 			}
-			trigger.configure(broker, parent, parameters);
+			trigger.configure(broker, collection, parameters);
 			return trigger;
 		} catch (ClassNotFoundException e) {
 			throw new CollectionConfigurationException(e.getMessage(), e);

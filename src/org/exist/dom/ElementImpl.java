@@ -669,12 +669,12 @@ public class ElementImpl
     public NamedNodeMap getAttributes() {
         NamedNodeMapImpl map = new NamedNodeMapImpl();
         long start = firstChildID();
-        if (getAttributesCount() == 0)
-            return map;
-        for (long i = start; i < start + children; i++) {
-            Node child = ownerDocument.getNode(i);
-            if (child != null && child.getNodeType() == Node.ATTRIBUTE_NODE)
-                map.setNamedItem(child);
+        if (getAttributesCount() > 0) {
+	        for (long i = start; i < start + children; i++) {
+	            Node child = ownerDocument.getNode(i);
+	            if (child != null && child.getNodeType() == Node.ATTRIBUTE_NODE)
+	                map.setNamedItem(child);
+	        }
         }
         if(declaresNamespacePrefixes()) {
             for(Iterator i = namespaceMappings.entrySet().iterator(); i.hasNext(); ) {

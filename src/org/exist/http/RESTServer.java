@@ -227,6 +227,7 @@ public class RESTServer {
 		Properties outputProperties = new Properties(defaultProperties);
 		String query = null;
 		Response response = null;
+		LOG.debug(content);
 		try {
 			InputSource src = new InputSource(new StringReader(content));
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory

@@ -30,6 +30,7 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.CollectionCache;
+import org.exist.collections.CollectionConfigurationManager;
 import org.exist.security.User;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.sync.SyncDaemon;
@@ -207,6 +208,8 @@ public class BrokerPool {
 	 */
 	private org.exist.security.SecurityManager secManager = null;
 	
+	private CollectionConfigurationManager collectionConfig = null;
+	
 	/**
 	 * SyncDaemon is a daemon thread which periodically triggers a cache sync.
 	 */
@@ -275,7 +278,7 @@ public class BrokerPool {
 		conf = config;
 		xqueryCache = new XQueryPool();
 		monitor = new XQueryMonitor();
-		collectionsCache = new CollectionCache(COLLECTION_BUFFER_SIZE);
+		collectionsCache = new CollectionCache(this, COLLECTION_BUFFER_SIZE);
 		xmlReaderPool = new XMLReaderPool(new XMLReaderObjectFactory(this), 5, 0);
 		initialize();
 	}
@@ -413,6 +416,8 @@ public class BrokerPool {
 		broker.cleanUpAll();
 		secManager = new org.exist.security.SecurityManager(this, broker);
 		initializing = false;
+		
+		collectionConfig = new CollectionConfigurationManager(broker);
 		
 		// now create remaining brokers
 		for (int i = 1; i < min; i++)
@@ -610,6 +615,10 @@ public class BrokerPool {
 	
 	public XQueryMonitor getXQueryMonitor() {
 		return monitor;
+	}
+	
+	public CollectionConfigurationManager getConfigurationManager() {
+	    return collectionConfig;
 	}
 	
 	/**
