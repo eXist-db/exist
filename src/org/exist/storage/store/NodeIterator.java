@@ -113,6 +113,7 @@ public final class NodeIterator implements Iterator {
 			}
 			db.setOwnerObject(lockKey);
 			if(gotoNextPosition()) {
+				long backLink = 0;
 			    boolean skipped = false;
 			    do {
 					DOMFile.DOMFilePageHeader ph = p.getPageHeader();
@@ -149,7 +150,8 @@ public final class NodeIterator implements Iterator {
 					short l = ByteConversion.byteToShort(p.data, offset);
 					offset += 2;
 					if(ItemId.isRelocated(lastTID)) {
-						// found a relocated node. Skip the next 8 bytes
+						// found a relocated node. Read the original address
+						backLink = ByteConversion.byteToLong(p.data, offset);
 						offset += 8;
 					}
 					//	overflow page? load the overflow value
@@ -181,9 +183,13 @@ public final class NodeIterator implements Iterator {
 					    Thread.dumpStack();
 					    return null;
 					}
-					nextNode.setInternalAddress(
-						StorageAddress.createPointer((int) page, ItemId.getId(lastTID))
-					);
+					if(ItemId.isRelocated(lastTID)) {
+						nextNode.setInternalAddress(backLink);
+					} else {
+						nextNode.setInternalAddress(
+							StorageAddress.createPointer((int) page, ItemId.getId(lastTID))
+						);
+					}
 					nextNode.setOwnerDocument(doc);
 //					System.out.println("Next: " + nextNode.getNodeName() + " [" + page + "]");
 			    } while(nextNode == null);
