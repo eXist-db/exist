@@ -241,6 +241,10 @@ public class XMLUtil {
 		return new Range(start, start + order - 1);
 	}
 
+	public final static long getParentId( NodeProxy node ) {
+		return getParentId(node.doc, node.gid);
+	}
+
 	public final static long getParentId(
 		final DocumentImpl doc,
 		final long gid) {
@@ -250,7 +254,7 @@ public class XMLUtil {
 		}
 		return getParentId(doc, gid, level);
 	}
-
+	
 	public final static long getParentId(
 		final DocumentImpl doc,
 		final long gid,
