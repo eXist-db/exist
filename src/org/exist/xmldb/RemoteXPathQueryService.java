@@ -13,6 +13,7 @@ import org.exist.xmlrpc.RpcAPI;
 import org.exist.xquery.XPathException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
+import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
@@ -132,7 +133,13 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
     }
     
     public ResourceSet queryResource( String resource, String query ) throws XMLDBException {
-        return query( query );
+    	Resource res = collection.getResource(resource);
+    	if(res == null)
+    		throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource " + resource + " not found");
+    	if(!"XMLResource".equals(res.getResourceType()))
+    		throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource " + resource + 
+    				" is not an XML resource");
+        return query( (XMLResource)res, query );
     }
 
     public String getVersion() throws XMLDBException {
