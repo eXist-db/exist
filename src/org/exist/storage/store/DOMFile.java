@@ -206,7 +206,7 @@ public class DOMFile extends BTree implements Lockable {
 //            	"; oldLen = " + page.len + "; valueLen = " + valueLen);
             page = newPage;
             setCurrentPage(newPage);
-            SanityCheck.ASSERT(owner != myOwner, "Owner changed during transaction!!!!!!!!!!!!!!!!!");
+            SanityCheck.ASSERT(owner == myOwner, "Owner changed during transaction!!!!!!!!!!!!!!!!!");
         }
         // save tuple identifier
         final DOMFilePageHeader ph = page.getPageHeader();
