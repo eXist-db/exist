@@ -100,10 +100,13 @@ import org.w3c.dom.NodeList;
  */
 public class NativeBroker extends DBBroker {
 
-	// default buffer size setting
+	private static final String DATABASE_IS_READ_ONLY = "database is read-only";
+	private static final String ROOT_COLLECTION = "/db";
+	private static final String EXCEPTION_DURING_REINDEX = "exception during reindex";
+	/** default buffer size setting */
 	protected final static int BUFFERS = 256;
 
-	// check available memory after storing MEM_LIMIT_CHECK nodes
+	/** check available memory after storing MEM_LIMIT_CHECK nodes */
 	protected static int MEM_LIMIT_CHECK = 10000;
 
 	protected CollectionStore collectionsDb = null;
@@ -237,7 +240,7 @@ public class NativeBroker extends DBBroker {
 			xmlSerializer = new NativeSerializer(this, config);
 			elementIndex = new NativeElementIndex(this, config, elementsDb);
 			user = new User("admin", null, "dba");
-			getOrCreateCollection("/db");
+			getOrCreateCollection(ROOT_COLLECTION);
 		} catch (Exception e) {
 			LOG.debug(e);
 			e.printStackTrace();
@@ -375,11 +378,11 @@ public class NativeBroker extends DBBroker {
 		int docId;
 		int len;
 		short collectionId;
-		long gid, address;
+		long gid; // , address;
 		VariableByteInputStream is;
 		ElementValue ref;
-		byte[] data;
-		InputStream dis;
+		// byte[] data;
+		InputStream dis = null;
 		short sym, nsSym;
 		Collection collection;
 		final short nodeType =
@@ -395,20 +398,23 @@ public class NativeBroker extends DBBroker {
 				nsSym = getSymbols().getNSSymbol(qname.getNamespaceURI());
 				ref = new ElementValue((byte) type, collectionId, sym, nsSym);
 			}
-
+			boolean exceptionOcurred = false;
 			try {
 				lock.acquire(Lock.READ_LOCK);
 				dis = elementsDb.getAsStream(ref);
 			} catch (LockException e) {
 				LOG.warn("failed to acquire lock", e);
-				dis = null;
+				// jmv: dis = null;
+				exceptionOcurred = true;
 			} catch (IOException e) {
 				LOG.warn("io exception while reading elements for " + qname, e);
-				dis = null;
+				// jmv: dis = null;
+				exceptionOcurred = true;
 			} finally {
 				lock.release();
 			}
-			if (dis == null)
+			// jmv: if (dis == null)
+			if (exceptionOcurred)
 				continue;
 			is = new VariableByteInputStream(dis);
 			try {
@@ -470,7 +476,7 @@ public class NativeBroker extends DBBroker {
 	 */
 	public DocumentSet getAllDocuments(DocumentSet docs) {
 		long start = System.currentTimeMillis();
-		Collection root = getCollection("/db");
+		Collection root = getCollection(ROOT_COLLECTION);
 		root.allDocs(this, docs, true);
 		LOG.debug(
 			"loading "
@@ -514,8 +520,8 @@ public class NativeBroker extends DBBroker {
 		if (name.length() > 0 && name.charAt(0) != '/')
 			name = "/" + name;
 
-		if (!name.startsWith("/db"))
-			name = "/db" + name;
+		if (!name.startsWith(ROOT_COLLECTION))
+			name = ROOT_COLLECTION + name;
 
 		if (name.endsWith("/") && name.length() > 1)
 			name = name.substring(0, name.length() - 1);
@@ -644,8 +650,8 @@ public class NativeBroker extends DBBroker {
 			return docs;
 		if (collection.charAt(0) != '/')
 			collection = "/" + collection;
-		if (!collection.startsWith("/db"))
-			collection = "/db" + collection;
+		if (!collection.startsWith(ROOT_COLLECTION))
+			collection = ROOT_COLLECTION + collection;
 		Collection root = getCollection(collection);
 		if (root == null) {
 			LOG.debug("collection " + collection + " not found");
@@ -914,9 +920,9 @@ public class NativeBroker extends DBBroker {
 							new NodeRef(doc.getDocId(), gid),
 							node.getInternalAddress());
 					} catch (BTreeException e) {
-						LOG.warn("exception during reindex", e);
+						LOG.warn(EXCEPTION_DURING_REINDEX, e);
 					} catch (IOException e) {
-						LOG.warn("exception during reindex", e);
+						LOG.warn(EXCEPTION_DURING_REINDEX, e);
 					}
 					return null;
 				}
@@ -1007,8 +1013,8 @@ public class NativeBroker extends DBBroker {
 		final int depth = idx == null ? defaultIndexDepth : idx.getIndexDepth();
 		final int level = doc.getTreeLevel(gid);
 		if (level >= doc.reindexRequired()) {
-			NodeIndexListener listener;
-			if ((listener = doc.getIndexListener()) != null)
+			NodeIndexListener listener = doc.getIndexListener();
+			// jmv if ((listener = doc.getIndexListener()) != null)
 				listener.nodeChanged(node);
 			if (nodeType == Node.ELEMENT_NODE && level <= depth) {
 				new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
@@ -1018,9 +1024,9 @@ public class NativeBroker extends DBBroker {
 								new NodeRef(doc.getDocId(), gid),
 								node.getInternalAddress());
 						} catch (BTreeException e) {
-							LOG.warn("exception during reindex", e);
+							LOG.warn(EXCEPTION_DURING_REINDEX, e);
 						} catch (IOException e) {
-							LOG.warn("exception during reindex", e);
+							LOG.warn(EXCEPTION_DURING_REINDEX, e);
 						}
 						return null;
 					}
@@ -1093,8 +1099,8 @@ public class NativeBroker extends DBBroker {
 				throw new IllegalStateException("wrong node id");
 			}
 			final long lastChildId = firstChildId + node.getChildCount();
-			long p;
-			Value value;
+			// ong p;
+			// Value value;
 			NodeImpl child;
 			for (long gid = firstChildId; gid < lastChildId; gid++) {
 				child = (NodeImpl) iterator.next();
@@ -1130,7 +1136,7 @@ public class NativeBroker extends DBBroker {
 		int relation,
 		String expr) {
 		//		long start = System.currentTimeMillis();
-		NodeSet temp;
+		// NodeSet temp;
 		int truncation = Constants.TRUNC_NONE;
 		if (expr.length() > 0 && expr.charAt(0) == '%') {
 			expr = expr.substring(1);
@@ -1172,8 +1178,8 @@ public class NativeBroker extends DBBroker {
 		if (name.length() > 0 && name.charAt(0) != '/')
 			name = "/" + name;
 
-		if (!name.startsWith("/db"))
-			name = "/db" + name;
+		if (!name.startsWith(ROOT_COLLECTION))
+			name = ROOT_COLLECTION + name;
 
 		if (name.endsWith("/") && name.length() > 1)
 			name = name.substring(0, name.length() - 1);
@@ -1184,12 +1190,12 @@ public class NativeBroker extends DBBroker {
 			lock.acquire();
 			StringTokenizer tok = new StringTokenizer(name, "/");
 			String temp = tok.nextToken();
-			String path = "/db";
+			String path = ROOT_COLLECTION;
 			Collection sub;
-			current = getCollection("/db");
+			current = getCollection(ROOT_COLLECTION);
 			if (current == null) {
 				LOG.debug("creating root collection /db");
-				current = new Collection(collectionsDb, "/db");
+				current = new Collection(collectionsDb, ROOT_COLLECTION);
 				current.getPermissions().setPermissions(0777);
 				current.getPermissions().setOwner(user);
 				current.getPermissions().setGroup(user.getPrimaryGroup());
@@ -1312,10 +1318,10 @@ public class NativeBroker extends DBBroker {
 
 	public boolean removeCollection(String name) throws PermissionDeniedException {
 		if (readOnly)
-			throw new PermissionDeniedException("database is read-only");
+			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
 		try {
-			if (!name.startsWith("/db"))
-				name = "/db" + name;
+			if (!name.startsWith(ROOT_COLLECTION))
+				name = ROOT_COLLECTION + name;
 
 			Collection collection = getCollection(name);
 			if (collection == null) {
@@ -1339,7 +1345,7 @@ public class NativeBroker extends DBBroker {
 				lock.acquire(Lock.WRITE_LOCK);
 				
 				// if this is not the root collection remove it completely
-				if (name.equals("/db"))
+				if (name.equals(ROOT_COLLECTION))
 					saveCollection(collection);
 				else {
 					Value key;
@@ -1350,7 +1356,7 @@ public class NativeBroker extends DBBroker {
 					}	
 					collectionsDb.remove(key);
 				}
-				if (!name.equals("/db"))
+				if (!name.equals(ROOT_COLLECTION))
 					collectionsDb.getCollectionCache().remove(collection);
 				Collection parent = collection.getParent(this);
 				if (parent != null) {
@@ -1435,14 +1441,14 @@ public class NativeBroker extends DBBroker {
 		} catch (BTreeException bte) {
 			LOG.warn(bte);
 		} catch (ReadOnlyException e) {
-			LOG.warn("database is read-only");
+			LOG.warn(DATABASE_IS_READ_ONLY);
 		}
 		return false;
 	}
 
 	public void removeDocument(String docName) throws PermissionDeniedException {
 		if (readOnly)
-			throw new PermissionDeniedException("database is read-only");
+			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
 		try {
 			if (!docName.startsWith("/"))
 				docName = '/' + docName;
@@ -1451,7 +1457,7 @@ public class NativeBroker extends DBBroker {
 				LOG.debug("document " + docName + " not found");
 				return;
 			}
-			LOG.info("removing document " + doc.getDocId() + "...");
+			LOG.info("removing document " + doc.getDocId() + " ...");
 
 			// drop element-index
 			short collectionId = doc.getCollection().getId();
@@ -1466,7 +1472,7 @@ public class NativeBroker extends DBBroker {
 				Value key;
 				Value value;
 				byte[] data;
-				byte[] ndata;
+				// byte[] ndata;
 				VariableByteInputStream is;
 				VariableByteOutputStream os;
 				int len;
@@ -1566,7 +1572,7 @@ public class NativeBroker extends DBBroker {
 			bte.printStackTrace();
 			LOG.warn(bte);
 		} catch (ReadOnlyException e) {
-			LOG.warn("database is read-only");
+			LOG.warn(DATABASE_IS_READ_ONLY);
 		}
 	}
 
@@ -1668,7 +1674,7 @@ public class NativeBroker extends DBBroker {
 				return;
 			}
 			collection.setAddress(address);
-			if (!name.equals("/db")) {
+			if (!name.equals(ROOT_COLLECTION)) {
 				Collection parent = collection.getParent(this);
 				parent.update(collection);
 				saveCollection(parent);
@@ -1677,7 +1683,7 @@ public class NativeBroker extends DBBroker {
 		} catch (IOException ioe) {
 			LOG.debug(ioe);
 		} catch (ReadOnlyException e) {
-			LOG.warn("database is read-only");
+			LOG.warn(DATABASE_IS_READ_ONLY);
 		} catch (LockException e) {
 			LOG.warn("failed to acquire lock on collections.dbx");
 		} finally {
@@ -1687,7 +1693,7 @@ public class NativeBroker extends DBBroker {
 
 	public void saveCollection(Collection collection) throws PermissionDeniedException {
 		if (readOnly)
-			throw new PermissionDeniedException("database is read-only");
+			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
 		Lock lock = null;
 		try {
 			lock = collectionsDb.getLock();
@@ -1713,7 +1719,7 @@ public class NativeBroker extends DBBroker {
 					return;
 				}
 				collection.setAddress(addr);
-				if (!name.equals("/db")) {
+				if (!name.equals(ROOT_COLLECTION)) {
 					Collection parent = collection.getParent(this);
 					parent.update(collection);
 					saveCollection(parent);
@@ -1724,7 +1730,7 @@ public class NativeBroker extends DBBroker {
 				LOG.debug(ioe);
 			}
 		} catch (ReadOnlyException e) {
-			LOG.warn("database is read-only");
+			LOG.warn(DATABASE_IS_READ_ONLY);
 		} catch (LockException e) {
 			LOG.warn("could not acquire lock for collections store", e);
 		} finally {
@@ -1751,13 +1757,13 @@ public class NativeBroker extends DBBroker {
 		ArraySet resultNodeSet = new ArraySet(context.getLength());
 		NodeProxy p;
 		String content;
-		StringBuffer buf = new StringBuffer(128);
-		byte[] data;
-		long filePos;
-		int offset;
-		NodeRef nodeRef;
+		// StringBuffer buf = new StringBuffer(128);
+		// byte[] data;
+		// long filePos;
+		// int offset;
+		// NodeRef nodeRef;
 		String cmp;
-		Iterator domIterator = null;
+		// Iterator domIterator = null;
 		Pattern regexp = null;
 		if (relation == Constants.REGEXP)
 			try {
@@ -1863,7 +1869,7 @@ public class NativeBroker extends DBBroker {
 		}
 		final short nodeType = node.getNodeType();
 		final String nodeName = node.getNodeName();
-		final String localName = node.getLocalName();
+		// final String localName = node.getLocalName();
 		final int depth = idx == null ? defaultIndexDepth : idx.getIndexDepth();
 		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
 			public Object start() throws ReadOnlyException {
@@ -1971,7 +1977,7 @@ public class NativeBroker extends DBBroker {
 	public void removeBinaryResource(final BinaryDocument blob)
 		throws PermissionDeniedException {
 		if (readOnly)
-			throw new PermissionDeniedException("database is read-only");
+			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
 		LOG.info("removing binary resource " + blob.getDocId() + "...");
 		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
 			public Object start() throws ReadOnlyException {
