@@ -33,6 +33,7 @@ import java.util.Properties;
 import javax.swing.JFrame;
 import javax.xml.transform.OutputKeys;
 
+import org.exist.collections.CollectionConfiguration;
 import org.exist.security.Permission;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.SAXSerializer;
@@ -47,7 +48,7 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 import org.exist.xmldb.EXistResource;
-import org.exist.xmldb.CollectionImpl; 
+import org.exist.xmldb.CollectionImpl;
 
 public class Backup {
 
@@ -111,6 +112,20 @@ public class Backup {
 
 		// get resources and permissions
 		String[] resources = current.listResources();
+		
+		// if the collection has a configuration resource, it needs to be stored
+		// first. Otherwise, the index settings would not be available during restore.
+		Resource config = current.getResource(CollectionConfiguration.COLLECTION_CONFIG_FILE);
+		if(config != null) {
+		    String[] temp = new String[resources.length];
+		    temp[0] = CollectionConfiguration.COLLECTION_CONFIG_FILE;
+		    int j = 1;
+		    for(int i = 0; i < resources.length; i++) {
+		        if(!resources[i].equals(CollectionConfiguration.COLLECTION_CONFIG_FILE))
+		            temp[j++] = resources[i];
+		    }
+		    resources = temp;
+		}
 		String cname = current.getName();
 		if (cname.charAt(0) != '/')
 			cname = '/' + cname;
