@@ -351,7 +351,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	protected NodeList findElementsByTagName(NodeImpl root, QName qname) {
 		DocumentSet docs = new DocumentSet();
 		docs.add(this);
-		NodeSelector selector = new DescendantSelector(new NodeProxy(root), false);
+		NodeProxy p = new NodeProxy(root.ownerDocument, root.gid, root.internalAddress);
+		NodeSelector selector = new DescendantSelector(p, false);
 		return (NodeSet) broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, selector);
 	}
 

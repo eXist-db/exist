@@ -1305,7 +1305,8 @@ public class RpcConnection extends Thread {
 							entry = new Vector();
 							if (((NodeValue) next).getImplementationType() == NodeValue.PERSISTENT_NODE) {
 								p = (NodeProxy) next;
-								entry.addElement(p.getDoc().getCollection().getName() + '/' + p.getDoc().getFileName());
+								entry.addElement(p.getDocument().getCollection().getName() + '/' + 
+								        p.getDocument().getFileName());
 								entry.addElement(Long.toString(p.getGID()));
 							} else {
 								entry.addElement("temp_xquery/"
@@ -1773,13 +1774,13 @@ public class RpcConnection extends Thread {
 			DoctypeCount doctypeCounter;
 			for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext(); ) {
 				p = (NodeProxy) i.next();
-				docName = p.getDoc().getCollection().getName() + '/' + p.getDoc().getFileName();
-				doctype = p.getDoc().getDoctype();
+				docName = p.getDocument().getCollection().getName() + '/' + p.getDocument().getFileName();
+				doctype = p.getDocument().getDoctype();
 				if (map.containsKey(docName)) {
 					counter = (NodeCount) map.get(docName);
 					counter.inc();
 				} else {
-					counter = new NodeCount(p.getDoc());
+					counter = new NodeCount(p.getDocument());
 					map.put(docName, counter);
 				}
 				if (doctype == null)
@@ -1849,13 +1850,13 @@ public class RpcConnection extends Thread {
 			DoctypeCount doctypeCounter;
 			for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext(); ) {
 				p = (NodeProxy) i.next();
-				docName = p.getDoc().getCollection().getName() + '/' + p.getDoc().getFileName();
-				doctype = p.getDoc().getDoctype();
+				docName = p.getDocument().getCollection().getName() + '/' + p.getDocument().getFileName();
+				doctype = p.getDocument().getDoctype();
 				if (map.containsKey(docName)) {
 					counter = (NodeCount) map.get(docName);
 					counter.inc();
 				} else {
-					counter = new NodeCount(p.getDoc());
+					counter = new NodeCount(p.getDocument());
 					map.put(docName, counter);
 				}
 				if (doctype == null)

@@ -27,7 +27,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.Node;
 
-public class ArraySet extends AbstractNodeSetBase {
+public class ArraySet extends AbstractNodeSet {
 
 	protected int counter = 0;
 	protected int length;
@@ -336,17 +336,6 @@ public class ArraySet extends AbstractNodeSetBase {
 				+ (System.currentTimeMillis() - start)
 				+ "ms.");
 		return result;
-	}
-
-	public NodeSet selectAncestorDescendant(NodeSet other, int mode) {
-		return selectAncestorDescendant(other, mode, false);
-	}
-
-	public NodeSet selectAncestorDescendant(
-		NodeSet other,
-		int mode,
-		boolean includeSelf) {
-		return selectAncestorDescendant(other, mode, includeSelf, false);
 	}
 
 	/**

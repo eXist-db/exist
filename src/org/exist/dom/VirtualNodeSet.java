@@ -47,7 +47,7 @@ import org.w3c.dom.NodeList;
  * @author Wolfgang Meier
  * @author Timo Boehme
  */
-public class VirtualNodeSet extends AbstractNodeSetBase {
+public class VirtualNodeSet extends AbstractNodeSet {
 
 	protected int axis = -1;
 	protected NodeTest test;
@@ -249,7 +249,7 @@ public class VirtualNodeSet extends AbstractNodeSetBase {
 					continue;
 				// -- inserted by Timo Boehme --
 				NodeProxy docElemProxy =
-					new NodeProxy(proxy.getDoc(), 1, Node.ELEMENT_NODE);
+					new NodeProxy(proxy.getDocument(), 1, Node.ELEMENT_NODE);
 				docElemProxy.setInternalAddress(proxy.getDocument().getFirstChildAddress());
 				if (test.matches(docElemProxy))
 					result.add(docElemProxy);

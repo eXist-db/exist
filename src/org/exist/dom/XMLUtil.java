@@ -287,54 +287,6 @@ public class XMLUtil {
 		return false;
 	}
 	
-	public final static NodeProxy parentWithChild(
-		NodeSet contextSet,
-		DocumentImpl doc,
-		long gid,
-		int level) {
-		NodeProxy temp = contextSet.get(doc, gid);
-		if(temp != null)
-			return temp;
-		if(level < 0)
-			level = doc.getTreeLevel(gid);
-		while (gid > 0) {
-			if(level == 0)
-				gid = -1;
-			else
-				// calculate parent's gid
-				gid = (gid - doc.treeLevelStartPoints[level])
-					/ doc.treeLevelOrder[level]
-					+ doc.treeLevelStartPoints[level - 1];
-			if ((temp = contextSet.get(doc, gid)) != null)
-				return temp;
-			else
-				--level;
-		}
-		return null;
-	}
-
-	public final static NodeProxy parentWithChild(
-			NodeSet contextSet,
-			NodeProxy child,
-			int level) {
-			NodeProxy temp = contextSet.get(child);
-			if(temp != null)
-				return temp;
-			if(level < 0)
-				level = child.getDocument().getTreeLevel(child.gid);
-			while (child.gid > 0) {
-				// calculate parent's gid
-				child.gid = (child.gid - child.getDocument().getLevelStartPoint(level))
-					/ child.getDocument().getTreeLevelOrder(level)
-					+ child.getDocument().getLevelStartPoint(level - 1);
-				if ((temp = contextSet.get(child.getDocument(), child.gid)) != null)
-					return temp;
-				else
-					--level;
-			}
-			return null;
-		}
-	
 	public final static String getXMLDecl(byte[] data) {
 		boolean foundTag = false;
 		for (int i = 0; i < data.length && !foundTag; i++)

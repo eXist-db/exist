@@ -20,12 +20,12 @@
  */
 package org.exist.dom;
 
-import java.util.Comparator;
 import java.util.Iterator;
 
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
+import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
@@ -43,7 +43,7 @@ import org.xml.sax.SAXException;
 /**
  * Placeholder class for DOM nodes. 
  * 
- * NodeProxy is an internal proxy class, acting as a placeholder for all types of XML nodes
+ * NodeProxy is an internal proxy class, acting as a placeholder for all types of persistent XML nodes
  * during query processing. NodeProxy just stores the node's unique id and the document it belongs to. 
  * Query processing deals with these proxys most of the time. Using a NodeProxy is much cheaper 
  * than loading the actual node from the database. The real DOM node is only loaded,
@@ -58,7 +58,7 @@ import org.xml.sax.SAXException;
  *
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
  */
-public class NodeProxy extends AbstractNodeSet implements NodeValue, Comparable {
+public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	
 	/**
 	 * The owner document of this node.
@@ -138,11 +138,6 @@ public class NodeProxy extends AbstractNodeSet implements NodeValue, Comparable 
 		nodeType = p.nodeType;
 		match = p.match;
 		internalAddress = p.internalAddress;
-	}
-
-	public NodeProxy(NodeImpl node) {
-		this((DocumentImpl) node.getOwnerDocument(), node.getGID());
-		internalAddress = node.getInternalAddress();
 	}
 
 	/* (non-Javadoc)
@@ -267,20 +262,12 @@ public class NodeProxy extends AbstractNodeSet implements NodeValue, Comparable 
 			return pa > pb;
 	}
 
-	public DocumentImpl getDoc() {
-		return doc;
-	}
-
 	public Document getOwnerDocument() {
 		return doc;
 	}
 	
 	public DocumentImpl getDocument()  {
 		return doc;
-	}
-	
-	public void setDocument(DocumentImpl doc) {
-		this.doc = doc;
 	}
 	
 	public long getGID() {
@@ -299,50 +286,12 @@ public class NodeProxy extends AbstractNodeSet implements NodeValue, Comparable 
 		return doc.getBroker().getNodeValue(this);
 	}
 
-	public void setGID(long gid) {
-		this.gid = gid;
-	}
-
 	public String toString() {
 		return doc.getNode(gid).toString();
 	}
 
 	public String pprint() {
 	    return doc.getDocId() + ":" + gid; 
-	}
-	
-	public static class NodeProxyComparator implements Comparator {
-
-		public final static NodeProxyComparator instance = new NodeProxyComparator();
-
-		public int compare(Object obj1, Object obj2) {
-			if (obj1 == null || obj2 == null)
-				throw new NullPointerException("cannot compare null values");
-			if (!(obj1 instanceof NodeProxy && obj2 instanceof NodeProxy))
-				throw new RuntimeException(
-					"cannot compare nodes " + "from different implementations");
-			NodeProxy p1 = (NodeProxy) obj1;
-			NodeProxy p2 = (NodeProxy) obj2;
-			if (p1.doc.docId == p2.doc.docId) {
-				if (p1.gid == p2.gid)
-					return 0;
-				else if (p1.gid < p2.gid)
-					return -1;
-				else
-					return 1;
-			} else if (p1.doc.docId < p2.doc.docId)
-				return -1;
-			else
-				return 1;
-		}
-	}
-
-	/**
-		 * Sets the doc this node belongs to.
-		 * @param doc The doc to set
-		 */
-	public void setDoc(DocumentImpl doc) {
-		this.doc = doc;
 	}
 
 	/**
@@ -511,40 +460,6 @@ public class NodeProxy extends AbstractNodeSet implements NodeValue, Comparable 
 		return context;
 	}
 	
-	public NodeProxy parentWithChild(
-			DocumentImpl otherDoc,
-			long otherId,
-			boolean directParent,
-			boolean includeSelf,
-			int level) {
-		if(otherDoc.getDocId() != doc.getDocId())
-			return null;
-		if(includeSelf && otherId == gid)
-			return this;
-		if (level < 0)
-			level = doc.getTreeLevel(otherId);
-		while (otherId > 0) {
-			otherId = XMLUtil.getParentId(doc, otherId, level);
-			if(otherId == gid)
-				return this;
-			else if (directParent)
-				return null;
-			else
-				--level;
-		}
-		return null;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.dom.AbstractNodeSet#getRange(org.exist.dom.DocumentImpl, long, long)
-	 */
-	public NodeSet getRange(DocumentImpl document, long lower, long upper) {
-		if(doc.getDocId() == document.getDocId()
-				&& gid >= lower && gid <= upper)
-			return this;
-		return NodeSet.EMPTY_SET;
-	}
-	
 	//	methods of interface Item
 
 	/* (non-Javadoc)
@@ -596,100 +511,10 @@ public class NodeProxy extends AbstractNodeSet implements NodeValue, Comparable 
 	public AtomicValue atomize() throws XPathException {
 		return new UntypedAtomicValue(getNodeValue());
 	}
-
-	/* -----------------------------------------------*
-	 * Methods of class NodeSet
-	 * -----------------------------------------------*/
-
-	/* (non-Javadoc)
-	 * @see org.exist.dom.NodeSet#iterator()
-	 */
-	public Iterator iterator() {
-		return new SingleNodeIterator(this);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.dom.NodeSet#iterate()
-	 */
-	public SequenceIterator iterate() {
-		return new SingleNodeIterator(this);
-	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.Sequence#unorderedIterator()
+	 * @see org.exist.xquery.value.Item#toSAX(org.exist.storage.DBBroker, org.xml.sax.ContentHandler)
 	 */
-	public SequenceIterator unorderedIterator() {
-		return new SingleNodeIterator(this);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.dom.NodeSet#contains(org.exist.dom.DocumentImpl, long)
-	 */
-	public boolean contains(DocumentImpl doc, long nodeId) {
-		return this.doc.getDocId() == doc.getDocId() && this.gid == nodeId;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.dom.NodeSet#contains(org.exist.dom.NodeProxy)
-	 */
-	public boolean contains(NodeProxy proxy) {
-		return doc.getDocId() == proxy.doc.getDocId() && gid == proxy.gid;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.dom.NodeSet#addAll(org.exist.dom.NodeSet)
-	 */
-	public void addAll(NodeSet other) {
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.dom.NodeSet#add(org.exist.dom.NodeProxy)
-	 */
-	public void add(NodeProxy proxy) {
-	}
-
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.NodeList#getLength()
-	 */
-	public int getLength() {
-		return 1;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.NodeList#item(int)
-	 */
-	public Node item(int pos) {
-		return pos > 0 ? null : getNode();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.Sequence#itemAt(int)
-	 */
-	public Item itemAt(int pos) {
-		return pos > 0 ? null : this;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.dom.NodeSet#get(int)
-	 */
-	public NodeProxy get(int pos) {
-		return pos > 0 ? null : this;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.dom.NodeSet#get(org.exist.dom.NodeProxy)
-	 */
-	public NodeProxy get(NodeProxy p) {
-		return contains(p) ? this : null;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.dom.NodeSet#get(org.exist.dom.DocumentImpl, long)
-	 */
-	public NodeProxy get(DocumentImpl doc, long nodeId) {
-		return contains(doc, nodeId) ? this : null;
-	}
-
 	public void toSAX(DBBroker broker, ContentHandler handler) throws SAXException {
 		Serializer serializer = broker.getSerializer();
 		serializer.reset();
@@ -698,6 +523,9 @@ public class NodeProxy extends AbstractNodeSet implements NodeValue, Comparable 
 		serializer.toSAX(this);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.Item#copyTo(org.exist.storage.DBBroker, org.exist.memtree.DocumentBuilderReceiver)
+	 */
 	public void copyTo(DBBroker broker, DocumentBuilderReceiver receiver) throws SAXException {
 	    if(nodeType == Node.ATTRIBUTE_NODE) {
 	        AttrImpl attr = (AttrImpl) getNode();
@@ -755,6 +583,407 @@ public class NodeProxy extends AbstractNodeSet implements NodeValue, Comparable 
 			return v.toJavaObject(target);
 		}
 	}
+
+	/*
+	 * Methods of interface Sequence:
+	 */
+	
+	/* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#getItemType()
+     */
+    public int getItemType() {
+        return Type.NODE;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#getCardinality()
+     */
+    public int getCardinality() {
+        return Cardinality.EXACTLY_ONE;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#isCached()
+     */
+    public boolean isCached() {
+        return false;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#setIsCached(boolean)
+     */
+    public void setIsCached(boolean cached) {
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#toNodeSet()
+     */
+    public NodeSet toNodeSet() throws XPathException {
+        return this;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#effectiveBooleanValue()
+     */
+    public boolean effectiveBooleanValue() throws XPathException {
+        return true;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#removeDuplicates()
+     */
+    public void removeDuplicates() {
+        // single node: no duplicates
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#setSelfAsContext()
+     */
+    public void setSelfAsContext() {
+        addContextNode(this);
+    }
+    
+	/* -----------------------------------------------*
+	 * Methods of class NodeSet
+	 * -----------------------------------------------*/
+
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#iterator()
+	 */
+	public Iterator iterator() {
+		return new SingleNodeIterator(this);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#iterate()
+	 */
+	public SequenceIterator iterate() {
+		return new SingleNodeIterator(this);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.Sequence#unorderedIterator()
+	 */
+	public SequenceIterator unorderedIterator() {
+		return new SingleNodeIterator(this);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#contains(org.exist.dom.DocumentImpl, long)
+	 */
+	public boolean contains(DocumentImpl doc, long nodeId) {
+		return this.doc.getDocId() == doc.getDocId() && this.gid == nodeId;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#contains(org.exist.dom.NodeProxy)
+	 */
+	public boolean contains(NodeProxy proxy) {
+		return doc.getDocId() == proxy.doc.getDocId() && gid == proxy.gid;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#addAll(org.exist.dom.NodeSet)
+	 */
+	public void addAll(NodeSet other) {
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#add(org.exist.dom.NodeProxy)
+	 */
+	public void add(NodeProxy proxy) {
+	}
+
+	/* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#add(org.exist.xquery.value.Item)
+     */
+    public void add(Item item) throws XPathException {
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.dom.NodeSet#add(org.exist.dom.NodeProxy, int)
+     */
+    public void add(NodeProxy proxy, int sizeHint) {
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.Sequence#addAll(org.exist.xquery.value.Sequence)
+     */
+    public void addAll(Sequence other) throws XPathException {
+    }
+    
+	/* (non-Javadoc)
+	 * @see org.w3c.dom.NodeList#getLength()
+	 */
+	public int getLength() {
+		return 1;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.w3c.dom.NodeList#item(int)
+	 */
+	public Node item(int pos) {
+		return pos > 0 ? null : getNode();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.Sequence#itemAt(int)
+	 */
+	public Item itemAt(int pos) {
+		return pos > 0 ? null : this;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#get(int)
+	 */
+	public NodeProxy get(int pos) {
+		return pos > 0 ? null : this;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#get(org.exist.dom.NodeProxy)
+	 */
+	public NodeProxy get(NodeProxy p) {
+		return contains(p) ? this : null;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#get(org.exist.dom.DocumentImpl, long)
+	 */
+	public NodeProxy get(DocumentImpl document, long nodeId) {
+	    if(doc.getDocId() == document.getDocId() && nodeId == gid)
+	        return this;
+	    else
+	        return null;
+	}
+
+	/* (non-Javadoc)
+     * @see org.exist.dom.NodeSet#parentWithChild(org.exist.dom.NodeProxy, boolean, boolean, int)
+     */
+    public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent,
+            boolean includeSelf, int level) {
+        return parentWithChild(proxy.getDocument(), proxy.gid, directParent, includeSelf, level);
+    }
+	
+	/* (non-Javadoc)
+     * @see org.exist.dom.NodeSet#parentWithChild(org.exist.dom.DocumentImpl, long, boolean, boolean)
+     */
+    public NodeProxy parentWithChild(DocumentImpl doc, long gid,
+            boolean directParent, boolean includeSelf) {
+        return parentWithChild(doc, gid, directParent, includeSelf, -1);
+    }
+    
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#parentWithChild(org.exist.dom.DocumentImpl, long, boolean, boolean, int)
+	 */
+	public NodeProxy parentWithChild(
+			DocumentImpl otherDoc,
+			long otherId,
+			boolean directParent,
+			boolean includeSelf,
+			int level) {
+		if(otherDoc.getDocId() != doc.getDocId())
+			return null;
+		if(includeSelf && otherId == gid)
+			return this;
+		if (level < 0)
+			level = doc.getTreeLevel(otherId);
+		while (otherId > 0) {
+			otherId = XMLUtil.getParentId(doc, otherId, level);
+			if(otherId == gid)
+				return this;
+			else if (directParent)
+				return null;
+			else
+				--level;
+		}
+		return null;
+	}
+	
+	/* (non-Javadoc)
+     * @see org.exist.dom.NodeSet#getContextNodes(boolean)
+     */
+    public NodeSet getContextNodes(boolean rememberContext) {
+		ExtArrayNodeSet result = new ExtArrayNodeSet();
+		ContextItem contextNode = getContext();
+		while (contextNode != null) {
+		    NodeProxy p = contextNode.getNode();
+		    p.addMatches(this);
+		    if (!result.contains(p)) {
+		        if (rememberContext)
+		            p.addContextNode(p);
+		        result.add(p);
+		    }
+		    contextNode = contextNode.getNextItem();
+		}
+		return result;
+    }
+    
+    /* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#getRange(org.exist.dom.DocumentImpl, long, long)
+	 */
+	public NodeSet getRange(DocumentImpl document, long lower, long upper) {
+		if(doc.getDocId() == document.getDocId()
+				&& gid >= lower && gid <= upper)
+			return this;
+		return NodeSet.EMPTY_SET;
+	}
+	
+    /* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#getState()
+	 */
+	public int getState() {
+		return 1;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#hasChanged(int)
+	 */
+	public boolean hasChanged(int previousState) {
+		return false;
+	}
+	
+	/* (non-Javadoc)
+     * @see org.exist.dom.NodeSet#getSizeHint(org.exist.dom.DocumentImpl)
+     */
+    public int getSizeHint(DocumentImpl document) {
+        if(document.getDocId() == doc.getDocId())
+            return 1;
+        else
+            return 0;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.dom.NodeSet#getDocumentSet()
+     */
+    public DocumentSet getDocumentSet() {
+        DocumentSet docs = new DocumentSet(1);
+        docs.add(doc);
+        return docs;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.dom.NodeSet#containsDoc(org.exist.dom.DocumentImpl)
+     */
+    public boolean containsDoc(DocumentImpl document) {
+        return doc.getDocId() == document.getDocId();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.dom.NodeSet#getParents(boolean)
+     */
+    public NodeSet getParents(boolean rememberContext) {
+        long pid = XMLUtil.getParentId(doc, gid);
+		if (pid > -1) {
+			NodeProxy parent = new NodeProxy(doc, pid, Node.ELEMENT_NODE);
+			if (rememberContext)
+				parent.addContextNode(this);
+			else
+				parent.copyContext(this);
+			return parent;
+		}
+		return NodeSet.EMPTY_SET;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.dom.NodeSet#intersection(org.exist.dom.NodeSet)
+     */
+    public NodeSet intersection(NodeSet other) {
+        if(other.contains(this))
+            return this;
+        else
+            return NodeSet.EMPTY_SET;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.dom.NodeSet#deepIntersection(org.exist.dom.NodeSet)
+     */
+    public NodeSet deepIntersection(NodeSet other) {
+        NodeProxy p = other.parentWithChild(this, false, true, -1);
+        if(p == null)
+            return NodeSet.EMPTY_SET;
+        if(p.gid != gid)
+			p.addMatches(this);
+        return p;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.dom.NodeSet#union(org.exist.dom.NodeSet)
+     */
+    public NodeSet union(NodeSet other) {
+        ExtArrayNodeSet result = new ExtArrayNodeSet();
+        result.addAll(other);
+        result.add(this);
+        return result;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.dom.NodeSet#except(org.exist.dom.NodeSet)
+     */
+    public NodeSet except(NodeSet other) {
+        return other.contains(this) ? NodeSet.EMPTY_SET : this;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.dom.NodeSet#selectParentChild(org.exist.dom.NodeSet, int)
+     */
+    public NodeSet selectParentChild(NodeSet al, int mode) {
+		return selectParentChild(al, mode, false);
+	}
+    
+    /* (non-Javadoc)
+     * @see org.exist.dom.NodeSet#selectParentChild(org.exist.dom.NodeSet, int, boolean)
+     */
+    public NodeSet selectParentChild(NodeSet al, int mode,
+            boolean rememberContext) {
+        NodeProxy p = al.parentWithChild(this, true, false, -1);
+        if(p != null) {
+            if(mode == DESCENDANT) {
+				if (rememberContext)
+					addContextNode(p);
+				else
+					copyContext(p);
+				return this;
+            } else {
+                if (rememberContext)
+					p.addContextNode(this);
+				else
+					p.copyContext(this);
+                return p;
+            }
+        } else
+            return NodeSet.EMPTY_SET;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.dom.NodeSet#selectAncestors(org.exist.dom.NodeSet, boolean, boolean)
+     */
+    public NodeSet selectAncestors(NodeSet al, boolean includeSelf,
+            boolean rememberContext) {
+        return NodeSetHelper.selectAncestors(this, al, includeSelf, rememberContext);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.dom.NodeSet#selectSiblings(org.exist.dom.NodeSet, int)
+     */
+    public NodeSet selectSiblings(NodeSet siblings, int mode) {
+        return NodeSetHelper.selectSiblings(this, siblings, mode);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.dom.NodeSet#selectAncestorDescendant(org.exist.dom.NodeSet, int, boolean, boolean)
+     */
+    public NodeSet selectAncestorDescendant(NodeSet al, int mode,
+            boolean includeSelf, boolean rememberContext) {
+        return NodeSetHelper.selectAncestorDescendant(this, al, mode, includeSelf, rememberContext);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.dom.NodeSet#selectFollowing(org.exist.dom.NodeSet)
+     */
+    public NodeSet selectFollowing(NodeSet following) throws XPathException {
+        return NodeSetHelper.selectFollowing(this, following);
+    }
     
 	private final static class SingleNodeIterator implements Iterator, SequenceIterator {
 

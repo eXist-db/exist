@@ -22,7 +22,7 @@ import org.w3c.dom.NodeList;
 
 import antlr.collections.AST;
 
-public class SortedNodeSet extends AbstractNodeSetBase {
+public class SortedNodeSet extends AbstractNodeSet {
 
 	private PathExpr expr;
 	private OrderedLinkedList list = new OrderedLinkedList();

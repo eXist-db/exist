@@ -784,7 +784,7 @@ public class DOMFile extends BTree implements Lockable {
      */
     protected long findValue(Object lock, NodeProxy node) throws IOException,
             BTreeException {
-        final DocumentImpl doc = (DocumentImpl) node.getDoc();
+        final DocumentImpl doc = (DocumentImpl) node.getDocument();
         final NativeBroker.NodeRef nodeRef = new NativeBroker.NodeRef(doc
                 .getDocId(), node.getGID());
         // first try to find the node in the index
