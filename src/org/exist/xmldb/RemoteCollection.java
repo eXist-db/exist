@@ -289,65 +289,28 @@ public class RemoteCollection implements CollectionImpl {
 		} catch (IOException ioe) {
 			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "an io error occurred", ioe);
 		}
-		Permission perm;
 		String docName = (String) hash.get("name");
 		int p;	
 		if ((p = docName.lastIndexOf('/')) > -1)
 			docName = docName.substring(p + 1);
-		DocumentProxy proxy = new DocumentProxy(docName);
-		perm =
+		Permission perm =
 			new Permission(
 				(String) hash.get("owner"),
 				(String) hash.get("group"),
 				((Integer) hash.get("permissions")).intValue());
-		proxy.setPermissions(perm);
-		proxy.setType((String)hash.get("type"));
-		if(proxy.getType() == null || proxy.getType().equals("XMLResource")) {
-			RemoteXMLResource r = new RemoteXMLResource(this, -1, -1, proxy.getName(), null);
-			r.setPermissions(proxy.getPermissions());
+		String type = (String)hash.get("type");
+		int contentLen = ((Integer)hash.get("content-length")).intValue();
+		if(type == null || type.equals("XMLResource")) {
+			RemoteXMLResource r = new RemoteXMLResource(this, -1, -1, docName, null);
+			r.setPermissions(perm);
+			r.setContentLength(contentLen);
 			return r;
 		} else {
-			RemoteBinaryResource r = new RemoteBinaryResource(this, proxy.getName());
-			r.setPermissions(proxy.getPermissions());
+			RemoteBinaryResource r = new RemoteBinaryResource(this, docName);
+			r.setContentLength(contentLen);
+			r.setPermissions(perm);
 			return r;
 		}
-	}
-	
-	private List readResources() throws XMLDBException {
-	    List resources = new ArrayList();
-	    Vector params = new Vector();
-		params.addElement(getPath());
-		Hashtable collection;
-		try {
-			collection = (Hashtable) rpcClient.execute("getCollectionDesc", params);
-		} catch (XmlRpcException xre) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
-		} catch (IOException ioe) {
-			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "an io error occurred", ioe);
-		}
-		Vector documents = (Vector) collection.get("documents");
-		String docName;
-		String childName;
-		Hashtable hash;
-		DocumentProxy proxy;
-		Permission perm;
-		int p, dsize = documents.size();
-		for (int i = 0; i < dsize; i++) {
-			hash = (Hashtable) documents.elementAt(i);
-			docName = (String) hash.get("name");
-			if ((p = docName.lastIndexOf('/')) > -1)
-				docName = docName.substring(p + 1);
-			proxy = new DocumentProxy(docName);
-			perm =
-				new Permission(
-					(String) hash.get("owner"),
-					(String) hash.get("group"),
-					((Integer) hash.get("permissions")).intValue());
-			proxy.setPermissions(perm);
-			proxy.setType((String)hash.get("type"));
-			resources.add(proxy);
-		}
-		return resources;
 	}
 	
 	private void readCollection() throws XMLDBException {

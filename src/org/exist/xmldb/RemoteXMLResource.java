@@ -57,7 +57,10 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	protected RemoteCollection parent;
 	protected String content = null;
 	protected File file = null;
+	
 	protected Permission permissions = null;
+	protected int contentLen = 0;
+	
 	protected Properties outputProperties = null;
 	
 	public RemoteXMLResource(RemoteCollection parent, String docId, String id)
@@ -347,6 +350,14 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 		return null;
 	} 
 
+	public void setContentLength(int len) {
+		this.contentLen = len;
+	}
+	
+	public int getContentLength() throws XMLDBException {
+		return contentLen;
+	}
+	
 	public void setPermissions(Permission perms) {
 		permissions = perms;
 	}

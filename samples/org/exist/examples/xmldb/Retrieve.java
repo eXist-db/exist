@@ -3,6 +3,7 @@ package org.exist.examples.xmldb;
 import javax.xml.transform.OutputKeys;
 
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.xmldb.EXistResource;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -48,7 +49,9 @@ public class Retrieve {
 		XMLResource res = (XMLResource)col.getResource(args[1]);
 		if(res == null)
 			System.out.println("document not found!");
-		else
+		else {
 			System.out.println(res.getContent());
+			System.out.println("Size: " + ((EXistResource)res).getContentLength());
+		}
 	}
 }

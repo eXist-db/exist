@@ -41,5 +41,7 @@ public interface EXistResource {
 	Date getLastModificationTime() throws XMLDBException;
 	
 	Permission getPermissions() throws XMLDBException;
+	
+	int getContentLength() throws XMLDBException;
 
 }

@@ -311,6 +311,26 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 			pool.release(broker);
 		}
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.EXistResource#getContentLength()
+	 */
+	public int getContentLength() throws XMLDBException {
+		DBBroker broker = null;
+		try {
+			broker = pool.get(user);
+			DocumentImpl document = getDocument(broker, false);
+			if (!document.getPermissions().validate(user, Permission.READ))
+				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
+						"permission denied to read resource");
+			return document.getContentLength();
+		} catch (EXistException e) {
+			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(),
+					e);
+		} finally {
+			pool.release(broker);
+		}
+	}
 
 	/**
 	 * Sets the content for this resource. If value is of type File, it is
