@@ -23,6 +23,7 @@
 package org.exist.memtree;
 
 import org.exist.dom.QName;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
@@ -55,7 +56,23 @@ public class AttributeImpl extends NodeImpl implements Attr {
 	public String getNodeName() {
 		return getQName().toString();
 	}
+
 	
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Node#getNodeType()
+     */
+    public short getNodeType() {
+        return Node.ATTRIBUTE_NODE;
+    }
+    
+    
+    /* (non-Javadoc)
+     * @see org.exist.memtree.NodeImpl#getType()
+     */
+    public int getType() {
+        return Type.ATTRIBUTE;
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getLocalName()
 	 */

@@ -656,8 +656,9 @@ public class XQueryContext {
 	}
 
 	public void popDocumentContext() {
-		if (!fragmentStack.isEmpty())
+		if (!fragmentStack.isEmpty()) {
 			builder = (MemTreeBuilder) fragmentStack.pop();
+		}
 	}
 
 	/**

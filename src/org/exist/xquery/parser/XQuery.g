@@ -93,7 +93,9 @@ imaginaryTokenDefinitions
 	PREFIX_WILDCARD FUNCTION UNARY_MINUS UNARY_PLUS XPOINTER XPOINTER_ID VARIABLE_REF 
 	VARIABLE_BINDING ELEMENT ATTRIBUTE TEXT VERSION_DECL NAMESPACE_DECL DEF_NAMESPACE_DECL 
 	DEF_FUNCTION_NS_DECL GLOBAL_VAR FUNCTION_DECL PROLOG ATOMIC_TYPE MODULE ORDER_BY 
-	POSITIONAL_VAR BEFORE AFTER MODULE_DECL ATTRIBUTE_TEST
+	POSITIONAL_VAR BEFORE AFTER MODULE_DECL ATTRIBUTE_TEST COMP_ELEM_CONSTRUCTOR
+	COMP_ATTR_CONSTRUCTOR COMP_TEXT_CONSTRUCTOR COMP_COMMENT_CONSTRUCTOR
+	COMP_PI_CONSTRUCTOR
 	;
 
 xpointer
@@ -444,6 +446,11 @@ stepExpr
 	( ( "text" | "node" | "element" | "attribute" | "comment" | "processing-instruction" | "document-node" ) LPAREN )
 	=> axisStep
 	|
+	( ( "element" | "attribute" | "text" | "document" | "processing-instruction" | "comment" ) LCURLY ) => 
+	filterStep
+	|
+	( ( "element" | "attribute" | "processing-instruction" ) . LCURLY ) => filterStep
+	|
 	( DOLLAR | ( qName LPAREN ) | SELF | LPAREN | literal | XML_COMMENT | LT |
 	  XML_PI )
 	=> filterStep
@@ -538,6 +545,13 @@ filterStep : primaryExpr predicates ;
 primaryExpr
 { String varName= null; }
 :
+	( ( "element" | "attribute" | "text" | "document" | "processing-instruction" | "comment" ) LCURLY ) => 
+	computedConstructor
+	|
+	( ( "element" | "attribute" | "processing-instruction" ) qName LCURLY ) => computedConstructor
+	|
+	constructor
+	|
 	functionCall
 	|
 	contextItemExpr
@@ -549,8 +563,6 @@ primaryExpr
         #primaryExpr= #[VARIABLE_REF, varName];
         #primaryExpr.copyLexInfo(#v);
     }
-	|
-	constructor
 	|
 	literal
 	;
@@ -628,7 +640,83 @@ qName returns [String name]
 
 constructor
 :
-	elementConstructor | xmlComment | xmlPI
+	elementConstructor
+	| 
+	xmlComment 
+	| 
+	xmlPI
+	;
+
+computedConstructor
+:
+	compElemConstructor
+	|
+	compAttrConstructor
+	|
+	compTextConstructor
+	|
+	compDocumentConstructor
+	|
+	compXmlPI
+	|
+	compXmlComment
+	;
+
+compElemConstructor
+{
+	String qn;
+}
+:
+	( "element" LCURLY ) =>
+	"element"! LCURLY! e1:expr RCURLY! LCURLY! e2:expr RCURLY!
+	{ #compElemConstructor = #(#[COMP_ELEM_CONSTRUCTOR], #compElemConstructor); }
+	|
+	"element"! qn=qName LCURLY! e3:expr RCURLY!
+	{ #compElemConstructor = #(#[COMP_ELEM_CONSTRUCTOR, qn], #[STRING_LITERAL, qn], #e3); }
+	;
+
+compAttrConstructor
+{
+	String qn;
+}
+:
+	( "attribute" LCURLY ) =>
+	"attribute"! LCURLY! e1:expr RCURLY! LCURLY! e2:expr RCURLY!
+	{ #compAttrConstructor = #(#[COMP_ATTR_CONSTRUCTOR], #compAttrConstructor); }
+	|
+	"attribute"! qn=qName LCURLY! e3:expr RCURLY!
+	{ #compAttrConstructor = #(#[COMP_ATTR_CONSTRUCTOR, qn], #[STRING_LITERAL, qn], #e3); }
+	;
+
+compTextConstructor
+:
+	"text" LCURLY! e:expr RCURLY!
+	{ #compTextConstructor = #(#[COMP_TEXT_CONSTRUCTOR, "text"], #e); }
+	;
+
+compDocumentConstructor
+:
+	"document" LCURLY! e:expr RCURLY!
+	{ #compDocumentConstructor = #(#[COMP_DOC_CONSTRUCTOR, "document"], #e); }
+	;
+
+compXmlPI
+{
+	String qn;
+}
+:
+	( "processing-instruction" LCURLY ) =>
+	"processing-instruction"! LCURLY! e1:expr RCURLY! LCURLY! e2:expr RCURLY!
+	{ #compXmlPI = #(#[COMP_PI_CONSTRUCTOR], #compXmlPI); }
+	|
+	"processing-instruction"! qn=qName LCURLY! e3:expr RCURLY!
+	{ #compXmlPI = #(#[COMP_PI_CONSTRUCTOR, qn], #[STRING_LITERAL, qn], #e3); }
+	;
+
+compXmlComment
+:
+	"comment" LCURLY! e:expr RCURLY!
+	{ #compXmlComment = #(#[COMP_COMMENT_CONSTRUCTOR, "comment"], #e); }
 	;
 
 elementConstructor
@@ -2299,8 +2387,59 @@ throws PermissionDeniedException, EXistException, XPathException
 	step= null;
 	PathExpr elementContent= null;
 	Expression contentExpr= null;
+	Expression qnameExpr = null;
 }
 :
+	// computed element constructor
+	#(
+		qn:COMP_ELEM_CONSTRUCTOR
+		{
+			ElementConstructor c= new ElementConstructor(context);
+            c.setASTNode(qn);
+			step= c;
+			elementContent = new EnclosedExpr(context);
+			c.setContent(elementContent);
+			PathExpr qnamePathExpr = new PathExpr(context);
+		}
+		
+		qnameExpr=expr [qnamePathExpr]
+		{ c.setNameExpr(qnameExpr); }
+		contentExpr=expr [elementContent]
+	)
+	|
+	#(
+		attr:COMP_ATTR_CONSTRUCTOR
+		{
+			DynamicAttributeConstructor a= new DynamicAttributeConstructor(context);
+            a.setASTNode(attr);
+            step = a;
+            PathExpr qnamePathExpr = new PathExpr(context);
+            elementContent = new PathExpr(context);
+            a.setValueExpr(elementContent);
+		}
+		qnameExpr=expr [qnamePathExpr]
+		{ a.setNameExpr(qnameExpr); }
+		contentExpr=expr [elementContent]
+		{ elementContent.add(contentExpr); }
+	)
+	|
+	#(
+		pid:COMP_PI_CONSTRUCTOR
+		{
+			DynamicPIConstructor pd= new DynamicPIConstructor(context);
+            pd.setASTNode(pid);
+            step = pd;
+            PathExpr qnamePathExpr = new PathExpr(context);
+            elementContent = new PathExpr(context);
+            pd.setContentExpr(elementContent);
+		}
+		qnameExpr=expr [qnamePathExpr]
+		{ pd.setNameExpr(qnameExpr); }
+		contentExpr=expr [elementContent]
+		{ elementContent.add(contentExpr); }
+	)
+	|
+	// direct element constructor
 	#(
 		e:ELEMENT
 		{
@@ -2350,6 +2489,36 @@ throws PermissionDeniedException, EXistException, XPathException
 	)
 	|
 	#(
+		t:COMP_TEXT_CONSTRUCTOR
+		contentExpr=expr [new PathExpr(context)]
+		{
+			DynamicTextConstructor text = new DynamicTextConstructor(context, contentExpr);
+			text.setASTNode(t);
+			step= text;
+		}
+	)
+	|
+	#(
+		tc:COMP_COMMENT_CONSTRUCTOR
+		contentExpr=expr [new PathExpr(context)]
+		{
+			DynamicCommentConstructor comment = new DynamicCommentConstructor(context, contentExpr);
+			comment.setASTNode(t);
+			step= comment;
+		}
+	)
+	|
+	#(
+		d:COMP_DOC_CONSTRUCTOR
+		contentExpr=expr [new PathExpr(context)]
+		{
+			DocumentConstructor doc = new DocumentConstructor(context, contentExpr);
+			doc.setASTNode(d);
+			step= doc;
+		}
+	)
+	|
+	#(
 		cdata:XML_COMMENT
 		{
 			CommentConstructor comment= new CommentConstructor(context, cdata.getText());
@@ -2367,6 +2536,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
 	)
 	|
+	// enclosed expression within element content
 	#(
 		l:LCURLY { 
             EnclosedExpr subexpr= new EnclosedExpr(context); 

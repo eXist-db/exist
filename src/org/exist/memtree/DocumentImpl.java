@@ -22,6 +22,7 @@ package org.exist.memtree;
 
 import java.util.Arrays;
 
+import org.apache.xerces.dom.AttrNSImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.util.hashtable.NamePool;
@@ -250,6 +251,10 @@ public class DocumentImpl extends NodeImpl implements Document {
         references = newReferences;
     }
 
+    public NodeImpl getAttribute(int nodeNr) throws DOMException {
+        return new AttributeImpl(this, nodeNr);
+    }
+    
     public NodeImpl getNode(int nodeNr) throws DOMException {
         if (nodeNr == 0) return this;
         if (nodeNr >= size)
@@ -519,11 +524,11 @@ public class DocumentImpl extends NodeImpl implements Document {
             node = nextNode;
         }
     }
-
+ 
     private void startNode(NodeImpl node, Receiver receiver)
             throws SAXException {
         int nr = node.nodeNumber;
-        switch (nodeKind[nr]) {
+        switch (node.getNodeType()) {
             case Node.ELEMENT_NODE:
                 QName nodeName = (QName) document.namePool
                         .get(document.nodeName[nr]);
@@ -542,6 +547,10 @@ public class DocumentImpl extends NodeImpl implements Document {
             case Node.TEXT_NODE:
                 receiver.characters(document.characters, document.alpha[nr],
                         document.alphaLen[nr]);
+                break;
+            case Node.ATTRIBUTE_NODE:
+                QName attrQName = (QName) document.namePool.get(document.attrName[nr]);
+                receiver.attribute(attrQName, attrValue[nr]);
                 break;
             case Node.COMMENT_NODE:
                 receiver.comment(document.characters, document.alpha[nr],

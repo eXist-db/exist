@@ -63,7 +63,6 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 				docs = c.allDocs(broker, docs, true);
 			} else {
 				DocumentImpl doc = c.getDocument(broker, resource);
-				LOG.debug("updating resource " + doc.getFileName());
 				docs.add(doc);
 			}
 			XUpdateProcessor processor = new XUpdateProcessor(broker, docs);

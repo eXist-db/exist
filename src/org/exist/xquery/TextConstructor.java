@@ -30,7 +30,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 
 /**
- * Constructor for text nodes.
+ * Direct constructor for text nodes.
  * 
  * @author wolf
  */
