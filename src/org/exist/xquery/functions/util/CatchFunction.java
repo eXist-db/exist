@@ -88,7 +88,9 @@ public class CatchFunction extends Function {
                         UtilModule myModule =
                 			(UtilModule) context.getModule(UtilModule.NAMESPACE_URI);
                         QName exQname = new QName("exception", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
+                        QName msgQname = new QName("exception-message", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
                         myModule.declareVariable(exQname, new StringValue(e.getClass().getName()));
+                        myModule.declareVariable(msgQname, new StringValue(e.getMessage()));
                         return getArgument(2).eval(contextSequence, contextItem);
                     }
                 } catch (ClassNotFoundException e1) {
