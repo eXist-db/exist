@@ -159,7 +159,14 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
         }
     }
 
-    
+    /* (non-Javadoc)
+	 * @see org.exist.xmldb.CollectionManagementServiceImpl#copy(java.lang.String, java.lang.String, java.lang.String)
+	 */
+	public void copy(String collection, String destination, String newName)
+			throws XMLDBException {
+		throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED);
+	}
+	
     /* (non-Javadoc)
      * @see org.exist.xmldb.CollectionManagementServiceImpl#copyResource(java.lang.String, java.lang.String, java.lang.String)
      */
