@@ -105,7 +105,6 @@ public class NativeElementIndex extends ElementIndex {
     }
 
     public NodeSet getAttributesByName(DocumentSet docs, QName qname, NodeSelector selector) {
-        qname.setLocalName(qname.getLocalName());
         NodeSet result = findElementsByTagName(ElementValue.ATTRIBUTE, docs,
                 qname, selector);
         return result;
@@ -161,6 +160,7 @@ public class NativeElementIndex extends ElementIndex {
             	if (is == null) continue;
             	while (is.available() > 0) {
             		docId = is.readInt();
+//                    debug.append("D" + docId + ": ");
             		len = is.readInt();
             		if ((doc = docs.getDoc(docId)) == null) {
             			is.skip(len * 4);

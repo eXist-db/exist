@@ -29,7 +29,6 @@ import org.exist.dom.QName;
 import org.exist.dom.QNameable;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
-import org.exist.util.sanity.SanityCheck;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.util.serializer.DOMStreamerPool;
 import org.exist.util.serializer.Receiver;
@@ -58,7 +57,7 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
     
 	protected int nodeNumber;
 	protected DocumentImpl document;
-
+    
 	public NodeImpl(DocumentImpl doc, int nodeNumber) {
 		this.document = doc;
 		this.nodeNumber = nodeNumber;
@@ -514,7 +513,7 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 */
 	public NodeSet toNodeSet() throws XPathException {
 //		throw new XPathException("Querying constructed nodes is not yet implemented");
-		return document.toNodeSet(this);
+        return document.toNodeSet(this);
 	}
 
 	private final static class SingleNodeIterator implements SequenceIterator {

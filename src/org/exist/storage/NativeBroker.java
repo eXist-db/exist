@@ -48,7 +48,6 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.ArraySet;
 import org.exist.dom.AttrImpl;
@@ -63,6 +62,7 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.TextImpl;
 import org.exist.dom.XMLUtil;
+import org.exist.memtree.DOMIndexer;
 import org.exist.security.MD5;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -87,7 +87,6 @@ import org.exist.util.Configuration;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
-import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.value.StringValue;
@@ -95,7 +94,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  *  Main class for the native XML storage backend.
@@ -2590,7 +2588,8 @@ public class NativeBroker extends DBBroker {
 				break;
 			case Node.ATTRIBUTE_NODE :
 				tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
-				currentPath.addComponent(new QName('@' + node.getLocalName(), node.getNamespaceURI()));
+                if (currentPath != null)
+                    currentPath.addComponent(new QName('@' + node.getLocalName(), node.getNamespaceURI()));
 				if (idxSpec != null) {
 				    ValueIndexSpec spec = idxSpec.getIndexByPath(currentPath);
 				    if(spec != null) {
@@ -2635,7 +2634,8 @@ public class NativeBroker extends DBBroker {
 					qname.setNameType(ElementValue.ATTRIBUTE_ID);
 					elementIndex.addRow(qname, tempProxy);
 				}
-				currentPath.removeLastComponent();
+                if (currentPath != null)
+                    currentPath.removeLastComponent();
 				break;
 			case Node.TEXT_NODE :
 				// check if this textual content should be fulltext-indexed
@@ -2870,30 +2870,31 @@ public class NativeBroker extends DBBroker {
 		return readOnly;
 	}
 
-	public DocumentImpl storeTemporaryDoc(String data) throws EXistException, PermissionDeniedException, LockException {
+	public DocumentImpl storeTemporaryDoc(org.exist.memtree.DocumentImpl doc) 
+    throws EXistException, PermissionDeniedException, LockException {
+        user = pool.getSecurityManager().getUser(SecurityManager.DBA_USER);
 		String docName = MD5.md(Thread.currentThread().getName() + Long.toString(System.currentTimeMillis())) +
 			".xml";
 		Collection temp = openCollection(TEMP_COLLECTION, Lock.WRITE_LOCK);
 		if(temp == null)
 			temp = createTempCollection();
-		IndexInfo info;
-		try {
-			info = temp.validate(this, docName, data);
-		} catch (TriggerException e) {
-			throw new EXistException(TEMP_STORE_ERROR + e.getMessage());
-		} catch (SAXException e) {
-			throw new EXistException(TEMP_STORE_ERROR + e.getMessage());
-		} finally {
-			temp.release();
-		}
-		try {
-			temp.store(this, info, data, false);
-		} catch (TriggerException e) {
-			throw new EXistException(TEMP_STORE_ERROR + e.getMessage());
-		} catch (SAXException e) {
-			throw new EXistException(TEMP_STORE_ERROR + e.getMessage());
-		}
-		return info.getDocument();
+        
+        try {
+            DocumentImpl targetDoc = new DocumentImpl(this, temp);
+            targetDoc.setFileName(docName);
+            targetDoc.setPermissions(0771);
+            temp.addDocumentLink(this, targetDoc);
+    		DOMIndexer indexer = new DOMIndexer(this, doc, targetDoc);
+            indexer.scan();
+            indexer.store();
+            flush();
+            addDocument(temp, targetDoc);
+            closeDocument();
+            saveCollection(temp);
+            return targetDoc;
+        } finally {
+            temp.release();
+        }
 	}
 	
 	public void removeTempDocs(List docs) {
@@ -2954,7 +2955,8 @@ public class NativeBroker extends DBBroker {
 			lock.acquire(Lock.WRITE_LOCK);
 			user = pool.getSecurityManager().getUser(SecurityManager.DBA_USER);
 			Collection temp = getOrCreateCollection(TEMP_COLLECTION);
-			temp.setPermissions(0777);
+			temp.setPermissions(0771);
+            
 			saveCollection(temp);
 			temp.getLock().acquire(Lock.WRITE_LOCK);
 			return temp;
