@@ -137,6 +137,12 @@ public class CollectionConfiguration {
 				triggers[Trigger.UPDATE_DOCUMENT_EVENT] = instantiate(broker, node, classAttr);
 			} else if(event.equalsIgnoreCase("remove")) {
 				triggers[Trigger.REMOVE_DOCUMENT_EVENT] = instantiate(broker, node, classAttr);
+			} else if(event.equalsIgnoreCase("create-collection")) {
+				triggers[Trigger.CREATE_COLLECTION_EVENT] = instantiate(broker, node, classAttr);
+			} else if(event.equalsIgnoreCase("rename-collection")) {
+				triggers[Trigger.RENAME_COLLECTION_EVENT] = instantiate(broker, node, classAttr);
+			} else if(event.equalsIgnoreCase("delete-collection")) {
+				triggers[Trigger.DELETE_COLLECTION_EVENT] = instantiate(broker, node, classAttr);
 			} else
 				throw new CollectionConfigurationException("unknown event type '" + event + "'");
 		}
