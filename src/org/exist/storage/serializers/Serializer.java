@@ -568,10 +568,13 @@ public class Serializer implements XMLReader {
 	 */
 	protected void serializeToSAX(NodeProxy p, boolean generateDocEvents)
 		throws SAXException {
-		NodeImpl n = (NodeImpl)p.getNode();
+		NodeImpl n;
+		if(p.gid < 0)
+			n = (NodeImpl)p.doc.getDocumentElement();
+		else
+			n = (NodeImpl)p.getNode();
 		if (n != null)
 			serializeToSAX(n, generateDocEvents);
-
 	}
 
 	/**
@@ -807,9 +810,10 @@ public class Serializer implements XMLReader {
 	
 	public void toSAX(NodeProxy p) throws SAXException {
 		setXSLHandler();
-		serializeToSAX(
-			p,
-			getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
+		if(p.gid < 0)
+			serializeToSAX(p.doc, getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
+		else
+			serializeToSAX(p, getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
 	}
 
 	private String hasXSLPi(Document doc) {

@@ -696,7 +696,7 @@ public class XQueryContext {
 		context.setStaticallyKnownDocuments(getStaticallyKnownDocuments());
 		
 		XQueryLexer lexer = new XQueryLexer(reader);
-		XQueryParser parser = new XQueryParser(lexer, false);
+		XQueryParser parser = new XQueryParser(lexer);
 		XQueryTreeParser astParser = new XQueryTreeParser(context);
 		try {
 			parser.xpath();

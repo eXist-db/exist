@@ -62,8 +62,8 @@ options {
 	protected Stack elementStack= new Stack();
 	protected XQueryLexer lexer;
 
-	public XQueryParser(XQueryLexer lexer, boolean dummy) {
-		this((TokenStream) lexer);
+	public XQueryParser(XQueryLexer lexer) {
+		this((TokenStream)lexer);
 		this.lexer= lexer;
         setASTNodeClass("org.exist.xquery.parser.XQueryAST");
 	}
@@ -481,7 +481,8 @@ forwardAxis : forwardAxisSpecifier COLON! COLON! ;
 
 forwardAxisSpecifier
 :
-	"child" | "self" | "attribute" | "descendant" | "descendant-or-self" | "following-sibling"
+	"child" | "self" | "attribute" | "descendant" | "descendant-or-self" 
+    | "following-sibling" | "following"
 	;
 
 reverseAxis : reverseAxisSpecifier COLON! COLON! ;
@@ -808,6 +809,8 @@ ncnameOrKeyword returns [String name]
 reservedKeywords returns [String name]
 { name= null; }
 :
+    "to" { name = "to"; }
+    |
 	"div" { name= "div"; }
 	|
 	"mod" { name= "mod"; }
@@ -845,6 +848,10 @@ reservedKeywords returns [String name]
 	"preceding-sibling" { name= "preceding-sibling"; }
 	|
 	"following-sibling" { name= "following-sibling"; }
+    |
+    "following" { name = "following"; }
+    |
+    "preceding" { name = "preceding"; }
 	|
 	"item" { name= "item"; }
 	|
@@ -2017,8 +2024,12 @@ throws PermissionDeniedException, EXistException
 	"descendant-or-self" { axis= Constants.DESCENDANT_SELF_AXIS; }
 	|
 	"following-sibling" { axis= Constants.FOLLOWING_SIBLING_AXIS; }
-	|
+    |
+    "following" { axis= Constants.FOLLOWING_AXIS; }
+    |
 	"preceding-sibling" { axis= Constants.PRECEDING_SIBLING_AXIS; }
+    |
+    "preceding" { axis= Constants.PRECEDING_AXIS; }
 	|
 	"ancestor" { axis= Constants.ANCESTOR_AXIS; }
 	|

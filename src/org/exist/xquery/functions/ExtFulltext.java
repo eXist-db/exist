@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- * Copyright (C) 2001-03, Wolfgang M. Meier (meier@ifs. tu- darmstadt. de)
+ * Copyright (C) 2001-04, Wolfgang M. Meier (wolfgang@exist-db.org)
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -36,8 +36,8 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.PathExpr;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -52,7 +52,7 @@ public class ExtFulltext extends Function {
 			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE) },
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
 		);
-			
+
 	protected PathExpr path;
 	protected Expression searchTerm = null;
 	protected String terms[] = null;
@@ -204,19 +204,44 @@ public class ExtFulltext extends Function {
 		NodeSet contextSet) {
 		if (terms == null)
 			throw new RuntimeException("no search terms");
-		NodeSet hits = null;
-		for (int k = 0; k < terms.length; k++) {
-			hits =
-				context.getBroker().getTextEngine().getNodesContaining(
-					contextSet.getDocumentSet(),
-					contextSet,
-					terms[k]);
-			if (hits == null)
+//		if(contextSet instanceof VirtualNodeSet) {
+			NodeSet hits[] = new NodeSet[terms.length];
+			for (int k = 0; k < terms.length; k++) {
+				hits[k] =
+					context.getBroker().getTextEngine().getNodesContaining(
+						contextSet.getDocumentSet(),
+						contextSet,
+						terms[k]);
+			}
+			NodeSet result = hits[0];
+			if(result != null) {
+				for(int k = 1; k < hits.length; k++) {
+					if(hits[k] != null)
+						result = (type == Constants.FULLTEXT_AND ? 
+								result.deepIntersection(hits[k]) : result.union(hits[k]));
+				}
+				return result;
+			} else
 				return NodeSet.EMPTY_SET;
-			if (type == Constants.FULLTEXT_AND)
-				contextSet = hits;
-		}
-		return hits;
+//		} else {
+//			NodeSet result = null, hits;
+//			for (int k = 0; k < terms.length; k++) {
+//				hits =
+//					context.getBroker().getTextEngine().getNodesContaining(
+//						contextSet.getDocumentSet(),
+//						contextSet,
+//						terms[k]);
+//				if(hits != null) {
+//					if(result == null)
+//						result = hits;
+//					else if(type == Constants.FULLTEXT_AND)
+//						result = result.intersection(hits);
+//					else
+//						result.addAll(hits);
+//				}
+//			}
+//			return result == null ? NodeSet.EMPTY_SET : result;
+//		}
 	}
 
 	public int returnsType() {

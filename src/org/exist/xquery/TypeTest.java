@@ -5,6 +5,11 @@ import org.exist.dom.QName;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
+/**
+ * Tests if a node is of a given node type.
+ * 
+ * @author Wolfgang Meier (wolfgang@exist-db.org)
+ */
 public class TypeTest implements NodeTest {
 
 	protected int nodeType = 0;
@@ -48,7 +53,6 @@ public class TypeTest implements NodeTest {
 			if(nodeType == Type.NODE)
 				return true;
 			Node node = proxy.getNode();
-			System.out.println("loaded node " + proxy.gid);
 			return matches(node);
 		} else
 			return isOfType(proxy.nodeType);

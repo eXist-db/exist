@@ -185,6 +185,10 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 	}
 
 	public boolean before(NodeValue other) throws XPathException {
+		return before(other, true);
+	}
+	
+	protected boolean before(NodeValue other, boolean includeAncestors) throws XPathException {
 		if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
 			throw new XPathException("cannot compare persistent node with in-memory node");
 		NodeProxy node = (NodeProxy) other;
@@ -200,6 +204,7 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 				--la;
 			}
 			if (pa == pb)
+				// a is a descendant of b
 				return false;
 			else
 				return pa < pb;
@@ -209,7 +214,8 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 				--lb;
 			}
 			if (pb == pa)
-				return true;
+				// a is an ancestor of b
+				return includeAncestors ? true : false;
 			else
 				return pa < pb;
 		} else
@@ -217,6 +223,10 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 	}
 
 	public boolean after(NodeValue other) throws XPathException {
+		return after(other, true);
+	}
+	
+	protected boolean after(NodeValue other, boolean includeDescendants) throws XPathException {
 		if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
 			throw new XPathException("cannot compare persistent node with in-memory node");
 		NodeProxy node = (NodeProxy) other;
@@ -231,8 +241,9 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 				pa = XMLUtil.getParentId(doc, pa, la);
 				--la;
 			}
+			// a is a descendant of b
 			if (pa == pb)
-				return true;
+				return includeDescendants ? true : false;
 			else
 				return pa > pb;
 		} else if (lb > la) {

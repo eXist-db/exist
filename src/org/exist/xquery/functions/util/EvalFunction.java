@@ -98,7 +98,7 @@ public class EvalFunction extends Function {
         }
 		LOG.debug("eval: " + expr);
 		XQueryLexer lexer = new XQueryLexer(new StringReader(expr));
-		XQueryParser parser = new XQueryParser(lexer, false);
+		XQueryParser parser = new XQueryParser(lexer);
 		// shares the context of the outer expression
 		XQueryTreeParser astParser = new XQueryTreeParser(context);
 		try {

@@ -36,12 +36,15 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TemplatesHandler;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.Receiver;
+import org.exist.util.serializer.DOMStreamer;
+import org.exist.util.serializer.DOMStreamerPool;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -65,13 +68,14 @@ public class Transform extends BasicFunction {
 		new FunctionSignature(
 			new QName("transform", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
 			"Applies an XSL stylesheet to the node tree passed as first argument. The stylesheet " +
-			"is read from the URI specified in the second argument. Stylesheet parameters " +
+			"is specified in the second argument. This should either be an URI or a node. " +
+			"Stylesheet parameters " +
 			"may be passed in the third argument using an XML fragment with the following structure: " +
 			"<parameters><param name=\"param-name1\" value=\"param-value1\"/>" +
 			"</parameters>",
 			new SequenceType[] {
 				new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE));
 
@@ -92,7 +96,8 @@ public class Transform extends BasicFunction {
 		if(args[0].getLength() == 0)
 			return Sequence.EMPTY_SEQUENCE;
 		Item inputNode = args[0].itemAt(0);
-		String stylesheet = args[1].getStringValue();
+		Item stylesheetItem = args[1].itemAt(0);
+		
 		Node options = null;
 		if(args[2].getLength() > 0)
 			options = ((NodeValue)args[2].itemAt(0)).getNode();
@@ -100,7 +105,14 @@ public class Transform extends BasicFunction {
 		SAXTransformerFactory factory = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
 		TransformerHandler handler;
 		try {
-			Templates templates = getSource(factory, stylesheet);
+			Templates templates;
+			if(Type.subTypeOf(stylesheetItem.getType(), Type.NODE)) {
+				NodeValue stylesheetNode = (NodeValue)stylesheetItem;
+				templates = getSource(factory, stylesheetNode);
+			} else {
+				String stylesheet = stylesheetItem.getStringValue();
+				templates = getSource(factory, stylesheet);
+			}
 			handler = factory.newTransformerHandler(templates);
 			if(options != null)
 				parseParameters(options, handler.getTransformer());
@@ -167,6 +179,20 @@ public class Transform extends BasicFunction {
 			throw new XPathException("Malformed URL for stylesheet: " + stylesheet, e);
 		} catch (IOException e) {
 			throw new XPathException("IO error while loading stylesheet: " + stylesheet, e);
+		}
+	}
+	
+	private Templates getSource(SAXTransformerFactory factory, NodeValue stylesheetRoot)
+	throws XPathException, TransformerConfigurationException {
+		TemplatesHandler handler = factory.newTemplatesHandler();
+		try {
+			handler.startDocument();
+			stylesheetRoot.toSAX(context.getBroker(), handler);
+			handler.endDocument();
+			return handler.getTemplates();
+		} catch (SAXException e) {
+			throw new XPathException(getASTNode(),
+				"A SAX exception occurred while compiling the stylesheet: " + e.getMessage(), e);
 		}
 	}
 	

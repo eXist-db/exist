@@ -169,6 +169,11 @@ public class LocationStep extends Step {
 				temp =
 					getSiblings(context, contextSequence.toNodeSet());
 				break;
+			case Constants.FOLLOWING_AXIS:
+				//temp = getFollowing(context, contextSequence.toNodeSet());
+				throw new XPathException("The following axis is not yet supported");
+			case Constants.PRECEDING_AXIS:
+				throw new XPathException("The preceding axis is not yet supported");
 			default :
 				throw new IllegalArgumentException("Unsupported axis specified");
 		}
@@ -312,6 +317,23 @@ public class LocationStep extends Step {
 		}
 	}
 
+	protected NodeSet getFollowing(XQueryContext context, NodeSet contextSet)
+	throws XPathException {
+		NodeSet result = NodeSet.EMPTY_SET;
+		if(!test.isWildcardTest()) {
+			DocumentSet docs = contextSet.getDocumentSet();
+			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
+				currentDocs = docs;
+				currentSet =
+					(NodeSet) context.getBroker().findElementsByTagName(
+						ElementValue.ELEMENT, currentDocs,
+						test.getName());
+			}
+			result = contextSet.selectFollowing(currentSet);
+		}
+		return result;
+	}
+	
 	protected NodeSet getAncestors(
 		XQueryContext context,
 		NodeSet contextSet) {

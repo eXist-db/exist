@@ -259,7 +259,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			context.setStaticallyKnownDocuments(docs);
 			
 			XQueryLexer lexer = new XQueryLexer(new StringReader(query));
-			XQueryParser parser = new XQueryParser(lexer, true);
+			XQueryParser parser = new XQueryParser(lexer);
 			XQueryTreeParser treeParser = new XQueryTreeParser(context);
 			parser.xpath();
 			if (parser.foundErrors()) {
