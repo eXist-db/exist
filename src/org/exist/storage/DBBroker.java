@@ -48,6 +48,7 @@ import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.io.VariableByteInputStream;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
+import org.exist.util.LockException;
 import org.exist.util.Occurrences;
 import org.exist.xquery.NodeSelector;
 import org.exist.xquery.XQuery;
@@ -506,6 +507,9 @@ public abstract class DBBroker extends Observable {
 	public abstract byte[] getBinaryResourceData(final BinaryDocument blob);
 	
 	public abstract void removeBinaryResource(final BinaryDocument blob) throws PermissionDeniedException;
+
+	public abstract void moveCollection(Collection collection, Collection destination, String newName) 
+	throws PermissionDeniedException, LockException;
 	
 	public void sync() {
 		/*

@@ -576,10 +576,9 @@ public class NativeBroker extends DBBroker {
 			lock.acquire(Lock.READ_LOCK);
 			collection = collectionsDb.getCollectionCache().get(name);
 			if (collection != null) {
+			    LOG.debug("Collection " + name + " found in cache");
 				return collection;
 			}
-			if(name.equals("/db/collection-31/collection-31-1"))
-			    LOG.debug("loading collection " + name);
 			collection = new Collection(collectionsDb, name);
 			try {
 				if (addr < 0) {
@@ -1685,19 +1684,6 @@ public class NativeBroker extends DBBroker {
 				public Object start() {
 				    NodeImpl node = (NodeImpl)doc.getFirstChild();
 					domDb.removeAll(node.getInternalAddress());
-//					NodeList children = doc.getChildNodes();
-//					NodeImpl node;
-//					for (int i = 0; i < children.getLength(); i++) {
-//						node = (NodeImpl) children.item(i);
-//						Iterator j =
-//							getDOMIterator(
-//								new NodeProxy(
-//									doc,
-//									node.getGID(),
-//									node.getInternalAddress()));
-//						removeNodes(j);
-//					}
-//					domDb.remove(doc.getAddress());
 					return null;
 				}
 			}
@@ -1732,24 +1718,6 @@ public class NativeBroker extends DBBroker {
             LOG.warn("removeDocument(String) - " + bte);
 		} catch (ReadOnlyException e) {
             LOG.warn("removeDocument(String) - " + DATABASE_IS_READ_ONLY);
-		}
-	}
-
-	private void removeNodes(Iterator domIterator) {
-		final Value next = (Value) domIterator.next();
-		if (next == null)
-			return;
-		final byte[] data = next.data();
-		final short type = Signatures.getType(data[next.start()]);
-		switch (type) {
-			case Node.ELEMENT_NODE :
-				int children = ByteConversion.byteToInt(data, next.start() + 1);
-				domIterator.remove();
-				for (int i = 0; i < children; i++)
-					removeNodes(domIterator);
-				break;
-			default :
-				domIterator.remove();
 		}
 	}
 
@@ -1878,11 +1846,6 @@ public class NativeBroker extends DBBroker {
 					return;
 				}
 				collection.setAddress(addr);
-//				if (!name.equals(ROOT_COLLECTION)) {
-//					Collection parent = collection.getParent(this);
-//					parent.update(collection);
-//					saveCollection(parent);
-//				}
 				collectionsDb.getCollectionCache().add(collection);
 				ostream.close();
 			} catch (IOException ioe) {
@@ -1897,6 +1860,52 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
+	public void moveCollection(Collection collection, Collection destination, String newName) 
+	throws PermissionDeniedException, LockException {
+	    if (readOnly)
+			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+	    if(collection.getName().equals(ROOT_COLLECTION))
+	        throw new PermissionDeniedException("Cannot move the db root collection");
+	    if(!collection.getPermissions().validate(user, Permission.WRITE))
+	        throw new PermissionDeniedException("Insufficient privileges to move collection " +
+	                collection.getName());
+	    if(!destination.getPermissions().validate(user, Permission.WRITE))
+	        throw new PermissionDeniedException("Insufficient privileges on target collection " +
+	                destination.getName());
+	    Lock lock = null;
+	    try {
+	        lock = collectionsDb.getLock();
+	        lock.acquire(Lock.WRITE_LOCK);
+	        String name = collection.getName();
+	        Collection parent = collection.getParent(this);
+	        parent.removeCollection(name.substring(name.lastIndexOf("/") + 1));
+		    
+	        collectionsDb.getCollectionCache().remove(collection);
+		    Value key;
+			try {
+				key = new Value(name.getBytes("UTF-8"));
+			} catch (UnsupportedEncodingException uee) {
+				key = new Value(name.getBytes());
+			}	
+			collectionsDb.remove(key);
+			
+			name = destination.getName() + '/' + newName;
+		    collection.setName(name);
+		    collection.setCreationTime(System.currentTimeMillis());
+		    collection.correctResourcePaths();
+		    
+		    destination.addCollection(collection);
+		    saveCollection(parent);
+		    if(parent != destination)
+		        saveCollection(destination);
+		    saveCollection(collection);
+	    } catch (ReadOnlyException e) {
+            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+        } finally {
+	        lock.release();
+	    }
+	}
+	
 	/**
 	 *  Do a sequential search through the DOM-file.
 	 *
@@ -1916,13 +1925,7 @@ public class NativeBroker extends DBBroker {
 		ArraySet resultNodeSet = new ArraySet(context.getLength());
 		NodeProxy p;
 		String content;
-		// StringBuffer buf = new StringBuffer(128);
-		// byte[] data;
-		// long filePos;
-		// int offset;
-		// NodeRef nodeRef;
 		String cmp;
-		// Iterator domIterator = null;
 		Pattern regexp = null;
 		if (relation == Constants.REGEXP)
 			try {

@@ -32,6 +32,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.TreeMap;
@@ -94,10 +95,11 @@ implements Comparable, EntityResolver, Cacheable {
 
 	private int validation = VALIDATION_AUTO;
 
+	// the unique internal id to identify this collection
 	private short collectionId = -1;
 
 	// the documents contained in this collection
-	private TreeMap documents = new TreeMap();
+	private Map documents = new TreeMap();
 
 	// the name of this collection
 	private String name;
@@ -121,6 +123,7 @@ implements Comparable, EntityResolver, Cacheable {
 	private CollectionConfiguration configuration = null;
 	private boolean triggersEnabled = true;
 
+	// fields required by the collections cache
 	private int refCount = 0;
 	private int timestamp = 0;
 
@@ -132,6 +135,10 @@ implements Comparable, EntityResolver, Cacheable {
 		this.db = db;
 	}
 
+	public void setName(String name) {
+	    this.name = name;
+	}
+	
 	/**
 	 *  Add a new sub-collection to the collection.
 	 *
@@ -142,10 +149,6 @@ implements Comparable, EntityResolver, Cacheable {
 		final String childName = child.name.substring(p);
 		if (!subcollections.contains(childName))
 			subcollections.add(childName);
-		if(name.equals("/db/collection-31/collection-31-1")) {
-		    LOG.debug("adding collection " + childName + "; count = " + subcollections.size() +
-		            "; id = " + this);
-		}
 	}
 
 	/**
@@ -1265,6 +1268,21 @@ implements Comparable, EntityResolver, Cacheable {
 		}
 	}
 
+	public void correctResourcePaths() {
+	    Map newMap = new TreeMap();
+	    DocumentImpl childDoc;
+	    String path;
+	    for(Iterator i = documents.values().iterator(); i.hasNext(); ) {
+	        childDoc = (DocumentImpl)i.next();
+	        path = childDoc.getFileName();
+	        path = path.substring(path.lastIndexOf('/') + 1);
+	        childDoc.setFileName(getName() + '/' + path);
+	        LOG.debug("Moved " + childDoc.getFileName());
+	        newMap.put(childDoc.getFileName(), childDoc);
+	    }
+	    documents = newMap;
+	}
+	
 	private CollectionConfiguration getConfiguration(DBBroker broker) {
 		if (configuration == null)
 			configuration = readCollectionConfiguration(broker);

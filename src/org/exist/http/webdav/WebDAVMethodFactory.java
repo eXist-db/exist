@@ -26,6 +26,7 @@ import org.exist.http.webdav.methods.Delete;
 import org.exist.http.webdav.methods.Get;
 import org.exist.http.webdav.methods.Head;
 import org.exist.http.webdav.methods.Mkcol;
+import org.exist.http.webdav.methods.Move;
 import org.exist.http.webdav.methods.Options;
 import org.exist.http.webdav.methods.Propfind;
 import org.exist.http.webdav.methods.Put;
@@ -55,6 +56,8 @@ public class WebDAVMethodFactory {
             return new Mkcol(pool);
         else if(method.equals("PROPFIND"))
             return new Propfind(pool);
+        else if(method.equals("MOVE"))
+            return new Move(pool);
         else return null;
     }
 

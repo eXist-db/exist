@@ -1,7 +1,6 @@
 package org.exist.collections;
 
 import org.exist.storage.cache.Cacheable;
-import org.exist.storage.cache.ClockCache;
 import org.exist.storage.cache.LRDCache;
 import org.exist.util.hashtable.Object2LongHashMap;
 
@@ -50,4 +49,8 @@ public class CollectionCache extends LRDCache {
 		return old;
 	}
 
+    public void remove(Cacheable item) {
+        super.remove(item);
+        names.remove(((Collection)item).getName());
+    }
 }
