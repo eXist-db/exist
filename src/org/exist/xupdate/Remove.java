@@ -6,7 +6,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.dom.Collection;
+import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
@@ -59,7 +59,8 @@ public class Remove extends Modification {
 			doc.setIndexListener(listener);
 			parent = node.getParentNode();
 			if (parent.getNodeType() != Node.ELEMENT_NODE) {
-				LOG.warn("cannot remove the root node");
+				throw new EXistException("you cannot remove the document element. Use update " +
+					"instead");
 			} else
 				parent.removeChild(node);
 			doc.clearIndexListener();

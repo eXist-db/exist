@@ -53,7 +53,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         try {
             broker = pool.get();
             LOG.debug( "creating collection " + collection );
-            org.exist.dom.Collection coll = broker.getOrCreateCollection( collection );
+            org.exist.collections.Collection coll = broker.getOrCreateCollection( collection );
             if ( coll == null ) {
                 LOG.debug( "failed to create collection" );
                 return false;

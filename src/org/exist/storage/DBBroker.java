@@ -23,7 +23,7 @@ package org.exist.storage;
 import java.util.Iterator;
 import java.util.Observable;
 
-import org.exist.dom.Collection;
+import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
@@ -41,30 +41,24 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- *  Description of the Class
+ * This is the base class for all database backends. All other components rely
+ * on the methods defined here.
  *
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
  *@created    20. Mai 2002
  */
 public abstract class DBBroker extends Observable {
-    /**  Description of the Field */
-    public final static int DBM = 3;
 
-    /**  Description of the Field */
     public final static int MATCH_EXACT = 0;
-    /**  Description of the Field */
     public final static int MATCH_REGEXP = 1;
     public final static int MATCH_WILDCARDS = 2;
 
     // constants for database type
-    /**  Description of the Field */
     public final static int MYSQL = 0;
-    /**  Description of the Field */
     public final static int NATIVE = 4;
-    /**  Description of the Field */
     public final static int ORACLE = 1;
-    /**  Description of the Field */
     public final static int POSTGRESQL = 2;
+	public final static int DBM = 3;
 
     protected boolean caseSensitive = true;
 
@@ -84,18 +78,6 @@ public abstract class DBBroker extends Observable {
             caseSensitive = temp.booleanValue();
 		this.pool = pool;
     }
-
-
-    /**
-     *  lock this broker instance for writing. The broker instance is
-     *  responsible for locking underlying files. Right now, BDBBroker has no
-     *  clean locking mechanism, so all files will be locked when this method is
-     *  called. Class RelationalBroker is safe and will ignore calls to
-     *  acquireWriteLock().
-     *
-     *@return    Description of the Return Value
-     */
-    public abstract Object acquireWriteLock();
 
 
     /**
@@ -497,15 +479,6 @@ public abstract class DBBroker extends Observable {
 
 
     /**
-     *  release a lock. The parameter object should be the one returned by a
-     *  previous call to acquireWriteLock().
-     *
-     *@param  lock  Description of the Parameter
-     */
-    public abstract void releaseWriteLock( Object lock );
-
-
-    /**
      *  Description of the Method
      *
      *@param  name                           Description of the Parameter
@@ -572,23 +545,6 @@ public abstract class DBBroker extends Observable {
 	    return null;
     }
     
-    /**
-     *  set the retrieval-mode used by all subsequent requests. The retrieval
-     *  mode setting is only used by RelationalBroker. There are two retrieval
-     *  modes: RelationalBroker.SINGLE and RelationalBroker.PRELOAD. With
-     *  retrieval mode set to PRELOAD, the broker will try to do a read ahead
-     *  when retrieving nodes. This means, that it will not only retrieve the
-     *  actual nodes, but also their children. The additional nodes will be put
-     *  into the ObjectPool where they will be found by subsequent calls to
-     *  objectWith. The advantage is that we need less sql-statements to
-     *  retrieve a certain portion of the document. On the other hand, nodes may
-     *  be read which are not really needed.
-     *
-     *@param  mode  one of RelationalBroker.SINGLE or RelationalBroker.PRELOAD
-     */
-    public abstract void setRetrvMode( int mode );
-
-
     /**
      *  shutdown the broker. All open files, jdbc connections etc. should be
      *  closed.

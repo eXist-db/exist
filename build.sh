@@ -21,7 +21,9 @@ fi
 
 LOCALCLASSPATH=$CLASSPATH:$JAVA_HOME/lib/tools.jar:$EXIST_HOME/lib/core/ant.jar:$EXIST_HOME/lib/optional/ant-optional.jar:$EXIST_HOME/lib/core/junit.jar:$EXIST_HOME/lib/core/jakarta-oro-2.0.6.jar
 
-JAVA_OPTS="-Djavax.xml.parsers.SAXParserFactory=org.apache.xerces.jaxp.SAXParserFactoryImpl -Dexist.home=$EXIST_HOME"
+JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
+
+JAVA_OPTS="-Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS -Djavax.xml.parsers.SAXParserFactory=org.apache.xerces.jaxp.SAXParserFactoryImpl -Dexist.home=$EXIST_HOME"
 
 echo Starting Ant...
 echo

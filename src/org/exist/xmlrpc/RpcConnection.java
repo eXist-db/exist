@@ -8,6 +8,7 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -22,8 +23,8 @@ import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 import org.exist.EXistException;
 import org.exist.Parser;
+import org.exist.collections.Collection;
 import org.exist.dom.ArraySet;
-import org.exist.dom.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
@@ -36,7 +37,6 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.RelationalBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
 import org.exist.util.Occurrences;
@@ -256,9 +256,12 @@ public class RpcConnection extends Thread {
 				LOG.debug("document " + name + " not found!");
 				throw new EXistException("document not found");
 			}
-			broker.setRetrvMode(RelationalBroker.PRELOAD);
 			Serializer serializer = broker.getSerializer();
-			serializer.setEncoding(encoding);
+			Map properties = new TreeMap();
+			properties.put(Serializer.ENCODING, encoding);
+			properties.put(Serializer.PRETTY_PRINT, Boolean.toString(prettyPrint));
+			serializer.setProperties(properties);
+			
 			if (stylesheet != null) {
 				if (!stylesheet.startsWith("/")) {
 					// make path relative to current collection
@@ -274,11 +277,8 @@ public class RpcConnection extends Thread {
 				}
 				serializer.setStylesheet(stylesheet);
 			}
-			String xml;
-			serializer.setIndent(prettyPrint);
-			xml = serializer.serialize(doc);
+			String xml = serializer.serialize(doc);
 
-			broker.setRetrvMode(RelationalBroker.SINGLE);
 			return xml;
 		} catch (NoSuchMethodError nsme) {
 			nsme.printStackTrace();
@@ -710,20 +710,11 @@ public class RpcConnection extends Thread {
 		if (start < 1 || start > resultSet.getLength())
 			throw new EXistException("start parameter out of range");
 		Serializer serializer = broker.getSerializer();
-		serializer.setEncoding(encoding);
-		if (prettyPrint) {
-			StringWriter sout = new StringWriter();
-			OutputFormat format = new OutputFormat("xml", encoding, true);
-			format.setOmitXMLDeclaration(false);
-			format.setOmitComments(false);
-			format.setLineWidth(60);
-			XMLSerializer xmlout = new XMLSerializer(sout, format);
-			serializer.setContentHandler(xmlout);
-			serializer.setLexicalHandler(xmlout);
-			serializer.toSAX((NodeSet) resultSet, start, howmany, queryTime);
-			return sout.toString();
-		} else
-			return serializer.serialize((NodeSet) resultSet, start, howmany, queryTime);
+		Map properties = new TreeMap();
+		properties.put(Serializer.ENCODING, encoding);
+		properties.put(Serializer.PRETTY_PRINT, Boolean.toString(prettyPrint));
+		serializer.setProperties(properties);
+		return serializer.serialize((NodeSet) resultSet, start, howmany, queryTime);
 	}
 
 	protected String printValues(
@@ -828,7 +819,6 @@ public class RpcConnection extends Thread {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get();
-			broker.setRetrvMode(RelationalBroker.PRELOAD);
 			switch (resultValue.getType()) {
 				case Value.isNodeList :
 					NodeList resultSet = resultValue.getNodeList();
@@ -852,7 +842,6 @@ public class RpcConnection extends Thread {
 					result = printValues(valueSet, howmany, start, prettyPrint, encoding);
 					break;
 			}
-			broker.setRetrvMode(RelationalBroker.SINGLE);
 		} finally {
 			brokerPool.release(broker);
 		}
@@ -1038,8 +1027,9 @@ public class RpcConnection extends Thread {
 
 			NodeProxy node = new NodeProxy(doc, id);
 			Serializer serializer = broker.getSerializer();
-			serializer.setEncoding(encoding);
-			serializer.setIndent(prettyPrint);
+			Map properties = new TreeMap();
+			properties.put(Serializer.ENCODING, encoding);
+			properties.put(Serializer.PRETTY_PRINT, Boolean.toString(prettyPrint));
 			return serializer.serialize(node);
 		} finally {
 			brokerPool.release(broker);
@@ -1072,8 +1062,9 @@ public class RpcConnection extends Thread {
 					if (proxy == null)
 						throw new EXistException("index out of range");
 					Serializer serializer = broker.getSerializer();
-					serializer.setEncoding(encoding);
-					serializer.setIndent(prettyPrint);
+					Map properties = new TreeMap();
+					properties.put(Serializer.ENCODING, encoding);
+					properties.put(Serializer.PRETTY_PRINT, Boolean.toString(prettyPrint));
 					return serializer.serialize(proxy);
 				default :
 					ValueSet valueSet = qr.result.getValueSet();

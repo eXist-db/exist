@@ -6,8 +6,8 @@
 package org.exist.xupdate;
 
 import org.exist.EXistException;
+import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
-import org.exist.dom.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;

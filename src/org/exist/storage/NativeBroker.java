@@ -49,9 +49,9 @@ import org.dbxml.core.filer.BTreeException;
 import org.dbxml.core.filer.Paged;
 import org.dbxml.core.indexer.IndexQuery;
 import org.exist.EXistException;
+import org.exist.collections.Collection;
 import org.exist.dom.ArraySet;
 import org.exist.dom.AttrImpl;
-import org.exist.dom.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
@@ -66,6 +66,12 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.serializers.NativeSerializer;
 import org.exist.storage.serializers.Serializer;
+import org.exist.storage.store.BFile;
+import org.exist.storage.store.CollectionStore;
+import org.exist.storage.store.DOMFile;
+import org.exist.storage.store.DOMFileIterator;
+import org.exist.storage.store.DOMTransaction;
+import org.exist.storage.store.NodeIterator;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.Configuration;
@@ -99,7 +105,6 @@ public class NativeBroker extends DBBroker {
 
 	private static Category LOG = Category.getInstance(NativeBroker.class.getName());
 
-	protected static RelationalBroker.TableLock writeLock = new RelationalBroker.TableLock();
 	protected CollectionStore collectionsDb = null;
 	protected DOMFile domDb = null;
 	protected NativeElementIndex elementIndex;
@@ -248,10 +253,6 @@ public class NativeBroker extends DBBroker {
 		return out.toString();
 	}
 
-	public Object acquireWriteLock() {
-		return null;
-	}
-
 	public void addObserver(Observer o) {
 		super.addObserver(o);
 		textEngine.addObserver(o);
@@ -359,15 +360,12 @@ public class NativeBroker extends DBBroker {
 	 */
 	public NodeSet findElementsByTagName(DocumentSet docs, String tagName) {
 		final long start = System.currentTimeMillis();
-		final NodeSet result = new ArraySet(100000);
+		final NodeSet result = new ArraySet(10000);
 		DocumentImpl doc;
 		int docId;
 		int len;
 		short collectionId;
 		long gid;
-		long address;
-		long delta;
-		long last = -1;
 		VariableByteInputStream is;
 		ElementValue ref;
 		byte[] data;
@@ -383,11 +381,9 @@ public class NativeBroker extends DBBroker {
 			try {
 				lock.acquire(Lock.READ_LOCK);
 				dis = elementsDb.getAsStream(ref);
-				//val = elementsDb.get(ref);
 			} catch (LockException e) {
 				LOG.warn("failed to acquire lock", e);
 				dis = null;
-				//val = null;
 			} finally {
 				lock.release();
 			}
@@ -402,14 +398,11 @@ public class NativeBroker extends DBBroker {
 						is.skip(len * 4);
 						continue;
 					}
-					last = 0;
+					gid = 0;
 					for (int k = 0; k < len; k++) {
-						delta = is.readLong();
-						gid = last + delta;
-						last = gid;
-						address = StorageAddress.read(is);
-						NodeProxy proxy = new NodeProxy(doc, gid, Node.ELEMENT_NODE, address);
-						result.add(proxy);
+						gid = gid + is.readLong();
+						result.add(
+							new NodeProxy(doc, gid, Node.ELEMENT_NODE, StorageAddress.read(is)));
 					}
 				}
 			} catch (EOFException e) {
@@ -512,31 +505,25 @@ public class NativeBroker extends DBBroker {
 		try {
 			lock.acquire(Lock.READ_LOCK);
 			collection = collectionsDb.getCollectionCache().get(name);
-			if (collection != null)
+			if (collection != null) {
+				collection.setBroker(this);
 				return collection;
+			}
 			collection = new Collection(this, name);
 			if (addr < 0) {
 				dis = collectionsDb.getAsStream(key);
 			} else {
 				dis = collectionsDb.getAsStream(addr);
 			}
-		} catch (LockException e) {
-			LOG.warn("failed to acquire lock on collection store");
-			return null;
-		} finally {
-			lock.release();
-		}
-		if (dis == null)
-			return null;
-		VariableByteInputStream istream = new VariableByteInputStream(dis);
-		try {
-			collection.read(istream);
-		} catch (IOException ioe) {
-			LOG.warn(ioe);
-			return null;
-		}
-		try {
-			lock.acquire();
+			if (dis == null)
+				return null;
+			VariableByteInputStream istream = new VariableByteInputStream(dis);
+			try {
+				collection.read(istream);
+			} catch (IOException ioe) {
+				LOG.warn(ioe);
+				return null;
+			}
 			collectionsDb.getCollectionCache().add(collection);
 		} catch (LockException e) {
 			LOG.warn("failed to acquire lock on collection store");
@@ -1211,10 +1198,6 @@ public class NativeBroker extends DBBroker {
 		.run();
 	}
 
-	public Node preloadDocument(DocumentImpl doc) {
-		return null;
-	}
-
 	public void registerNamespace(String namespace, String prefix) {
 		byte[] ns;
 		byte[] pfx;
@@ -1234,9 +1217,6 @@ public class NativeBroker extends DBBroker {
 				LOG.warn("database is read-only");
 			}
 		}
-	}
-
-	public void releaseWriteLock(Object lock) {
 	}
 
 	public boolean removeCollection(User user, String name) throws PermissionDeniedException {
@@ -1323,7 +1303,6 @@ public class NativeBroker extends DBBroker {
 				final DocumentImpl doc = (DocumentImpl) i.next();
 				new DOMTransaction(this, domDb) {
 					public Object start() {
-						domDb.remove(doc.getAddress());
 						NodeList children = doc.getChildNodes();
 						NodeImpl node;
 						for (int j = 0; j < children.getLength(); j++) {
@@ -1333,6 +1312,7 @@ public class NativeBroker extends DBBroker {
 									new NodeProxy(doc, node.getGID(), node.getInternalAddress()));
 							removeNodes(k);
 						}
+						domDb.remove(doc.getAddress());
 						return null;
 					}
 				}
@@ -1385,18 +1365,18 @@ public class NativeBroker extends DBBroker {
 				throw new PermissionDeniedException("permission to remove document denied");
 			LOG.info("removing document " + doc.getDocId() + "...");
 			// remove document
-				Lock lock = collectionsDb.getLock();
-				try {
-					lock.acquire(Lock.WRITE_LOCK);
-					Collection collection = doc.getCollection();
-					collection.removeDocument(docName);
-					saveCollection(collection);
-					collectionsDb.flush();
-				} catch (LockException e) {
-					LOG.warn("failed to acquire lock on collections store", e);
-				} finally {
-					lock.release();
-				}
+			Lock lock = collectionsDb.getLock();
+			try {
+				lock.acquire(Lock.WRITE_LOCK);
+				Collection collection = doc.getCollection();
+				collection.removeDocument(docName);
+				saveCollection(collection);
+				collectionsDb.flush();
+			} catch (LockException e) {
+				LOG.warn("failed to acquire lock on collections store", e);
+			} finally {
+				lock.release();
+			}
 
 			// drop element-index
 			short collectionId = doc.getCollection().getId();
@@ -1621,6 +1601,7 @@ public class NativeBroker extends DBBroker {
 		if (readOnly)
 			throw new PermissionDeniedException("database is read-only");
 		try {
+			
 			if (collection.getId() < 0)
 				collection.setId(getNextCollectionId());
 
@@ -1770,9 +1751,6 @@ public class NativeBroker extends DBBroker {
 		return resultNodeSet;
 	}
 
-	public void setRetrvMode(int mode) {
-	}
-
 	public void shutdown() {
 		super.shutdown();
 		try {
@@ -1877,6 +1855,9 @@ public class NativeBroker extends DBBroker {
 		final byte data[] = doc.serialize();
 		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
 			public Object start() throws ReadOnlyException {
+				if (doc.getAddress() > -1) {
+					domDb.remove(doc.getAddress());
+				}
 				doc.setAddress(domDb.add(data));
 				return null;
 			}
@@ -2030,13 +2011,13 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
-	final static class NodeRef extends Value {
+	public final static class NodeRef extends Value {
 
-		NodeRef() {
+		public NodeRef() {
 			data = new byte[12];
 		}
 
-		NodeRef(int docId, long gid) {
+		public NodeRef(int docId, long gid) {
 			data = new byte[12];
 			ByteConversion.intToByte(docId, data, 0);
 			ByteConversion.longToByte(gid, data, 4);
@@ -2044,7 +2025,7 @@ public class NativeBroker extends DBBroker {
 			pos = 0;
 		}
 
-		NodeRef(int docId) {
+		public NodeRef(int docId) {
 			data = new byte[4];
 			ByteConversion.intToByte(docId, data, 0);
 			len = 4;

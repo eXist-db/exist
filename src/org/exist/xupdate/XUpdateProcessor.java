@@ -28,6 +28,7 @@ import org.exist.xpath.PathExpr;
 import org.exist.xpath.RootNode;
 import org.exist.xpath.Value;
 import org.w3c.dom.Attr;
+import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -41,6 +42,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
+import org.xml.sax.ext.LexicalHandler;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
@@ -54,7 +56,7 @@ import antlr.TokenStreamException;
  *   xupdate:processing-instruction
  *   xupdate:comment
  */
-public class XUpdateProcessor implements ContentHandler {
+public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 
 	public final static String XUPDATE_NS = "http://www.xmldb.org/xupdate";
 
@@ -106,6 +108,7 @@ public class XUpdateProcessor implements ContentHandler {
 		SAXParser sax = saxFactory.newSAXParser();
 		XMLReader reader = sax.getXMLReader();
 		reader.setContentHandler(this);
+		reader.setProperty("http://xml.org/sax/properties/lexical-handler", this);
 		reader.parse(is);
 		Modification mods[] = new Modification[modifications.size()];
 		return (Modification[]) modifications.toArray(mods);
@@ -429,4 +432,69 @@ public class XUpdateProcessor implements ContentHandler {
 			throw new SAXException(e);
 		}
 	}
+	/* (non-Javadoc)
+	 * @see org.xml.sax.ext.LexicalHandler#comment(char[], int, int)
+	 */
+	public void comment(char[] ch, int start, int length) throws SAXException {
+		if (inModification && charBuf.length() > 0) {
+					final String normalized = charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+					if (normalized.length() > 0) {
+						Text text = doc.createTextNode(normalized);
+						if (stack.isEmpty()) {
+							LOG.debug("appending text to fragment: " + text.getData());
+							fragment.appendChild(text);
+						} else {
+							Element last = (Element) stack.peek();
+							last.appendChild(text);
+						}
+					}
+					charBuf.setLength(0);
+				}
+				if(inModification) {
+					Comment comment = doc.createComment(new String(ch, start, length));
+					if (stack.isEmpty()) {
+						fragment.appendChild(comment);
+					} else {
+						Element last = (Element) stack.peek();
+						last.appendChild(comment);
+					}
+				}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.xml.sax.ext.LexicalHandler#endCDATA()
+	 */
+	public void endCDATA() throws SAXException {
+	}
+
+	/* (non-Javadoc)
+	 * @see org.xml.sax.ext.LexicalHandler#endDTD()
+	 */
+	public void endDTD() throws SAXException {
+	}
+
+	/* (non-Javadoc)
+	 * @see org.xml.sax.ext.LexicalHandler#endEntity(java.lang.String)
+	 */
+	public void endEntity(String name) throws SAXException {
+	}
+
+	/* (non-Javadoc)
+	 * @see org.xml.sax.ext.LexicalHandler#startCDATA()
+	 */
+	public void startCDATA() throws SAXException {
+	}
+
+	/* (non-Javadoc)
+	 * @see org.xml.sax.ext.LexicalHandler#startDTD(java.lang.String, java.lang.String, java.lang.String)
+	 */
+	public void startDTD(String name, String publicId, String systemId) throws SAXException {
+	}
+
+	/* (non-Javadoc)
+	 * @see org.xml.sax.ext.LexicalHandler#startEntity(java.lang.String)
+	 */
+	public void startEntity(String name) throws SAXException {
+	}
+
 }

@@ -1,9 +1,9 @@
 package org.exist.xmldb;
 
-import org.exist.storage.BFile;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.DOMFile;
 import org.exist.storage.IndexStats;
+import org.exist.storage.store.BFile;
+import org.exist.storage.store.DOMFile;
 import org.exist.util.Configuration;
 
 import java.util.Map;

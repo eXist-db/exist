@@ -24,10 +24,12 @@
 package org.exist.xmldb;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Random;
 import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.TreeMap;
 import java.io.File;
 import org.apache.log4j.Category;
 import org.exist.EXistException;
@@ -47,8 +49,8 @@ import org.xmldb.api.modules.XMLResource;
  *
  * Extends Observable to allow status callbacks during indexing.
  * Methods storeResource notifies registered observers about the
- * progress of the indexer. It passed an Object of type
- * ProgressIndicator to the Observer.
+ * progress of the indexer by passing an object of type ProgressIndicator
+ * to the observer.
  * 
  *@author     wolf
  *@created    April 2, 2002
@@ -59,12 +61,9 @@ public class LocalCollection extends Observable implements Collection {
         Category.getInstance( LocalCollection.class.getName() );
 
     protected BrokerPool brokerPool = null;
-    protected org.exist.dom.Collection collection = null;
-    protected String encoding = "ISO-8859-1";
-    protected boolean indentXML = true;
+    protected org.exist.collections.Collection collection = null;
+    protected Map properties = new TreeMap();
     protected LocalCollection parent = null;
-    protected boolean saxDocumentEvents = true;
-    protected boolean processXInclude = true;
     protected User user = null;
 	
 	protected ArrayList observers = new ArrayList(1);
@@ -75,7 +74,7 @@ public class LocalCollection extends Observable implements Collection {
     }
 
     public LocalCollection( User user, BrokerPool brokerPool,
-                            LocalCollection parent, org.exist.dom.Collection collection ) {
+                            LocalCollection parent, org.exist.collections.Collection collection ) {
         this.user = user;
         this.brokerPool = brokerPool;
         this.parent = parent;
@@ -168,10 +167,7 @@ public class LocalCollection extends Observable implements Collection {
             id = createId();
 
         LocalXMLResource r =
-            new LocalXMLResource( user, brokerPool, this, id, -1, indentXML );
-        r.setEncoding( encoding );
-        r.setSAXDocEvents( this.saxDocumentEvents );
-	r.setProcessXInclude( processXInclude );
+            new LocalXMLResource( user, brokerPool, this, id, -1, properties);
         return r;
     }
 
@@ -204,7 +200,7 @@ public class LocalCollection extends Observable implements Collection {
     }
 
 
-    protected org.exist.dom.Collection getCollection() {
+    protected org.exist.collections.Collection getCollection() {
         return collection;
     }
 
@@ -234,15 +230,7 @@ public class LocalCollection extends Observable implements Collection {
 
 
     public String getProperty( String property ) throws XMLDBException {
-        if ( property.equals( "pretty" ) )
-            return indentXML ? "true" : "false";
-        if ( property.equals( "encoding" ) )
-            return encoding;
-        if ( property.equals( "sax-document-events" ) )
-            return saxDocumentEvents ? "true" : "false";
-		if ( property.equals( "expand-xincludes" ) )
-			return processXInclude ? "true" : "false";
-        return null;
+    	return (String)properties.get(property);
     }
 
 
@@ -257,10 +245,7 @@ public class LocalCollection extends Observable implements Collection {
         if ( document == null )
             return null;
         LocalXMLResource r =
-            new LocalXMLResource( user, brokerPool, this, document, -1, indentXML );
-        r.setEncoding( encoding );
-        r.setSAXDocEvents( saxDocumentEvents );
-		r.setProcessXInclude( processXInclude );
+            new LocalXMLResource( user, brokerPool, this, document, -1, properties );
         return r;
     }
 
@@ -390,17 +375,7 @@ public class LocalCollection extends Observable implements Collection {
 
     public void setProperty( String property,
                              String value ) throws XMLDBException {
-        if ( property.equals( "pretty" ) )
-            indentXML = value.equals( "true" );
-
-        if ( property.equals( "encoding" ) )
-            encoding = value;
-
-        if ( property.equals( "sax-document-events" ) )
-            saxDocumentEvents = value.equals( "true" );
-
-		if ( property.equals( "expand-xincludes" ) )
-			processXInclude = value.equals( "true" );
+        properties.put(property, value);
     }
 
 

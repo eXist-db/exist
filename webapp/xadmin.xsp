@@ -3,12 +3,10 @@
 <!-- Author: Wolfgang Meier "meier@ifs.tu-darmstadt.de" -->
 
 <xsp:page language="java"
-          xmlns:xsp="http://apache.org/xsp"
-		  xmlns:xsp-request="http://apache.org/xsp/request/2.0"
-          xmlns:ci="http://apache.org/cocoon/include/1.0"
-          xmlns:xmldb="http://exist-db.org/xmldb/1.0"
-		  xmlns:exist="http://exist.sourceforge.net/NS/exist"
-          xmlns:log="http://apache.org/xsp/log/2.0">
+		xmlns:xsp="http://apache.org/xsp"
+    	xmlns:ci="http://apache.org/cocoon/include/1.0"
+    	xmlns:xmldb="http://exist-db.org/xmldb/1.0"
+        xmlns:log="http://apache.org/xsp/log/2.0">
 	
     <xsp:structure>
         <xsp:include>org.apache.cocoon.components.language.markup.xsp.XSPUtil</xsp:include>
@@ -16,7 +14,7 @@
         <xsp:include>java.io.BufferedReader</xsp:include>
         <xsp:include>java.io.FileReader</xsp:include>
         <xsp:include>java.util.StringTokenizer</xsp:include>
-        <xsp:include>org.apache.cocoon.components.request.multipart.FilePartFile</xsp:include>
+        <xsp:include>org.apache.cocoon.servlet.multipart.Part</xsp:include>
         <xsp:include>org.exist.util.XMLUtil</xsp:include>
     </xsp:structure>
 
@@ -70,8 +68,6 @@
         String action = request.getParameter("action");
         
             if(action != null) {
-              
-                <!-- view document -->
         
                 if(action.equals("view")) {
                     String coll = request.getParameter("subcoll");
@@ -81,8 +77,6 @@
                       String docs[] = request.getParameterValues("docs");
         
                      <section title="View document">
-                        <!-- insert content as xml-source
-                           will be pretty printed       -->
                         <xml-source>
                             <xmldb:collection>
                                 <xmldb:uri>collectionURI</xmldb:uri>
@@ -143,16 +137,19 @@
                 }
                 
             } else if(action.equals("store")) {
-                FilePartFile file = 
-                    (FilePartFile)request.get("uploaded_file");
+				Part file = 
+					(Part)request.get("uploaded_file");
                 String overwrite = request.getParameter("overwrite");
                 overwrite = (overwrite == null ? "false" : "true");
                 String fileName = request.getParameter("filename");
                 if(fileName == null || fileName.length() == 0)
-		fileName = file.getFileName();
-                String source = XMLUtil.readFile(file.getFile());
-                file.getFile().delete();
-                
+					fileName = file.getUploadName();
+				String source = null;
+				try {
+					source = XMLUtil.readFile(file.getInputStream(), "ISO-8859-1");
+				} catch(Exception e) {
+				}
+				
                 <section title="Store document">
                 
                 <p>Filename: <xsp:expr>fileName</xsp:expr>.</p>
@@ -174,6 +171,7 @@
                 </xmldb:collection>
                         
                 </section>
+
             } else if(action.equals("create")) {
                 String subcoll = request.getParameter("subcoll");
                 <xmldb:collection>
@@ -237,7 +235,8 @@
                     <xsp:logic>
                         UserManagementService _service = (UserManagementService)
                             collection.getService( "UserManagementService", "1.0" );
-                        _service.removeUser( username );
+                        User user_ = _service.getUser( username );
+                        _service.removeUser( user_ );
                     </xsp:logic>
                     <xmldb:error>
                         <error><xmldb:get-error/></error>

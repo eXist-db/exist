@@ -49,7 +49,7 @@ public class LocalCollectionManagementService extends CollectionManager {
         DBBroker broker = null;
         try {
             broker = brokerPool.get();
-            org.exist.dom.Collection coll =
+            org.exist.collections.Collection coll =
                 broker.getOrCreateCollection( user, collName );
             broker.saveCollection( coll );
             broker.flush();

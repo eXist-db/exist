@@ -33,6 +33,6 @@ public class BrokerFactory {
 		if (dbName.equalsIgnoreCase("NATIVE"))
 			return new NativeBroker(pool, conf);
 		else
-			return new RelationalBroker(pool, conf);
+			throw new EXistException("no database backend found for " + dbName);
 	}
 }

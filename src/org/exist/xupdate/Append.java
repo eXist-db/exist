@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.exist.EXistException;
-import org.exist.dom.Collection;
+import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;

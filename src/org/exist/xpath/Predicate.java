@@ -23,7 +23,7 @@ package org.exist.xpath;
 
 import java.util.Iterator;
 
-import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
 import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -40,13 +40,14 @@ import org.exist.storage.BrokerPool;
  */
 public class Predicate extends PathExpr {
 
-    protected static Category LOG = Category.getInstance( Predicate.class.getName() );
+    protected static Logger LOG = Logger.getLogger( Predicate.class );
 
     public Predicate(BrokerPool pool) {
         super(pool);
     }
 
     public Value eval( DocumentSet docs, NodeSet context, NodeProxy node ) {
+    	long start = System.currentTimeMillis();
         ArraySet result = new ArraySet( 100 );
         Expression first = getExpression( 0 );
         if ( first == null )
@@ -56,6 +57,7 @@ public class Predicate extends PathExpr {
             {
                 NodeSet nodes =
                     (NodeSet) super.eval( docs, context, null ).getNodeList();
+                start = System.currentTimeMillis();
                 NodeProxy l;
                 NodeProxy parent;
                 boolean includeSelf =
@@ -145,6 +147,8 @@ public class Predicate extends PathExpr {
                 }
             }
         }
+        LOG.debug("predicate expression found " + result.getLength() + " in " + 
+        	(System.currentTimeMillis() - start) + "ms.");
         return new ValueNodeSet( result );
     }
 

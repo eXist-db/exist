@@ -1,16 +1,19 @@
 package org.exist.xmldb;
 
 import java.util.Iterator;
+
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
-import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.SyntaxException;
-import org.xmldb.api.base.*;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.ErrorCodes;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.XMLDBException;
 
 public class LocalUserManagementService implements UserManagementService {
 	private LocalCollection collection;
@@ -64,7 +67,7 @@ public class LocalUserManagementService implements UserManagementService {
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				"you are not the owner of this collection");
-		org.exist.dom.Collection coll = ((LocalCollection) child).getCollection();
+		org.exist.collections.Collection coll = ((LocalCollection) child).getCollection();
 		coll.setPermissions(perm);
 		DBBroker broker = null;
 		try {
@@ -86,7 +89,7 @@ public class LocalUserManagementService implements UserManagementService {
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				"you are not the owner of this collection");
-		org.exist.dom.Collection coll = collection.getCollection();
+		org.exist.collections.Collection coll = collection.getCollection();
 		try {
 			coll.setPermissions(modeStr);
 		} catch (SyntaxException e) {
@@ -136,10 +139,10 @@ public class LocalUserManagementService implements UserManagementService {
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				"you are not the owner of this collection");
-		org.exist.dom.Collection coll = collection.getCollection();
-		coll.setPermissions(mode);
+		org.exist.collections.Collection coll = collection.getCollection();
 		DBBroker broker = null;
 		try {
+			coll.setPermissions(mode);
 			broker = pool.get();
 			broker.saveCollection(coll);
 			broker.flush();
@@ -183,11 +186,12 @@ public class LocalUserManagementService implements UserManagementService {
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				"need admin privileges for chown");
-		org.exist.dom.Collection coll = collection.getCollection();
-		coll.getPermissions().setOwner(u);
-		coll.getPermissions().setGroup(group);
+		org.exist.collections.Collection coll = collection.getCollection();
 		DBBroker broker = null;
 		try {
+			coll.getPermissions().setOwner(u);
+			coll.getPermissions().setGroup(group);
+
 			broker = pool.get();
 			broker.saveCollection(coll);
 			broker.flush();
@@ -264,7 +268,7 @@ public class LocalUserManagementService implements UserManagementService {
 		try {
 			broker = pool.get();
 			String child;
-			org.exist.dom.Collection childColl;
+			org.exist.collections.Collection childColl;
 			int j = 0;
 			for (Iterator i = collection.collection.collectionIterator(); i.hasNext(); j++) {
 				child = (String) i.next();

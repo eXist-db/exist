@@ -1,12 +1,8 @@
 package org.exist.xupdate;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Set;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.dom.Collection;
+import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
@@ -14,7 +10,6 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
-import org.exist.util.StorageAddress;
 import org.w3c.dom.NodeList;
 
 /**
@@ -72,8 +67,6 @@ public class Insert extends Modification {
 				doc.getBroker().saveCollection(prevCollection);
 			if (!doc.getPermissions().validate(user, Permission.UPDATE))
 				throw new PermissionDeniedException("permission to remove document denied");
-			LOG.debug("processing " + node.getGID() + " [" + 
-				StorageAddress.toString(node.getInternalAddress()) + "]");
 			parent = (NodeImpl) node.getParentNode();
 			switch (mode) {
 				case INSERT_BEFORE :

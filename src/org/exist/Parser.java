@@ -39,8 +39,8 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Category;
 import org.apache.xml.resolver.tools.CatalogResolver;
+import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
-import org.exist.dom.Collection;
 import org.exist.dom.CommentImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentTypeImpl;
@@ -91,7 +91,7 @@ public class Parser
 	private final static int VALIDATION_DISABLED = 2;
 
 	private int validation = VALIDATION_AUTO;
-	
+
 	public Collection collection = null;
 	protected DBBroker broker = null;
 	protected XMLString charBuf = new XMLString();
@@ -103,7 +103,7 @@ public class Parser
 	protected boolean validate = false;
 	protected int level = 0;
 	protected Locator locator = null;
-	protected int normalize = FastStringBuffer.SUPPRESS_BOTH;
+	protected int normalize = XMLString.SUPPRESS_NONE;
 	protected XMLReader parser;
 	protected Stack prefixes = new Stack();
 	protected ProgressIndicator progress;
@@ -165,9 +165,9 @@ public class Parser
 		String suppressWS = (String) config.getProperty("indexer.suppress-whitespace");
 		if (suppressWS != null) {
 			if (suppressWS.equals("leading"))
-				normalize = FastStringBuffer.SUPPRESS_LEADING_WS;
+				normalize = XMLString.SUPPRESS_LEADING_WS;
 			else if (suppressWS.equals("trailing"))
-				normalize = FastStringBuffer.SUPPRESS_TRAILING_WS;
+				normalize = XMLString.SUPPRESS_TRAILING_WS;
 			else if (suppressWS.equals("none"))
 				normalize = 0;
 
@@ -232,9 +232,11 @@ public class Parser
 			return;
 		CommentImpl comment = new CommentImpl(ch, start, length);
 		comment.setOwnerDocument(document);
-		if (stack.empty())
-			document.appendChild(comment, validate);
-		else {
+		if (stack.empty()) {
+			if (!validate)
+				broker.store(comment, currentPath.toString());
+			document.appendChild(comment);
+		} else {
 			ElementImpl last = (ElementImpl) stack.peek();
 			if (charBuf != null && charBuf.length() > 0) {
 				final XMLString normalized = charBuf.normalize(normalize);
@@ -250,10 +252,9 @@ public class Parser
 				}
 			}
 			last.appendChildInternal(comment);
+			if (!validate)
+				broker.store(comment, currentPath.toString());
 		}
-		if (!validate)
-			broker.store(comment, currentPath.toString());
-
 	}
 
 	public void endCDATA() {
@@ -358,14 +359,9 @@ public class Parser
 	public DocumentImpl parse(Collection coll, InputSource is, String fileName)
 		throws SAXException, IOException, PermissionDeniedException {
 		this.collection = coll;
-		final Object lock = broker.acquireWriteLock();
-		try {
-			scan(is, fileName);
+		scan(is, fileName);
 
-			return store(is);
-		} finally {
-			broker.releaseWriteLock(lock);
-		}
+		return store(is);
 	}
 
 	/**
@@ -397,14 +393,9 @@ public class Parser
 	public DocumentImpl parse(Collection collection, File file, String xmlFileName)
 		throws SAXException, IOException, PermissionDeniedException {
 		this.collection = collection;
-		final Object lock = broker.acquireWriteLock();
-		try {
-			final InputSource in = new InputSource(file.getAbsolutePath());
-			scan(in, xmlFileName);
-			return store(in);
-		} finally {
-			broker.releaseWriteLock(lock);
-		}
+		final InputSource in = new InputSource(file.getAbsolutePath());
+		scan(in, xmlFileName);
+		return store(in);
 	}
 
 	/**
@@ -436,13 +427,8 @@ public class Parser
 	public DocumentImpl parse(Collection coll, String str, String xmlFileName)
 		throws SAXException, IOException, PermissionDeniedException {
 		collection = coll;
-		final Object lock = broker.acquireWriteLock();
-		try {
-			scan(new InputSource(new StringReader(str)), xmlFileName);
-			return store(new InputSource(new StringReader(str)));
-		} finally {
-			broker.releaseWriteLock(lock);
-		}
+		scan(new InputSource(new StringReader(str)), xmlFileName);
+		return store(new InputSource(new StringReader(str)));
 	}
 
 	public DocumentImpl parse(byte[] data, String xmlFileName)
@@ -453,39 +439,31 @@ public class Parser
 	public DocumentImpl parse(Collection coll, byte[] data, String xmlFileName)
 		throws SAXException, IOException, PermissionDeniedException {
 		collection = coll;
-		final Object lock = broker.acquireWriteLock();
-		try {
-			ByteArrayInputStream bos = new ByteArrayInputStream(data);
-			InputSource is = new InputSource(bos);
-			is.setEncoding("UTF-8");
-			scan(is, xmlFileName);
-			bos.reset();
-			is = new InputSource(bos);
-			is.setEncoding("UTF-8");
-			return store(is);
-		} finally {
-			broker.releaseWriteLock(lock);
-		}
+		ByteArrayInputStream bos = new ByteArrayInputStream(data);
+		InputSource is = new InputSource(bos);
+		is.setEncoding("UTF-8");
+		scan(is, xmlFileName);
+		bos.reset();
+		is = new InputSource(bos);
+		is.setEncoding("UTF-8");
+		return store(is);
 	}
 
 	public DocumentImpl parse(Collection coll, Node node, String xmlFileName)
 		throws SAXException, IOException, PermissionDeniedException {
 		collection = coll;
-		final Object lock = broker.acquireWriteLock();
-		try {
-			scan(node, xmlFileName);
-			return store(node);
-		} finally {
-			broker.releaseWriteLock(lock);
-		}
+		scan(node, xmlFileName);
+		return store(node);
 	}
 
 	public void processingInstruction(String target, String data) {
 		ProcessingInstructionImpl pi = new ProcessingInstructionImpl(0, target, data);
 		pi.setOwnerDocument(document);
-		if (stack.isEmpty())
-			document.appendChild(pi, validate);
-		else {
+		if (stack.isEmpty()) {
+			if (!validate)
+				broker.store(pi, currentPath);
+			document.appendChild(pi);
+		} else {
 			ElementImpl last = (ElementImpl) stack.peek();
 			if (charBuf != null && charBuf.length() > 0) {
 				XMLString normalized = charBuf.normalize(normalize);
@@ -502,10 +480,9 @@ public class Parser
 				charBuf.reset();
 			}
 			last.appendChildInternal(pi);
+			if (!validate)
+				broker.store(pi, currentPath);
 		}
-		if (!validate)
-			broker.store(pi, currentPath);
-
 	}
 
 	/**
@@ -694,7 +671,7 @@ public class Parser
 			if (!oldDoc.getPermissions().validate(user, Permission.UPDATE))
 				throw new PermissionDeniedException(
 					"document exists and update " + "is not allowed");
-		// no: do we have write permissions?
+			// no: do we have write permissions?
 		} else if (!collection.getPermissions().validate(user, Permission.WRITE))
 			throw new PermissionDeniedException(
 				"not allowed to write to collection " + collection.getName());
@@ -800,26 +777,34 @@ public class Parser
 			} else
 				node = new ElementImpl(qname);
 			last.appendChildInternal(node);
+
+			node.setOwnerDocument(document);
+			node.setAttributes((short) attributes.getLength());
+			if (prefixes.size() > 0)
+				node.setPrefixes(prefixes);
+
+			stack.push(node);
+			currentPath.append('/').append(qname);
+			if (!validate) {
+				broker.store(node, currentPath);
+			}
 		} else {
 			if (validate)
 				node = new ElementImpl(0, qname);
 			else
 				node = new ElementImpl(1, qname);
-
 			rootNode = node;
-			document.appendChild(node, validate);
-		}
-		node.setOwnerDocument(document);
-		node.setAttributes((short) attributes.getLength());
-		if (prefixes.size() > 0)
-			node.setPrefixes(prefixes);
+			node.setOwnerDocument(document);
+			node.setAttributes((short) attributes.getLength());
+			if (prefixes.size() > 0)
+				node.setPrefixes(prefixes);
 
-		stack.push(node);
-		currentPath.append('/').append(qname);
-		if (!validate
-			&& (broker.getDatabaseType() == DBBroker.DBM
-				|| broker.getDatabaseType() == DBBroker.NATIVE)) {
-			broker.store(node, currentPath);
+			stack.push(node);
+			currentPath.append('/').append(qname);
+			if (!validate) {
+				broker.store(node, currentPath);
+			}
+			document.appendChild(node);
 		}
 
 		level++;
@@ -852,7 +837,7 @@ public class Parser
 		currentLine = locator.getLineNumber();
 		if (!validate) {
 			progress.setValue(currentLine);
-			if(progress.changed()) {
+			if (progress.changed()) {
 				setChanged();
 				notifyObservers(progress);
 			}
@@ -913,18 +898,12 @@ public class Parser
 					new DocumentTypeImpl(rootNode.getTagName(), null, document.getFileName());
 				document.setDocumentType(dt);
 			}
-			if (broker.getDatabaseType() != DBBroker.NATIVE) {
-				broker.storeDocument(document);
-				broker.saveCollection(collection);
-			} else
-				broker.addDocument(collection, document);
 			document.setChildCount(0);
 			parser.parse(src);
 			progress.finish();
 			setChanged();
 			notifyObservers(progress);
-			//if(broker.getDatabaseType() == DBBroker.NATIVE)
-			//	broker.addDocument(collection, document);
+			broker.addDocument(collection, document);
 			broker.closeDocument();
 			broker.flush();
 			if (document.getFileName().equals("/db/system/users.xml") && privileged == false) {
@@ -1015,6 +994,7 @@ public class Parser
 			URL url = new URL(systemId);
 			if (url.getProtocol().equals("file")) {
 				String path = url.getPath();
+				LOG.debug("trying to resolve " + path);
 				File f = new File(path);
 				if (!f.canRead())
 					return resolver.resolveEntity(null, f.getName());

@@ -180,7 +180,7 @@ public class QuerySoapBindingImpl
             broker = pool.get();
             if ( path == null )
                 path = "/db";
-            org.exist.dom.Collection collection =
+            org.exist.collections.Collection collection =
                 broker.getCollection( path );
             if ( collection == null )
                 throw new RemoteException( "collection " + path + " not found" );
@@ -297,29 +297,11 @@ public class QuerySoapBindingImpl
                         throw new RuntimeException( "not found: " + num );
                     LOG.debug( "loaded node " + proxy.gid );
                     Serializer serializer = broker.getSerializer();
-                    serializer.setEncoding( encoding );
-
-                    if ( prettyPrint ) {
-                        StringWriter sout = new StringWriter();
-                        OutputFormat format =
-                            new OutputFormat( "xml", encoding, true );
-                        format.setOmitXMLDeclaration( true );
-                        format.setOmitComments( false );
-                        format.setLineWidth( 60 );
-                        XMLSerializer xmlout =
-                            new XMLSerializer( sout, format );
-                        serializer.setContentHandler( xmlout );
-                        serializer.setLexicalHandler( xmlout );
-                        try {
-                            serializer.toSAX( proxy );
-                        } catch ( SAXException saxe ) {
-                            LOG.warn( saxe );
-                            throw saxe;
-                        }
-                        xml = sout.toString();
-                    }
-                    else
-                        xml = serializer.serialize( proxy );
+                    Map properties = new TreeMap();
+                    properties.put(Serializer.ENCODING, encoding);
+                    properties.put(Serializer.PRETTY_PRINT, Boolean.toString(prettyPrint));
+                    serializer.setProperties( properties );
+                    xml = serializer.serialize( proxy );
                     break;
                 default:
                     ValueSet valueSet = qr.getValueSet();
@@ -380,29 +362,11 @@ public class QuerySoapBindingImpl
                         throw new RuntimeException( "not found: " + pos );
                     LOG.debug( "loaded node " + proxy.gid );
                     Serializer serializer = broker.getSerializer();
-                    serializer.setEncoding( encoding );
-
-                    if ( prettyPrint ) {
-                        StringWriter sout = new StringWriter();
-                        OutputFormat format =
-                            new OutputFormat( "xml", encoding, true );
-                        format.setOmitXMLDeclaration( true );
-                        format.setOmitComments( false );
-                        format.setLineWidth( 60 );
-                        XMLSerializer xmlout =
-                            new XMLSerializer( sout, format );
-                        serializer.setContentHandler( xmlout );
-                        serializer.setLexicalHandler( xmlout );
-                        try {
-                            serializer.toSAX( proxy );
-                        } catch ( SAXException saxe ) {
-                            LOG.warn( saxe );
-                            throw saxe;
-                        }
-                        xml = sout.toString();
-                    }
-                    else
-                        xml = serializer.serialize( proxy );
+                    Map properties = new TreeMap();
+                    properties.put(Serializer.ENCODING, encoding);
+                    properties.put(Serializer.PRETTY_PRINT, Boolean.toString(prettyPrint));
+                    serializer.setProperties( properties );
+                    xml = serializer.serialize( proxy );
                     break;
                 default:
                     throw new RemoteException( "result set is not a node list" );
