@@ -161,7 +161,7 @@ public class Predicate extends PathExpr {
 				    	    temp = contextSet.selectSiblings(p, NodeSet.PRECEDING);
 				    		break;
 				    	case Constants.PARENT_AXIS:
-				    	    temp = p.getParents();
+				    	    temp = p.getParents(false);
 				    		break;
 				    	case Constants.ANCESTOR_AXIS:
 				    	case Constants.ANCESTOR_SELF_AXIS:

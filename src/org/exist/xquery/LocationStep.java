@@ -123,19 +123,7 @@ public class LocationStep extends Step {
 					getAncestors(context, contextSequence.toNodeSet());
 				break;
 			case Constants.SELF_AXIS :
-				if (inPredicate) {
-					if (contextSequence instanceof VirtualNodeSet) {
-						((VirtualNodeSet) contextSequence).setInPredicate(true);
-						((VirtualNodeSet) contextSequence).setSelfIsContext();
-					} else if(Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {
-						NodeProxy p;
-						for (Iterator i = contextSequence.toNodeSet().iterator(); i.hasNext();) {
-							p = (NodeProxy) i.next();
-							p.addContextNode(p);
-						}
-					}
-				}
-				temp = contextSequence;
+				temp = getSelf(context, contextSequence.toNodeSet());
 				break;
 			case Constants.PARENT_AXIS :
 				temp =
@@ -169,6 +157,43 @@ public class LocationStep extends Step {
 			(predicates.size() == 0)
 				? temp
 				: applyPredicate(contextSequence, temp);
+	}
+
+	/**
+	 * @param context
+	 * @param contextSet
+	 * @return
+	 */
+	protected Sequence getSelf(XQueryContext context, NodeSet contextSet) {
+		if(test.isWildcardTest()) {
+			if(((TypeTest)test).nodeType == Type.NODE) {
+				if (inPredicate) {
+					if (contextSet instanceof VirtualNodeSet) {
+						((VirtualNodeSet) contextSet).setInPredicate(true);
+						((VirtualNodeSet) contextSet).setSelfIsContext();
+					} else if(Type.subTypeOf(contextSet.getItemType(), Type.NODE)) {
+						NodeProxy p;
+						for (Iterator i = contextSet.iterator(); i.hasNext();) {
+							p = (NodeProxy) i.next();
+							p.addContextNode(p);
+						}
+					}
+				}
+				return contextSet;
+			} else {
+				VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextSet);
+				vset.setInPredicate(inPredicate);
+				return vset;
+			}
+		} else {
+			DocumentSet docs = getDocumentSet(contextSet);
+		    NodeSelector selector = new SelfSelector(contextSet, inPredicate);
+		    NodeSet result = context.getBroker().getElementIndex().findElementsByTagName(
+		    		ElementValue.ELEMENT, docs, test.getName(), selector
+		    );
+		    LOG.debug("Found " + result.getLength() + " for " + test.getName() + "; context: " + contextSet.getLength());
+			return result;
+		}
 	}
 
 	protected NodeSet getAttributes(
@@ -351,13 +376,19 @@ public class LocationStep extends Step {
 		return result;
 	}
 
-	/**
-	 * TODO: works only for ..
-	 */
 	protected NodeSet getParents(
 		XQueryContext context,
 		NodeSet contextSet) {
-		return contextSet.getParents();
+		if(test.isWildcardTest()) {
+			return contextSet.getParents(inPredicate);
+		} else {
+		    DocumentSet docs = getDocumentSet(contextSet);
+		    NodeSelector selector = new ParentSelector(contextSet, inPredicate);
+		    NodeSet result = context.getBroker().getElementIndex().findElementsByTagName(
+		    		ElementValue.ELEMENT, docs, test.getName(), selector
+		    );
+			return result;
+		}
 	}
 
 	protected DocumentSet getDocumentSet(NodeSet contextSet) {
