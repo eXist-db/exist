@@ -39,6 +39,9 @@ import org.w3c.dom.NodeList;
 /**
  * Implements an XUpate append statement.
  * 
+ * Note: appending an attribute that is already present in
+ * an element will overwrite the old attribute value.
+ * 
  * @author Wolfgang Meier
  */
 public class Append extends Modification {
