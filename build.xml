@@ -214,6 +214,8 @@
 				<include name="**.xq"/>
 			</fileset>
 		</copy>
+    	<copy file="${src}/org/exist/xquery/util/messages.properties"
+    		todir="${build.classes}/org/exist/xquery/util"/>
         <copy file="${src}/org/exist/ant/antlib.xml" 
 			todir="${build.classes}/org/exist/ant"/>
         <copy file="${src}/org/exist/exist.xsl" 
