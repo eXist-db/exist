@@ -13,6 +13,8 @@ import javax.xml.parsers.SAXParserFactory;
 
 import junit.framework.TestCase;
 
+import org.exist.dom.QName;
+import org.exist.memtree.*;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.util.serializer.DOMSerializer;
@@ -58,6 +60,37 @@ public class DOMTest extends TestCase {
 		DOMSerializer serializer = new DOMSerializer(writer, null);
 		serializer.serialize(node);
 		System.out.println(writer.toString());
+	}
+	
+	public void testGetChildNodes1() {
+		MemTreeBuilder builder = new MemTreeBuilder();
+		builder.startDocument();
+		builder.startElement(new QName("top", null, null), null);
+		builder.characters("text");
+		builder.endElement();
+		builder.endDocument();
+		DocumentImpl doc = builder.getDocument();
+		Node top = doc.getFirstChild();
+		assertEquals(Node.ELEMENT_NODE, top.getNodeType());
+		assertEquals("top", top.getNodeName());
+		assertEquals(1, top.getChildNodes().getLength());
+	}
+
+	public void testGetChildNodes2() {
+		MemTreeBuilder builder = new MemTreeBuilder();
+		builder.startDocument();
+		builder.startElement(new QName("top", null, null), null);
+		builder.startElement(new QName("child1", null, null), null);
+		builder.endElement();
+		builder.startElement(new QName("child2", null, null), null);
+		builder.endElement();
+		builder.endElement();
+		builder.endDocument();
+		DocumentImpl doc = builder.getDocument();
+		Node top = doc.getFirstChild();
+		assertEquals(Node.ELEMENT_NODE, top.getNodeType());
+		assertEquals("top", top.getNodeName());
+		assertEquals(2, top.getChildNodes().getLength());
 	}
 
 	public void print(Node node) {
