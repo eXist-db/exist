@@ -1,6 +1,5 @@
 xquery version "1.0";
 
-(: Test module import :)
 import module namespace utils="http://exist-db.org/xquery/collection-utils"
 at "collections.xqm";
 
@@ -100,7 +99,7 @@ declare function f:get-query-history() as element()*
                 <tr>
                     <td colspan="2">
                         <span class="label">XQuery:</span><br/>
-                        <textarea name="query" cols="70" rows="15"/>
+                        <textarea name="query" cols="80" rows="15"/>
                     </td>
                 </tr>
                 <tr>

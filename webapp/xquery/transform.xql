@@ -5,14 +5,22 @@ declare namespace util="http://exist-db.org/xquery/util";
 
 declare function local:list-functions() as node()
 {
-	<builtin-functions>
-		{
-			for $f in util:builtin-functions()
-            order by $f
-			return
-				util:describe-function($f)
-		}
-	</builtin-functions>
+     <builtin-functions>
+     {
+     	for $mod in util:registered-modules()
+		let $functions := util:registered-functions($mod)
+		order by $mod descending
+        return
+			<module namespace="{$mod}">
+				<description>{util:get-module-description($mod)}</description>
+				{
+					for $f in $functions 
+					return
+                    	util:describe-function($f)
+				}
+			</module>
+      }
+      </builtin-functions>
 };
 
 let	$params := 

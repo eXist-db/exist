@@ -5,39 +5,40 @@
 	<xsl:template match="document">
 		<html>
 			<head>
-				<title>XQuery Builtin Functions</title>
+				<title>XQuery Available Functions</title>
 				<link rel="stylesheet" type="text/css" 
 					href="styles/functions.css"/>
 			</head>
 			<body>
-				<h1>XQuery Builtin Functions</h1>
+				<h1>Available XQuery Functions</h1>
 				<xsl:apply-templates select="builtin-functions"/>
 			</body>
 		</html>
 	</xsl:template>
 
     <xsl:template match="builtin-functions">
-		<div class="module">
-            XPath/XQuery Core Library Functions (http://www.w3.org/2003/05/xpath-functions)
-		</div>
-        <xsl:apply-templates select="function[@module='http://www.w3.org/2003/05/xpath-functions']"/>
-		
-		<div class="module">
-			Utility Extension Functions (http://exist-db.org/xquery/util)
-		</div>
-        <xsl:apply-templates select="function[@module='http://exist-db.org/xquery/util']"/>
-            
-		<div class="module">
-			XMLDB Extension Functions (http://exist-db.org/xquery/xmldb)
-		</div>
-        <xsl:apply-templates select="function[@module='http://exist-db.org/xquery/xmldb']"/>
-            
-		<div class="module">
-            HTTP Request Extension Functions (http://exist-db.org/xquery/request)
-		</div>
-        <xsl:apply-templates select="function[@module='http://exist-db.org/xquery/request']"/>
+		<ul>
+			<xsl:for-each select="module">
+				<li>
+					<a href="#{generate-id()}">
+						<xsl:value-of select="description"/>
+					</a>
+				</li>
+			</xsl:for-each>
+		</ul>
+		<xsl:apply-templates/>
     </xsl:template>
     
+	<xsl:template match="module">
+		<div class="module">
+			<a style="color: white">
+				<xsl:attribute name="name"><xsl:value-of select="generate-id()"/></xsl:attribute>
+				<xsl:value-of select="description"/> (<xsl:value-of select="@namespace"/>)
+			</a>
+		</div>
+		<xsl:apply-templates select="function"/>
+	</xsl:template>
+
     <xsl:template match="function">
 		<div class="function">
 			<div class="functionhead">
