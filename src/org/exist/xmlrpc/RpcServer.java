@@ -1730,4 +1730,21 @@ public boolean dataBackup(User user, String dest) throws PermissionDeniedExcepti
 	         pool.release(con);
 	     }
 	 }
+
+    /* (non-Javadoc)
+     * @see org.exist.xmlrpc.RpcAPI#configureCollection(org.exist.security.User, java.lang.String, java.lang.String)
+     */
+    public boolean configureCollection(User user, String collection, String configuration) 
+    	throws EXistException, PermissionDeniedException {
+        RpcConnection con = pool.get();
+	     try {
+	         con.configureCollection(user, collection, configuration);
+	         return true;
+	     } catch (Exception e) {
+	         handleException(e);
+	         return false;
+	     } finally {
+	         pool.release(con);
+	     }
+    }
 }

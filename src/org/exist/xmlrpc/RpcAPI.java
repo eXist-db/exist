@@ -544,6 +544,9 @@ public interface RpcAPI {
 	boolean createCollection(User user, String name)
 		throws EXistException, PermissionDeniedException;
 
+	boolean configureCollection(User user, String collection, String configuration)
+		throws EXistException, PermissionDeniedException;
+	
 	/**
 	 *  Execute XPath query and return a reference to the result set. The
 	 *  returned reference may be used later to get a summary of results or
