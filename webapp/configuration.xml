@@ -341,6 +341,13 @@
 								only) if a document is validated.</para>
 						</listitem>
 					</varlistentry>
+				      <varlistentry>
+						<term>preserve-whitespace-mixed-content</term>
+						<listitem>
+							<para>Preserve whitespace for mixed content. Default option is <option>no</option>.
+                                                The option are <option>yes</option> and <option>no</option></para>
+						</listitem>
+					</varlistentry>
 				</variablelist>
 			</section>
 			<section>
