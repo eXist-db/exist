@@ -24,11 +24,14 @@ import java.net.MalformedURLException;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import javax.xml.transform.OutputKeys;
+
 import junit.framework.TestCase;
 
 import org.apache.xmlrpc.WebServer;
 import org.apache.xmlrpc.XmlRpc;
 import org.apache.xmlrpc.XmlRpcClient;
+import org.exist.storage.serializers.EXistOutputKeys;
 
 /**
  * JUnit test for XMLRPC interface methods.
@@ -48,6 +51,15 @@ public class XmlRpcTest extends TestCase {
     	"<para>ääööüüÄÄÖÖÜÜßß</para>" +
 		"<para>\uC5F4\uB2E8\uACC4</para>" +
     	"</test>";
+    
+    private final static String XSL_DATA =
+    	"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" " +
+    	"version=\"1.0\">" +
+		"<xsl:param name=\"testparam\"/>" +
+		"<xsl:template match=\"test\"><test><xsl:apply-templates/></test></xsl:template>" +
+		"<xsl:template match=\"para\">" +
+		"<p><xsl:value-of select=\"$testparam\"/>: <xsl:apply-templates/></p></xsl:template>" +
+		"</xsl:stylesheet>";
     
     private final static String TARGET_COLLECTION = "/db/xmlrpc/";
  
@@ -77,7 +89,13 @@ public class XmlRpcTest extends TestCase {
 		
 		result = (Boolean)xmlrpc.execute("parse", params);
 		assertTrue(result.booleanValue());
-		System.out.println("Document stored.");
+		
+		params.setElementAt(XSL_DATA, 0);
+		params.setElementAt(TARGET_COLLECTION + "test.xsl", 1);
+		result = (Boolean)xmlrpc.execute("parse", params);
+		assertTrue(result.booleanValue());
+		
+		System.out.println("Documents stored.");
 	}
 	
 	public void testRetrieveDoc() throws Exception {
@@ -94,8 +112,12 @@ public class XmlRpcTest extends TestCase {
         
         // execute the call
 		XmlRpcClient xmlrpc = getClient();
-		byte[] data = (byte[])
-        xmlrpc.execute( "getDocument", params );
+		byte[] data = (byte[]) xmlrpc.execute( "getDocument", params );
+		System.out.println( new String(data, "UTF-8") );
+		
+		System.out.println("Retrieving document with stylesheet applied");
+		options.put("stylesheet", "test.xsl");
+		data = (byte[]) xmlrpc.execute( "getDocument", params );
 		System.out.println( new String(data, "UTF-8") );
 	}
 	
@@ -130,6 +152,33 @@ public class XmlRpcTest extends TestCase {
         assertNotNull(result);
         assertTrue(result.length > 0);
         System.out.println(new String(result, "UTF-8"));
+	}
+	
+	public void testQueryWithStylesheet() throws Exception {
+		Hashtable options = new Hashtable();
+		options.put(EXistOutputKeys.STYLESHEET, "test.xsl");
+		options.put(EXistOutputKeys.STYLESHEET_PARAM + ".testparam", "Test");
+		options.put(OutputKeys.OMIT_XML_DECLARATION, "yes");
+		
+		Vector params = new Vector();
+		String query = "//para[1]";
+		params.addElement(query.getBytes("UTF-8"));
+		params.addElement(options);
+		XmlRpcClient xmlrpc = getClient();
+        Integer handle = (Integer) xmlrpc.execute( "executeQuery", params );
+        assertNotNull(handle);
+        
+        params.clear();
+        params.addElement(handle);
+        params.addElement(new Integer(0));
+        params.addElement(options);
+        byte[] item = (byte[]) xmlrpc.execute( "retrieve", params );
+        assertNotNull(item);
+        assertTrue(item.length > 0);
+        String out = new String(item, "UTF-8");
+        System.out.println("Received: " + out);
+        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+        		"<p>Test: ääööüüÄÄÖÖÜÜßß</p>", out);
 	}
 	
 	public void testExecuteQuery() throws Exception {

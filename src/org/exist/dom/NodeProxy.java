@@ -35,6 +35,7 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.UntypedAtomicValue;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -270,6 +271,10 @@ public class NodeProxy extends AbstractNodeSet implements NodeValue, Comparable 
 		return doc;
 	}
 
+	public Document getOwnerDocument() {
+		return doc;
+	}
+	
 	public DocumentImpl getDocument()  {
 		return doc;
 	}

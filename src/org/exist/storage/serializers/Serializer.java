@@ -24,6 +24,7 @@ package org.exist.storage.serializers;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.net.URI;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -194,7 +195,7 @@ public abstract class Serializer implements XMLReader {
 		if (prop.equals("http://xml.org/sax/properties/lexical-handler")) {
 			lexicalHandler = (LexicalHandler) value;
 		} else {
-			outputProperties.setProperty(prop, (String) value);
+			outputProperties.put(prop, value);
 		}
 	}
 
@@ -223,12 +224,9 @@ public abstract class Serializer implements XMLReader {
 	/**
 	 *  If an XSL stylesheet is present, plug it into
 	 *  the chain.
-	 *
-	 *@return StringWriter containing the generated XML
 	 */
-	protected StringWriter applyXSLHandler() {
-		StringWriter sout = new StringWriter();
-		StreamResult result = new StreamResult(sout);
+	protected void applyXSLHandler(Writer writer) {
+		StreamResult result = new StreamResult(writer);
 		xslHandler.setResult(result);
 		if (getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes")
 			.equals("yes")) {
@@ -236,7 +234,6 @@ public abstract class Serializer implements XMLReader {
 			receiver = xinclude;
 		} else
 			receiver = new ReceiverToSAX(xslHandler);
-		return sout;
 	}
 
 	/**
@@ -321,37 +318,39 @@ public abstract class Serializer implements XMLReader {
 		outputProperties.clear();
 	}
 
-	/**
-	 *  Serialize a document
-	 *
-	 *@param  doc               Description of the Parameter
-	 *@return                   Description of the Return Value
-	 *@exception  SAXException  Description of the Exception
-	 */
 	public String serialize(DocumentImpl doc) throws SAXException {
+		StringWriter writer = new StringWriter();
+		serialize(doc, writer);
+		return writer.toString();
+	}
+	
+	/**
+	 *  Serialize a document to the supplied writer.
+	 */
+	public void serialize(DocumentImpl doc, Writer writer) throws SAXException {
 		if (outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no").equals("yes")) {
 			String stylesheet = hasXSLPi(doc);
 			if (stylesheet != null)
 				setStylesheet((DocumentImpl) doc, stylesheet);
 		}
-		StringWriter out;
+		setStylesheetFromProperties(doc);
 		if (templates != null)
-			out = applyXSLHandler();
+			applyXSLHandler(writer);
 		else
-			out = setPrettyPrinter(true);
+			setPrettyPrinter(writer, true);
 		
 		serializeToReceiver(doc, true);
 		releasePrettyPrinter();
-		return out.toString();
 	}
 	
 
 	public String serialize(NodeValue n) throws SAXException {
-		StringWriter out;
+		setStylesheetFromProperties(n.getOwnerDocument());
+		StringWriter out = new StringWriter();
 		if (templates != null)
-			out = applyXSLHandler();
+			applyXSLHandler(out);
 		else
-			out = setPrettyPrinter(false);
+			setPrettyPrinter(out, false);
 		serializeToReceiver(n, true);
 		releasePrettyPrinter();
 		return out.toString();
@@ -365,11 +364,12 @@ public abstract class Serializer implements XMLReader {
 	 *@exception  SAXException  Description of the Exception
 	 */
 	public String serialize(NodeProxy p) throws SAXException {
-		StringWriter out;
+		setStylesheetFromProperties(p.getOwnerDocument());
+		StringWriter out = new StringWriter();
 		if (templates != null)
-			out = applyXSLHandler();
+			applyXSLHandler(out);
 		else
-			out = setPrettyPrinter(false);
+			setPrettyPrinter(out, false);
 		serializeToReceiver(p, false);
 		releasePrettyPrinter();
 		return out.toString();
@@ -441,13 +441,12 @@ public abstract class Serializer implements XMLReader {
 		throw new SAXNotRecognizedException(name);
 	}
 
-	protected StringWriter setPrettyPrinter(boolean xmlDecl) {
-		StringWriter sout = new StringWriter();
+	protected void setPrettyPrinter(Writer writer, boolean xmlDecl) {
 		outputProperties.setProperty(
 			OutputKeys.OMIT_XML_DECLARATION,
 			xmlDecl ? "no" : "yes");
 		xmlout = SAXSerializerPool.getInstance().borrowSAXSerializer();
-		xmlout.setWriter(sout);
+		xmlout.setWriter(writer);
 		xmlout.setOutputProperties(outputProperties);
 		if (getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes")
 				.equals("yes")) {
@@ -455,7 +454,6 @@ public abstract class Serializer implements XMLReader {
 			receiver = xinclude;
 		} else
 			receiver = xmlout;
-		return sout;
 	}
 
 	protected void releasePrettyPrinter() {
@@ -464,18 +462,39 @@ public abstract class Serializer implements XMLReader {
 		xmlout = null;
 	}
 
+	protected void setStylesheetFromProperties(Document doc) {
+		if(templates != null)
+			return;
+		String stylesheet = outputProperties.getProperty(EXistOutputKeys.STYLESHEET);
+		LOG.debug("xsl = " + stylesheet);
+		if(stylesheet != null) {
+			if(doc instanceof DocumentImpl)
+				setStylesheet((DocumentImpl)doc, stylesheet);
+			else
+				setStylesheet(null, stylesheet);
+		}
+	}
+	
+	protected void checkStylesheetParams() {
+		if(xslHandler == null)
+			return;
+		for(Enumeration e = outputProperties.propertyNames(); e.hasMoreElements(); ) {
+			String property = (String)e.nextElement();
+			if(property.startsWith(EXistOutputKeys.STYLESHEET_PARAM)) {
+				String value = outputProperties.getProperty(property);
+				property = property.substring(EXistOutputKeys.STYLESHEET_PARAM.length() + 1);
+				LOG.debug(property + " = " + value);
+				xslHandler.getTransformer().setParameter(property, value);
+			}
+		}
+	}
 	public void setStylesheet(String stylesheet) {
 		setStylesheet(null, stylesheet);
 	}
 
 	/**
-	 *  Sets the stylesheet attribute of the Serializer object
-	 *
-	 *@param  stylesheet                             The new stylesheet value
-	 *@exception  SAXException                       Description of the
-	 *      Exception
-	 *@exception  TransformerConfigurationException  Description of the
-	 *      Exception
+	 *  Plug an XSL stylesheet into the processing pipeline.
+	 *  All output will be passed to this stylesheet.
 	 */
 	public void setStylesheet(DocumentImpl doc, String stylesheet) {
 		if (stylesheet == null) {
@@ -527,7 +546,7 @@ public abstract class Serializer implements XMLReader {
 				TemplatesHandler handler = factory.newTemplatesHandler();
 				receiver = new ReceiverToSAX(handler);
 				try {
-					this.toSAX(xsl);
+					this.serializeToReceiver(xsl, true);
 				} catch (SAXException e) {
 					LOG.warn("SAXException while creating template", e);
 				}
@@ -541,18 +560,20 @@ public abstract class Serializer implements XMLReader {
 				"compiling stylesheet took " + (System.currentTimeMillis() - start));
 			xslHandler =
 				((SAXTransformerFactory) factory).newTransformerHandler(templates);
+//			xslHandler.getTransformer().setOutputProperties(outputProperties);
 		} catch (TransformerConfigurationException e) {
 			LOG.debug("error compiling stylesheet", e);
 			return;
 		}
+		checkStylesheetParams();
 	}
 
 	/** 
 	 * Set stylesheet parameter
 	 **/
-	public void setStylesheetParamameter(String valore, String valore1) {
+	public void setStylesheetParam(String param, String value) {
 		if (xslHandler != null)
-			xslHandler.getTransformer().setParameter(valore, valore1);
+			xslHandler.getTransformer().setParameter(param, value);
 	}
 
 	protected void setXSLHandler() {
@@ -584,6 +605,7 @@ public abstract class Serializer implements XMLReader {
 			if (stylesheet != null)
 				setStylesheet((DocumentImpl) doc, stylesheet);
 		}
+		setStylesheetFromProperties(doc);
 		setXSLHandler();
 		serializeToReceiver(
 			doc,
@@ -591,6 +613,7 @@ public abstract class Serializer implements XMLReader {
 	}
 
 	public void toSAX(NodeValue n) throws SAXException {
+		setStylesheetFromProperties(n.getOwnerDocument());
 		setXSLHandler();
 		serializeToReceiver(
 				n,
@@ -598,6 +621,7 @@ public abstract class Serializer implements XMLReader {
 	}
 	
 	public void toSAX(NodeProxy p) throws SAXException {
+		setStylesheetFromProperties(p.getOwnerDocument());
 		setXSLHandler();
 		if(p.gid < 0)
 			serializeToReceiver(p.getDocument(), getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
