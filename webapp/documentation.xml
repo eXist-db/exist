@@ -30,6 +30,9 @@
                     <para><ulink href="quickstart.xml">Quick Start</ulink>: getting started with eXist.</para>
                 </listitem>
                 <listitem>
+                    <para><ulink href="changes.xml">Changes</ulink>: overview of changes in this release.</para>
+                </listitem>
+                <listitem>
                     <para><ulink href="xquery.xml">XQuery</ulink>: current status, supported
                     features and extensions.</para>
                 </listitem>
@@ -59,16 +62,10 @@
                 <listitem>
                     <para><ulink href="ant-tasks.xml">Ant Tasks</ulink>: how to automate tasks with Ant.</para>
                 </listitem>
-                <listitem>
-                    <para><ulink href="changes.xml">Changes</ulink></para>
-                </listitem>
-                <listitem>
-                    <para><ulink href="performance.xml">Performance Issues</ulink></para>
-                </listitem>
-                <listitem>
-                    <para><ulink href="howtos.xml">Misc HowTos</ulink></para>
-                </listitem>
             </unorderedlist>
+            
+            <para>Further documentation can be found in the <ulink url="http://wiki.exist-db.org">Wiki</ulink>.
+            </para>
         </section>
         <section>
             <title>Articles</title>
