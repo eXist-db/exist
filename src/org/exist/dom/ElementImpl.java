@@ -448,8 +448,9 @@ public class ElementImpl extends NamedNode implements Element {
 				// index now?
 				if ((ownerDocument.reindex < 0
 					|| ownerDocument.reindex > ownerDocument.getTreeLevel(gid))
-					&& index)
+					&& index) {
 				    ownerDocument.broker.index(attrib, lastPath);
+				}
 				return attrib;
 			case Node.COMMENT_NODE :
 				final CommentImpl comment = new CommentImpl(((Comment) child).getData());

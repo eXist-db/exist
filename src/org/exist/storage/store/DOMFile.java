@@ -390,9 +390,9 @@ public class DOMFile extends BTree implements Lockable {
             rec.page.getPageHeader().setDataLength(rec.page.len);
         }
         // write the data
-//        LOG.debug("inserting " + new String(value) + " to " + rec.page.page.getPageInfo() + "; " +
-//                rec.page.page.hashCode());
         short tid = rec.page.getPageHeader().getNextTID();
+//        LOG.debug("inserting " + new String(value) + " to " + rec.page.page.getPageInfo() + "; " +
+//                tid);
         ByteConversion.shortToByte((short) tid, rec.page.data, rec.offset);
         rec.offset += 2;
         ByteConversion.shortToByte(isOverflow ? 0 : (short) value.length,
@@ -430,7 +430,7 @@ public class DOMFile extends BTree implements Lockable {
             pos += 10;
         }
         if(!requireSplit) {
-            LOG.debug("page " + rec.page.getPageNum() + ": no split required");
+//            LOG.debug("page " + rec.page.getPageNum() + ": no split required");
             rec.offset = rec.page.len;
             return rec;
         }
@@ -539,7 +539,7 @@ public class DOMFile extends BTree implements Lockable {
                     newPage.getPageHeader().setNextTID((short)(rec.page.getPageHeader().getNextTID() - 1));
                     newPage.getPageHeader().setPrevDataPage(rec.page.getPageNum());
                     newPage.getPageHeader().setNextDataPage(rec.page.getPageHeader().getNextDataPage());
-                    LOG.debug("creating new page after split: " + newPage.getPageNum());
+//                    LOG.debug("creating new page after split: " + newPage.getPageNum());
                     rec.page.getPageHeader().setNextDataPage(newPage.getPageNum());
                     rec.page.getPageHeader().setDataLength(rec.page.len);
                     rec.page.getPageHeader().setRecordCount(countRecordsInPage(rec.page));
@@ -1289,6 +1289,11 @@ public class DOMFile extends BTree implements Lockable {
             if (address < 0) address = findValue(this, proxy);
             if (address == BTree.KEY_NOT_FOUND) return null;
             final RecordPos rec = findRecord(address);
+            if(rec == null) {
+                LOG.warn("Node data could not be found! Page: " + StorageAddress.pageFromPointer(address) +
+                        "; tid: " + StorageAddress.tidFromPointer(address));
+                throw new RuntimeException("Node data could not be found for node " + proxy.gid);
+            }
             final ByteArrayOutputStream os = new ByteArrayOutputStream();
             getNodeValue(os, rec, true);
             final byte[] data = os.toByteArray();

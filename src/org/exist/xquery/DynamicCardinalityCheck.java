@@ -51,11 +51,11 @@ public class DynamicCardinalityCheck extends AbstractExpression {
 		Sequence seq = expression.eval(contextSequence, contextItem);
 		int items = seq.getLength();
 		if(items > 0 && requiredCardinality == Cardinality.EMPTY)
-			throw new XPathException("Empty sequence expected; got " + items);
+			throw new XPathException(getASTNode(), "Empty sequence expected; got " + items);
 		if(items == 0 && (requiredCardinality & Cardinality.ZERO) == 0)
-			throw new XPathException("Empty sequence is not allowed here");
+			throw new XPathException(getASTNode(), "Empty sequence is not allowed here");
 		else if(items > 1 && (requiredCardinality & Cardinality.MANY) == 0)
-			throw new XPathException("Sequence with more than one item is not allowed here");
+			throw new XPathException(getASTNode(), "Sequence with more than one item is not allowed here");
 		return seq;
 	}
 
