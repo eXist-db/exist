@@ -142,9 +142,9 @@
 				<fileset dir="${catalina.home}/server/lib">
 					<include name="*.jar"/>
 				</fileset>
-				<fileset dir="${catalina.home}/common/lib">
+				<!--fileset dir="${catalina.home}/common/lib">
 					<include name="*.jar"/>
-				</fileset>
+				</fileset-->
 			</classpath>
 		</javac>
 	</target>
@@ -718,10 +718,11 @@ Running tests on remote database
 	<!-- ================================================================== -->
 	<!-- Build installer                                                    -->
 	<!-- ================================================================== -->
-	<target depends="all,samples,javadocs" name="installer">
+	<target depends="all,samples,wrapper,javadocs" name="installer">
         <taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
 			classname="com.izforge.izpack.ant.IzPackTask"/>
 		<tstamp/>
+		<delete dir="${jetty.dir}/work/Jetty__8080__exist"/>
 		<echo message="Calling IzPack to create installer ..."/>
 		<izpack input="installer/install.xml"
 			output="installer/${project.name}-${project.version}.jar"
