@@ -56,6 +56,7 @@ public class ValueIndexTest extends TestCase {
                     .getService("CollectionManagementService", "1.0");
             testCollection = service.createCollection("test");
             assertNotNull(testCollection);
+            storeXMLFileAndGetQueryService("collection.xconf", "src/org/exist/xquery/test/collection.xconf");
         } catch (ClassNotFoundException e) {
         } catch (InstantiationException e) {
         } catch (IllegalAccessException e) {
@@ -72,6 +73,7 @@ public class ValueIndexTest extends TestCase {
         queryResource(service, "items.xml", "//item[itemno = 3]", 1);
         queryResource(service, "items.xml", "//item[stock <= 10]", 5);
         queryResource(service, "items.xml", "//item[stock > 20]", 1);
+        queryResource(service, "items.xml", "//item[x:rating > 8.0]", 2);
     }
     
     private ResourceSet queryResource(XPathQueryService service,
@@ -109,4 +111,8 @@ public class ValueIndexTest extends TestCase {
                 .getService("XPathQueryService", "1.0");
         return service;
     }
+    
+    public static void main(String[] args) {
+		junit.textui.TestRunner.run(ValueIndexTest.class);
+	}
 }

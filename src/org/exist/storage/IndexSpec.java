@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.exist.dom.QName;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
@@ -48,8 +49,9 @@ public class IndexSpec {
     private ValueIndexSpec specs[] = null;
     
     public IndexSpec(Element index) throws DatabaseConfigurationException {
+    	Map namespaces = getNamespaceMap(index);
+
         NodeList cl = index.getChildNodes();
-        Map namespaces = getNamespaceMap(index);
         for(int i = 0; i < cl.getLength(); i++) {
             Node node = cl.item(i);
             if(node.getNodeType() == Node.ELEMENT_NODE) {
@@ -67,7 +69,7 @@ public class IndexSpec {
             }
         }
     }
-
+    
     public FulltextIndexSpec getFulltextIndexSpec() {
         return ftSpec;
     }

@@ -1,0 +1,11 @@
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+	<index xmlns:x="http://www.foo.com">
+		<fulltext default="none"/>
+		<create path="//item/itemno" type="xs:integer"/>
+		<create path="//item/name" type="xs:string"/>
+		<create path="//item/stock" type="xs:integer"/>
+		<create path="//item/price" type="xs:double"/>
+		<create path="//item/prices/@specialprice" type="xs:boolean"/>
+		<create path="//item/x:rating" type="xs:double"/>
+	</index>
+</collection>

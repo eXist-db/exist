@@ -141,7 +141,7 @@ public class NativeBroker extends DBBroker {
 	protected PatternMatcher matcher = new Perl5Matcher();
 	
 	protected int defaultIndexDepth = 1;
-	protected IndexConfiguration idxConf;
+	protected IndexSpec idxConf;
 	
 	protected boolean readOnly = false;
 	
@@ -283,7 +283,7 @@ public class NativeBroker extends DBBroker {
 			if (readOnly)
 				LOG.info("database runs in read-only mode");
 			
-			idxConf = (IndexConfiguration) config.getProperty("indexer.map");
+			idxConf = (IndexSpec) config.getProperty("indexer.config");
 			textEngine = new NativeTextEngine(this, config, buffers);
 			valueIndex = new NativeValueIndex(this, valuesDb);
 			xmlSerializer = new NativeSerializer(this, config);
@@ -343,7 +343,7 @@ public class NativeBroker extends DBBroker {
 	    return elementIndex;
 	}
 
-	public IndexConfiguration getIndexConfiguration() {
+	public IndexSpec getIndexConfiguration() {
 	    return idxConf;
 	}
 	
@@ -910,7 +910,7 @@ public class NativeBroker extends DBBroker {
 		final String nodeName = node.getNodeName();
 		final long address = node.getInternalAddress();
 		final IndexSpec idxSpec = 
-		    doc.getCollection().getIdxConf(this, node.getOwnerDocument().getDoctype().getName());
+		    doc.getCollection().getIdxConf(this);
 		final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null; 
 		if (address < 0)
 			LOG.debug("node " + gid + ": internal address missing");
@@ -1118,7 +1118,7 @@ public class NativeBroker extends DBBroker {
 		final long gid = node.getGID();
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 		final IndexSpec idxSpec = 
-		    doc.getCollection().getIdxConf(this, node.getOwnerDocument().getDoctype().getName());
+		    doc.getCollection().getIdxConf(this);
 		final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
 		final int depth = ftIdx == null ? defaultIndexDepth : ftIdx.getIndexDepth();
 		final int level = doc.getTreeLevel(gid);
@@ -2038,7 +2038,7 @@ public class NativeBroker extends DBBroker {
 	public void removeNode(final NodeImpl node, NodePath currentPath) {
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 		final IndexSpec idxSpec = 
-		    doc.getCollection().getIdxConf(this, node.getOwnerDocument().getDoctype().getName());
+		    doc.getCollection().getIdxConf(this);
 		final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
 		final long gid = node.getGID();
 		final short nodeType = node.getNodeType();
@@ -2535,7 +2535,7 @@ public class NativeBroker extends DBBroker {
 		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 		final boolean isTemp = TEMP_COLLECTION.equals(doc.getCollection().getName());
 		final IndexSpec idxSpec = 
-		    doc.getCollection().getIdxConf(this, node.getOwnerDocument().getDoctype().getName());
+		    doc.getCollection().getIdxConf(this);
 		final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
 		final long gid = node.getGID();
 		if (gid < 0) {

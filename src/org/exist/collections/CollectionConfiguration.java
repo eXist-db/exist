@@ -23,9 +23,8 @@ package org.exist.collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
 
-import org.exist.collections.triggers.*;
+import org.exist.collections.triggers.Trigger;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.util.DatabaseConfigurationException;
@@ -37,6 +36,7 @@ import org.w3c.dom.NodeList;
 public class CollectionConfiguration {
 
     private final static String NAMESPACE = "http://exist-db.org/collection-config/1.0";
+    
 	private final static String ROOT_ELEMENT = "collection";
 	private final static String TRIGGERS_ELEMENT = "triggers";
 	private final static String EVENT_ATTRIBUTE = "event";
@@ -45,11 +45,11 @@ public class CollectionConfiguration {
 	private final static String PARAM_NAME_ATTRIBUTE = "name";
 	private final static String PARAM_VALUE_ATTRIBUTE = "value";
 	private final static String INDEX_ELEMENT = "index";
-	private static final String DOCTYPE_ATTRIBUTE = "doctype";
+	private static final String DOCROOT_ATTRIBUTE = "root";
 	
 	private Trigger[] triggers = new Trigger[3];
 	
-	private Map indexByDoctype = new TreeMap();
+	private IndexSpec indexSpec = null;
 	
 	public CollectionConfiguration(DBBroker broker, Collection parent, Document doc) 
     throws CollectionConfigurationException {
@@ -70,12 +70,12 @@ public class CollectionConfiguration {
 							createTrigger(broker, parent, (Element)node);
 					}
 			    } else if(INDEX_ELEMENT.equals(node.getLocalName())) {
+			    	if(indexSpec != null)
+			    		throw new CollectionConfigurationException("More than one <index> element found");
 			        Element elem = (Element) node;
-			        String doctype = elem.getAttribute(DOCTYPE_ATTRIBUTE);
 			        IndexSpec spec;
                     try {
-                        spec = new IndexSpec(elem);
-                        indexByDoctype.put(doctype, spec);
+                        indexSpec = new IndexSpec(elem);
                     } catch (DatabaseConfigurationException e) {
                         throw new CollectionConfigurationException(e.getMessage(), e);
                     }
@@ -84,8 +84,8 @@ public class CollectionConfiguration {
 		}
 	}
 	
-	public IndexSpec getByDoctype(String doctype) {
-        return (IndexSpec) indexByDoctype.get(doctype);
+	public IndexSpec getIndexConfiguration() {
+        return indexSpec;
     }
 	
 	public Trigger getTrigger(int eventType) {

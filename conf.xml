@@ -104,7 +104,7 @@
 	-->
 
 	<xupdate growth-factor="20" allowed-fragmentation="20"
-		enable-consistency-checks="no"/>
+		enable-consistency-checks="yes"/>
 
     <!-- 
         Settings for the indexer:
@@ -170,51 +170,9 @@
 	    		retrieving queryb results or for some types of XPath subexpressions, like
 	    		equality comparisons.
         -->
-        <index doctype="auth">
-			<fulltext default="none" attributes="false"/>
-		</index>
-
-		<index doctype="items"
-			xmlns:x="http://www.foo.com">
-			<fulltext default="none"/>
-			<create path="//item/itemno" type="xs:integer"/>
-			<create path="//item/name" type="xs:string"/>
-			<create path="//item/stock" type="xs:integer"/>
-			<create path="//item/price" type="xs:double"/>
-			<create path="//item/price/@specialprice" type="xs:boolean"/>
-			<create path="//item/x:rating" type="xs:double"/>
-		</index>
-
-		<index doctype="modsCollection"
-			xmlns:mods="http://www.loc.gov/mods/v3">
-			<fulltext default="none" attributes="false"/>
-			<create path="//mods/@ID" type="xs:string"/>
-		</index>
-
-		<index doctype="PLAY">
-			<fulltext default="all" attributes="true">
-				<exclude path="//SPEAKER"/>
-			</fulltext>
-			<create path="//SPEAKER" type="xs:string"/>
-		</index>
-
-		<index doctype="dblp">
-			<fulltext default="all">
-				<exclude path="//@mdate"/>
-				<exclude path="//ee"/>
-				<exclude path="//volume"/>
-				<exclude path="//cdrom"/>
-				<exclude path="//url"/>
-			</fulltext>
-		</index>
-
-		<index doctype="movie">
-			<fulltext default="all" attributes="true">
-				<exclude path="//@subtype"/>
-				<exclude path="//@id"/>
-				<exclude path="//@name"/>
-				<exclude path="//@type"/>
-				<exclude path="//@creditorder"/>
+        <index>
+			<fulltext default="all" attributes="false">
+				<exclude path="/auth"/>
 			</fulltext>
 		</index>
 
