@@ -21,7 +21,7 @@
     <title>XPath HowTo</title>
     <section>
       <title>Current Status</title>
-      <para>Beginning with version 0.9.2, XPath support in eXist is nearly complete. Contrary to earlier releases, XPath axis specifiers are now implemented. However, some minor features are still missing and will be added for the 1.0 release. Since eXist's query processing differs a lot from standard implementations, we simply can't just plug in some other open source XPath engine. Instead, we put much work into the extensions eXist defines to standard XPath.</para>
+      <para>With version 0.9.2, XPath support in eXist is nearly complete. Contrary to earlier releases, XPath axis specifiers are now implemented. However, some minor features are still missing and will be added for the 1.0 release. Since eXist's query processing differs a lot from standard implementations, we simply can't just plug in some other open source XPath engine. Instead, we put much work into the extensions eXist defines to standard XPath.</para>
       <para>eXist currently supports the following functions from the XPath spec: contains, starts-with, ends-with, not, position, last, true, false, count, boolean, string, number, string-length, sum, floor, ceiling, round.</para>
       <para>The following axis specifiers are recognized: child, descendant, descendant-or-self, parent, attribute, ancestor, ancestor-or-self, following-axis, preceding-axis.</para>
       <para>The remaining sections have a quick look at the extensions eXist adds to XPath to enable you to efficiently use the database:</para>

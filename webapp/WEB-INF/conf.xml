@@ -1,39 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+	This is the central configuration file for eXist.
+-->
 <exist>
-	
-  <!-- db-connection describes settings for the different 
-          storage backends. For the relational backend, these
-          are mostly JDBC settings. Adjust them according to 
-          your drivers documentation.
 
-          The native backends only need some information
-          about the directory to use for db-files and memory buffer
-          sizes.
-          
-          Which backend is chosen depends on the value of
-          the database-attribute. Currently the following
-          values are recognized:
-          
-          mysql                     selects the relational backend
-          postgresql             
-          native                     pure Java native backend
-  
-          Please note that you have to specify the correct setting
-          here. MySQL for example will not work with database=
-          postgresql or oracle.
-          
-          The relational backend accepts the following options:
-          
-          - driver:      name of the jdbc-driver
-          - url:         jdbc-url
-          - database:    database backend being used
-          - encoding:    character encoding used to write character
-              data to temporary files. This depends on the character
-              handling capabilities of your rdbms and the settings of
-              your database.
-  -->
-
-  <!-- sample db-connection for native Java backend
+  <!-- sample db-connection for the native Java backend
 
        - files:   the name of the directory where database files are
                   stored.
@@ -56,36 +28,16 @@
 
 		   <!-- Settings for the database connection pool
 
-		   	    - idle-time: the database will try to sync its internal buffers
-				with the filesystem after being idle for the specified number of
-				seconds.
+				- sync-period
+					defines how often the database will flush its 
+					internal buffers to disk. The sync thread will interrupt 
+					normal database operation after the specified number of 
+					milliseconds and write all dirty pages to disk.
 				- min: minimum number of connections to keep alive.
 				- max: maximum number of connections allowed.
 		   -->
-		   <pool min="1" max="15" sync-period="10000"/>
+		   <pool min="1" max="15" sync-period="300000"/>
 	   </db-connection>
-	
-  <!-- sample db-connection for MySQL --> 
-  <!--
-  <db-connection driver="org.gjt.mm.mysql.Driver"
-    	         url="jdbc:mysql://localhost/test?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=iso-8859-1"
-		 user="exist"
-		 password="exist"
-                 encoding="ISO-8859-1"
-		 database="mysql"
-  />
-  -->
-
-  <!-- sample db-connection for PostgreSQL -->
-  <!--
-  <db-connection driver="org.postgresql.Driver"
-    	 url="jdbc:postgresql://localhost/exist"
-         user="exist"
-	 password="exist"
-         database="postgresql"
-	     encoding="ISO-8859-1"
-  />
-  -->
   
   <!-- settings for the serializer
 
@@ -95,24 +47,11 @@
 	   - indent: should the serializer pretty-print (indent) xml?
   -->
   <serializer enable-xinclude="true" enable-xsl="false"
-	  indent="false" add-exist-id="false" match-tagging-elements="true"
+	  indent="false" add-exist-id="element" match-tagging-elements="true"
 	  match-tagging-attributes="false"/>
   
   <!-- settings for the indexer
        Attributes:
-	- batchLoad	
-	        setting this to true will cause the relational backend
-			to temporarily write most table-data to a file 
-			instead of directly storing it into the database.
-			These files will be read in using the mysql LOAD DATA
-			INFILE or the respective Oracle or PostgreSQL commands. 
-			This is about twice as fast as storing data directly.
-	- tmpDir	
-	        the temporary directory to write temporary files
-			during the parsing.
-	- controls
-	        the directory containing the .ctl-files needed by Oracle's
-			sqlldr.
 	- suppress-whitespace
 		should leading or trailing whitespace be removed from a text
 		node? Set to "leading", "trailing", "both" or "none".
@@ -127,9 +66,8 @@
     		retrieving query results or for some types of XPath subexpressions, like
     		equality comparisons.
   -->
-  <indexer batchLoad="true" tmpDir="tmp"
-	  stemming="false" controls="ctl" caseSensitive="false"
-	  suppress-whitespace="both" index-depth="1"
+  <indexer stemming="false" caseSensitive="false"
+	  suppress-whitespace="both" index-depth="3"
 	  tokenizer="org.exist.storage.analysis.SimpleTokenizer"
 	  validation="false">
 
@@ -164,7 +102,7 @@
 	    		retrieving query results or for some types of XPath subexpressions, like
 	    		equality comparisons.
 	-->
-	<index doctype="users" default="none">
+	<index doctype="users" default="none" attributes="false">
 	</index>
 
 	<index attributes="true" doctype="dblp" default="all">
@@ -174,12 +112,11 @@
 		<exclude path="//volume"/>
 	</index>
 	
-	<!--index doctype="PLAY" default="all">
-		<exclude path="//LINE"/>
-	</index-->
+	<index doctype="PLAY" default="all">
+	</index>
 
 	<index attributes="true" alphanum="true" doctype="movie" default="all">
-		<exclude path="//@id"/>
+		<!--exclude path="//@id"/-->
 	</index>
 
 	<index attributes="false" doctype="species" default="all" alphanum="true"/>
@@ -190,7 +127,7 @@
 	</index>
 	
     <entity-resolver>
-		<catalog file="catalog"/>
+		<catalog file="webapp/WEB-INF/catalog"/>
     </entity-resolver>
   </indexer>
   
@@ -206,7 +143,7 @@
 		 so just use it for debugging. -->
     <appender name="console" class="org.apache.log4j.ConsoleAppender">
       <layout class="org.apache.log4j.PatternLayout">
-        <param name="ConversionPattern" value="%d{DATE} %-5p (%F [%M]:%L) - %m\n"/>
+        <param name="ConversionPattern" value="%d{DATE} [%t] %-5p (%F [%M]:%L) - %m\n"/>
       </layout>
     </appender>
 
@@ -220,27 +157,28 @@
     <!-- file appenders -->
     <appender name="exist.core" class="org.apache.log4j.RollingFileAppender">
 	    <param name="File" value="logs/exist.log"/>
-	  <param name="MaximumFileSize" value="500000"/>
+		<param name="MaximumFileSize" value="500000"/>
+		<param name="Encoding" value="UTF-8"/>
       <layout class="org.apache.log4j.PatternLayout">
         <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m\n"/>
       </layout>
     </appender>
 
     <appender name="exist.xmldb" class="org.apache.log4j.RollingFileAppender">
-	    <param name="File" value="logs/xmldb.log"/>
+		<param name="File" value="logs/xmldb.log"/>
 	  <param name="MaximumFileSize" value="500000"/>
       <layout class="org.apache.log4j.PatternLayout">
         <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m\n"/>
       </layout>
-  </appender>
+    </appender>
 
-  <appender name="axis" class="org.apache.log4j.RollingFileAppender">
-	  <param name="File" value="logs/axis.log"/>
+	<appender name="axis" class="org.apache.log4j.RollingFileAppender">
+		<param name="File" value="logs/axis.log"/>
 	  <param name="MaximumFileSize" value="500000"/>
       <layout class="org.apache.log4j.PatternLayout">
         <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m\n"/>
       </layout>
-  </appender>
+    </appender>
 
     <!-- LF5 appender -->
     <appender name="lf5" class="org.apache.log4j.lf5.LF5Appender">
@@ -248,7 +186,7 @@
     </appender>
     
     <root>
-		<appender-ref ref="console"/>
+		<appender-ref ref="exist.core"/>
 		<priority value="debug"/>
     </root>
 
@@ -256,10 +194,18 @@
 		<appender-ref ref="exist.xmldb"/>
 		<priority value="debug"/>
     </category>
-    
+
+	<!-- Axis generates large amounts of debugging output -->
 	<category name="org.apache.axis" additivity="false">
 		<appender-ref ref="axis"/>
 		<priority value="warn"/>
+	</category>
+
+    <!--
+    <category name="exist.http">
+      <appender-ref ref="A1"/>
+      <priority value="debug" />
     </category>
+	-->
   </log4j:configuration>
 </exist>

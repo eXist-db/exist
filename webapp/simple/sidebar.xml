@@ -63,7 +63,7 @@
             <link href="../xadmin.xsp">Admin Interface</link>
         </item>
         <item>
-            <link href="../admin">Server Status</link>
+			<link href="../status">Server Status</link>
         </item>
     </group>
     

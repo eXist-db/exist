@@ -418,8 +418,8 @@
         </xsl:variable>
         <xsp:logic>
 	        if(<xsl:value-of select="$as"/>.equals("xml")) {
-                if(_resource instanceof org.exist.xmldb.XMLResourceImpl)
-                    ((org.exist.xmldb.XMLResourceImpl)_resource).setCocoonParser( newParser );
+                if(_resource instanceof org.exist.xmldb.RemoteXMLResource)
+                    ((org.exist.xmldb.RemoteXMLResource)_resource).setCocoonParser( newParser );
                 //String _content = (String)_resource.getContent();
                 //XSPUtil.include(new InputSource(new StringReader(_content)),
                 //    this.contentHandler, newParser);
@@ -521,8 +521,8 @@
             collection.setProperty("sax-document-events", "false");
             XMLResource _res = (XMLResource) collection.getResource(<xsl:value-of select="$name"/>);
             if(<xsl:value-of select="$as"/>.equals("xml")) {
-                if(_res instanceof org.exist.xmldb.XMLResourceImpl)
-                    ((org.exist.xmldb.XMLResourceImpl)_res).setCocoonParser( newParser );
+                if(_res instanceof org.exist.xmldb.RemoteXMLResource)
+                    ((org.exist.xmldb.RemoteXMLResource)_res).setCocoonParser( newParser );
                 //String _content = (String)_res.getContent();
                 //XSPUtil.include(new InputSource(new StringReader(_content)),
                 //    this.contentHandler, newParser);

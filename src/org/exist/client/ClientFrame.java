@@ -29,6 +29,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.TreeSet;
@@ -36,6 +37,7 @@ import java.util.TreeSet;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -43,9 +45,13 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
@@ -137,6 +143,8 @@ public class ClientFrame extends JFrame {
 	}
 
 	private void setupComponents() {
+		setJMenuBar(createMenuBar());
+
 		JToolBar toolbar = new JToolBar();
 		URL url = getClass().getResource("icons/Up24.gif");
 		JButton button = new JButton(new ImageIcon(url));
@@ -177,16 +185,16 @@ public class ClientFrame extends JFrame {
 			}
 		});
 		toolbar.add(button);
-		
+
 		url = getClass().getResource("icons/Preferences24.gif");
-				button = new JButton(new ImageIcon(url));
-				button.setToolTipText("Edit owners/permissions for selected resource");
-				button.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						setPermAction(e);
-					}
-				});
-				toolbar.add(button);
+		button = new JButton(new ImageIcon(url));
+		button.setToolTipText("Edit owners/permissions for selected resource");
+		button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setPermAction(e);
+			}
+		});
+		toolbar.add(button);
 
 		toolbar.addSeparator();
 		url = getClass().getResource("icons/Export24.gif");
@@ -229,7 +237,7 @@ public class ClientFrame extends JFrame {
 			}
 		});
 		toolbar.add(button);
-		
+
 		JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		split.setResizeWeight(0.5);
 
@@ -257,7 +265,7 @@ public class ClientFrame extends JFrame {
 		// shell window
 		doc = new DefaultStyledDocument();
 		shell = new JTextPane(doc);
-        shell.setContentType("text/plain; charset=UTF-8");
+		shell.setContentType("text/plain; charset=UTF-8");
 		shell.setFont(new Font("Monospaced", Font.PLAIN, 12));
 		scroll = new JScrollPane(shell);
 		KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
@@ -282,6 +290,156 @@ public class ClientFrame extends JFrame {
 		getContentPane().add(split, BorderLayout.CENTER);
 		getContentPane().add(toolbar, BorderLayout.NORTH);
 		getContentPane().add(statusbar, BorderLayout.SOUTH);
+	}
+
+	private JMenuBar createMenuBar() {
+		JMenuBar menubar = new JMenuBar();
+
+		JMenu fileMenu = new JMenu("File");
+		fileMenu.setMnemonic(KeyEvent.VK_F);
+		menubar.add(fileMenu);
+
+		JMenuItem item = new JMenuItem("Store files/directories", KeyEvent.VK_S);
+		item.setAccelerator(KeyStroke.getKeyStroke("control S"));
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				uploadAction(e);
+			}
+		});
+		fileMenu.add(item);
+
+		item = new JMenuItem("Create collection", KeyEvent.VK_C);
+		item.setAccelerator(KeyStroke.getKeyStroke("control N"));
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				newCollectionAction(e);
+			}
+		});
+		fileMenu.add(item);
+
+		item = new JMenuItem("Remove");
+		item.setAccelerator(KeyStroke.getKeyStroke("control D"));
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				removeAction(e);
+			}
+		});
+		fileMenu.add(item);
+
+		item = new JMenuItem("Edit properties");
+		item.setAccelerator(KeyStroke.getKeyStroke("control P"));
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setPermAction(e);
+			}
+		});
+		fileMenu.add(item);
+
+		item = new JMenuItem("Quit", KeyEvent.VK_Q);
+		item.setAccelerator(KeyStroke.getKeyStroke("control Q"));
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				close();
+			}
+		});
+		fileMenu.add(item);
+
+		JMenu toolsMenu = new JMenu("Tools");
+		toolsMenu.setMnemonic(KeyEvent.VK_T);
+		menubar.add(toolsMenu);
+
+		item = new JMenuItem("Find", KeyEvent.VK_F);
+		item.setAccelerator(KeyStroke.getKeyStroke("control F"));
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				findAction(e);
+			}
+		});
+		toolsMenu.add(item);
+
+		toolsMenu.addSeparator();
+
+		item = new JMenuItem("Edit users", KeyEvent.VK_F);
+		item.setAccelerator(KeyStroke.getKeyStroke("control U"));
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				newUserAction(e);
+			}
+		});
+		toolsMenu.add(item);
+
+		toolsMenu.addSeparator();
+
+		item = new JMenuItem("Backup", KeyEvent.VK_B);
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				backupAction(e);
+			}
+		});
+		toolsMenu.add(item);
+
+		item = new JMenuItem("Restore", KeyEvent.VK_R);
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				restoreAction(e);
+			}
+		});
+		toolsMenu.add(item);
+
+		JMenu dbMenu = new JMenu("Database");
+		dbMenu.setMnemonic(KeyEvent.VK_D);
+		menubar.add(dbMenu);
+
+		item = new JMenuItem("Shutdown", KeyEvent.VK_S);
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				display("shutdown\n");
+				process.setAction("shutdown");
+			}
+		});
+		dbMenu.add(item);
+
+		dbMenu.addSeparator();
+
+		ButtonGroup group = new ButtonGroup();
+		
+		item = new JRadioButtonMenuItem(properties.getProperty("uri"), true);
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				newServerURIAction(properties.getProperty("uri"));
+			}
+		});
+		dbMenu.add(item);
+		group.add(item);
+
+		String next;
+		for (Enumeration enum = properties.propertyNames(); enum.hasMoreElements();) {
+			next = (String) enum.nextElement();
+			if (next.startsWith("alternate_uri_")) {
+				final String uri = properties.getProperty(next);
+				if(uri.equals(properties.getProperty("uri")))
+					continue;
+				item = new JRadioButtonMenuItem(uri, false);
+				item.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						newServerURIAction(uri);
+					}
+				});
+				dbMenu.add(item);
+				group.add(item);
+			}
+		}
+
+		dbMenu.addSeparator();
+		item = new JMenuItem("Connect to alternate URI", KeyEvent.VK_C);
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				newServerURIAction(null);
+			}
+		});
+		dbMenu.add(item);
+
+		return menubar;
 	}
 
 	private void prepare() {
@@ -355,6 +513,23 @@ public class ClientFrame extends JFrame {
 			String command = "mkcol " + newCol;
 			display(command + "\n");
 			process.setAction(command);
+		}
+	}
+
+	private void newServerURIAction(String newURI) {
+		if (newURI == null)
+			newURI =
+				JOptionPane.showInputDialog(
+					this,
+					"Please enter a valid XML:DB base URI (without " + "collection path)");
+		if (newURI != null) {
+			properties.setProperty("uri", newURI);
+			try {
+				client.shutdown(false);
+				client.connect();
+			} catch (Exception e) {
+				showErrorMessage("Connection to " + newURI + " failed!", e);
+			}
 		}
 	}
 
@@ -498,9 +673,9 @@ public class ClientFrame extends JFrame {
 		QueryDialog dialog = new QueryDialog(collection, properties);
 		dialog.show();
 	}
-	
+
 	private void setPermAction(ActionEvent ev) {
-		if(fileman.getSelectedRowCount() == 0)
+		if (fileman.getSelectedRowCount() == 0)
 			return;
 		try {
 			Collection collection = client.getCollection();
@@ -510,48 +685,48 @@ public class ClientFrame extends JFrame {
 			String name;
 			Date created = new Date();
 			Date modified = null;
-			if(fileman.getSelectedRowCount() == 1) {
+			if (fileman.getSelectedRowCount() == 1) {
 				int row = fileman.getSelectedRow();
 				Object obj = (Object) resources.getValueAt(row, 3);
-				if(obj instanceof InteractiveClient.CollectionName) {
+				if (obj instanceof InteractiveClient.CollectionName) {
 					name = obj.toString();
 					Collection coll = collection.getChildCollection(name);
-					created = ((CollectionImpl)coll).getCreationTime();
+					created = ((CollectionImpl) coll).getCreationTime();
 					perm = service.getPermissions(coll);
 				} else {
-					name = (String)obj;
+					name = (String) obj;
 					Resource res = collection.getResource(name);
-					created = ((XMLResourceImpl)res).getCreationTime();
-					modified = ((XMLResourceImpl)res).getLastModificationTime();
+					created = ((XMLResourceImpl) res).getCreationTime();
+					modified = ((XMLResourceImpl) res).getLastModificationTime();
 					perm = service.getPermissions(res);
 				}
 			} else {
 				name = "...";
 				perm = new Permission("", "");
 			}
-			ResourcePropertyDialog dialog = 
+			ResourcePropertyDialog dialog =
 				new ResourcePropertyDialog(this, service, name, perm, created, modified);
 			dialog.show();
-			if(dialog.getResult() == ResourcePropertyDialog.APPLY_OPTION) {
+			if (dialog.getResult() == ResourcePropertyDialog.APPLY_OPTION) {
 				int rows[] = fileman.getSelectedRows();
-				for(int i = 0; i < rows.length; i++) {
+				for (int i = 0; i < rows.length; i++) {
 					Object obj = (Object) resources.getValueAt(rows[i], 3);
-					if(obj instanceof InteractiveClient.CollectionName) {
+					if (obj instanceof InteractiveClient.CollectionName) {
 						Collection coll = collection.getChildCollection(obj.toString());
 						service.setPermissions(coll, dialog.permissions);
 					} else {
-						Resource res = collection.getResource((String)obj);
+						Resource res = collection.getResource((String) obj);
 						service.setPermissions(res, dialog.permissions);
 					}
 				}
 				client.getResources();
 			}
-		} catch(XMLDBException e) {
+		} catch (XMLDBException e) {
 			showErrorMessage("XMLDB Exception: " + e.getMessage(), e);
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void close() {
 		setVisible(false);
 		dispose();
@@ -826,12 +1001,18 @@ public class ClientFrame extends JFrame {
 		}
 		return null;
 	}
-	
+
 	public static void showErrorMessage(String message, Throwable t) {
 		ErrorPanel panel = new ErrorPanel(message, t);
-		JOptionPane.showOptionDialog(null, panel, "Exception",
-			JOptionPane.OK_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE,
-			null, null, null);
+		JOptionPane.showOptionDialog(
+			null,
+			panel,
+			"Exception",
+			JOptionPane.OK_CANCEL_OPTION,
+			JOptionPane.ERROR_MESSAGE,
+			null,
+			null,
+			null);
 		return;
 	}
 }
@@ -895,16 +1076,16 @@ class LoginPanel extends JPanel {
 }
 
 class ErrorPanel extends JPanel {
-	
+
 	JLabel text;
 	JTextArea stacktrace;
-	
+
 	public ErrorPanel(String message, Throwable t) {
 		super(false);
 		setLayout(new BorderLayout(5, 10));
 		text = new JLabel(message);
 		add(text, BorderLayout.NORTH);
-		
+
 		StringWriter out = new StringWriter();
 		PrintWriter writer = new PrintWriter(out);
 		t.printStackTrace(writer);

@@ -339,7 +339,7 @@ public class InteractiveClient {
 	 *
 	 *@exception  Exception  Description of the Exception
 	 */
-	private void connect() throws Exception {
+	protected void connect() throws Exception {
 		if (startGUI && frame != null)
 			frame.setStatus("connecting to " + properties.getProperty("uri"));
 		Class cl = Class.forName(properties.getProperty("driver"));
@@ -1774,7 +1774,7 @@ public class InteractiveClient {
 		messageln("quit.");
 	}
 
-	private final void shutdown(boolean force) {
+	protected final void shutdown(boolean force) {
 		if(traceWriter != null)
 			try {
 				traceWriter.write("</query-log>");

@@ -5,7 +5,6 @@
     <classpathentry kind="src" path="src14"/>
     <classpathentry kind="lib" path="lib/core/ant.jar"/>
     <classpathentry kind="lib" path="lib/core/antlr.jar"/>
-    <classpathentry kind="lib" path="lib/core/getopt.jar"/>
     <classpathentry kind="lib" path="lib/core/jakarta-oro-2.0.6.jar"/>
     <classpathentry kind="lib" path="lib/core/javax.servlet.jar"/>
     <classpathentry kind="lib" path="lib/core/junit.jar"/>
@@ -22,9 +21,7 @@
     <classpathentry kind="lib" path="lib/optional/saaj.jar"/>
     <classpathentry kind="lib" path="lib/optional/tt-bytecode.jar"/>
     <classpathentry kind="lib" path="lib/optional/wsdl4j.jar"/>
-    <classpathentry kind="lib" path="lib/core/xmlrpc-1.1.jar"/>
     <classpathentry kind="lib" path="lib/core/fastutil-2.52.jar"/>
-    <classpathentry kind="lib" path="lib/core/resolver-20021114.jar"/>
     <classpathentry kind="lib" path="lib/optional/avalon-framework-4.1.4.jar"/>
     <classpathentry kind="lib" path="lib/endorsed/xml-apis.jar"/>
     <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
@@ -34,7 +31,6 @@
     <classpathentry kind="lib" path="lib/optional/cocoon-deprecated.jar"/>
     <classpathentry kind="lib" path="lib/optional/commons-collections-2.1.jar"/>
     <classpathentry kind="lib" path="lib/optional/commons-discovery.jar"/>
-    <classpathentry kind="lib" path="lib/optional/commons-httpclient-20030210.jar"/>
     <classpathentry kind="lib" path="lib/optional/commons-jxpath-1.1.jar"/>
     <classpathentry kind="lib" path="lib/optional/commons-lang-1.0.1.jar"/>
     <classpathentry kind="lib" path="lib/optional/commons-logging-1.0.3.jar"/>
@@ -53,10 +49,7 @@
     <classpathentry kind="lib" path="lib/optional/excalibur-monitor-1.0.2.jar"/>
     <classpathentry kind="lib" path="lib/optional/excalibur-naming-1.0.jar"/>
     <classpathentry kind="lib" path="lib/optional/excalibur-pool-1.2.jar"/>
-    <classpathentry kind="lib" path="lib/optional/excalibur-sourceresolve-20030630.jar"/>
-    <classpathentry kind="lib" path="lib/optional/excalibur-store-20030317.jar"/>
     <classpathentry kind="lib" path="lib/optional/excalibur-xmlutil-20030520.jar"/>
-    <classpathentry kind="lib" path="lib/optional/jisp-2.0.1.jar"/>
     <classpathentry kind="lib" path="lib/optional/logkit-1.2.jar"/>
     <classpathentry kind="lib" path="lib/optional/pizza-1.1.jar"/>
     <classpathentry kind="lib" path="lib/optional/taglib-block.jar"/>
@@ -65,5 +58,10 @@
     <classpathentry kind="lib" path="lib/optional/xmlform-block.jar"/>
     <classpathentry kind="lib" path="Jetty-4.1.4/lib/org.mortbay.jetty.jar"/>
     <classpathentry kind="lib" path="lib/core/xmlrpc-1.2.jar"/>
+    <classpathentry kind="lib" path="lib/core/resolver-20030708.jar"/>
+    <classpathentry kind="lib" path="lib/optional/commons-httpclient-2.0-beta2.jar"/>
+    <classpathentry kind="lib" path="lib/optional/excalibur-sourceresolve-20030715.jar"/>
+    <classpathentry kind="lib" path="lib/optional/excalibur-store-20030726.jar"/>
+    <classpathentry kind="lib" path="lib/optional/jisp-2.5.1.jar"/>
     <classpathentry kind="output" path="classes"/>
 </classpath>
