@@ -79,6 +79,7 @@ public class Update extends Modification {
 					throw new EXistException("unsupported node-type");
 			}
 			prevCollection = collection;
+			doc.setLastModified(System.currentTimeMillis());
 		}
 		if(doc != null)
 			doc.getBroker().saveCollection(collection);

@@ -77,6 +77,7 @@ public class Insert extends Modification {
 					break;
 			}
 			doc.clearIndexListener();
+			doc.setLastModified(System.currentTimeMillis());
 			prevCollection = collection;
 		}
 		if(doc != null)

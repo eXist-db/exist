@@ -245,7 +245,7 @@ public class DOMFile extends BTree implements Lockable {
 		boolean isOverflow = false;
 		if (value.length + 4 > fileHeader.getWorkSize()) {
 			OverflowDOMPage overflow = new OverflowDOMPage();
-			LOG.debug("creating overflow page: " + overflow.getPageNum());
+//			LOG.debug("creating overflow page: " + overflow.getPageNum());
 			overflow.write(value);
 			value = ByteConversion.longToByte(overflow.getPageNum());
 			isOverflow = true;
@@ -261,25 +261,25 @@ public class DOMFile extends BTree implements Lockable {
 		else
 			rec.offset = rec.offset + l + 2;
 		int dataLen = rec.page.getPageHeader().getDataLength();
-		LOG.debug(
-			"trying "
-				+ value.length
-				+ " bytes to "
-				+ rec.page.getPageNum()
-				+ "; offset = "
-				+ rec.offset
-				+ "; len = "
-				+ dataLen);
+//		LOG.debug(
+//			"trying "
+//				+ value.length
+//				+ " bytes to "
+//				+ rec.page.getPageNum()
+//				+ "; offset = "
+//				+ rec.offset
+//				+ "; len = "
+//				+ dataLen);
 		// insert in the middle of the page?
 		if (rec.offset < dataLen) {
 			if (dataLen + value.length + 4 < fileHeader.getWorkSize()) {
-				LOG.debug(
-					"copying data in page "
-						+ rec.page.getPageNum()
-						+ "; offset = "
-						+ rec.offset
-						+ "; dataLen = "
-						+ dataLen);
+//				LOG.debug(
+//					"copying data in page "
+//						+ rec.page.getPageNum()
+//						+ "; offset = "
+//						+ rec.offset
+//						+ "; dataLen = "
+//						+ dataLen);
 				// new value fits into the page
 				int end = rec.offset + value.length + 4;
 				System.arraycopy(
@@ -293,8 +293,8 @@ public class DOMFile extends BTree implements Lockable {
 			} else {
 				// doesn't fit: split the page
 				DOMPage splitPage = new DOMPage();
-				LOG.debug(
-					"splitting " + rec.page.getPageNum() + ": new: " + splitPage.getPageNum());
+//				LOG.debug(
+//					"splitting " + rec.page.getPageNum() + ": new: " + splitPage.getPageNum());
 				splitPage.len = dataLen - rec.offset;
 				System.arraycopy(rec.page.data, rec.offset, splitPage.data, 0, splitPage.len);
 				splitPage.getPageHeader().setDataLength(splitPage.len);
@@ -339,7 +339,7 @@ public class DOMFile extends BTree implements Lockable {
 			// append at the end of the page
 			// does value fit into page?
 			DOMPage newPage = new DOMPage();
-			LOG.debug("creating new page: " + newPage.getPageNum());
+//			LOG.debug("creating new page: " + newPage.getPageNum());
 			newPage.getPageHeader().setNextDataPage(rec.page.getPageHeader().getNextDataPage());
 			rec.page.getPageHeader().setNextDataPage(newPage.getPageNum());
 			rec.page.setDirty(true);
@@ -354,7 +354,7 @@ public class DOMFile extends BTree implements Lockable {
 		}
 
 		// write the data
-		LOG.debug("writing " + value.length + " to " + rec.page.getPageNum() + " at " + rec.offset);
+//		LOG.debug("writing " + value.length + " to " + rec.page.getPageNum() + " at " + rec.offset);
 		short tid = rec.page.getPageHeader().getNextTID();
 		ByteConversion.shortToByte((short) tid, rec.page.data, rec.offset);
 		rec.offset += 2;

@@ -53,6 +53,7 @@ public class Append extends Modification {
 				throw new PermissionDeniedException("permission to update document denied");
 			node.appendChildren(children);
 			doc.clearIndexListener();
+			doc.setLastModified(System.currentTimeMillis());
 			prevCollection = collection;
 		}
 		if (doc != null)

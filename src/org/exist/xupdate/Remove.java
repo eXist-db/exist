@@ -64,6 +64,7 @@ public class Remove extends Modification {
 			} else
 				parent.removeChild(node);
 			doc.clearIndexListener();
+			doc.setLastModified(System.currentTimeMillis());
 			prevCollection = collection;
 		}
 		if(doc != null)
