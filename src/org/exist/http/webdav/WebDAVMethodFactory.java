@@ -22,6 +22,7 @@
  */
 package org.exist.http.webdav;
 
+import org.exist.http.webdav.methods.Copy;
 import org.exist.http.webdav.methods.Delete;
 import org.exist.http.webdav.methods.Get;
 import org.exist.http.webdav.methods.Head;
@@ -58,6 +59,8 @@ public class WebDAVMethodFactory {
             return new Propfind(pool);
         else if(method.equals("MOVE"))
             return new Move(pool);
+        else if(method.equals("COPY"))
+            return new Copy(pool);
         else return null;
     }
 
