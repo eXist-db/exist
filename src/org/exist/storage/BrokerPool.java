@@ -21,7 +21,9 @@
 package org.exist.storage;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -159,6 +161,7 @@ public class BrokerPool {
 	private ArrayList active = new ArrayList();
 	private int brokers = 0;
 	private Stack pool = new Stack();
+	private Map threads = new HashMap();
 	private org.exist.security.SecurityManager secManager = null;
 	private String instanceId;
 	private boolean syncRequired = false;
@@ -235,6 +238,12 @@ public class BrokerPool {
 	public synchronized DBBroker get() throws EXistException {
 		if (!isInstanceConfigured())
 			throw new EXistException("database instance is not available");
+		DBBroker broker = (DBBroker)threads.get(Thread.currentThread());
+		if(broker != null) {
+			// the thread already holds a reference to a broker object.
+			broker.incReferenceCount();
+			return broker;
+		}
 		if (pool.isEmpty()) {
 			if (brokers < max)
 				createBroker();
@@ -247,7 +256,9 @@ public class BrokerPool {
 					}
 				}
 		}
-		DBBroker broker = (DBBroker) pool.pop();
+		broker = (DBBroker) pool.pop();
+		threads.put(Thread.currentThread(), broker);
+		broker.incReferenceCount();
 		this.notifyAll();
 		return broker;
 	}
@@ -311,6 +322,12 @@ public class BrokerPool {
 	public void release(DBBroker broker) {
 		if (broker == null)
 			return;
+		broker.decReferenceCount();
+		if(broker.getReferenceCount() > 0) {
+			LOG.debug("Broker still has references. Keep it.");
+			return;  
+		}
+		threads.remove(Thread.currentThread());
 		if (pool.contains(broker)) {
 			return;
 		}

@@ -81,6 +81,8 @@ public abstract class DBBroker extends Observable {
 	protected File symbolsFile;
 	protected SymbolTable symbols = null;
 	protected User user = null;
+	
+	private int referenceCount = 0;
 
 	protected void saveSymbols() throws EXistException {
 		synchronized (symbols) {
@@ -550,6 +552,7 @@ public abstract class DBBroker extends Observable {
 
 	public void readDocumentMetadata(final DocumentImpl doc) {
 	}
+	
 	/**
 	 *  get all the documents in this database matching the given  document-type's name.@param  doctypeName  Description of the Parameter@param  user         Description of the Parameter@return              The documentsByDoctype value  
 	 */
@@ -557,4 +560,15 @@ public abstract class DBBroker extends Observable {
 		String doctype,
 		DocumentSet result);
 
+	public int getReferenceCount() {
+		return referenceCount;
+	}
+	
+	public void incReferenceCount() {
+		++referenceCount;
+	}
+	
+	public void decReferenceCount() {
+		--referenceCount;
+	}
 }

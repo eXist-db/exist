@@ -49,6 +49,8 @@ import org.exist.util.Occurrences;
 import org.exist.util.SyntaxException;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.DOMSerializerPool;
+import org.exist.util.serializer.SAXSerializer;
+import org.exist.util.serializer.SAXSerializerPool;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -68,6 +70,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 
 import antlr.collections.AST;
 
@@ -801,6 +804,7 @@ public class RpcConnection extends Thread {
 					new InputSource(is));
 			LOG.debug("parsing " + docName + " took "
 					+ (System.currentTimeMillis() - startTime) + "ms.");
+			documentCache.clear();
 			return doc != null;
 		} catch (Exception e) {
 			LOG.debug(e.getMessage(), e);
@@ -851,6 +855,7 @@ public class RpcConnection extends Thread {
 			brokerPool.release(broker);
 		}
 		file.delete();
+		documentCache.clear();
 		return doc != null;
 	}
 
@@ -860,8 +865,6 @@ public class RpcConnection extends Thread {
 		DocumentImpl doc = null;
 		try {
 			broker = brokerPool.get(user);
-		} finally {
-			brokerPool.release(broker);
 			int p = docName.lastIndexOf('/');
 			if (p < 0 || p == docName.length() - 1)
 				throw new EXistException("Illegal document path");
@@ -878,7 +881,10 @@ public class RpcConnection extends Thread {
 							"Old document exists and overwrite is not allowed");
 			}
 			doc = collection.addBinaryResource(broker, docName, data);
+		} finally {
+			brokerPool.release(broker);
 		}
+		documentCache.clear();
 		return doc != null;
 	}
 
@@ -1051,6 +1057,7 @@ public class RpcConnection extends Thread {
 
 	public void releaseQueryResult(int handle) {
 		connectionPool.resultSets.remove(handle);
+		documentCache.clear();
 		LOG.debug("removed query result with handle " + handle);
 	}
 
@@ -1074,6 +1081,7 @@ public class RpcConnection extends Thread {
 				collection.removeBinaryResource(broker, doc);
 			else
 				collection.removeDocument(broker, docName);
+			documentCache.clear();
 		} finally {
 			brokerPool.release(broker);
 		}
@@ -1086,6 +1094,7 @@ public class RpcConnection extends Thread {
 			if (broker.getCollection(name) == null)
 				return false;
 			LOG.debug("removing collection " + name);
+			documentCache.clear();
 			return broker.removeCollection(name);
 		} finally {
 			brokerPool.release(broker);
@@ -1111,6 +1120,7 @@ public class RpcConnection extends Thread {
 			long id = Long.parseLong(s_id);
 			DocumentImpl doc;
 			if (!documentCache.containsKey(docName)) {
+				LOG.debug("loading doc " + docName);
 				doc = (DocumentImpl) broker.getDocument(docName);
 				documentCache.put(docName, doc);
 			} else
@@ -1128,8 +1138,9 @@ public class RpcConnection extends Thread {
 
 	public String retrieve(User user, int resultId, int num,
 			Hashtable parameters) throws Exception {
-		DBBroker broker = brokerPool.get(user);
+		DBBroker broker = null;
 		try {
+			broker = brokerPool.get(user);
 			QueryResult qr = (QueryResult) connectionPool.resultSets
 					.get(resultId);
 			if (qr == null)
@@ -1163,6 +1174,60 @@ public class RpcConnection extends Thread {
 		}
 	}
 
+	public String retrieveAll(User user, int resultId, Hashtable parameters) throws Exception {
+		DBBroker broker = null;
+		try {
+			broker = brokerPool.get(user);
+			QueryResult qr = (QueryResult) connectionPool.resultSets
+					.get(resultId);
+			if (qr == null)
+				throw new EXistException("result set unknown or timed out");
+			qr.timestamp = System.currentTimeMillis();
+			
+			Serializer serializer = broker.getSerializer();
+			serializer.reset();
+			serializer.setProperties(parameters);
+			
+			SAXSerializer handler = SAXSerializerPool.getInstance().borrowSAXSerializer();
+			handler.setOutputProperties(getProperties(parameters));
+			StringWriter writer = new StringWriter();
+			handler.setWriter(writer);
+			
+//			serialize results
+			handler.startDocument();
+			handler.startPrefixMapping("exist", Serializer.EXIST_NS);
+			AttributesImpl attribs = new AttributesImpl();
+			attribs.addAttribute(
+				"",
+				"hitCount",
+				"hitCount",
+				"CDATA",
+				Integer.toString(qr.result.getLength()));
+			handler.startElement(
+						Serializer.EXIST_NS,
+						"result",
+						"exist:result",
+						attribs);
+			Item current;
+			char[] value;
+			for(SequenceIterator i = qr.result.iterate(); i.hasNext(); ) {
+				current = i.nextItem();
+				if(Type.subTypeOf(current.getType(), Type.NODE))
+					((NodeValue)current).toSAX(broker, handler);
+				else {
+					value = current.toString().toCharArray();
+					handler.characters(value, 0, value.length);
+				}
+			}
+			handler.endElement(Serializer.EXIST_NS, "result", "exist:result");
+			handler.endPrefixMapping("exist");
+			handler.endDocument();
+			return writer.toString();
+		} finally {
+			brokerPool.release(broker);
+		}
+	}
+	
 	public void run() {
 		synchronized (this) {
 			while (!terminate)

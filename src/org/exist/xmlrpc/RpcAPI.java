@@ -230,6 +230,9 @@ public interface RpcAPI {
 	String retrieveAsString(User user, String doc, String id, Hashtable parameters)
 		throws EXistException, PermissionDeniedException;
 
+	public byte[] retrieveAll(User user, int resultId, Hashtable parameters) 
+	throws EXistException, PermissionDeniedException;
+	
 	Hashtable queryP(User user, byte[] xpath, Hashtable parameters)
 		throws EXistException, PermissionDeniedException;
 
