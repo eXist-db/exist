@@ -1532,6 +1532,14 @@ public class ClientFrame extends JFrame
 			c.fill = GridBagConstraints.HORIZONTAL;
 			grid.setConstraints(cur_url, c);
 			add(cur_url);
+			
+			label = new JLabel("(insert xmldb:exist:// for start local mode)");
+			c.gridx = 1;
+			c.gridy = 3;
+			c.anchor = GridBagConstraints.EAST;
+			c.fill = GridBagConstraints.HORIZONTAL;
+			grid.setConstraints(label, c);
+			add(label);
 		}
 
 		public String getUsername() {
