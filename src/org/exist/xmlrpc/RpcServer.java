@@ -37,6 +37,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
+import javax.xml.transform.OutputKeys;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.OutputKeys;
@@ -1472,6 +1473,69 @@ public class RpcServer implements RpcAPI {
 			for (Iterator i = threads.iterator(); i.hasNext();)
 				 ((RpcConnection) i.next()).synchronize();
 
+		}
+	}
+
+
+ 	/**
+	 *  Description of the Method
+	 *
+	 *@param  name                           Source dir
+	 *@param  namedest                       Destination dir
+	 *@param  user                           Description of the Parameter
+	 *@return                                Description of the Return Value
+	 *@exception  EXistException             Description of the Exception
+	 *@exception  PermissionDeniedException  Description of the Exception
+	 *@author Giulio
+	 */
+
+	public boolean copyCollection(User user, String name, String namedest)
+		throws EXistException, PermissionDeniedException {
+		RpcConnection con = pool.get();
+		try {
+							
+			con.createCollection(user, namedest);
+			
+	        Hashtable parametri = new Hashtable();
+			parametri.put(OutputKeys.INDENT, "no");
+			parametri.put(EXistOutputKeys.EXPAND_XINCLUDES, "no");
+			parametri.put(OutputKeys.ENCODING, "UTF-8");
+
+			
+			Hashtable lista = getCollectionDesc(user,name);
+			Vector collezioni = (Vector) lista.get("collections");
+			Vector documents = (Vector) lista.get("documents");
+			
+			//ricrea le directory
+			Iterator collezioniItr = collezioni.iterator();
+			String nome;
+			while (collezioniItr.hasNext())
+			{
+			nome = collezioniItr.next().toString();
+			con.createCollection(user, namedest+"/"+nome);
+			copyCollection(user, name+"/"+nome, namedest+"/"+nome);			
+			}
+			
+			//Copy i file
+			Hashtable hash;
+			int p, dsize= documents.size();
+			for (int i = 0; i <dsize; i++){
+				hash = (Hashtable) documents.elementAt(i);
+				nome = (String) hash.get("name");
+				if ((p = nome.lastIndexOf('/')) > -1)
+				   nome = nome.substring(p+1);
+				   
+			String xml = con.getDocument(user,name+"/"+nome, parametri);
+			con.parse(user, xml.getBytes(), namedest +"/"+nome,false);						
+	        }		
+			
+			
+			return true;
+		} catch (Exception e) {
+			handleException(e);
+			return false;
+		} finally {
+			pool.release(con);
 		}
 	}
 

@@ -742,4 +742,7 @@ public interface RpcAPI {
 	
 	Vector getTimestamps(User user, String documentName)
 		throws PermissionDeniedException, EXistException;
+		
+	boolean copyCollection(User user, String name, String namedest)
+	    throws PermissionDeniedException, EXistException;
 }
