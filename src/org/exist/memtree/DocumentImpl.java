@@ -26,6 +26,7 @@ import org.exist.dom.NodeListImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
+import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.hashtable.NamePool;
 import org.exist.util.serializer.AttrList;
@@ -35,6 +36,7 @@ import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
+import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
@@ -46,6 +48,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 /**
@@ -773,4 +776,102 @@ public class DocumentImpl extends NodeImpl implements Document {
 		}
 		return context.storeTemporaryDoc(data);
     }
+
+	/** ? @see org.w3c.dom.Document#getInputEncoding()
+	 */
+	public String getInputEncoding() {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
+
+	/** ? @see org.w3c.dom.Document#getXmlEncoding()
+	 */
+	public String getXmlEncoding() {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
+
+	/** ? @see org.w3c.dom.Document#getXmlStandalone()
+	 */
+	public boolean getXmlStandalone() {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return false;
+	}
+
+	/** ? @see org.w3c.dom.Document#setXmlStandalone(boolean)
+	 */
+	public void setXmlStandalone(boolean xmlStandalone) throws DOMException {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		
+	}
+
+	/** ? @see org.w3c.dom.Document#getXmlVersion()
+	 */
+	public String getXmlVersion() {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
+
+	/** ? @see org.w3c.dom.Document#setXmlVersion(java.lang.String)
+	 */
+	public void setXmlVersion(String xmlVersion) throws DOMException {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		
+	}
+
+	/** ? @see org.w3c.dom.Document#getStrictErrorChecking()
+	 */
+	public boolean getStrictErrorChecking() {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return false;
+	}
+
+	/** ? @see org.w3c.dom.Document#setStrictErrorChecking(boolean)
+	 */
+	public void setStrictErrorChecking(boolean strictErrorChecking) {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		
+	}
+
+	/** ? @see org.w3c.dom.Document#getDocumentURI()
+	 */
+	public String getDocumentURI() {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
+
+	/** ? @see org.w3c.dom.Document#setDocumentURI(java.lang.String)
+	 */
+	public void setDocumentURI(String documentURI) {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		
+	}
+
+	/** ? @see org.w3c.dom.Document#adoptNode(org.w3c.dom.Node)
+	 */
+	public Node adoptNode(Node source) throws DOMException {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
+
+	/** ? @see org.w3c.dom.Document#getDomConfig()
+	 */
+	public DOMConfiguration getDomConfig() {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
+
+	/** ? @see org.w3c.dom.Document#normalizeDocument()
+	 */
+	public void normalizeDocument() {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		
+	}
+
+	/** ? @see org.w3c.dom.Document#renameNode(org.w3c.dom.Node, java.lang.String, java.lang.String)
+	 */
+	public Node renameNode(Node n, String namespaceURI, String qualifiedName) throws DOMException {
+		// maybe TODO - new DOM interfaces - Java 5.0
+		return null;
+	}
 }
