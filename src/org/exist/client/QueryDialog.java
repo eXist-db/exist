@@ -115,12 +115,23 @@ public class QueryDialog extends JFrame {
 		"Write query to file.");
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				save();
+				save(query.getText(), "query");
+			}
+		});
+		toolbar.add(button);
+
+		url= getClass().getResource("icons/SaveAs24.gif");
+		button= new JButton(new ImageIcon(url));
+		button.setToolTipText(
+		"Write result to file.");
+		button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				save(resultDisplay.getText(), "result");
 			}
 		});
 		toolbar.add(button);
 		
-			toolbar.addSeparator();
+		toolbar.addSeparator();
 		url = getClass().getResource("icons/Copy24.gif");
 		button = new JButton(new ImageIcon(url));
 		button.setToolTipText("Copy selection.");
@@ -322,13 +333,15 @@ public class QueryDialog extends JFrame {
 		}
 	}
 	
-	private void save() {
+	private void save(String stringToSave, String fileCategory) {
+		if ( stringToSave == null || "".equals(stringToSave) )
+			return;
 		String workDir = properties.getProperty("working-dir", System.getProperty("user.dir"));
 		JFileChooser chooser = new JFileChooser();
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setCurrentDirectory(new File(workDir));
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		if (chooser.showDialog(this, "Select file for query export")
+		if (chooser.showDialog(this, "Select file for " +fileCategory+ " export")
 			== JFileChooser.APPROVE_OPTION) {
 			File selectedDir = chooser.getCurrentDirectory();
 			properties.setProperty("working-dir", selectedDir.getAbsolutePath());
@@ -342,7 +355,7 @@ public class QueryDialog extends JFrame {
 				return;
 			try {
 				FileWriter writer = new FileWriter(file);
-				writer.write(query.getText());
+				writer.write(stringToSave);
 				writer.close();
 			} catch (FileNotFoundException e) {
 				ClientFrame.showErrorMessage(e.getMessage(), e);
