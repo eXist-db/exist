@@ -281,7 +281,7 @@ public interface RpcAPI {
 	 */
 	String query(
 		User user,
-		String xquery,
+		byte[] xquery,
 		int howmany,
 		int start,
 		Hashtable parameters)

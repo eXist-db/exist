@@ -26,8 +26,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.dbxml.core.DBException;
 import org.dbxml.core.data.Value;
@@ -48,6 +51,7 @@ import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.ClockCache;
 import org.exist.util.ByteConversion;
+import org.exist.util.FastQSort;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.Lockable;
@@ -205,6 +209,7 @@ public class DOMFile extends BTree implements Lockable {
     private long add(byte[] value, boolean overflowPage)
             throws ReadOnlyException {
         final int valueLen = value.length;
+        final Object myOwner = owner;
         // always append data to the end of the file
         DOMPage page = getCurrentPage();
         // does value fit into current data page?
@@ -217,12 +222,18 @@ public class DOMFile extends BTree implements Lockable {
                 page.setDirty(true);
                 dataCache.add(page);
             }
+//            LOG.debug("created new page: " + newPage.getPageNum() + "; prev = " + page.getPageNum() +
+//            	"; oldLen = " + page.len + "; valueLen = " + valueLen);
             page = newPage;
             setCurrentPage(newPage);
+            if(owner != myOwner)
+            	LOG.error("Owner changed during transaction!!!!!!!!!!!!!!!!!");
         }
         // save tuple identifier
         final DOMFilePageHeader ph = page.getPageHeader();
         final short tid = ph.getNextTID();
+//        LOG.debug("writing to " + page.getPageNum() + "; " + page.len + "; tid = " + tid + 
+//        		"; len = " + valueLen + "; dataLen = " + page.data.length);
         ByteConversion.shortToByte(tid, page.data, page.len);
         page.len += 2;
         // save data length
@@ -391,8 +402,7 @@ public class DOMFile extends BTree implements Lockable {
         }
         // write the data
         short tid = rec.page.getPageHeader().getNextTID();
-//        LOG.debug("inserting " + new String(value) + " to " + rec.page.page.getPageInfo() + "; " +
-//                tid);
+//        LOG.debug("inserting " + new String(value) + " to " + rec.page.page.getPageInfo() + "; " + tid);
         ByteConversion.shortToByte((short) tid, rec.page.data, rec.offset);
         rec.offset += 2;
         ByteConversion.shortToByte(isOverflow ? 0 : (short) value.length,
@@ -448,9 +458,9 @@ public class DOMFile extends BTree implements Lockable {
         short tid, currentId, currentLen;
         long backLink;
         short splitRecordCount = 0;
-//        LOG.debug("splitting " + rec.page.getPageNum() + ": new: "
-//                + nextSplitPage.getPageNum() + "; next: " + 
-//                rec.page.getPageHeader().getNextDataPage());
+        LOG.debug("splitting " + rec.page.getPageNum() + ": new: "
+                + nextSplitPage.getPageNum() + "; next: " + 
+                rec.page.getPageHeader().getNextDataPage());
         for (int pos = rec.offset; pos < oldDataLen; splitRecordCount++) {
             // read the current id
             currentId = ByteConversion.byteToShort(oldData, pos);
@@ -626,14 +636,15 @@ public class DOMFile extends BTree implements Lockable {
         return count;
     }
     
-    private void printPageContents(DOMPage page) {
-    	System.out.print("Page " + page.getPageNum() + ": ");
+    public String debugPageContents(DOMPage page) {
+    	StringBuffer buf = new StringBuffer();
+    	buf.append("Page " + page.getPageNum() + ": ");
             short count = 0;
             short currentId, vlen;
             int dlen = page.getPageHeader().getDataLength();
             for (int pos = 0; pos < dlen; count++) {
                 currentId = ByteConversion.byteToShort(page.data, pos);
-                System.out.print(currentId + " ");
+                buf.append(currentId + " ");
                 if (ItemId.isLink(currentId)) {
                         pos += 10;
                 } else {
@@ -644,8 +655,8 @@ public class DOMFile extends BTree implements Lockable {
                         pos += vlen == OVERFLOW ? 12 : vlen + 4;
                 }
             }
-            System.out.println();
-            LOG.debug("page " + page.getPageNum() + " has " + count + " records.");
+            buf.append("; records in page: " + count);
+            return buf.toString();
     }
     
     public boolean close() throws DBException {
@@ -823,7 +834,8 @@ public class DOMFile extends BTree implements Lockable {
     public boolean flush() throws DBException {
         super.flush();
         dataCache.flush();
-        pages.remove(owner);
+//        pages.remove(owner);
+        closeDocument();
         try {
             if (fileHeader.isDirty()) fileHeader.write();
         } catch (IOException ioe) {
@@ -835,7 +847,8 @@ public class DOMFile extends BTree implements Lockable {
     public void sync() throws DBException {
         super.flush();
         dataCache.flush();
-        pages.remove(owner);
+//        pages.remove(owner);
+        closeDocument();
         try {
             if (fileHeader.isDirty()) fileHeader.write();
         } catch (IOException ioe) {
@@ -956,6 +969,8 @@ public class DOMFile extends BTree implements Lockable {
         if (pnum < 0) {
             final DOMPage page = new DOMPage();
             pages.put(owner, page.page.getPageNum());
+            LOG.debug("new page created: " + page.page.getPageNum() + " by " + owner +
+            		"; thread: " + Thread.currentThread().getName());
             dataCache.add(page);
             return page;
         } else
@@ -979,6 +994,8 @@ public class DOMFile extends BTree implements Lockable {
 
     public void closeDocument() {
         pages.remove(owner);
+//        LOG.debug("current doc closed by: " + owner +
+//        		"; thread: " + Thread.currentThread().getName());
     }
 
     /**
@@ -1104,6 +1121,7 @@ public class DOMFile extends BTree implements Lockable {
         rec.page.len = len;
         rec.page.setDirty(true);
         ph.decRecordCount();
+//        LOG.debug(debugPageContents(rec.page));
         if (rec.page.len == 0) {
 //            LOG.debug("removing page " + rec.page.getPageNum());
             removePage(rec.page);
@@ -1167,17 +1185,41 @@ public class DOMFile extends BTree implements Lockable {
     }
     
     public void removeAll(long p) {
+//    	StringBuffer debug = new StringBuffer();
+//    	debug.append("Removed pages: ");
         long pnum = StorageAddress.pageFromPointer(p);
         while(-1 < pnum) {
+//        	debug.append(' ').append(pnum);
             DOMPage page = getCurrentPage(pnum);
             pnum = page.getPageHeader().getNextDataPage();
             dataCache.remove(page);
             try {
+            	DOMFilePageHeader ph = page.getPageHeader();
+                ph.setNextDataPage(-1);
+                ph.setPrevDataPage(-1);
+                ph.setDataLength(0);
+                ph.setNextTID((short) -1);
+                ph.setRecordCount((short) 0);
+                page.len = 0;
                 unlinkPages(page.page);
             } catch (IOException e) {
                 LOG.warn("Error while removing page: " + e.getMessage(), e);
             }
         }
+//        LOG.debug(debug.toString());
+    }
+    
+    public String debugPages(DocumentImpl doc) {
+    	StringBuffer buf = new StringBuffer();
+    	buf.append("Pages used by ").append(doc.getFileName());
+    	buf.append(':');
+    	long pnum = StorageAddress.pageFromPointer(((NodeImpl)doc.getFirstChild()).getInternalAddress());
+        while(-1 < pnum) {
+            DOMPage page = getCurrentPage(pnum);
+            buf.append(' ').append(pnum);
+            pnum = page.getPageHeader().getNextDataPage();
+        }
+        return buf.toString();
     }
     
     /**
@@ -1187,9 +1229,11 @@ public class DOMFile extends BTree implements Lockable {
      *                   The new currentPage value
      */
     private final void setCurrentPage(DOMPage page) {
-        final long pnum = pages.get(owner);
+        long pnum = pages.get(owner);
         if (pnum == page.page.getPageNum()) return;
-        //pages.remove(owner);
+//        pages.remove(owner);
+//        LOG.debug("current page set: " + page.page.getPageNum() + " by " + owner.hashCode() +
+//        		"; thread: " + Thread.currentThread().getName());
         pages.put(owner, page.page.getPageNum());
     }
 
@@ -1209,11 +1253,9 @@ public class DOMFile extends BTree implements Lockable {
      *                   The new ownerObject value
      */
     public final void setOwnerObject(Object obj) {
+//    	if(owner != obj && obj != null)
+//    		LOG.debug("owner set -> " + obj.hashCode());
         owner = obj;
-    }
-
-    public final void releaseOwner(Object obj) {
-        //pages.remove(obj);
     }
 
     /**

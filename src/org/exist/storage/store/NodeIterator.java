@@ -120,12 +120,12 @@ public final class NodeIterator implements Iterator {
 						long nextPage = ph.getNextDataPage();
 						if (nextPage < 0) {
 							LOG.debug("bad link to next " + p.page.getPageInfo() + "; previous: " +
-									ph.getPrevDataPage());
+									ph.getPrevDataPage() + "; offset = " + offset + "; lastTID = " + lastTID);
 							return null;
 						}
-//						LOG.debug(page + " -> " + nextPage);
 						page = nextPage;
 						p = db.getCurrentPage(nextPage);
+//						LOG.debug(" -> " + nextPage + "; len = " + p.len + "; " + p.page.getPageInfo());
 						db.addToBuffer(p);
 						offset = 0;
 					}
@@ -168,6 +168,7 @@ public final class NodeIterator implements Iterator {
 					            "; next = " + p.getPageHeader().getNextDataPage() + "; prev = " + 
 					            p.getPageHeader().getPrevDataPage() + "; offset = " + (offset - l) +
 					            "; len = " + p.getPageHeader().getDataLength());
+					    LOG.debug(db.debugPageContents(p));
 					    return null;
 					}
 					nextNode.setInternalAddress(

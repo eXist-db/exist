@@ -232,6 +232,7 @@ public class BrokerPool {
 		pool.push(broker);
 		active.add(broker);
 		brokers++;
+		broker.setId(broker.getClass().getName() + '_' + brokers);
 		return broker;
 	}
 
