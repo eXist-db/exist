@@ -24,6 +24,7 @@ package org.exist.memtree;
 
 import org.exist.dom.NamedNodeMapImpl;
 import org.exist.dom.QName;
+import org.exist.dom.QNameable;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
@@ -31,7 +32,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class ElementImpl extends NodeImpl implements Element {
+public class ElementImpl extends NodeImpl implements Element, QNameable {
 
 	public ElementImpl(DocumentImpl doc, int nodeNumber) {
 		super(doc, nodeNumber);

@@ -30,7 +30,7 @@ import org.w3c.dom.Node;
  * 
  * @author wolf
  */
-public class NamedNode extends NodeImpl {
+public class NamedNode extends NodeImpl implements QNameable {
 
     protected QName nodeName = null;
     

@@ -22,14 +22,15 @@
  */
 package org.exist.xquery.functions;
 
+import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
-import org.exist.memtree.NodeImpl;
-import org.exist.xquery.BasicFunction;
+import org.exist.dom.QNameable;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -43,7 +44,7 @@ import org.w3c.dom.Node;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class FunNodeName extends BasicFunction {
+public class FunNodeName extends Function {
 
     public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -63,23 +64,31 @@ public class FunNodeName extends BasicFunction {
         super(context, signature);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-     */
-    public Sequence eval(Sequence[] args, Sequence contextSequence)
-            throws XPathException {
-        if(args[0].getLength() == 0)
-            return Sequence.EMPTY_SEQUENCE;
-        NodeValue val = (NodeValue)args[0];
-        Node node = val.getNode();
-        if(node.getNodeType() == Node.ELEMENT_NODE ||
-                node.getNodeType() == Node.ATTRIBUTE_NODE) {
-            if(val.getImplementationType() == NodeValue.IN_MEMORY_NODE)
-                return new QNameValue(context, ((NodeImpl)val).getQName());
-            else
-                return new QNameValue(context, ((org.exist.dom.NodeImpl)node).getQName());
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        Sequence retval = Sequence.EMPTY_SEQUENCE;
+        Node n = null;
+        
+        if(contextItem != null)
+            contextSequence = contextItem.toSequence();
+        if(getArgumentCount() > 0) {
+            NodeSet result = getArgument(0).eval(contextSequence).toNodeSet();
+            if(result.getLength() > 0)
+                n = result.item(0);
+        } else {
+            if(contextSequence.getLength() > 0 && contextSequence.getItemType() == Type.NODE)
+                n = ((NodeSet)contextSequence).item(0);
         }
-        return Sequence.EMPTY_SEQUENCE;
+        if(n != null) {
+            switch(n.getNodeType()) {
+                case Node.ELEMENT_NODE:
+                case Node.ATTRIBUTE_NODE:
+                    retval = new QNameValue(context, ((QNameable) n).getQName());
+                    break;
+                default:
+                    retval = Sequence.EMPTY_SEQUENCE;
+                    break;
+            }
+        } 
+        return retval;
     }
-
 }

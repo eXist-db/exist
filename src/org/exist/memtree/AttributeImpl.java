@@ -23,13 +23,14 @@
 package org.exist.memtree;
 
 import org.exist.dom.QName;
+import org.exist.dom.QNameable;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-public class AttributeImpl extends NodeImpl implements Attr {
+public class AttributeImpl extends NodeImpl implements Attr, QNameable {
 
 	/**
 	 * @param doc
