@@ -61,6 +61,8 @@ public class SecurityManager {
 	public final static String GUEST_USER = "guest";
 	public final static String SYSTEM = "/db/system";
 	
+	public final static User SYSTEM_USER = new User(DBA_USER, null, DBA_GROUP);
+	
 	private final static Logger LOG =
 		Logger.getLogger(SecurityManager.class);
 
