@@ -23,7 +23,7 @@ do
 done
 
 if [ -z "$JAVA_OPTS" ]; then
-    JAVA_OPTS="-Xms128000k -Xmx256000k"
+    JAVA_OPTS="-Xms64000k -Xmx256000k"
 fi
 
 SAXFACTORY=org.apache.xerces.jaxp.SAXParserFactoryImpl

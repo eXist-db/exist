@@ -558,7 +558,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 *@return    The fileName value
 	 */
 	public String getFileName() {
-		checkAvail();
+		//checkAvail();
 		return fileName;
 	}
 
@@ -744,6 +744,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public void read(VariableByteInputStream istream)
 		throws IOException, EOFException {
 		docId = istream.readInt();
+		fileName = collection.getName() + '/' + istream.readUTF();
 		children = istream.readInt();
 		address = DOMFile.createPointer(istream.readInt(), istream.readInt());
 		maxDepth = istream.readInt();
@@ -868,6 +869,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	public void write(VariableByteOutputStream ostream) throws IOException {
 		ostream.writeInt(docId);
+		ostream.writeUTF(fileName.substring(collection.getName().length() + 1));
 		ostream.writeInt(children);
 		ostream.writeInt(DOMFile.pageFromPointer(address));
 		ostream.writeInt(DOMFile.tidFromPointer(address));
@@ -896,8 +898,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public byte[] serialize() {
 		VariableByteOutputStream ostream = new VariableByteOutputStream();
 		try {
-			ostream.writeUTF(fileName.substring(collection.getName().length() + 1));
-			//ostream.writeInt(children);
+			//ostream.writeUTF(fileName.substring(collection.getName().length() + 1));
 			ostream.writeLong(documentRootId);
 			((DocumentTypeImpl) docType).write(ostream);
 		} catch(IOException e) {
@@ -910,7 +911,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public void deserialize(byte[] data) {
 		VariableByteInputStream istream = new VariableByteInputStream(data);
 		try {
-			fileName = collection.getName() + '/' + istream.readUTF();
+			//fileName = collection.getName() + '/' + istream.readUTF();
 			//children = istream.readInt();
 			documentRootId = istream.readLong();
 			docType = new DocumentTypeImpl();
