@@ -301,6 +301,8 @@ public class XMLWriter {
 	}
 
     public void cdataSection(char[] ch, int start, int len) throws TransformerException {
+        if (tagIsOpen)
+            closeStartTag(false);
         try {
             writer.write("<![CDATA[");
             writer.write(ch, start, len);
