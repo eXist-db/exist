@@ -2589,9 +2589,9 @@ public class NativeBroker extends DBBroker {
 			if(syncEvent == Sync.MAJOR_SYNC) {
 				elementIndex.sync();
 				textEngine.sync();
-				
+				System.gc();
 				Runtime runtime = Runtime.getRuntime();
-				LOG.debug("Memory: " + (runtime.totalMemory() / 1024) + "K total; " +
+				LOG.info("Memory: " + (runtime.totalMemory() / 1024) + "K total; " +
 						(runtime.maxMemory() / 1024) + "K max; " +
 						(runtime.freeMemory() / 1024) + "K free");
 				

@@ -110,22 +110,6 @@ public class BFile extends BTree {
         dataCache.setFileName(getFile().getName());
         minFree = PAGE_MIN_FREE;
         lock = new ReentrantReadWriteLock(file.getName());
-        
-//        Runnable syncAction = new Runnable() {
-//            public void run() {
-//                if(dataCache.hasDirtyItems()) {
-//	                try {
-//	                    lock.acquire(Lock.WRITE_LOCK);
-//	                    dataCache.flush();
-//	                } catch (LockException e) {
-//	                    LOG.warn("Failed to acquire lock on " + getFile().getName());
-//	                } finally {
-//	                    lock.release();
-//	                }
-//                }
-//            }
-//        };
-//        pool.getSyncDaemon().executePeriodically(getDataSyncPeriod(), syncAction, false);
     }
 
     /**
@@ -1870,6 +1854,8 @@ public class BFile extends BTree {
         }
         
         private void readOffsets() throws IOException {
+//        	if(offsets.length > 256)
+//        		LOG.warn("TID size: " + ph.nextTID);
         	Arrays.fill(offsets, (short)-1);
         	final int dlen = ph.getDataLength();
 		    for(short pos = 0; pos < dlen; ) {
@@ -1903,6 +1889,8 @@ public class BFile extends BTree {
         	System.arraycopy(offsets, 0, t, 0, offsets.length);
         	offsets = t;
         	ph.nextTID = next;
+//        	if(ph.nextTID > 256)
+//        		LOG.warn("TID size: " + ph.nextTID);
         	return tid;
         }
         

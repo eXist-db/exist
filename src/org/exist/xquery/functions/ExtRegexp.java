@@ -209,4 +209,11 @@ public class ExtRegexp extends Function {
 		}
 		return deps;
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.PathExpr#resetState()
+	 */
+	public void resetState() {
+		cached = null;
+	}
 }
