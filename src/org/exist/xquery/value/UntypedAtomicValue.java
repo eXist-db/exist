@@ -115,7 +115,8 @@ public class UntypedAtomicValue extends AtomicValue {
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 	 */
 	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
-		if (Type.subTypeOf(other.getType(), Type.STRING)) {
+		if (Type.subTypeOf(other.getType(), Type.STRING) ||
+				Type.subTypeOf(other.getType(), Type.UNTYPED_ATOMIC)) {
 			int cmp = Collations.compare(collator, value, other.getStringValue());
 			switch (operator) {
 				case Constants.EQ :
@@ -135,7 +136,7 @@ public class UntypedAtomicValue extends AtomicValue {
 			}
 		}
 		throw new XPathException(
-			"Type error: operands are not comparable; expected xs:string; got "
+			"Type error: operands are not comparable; expected xdt:untypedAtomic; got "
 				+ Type.getTypeName(other.getType()));
 	}
 
@@ -150,10 +151,10 @@ public class UntypedAtomicValue extends AtomicValue {
 	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
 	 */
 	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
-		if (Type.subTypeOf(other.getType(), Type.STRING))
-			return Collations.compare(collator, value, ((StringValue) other).value) > 0 ? this : other;
+		if (Type.subTypeOf(other.getType(), Type.UNTYPED_ATOMIC))
+			return Collations.compare(collator, value, ((UntypedAtomicValue) other).value) > 0 ? this : other;
 		else
-			return Collations.compare(collator, value, ((StringValue) other.convertTo(getType())).value) > 0
+			return Collations.compare(collator, value, other.getStringValue()) > 0
 			? this
 			: other;
 	}
@@ -162,10 +163,10 @@ public class UntypedAtomicValue extends AtomicValue {
 	 * @see org.exist.xquery.value.AtomicValue#min(org.exist.xquery.value.AtomicValue)
 	 */
 	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
-		if (Type.subTypeOf(other.getType(), Type.STRING))
-			return Collations.compare(collator, value, ((StringValue) other).value) < 0 ? this : other;
+		if (Type.subTypeOf(other.getType(), Type.UNTYPED_ATOMIC))
+			return Collations.compare(collator, value, ((UntypedAtomicValue) other).value) < 0 ? this : other;
 		else
-			return Collations.compare(collator, value, ((StringValue) other.convertTo(getType())).value) < 0
+			return Collations.compare(collator, value, other.getStringValue()) < 0
 				? this
 				: other;
 	}
@@ -204,7 +205,7 @@ public class UntypedAtomicValue extends AtomicValue {
 	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 	 */
 	public Object toJavaObject(Class target) throws XPathException {
-		if (target.isAssignableFrom(StringValue.class))
+		if (target.isAssignableFrom(UntypedAtomicValue.class))
 			return this;
 		else if (
 			target == Object.class

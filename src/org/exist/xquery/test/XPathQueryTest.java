@@ -182,6 +182,71 @@ public class XPathQueryTest extends TestCase {
 		}
 	}
 
+	public void testBoolean() {
+		try {
+			System.out.println("Testing effective boolean value of expressions ...");
+			
+			XPathQueryService service =
+				storeXMLStringAndGetQueryService("numbers.xml", numbers);
+			
+			ResourceSet result = queryResource(service, "numbers.xml", "boolean(1.0)", 1);
+			assertEquals("boolean value of 1.0 should be true", "true", result.getResource(0).getContent());
+			
+			result = queryResource(service, "numbers.xml", "boolean(0.0)", 1);
+			assertEquals("boolean value of 0.0 should be false", "false", result.getResource(0).getContent());
+			
+			result = queryResource(service, "numbers.xml", "boolean(xs:double(0.0))", 1);
+			assertEquals("boolean value of double 0.0 should be false", "false", result.getResource(0).getContent());
+			
+			result = queryResource(service, "numbers.xml", "boolean(xs:double(1.0))", 1);
+			assertEquals("boolean value of double 1.0 should be true", "true", result.getResource(0).getContent());
+			
+			result = queryResource(service, "numbers.xml", "boolean(xs:float(1.0))", 1);
+			assertEquals("boolean value of float 1.0 should be true", "true", result.getResource(0).getContent());
+			
+			result = queryResource(service, "numbers.xml", "boolean(xs:float(0.0))", 1);
+			assertEquals("boolean value of float 0.0 should be false", "false", result.getResource(0).getContent());
+			
+			result = queryResource(service, "numbers.xml", "boolean(xs:integer(0))", 1);
+			assertEquals("boolean value of integer 0 should be false", "false", result.getResource(0).getContent());
+			
+			result = queryResource(service, "numbers.xml", "boolean(xs:integer(1))", 1);
+			assertEquals("boolean value of integer 1 should be true", "true", result.getResource(0).getContent());
+			
+			result = queryResource(service, "numbers.xml", "'true' cast as xs:boolean", 1);
+			assertEquals("boolean value of 'true' cast to xs:boolean should be true", 
+					"true", result.getResource(0).getContent());
+			
+			result = queryResource(service, "numbers.xml", "'false' cast as xs:boolean", 1);
+			assertEquals("boolean value of 'false' cast to xs:boolean should be false", 
+					"false", result.getResource(0).getContent());
+			
+			result = queryResource(service, "numbers.xml", "boolean('Hello')", 1);
+			assertEquals("boolean value of string 'Hello' should be true", "true", result.getResource(0).getContent());
+			
+			result = queryResource(service, "numbers.xml", "boolean('')", 1);
+			assertEquals("boolean value of empty string should be false", "false", result.getResource(0).getContent());
+			
+			result = queryResource(service, "numbers.xml", "boolean(())", 1);
+			assertEquals("boolean value of empty sequence should be false", "false", result.getResource(0).getContent());
+			
+			result = queryResource(service, "numbers.xml", "boolean(('Hello'))", 1);
+			assertEquals("boolean value of sequence with non-empty string should be true", 
+					"true", result.getResource(0).getContent());
+			
+			result = queryResource(service, "numbers.xml", "boolean((0.0, 0.0))", 1);
+			assertEquals("boolean value of sequence with two elements should be true", "true", 
+					result.getResource(0).getContent());
+			
+			result = queryResource(service, "numbers.xml", "boolean(//item[@id = '1']/price)", 1);
+			assertEquals("boolean value of 5.6 should be true", "true", 
+					result.getResource(0).getContent());
+		} catch (XMLDBException e) {
+			System.out.println("testBoolean(): XMLDBException: "+e);
+			fail(e.getMessage());
+		}
+	}
+	
 	public void testNot() {
 		try {
 			XPathQueryService service = 
