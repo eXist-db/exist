@@ -19,13 +19,13 @@ if [ -z "$EXIST_HOME" ]; then
     fi
 fi
 
-LOCALCLASSPATH=$CLASSPATH:$JAVA_HOME/lib/tools.jar:$EXIST_HOME/lib/core/ant.jar:$EXIST_HOME/lib/optional/ant-optional.jar:$EXIST_HOME/lib/core/junit.jar:$EXIST_HOME/lib/core/jakarta-oro-2.0.6.jar
+LOCALCLASSPATH=$CLASSPATH:$EXIST_HOME/lib/core/ant-launcher.jar:$EXIST_HOME/lib/core/junit.jar:$EXIST_HOME/lib/core/jakarta-oro-2.0.6.jar
 
 JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
 
-JAVA_OPTS="-Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS -Dexist.home=$EXIST_HOME"
+JAVA_OPTS="-Dant.home=$EXIST_HOME -Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS -Dexist.home=$EXIST_HOME"
 
 echo Starting Ant...
 echo
 
-$JAVA_HOME/bin/java -Xms64000K $JAVA_OPTS -classpath $LOCALCLASSPATH org.apache.tools.ant.Main $*
+$JAVA_HOME/bin/java -Xms64000K $JAVA_OPTS -classpath $LOCALCLASSPATH org.apache.tools.ant.launch.Launcher $*

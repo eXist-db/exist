@@ -64,11 +64,12 @@ public class AVLTreeNodeSet extends NodeSet {
 	 * @see org.exist.xpath.value.Sequence#itemAt(int)
 	 */
 	public Item itemAt(int pos) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("unsupported method: itemAt");
 	}
 
 	public final void add(NodeProxy proxy) {
+		if(proxy == null)
+			return;
 		if (root == null) {
 			root = new Node(proxy);
 			++size;

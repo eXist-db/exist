@@ -36,11 +36,13 @@ public class OrderedValueSequence extends AbstractSequence {
 
 	private OrderSpec orderSpecs[];
 	private Entry[] items = null;
+	private int count = 0;
 	private DocumentSet docs;
 	
-	public OrderedValueSequence(DocumentSet docs, OrderSpec orderSpecs[]) {
+	public OrderedValueSequence(DocumentSet docs, OrderSpec orderSpecs[], int size) {
 		this.orderSpecs = orderSpecs;
 		this.docs = docs;
+		this.items = new Entry[size];
 	}
 	
 	/* (non-Javadoc)
@@ -67,33 +69,34 @@ public class OrderedValueSequence extends AbstractSequence {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Sequence#add(org.exist.xpath.value.Item)
 	 */
-	public void add(Item item) throws XPathException {
-		throw new XPathException("Operation not supported");
+	public void add(Item item) throws XPathException { 
+		items[count++] = new Entry(item);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.AbstractSequence#addAll(org.exist.xpath.value.Sequence)
 	 */
 	public void addAll(Sequence other) throws XPathException {
-		items = new Entry[other.getLength()];
-		Item item;
-		Entry entry;
-		Sequence seq;
-		AtomicValue value;
-		int k = 0;
-		for(SequenceIterator i = other.iterate(); i.hasNext(); k++) {
-			item = i.nextItem();
-			entry = new Entry(item);
-			items[k] = entry;
-		}
-		FastQSort.sort(items, 0, items.length - 1);
+		if(other.getLength() > 0) {
+			Item next;
+			for(SequenceIterator i = other.iterate(); i.hasNext(); ) {
+				next = i.nextItem();
+				if(next != null)
+					add(next);
+			}
+		} else if(other.getLength() == 1)
+			add(other.itemAt(0));
+	}
+	
+	public void sort() {
+		FastQSort.sort(items, 0, count - 1);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Sequence#itemAt(int)
 	 */
 	public Item itemAt(int pos) {
-		if(items != null && pos > -1 && pos < items.length)
+		if(items != null && pos > -1 && pos < count)
 			return items[pos].item;
 		else
 			return null;
@@ -111,9 +114,18 @@ public class OrderedValueSequence extends AbstractSequence {
 		Item item;
 		AtomicValue values[];
 		
-		public Entry(Item item) {
+		public Entry(Item item) throws XPathException {
 			this.item = item;
 			values = new AtomicValue[orderSpecs.length];
+			for(int i = 0; i < orderSpecs.length; i++) {
+				Sequence seq = orderSpecs[i].getSortExpression().eval(docs, null);
+				values[i] = AtomicValue.EMPTY_VALUE;
+				if(seq.getLength() == 1) {
+					values[i] = seq.itemAt(0).atomize();
+				} else if(seq.getLength() > 1)
+					throw new XPathException("expected a single value for order expression " +
+						orderSpecs[i].getSortExpression().pprint() + " ; found: " + seq.getLength());
+			}
 		}
 
 		/* (non-Javadoc)
@@ -125,8 +137,8 @@ public class OrderedValueSequence extends AbstractSequence {
 			AtomicValue a, b;
 			for(int i = 0; i < values.length; i++) {
 				try {
-					a = getValue(i);
-					b = other.getValue(i);
+					a = values[i];
+					b = other.values[i];
 					if(a == AtomicValue.EMPTY_VALUE && b != AtomicValue.EMPTY_VALUE) {
 						if((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0)
 							cmp = -1;
@@ -138,7 +150,7 @@ public class OrderedValueSequence extends AbstractSequence {
 						else
 							cmp = -1;
 					} else
-						cmp = getValue(i).compareTo(other.getValue(i));
+						cmp = a.compareTo(b);
 					if((orderSpecs[i].getModifiers() & OrderSpec.DESCENDING_ORDER) != 0)
 						cmp = cmp * -1;
 					if(cmp != 0)
@@ -147,19 +159,6 @@ public class OrderedValueSequence extends AbstractSequence {
 				}
 			}
 			return cmp;
-		}
-		
-		private AtomicValue getValue(int at) throws XPathException {
-			if(values[at] != null)
-				return values[at];
-			Sequence seq = orderSpecs[at].getSortExpression().eval(docs, item.toSequence());
-			if(seq.getLength() == 0)
-				values[at] = AtomicValue.EMPTY_VALUE;
-			if(seq.getLength() == 1) {
-				values[at] = seq.itemAt(0).atomize();
-				return values[at];
-			}
-			throw new XPathException("Order spec should evaluate to a single value");
 		}
 	}
 	
@@ -171,14 +170,14 @@ public class OrderedValueSequence extends AbstractSequence {
 		 * @see org.exist.xpath.value.SequenceIterator#hasNext()
 		 */
 		public boolean hasNext() {
-			return pos < items.length;
+			return pos < count;
 		}
 		
 		/* (non-Javadoc)
 		 * @see org.exist.xpath.value.SequenceIterator#nextItem()
 		 */
 		public Item nextItem() {
-			if(pos < items.length)
+			if(pos < count)
 				return items[pos++].item;
 			return null;
 		}

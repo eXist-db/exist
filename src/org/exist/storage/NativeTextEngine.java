@@ -118,7 +118,7 @@ public class NativeTextEngine extends TextSearchEngine {
 			dataDir = "data";
 
 		if ((buffers = config.getInteger("db-connection.words.buffers")) < 0)
-			buffers = 1024;
+			buffers = 128;
 
 		if ((temp = (String) config.getProperty("db-connection.compress"))
 			!= null)
@@ -151,7 +151,6 @@ public class NativeTextEngine extends TextSearchEngine {
 				else
 					dbWords.open();
 
-				dbWords.setCompression(compress);
 				config.setProperty("db-connection.words", dbWords);
 			}
 			invIdx = new InvertedIndex();

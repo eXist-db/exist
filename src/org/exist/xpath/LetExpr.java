@@ -25,6 +25,7 @@ package org.exist.xpath;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.xpath.value.Item;
+import org.exist.xpath.value.OrderedValueSequence;
 import org.exist.xpath.value.Sequence;
 
 /**
@@ -56,8 +57,18 @@ public class LetExpr extends BindingExpression {
 		if(whereExpr != null)
 			filtered = applyWhereExpression(context, docs, null);
 		if(whereExpr != null && filtered.getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE; 
-		Sequence returnSeq = returnExpr.eval(docs, filtered, null);
+			return Sequence.EMPTY_SEQUENCE;
+		Sequence returnSeq = null;
+		if(orderSpecs == null) 
+			returnSeq = returnExpr.eval(docs, filtered, null);
+		else {
+			if(filtered != null)
+				val = filtered;
+			OrderedValueSequence ordered = 
+				new OrderedValueSequence(docs, orderSpecs, val.getLength());
+			ordered.addAll(val);
+			returnSeq = returnExpr.eval(docs, ordered, null);
+		}
 		context.popLocalContext();
 		return returnSeq;
 	}
