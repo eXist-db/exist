@@ -52,6 +52,7 @@ import org.exist.util.Lockable;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.ReentrantReadWriteLock;
 import org.exist.util.hashtable.Object2LongIdentityHashMap;
+import org.exist.xquery.TerminatedException;
 import org.w3c.dom.Node;
 
 /**
@@ -666,7 +667,12 @@ public class DOMFile extends BTree implements Lockable {
     public ArrayList findKeys(IndexQuery query) throws IOException,
             BTreeException {
         final FindCallback cb = new FindCallback(FindCallback.KEYS);
-        query(query, cb);
+        try {
+            query(query, cb);
+        } catch (TerminatedException e) {
+            // Should never happen hear
+            LOG.warn("Method terminated");
+        }
         return cb.getValues();
     }
 
@@ -757,7 +763,12 @@ public class DOMFile extends BTree implements Lockable {
     public ArrayList findValues(IndexQuery query) throws IOException,
             BTreeException {
         FindCallback cb = new FindCallback(FindCallback.VALUES);
-        query(query, cb);
+        try {
+            query(query, cb);
+        } catch (TerminatedException e) {
+            // Should never happen
+            LOG.warn("Method terminated");
+        }
         return cb.getValues();
     }
 
@@ -1813,7 +1824,8 @@ public class DOMFile extends BTree implements Lockable {
             return values;
         }
 
-        public boolean indexInfo(Value value, long pointer) {
+        public boolean indexInfo(Value value, long pointer) 
+        {
             switch (mode) {
             case VALUES:
                 RecordPos rec = findRecord(pointer);
@@ -1843,7 +1855,8 @@ public class DOMFile extends BTree implements Lockable {
             return values;
         }
 
-        public boolean indexInfo(Value value, long pointer) {
+        public boolean indexInfo(Value value, long pointer) 
+        throws TerminatedException {
             RecordPos rec = findRecord(pointer);
             short l = ByteConversion.byteToShort(rec.page.data, rec.offset);
             int dataStart = rec.offset + 2;

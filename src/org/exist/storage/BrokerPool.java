@@ -167,6 +167,7 @@ public class BrokerPool {
 	private boolean syncRequired = false;
 	private SyncDaemon syncDaemon;
 	private ShutdownListener shutdownListener = null;
+	private XQueryPool xqueryCache;
 
 	/**
 	 *  Constructor for the BrokerPool object
@@ -193,6 +194,7 @@ public class BrokerPool {
 		if (syncPeriod > 0)
 			syncDaemon.executePeriodically(syncPeriod, new Sync(this), false);
 		conf = config;
+		xqueryCache = new XQueryPool();
 		initialize();
 	}
 
@@ -235,32 +237,34 @@ public class BrokerPool {
 	 *@return                     Description of the Return Value
 	 *@exception  EXistException  Description of the Exception
 	 */
-	public synchronized DBBroker get() throws EXistException {
+	public DBBroker get() throws EXistException {
 		if (!isInstanceConfigured())
 			throw new EXistException("database instance is not available");
 		DBBroker broker = (DBBroker)threads.get(Thread.currentThread());
 		if(broker != null) {
-			// the thread already holds a reference to a broker object.
+			// the thread already holds a reference to a broker object
 			broker.incReferenceCount();
 			return broker;
 		}
-		if (pool.isEmpty()) {
-			if (brokers < max)
-				createBroker();
-			else
-				while (pool.isEmpty()) {
-					LOG.debug("waiting for broker instance to become available");
-					try {
-						this.wait();
-					} catch (InterruptedException e) {
+		synchronized(this) {
+			if (pool.isEmpty()) {
+				if (brokers < max)
+					createBroker();
+				else
+					while (pool.isEmpty()) {
+						LOG.debug("waiting for broker instance to become available");
+						try {
+							this.wait();
+						} catch (InterruptedException e) {
+						}
 					}
-				}
+			}
+			broker = (DBBroker) pool.pop();
+			threads.put(Thread.currentThread(), broker);
+			broker.incReferenceCount();
+			this.notifyAll();
+			return broker;
 		}
-		broker = (DBBroker) pool.pop();
-		threads.put(Thread.currentThread(), broker);
-		broker.incReferenceCount();
-		this.notifyAll();
-		return broker;
 	}
 
 	/**
@@ -270,7 +274,7 @@ public class BrokerPool {
 	 * @return
 	 * @throws EXistException
 	 */
-	public synchronized DBBroker get(User user) throws EXistException {
+	public DBBroker get(User user) throws EXistException {
 		DBBroker broker = get();
 		broker.setUser(user);
 		return broker;
@@ -327,11 +331,8 @@ public class BrokerPool {
 			// broker still has references. Keep it
 			return;  
 		}
-		threads.remove(Thread.currentThread());
-		if (pool.contains(broker)) {
-			return;
-		}
 		synchronized (this) {
+		    threads.remove(Thread.currentThread());
 			pool.push(broker);
 			if (syncRequired && pool.size() == brokers) {
 				sync(broker);
@@ -416,6 +417,10 @@ public class BrokerPool {
 		shutdownListener = listener;
 	}
 
+	public XQueryPool getXQueryPool() {
+	    return xqueryCache;
+	}
+	
 	protected static class ShutdownThread extends Thread {
 
 		/**  Constructor for the ShutdownThread object */

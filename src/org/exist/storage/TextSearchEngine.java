@@ -42,6 +42,8 @@ import org.exist.storage.analysis.Tokenizer;
 import org.exist.util.Configuration;
 import org.exist.util.Occurrences;
 import org.exist.util.PorterStemmer;
+import org.exist.xquery.TerminatedException;
+import org.exist.xquery.XQueryContext;
 
 /**
  * This is the base class for all classes providing access to the fulltext index.
@@ -159,8 +161,9 @@ public abstract class TextSearchEngine extends Observable {
 	 * @param expr
 	 * @return
 	 */
-	public NodeSet getNodesContaining(DocumentSet doc, NodeSet context, String expr) {
-		return getNodesContaining(doc, context, expr, DBBroker.MATCH_EXACT);
+	public NodeSet getNodesContaining(XQueryContext context, DocumentSet docs, NodeSet contextSet, 
+	        String expr) throws TerminatedException {
+		return getNodesContaining(context, docs, contextSet, expr, DBBroker.MATCH_EXACT);
 	}
 
 	/**
@@ -175,10 +178,11 @@ public abstract class TextSearchEngine extends Observable {
 	 * @param expr
 	 * @return
 	 */
-	public abstract NodeSet getNodesContaining(DocumentSet docs, NodeSet context, String expr, int type);
+	public abstract NodeSet getNodesContaining(XQueryContext context, DocumentSet docs, 
+	        NodeSet contextSet, String expr, int type) throws TerminatedException;
 	
-	public abstract NodeSet getNodes(DocumentSet docs, NodeSet context, TermMatcher matcher,
-		CharSequence startTerm);
+	public abstract NodeSet getNodes(XQueryContext context, DocumentSet docs, NodeSet contextSet, 
+	        TermMatcher matcher, CharSequence startTerm) throws TerminatedException;
 	
 	/**
 	 * Scan the fulltext index and return an Occurrences object for each

@@ -80,6 +80,8 @@ import org.exist.util.OrderedLongLinkedList;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.UTF8;
+import org.exist.xquery.TerminatedException;
+import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -263,16 +265,16 @@ public class NativeTextEngine extends TextSearchEngine {
 		invIdx.remove();
 	}
 
-	public NodeSet getNodesContaining(DocumentSet docs, NodeSet context,
-										String expr, int type) {
+	public NodeSet getNodesContaining(XQueryContext context, DocumentSet docs, NodeSet contextSet,
+										String expr, int type) throws TerminatedException {
 		if (type == DBBroker.MATCH_EXACT && containsWildcards(expr)) {
 			type = DBBroker.MATCH_WILDCARDS;
 		}
 		switch (type) {
 			case DBBroker.MATCH_EXACT :
-				return getNodesExact(docs, context, expr);
+				return getNodesExact(context, docs, contextSet, expr);
 			default :
-				return getNodesRegexp(docs, context, expr, type);
+				return getNodesRegexp(context, docs, contextSet, expr, type);
 		}
 	}
 
@@ -286,12 +288,13 @@ public class NativeTextEngine extends TextSearchEngine {
 	 *                of regular expression search terms
 	 * @return array containing a NodeSet for each of the search terms
 	 */
-	public NodeSet getNodesExact(DocumentSet docs, NodeSet context, String expr) {
+	public NodeSet getNodesExact(XQueryContext context, DocumentSet docs, NodeSet contextSet, String expr) 
+	throws TerminatedException {
 		if (expr == null)
 			return null;
 		if (stoplist.contains(expr))
 			return null;
-				long start = System.currentTimeMillis();
+//				long start = System.currentTimeMillis();
 		DocumentImpl doc;
 		Value ref;
 		byte[] data;
@@ -307,7 +310,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		VariableByteInput is = null;
 		NodeProxy parent, current = new NodeProxy();
 		NodeSet result;
-		if (context == null)
+		if (contextSet == null)
 			result = new TextSearchResult(trackMatches != Serializer.TAG_NONE);
 		else
 			result = new ExtArrayNodeSet(docs.getLength(), 250);
@@ -330,23 +333,23 @@ public class NativeTextEngine extends TextSearchEngine {
 					section = is.readByte();
 					len = is.readInt();
 					if ((doc = docs.getDoc(docId)) == null
-							|| (context != null && !context.containsDoc(doc))) {
+							|| (contextSet != null && !contextSet.containsDoc(doc))) {
 						is.skip(len);
 						continue;
 					}
-					if (context != null)
-						sizeHint = context.getSizeHint(doc);
+					if (contextSet != null)
+						sizeHint = contextSet.getSizeHint(doc);
 					last = 0;
 					for (int j = 0; j < len; j++) {
 						delta = is.readLong();
 						gid = last + delta;
 						last = gid;
 						count++;
-						if (context != null) {
+						if (contextSet != null) {
 							current = (section == TEXT_SECTION ? new NodeProxy(
 									doc, gid, Node.TEXT_NODE) : new NodeProxy(
 									doc, gid, Node.ATTRIBUTE_NODE));
-							parent = context.parentWithChild(current, false,
+							parent = contextSet.parentWithChild(current, false,
 									true, -1);
 							if (parent != null) {
 								result.add(parent, sizeHint);
@@ -355,6 +358,7 @@ public class NativeTextEngine extends TextSearchEngine {
 							}
 						} else
 							((TextSearchResult) result).add(doc, gid, term);
+						context.proceed();
 					}
 				}
 			} catch (EOFException e) {
@@ -366,24 +370,24 @@ public class NativeTextEngine extends TextSearchEngine {
 				lock.release();
 			}
 		}
-		if (context != null)
+		if (contextSet != null)
 			((ExtArrayNodeSet) result).sort();
-				LOG.debug(
-					"found "
-						+ expr
-						+ ": "
-						+ result.getLength()
-						+ " ("
-						+ count
-						+ ") "
-						+ " in "
-						+ (System.currentTimeMillis() - start)
-						+ "ms.");
+//				LOG.debug(
+//					"found "
+//						+ expr
+//						+ ": "
+//						+ result.getLength()
+//						+ " ("
+//						+ count
+//						+ ") "
+//						+ " in "
+//						+ (System.currentTimeMillis() - start)
+//						+ "ms.");
 		return result;
 	}
 
-	private NodeSet getNodesRegexp(DocumentSet docs, NodeSet context,
-									String expr, int type) {
+	private NodeSet getNodesRegexp(XQueryContext context, DocumentSet docs, NodeSet contextSet,
+									String expr, int type) throws TerminatedException {
 		if (expr == null)
 			return null;
 		if (stoplist.contains(expr))
@@ -397,7 +401,7 @@ public class NativeTextEngine extends TextSearchEngine {
 				break;
 		try {
 			TermMatcher comparator = new RegexMatcher(expr, type);
-			return getNodes(docs, context, comparator, term);
+			return getNodes(context, docs, contextSet, comparator, term);
 		} catch (EXistException e) {
 			return null;
 		}
@@ -414,11 +418,11 @@ public class NativeTextEngine extends TextSearchEngine {
 	 *                of regular expression search terms
 	 * @return array containing a NodeSet for each of the search terms
 	 */
-	public NodeSet getNodes(DocumentSet docs, NodeSet context,
-							TermMatcher matcher, CharSequence startTerm) {
-		long start = System.currentTimeMillis();
+	public NodeSet getNodes(XQueryContext context, DocumentSet docs, NodeSet contextSet,
+							TermMatcher matcher, CharSequence startTerm) throws TerminatedException {
+//		long start = System.currentTimeMillis();
 		NodeSet result;
-		if (context == null)
+		if (contextSet == null)
 			result = new TextSearchResult(trackMatches != Serializer.TAG_NONE);
 		else
 			result = new ExtArrayNodeSet();
@@ -427,7 +431,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		short collectionId;
 		SearchCallback cb;
 		Lock lock = dbWords.getLock();
-		cb = new SearchCallback(matcher, result, context, docs);
+		cb = new SearchCallback(context, matcher, result, contextSet, docs);
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
 			collection = (Collection) iter.next();
 			collectionId = collection.getId();
@@ -451,8 +455,8 @@ public class NativeTextEngine extends TextSearchEngine {
 				lock.release();
 			}
 		}
-		LOG.debug("regexp found: " + result.getLength() + " in "
-				+ (System.currentTimeMillis() - start) + "ms.");
+//		LOG.debug("regexp found: " + result.getLength() + " in "
+//				+ (System.currentTimeMillis() - start) + "ms.");
 		return result;
 	}
 
@@ -462,7 +466,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		Collection collection;
 		short collectionId;
 		Lock lock = dbWords.getLock();
-		IndexCallback cb = new IndexCallback(matcher);
+		IndexCallback cb = new IndexCallback(null, matcher);
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
 			collection = (Collection) iter.next();
 			collectionId = collection.getId();
@@ -476,7 +480,9 @@ public class NativeTextEngine extends TextSearchEngine {
 					LOG.debug(ioe);
 				} catch (BTreeException bte) {
 					LOG.debug(bte);
-				}
+				} catch (TerminatedException e) {
+                    LOG.debug(e);
+                }
 			} catch (LockException e) {
 				LOG.debug(e);
 			} finally {
@@ -544,7 +550,9 @@ public class NativeTextEngine extends TextSearchEngine {
 				LOG.warn("error while reading words", e);
 			} catch (BTreeException e) {
 				LOG.warn("error while reading words", e);
-			} finally {
+			} catch (TerminatedException e) {
+                LOG.warn("Method terminated", e);
+            } finally {
 				lock.release();
 			}
 		}
@@ -755,6 +763,7 @@ public class NativeTextEngine extends TextSearchEngine {
 			lock.release();
 		}
 	}
+	
 	private final static class WordRef extends Value {
 
 		public WordRef(short collectionId) {
@@ -1130,9 +1139,11 @@ public class NativeTextEngine extends TextSearchEngine {
 		
 		List matches = new ArrayList();
 		TermMatcher matcher;
+		XQueryContext context;
 		
-		public IndexCallback(TermMatcher matcher) {
+		public IndexCallback(XQueryContext context, TermMatcher matcher) {
 			this.matcher = matcher;
+			this.context = context;
 		}
 		
 		public String[] getMatches() {
@@ -1143,7 +1154,9 @@ public class NativeTextEngine extends TextSearchEngine {
 		/* (non-Javadoc)
 		 * @see org.dbxml.core.filer.BTreeCallback#indexInfo(org.dbxml.core.data.Value, long)
 		 */
-		public boolean indexInfo(Value key, long pointer) {
+		public boolean indexInfo(Value key, long pointer) throws TerminatedException {
+		    if(context != null)
+		        context.proceed();
 			String word;
 			try {
 				word = new String(key.getData(), 2, key.getLength() - 2,
@@ -1161,17 +1174,19 @@ public class NativeTextEngine extends TextSearchEngine {
 
 		DocumentSet docs;
 		TermMatcher matcher;
-		NodeSet result, context;
-
-		public SearchCallback(TermMatcher comparator, NodeSet result,
-				NodeSet context, DocumentSet docs) {
+		NodeSet result, contextSet;
+		XQueryContext context;
+		
+		public SearchCallback(XQueryContext context, TermMatcher comparator, NodeSet result,
+				NodeSet contextSet, DocumentSet docs) {
 			this.matcher = comparator;
 			this.result = result;
 			this.docs = docs;
+			this.contextSet = contextSet;
 			this.context = context;
 		}
 
-		public boolean indexInfo(Value key, long pointer) {
+		public boolean indexInfo(Value key, long pointer) throws TerminatedException {
 			String word;
 			try {
 				word = new String(key.getData(), 2, key.getLength() - 2,
@@ -1200,6 +1215,8 @@ public class NativeTextEngine extends TextSearchEngine {
 				NodeProxy parent, proxy;
 				try {
 					while (is.available() > 0) {
+					    if(context != null)
+					        context.proceed();
 						docId = is.readInt();
 						section = is.readByte();
 						len = is.readInt();
@@ -1207,20 +1224,20 @@ public class NativeTextEngine extends TextSearchEngine {
 							is.skip(len);
 							continue;
 						}
-						if (context != null)
-							sizeHint = context.getSizeHint(doc);
+						if (contextSet != null)
+							sizeHint = contextSet.getSizeHint(doc);
 						last = -1;
 						for (int j = 0; j < len; j++) {
 							delta = is.readLong();
 							gid = (last < 0 ? delta : last + delta);
 							last = gid;
-							if (context != null) {
+							if (contextSet != null) {
 								proxy = (section == TEXT_SECTION
 										? new NodeProxy(doc, gid,
 												Node.TEXT_NODE)
 										: new NodeProxy(doc, gid,
 												Node.ATTRIBUTE_NODE));
-								parent = context.parentWithChild(proxy, false,
+								parent = contextSet.parentWithChild(proxy, false,
 										true, -1);
 								if (parent != null) {
 									result.add(parent, sizeHint);
@@ -1237,7 +1254,7 @@ public class NativeTextEngine extends TextSearchEngine {
 					LOG.warn("io error while reading index", e);
 				}
 			}
-			if (context != null)
+			if (contextSet != null)
 				((ExtArrayNodeSet) result).sort();
 			return true;
 		}

@@ -50,6 +50,7 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
 import org.exist.util.Occurrences;
 import org.exist.xquery.NodeSelector;
+import org.exist.xquery.XQuery;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -85,6 +86,8 @@ public abstract class DBBroker extends Observable {
 	protected SymbolTable symbols = null;
 	
 	protected User user = null;
+	
+	protected XQuery xqueryService;
 	
 	private int referenceCount = 0;
 
@@ -154,6 +157,7 @@ public abstract class DBBroker extends Observable {
 		if ((xupdateGrowthFactor = config.getInteger("xupdate.growth-factor")) < 0)
 		    xupdateGrowthFactor = 1;
 		this.pool = pool;
+		xqueryService = new XQuery(this);
 	}
 
 	public void setUser(User user) {
@@ -162,6 +166,10 @@ public abstract class DBBroker extends Observable {
 	
 	public User getUser() {
 		return user;
+	}
+	
+	public XQuery getXQueryService() {
+	    return xqueryService;
 	}
 	
 	/**
