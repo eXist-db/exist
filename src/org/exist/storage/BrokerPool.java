@@ -112,7 +112,7 @@ public class BrokerPool {
 	public final static Iterator getInstances() {
 		return instances.values().iterator();
 	}
-	
+
 	/**
 	 *  Shutdown running brokers. After calling this method, the BrokerPool is
 	 *  no longer configured. You have to configure it again by calling
@@ -134,8 +134,8 @@ public class BrokerPool {
 	public final static void stopAll() {
 		BrokerPool instance;
 		for (Iterator i = instances.values().iterator(); i.hasNext();) {
-			instance = (BrokerPool)i.next();
-			if(instance.conf != null)
+			instance = (BrokerPool) i.next();
+			if (instance.conf != null)
 				instance.shutdown();
 		}
 		instances.clear();
@@ -151,7 +151,8 @@ public class BrokerPool {
 	private String instanceId;
 	private boolean syncRequired = false;
 	private SyncDaemon syncDaemon;
-	
+	private ShutdownListener shutdownListener = null;
+
 	/**
 	 *  Constructor for the BrokerPool object
 	 *
@@ -170,12 +171,12 @@ public class BrokerPool {
 		if (maxInt != null)
 			max = maxInt.intValue();
 		long syncPeriod = 120000;
-		if(syncInt != null)
+		if (syncInt != null)
 			syncPeriod = syncInt.longValue();
 		LOG.debug("min = " + min + "; max = " + max + "; sync = " + syncPeriod);
 		syncDaemon = new SyncDaemon();
-		if(syncPeriod > 0)
-			syncDaemon.executePeriodically(syncPeriod, new Sync(this), false); 
+		if (syncPeriod > 0)
+			syncDaemon.executePeriodically(syncPeriod, new Sync(this), false);
 		conf = config;
 		initialize();
 	}
@@ -210,7 +211,8 @@ public class BrokerPool {
 	 */
 	protected DBBroker createBroker() throws EXistException {
 		DBBroker broker = BrokerFactory.getInstance(this, conf);
-		LOG.debug("database " + instanceId + ": creating new instance of " + broker.getClass().getName());
+		LOG.debug(
+			"database " + instanceId + ": creating new instance of " + broker.getClass().getName());
 		pool.push(broker);
 		active.add(broker);
 		brokers++;
@@ -289,13 +291,12 @@ public class BrokerPool {
 	public void release(DBBroker broker) {
 		if (broker == null)
 			return;
-		if(pool.contains(broker)) {
-			Thread.dumpStack();
+		if (pool.contains(broker)) {
 			return;
 		}
-		synchronized(this) {
+		synchronized (this) {
 			pool.push(broker);
-			if(syncRequired && pool.size() == brokers) {
+			if (syncRequired && pool.size() == brokers) {
 				sync(broker);
 				syncRequired = false;
 			}
@@ -328,6 +329,9 @@ public class BrokerPool {
 			 ((DBBroker) i.next()).shutdown();
 		LOG.debug("shutdown!");
 		conf = null;
+		instances.remove(instanceId);
+		if (shutdownListener != null)
+			shutdownListener.shutdown(instanceId, instances.size());
 	}
 
 	/**
@@ -353,9 +357,20 @@ public class BrokerPool {
 	}
 
 	public void triggerSync() {
-		syncRequired = true;
+		synchronized (this) {
+			if (pool.size() == brokers) {
+				DBBroker broker = (DBBroker) pool.peek();
+				sync(broker);
+				syncRequired = false;
+			} else
+				syncRequired = true;
+		}
 	}
-	
+
+	public void registerShutdownListener(ShutdownListener listener) {
+		shutdownListener = listener;
+	}
+
 	protected class ShutdownThread extends Thread {
 
 		/**  Constructor for the ShutdownThread object */

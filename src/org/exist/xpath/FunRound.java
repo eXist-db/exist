@@ -29,50 +29,36 @@ import org.w3c.dom.NodeList;
 
 public class FunRound extends Function {
 
-    public FunRound(BrokerPool pool) {
+	public FunRound(BrokerPool pool) {
 		super(pool, "round");
-    }
+	}
 
-    public int returnsType() {
+	public int returnsType() {
 		return Constants.TYPE_NUM;
-    }
+	}
 
-    public DocumentSet preselect(DocumentSet in_docs) {
+	public DocumentSet preselect(DocumentSet in_docs) {
 		return getArgument(0).preselect(in_docs);
-    }
+	}
 
-    public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
-		NodeSet set = new ArraySet(1);
-		DocumentSet dset = new DocumentSet();
-		set.add(node);
-		dset.add(node.doc);
+	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
 		double val;
 		// Argument is a node list
-		if(getArgument(0).returnsType() == Constants.TYPE_NODELIST) {
+		if (getArgument(0).returnsType() == Constants.TYPE_NODELIST) {
 			ValueSet values = new ValueSet();
-			NodeList args = getArgument(0).eval(dset, set, node).getNodeList();
-			for(int i = 0; i < args.getLength(); i++) {
+			NodeSet args = (NodeSet) getArgument(0).eval(docs, context, null).getNodeList();
+			if (args.getLength() > 0) {
 				try {
-					val = Double.parseDouble(args.item(i).getNodeValue());
+					val = Double.parseDouble(args.get(0).getNodeValue());
 					values.add(new ValueNumber(Math.round(val)));
-				} catch(NumberFormatException nfe) {
+				} catch (NumberFormatException nfe) {
 				}
 			}
 			return values;
 		} else {
 			// does argument return a value set?
-			Value v = getArgument(0).eval(dset, set, node);
-			ValueSet values = new ValueSet();
-			if(v.getType() == Value.isValueSet) {
-				for(int i = 0; i < v.getLength(); i++) {
-					val = v.get(i).getNumericValue();
-					if(val != Double.NaN)
-						values.add(new ValueNumber(Math.round(val)));
-				}
-				return values;
-			} else
-				// Argument is a single number
-				return new ValueNumber(Math.round(v.getNumericValue()));
+			Value v = getArgument(0).eval(docs, context, node);
+			return new ValueNumber(Math.ceil(v.getNumericValue()));
 		}
 	}
 
@@ -82,6 +68,5 @@ public class FunRound extends Function {
 		buf.append(getArgument(0).pprint());
 		buf.append(')');
 		return buf.toString();
-    }
+	}
 }
-			  

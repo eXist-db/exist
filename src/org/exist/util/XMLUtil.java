@@ -198,7 +198,7 @@ public class XMLUtil {
 	 *@param  e  Description of the Parameter
 	 *@return    Description of the Return Value
 	 */
-	public final static String exceptionToString(Exception e) {
+	public final static String exceptionToString(Throwable e) {
 		StringWriter sw = new StringWriter();
 		e.printStackTrace(new PrintWriter(sw));
 		return sw.toString();

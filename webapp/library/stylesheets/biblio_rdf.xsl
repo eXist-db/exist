@@ -6,7 +6,7 @@
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
   xmlns:exist="http://exist.sourceforge.net/NS/exist" 
   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:dc="http://purl.org/dc/elements/1.1/#"
   xmlns:x="http://exist.sourceforge.net/dc-ext"
   xmlns:java="http://xml.apache.org/xslt/java"
   xmlns:xmldb="http://exist-db.org/transformer/1.0"

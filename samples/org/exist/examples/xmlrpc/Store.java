@@ -18,10 +18,11 @@ public class Store {
 	}
 
 	public static void main(String args[]) throws Exception {
-		if(args.length < 2)
+		if(args.length < 1)
 			usage();
 		String docName = (args.length == 2) ? args[1] : args[0];
 
+		XmlRpc.setEncoding("UTF-8");
 		XmlRpcClient xmlrpc = new XmlRpcClient(uri);
 		xmlrpc.setBasicAuthentication("admin", "");
 		

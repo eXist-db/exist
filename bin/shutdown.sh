@@ -1,6 +1,6 @@
 #!/bin/bash
 # -----------------------------------------------------------------------------
-# startup.sh - Start Script for Jetty + eXist
+# shutdown.sh - Stop Jetty + eXist
 #
 # $Id: startup.sh,v 1.6 2002/12/28 17:37:22 wolfgang_m Exp $
 # -----------------------------------------------------------------------------
@@ -17,13 +17,6 @@ exist_home () {
 		(cd `/usr/bin/dirname $p` ; /bin/pwd)
 }
 
-# will be set by the installer
-if [ -z "$EXIST_HOME"]; then
-	EXIST_HOME="$INSTALL_PATH"
-fi
-
-JAVA_CMD="$JAVA_HOME/bin/java"
-
 unset LANG
 OPTIONS=
 
@@ -39,16 +32,6 @@ fi
 
 OPTIONS="-Dexist.home=$EXIST_HOME"
 
-if [ -n "$JETTY_HOME" ]; then
-	OPTIONS="-Djetty.home=$JETTY_HOME $OPTIONS"
-fi
-
-# use xerces as SAX parser
-SAXFACTORY=org.apache.xerces.jaxp.SAXParserFactoryImpl
-
-# set java options
-if [ -z "$JAVA_OPTIONS" ]; then
-    export JAVA_OPTIONS="-Xms32000k -Xmx256000k -Djavax.xml.parsers.SAXParserFactory=$SAXFACTORY -Dfile.encoding=UTF-8"
-fi
-
-$JAVA_CMD $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" backup $*
+JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
+$JAVA_HOME/bin/java $OPTIONS -jar "$EXIST_HOME/start.jar" \
+	shutdown $*

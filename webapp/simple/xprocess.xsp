@@ -33,6 +33,7 @@
             int count = Integer.parseInt(pcount);
             int hits = 0;
             
+            //String query = new String(request.getParameter("query").getBytes("ISO-8859-1"), "UTF-8");
             String query = request.getParameter("query");
             String cname = request.getParameter("collection");
             String psummarize = request.getParameter("summarize");

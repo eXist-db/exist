@@ -197,6 +197,12 @@
         </div>
     </xsl:template>
 
+    <xsl:template match="screenshot">
+        <center>
+            <xsl:apply-templates/>
+        </center>
+    </xsl:template>
+    
     <xsl:template match="programlisting">
         <pre>
             <xsl:apply-templates/>
@@ -214,7 +220,7 @@
     </xsl:template>
     
     <xsl:template match="ulink|sidebar:link">
-        <a href="{@href}"><xsl:apply-templates/></a>
+        <a href="{@href|@url}"><xsl:apply-templates/></a>
     </xsl:template>
     
     <xsl:template match="variablelist">

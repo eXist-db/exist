@@ -18,12 +18,10 @@
  */
 package org.exist.xpath;
 
-import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.storage.BrokerPool;
-import org.w3c.dom.Node;
 
 public class FunSum extends Function {
 
@@ -40,26 +38,22 @@ public class FunSum extends Function {
     }
 
     public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
-		NodeSet set = new ArraySet(1);
-		DocumentSet dset = new DocumentSet();
-		set.add(node);
-		dset.add(node.doc);
 		double sum = 0.0, val;
 		// does argument return a node list?
 		if(getArgument(0).returnsType() == Constants.TYPE_NODELIST) {
-			NodeSet temp = (NodeSet)getArgument(0).eval(dset, set, node).getNodeList();
-			Node n;
-			for(int i = 0; i < temp.getLength(); i++) {
-				n = temp.item(i);
+			ValueSet values = new ValueSet();
+			NodeSet args = (NodeSet) getArgument(0).eval(docs, context, null).getNodeList();
+			for(int i = 0; i < args.getLength(); i++) {
 				try {
-					val = Double.parseDouble(n.getNodeValue());
-					sum += val;
-				} catch(NumberFormatException nfe) {
+					val = Double.parseDouble(args.get(i).getNodeValue());
+					if(val != Double.NaN)
+						sum += val;
+				} catch (NumberFormatException nfe) {
 				}
 			}
 		} else {
 			// does argument return a value set?
-			Value v = getArgument(0).eval(dset, set, node);
+			Value v = getArgument(0).eval(docs, context, null);
 			if(v.getType() == Value.isValueSet) {
 				for(int i = 0; i < v.getLength(); i++) {
 					val = v.get(i).getNumericValue();

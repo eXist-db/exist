@@ -12,6 +12,7 @@ import org.exist.EXistException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
+import org.exist.util.XMLUtil;
 
 /**
  *  Description of the Class
@@ -74,7 +75,7 @@ public class AuthenticatedHandler implements AuthenticatedXmlRpcHandler {
             LOG.debug( "user " + user + " logged in" );
             LOG.debug( "calling " + method );
             for ( int i = 0; i < v.size(); i++ )
-                LOG.debug( "argument " + i + ": " + v.elementAt( i ) );
+                LOG.debug( "argument " + i + ": " + v.elementAt( i ).toString() );
         }
         return execute( u, method, v );
     }
@@ -139,10 +140,15 @@ public class AuthenticatedHandler implements AuthenticatedXmlRpcHandler {
             Throwable t = it_e.getTargetException();
             if(XmlRpc.debug)
             	t.printStackTrace();
+            LOG.debug("Caught exception: " + XMLUtil.exceptionToString(it_e));
+            LOG.warn("Caused by: " + XMLUtil.exceptionToString(t));
             if ( t instanceof XmlRpcException )
                 throw (XmlRpcException) t;
             // It is some other exception
             throw new Exception( t.toString() );
+        } catch(Exception e) {
+        	LOG.debug(e.getMessage(), e);
+        	throw e;
         }
         return returnValue;
     }

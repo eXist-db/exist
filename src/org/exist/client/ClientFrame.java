@@ -244,6 +244,7 @@ public class ClientFrame extends JFrame {
 		// shell window
 		doc = new DefaultStyledDocument();
 		shell = new JTextPane(doc);
+        shell.setContentType("text/plain; charset=UTF-8");
 		shell.setFont(new Font("Monospaced", Font.PLAIN, 12));
 		scroll = new JScrollPane(shell);
 		KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);

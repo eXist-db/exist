@@ -110,7 +110,7 @@ public class Serializer implements XMLReader {
 	private ErrorHandler errorHandler = null;
 	protected TransformerFactory factory;
 	protected boolean indent = false;
-	protected boolean createContainerElements = true;
+	protected boolean createContainerElements = false;
 	protected boolean processXInclude = true;
 	protected boolean processXSL = false;
 	protected boolean generateDocEvents = true;

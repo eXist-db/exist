@@ -80,13 +80,18 @@ public class PathExpr implements Expression {
         for ( Iterator iter = steps.iterator(); iter.hasNext();  ) {
             set = (NodeSet) r.getNodeList();
             expr = (Expression) iter.next();
-//            LOG.debug("processing " + expr.pprint());
             if ( expr.returnsType() != Constants.TYPE_NODELIST ) {
                 if ( expr instanceof Literal || expr instanceof IntNumber )
                     return expr.eval( docs, set, null );
                 ValueSet values = new ValueSet();
-                for ( Iterator iter2 = set.iterator(); iter2.hasNext();  )
-                    values.add( expr.eval( docs, set, (NodeProxy) iter2.next() ) );
+                NodeProxy current;
+                ArraySet currentSet;
+                for ( Iterator iter2 = set.iterator(); iter2.hasNext();  ) {
+                	current = (NodeProxy)iter2.next();
+                	currentSet = new ArraySet(1);
+                	currentSet.add(current);
+                    values.add( expr.eval( docs, currentSet, current ) );
+                }
                 return values;
             }
             r = expr.eval( docs, set, node );

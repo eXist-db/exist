@@ -8,23 +8,24 @@ import java.util.Vector;
  */
 public class Search {
 
-    private static String encoding = "ISO-8859-1";
-
     public static void main(String args[]) throws Exception {
     	
-        XmlRpcClient xmlrpc = new XmlRpcClient("http://localhost:8080/exist/xmlrpc");
+    	String query = "document(*)//character[.//reading &= 'チョウ']";
+    	if(args.length > 0)
+    		query = args[0];
+    		
+		XmlRpc.setEncoding("UTF8");
+		XmlRpcClient xmlrpc = new XmlRpcClient("http://localhost:8080/exist/xmlrpc");
         xmlrpc.setBasicAuthentication( "guest", "guest" );
         
         // execute query and retrieve an id for the generated result set
         Vector params = new Vector();
-        params.addElement("document(*)//SPEECH[LINE &= 'king']");
-		params.addElement("UTF-8");
+        params.addElement(query);
 		params.addElement(new Integer(10));
 		params.addElement(new Integer(1));
 		params.addElement(new Integer(1));
-		params.addElement("/SPEAKER[1]");
-        byte[] result = (byte[]) xmlrpc.execute("query", params);
-		System.out.println(new String(result, "UTF-8"));
+		System.out.println("Executing query " + params.elementAt(0));
+        String result = (String) xmlrpc.execute("query", params);
+		System.out.println(result);
     }
 }
-

@@ -175,6 +175,12 @@
                 <xsl:with-param name="default" select="ISO-8859-1"/>
             </xsl:call-template>
         </xsl:variable>
+        <xsl:variable name="sort">
+            <xsl:call-template name="get-parameter">
+                <xsl:with-param name="name">sort-by</xsl:with-param>
+                <xsl:with-param name="default">null</xsl:with-param>
+            </xsl:call-template>
+        </xsl:variable>
         <xsl:variable name="containers">
         	<xsl:call-template name="get-parameter">
         		<xsl:with-param name="name">create-container-elements</xsl:with-param>
@@ -183,8 +189,8 @@
         </xsl:variable>
         <xsl:variable name="cache">
         	<xsl:call-template name="get-parameter">
-        		<xsl:with-param name="name" select="cache"/>
-        		<xsl:with-param name="default" select="true"/>
+        		<xsl:with-param name="name">cache</xsl:with-param>
+        		<xsl:with-param name="default">"true"</xsl:with-param>
         	</xsl:call-template>
         </xsl:variable>
         <xsl:variable name="nested">
@@ -212,41 +218,46 @@
                 String <xsl:value-of select="$query"/> = <xsl:value-of select="$xpath"/>;
                 long <xsl:value-of select="$queryTime"/> = System.currentTimeMillis();
                 XSPHelper <xsl:value-of select="$helper"/> = null;
-            	<xsl:if test="$cache = 'true'">
+            	if(<xsl:value-of select="$cache"/>.equals("true")) {
             		<xsl:value-of select="$helper"/> =
             			(XSPHelper)session.getAttribute(<xsl:value-of select="$query"/>);
-            	</xsl:if>
-                XPathQueryService _service =
-                    ( XPathQueryService ) collection.getService( "XPathQueryService", "1.0" );
-                _service.setProperty( "pretty", "false" );
-                _service.setProperty( "encoding", <xsl:value-of select="$encoding"/> );
-                _service.setProperty("create-container-elements", <xsl:value-of select="$containers"/>);
-                <xsl:choose>
-                	<xsl:when test="$nested != 'null'">
-                		<xsl:value-of select="$helper"/> = 
-                			new XSPHelper(
-                				((XPathQueryServiceImpl)_service).query(
-                					<xsl:value-of select="$nested"/>,
-                					<xsl:value-of select="$query"/>
-                				)
-                			);
-                	</xsl:when>
-                	<xsl:otherwise>
-                		<xsl:value-of select="$helper"/> =
-                			new XSPHelper(
-                				_service.query(
-                					<xsl:value-of select="$query"/>
-                				)
-                			);
-                		<xsl:if test="$cache = 'true'">
-		        			session.setAttribute(
-		        				<xsl:value-of select="$query"/>, 
-		            			<xsl:value-of select="$helper"/>
-		        			);
-		        		</xsl:if>
-                	</xsl:otherwise>
-                </xsl:choose>
-
+            	}
+                if(<xsl:value-of select="$helper"/> == null ||
+                    <xsl:value-of select="$nested"/> != null) {
+                    XPathQueryServiceImpl _service =
+                        ( XPathQueryServiceImpl ) collection.getService( "XPathQueryService", "1.0" );
+                    _service.setProperty( "pretty", "false" );
+                    _service.setProperty( "encoding", <xsl:value-of select="$encoding"/> );
+                    _service.setProperty( "highlight-matches", "elements" );
+                    _service.setProperty("create-container-elements", <xsl:value-of select="$containers"/>);
+                    <xsl:choose>
+                        <xsl:when test="$nested != 'null'">
+                            <xsl:value-of select="$helper"/> = 
+                                new XSPHelper(
+                                    ((XPathQueryServiceImpl)_service).query(
+                                        <xsl:value-of select="$nested"/>,
+                                        <xsl:value-of select="$query"/>
+                                    )
+                                );
+                        </xsl:when>
+                        <xsl:otherwise>
+                            System.out.println("sort-expr = " + <xsl:value-of select="$sort"/> + "; cache = " + String.valueOf(<xsl:value-of select="$cache"/>));
+                            <xsl:value-of select="$helper"/> =
+                                new XSPHelper(
+                                    _service.query(
+                                        <xsl:value-of select="$query"/>
+                                        <xsl:if test="$sort != 'null'">
+                                            , <xsl:value-of select="$sort"/>
+                                        </xsl:if>
+                                    )
+                                );
+                            session.setAttribute(
+                                <xsl:value-of select="$query"/>, 
+                                <xsl:value-of select="$helper"/>
+                            );
+                        </xsl:otherwise>
+                    </xsl:choose>
+                }
                 <xsl:value-of select="$queryTime"/> = 
                 	System.currentTimeMillis() - <xsl:value-of select="$queryTime"/>;
                 <xsl:apply-templates/>
@@ -419,7 +430,69 @@
 		            		<xsp:expr>(String)_resource.getContent()</xsp:expr>
 		            	</xsp:content>
             		</xsl:otherwise>
-            	</xsl:choose>	            	
+            	</xsl:choose>
+            }
+        </xsp:logic>
+     </xsl:template> 
+     
+     <xsl:template match="xmldb:execute//xmldb:get-node">
+     	<xsl:variable name="xpath">
+            <xsl:call-template name="get-parameter">
+		    <xsl:with-param name="name">xpath</xsl:with-param>
+                <xsl:with-param name="required">true</xsl:with-param>
+            </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="nested">
+        	<xsl:choose>
+        		<xsl:when test="ancestor::xmldb:for-each">
+        			__resource_<xsl:value-of select="generate-id(ancestor::xmldb:for-each)"/>
+        		</xsl:when>
+        		<xsl:otherwise>null</xsl:otherwise>
+        	</xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="query">
+        	__query_<xsl:value-of select="generate-id(.)"/>
+        </xsl:variable>
+        <xsl:variable name="helper">
+        	__helper_<xsl:value-of select="generate-id(.)"/>
+        </xsl:variable>
+        <xsl:variable name="service">
+        	__service_<xsl:value-of select="generate-id(.)"/>
+        </xsl:variable>
+        <xsp:logic>
+        	String <xsl:value-of select="$query"/> = <xsl:value-of select="$xpath"/>;
+        	XSPHelper <xsl:value-of select="$helper"/>;
+            XPathQueryService <xsl:value-of select="$service"/> =
+                ( XPathQueryService ) collection.getService( "XPathQueryService", "1.0" );
+            <xsl:value-of select="$service"/>.setProperty( "pretty", "false" );
+            <xsl:choose>
+            	<xsl:when test="$nested != 'null'">
+            		<xsl:value-of select="$helper"/> = 
+            			new XSPHelper(
+            				((XPathQueryServiceImpl)<xsl:value-of select="$service"/>).query(
+            					<xsl:value-of select="$nested"/>,
+            					<xsl:value-of select="$query"/>
+            				)
+            			);
+            	</xsl:when>
+            	<xsl:otherwise>
+            		<xsl:value-of select="$helper"/> =
+            			new XSPHelper(
+            				<xsl:value-of select="$service"/>.query(
+            					<xsl:value-of select="$query"/>
+            				)
+            			);
+            	</xsl:otherwise>
+            </xsl:choose>
+            if(<xsl:value-of select="$helper"/>.getHits() &gt; 0) {
+            	XMLResource _resource = (XMLResource)
+            		<xsl:value-of select="$helper"/>.getResult()
+            		.getResource( 0L );
+                if(_resource instanceof org.exist.xmldb.XMLResourceImpl)
+                    ((org.exist.xmldb.XMLResourceImpl)_resource).setCocoonParser( newParser );
+                IncludeXMLFilter _consumer = 
+                    new IncludeXMLFilter(this.contentHandler);
+                _resource.getContentAsSAX(_consumer);
             }
         </xsp:logic>
      </xsl:template> 
@@ -745,7 +818,7 @@
     
     <xsl:template match="xmldb:error|xmldb:xpath|xmldb:uri|xmldb:as|xmldb:count|xmldb:position"/>
     <xsl:template match="xmldb:results//xmldb:collection|xmldb:results//xmldb:document"/>
-    <xsl:template match="xmldb:user|xmldb:password"/>
+    <xsl:template match="xmldb:user|xmldb:password|xmldb:cache|xmldb:sort-by"/>
     
     <xsl:template match="@*|node()" priority="-1">
       <xsl:copy>

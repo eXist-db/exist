@@ -375,16 +375,19 @@ public class OpEquals extends BinaryOp {
 		NodeSet context,
 		NodeProxy node) {
 		ArraySet result = new ArraySet(100);
-		NodeProxy n;
+		ArraySet currentSet;
+		NodeProxy current;
 		double rvalue;
 		double lvalue;
 		for (Iterator i = context.iterator(); i.hasNext();) {
-			n = (NodeProxy) i.next();
-			rvalue = right.eval(docs, context, n).getNumericValue();
-			lvalue = left.eval(docs, context, n).getNumericValue();
+			current = (NodeProxy) i.next();
+			currentSet = new ArraySet(1);
+			currentSet.add(current);
+			rvalue = right.eval(docs, currentSet, current).getNumericValue();
+			lvalue = left.eval(docs, currentSet, current).getNumericValue();
 			if (cmpNumbers(lvalue, rvalue)) {
-				result.add(n);
-				n.addContextNode(n);
+				result.add(current);
+				current.addContextNode(current);
 			}
 			
 		}

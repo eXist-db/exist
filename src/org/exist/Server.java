@@ -29,6 +29,8 @@ import org.exist.util.*;
 import org.exist.xmlrpc.*;
 import org.apache.avalon.excalibur.cli.*;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  *  Main class to start the stand-alone server. By default,
@@ -48,6 +50,9 @@ public class Server {
 	private final static int XMLRPC_PORT_OPT = 'x';
 	private final static int THREADS_OPT = 't';
 
+	private static WebServer webServer;
+	private static HttpServer http;
+	
 	private final static CLOptionDescriptor OPTIONS[] = new CLOptionDescriptor[] {
 		new CLOptionDescriptor( "help", CLOptionDescriptor.ARGUMENT_DISALLOWED,
 			HELP_OPT, "print help on command line options and exit." ),
@@ -124,25 +129,42 @@ public class Server {
             pathSep + "conf.xml" );
         Configuration config = new Configuration( "conf.xml", home );
         BrokerPool.configure( 1, threads, config );
+        BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl());
+        
         System.out.println( "starting HTTP listener at port " + httpPort );
-        HttpServer http = new HttpServer( config, httpPort, 1, threads );
+        http = new HttpServer( config, httpPort, 1, threads );
         http.start();
         System.out.println( "starting XMLRPC listener at port " + rpcPort );
         XmlRpc.setEncoding( "UTF-8" );
-        WebServer webServer = new WebServer( rpcPort );
+        webServer = new WebServer( rpcPort );
         AuthenticatedHandler handler = new AuthenticatedHandler( config );
         webServer.addHandler( "$default", handler );
         webServer.start();
         System.err.println( "waiting for connections ..." );
     }
 
-
     private static void printHelp() {
-        System.out.println( "Options:" );
-        System.out.println( "-t x      Maximum number of server threads (default=5)." );
-        System.out.println( "-p x      Port number for HTTP listener (default=8088)." );
-        System.out.println( "-x x      Port number for XML-RPC listener (default=8081)." );
-        System.out.println( "-d        Turn on XML-RPC debugging output." );
+		System.out.println("Usage: java " + Server.class.getName() + " [options]");
+		System.out.println(CLUtil.describeOptions(OPTIONS).toString());
+    }
+    
+    static class ShutdownListenerImpl implements ShutdownListener {
+
+		public void shutdown(String dbname, int remainingInstances) {
+			if(remainingInstances == 0) {
+				// give the server a 1s chance to complete pending requests
+				Timer timer = new Timer();
+				timer.schedule(new TimerTask() {
+					public void run() {
+						System.out.println("killing threads ...");
+						http.shutdown();
+						http.interrupt();
+						webServer.shutdown();
+						System.exit(0);
+					}
+				}, 1000);
+    		}
+		}
     }
 }
 

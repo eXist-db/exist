@@ -165,7 +165,7 @@ public class RpcConnection extends Thread {
 		XPathParser parser = new XPathParser(brokerPool, user, lexer);
 		PathExpr expr = new PathExpr(brokerPool);
 		parser.expr(expr);
-		LOG.info("query: " + expr.pprint());
+		LOG.info("query: " + xpath);
 		long start = System.currentTimeMillis();
 		if (parser.foundErrors())
 			throw new EXistException(parser.getErrorMsg());
@@ -623,7 +623,7 @@ public class RpcConnection extends Thread {
 				"parsing " + docName + " took " + (System.currentTimeMillis() - startTime) + "ms.");
 			return doc != null;
 		} catch (Exception e) {
-			LOG.debug(e);
+			LOG.debug(e.getMessage(), e);
 			throw e;
 		} finally {
 			brokerPool.release(broker);
