@@ -77,7 +77,7 @@ public class UntypedValueCheck extends AbstractExpression {
 		}
 		return result;
 	}
-
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#preselect(org.exist.dom.DocumentSet, org.exist.xquery.StaticContext)
 	 */

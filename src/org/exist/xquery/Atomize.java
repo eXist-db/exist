@@ -57,15 +57,19 @@ public class Atomize extends AbstractExpression {
 		Item contextItem)
 		throws XPathException {
 		Sequence seq = expression.eval(contextSequence, contextItem);
-		Item next;
-		ValueSequence result = new ValueSequence();
-		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-			next = i.nextItem();
-			result.add(next.atomize());
-		}
-		return result;
+		return atomize(seq);
 	}
 
+    public static Sequence atomize(Sequence input) throws XPathException {
+        Item next;
+        ValueSequence result = new ValueSequence();
+        for(SequenceIterator i = input.iterate(); i.hasNext(); ) {
+            next = i.nextItem();
+            result.add(next.atomize());
+        }
+        return result;
+    }
+    
 	/* (non-Javadoc)
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */

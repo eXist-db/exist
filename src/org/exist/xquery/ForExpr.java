@@ -67,12 +67,17 @@ public class ForExpr extends BindingExpression {
 		LocalVariable mark = context.markLocalVariables();
 		
 		// Declare the iteration variable
-		context.declareVariable(new LocalVariable(QName.parse(context, varName, null)));
+        LocalVariable inVar = new LocalVariable(QName.parse(context, varName, null));
+        inVar.setSequenceType(sequenceType);
+		context.declareVariable(inVar);
 		
 		// Declare positional variable
-		if(positionalVariable != null)
-			context.declareVariable(new LocalVariable(QName.parse(context, positionalVariable, null)));
-		
+		if(positionalVariable != null) {
+			LocalVariable posVar = new LocalVariable(QName.parse(context, positionalVariable, null));
+            posVar.setSequenceType(POSITIONAL_VAR_TYPE);
+            context.declareVariable(posVar);
+        }
+        
 		inputSequence.analyze(this, flags);
 		if(whereExpr != null) {
 		    whereExpr.analyze(this, flags | IN_PREDICATE | IN_WHERE_CLAUSE);
@@ -112,12 +117,14 @@ public class ForExpr extends BindingExpression {
 		
 		// Declare the iteration variable
 		LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
+        var.setSequenceType(sequenceType);
 		context.declareVariable(var);
 		
 		// Declare positional variable
 		LocalVariable at = null;
 		if(positionalVariable != null) {
 			at = new LocalVariable(QName.parse(context, positionalVariable, null));
+            at.setSequenceType(POSITIONAL_VAR_TYPE);
 			context.declareVariable(at);
 		}
 		
@@ -192,12 +199,10 @@ public class ForExpr extends BindingExpression {
 				at.setValue(new IntegerValue(p));
 			 
 			contextSequence = contextItem.toSequence();
-			if(sequenceType != null)
-				// check sequence type
-				sequenceType.checkType(contextItem.getType());
 
 			// set variable value to current item
 			var.setValue(contextSequence);
+            var.checkType();
 			val = contextSequence;
 			
 			// check optional where clause

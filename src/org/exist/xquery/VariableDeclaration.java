@@ -85,15 +85,16 @@ public class VariableDeclaration extends AbstractExpression {
 		
 		// declare the variable
 		Sequence seq = expression.eval(contextSequence, contextItem);
-		if(sequenceType != null) {
-			sequenceType.checkType(seq.getItemType());
-			sequenceType.checkCardinality(seq);
-		}
-		if(myModule != null)
-			myModule.declareVariable(qn, seq);
-		else {
+
+		if(myModule != null) {
+			Variable var = myModule.declareVariable(qn, seq);
+            var.setSequenceType(sequenceType);
+            var.checkType();
+        } else {
 			Variable var = new Variable(qn);
 			var.setValue(seq);
+            var.setSequenceType(sequenceType);
+            var.checkType();
 			context.declareGlobalVariable(var);
 		}
 		return Sequence.EMPTY_SEQUENCE;
