@@ -113,7 +113,7 @@
 			optimize="${build.optimize}" srcdir="${src}" >
 			<!-- jmv target="1.4" -->
         	<include name="org/**"/>
-        	<exclude name="org/exist/schema/**"/>
+			<include name="org/exist/schema/**"/>
 			<exclude name="org/exist/http/realm/**"/>
 			<exclude name="doxygen" />
             <classpath>
@@ -255,17 +255,19 @@
 
     <!-- ================================================================== -->
     <!-- Run JUnit tests                                                    -->
-    <!-- ================================================================== -->
-    <target name="test" depends="jar">
+	<!-- ================================================================== -->
+	<target name="test" depends="test-local,test-remote"/>
+
+    <target name="test-local" depends="jar">
         <delete failonerror="false">
-		<fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
+			<fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
         </delete>
     	<mkdir dir="${junit.reports}"/>
         <junit haltonfailure="yes" printsummary="yes" 
         	showoutput="${junit.output}">
         	<classpath refid="classpath.core"/>
             <formatter type="plain"/>
-            <test fork="yes" name="org.exist.xmldb.test.AllTests" 
+			<test fork="yes" name="org.exist.xmldb.test.LocalTests" 
 				todir="${junit.reports}">
 			</test>
 			<test fork="yes" name="org.exist.xupdate.test.AllTests" todir="${junit.reports}"/>
@@ -275,12 +277,51 @@
                     <exclude name="**/xmldb/test/*.java"/>
 					<exclude name="**/xupdate/test/*.java"/>
 					<exclude name="**/xquery/test/*.java"/>
-					<exclude name="org/exist/test/ServerTest.java"/>
+					<exclude name="**/xmlrpc/test/*.java"/>
                 </fileset>
             </batchtest>
         </junit>
     </target>
     
+	<target name="start-server">
+		<echo>Starting stand-alone database server...
+		</echo>
+        <delete failonerror="false">
+			<fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
+        </delete>
+		<java classname="org.exist.Server">
+            <classpath refid="classpath.core"/>
+        </java>
+		<echo>Server started.</echo>
+	</target>
+		
+	<target name="test-remote" depends="jar,start-server">
+		<!-- Register Ant tasks for eXist -->
+		<typedef resource="org/exist/ant/antlib.xml"
+			uri="http://exist-db.org/ant">
+		    <classpath refid="classpath.core"/>
+		</typedef>
+		<mkdir dir="${junit.reports}"/>
+		
+		<echo message="Running tests ..."/>
+		<junit haltonfailure="yes" printsummary="yes" 
+			showoutput="${junit.output}">
+	       	<classpath refid="classpath.core"/>
+	        <formatter type="plain"/>
+	        <test fork="yes" name="org.exist.xmlrpc.test.XmlRpcTest" 
+				todir="${junit.reports}">
+			</test>
+			<test fork="yes" name="org.exist.xmldb.test.RemoteTests"
+				todir="${junit.reports}">
+			</test>
+		</junit>
+
+		<echo message="Shutting down the server ..."/>
+		<xmldb:shutdown xmlns:xmldb="http://exist-db.org/ant"
+			uri="xmldb:exist://localhost:8081/db"
+			user="admin" password=""/>
+	</target>
+	
     <!-- ================================================================== -->
     <!-- Create javadoc                                                     -->
     <!-- ================================================================== -->
