@@ -72,7 +72,6 @@ public class DOMStreamer {
     }
     
 	public void serialize(Node node, boolean callDocumentEvents) throws SAXException {
-        System.out.println("calling startDocument " + callDocumentEvents);
         if(callDocumentEvents)
             contentHandler.startDocument();
 		Node top = node;
