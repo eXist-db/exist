@@ -37,7 +37,7 @@
 
 	<available file="${xmldb.src}" type="dir" property="has.xmldb.src"/>
 	
-	<available file="${catalina.home}/server/lib" property="catalina.present"/>
+	<available file="${catalina.home}/bin" property="catalina.present"/>
 
     <path id="classpath.core">
         <fileset dir="${lib.core}">
@@ -110,10 +110,12 @@
         <echo message="Compiling with Java ${ant.java.version}, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
         <javac debug="${build.debug}" deprecation="${build.deprecation}" 
 			destdir="${build.classes}" encoding="UTF-8"
-			optimize="${build.optimize}" srcdir="${src}" target="1.4">
+			optimize="${build.optimize}" srcdir="${src}" >
+			<!-- jmv target="1.4" -->
         	<include name="org/**"/>
         	<exclude name="org/exist/schema/**"/>
 			<exclude name="org/exist/http/realm/**"/>
+			<exclude name="doxygen" />
             <classpath>
                 <path refid="classpath.core"/>
 				<path refid="classpath.jetty"/>
@@ -132,6 +134,9 @@
 			<include name="org/exist/http/realm/**"/>
 			<classpath>
 				<path refid="classpath.core"/>
+				<fileset dir="${catalina.home}/bin">
+					<include name="*.jar"/>
+				</fileset>
 				<fileset dir="${catalina.home}/server/lib">
 					<include name="*.jar"/>
 				</fileset>
