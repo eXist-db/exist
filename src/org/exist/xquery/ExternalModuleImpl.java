@@ -164,4 +164,8 @@ public class ExternalModuleImpl implements ExternalModule {
 		// check other modules imported from here
 		return mContext.checkModulesValid();
 	}
+	
+	public void reset() {
+		mContext.reset();
+	}
 }
