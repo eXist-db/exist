@@ -28,6 +28,8 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Stack;
 import java.util.Vector;
+import java.util.zip.*;
+import java.io.*;
 
 import javax.xml.transform.OutputKeys;
 
@@ -303,21 +305,42 @@ public class RpcServer implements RpcAPI {
 		throws EXistException, PermissionDeniedException {
 
 		String encoding = "UTF-8";
+		String compression ="no";
+		
 
 		if (((String) parametri.get("encoding")) == null) {
 			encoding = "UTF-8";
 		} else {
 			encoding = (String) parametri.get("encoding");
 		}
+		
+		
+		if (((String) parametri.get(EXistOutputKeys.COMPRESS_OUTPUT)) != null) {
+			compression = (String) parametri.get(EXistOutputKeys.COMPRESS_OUTPUT);
+		}
+		
 		RpcConnection con = pool.get();
 		try {
 			String xml = con.getDocument(user, name, parametri);
 			if (xml == null)
 				throw new EXistException("document " + name + " not found!");
 			try {
-				return xml.getBytes(encoding);
+				if (compression.equals("no")) {
+				 return xml.getBytes(encoding);
+				} else {
+				 LOG.debug("getdocument with compression");
+				 return compress(xml.getBytes(encoding));
+				}	 
+				
 			} catch (UnsupportedEncodingException uee) {
-				return xml.getBytes();
+				
+				if (compression.equals("no")) {
+				 return xml.getBytes();
+				} else {
+				  LOG.debug("getdocument with compression");
+				  return compress(xml.getBytes());
+				}
+				
 			}
 		} catch (Exception e) {
 			handleException(e);
@@ -1368,4 +1391,29 @@ public class RpcServer implements RpcAPI {
 		}
 	}
 
+private static byte[] compress(byte[] whatToCompress) throws IOException {
+ByteArrayOutputStream baos = new ByteArrayOutputStream();
+ZipOutputStream gzos = new ZipOutputStream(baos);
+gzos.setMethod(gzos.DEFLATED);
+gzos.putNextEntry(new ZipEntry(whatToCompress.length+""));
+gzos.write(whatToCompress);
+gzos.closeEntry();
+gzos.finish();
+gzos.close();
+return baos.toByteArray();
+}
+
+private static byte[] uncompress(byte[] whatToUncompress) throws IOException {
+ByteArrayInputStream bais = new ByteArrayInputStream(whatToUncompress);
+ZipInputStream gzis = new ZipInputStream(bais);
+ZipEntry zipentry = gzis.getNextEntry();
+int len = Integer.parseInt(zipentry.getName());
+ByteArrayOutputStream baos = new ByteArrayOutputStream(len);
+byte[] buf = new byte[512];
+int bread;
+while ((bread = gzis.read(buf)) != -1) baos.write(buf, 0, bread);
+gzis.closeEntry();
+gzis.close();
+return baos.toByteArray();
+} 
 }

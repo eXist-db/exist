@@ -36,4 +36,6 @@ public class EXistOutputKeys {
 	
 	public final static String STYLESHEET_PARAM = "stylesheet-param";
 	
+	public final static String COMPRESS_OUTPUT = "compress-output";
+	
 }
