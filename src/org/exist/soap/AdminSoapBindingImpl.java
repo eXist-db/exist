@@ -89,13 +89,14 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		}
 	}
 
-	public boolean removeCollection(String sessionId, String collection)
+	public boolean removeCollection(String sessionId, String name)
 		throws RemoteException {
 		Session session = getSession(sessionId);
 		DBBroker broker = null;
 		try {
 			broker = pool.get(session.getUser());
-			if (broker.getCollection(collection) == null)
+			Collection collection = broker.getCollection(name);
+			if(collection == null)
 				return false;
 			return broker.removeCollection(collection);
 		} catch (Exception e) {

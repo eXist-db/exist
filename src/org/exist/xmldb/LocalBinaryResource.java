@@ -45,25 +45,15 @@ import org.xmldb.api.modules.BinaryResource;
 /**
  * @author wolf
  */
-public class LocalBinaryResource implements BinaryResource, EXistResource {
+public class LocalBinaryResource extends AbstractEXistResource implements BinaryResource {
 
-	protected User user;
-	protected BrokerPool pool;
-	protected LocalCollection parent;
-	protected String docId;
 	protected byte[] rawData = null;
 	
 	/**
 	 * 
 	 */
 	public LocalBinaryResource(User user, BrokerPool pool, LocalCollection collection, String docId) {
-		super();
-		this.user = user;
-		this.pool = pool;
-		this.parent = collection;
-		if (docId.indexOf('/') > -1)
-			docId = docId.substring(docId.lastIndexOf('/') + 1);
-		this.docId = docId;
+		super(user, pool, collection, docId);
 	}
 	
 	/* (non-Javadoc)
@@ -96,7 +86,7 @@ public class LocalBinaryResource implements BinaryResource, EXistResource {
 			BinaryDocument blob = null;
 			try {
 				broker = pool.get(user);
-				blob = getDocument(broker, true);
+				blob = (BinaryDocument)getDocument(broker, true);
 				if(!blob.getPermissions().validate(user, Permission.READ))
 				    throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 				    	"Permission denied to read resource");
@@ -153,7 +143,7 @@ public class LocalBinaryResource implements BinaryResource, EXistResource {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			BinaryDocument blob = getDocument(broker, false);
+			BinaryDocument blob = (BinaryDocument)getDocument(broker, false);
 			if (!blob.getPermissions().validate(user, Permission.READ))
 				throw new XMLDBException(
 						ErrorCodes.PERMISSION_DENIED,
@@ -173,7 +163,7 @@ public class LocalBinaryResource implements BinaryResource, EXistResource {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			BinaryDocument blob = getDocument(broker, false);
+			BinaryDocument blob = (BinaryDocument)getDocument(broker, false);
 			if (!blob.getPermissions().validate(user, Permission.READ))
 				throw new XMLDBException(
 						ErrorCodes.PERMISSION_DENIED,
@@ -202,7 +192,7 @@ public class LocalBinaryResource implements BinaryResource, EXistResource {
 	    }
 	}
 
-	protected BinaryDocument getDocument(DBBroker broker, boolean lock) throws XMLDBException {
+	protected DocumentImpl getDocument(DBBroker broker, boolean lock) throws XMLDBException {
 	    DocumentImpl document = null;
 	    if(lock)
             try {
@@ -218,6 +208,16 @@ public class LocalBinaryResource implements BinaryResource, EXistResource {
 	    if (document.getResourceType() != DocumentImpl.BINARY_FILE)
 	        throw new XMLDBException(ErrorCodes.WRONG_CONTENT_TYPE, "Document " + docId + 
 	                " is not a binary resource");
-	    return (BinaryDocument)document;
+	    return document;
+	}
+	
+	protected DocumentImpl openDocument(DBBroker broker, int lockMode) throws XMLDBException {
+	    DocumentImpl document = super.openDocument(broker, lockMode);
+	    if (document.getResourceType() != DocumentImpl.BINARY_FILE) {
+	    	closeDocument(document, lockMode);
+	        throw new XMLDBException(ErrorCodes.WRONG_CONTENT_TYPE, "Document " + docId + 
+	                " is not a binary resource");
+	    }
+	    return document;
 	}
 }

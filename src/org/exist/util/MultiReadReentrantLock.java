@@ -92,6 +92,13 @@ public class MultiReadReentrantLock implements Lock {
         }
     }
 
+    /* (non-Javadoc)
+	 * @see org.exist.util.Lock#attempt(int)
+	 */
+	public boolean attempt(int mode) {
+		throw new RuntimeException("Not implemented");
+	}
+	
     /**
      * Issue a read lock if there is no outstanding write lock or threads
      * waiting to get a write lock. Caller of this method must be careful to

@@ -98,6 +98,26 @@ public class ReentrantReadWriteLock implements Lock {
 		}
 	}
 
+	public boolean attempt(int mode) {
+		Thread caller = Thread.currentThread();
+		synchronized (this) {
+			if (caller == owner_) {
+				++holds_;
+				mode_ = mode;
+//				System.out.println("thread " + caller.getName() + " acquired lock on " + id_ +
+//					"; locks held = " + holds_);
+				return true;
+			} else if (owner_ == null) {
+				owner_ = caller;
+				holds_ = 1;
+				mode_ = mode;
+//				System.out.println("thread " + caller.getName() + " acquired lock on " + id_);
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
 	
     /* (non-Javadoc)
      * @see org.exist.util.Lock#isLockedForWrite()

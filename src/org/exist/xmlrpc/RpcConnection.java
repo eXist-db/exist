@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
@@ -48,6 +49,7 @@ import javax.xml.transform.OutputKeys;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.Indexer;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.ArraySet;
@@ -70,6 +72,7 @@ import org.exist.storage.XQueryPool;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
+import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.Occurrences;
 import org.exist.util.SyntaxException;
@@ -90,7 +93,6 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
-import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -98,7 +100,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import antlr.collections.AST;
-import java.io.RandomAccessFile;
 
 /**
  * This class implements the actual methods defined by
@@ -147,8 +148,9 @@ public class RpcConnection extends Thread {
 
 	public String createId(User user, String collName) throws EXistException {
 		DBBroker broker = brokerPool.get(user);
+		Collection collection = null;
 		try {
-			Collection collection = broker.getCollection(collName);
+			collection = broker.openCollection(collName, Lock.READ_LOCK);
 			if (collection == null)
 				throw new EXistException("collection " + collName
 						+ " not found!");
@@ -168,6 +170,8 @@ public class RpcConnection extends Thread {
 			} while (!ok);
 			return id;
 		} finally {
+			if(collection != null)
+				collection.release();
 			brokerPool.release(broker);
 		}
 	}
@@ -298,11 +302,12 @@ public class RpcConnection extends Thread {
 	public Hashtable getCollectionDesc(User user, String rootCollection)
 			throws Exception {
 		DBBroker broker = brokerPool.get(user);
+		Collection collection = null;
 		try {
 			if (rootCollection == null)
 				rootCollection = "/db";
 
-			Collection collection = broker.getCollection(rootCollection);
+			collection = broker.openCollection(rootCollection, Lock.READ_LOCK);
 			if (collection == null)
 				throw new EXistException("collection " + rootCollection
 						+ " not found!");
@@ -342,6 +347,8 @@ public class RpcConnection extends Thread {
 			desc.put("permissions", new Integer(perms.getPermissions()));
 			return desc;
 		} finally {
+			if(collection != null)
+				collection.release();
 			brokerPool.release(broker);
 		}
 	}
@@ -349,8 +356,9 @@ public class RpcConnection extends Thread {
 	Hashtable describeResource(User user, String resourceName)
 		throws EXistException, PermissionDeniedException {
 	    DBBroker broker = brokerPool.get(user);
+	    DocumentImpl doc = null;
 		try {
-		    DocumentImpl doc = (DocumentImpl) broker.getDocument(resourceName);
+		    doc = (DocumentImpl) broker.openDocument(resourceName, Lock.READ_LOCK);
 			if (doc == null) {
 				LOG.debug("document " + resourceName + " not found!");
 				throw new EXistException("document not found");
@@ -374,6 +382,8 @@ public class RpcConnection extends Thread {
 							: "XMLResource");
 			return hash;
 		} finally {
+			if(doc != null)
+				doc.getUpdateLock().release(Lock.READ_LOCK);
 			brokerPool.release(broker);
 		}
 	}
@@ -381,11 +391,12 @@ public class RpcConnection extends Thread {
 	public Hashtable describeCollection(User user, String rootCollection)
 	throws Exception {
 		DBBroker broker = brokerPool.get(user);
+		Collection collection = null;
 		try {
 			if (rootCollection == null)
 				rootCollection = "/db";
 		
-			Collection collection = broker.getCollection(rootCollection);
+			collection = broker.openCollection(rootCollection, Lock.WRITE_LOCK);
 			if (collection == null)
 				throw new EXistException("collection " + rootCollection
 						+ " not found!");
@@ -404,6 +415,8 @@ public class RpcConnection extends Thread {
 			desc.put("permissions", new Integer(perms.getPermissions()));
 			return desc;
 		} finally {
+			if(collection != null)
+				collection.release();
 			brokerPool.release(broker);
 		}
 	}
@@ -432,18 +445,22 @@ public class RpcConnection extends Thread {
 			String collName = name.substring(0, pos);
 			String docName = name.substring(pos + 1);
 			
-			collection = broker.getCollection(collName);
+			collection = broker.openCollection(collName, Lock.READ_LOCK);
 			if (collection == null) {
 				LOG.debug("collection " + collName + " not found!");
 				return null;
 			}
-			if(!collection.getPermissions().validate(user, Permission.READ))
-			    throw new PermissionDeniedException("Insufficient privileges to read resource");
+			if(!collection.getPermissions().validate(user, Permission.READ)) {
+			    collection.release();
+				throw new PermissionDeniedException("Insufficient privileges to read resource");
+			}
 			doc = collection.getDocumentWithLock(broker, docName);
+			collection.release();
 			if (doc == null) {
 				LOG.debug("document " + name + " not found!");
 				throw new EXistException("document not found");
 			}
+			
 			if(!doc.getPermissions().validate(user, Permission.READ))
 			    throw new PermissionDeniedException("Insufficient privileges to read resource " + docName);
 			Serializer serializer = broker.getSerializer();
@@ -535,9 +552,10 @@ public class RpcConnection extends Thread {
 	public byte[] getBinaryResource(User user, String name)
 			throws EXistException, PermissionDeniedException {
 		DBBroker broker = null;
+		DocumentImpl doc = null;
 		try {
 			broker = brokerPool.get(user);
-			DocumentImpl doc = (DocumentImpl) broker.getDocument(name);
+			doc = (DocumentImpl) broker.openDocument(name, Lock.READ_LOCK);
 			if (doc == null)
 				throw new EXistException("Resource " + name + " not found");
 			if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
@@ -547,6 +565,8 @@ public class RpcConnection extends Thread {
 			    throw new PermissionDeniedException("Insufficient privileges to read resource");
 			return broker.getBinaryResourceData((BinaryDocument) doc);
 		} finally {
+			if(doc != null)
+				doc.getUpdateLock().release(Lock.READ_LOCK);
 			brokerPool.release(broker);
 		}
 	}
@@ -624,15 +644,6 @@ public class RpcConnection extends Thread {
 		return true;
 	}
 
-	/**
-	 * Gets the documentListing attribute of the RpcConnection object
-	 * 
-	 * @param user
-	 *                   Description of the Parameter
-	 * @return The documentListing value
-	 * @exception EXistException
-	 *                         Description of the Exception
-	 */
 	public Vector getDocumentListing(User user) throws EXistException {
 		DBBroker broker = null;
 		try {
@@ -649,29 +660,17 @@ public class RpcConnection extends Thread {
 		}
 	}
 
-	/**
-	 * Gets the documentListing attribute of the RpcConnection object
-	 * 
-	 * @param collection
-	 *                   Description of the Parameter
-	 * @param user
-	 *                   Description of the Parameter
-	 * @return The documentListing value
-	 * @exception EXistException
-	 *                         Description of the Exception
-	 * @exception PermissionDeniedException
-	 *                         Description of the Exception
-	 */
 	public Vector getDocumentListing(User user, String name)
 			throws EXistException, PermissionDeniedException {
 		DBBroker broker = null;
+		Collection collection = null;
 		try {
 			broker = brokerPool.get(user);
 			if (!name.startsWith("/"))
 				name = '/' + name;
 			if (!name.startsWith("/db"))
 				name = "/db" + name;
-			Collection collection = broker.getCollection(name);
+			collection = broker.openCollection(name, Lock.READ_LOCK);
 			Vector vec = new Vector();
 			if (collection == null) {
 			    LOG.debug("collection " + name + " not found.");
@@ -686,6 +685,8 @@ public class RpcConnection extends Thread {
 			}
 			return vec;
 		} finally {
+			if(collection != null)
+				collection.release();
 			brokerPool.release(broker);
 		}
 	}
@@ -693,15 +694,18 @@ public class RpcConnection extends Thread {
 	public int getResourceCount(User user, String collectionName)
 	throws EXistException, PermissionDeniedException {
 	    DBBroker broker = null;
+	    Collection collection = null;
 		try {
 			broker = brokerPool.get(user);
 			if (!collectionName.startsWith("/"))
 				collectionName = '/' + collectionName;
 			if (!collectionName.startsWith("/db"))
 				collectionName = "/db" + collectionName;
-			Collection collection = broker.getCollection(collectionName);
+			collection = broker.openCollection(collectionName, Lock.READ_LOCK);
 			return collection.getDocumentCount();
 		} finally {
+			if(collection != null)
+				collection.release();
 			brokerPool.release(broker);
 		}
 	}
@@ -709,13 +713,14 @@ public class RpcConnection extends Thread {
 	public String createResourceId(User user, String collectionName)
 	throws EXistException, PermissionDeniedException {
 	    DBBroker broker = null;
+	    Collection collection = null;
 	    try {
 	        broker = brokerPool.get(user);
 	        if (!collectionName.startsWith("/"))
 	            collectionName = '/' + collectionName;
 	        if (!collectionName.startsWith("/db"))
 	            collectionName = "/db" + collectionName;
-	        Collection collection = broker.getCollection(collectionName);
+	        collection = broker.openCollection(collectionName, Lock.READ_LOCK);
 	        String id;
 			Random rand = new Random();
 			boolean ok;
@@ -732,26 +737,29 @@ public class RpcConnection extends Thread {
 			} while (!ok);
 			return id;
 	    } finally {
+	    	if(collection != null)
+				collection.release();
 	        brokerPool.release(broker);
 	    }
-}
+	}
 	
 	public Hashtable listDocumentPermissions(User user, String name)
 			throws EXistException, PermissionDeniedException {
 		DBBroker broker = null;
+		Collection collection = null;
 		try {
 			broker = brokerPool.get(user);
 			if (!name.startsWith("/"))
 				name = '/' + name;
 			if (!name.startsWith("/db"))
 				name = "/db" + name;
-			Collection collection = broker.getCollection(name);
+			collection = broker.openCollection(name, Lock.READ_LOCK);
+			if (collection == null)
+				throw new EXistException("Collection " + name + " not found");
 			if (!collection.getPermissions().validate(user, Permission.READ))
 				throw new PermissionDeniedException(
 						"not allowed to read collection " + name);
 			Hashtable result = new Hashtable(collection.getDocumentCount());
-			if (collection == null)
-				return result;
 			DocumentImpl doc;
 			Permission perm;
 			Vector tmp;
@@ -768,6 +776,8 @@ public class RpcConnection extends Thread {
 			}
 			return result;
 		} finally {
+			if(collection != null)
+				collection.release();
 			brokerPool.release(broker);
 		}
 	}
@@ -775,20 +785,21 @@ public class RpcConnection extends Thread {
 	public Hashtable listCollectionPermissions(User user, String name)
 			throws EXistException, PermissionDeniedException {
 		DBBroker broker = null;
+		Collection collection = null;
 		try {
 			broker = brokerPool.get(user);
 			if (!name.startsWith("/"))
 				name = '/' + name;
 			if (!name.startsWith("/db"))
 				name = "/db" + name;
-			Collection collection = broker.getCollection(name);
+			collection = broker.openCollection(name, Lock.READ_LOCK);
+			if (collection == null)
+				throw new EXistException("Collection " + name + " not found");
 			if (!collection.getPermissions().validate(user, Permission.READ))
 				throw new PermissionDeniedException(
 						"not allowed to read collection " + name);
 			Hashtable result = new Hashtable(collection
 					.getChildCollectionCount());
-			if (collection == null)
-				return result;
 			String child, path;
 			Collection childColl;
 			Permission perm;
@@ -806,6 +817,8 @@ public class RpcConnection extends Thread {
 			}
 			return result;
 		} finally {
+			if(collection != null)
+				collection.release();
 			brokerPool.release(broker);
 		}
 	}
@@ -829,16 +842,18 @@ public class RpcConnection extends Thread {
 				name = '/' + name;
 			if (!name.startsWith("/db"))
 				name = "/db" + name;
-			Collection collection = broker.getCollection(name);
+			Collection collection = broker.openCollection(name, Lock.READ_LOCK);
 			Permission perm = null;
 			if (collection == null) {
-				DocumentImpl doc = (DocumentImpl) broker.getDocument(name);
+				DocumentImpl doc = (DocumentImpl) broker.openDocument(name, Lock.READ_LOCK);
 				if (doc == null)
 					throw new EXistException("document or collection " + name
 							+ " not found");
 				perm = doc.getPermissions();
+				doc.getUpdateLock().release(Lock.READ_LOCK);
 			} else {
 				perm = collection.getPermissions();
+				collection.release();
 			}
 			Hashtable result = new Hashtable();
 			result.put("owner", perm.getOwner());
@@ -853,18 +868,21 @@ public class RpcConnection extends Thread {
 	public Date getCreationDate(User user, String collectionPath)
 			throws PermissionDeniedException, EXistException {
 		DBBroker broker = null;
+		Collection collection = null;
 		try {
 			broker = brokerPool.get(user);
 			if (!collectionPath.startsWith("/"))
 				collectionPath = '/' + collectionPath;
 			if (!collectionPath.startsWith("/db"))
 				collectionPath = "/db" + collectionPath;
-			Collection collection = broker.getCollection(collectionPath);
+			collection = broker.openCollection(collectionPath, Lock.READ_LOCK);
 			if (collection == null)
 				throw new EXistException("collection " + collectionPath
 						+ " not found");
 			return new Date(collection.getCreationTime());
 		} finally {
+			if(collection != null)
+				collection.release();
 			brokerPool.release(broker);
 		}
 	}
@@ -872,13 +890,14 @@ public class RpcConnection extends Thread {
 	public Vector getTimestamps(User user, String documentPath)
 			throws PermissionDeniedException, EXistException {
 		DBBroker broker = null;
+		DocumentImpl doc = null;
 		try {
 			broker = brokerPool.get(user);
 			if (!documentPath.startsWith("/"))
 				documentPath = '/' + documentPath;
 			if (!documentPath.startsWith("/db"))
 				documentPath = "/db" + documentPath;
-			DocumentImpl doc = (DocumentImpl) broker.getDocument(documentPath);
+			doc = (DocumentImpl) broker.openDocument(documentPath, Lock.READ_LOCK);
 			if (doc == null) {
 				LOG.debug("document " + documentPath + " not found!");
 				throw new EXistException("document not found");
@@ -888,6 +907,8 @@ public class RpcConnection extends Thread {
 			vector.addElement(new Date(doc.getLastModified()));
 			return vector;
 		} finally {
+			if(doc != null)
+				doc.getUpdateLock().release(Lock.READ_LOCK);
 			brokerPool.release(broker);
 		}
 	}
@@ -937,40 +958,52 @@ public class RpcConnection extends Thread {
 	}
 
 	public boolean hasDocument(User user, String name) throws Exception {
-		DBBroker broker = brokerPool.get(user);
-		boolean r = (broker.getDocument(name) != null);
-		brokerPool.release(broker);
-		return r;
+		DBBroker broker = null;
+		try {
+			broker = brokerPool.get(user);
+			return (broker.getDocument(name) != null);
+		} finally {
+			brokerPool.release(broker);
+		}
 	}
 
 	public boolean parse(User user, byte[] xml, String path, 
 			boolean replace) throws Exception {
 		DBBroker broker = null;
+		Collection collection = null;
 		try {
+			long startTime = System.currentTimeMillis();
 			broker = brokerPool.get(user);
 			int p = path.lastIndexOf('/');
 			if (p < 0 || p == path.length() - 1)
 				throw new EXistException("Illegal document path");
 			String collectionName = path.substring(0, p);
 			String docName = path.substring(p + 1);
-			Collection collection = broker.getCollection(collectionName);
-			if (collection == null)
-				throw new EXistException("Collection " + collectionName
-						+ " not found");
-			if (!replace) {
-				DocumentImpl old = collection.getDocument(broker, docName);
-				if (old != null)
-					throw new PermissionDeniedException(
-							"Document exists and overwrite is not allowed");
+			InputSource source;
+			Indexer indexer;
+			try {
+				collection = broker.openCollection(collectionName, Lock.WRITE_LOCK);
+				if (collection == null)
+					throw new EXistException("Collection " + collectionName
+							+ " not found");
+				if (!replace) {
+					DocumentImpl old = collection.getDocument(broker, docName);
+					if (old != null)
+						throw new PermissionDeniedException(
+								"Document exists and overwrite is not allowed");
+				}
+				InputStream is = new ByteArrayInputStream(xml);
+				source = new InputSource(is);
+				indexer = collection.validate(broker, docName, source);
+			} finally {
+				if(collection != null)
+					collection.release();
 			}
-			long startTime = System.currentTimeMillis();
-			InputStream is = new ByteArrayInputStream(xml);
-			DocumentImpl doc = collection.addDocument(broker, docName,
-					new InputSource(is));
+			collection.store(broker, indexer, source, false);
 			LOG.debug("parsing " + path + " took "
 					+ (System.currentTimeMillis() - startTime) + "ms.");
 			documentCache.clear();
-			return doc != null;
+			return true;
 		} catch (Exception e) {
 			LOG.debug(e.getMessage(), e);
 			throw e;
@@ -1004,23 +1037,33 @@ public class RpcConnection extends Thread {
 				throw new EXistException("Illegal document path");
 			String collectionName = docName.substring(0, p);
 			docName = docName.substring(p + 1);
-			Collection collection = broker.getCollection(collectionName);
-			if (collection == null)
-				throw new EXistException("Collection " + collectionName
-						+ " not found");
-			if (!replace) {
-				DocumentImpl old = collection.getDocument(broker, docName);
-				if (old != null)
-					throw new PermissionDeniedException(
-							"Old document exists and overwrite is not allowed");
-			}
-			String uri;
+			Collection collection = null;
+			Indexer indexer;
+			InputSource source;
 			try {
-				uri = new URI(file.toURL().toString()).toASCIIString();
-			} catch (Exception e) {
-				uri = file.getAbsolutePath();
+				collection = broker.openCollection(collectionName, Lock.WRITE_LOCK);
+				if (collection == null)
+					throw new EXistException("Collection " + collectionName
+							+ " not found");
+				if (!replace) {
+					DocumentImpl old = collection.getDocument(broker, docName);
+					if (old != null)
+						throw new PermissionDeniedException(
+								"Old document exists and overwrite is not allowed");
+				}
+				String uri;
+				try {
+					uri = new URI(file.toURL().toString()).toASCIIString();
+				} catch (Exception e) {
+					uri = file.getAbsolutePath();
+				}
+				source = new InputSource(uri);
+				indexer = collection.validate(broker, docName, source);
+			} finally {
+				if(collection != null)
+					collection.release();
 			}
-			collection.addDocument(broker, docName, new InputSource(uri));
+			collection.store(broker, indexer, source, false);
 		} finally {
 			brokerPool.release(broker);
 		}
@@ -1033,6 +1076,7 @@ public class RpcConnection extends Thread {
 		boolean replace) throws EXistException, PermissionDeniedException, LockException {
 		DBBroker broker = null;
 		DocumentImpl doc = null;
+		Collection collection = null;
 		try {
 			broker = brokerPool.get(user);
 			int p = docName.lastIndexOf('/');
@@ -1040,7 +1084,7 @@ public class RpcConnection extends Thread {
 				throw new EXistException("Illegal document path");
 			String collectionName = docName.substring(0, p);
 			docName = docName.substring(p + 1);
-			Collection collection = broker.getCollection(collectionName);
+			collection = broker.openCollection(collectionName, Lock.WRITE_LOCK);
 			if (collection == null)
 				throw new EXistException("Collection " + collectionName
 						+ " not found");
@@ -1052,6 +1096,8 @@ public class RpcConnection extends Thread {
 			}
 			doc = collection.addBinaryResource(broker, docName, data);
 		} finally {
+			if(collection != null)
+				collection.release();
 			brokerPool.release(broker);
 		}
 		documentCache.clear();
@@ -1233,6 +1279,7 @@ public class RpcConnection extends Thread {
 
 	public void remove(User user, String docPath) throws Exception {
 		DBBroker broker = null;
+		Collection collection = null;
 		try {
 			broker = brokerPool.get(user);
 			int p = docPath.lastIndexOf('/');
@@ -1240,7 +1287,7 @@ public class RpcConnection extends Thread {
 				throw new EXistException("Illegal document path");
 			String collectionName = docPath.substring(0, p);
 			String docName = docPath.substring(p + 1);
-			Collection collection = broker.getCollection(collectionName);
+			collection = broker.openCollection(collectionName, Lock.WRITE_LOCK);
 			if (collection == null)
 				throw new EXistException("Collection " + collectionName
 						+ " not found");
@@ -1253,20 +1300,26 @@ public class RpcConnection extends Thread {
 				collection.removeDocument(broker, docName);
 			documentCache.clear();
 		} finally {
+			if(collection != null)
+				collection.release();
 			brokerPool.release(broker);
 		}
 	}
 
 	public boolean removeCollection(User user, String name) throws Exception {
 		DBBroker broker = null;
+		Collection collection = null;
 		try {
 			broker = brokerPool.get(user);
-			if (broker.getCollection(name) == null)
+			collection = broker.openCollection(name, Lock.WRITE_LOCK);
+			if (collection == null)
 				return false;
 			LOG.debug("removing collection " + name);
 			documentCache.clear();
-			return broker.removeCollection(name);
+			return broker.removeCollection(collection);
 		} finally {
+			if(collection != null)
+				collection.getLock().release();
 			brokerPool.release(broker);
 		}
 	}
@@ -1404,13 +1457,15 @@ public class RpcConnection extends Thread {
 			String ownerGroup, String permissions) throws EXistException,
 			PermissionDeniedException {
 		DBBroker broker = null;
+		Collection collection = null;
+		DocumentImpl doc = null;
 		try {
 			broker = brokerPool.get(user);
 			org.exist.security.SecurityManager manager = brokerPool
 					.getSecurityManager();
-			Collection collection = broker.getCollection(resource);
+			collection = broker.openCollection(resource, Lock.WRITE_LOCK);
 			if (collection == null) {
-				DocumentImpl doc = (DocumentImpl) broker.getDocument(resource);
+				doc = (DocumentImpl) broker.openDocument(resource, Lock.WRITE_LOCK);
 				if (doc == null)
 					throw new EXistException("document or collection "
 							+ resource + " not found");
@@ -1453,6 +1508,10 @@ public class RpcConnection extends Thread {
 		} catch (PermissionDeniedException e) {
 			throw new EXistException(e.getMessage());
 		} finally {
+			if(doc != null)
+				doc.getUpdateLock().release(Lock.WRITE_LOCK);
+			if(collection != null)
+				collection.release();
 			brokerPool.release(broker);
 		}
 	}
@@ -1461,13 +1520,15 @@ public class RpcConnection extends Thread {
 			String ownerGroup, int permissions) throws EXistException,
 			PermissionDeniedException {
 		DBBroker broker = null;
+		Collection collection = null;
+		DocumentImpl doc = null;
 		try {
 			broker = brokerPool.get(user);
 			org.exist.security.SecurityManager manager = brokerPool
 					.getSecurityManager();
-			Collection collection = broker.getCollection(resource);
+			collection = broker.openCollection(resource, Lock.WRITE_LOCK);
 			if (collection == null) {
-				DocumentImpl doc = (DocumentImpl) broker.getDocument(resource);
+				doc = (DocumentImpl) broker.openDocument(resource, Lock.WRITE_LOCK);
 				if (doc == null)
 					throw new EXistException("document or collection "
 							+ resource + " not found");
@@ -1506,6 +1567,10 @@ public class RpcConnection extends Thread {
 		} catch (PermissionDeniedException e) {
 			throw new EXistException(e.getMessage());
 		} finally {
+			if(doc != null)
+				doc.getUpdateLock().release(Lock.WRITE_LOCK);
+			if(collection != null)
+				collection.release();
 			brokerPool.release(broker);
 		}
 	}
@@ -1552,9 +1617,10 @@ public class RpcConnection extends Thread {
 
 	public boolean lockResource(User user, String path, String userName) throws Exception {
 		DBBroker broker = null;
+		DocumentImpl doc = null;
 		try {
 			broker = brokerPool.get(user);
-			DocumentImpl doc = (DocumentImpl) broker.getDocument(path);
+			doc = (DocumentImpl) broker.openDocument(path, Lock.WRITE_LOCK);
 				if (doc == null)
 					throw new EXistException("Resource "
 							+ path + " not found");
@@ -1572,15 +1638,18 @@ public class RpcConnection extends Thread {
 			broker.saveCollection(doc.getCollection());
 			return true;
 		} finally {
+			if(doc != null)
+				doc.getUpdateLock().release(Lock.WRITE_LOCK);
 			brokerPool.release(broker);
 		}
 	}
 	
 	public String hasUserLock(User user, String path) throws Exception {
 		DBBroker broker = null;
+		DocumentImpl doc = null;
 		try {
 			broker = brokerPool.get(user);
-			DocumentImpl doc = (DocumentImpl) broker.getDocument(path);
+			doc = (DocumentImpl) broker.openDocument(path, Lock.READ_LOCK);
 			if(!doc.getPermissions().validate(user, Permission.READ))
 			    throw new PermissionDeniedException("Insufficient privileges to read resource");
 			if (doc == null)
@@ -1588,15 +1657,18 @@ public class RpcConnection extends Thread {
 			User u = doc.getUserLock();
 			return u == null ? "" : u.getName();
 		} finally {
+			if(doc != null)
+				doc.getUpdateLock().release(Lock.READ_LOCK);
 			brokerPool.release(broker);
 		}
 	}
 	
 	public boolean unlockResource(User user, String path) throws Exception {
 		DBBroker broker = null;
+		DocumentImpl doc = null;
 		try {
 			broker = brokerPool.get(user);
-			DocumentImpl doc = (DocumentImpl) broker.getDocument(path);
+			doc = (DocumentImpl) broker.openDocument(path, Lock.WRITE_LOCK);
 			if (doc == null)
 				throw new EXistException("Resource "
 						+ path + " not found");
@@ -1611,6 +1683,8 @@ public class RpcConnection extends Thread {
 			broker.saveCollection(doc.getCollection());
 			return true;
 		} finally {
+			if(doc != null)
+				doc.getUpdateLock().release(Lock.WRITE_LOCK);
 			brokerPool.release(broker);
 		}
 	}
@@ -1685,17 +1759,6 @@ public class RpcConnection extends Thread {
 		}
 	}
 
-	/**
-	 * Description of the Method
-	 * 
-	 * @param resultId
-	 *                   Description of the Parameter
-	 * @param user
-	 *                   Description of the Parameter
-	 * @return Description of the Return Value
-	 * @exception EXistException
-	 *                         Description of the Exception
-	 */
 	public Hashtable summary(User user, int resultId) throws EXistException {
 		long startTime = System.currentTimeMillis();
 		QueryResult qr = (QueryResult) connectionPool.resultSets.get(resultId);
@@ -1772,9 +1835,10 @@ public class RpcConnection extends Thread {
 	public Vector getIndexedElements(User user, String collectionName,
 			boolean inclusive) throws EXistException, PermissionDeniedException {
 		DBBroker broker = null;
+		Collection collection = null;
 		try {
 			broker = brokerPool.get(user);
-			Collection collection = broker.getCollection(collectionName);
+			collection = broker.openCollection(collectionName, Lock.READ_LOCK);
 			if (collection == null)
 				throw new EXistException("collection " + collectionName
 						+ " not found");
@@ -1792,6 +1856,8 @@ public class RpcConnection extends Thread {
 			}
 			return result;
 		} finally {
+			if(collection != null)
+				collection.release();
 			brokerPool.release(broker);
 		}
 	}
@@ -1800,9 +1866,10 @@ public class RpcConnection extends Thread {
 			String start, String end, boolean inclusive)
 			throws PermissionDeniedException, EXistException {
 		DBBroker broker = null;
+		Collection collection = null;
 		try {
 			broker = brokerPool.get(user);
-			Collection collection = broker.getCollection(collectionName);
+			collection = broker.openCollection(collectionName, Lock.READ_LOCK);
 			if (collection == null)
 				throw new EXistException("collection " + collectionName
 						+ " not found");
@@ -1818,6 +1885,8 @@ public class RpcConnection extends Thread {
 			}
 			return result;
 		} finally {
+			if(collection != null)
+				collection.release();
 			brokerPool.release(broker);
 		}
 	}
@@ -1931,6 +2000,9 @@ public class RpcConnection extends Thread {
 	public boolean moveResource(User user, String docPath, String destinationPath, String newName) 
 	throws EXistException, PermissionDeniedException {
 	    DBBroker broker = null;
+	    Collection collection = null;
+	    Collection destination = null;
+	    DocumentImpl doc = null;
 		try {
 			broker = brokerPool.get(user);
 			// get source document
@@ -1939,16 +2011,16 @@ public class RpcConnection extends Thread {
 				throw new EXistException("Illegal document path");
 			String collectionName = docPath.substring(0, p);
 			String docName = docPath.substring(p + 1);
-			Collection collection = broker.getCollection(collectionName);
+			collection = broker.openCollection(collectionName, Lock.WRITE_LOCK);
 			if (collection == null)
 				throw new EXistException("Collection " + collectionName
 						+ " not found");
-			DocumentImpl doc = collection.getDocument(broker, docName);
+			doc = collection.getDocumentWithLock(broker, docName, Lock.WRITE_LOCK);
 			if(doc == null)
 				throw new EXistException("Document " + docPath + " not found");
 			
 			// get destination collection
-			Collection destination = broker.getCollection(destinationPath);
+			destination = broker.openCollection(destinationPath, Lock.WRITE_LOCK);
 			if(destination == null)
 			    throw new EXistException("Destination collection " + destinationPath + " not found");
 			broker.moveResource(doc, destination, newName);
@@ -1957,6 +2029,12 @@ public class RpcConnection extends Thread {
         } catch (LockException e) {
             throw new PermissionDeniedException("Could not acquire lock on document " + docPath);
         } finally {
+        	if(collection != null)
+        		collection.release();
+        	if(destination != null)
+        		destination.release();
+        	if(doc != null)
+        		doc.getUpdateLock().release(Lock.WRITE_LOCK);
 			brokerPool.release(broker);
 		}
 	}
@@ -1964,16 +2042,18 @@ public class RpcConnection extends Thread {
 	public boolean moveCollection(User user, String collectionPath, String destinationPath, String newName) 
 	throws EXistException, PermissionDeniedException {
 	    DBBroker broker = null;
+	    Collection collection = null;
+	    Collection destination = null;
 		try {
 			broker = brokerPool.get(user);
 			// get source document
-			Collection collection = broker.getCollection(collectionPath);
+			collection = broker.openCollection(collectionPath, Lock.WRITE_LOCK);
 			if (collection == null)
 				throw new EXistException("Collection " + collectionPath
 						+ " not found");
 			
 			// get destination collection
-			Collection destination = broker.getCollection(destinationPath);
+			destination = broker.openCollection(destinationPath, Lock.WRITE_LOCK);
 			if(destination == null)
 			    throw new EXistException("Destination collection " + destinationPath + " not found");
 			broker.moveCollection(collection, destination, newName);
@@ -1982,6 +2062,10 @@ public class RpcConnection extends Thread {
         } catch (LockException e) {
             throw new PermissionDeniedException(e.getMessage());
         } finally {
+        	if(collection != null)
+        		collection.release();
+        	if(destination != null)
+        		destination.release();
 			brokerPool.release(broker);
 		}
 	}

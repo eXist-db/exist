@@ -34,9 +34,9 @@ import java.util.Random;
 
 import javax.xml.transform.OutputKeys;
 
-import org.apache.log4j.Category;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.Indexer;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
@@ -47,6 +47,7 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
@@ -127,6 +128,43 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		getCollection();
 	}
 
+	protected Collection getCollectionWithLock(int lockMode) throws XMLDBException {
+		DBBroker broker = null;
+		Collection collection = null;
+		try {
+			broker = brokerPool.get(user);
+			collection = broker.openCollection(path, lockMode);
+			if(collection == null)
+				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
+			collection.setReader(userReader);
+		} catch (EXistException e) {
+			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+		} finally {
+			brokerPool.release(broker);
+		}
+		return collection;
+	}
+
+	protected void saveCollection() throws XMLDBException {
+		DBBroker broker = null;
+		Collection collection = null;
+		try {
+			broker = brokerPool.get(user);
+			collection = broker.openCollection(path, Lock.WRITE_LOCK);
+			if(collection == null)
+				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
+			broker.saveCollection(collection);
+		} catch (EXistException e) {
+			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+		} catch (PermissionDeniedException e) {
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
+		} finally {
+			if(collection != null)
+				collection.release();
+			brokerPool.release(broker);
+		}
+	}
+	
 	protected Collection getCollection() throws XMLDBException {
 		DBBroker broker = null;
 		try {
@@ -147,12 +185,12 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		}
 	}
 
-	protected boolean checkOwner(User user) throws XMLDBException {
-		return user.getName().equals(getCollection().getPermissions().getOwner());
+	protected boolean checkOwner(Collection collection, User user) throws XMLDBException {
+		return user.getName().equals(collection.getPermissions().getOwner());
 	}
 
-	protected boolean checkPermissions(int perm) throws XMLDBException {
-		return getCollection().getPermissions().validate(user, perm);
+	protected boolean checkPermissions(Collection collection, int perm) throws XMLDBException {
+		return collection.getPermissions().validate(user, perm);
 	}
 
 	/**
@@ -174,21 +212,26 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	}
 
 	public String createId() throws XMLDBException {
-		String id;
-		Random rand = new Random();
-		boolean ok;
-		do {
-			ok = true;
-			id = Integer.toHexString(rand.nextInt()) + ".xml";
-			// check if this id does already exist
-			if (getCollection().hasDocument(id))
-				ok = false;
-
-			if (getCollection().hasSubcollection(id))
-				ok = false;
-
-		} while (!ok);
-		return id;
+		Collection collection = getCollectionWithLock(Lock.READ_LOCK);
+		try {
+			String id;
+			Random rand = new Random();
+			boolean ok;
+			do {
+				ok = true;
+				id = Integer.toHexString(rand.nextInt()) + ".xml";
+				// check if this id does already exist
+				if (collection.hasDocument(id))
+					ok = false;
+	
+				if (collection.hasSubcollection(id))
+					ok = false;
+	
+			} while (!ok);
+			return id;
+		} finally {
+			collection.getLock().release(Lock.READ_LOCK);
+		}
 	}
 
 	public Resource createResource(String id, String type) throws XMLDBException {
@@ -208,49 +251,66 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	}
 
 	public org.xmldb.api.base.Collection getChildCollection(String name) throws XMLDBException {
-		if (!checkPermissions(Permission.READ))
-			throw new XMLDBException(
-				ErrorCodes.PERMISSION_DENIED,
-				"you are not allowed to access this collection");
-		String cname;
-		for (Iterator i = getCollection().collectionIterator(); i.hasNext();) {
-			cname = (String) i.next();
-			if (cname.equals(name)) {
-				cname = getPath() + '/' + cname;
-				return new LocalCollection(user, brokerPool, this, cname);
-			}
+		String childName = null;
+		Collection collection = getCollectionWithLock(Lock.READ_LOCK);
+		try {
+			if (!checkPermissions(collection, Permission.READ))
+				throw new XMLDBException(
+					ErrorCodes.PERMISSION_DENIED,
+					"You are not allowed to access this collection");
+			if(collection.hasChildCollection(name))
+				childName = getPath() + '/' + name;
+		} finally {
+			collection.getLock().release(Lock.READ_LOCK);
 		}
-		return null;
+		if(childName != null)
+			return new LocalCollection(user, brokerPool, this, childName);
+		else
+			return null;
 	}
 
-	public int getChildCollectionCount() throws XMLDBException {
-	    Collection collection = getCollection();
-		if (collection.getPermissions().validate(user, Permission.READ))
-			return collection.getChildCollectionCount();
-		else
-			return 0;
+	public int getChildCollectionCount() throws XMLDBException { 
+		Collection collection = getCollectionWithLock(Lock.READ_LOCK);
+		try {
+			if (checkPermissions(collection, Permission.READ))
+				return collection.getChildCollectionCount();
+			else
+				return 0;
+		} finally {
+			collection.getLock().release(Lock.READ_LOCK);
+		}
 	}
 
 	public String getName() throws XMLDBException {
-		return getCollection().getName();
+		Collection collection = getCollectionWithLock(Lock.READ_LOCK);
+		try {
+			return collection.getName();
+		} finally {
+			collection.getLock().release(Lock.READ_LOCK);
+		}
 	}
 
 	public org.xmldb.api.base.Collection getParentCollection() throws XMLDBException {
 		if (getName().equals("/db"))
 			return null;
-		Collection collection = getCollection();
-		if (parent == null && collection != null) {
+		if (parent == null) {
+			// load the collection to check if it is valid
 			DBBroker broker = null;
+			Collection collection = null;
 			try {
 				broker = brokerPool.get(user);
-				org.exist.collections.Collection c = collection.getParent(broker);
-				parent = new LocalCollection(user, brokerPool, null, c.getName());
+				collection = broker.openCollection(path, Lock.READ_LOCK);
+				if(collection == null)
+					throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
+				parent = new LocalCollection(user, brokerPool, null, collection.getParentPath());
 			} catch (EXistException e) {
 				throw new XMLDBException(
-					ErrorCodes.UNKNOWN_ERROR,
-					"error while retrieving parent collection: " + e.getMessage(),
-					e);
+						ErrorCodes.UNKNOWN_ERROR,
+						"error while retrieving parent collection: " + e.getMessage(),
+						e);
 			} finally {
+				if(collection != null)
+					collection.getLock().release(Lock.READ_LOCK);
 				brokerPool.release(broker);
 			}
 		}
@@ -266,17 +326,20 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	}
 
 	public Resource getResource(String id) throws XMLDBException {
-	    Collection collection = getCollection();
-		if (!collection.getPermissions().validate(user, Permission.READ))
-			throw new XMLDBException(
-				ErrorCodes.PERMISSION_DENIED,
-				"not allowed to read collection");
+		Collection collection = null;
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
+			collection = broker.openCollection(path, Lock.READ_LOCK);
+			if(collection == null)
+				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
+			if (!checkPermissions(collection, Permission.READ))
+				throw new XMLDBException(
+						ErrorCodes.PERMISSION_DENIED,
+				"not allowed to read collection");
 			DocumentImpl document = collection.getDocument(broker, id);
 			if (document == null) {
-			    LOG.warn("Resource " + id + " not found");
+				LOG.warn("Resource " + id + " not found");
 				return null;
 			}
 			Resource r;
@@ -286,25 +349,31 @@ public class LocalCollection extends Observable implements CollectionImpl {
 				r = new LocalBinaryResource(user, brokerPool, this, id);
 			else
 				throw new XMLDBException(
-					ErrorCodes.INVALID_RESOURCE,
-					"unknown resource type");
+						ErrorCodes.INVALID_RESOURCE,
+				"unknown resource type");
 			return r;
 		} catch (EXistException e) {
-		    throw new XMLDBException(
+			throw new XMLDBException(
 					ErrorCodes.UNKNOWN_ERROR,
 					"error while retrieving resource: " + e.getMessage(),
 					e);
-        } finally {
-		    brokerPool.release(broker);
+		} finally {
+			if(collection != null)
+				collection.release();
+			brokerPool.release(broker);
 		}
 	}
 
 	public int getResourceCount() throws XMLDBException {
-	    Collection collection = getCollection();
-		if (!collection.getPermissions().validate(user, Permission.READ))
-			return 0;
-		else
-			return collection.getDocumentCount();
+		Collection collection = getCollectionWithLock(Lock.READ_LOCK);
+		try {
+			if (!checkPermissions(collection, Permission.READ))
+				return 0;
+			else
+				return collection.getDocumentCount();
+		} finally {
+			collection.getLock().release(Lock.READ_LOCK);
+		}
 	}
 
 	public Service getService(String name, String version) throws XMLDBException {
@@ -349,14 +418,18 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	}
 
 	public String[] listChildCollections() throws XMLDBException {
-	    Collection collection = getCollection();
-		if (!checkPermissions(Permission.READ))
-			return new String[0];
-		String[] collections = new String[collection.getChildCollectionCount()];
-		int j = 0;
-		for (Iterator i = collection.collectionIterator(); i.hasNext(); j++)
-			collections[j] = (String) i.next();
-		return collections;
+		Collection collection = getCollectionWithLock(Lock.READ_LOCK);
+		try {
+			if (!checkPermissions(collection, Permission.READ))
+				return new String[0];
+			String[] collections = new String[collection.getChildCollectionCount()];
+			int j = 0;
+			for (Iterator i = collection.collectionIterator(); i.hasNext(); j++)
+				collections[j] = (String) i.next();
+			return collections;
+		} finally {
+			collection.release();
+		}
 	}
 	
 	public String[] getChildCollections() throws XMLDBException {
@@ -364,12 +437,15 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	}
 
 	public String[] listResources() throws XMLDBException {
-	    Collection collection = getCollection();
-		if (!collection.getPermissions().validate(user, Permission.READ))
-			return new String[0];
+		Collection collection = null;
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
+			collection = broker.openCollection(path, Lock.READ_LOCK);
+			if(collection == null)
+				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
+			if (!checkPermissions(collection, Permission.READ))
+				return new String[0];
 			String[] resources = new String[collection.getDocumentCount()];
 			int j = 0;
 			int p;
@@ -381,12 +457,14 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			}
 			return resources;
 		} catch (EXistException e) {
-		    throw new XMLDBException(
+			throw new XMLDBException(
 					ErrorCodes.UNKNOWN_ERROR,
 					"error while retrieving resource: " + e.getMessage(),
 					e);
-        } finally {
-		    brokerPool.release(broker);
+		} finally {
+			if(collection != null)
+				collection.release();
+			brokerPool.release(broker);
 		}
 	}
 	
@@ -401,17 +479,21 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	public void removeResource(Resource res) throws XMLDBException {
 		if (res == null)
 			return;
-		Collection collection = getCollection();
-		String name = res.getId();
-		LOG.debug("removing " + name);
+		Collection collection = null;
 		DBBroker broker = null;
 		try {
+			String name = res.getId();
+			LOG.debug("removing " + name);
+			
 			broker = brokerPool.get(user);
+			collection = broker.openCollection(path, Lock.READ_LOCK);
+			if(collection == null)
+				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
 			DocumentImpl doc = collection.getDocument(broker, name);
 			if (doc == null)
 				throw new XMLDBException(
-					ErrorCodes.INVALID_RESOURCE,
-					"resource " + name + " not found");
+						ErrorCodes.INVALID_RESOURCE,
+						"resource " + name + " not found");
 			if (res.getResourceType().equals("XMLResource"))
 				collection.removeDocument(broker, name);
 			else
@@ -426,6 +508,8 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 					"Failed to acquire lock on collections.dbx", e);
 		} finally {
+			if(collection != null)
+				collection.getLock().release();
 			brokerPool.release(broker);
 		}
 		needsSync = true;
@@ -450,10 +534,13 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	}
 
 	private void storeBinaryResource(LocalBinaryResource res) throws XMLDBException {
-	    Collection collection = getCollection();
+	    Collection collection = null;
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
+			collection = broker.openCollection(path, Lock.WRITE_LOCK);
+			if(collection == null)
+				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
 			BinaryDocument blob =
 				collection.addBinaryResource(
 					broker,
@@ -465,46 +552,60 @@ public class LocalCollection extends Observable implements CollectionImpl {
 				"Exception while storing binary resource: " + e.getMessage(),
 				e);
 		} finally {
+			if(collection != null)
+				collection.getLock().release();
 			brokerPool.release(broker);
 		}
 	}
 
 	private void storeXMLResource(LocalXMLResource res) throws XMLDBException {
-	    Collection collection = getCollection();
 		DBBroker broker = null;
-		String name = res.getDocumentId();
 		try {
 			broker = brokerPool.get(user);
-			//broker.flush();
-			Observer observer;
-			for (Iterator i = observers.iterator(); i.hasNext();) {
-				observer = (Observer) i.next();
-				collection.addObserver(observer);
-			}
+			String name = res.getDocumentId();
+			String uri = null;
+			if(res.file != null)
+				uri = new URI(res.file.toURL().toString()).toASCIIString();
 			DocumentImpl newDoc;
-			if (res.file != null) {
-				String uri = new URI(res.file.toURL().toString()).toASCIIString();
-				newDoc =
-					collection.addDocument(
-						broker,
-						name,
-						new InputSource(uri));
-			} else if (res.root != null)
-				newDoc = collection.addDocument(broker, name, res.root);
-			else
-				newDoc = collection.addDocument(broker, name, res.content);
-			//broker.flush();
+			Collection collection = broker.openCollection(path, Lock.WRITE_LOCK);
+			Indexer indexer = null;
+			try {
+				if(collection == null)
+					throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
+				Observer observer;
+				for (Iterator i = observers.iterator(); i.hasNext();) {
+					observer = (Observer) i.next();
+					collection.addObserver(observer);
+				}
+				if (uri != null) {
+					indexer = collection.validate(broker, name, new InputSource(uri));
+				} else if (res.root != null)
+					newDoc = collection.addDocument(broker, name, res.root);
+				else
+					indexer = collection.validate(broker, name, res.content);
+			} finally {
+				collection.release();
+			}
+			if (uri != null) {
+				collection.store(broker, indexer, new InputSource(uri), false);
+			} else
+				collection.store(broker, indexer, res.content, false);
+			collection.deleteObservers();
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} finally {
-			collection.deleteObservers();
 			brokerPool.release(broker);
 		}
 	}
 
 	public Date getCreationTime() throws XMLDBException {
-		return new Date(getCollection().getCreationTime());
+		Collection collection = getCollectionWithLock(Lock.READ_LOCK);
+		try {
+			return new Date(collection.getCreationTime());
+		} finally {
+			collection.getLock().release();
+		}
 	}
 
 	/**

@@ -394,7 +394,7 @@ public class RESTServer {
 			if(collection != null) {
 				// remove the collection
 				LOG.debug("removing collection " + path);
-				broker.removeCollection(path);
+				broker.removeCollection(collection);
 				response = new Response();
 				response.setDescription("Collection " + path + " removed.");
 			} else {

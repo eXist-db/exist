@@ -106,7 +106,7 @@ public class Move implements WebDAVMethod {
                         "Destination collection exists");
                     return;
                 }
-                broker.removeCollection(destCollection.getName());
+                broker.removeCollection(destCollection);
                 replaced = true;
             }
             int p = destination.lastIndexOf('/');

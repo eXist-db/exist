@@ -40,7 +40,7 @@ package org.exist.storage.cache;
  */
 public class LRDCache extends GClockCache {
 	
-	private int totalReferences = 0;
+	protected int totalReferences = 0;
 
 	private int nextCleanup;
 	
