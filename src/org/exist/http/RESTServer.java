@@ -55,6 +55,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
+import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SAXSerializerPool;
@@ -106,25 +107,29 @@ public class RESTServer {
     }
 
     /**
-     * Handle GET request. In the simplest case just returns the document
-     * or binary resource specified in the path. If the path leads to a collection,
+     * Handle GET request. In the simplest case just returns the document or
+     * binary resource specified in the path. If the path leads to a collection,
      * a listing of the collection contents is returned.
      * 
      * The method also recognizes a number of predefined parameters:
      * 
      * <ul>
-     * <li>_xpath or _query: if specified, the given query is executed on the current
-     * resource or collection.</li>
+     * <li>_xpath or _query: if specified, the given query is executed on the
+     * current resource or collection.</li>
      * 
-     * <li>_howmany: defines how many items from the query result will be returned.</li>
+     * <li>_howmany: defines how many items from the query result will be
+     * returned.</li>
      * 
      * <li>_start: a start offset into the result set.</li>
      * 
-     * <li>_wrap: if set to "yes", the query results will be wrapped into a exist:result element.</li>
+     * <li>_wrap: if set to "yes", the query results will be wrapped into a
+     * exist:result element.</li>
      * 
-     * <li>_indent: if set to "yes", the returned XML will be pretty-printed.</li>
+     * <li>_indent: if set to "yes", the returned XML will be pretty-printed.
+     * </li>
      * 
-     * <li>_xsl: an URI pointing to an XSL stylesheet that will be applied to the returned XML.</li>
+     * <li>_xsl: an URI pointing to an XSL stylesheet that will be applied to
+     * the returned XML.</li>
      * 
      * @param broker
      * @param parameters
@@ -137,9 +142,9 @@ public class RESTServer {
     public Response doGet(DBBroker broker, Map parameters, String path)
             throws BadRequestException, PermissionDeniedException,
             NotFoundException {
-        
+
         // Process special parameters
-        
+
         int howmany = 10;
         int start = 1;
         boolean wrap = true;
@@ -188,70 +193,87 @@ public class RESTServer {
             outputProperties.setProperty(OutputKeys.ENCODING, encoding);
         else
             encoding = "UTF-8";
-        
+
         // Process the request
         Response response = new Response();
-        if (query != null) {
-            // query parameter specified
-            try {
-                response.setContent(search(broker, query, path, howmany, start,
-                        outputProperties, wrap));
-            } catch (XPathException e) {
-                response.setContent(formatXPathException(query, e));
-                response.setContentType("text/html");
-                response.setResponseCode(HttpServerConnection.HTTP_BAD_REQUEST);
-                return response;
+
+        DocumentImpl resource = null;
+        try {
+            // first, check if path leads to an XQuery resource
+            resource = (DocumentImpl) broker.openDocument(path, Lock.READ_LOCK);
+            if (resource != null) {
+                if (resource.getResourceType() == DocumentImpl.BINARY_FILE &&
+                        "application/xquery".equals(resource.getMimeType()))
+                    LOG.debug("XQUERY FOUND!!!!");
             }
-        } else {
-            // no query parameter: try to load a document from the specified path
-            DocumentImpl d = (DocumentImpl) broker.getDocument(path);
-            if (d == null) {
-                // no document: check if path points to a collection
-                Collection collection = broker.getCollection(path);
-                if (collection != null) {
-                    if (!collection.getPermissions().validate(broker.getUser(),
-                            Permission.READ))
-                        throw new PermissionDeniedException(
-                                "Not allowed to read collection");
-                    // return a listing of the collection contents
-                    response = new Response(printCollection(broker, collection));
-                } else {
-                    throw new NotFoundException("Document " + path
-                            + " not found");
+            if (query != null) {
+                // query parameter specified
+                try {
+                    response.setContent(search(broker, query, path, howmany,
+                            start, outputProperties, wrap));
+                } catch (XPathException e) {
+                    response.setContent(formatXPathException(query, e));
+                    response.setContentType("text/html");
+                    response
+                            .setResponseCode(HttpServerConnection.HTTP_BAD_REQUEST);
+                    return response;
                 }
             } else {
-                // document found: serialize it
-                if (!d.getPermissions().validate(broker.getUser(),
-                        Permission.READ))
-                    throw new PermissionDeniedException(
-                            "Not allowed to read resource");
-                if (d.getResourceType() == DocumentImpl.BINARY_FILE) {
-                    // binary resource
-                    response.setContentType(d.getMimeType());
-                    response.setContent(broker
-                            .getBinaryResourceData((BinaryDocument) d));
-                } else {
-                    // xml resource
-                    Serializer serializer = broker.getSerializer();
-                    serializer.reset();
-
-                    if (stylesheet != null) {
-                        serializer.setStylesheet(d, stylesheet);
-                        response.setContentType("text/html");
+                // no query parameter: try to load a document from the specified
+                // path
+                if (resource == null) {
+                    // no document: check if path points to a collection
+                    Collection collection = broker.getCollection(path);
+                    if (collection != null) {
+                        if (!collection.getPermissions().validate(
+                                broker.getUser(), Permission.READ))
+                            throw new PermissionDeniedException(
+                                    "Not allowed to read collection");
+                        // return a listing of the collection contents
+                        response = new Response(printCollection(broker,
+                                collection));
+                    } else {
+                        throw new NotFoundException("Document " + path
+                                + " not found");
                     }
-                    try {
-                        serializer.setProperties(outputProperties);
-                        response.setContent(serializer.serialize(d));
-                        if (serializer.isStylesheetApplied())
+                } else {
+                    // document found: serialize it
+                    if (!resource.getPermissions().validate(broker.getUser(),
+                            Permission.READ))
+                        throw new PermissionDeniedException(
+                                "Not allowed to read resource");
+                    if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
+                        // binary resource
+                        response.setContentType(resource.getMimeType());
+                        response
+                                .setContent(broker
+                                        .getBinaryResourceData((BinaryDocument) resource));
+                    } else {
+                        // xml resource
+                        Serializer serializer = broker.getSerializer();
+                        serializer.reset();
+
+                        if (stylesheet != null) {
+                            serializer.setStylesheet(resource, stylesheet);
                             response.setContentType("text/html");
-                    } catch (SAXException saxe) {
-                        LOG.warn(saxe);
-                        throw new BadRequestException(
-                                "Error while serializing XML: "
-                                        + saxe.getMessage());
+                        }
+                        try {
+                            serializer.setProperties(outputProperties);
+                            response.setContent(serializer.serialize(resource));
+                            if (serializer.isStylesheetApplied())
+                                response.setContentType("text/html");
+                        } catch (SAXException saxe) {
+                            LOG.warn(saxe);
+                            throw new BadRequestException(
+                                    "Error while serializing XML: "
+                                            + saxe.getMessage());
+                        }
                     }
                 }
             }
+        } finally {
+            if (resource != null)
+                resource.getUpdateLock().release(Lock.READ_LOCK);
         }
         return response;
     }

@@ -43,6 +43,7 @@ public class ResourcePropertyDialog extends JDialog {
 	UserManagementService service;
 	Date creationDate;
 	Date modificationDate;
+    String mimeType;
 	JComboBox groups;
 	JComboBox owners;
 	JCheckBox[] worldPerms;
@@ -62,14 +63,16 @@ public class ResourcePropertyDialog extends JDialog {
 		String res,
 		Permission perm,
 		Date created,
-		Date modified)
+		Date modified,
+        String mimeType)
 		throws HeadlessException, XMLDBException {
 		super(owner, "Edit Properties", true);
-		service = mgt;
-		permissions = perm;
-		creationDate = created;
-		modificationDate = modified;
-		resource = res;
+		this.service = mgt;
+		this.permissions = perm;
+		this.creationDate = created;
+		this.modificationDate = modified;
+		this.resource = res; 
+        this.mimeType = mimeType == null ? "N/A" : mimeType;
 		setupComponents();
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent ev) {
@@ -109,9 +112,25 @@ public class ResourcePropertyDialog extends JDialog {
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
+        label = new JLabel("Mime:");
+        c.gridx = 0;
+        c.gridy = 1;
+        c.anchor = GridBagConstraints.EAST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        grid.setConstraints(label, c);
+        getContentPane().add(label);
+        
+        label = new JLabel(mimeType);
+        c.gridx = 1;
+        c.gridy = 1;
+        c.anchor = GridBagConstraints.EAST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        grid.setConstraints(label, c);
+        getContentPane().add(label);
+        
 		label = new JLabel("Created:");
 		c.gridx = 0;
-		c.gridy = 1;
+		c.gridy = 2;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
 		grid.setConstraints(label, c);
@@ -120,7 +139,7 @@ public class ResourcePropertyDialog extends JDialog {
 		String date = DateFormat.getDateTimeInstance().format(creationDate);
 		label = new JLabel(date);
 		c.gridx = 1;
-		c.gridy = 1;
+		c.gridy = 2;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.HORIZONTAL;
 		grid.setConstraints(label, c);
@@ -128,7 +147,7 @@ public class ResourcePropertyDialog extends JDialog {
 
 		label = new JLabel("Last modified:");
 		c.gridx = 0;
-		c.gridy = 2;
+		c.gridy = 3;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
 		grid.setConstraints(label, c);
@@ -138,7 +157,7 @@ public class ResourcePropertyDialog extends JDialog {
 			"not available";
 		label = new JLabel(date);
 		c.gridx = 1;
-		c.gridy = 2;
+		c.gridy = 3;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.HORIZONTAL;
 		grid.setConstraints(label, c);
@@ -146,7 +165,7 @@ public class ResourcePropertyDialog extends JDialog {
 
 		label = new JLabel("Owner");
 		c.gridx = 0;
-		c.gridy = 3;
+		c.gridy = 4;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
 		grid.setConstraints(label, c);
@@ -160,7 +179,7 @@ public class ResourcePropertyDialog extends JDialog {
 		owners = new JComboBox(ol);
 		owners.setSelectedItem(permissions.getOwner());
 		c.gridx = 1;
-		c.gridy = 3;
+		c.gridy = 4;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.HORIZONTAL;
 		grid.setConstraints(owners, c);
@@ -168,7 +187,7 @@ public class ResourcePropertyDialog extends JDialog {
 
 		label = new JLabel("Group");
 		c.gridx = 0;
-		c.gridy = 4;
+		c.gridy = 5;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
 		grid.setConstraints(label, c);
@@ -181,7 +200,7 @@ public class ResourcePropertyDialog extends JDialog {
 		groups = new JComboBox(gl);
 		groups.setSelectedItem(permissions.getOwnerGroup());
 		c.gridx = 1;
-		c.gridy = 4;
+		c.gridy = 5;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.HORIZONTAL;
 		grid.setConstraints(groups, c);
@@ -189,7 +208,7 @@ public class ResourcePropertyDialog extends JDialog {
 
 		JComponent pc = setupPermissions();
 		c.gridx = 0;
-		c.gridy = 5;
+		c.gridy = 6;
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.HORIZONTAL;
@@ -214,7 +233,7 @@ public class ResourcePropertyDialog extends JDialog {
 		buttonBox.add(button);
 
 		c.gridx = 1;
-		c.gridy = 6;
+		c.gridy = 7;
 		c.gridwidth = 1;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.NONE;

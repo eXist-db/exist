@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Properties;
@@ -96,6 +95,7 @@ import org.exist.backup.Restore;
 import org.exist.security.Permission;
 import org.exist.security.User;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.MimeTable;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.EXistResource;
@@ -1077,6 +1077,7 @@ public class ClientFrame extends JFrame
 			String name;
 			Date created = new Date();
 			Date modified = null;
+            String mimeType = null;
 			if (fileman.getSelectedRowCount() == 1) {
 				int row = fileman.getSelectedRow();
 				Object obj = (Object) resources.getValueAt(row, 3);
@@ -1090,6 +1091,7 @@ public class ClientFrame extends JFrame
 					Resource res = collection.getResource(name);
 					created = ((EXistResource) res).getCreationTime();
 					modified = ((EXistResource) res).getLastModificationTime();
+                    mimeType = ((EXistResource) res).getMimeType();
 					perm = service.getPermissions(res);
 				}
 			} else {
@@ -1097,7 +1099,7 @@ public class ClientFrame extends JFrame
 				perm = new Permission("", "");
 			}
 			ResourcePropertyDialog dialog = new ResourcePropertyDialog(this,
-					service, name, perm, created, modified);
+					service, name, perm, created, modified, mimeType);
 			dialog.setVisible(true);
 			if (dialog.getResult() == ResourcePropertyDialog.APPLY_OPTION) {
 				int rows[] = fileman.getSelectedRows();
@@ -1590,7 +1592,7 @@ public class ClientFrame extends JFrame
 	}
 	
 	class BinaryFileFilter extends FileFilter {
-		
+        
 		/* (non-Javadoc)
 		 * @see javax.swing.filechooser.FileFilter#getDescription()
 		 */
@@ -1604,17 +1606,12 @@ public class ClientFrame extends JFrame
 		public boolean accept(File f) {
 			if(f.isDirectory())
 				return true;
-			String name = f.getName();
-			int p = name.lastIndexOf('.');
-			if(p < 0 || p + 1 == name.length())
-				return false;
-			name = name.substring(p + 1);
-			return Arrays.binarySearch(client.binarySuffixes, name) > -1;
+			return !MimeTable.getInstance().isXMLContent(f.getName());
 		}
 	}
 	
 	class XMLFileFilter extends FileFilter {
-		
+        
 		/* (non-Javadoc)
 		 * @see javax.swing.filechooser.FileFilter#getDescription()
 		 */
@@ -1628,12 +1625,7 @@ public class ClientFrame extends JFrame
 		public boolean accept(File f) {
 			if(f.isDirectory())
 				return true;
-			String name = f.getName();
-			int p = name.lastIndexOf('.');
-			if(p < 0 || p + 1 == name.length())
-				return false;
-			name = name.substring(p + 1);
-			return Arrays.binarySearch(client.xmlSuffixes, name) > -1;
+            return MimeTable.getInstance().isXMLContent(f.getName());
 		}
 	}
 }

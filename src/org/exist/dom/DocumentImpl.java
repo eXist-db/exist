@@ -91,6 +91,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	// the document's file name
 	protected String fileName = null;
 
+    protected String mimeType = "text/xml";
+    
 	// the creation time of this document
 	protected long created = 0;
 	
@@ -205,9 +207,15 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public byte getResourceType() {
 		return XML_FILE;
 	}
-	
+    
+    public void setMimeType(String type) {
+        if (type != null)
+            this.mimeType = type;
+    }
+    
     public String getMimeType() {
-        return "text/xml";
+        checkAvail();
+        return mimeType;
     }
     
 	/**
@@ -729,6 +737,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			((DocumentTypeImpl) docType).write(ostream);
 			ostream.writeLong(created);
 			ostream.writeLong(lastModified);
+            ostream.writeUTF(mimeType);
 			ostream.writeInt(pageCount);
 			final byte[] data = ostream.toByteArray();
 			ostream.close();
@@ -756,6 +765,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			((DocumentTypeImpl) docType).read(istream);
 			created = istream.readLong();
 			lastModified = istream.readLong();
+            mimeType = istream.readUTF();
 			if(istream.available() > 0)
 			    pageCount = istream.readInt();
 		} catch (IOException e) {

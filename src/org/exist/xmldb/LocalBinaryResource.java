@@ -53,7 +53,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 	 * 
 	 */
 	public LocalBinaryResource(User user, BrokerPool pool, LocalCollection collection, String docId) {
-		super(user, pool, collection, docId, "application/octet-stream");
+		super(user, pool, collection, docId, null);
 	}
 	
 	/* (non-Javadoc)
@@ -140,6 +140,8 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 	 * @see org.exist.xmldb.EXistResource#getCreationTime()
 	 */
 	public Date getCreationTime() throws XMLDBException {
+        if (isNewResource)
+            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "The resource has not yet been stored");
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
@@ -160,6 +162,8 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 	 * @see org.exist.xmldb.EXistResource#getLastModificationTime()
 	 */
 	public Date getLastModificationTime() throws XMLDBException {
+        if (isNewResource)
+            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "The resource has not yet been stored");
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
@@ -176,10 +180,35 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 		}
 	}
 
+    /* (non-Javadoc)
+     * @see org.exist.xmldb.AbstractEXistResource#getMimeType()
+     */
+    public String getMimeType() throws XMLDBException {
+        if (isNewResource)
+            return mimeType;
+        DBBroker broker = null;
+        try {
+            broker = pool.get(user);
+            BinaryDocument blob = (BinaryDocument)getDocument(broker, false);
+            if (!blob.getPermissions().validate(user, Permission.READ))
+                throw new XMLDBException(
+                        ErrorCodes.PERMISSION_DENIED,
+                "permission denied to read resource");
+            mimeType = blob.getMimeType();
+            return mimeType;
+        } catch (EXistException e) {
+            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+        } finally {
+            pool.release(broker);
+        }
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.EXistResource#getPermissions()
 	 */
 	public Permission getPermissions() throws XMLDBException {
+        if (isNewResource)
+            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "The resource has not yet been stored");
 	    DBBroker broker = null;
 	    try {
 	        broker = pool.get(user);
@@ -196,6 +225,8 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 	 * @see org.exist.xmldb.EXistResource#getContentLength()
 	 */
 	public int getContentLength() throws XMLDBException {
+        if (isNewResource)
+            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "The resource has not yet been stored");
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
