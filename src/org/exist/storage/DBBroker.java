@@ -42,7 +42,6 @@ import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.SymbolTable;
-import org.exist.memtree.ElementImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.io.VariableByteInput;
@@ -67,14 +66,10 @@ public abstract class DBBroker extends Observable {
 	public final static int MATCH_EXACT = 0;
 	public final static int MATCH_REGEXP = 1;
 	public final static int MATCH_WILDCARDS = 2;
-
-	// constants for database type
-	public final static int MYSQL = 0;
-	public final static int NATIVE = 4;
-	public final static int ORACLE = 1;
-	public final static int POSTGRESQL = 2;
-	public final static int DBM = 3;
 	
+    public final static int NATIVE = 0;
+    public final static int NATIVE_CLUSTER = 1;
+    
 	protected final static Logger LOG = Logger.getLogger(DBBroker.class);
 	
 	protected boolean caseSensitive = true;
@@ -368,6 +363,7 @@ public abstract class DBBroker extends Observable {
 		NodeSet context,
 		DocumentSet docs,
 		int relation,
+        int truncation,
 		String expr,
 		Collator collator);
 
@@ -733,4 +729,6 @@ public abstract class DBBroker extends Observable {
 	public String toString() {
 		return id;
 	}
+    
+    public abstract int getBackendType();
 }

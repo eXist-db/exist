@@ -105,6 +105,7 @@ public class FunDeepEqual extends Function {
 				}
 			}
 		} catch (XPathException e) {
+            e.printStackTrace();
 			return false;
 		}
 	}

@@ -58,4 +58,8 @@ public class NativeClusterBroker extends NativeBroker {
         return c==null?null:new ClusterCollection(c);
 
     }
+    
+    public int getBackendType() {
+        return NATIVE_CLUSTER;
+    }
 }

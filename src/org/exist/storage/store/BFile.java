@@ -231,7 +231,6 @@ public class BFile extends BTree {
 
     public boolean create() throws DBException {
         if (super.create((short) fixedKeyLen)) {
-            fileHeader.setLastDataPage(-1);
             return true;
         } else
             return false;
@@ -884,8 +883,6 @@ public class BFile extends BTree {
      */
     private final class BFileHeader extends BTreeFileHeader {
 
-        private long lastDataPage = -1;
-
         private FreeList freeList = new FreeList();
         
         public final static int MAX_FREE_LIST_LEN = 128;
@@ -896,6 +893,7 @@ public class BFile extends BTree {
 
         public void addFreeSpace(FreeSpace freeSpace) {
             freeList.add(freeSpace);
+            setDirty(true);
         }
 
         public FreeSpace findFreeSpace(int needed) {
@@ -909,29 +907,20 @@ public class BFile extends BTree {
         public void removeFreeSpace(FreeSpace space) {
             if (space == null) return;
             freeList.remove(space);
+            setDirty(true);
         }
         
         public void debugFreeList() {
         	LOG.debug(getFile().getName() + ": " + freeList.toString());
         }
         
-        public long getLastDataPage() {
-            return lastDataPage;
-        }
-        
         public void read(java.io.RandomAccessFile raf) throws IOException {
             super.read(raf);
-            lastDataPage = raf.readLong();
             freeList.read(raf);
-        }
-
-        public void setLastDataPage(long last) {
-            lastDataPage = last;
         }
 
         public void write(java.io.RandomAccessFile raf) throws IOException {
             super.write(raf);
-            raf.writeLong(lastDataPage);
             freeList.write(raf);
         }
     }
@@ -1820,7 +1809,6 @@ public class BFile extends BTree {
             ph.setDirty(true);
             ph.setDataLength(0);
             //ph.setNextChunk( -1 );
-            fileHeader.setLastDataPage(page.getPageNum());
             data = new byte[fileHeader.getWorkSize()];
             offsets = new short[32];
             ph.nextTID = 32;

@@ -1594,37 +1594,15 @@ public class NativeBroker extends DBBroker {
 		.run();
 	}
 
-	/**
-	 *  This method handles left or left-and-right truncated search terms. In
-	 *  these cases it is not possible to use the cdata-index, since it contains
-	 *  just the first 8 bytes of every cdata-string.
-	 *
-	 *@param  context   Description of the Parameter
-	 *@param  docs      Description of the Parameter
-	 *@param  relation  Description of the Parameter
-	 *@param  expr      Description of the Parameter
-	 *@return           The nodesEqualTo value
-	 */
 	public NodeSet getNodesEqualTo(
 		NodeSet context,
 		DocumentSet docs,
 		int relation,
+        int truncation,
 		String expr,
 		Collator collator) {
 		//		long start = System.currentTimeMillis();
 		// NodeSet temp;
-		int truncation = Constants.TRUNC_NONE;
-		if (expr.length() > 0 && expr.charAt(0) == '%') {
-			expr = expr.substring(1);
-			truncation = Constants.TRUNC_LEFT;
-		}
-		if (expr.length() > 1 && expr.charAt(expr.length() - 1) == '%') {
-			expr = expr.substring(0, expr.length() - 1);
-			truncation =
-				(truncation == Constants.TRUNC_LEFT)
-					? Constants.TRUNC_BOTH
-					: Constants.TRUNC_RIGHT;
-		}
 		if (!isCaseSensitive())
 			expr = expr.toLowerCase();
 		NodeSet result = scanSequential(context, docs, relation, truncation, expr, collator);
@@ -1637,16 +1615,6 @@ public class NativeBroker extends DBBroker {
 		return result;
 	}
 	
-	/**
-	 *  get collection object If the collection does not yet exists, it is
-	 *  created automatically.
-	 *
-	 *@param  name                           the collection's name
-	 *@param  user                           Description of the Parameter
-	 *@return                                The orCreateCollection value
-	 *@exception  PermissionDeniedException  Description of the Exception
-	 *@author=@author
-	 */
 	public Collection getOrCreateCollection(String name)
 		throws PermissionDeniedException {
 		//		final long start = System.currentTimeMillis();
@@ -1707,14 +1675,6 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 	
-	/**
-	 *  Gets a range of nodes, starting with first, ending with last
-	 *
-	 *@param  doc    the document
-	 *@param  first  node-id of the first node
-	 *@param  last   node-id of the last node
-	 *@return        a list of nodes
-	 */
 	public NodeList getRange(final Document doc, final long first, final long last) {
 		NodeListImpl result = new NodeListImpl((int) (last - first + 1));
 		for (long gid = first; gid <= last; gid++) {
@@ -3011,5 +2971,9 @@ public class NativeBroker extends DBBroker {
 			pos = 0;
 		}
 	}
+
+    public int getBackendType() {
+        return NATIVE;
+    }
 
 }
