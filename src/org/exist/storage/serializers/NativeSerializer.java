@@ -113,7 +113,7 @@ public class NativeSerializer extends Serializer {
 		if (generateDocEvent)
 			contentHandler.startDocument();
 
-		contentHandler.startPrefixMapping("exist", EXIST_NS);
+		//contentHandler.startPrefixMapping("exist", EXIST_NS);
 		// iterate through children
 		for (int i = 0; i < children.getLength(); i++) {
 			final NodeImpl n = (NodeImpl) children.item(i);
@@ -137,7 +137,7 @@ public class NativeSerializer extends Serializer {
 				+ ((DocumentImpl) doc).getDocId()
 				+ "to SAX took "
 				+ (System.currentTimeMillis() - start));
-		contentHandler.endPrefixMapping("exist");
+		//contentHandler.endPrefixMapping("exist");
 		if (generateDocEvent)
 			contentHandler.endDocument();
 

@@ -43,6 +43,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler {
 	protected Properties outputProperties;
 	protected NamespaceSupport nsSupport = new NamespaceSupport();
 	protected HashMap namespaceDecls = new HashMap();
+	protected HashMap optionalNamespaceDecls = new HashMap();
 
 	public SAXSerializer(Writer writer, Properties outputProperties) {
 		super();
@@ -82,14 +83,20 @@ public class SAXSerializer implements ContentHandler, LexicalHandler {
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String, java.lang.String)
 	 */
-	public void startPrefixMapping(String arg0, String arg1)
+	public void startPrefixMapping(String prefix, String namespaceURI)
 		throws SAXException {
+		String ns = nsSupport.getURI(prefix);
+		if(ns == null || (!ns.equals(namespaceURI))) {
+			nsSupport.declarePrefix(prefix, namespaceURI);
+			optionalNamespaceDecls.put(prefix, namespaceURI);
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see org.xml.sax.ContentHandler#endPrefixMapping(java.lang.String)
 	 */
-	public void endPrefixMapping(String arg0) throws SAXException {
+	public void endPrefixMapping(String prefix) throws SAXException {
+		optionalNamespaceDecls.remove(prefix);
 	}
 
 	/* (non-Javadoc)
@@ -108,7 +115,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler {
 			String prefix = "";
 			int p = qname.indexOf(':');
 			if (p > 0)
-				prefix = qname.substring(p + 1);
+				prefix = qname.substring(0, p);
 			if (namespaceURI == null)
 				namespaceURI = "";
 			if (nsSupport.getURI(prefix) == null) {
@@ -143,8 +150,17 @@ public class SAXSerializer implements ContentHandler, LexicalHandler {
 					}
 				}
 			}
-			// output all namespace declarations
 			Map.Entry nsEntry;
+			for (Iterator i = optionalNamespaceDecls.entrySet().iterator();
+				i.hasNext();
+			) {
+				nsEntry = (Map.Entry) i.next();
+				receiver.namespace(
+				(String) nsEntry.getKey(),
+				(String) nsEntry.getValue());
+			}
+			optionalNamespaceDecls.clear();
+			// output all namespace declarations
 			for (Iterator i = namespaceDecls.entrySet().iterator();
 				i.hasNext();
 				) {
@@ -153,6 +169,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler {
 					(String) nsEntry.getKey(),
 					(String) nsEntry.getValue());
 			}
+			
 			// output attributes
 			for (int i = 0; i < attribs.getLength(); i++) {
 				if (!attribs.getQName(i).startsWith("xmlns"))
