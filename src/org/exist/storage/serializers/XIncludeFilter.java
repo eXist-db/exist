@@ -224,6 +224,9 @@ public class XIncludeFilter implements Receiver {
 					xpointer = checkNamespaces(context, xpointer);
 					context.declareNamespaces(namespaces);
 					
+					context.declareNamespace("xinclude", XINCLUDE_NS);
+					context.declareVariable("xinclude:current-doc", document.getName());
+					
 					XQueryLexer lexer = new XQueryLexer(context, new StringReader(xpointer));
 					XQueryParser parser = new XQueryParser(lexer);
 					XQueryTreeParser treeParser = new XQueryTreeParser(context);
