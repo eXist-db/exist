@@ -89,8 +89,8 @@ public class SecurityManager {
 			Collection sysCollection = broker.getCollection(SYSTEM);
 			if (sysCollection == null) {
 				sysCollection = broker.getOrCreateCollection(SYSTEM);
-				broker.saveCollection(sysCollection);
 				sysCollection.setPermissions(0770);
+				broker.saveCollection(sysCollection);
 			}
 			Document acl = sysCollection.getDocument(broker, ACL_FILE);
 			Element docElement = null;

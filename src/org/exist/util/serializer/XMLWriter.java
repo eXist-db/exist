@@ -317,6 +317,8 @@ public class XMLWriter {
 	protected void writeDeclaration() throws TransformerException {
 		if (declarationWritten)
 			return;
+		if(outputProperties == null)
+			outputProperties = defaultProperties;
 		declarationWritten = true;
 		String omitXmlDecl =
 			outputProperties.getProperty(

@@ -37,9 +37,12 @@ import java.util.Stack;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
+import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.SymbolTable;
 import org.exist.memtree.MemTreeBuilder;
@@ -52,6 +55,7 @@ import org.exist.source.URLSource;
 import org.exist.storage.DBBroker;
 import org.exist.util.Collations;
 import org.exist.util.Lock;
+import org.exist.util.LockException;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
@@ -68,7 +72,7 @@ import antlr.collections.AST;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class XQueryContext {
-
+	
 	public final static String XML_NS = "http://www.w3.org/XML/1998/namespace";
 	public final static String SCHEMA_NS = "http://www.w3.org/2001/XMLSchema";
 	public final static String SCHEMA_DATATYPES_NS =
@@ -84,6 +88,8 @@ public class XQueryContext {
 	
 	private final static Logger LOG = Logger.getLogger(XQueryContext.class);
 
+	private static final String TEMP_STORE_ERROR = "Error occurred while storing temporary data";
+	
 	// Static namespace/prefix mappings
 	protected HashMap namespaces;
 	
@@ -1090,6 +1096,27 @@ public class XQueryContext {
 			}
 		}
 		return null;
+	}
+	
+	/**
+	 * Store the supplied data to a temporary document fragment.
+	 * 
+	 * @param data
+	 * @return
+	 * @throws XPathException
+	 */
+	public NodeSet storeTemporaryDoc(String data) throws XPathException {
+		try {
+			DocumentImpl doc = broker.storeTemporaryDoc(data);
+			watchdog.addTemporaryFragment(doc.getFileName());
+			return new NodeProxy(doc, 1, doc.getFirstChildAddress());
+		} catch (EXistException e) {
+			throw new XPathException(TEMP_STORE_ERROR, e);
+		} catch (PermissionDeniedException e) {
+			throw new XPathException(TEMP_STORE_ERROR, e);
+		} catch (LockException e) {
+			throw new XPathException(TEMP_STORE_ERROR, e);
+		}
 	}
 	
 	/**

@@ -405,6 +405,7 @@ public class BrokerPool {
 		// create a first broker to initialize the security manager
 		createBroker();
 		DBBroker broker = (DBBroker) pool.peek();
+		broker.cleanUp();
 		secManager = new org.exist.security.SecurityManager(this, broker);
 		initializing = false;
 		

@@ -23,6 +23,7 @@ package org.exist.xquery.value;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
@@ -35,6 +36,8 @@ import org.exist.xquery.XPathException;
  */
 public class ValueSequence extends AbstractSequence {
 
+	private final Logger LOG = Logger.getLogger(ValueSequence.class);
+	
 	private final static int INITIAL_SIZE = 64;
 	
 	private Item[] values;

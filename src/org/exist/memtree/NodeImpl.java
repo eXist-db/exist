@@ -507,7 +507,8 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * @see org.exist.xquery.value.Sequence#toNodeSet()
 	 */
 	public NodeSet toNodeSet() throws XPathException {
-		return null;
+		throw new XPathException("Querying constructed nodes is not yet implemented");
+//		return document.toNodeSet(this);
 	}
 
 	private final static class SingleNodeIterator implements SequenceIterator {

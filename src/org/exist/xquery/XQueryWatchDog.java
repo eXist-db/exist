@@ -22,6 +22,9 @@
  */
 package org.exist.xquery;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.util.Configuration;
@@ -44,6 +47,8 @@ public class XQueryWatchDog {
     private long startTime;
     
     private boolean terminate = false;
+    
+    private List tempFragments = null;
     
     /**
      * 
@@ -94,6 +99,7 @@ public class XQueryWatchDog {
     	if(terminate) {
     		if(expr == null)
     			expr = context.getRootExpression();
+    		cleanUp();
     		throw new TerminatedException(expr.getASTNode(),
     				"The query has been killed by the server.");
     	}
@@ -102,6 +108,7 @@ public class XQueryWatchDog {
             if(expr == null)
                 expr = context.getRootExpression();
             LOG.warn("Query exceeded predefined timeout (" + elapsed + "ms.): " + expr.pprint());
+            cleanUp();
             throw new TerminatedException.TimeoutException(expr.getASTNode(),
                     "The query exceeded the predefined timeout and has been killed.");
         }
@@ -113,11 +120,25 @@ public class XQueryWatchDog {
             if(expr == null)
                 expr = context.getRootExpression();
             LOG.warn("Query exceeded predefined limit for document fragments: " + expr.pprint());
+            cleanUp();
             throw new TerminatedException.SizeLimitException(expr.getASTNode(),
                     "The constructed document fragment exceeded the predefined size limit (current: " +
                     builder.getSize() + "; allowed: " + maxNodesLimit +
                     "). The query has been killed.");
         }
+    }
+    
+    public void addTemporaryFragment(String docName) {
+    	if(tempFragments == null)
+    		tempFragments = new LinkedList();
+    	tempFragments.add(docName);
+    }
+    
+    public void cleanUp() {
+    	if(tempFragments == null)
+    		return;
+    	context.getBroker().removeTempDocs(tempFragments);
+    	tempFragments = null;
     }
     
     public void kill(long waitTime) {
