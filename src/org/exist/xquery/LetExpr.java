@@ -93,7 +93,7 @@ public class LetExpr extends BindingExpression {
 		if (whereExpr != null) {
 			filtered = applyWhereExpression(null);
 			// TODO: don't use returnsType here
-			if (whereExpr.returnsType() == Type.BOOLEAN) {
+			if (filtered.getItemType() == Type.BOOLEAN) {
 				if (!filtered.effectiveBooleanValue())
 					return Sequence.EMPTY_SEQUENCE;
 			} else if (filtered.getLength() == 0)
