@@ -42,6 +42,7 @@ import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -88,6 +89,10 @@ public class NativeSerializer extends Serializer {
 
     protected void serializeToReceiver(NodeProxy p, boolean generateDocEvent)
     throws SAXException {
+    	if(Type.subTypeOf(p.getType(), Type.DOCUMENT)) {
+    			serializeToReceiver(p.getDocument(), generateDocEvent);
+    			return;
+    	}
     	setDocument(p.getDocument());
     	if (generateDocEvent) receiver.startDocument();
         Iterator domIter = broker.getNodeIterator(p);
