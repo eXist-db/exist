@@ -46,6 +46,7 @@ import java.util.TreeSet;
 import java.util.Observer;
 import java.util.Observable;
 import org.apache.oro.io.GlobFilenameFilter;
+import org.apache.oro.text.perl.Perl5Util;
 import org.exist.security.Permission;
 import org.exist.security.User;
 import org.exist.util.Occurrences;
@@ -58,6 +59,7 @@ import org.exist.util.XMLUtil;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.XPathQueryServiceImpl;
 import org.gnu.readline.Readline;
 import org.gnu.readline.ReadlineCompleter;
 import org.gnu.readline.ReadlineLibrary;
@@ -248,7 +250,6 @@ public class InteractiveClient {
 	protected String[] resources = null;
 	protected ResourceSet result = null;
 	protected int filesCount = 0;
-	protected long bytesCount = 0;
 	protected boolean quiet = false;
 	protected boolean verbose = false;
 	protected boolean recurseDirs = false;
@@ -882,9 +883,9 @@ public class InteractiveClient {
 				return true;
 			} else if (args[0].equalsIgnoreCase("help") || args[0].equals("?"))
 				displayHelp();
-			else if (args[0].equalsIgnoreCase("quit"))
+			else if (args[0].equalsIgnoreCase("quit")) {
 				return false;
-			else {
+			} else {
 				System.err.println("unknown command");
 				return true;
 			}
@@ -903,11 +904,21 @@ public class InteractiveClient {
 	}
 
 	private final ResourceSet find(String xpath) throws XMLDBException {
-		XPathQueryService service =
-			(XPathQueryService) current.getService("XPathQueryService", "1.0");
+		String sortBy = null;
+		int p = xpath.indexOf(" sort by ");
+		if(p > -1) {
+			String xp = xpath.substring(0, p);
+			sortBy = xpath.substring(p + " sort by ".length());
+			xpath = xp;
+			System.out.println("XPath =   " + xpath);
+			System.out.println("Sort-by = " + sortBy);
+		}
+		XPathQueryServiceImpl service =
+			(XPathQueryServiceImpl) current.getService("XPathQueryService", "1.0");
 		service.setProperty("pretty", properties.getProperty("indent"));
 		service.setProperty("encoding", properties.getProperty("encoding"));
-		return service.query(xpath);
+		return (sortBy == null) ? service.query(xpath) :
+			service.query(xpath, sortBy);
 	}
 
 	private final void testQuery(String queryFile) {
@@ -1107,7 +1118,6 @@ public class InteractiveClient {
 							"XMLResource");
 					document.setContent(temp[i]);
 					collection.storeResource(document);
-					bytesCount += temp[i].length();
 					++filesCount;
 					messageln(
 						" "
@@ -1137,13 +1147,11 @@ public class InteractiveClient {
 		if (file.canRead()) {
 			if (file.isDirectory()) {
 				if (recurseDirs) {
-					bytesCount = 0;
 					filesCount = 0;
 					long start = System.currentTimeMillis();
 					boolean result = 
 						findRecursive(current, file, path);
-					System.out.println("storing " + filesCount + " files (" +
-						bytesCount + "K) took " + 
+					System.out.println("storing " + filesCount + " files took " + 
 						((System.currentTimeMillis() - start) / 1000) + "sec.");
                     return result;
                 } else
@@ -1648,23 +1656,10 @@ public class InteractiveClient {
 			System.out.println(msg);
 	}
 
-	/**
-	 *  Description of the Class
-	 *
-	 *@author     wolf
-	 *@created    April 2, 2002
-	 */
 	private class CollectionCompleter implements ReadlineCompleter {
 
 		Iterator possibleValues;
 
-		/**
-		 *  Description of the Method
-		 *
-		 *@param  text   Description of the Parameter
-		 *@param  state  Description of the Parameter
-		 *@return        Description of the Return Value
-		 */
 		public String completer(String text, int state) {
 			if (state == 0)
 				possibleValues = completitions.tailSet(text).iterator();

@@ -13,16 +13,9 @@ echo home directory of eXist.
 goto :eof
 
 :gotExistHome
-if not "%EXIST_BASE%" == "" goto gotExistBase
-set EXIST_BASE=%EXIST_HOME%
-
-:gotExistBase
-set _LIBJARS=%EXIST_BASE%;%EXIST_BASE%\exist.jar
-for %%i in (%EXIST_BASE%\lib\core\*.jar) do call %EXIST_BASE%\bin\cpappend.bat %%i
-
 if not "%JAVA_OPTS%" == "" goto gotJavaOpts
-set JAVA_OPTS=-Xms32000k -Xmx128000k
+set JAVA_OPTS=-Xms32000k -Xmx256000k
 
 :gotJavaOpts
-%JAVA_HOME%\bin\java %JAVA_OPTS% -Dexist.home=%EXIST_HOME% -classpath %_LIBJARS% org.exist.InteractiveClient %1 %2 %3 %4 %5 %6 %7 %8
+%JAVA_HOME%\bin\java %JAVA_OPTS% -Dexist.home=%EXIST_HOME% -jar "%EXIST_HOME%\start.jar" client %1 %2 %3 %4 %5 %6 %7 %8
 :eof

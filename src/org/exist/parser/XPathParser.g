@@ -352,6 +352,7 @@ document_function [PathExpr expr]
 {
 	Expression step = null;
 	boolean inclusive = true;
+	DocumentSet temp;
 }:
 	"doctype" LPAREN arg3:CONST RPAREN {
         DBBroker broker = null;
@@ -416,24 +417,60 @@ document_function [PathExpr expr]
         }
 	}
 	)* RPAREN
-	| "collection" LPAREN arg4:CONST 
-          (COMMA 
-          ( "false" { inclusive = false; } | "true" { inclusive = true; } )
-	  )* RPAREN {
-        DBBroker broker = null;
-        try {
-            broker = pool.get();
-            includeDocs = broker.getDocumentsByCollection(user, arg4.getText(), inclusive);
-
-            step = new RootNode(pool);
-            expr.setDocumentSet(includeDocs);
-            expr.add(step);
+	| "collection" LPAREN arg6:CONST {
+		DBBroker broker = null;
+      	try {
+      		broker = pool.get();
+        	temp = broker.getDocumentsByCollection(user, arg6.getText(), true);
+        	includeDocs.addAll(temp);
         } catch(EXistException e) {
-            e.printStackTrace();
         } finally {
-            pool.release( broker );
+        	pool.release(broker);
         }
-	}
+      }
+      (COMMA arg7:CONST {
+      	DBBroker broker = null;
+      	try {
+      		broker = pool.get();
+        	temp = broker.getDocumentsByCollection(user, arg7.getText(), true);
+        	includeDocs.addAll(temp);
+        } catch(EXistException e) {
+        } finally {
+        	pool.release(broker);
+        }
+      })*
+      RPAREN {
+        	step = new RootNode(pool);
+        	expr.setDocumentSet(includeDocs);
+        	expr.add(step);
+    }
+    | "xcollection" LPAREN arg8:CONST {
+		DBBroker broker = null;
+      	try {
+      		broker = pool.get();
+        	temp = broker.getDocumentsByCollection(user, arg8.getText(), false);
+        	includeDocs.addAll(temp);
+        } catch(EXistException e) {
+        } finally {
+        	pool.release(broker);
+        }
+      }
+      (COMMA arg9:CONST {
+      	DBBroker broker = null;
+      	try {
+      		broker = pool.get();
+        	temp = broker.getDocumentsByCollection(user, arg9.getText(), false);
+        	includeDocs.addAll(temp);
+        } catch(EXistException e) {
+        } finally {
+        	pool.release(broker);
+        }
+      })*
+      RPAREN {
+        	step = new RootNode(pool);
+        	expr.setDocumentSet(includeDocs);
+        	expr.add(step);
+      }
 	;
 
 pathexpr [PathExpr expr] 

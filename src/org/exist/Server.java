@@ -23,7 +23,6 @@ package org.exist;
  */
 
 import org.apache.xmlrpc.*;
-import org.apache.xmlrpc.secure.*;
 import org.exist.http.*;
 import org.exist.storage.*;
 import org.exist.util.*;
@@ -88,7 +87,7 @@ public class Server {
 					printHelp();
 					return;
 				case DEBUG_OPT :
-					XmlRpc.debug = true;
+					XmlRpc.setDebug(true);
 					break;
 				case HTTP_PORT_OPT :
 					try {
@@ -133,6 +132,7 @@ public class Server {
         WebServer webServer = new WebServer( rpcPort );
         AuthenticatedHandler handler = new AuthenticatedHandler( config );
         webServer.addHandler( "$default", handler );
+        webServer.start();
         System.err.println( "waiting for connections ..." );
     }
 

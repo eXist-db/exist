@@ -39,22 +39,27 @@ public class XMLResourceImpl implements XMLResource {
 	protected String encoding = "UTF-8";
 	protected String id, documentName, path = null;
 	protected int indent = -1;
-
+	protected int handle = -1;
+	protected int pos = -1;
 	protected CollectionImpl parent;
 	protected boolean saxDocEvents = true;
 	protected String content = null;
 
 	public XMLResourceImpl(CollectionImpl parent, String docId, String id) 
 	throws XMLDBException {
-		this(parent, docId, id, 1, "UTF-8");
+		this(parent, -1, -1, docId, id, 1, "UTF-8");
 	}
 
 	public XMLResourceImpl(
 		CollectionImpl parent,
+		int handle,
+		int pos,
 		String docId,
 		String id,
 		int indent,
 		String encoding) throws XMLDBException {
+		this.handle = handle;
+		this.pos = pos;
 		this.parent = parent;
 		this.id = id;
 		int p;
@@ -93,8 +98,8 @@ public class XMLResourceImpl implements XMLResource {
 			}
 		} else {
 			Vector params = new Vector();
-			params.addElement(path);
-			params.addElement(id);
+			params.addElement(new Integer(handle));
+			params.addElement(new Integer(pos));
 			params.addElement(new Integer(indent));
 			params.addElement(encoding);
 			try {

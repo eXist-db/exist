@@ -65,14 +65,23 @@
         <section>
             <title>Installing the source distribution</title>
             <para>Simply unzip or untar the distribution file to some suitable
-                location, open a shell or DOS command prompt and change into the
-                newly created directory <filename>eXist-0.9</filename>. </para>
-            <para>Now set your JAVA_HOME environment variable to point to the
-                Java installation directory and EXIST_HOME to eXist's base
+				location. Your JAVA_HOME environment variable should point to the
+				Java installation directory.</para>
+			<para>Beginning with version 0.9.1, the distribution contains a small
+				startup program in <filename>start.jar</filename>, which will try to
+				determine correct classpath settings. This makes it
+				possible to launch eXist by double-clicking on <filename>start.jar</filename>
+				or by using the <option>-jar</option> option of the Java JVM.</para>
+			<para>To launch the included webserver, change into the newly created directory 
+				and double-click <filename>start.jar</filename> (Windows) or type</para>
+			<synopsis>java -Xmx128M -jar start.jar</synopsis>
+			<para>on the shell or a DOS command prompt.</para> 
+			<para>If something goes wrong here, you may have to switch to the manual
+				startup method: first, set the EXIST_HOME environment variable to eXist's base
                 directory, e.g.:</para>
-            <synopsis>set JAVA_HOME=c:\JDK1.4 set EXIST_HOME=c:\Devel\eXist-0.9</synopsis>
+			<synopsis>set EXIST_HOME=c:\Devel\eXist-0.9</synopsis>
             <para>or on a Unix system:</para>
-            <synopsis>export JAVA_HOME=/usr/local/j2sdk1.4 export EXIST_HOME=/home/wolf/eXist-0.9</synopsis>
+			<synopsis>export EXIST_HOME=/home/wolf/eXist-0.9</synopsis>
             <para>The distribution contains several shell and batch scripts to
                 start the servers and various clients in directory
                 <filename>bin</filename>. To launch the included webserver, use
@@ -88,7 +97,7 @@
                 .war-file and put it into a proper location where your
                 servlet-engine can find it. Most installations have a directory
                 called <filename>webapps</filename> and will automatically
-                launch any .war-files found therein. Please rename the file to <filename>exist.war</filename>.</para>
+				launch any .war-files found therein. Please rename the file to <filename>exist.war</filename> (otherwise some examples may not work correctly).</para>
             <important>
                 <para>Most servlet-engines will automatically unpack war-files
                     (Tomcat does so). If not, you have to do this by hand
@@ -139,8 +148,12 @@ jar xfv ../exist.war]]></screen>
                 you will find the shell scripts to start the client in directory
                 <filename>eXist-0.9/bin</filename>. Otherwise you have to change
                 to the location where the exist.war file has been unpacked and
-                find the <filename>bin</filename> directory there.</para>
-            <para>Please make sure that the <command>EXIST_HOME</command>
+				find the <filename>bin</filename> directory there.</para>
+			<para>As an alternative to the shell scripts, you may also use the 
+				<filename>start.jar</filename> jar-file to start the client. In this case,
+				pass the string &quot;client&quot; as first argument:</para>
+			<synopsis>java -jar start.jar client</synopsis>
+            <para>When using the shell-scripts, please make sure that the <command>EXIST_HOME</command>
                 environment variable points to the directory where the
                 configuration file <filename>conf.xml</filename> can be found.
                 The server will try to read the file from
@@ -165,12 +178,6 @@ jar xfv ../exist.war]]></screen>
                 <para>If you can't execute the shell script on Unix, try to do a
                         <command>chmod +x bin/client.sh</command> first.</para>
             </note>
-            <para>The shell scripts should set up the correct CLASSPATH
-                automatically. If this doesn't work for some reason, add all the
-                jar-files in directory <filename>lib/core</filename> or
-                <filename>WEB-INF/lib</filename> to your CLASSPATH environment
-                variable and call the client's class by hand:</para>
-            <synopsis>java org.exist.InteractiveClient</synopsis>
             <important>
                 <para>If Java complains about unknown classes, please check if
                     you have set EXIST_HOME to point to the correct location. </para>
@@ -312,6 +319,11 @@ exist:/db>]]></screen>
             <synopsis>bin/client.sh -m /db/shakespeare/plays -p samples/shakespeare</synopsis>
             <synopsis>bin/client.sh -m /db/xinclude -p samples/xinclude</synopsis>
             <synopsis>bin/client.sh -m /db/library -p samples/biblio.rdf</synopsis>
+			<note>
+				<para>If you use <filename>start.jar</filename> instead of the shell-scripts,
+					your command line should look like this:</para>
+				<synopsis>java -jar start.jar client -m ... -p ...</synopsis>
+			</note>
             <para>The <option>-m</option> option implicitely creates all required collections,
             <option>-p</option> interprets all remaining parameters on the command-line as
             file or directory names to be stored to the database.</para>

@@ -1,6 +1,0 @@
-OVERRIDE YES
-
-PUBLIC "-//PLAY//EN"
-       "./shakespeare/play.dtd"
-SYSTEM "./play.dtd" 
-       "./shakespeare/play.dtd"

@@ -47,11 +47,10 @@ public abstract class DOMTransaction {
                 return null;
             }
     	    file.setOwnerObject(ownerObject);
-    	    Object result = start();
-            lock.release( ownerObject );
-            return result;
-    	} catch( Exception e ) {
-            lock.release( ownerObject );
+            return start();
+    	} catch( ReadOnlyException e ) {
+        } finally {
+			lock.release( ownerObject );
         }
         return null;
     }

@@ -1,8 +1,8 @@
 package org.exist.dom;
 
-import it.unimi.dsi.fastUtil.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastUtil.Object2IntMap;
-import it.unimi.dsi.fastUtil.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.Object2IntMap;
+import it.unimi.dsi.fastutil.Object2IntOpenHashMap;
 
 import java.io.DataInput;
 import java.io.DataOutput;

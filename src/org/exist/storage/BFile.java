@@ -22,7 +22,7 @@
  */
 package org.exist.storage;
 
-import it.unimi.dsi.fastUtil.Long2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.Long2ObjectLinkedOpenHashMap;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -77,7 +77,7 @@ public class BFile extends BTree {
 
 	// minimum free space a page should have to be
 	// considered for reusing
-	public final static int PAGE_MIN_FREE = 128;
+	public final static int PAGE_MIN_FREE = 64;
 
 	// page signatures
 	public final static byte RECORD = 20;

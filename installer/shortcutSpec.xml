@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shortcuts>
+	<programGroup defaultName="eXist XML Database" location="applications"/>
+	
+	<shortcut name="Launch eXist" target="$INSTALL_PATH/bin/startup.bat"
+		description="Start Jetty and eXist" programGroup="yes"
+		desktop="yes"/>
+	<shortcut name="Launch Command-Line Client"
+		target="$INSTALL_PATH/bin/client.bat"
+		description="Start the command-line client" programGroup="yes"/>
+	<shortcut name="QuickStart Guide"
+		target="$INSTALL_PATH/Quickstart.html" programGroup="yes"
+		description="Open the QuickStart Guide"/>
+	<shortcut name="Uninstall" target="$INSTALL_PATH/Uninstaller/uninstaller.jar"
+		description="Uninstall eXist" programGroup="yes"/>
+</shortcuts>

@@ -23,23 +23,16 @@ package org.exist.dom;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import java.util.Iterator;
-//import java.util.Arrays;
 import org.apache.log4j.Category;
+import java.util.Arrays;
 import org.exist.xpath.Value;
 
-/**
- *  Description of the Class
- *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    22. Juli 2002
- */
 public class ArraySet extends NodeSet {
 
 	public final static int ANCESTOR = 0;
 	public final static int DESCENDANT = 1;
 
-	protected static Category LOG =
-		Category.getInstance(ArraySet.class.getName());
+	protected static Category LOG = Category.getInstance(ArraySet.class.getName());
 	protected int counter = 0;
 	protected int length;
 
@@ -58,9 +51,10 @@ public class ArraySet extends NodeSet {
 
 	private final static boolean getParentSet(NodeProxy[] nl) {
 		int level;
-		long pid;
 		boolean foundValid = false;
-		for (int i = 0; i < nl.length; i++) {
+		final int len = nl.length;
+		long pid;
+		for (int i = 0; i < len; i++) {
 			// skip invalid nodes
 			if (nl[i] == null)
 				continue;
@@ -69,14 +63,19 @@ public class ArraySet extends NodeSet {
 				continue;
 			}
 			level = nl[i].doc.getTreeLevel(nl[i].gid);
+			if (level == 0) {
+				nl[i].gid = -1;
+				continue;
+			}
 			// calculate parent's gid
 			pid =
-				(nl[i].gid - nl[i].doc.getLevelStartPoint(level))
-					/ nl[i].doc.getTreeLevelOrder(level)
-					+ nl[i].doc.getLevelStartPoint(level - 1);
+				(nl[i].gid - nl[i].doc.treeLevelStartPoints[level])
+					/ nl[i].doc.treeLevelOrder[level]
+					+ nl[i].doc.treeLevelStartPoints[level
+					- 1];
 			//System.out.println(nl[i].doc.getDocId() + ":" + nl[i].gid + "->" + pid);
 			nl[i].gid = pid;
-			if (pid > 0)
+			if (nl[i].gid > 0)
 				foundValid = true;
 		}
 		return foundValid;
@@ -89,19 +88,18 @@ public class ArraySet extends NodeSet {
 	 *@param  low   Description of the Parameter
 	 *@param  high  Description of the Parameter
 	 */
-	public final static void quickSort(NodeProxy[] list, int low, int high) {
+	private final static void quickSort(NodeProxy[] list, int low, int high) {
 		if (low >= high)
 			return;
 		int left_index = low;
 		int right_index = high;
-		NodeProxy pivot = list[(low + high) / 2];
+		final NodeProxy pivot = list[(low + high) / 2];
 		NodeProxy temp;
 		do {
 			while (left_index <= high && list[left_index].compareTo(pivot) < 0)
 				left_index++;
 
-			while (right_index >= low
-				&& list[right_index].compareTo(pivot) > 0)
+			while (right_index >= low && list[right_index].compareTo(pivot) > 0)
 				right_index--;
 
 			if (left_index <= right_index) {
@@ -129,11 +127,7 @@ public class ArraySet extends NodeSet {
 	 *@param  cmpItem  Description of the Parameter
 	 *@return          Description of the Return Value
 	 */
-	private final static int search(
-		NodeProxy[] items,
-		int low,
-		int high,
-		NodeProxy cmpItem) {
+	private final static int search(NodeProxy[] items, int low, int high, NodeProxy cmpItem) {
 		int mid;
 		int cmp;
 		while (low <= high) {
@@ -258,21 +252,12 @@ public class ArraySet extends NodeSet {
 
 	/**  Description of the Method */
 	protected void checkSorted() {
-		if (counter > 1
-			&& nodes[counter - 1].compareTo(nodes[counter - 2]) < 0)
+		if (counter > 1 && nodes[counter - 1].compareTo(nodes[counter - 2]) < 0)
 			sorted = false;
 		else
 			sorted = true;
 
 	}
-
-	//    protected void finalize() throws Throwable {
-	//        System.out.println( "releasing nodes ...");
-	//        for( int i = 0; i < counter; i++ ) {
-	//            NodeProxyFactory.release( nodes[i] );
-	//            nodes[i] = null;
-	//        }
-	//    }
 
 	/**  Description of the Method */
 	public void clear() {
@@ -369,13 +354,11 @@ public class ArraySet extends NodeSet {
 		int level = doc.getTreeLevel(gid);
 		// get parents id
 		long pid =
-			(gid - doc.getLevelStartPoint(level))
-				/ doc.getTreeLevelOrder(level)
+			(gid - doc.getLevelStartPoint(level)) / doc.getTreeLevelOrder(level)
 				+ doc.getLevelStartPoint(level - 1);
 		// get first childs id
 		long f_gid =
-			(pid - doc.getLevelStartPoint(level - 1))
-				* doc.getTreeLevelOrder(level)
+			(pid - doc.getLevelStartPoint(level - 1)) * doc.getTreeLevelOrder(level)
 				+ doc.getLevelStartPoint(level);
 		// get last childs id
 		long e_gid = f_gid + doc.getTreeLevelOrder(level);
@@ -390,7 +373,7 @@ public class ArraySet extends NodeSet {
 		ArraySet al = (ArraySet) ancestors;
 		if (al.counter == 0)
 			return new ArraySet(1);
-		long start = System.currentTimeMillis();
+		//		long start = System.currentTimeMillis();
 		sort();
 		al.sort();
 		// get a deep copy of array - will be modified
@@ -402,19 +385,25 @@ public class ArraySet extends NodeSet {
 		} else
 			dl = nodes;
 
-		ArraySet result = new ArraySet(al.counter);
+		final ArraySet result = new ArraySet(al.counter);
 		int ax = 0;
 		int dx = 0;
+		final int dlen = dl.length;
 		int cmp;
 		getParentSet(dl);
-		while (dx < dl.length) {
+		while (dx < dlen) {
 			if (dl[dx] == null) { // || dl[dx].gid < 1) {
 				dx++;
 				continue;
 			}
-			//            System.out.println(dl[dx].doc.getDocId() + ":" + dl[dx].gid + 
-			//                        " = " + al.nodes[ax].doc.getDocId() + ':' + 
-			//                        al.nodes[ax].gid);
+//			System.out.println(
+//				dl[dx].doc.getDocId()
+//					+ ":"
+//					+ dl[dx].gid
+//					+ " = "
+//					+ al.nodes[ax].doc.getDocId()
+//					+ ':'
+//					+ al.nodes[ax].gid);
 			cmp = dl[dx].compareTo(al.nodes[ax]);
 			if (cmp > 0) {
 				if (ax < al.counter - 1)
@@ -437,8 +426,8 @@ public class ArraySet extends NodeSet {
 				dx++;
 			}
 		}
-		LOG.debug(
-			"getChildren took " + (System.currentTimeMillis() - start) + "ms.");
+		//		LOG.debug(
+		//			"getChildren took " + (System.currentTimeMillis() - start) + "ms.");
 		return result;
 	}
 
@@ -493,22 +482,23 @@ public class ArraySet extends NodeSet {
 	public ArraySet getDescendants(ArraySet al, int mode) {
 		if (al.counter == 0 || counter == 0)
 			return new ArraySet(1);
-		long start = System.currentTimeMillis();
+		//long start = System.currentTimeMillis();
 		al.sort();
 		sort();
 		// the descendant set will be modified: copy if required 
 		NodeProxy[] dl = null;
 		if (mode == DESCENDANT) {
 			dl = new NodeProxy[counter];
-				for (int i = 0; i < counter; i++)
-					dl[i] = new NodeProxy(nodes[i]);
+			for (int i = 0; i < counter; i++)
+				dl[i] = new NodeProxy(nodes[i]);
 		} else
 			dl = nodes;
 
-		ArraySet result = new ArraySet(al.counter);
+		ArraySet result = new ArraySet(counter);
 		int ax;
 		int dx;
 		int cmp;
+		final int dlen = dl.length;
 		boolean more = false;
 		do {
 			// calculate parent id for each node in the
@@ -517,7 +507,7 @@ public class ArraySet extends NodeSet {
 			more = getParentSet(dl);
 			ax = 0;
 			dx = 0;
-			while (dx < dl.length) {
+			while (dx < dlen) {
 				if (dl[dx] == null) { // || dl[dx].gid < 1) {
 					dx++;
 					continue;
@@ -548,10 +538,10 @@ public class ArraySet extends NodeSet {
 			}
 		}
 		while (more);
-		LOG.debug(
-			"getDescendants took "
-				+ (System.currentTimeMillis() - start)
-				+ "ms.");
+		//		LOG.debug(
+		//			"getDescendants took "
+		//				+ (System.currentTimeMillis() - start)
+		//				+ "ms.");
 		return result;
 	}
 
@@ -604,8 +594,7 @@ public class ArraySet extends NodeSet {
 			level = doc.getTreeLevel(node);
 			// calculate parent's gid
 			pid =
-				(node - doc.getLevelStartPoint(level))
-					/ doc.getTreeLevelOrder(level)
+				(node - doc.getLevelStartPoint(level)) / doc.getTreeLevelOrder(level)
 					+ doc.getLevelStartPoint(level - 1);
 			if (pid == ancestor)
 				return true;
@@ -618,8 +607,7 @@ public class ArraySet extends NodeSet {
 		int level = doc.getTreeLevel(node);
 		// calculate parent's gid
 		long pid =
-			(node - doc.getLevelStartPoint(level))
-				/ doc.getTreeLevelOrder(level)
+			(node - doc.getLevelStartPoint(level)) / doc.getTreeLevelOrder(level)
 				+ doc.getLevelStartPoint(level - 1);
 		return pid == parent;
 	}
@@ -683,10 +671,7 @@ public class ArraySet extends NodeSet {
 	 *@param  directParent  Description of the Parameter
 	 *@return               Description of the Return Value
 	 */
-	public boolean nodeHasParent(
-		DocumentImpl doc,
-		long gid,
-		boolean directParent) {
+	public boolean nodeHasParent(DocumentImpl doc, long gid, boolean directParent) {
 		sort();
 		return super.nodeHasParent(doc, gid, directParent, false);
 	}
@@ -709,47 +694,22 @@ public class ArraySet extends NodeSet {
 		return super.parentWithChild(doc, gid, directParent, includeSelf);
 	}
 
-	public NodeProxy parentWithChild(
-		NodeProxy proxy,
-		boolean directParent,
-		boolean includeSelf) {
+	public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent, boolean includeSelf) {
 		sort();
-		return parentWithChild(
-			proxy.doc,
-			proxy.gid,
-			directParent,
-			includeSelf,
-			-1);
+		return parentWithChild(proxy.doc, proxy.gid, directParent, includeSelf, -1);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  test  Description of the Parameter
-	 *@return       Description of the Return Value
-	 */
 	public int position(NodeImpl test) {
 		sort();
 		NodeProxy p = new NodeProxy(test.ownerDocument, test.getGID());
 		return search(nodes, 0, counter - 1, p);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  proxy  Description of the Parameter
-	 *@return        Description of the Return Value
-	 */
 	public int position(NodeProxy proxy) {
 		sort();
 		return search(nodes, 0, counter - 1, proxy);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  node  Description of the Parameter
-	 */
 	public void remove(NodeProxy node) {
 		long start = System.currentTimeMillis();
 		int pos = search(nodes, 0, counter - 1, node);
@@ -760,17 +720,9 @@ public class ArraySet extends NodeSet {
 		System.arraycopy(nodes, pos + 1, temp, pos + 1, temp.length - pos - 1);
 		nodes = temp;
 		counter--;
-		LOG.debug(
-			"removal of node took " + (System.currentTimeMillis() - start));
+		LOG.debug("removal of node took " + (System.currentTimeMillis() - start));
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  position  Description of the Parameter
-	 *@param  doc       Description of the Parameter
-	 *@param  nodeId    Description of the Parameter
-	 */
 	public void set(int position, DocumentImpl doc, long nodeId) {
 		if (position >= counter)
 			throw new ArrayIndexOutOfBoundsException("out of bounds");
@@ -778,53 +730,30 @@ public class ArraySet extends NodeSet {
 		nodes[position].doc = doc;
 	}
 
-	/**
-	 *  Sets the isSorted attribute of the ArraySet object
-	 *
-	 *@param  sorted  The new isSorted value
-	 */
 	public void setIsSorted(boolean sorted) {
 		//this.sorted = sorted;
 	}
 
-	/**  Description of the Method */
 	public void sort() {
 		if (this.sorted || counter < 2)
 			return;
-		quickSort(nodes, 0, counter - 1);
-		//Arrays.sort(nodes, 0, counter - 1);
+		//quickSort(nodes, 0, counter - 1);
+		Arrays.sort(nodes, 0, counter - 1);
 		sorted = true;
 	}
 
-	/**
-	 *  Description of the Class
-	 *
-	 *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
-	 *@created    22. Juli 2002
-	 */
 	public class ArraySetIterator implements Iterator {
 
 		protected int pos = 0;
 
-		/**
-		 *  Description of the Method
-		 *
-		 *@return    Description of the Return Value
-		 */
 		public boolean hasNext() {
 			return (pos < counter) ? true : false;
 		}
 
-		/**
-		 *  Description of the Method
-		 *
-		 *@return    Description of the Return Value
-		 */
 		public Object next() {
 			return hasNext() ? nodes[pos++] : null;
 		}
 
-		/**  Description of the Method */
 		public void remove() {
 		}
 	}

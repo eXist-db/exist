@@ -22,8 +22,8 @@
  */
 package org.exist.storage;
 
-import it.unimi.dsi.fastUtil.Object2ObjectAVLTreeMap;
-import it.unimi.dsi.fastUtil.Object2ObjectRBTreeMap;
+import it.unimi.dsi.fastutil.Object2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.Object2ObjectRBTreeMap;
 
 import java.io.EOFException;
 import java.io.File;
@@ -884,7 +884,8 @@ public class NativeTextEngine extends TextSearchEngine {
 		protected DocumentImpl doc = null;
 		protected boolean flushed = false;
 		//protected TreeMap words = new TreeMap();
-		private Object2ObjectRBTreeMap words = new Object2ObjectRBTreeMap();
+		//private Object2ObjectRBTreeMap words = new Object2ObjectRBTreeMap();
+		private Object2ObjectAVLTreeMap words = new Object2ObjectAVLTreeMap();
 		private VariableByteOutputStream os = new VariableByteOutputStream();
 		private WordRef reusableWordRef = new WordRef(512);
 		private long currentSize = 0;
@@ -893,10 +894,8 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 
 		public void addRow(String word, long gid) {
-			LongLinkedList buf;
-			if (words.containsKey(word)) {
-				buf = (OrderedLongLinkedList) words.get(word);
-			} else {
+			LongLinkedList buf = (OrderedLongLinkedList)words.get(word);
+			if(buf == null) {
 				buf = new OrderedLongLinkedList();
 				words.put(word, buf);
 			}

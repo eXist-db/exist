@@ -263,6 +263,8 @@ public class XMLUtil {
 	 */
 	public final static long getParentId(DocumentImpl doc, long gid) {
 		int level = doc.getTreeLevel(gid);
+		if(level < 0)
+			return -1;
 		return (gid - doc.getLevelStartPoint(level))
 			/ doc.getTreeLevelOrder(level)
 			+ doc.getLevelStartPoint(level - 1);

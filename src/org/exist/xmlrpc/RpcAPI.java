@@ -273,6 +273,19 @@ public interface RpcAPI {
     Vector query( User user, byte[] xpath )
          throws EXistException, PermissionDeniedException;
 
+	Hashtable queryP(User user, byte[] xpath)
+		throws EXistException, PermissionDeniedException;
+	
+	Hashtable queryP(User user, byte[] xpath, byte[] sortExpr)
+		throws EXistException, PermissionDeniedException;
+	
+	Hashtable queryP(User user, byte[] xpath, String docName, 
+		String s_id, byte[] sortExpr)
+		throws EXistException, PermissionDeniedException;
+		
+	Hashtable queryP(User user, byte[] xpath, String docName, 
+		String s_id)
+		throws EXistException, PermissionDeniedException; 
 
     /**
      *  <p>
@@ -691,6 +704,15 @@ public interface RpcAPI {
 
     boolean removeUser( User user, String name )
          throws EXistException, PermissionDeniedException;
+         
+	public Vector getIndexedElements(User user, String collectionName, boolean inclusive)
+		throws EXistException, PermissionDeniedException;
+		
+	public Vector scanIndexTerms(User user, String collectionName,
+		String start, String end, boolean inclusive)
+		throws PermissionDeniedException, EXistException;
+		
+	public void releaseQueryResult(int handle);
 }
 
 

@@ -22,6 +22,7 @@
  *  $Id:
  */
 package org.exist.xmldb;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -31,7 +32,6 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.Vector;
 import org.apache.xmlrpc.*;
-
 import org.xmldb.api.base.*;
 
 /**
@@ -42,292 +42,305 @@ import org.xmldb.api.base.*;
  * @author wolf
  */
 public class CollectionImpl implements Collection {
-    protected HashMap childCollections = new HashMap();
-    protected String encoding = "UTF-8";
-    protected int indentXML = 1;
-    protected String name;
+	protected HashMap childCollections = null;
+	protected String encoding = "UTF-8";
+	protected int indentXML = 1;
+	protected String name;
 
-    protected CollectionImpl parent = null;
-    protected ArrayList resources = new ArrayList();
-    protected XmlRpcClient rpcClient = null;
-    protected boolean saxDocumentEvents = true;
+	protected CollectionImpl parent = null;
+	protected ArrayList resources = null;
+	protected XmlRpcClient rpcClient = null;
+	protected boolean saxDocumentEvents = true;
 
-    public CollectionImpl( XmlRpcClient client, String host,
-                           String collection ) throws XMLDBException {
-        this( client, null, host, collection );
-    }
+	public CollectionImpl(XmlRpcClient client, String host, String collection)
+		throws XMLDBException {
+		this(client, null, host, collection);
+	}
 
-    public CollectionImpl( XmlRpcClient client, CollectionImpl parent,
-                           String host, String collection ) throws XMLDBException {
-        this.name = collection;
-        this.parent = parent;
-        this.rpcClient = client;
-        readCollection();
-    }
+	public CollectionImpl(
+		XmlRpcClient client,
+		CollectionImpl parent,
+		String host,
+		String collection)
+		throws XMLDBException {
+		this.name = collection;
+		this.parent = parent;
+		this.rpcClient = client;
+	}
 
-    protected void addChildCollection( Collection child )
-         throws XMLDBException {
-        childCollections.put( child.getName(), child );
-    }
+	protected void addChildCollection(Collection child) throws XMLDBException {
+		if (childCollections == null)
+			readCollection();
+		childCollections.put(child.getName(), child);
+	}
 
-    protected void addResource( String id ) {
-        resources.add( id );
-    }
+	protected void addResource(String id) throws XMLDBException {
+		if (childCollections == null)
+			readCollection();
+		resources.add(id);
+	}
 
-    public void close() throws XMLDBException {
-    }
+	public void close() throws XMLDBException {
+	}
 
+	public String createId() throws XMLDBException {
+		if (childCollections == null)
+			readCollection();
+		String id;
+		Random rand = new Random();
+		boolean ok;
+		do {
+			ok = true;
+			id = Integer.toHexString(rand.nextInt()) + ".xml";
+			// check if this id does already exist
+			for (int i = 0; i < resources.size(); i++)
+				if (((String) resources.get(i)).equals(id))
+					ok = false;
 
-    public String createId() throws XMLDBException {
-        String id;
-        Random rand = new Random();
-        boolean ok;
-        do {
-            ok = true;
-            id = Integer.toHexString( rand.nextInt() ) + ".xml";
-            // check if this id does already exist
-            for ( int i = 0; i < resources.size(); i++ )
-                if ( ( (String) resources.get( i ) ).equals( id ) )
-                    ok = false;
+			if (childCollections.containsKey(id))
+				ok = false;
 
-            if ( childCollections.containsKey( id ) )
-                ok = false;
+		} while (!ok);
+		return id;
+	}
 
-        } while ( !ok )
-            ;
-        return id;
-    }
+	public Resource createResource(String id, String type) throws XMLDBException {
+		if (id == null)
+			id = createId();
 
+		XMLResourceImpl r = new XMLResourceImpl(this, -1, -1, id, null, indentXML, encoding);
+		r.setSAXDocEvents(this.saxDocumentEvents);
+		return r;
+	}
 
-    public Resource createResource( String id,
-                                    String type ) throws XMLDBException {
-        if ( id == null )
-            id = createId();
+	public Collection getChildCollection(String name) throws XMLDBException {
+		if (childCollections == null)
+			readCollection();
+		if (name.indexOf('/') > -1)
+			return (Collection) childCollections.get(name);
+		else
+			return (Collection) childCollections.get(getPath() + '/' + name);
+	}
 
-        XMLResourceImpl r = new XMLResourceImpl( this, id, null, indentXML, encoding );
-        r.setSAXDocEvents( this.saxDocumentEvents );
-        return r;
-    }
+	public int getChildCollectionCount() throws XMLDBException {
+		if (childCollections == null)
+			readCollection();
+		return childCollections.size();
+	}
 
+	protected XmlRpcClient getClient() {
+		return rpcClient;
+	}
 
-    public Collection getChildCollection( String name )
-         throws XMLDBException {
-        if ( name.indexOf( '/' ) > -1 )
-            return (Collection) childCollections.get( name );
-        else
-            return (Collection) childCollections.get( getPath() + '/' + name );
-    }
+	public String getName() throws XMLDBException {
+		return name;
+	}
 
-    public int getChildCollectionCount() throws XMLDBException {
-        return childCollections.size();
-    }
+	public Collection getParentCollection() throws XMLDBException {
+		return parent;
+	}
 
-    protected XmlRpcClient getClient() {
-        return rpcClient;
-    }
+	public String getPath() throws XMLDBException {
+		if (parent == null)
+			return "/db";
+		return name;
+	}
 
-    public String getName() throws XMLDBException {
-        return name;
-    }
+	public String getProperty(String property) throws XMLDBException {
+		if (property.equals("pretty"))
+			return (indentXML == 1) ? "true" : "false";
+		if (property.equals("encoding"))
+			return encoding;
+		if (property.equals("sax-document-events"))
+			return saxDocumentEvents ? "true" : "false";
+		return null;
+	}
 
-    public Collection getParentCollection() throws XMLDBException {
-        return parent;
-    }
+	public Resource getResource(String id) throws XMLDBException {
+		if (childCollections == null)
+			readCollection();
+		for (int i = 0; i < resources.size(); i++)
+			if (((String) resources.get(i)).equals(id)) {
+				XMLResourceImpl r =
+					new XMLResourceImpl(
+						this,
+						-1,
+						-1,
+						(String) resources.get(i),
+						null,
+						indentXML,
+						encoding);
+				r.setSAXDocEvents(this.saxDocumentEvents);
+				return r;
+			}
+		return null;
+	}
 
-    public String getPath() throws XMLDBException {
-        if ( parent == null )
-            return "/db";
-        return name;
-    }
+	public int getResourceCount() throws XMLDBException {
+		if (childCollections == null)
+			readCollection();
+		return resources.size();
+	}
 
-    public String getProperty( String property ) throws XMLDBException {
-        if ( property.equals( "pretty" ) )
-            return ( indentXML == 1 ) ? "true" : "false";
-        if ( property.equals( "encoding" ) )
-            return encoding;
-        if ( property.equals( "sax-document-events" ) )
-            return saxDocumentEvents ? "true" : "false";
-        return null;
-    }
+	public Service getService(String name, String version) throws XMLDBException {
+		if (name.equals("XPathQueryService"))
+			return new RemoteXPathQueryService(this);
+		if (name.equals("CollectionManagementService") || name.equals("CollectionManager"))
+			return new CollectionManagementServiceImpl(this, rpcClient);
+		if (name.equals("UserManagementService"))
+			return new UserManagementServiceImpl(this);
+		if (name.equals("DatabaseInstanceManager"))
+			return new DatabaseInstanceManagerImpl(rpcClient);
+		if (name.equals("IndexQueryService"))
+			return new RemoteIndexQueryService(rpcClient, this);
+		throw new XMLDBException(ErrorCodes.NO_SUCH_SERVICE);
+	}
 
+	public Service[] getServices() throws XMLDBException {
+		Service[] services = new Service[5];
+		services[0] = new RemoteXPathQueryService(this);
+		services[1] = new CollectionManagementServiceImpl(this, rpcClient);
+		services[2] = new UserManagementServiceImpl(this);
+		services[3] = new DatabaseInstanceManagerImpl(rpcClient);
+		services[4] = new RemoteIndexQueryService(rpcClient, this);
+		return services;
+	}
 
-    public Resource getResource( String id ) throws XMLDBException {
-        for ( int i = 0; i < resources.size(); i++ )
-            if ( ( (String) resources.get( i ) ).equals( id ) ) {
-                XMLResourceImpl r = new XMLResourceImpl( this,
-                    (String) resources.get( i ), null, indentXML, encoding );
-                r.setSAXDocEvents( this.saxDocumentEvents );
-                return r;
-            }
-        return null;
-    }
+	protected boolean hasChildCollection(String name) throws XMLDBException {
+		if (childCollections == null)
+			readCollection();
+		return childCollections.containsKey(name);
+	}
 
-    public int getResourceCount() throws XMLDBException {
-        return resources.size();
-    }
+	public boolean isOpen() throws XMLDBException {
+		return true;
+	}
 
-    public Service getService( String name,
-                               String version ) throws XMLDBException {
-        if ( name.equals( "XPathQueryService" ) )
-            return new RemoteXPathQueryService( this );
-        if ( name.equals( "CollectionManagementService" ) ||
-            name.equals( "CollectionManager" ) )
-            return new CollectionManagementServiceImpl( this, rpcClient );
-        if ( name.equals( "UserManagementService" ) )
-            return new UserManagementServiceImpl( this );
-        if ( name.equals( "DatabaseInstanceManager" ) )
-        	return new DatabaseInstanceManagerImpl( rpcClient );
-        throw new XMLDBException( ErrorCodes.NO_SUCH_SERVICE );
-    }
+	/**
+	 *  Returns a list of collection names naming all child collections of the
+	 *  current collection. Only the name of the collection is returned - not
+	 *  the entire path to the collection.
+	 *
+	 *@return                     Description of the Return Value
+	 *@exception  XMLDBException  Description of the Exception
+	 */
+	public String[] listChildCollections() throws XMLDBException {
+		if (childCollections == null)
+			readCollection();
+		String coll[] = new String[childCollections.size()];
+		int j = 0;
+		int p;
+		for (Iterator i = childCollections.keySet().iterator(); i.hasNext(); j++) {
+			coll[j] = (String) i.next();
+			if ((p = coll[j].lastIndexOf('/')) > -1)
+				coll[j] = coll[j].substring(p + 1);
 
-    public Service[] getServices() throws XMLDBException {
-        Service[] services = new Service[4];
-        services[0] = new RemoteXPathQueryService( this );
-        services[1] = new CollectionManagementServiceImpl( this, rpcClient );
-        services[2] = new UserManagementServiceImpl( this );
-        services[3] = new DatabaseInstanceManagerImpl( rpcClient );
-        return services;
-    }
+		}
+		return coll;
+	}
 
-    protected boolean hasChildCollection( String name ) {
-        return childCollections.containsKey( name );
-    }
+	public String[] listResources() throws XMLDBException {
+		if (childCollections == null)
+			readCollection();
+		return (String[]) resources.toArray(new String[resources.size()]);
+	}
 
-    public boolean isOpen() throws XMLDBException {
-        return true;
-    }
+	private void readCollection() throws XMLDBException {
+		resources = new ArrayList();
+		childCollections = new HashMap();
+		Vector params = new Vector();
+		params.addElement(getPath());
 
-    /**
-     *  Returns a list of collection names naming all child collections of the
-     *  current collection. Only the name of the collection is returned - not
-     *  the entire path to the collection.
-     *
-     *@return                     Description of the Return Value
-     *@exception  XMLDBException  Description of the Exception
-     */
-    public String[] listChildCollections() throws XMLDBException {
-        String coll[] = new String[childCollections.size()];
-        int j = 0;
-        int p;
-        for ( Iterator i = childCollections.keySet().iterator();
-            i.hasNext(); j++ ) {
-            coll[j] = (String) i.next();
-            if ( ( p = coll[j].lastIndexOf( '/' ) ) > -1 )
-                coll[j] = coll[j].substring( p + 1 );
+		Hashtable collection;
+		try {
+			collection = (Hashtable) rpcClient.execute("getCollectionDesc", params);
+		} catch (XmlRpcException xre) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
+		} catch (IOException ioe) {
+			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "an io error occurred", ioe);
+		}
+		Vector documents = (Vector) collection.get("documents");
+		Vector collections = (Vector) collection.get("collections");
+		String docName;
+		String childName;
+		int p;
+		for (int i = 0; i < documents.size(); i++) {
+			docName = (String) documents.elementAt(i);
+			if ((p = docName.lastIndexOf('/')) > -1)
+				docName = docName.substring(p + 1);
 
-        }
-        return coll;
-    }
+			addResource(docName);
+		}
+		for (int i = 0; i < collections.size(); i++) {
+			childName = (String) collections.elementAt(i);
+			try {
+				CollectionImpl child =
+					new CollectionImpl(rpcClient, this, null, getPath() + '/' + childName);
+				addChildCollection(child);
+			} catch (XMLDBException e) {
+			}
+		}
+	}
 
+	public void registerService(Service serv) throws XMLDBException {
+		throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED);
+	}
 
-    public String[] listResources() throws XMLDBException {
-        return (String[]) resources.toArray( new String[resources.size()] );
-    }
+	public void removeChildCollection(String name) throws XMLDBException {
+		childCollections.remove(getPath() + '/' + name);
+	}
 
+	public void removeResource(Resource res) throws XMLDBException {
+		if (!resources.contains(res.getId()))
+			throw new XMLDBException(
+				ErrorCodes.INVALID_RESOURCE,
+				"resource " + res.getId() + " not found");
+		Vector params = new Vector();
+		params.addElement(getPath() + '/' + res.getId());
 
-    private void readCollection() throws XMLDBException {
-        Vector params = new Vector();
-        params.addElement( getPath() );
+		try {
+			rpcClient.execute("remove", params);
+		} catch (XmlRpcException xre) {
+			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
+		} catch (IOException ioe) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
+		}
+		resources.remove(res.getId());
+	}
 
-        Hashtable collection;
-        try {
-            collection = (Hashtable) rpcClient.execute( "getCollectionDesc",
-                params );
-        } catch ( XmlRpcException xre ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                xre.getMessage(),
-                xre );
-        } catch ( IOException ioe ) {
-            throw new XMLDBException( ErrorCodes.INVALID_COLLECTION,
-                "an io error occurred",
-                ioe );
-        }
-        Vector documents = (Vector) collection.get( "documents" );
-        Vector collections = (Vector) collection.get( "collections" );
-        String docName;
-        String childName;
-        int p;
-        for ( int i = 0; i < documents.size(); i++ ) {
-            docName = (String) documents.elementAt( i );
-            if ( ( p = docName.lastIndexOf( '/' ) ) > -1 )
-                docName = docName.substring( p + 1 );
+	public void setProperty(String property, String value) throws XMLDBException {
+		if (property.equals("pretty"))
+			indentXML = (value.equals("true") ? 1 : -1);
 
-            addResource( docName );
-        }
-        for ( int i = 0; i < collections.size(); i++ ) {
-            childName = (String) collections.elementAt( i );
-            try {
-                CollectionImpl child =
-                	new CollectionImpl( rpcClient, this, null, getPath() + '/' + childName );
-                addChildCollection( child );
-            } catch ( XMLDBException e ) {
-            }
-        }
-    }
+		if (property.equals("encoding"))
+			encoding = value;
 
-    public void registerService( Service serv ) throws XMLDBException {
-        throw new XMLDBException( ErrorCodes.NOT_IMPLEMENTED );
-    }
+		if (property.equals("sax-document-events"))
+			saxDocumentEvents = value.equals("true");
 
-    public void removeChildCollection( String name ) throws XMLDBException {
-        childCollections.remove( getPath() + '/' + name );
-    }
+	}
 
-    public void removeResource( Resource res ) throws XMLDBException {
-        if ( !resources.contains( res.getId() ) )
-            throw new XMLDBException( ErrorCodes.INVALID_RESOURCE,
-                "resource " + res.getId() + " not found" );
-        Vector params = new Vector();
-        params.addElement( getPath() + '/' + res.getId() );
-
-        try {
-            rpcClient.execute( "remove", params );
-        } catch ( XmlRpcException xre ) {
-            throw new XMLDBException( ErrorCodes.INVALID_RESOURCE,
-                xre.getMessage(), xre );
-        } catch ( IOException ioe ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                ioe.getMessage(), ioe );
-        }
-        resources.remove( res.getId() );
-    }
-
-    public void setProperty( String property,
-                             String value ) throws XMLDBException {
-        if ( property.equals( "pretty" ) )
-            indentXML = ( value.equals( "true" ) ? 1 : -1 );
-
-        if ( property.equals( "encoding" ) )
-            encoding = value;
-
-        if ( property.equals( "sax-document-events" ) )
-            saxDocumentEvents = value.equals( "true" );
-
-    }
-
-    public void storeResource( Resource res ) throws XMLDBException {
-    	resources.remove(res.getId());
-        String data = (String) res.getContent();
-        byte[] bdata = null;
-        try {
-            bdata = data.getBytes( "UTF-8" );
-        } catch ( UnsupportedEncodingException e ) {
-            bdata = data.getBytes();
-        }
-        Vector params = new Vector();
-        params.addElement( bdata );
-        params.addElement( getPath() + '/' + res.getId() );
-        params.addElement( new Integer( 1 ) );
-        try {
-            rpcClient.execute( "parse", params );
-        } catch ( XmlRpcException xre ) {
-            throw new XMLDBException( ErrorCodes.INVALID_RESOURCE,
-                xre.getMessage(), xre );
-        } catch ( IOException ioe ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                ioe.getMessage(), ioe );
-        }
-        addResource( res.getId() );
-    }
+	public void storeResource(Resource res) throws XMLDBException {
+		resources.remove(res.getId());
+		long start = System.currentTimeMillis();
+		String data = (String) res.getContent();
+		byte[] bdata = null;
+		try {
+			bdata = data.getBytes("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			bdata = data.getBytes();
+		}
+		Vector params = new Vector();
+		params.addElement(bdata);
+		params.addElement(getPath() + '/' + res.getId());
+		params.addElement(new Integer(1));
+		try {
+			rpcClient.execute("parse", params);
+		} catch (XmlRpcException xre) {
+			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
+		} catch (IOException ioe) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
+		}
+		addResource(res.getId());
+	}
 }
-

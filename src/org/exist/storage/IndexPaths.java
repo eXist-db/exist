@@ -20,7 +20,7 @@
  */
 package org.exist.storage;
 
-import it.unimi.dsi.fastUtil.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.Object2ObjectOpenHashMap;
 
 import java.util.ArrayList;
 import java.util.Iterator;

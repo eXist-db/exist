@@ -2,7 +2,7 @@ package org.exist.soap;
 
 import java.util.Iterator;
 
-import it.unimi.dsi.fastUtil.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.Int2ObjectOpenHashMap;
 
 import org.exist.xpath.Value;
 

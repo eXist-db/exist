@@ -23,20 +23,23 @@
  */
 package org.exist.dom;
 
+import it.unimi.dsi.fastutil.Object2ObjectRBTreeMap;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+
 import org.apache.log4j.Category;
 import org.exist.security.Group;
 import org.exist.security.Permission;
-import org.exist.security.User;
 import org.exist.security.SecurityManager;
-import org.exist.storage.*;
+import org.exist.security.User;
+import org.exist.storage.DBBroker;
 import org.exist.util.SyntaxException;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
@@ -48,10 +51,11 @@ public class Collection implements Comparable {
 	private DBBroker broker;
 	private int refCount = 0;
 	private short collectionId = -1;
-	private LinkedList documents = new LinkedList();
+	private Object2ObjectRBTreeMap documents = new Object2ObjectRBTreeMap();
 	private String name;
 	private Permission permissions = new Permission(0755);
-	private ArrayList subcollections = new ArrayList();
+	private List subcollections = 
+		Collections.synchronizedList(new ArrayList());
 
 	public Collection(DBBroker broker) {
 		this.broker = broker;
@@ -67,7 +71,7 @@ public class Collection implements Comparable {
 	 *
 	 *@param  name  The feature to be added to the Collection attribute
 	 */
-	public void addCollection(String name) {
+	synchronized public void addCollection(String name) {
 		if (!subcollections.contains(name))
 			subcollections.add(name);
 
@@ -78,7 +82,7 @@ public class Collection implements Comparable {
 	 *
 	 *@param  doc  The feature to be added to the Document attribute
 	 */
-	public void addDocument(DocumentImpl doc) {
+	synchronized public void addDocument(DocumentImpl doc) {
 		addDocument(new User("admin", null, "dba"), doc);
 	}
 
@@ -88,31 +92,30 @@ public class Collection implements Comparable {
 	 *@param  user  The feature to be added to the Document attribute
 	 *@param  doc   The feature to be added to the Document attribute
 	 */
-	public void addDocument(User user, DocumentImpl doc) {
+	synchronized public void addDocument(User user, DocumentImpl doc) {
 		if (doc.getDocId() < 0)
 			doc.setDocId(broker.getNextDocId(this));
-		//documents.put(doc.getFileName(), doc);
-		documents.add(doc);
+		documents.put(doc.getFileName(), doc);
+		//documents.add(doc);
 	}
 
-	public void renameDocument(String oldName, String newName) {
-		DocumentImpl doc;
-		for (Iterator i = documents.iterator(); i.hasNext();) {
-			doc = (DocumentImpl) i.next();
-			if (doc.getFileName().equals(oldName)) {
-				doc.setFileName(newName);
-				return;
-			}
-		}
+	synchronized public void renameDocument(String oldName, String newName) {
+		DocumentImpl doc = (DocumentImpl)documents.remove(oldName);
+		doc.setFileName(newName);
+		if(doc != null)
+			documents.put(newName, doc);
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Return an iterator over all subcollections.
+	 * 
+	 * The list of subcollections is copied first, so modifications
+	 * via the iterator have no affect.
 	 *
 	 *@return    Description of the Return Value
 	 */
-	public Iterator collectionIterator() {
-		return subcollections.iterator();
+	synchronized public Iterator collectionIterator() {
+		return new ArrayList(subcollections).iterator();
 	}
 
 	/**
@@ -137,10 +140,11 @@ public class Collection implements Comparable {
 		return cl;
 	}
 
-	public DocumentSet allDocs(User user) {
+	public DocumentSet allDocs(User user, boolean recursive) {
 		DocumentSet docs = new DocumentSet();
 		getDocuments(docs);
-		allDocs(user, docs);
+		if(recursive)
+			allDocs(user, docs);
 		return docs;
 	}
 
@@ -160,7 +164,7 @@ public class Collection implements Comparable {
 	}
 
 	public void getDocuments(DocumentSet set) {
-		for (Iterator i = documents.iterator(); i.hasNext();)
+		for (Iterator i = documents.values().iterator(); i.hasNext();)
 			set.add((DocumentImpl) i.next());
 	}
 
@@ -202,15 +206,14 @@ public class Collection implements Comparable {
 	 *@return       The document value
 	 */
 	public DocumentImpl getDocument(String name) {
-		//return (DocumentImpl) documents.get(name);
-		//return null;
-		DocumentImpl doc;
-		for (Iterator i = documents.iterator(); i.hasNext();) {
-			doc = (DocumentImpl) i.next();
-			if (doc.getFileName().equals(name))
-				return doc;
-		}
-		return null;
+		return (DocumentImpl) documents.get(name);
+//		DocumentImpl doc;
+//		for (Iterator i = documents.iterator(); i.hasNext();) {
+//			doc = (DocumentImpl) i.next();
+//			if (doc.getFileName().equals(name))
+//				return doc;
+//		}
+//		return null;
 	}
 
 	/**
@@ -299,7 +302,7 @@ public class Collection implements Comparable {
 	 *@return    Description of the Return Value
 	 */
 	public Iterator iterator() {
-		return documents.iterator();
+		return documents.values().iterator();
 	}
 
 	/**
@@ -337,7 +340,7 @@ public class Collection implements Comparable {
 			broker.getBrokerPool().getSecurityManager();
 		final int uid = istream.readInt();
 		final int gid = istream.readInt();
-		final int perm = istream.readByte();
+		final int perm = (istream.readByte() & 0777);
 		if (secman == null) {
 			permissions.setOwner(SecurityManager.DBA_USER);
 			permissions.setGroup(SecurityManager.DBA_GROUP);
@@ -370,15 +373,16 @@ public class Collection implements Comparable {
 	 *
 	 *@param  name  Description of the Parameter
 	 */
-	public void removeDocument(String name) {
-		DocumentImpl doc;
-		for (Iterator i = documents.iterator(); i.hasNext();) {
-			doc = (DocumentImpl) i.next();
-			if (doc.getFileName().equals(name)) {
-				i.remove();
-				return;
-			}
-		}
+	synchronized public void removeDocument(String name) {
+		documents.remove(name);
+//		DocumentImpl doc;
+//		for (Iterator i = documents.iterator(); i.hasNext();) {
+//			doc = (DocumentImpl) i.next();
+//			if (doc.getFileName().equals(name)) {
+//				i.remove();
+//				return;
+//			}
+//		}
 	}
 
 	/**

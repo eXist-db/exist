@@ -22,27 +22,44 @@
  * 
  */
 package org.exist;
-import java.io.*;
-import java.util.Iterator;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.net.URL;
 import java.util.Observable;
 import java.util.Stack;
 
-import javax.xml.parsers.*;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Category;
-
-//import com.sun.resolver.tools.CatalogResolver;
 import org.apache.xml.resolver.tools.CatalogResolver;
-import org.exist.dom.*;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.Collection;
+import org.exist.dom.CommentImpl;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentTypeImpl;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.ProcessingInstructionImpl;
+import org.exist.dom.TextImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
-import org.exist.storage.*;
-import org.exist.util.*;
+import org.exist.storage.DBBroker;
+import org.exist.storage.DOMFile;
+import org.exist.util.Configuration;
+import org.exist.util.DOMStreamer;
+import org.exist.util.FastStringBuffer;
+import org.exist.util.ProgressIndicator;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -62,26 +79,30 @@ import org.xml.sax.ext.LexicalHandler;
  */
 public class Parser
 	extends Observable
-	implements ContentHandler, LexicalHandler, ErrorHandler {
+	implements ContentHandler, LexicalHandler, ErrorHandler, EntityResolver {
 
-	private final static Category LOG =
-		Category.getInstance(Parser.class.getName());
+	private final static Category LOG = Category.getInstance(Parser.class.getName());
 
 	public final static int MAX_STR_LEN = 225;
 	public final static int SPARSE_IDENTIFIERS = 100;
 
+	private final static int VALIDATION_ENABLED = 0;
+	private final static int VALIDATION_AUTO = 1;
+	private final static int VALIDATION_DISABLED = 2;
+
+	private int validation = VALIDATION_AUTO;
+
+	public Collection collection = null;
 	protected DBBroker broker = null;
 	protected FastStringBuffer charBuf = new FastStringBuffer(6, 15, 5);
-	protected Collection collection = null;
-	protected boolean validate;
 	protected int currentLine = 0, maxLine;
 	protected StringBuffer currentPath = new StringBuffer();
 	protected DocumentImpl document = null;
 	protected String fileName;
 	protected boolean insideDTD = false;
+	protected boolean validate = false;
 	protected int level = 0;
 	protected Locator locator = null;
-	protected int maxLevel = 0;
 	protected int normalize = FastStringBuffer.SUPPRESS_BOTH;
 	protected XMLReader parser;
 	protected Stack prefixes = new Stack();
@@ -89,10 +110,11 @@ public class Parser
 	protected boolean replace = false;
 	protected CatalogResolver resolver;
 	protected Element rootNode;
-	//protected InputSource src;
 	protected Stack stack = new Stack();
 	protected User user;
-	private String previousPath = null;
+	protected boolean privileged = false;
+
+	// reusable fields
 	private TextImpl text = new TextImpl();
 	private Stack usedElements = new Stack();
 	private FastStringBuffer temp = new FastStringBuffer();
@@ -106,15 +128,41 @@ public class Parser
 	 *@param  replace             replace existing documents?
 	 *@exception  EXistException  
 	 */
-	public Parser(DBBroker broker, User user, boolean replace)
+	public Parser(DBBroker broker, User user, boolean replace) throws EXistException {
+		this(broker, user, replace, false);
+	}
+
+	/**
+	 *  Create a new parser using the given database broker and
+	 * user to store the document.
+	 *
+	 *@param  broker              
+	 *@param  user                user identity
+	 *@param  replace             replace existing documents?
+	 *@param  privileged		  used by the security manager to
+	 *							  indicate that it needs privileged
+	 *                            access to the db.
+	 *@exception  EXistException  
+	 */
+	public Parser(DBBroker broker, User user, boolean replace, boolean priv)
 		throws EXistException {
 		this.broker = broker;
 		this.user = user;
-		resolver =
-			(CatalogResolver) broker.getConfiguration().getProperty("resolver");
-		String suppressWS =
-			(String) broker.getConfiguration().getProperty(
-				"indexer.suppress-whitespace");
+		this.privileged = priv;
+		Configuration config = broker.getConfiguration();
+		// get validation settings
+		String option = (String) config.getProperty("indexer.validation");
+		if (option != null) {
+			if (option.equals("true"))
+				validation = VALIDATION_ENABLED;
+			else if (option.equals("auto"))
+				validation = VALIDATION_AUTO;
+			else
+				validation = VALIDATION_DISABLED;
+		}
+		resolver = (CatalogResolver) config.getProperty("resolver");
+		// check whitespace suppression
+		String suppressWS = (String) config.getProperty("indexer.suppress-whitespace");
 		if (suppressWS != null) {
 			if (suppressWS.equals("leading"))
 				normalize = FastStringBuffer.SUPPRESS_LEADING_WS;
@@ -124,28 +172,29 @@ public class Parser
 				normalize = 0;
 
 		}
+		// create a SAX parser
 		SAXParserFactory saxFactory = SAXParserFactory.newInstance();
-		//saxFactory.setValidating(false);
+		if (validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED)
+			saxFactory.setValidating(true);
+		else
+			saxFactory.setValidating(false);
 		saxFactory.setNamespaceAware(true);
 		try {
-			setFeature(
-				saxFactory,
-				"http://xml.org/sax/features/namespace-prefixes",
-				true);
+			setFeature(saxFactory, "http://xml.org/sax/features/namespace-prefixes", true);
 			setFeature(
 				saxFactory,
 				"http://apache.org/xml/features/validation/dynamic",
-				true);
+				validation == VALIDATION_AUTO);
 			setFeature(
 				saxFactory,
 				"http://apache.org/xml/features/validation/schema",
-				false);
+				validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);
 			SAXParser sax = saxFactory.newSAXParser();
 			parser = sax.getXMLReader();
-			parser.setEntityResolver(resolver);
-			sax.setProperty(
-				"http://xml.org/sax/properties/lexical-handler",
-				this);
+			//parser.setEntityResolver(resolver);
+			parser.setEntityResolver(this);
+			parser.setErrorHandler(this);
+			sax.setProperty("http://xml.org/sax/properties/lexical-handler", this);
 		} catch (ParserConfigurationException e) {
 			LOG.warn(e);
 			throw new EXistException(e);
@@ -222,7 +271,7 @@ public class Parser
 		CommentImpl comment = new CommentImpl(ch, start, length);
 		comment.setOwnerDocument(document);
 		if (stack.empty())
-			document.appendChild(comment);
+			document.appendChild(comment, validate);
 		else {
 			ElementImpl last = (ElementImpl) stack.peek();
 			if (charBuf != null && charBuf.length() > 0) {
@@ -264,8 +313,7 @@ public class Parser
 		final ElementImpl last = (ElementImpl) stack.peek();
 		if (last.getNodeName().equals(qname)) {
 			if (charBuf != null && charBuf.length() > 0) {
-				final String normalized =
-					charBuf.getNormalizedString(normalize);
+				final String normalized = charBuf.getNormalizedString(normalize);
 				if (normalized.length() > 0) {
 					//TextImpl text =
 					//    new TextImpl( normalized );
@@ -280,9 +328,7 @@ public class Parser
 				}
 			}
 			stack.pop();
-			currentPath.delete(
-				currentPath.lastIndexOf("/"),
-				currentPath.length());
+			currentPath.delete(currentPath.lastIndexOf("/"), currentPath.length());
 			//				currentPath.substring(0, currentPath.lastIndexOf('/'));
 			if (validate) {
 				if (document.getTreeLevelOrder(level) < last.getChildCount())
@@ -302,7 +348,6 @@ public class Parser
 				usedElements.push(last);
 			}
 		}
-		previousPath = null;
 	}
 
 	public void endEntity(String name) {
@@ -313,27 +358,15 @@ public class Parser
 	}
 
 	public void error(SAXParseException e) throws SAXException {
-		LOG.warn(e);
-		System.out.println("parse error at line " + e.getLineNumber());
+		LOG.debug("error at line " + e.getLineNumber(), e);
+		throw new SAXException("error at line " + e.getLineNumber() + ": " + e.getMessage(), e);
 	}
 
 	public void fatalError(SAXParseException e) throws SAXException {
-		LOG.debug("fatal error at line " + e.getLineNumber());
-		LOG.error(e);
-		throw new SAXException(e);
-	}
-
-	private final String getCurrentPath() {
-		//final StringBuffer buf = new StringBuffer();
-		temp.setLength(0);
-		ElementImpl current;
-		for (Iterator i = stack.iterator(); i.hasNext();) {
-			temp.append('/');
-			current = (ElementImpl) i.next();
-			temp.append(current.getTagName());
-		}
-		previousPath = temp.toString();
-		return previousPath;
+		LOG.debug("fatal error at line " + e.getLineNumber(), e);
+		throw new SAXException(
+			"fatal error at line " + e.getLineNumber() + ": " + e.getMessage(),
+			e);
 	}
 
 	public void ignorableWhitespace(char[] ch, int start, int length) {
@@ -403,10 +436,7 @@ public class Parser
 	 * @throws IOException
 	 * @throws PermissionDeniedException
 	 */
-	public DocumentImpl parse(
-		Collection collection,
-		File file,
-		String xmlFileName)
+	public DocumentImpl parse(Collection collection, File file, String xmlFileName)
 		throws SAXException, IOException, PermissionDeniedException {
 		this.collection = collection;
 		final Object lock = broker.acquireWriteLock();
@@ -457,6 +487,29 @@ public class Parser
 		}
 	}
 
+	public DocumentImpl parse(byte[] data, String xmlFileName)
+		throws SAXException, IOException, PermissionDeniedException {
+		return parse(collection, data, xmlFileName);
+	}
+
+	public DocumentImpl parse(Collection coll, byte[] data, String xmlFileName)
+		throws SAXException, IOException, PermissionDeniedException {
+		collection = coll;
+		final Object lock = broker.acquireWriteLock();
+		try {
+			ByteArrayInputStream bos = new ByteArrayInputStream(data);
+			InputSource is = new InputSource(bos);
+			is.setEncoding("UTF-8");
+			scan(is, xmlFileName);
+			bos.reset();
+			is = new InputSource(bos);
+			is.setEncoding("UTF-8");
+			return store(is);
+		} finally {
+			broker.releaseWriteLock(lock);
+		}
+	}
+
 	public DocumentImpl parse(Collection coll, Node node, String xmlFileName)
 		throws SAXException, IOException, PermissionDeniedException {
 		collection = coll;
@@ -470,11 +523,10 @@ public class Parser
 	}
 
 	public void processingInstruction(String target, String data) {
-		ProcessingInstructionImpl pi =
-			new ProcessingInstructionImpl(0, target, data);
+		ProcessingInstructionImpl pi = new ProcessingInstructionImpl(0, target, data);
 		pi.setOwnerDocument(document);
 		if (stack.isEmpty())
-			document.appendChild(pi);
+			document.appendChild(pi, validate);
 		else {
 			ElementImpl last = (ElementImpl) stack.peek();
 			if (charBuf != null && charBuf.length() > 0) {
@@ -529,8 +581,7 @@ public class Parser
 	 *@exception  IOException                Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	public void scan(InputSource src)
-		throws SAXException, IOException, PermissionDeniedException {
+	public void scan(InputSource src) throws SAXException, IOException, PermissionDeniedException {
 		scan(src, null);
 	}
 
@@ -579,29 +630,23 @@ public class Parser
 		}
 		DocumentImpl oldDoc = null;
 		// does a document with the same name exist?
-		if ((oldDoc = collection.getDocument(collName + '/' + fileName))
-			!= null) {
+		if ((oldDoc = collection.getDocument(collName + '/' + fileName)) != null) {
 			// do we have permissions for update?
 			if (!oldDoc.getPermissions().validate(user, Permission.UPDATE))
 				throw new PermissionDeniedException(
 					"document exists and update " + "is not allowed");
 			// no: do we have write permissions?
-		} else if (
-			!collection.getPermissions().validate(user, Permission.WRITE))
+		} else if (!collection.getPermissions().validate(user, Permission.WRITE))
 			throw new PermissionDeniedException(
 				"not allowed to write to collection " + collection.getName());
 		// if an old document exists, save the new document with a temporary
 		// document name
 		if (oldDoc != null)
-			document =
-				new DocumentImpl(
-					broker,
-					collName + "/__" + fileName,
-					collection);
+			document = new DocumentImpl(broker, collName + "/__" + fileName, collection);
 		else
-			document =
-				new DocumentImpl(broker, collName + '/' + fileName, collection);
-		collection.addDocument(document);
+			document = new DocumentImpl(broker, collName + '/' + fileName, collection);
+		//collection.addDocument(document);
+		document.setDocId(broker.getNextDocId(collection));
 		if (oldDoc == null) {
 			document.getPermissions().setOwner(user);
 			document.getPermissions().setGroup(user.getPrimaryGroup());
@@ -609,30 +654,31 @@ public class Parser
 			document.setPermissions(oldDoc.getPermissions());
 
 		// reset internal variables
-		maxLevel = 0;
 		level = 0;
 		currentPath.setLength(0);
 		stack = new Stack();
 		prefixes = new Stack();
-		previousPath = null;
 		rootNode = null;
 		LOG.debug("validating document " + fileName + " ...");
 		try {
 			parser.parse(src);
 		} catch (SAXException e) {
-			LOG.debug(e.getMessage());
 			if (collection != null)
 				collection.removeDocument(document.getFileName());
-			throw e;
+			throw new SAXException(
+				"[line " + locator.getLineNumber() + "] " + e.getMessage(),
+				e.getException());
 		}
-		// new document is valid: remove old document
+		// new document is valid: remove old document 
 		if (oldDoc != null) {
+			LOG.debug("removing old document " + oldDoc.getFileName());
 			broker.removeDocument(oldDoc.getFileName());
-			collection.renameDocument(
-				document.getFileName(),
-				oldDoc.getFileName());
+			document.setFileName(oldDoc.getFileName());
+			//collection.renameDocument(
+			//	document.getFileName(),
+			//	oldDoc.getFileName());
 		}
-
+		collection.addDocument(document);
 	}
 
 	/**
@@ -673,32 +719,25 @@ public class Parser
 
 		if (collection == null || (!collection.getName().equals(collName))) {
 			collection = broker.getOrCreateCollection(user, collName);
-			broker.saveCollection(collection);
+			//broker.saveCollection(collection);
 		}
 		DocumentImpl oldDoc = null;
 		// does a document with the same name exist?
-		if ((oldDoc = collection.getDocument(collName + '/' + fileName))
-			!= null) {
+		if ((oldDoc = collection.getDocument(collName + '/' + fileName)) != null) {
 			// do we have permissions for update?
 			if (!oldDoc.getPermissions().validate(user, Permission.UPDATE))
 				throw new PermissionDeniedException(
 					"document exists and update " + "is not allowed");
 			// no: do we have write permissions?
-		} else if (
-			!collection.getPermissions().validate(user, Permission.WRITE))
+		} else if (!collection.getPermissions().validate(user, Permission.WRITE))
 			throw new PermissionDeniedException(
 				"not allowed to write to collection " + collection.getName());
 		// if an old document exists, save the new document with a temporary
 		// document name
 		if (oldDoc != null)
-			document =
-				new DocumentImpl(
-					broker,
-					collName + "/__" + fileName,
-					collection);
+			document = new DocumentImpl(broker, collName + "/__" + fileName, collection);
 		else
-			document =
-				new DocumentImpl(broker, collName + '/' + fileName, collection);
+			document = new DocumentImpl(broker, collName + '/' + fileName, collection);
 		collection.addDocument(document);
 		if (oldDoc == null) {
 			document.getPermissions().setOwner(user);
@@ -707,12 +746,10 @@ public class Parser
 			document.setPermissions(oldDoc.getPermissions());
 
 		// reset internal variables
-		maxLevel = 0;
 		level = 0;
 		currentPath.setLength(0);
 		stack = new Stack();
 		prefixes = new Stack();
-		previousPath = null;
 		rootNode = null;
 		LOG.debug("validating document " + fileName + " ...");
 		DOMStreamer streamer = new DOMStreamer(this, this);
@@ -727,9 +764,7 @@ public class Parser
 		// new document is valid: remove old document
 		if (oldDoc != null) {
 			broker.removeDocument(oldDoc.getFileName());
-			collection.renameDocument(
-				document.getFileName(),
-				oldDoc.getFileName());
+			collection.renameDocument(document.getFileName(), oldDoc.getFileName());
 		}
 
 	}
@@ -746,10 +781,7 @@ public class Parser
 	 *@param  feature  
 	 *@param  value    
 	 */
-	private void setFeature(
-		SAXParserFactory factory,
-		String feature,
-		boolean value) {
+	private void setFeature(SAXParserFactory factory, String feature, boolean value) {
 		try {
 			factory.setFeature(feature, value);
 		} catch (SAXNotRecognizedException e) {
@@ -771,8 +803,7 @@ public class Parser
 	// used to determine Doctype
 
 	public void startDTD(String name, String publicId, String systemId) {
-		DocumentTypeImpl docType =
-			new DocumentTypeImpl(name, publicId, systemId);
+		DocumentTypeImpl docType = new DocumentTypeImpl(name, publicId, systemId);
 		document.setDocumentType(docType);
 		insideDTD = true;
 	}
@@ -780,25 +811,18 @@ public class Parser
 	public void startDocument() {
 	}
 
-	public void startElement(
-		String namespace,
-		String name,
-		String qname,
-		Attributes attributes) {
+	public void startElement(String namespace, String name, String qname, Attributes attributes) {
 		ElementImpl last = null;
 		ElementImpl node = null;
 
 		if (!stack.empty()) {
 			last = (ElementImpl) stack.peek();
 			if (charBuf != null && charBuf.length() > 0) {
-				final String normalized =
-					charBuf.getNormalizedString(normalize);
+				final String normalized = charBuf.getNormalizedString(normalize);
 				if (normalized.length() > 0) {
 					text.setData(normalized);
 					text.setOwnerDocument(document);
-					charBuf.setLength(0);
 					last.appendChildInternal(text);
-
 					if (!validate)
 						broker.store(text, currentPath.toString());
 					text.clear();
@@ -811,14 +835,13 @@ public class Parser
 				node = new ElementImpl(qname);
 			last.appendChildInternal(node);
 		} else {
-			if (!validate)
-				node = new ElementImpl(1, qname);
-			else
+			if (validate)
 				node = new ElementImpl(0, qname);
+			else
+				node = new ElementImpl(1, qname);
 
 			rootNode = node;
-			document.appendChild(node);
-			document.setDocumentElement(node.getGID());
+			document.appendChild(node, validate);
 		}
 		node.setOwnerDocument(document);
 		node.setAttributes((short) attributes.getLength());
@@ -829,19 +852,15 @@ public class Parser
 		currentPath.append('/').append(qname);
 		if (!validate
 			&& (broker.getDatabaseType() == DBBroker.DBM
-				|| broker.getDatabaseType() == DBBroker.NATIVE))
+				|| broker.getDatabaseType() == DBBroker.NATIVE)) {
 			broker.store(node, currentPath.toString());
+		}
 
 		level++;
 		if (document.getMaxDepth() < level)
 			document.setMaxDepth(level);
 
 		int attrLength = attributes.getLength();
-		if (attrLength > 0 && document.getMaxDepth() < level + 1) {
-			document.setMaxDepth(level + 1);
-			if (validate && document.getTreeLevelOrder(level + 1) < attrLength)
-				document.setTreeLevelOrder(level + 1, attrLength);
-		}
 		String attrQName;
 		String attrPrefix;
 		String attrNS;
@@ -852,8 +871,7 @@ public class Parser
 			if (attrQName.startsWith("xmlns"))
 				--attrLength;
 			else {
-				final AttrImpl attr =
-					new AttrImpl(attrQName, attributes.getValue(i));
+				final AttrImpl attr = new AttrImpl(attrQName, attributes.getValue(i));
 				attr.setOwnerDocument(document);
 				if (attributes.getType(i).equals("ID"))
 					attr.setType(AttrImpl.ID);
@@ -865,13 +883,13 @@ public class Parser
 		}
 		if (attrLength > 0)
 			node.setAttributes((short) attrLength);
-
 		currentLine = locator.getLineNumber();
 		if (!validate) {
 			progress.setValue(currentLine);
 			setChanged();
 			notifyObservers(progress);
 		}
+		charBuf.setLength(0);
 		//		previousPath = currentPath;
 	}
 
@@ -903,8 +921,7 @@ public class Parser
 	 *@exception  SAXException  Description of the Exception
 	 *@exception  IOException   Description of the Exception
 	 */
-	public DocumentImpl store(InputSource src)
-		throws SAXException, IOException {
+	public DocumentImpl store(InputSource src) throws SAXException, IOException {
 		LOG.debug("storing document ...");
 		try {
 			final InputStream is = src.getByteStream();
@@ -927,21 +944,23 @@ public class Parser
 				// we don't know the doctype
 				// set it to the root node's tag name
 				final DocumentTypeImpl dt =
-					new DocumentTypeImpl(
-						rootNode.getTagName(),
-						null,
-						document.getFileName());
+					new DocumentTypeImpl(rootNode.getTagName(), null, document.getFileName());
 				document.setDocumentType(dt);
 			}
 			if (broker.getDatabaseType() != DBBroker.NATIVE) {
 				broker.storeDocument(document);
 				broker.saveCollection(collection);
-			} else {
-				broker.addDocument(collection, document);
 			}
 			document.setChildCount(0);
 			parser.parse(src);
+			if(broker.getDatabaseType() == DBBroker.NATIVE)
+				broker.addDocument(collection, document);
 			broker.flush();
+			if (document.getFileName().equals("/db/system/users.xml") && privileged == false) {
+				// inform the security manager that system data has changed
+				LOG.debug("users.xml changed");
+				broker.getBrokerPool().reloadSecurityManager(broker);
+			}
 			return document;
 		} catch (NullPointerException npe) {
 			LOG.debug("null pointer", npe);
@@ -971,10 +990,7 @@ public class Parser
 				// we don't know the doctype
 				// set it to the root node's tag name
 				final DocumentTypeImpl dt =
-					new DocumentTypeImpl(
-						rootNode.getTagName(),
-						null,
-						document.getFileName());
+					new DocumentTypeImpl(rootNode.getTagName(), null, document.getFileName());
 				document.setDocumentType(dt);
 			}
 			if (broker.getDatabaseType() != DBBroker.NATIVE) {
@@ -987,6 +1003,11 @@ public class Parser
 			DOMStreamer streamer = new DOMStreamer(this, this);
 			streamer.stream(node);
 			broker.flush();
+			if (document.getFileName().equals("/db/system/users.xml") && privileged == false) {
+				// inform the security manager that system data has changed
+				LOG.debug("users.xml changed");
+				broker.getBrokerPool().reloadSecurityManager(broker);
+			}
 			return document;
 		} catch (NullPointerException npe) {
 			LOG.debug("null pointer", npe);
@@ -996,10 +1017,41 @@ public class Parser
 		}
 	}
 
-	// Methods of interface ErrorHandler
-
 	public void warning(SAXParseException e) throws SAXException {
-		LOG.warn(e);
-		System.out.println("parser warning at line " + e.getLineNumber());
+		LOG.debug("warning at line " + e.getLineNumber(), e);
+		throw new SAXException("warning at line " + e.getLineNumber() + ": " + e.getMessage(), e);
 	}
+
+	/**
+	 * Try to resolve external entities.
+	 * 
+	 * This method forwards the request to the resolver. If that fails,
+	 * the method replaces absolute file names with relative ones 
+	 * and retries to resolve. This makes it possible to use relative
+	 * file names in the catalog.
+	 * 
+	 * @see org.xml.sax.EntityResolver#resolveEntity(java.lang.String, java.lang.String)
+	 */
+	public InputSource resolveEntity(String publicId, String systemId)
+		throws SAXException, IOException {
+		InputSource is = resolver.resolveEntity(publicId, systemId);
+		// if resolution failed and publicId == null,
+		// try to make absolute file names relative and retry
+		if (is == null) {
+			if (publicId != null)
+				return null;
+			URL url = new URL(systemId);
+			if (url.getProtocol().equals("file")) {
+				String path = url.getPath();
+				File f = new File(path);
+				if (!f.canRead())
+					return resolver.resolveEntity(null, f.getName());
+				else
+					return new InputSource(f.getAbsolutePath());
+			} else
+				return new InputSource(url.openStream());
+		}
+		return is;
+	}
+
 }

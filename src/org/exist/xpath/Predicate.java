@@ -56,7 +56,6 @@ public class Predicate extends PathExpr {
             {
                 NodeSet nodes =
                     (NodeSet) super.eval( docs, context, null ).getNodeList();
-                long start = System.currentTimeMillis();
                 NodeProxy l;
                 NodeProxy parent;
                 boolean includeSelf =
@@ -75,8 +74,6 @@ public class Predicate extends PathExpr {
                         }
                     }
                 }
-                LOG.debug("merging predicate values took " +
-                    (System.currentTimeMillis() - start) + "ms.");
                 break;
             }
             case Constants.TYPE_BOOL:
@@ -151,13 +148,6 @@ public class Predicate extends PathExpr {
         return new ValueNodeSet( result );
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@param  in_docs  Description of the Parameter
-     *@return          Description of the Return Value
-     */
     public DocumentSet preselect( DocumentSet in_docs ) {
         DocumentSet docs = in_docs;
         for ( Iterator iter = steps.iterator(); iter.hasNext();  )

@@ -171,10 +171,9 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 			return;
 		ForEach each = (ForEach) commandStack.peek();
 		try {
-			each.currentResource.getContentAsSAX(this);
+			if(each.currentResource != null)
+				each.currentResource.getContentAsSAX(this);
 		} catch (XMLDBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	}
 
@@ -236,6 +235,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 			return;
 		}
 		each.query = xpath;
+		String sortExpr = attribs.getValue("sort-by");
 		String pFrom = attribs.getValue("from");
 		if (pFrom != null)
 			try {
@@ -264,25 +264,26 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 				(XPathQueryServiceImpl) collection.getService("XPathQueryService", "1.0");
 			service.setProperty("sax-document-events", "false");
 			service.setProperty("create-container-elements", "false");
-
 			// check if query result is already stored in the session
 			if (createSession && resource == null)
 				queryResult = (ResourceSet) session.getAttribute(xpath);
 			if (queryResult == null) {
 				queryResult =
-					(resource == null) ? service.query(xpath) : service.query(resource, xpath);
+					(resource == null) ? service.query(xpath, sortExpr) : 
+						service.query(resource, xpath, sortExpr);
 				if (createSession)
 					session.setAttribute(xpath, queryResult);
 			}
-			if (queryResult == null)
+			if (queryResult == null) {
 				reportError(WARNING, "query returned null");
-
+				return;
+			}
 			each.queryResult = queryResult;
 			int size = (int) each.queryResult.getSize();
 			if (each.from < 0)
 				each.from = 0;
-			if (each.to < 0 || each.to > size)
-				each.to = size;
+			if (each.to < 0 || each.to >= size)
+				each.to = size - 1;
 			if (!nested) {
 				AttributesImpl atts = new AttributesImpl();
 				atts.addAttribute(
@@ -385,7 +386,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 		if (each.queryResult == null)
 			return;
 		DOMStreamer streamer = new DOMStreamer(this);
-		for (each.current = each.from; each.current < each.to; ++each.current) {
+		for (each.current = each.from; each.current <= each.to; ++each.current) {
 			try {
 				each.currentResource = (XMLResource)
 					each.queryResult.getResource(each.current);

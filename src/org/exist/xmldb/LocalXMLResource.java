@@ -46,7 +46,8 @@ public class LocalXMLResource implements XMLResource {
 	protected boolean indent = true;
 	protected boolean createContainerElements = true;
 	protected boolean processXInclude = true;
-
+	protected boolean matchTagging = true;
+	
 	protected User user;
 	protected String content = null;
 	protected File file = null;
@@ -142,6 +143,7 @@ public class LocalXMLResource implements XMLResource {
 				serializer.setEncoding(encoding);
 				serializer.setProcessXInclude(processXInclude);
 				serializer.setCreateContainerElements(createContainerElements);
+				serializer.setHighlightMatches(matchTagging);
 				if (id < 0)
 					content = serializer.serialize(document);
 				else {
@@ -210,6 +212,7 @@ public class LocalXMLResource implements XMLResource {
 			serializer.setProcessXInclude(processXInclude);
 			serializer.setContentHandler(handler);
 			serializer.setCreateContainerElements(createContainerElements);
+			serializer.setHighlightMatches(matchTagging);
 			String xml;
 			try {
 				if (id < 0)
@@ -308,26 +311,6 @@ public class LocalXMLResource implements XMLResource {
 
 	public void setContentAsDOM(Node root) throws XMLDBException {
 		this.root = root;
-//		OutputFormat format = new OutputFormat("xml", encoding, false);
-//		InternalXMLSerializer xmlout = new InternalXMLSerializer(format);
-//		try {
-//            switch(root.getNodeType()) {
-//                case Node.ELEMENT_NODE:
-//                    xmlout.serialize((Element)root);
-//                    break;
-//                case Node.DOCUMENT_NODE:
-//                    xmlout.serialize((Document)root);
-//                    break;
-//                case Node.DOCUMENT_FRAGMENT_NODE:
-//                    xmlout.serialize((DocumentFragment)root);
-//                    break;
-//                default:
-//                    throw new XMLDBException(ErrorCodes.WRONG_CONTENT_TYPE,
-//                        "argument should be an Element, Document or DocumentFragment");
-//            }
-//		} catch (IOException ioe) {
-//			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
-//		}
 	}
 
 	public ContentHandler setContentAsSAX() throws XMLDBException {
@@ -351,6 +334,10 @@ public class LocalXMLResource implements XMLResource {
 		processXInclude = process;
 	}
 
+	public void setMatchTagging(boolean tagging) {
+		matchTagging = tagging;
+	}
+	
 	private class InternalXMLSerializer extends XMLSerializer {
 
 		StringWriter writer = new StringWriter();
@@ -369,17 +356,12 @@ public class LocalXMLResource implements XMLResource {
 			System.out.println(content);
 		}
 	}
-	/* (non-Javadoc)
-	 * @see org.xmldb.api.modules.XMLResource#getSAXFeature(java.lang.String)
-	 */
+	
 	public boolean getSAXFeature(String arg0)
 		throws SAXNotRecognizedException, SAXNotSupportedException {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xmldb.api.modules.XMLResource#setSAXFeature(java.lang.String, boolean)
-	 */
 	public void setSAXFeature(String arg0, boolean arg1)
 		throws SAXNotRecognizedException, SAXNotSupportedException {
 	}

@@ -1,0 +1,105 @@
+<installation version="1.0">
+    <info>
+        <appname>eXist</appname>
+        <appversion>0.9.1</appversion>
+        <authors>
+            <author email="meier@ifs.tu-darmstadt.de" name="Wolfgang Meier"/>
+        </authors>
+        <url>http://exist-db.org</url>
+    </info>
+    <guiprefs height="430" resizable="no" width="640"/>
+    <locale>
+        <langpack iso3="eng"/>
+    </locale>
+    <resources>
+    	<res id="Installer.image" src="installer/ilogo.jpg"/>
+    	<res id="shortcutSpec.xml" src="installer/shortcutSpec.xml"/>
+    	<res id="XInfoPanel.info" src="installer/finished.txt"/>
+    </resources>
+    <native type="izpack" name="ShellLink.dll"/>
+    <panels>
+        <panel classname="HelloPanel"/>
+        <panel classname="PacksPanel"/>
+        <panel classname="TargetPanel"/>
+        <panel classname="InstallPanel"/>
+        <panel classname="ShortcutPanel"/>
+        <panel classname="XInfoPanel"/>
+        <panel classname="FinishPanel"/>
+    </panels>
+    <packs>
+        <pack name="core" required="yes">
+            <description>Everything needed for the database core, including Jetty + Cocoon</description>
+            <fileset targetdir="$INSTALL_PATH" dir=".">
+            	<include name="conf.xml"/>
+            	<include name="client.properties"/>
+            	<include name="conf.xml"/>
+            	<include name="*.css"/>
+            	<include name="LICENSE"/>
+            	<include name="README"/>
+            	<include name="*.jpg"/>
+            	<include name="*.html"/>
+            	<include name="exist.jar"/>
+            	<include name="start.jar"/>
+            	<include name="examples.jar"/>
+            	<include name="ctl/"/>
+            	<include name="Jetty*/"/>
+            	<include name="lib/"/>
+            	<include name="samples/**"/>
+            	<include name="sql/"/>
+            	<include name="thirdparty/"/>
+            	<exclude name="**/CVS/"/>
+            	<exclude name="**/*~"/>
+            	<exclude name="samples/xupdate/**"/>
+            </fileset>
+            <fileset targetdir="$INSTALL_PATH/webapp" dir="webapp">
+            	<exclude name="**/*.dbx"/>
+            	<exclude name="**/*.log"/>
+				<exclude name="api/**"/>
+				<exclude name="bin/**"/>
+				<exclude name="**/CVS/"/>
+				<exclude name="**/*~"/>
+            </fileset>
+            <fileset targetdir="$INSTALL_PATH/bin" dir="installer">
+            	<include name="*.sh"/>
+            	<include name="*.bat"/>
+            </fileset>
+			<parsable targetfile="$INSTALL_PATH/bin/backup.sh"/>
+			<parsable targetfile="$INSTALL_PATH/bin/client.sh"/>
+			<parsable targetfile="$INSTALL_PATH/bin/startup.sh"/>
+			<parsable targetfile="$INSTALL_PATH/bin/server.sh"/>
+			<parsable targetfile="$INSTALL_PATH/bin/backup.bat"/>
+			<parsable targetfile="$INSTALL_PATH/bin/client.bat"/>
+			<parsable targetfile="$INSTALL_PATH/bin/startup.bat"/>
+			<parsable targetfile="$INSTALL_PATH/bin/server.bat"/>
+			<executable targetfile="$INSTALL_PATH/bin/backup.sh"
+				stage="never" os="unix"/>
+			<executable targetfile="$INSTALL_PATH/bin/client.sh"
+				stage="never" os="unix"/>
+			<executable targetfile="$INSTALL_PATH/bin/startup.sh"
+				stage="never" os="unix"/>
+			<executable targetfile="$INSTALL_PATH/bin/server.sh"
+				stage="never" os="unix"/>
+        </pack>
+        <pack name="sources" required="no">
+            <description>Java source files</description>
+            <fileset targetdir="$INSTALL_PATH/src" 
+            	dir="src">
+            	<exclude name="**/*~"/>
+            	<exclude name="**/.*"/>
+            	<exclude name="**/CVS/"/>
+            </fileset>
+            <fileset targetdir="$INSTALL_PATH"
+            	dir=".">
+            	<include name="build.*"/>
+            	<exclude name="*~"/>
+            </fileset>
+        </pack>
+        <pack name="javadoc" required="no">
+        	<description>Generated Javadocs</description>
+        	<fileset targetdir="$INSTALL_PATH/webapp/api"
+        		dir="webapp/api">
+        		<exclude name="**/CVS/"/>
+        	</fileset>
+        </pack>
+    </packs>	
+</installation>

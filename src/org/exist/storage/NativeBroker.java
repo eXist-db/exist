@@ -22,7 +22,7 @@
  */
 package org.exist.storage;
 
-import it.unimi.dsi.fastUtil.Int2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.Int2ObjectAVLTreeMap;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -70,9 +70,9 @@ import org.exist.util.ByteConversion;
 import org.exist.util.CollectionCache;
 import org.exist.util.Configuration;
 import org.exist.util.IndexCallback;
-import org.exist.util.Occurrences;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
+import org.exist.util.Occurrences;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
@@ -114,7 +114,7 @@ public class NativeBroker extends DBBroker {
 	protected boolean readOnly = false;
 	protected int memMinFree;
 	protected int nodesCount = 0;
-	protected CollectionCache collections = new CollectionCache(128);
+	protected final static CollectionCache collections = new CollectionCache(512);
 	private final Runtime run = Runtime.getRuntime();
 
 	/**
@@ -189,7 +189,7 @@ public class NativeBroker extends DBBroker {
 
 			if ((domDb = (DOMFile) config.getProperty("db-connection.dom")) == null) {
 				LOG.debug("page buffer size = " + buffers);
-				domDb = new DOMFile(new File(dataDir + pathSep + "dom.dbx"), buffers, 64);
+				domDb = new DOMFile(new File(dataDir + pathSep + "dom.dbx"), buffers, 128);
 				if (!domDb.exists()) {
 					LOG.info("creating dom.dbx");
 					domDb.create();
@@ -446,19 +446,7 @@ public class NativeBroker extends DBBroker {
 		return result;
 	}
 
-	/**  Description of the Method */
 	public void flush() {
-		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-			public Object start() {
-				try {
-					domDb.flush();
-				} catch (DBException e) {
-					LOG.warn("error while flushing dom.dbx", e);
-				}
-				return null;
-			}
-		}
-		.run();
 		textEngine.flush();
 		elementIndex.flush();
 		if (symbols != null && symbols.hasChanged())
@@ -476,7 +464,7 @@ public class NativeBroker extends DBBroker {
 	public DocumentSet getAllDocuments(User user) {
 		long start = System.currentTimeMillis();
 		Collection root = getCollection("/db");
-		DocumentSet docs = root.allDocs(user);
+		DocumentSet docs = root.allDocs(user, true);
 
 		//		try {
 		//			ArrayList collList = null;
@@ -557,7 +545,7 @@ public class NativeBroker extends DBBroker {
 	 *@return       The collection value
 	 */
 	public Collection getCollection(String name) {
-		final long start = System.currentTimeMillis();
+//		final long start = System.currentTimeMillis();
 		name = normalizeCollectionName(name);
 		if (name.length() > 0 && name.charAt(0) != '/')
 			name = "/" + name;
@@ -573,28 +561,34 @@ public class NativeBroker extends DBBroker {
 		} catch (UnsupportedEncodingException uee) {
 			key = new Value(name.getBytes());
 		}
-		Collection collection = collections.get(name);
-		if (collection != null)
+		synchronized (collections) {
+			Collection collection = collections.get(name);
+			if (collection != null)
+				return collection;
+			collection = new Collection(this, name);
+			Value val = null;
+			synchronized (collectionsDb) {
+				val = collectionsDb.get(key);
+			}
+			if (val == null)
+				return null;
+			final byte[] data = val.getData();
+			VariableByteInputStream istream = new VariableByteInputStream(data);
+			try {
+				collection.read(istream);
+			} catch (IOException ioe) {
+				LOG.warn(ioe);
+				return null;
+			}
+			collections.add(collection);
+//			LOG.debug(
+//				"loading collection "
+//					+ name
+//					+ " took "
+//					+ (System.currentTimeMillis() - start)
+//					+ "ms.");
 			return collection;
-		collection = new Collection(this, name);
-		Value val = null;
-		synchronized (collectionsDb) {
-			val = collectionsDb.get(key);
 		}
-		if (val == null)
-			return null;
-		final byte[] data = val.getData();
-		VariableByteInputStream istream = new VariableByteInputStream(data);
-		try {
-			collection.read(istream);
-		} catch (IOException ioe) {
-			LOG.warn(ioe);
-			return null;
-		}
-		collections.add(collection);
-		LOG.debug(
-			"loading collection " + name + " took " + (System.currentTimeMillis() - start) + "ms.");
-		return collection;
 	}
 
 	public static SymbolTable getSymbols() {
@@ -732,7 +726,11 @@ public class NativeBroker extends DBBroker {
 		if (!collection.startsWith("/db"))
 			collection = "/db" + collection;
 		Collection root = getCollection(collection);
-		docs = root.allDocs(user);
+		if(root == null) {
+			LOG.debug("collection " + collection + " not found");
+			return docs;
+		}
+		docs = root.allDocs(user, inclusive);
 		//		ArrayList collections = null;
 		//		// read collection + subcollections if inclusive=true
 		//		if (inclusive) {
@@ -790,38 +788,6 @@ public class NativeBroker extends DBBroker {
 				+ (System.currentTimeMillis() - start)
 				+ "ms.");
 		return docs;
-	}
-
-	private final class CollectionsCallback implements IndexCallback {
-
-		DBBroker broker;
-		ArrayList list = new ArrayList();
-
-		public CollectionsCallback(DBBroker broker) {
-			this.broker = broker;
-		}
-
-		public boolean indexInfo(Value key, Value value) {
-			String name = key.toString();
-			Collection temp = collections.get(name);
-			if (temp == null) {
-				temp = new Collection(broker, name);
-				byte[] data = value.getData();
-				VariableByteInputStream istream = new VariableByteInputStream(data);
-				try {
-					temp.read(istream);
-				} catch (IOException e) {
-					LOG.warn("io error while reading collection " + name, e);
-					return false;
-				}
-			}
-			list.add(temp);
-			return true;
-		}
-
-		public ArrayList getCollections() {
-			return list;
-		}
 	}
 
 	/**
@@ -1309,6 +1275,7 @@ public class NativeBroker extends DBBroker {
 	 */
 	public Collection getOrCreateCollection(User user, String name)
 		throws PermissionDeniedException {
+//		final long start = System.currentTimeMillis();
 		name = normalizeCollectionName(name);
 		if (name.length() > 0 && name.charAt(0) != '/')
 			name = "/" + name;
@@ -1319,45 +1286,49 @@ public class NativeBroker extends DBBroker {
 		if (name.endsWith("/") && name.length() > 1)
 			name = name.substring(0, name.length() - 1);
 
-		Collection current;
-		try {
-			StringTokenizer tok = new StringTokenizer(name, "/");
-			String temp = tok.nextToken();
-			String path = "/db";
-			Collection sub;
-			current = getCollection("/db");
-			if (current == null) {
-				LOG.debug("creating root collection /db");
-				current = new Collection(this, "/db");
-				current.getPermissions().setPermissions(0777);
-				current.getPermissions().setOwner(user);
-				current.getPermissions().setGroup(user.getPrimaryGroup());
-				current.setId(getNextCollectionId());
-				saveCollection(current);
-			}
-			while (tok.hasMoreTokens()) {
-				temp = tok.nextToken();
-				path = path + "/" + temp;
-				if (current.hasSubcollection(temp))
-					current = getCollection(path);
-				else {
-					if (!current.getPermissions().validate(user, Permission.WRITE))
-						throw new PermissionDeniedException("not allowed to write to collection");
-					LOG.debug("creating collection " + path);
-					sub = new Collection(this, path);
-					sub.getPermissions().setOwner(user);
-					sub.getPermissions().setGroup(user.getPrimaryGroup());
-					sub.setId(getNextCollectionId());
-					current.addCollection(temp);
+		synchronized (collections) {
+			Collection current;
+			try {
+				StringTokenizer tok = new StringTokenizer(name, "/");
+				String temp = tok.nextToken();
+				String path = "/db";
+				Collection sub;
+				current = getCollection("/db");
+				if (current == null) {
+					LOG.debug("creating root collection /db");
+					current = new Collection(this, "/db");
+					current.getPermissions().setPermissions(0777);
+					current.getPermissions().setOwner(user);
+					current.getPermissions().setGroup(user.getPrimaryGroup());
+					current.setId(getNextCollectionId());
 					saveCollection(current);
-					current = sub;
 				}
+				while (tok.hasMoreTokens()) {
+					temp = tok.nextToken();
+					path = path + "/" + temp;
+					if (current.hasSubcollection(temp))
+						current = getCollection(path);
+					else {
+						if (!current.getPermissions().validate(user, Permission.WRITE))
+							throw new PermissionDeniedException("not allowed to write to collection");
+						LOG.debug("creating collection " + path);
+						sub = new Collection(this, path);
+						sub.getPermissions().setOwner(user);
+						sub.getPermissions().setGroup(user.getPrimaryGroup());
+						sub.setId(getNextCollectionId());
+						current.addCollection(temp);
+						saveCollection(current);
+						current = sub;
+					}
+				}
+			} catch (ReadOnlyException e) {
+				LOG.debug("database read-only");
+				return null;
 			}
-		} catch (ReadOnlyException e) {
-			LOG.debug("database read-only");
-			return null;
+//			LOG.debug("getOrCreateCollection took " + 
+//				(System.currentTimeMillis() - start) + "ms.");
+			return current;
 		}
-		return current;
 	}
 
 	/**
@@ -1508,10 +1479,18 @@ public class NativeBroker extends DBBroker {
 				LOG.debug("collection " + name + " not found!");
 				return false;
 			}
-			Collection parent = collection.getParent();
 			if (!collection.getPermissions().validate(user, Permission.WRITE))
 				throw new PermissionDeniedException("not allowed to remove collection");
 
+			synchronized (collections) {
+				if(!name.equals("/db"))
+					collections.clear();
+				Collection parent = collection.getParent();
+				if (parent != null) {
+					parent.removeCollection(name.substring(name.lastIndexOf("/") + 1));
+					saveCollection(parent);
+				}
+			}
 			((NativeTextEngine) textEngine).removeCollection(collection);
 
 			LOG.debug("removing elements ...");
@@ -1538,10 +1517,6 @@ public class NativeBroker extends DBBroker {
 			}
 			elementPool.clear();
 
-			if (parent != null) {
-				parent.removeCollection(name.substring(name.lastIndexOf("/") + 1));
-				saveCollection(parent);
-			}
 			String childCollection;
 			LOG.debug("removing sub-collections");
 			for (Iterator i = collection.collectionIterator(); i.hasNext();) {
@@ -1566,53 +1541,55 @@ public class NativeBroker extends DBBroker {
 			LOG.debug("removed collection ...");
 
 			LOG.debug("removing dom ...");
-			DocumentImpl doc;
 			for (Iterator i = collection.iterator(); i.hasNext();) {
-				doc = (DocumentImpl) i.next();
-				synchronized (domDb) {
-					NodeList children = doc.getChildNodes();
-					NodeImpl node;
-					for (int j = 0; j < children.getLength(); j++) {
-						node = (NodeImpl) children.item(j);
-						Iterator k = getDOMIterator(doc, node.getGID());
-						removeNodes(k);
+				final DocumentImpl doc = (DocumentImpl) i.next();
+				new DOMTransaction(this, domDb) {
+					public Object start() {
+						domDb.remove(doc.getAddress());
+						NodeList children = doc.getChildNodes();
+						NodeImpl node;
+						for (int j = 0; j < children.getLength(); j++) {
+							node = (NodeImpl) children.item(j);
+							Iterator k = getDOMIterator(doc, node.getGID());
+							removeNodes(k);
+						}
+						return null;
 					}
-				}
-				ref = new NodeRef(doc.getDocId());
-				query = new IndexQuery(null, IndexQuery.TRUNC_RIGHT, ref);
-				lock = domDb.getLock();
-				// try to acquire a lock on the file
-				try {
-					lock.acquire(this, Lock.WRITE_LOCK);
-					lock.enter(this);
-					domDb.setOwnerObject(this);
-					ArrayList nodes = domDb.findKeys(query);
-					for (Iterator j = nodes.iterator(); j.hasNext();) {
-						ref = (Value) j.next();
-						domDb.removeValue(ref);
+				}.run();
+				new DOMTransaction(this, domDb) {
+					public Object start() {
+						try {
+							Value ref = new NodeRef(doc.getDocId());
+							IndexQuery query = 
+								new IndexQuery(null, IndexQuery.TRUNC_RIGHT, ref);
+							ArrayList nodes = domDb.findKeys(query);
+							for (Iterator j = nodes.iterator(); j.hasNext();) {
+								ref = (Value) j.next();
+								domDb.removeValue(ref);
+							}
+							domDb.flush();
+						} catch (BTreeException e) {
+							LOG.warn("btree error while removing document", e);
+						} catch (DBException e) {
+							LOG.warn("db error while removing document", e);
+						} catch (IOException e) {
+							LOG.warn("io error while removing document", e);
+						}
+						return null;
 					}
-					domDb.flush();
-				} catch (LockException e) {
-					// timed out
-					e.printStackTrace();
-					return false;
-				} finally {
-					lock.release(this);
-				}
+				}.run();
 			}
 			return true;
 		} catch (IOException ioe) {
 			LOG.warn(ioe);
 		} catch (BTreeException bte) {
 			LOG.warn(bte);
-		} catch (DBException dbe) {
-			LOG.warn(dbe);
 		} catch (ReadOnlyException e) {
 			LOG.warn("database is read-only");
 		}
 		return false;
 	}
-
+	
 	/**
 	 *  Description of the Method
 	 *
@@ -1626,7 +1603,6 @@ public class NativeBroker extends DBBroker {
 		try {
 			if (!docName.startsWith("/"))
 				docName = '/' + docName;
-
 			final DocumentImpl doc = (DocumentImpl) getDocument(docName);
 			if (doc == null) {
 				LOG.debug("document " + docName + " not found");
@@ -1639,6 +1615,15 @@ public class NativeBroker extends DBBroker {
 				throw new PermissionDeniedException("permission to remove document denied");
 			LOG.info("removing document " + doc.getDocId() + "...");
 			// remove document
+			synchronized (collections) {
+				synchronized (collectionsDb) {
+					Collection collection = doc.getCollection();
+					collection.removeDocument(docName);
+					saveCollection(collection);
+					collectionsDb.flush();
+					//collections.remove(collection);
+				}
+			}
 
 			// drop element-index
 			short collectionId = doc.getCollection().getId();
@@ -1751,13 +1736,7 @@ public class NativeBroker extends DBBroker {
 					return null;
 				}
 			}
-			.start();
-			synchronized (collectionsDb) {
-				Collection collection = doc.getCollection();
-				collection.removeDocument(docName);
-				saveCollection(collection);
-				collectionsDb.flush();
-			}
+			.run();
 			LOG.info("removed document.");
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
@@ -2029,8 +2008,11 @@ public class NativeBroker extends DBBroker {
 		final IndexPaths idx =
 			(IndexPaths) config.getProperty("indexScheme." + doc.getDoctype().getName());
 		final long gid = node.getGID();
-		if (gid < 0)
+		if (gid < 0) {
 			LOG.debug("illegal node: " + gid + "; " + node.getNodeName());
+			Thread.dumpStack();
+			return;
+		}
 		final short nodeType = node.getNodeType();
 		final String nodeName = node.getNodeName();
 		final int depth = idx == null ? defaultIndexDepth : idx.getIndexDepth();
@@ -2046,6 +2028,8 @@ public class NativeBroker extends DBBroker {
 					//LOG.debug("adding " + gid + " to dom.dbx");
 					address = domDb.put(new NodeRef(doc.getDocId(), gid), data);
 				}
+				if (address < 0)
+					LOG.warn("address is missing");
 				node.setInternalAddress(address);
 				return null;
 			}
@@ -2158,8 +2142,9 @@ public class NativeBroker extends DBBroker {
 			}
 			.run();
 		} catch (Exception e) {
-			LOG.debug(e);
-			e.printStackTrace();
+			LOG.debug("Exception while storing " + node.getNodeName() +
+				"; gid = " + node.getGID() + "; address = " +
+				DOMFile.printAddress(node.getInternalAddress()), e);
 		}
 	}
 

@@ -3,6 +3,8 @@ package org.exist.xmldb;
 
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.*;
+
+import java.util.Hashtable;
 import java.util.Vector;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -20,27 +22,29 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
         this.collection = collection;
     }
 
-
-    public ResourceSet query( String query ) throws XMLDBException {
-        if ( !( query.startsWith( "document(" ) || query.startsWith( "collection(" ) ) ) {
+	public ResourceSet query( String query ) throws XMLDBException {
+		return query(query, null);
+	}
+	
+    public ResourceSet query( String query, String sortExpr ) throws XMLDBException {
+        if ( !( query.startsWith( "document(" ) || query.startsWith( "collection(" ) ||
+        	query.startsWith("xcollection("))) {
             if ( collection.getName().equals( "/" ) )
                 query = "document(*)" + query;
             else
                 query = "collection('" + collection.getPath() + "')" + query;
         }
-        byte[] qdata = null;
-        System.out.println("query: " + query);
-        try {
-            qdata = query.getBytes( "UTF-8" );
-        } catch ( UnsupportedEncodingException e ) {
-            qdata = query.getBytes();
-        }
         try {
             Vector params = new Vector();
-            params.addElement( qdata );
-            Vector result = (Vector) collection.getClient().execute( "query", params );
-            System.out.println("query finished.");
-            return new ResourceSetImpl( collection, result, indentXML, encoding );
+            params.addElement(query.getBytes("UTF-8"));
+            if(sortExpr != null)
+            	params.addElement(sortExpr.getBytes("UTF-8"));
+            Hashtable result = (Hashtable) collection.getClient().execute( "queryP", params );
+            Vector resources = (Vector)result.get("results");
+            int handle = -1;
+            if(resources != null && resources.size() > 0)
+            	handle = ((Integer)result.get("id")).intValue();
+            return new ResourceSetImpl( collection, resources, handle, indentXML, encoding );
         } catch ( XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre );
         } catch ( IOException ioe ) {
@@ -48,22 +52,34 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
         }
     }
 
-    public ResourceSet query( XMLResource res, String query )
+	public ResourceSet query( XMLResource res, String query )
+		throws XMLDBException {
+			return query(res, query, null);
+	}
+		
+    public ResourceSet query( XMLResource res, String query, String sortExpr )
         throws XMLDBException {
         XMLResourceImpl resource = (XMLResourceImpl)res;
         if(resource.id == null) {
             // resource is a document
-            if(!(query.startsWith( "document(" ) || query.startsWith("collection("))) 
+            if(!(query.startsWith( "document(" ) || query.startsWith("collection(") ||
+            	query.startsWith("xcollection("))) 
                 query = "document('" + res.getDocumentId() + "')" + query;
             return query( query );
         }
         try {
             Vector params = new Vector();
-            params.addElement( query );
+            params.addElement( query.getBytes("UTF-8") );
             params.addElement( resource.path );
             params.addElement( resource.id );
-            Vector result = (Vector) collection.getClient().execute( "query", params );
-            return new ResourceSetImpl( collection, result, indentXML, encoding );
+            if(sortExpr != null)
+            	params.addElement( sortExpr.getBytes("UTF-8") );
+			Hashtable result = (Hashtable) collection.getClient().execute( "queryP", params );
+			Vector resources = (Vector)result.get("results");
+			int handle = -1;
+			if(resources != null && resources.size() > 0)
+				handle = ((Integer)result.get("id")).intValue();
+			return new ResourceSetImpl( collection, resources, handle, indentXML, encoding );
         } catch ( XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre );
         } catch ( IOException ioe ) {
@@ -192,6 +208,5 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl {
     public String getNamespace( String prefix ) throws XMLDBException {
         throw new XMLDBException( ErrorCodes.NOT_IMPLEMENTED );
     }
-
 }
 

@@ -24,8 +24,11 @@ import org.apache.log4j.xml.DOMConfigurator;
 import org.apache.xml.resolver.tools.CatalogResolver;
 import org.exist.storage.IndexPaths;
 import org.w3c.dom.*;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -40,7 +43,7 @@ import org.apache.log4j.Logger;
  * @author Wolfgang Meier
  *
  */
-public class Configuration {
+public class Configuration implements ErrorHandler {
 	
 	private final static Logger LOG = 
 		Logger.getLogger( Configuration.class );
@@ -104,7 +107,7 @@ public class Configuration {
 			DocumentBuilderFactory factory =
 				DocumentBuilderFactory.newInstance();
 			builder = factory.newDocumentBuilder();
-
+			builder.setErrorHandler(this);
 			InputSource src = new InputSource(new FileReader(file));
 			Document doc = builder.parse(src);
 			Element root = doc.getDocumentElement();
@@ -121,6 +124,7 @@ public class Configuration {
 				String suppressWS = p.getAttribute("suppress-whitespace");
 				String caseSensitive = p.getAttribute("caseSensitive");
 				String tokenizer = p.getAttribute("tokenizer");
+				String validation = p.getAttribute("validation");
 
 				if (tmp != null)
 					config.put("tmpDir", tmp);
@@ -149,6 +153,8 @@ public class Configuration {
 				if (suppressWS != null)
 					config.put("indexer.suppress-whitespace", suppressWS);
 
+				if (validation != null)
+					config.put("indexer.validation", validation);
 				if (tokenizer != null)
 					config.put("indexer.tokenizer", tokenizer);
 					
@@ -408,6 +414,9 @@ public class Configuration {
                 String internalId = serializer.getAttribute("add-exist-id");
                 if(internalId != null)
                     config.put("serialization.add-exist-id", internalId);
+                String matchTagging = serializer.getAttribute("match-tagging");
+                if(matchTagging != null)
+                	config.put("serialization.match-tagging", matchTagging);
 			}
 			
 			NodeList log4j = doc.getElementsByTagName("log4j:configuration");
@@ -516,4 +525,31 @@ public class Configuration {
 	public void setProperty(String name, Object obj) {
 		config.put(name, obj);
 	}
+	/* (non-Javadoc)
+	 * @see org.xml.sax.ErrorHandler#error(org.xml.sax.SAXParseException)
+	 */
+	public void error(SAXParseException exception) throws SAXException {
+		System.err.println("error occured while reading configuration file " +
+			"[line: " + exception.getLineNumber() + "]:" +
+			exception.getMessage());
+	}
+
+	/* (non-Javadoc)
+	 * @see org.xml.sax.ErrorHandler#fatalError(org.xml.sax.SAXParseException)
+	 */
+	public void fatalError(SAXParseException exception) throws SAXException {
+		System.err.println("error occured while reading configuration file " +
+					"[line: " + exception.getLineNumber() + "]:" +
+					exception.getMessage());
+	}
+
+	/* (non-Javadoc)
+	 * @see org.xml.sax.ErrorHandler#warning(org.xml.sax.SAXParseException)
+	 */
+	public void warning(SAXParseException exception) throws SAXException {
+		System.err.println("error occured while reading configuration file " +
+					"[line: " + exception.getLineNumber() + "]:" +
+					exception.getMessage());
+	}
+
 }

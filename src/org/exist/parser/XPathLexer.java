@@ -1,4 +1,4 @@
-// $ANTLR : "XPathParser.g" -> "XPathLexer.java"$
+// $ANTLR 2.7.2rc2 (20030105): "XPathParser.g" -> "XPathLexer.java"$
 
 	package org.exist.parser;
 	
@@ -57,21 +57,20 @@ public XPathLexer(LexerSharedInputState state) {
 	caseSensitiveLiterals = true;
 	setCaseSensitive(true);
 	literals = new Hashtable();
-	literals.put(new ANTLRHashString("node", this), new Integer(41));
-	literals.put(new ANTLRHashString("near", this), new Integer(37));
-	literals.put(new ANTLRHashString("text", this), new Integer(29));
+	literals.put(new ANTLRHashString("node", this), new Integer(40));
+	literals.put(new ANTLRHashString("near", this), new Integer(36));
+	literals.put(new ANTLRHashString("text", this), new Integer(28));
 	literals.put(new ANTLRHashString("doctype", this), new Integer(21));
 	literals.put(new ANTLRHashString("or", this), new Integer(8));
-	literals.put(new ANTLRHashString("starts-with", this), new Integer(33));
+	literals.put(new ANTLRHashString("starts-with", this), new Integer(32));
 	literals.put(new ANTLRHashString("collection", this), new Integer(25));
-	literals.put(new ANTLRHashString("match", this), new Integer(36));
+	literals.put(new ANTLRHashString("match", this), new Integer(35));
 	literals.put(new ANTLRHashString("document", this), new Integer(22));
 	literals.put(new ANTLRHashString("xpointer", this), new Integer(4));
-	literals.put(new ANTLRHashString("true", this), new Integer(27));
 	literals.put(new ANTLRHashString("and", this), new Integer(9));
-	literals.put(new ANTLRHashString("ends-with", this), new Integer(34));
-	literals.put(new ANTLRHashString("false", this), new Integer(26));
-	literals.put(new ANTLRHashString("contains", this), new Integer(35));
+	literals.put(new ANTLRHashString("xcollection", this), new Integer(26));
+	literals.put(new ANTLRHashString("ends-with", this), new Integer(33));
+	literals.put(new ANTLRHashString("contains", this), new Integer(34));
 }
 
 public Token nextToken() throws TokenStreamException {
@@ -333,7 +332,7 @@ tryAgain:
 			match('"');
 			text.setLength(_saveIndex);
 			{
-			_loop402:
+			_loop61:
 			do {
 				if ((_tokenSet_1.member(LA(1)))) {
 					{
@@ -341,7 +340,7 @@ tryAgain:
 					}
 				}
 				else {
-					break _loop402;
+					break _loop61;
 				}
 				
 			} while (true);
@@ -357,7 +356,7 @@ tryAgain:
 			match('\'');
 			text.setLength(_saveIndex);
 			{
-			_loop405:
+			_loop64:
 			do {
 				if ((_tokenSet_2.member(LA(1)))) {
 					{
@@ -365,7 +364,7 @@ tryAgain:
 					}
 				}
 				else {
-					break _loop405;
+					break _loop64;
 				}
 				
 			} while (true);
@@ -810,13 +809,13 @@ tryAgain:
 		
 		mNMSTART(false);
 		{
-		_loop430:
+		_loop89:
 		do {
 			if ((_tokenSet_3.member(LA(1)))) {
 				mNMCHAR(false);
 			}
 			else {
-				break _loop430;
+				break _loop89;
 			}
 			
 		} while (true);
@@ -835,13 +834,13 @@ tryAgain:
 		
 		mNMSTART(false);
 		{
-		_loop433:
+		_loop92:
 		do {
 			if ((_tokenSet_3.member(LA(1)))) {
 				mNMCHAR(false);
 			}
 			else {
-				break _loop433;
+				break _loop92;
 			}
 			
 		} while (true);
@@ -872,10 +871,10 @@ tryAgain:
 		_ttype = ID_OR_FUNC;
 		int _saveIndex;
 		
-		boolean synPredMatched437 = false;
+		boolean synPredMatched96 = false;
 		if (((_tokenSet_0.member(LA(1))) && (true))) {
-			int _m437 = mark();
-			synPredMatched437 = true;
+			int _m96 = mark();
+			synPredMatched96 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -884,12 +883,12 @@ tryAgain:
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched437 = false;
+				synPredMatched96 = false;
 			}
-			rewind(_m437);
+			rewind(_m96);
 			inputState.guessing--;
 		}
-		if ( synPredMatched437 ) {
+		if ( synPredMatched96 ) {
 			mFUNC(false);
 			if ( inputState.guessing==0 ) {
 				_ttype = FUNC;
@@ -919,41 +918,41 @@ tryAgain:
 		int _saveIndex;
 		
 		{
-		int _cnt440=0;
-		_loop440:
+		int _cnt99=0;
+		_loop99:
 		do {
 			if (((LA(1) >= '0' && LA(1) <= '9'))) {
 				mDIGIT(false);
 			}
 			else {
-				if ( _cnt440>=1 ) { break _loop440; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt99>=1 ) { break _loop99; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			
-			_cnt440++;
+			_cnt99++;
 		} while (true);
 		}
 		{
-		_loop444:
+		_loop103:
 		do {
 			if ((LA(1)=='.')) {
 				match('.');
 				{
-				int _cnt443=0;
-				_loop443:
+				int _cnt102=0;
+				_loop102:
 				do {
 					if (((LA(1) >= '0' && LA(1) <= '9'))) {
 						mDIGIT(false);
 					}
 					else {
-						if ( _cnt443>=1 ) { break _loop443; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+						if ( _cnt102>=1 ) { break _loop102; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 					}
 					
-					_cnt443++;
+					_cnt102++;
 				} while (true);
 				}
 			}
 			else {
-				break _loop444;
+				break _loop103;
 			}
 			
 		} while (true);
@@ -1120,11 +1119,8 @@ tryAgain:
 	
 	private static final long[] mk_tokenSet_0() {
 		long[] data = new long[1025];
-		data[0]=0L;
 		data[1]=576460745995190270L;
-		data[2]=0L;
 		data[3]=-36028797027352577L;
-		for (int i = 4; i<=1024; i++) { data[i]=0L; }
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
@@ -1132,7 +1128,6 @@ tryAgain:
 		long[] data = new long[2048];
 		data[0]=-17179869192L;
 		for (int i = 1; i<=1023; i++) { data[i]=-1L; }
-		for (int i = 1024; i<=2047; i++) { data[i]=0L; }
 		return data;
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
@@ -1140,7 +1135,6 @@ tryAgain:
 		long[] data = new long[2048];
 		data[0]=-549755813896L;
 		for (int i = 1; i<=1023; i++) { data[i]=-1L; }
-		for (int i = 1024; i<=2047; i++) { data[i]=0L; }
 		return data;
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
@@ -1148,9 +1142,7 @@ tryAgain:
 		long[] data = new long[1025];
 		data[0]=576284830442979328L;
 		data[1]=576460745995190270L;
-		data[2]=0L;
 		data[3]=-36028797027352577L;
-		for (int i = 4; i<=1024; i++) { data[i]=0L; }
 		return data;
 	}
 	public static final BitSet _tokenSet_3 = new BitSet(mk_tokenSet_3());
