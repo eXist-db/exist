@@ -41,6 +41,8 @@ import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.NamespaceSupport;
 
 /**
+ * General purpose class to stream a DOM node to SAX.
+ * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class DOMStreamer {
@@ -68,6 +70,11 @@ public class DOMStreamer {
 		lexicalHandler = handler;
 	}
 
+	/**
+	 * Reset internal state for reuse. Registered handlers will be set
+	 * to null.
+	 *
+	 */
 	public void reset() {
 		nsSupport.reset();
 		namespaceDecls.clear();
@@ -76,10 +83,25 @@ public class DOMStreamer {
 		lexicalHandler = null;
 	}
 	
+	/**
+	 * Serialize the given node and all its descendants to SAX.
+	 * 
+	 * @param node
+	 * @throws SAXException
+	 */
     public void serialize(Node node) throws SAXException {
         serialize(node, false);
     }
     
+    /**
+     * Serialize the given node and all its descendants to SAX. If
+     * callDocumentEvents is set to false, startDocument/endDocument
+     * events will not be fired.
+     * 
+     * @param node
+     * @param callDocumentEvents
+     * @throws SAXException
+     */
 	public void serialize(Node node, boolean callDocumentEvents) throws SAXException {
         if(callDocumentEvents)
             contentHandler.startDocument();
@@ -132,6 +154,7 @@ public class DOMStreamer {
 				String attrName;
 				for (int i = 0; i < attrs.getLength(); i++) {
 					nextAttr = (Attr) attrs.item(i);
+					System.out.println("attr = " + nextAttr.getName());
 					attrName = nextAttr.getName();
 					if (attrName.equals("xmlns")) {
 						if (nsSupport.getURI("") == null) {
@@ -140,6 +163,7 @@ public class DOMStreamer {
 							nsSupport.declarePrefix("", uri);
 						}
 					} else if (attrName.startsWith("xmlns:")) {
+						System.out.println("Found " + attrName);
 						prefix = attrName.substring(6);
 						if (nsSupport.getURI(prefix) == null) {
 							uri = nextAttr.getValue();

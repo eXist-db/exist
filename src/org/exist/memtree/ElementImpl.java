@@ -136,12 +136,21 @@ public class ElementImpl extends NodeImpl implements Element {
 	public NamedNodeMap getAttributes() {
 		NamedNodeMapImpl map = new NamedNodeMapImpl();
 		int attr = document.alpha[nodeNumber];
-		if (attr < 0)
+		if(-1 < attr) {
+			while (attr < document.nextAttr
+				&& document.attrParent[attr] == nodeNumber) {
+				map.add(new AttributeImpl(document, attr));
+				++attr;
+			}
+		}
+		// add namespace declarations attached to this element
+		int ns = document.alphaLen[nodeNumber];
+		if (ns < 0)
 			return map;
-		while (attr < document.nextAttr
-			&& document.attrParent[attr] == nodeNumber) {
-			map.add(new AttributeImpl(document, attr));
-			++attr;
+		while (ns < document.nextNamespace
+				&& document.namespaceParent[ns] == nodeNumber) {
+			map.add(new NamespaceNode(document, ns));
+			++ns;
 		}
 		return map;
 	}

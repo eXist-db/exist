@@ -24,14 +24,19 @@ package org.exist.memtree;
 
 import org.exist.dom.QName;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Element;
 
 
 /**
- * A dynamically constructed namespace node.
+ * A dynamically constructed namespace node. Used to track namespace
+ * declarations in elements. Implements Attr, so it can be treated as a normal
+ * attribute.
  * 
  * @author wolf
  */
-public class NamespaceNode extends NodeImpl {
+public class NamespaceNode extends NodeImpl implements Attr {
 
     /**
      * @param doc
@@ -56,12 +61,44 @@ public class NamespaceNode extends NodeImpl {
     }
     
     public String getPrefix() {
-        QName qn = (QName)document.namePool.get(document.nodeName[nodeNumber]);
+        QName qn = getQName();
 		return qn != null ? qn.getLocalName() : null;
     }
     
     public String getNamespaceURI() {
-        return new String(document.characters, document.alpha[nodeNumber],
-        		document.alphaLen[nodeNumber]);
+    	QName qn = getQName();
+		return qn != null ? qn.getNamespaceURI() : null;
     }
+
+	public boolean getSpecified() {
+		return true;
+	}
+
+	public QName getQName() {
+		return (QName)document.namePool.get(document.namespaceCode[nodeNumber]);
+	}
+	
+	public String getName() {
+		return getQName().toString();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.w3c.dom.Attr#getValue()
+	 */
+	public String getValue() {
+		return getQName().getNamespaceURI();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.w3c.dom.Attr#setValue(java.lang.String)
+	 */
+	public void setValue(String value) throws DOMException {
+	}
+
+	/* (non-Javadoc)
+	 * @see org.w3c.dom.Attr#getOwnerElement()
+	 */
+	public Element getOwnerElement() {
+		return (Element)document.getNode(document.namespaceParent[nodeNumber]);
+	}
 }

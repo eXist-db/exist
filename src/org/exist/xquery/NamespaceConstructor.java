@@ -75,7 +75,7 @@ public class NamespaceConstructor extends NodeConstructor {
         }
         context.declareInScopeNamespace(prefix, value);
         int nodeNr = builder.namespaceNode(prefix, value);
-        return ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
+        return ((DocumentImpl)builder.getDocument()).getNamespaceNode(nodeNr);
     }
 
     /* (non-Javadoc)

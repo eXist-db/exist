@@ -27,7 +27,6 @@ import java.util.Arrays;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 
@@ -248,14 +247,12 @@ public class MemTreeBuilder {
 	}
 	
 	public int namespaceNode(String prefix, String uri) {
-		QName qn = new QName(prefix, null, null);
-		int nodeNr = doc.addNode(NodeImpl.NAMESPACE_NODE, level, qn);
-		doc.addChars(nodeNr, uri);
-		int prevNr = prevNodeInLevel[level];
-		if (prevNr > -1)
-			doc.next[prevNr] = nodeNr;
-		doc.next[nodeNr] = prevNodeInLevel[level - 1];
-		prevNodeInLevel[level] = nodeNr;
+		return namespaceNode(new QName(prefix, uri, "xmlns"));
+	}
+	
+	public int namespaceNode(QName qn) {
+		int lastNode = doc.getLastNode();
+		int nodeNr = doc.addNamespace(lastNode, qn);
 		return nodeNr;
 	}
 }
