@@ -40,7 +40,7 @@ import org.exist.util.*;
  *@created    27. Juni 2002
  */
 public class CharacterDataImpl extends NodeImpl implements CharacterData {
-    protected String cdata = null;
+    protected FastStringBuffer cdata = new FastStringBuffer();
 
 
     public CharacterDataImpl( short nodeType ) {
@@ -67,7 +67,7 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      */
     public CharacterDataImpl( short nodeType, long gid, String data ) {
         super( nodeType, "", gid );
-        cdata = data;
+        cdata.append(data);
     }
 
 
@@ -80,7 +80,7 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      */
     public CharacterDataImpl( short nodeType, long gid, StringBuffer data ) {
         super( nodeType, "", gid );
-        this.cdata = data.toString();
+        cdata.append(data);
     }
 
 
@@ -92,7 +92,7 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      */
     public CharacterDataImpl( short nodeType, String data ) {
         super( nodeType, "" );
-        cdata = data;
+        cdata.append(data);
     }
 
 
@@ -104,7 +104,7 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      */
     public CharacterDataImpl( short nodeType, StringBuffer data ) {
         super( nodeType, "" );
-        cdata = data.toString();
+        cdata.append(data);
     }
 
 
@@ -118,12 +118,11 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      */
     public CharacterDataImpl( short nodeType, char[] data, int start, int howmany ) {
         super( nodeType, "" );
-        cdata = new String(data, start, howmany);
+        cdata.append(data, start, howmany);
     }
 
     public void clear() {
-        super.clear();
-        cdata = null;
+        cdata.setLength(0);
     }
 
     /**
@@ -133,7 +132,7 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@exception  DOMException  Description of the Exception
      */
     public void appendData( String arg ) throws DOMException {
-        cdata = (cdata == null ? arg : cdata + arg);
+        cdata.append(arg);
     }
 
 
@@ -146,8 +145,7 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@exception  DOMException  Description of the Exception
      */
     public void appendData( char[] data, int start, int howmany ) throws DOMException {
-        String s = new String( data, start, howmany );
-        appendData( s );
+        cdata.append( data, start, howmany );
     }
 
 
@@ -159,13 +157,10 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@exception  DOMException  Description of the Exception
      */
     public void deleteData( int offset, int count ) throws DOMException {
-        /*
-         *  if(offset < 0 || offset + count > cdata.length())
-         *  throw new DOMException(DOMException.INDEX_SIZE_ERR, "");
-         */
-        StringBuffer buf = new StringBuffer(cdata);
+        StringBuffer buf = cdata.getString();
         buf.delete( offset, offset + count );
-        cdata = buf.toString();
+        cdata.setLength(0);
+        cdata.append(buf);
     }
 
 
@@ -176,7 +171,7 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@exception  DOMException  Description of the Exception
      */
     public String getData() throws DOMException {
-        return cdata;
+        return cdata.toString();
     }
 
 
@@ -196,7 +191,7 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@return    The nodeValue value
      */
     public String getNodeValue() {
-        return cdata;
+        return cdata.toString();
     }
 
 
@@ -208,9 +203,10 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@exception  DOMException  Description of the Exception
      */
     public void insertData( int offset, String arg ) throws DOMException {
-        StringBuffer buf = new StringBuffer( cdata );
+        StringBuffer buf = cdata.getString();
         buf.insert( offset, arg );
-        cdata = buf.toString();
+        cdata.setLength(0);
+        cdata.append(buf);
     }
 
 
@@ -227,8 +223,10 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
          *  if(offset < 0 || offset + count > cdata.length())
          *  throw new DOMException(DOMException.INDEX_SIZE_ERR, "");
          */
-        cdata = 
-            new StringBuffer( cdata ).replace( offset, offset + count, arg).toString();
+        StringBuffer buf = cdata.getString();
+        buf.replace( offset, offset + count, arg);
+        cdata.setLength(0);
+        cdata.append(buf);
     }
 
 
@@ -239,7 +237,8 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@exception  DOMException  Description of the Exception
      */
     public void setData( String data ) throws DOMException {
-        cdata = data;
+        cdata.setLength(0);
+        cdata.append(data);
     }
 
 
@@ -252,7 +251,8 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@exception  DOMException  Description of the Exception
      */
     public void setData( char[] data, int start, int howmany ) throws DOMException {
-        cdata = new String( data, start, howmany );
+        cdata.setLength(0);
+        cdata.append( data, start, howmany );
     }
 
 
@@ -265,7 +265,7 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@exception  DOMException  Description of the Exception
      */
     public String substringData( int offset, int count ) throws DOMException {
-        return cdata.substring( offset, offset + count );
+        return cdata.getString().substring( offset, offset + count );
     }
 
 
@@ -292,7 +292,7 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
                 "exist:text", attribs );
         }
         char ch[] = new char[cdata.length()];
-        cdata.getChars( 0, ch.length, ch, 0 );
+        cdata.toString().getChars( 0, ch.length, ch, 0 );
         contentHandler.characters( ch, 0, ch.length );
         if ( first )
             contentHandler.endElement( "http://exist.sourceforge.net/NS/exist", "text",
@@ -307,7 +307,7 @@ public class CharacterDataImpl extends NodeImpl implements CharacterData {
      *@return    Description of the Return Value
      */
     public String toString() {
-        return cdata;
+        return cdata.toString();
     }
 }
 

@@ -5,8 +5,10 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
@@ -24,8 +26,8 @@ public class Insert extends Modification {
 	public final static int INSERT_BEFORE = 0;
 	public final static int INSERT_AFTER = 1;
 
-    private final static Logger LOG = Logger.getLogger(Insert.class);
-     
+	private final static Logger LOG = Logger.getLogger(Insert.class);
+
 	private int mode = INSERT_BEFORE;
 
 	/**
@@ -55,13 +57,30 @@ public class Insert extends Modification {
 		Node node, parent;
 		NodeList children = content.getChildNodes();
 		int len = children.getLength();
-		LOG.debug("found " + len + " nodes to append");
+		LOG.debug("found " + len + " nodes to insert");
 		for (Iterator i = qr.iterator(); i.hasNext();) {
 			proxy = (NodeProxy) i.next();
+			if (!proxy
+				.doc
+				.getCollection()
+				.getPermissions()
+				.validate(user, Permission.UPDATE))
+				throw new PermissionDeniedException(
+					"write access to collection denied; user="
+						+ user.getName());
+			if (!proxy.doc.getPermissions().validate(user, Permission.UPDATE))
+				throw new PermissionDeniedException("permission to remove document denied");
 			node = proxy.getNode();
-            parent = node.getParentNode();
+			parent = node.getParentNode();
 			for (int j = 0; j < len; j++) {
-				parent.insertBefore(children.item(j), node);
+				switch (mode) {
+					case INSERT_BEFORE :
+						parent.insertBefore(children.item(j), node);
+						break;
+					case INSERT_AFTER :
+						((NodeImpl) parent).insertAfter(children.item(j), node);
+						break;
+				}
 			}
 		}
 		return qr.getLength();

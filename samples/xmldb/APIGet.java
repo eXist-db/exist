@@ -54,31 +54,8 @@ public class APIGet {
 
 		String collection = "/db";
 
-		String xpath;
-
 		// if collection does not start with "/" add it
 		collection = (args[0].charAt(0) == '/') ? args[0] : "/db/" + args[0];
-
-		xpath = args[1];
-
-		DocumentBuilder builder = null;
-		try {
-			DocumentBuilderFactory factory =
-				DocumentBuilderFactory.newInstance();
-			factory.setNamespaceAware(true);
-			factory.setValidating(false);
-			builder = factory.newDocumentBuilder();
-		} catch (ParserConfigurationException pce) {
-			throw new RuntimeException(pce.getMessage());
-		}
-		Document doc = builder.newDocument();
-		Element speech = doc.createElement("SPEECH");
-		Element speaker = doc.createElement("SPEAKER");
-        speech.setAttribute("call", "susi");
-		speech.appendChild(speaker);
-		Text stext = doc.createTextNode("Wolfgang");
-		speaker.appendChild(stext);
-		doc.appendChild(speech);
 
 		// initialize database drivers
 		Class cl = Class.forName(driver);
@@ -90,19 +67,7 @@ public class APIGet {
 		Collection col = DatabaseManager.getCollection(URI + collection);
 		col.setProperty("pretty", "true");
 		col.setProperty("encoding", "ISO-8859-1");
-
-		XPathQueryService service =
-			(XPathQueryService) col.getService("XPathQueryService", "1.0");
-		ResourceSet result = service.query(xpath);
-
-		if (result.getSize() == 0) {
-			System.out.println("no matches found!");
-			return;
-		}
-
-		XMLResource res = (XMLResource) result.getResource(0);
-		Element root = (Element) res.getContentAsDOM();
-		root.appendChild(speech);
-		System.out.println("node appended");
+		XMLResource res = (XMLResource)col.getResource(args[1]);
+		System.out.println(res.getContent());
 	}
 }

@@ -212,15 +212,9 @@ public class TextImpl extends CharacterDataImpl implements Text {
      *@return    Description of the Return Value
      */
     public byte[] serialize() {
-        byte[] cd;
-        try {
-            cd = cdata.getBytes( "UTF-8" );
-        } catch ( UnsupportedEncodingException uee ) {
-            cd = cdata.getBytes();
-        }
-        final byte[] data = new byte[cd.length + 1];
+        final byte[] data = new byte[StringUtil.utflen(cdata) + 1];
         data[0] = (byte) ( Signatures.Char << 0x5 );
-        System.arraycopy( cd, 0, data, 1, cd.length );
+        StringUtil.utfwrite(data, 1, cdata);
         return data;
     }
 
@@ -292,7 +286,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
      *@return    Description of the Return Value
      */
     public String toString() {
-        return cdata;
+        return super.toString();
     }
 }
 

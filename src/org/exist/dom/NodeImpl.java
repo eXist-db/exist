@@ -34,6 +34,11 @@ import java.util.ArrayList;
 import org.exist.storage.*;
 
 /**
+ * NodeImpl.java
+ * 
+ * @author Wolfgang Meier
+ */
+/**
  *  The base class for all DOM objects.
  *
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
@@ -150,7 +155,8 @@ public class NodeImpl implements Node {
     }
 
     /**
-     * Reset this object to its initial state.
+     * Reset this object to its initial state. Required by the
+     * parser to be able to reuse node objects.
      */
     public void clear() {
         attributes = 0;
@@ -161,35 +167,23 @@ public class NodeImpl implements Node {
     }
     
     /**
-     *  Description of the Method
-     *
-     *@param  child             Description of the Parameter
-     *@return                   Description of the Return Value
-     *@exception  DOMException  Description of the Exception
-     */
-    public Node appendChild( Node child ) throws DOMException {
+	 * @see org.w3c.dom.Node#appendChild(org.w3c.dom.Node)
+	 */
+	public Node appendChild( Node child ) throws DOMException {
         return null;
     }
 
-
     /**
-     *  Description of the Method
-     *
-     *@param  deep  Description of the Parameter
-     *@return       Description of the Return Value
-     */
-    public Node cloneNode( boolean deep ) {
+	 * @see org.w3c.dom.Node#cloneNode(boolean)
+	 */
+	public Node cloneNode( boolean deep ) {
         return this;
     }
 
-
     /**
-     *  Description of the Method
-     *
-     *@param  obj  Description of the Parameter
-     *@return      Description of the Return Value
-     */
-    public boolean equals( Object obj ) {
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	public boolean equals( Object obj ) {
         if ( !( obj instanceof NodeImpl ) )
             return false;
         if ( ( (NodeImpl) obj ).gid == gid )
@@ -207,33 +201,18 @@ public class NodeImpl implements Node {
         return 0;
     }
 
-
     /**
-     *  Gets the allChildCount attribute of the NodeImpl object
-     *
-     *@return    The allChildCount value
-     */
-    public int getAllChildCount() {
-        return 0;
-    }
-
-
-    /**
-     *  Gets the attributes attribute of the NodeImpl object
-     *
-     *@return    The attributes value
-     */
-    public NamedNodeMap getAttributes() {
+	 * @see org.w3c.dom.Node#getAttributes()
+	 */
+	public NamedNodeMap getAttributes() {
         return null;
     }
 
-
     /**
-     *  Gets the attributesCount attribute of the NodeImpl object
-     *
-     *@return    The attributesCount value
-     */
-    public short getAttributesCount() {
+	 * Method getAttributesCount.
+	 * @return short
+	 */
+	public short getAttributesCount() {
         return attributes;
     }
 
@@ -247,13 +226,11 @@ public class NodeImpl implements Node {
         return (DBBroker) ownerDocument.broker;
     }
 
-
     /**
-     *  Gets the childCount attribute of the NodeImpl object
-     *
-     *@return    The childCount value
-     */
-    public int getChildCount() {
+	 * Method getChildCount.
+	 * @return int
+	 */
+	public int getChildCount() {
         return 0;
     }
 
@@ -269,17 +246,15 @@ public class NodeImpl implements Node {
 
 
     /**
-     *  Gets the firstChild attribute of the NodeImpl object
-     *
-     *@return    The firstChild value
-     */
-    public Node getFirstChild() {
+	 * @see org.w3c.dom.Node#getFirstChild()
+	 */
+	public Node getFirstChild() {
         return null;
     }
 
 
     /**
-     *  Gets the gID attribute of the NodeImpl object
+     *  Get the unique identifier assigned to this node
      *
      *@return    The gID value
      */
@@ -289,7 +264,7 @@ public class NodeImpl implements Node {
 
 
     /**
-     *  Gets the internalAddress attribute of the NodeImpl object
+     *  Get the internal storage address of this node
      *
      *@return    The internalAddress value
      */
@@ -297,35 +272,26 @@ public class NodeImpl implements Node {
         return internalAddress;
     }
 
-
     /**
-     *  Gets the lastChild attribute of the NodeImpl object
-     *
-     *@return    The lastChild value
-     */
-    public Node getLastChild() {
+	 * @see org.w3c.dom.Node#getLastChild()
+	 */
+	public Node getLastChild() {
         return null;
     }
 
-
     /**
-     *  Gets the localName attribute of the NodeImpl object
-     *
-     *@return    The localName value
-     */
-    public String getLocalName() {
+	 * @see org.w3c.dom.Node#getLocalName()
+	 */
+	public String getLocalName() {
         if ( nodeName != null && nodeName.indexOf( ':' ) > -1 )
             return nodeName.substring( nodeName.indexOf( ':' ) + 1 );
         return nodeName;
     }
 
-
     /**
-     *  Gets the namespaceURI attribute of the NodeImpl object
-     *
-     *@return    The namespaceURI value
-     */
-    public String getNamespaceURI() {
+	 * @see org.w3c.dom.Node#getNamespaceURI()
+	 */
+	public String getNamespaceURI() {
         if ( nodeName != null && nodeName.indexOf( ':' ) > -1 ) {
             String prefix = nodeName.substring( 0, nodeName.indexOf( ':' ) );
             if ( !prefix.equals( "xml" ) ) {
@@ -335,80 +301,46 @@ public class NodeImpl implements Node {
         return "";
     }
 
-
     /**
-     *  Gets the nextSibling attribute of the NodeImpl object
-     *
-     *@return    The nextSibling value
-     */
-    public Node getNextSibling() {
+	 * @see org.w3c.dom.Node#getNextSibling()
+	 */
+	public Node getNextSibling() {
         NodeImpl parent = (NodeImpl) getParentNode();
         if ( gid < parent.lastChildID() )
             return ownerDocument.getNode( gid + 1 );
         return null;
     }
-
-
+    
     /**
-     *  Gets the nodeName attribute of the NodeImpl object
-     *
-     *@return    The nodeName value
-     */
-    public String getNodeName() {
+	 * @see org.w3c.dom.Node#getNodeName()
+	 */
+	public String getNodeName() {
         return nodeName;
     }
 
-
     /**
-     *  Gets the nodeType attribute of the NodeImpl object
-     *
-     *@return    The nodeType value
-     */
-    public short getNodeType() {
+	 * @see org.w3c.dom.Node#getNodeType()
+	 */
+	public short getNodeType() {
         return nodeType;
     }
 
-
     /**
-     *  Gets the nodeValue attribute of the NodeImpl object
-     *
-     *@return                   The nodeValue value
-     *@exception  DOMException  Description of the Exception
-     */
-    public String getNodeValue() throws DOMException {
+	 * @see org.w3c.dom.Node#getNodeValue()
+	 */
+	public String getNodeValue() throws DOMException {
         return "";
     }
 
-
     /**
-     *  Gets the ownerDocument attribute of the NodeImpl object
-     *
-     *@return    The ownerDocument value
-     */
-    public Document getOwnerDocument() {
+	 * @see org.w3c.dom.Node#getOwnerDocument()
+	 */
+	public Document getOwnerDocument() {
         return ownerDocument;
     }
 
-
     /**
-     *  Gets the parentByName attribute of the NodeImpl object
-     *
-     *@param  parentName  Description of the Parameter
-     *@return             The parentByName value
-     */
-    public Node getParentByName( String parentName ) {
-        NodeImpl p = this;
-        while ( p != null ) {
-            if ( p.getNodeName().equals( parentName ) )
-                return p;
-            p = (NodeImpl) p.getParentNode();
-        }
-        return null;
-    }
-
-
-    /**
-     *  Gets the parentGID attribute of the NodeImpl object
+     *  Get the unique node identifier of this node's parent node.
      *
      *@return    The parentGID value
      */
@@ -421,24 +353,19 @@ public class NodeImpl implements Node {
 
 
     /**
-     *  Gets the parentNode attribute of the NodeImpl object
-     *
-     *@return    The parentNode value
-     */
-    public Node getParentNode() {
+	 * @see org.w3c.dom.Node#getParentNode()
+	 */
+	public Node getParentNode() {
         if ( gid < 2 )
             return ownerDocument;
         long pid = getParentGID();
         return ownerDocument.getNode( pid );
     }
 
-
     /**
-     *  Gets the prefix attribute of the NodeImpl object
-     *
-     *@return    The prefix value
-     */
-    public String getPrefix() {
+	 * @see org.w3c.dom.Node#getPrefix()
+	 */
+	public String getPrefix() {
         if ( nodeName != null && nodeName.indexOf( ':' ) > -1 )
             return nodeName.substring( 0, nodeName.indexOf( ':' ) );
         return "";
@@ -446,11 +373,9 @@ public class NodeImpl implements Node {
 
 
     /**
-     *  Gets the previousSibling attribute of the NodeImpl object
-     *
-     *@return    The previousSibling value
-     */
-    public Node getPreviousSibling() {
+	 * @see org.w3c.dom.Node#getPreviousSibling()
+	 */
+	public Node getPreviousSibling() {
         int level = ownerDocument.getTreeLevel( gid );
         long pid = ( gid - ownerDocument.getLevelStartPoint( level ) ) / ownerDocument.getTreeLevelOrder( level )
              + ownerDocument.getLevelStartPoint( level - 1 );
@@ -465,53 +390,43 @@ public class NodeImpl implements Node {
 
 
     /**
-     *  Description of the Method
-     *
-     *@return    Description of the Return Value
-     */
-    public boolean hasAttributes() {
+	 * @see org.w3c.dom.Node#hasAttributes()
+	 */
+	public boolean hasAttributes() {
+        return false;
+    }
+
+    /**
+	 * @see org.w3c.dom.Node#hasChildNodes()
+	 */
+	public boolean hasChildNodes() {
         return false;
     }
 
 
     /**
-     *  Description of the Method
-     *
-     *@return    Description of the Return Value
-     */
-    public boolean hasChildNodes() {
-        return false;
-    }
-
-
-    /**
-     *  Description of the Method
-     *
-     *@param  newChild          Description of the Parameter
-     *@param  refChild          Description of the Parameter
-     *@return                   Description of the Return Value
-     *@exception  DOMException  Description of the Exception
-     */
+	 * @see org.w3c.dom.Node#insertBefore(org.w3c.dom.Node, org.w3c.dom.Node)
+	 */
     public Node insertBefore( Node newChild, Node refChild )
          throws DOMException {
         return null;
     }
 
+    public Node insertAfter( Node newChild, Node refChild )
+        throws DOMException {
+        return null;
+    }
 
     /**
-     *  Gets the supported attribute of the NodeImpl object
-     *
-     *@param  key    Description of the Parameter
-     *@param  value  Description of the Parameter
-     *@return        The supported value
-     */
-    public boolean isSupported( String key, String value ) {
+	 * @see org.w3c.dom.Node#isSupported(java.lang.String, java.lang.String)
+	 */
+	public boolean isSupported( String key, String value ) {
         return false;
     }
 
 
     /**
-     *  Description of the Method
+     *  Get the unique node identifier of the last child of this node.
      *
      *@return    Description of the Return Value
      */
@@ -519,50 +434,37 @@ public class NodeImpl implements Node {
         return 0;
     }
 
-
-    /**  Description of the Method */
-    public void normalize() {
+    /**
+	 * @see org.w3c.dom.Node#normalize()
+	 */
+	public void normalize() {
         return;
     }
 
 
+    
     /**
-     *  Description of the Method
-     *
-     *@param  node              Description of the Parameter
-     *@return                   Description of the Return Value
-     *@exception  DOMException  Description of the Exception
-     */
-    public Node removeChild( Node node ) throws DOMException {
+	 * @see org.w3c.dom.Node#removeChild(org.w3c.dom.Node)
+	 */
+	public Node removeChild( Node node ) throws DOMException {
         return null;
     }
 
 
     /**
-     *  Description of the Method
-     *
-     *@param  newChild          Description of the Parameter
-     *@param  oldChild          Description of the Parameter
-     *@return                   Description of the Return Value
-     *@exception  DOMException  Description of the Exception
-     */
+	 * @see org.w3c.dom.Node#replaceChild(org.w3c.dom.Node, org.w3c.dom.Node)
+	 */
     public Node replaceChild( Node newChild, Node oldChild ) throws DOMException {
         return null;
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@return    Description of the Return Value
-     */
     public byte[] serialize() {
         return null;
     }
 
 
     /**
-     *  Sets the attributes attribute of the NodeImpl object
+     *  Set the attributes that belong to this node.
      *
      *@param  attribNum  The new attributes value
      */
@@ -572,7 +474,7 @@ public class NodeImpl implements Node {
 
 
     /**
-     *  Sets the childCount attribute of the NodeImpl object
+     *  Set the number of children.
      *
      *@param  count  The new childCount value
      */
@@ -582,7 +484,7 @@ public class NodeImpl implements Node {
 
 
     /**
-     *  Sets the gID attribute of the NodeImpl object
+     *  Set the unique node identifier of this node.
      *
      *@param  gid  The new gID value
      */
@@ -592,7 +494,7 @@ public class NodeImpl implements Node {
 
 
     /**
-     *  Sets the internalAddress attribute of the NodeImpl object
+     *  Set the internal storage address of this node.
      *
      *@param  address  The new internalAddress value
      */
@@ -602,7 +504,7 @@ public class NodeImpl implements Node {
 
 
     /**
-     *  Sets the nodeName attribute of the NodeImpl object
+     *  Set the node name.
      *
      *@param  name  The new nodeName value
      */
@@ -612,7 +514,7 @@ public class NodeImpl implements Node {
 
 
     /**
-     *  Sets the nodeValue attribute of the NodeImpl object
+     *  Set the node value.
      *
      *@param  value             The new nodeValue value
      *@exception  DOMException  Description of the Exception
@@ -622,7 +524,7 @@ public class NodeImpl implements Node {
 
 
     /**
-     *  Sets the ownerDocument attribute of the NodeImpl object
+     *  Set the owner document.
      *
      *@param  doc  The new ownerDocument value
      */
@@ -642,13 +544,12 @@ public class NodeImpl implements Node {
 
 
     /**
-     *  Description of the Method
-     *
-     *@param  feature  Description of the Parameter
-     *@param  version  Description of the Parameter
-     *@return          Description of the Return Value
-     */
-    public boolean supports( String feature, String version ) {
+	 * Method supports.
+	 * @param feature
+	 * @param version
+	 * @return boolean
+	 */
+	public boolean supports( String feature, String version ) {
         return false;
     }
 

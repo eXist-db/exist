@@ -23,7 +23,7 @@ package org.exist.dom;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import java.util.Iterator;
-import java.util.Arrays;
+//import java.util.Arrays;
 import org.apache.log4j.Category;
 import org.exist.xpath.Value;
 
@@ -74,7 +74,7 @@ public class ArraySet extends NodeSet {
 				(nl[i].gid - nl[i].doc.getLevelStartPoint(level))
 					/ nl[i].doc.getTreeLevelOrder(level)
 					+ nl[i].doc.getLevelStartPoint(level - 1);
-//			System.out.println(nl[i].gid + "->" + pid);
+			//System.out.println(nl[i].doc.getDocId() + ":" + nl[i].gid + "->" + pid);
 			nl[i].gid = pid;
 			if (pid > 0)
 				foundValid = true;
@@ -404,14 +404,14 @@ public class ArraySet extends NodeSet {
 		int dx = 0;
 		int cmp;
 		getParentSet(dl);
-//		System.out.println(dl[dx].doc.getDocId() + ":" + dl[dx].gid + 
-//			" = " + al.nodes[ax].doc.getDocId() + ':' + 
-//			al.nodes[ax].gid);
 		while (dx < dl.length) {
 			if (dl[dx] == null) { // || dl[dx].gid < 1) {
 				dx++;
 				continue;
 			}
+//            System.out.println(dl[dx].doc.getDocId() + ":" + dl[dx].gid + 
+//                        " = " + al.nodes[ax].doc.getDocId() + ':' + 
+//                        al.nodes[ax].gid);
 			cmp = dl[dx].compareTo(al.nodes[ax]);
 			if (cmp > 0) {
 				if (ax < al.counter - 1)
@@ -486,6 +486,8 @@ public class ArraySet extends NodeSet {
 	 *@return       The descendants value
 	 */
 	public ArraySet getDescendants(ArraySet al, int mode) {
+        if(al.counter == 0 || counter == 0)
+            return new ArraySet(1);
 		long start = System.currentTimeMillis();
 		al.sort();
 		sort();
@@ -808,9 +810,8 @@ public class ArraySet extends NodeSet {
 	public void sort() {
 		if (this.sorted || counter < 2)
 			return;
-		long start = System.currentTimeMillis();
-		//quickSort(nodes, 0, counter - 1);
-		Arrays.sort(nodes, 0, counter - 1);
+		quickSort(nodes, 0, counter - 1);
+		//Arrays.sort(nodes, 0, counter - 1);
 		sorted = true;
 	}
 

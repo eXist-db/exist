@@ -231,7 +231,7 @@ public class InteractiveClient {
 	protected boolean quiet = false;
 	protected boolean verbose = false;
 	protected boolean recurseDirs = false;
-	
+
 	public InteractiveClient() {
 	}
 
@@ -842,7 +842,7 @@ public class InteractiveClient {
 	private final ResourceSet find(String xpath) throws XMLDBException {
 		XPathQueryService service =
 			(XPathQueryService) current.getService("XPathQueryService", "1.0");
-		service.setProperty("pretty", "true");
+		service.setProperty("pretty", properties.getProperty("indent"));
 		service.setProperty("encoding", properties.getProperty("encoding"));
 		return service.query(xpath);
 	}
@@ -981,9 +981,15 @@ public class InteractiveClient {
 		return dir.listFiles((FileFilter) new GlobFilenameFilter(globExpr));
 	}
 
-	private final boolean findRecursive(Collection collection, 
-		File dir, String base) {
+	private final boolean findRecursive(
+		Collection collection,
+		File dir,
+		String base) {
 		File temp[] = dir.listFiles();
+		if (collection instanceof Observable && verbose) {
+			ProgressObserver observer = new ProgressObserver();
+			((Observable) collection).addObserver(observer);
+		}
 		Collection c;
 		XMLResource document;
 		CollectionManagementService mgtService;
@@ -996,26 +1002,36 @@ public class InteractiveClient {
 					c = collection.getChildCollection(temp[i].getName());
 					if (c == null) {
 						mgtService =
-							(CollectionManagementService) collection.getService(
+							(
+								CollectionManagementService) collection
+									.getService(
 								"CollectionManagementService",
 								"1.0");
 						c = mgtService.createCollection(temp[i].getName());
-	
+
 					}
 					findRecursive(c, temp[i], next);
 				} else {
 					long start1 = System.currentTimeMillis();
-					messageln("storing document " + temp[i].getName() + 
-						" to " + next + "...");
+					messageln(
+						"storing document "
+							+ temp[i].getName()
+							+ " to "
+							+ next
+							+ "...");
 					document =
-						(XMLResource) current.createResource(
+						(XMLResource) collection.createResource(
 							temp[i].getName(),
 							"XMLResource");
 					document.setContent(temp[i]);
 					collection.storeResource(document);
-					messageln("storing " + temp[i].length() + " bytes took " +
-						(System.currentTimeMillis() - start1) + "ms.");
-					
+					messageln(
+						"storing "
+							+ temp[i].length()
+							+ " bytes took "
+							+ (System.currentTimeMillis() - start1)
+							+ "ms.");
+
 				}
 			} catch (XMLDBException e) {
 				System.err.println(
@@ -1036,10 +1052,10 @@ public class InteractiveClient {
 		File files[];
 		if (file.canRead()) {
 			if (file.isDirectory()) {
-				if(recurseDirs)
+				if (recurseDirs)
 					return findRecursive(current, file, path);
 				else
-                    files = file.listFiles( new XMLFilenameFilter() );
+					files = file.listFiles(new XMLFilenameFilter());
 			} else {
 				files = new File[1];
 				files[0] = file;

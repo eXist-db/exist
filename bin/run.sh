@@ -1,5 +1,5 @@
 #!/bin/bash
-unset LANG
+#unset LANG
 
 if [ -z "$EXIST_HOME" ]; then
     EXIST_HOME_1=`dirname "$0"`

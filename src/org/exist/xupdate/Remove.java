@@ -13,37 +13,36 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.util.XMLUtil;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
- * Append.java
+ * Remove.java
  * 
  * @author Wolfgang Meier
  */
-public class Append extends Modification {
+public class Remove extends Modification {
 
-	private final static Logger LOG = Logger.getLogger(Append.class);
-
+    private final static Logger LOG = Logger.getLogger(Remove.class);
+    
 	/**
-	 * Constructor for Append.
+	 * Constructor for Remove.
+	 * @param pool
+	 * @param user
 	 * @param selectStmt
 	 */
-	public Append(BrokerPool pool, User user, String selectStmt) {
+	public Remove(BrokerPool pool, User user, String selectStmt) {
 		super(pool, user, selectStmt);
 	}
+
 	/**
-	 * @see org.exist.xupdate.Modification#process()
+	 * @see org.exist.xupdate.Modification#process(org.exist.dom.DocumentSet)
 	 */
 	public long process(DocumentSet docs)
 		throws PermissionDeniedException, EXistException {
 		System.out.println(XMLUtil.dump(content));
 		NodeSet qr = select(docs);
-		LOG.debug("select found " + qr.getLength() + " nodes for append");
+		LOG.debug("select found " + qr.getLength() + " nodes for remove");
 		NodeProxy proxy;
-		Node node;
-		NodeList children = content.getChildNodes();
-		int len = children.getLength();
-		LOG.debug("found " + len + " nodes to append");
+		Node node, parent;
 		for (Iterator i = qr.iterator(); i.hasNext();) {
 			proxy = (NodeProxy) i.next();
 			if (!proxy
@@ -57,14 +56,20 @@ public class Append extends Modification {
 			if (!proxy.doc.getPermissions().validate(user, Permission.UPDATE))
 				throw new PermissionDeniedException("permission to remove document denied");
 			node = proxy.getNode();
-			for (int j = 0; j < len; j++)
-				node.appendChild(children.item(j));
+            parent = node.getParentNode();
+            if(parent.getNodeType() != Node.ELEMENT_NODE) {
+                LOG.warn("cannot remove the root node");
+            } else
+                parent.removeChild(node);
 		}
 		return qr.getLength();
 	}
 
+	/**
+	 * @see org.exist.xupdate.Modification#getName()
+	 */
 	public String getName() {
-		return "append";
+		return "remove";
 	}
 
 }

@@ -109,7 +109,9 @@ public class NativeBroker extends DBBroker {
 	protected PatternMatcher matcher = new Perl5Matcher();
 	protected int defaultIndexDepth = 1;
 	protected boolean readOnly = false;
-
+	protected int memMinFree;
+	private final Runtime run = Runtime.getRuntime();
+    
 	/**
 	 *  Constructor for the NativeBroker object
 	 *
@@ -136,6 +138,9 @@ public class NativeBroker extends DBBroker {
 			compress = temp.equals("true");
 		if ((defaultIndexDepth = config.getInteger("indexer.index-depth")) < 0)
 			defaultIndexDepth = 1;
+		if ((memMinFree = config.getInteger("db-connection.min_free_memory"))
+			< 0)
+			memMinFree = 5000000;
 		Paged.setPageSize(pageSize);
 		String pathSep = System.getProperty("file.separator", "/");
 		try {
@@ -327,6 +332,7 @@ public class NativeBroker extends DBBroker {
 	 *@return          Description of the Return Value
 	 */
 	public NodeSet findElementsByTagName(DocumentSet docs, String tagName) {
+		//LOG.debug("loading tag " + tagName);
 		long start = System.currentTimeMillis();
 		NodeSet result = new ArraySet(10000);
 		DocumentImpl doc;
@@ -385,6 +391,7 @@ public class NativeBroker extends DBBroker {
 						page = is.readInt();
 						tid = is.readInt();
 						address = DOMFile.createPointer(page, tid);
+						//LOG.debug("loaded " + docId + ':' + gid);
 						result.add(
 							new NodeProxy(
 								doc,
@@ -794,8 +801,7 @@ public class NativeBroker extends DBBroker {
 			}
 			byte[] d = new byte[2];
 			ByteConversion.shortToByte(nextCollectionId, d, 0);
-			data = new Value(d);
-			collectionsDb.put(key, data);
+			collectionsDb.put(key, d);
 		}
 		return nextCollectionId;
 	}
@@ -819,9 +825,8 @@ public class NativeBroker extends DBBroker {
 			}
 			byte[] d = new byte[4];
 			ByteConversion.intToByte(nextDocId, d, 0);
-			data = new Value(d);
 			try {
-				collectionsDb.put(key, data);
+				collectionsDb.put(key, d);
 			} catch (ReadOnlyException e) {
 				LOG.debug("database read-only");
 				return -1;
@@ -831,17 +836,18 @@ public class NativeBroker extends DBBroker {
 	}
 
 	public void index(NodeImpl node) {
-        final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
-        
-        final long gid = node.getGID();
-        final short nodeType = node.getNodeType();
-        final String nodeName = node.getNodeName();
-        IndexPaths idx =
-            (IndexPaths) config.getProperty(
-                "indexScheme."
-                + node.getOwnerDocument().getDoctype().getName());
-		NodeProxy tempProxy =
-			new NodeProxy(doc, gid, node.getInternalAddress());
+		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
+		final long gid = node.getGID();
+		final short nodeType = node.getNodeType();
+		final String nodeName = node.getNodeName();
+		final long address = node.getInternalAddress();
+		IndexPaths idx =
+			(IndexPaths) config.getProperty(
+				"indexScheme."
+					+ node.getOwnerDocument().getDoctype().getName());
+		if (address < 0)
+			LOG.debug("node " + gid + ": internal address missing");
+		NodeProxy tempProxy = new NodeProxy(doc, gid, address);
 		switch (nodeType) {
 			case Node.ELEMENT_NODE :
 				// save element by calling ElementIndex
@@ -853,8 +859,7 @@ public class NativeBroker extends DBBroker {
 				elementIndex.addRow("@" + nodeName, tempProxy);
 				// check if attribute value should be fulltext-indexed
 				// by calling IndexPaths.match(path) 
-				if (idx == null
-					|| idx.getIncludeAttributes())
+				if (idx == null || idx.getIncludeAttributes())
 					textEngine.storeAttribute(idx, (AttrImpl) node);
 				// if the attribute has type ID, store the ID-value
 				// to the element index as well
@@ -869,11 +874,11 @@ public class NativeBroker extends DBBroker {
 				// check if this textual content should be fulltext-indexed
 				// by calling IndexPaths.match(path)
 				// if (idx == null || idx.match(currentPath))
-					textEngine.storeText(idx, (TextImpl) node);
+				textEngine.storeText(idx, (TextImpl) node);
 				break;
 		}
-
 	}
+
 	public void reindex(DocumentImpl oldDoc, DocumentImpl doc) {
 		int idxLevel = doc.reindexRequired();
 		if (idxLevel < 0)
@@ -944,6 +949,7 @@ public class NativeBroker extends DBBroker {
 		final int depth = idx == null ? defaultIndexDepth : idx.getIndexDepth();
 		final int level = doc.getTreeLevel(gid);
 		if (level >= doc.reindexRequired()) {
+			LOG.debug("reindexing at level " + level);
 			if (nodeType == Node.ELEMENT_NODE && level <= depth) {
 				new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
 					public Object start() throws ReadOnlyException {
@@ -1003,14 +1009,23 @@ public class NativeBroker extends DBBroker {
 		String currentPath) {
 		if (node.getNodeType() == Node.ELEMENT_NODE)
 			currentPath = currentPath + '/' + node.getNodeName();
+		LOG.debug("reindexing node " + node.getGID());
 		reindex(node, currentPath);
 		if (node.hasChildNodes()) {
 			long firstChildId =
 				XMLUtil.getFirstChildId(
 					(DocumentImpl) node.getOwnerDocument(),
 					node.getGID());
-			if (firstChildId < 0)
+			if (firstChildId < 0) {
+				LOG.fatal(
+					"no child found: expected = "
+						+ node.getChildCount()
+						+ "; node = "
+						+ node.getNodeName()
+						+ "; gid = "
+						+ node.getGID());
 				throw new IllegalStateException("wrong node id");
+			}
 			final long lastChildId = firstChildId + node.getChildCount();
 			final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 			long p;
@@ -1352,6 +1367,7 @@ public class NativeBroker extends DBBroker {
 				Value val = domDb.get(new NodeProxy((DocumentImpl) doc, gid));
 				if (val == null) {
 					LOG.debug("node " + gid + " not found!");
+					Thread.dumpStack();
 					return null;
 				}
 				NodeImpl node =
@@ -1364,7 +1380,7 @@ public class NativeBroker extends DBBroker {
 		}
 		.run();
 	}
-    
+
 	/**
 	 *  Description of the Method
 	 *
@@ -1382,21 +1398,21 @@ public class NativeBroker extends DBBroker {
 	 *@param  prefix     Description of the Parameter
 	 */
 	public void registerNamespace(String namespace, String prefix) {
-		Value ns;
-		Value pfx;
+		byte[] ns;
+		byte[] pfx;
 		try {
-			ns = new Value(namespace.getBytes("UTF-8"));
-			pfx = new Value(prefix.getBytes("UTF-8"));
+			ns = namespace.getBytes("UTF-8");
+			pfx = prefix.getBytes("UTF-8");
 		} catch (UnsupportedEncodingException uee) {
-			ns = new Value(namespace);
-			pfx = new Value(prefix);
+			ns = namespace.getBytes();
+			pfx = prefix.getBytes();
 		}
 		LOG.debug(
 			"registering namespace: " + namespace + "; prefix: " + prefix);
 		synchronized (namespacesDb) {
 			try {
-				namespacesDb.put(ns, pfx, false);
-				namespacesDb.put(pfx, ns, false);
+				namespacesDb.put(new Value(ns), pfx, false);
+				namespacesDb.put(new Value(pfx), ns, false);
 			} catch (ReadOnlyException e) {
 				LOG.warn("database is read-only");
 			}
@@ -1635,8 +1651,7 @@ public class NativeBroker extends DBBroker {
 					}
 					if (changed) {
 						ndata = os.toByteArray();
-						value = new Value(ndata);
-						if (!elementsDb.put(key, value))
+						if (!elementsDb.put(key, ndata))
 							LOG.debug("could not save element");
 					}
 				}
@@ -1705,13 +1720,12 @@ public class NativeBroker extends DBBroker {
 	 *@param  domIterator  Description of the Parameter
 	 */
 	protected void removeNodes(Iterator domIterator) {
-        final Value next = (Value)domIterator.next();
+		final Value next = (Value) domIterator.next();
 		final byte[] data = next.getData();
 		final short type = Signatures.getType(data[0]);
 		switch (type) {
 			case Node.ELEMENT_NODE :
 				int children = ByteConversion.byteToInt(data, 1);
-                LOG.debug("found " + children + " child nodes");
 				domIterator.remove();
 				for (int i = 0; i < children; i++)
 					removeNodes(domIterator);
@@ -1720,6 +1734,22 @@ public class NativeBroker extends DBBroker {
 			default :
 				domIterator.remove();
 		}
+	}
+
+	public void removeNode(final NodeImpl node) {
+		LOG.debug("removing " + node.getGID());
+		final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
+		new DOMTransaction(this, domDb) {
+			public Object start() {
+				long address = node.getInternalAddress();
+				if (address > -1)
+					domDb.remove(address);
+				else
+					domDb.remove(new NodeRef(doc.getDocId(), node.getGID()));
+				return null;
+			}
+		}
+		.run();
 	}
 
 	public void addDocument(Collection collection, DocumentImpl doc)
@@ -1735,9 +1765,8 @@ public class NativeBroker extends DBBroker {
 			VariableByteOutputStream ostream = new VariableByteOutputStream();
 			doc.write(ostream);
 			byte[] data = ostream.toByteArray();
-			Value collData = new Value(data);
 			synchronized (collectionsDb) {
-				if (!collectionsDb.append(name, collData)) {
+				if (!collectionsDb.append(name, data)) {
 					LOG.debug(
 						"could not store collection data for "
 							+ collection.getName());
@@ -1776,8 +1805,7 @@ public class NativeBroker extends DBBroker {
 					new VariableByteOutputStream();
 				collection.write(ostream);
 				synchronized (collectionsDb) {
-					if (!collectionsDb
-						.put(name, new Value(ostream.toByteArray()))) {
+					if (!collectionsDb.put(name, ostream.toByteArray())) {
 						LOG.debug(
 							"could not store collection data for "
 								+ collection.getName());
@@ -1804,7 +1832,7 @@ public class NativeBroker extends DBBroker {
 			symbols.write(ostream);
 			byte[] data = ostream.toByteArray();
 			synchronized (namespacesDb) {
-				if (!namespacesDb.put(name, new Value(data))) {
+				if (!namespacesDb.put(name, data)) {
 					LOG.debug("could not store symbol table");
 					return;
 				}
@@ -1998,6 +2026,21 @@ public class NativeBroker extends DBBroker {
 					textEngine.storeText(idx, (TextImpl) node);
 				break;
 		}
+		int percent = (int) (run.freeMemory() / (run.totalMemory() / 100));
+		if (percent < memMinFree) {
+			LOG.info(
+				"total memory: "
+					+ run.totalMemory()
+					+ "; free: "
+					+ run.freeMemory());
+			flush();
+			System.gc();
+			LOG.info(
+				"total memory: "
+					+ run.totalMemory()
+					+ "; free: "
+					+ run.freeMemory());
+		}
 	}
 
 	public void storeDocument(DocumentImpl doc) {
@@ -2025,6 +2068,7 @@ public class NativeBroker extends DBBroker {
 			dbe.printStackTrace();
 			LOG.debug(dbe);
 		}
+        System.gc();
 	}
 
 	public void update(final NodeImpl node) {
@@ -2140,6 +2184,10 @@ public class NativeBroker extends DBBroker {
 	 */
 	final static class NodeRef extends Value {
 
+        NodeRef() {
+            data = new byte[12];
+        }
+        
 		NodeRef(int docId, long gid) {
 			data = new byte[12];
 			ByteConversion.intToByte(docId, data, 0);
@@ -2166,6 +2214,8 @@ public class NativeBroker extends DBBroker {
 		void set(int docId, long gid) {
 			ByteConversion.intToByte(docId, data, 0);
 			ByteConversion.longToByte(gid, data, 4);
+            len = 12;
+            pos = 0;
 		}
 	}
 

@@ -23,10 +23,11 @@ do
 done
 
 if [ -z "$JAVA_OPTS" ]; then
-    JAVA_OPTS="-Xms128000k -Xmx256000k"
+    JAVA_OPTS="-Xms256000k -Xmx256000k"
 fi
 
 SAXFACTORY=org.apache.xerces.jaxp.SAXParserFactoryImpl
-#PROF=-Xrunjmp:nomethods
+
+PROF=-Xrundrmem:file=drmem.log
 
 $JAVA_HOME/bin/java $PROF $JAVA_OPTS -Djavax.xml.parsers.SAXParserFactory=$SAXFACTORY -Dexist.home=$EXIST_HOME -classpath $LOCALCLASSPATH:$CLASSPATH org.exist.Server $*

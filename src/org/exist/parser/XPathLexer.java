@@ -138,20 +138,35 @@ tryAgain:
 					theRetToken=_returnToken;
 					break;
 				}
-				case '%':  case '-':  case 'A':  case 'B':
-				case 'C':  case 'D':  case 'E':  case 'F':
-				case 'G':  case 'H':  case 'I':  case 'J':
-				case 'K':  case 'L':  case 'M':  case 'N':
-				case 'O':  case 'P':  case 'Q':  case 'R':
-				case 'S':  case 'T':  case 'U':  case 'V':
-				case 'W':  case 'X':  case 'Y':  case 'Z':
-				case '_':  case 'a':  case 'b':  case 'c':
-				case 'd':  case 'e':  case 'f':  case 'g':
-				case 'h':  case 'i':  case 'j':  case 'k':
-				case 'l':  case 'm':  case 'n':  case 'o':
-				case 'p':  case 'q':  case 'r':  case 's':
-				case 't':  case 'u':  case 'v':  case 'w':
-				case 'x':  case 'y':  case 'z':
+				case 'A':  case 'B':  case 'C':  case 'D':
+				case 'E':  case 'F':  case 'G':  case 'H':
+				case 'I':  case 'J':  case 'K':  case 'L':
+				case 'M':  case 'N':  case 'O':  case 'P':
+				case 'Q':  case 'R':  case 'S':  case 'T':
+				case 'U':  case 'V':  case 'W':  case 'X':
+				case 'Y':  case 'Z':  case '_':  case 'a':
+				case 'b':  case 'c':  case 'd':  case 'e':
+				case 'f':  case 'g':  case 'h':  case 'i':
+				case 'j':  case 'k':  case 'l':  case 'm':
+				case 'n':  case 'o':  case 'p':  case 'q':
+				case 'r':  case 's':  case 't':  case 'u':
+				case 'v':  case 'w':  case 'x':  case 'y':
+				case 'z':  case '\u00c0':  case '\u00c1':  case '\u00c2':
+				case '\u00c3':  case '\u00c4':  case '\u00c5':  case '\u00c6':
+				case '\u00c7':  case '\u00c8':  case '\u00c9':  case '\u00ca':
+				case '\u00cb':  case '\u00cc':  case '\u00cd':  case '\u00ce':
+				case '\u00cf':  case '\u00d0':  case '\u00d1':  case '\u00d2':
+				case '\u00d3':  case '\u00d4':  case '\u00d5':  case '\u00d6':
+				case '\u00d8':  case '\u00d9':  case '\u00da':  case '\u00db':
+				case '\u00dc':  case '\u00dd':  case '\u00de':  case '\u00df':
+				case '\u00e0':  case '\u00e1':  case '\u00e2':  case '\u00e3':
+				case '\u00e4':  case '\u00e5':  case '\u00e6':  case '\u00e7':
+				case '\u00e8':  case '\u00e9':  case '\u00ea':  case '\u00eb':
+				case '\u00ec':  case '\u00ed':  case '\u00ee':  case '\u00ef':
+				case '\u00f0':  case '\u00f1':  case '\u00f2':  case '\u00f3':
+				case '\u00f4':  case '\u00f5':  case '\u00f6':  case '\u00f8':
+				case '\u00f9':  case '\u00fa':  case '\u00fb':  case '\u00fc':
+				case '\u00fd':  case '\u00fe':  case '\u00ff':
 				{
 					mID_OR_FUNC(true);
 					theRetToken=_returnToken;
@@ -318,7 +333,7 @@ tryAgain:
 			match('"');
 			text.setLength(_saveIndex);
 			{
-			_loop60:
+			_loop176:
 			do {
 				if ((_tokenSet_1.member(LA(1)))) {
 					{
@@ -326,7 +341,7 @@ tryAgain:
 					}
 				}
 				else {
-					break _loop60;
+					break _loop176;
 				}
 				
 			} while (true);
@@ -342,7 +357,7 @@ tryAgain:
 			match('\'');
 			text.setLength(_saveIndex);
 			{
-			_loop63:
+			_loop179:
 			do {
 				if ((_tokenSet_2.member(LA(1)))) {
 					{
@@ -350,7 +365,7 @@ tryAgain:
 					}
 				}
 				else {
-					break _loop63;
+					break _loop179;
 				}
 				
 			} while (true);
@@ -529,24 +544,13 @@ tryAgain:
 		_returnToken = _token;
 	}
 	
-	protected final void mCHAR(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+	protected final void mBASECHAR(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
 		int _ttype; Token _token=null; int _begin=text.length();
-		_ttype = CHAR;
+		_ttype = BASECHAR;
 		int _saveIndex;
 		
 		{
 		switch ( LA(1)) {
-		case 'a':  case 'b':  case 'c':  case 'd':
-		case 'e':  case 'f':  case 'g':  case 'h':
-		case 'i':  case 'j':  case 'k':  case 'l':
-		case 'm':  case 'n':  case 'o':  case 'p':
-		case 'q':  case 'r':  case 's':  case 't':
-		case 'u':  case 'v':  case 'w':  case 'x':
-		case 'y':  case 'z':
-		{
-			matchRange('a','z');
-			break;
-		}
 		case 'A':  case 'B':  case 'C':  case 'D':
 		case 'E':  case 'F':  case 'G':  case 'H':
 		case 'I':  case 'J':  case 'K':  case 'L':
@@ -555,22 +559,46 @@ tryAgain:
 		case 'U':  case 'V':  case 'W':  case 'X':
 		case 'Y':  case 'Z':
 		{
-			matchRange('A','Z');
+			matchRange('\u0041','\u005a');
 			break;
 		}
-		case '-':
+		case 'a':  case 'b':  case 'c':  case 'd':
+		case 'e':  case 'f':  case 'g':  case 'h':
+		case 'i':  case 'j':  case 'k':  case 'l':
+		case 'm':  case 'n':  case 'o':  case 'p':
+		case 'q':  case 'r':  case 's':  case 't':
+		case 'u':  case 'v':  case 'w':  case 'x':
+		case 'y':  case 'z':
 		{
-			match('-');
+			matchRange('\u0061','\u007a');
 			break;
 		}
-		case '%':
+		case '\u00c0':  case '\u00c1':  case '\u00c2':  case '\u00c3':
+		case '\u00c4':  case '\u00c5':  case '\u00c6':  case '\u00c7':
+		case '\u00c8':  case '\u00c9':  case '\u00ca':  case '\u00cb':
+		case '\u00cc':  case '\u00cd':  case '\u00ce':  case '\u00cf':
+		case '\u00d0':  case '\u00d1':  case '\u00d2':  case '\u00d3':
+		case '\u00d4':  case '\u00d5':  case '\u00d6':
 		{
-			match('%');
+			matchRange('\u00c0','\u00d6');
 			break;
 		}
-		case '_':
+		case '\u00d8':  case '\u00d9':  case '\u00da':  case '\u00db':
+		case '\u00dc':  case '\u00dd':  case '\u00de':  case '\u00df':
+		case '\u00e0':  case '\u00e1':  case '\u00e2':  case '\u00e3':
+		case '\u00e4':  case '\u00e5':  case '\u00e6':  case '\u00e7':
+		case '\u00e8':  case '\u00e9':  case '\u00ea':  case '\u00eb':
+		case '\u00ec':  case '\u00ed':  case '\u00ee':  case '\u00ef':
+		case '\u00f0':  case '\u00f1':  case '\u00f2':  case '\u00f3':
+		case '\u00f4':  case '\u00f5':  case '\u00f6':
 		{
-			match('_');
+			matchRange('\u00d8','\u00f6');
+			break;
+		}
+		case '\u00f8':  case '\u00f9':  case '\u00fa':  case '\u00fb':
+		case '\u00fc':  case '\u00fd':  case '\u00fe':  case '\u00ff':
+		{
+			matchRange('\u00f8','\u00ff');
 			break;
 		}
 		default:
@@ -587,13 +615,206 @@ tryAgain:
 		_returnToken = _token;
 	}
 	
+	protected final void mIDEOGRAPHIC(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+		int _ttype; Token _token=null; int _begin=text.length();
+		_ttype = IDEOGRAPHIC;
+		int _saveIndex;
+		
+		{
+		switch ( LA(1)) {
+		case '\u3007':
+		{
+			match('\u3007');
+			break;
+		}
+		case '\u3021':  case '\u3022':  case '\u3023':  case '\u3024':
+		case '\u3025':  case '\u3026':  case '\u3027':  case '\u3028':
+		case '\u3029':
+		{
+			matchRange('\u3021','\u3029');
+			break;
+		}
+		default:
+			if (((LA(1) >= '\u4e00' && LA(1) <= '\u9fa5'))) {
+				matchRange('\u4e00','\u9fa5');
+			}
+		else {
+			throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
+		}
+		}
+		}
+		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
+			_token = makeToken(_ttype);
+			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
+		}
+		_returnToken = _token;
+	}
+	
 	protected final void mDIGIT(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
 		int _ttype; Token _token=null; int _begin=text.length();
 		_ttype = DIGIT;
 		int _saveIndex;
 		
 		{
-		matchRange('0','9');
+		matchRange('\u0030','\u0039');
+		}
+		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
+			_token = makeToken(_ttype);
+			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
+		}
+		_returnToken = _token;
+	}
+	
+	protected final void mNMSTART(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+		int _ttype; Token _token=null; int _begin=text.length();
+		_ttype = NMSTART;
+		int _saveIndex;
+		
+		{
+		switch ( LA(1)) {
+		case 'A':  case 'B':  case 'C':  case 'D':
+		case 'E':  case 'F':  case 'G':  case 'H':
+		case 'I':  case 'J':  case 'K':  case 'L':
+		case 'M':  case 'N':  case 'O':  case 'P':
+		case 'Q':  case 'R':  case 'S':  case 'T':
+		case 'U':  case 'V':  case 'W':  case 'X':
+		case 'Y':  case 'Z':  case 'a':  case 'b':
+		case 'c':  case 'd':  case 'e':  case 'f':
+		case 'g':  case 'h':  case 'i':  case 'j':
+		case 'k':  case 'l':  case 'm':  case 'n':
+		case 'o':  case 'p':  case 'q':  case 'r':
+		case 's':  case 't':  case 'u':  case 'v':
+		case 'w':  case 'x':  case 'y':  case 'z':
+		case '\u00c0':  case '\u00c1':  case '\u00c2':  case '\u00c3':
+		case '\u00c4':  case '\u00c5':  case '\u00c6':  case '\u00c7':
+		case '\u00c8':  case '\u00c9':  case '\u00ca':  case '\u00cb':
+		case '\u00cc':  case '\u00cd':  case '\u00ce':  case '\u00cf':
+		case '\u00d0':  case '\u00d1':  case '\u00d2':  case '\u00d3':
+		case '\u00d4':  case '\u00d5':  case '\u00d6':  case '\u00d8':
+		case '\u00d9':  case '\u00da':  case '\u00db':  case '\u00dc':
+		case '\u00dd':  case '\u00de':  case '\u00df':  case '\u00e0':
+		case '\u00e1':  case '\u00e2':  case '\u00e3':  case '\u00e4':
+		case '\u00e5':  case '\u00e6':  case '\u00e7':  case '\u00e8':
+		case '\u00e9':  case '\u00ea':  case '\u00eb':  case '\u00ec':
+		case '\u00ed':  case '\u00ee':  case '\u00ef':  case '\u00f0':
+		case '\u00f1':  case '\u00f2':  case '\u00f3':  case '\u00f4':
+		case '\u00f5':  case '\u00f6':  case '\u00f8':  case '\u00f9':
+		case '\u00fa':  case '\u00fb':  case '\u00fc':  case '\u00fd':
+		case '\u00fe':  case '\u00ff':
+		{
+			mBASECHAR(false);
+			break;
+		}
+		case '_':
+		{
+			match('_');
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
+		}
+		}
+		}
+		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
+			_token = makeToken(_ttype);
+			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
+		}
+		_returnToken = _token;
+	}
+	
+	protected final void mNMCHAR(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+		int _ttype; Token _token=null; int _begin=text.length();
+		_ttype = NMCHAR;
+		int _saveIndex;
+		
+		{
+		switch ( LA(1)) {
+		case 'A':  case 'B':  case 'C':  case 'D':
+		case 'E':  case 'F':  case 'G':  case 'H':
+		case 'I':  case 'J':  case 'K':  case 'L':
+		case 'M':  case 'N':  case 'O':  case 'P':
+		case 'Q':  case 'R':  case 'S':  case 'T':
+		case 'U':  case 'V':  case 'W':  case 'X':
+		case 'Y':  case 'Z':  case 'a':  case 'b':
+		case 'c':  case 'd':  case 'e':  case 'f':
+		case 'g':  case 'h':  case 'i':  case 'j':
+		case 'k':  case 'l':  case 'm':  case 'n':
+		case 'o':  case 'p':  case 'q':  case 'r':
+		case 's':  case 't':  case 'u':  case 'v':
+		case 'w':  case 'x':  case 'y':  case 'z':
+		case '\u00c0':  case '\u00c1':  case '\u00c2':  case '\u00c3':
+		case '\u00c4':  case '\u00c5':  case '\u00c6':  case '\u00c7':
+		case '\u00c8':  case '\u00c9':  case '\u00ca':  case '\u00cb':
+		case '\u00cc':  case '\u00cd':  case '\u00ce':  case '\u00cf':
+		case '\u00d0':  case '\u00d1':  case '\u00d2':  case '\u00d3':
+		case '\u00d4':  case '\u00d5':  case '\u00d6':  case '\u00d8':
+		case '\u00d9':  case '\u00da':  case '\u00db':  case '\u00dc':
+		case '\u00dd':  case '\u00de':  case '\u00df':  case '\u00e0':
+		case '\u00e1':  case '\u00e2':  case '\u00e3':  case '\u00e4':
+		case '\u00e5':  case '\u00e6':  case '\u00e7':  case '\u00e8':
+		case '\u00e9':  case '\u00ea':  case '\u00eb':  case '\u00ec':
+		case '\u00ed':  case '\u00ee':  case '\u00ef':  case '\u00f0':
+		case '\u00f1':  case '\u00f2':  case '\u00f3':  case '\u00f4':
+		case '\u00f5':  case '\u00f6':  case '\u00f8':  case '\u00f9':
+		case '\u00fa':  case '\u00fb':  case '\u00fc':  case '\u00fd':
+		case '\u00fe':  case '\u00ff':
+		{
+			mBASECHAR(false);
+			break;
+		}
+		case '0':  case '1':  case '2':  case '3':
+		case '4':  case '5':  case '6':  case '7':
+		case '8':  case '9':
+		{
+			mDIGIT(false);
+			break;
+		}
+		case '.':
+		{
+			match('.');
+			break;
+		}
+		case '-':
+		{
+			match('-');
+			break;
+		}
+		case '_':
+		{
+			match('_');
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
+		}
+		}
+		}
+		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
+			_token = makeToken(_ttype);
+			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
+		}
+		_returnToken = _token;
+	}
+	
+	protected final void mNCNAME(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+		int _ttype; Token _token=null; int _begin=text.length();
+		_ttype = NCNAME;
+		int _saveIndex;
+		
+		mNMSTART(false);
+		{
+		_loop204:
+		do {
+			if ((_tokenSet_3.member(LA(1)))) {
+				mNMCHAR(false);
+			}
+			else {
+				break _loop204;
+			}
+			
+		} while (true);
 		}
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
 			_token = makeToken(_ttype);
@@ -607,51 +828,17 @@ tryAgain:
 		_ttype = ID;
 		int _saveIndex;
 		
-		mCHAR(false);
+		mNMSTART(false);
 		{
-		_loop82:
+		_loop207:
 		do {
-			switch ( LA(1)) {
-			case '%':  case '-':  case 'A':  case 'B':
-			case 'C':  case 'D':  case 'E':  case 'F':
-			case 'G':  case 'H':  case 'I':  case 'J':
-			case 'K':  case 'L':  case 'M':  case 'N':
-			case 'O':  case 'P':  case 'Q':  case 'R':
-			case 'S':  case 'T':  case 'U':  case 'V':
-			case 'W':  case 'X':  case 'Y':  case 'Z':
-			case '_':  case 'a':  case 'b':  case 'c':
-			case 'd':  case 'e':  case 'f':  case 'g':
-			case 'h':  case 'i':  case 'j':  case 'k':
-			case 'l':  case 'm':  case 'n':  case 'o':
-			case 'p':  case 'q':  case 'r':  case 's':
-			case 't':  case 'u':  case 'v':  case 'w':
-			case 'x':  case 'y':  case 'z':
-			{
-				mCHAR(false);
-				break;
+			if ((_tokenSet_3.member(LA(1)))) {
+				mNMCHAR(false);
 			}
-			case '0':  case '1':  case '2':  case '3':
-			case '4':  case '5':  case '6':  case '7':
-			case '8':  case '9':
-			{
-				mDIGIT(false);
-				break;
+			else {
+				break _loop207;
 			}
-			case '.':
-			{
-				match('.');
-				break;
-			}
-			case ':':
-			{
-				match(':');
-				break;
-			}
-			default:
-			{
-				break _loop82;
-			}
-			}
+			
 		} while (true);
 		}
 		_ttype = testLiteralsTable(new String(text.getBuffer(),_begin,text.length()-_begin),_ttype);
@@ -667,43 +854,7 @@ tryAgain:
 		_ttype = FUNC;
 		int _saveIndex;
 		
-		mCHAR(false);
-		{
-		_loop85:
-		do {
-			switch ( LA(1)) {
-			case '%':  case '-':  case 'A':  case 'B':
-			case 'C':  case 'D':  case 'E':  case 'F':
-			case 'G':  case 'H':  case 'I':  case 'J':
-			case 'K':  case 'L':  case 'M':  case 'N':
-			case 'O':  case 'P':  case 'Q':  case 'R':
-			case 'S':  case 'T':  case 'U':  case 'V':
-			case 'W':  case 'X':  case 'Y':  case 'Z':
-			case '_':  case 'a':  case 'b':  case 'c':
-			case 'd':  case 'e':  case 'f':  case 'g':
-			case 'h':  case 'i':  case 'j':  case 'k':
-			case 'l':  case 'm':  case 'n':  case 'o':
-			case 'p':  case 'q':  case 'r':  case 's':
-			case 't':  case 'u':  case 'v':  case 'w':
-			case 'x':  case 'y':  case 'z':
-			{
-				mCHAR(false);
-				break;
-			}
-			case '0':  case '1':  case '2':  case '3':
-			case '4':  case '5':  case '6':  case '7':
-			case '8':  case '9':
-			{
-				mDIGIT(false);
-				break;
-			}
-			default:
-			{
-				break _loop85;
-			}
-			}
-		} while (true);
-		}
+		mNCNAME(false);
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
 			_token = makeToken(_ttype);
 			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
@@ -716,10 +867,10 @@ tryAgain:
 		_ttype = ID_OR_FUNC;
 		int _saveIndex;
 		
-		boolean synPredMatched88 = false;
+		boolean synPredMatched211 = false;
 		if (((_tokenSet_0.member(LA(1))) && (true))) {
-			int _m88 = mark();
-			synPredMatched88 = true;
+			int _m211 = mark();
+			synPredMatched211 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -728,12 +879,12 @@ tryAgain:
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched88 = false;
+				synPredMatched211 = false;
 			}
-			rewind(_m88);
+			rewind(_m211);
 			inputState.guessing--;
 		}
-		if ( synPredMatched88 ) {
+		if ( synPredMatched211 ) {
 			mFUNC(false);
 			if ( inputState.guessing==0 ) {
 				_ttype = FUNC;
@@ -763,41 +914,41 @@ tryAgain:
 		int _saveIndex;
 		
 		{
-		int _cnt91=0;
-		_loop91:
+		int _cnt214=0;
+		_loop214:
 		do {
 			if (((LA(1) >= '0' && LA(1) <= '9'))) {
 				mDIGIT(false);
 			}
 			else {
-				if ( _cnt91>=1 ) { break _loop91; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt214>=1 ) { break _loop214; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			
-			_cnt91++;
+			_cnt214++;
 		} while (true);
 		}
 		{
-		_loop95:
+		_loop218:
 		do {
 			if ((LA(1)=='.')) {
 				match('.');
 				{
-				int _cnt94=0;
-				_loop94:
+				int _cnt217=0;
+				_loop217:
 				do {
 					if (((LA(1) >= '0' && LA(1) <= '9'))) {
 						mDIGIT(false);
 					}
 					else {
-						if ( _cnt94>=1 ) { break _loop94; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+						if ( _cnt217>=1 ) { break _loop217; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 					}
 					
-					_cnt94++;
+					_cnt217++;
 				} while (true);
 				}
 			}
 			else {
-				break _loop95;
+				break _loop218;
 			}
 			
 		} while (true);
@@ -964,9 +1115,11 @@ tryAgain:
 	
 	private static final long[] mk_tokenSet_0() {
 		long[] data = new long[1025];
-		data[0]=35321811042304L;
+		data[0]=0L;
 		data[1]=576460745995190270L;
-		for (int i = 2; i<=1024; i++) { data[i]=0L; }
+		data[2]=0L;
+		data[3]=-36028797027352577L;
+		for (int i = 4; i<=1024; i++) { data[i]=0L; }
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
@@ -986,5 +1139,15 @@ tryAgain:
 		return data;
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
+	private static final long[] mk_tokenSet_3() {
+		long[] data = new long[1025];
+		data[0]=288054454291267584L;
+		data[1]=576460745995190270L;
+		data[2]=0L;
+		data[3]=-36028797027352577L;
+		for (int i = 4; i<=1024; i++) { data[i]=0L; }
+		return data;
+	}
+	public static final BitSet _tokenSet_3 = new BitSet(mk_tokenSet_3());
 	
 	}

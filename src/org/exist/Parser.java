@@ -169,7 +169,7 @@ public class Parser extends Observable implements ContentHandler, LexicalHandler
 
         final ElementImpl last = (ElementImpl) stack.peek();
         if ( charBuf != null && charBuf.length() > 0 ) {
-            String normalized = charBuf.getNormalizedString( normalize );
+            final String normalized = charBuf.getNormalizedString( normalize );
 
             if ( normalized.length() > 0 ) {
                 //TextImpl text =
@@ -278,14 +278,14 @@ public class Parser extends Observable implements ContentHandler, LexicalHandler
         final ElementImpl last = (ElementImpl) stack.peek();
         if ( last.getNodeName().equals( qname ) ) {
             if ( charBuf != null && charBuf.length() > 0 ) {
-                String normalized = charBuf.getNormalizedString( normalize );
+                final String normalized = charBuf.getNormalizedString( normalize );
                 if ( normalized.length() > 0 ) {
                     //TextImpl text =
                     //    new TextImpl( normalized );
                     text.setData( normalized );
                     text.setOwnerDocument( document );
-                    //charBuf.setLength( 0 );
-                    charBuf = new FastStringBuffer( 6, 6, 3 );
+                    charBuf.setLength( 0 );
+                    //charBuf = new FastStringBuffer( 6, 6, 3 );
                     last.appendChildInternal( text );
                     if ( !validate )
                         broker.store( text, currentPath );
@@ -412,12 +412,11 @@ public class Parser extends Observable implements ContentHandler, LexicalHandler
     public DocumentImpl parse( Collection coll, InputSource is, String fileName )
 		throws SAXException, IOException, PermissionDeniedException {
 		this.collection = coll;
-		Object lock = broker.acquireWriteLock();
+		final Object lock = broker.acquireWriteLock();
 		try {
 			scan( is, fileName );
 			
-			DocumentImpl doc = store();
-			return doc;
+			return store();
 		} finally {
 			broker.releaseWriteLock( lock );
 		}
@@ -441,12 +440,11 @@ public class Parser extends Observable implements ContentHandler, LexicalHandler
     public DocumentImpl parse( Collection collection, File file, String xmlFileName )
          throws SAXException, IOException, PermissionDeniedException {
 		this.collection = collection;
-        Object lock = broker.acquireWriteLock();
+        final Object lock = broker.acquireWriteLock();
         try {
-            InputSource in = new InputSource( file.getAbsolutePath() );
+            final InputSource in = new InputSource( file.getAbsolutePath() );
             scan( in, xmlFileName );
-            DocumentImpl doc = store();
-            return doc;
+            return store();
         } finally {
             broker.releaseWriteLock( lock );
         }
@@ -471,13 +469,11 @@ public class Parser extends Observable implements ContentHandler, LexicalHandler
     public DocumentImpl parse( Collection coll, String str, String xmlFileName )
          throws SAXException, IOException, PermissionDeniedException {
         collection = coll;
-        Object lock = broker.acquireWriteLock();
+        final Object lock = broker.acquireWriteLock();
         try {
-            StringReader sr = new StringReader( str );
-            scan( new InputSource( sr ), xmlFileName );
+            scan( new InputSource( new StringReader( str ) ), xmlFileName );
             this.src = new InputSource( new StringReader( str ) );
-            DocumentImpl doc = store();
-            return doc;
+            return store();
         } finally {
             broker.releaseWriteLock( lock );
         }
@@ -532,8 +528,7 @@ public class Parser extends Observable implements ContentHandler, LexicalHandler
      */
     public void scan( InputStream inStream, String xmlFileName )
          throws SAXException, IOException, PermissionDeniedException {
-        InputSource in = new InputSource( inStream );
-        scan( in, xmlFileName );
+        scan( new InputSource( inStream ), xmlFileName );
     }
 
 
@@ -566,7 +561,7 @@ public class Parser extends Observable implements ContentHandler, LexicalHandler
 			throw new IOException("no input source");
 		if( broker.isReadOnly() )
 			throw new PermissionDeniedException("database is read-only");
-        String pathSep = File.pathSeparator;
+        final String pathSep = File.pathSeparator;
         this.src = src;
         this.fileName = xmlFileName;
         parser.setContentHandler( this );
@@ -584,8 +579,8 @@ public class Parser extends Observable implements ContentHandler, LexicalHandler
         if ( !fileName.startsWith( "/db" ) )
             fileName = "/db" + fileName;
 
-        int pos = fileName.lastIndexOf( '/' );
-        String collName =
+        final int pos = fileName.lastIndexOf( '/' );
+        final String collName =
             ( pos > 0 ) ? fileName.substring( 0, pos ) : "/db";
         if ( pos > 0 )
             fileName = fileName.substring( pos + 1 );
@@ -727,11 +722,11 @@ public class Parser extends Observable implements ContentHandler, LexicalHandler
         if ( !stack.empty() ) {
             last = (ElementImpl) stack.peek();
             if ( charBuf != null && charBuf.length() > 0 ) {
-                String normalized = charBuf.getNormalizedString( normalize );
+                final String normalized = charBuf.getNormalizedString( normalize );
                 if ( normalized.length() > 0 ) {
                     text.setData( normalized );
                     text.setOwnerDocument( document );
-                    charBuf = new FastStringBuffer( 6, 6, 3 );
+                    charBuf.setLength(0);
                     last.appendChildInternal( text );
 
                     if ( !validate )
@@ -781,14 +776,14 @@ public class Parser extends Observable implements ContentHandler, LexicalHandler
         String attrQName;
         String attrPrefix;
         String attrNS;
-        for ( int i = 0; i < attributes.getLength(); i++ ) {
+        for ( int i = 0; i < attrLength; i++ ) {
             attrNS = attributes.getURI( i );
             attrQName = attributes.getQName( i );
             // skip xmlns-attributes
             if ( attrQName.startsWith( "xmlns" ) )
                 --attrLength;
             else {
-                AttrImpl attr =
+                final AttrImpl attr =
                     new AttrImpl( attrQName,
                     		attributes.getValue( i ) );
                 attr.setOwnerDocument( document );
@@ -856,11 +851,11 @@ public class Parser extends Observable implements ContentHandler, LexicalHandler
     public DocumentImpl store() throws SAXException, IOException {
         LOG.debug( "storing document ..." );
 		try {
-			InputStream is = src.getByteStream();
+			final InputStream is = src.getByteStream();
 			if( is != null )
 				is.reset();
 			else {
-				Reader cs = src.getCharacterStream();
+				final Reader cs = src.getCharacterStream();
 				if( cs != null )
 					cs.reset();
 			}
@@ -875,7 +870,7 @@ public class Parser extends Observable implements ContentHandler, LexicalHandler
             if ( document.getDoctype() == null ) {
                 // we don't know the doctype
                 // set it to the root node's tag name
-                DocumentTypeImpl dt =
+                final DocumentTypeImpl dt =
                     new DocumentTypeImpl( rootNode.getTagName(), null, document.getFileName() );
                 document.setDocumentType( dt );
             }

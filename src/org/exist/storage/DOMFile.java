@@ -172,6 +172,7 @@ public class DOMFile extends BTree implements Lockable {
 			if (page != null) {
 				DOMFilePageHeader ph = page.getPageHeader();
 				ph.setNextDataPage(newPage.getPageNum());
+                newPage.getPageHeader().setPrevDataPage(page.getPageNum());
 				page.setDirty(true);
 				//page.write();
 			}
@@ -222,8 +223,8 @@ public class DOMFile extends BTree implements Lockable {
 		// insert in the middle of the page?
 		if (rec.offset < dataLen) {
 			if (dataLen + value.length + 4 < fileHeader.getWorkSize()) {
-				// move data
 				int end = rec.offset + value.length + 4;
+				LOG.debug(rec.page.getPageNum() + " moving data to " + end);
 				System.arraycopy(
 					rec.page.data,
 					rec.offset,
@@ -234,7 +235,11 @@ public class DOMFile extends BTree implements Lockable {
 				rec.page.getPageHeader().setDataLength(rec.page.len);
 			} else {
 				// split the page
-				LOG.debug("splitting page " + rec.page.getPageNum());
+				LOG.debug(
+					"splitting page "
+						+ rec.page.getPageNum()
+						+ " at "
+						+ rec.offset);
 				DOMPage splitPage = new DOMPage();
 				splitPage.len = dataLen - rec.offset;
 				System.arraycopy(
@@ -246,12 +251,23 @@ public class DOMFile extends BTree implements Lockable {
 				splitPage.getPageHeader().setDataLength(splitPage.len);
 				splitPage.getPageHeader().setNextDataPage(
 					rec.page.getPageHeader().getNextDataPage());
+                splitPage.getPageHeader().setPrevDataPage(
+                    rec.page.getPageNum()
+                );
 				splitPage.getPageHeader().setNextTID(
 					rec.page.getPageHeader().getNextTID());
 				splitPage.getPageHeader().setRecordCount(
 					getRecordCount(splitPage));
 				splitPage.setDirty(true);
 				buffer.add(splitPage);
+                DOMPage nextPage = getCurrentPage(
+                    splitPage.getPageHeader().getNextDataPage()
+                );
+                nextPage.getPageHeader().setPrevDataPage(
+                    splitPage.getPageNum()
+                );
+                nextPage.setDirty(true);
+                buffer.add(nextPage);
 				rec.page.getPageHeader().setNextDataPage(
 					splitPage.getPageNum());
 				rec.page.len = rec.offset + value.length + 4;
@@ -260,8 +276,7 @@ public class DOMFile extends BTree implements Lockable {
 					getRecordCount(rec.page));
 				dataLen = rec.offset;
 			}
-		}
-		if (dataLen + value.length + 2 > fileHeader.getWorkSize()) {
+		} else if (dataLen + value.length + 4 > fileHeader.getWorkSize()) {
 			// append at the end of the page
 			// does value fit into page?
 			DOMPage newPage = new DOMPage();
@@ -275,10 +290,21 @@ public class DOMFile extends BTree implements Lockable {
 			rec.offset = 0;
 			rec.page.len = value.length + 4;
 			rec.page.getPageHeader().setDataLength(rec.page.len);
+		} else {
+			rec.page.len = dataLen + value.length + 4;
+			rec.page.getPageHeader().setDataLength(rec.page.len);
 		}
+
 		// write the data
-		LOG.debug("writing to page " + rec.page.getPageNum());
 		short tid = rec.page.getPageHeader().getNextTID();
+		LOG.debug(
+			"writing tid "
+				+ 
+				+ tid
+				+ " to page "
+				+ rec.page.getPageNum()
+				+ " at "
+				+ rec.offset);
 		ByteConversion.shortToByte((short) tid, rec.page.data, rec.offset);
 		rec.offset += 2;
 		ByteConversion.shortToByte(
@@ -372,6 +398,7 @@ public class DOMFile extends BTree implements Lockable {
 			ph.setStatus(RECORD);
 			ph.setDirty(true);
 			ph.setNextDataPage(-1);
+            ph.setPrevDataPage(-1);
 			ph.setDataLength(0);
 			ph.setRecordCount((short) 0);
 			//page.write();
@@ -605,24 +632,28 @@ public class DOMFile extends BTree implements Lockable {
 
 	private final RecordPos findValuePosition(long p) {
 		long pageNr = (long) pageFromPointer(p);
-		short tid = (short) tidFromPointer(p);
+		final short tid = (short) tidFromPointer(p);
 		DOMPage page;
 		int pos;
-		int l;
-		short current = -1;
 		while (pageNr > -1) {
 			page = getCurrentPage(pageNr);
 			buffer.add(page);
 			pos = 0;
-			while (pos < page.getPageHeader().getDataLength()) {
-				current = ByteConversion.byteToShort(page.data, pos);
+            final int dlen = page.getPageHeader().getDataLength();
+			while (pos < dlen) {
+				final short current = ByteConversion.byteToShort(page.data, pos);
 				if (current == tid)
-					return new RecordPos(pos + 2, page);
-				l = ByteConversion.byteToShort(page.data, pos + 2);
-				pos = pos + l + 4;
+					return new RecordPos(pos + 2, page); 
+				pos = pos + ByteConversion.byteToShort(page.data, pos + 2) + 4;
 			}
 			pageNr = page.getPageHeader().getNextDataPage();
-			LOG.debug("tid " + tid + " not found. Loading " + pageNr);
+			LOG.debug(
+				"tid "
+					+ tid
+					+ " not found on page "
+					+ page.getPageNum()
+					+ ". Loading "
+					+ pageNr);
 		}
 		LOG.debug("tid " + tid + " not found.");
 		return null;
@@ -786,11 +817,27 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	public void remove(long p) {
 		RecordPos rec = findValuePosition(p);
-		DOMFilePageHeader ph = rec.page.getPageHeader();
+        LOG.debug("removing tid " + tidFromPointer(p) + 
+            " from page " + pageFromPointer(p));
+        DOMFilePageHeader ph = rec.page.getPageHeader();
+		short l = ByteConversion.byteToShort(rec.page.data, rec.offset);
+		int end = rec.offset + 2 + l;
+		int len = ph.getDataLength();
+		// remove old value
+		System.arraycopy(rec.page.data, end, rec.page.data, 
+            rec.offset - 2, len - end);
+		ph.setDirty(true);
+		len = len - l - 4;
+		ph.setDataLength(len);
+		rec.page.setDirty(true);
 		ph.decRecordCount();
 		if (ph.getRecordCount() == 0) {
 			buffer.remove(rec.page);
 			long np = ph.getNextDataPage();
+            DOMPage prev = getCurrentPage(ph.getPrevDataPage());
+            prev.getPageHeader().setNextDataPage(np);
+            prev.setDirty(true);
+            buffer.add(prev);
 			try {
 				if (fileHeader.getLastDataPage() == rec.page.getPageNum())
 					fileHeader.setLastDataPage(-1);
@@ -1118,6 +1165,7 @@ public class DOMFile extends BTree implements Lockable {
 						if (db.fileHeader.getLastDataPage() == p.getPageNum())
 							db.fileHeader.setLastDataPage(-1);
 						ph.setNextDataPage(-1);
+                        ph.setPrevDataPage(-1);
 						ph.setDataLength(0);
 						ph.setRecordCount((short) 0);
 						p.setDirty(true);
@@ -1294,6 +1342,7 @@ public class DOMFile extends BTree implements Lockable {
 	private final class DOMFilePageHeader extends BTreePageHeader {
 		protected int dataLen = 0;
 		protected long nextDataPage = -1;
+        protected long prevDataPage = -1;
 		protected short tid = 0;
 		protected short records = 0;
 
@@ -1343,6 +1392,10 @@ public class DOMFile extends BTree implements Lockable {
 			return nextDataPage;
 		}
 
+        public long getPrevDataPage() {
+            return prevDataPage;
+        }
+        
 		/**
 		 *  Gets the recordCount attribute of the DOMFilePageHeader object
 		 *
@@ -1368,6 +1421,7 @@ public class DOMFile extends BTree implements Lockable {
 			records = dis.readShort();
 			dataLen = dis.readInt();
 			nextDataPage = dis.readLong();
+            prevDataPage = dis.readLong();
 			tid = dis.readShort();
 		}
 
@@ -1389,6 +1443,10 @@ public class DOMFile extends BTree implements Lockable {
 			nextDataPage = page;
 		}
 
+        public void setPrevDataPage(long page) {
+            prevDataPage = page;
+        }
+        
 		/**
 		 *  Sets the recordCount attribute of the DOMFilePageHeader object
 		 *
@@ -1409,6 +1467,7 @@ public class DOMFile extends BTree implements Lockable {
 			dos.writeShort(records);
 			dos.writeInt(dataLen);
 			dos.writeLong(nextDataPage);
+            dos.writeLong(prevDataPage);
 			dos.writeShort(tid);
 		}
 	}
@@ -1662,8 +1721,7 @@ public class DOMFile extends BTree implements Lockable {
 			int idx;
 			while ((idx = queue.indexOf(page)) > -1)
 				queue.remove(idx);
-			if (map.remove(page.page.getPageNum()) == null)
-				LOG.debug("could not remove page " + page.page.getPageNum());
+			map.remove(page.page.getPageNum());
 		}
 
 		public void printStatistics() {

@@ -143,7 +143,7 @@ public class BrokerPool {
 	protected int brokers = 0;
 	protected Stack pool = new Stack();
 	private org.exist.security.SecurityManager secManager = null;
-	private long lastSync = System.currentTimeMillis();
+	private long lastRequest = System.currentTimeMillis();
 	private long idleTime = 900000L;
 
 	/**
@@ -269,8 +269,9 @@ public class BrokerPool {
 			return;
 		pool.push(broker);
 		if(pool.size() == brokers && 
-			(System.currentTimeMillis() - lastSync) > idleTime)
+			(System.currentTimeMillis() - lastRequest) > idleTime)
 			sync(broker);
+        lastRequest = System.currentTimeMillis();
 		this.notifyAll();
 	}
 
@@ -284,7 +285,6 @@ public class BrokerPool {
 	public void sync(DBBroker broker) {
 		LOG.debug("database is idle; syncing buffers to disk");
 		broker.sync();
-		lastSync = System.currentTimeMillis();
 	}
 	
 	/**  Shutdown all brokers. */

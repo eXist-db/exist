@@ -139,6 +139,7 @@ public class XUpdateProcessor implements ContentHandler {
 			if (localName.equals("append")
 				|| localName.equals("insert-before")
 				|| localName.equals("insert-after")
+                || localName.equals("remove")
 				|| localName.equals("update")) {
 				if (inModification)
 					throw new SAXException("nested modifications are not allowed");
@@ -163,6 +164,10 @@ public class XUpdateProcessor implements ContentHandler {
 				modification = new Append(pool, user, select);
             else if (localName.equals("insert-before"))
                 modification = new Insert(pool, user, select, Insert.INSERT_BEFORE);
+            else if (localName.equals("insert-after"))
+                modification = new Insert(pool, user, select, Insert.INSERT_AFTER);
+            else if (localName.equals("remove"))
+                modification = new Remove(pool, user, select);
             else if (localName.equals("element")) {
                 String name = atts.getValue("name");
                 if(name == null)
@@ -216,6 +221,7 @@ public class XUpdateProcessor implements ContentHandler {
             } else if(localName.equals("attribute"))
                 inAttribute = false;
             if(localName.equals("append") ||
+                localName.equals("remove") ||
                 localName.equals("insert-before") ||
                 localName.equals("insert-after")) {
                 inModification = false;

@@ -298,7 +298,20 @@ public class LocalXMLResource implements XMLResource {
 		OutputFormat format = new OutputFormat("xml", encoding, false);
 		InternalXMLSerializer xmlout = new InternalXMLSerializer(format);
 		try {
-			xmlout.serialize((Element) root);
+            switch(root.getNodeType()) {
+                case Node.ELEMENT_NODE:
+                    xmlout.serialize((Element)root);
+                    break;
+                case Node.DOCUMENT_NODE:
+                    xmlout.serialize((Document)root);
+                    break;
+                case Node.DOCUMENT_FRAGMENT_NODE:
+                    xmlout.serialize((DocumentFragment)root);
+                    break;
+                default:
+                    throw new XMLDBException(ErrorCodes.WRONG_CONTENT_TYPE,
+                        "argument should be an Element, Document or DocumentFragment");
+            }
 		} catch (IOException ioe) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage());
 		}

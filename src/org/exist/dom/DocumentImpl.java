@@ -22,7 +22,6 @@
  */
 package org.exist.dom;
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.log4j.Category;
@@ -671,9 +670,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 */
 	public int getTreeLevelOrder(int level) {
 		if (level >= treeLevelOrder.length) {
-			LOG.debug("tree-level " + level + " does not exist.");
-			Thread.dumpStack();
-			throw new ArrayIndexOutOfBoundsException();
+            LOG.fatal("tree level " + level + " does not exist");
+			return -1;
 		}
 		return treeLevelOrder[level];
 	}
@@ -967,6 +965,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		ostream.writeInt(docId);
 		ostream.writeInt(children);
 		ostream.writeInt(maxDepth);
+        //LOG.debug("maxDepth = " + maxDepth);
 		//ostream.writeShort( treeLevelOrder.length );
 		for (int i = 0; i < maxDepth; i++)
 			ostream.writeInt(treeLevelOrder[i]);
