@@ -42,6 +42,9 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.Configuration;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.xml.sax.SAXException;
+import java.io.IOException;
+import java.io.FileOutputStream;
+
 
 /**
  *  Handler class for XMLRPC calls. <p>
@@ -1391,29 +1394,62 @@ public class RpcServer implements RpcAPI {
 		}
 	}
 
-private static byte[] compress(byte[] whatToCompress) throws IOException {
-ByteArrayOutputStream baos = new ByteArrayOutputStream();
-ZipOutputStream gzos = new ZipOutputStream(baos);
-gzos.setMethod(gzos.DEFLATED);
-gzos.putNextEntry(new ZipEntry(whatToCompress.length+""));
-gzos.write(whatToCompress);
-gzos.closeEntry();
-gzos.finish();
-gzos.close();
-return baos.toByteArray();
-}
+	
+	//FIXME: Check it for possible security hole. The name of file is not generated in random mode
+	public Vector getDocumentChunk(User user, String name, Hashtable parameters)
+			throws EXistException, PermissionDeniedException, IOException {
+		Vector result = new Vector();
+		File file;
+		file = File.createTempFile("rpc", ".xml");
+		FileOutputStream os = new FileOutputStream(file.getAbsolutePath(), true);
+		os.write(getDocument(user, name, parameters));
+		os.close();
+		result.addElement(file.getName());
+		result.addElement(Long.toString(file.length()));
+		file.deleteOnExit();
+		LOG.debug("The file is created with name: "+file.getName());
+		return result;
+	}
+	
 
-private static byte[] uncompress(byte[] whatToUncompress) throws IOException {
-ByteArrayInputStream bais = new ByteArrayInputStream(whatToUncompress);
-ZipInputStream gzis = new ZipInputStream(bais);
-ZipEntry zipentry = gzis.getNextEntry();
-int len = Integer.parseInt(zipentry.getName());
-ByteArrayOutputStream baos = new ByteArrayOutputStream(len);
-byte[] buf = new byte[512];
-int bread;
-while ((bread = gzis.read(buf)) != -1) baos.write(buf, 0, bread);
-gzis.closeEntry();
-gzis.close();
-return baos.toByteArray();
-} 
+	public byte[] getDocumentChunk(User user, String name, int start, int len)
+			throws EXistException, PermissionDeniedException, IOException {
+		RpcConnection con = pool.get();
+		try {
+			return con.getDocumentChunk(user, name, start, len);
+		} finally {
+			pool.release(con);
+		}
+	}
+
+	
+	
+	
+	private static byte[] compress(byte[] whatToCompress) throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ZipOutputStream gzos = new ZipOutputStream(baos);
+		gzos.setMethod(gzos.DEFLATED);
+		gzos.putNextEntry(new ZipEntry(whatToCompress.length + ""));
+		gzos.write(whatToCompress);
+		gzos.closeEntry();
+		gzos.finish();
+		gzos.close();
+		return baos.toByteArray();
+	}
+
+	private static byte[] uncompress(byte[] whatToUncompress)
+			throws IOException {
+		ByteArrayInputStream bais = new ByteArrayInputStream(whatToUncompress);
+		ZipInputStream gzis = new ZipInputStream(bais);
+		ZipEntry zipentry = gzis.getNextEntry();
+		int len = Integer.parseInt(zipentry.getName());
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(len);
+		byte[] buf = new byte[512];
+		int bread;
+		while ((bread = gzis.read(buf)) != -1)
+			baos.write(buf, 0, bread);
+		gzis.closeEntry();
+		gzis.close();
+		return baos.toByteArray();
+	} 
 }
