@@ -528,7 +528,7 @@ public class BrokerPool {
 				return;
 			if (pool.size() == brokers) {
 				DBBroker broker = (DBBroker) pool.peek();
-				sync(broker, syncEvent);
+				sync(broker, event);
 				syncRequired = false;
 			} else {
 				syncEvent = event;

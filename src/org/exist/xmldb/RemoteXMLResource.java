@@ -340,9 +340,9 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 					ErrorCodes.INVALID_RESOURCE,
 					"failed to read resource content from file " + file.getAbsolutePath());
 			try {
-				byte[] chunk = new byte[512];
-				ByteArrayOutputStream out = new ByteArrayOutputStream();
-				FileInputStream in = new FileInputStream(file);
+				final byte[] chunk = new byte[512];
+				final ByteArrayOutputStream out = new ByteArrayOutputStream();
+				final FileInputStream in = new FileInputStream(file);
 				int l;
 				do {
 					l = in.read(chunk);
@@ -351,8 +351,8 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 
 				} while (l > -1);
 				in.close();
-				byte[] data = out.toByteArray();
-				content = new String(data);
+				final byte[] data = out.toByteArray();
+//				content = new String(data);
 				file = null;
 				return data;
 			} catch (IOException e) {

@@ -251,4 +251,12 @@ public class Predicate extends PathExpr {
 	public final static boolean isReverseAxis(int axis) {
 	    return axis < Constants.CHILD_AXIS;
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.PathExpr#resetState()
+	 */
+	public void resetState() {
+		LOG.debug("Clearing cached result");
+		cached = null;
+	}
 }
