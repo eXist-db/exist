@@ -713,35 +713,7 @@ implements Comparable, EntityResolver, Cacheable {
 		XMLReader reader;
 		InputSource source;
 		try {
-			lock.acquire(Lock.WRITE_LOCK);
-			if (hasDocument(name) && (oldDoc = getDocument(broker, name)) != null) {
-				if(oldDoc.isLockedForWrite())
-					throw new PermissionDeniedException("Document " + name + 
-							" is locked for write");
-				// check if the document is locked by another user
-				User lockUser = oldDoc.getUserLock();
-				if(lockUser != null && !lockUser.equals(broker.getUser()))
-					throw new PermissionDeniedException("The document is locked by user " +
-							lockUser.getName());
-				
-				// check if the document is currently being changed by someone else
-				Lock oldLock = oldDoc.getUpdateLock();
-				oldLock.acquire(Lock.WRITE_LOCK);
-				
-				// do we have permissions for update?
-				if (!oldDoc.getPermissions().validate(broker.getUser(),
-						Permission.UPDATE))
-					throw new PermissionDeniedException(
-							"Document \""+name+"\" exists and update is not allowed");
-				if (!(getPermissions().validate(broker.getUser(), Permission.UPDATE) ||
-				        getPermissions().validate(broker.getUser(), Permission.WRITE)))
-					throw new PermissionDeniedException(
-							"Document exists and update is not allowed for the collection");
-				// do we have write permissions?
-			} else if (!getPermissions().validate(broker.getUser(),
-					Permission.WRITE))
-				throw new PermissionDeniedException(
-						"Not allowed to write to collection " + getName());
+			oldDoc = checkPermissions(broker, name);
 			
 			document = new DocumentImpl(broker, name,	this);
 			manageDocumentInformation(broker, name, oldDoc, document );
@@ -879,7 +851,7 @@ implements Comparable, EntityResolver, Cacheable {
 		return document;
 	}
 
-	/** If an old document exists, keep information  about  the document
+	/** If an old document exists, keep information  about  the document.
 	 * @param broker
 	 * @param name
 	 * @param oldDoc
@@ -899,6 +871,50 @@ implements Comparable, EntityResolver, Cacheable {
 		}
 	}
 
+	/** Check Permissions about user and document, and throw exceptions if necessary.
+	 * @param broker
+	 * @param name
+	 * @return
+	 * @throws LockException
+	 * @throws PermissionDeniedException
+	 */
+	private DocumentImpl checkPermissions(DBBroker broker, String name) throws LockException, PermissionDeniedException {
+		DocumentImpl oldDoc = null;
+		lock.acquire(Lock.WRITE_LOCK);
+		if (hasDocument(name) && (oldDoc = getDocument(broker, name)) != null) {
+
+			// jmv: Note: this was only in addDocument(DBBroker broker, String name, String data,)
+			if(oldDoc.isLockedForWrite())
+				throw new PermissionDeniedException("Document " + name + 
+						" is locked for write");
+
+			// check if the document is locked by another user
+			User lockUser = oldDoc.getUserLock();
+			if(lockUser != null && !lockUser.equals(broker.getUser()))
+				throw new PermissionDeniedException("The document is locked by user " +
+						lockUser.getName());
+			
+			// check if the document is currently being changed by someone else
+			Lock oldLock = oldDoc.getUpdateLock();
+			oldLock.acquire(Lock.WRITE_LOCK);
+			
+			// do we have permissions for update?
+			if (!oldDoc.getPermissions().validate(broker.getUser(),
+					Permission.UPDATE))
+				throw new PermissionDeniedException(
+						"Document exists and update is not allowed");
+			if (!(getPermissions().validate(broker.getUser(), Permission.UPDATE) ||
+			        getPermissions().validate(broker.getUser(), Permission.WRITE)))
+				throw new PermissionDeniedException(
+						"Document exists and update is not allowed for the collection");
+			// do we have write permissions?
+		} else if (!getPermissions().validate(broker.getUser(),
+				Permission.WRITE))
+			throw new PermissionDeniedException(
+					"Not allowed to write to collection " + getName());
+		return oldDoc;
+	}
+	
 	public DocumentImpl addDocument(DBBroker broker, String name,
 			InputSource source) throws EXistException, LockException,
 			PermissionDeniedException, TriggerException, SAXException {
@@ -914,32 +930,7 @@ implements Comparable, EntityResolver, Cacheable {
 		DocumentImpl document = null, oldDoc = null;
 		XMLReader reader;
 		try {
-			lock.acquire(Lock.WRITE_LOCK);
-			if (hasDocument(name) && (oldDoc = getDocument(broker, name)) != null) {
-				// check if the document is locked by another user
-				User lockUser = oldDoc.getUserLock();
-				if(lockUser != null && !lockUser.equals(broker.getUser()))
-					throw new PermissionDeniedException("The document is locked by user " +
-							lockUser.getName());
-				
-				// check if the document is currently being changed by someone else
-				Lock oldLock = oldDoc.getUpdateLock();
-				oldLock.acquire(Lock.WRITE_LOCK);
-				
-				// do we have permissions for update?
-				if (!oldDoc.getPermissions().validate(broker.getUser(),
-						Permission.UPDATE))
-					throw new PermissionDeniedException(
-							"Document exists and update is not allowed");
-				if (!(getPermissions().validate(broker.getUser(), Permission.UPDATE) ||
-				        getPermissions().validate(broker.getUser(), Permission.WRITE)))
-					throw new PermissionDeniedException(
-							"Document exists and update is not allowed for the collection");
-				// do we have write permissions?
-			} else if (!getPermissions().validate(broker.getUser(),
-					Permission.WRITE))
-				throw new PermissionDeniedException(
-						"Not allowed to write to collection " + getName());
+			oldDoc = checkPermissions(broker, name);
 			
 			document = new DocumentImpl(broker, name,	this);
 			manageDocumentInformation(broker, name, oldDoc, document );
@@ -1007,7 +998,7 @@ implements Comparable, EntityResolver, Cacheable {
 			} catch (IOException e) {
 				throw new EXistException(e);
 			}
-			document.setMaxDepth(document.getMaxDepth() + 1);
+			document.setMaxDepth(document.getMaxDepth() + 1);//ddddddddddddddddddddddddddddddd
 			document.calculateTreeLevelStartPoints();
 			// new document is valid: remove old document 
 			if (oldDoc != null) {
@@ -1102,31 +1093,8 @@ implements Comparable, EntityResolver, Cacheable {
 		DocumentImpl document, oldDoc = null;
 		DOMStreamer streamer;
 		try {
-			lock.acquire(Lock.WRITE_LOCK);
-			if (hasDocument(name) && (oldDoc = getDocument(broker, name)) != null) {
-				// check if the document is locked by another user
-				User lockUser = oldDoc.getUserLock();
-				if(lockUser != null && !lockUser.equals(broker.getUser()))
-					throw new PermissionDeniedException("The document is locked by user " +
-							lockUser.getName());
-				
-				// check if the document is currently being changed by someone else
-				oldDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
-				
-				// do we have permissions for update?
-				if (!oldDoc.getPermissions().validate(broker.getUser(),
-						Permission.UPDATE))
-					throw new PermissionDeniedException(
-							"document exists and update " + "is not allowed");
-				if (!(getPermissions().validate(broker.getUser(), Permission.UPDATE) ||
-				        getPermissions().validate(broker.getUser(), Permission.WRITE)))
-					throw new PermissionDeniedException(
-							"Document exists and update is not allowed for the collection");
-				// no: do we have write permissions?
-			} else if (!getPermissions().validate(broker.getUser(),
-					Permission.WRITE))
-				throw new PermissionDeniedException(
-						"not allowed to write to collection " + getName());
+			
+			oldDoc = checkPermissions(broker, name);
 			
 			document = new DocumentImpl(broker, name,	this);
 			manageDocumentInformation(broker, name, oldDoc, document );
@@ -1248,45 +1216,10 @@ implements Comparable, EntityResolver, Cacheable {
 			throw new PermissionDeniedException("Database is read-only");
 		BinaryDocument blob = null;
 		try {
-			lock.acquire(Lock.WRITE_LOCK);
-			DocumentImpl oldDoc = getDocument(broker, name);
-			if (oldDoc != null) {
-				if(oldDoc.isLockedForWrite())
-					throw new PermissionDeniedException("Document " + name +
-							" is already locked for write");
-				// check if the document is locked by another user
-				User lockUser = oldDoc.getUserLock();
-				if(lockUser != null && !lockUser.equals(broker.getUser()))
-					throw new PermissionDeniedException("The document is locked by user " +
-							lockUser.getName());
-				// do we have permissions for update?
-				if (!oldDoc.getPermissions().validate(broker.getUser(),
-						Permission.UPDATE))
-					throw new PermissionDeniedException(
-							"document exists and update is not allowed");
-				// no: do we have write permissions?
-			} else if (!getPermissions().validate(broker.getUser(),
-					Permission.WRITE))
-				throw new PermissionDeniedException(
-						"not allowed to write to collection " + getName());
+
+			DocumentImpl oldDoc = checkPermissions(broker, name);
 
 			blob = new BinaryDocument(broker, name, this);
-//			if (oldDoc != null) {
-//				blob.setCreated(oldDoc.getCreated());
-//				blob.setLastModified(System.currentTimeMillis());
-//				blob.setPermissions(oldDoc.getPermissions());
-//
-//				LOG.debug("removing old document " + oldDoc.getFileName());
-//				if (oldDoc instanceof BinaryDocument)
-//					broker.removeBinaryResource((BinaryDocument) oldDoc);
-//				else
-//					broker.removeDocument(getName() + '/' + oldDoc.getFileName());
-//			} else {
-//				blob.setCreated(System.currentTimeMillis());
-//				blob.getPermissions().setOwner(broker.getUser());
-//				blob.getPermissions().setGroup(
-//						broker.getUser().getPrimaryGroup());
-//			}
 
 			manageDocumentInformation(broker, name, oldDoc, blob );
 			
