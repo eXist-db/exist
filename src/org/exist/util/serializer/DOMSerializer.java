@@ -121,8 +121,9 @@ public class DOMSerializer {
 					nextAttr = (Attr) attrs.item(i);
 					attrName = nextAttr.getName();
 					if (attrName.equals("xmlns")) {
-						if (nsSupport.getURI("") == null) {
-							uri = nextAttr.getValue();
+						String oldURI = nsSupport.getURI("");
+						uri = nextAttr.getValue();
+						if (oldURI == null || (!oldURI.equals(uri))) {
 							namespaceDecls.put("", uri);
 							nsSupport.declarePrefix("", uri);
 						}
