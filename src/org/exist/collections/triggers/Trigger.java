@@ -61,6 +61,7 @@ import org.xml.sax.ext.LexicalHandler;
  * 
  * The collection configuration file looks as follows:
  * 
+ * <pre>
  * &lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
  * &lt;exist:collection xmlns:exist="http://exist-db.org/collection-config/1.0"&gt;
  *	&lt;exist:triggers&gt;
@@ -71,6 +72,7 @@ import org.xml.sax.ext.LexicalHandler;
  *		&lt;/exist:trigger&gt;
  *	&lt;/exist:triggers&gt;
  * &lt;/exist:collection&gt;
+ * </pre>
  * 
  * Triggers may have two roles:
  * 

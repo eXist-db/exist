@@ -1522,8 +1522,8 @@ public XQueryTreeParser() {
 			_t = _t.getNextSibling();
 			
 					OpOr or= new OpOr(context);
-					or.add(left);
-					or.add(right);
+					or.addPath(left);
+					or.addPath(right);
 					path.addPath(or);
 					step = or;
 				
@@ -1547,8 +1547,8 @@ public XQueryTreeParser() {
 			_t = _t.getNextSibling();
 			
 					OpAnd and= new OpAnd(context);
-					and.add(left);
-					and.add(right);
+					and.addPath(left);
+					and.addPath(right);
 					path.addPath(and);
 					step = and;
 				
@@ -3714,7 +3714,7 @@ public XQueryTreeParser() {
 				
 							String namespaceURI= context.getURIForPrefix(nc3.getText());
 							if (namespaceURI == null)
-								throw new EXistException("No namespace defined for prefix " + nc.getText());
+								throw new EXistException("No namespace defined for prefix " + nc3.getText());
 							qname= new QName(null, namespaceURI, null);
 						
 				break;

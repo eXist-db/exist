@@ -68,5 +68,4 @@ public class XMLDBLastModified extends BasicFunction {
 		}
 		return Sequence.EMPTY_SEQUENCE;
 	}
-
 }
