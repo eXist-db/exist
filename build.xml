@@ -618,10 +618,6 @@
                 <include name="build.xml"/>
                 <include name="log4j.xml"/>
                 <include name="examples-setup.xml"/>
-                <include name="exist.jar"/>
-				<include name="exist-optional.jar"/>
-				<include name="examples.jar"/>
-				<include name="start.jar"/>
                 <include name="stopword"/>
 				<include name="*.properties"/>
                 <include name="*.jpg"/>
@@ -629,6 +625,14 @@
             </fileset>
         </copy>
 
+        <copy todir="${dist.dir}/">
+            <fileset dir=".">
+                <include name="exist.jar"/>
+				<include name="exist-optional.jar"/>
+				<include name="examples.jar"/>
+				<include name="start.jar"/>
+            </fileset>
+        </copy>
 
         <copy todir="${dist.dir}/src">
             <fileset dir="./src">
