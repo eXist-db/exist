@@ -87,22 +87,31 @@ public class XPathQueryTest extends TestCase {
 	}
 
 	public void testStarAxis() {
+		ResourceSet result;
 		try {
 			XPathQueryService service = 
 				storeXMLStringAndGetQueryService("numbers.xml", numbers);
 
-			ResourceSet result = service.queryResource(
+			result = service.queryResource(
 					"numbers.xml", "/*/item" );
-			System.out.println("testElements 1: ========" ); 		printResult(result);
+			System.out.println("testStarAxis 1: ========" ); 		printResult(result);
 			assertEquals( "XPath: /*/item", 4, result.getSize() );
 
 			result = service.queryResource(
-					"numbers.xml", "/*/*" );
-			System.out.println("testElements  2: ========" ); 		printResult(result);
+					"numbers.xml", "/test/*" );
+			System.out.println("testStarAxis  2: ========" ); 		printResult(result);
+			assertEquals( "XPath: /test/*", 4, result.getSize() );
+
+			result = service.queryResource(
+				"numbers.xml", "/test/descendant-or-self::*" );
+			System.out.println("testStarAxis  3: ========" ); 		printResult(result);
+			assertEquals( "XPath: /test/descendant-or-self::*", 12, result.getSize() );
+
+			System.out.println("testStarAxis 4: ========" ); 		printResult(result);
 			assertEquals( "XPath: /*/*", 4, result.getSize() );
 
 		} catch (XMLDBException e) {
-			System.out.println("testElements(): XMLDBException: "+e);
+			System.out.println("testStarAxis(): XMLDBException: "+e);
 			fail(e.getMessage());
 		}
 	}
