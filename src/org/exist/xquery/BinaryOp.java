@@ -25,6 +25,8 @@ import org.exist.xquery.value.Type;
 
 public abstract class BinaryOp extends PathExpr {
 
+    protected boolean inWhereClause = false;
+    
     public BinaryOp(XQueryContext context) {
         super(context);
     }
@@ -56,6 +58,7 @@ public abstract class BinaryOp extends PathExpr {
      */
     public void analyze(Expression parent, int flags) throws XPathException {
     	inPredicate = (flags & IN_PREDICATE) != 0;
+        inWhereClause = (flags & IN_WHERE_CLAUSE) != 0;
         getLeft().analyze(this, flags);
         getRight().analyze(this, flags);
     }

@@ -52,7 +52,8 @@ public abstract class LogicalOp extends BinaryOp {
 	 * @see org.exist.xquery.BinaryOp#returnsType()
 	 */
 	public int returnsType() {
-		if(Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
+		if(!inWhereClause &&
+            Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
 			Type.subTypeOf(getRight().returnsType(), Type.NODE) &&
 			(getLeft().getDependencies() & Dependency.CONTEXT_ITEM) == 0 &&
 			(getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0)
