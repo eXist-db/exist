@@ -54,6 +54,7 @@
         </fileset>
         <pathelement path="exist.jar"/>
 		<pathelement path="exist-optional.jar"/>
+    	<pathelement path="start.jar"/>
 		<pathelement path="${java.class.path}"/>
     </path>
 
@@ -93,7 +94,9 @@
     	<mkdir dir="${jetty.dir}/work"/>
         <tstamp/>
 		<filter token="version" value="${project.version}-${DSTAMP}"/>
+    	<filter token="database" value="native"/>
 		<copy file="${src.webapp}/header.xml.tmpl" tofile="${src.webapp}/header.xml" filtering="true"/>
+    	<copy file="${basedir}/conf.xml.tmpl" tofile="${basedir}/conf.xml" filtering="true"/>
     </target>
 
     <!-- =================================================================== -->
