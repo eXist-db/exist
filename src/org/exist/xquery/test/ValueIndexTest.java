@@ -73,7 +73,7 @@ public class ValueIndexTest extends TestCase {
         queryResource(service, "items.xml", "//item[itemno = 3]", 1);
         queryResource(service, "items.xml", "//item[stock <= 10]", 5);
         queryResource(service, "items.xml", "//item[stock > 20]", 1);
-        queryResource(service, "items.xml", "//item[x:rating > 8.0]", 2);
+        queryResource(service, "items.xml", "declare namespace x=\"http://www.foo.com\"; //item[x:rating > 8.0]", 2);
     }
     
     private ResourceSet queryResource(XPathQueryService service,
