@@ -63,7 +63,6 @@ public class DynamicAttributeConstructor extends NodeConstructor {
      */
     public Sequence eval(Sequence contextSequence, Item contextItem)
             throws XPathException {
-        System.out.println(pprint());
         MemTreeBuilder builder = context.getDocumentBuilder();
         context.proceed(this, builder);
         Sequence nameSeq = qnameExpr.eval(contextSequence, contextItem);
