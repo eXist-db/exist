@@ -112,7 +112,6 @@ public class RemoteResourceSet implements ResourceSet {
 	 * @see java.lang.Object#finalize()
 	 */
 	protected void finalize() throws Throwable {
-		System.err.println("releasing query results");
 		try {
 			Vector params = new Vector(1);
 			params.addElement(new Integer(handle));

@@ -202,6 +202,7 @@ public class ArraySet extends AbstractNodeSet {
 			nodes = temp;
 			nodes[counter++] = proxy;
 		}
+		sorted = false;
 	}
 
 	public void addAll(NodeSet other) {
@@ -240,8 +241,10 @@ public class ArraySet extends AbstractNodeSet {
 	public NodeProxy get(NodeProxy p) {
 		sort();
 		int pos = search(nodes, 0, counter - 1, p);
-		if (pos < 0)
+		if (pos < 0) {
+			System.out.println(p.gid + " not found");
 			return null;
+		}
 		return nodes[pos];
 	}
 

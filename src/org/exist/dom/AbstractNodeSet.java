@@ -839,7 +839,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @return
 	 */
 	public NodeSet getContextNodes(NodeSet contextNodes, boolean rememberContext) {
-		NodeSet result = new ArraySet(getLength());
+		ArraySet result = new ArraySet(getLength());
 		NodeProxy current, context, item;
 		ContextItem contextNode;
 		for (Iterator i = iterator(); i.hasNext();) {
@@ -866,7 +866,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	public NodeSet getContextNodes(boolean rememberContext) {
 		NodeProxy current, context;
 		ContextItem contextNode;
-		NodeSet result = new ArraySet(getLength());
+		ExtArrayNodeSet result = new ExtArrayNodeSet();
+		DocumentImpl lastDoc = null;
 		for (Iterator i = iterator(); i.hasNext();) {
 			current = (NodeProxy) i.next();
 			contextNode = current.getContext();
@@ -876,7 +877,11 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 				if (!result.contains(context)) {
 					if (rememberContext)
 						context.addContextNode(context);
-					result.add(context);
+					if(lastDoc != null && lastDoc.getDocId() != context.doc.getDocId()) {
+						lastDoc = context.doc;
+						result.add(context, getSizeHint(lastDoc));
+					} else
+						result.add(context);
 				}
 				contextNode = contextNode.getNextItem();
 			}

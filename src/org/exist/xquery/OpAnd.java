@@ -58,7 +58,7 @@ public class OpAnd extends LogicalOp {
 			NodeSet rr = right.eval(contextSequence, null).toNodeSet();
 			rr = rr.getContextNodes(inPredicate);
 			rl =
-				rl.intersection(rr);
+				rr.intersection(rl);
 			return rl;
 		} else {
 			boolean ls =
