@@ -309,7 +309,7 @@ public class RpcConnection extends Thread {
 			XQueryPool pool = xquery.getXQueryPool();
 			CompiledXQuery compiled = pool.borrowCompiledXQuery(source);
 			if(compiled == null)
-			    compile(user, broker, query, parameters);
+			    compiled = compile(user, broker, query, parameters);
 			StringWriter writer = new StringWriter();
 			compiled.dump(writer);
 			return writer.toString();
