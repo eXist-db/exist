@@ -98,17 +98,15 @@ SYSTEM "play.dtd" "entities/play.dtd"
 		<itemizedlist>
 			<listitem><para>exist.jar (from the root directory of eXist)</para></listitem>
 			<listitem><para>lib/core/antlr.jar</para></listitem>
+            <listitem><para>lib/core/commons-pool-x.x.jar</para></listitem>
             <listitem><para>lib/core/jakarta-oro-x.x.x.jar</para></listitem>
             <listitem><para>lib/core/log4j.jar</para></listitem>
             <listitem><para>lib/core/xmldb.jar</para></listitem>
             <listitem><para>lib/core/xmlrpc-x.x.jar</para></listitem>
-            <listitem><para>lib/core/fastutil-x.x.jar</para></listitem>
 			<listitem><para>lib/optional/axis.jar</para></listitem>
-			<listitem><para>lib/optional/clutil.jar</para></listitem>
             <listitem><para>lib/optional/commons-logging-x.x.x.jar</para></listitem>
-			<listitem><para>lib/optional/jaxrpc.jar</para></listitem>
-			<listitem><para>lib/optional/saaj.jar</para></listitem>
-			<listitem><para>lib/optional/tt-bytecode.jar</para></listitem>
+			<listitem><para>lib/optional/axis-jaxrpc.jar</para></listitem>
+			<listitem><para>lib/optional/axis-saaj.jar</para></listitem>
 			<listitem><para>lib/optional/wsdl4j.jar</para></listitem>
 		</itemizedlist>
 		
@@ -122,7 +120,7 @@ SYSTEM "play.dtd" "entities/play.dtd"
 
 		<para>Next step: edit the <filename>web.xml</filename> file in your <filename>WEB-INF</filename> directory.
 		From the <filename>web.xml</filename> file that comes with eXist copy the servlet definitions for the
-		RpcServlet, DatabaseAdminServlet, AxisServlet, AdminServlet and (optionally) the xincon servlet into your
+		RpcServlet, EXistServlet, AxisServlet, AdminServlet and (optionally) the xincon servlet into your
 		own <filename>web.xml</filename>. Additionally, copy all the servlet-mapping sections for these servlets.
 		Please note that order is important in the <filename>web.xml</filename> file: the block with &lt;servlet&gt; sections
 		should always precede the &lt;servlet-mapping&gt; sections.</para>
@@ -136,7 +134,7 @@ SYSTEM "play.dtd" "entities/play.dtd"
 			    <![CDATA[
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-    <!--+
+<!--+
     | Configuration file for the web application. 
     |
     | Provides XMLRPC + SOAP access to eXist and configures Cocoon2. If you don't need
@@ -156,11 +154,11 @@ SYSTEM "play.dtd" "entities/play.dtd"
     </servlet>
   
     <!-- DatabaseAdminServlet: this servlet can be used to ensure that
-     eXist is running in the background. Just set the start-parameter to true and
-     load-on-startup to greater 0 -->
+	eXist is running in the background. Just set the start-parameter 
+	to true and load-on-startup to 1 -->
     <servlet>
-        <servlet-name>org.exist.DatabaseAdminServlet</servlet-name>
-        <servlet-class>org.exist.DatabaseAdminServlet</servlet-class>
+        <servlet-name>EXistServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.EXistServlet</servlet-class>
     
         <!-- where to find eXist's configuration file
              relative to the basedir of the web-application.
@@ -184,11 +182,22 @@ SYSTEM "play.dtd" "entities/play.dtd"
             <param-value>true</param-value>
         </init-param>
 
-        <load-on-startup>2</load-on-startup>
+		<load-on-startup>2</load-on-startup>
 
     </servlet>
-  
-  <!-- configure the Axis servlet. Axis provides eXist's
+
+    <!-- XQueryServlet generates HTML from an XQuery file. -->
+	<servlet>
+		<servlet-name>XQueryServlet</servlet-name>
+		<servlet-class>org.exist.http.servlets.XQueryServlet</servlet-class>
+
+		<init-param>
+			<param-name>url</param-name>
+			<param-value>xmldb:exist:///db</param-value>
+		</init-param>
+	</servlet>
+	
+  <!-- configure the Axis servlets. Axis provides eXist's
   web-services via SOAP -->
   <servlet>
         <servlet-name>AxisServlet</servlet-name>
@@ -216,14 +225,14 @@ SYSTEM "play.dtd" "entities/play.dtd"
 
         <init-param>
             <param-name>log4j-priority</param-name>
-            <param-value>DEBUG</param-value>
+            <param-value>WARN</param-value>
         </init-param>
         <init-param>
             <param-name>log4j-layout</param-name>
             <param-value>%-5p [%M] %m%n</param-value>
         </init-param>
 
-        <load-on-startup>1</load-on-startup>
+		<load-on-startup>1</load-on-startup>
     </servlet>
 	
   <!-- Cocoon2 Configuration starts here ================================ -->
@@ -237,6 +246,23 @@ SYSTEM "play.dtd" "entities/play.dtd"
       The regular servlet class (trusts the servlet container classloader)
       -->
         <servlet-class>org.apache.cocoon.servlet.CocoonServlet</servlet-class>
+
+    <!--
+      In cases you're facing class loading problems, you can alternatively
+      use the following servlet-class instead of the above one
+      
+      <servlet-class>org.apache.cocoon.servlet.ParanoidCocoonServlet</servlet-class>
+    -->
+
+    <!--
+      This parameter tells cocoon to set the thread's context classloader to
+      its own classloader. If you experience strange classloader issues,
+      try setting this parameter to "true" or using ParanoidCocoonServlet.
+    -->
+        <init-param>
+            <param-name>init-classloader</param-name>
+            <param-value>false</param-value>
+        </init-param>
     
     <!--
       This parameter points to the main configuration file for Cocoon.
@@ -306,6 +332,34 @@ SYSTEM "play.dtd" "entities/play.dtd"
         </init-param>
 
     <!--
+      This parameter is used to list classes that should be loaded
+      at initialization time of the servlet.
+      Usually this classes are JDBC Drivers used
+    -->
+        <init-param>
+            <param-name>load-class</param-name>
+            <param-value>
+        <!-- For IBM WebSphere:
+        com.ibm.servlet.classloader.Handler -->
+
+        <!-- For Database Driver: -->
+        <!-- org.hsqldb.jdbcDriver -->
+
+        <!-- For PostgeSQL Database: 
+             org.postgresql.Driver -->
+
+        <!-- For Oracle Database:
+             oracle.jdbc.driver.OracleDriver -->
+
+        <!-- ODBC 
+             sun.jdbc.odbc.JdbcOdbcDriver -->
+ 
+        <!-- For parent ComponentManager sample:
+        org.apache.cocoon.samples.parentcm.Configurator
+        --></param-value>
+        </init-param>
+
+    <!--
       Causes all files in multipart requests to be processed.
       Default is false for security reasons.  
       Unsupported values will be interpreted as false.
@@ -349,6 +403,86 @@ SYSTEM "play.dtd" "entities/play.dtd"
             <param-name>overwrite-uploads</param-name>
 			<param-value>allow</param-value>
         </init-param>
+    
+    <!--
+      Specify maximum allowed size of the upload. Defaults to 10 Mb.
+	-->
+    <init-param>
+      <param-name>upload-max-size</param-name>
+      <param-value>100000000</param-value>
+    </init-param>
+
+    <!--
+      This parameter allows to specify where Cocoon should create its page
+      and other objects cache. The path specified can be either absolute or
+      relative to the context path of the servlet. On windows platform,
+      absolute directory must start with volume: C:\Path\To\Cache\Directory
+      
+      The default directory is "cache-dir" in the work-directory
+
+    <init-param>
+      <param-name>cache-directory</param-name>
+      <param-value>WEB-INF/work/cache-dir</param-value>
+    </init-param>
+    -->
+
+    <!--
+      This parameter allows to specify where Cocoon should put it's
+      working files. The path specified is either absolute or relative
+      to the context path of the Cocoon servlet.  On windows platform,
+      absolute directory must start with volume: C:\Path\To\Work\Directory
+
+      The default directory is "cocoon-files" directory in the servlet
+      context's temp directory (context property javax.servlet.context.tempdir).
+
+    <init-param>
+      <param-name>work-directory</param-name>
+      <param-value>WEB-INF/work</param-value>
+    </init-param>
+    -->
+
+    <!--
+      This parameter allows to specify additional directories or jars
+      which Cocoon should put into it's own classpath.
+      Note that you must separate them using the platforms path.separator
+      (":" for *nix and ";" for Windows systems). Also note that absolute
+      pathes are take as such but relative pathes are rooted at the context
+      root of the Cocoon servlet.
+
+    <init-param>
+      <param-name>extra-classpath</param-name>
+      <param-value>WEB-INF/extra-classes1:/[YOU-ABSOLUTE-PATH-TO]/own.jar</param-value>
+    </init-param>
+    -->
+
+    <!--
+      This parameter allows you to select the parent component manager.
+      The class will be instantiated via the constructor that takes a single
+      String as a parameter. That String will be equal to the text after the
+      '/'.
+
+      Cocoon honors the LogEnabled and Initializable interfaces for this class,
+      if it implements them.
+
+      If you uncomment the following lines the parent CM is set to the Parent CM sample, which will look up
+      a configuration via JNDI at org/apache/cocoon/samples/parentcm/ParentCMConfiguration
+      and use it.
+    <init-param>
+      <param-name>parent-component-manager</param-name>
+      <param-value>org.apache.cocoon.samples.parentcm.ParentComponentManager/org/apache/cocoon/samples/parentcm/ParentCMConfiguration</param-value>
+    </init-param>
+    -->
+
+    <!--
+      If you set this parameter to 'true' or 'yes', Cocoon will add processing
+      time to the end of each response. Value 'hide' adds processing time as an HTML
+      comment. By default, processing time is not added (corresponds to value 'no').
+
+    <init-param>
+      <param-name>show-time</param-name>
+      <param-value>hide</param-value>
+    </init-param>
+    -->
 
     <!--
        If true or not set, this class will try to catch and handle all Cocoon exceptions.
@@ -358,6 +492,26 @@ SYSTEM "play.dtd" "entities/play.dtd"
             <param-name>manage-exceptions</param-name>
             <param-value>true</param-value>
         </init-param>
+    
+    <!--
+       If true, Avalon Excalibur instrumentation will be enabled on all Instrumentable
+       components with Cocoon and your Cocoon application.
+
+    <init-param>
+      <param-name>enable-instrumentation</param-name>
+      <param-value>true</param-value>
+    </init-param>
+    -->
+
+    <!--
+       This defines the location of the instrument manager configuration, only used
+       if the init-param enable-instrumentation is enabled.
+
+    <init-param>
+      <param-name>instrumentation-config</param-name>
+      <param-value>/WEB-INF/instrumentation.xconf</param-value>
+    </init-param>    
+    -->
 
     <!--
       Set encoding used by the container. If not set the ISO-8859-1 encoding will be assumed.
@@ -393,8 +547,14 @@ SYSTEM "play.dtd" "entities/play.dtd"
   
   <!-- eXist's DatabaseAdminServlet -->
   <servlet-mapping>
-    <servlet-name>org.exist.DatabaseAdminServlet</servlet-name>
-    <url-pattern>/admin</url-pattern>
+    <servlet-name>EXistServlet</servlet-name>
+    <url-pattern>/servlet/*</url-pattern>
+  </servlet-mapping>
+
+  <!-- XQueryServlet -->
+  <servlet-mapping>
+	  <servlet-name>XQueryServlet</servlet-name>
+	  <url-pattern>*.xql</url-pattern>
   </servlet-mapping>
   
   <!-- Define where Xincon listens for WebDAV requests -->
@@ -406,7 +566,7 @@ SYSTEM "play.dtd" "entities/play.dtd"
   <!-- The following servlet-mappings are for Axis (SOAP) -->
   <servlet-mapping>
     <servlet-name>AxisServlet</servlet-name>
-	<url-pattern>/servlet/AxisServlet</url-pattern>
+	<url-pattern>/axis-servlet/AxisServlet</url-pattern>
   </servlet-mapping>
 
   <servlet-mapping>
@@ -421,7 +581,7 @@ SYSTEM "play.dtd" "entities/play.dtd"
 
   <servlet-mapping>
     <servlet-name>AdminServlet</servlet-name>
-	<url-pattern>/servlet/AdminServlet</url-pattern>
+	<url-pattern>/axis-servlet/AdminServlet</url-pattern>
   </servlet-mapping>
   
   <!-- Finally, we establish the main mapping for Cocoon  -->
@@ -492,6 +652,30 @@ SYSTEM "play.dtd" "entities/play.dtd"
         <mime-type>text/plain</mime-type>
     </mime-mapping>
 
+    <!-- Add a security-constraint for the DatabaseAdminServlet: the servlet allows to
+    shutdown the database. We don't want everybody to be able to access this. -->
+    <security-constraint>
+    <web-resource-collection>
+        <web-resource-name>DatabaseAdmin</web-resource-name>
+	<url-pattern>/admin</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+	<role-name>dba</role-name>
+    </auth-constraint>
+  </security-constraint>
+
+  <login-config>
+    <auth-method>FORM</auth-method>
+    <realm-name>eXist Database Admin Realm</realm-name>
+    <form-login-config>
+      <form-login-page>adminLogin.xml</form-login-page>
+	  <form-error-page>adminLogin.xml</form-error-page>
+    </form-login-config>
+  </login-config>
+
+  <security-role>
+	  <role-name>dba</role-name>
+  </security-role>
 </web-app>]]>
 			</screen>
 		</example>
@@ -534,7 +718,7 @@ SYSTEM "play.dtd" "entities/play.dtd"
     <!-- xmldb pseudo protocol -->
     <protocol class="org.apache.cocoon.components.source.XMLDBSourceFactory">
         <!-- Xindice driver -->
-            <driver class="org.apache.xindice.client.xmldb.DatabaseImpl" type="xindice"/>
+            <!--driver class="org.apache.xindice.client.xmldb.DatabaseImpl" type="xindice"/-->
         <!-- Add here other XML:DB compliant databases drivers -->
             <driver class="org.exist.xmldb.DatabaseImpl" type="exist"/>
     </protocol>
@@ -542,127 +726,13 @@ SYSTEM "play.dtd" "entities/play.dtd"
 			</screen>
 		</example>
 		
+        <para>Please comment out the Xindice driver if you don't have Xindice in
+        your classpath.</para>
+        
 		<para>You should now be able to restart your servlet-engine. You may check
 		if eXist is running by browsing to http://your-host:8080/your-app/admin</para>
 	</section>
 	
-	<section>
-        <title>Getting up and running with Jetty</title>
-        
-        <para>contributed by <emphasis>Michael I. Angermann</emphasis></para>
-        
-		<para>Besides Tomcat, eXist runs very well on
-		<ulink href="http://jetty.mortbay.org/jetty/">Jetty</ulink>.
-		Jetty is a 100% Java HTTP Server and Servlet Container.</para>
-
-		<para>To get <filename>jetty-4.1.1.zip</filename> up and running with 
-		<filename>eXist-0.8.1.zip</filename></para>
-
-		<para>Make a directory called <filename>exist</filename> in 
-		<filename>c:\jetty\demo\webapps</filename></para>
-
-		<para>Unpack <filename>eXist-0.8.1.war.zip</filename> into 
-		<filename>c:\jetty\demo\webapps\exist</filename></para>
-
-		<para>From <ulink href="http://hsqldb.sourceforge.net">
-		http://hsqldb.sourceforge.net</ulink>
-		add <filename>hsqldb.jar</filename> to 
-		<filename>c:\jetty\demo\webapps\exist\WEB-INF\lib</filename>.</para>
-
-		<para>Put these files in <filename>c:\jetty\lib</filename>:</para>
-
-		<unorderedlist>
-			<listitem><para>tools.jar</para></listitem>
-			<listitem><para>xalan.jar</para></listitem>
-			<listitem><para>xercesImpl.jar</para></listitem>
-			<listitem><para>xml-apis.jar</para></listitem>
-		</unorderedlist>
-		
-		<note>
-			<para><filename>tools.jar</filename> comes from the jdk 
-			release under <filename>c:\jdk\lib</filename></para></note>
-
-		<note>
-			<para>
-				<filename>xalan.jar</filename>, <filename>xercesImpl.jar</filename>,
-				<filename>xml-apis.jar</filename> comes from
-				<ulink href="http://xml.apache.org">http://xml.apache.org</ulink>.
-				Xalan Java Version 2.4.0 (<filename>xalan-j_2_4_0-bin.zip</filename>,
-				dated Sept. 03, 2002).
-			</para>
-		</note>
-
-		<para>Modify the following (2) files:</para>
-		
-		<unorderedlist>
-			<listitem><para><filename>c:\jetty\build.xml</filename></para></listitem>
-			<listitem><para><filename>c:\jetty\etc\demo.xml</filename></para></listitem>
-		</unorderedlist>
-		
-		<para>Add these lines in to build.xml</para>
-
-		<example>
-			<title>Added lines in build.xml</title>
-			
-			<screen><![CDATA[
-<property name="xerces.jar"     
-value="${lib}/xercesImpl.jar"/>
-
-<property name="xmlapis.jar"     
-value="${lib}/xml-apis.jar"/>
-
-<property name="xalan.jar"      
-value="${lib}/xalan.jar"/>
-
-<property name="tools.jar"      
-value="${lib}/tools.jar"/>
-
-<!-- Modify the classpath id with the following
-pathelements -->
-
-<path id="classpath">
-  <pathelement location="${jetty1.2.jar}" />
-  <pathelement location="${jasper.jar}" />
-  <pathelement location="${servlet.jar}" />
-
-  <!--  add in these lines     -->
-
-  <pathelement location="${tools.jar}" />
-  <pathelement location="${xalan.jar}" />
-  <pathelement location="${xmlapis.jar}" />
-  <pathelement location="${xerces.jar}" />
-  <path refid="extpath" />
-</path>			
-			]]></screen>
-		</example>
-
-		<para>Add the following lines to demo.xml:</para>
-
-		<example>
-			<title>Added lines in demo.xml</title>
-			
-			<screen><![CDATA[
-<Call name="addWebApplication">
- <Arg>/exist/*</Arg>
- <Arg><SystemProperty name="jetty.home"
-      default="."/>/demo/webapps/exist/</Arg>
- <Arg><SystemProperty name="jetty.home"
-      default="."/>/etc/webdefault.xml</Arg>
- <Arg type="boolean">false</Arg> <!-- if true,
-      expand war in temp dir -->
-</Call>			
-			]]></screen>
-		</example>
-
-		<para>To bring up jetty and exist type</para>
-		
-		<synopsis>ant demo</synopsis>
-
-		<para>Type into your browser</para>
-		
-		<synopsis>http://localhost:8080/exist/index.xml</synopsis>
-
-	</section>
 </chapter>
 
 </book>

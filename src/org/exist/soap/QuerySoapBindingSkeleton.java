@@ -101,6 +101,52 @@ public class QuerySoapBindingSkeleton implements org.exist.soap.Query, org.apach
         ((java.util.List)_myOperations.get("disconnect")).add(_oper);
         _params = new org.apache.axis.description.ParameterDesc [] {
             new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in0"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in1"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in2"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in3"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in4"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, false, false), 
+        };
+        _oper = new org.apache.axis.description.OperationDesc("getResourceData", _params, new javax.xml.namespace.QName("", "getResourceDataReturn"));
+        _oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "base64Binary"));
+        _oper.setElementQName(new javax.xml.namespace.QName("urn:exist", "getResourceData"));
+        _oper.setSoapAction("");
+        _myOperationsList.add(_oper);
+        if (_myOperations.get("getResourceData") == null) {
+            _myOperations.put("getResourceData", new java.util.ArrayList());
+        }
+        ((java.util.List)_myOperations.get("getResourceData")).add(_oper);
+        _params = new org.apache.axis.description.ParameterDesc [] {
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in0"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in1"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "base64Binary"), byte[].class, false, false), 
+        };
+        _oper = new org.apache.axis.description.OperationDesc("xquery", _params, new javax.xml.namespace.QName("", "xqueryReturn"));
+        _oper.setReturnType(new javax.xml.namespace.QName("urn:exist", "QueryResponse"));
+        _oper.setElementQName(new javax.xml.namespace.QName("urn:exist", "xquery"));
+        _oper.setSoapAction("");
+        _myOperationsList.add(_oper);
+        if (_myOperations.get("xquery") == null) {
+            _myOperations.put("xquery", new java.util.ArrayList());
+        }
+        ((java.util.List)_myOperations.get("xquery")).add(_oper);
+        _params = new org.apache.axis.description.ParameterDesc [] {
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in0"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in1"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in2"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in3"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in4"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in5"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+        };
+        _oper = new org.apache.axis.description.OperationDesc("retrieveData", _params, new javax.xml.namespace.QName("", "retrieveDataReturn"));
+        _oper.setReturnType(new javax.xml.namespace.QName("urn:exist", "ArrayOf_xsd_base64Binary"));
+        _oper.setElementQName(new javax.xml.namespace.QName("urn:exist", "retrieveData"));
+        _oper.setSoapAction("");
+        _myOperationsList.add(_oper);
+        if (_myOperations.get("retrieveData") == null) {
+            _myOperations.put("retrieveData", new java.util.ArrayList());
+        }
+        ((java.util.List)_myOperations.get("retrieveData")).add(_oper);
+        _params = new org.apache.axis.description.ParameterDesc [] {
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in0"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
             new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in1"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, false, false), 
             new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in2"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, false, false), 
             new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "in3"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
@@ -166,6 +212,24 @@ public class QuerySoapBindingSkeleton implements org.exist.soap.Query, org.apach
     public void disconnect(java.lang.String in0) throws java.rmi.RemoteException
     {
         impl.disconnect(in0);
+    }
+
+    public byte[] getResourceData(java.lang.String in0, java.lang.String in1, boolean in2, boolean in3, boolean in4) throws java.rmi.RemoteException
+    {
+        byte[] ret = impl.getResourceData(in0, in1, in2, in3, in4);
+        return ret;
+    }
+
+    public org.exist.soap.QueryResponse xquery(java.lang.String in0, byte[] in1) throws java.rmi.RemoteException
+    {
+        org.exist.soap.QueryResponse ret = impl.xquery(in0, in1);
+        return ret;
+    }
+
+    public byte[][] retrieveData(java.lang.String in0, int in1, int in2, boolean in3, boolean in4, java.lang.String in5) throws java.rmi.RemoteException
+    {
+        byte[][] ret = impl.retrieveData(in0, in1, in2, in3, in4, in5);
+        return ret;
     }
 
     public java.lang.String[] retrieveByDocument(java.lang.String in0, int in1, int in2, java.lang.String in3, boolean in4, boolean in5, java.lang.String in6) throws java.rmi.RemoteException

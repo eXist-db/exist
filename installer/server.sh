@@ -5,21 +5,13 @@
 # $Id: startup.sh,v 1.6 2002/12/28 17:37:22 wolfgang_m Exp $
 # -----------------------------------------------------------------------------
 
-exist_home () {
-	case "$0" in
-		/*)
-			p=$0
-		;;
-		*)
-			p=`/bin/pwd`/$0
-		;;
-	esac
-		(cd `/usr/bin/dirname $p` ; /bin/pwd)
-}
-
 # will be set by the installer
 if [ -z "$EXIST_HOME"]; then
-	EXIST_HOME="$INSTALL_PATH"
+	EXIST_HOME="%{INSTALL_PATH}"
+fi
+
+if [ -z "$JAVA_HOME" ]; then
+    JAVA_HOME="%{JAVA_HOME}"
 fi
 
 JAVA_CMD="$JAVA_HOME/bin/java"

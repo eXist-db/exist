@@ -40,9 +40,9 @@ import javax.servlet.http.HttpSession;
 
 import org.exist.xmldb.CompiledExpression;
 import org.exist.xmldb.XQueryService;
-import org.exist.xpath.XPathException;
-import org.exist.xpath.functions.request.RequestModule;
-import org.exist.xpath.value.Item;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.functions.request.RequestModule;
+import org.exist.xquery.value.Item;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -116,6 +116,22 @@ public class XQueryServlet extends HttpServlet {
 	 * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		process(request, response);
+	}
+	
+	/* (non-Javadoc)
+	 * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		process(request, response);
+	}
+	
+	/* (non-Javadoc)
+	 * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+	 */
+	protected void process(HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException {
 		PrintStream output = new PrintStream( response.getOutputStream() );
 		response.setContentType("text/html");
@@ -157,6 +173,7 @@ public class XQueryServlet extends HttpServlet {
 			XQueryService service = (XQueryService)
 				collection.getService("XQueryService", "1.0");
 			service.setProperty("base-uri", baseURI);
+			service.setModuleLoadPath(baseURI);
 			String prefix = RequestModule.PREFIX;
 			service.setNamespace(prefix, RequestModule.NAMESPACE_URI);
 			service.declareVariable(prefix + ":request", new HttpRequestWrapper(request));

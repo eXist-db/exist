@@ -48,6 +48,16 @@ public class XMLIndenter extends XMLWriter {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.exist.util.serializer.XMLWriter#setWriter(java.io.Writer)
+	 */
+	public void setWriter(Writer writer) {
+		super.setWriter(writer);
+		level = 0;
+		afterTag = false;
+		sameline = false;
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.exist.util.serializer.XMLWriter#startElement(java.lang.String)
 	 */
 	public void startElement(String qname) throws TransformerException {

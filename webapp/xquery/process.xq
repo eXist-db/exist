@@ -14,37 +14,40 @@ declare namespace f="http://exist-db.org/xquery/local-functions";
 declare function f:display($hits as item()*, $count as xs:int)
 as element()+
 {
-    let $howmany := request:request-parameter("howmany", "10") cast as xs:int,
-        $start := request:request-parameter("start", "1") cast as xs:int,
-        $end := if ($start + $howmany le $count) then $start + $howmany - 1 else $count
-    return (
-        <table class="display" border="0" cellspacing="0" cellpadding="4">
-            <tr>
-                <td colspan="3" align="center">
-                    &lt;<a href="xquery.xq">New Query</a>&gt;
-                </td>
-            </tr>
-            { f:navbar($start, $end, $howmany, $count) }
-            {
-                for $p in $start to $end
-                let $current := item-at($hits, $p),
-                    $style := if($p mod 2 eq 0) then "high" else "low"
-                return
-                    <tr class="{$style}">
-                        <td align="left" class="position">{$p}</td>
-                        <td colspan="2">
-                            <xml-source>{$current}</xml-source>
-                        </td>
-                    </tr>
-            }
-            { f:navbar($start, $end, $howmany, $count) }
-             <tr>
-                <td colspan="3" align="center">
-                    &lt;<a href="xquery.xq">New Query</a>&gt;
-                </td>
-            </tr>
-        </table>
-    )
+    if (empty($hits)) then
+        <p>Nothing found! <a href="xquery.xq">Back to query form</a>.</p>
+    else
+        let $howmany := request:request-parameter("howmany", "10") cast as xs:int,
+            $start := request:request-parameter("start", "1") cast as xs:int,
+            $end := if ($start + $howmany le $count) then $start + $howmany - 1 else $count
+        return (
+            <table class="display" border="0" cellspacing="0" cellpadding="4">
+                <tr>
+                    <td colspan="3" align="center">
+                        &lt;<a href="xquery.xq">New Query</a>&gt;
+                    </td>
+                </tr>
+                { f:navbar($start, $end, $howmany, $count) }
+                {
+                    for $p in $start to $end
+                    let $current := item-at($hits, $p),
+                        $style := if($p mod 2 eq 0) then "high" else "low"
+                    return
+                        <tr class="{$style}">
+                            <td align="left" class="position">{$p}</td>
+                            <td colspan="2">
+                                <xml-source>{$current}</xml-source>
+                            </td>
+                        </tr>
+                }
+                { f:navbar($start, $end, $howmany, $count) }
+                 <tr>
+                    <td colspan="3" align="center">
+                        &lt;<a href="xquery.xq">New Query</a>&gt;
+                    </td>
+                </tr>
+            </table>
+        )
 };
 
 (: Display the navigation bar :)
@@ -102,7 +105,7 @@ $hitsPerPage as xs:int, $count as xs:int) as element()
 };
 
 (:  Add the last query to the query-history. The history is
-    stored as an XQuery sequence in the session.
+    stored in the session as an XQuery sequence.
 :)
 declare function f:add-to-history($query as xs:string) as empty()
 {
@@ -140,7 +143,6 @@ declare function f:main() as element()+
             <p>Please specify a query! <a href="xquery.xq">Back to query
             form</a>.</p>
 };
-            
 
 <document xmlns:xi="http://www.w3.org/2001/XInclude">
    	

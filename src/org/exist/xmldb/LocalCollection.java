@@ -36,7 +36,7 @@ import javax.xml.transform.OutputKeys;
 import org.apache.log4j.Category;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.BLOBDocument;
+import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -292,7 +292,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		if (document.getResourceType() == DocumentImpl.XML_FILE)
 			r = new LocalXMLResource(user, brokerPool, this, document, -1);
 		else if (document.getResourceType() == DocumentImpl.BINARY_FILE)
-			r = new LocalBinaryResource(user, brokerPool, this, (BLOBDocument) document);
+			r = new LocalBinaryResource(user, brokerPool, this, (BinaryDocument) document);
 		else
 			throw new XMLDBException(
 				ErrorCodes.INVALID_RESOURCE,
@@ -440,7 +440,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			BLOBDocument blob =
+			BinaryDocument blob =
 				collection.addBinaryResource(
 					broker,
 					res.getId(),

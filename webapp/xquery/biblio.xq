@@ -92,10 +92,11 @@ as element()
 {
     let $count := count($hits),
         $start := xs:int(request:request-parameter("start", "1")),
+        $max := request:request-parameter("howmany", "10") cast as xs:int,
         $hit := item-at($hits, $start)
     return
         <query-results hits="{$count}" start="{$start}" 
-            next="{$start + 1}">
+            next="{$start + 1}" max="{$max}">
             {$hit}
         </query-results>
 };
@@ -105,11 +106,12 @@ declare function fn:display-summary($hits as node()+)
 as element()
 {
     let $count := count($hits),
-        $start := xs:int(request:request-parameter("start", "1")),
-        $end := if ($start + 9 < $count) then $start + 9 else $count
+        $max := request:request-parameter("howmany", "10") cast as xs:int,
+        $start := request:request-parameter("start", "1") cast as xs:int,
+        $end := if ($start + $max - 1 < $count) then $start + $max - 1 else $count
     return
         <query-results hits="{$count}" start="{$start}" 
-            next="{$end + 1}">
+            next="{$end + 1}" max="{$max}">
             {
                 for $p in $start to $end
                 let $current := item-at($hits, $p)
@@ -152,7 +154,7 @@ as element()
 			fn:display($hits)
 };
 
-declare function fn:do-query() as element()+
+declare function fn:main() as element()+
 {
     let $term1 := request:request-parameter("term1", ""),
         $previous := request:get-session-attribute("results"),
@@ -189,7 +191,7 @@ declare function fn:do-query() as element()+
         <section title="Library Search">
             { let $start := current-time() return
 				(
-					fn:do-query(),
+					fn:main(),
             		<p><small>Request served in 
 					{get-seconds-from-dayTimeDuration(current-time()-$start)}
 					seconds. <a href="source/biblio.xq">View Source</a>.

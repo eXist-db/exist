@@ -196,7 +196,8 @@ public class Main {
 							properties.getProperty("uri", "xmldb:exist://"),
 							properties.getProperty("user", "admin"),
 							optionPass,
-							properties.getProperty("backup-dir", "backup"));
+							properties.getProperty("backup-dir", System.getProperty("user.home") +
+									File.separatorChar + "backup"));
 					if (JOptionPane
 						.showOptionDialog(
 							null,

@@ -283,3 +283,7 @@ a.navbar {
 span.navbar {
     color: #BBDDFF;
 }
+
+textarea {
+    font-size: 11pt;
+}

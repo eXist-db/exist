@@ -49,14 +49,16 @@ import org.exist.util.VariableByteOutputStream;
 
 public class NativeElementIndex extends ElementIndex {
 
-	private static Category LOG = Category.getInstance(NativeElementIndex.class.getName());
+	private static Category LOG = Category.getInstance(NativeElementIndex.class
+			.getName());
 
 	public final static int PARTITION_SIZE = 102400;
 
 	protected BFile dbElement;
 	private VariableByteOutputStream os = new VariableByteOutputStream();
-	
-	public NativeElementIndex(DBBroker broker, Configuration config, BFile dbElement) {
+
+	public NativeElementIndex(DBBroker broker, Configuration config,
+			BFile dbElement) {
 		super(broker, config);
 		this.dbElement = dbElement;
 	}
@@ -91,16 +93,19 @@ public class NativeElementIndex extends ElementIndex {
 		long delta, last, gid, address;
 		try {
 			// iterate through elements
-			for (Iterator i = elementIds.entrySet().iterator(); i.hasNext();) {
+			for (Iterator i = elementIds.entrySet().iterator(); i.hasNext(); ) {
 				entry = (Map.Entry) i.next();
 				idList = (ArrayList) entry.getValue();
 				qname = (QName) entry.getKey();
-				if(qname.getNameType() != ElementValue.ATTRIBUTE_ID) {
-					sym = DBBroker.getSymbols().getSymbol(qname.getLocalName());
-					nsSym = DBBroker.getSymbols().getNSSymbol(qname.getNamespaceURI());
-					ref = new ElementValue(qname.getNameType(), collectionId, sym, nsSym);
+				if (qname.getNameType() != ElementValue.ATTRIBUTE_ID) {
+					sym = broker.getSymbols().getSymbol(qname.getLocalName());
+					nsSym = broker.getSymbols().getNSSymbol(
+							qname.getNamespaceURI());
+					ref = new ElementValue(qname.getNameType(), collectionId,
+							sym, nsSym);
 				} else
-					ref = new ElementValue(qname.getNameType(), collectionId, qname.getLocalName());
+					ref = new ElementValue(qname.getNameType(), collectionId,
+							qname.getLocalName());
 				// try to retrieve old index entry for the element
 				try {
 					lock.acquire(Lock.READ_LOCK);
@@ -141,20 +146,23 @@ public class NativeElementIndex extends ElementIndex {
 									//address = is.readFixedLong();
 									address = StorageAddress.read(is);
 									if (node == null
-										&& oldDoc.getTreeLevel(gid) < oldDoc.reindexRequired()) {
-										idList.add(new NodeProxy(oldDoc, gid, address));
-									} else if (
-										node != null
-											&& (!XMLUtil
-												.isDescendantOrSelf(oldDoc, node.getGID(), gid))) {
-											oldList.add(new NodeProxy(oldDoc, gid, address));
+											&& oldDoc.getTreeLevel(gid) < oldDoc
+													.reindexRequired()) {
+										idList.add(new NodeProxy(oldDoc, gid,
+												address));
+									} else if (node != null
+											&& (!XMLUtil.isDescendant(
+													oldDoc, node.getGID(), gid))) {
+										oldList.add(new NodeProxy(oldDoc, gid,
+												address));
 									}
 								}
 							}
 						}
 					} catch (EOFException e) {
 					} catch (IOException e) {
-						LOG.error("io-error while updating index for element " + qname);
+						LOG.error("io-error while updating index for element "
+								+ qname);
 					}
 				}
 				if (node != null)
@@ -171,7 +179,6 @@ public class NativeElementIndex extends ElementIndex {
 					last = p.gid;
 					os.writeLong(delta);
 					StorageAddress.write(p.getInternalAddress(), os);
-					//os.writeFixedLong(p.getInternalAddress());
 				}
 				//data = os.toByteArray();
 				try {
@@ -179,7 +186,7 @@ public class NativeElementIndex extends ElementIndex {
 					if (dis == null)
 						dbElement.put(ref, os.data());
 					else {
-						address = ((BFile.PageInputStream)dis).getAddress();
+						address = ((BFile.PageInputStream) dis).getAddress();
 						dbElement.update(address, ref, os.data());
 						//dbElement.update(val.getAddress(), ref, data);
 					}
@@ -213,16 +220,19 @@ public class NativeElementIndex extends ElementIndex {
 		long delta, last, gid, address;
 		try {
 			// iterate through elements
-			for (Iterator i = elementIds.entrySet().iterator(); i.hasNext();) {
+			for (Iterator i = elementIds.entrySet().iterator(); i.hasNext(); ) {
 				entry = (Map.Entry) i.next();
 				idList = (ArrayList) entry.getValue();
 				qname = (QName) entry.getKey();
-				if(qname.getNameType() != ElementValue.ATTRIBUTE_ID) {
-					sym = DBBroker.getSymbols().getSymbol(qname.getLocalName());
-					nsSym = DBBroker.getSymbols().getNSSymbol(qname.getNamespaceURI());
-					ref = new ElementValue(qname.getNameType(), collectionId, sym, nsSym);
+				if (qname.getNameType() != ElementValue.ATTRIBUTE_ID) {
+					sym = broker.getSymbols().getSymbol(qname.getLocalName());
+					nsSym = broker.getSymbols().getNSSymbol(
+							qname.getNamespaceURI());
+					ref = new ElementValue(qname.getNameType(), collectionId,
+							sym, nsSym);
 				} else {
-					ref = new ElementValue(qname.getNameType(), collectionId, qname.getLocalName());
+					ref = new ElementValue(qname.getNameType(), collectionId,
+							qname.getLocalName());
 				}
 				// try to retrieve old index entry for the element
 				try {
@@ -249,9 +259,7 @@ public class NativeElementIndex extends ElementIndex {
 								// copy data to new buffer
 								os.writeInt(docId);
 								os.writeInt(len);
-								for (int j = 0; j < len * 4; j++) {
-									is.copyTo(os);
-								}
+								is.copyTo(os, len * 4);
 							} else {
 								// copy nodes to new list
 								last = 0;
@@ -261,16 +269,20 @@ public class NativeElementIndex extends ElementIndex {
 									last = gid;
 									address = StorageAddress.read(is);
 									//address = is.readFixedLong();
-									if(!containsNode(idList, gid)) {
-										newList.add(new NodeProxy(doc, gid, address));
+									if (!containsNode(idList, gid)) {
+										newList.add(new NodeProxy(doc, gid,
+												address));
 									}
 								}
 							}
 						}
 					} catch (EOFException e) {
-						LOG.error("end-of-file while updating index for element " + qname);
+						LOG
+								.error("end-of-file while updating index for element "
+										+ qname);
 					} catch (IOException e) {
-						LOG.error("io-error while updating index for element " + qname);
+						LOG.error("io-error while updating index for element "
+								+ qname);
 					}
 				}
 				// write out the updated list
@@ -285,14 +297,14 @@ public class NativeElementIndex extends ElementIndex {
 					last = p.gid;
 					os.writeLong(delta);
 					StorageAddress.write(p.getInternalAddress(), os);
-					//os.writeFixedLong(p.getInternalAddress());
 				}
 				try {
 					lock.acquire(Lock.WRITE_LOCK);
-					if (val == null)
+					if (val == null) {
 						dbElement.put(ref, os.data());
-					else
+					} else {
 						dbElement.update(val.getAddress(), ref, os.data());
+					}
 				} catch (LockException e) {
 					LOG.error("could not acquire lock on elements", e);
 				} finally {
@@ -315,7 +327,8 @@ public class NativeElementIndex extends ElementIndex {
 	public void flush() {
 		if (elementIds.size() == 0)
 			return;
-		final ProgressIndicator progress = new ProgressIndicator(elementIds.size(), 5);
+		final ProgressIndicator progress = new ProgressIndicator(elementIds
+				.size(), 5);
 
 		NodeProxy proxy;
 		QName qname;
@@ -333,7 +346,7 @@ public class NativeElementIndex extends ElementIndex {
 		short collectionId = doc.getCollection().getId();
 		Lock lock = dbElement.getLock();
 		try {
-			for (Iterator i = elementIds.entrySet().iterator(); i.hasNext();) {
+			for (Iterator i = elementIds.entrySet().iterator(); i.hasNext(); ) {
 				entry = (Map.Entry) i.next();
 				qname = (QName) entry.getKey();
 				idList = (ArrayList) entry.getValue();
@@ -351,12 +364,16 @@ public class NativeElementIndex extends ElementIndex {
 					//os.writeFixedLong(proxy.getInternalAddress());
 					StorageAddress.write(proxy.getInternalAddress(), os);
 				}
-				if(qname.getNameType() != ElementValue.ATTRIBUTE_ID) {
-					short sym = NativeBroker.getSymbols().getSymbol(qname.getLocalName());
-					short nsSym = NativeBroker.getSymbols().getNSSymbol(qname.getNamespaceURI());
-					ref = new ElementValue(qname.getNameType(), collectionId, sym, nsSym);
+				if (qname.getNameType() != ElementValue.ATTRIBUTE_ID) {
+					short sym = broker.getSymbols().getSymbol(
+							qname.getLocalName());
+					short nsSym = broker.getSymbols().getNSSymbol(
+							qname.getNamespaceURI());
+					ref = new ElementValue(qname.getNameType(), collectionId,
+							sym, nsSym);
 				} else {
-					ref = new ElementValue(qname.getNameType(), collectionId, qname.getLocalName());
+					ref = new ElementValue(qname.getNameType(), collectionId,
+							qname.getLocalName());
 				}
 				try {
 					lock.acquire(Lock.WRITE_LOCK);
@@ -372,7 +389,7 @@ public class NativeElementIndex extends ElementIndex {
 					lock.release();
 				}
 				progress.setValue(count);
-				if(progress.changed()) {
+				if (progress.changed()) {
 					setChanged();
 					notifyObservers(progress);
 				}

@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.exist.util.FastQSort;
-import org.exist.xpath.value.Item;
-import org.exist.xpath.value.SequenceIterator;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.Node;
 
 public class TextSearchResult extends AbstractNodeSet {
@@ -157,6 +157,13 @@ public class TextSearchResult extends AbstractNodeSet {
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.dom.AbstractNodeSet#unorderedIterator()
+	 */
+	public SequenceIterator unorderedIterator() {
+		return null;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.dom.NodeSet#contains(org.exist.dom.DocumentImpl, long)
 	 */

@@ -40,7 +40,6 @@ import org.exist.dom.TextImpl;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -110,7 +109,7 @@ public class NativeSerializer extends Serializer {
 			contentHandler.endDocument();
 	}
 
-	protected void serializeToSAX(Document doc, boolean generateDocEvent) throws SAXException {
+	protected void serializeToSAX(DocumentImpl doc, boolean generateDocEvent) throws SAXException {
 		long start = System.currentTimeMillis();
 		setDocument((DocumentImpl) doc);
 		NodeList children = doc.getChildNodes();
@@ -147,7 +146,7 @@ public class NativeSerializer extends Serializer {
 
 	}
 
-	protected void serializeToSAX(Node n) throws SAXException {
+	protected void serializeToSAX(NodeImpl n) throws SAXException {
 		if (!(n instanceof NodeImpl))
 			throw new RuntimeException("wrong implementation");
 		serializeToSAX(new NodeProxy((DocumentImpl) n.getOwnerDocument(), ((NodeImpl) n).getGID()));
@@ -161,10 +160,10 @@ public class NativeSerializer extends Serializer {
 		if (generateDocEvents)
 			contentHandler.startDocument();
 
-		contentHandler.startPrefixMapping("exist", EXIST_NS);
+		//contentHandler.startPrefixMapping("exist", EXIST_NS);
 		Iterator domIter = broker.getNodeIterator(p);
 		serializeToSAX(null, domIter, p.doc, p.gid, true, p.match);
-		contentHandler.endPrefixMapping("exist");
+		//contentHandler.endPrefixMapping("exist");
 		if (generateDocEvents)
 			contentHandler.endDocument();
 

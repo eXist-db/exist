@@ -37,8 +37,9 @@ import org.xml.sax.XMLReader;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.XMLResource;
 
-public class RemoteXMLResource implements XMLResourceImpl {
+public class RemoteXMLResource implements XMLResource, EXistResource {
 	/**
 	 *  if this class is used from Cocoon, use the Cocoon parser component
 	 *  instead of JAXP
@@ -114,6 +115,8 @@ public class RemoteXMLResource implements XMLResourceImpl {
 			Vector params = new Vector();
 			params.addElement(path);
 			params.addElement(properties);
+			//params.addElement("UTF-8");
+			//params.addElement(new Integer(1));
 			try {
 				data = (byte[]) parent.getClient().execute("getDocument", params);
 			} catch (XmlRpcException xre) {
@@ -122,7 +125,6 @@ public class RemoteXMLResource implements XMLResourceImpl {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 			}
 		} else {
-			System.out.println("indent = " + properties.getProperty("indent"));
 			Vector params = new Vector();
 			params.addElement(new Integer(handle));
 			params.addElement(new Integer(pos));

@@ -1,6 +1,6 @@
 package org.exist.xmlrpc;
 
-import org.exist.xpath.value.Sequence;
+import org.exist.xquery.value.Sequence;
 
 public class QueryResult {
 	long queryTime = 0;

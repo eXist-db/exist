@@ -27,9 +27,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Date;
 
 import org.exist.EXistException;
-import org.exist.dom.BLOBDocument;
+import org.exist.dom.BinaryDocument;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -41,13 +44,13 @@ import org.xmldb.api.modules.BinaryResource;
 /**
  * @author wolf
  */
-public class LocalBinaryResource implements BinaryResource {
+public class LocalBinaryResource implements BinaryResource, EXistResource {
 
 	protected User user;
 	protected BrokerPool pool;
 	protected LocalCollection parent;
 	protected String docId;
-	protected BLOBDocument blob = null;
+	protected BinaryDocument blob = null;
 	protected byte[] rawData = null;
 	
 	/**
@@ -63,7 +66,7 @@ public class LocalBinaryResource implements BinaryResource {
 		this.docId = docId;
 	}
 
-	public LocalBinaryResource(User user, BrokerPool pool, LocalCollection collection, BLOBDocument blob) {
+	public LocalBinaryResource(User user, BrokerPool pool, LocalCollection collection, BinaryDocument blob) {
 		this(user, pool, collection, blob.getFileName());
 		this.blob = blob;
 	}
@@ -75,7 +78,7 @@ public class LocalBinaryResource implements BinaryResource {
 		return parent;
 	}
 
-	public BLOBDocument getBlob() {
+	public BinaryDocument getBlob() {
 		return blob;
 	}
 	
@@ -120,6 +123,8 @@ public class LocalBinaryResource implements BinaryResource {
 			readFile((File)value);
 		} else if(value instanceof byte[])
 			rawData = (byte[])value;
+		else if(value instanceof String)
+			rawData = ((String)value).getBytes();
 		else
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 				"don't know how to handle value of type " + value.getClass().getName());
@@ -144,4 +149,66 @@ public class LocalBinaryResource implements BinaryResource {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.EXistResource#getCreationTime()
+	 */
+	public Date getCreationTime() throws XMLDBException {
+		DBBroker broker = null;
+		try {
+			broker = pool.get(user);
+			if (blob == null)
+				getDocument(broker);
+			if (!blob.getPermissions().validate(user, Permission.READ))
+				throw new XMLDBException(
+						ErrorCodes.PERMISSION_DENIED,
+				"permission denied to read resource");
+			return new Date(blob.getCreated());
+		} catch (EXistException e) {
+			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+		} finally {
+			pool.release(broker);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.EXistResource#getLastModificationTime()
+	 */
+	public Date getLastModificationTime() throws XMLDBException {
+		DBBroker broker = null;
+		try {
+			broker = pool.get(user);
+			if (blob == null)
+				getDocument(broker);
+			if (!blob.getPermissions().validate(user, Permission.READ))
+				throw new XMLDBException(
+						ErrorCodes.PERMISSION_DENIED,
+				"permission denied to read resource");
+			return new Date(blob.getLastModified());
+		} catch (EXistException e) {
+			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+		} finally {
+			pool.release(broker);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.EXistResource#getPermissions()
+	 */
+	public Permission getPermissions() {
+		return blob != null ? blob.getPermissions() : null;
+	}
+
+	protected void getDocument(DBBroker broker) throws XMLDBException {
+		if (blob != null)
+			return;
+		try {
+			String path =
+				(parent.getPath().equals("/") ? '/' + docId : parent.getPath() + '/' + docId);
+			blob = (BinaryDocument) broker.getDocument(path);
+			if (blob == null)
+				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE);
+		} catch (PermissionDeniedException e) {
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e);
+		}
+	}
 }

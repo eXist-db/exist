@@ -38,10 +38,11 @@ import org.apache.cocoon.environment.SourceResolver;
 import org.apache.cocoon.generation.ServiceableGenerator;
 import org.apache.excalibur.source.Source;
 import org.apache.excalibur.source.SourceValidity;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xmldb.CompiledExpression;
 import org.exist.xmldb.XQueryService;
-import org.exist.xpath.functions.request.RequestModule;
+import org.exist.xquery.functions.request.RequestModule;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -60,6 +61,7 @@ import org.xmldb.api.modules.XMLResource;
  * &lt;map:parameter name="user" value="guest"/&gt;
  * &lt;map:parameter name="password" value="guest"/&gt;
  * &lt;map:parameter name="create-session" value="false"/&gt;
+ * &lt;map:parameter name="expand-xincludes" value="false"/&gt;
  * </pre>
  * 
  * Parameter collection identifies the XML:DB root collection used to
@@ -74,6 +76,7 @@ public class XQueryGenerator extends ServiceableGenerator {
 	private Source inputSource = null;
 	private Map objectModel = null;
 	private boolean createSession = false;
+	private boolean expandXIncludes = false;
 	
 	private String collectionURI = null;
 	private String defaultUser = null;
@@ -107,6 +110,7 @@ public class XQueryGenerator extends ServiceableGenerator {
 		this.defaultUser = parameters.getParameter("user", "guest");
 		this.defaultPassword = parameters.getParameter("password", "guest");
 		this.createSession = parameters.getParameterAsBoolean("create-session", false);
+		this.expandXIncludes = parameters.getParameterAsBoolean("expand-xincludes", false);
 	}
 
 	/* (non-Javadoc)
@@ -128,7 +132,7 @@ public class XQueryGenerator extends ServiceableGenerator {
 			throw new ProcessingException("No input source");
 		Request request = ObjectModelHelper.getRequest(objectModel);
 		Response response = ObjectModelHelper.getResponse(objectModel);
-		
+		String contextPath = request.getPathTranslated();
 		Session session = request.getSession(createSession);
 		String user = null;
         String password = null;
@@ -141,7 +145,6 @@ public class XQueryGenerator extends ServiceableGenerator {
             user = defaultUser;
         if(password == null)
             password = defaultPassword;
-        System.out.println("user = " + user + "; password = " + password);
 		try {
 			Collection collection = DatabaseManager.getCollection(collectionURI, user, password);
 			if(collection == null) {
@@ -152,8 +155,11 @@ public class XQueryGenerator extends ServiceableGenerator {
 			XQueryService service = (XQueryService)
 				collection.getService("XQueryService", "1.0");
 			service.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
+			service.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, 
+					expandXIncludes ? "yes" : "no");
 			String prefix = RequestModule.PREFIX;
 			service.setNamespace(prefix, RequestModule.NAMESPACE_URI);
+			service.setModuleLoadPath(contextPath);
 			service.declareVariable(prefix + ":request", new CocoonRequestWrapper(request));
 			service.declareVariable(prefix + ":response", new CocoonResponseWrapper(response));
 			service.declareVariable(prefix + ":session", new CocoonSessionWrapper(session));

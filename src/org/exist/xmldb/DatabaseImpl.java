@@ -86,7 +86,8 @@ public class DatabaseImpl implements Database {
                                              String address ) throws XMLDBException {
         StringTokenizer tok = new StringTokenizer( c, "/" );
         String temp = tok.nextToken();
-
+        if(temp.equals("db"))
+        	temp = '/' + temp;
         Collection current =
             new RemoteCollection( rpcClient, null, address, temp );
         while ( current != null && tok.hasMoreTokens() ) {

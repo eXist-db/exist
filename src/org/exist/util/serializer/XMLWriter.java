@@ -85,6 +85,10 @@ public class XMLWriter {
 	}
 	
 	public void startDocument() throws TransformerException {
+		tagIsOpen = false;
+		tagIsEmpty = true;
+		declarationWritten = false;
+		elementStack.clear();
 	}
 
 	public void endDocument() throws TransformerException {
@@ -158,6 +162,8 @@ public class XMLWriter {
 	}
 
 	public void characters(CharSequence chars) throws TransformerException {
+		if (!declarationWritten)
+			writeDeclaration();
 		try {
 			if (tagIsOpen)
 				closeStartTag(false);
@@ -169,6 +175,8 @@ public class XMLWriter {
 
 	public void characters(char[] ch, int start, int len)
 		throws TransformerException {
+		if (!declarationWritten)
+			writeDeclaration();
 		characters(new XMLString(ch, start, len));
 	}
 

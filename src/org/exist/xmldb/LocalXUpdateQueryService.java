@@ -66,7 +66,7 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 				LOG.debug("updating resource " + doc.getFileName());
 				docs.add(doc);
 			}
-			LOG.debug(xupdate);
+			//LOG.debug(xupdate);
 			XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
 			Modification modifications[] =
 				processor.parse(new InputSource(new StringReader(xupdate)));

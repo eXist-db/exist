@@ -1,0 +1,144 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Library General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Library General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ *  $Id$
+ */
+package org.exist.xquery.value;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.exist.dom.NodeProxy;
+import org.exist.xquery.XPathException;
+
+/**
+ * An abstract implementation of {@link org.exist.xpath.value.Sequence} with
+ * default implementations for some methods.
+ */
+public abstract class AbstractSequence implements Sequence {
+
+	protected AbstractSequence() {
+	}
+	
+	public abstract int getItemType();
+
+	public abstract SequenceIterator iterate();
+
+	public abstract SequenceIterator unorderedIterator();
+	
+	public abstract int getLength();
+	
+	public AtomicValue convertTo(int requiredType) throws XPathException {
+		Item first = itemAt(0);
+		if(Type.subTypeOf(first.getType(), Type.ATOMIC))
+			return ((AtomicValue)first).convertTo(requiredType);
+		else
+			return new StringValue(first.getStringValue()).convertTo(requiredType);
+	}
+	
+	public String getStringValue() throws XPathException {
+		if(getLength() == 0)
+			return "";
+		Item first = iterate().nextItem();
+		return first.getStringValue();
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Sequence#add(org.exist.xpath.value.Item)
+	 */
+	public abstract void add(Item item) throws XPathException;
+
+	public void addAll(Sequence other) throws XPathException {
+		for(SequenceIterator i = other.iterate(); i.hasNext(); )
+			add(i.nextItem());
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Sequence#itemAt(int)
+	 */
+	public abstract Item itemAt(int pos);
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Sequence#effectiveBooleanValue()
+	 */
+	public boolean effectiveBooleanValue() throws XPathException {
+		int len = getLength();
+		if (len == 0)
+			return false;
+		if (len > 1)
+			return true;
+		Item first = itemAt(0);
+		if(first instanceof StringValue)
+			return first.getStringValue().equals("") ? true : false;
+		else if(first instanceof BooleanValue)
+			return ((BooleanValue)first).getValue();
+		else if(first instanceof NumericValue)
+			return ((BooleanValue)first.convertTo(Type.BOOLEAN)).getValue();
+		else
+			return true;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Sequence#conversionPreference(java.lang.Class)
+	 */
+	public int conversionPreference(Class javaClass) {
+		if(javaClass.isAssignableFrom(Sequence.class))
+			return 0;
+		else if(javaClass.isAssignableFrom(List.class))
+			return 1;
+		else if(javaClass == Object.class)
+			return 20;
+		
+		if(getLength() > 0)
+			return itemAt(0).conversionPreference(javaClass);
+			
+		return Integer.MAX_VALUE;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.Sequence#toJavaObject(java.lang.Class)
+	 */
+	public Object toJavaObject(Class target) throws XPathException {
+		if(target.isAssignableFrom(Sequence.class))
+			return this;
+		else if(target.isAssignableFrom(List.class)) {
+			List l = new ArrayList(getLength());
+			for(SequenceIterator i = iterate(); i.hasNext(); ) {
+				l.add(i.nextItem());
+			}
+			return l;
+		}
+			
+		if(getLength() > 0)
+			return itemAt(0).toJavaObject(target);
+		return null;
+	}
+	
+	public void setSelfAsContext() {
+		Item next;
+		for (SequenceIterator i = unorderedIterator(); i.hasNext();) {
+			next = i.nextItem();
+			if(Type.subTypeOf(next.getType(), Type.NODE)) {
+				if (next instanceof NodeProxy) {
+					NodeProxy n = (NodeProxy)next;
+					n.addContextNode(n);
+				}
+			}
+		}
+	}
+}

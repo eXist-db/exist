@@ -23,6 +23,7 @@
 package org.exist.client;
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -38,6 +39,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Vector;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -49,10 +51,13 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JSpinner;
 import javax.swing.JSplitPane;
+import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.border.BevelBorder;
 import javax.xml.transform.OutputKeys;
 
 import org.exist.xmldb.XPathQueryServiceImpl;
@@ -73,6 +78,8 @@ public class QueryDialog extends JFrame {
 	private SpinnerNumberModel count;
 	private DefaultComboBoxModel history= new DefaultComboBoxModel();
     private Font display = new Font("Monospaced", Font.BOLD, 12);
+	private JTextField statusMessage;
+	private JProgressBar progress;
 
 	public QueryDialog(InteractiveClient client, Collection collection, Properties properties) {
 		this.collection= collection;
@@ -97,7 +104,7 @@ public class QueryDialog extends JFrame {
 		});
 		toolbar.add(button);
 		
-		url= getClass().getResource("icons/Save24.gif");
+		url= getClass().getResource("icons/SaveAs24.gif");
 		button= new JButton(new ImageIcon(url));
 		button.setToolTipText(
 		"Write query to file.");
@@ -124,6 +131,21 @@ public class QueryDialog extends JFrame {
 		resultDisplay.setText("");
 		resultDisplay.setPreferredSize(new Dimension(400, 250));
         vbox.add(resultDisplay, BorderLayout.CENTER);
+        
+        Box statusbar = Box.createHorizontalBox();
+        statusbar.setBorder(BorderFactory
+        		.createBevelBorder(BevelBorder.LOWERED));
+        statusMessage = new JTextField(20);
+        statusMessage.setEditable(false);
+        statusMessage.setFocusable(false);
+        statusbar.add(statusMessage);
+
+        progress = new JProgressBar();
+        progress.setPreferredSize(new Dimension(200, 30));
+        progress.setVisible(false);
+        statusbar.add(progress);
+        
+        vbox.add(statusbar, BorderLayout.SOUTH);
         
 		split.setBottomComponent(vbox);
 		split.setDividerLocation(0.4);
@@ -178,7 +200,7 @@ public class QueryDialog extends JFrame {
 			getCollections(root, collection, data);
 		} catch (XMLDBException e) {
 			ClientFrame.showErrorMessage(
-					"An error occurred while retrieving collections list", e);
+					"An error occurred while retrieving collections list.", e);
 		}
 		collections= new JComboBox(data);
 		collections.addActionListener(new ActionListener() {
@@ -228,14 +250,17 @@ public class QueryDialog extends JFrame {
 	}
 
 	private void open() {
-		JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
+		String workDir = properties.getProperty("working-dir", System.getProperty("user.dir"));
+		JFileChooser chooser = new JFileChooser(workDir);
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		if (chooser.showDialog(this, "Select file for export")
+		if (chooser.showDialog(this, "Select query file")
 			== JFileChooser.APPROVE_OPTION) {
+			File selectedDir = chooser.getCurrentDirectory();
+			properties.setProperty("working-dir", selectedDir.getAbsolutePath());
 			File file = chooser.getSelectedFile();
 			if(!file.canRead())
-				JOptionPane.showInternalMessageDialog(this, "Can not read query from file " + file.getAbsolutePath(),
+				JOptionPane.showInternalMessageDialog(this, "Cannot read query from file " + file.getAbsolutePath(),
 					"Error", JOptionPane.ERROR_MESSAGE);
 			try {
 				BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -255,11 +280,14 @@ public class QueryDialog extends JFrame {
 	}
 	
 	private void save() {
-		JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
+		String workDir = properties.getProperty("working-dir", System.getProperty("user.dir"));
+		JFileChooser chooser = new JFileChooser(workDir);
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY + JFileChooser.SAVE_DIALOG);
 		if (chooser.showDialog(this, "Select file for query export")
 			== JFileChooser.APPROVE_OPTION) {
+			File selectedDir = chooser.getCurrentDirectory();
+			properties.setProperty("working-dir", selectedDir.getAbsolutePath());
 			File file = chooser.getSelectedFile();
 			if(file.exists() && (!file.canWrite()))
 				JOptionPane.showMessageDialog(this, "Can not write query to file " + file.getAbsolutePath(),
@@ -285,40 +313,70 @@ public class QueryDialog extends JFrame {
 		if (xpath.length() == 0)
 			return;
 		resultDisplay.setText("");
-		try {
-			XPathQueryServiceImpl service= (XPathQueryServiceImpl) collection
-					.getService("XPathQueryService", "1.0");
-			service.setProperty(OutputKeys.INDENT, properties
-					.getProperty("indent"));
-			ResourceSet result= service.query(xpath);
-            XMLResource resource;
-            int howmany= count.getNumber().intValue();
-            int j= 0;
-            StringBuffer contents = new StringBuffer();
-            for (ResourceIterator i = result.getIterator(); i.hasMoreResources() && j < howmany; j++) {
-                resource= (XMLResource) i.nextResource();
-                try {
-                    contents.append((String) resource.getContent());
-                    contents.append("\n");
-                } catch (XMLDBException e) {
-                    ClientFrame.showErrorMessage(
-                            "An error occurred while retrieving results: "
-                            + e.getMessage()                        , e);
-                }
-            }
-            resultDisplay.setText(contents.toString());
-            resultDisplay.setCaretPosition(0);
-            resultDisplay.scrollToCaret();
-		} catch (XMLDBException e) {
-			ClientFrame.showErrorMessage(
-					"An exception occurred during query execution: "
-							+ e.getMessage()					, e);
+		new QueryThread(xpath).start();
+	}
+	
+	class QueryThread extends Thread {
+
+		private String xpath;
+		
+		public QueryThread(String query) {
+			super();
+			this.xpath = query;
 		}
-		if(client.queryHistory.isEmpty() || !((String)client.queryHistory.getLast()).equals(xpath)) {
-			client.addToHistory(xpath);
-			if(xpath.length() > 40)
-				xpath = xpath.substring(0, 40);
-			history.addElement(xpath);
+		
+		/* (non-Javadoc)
+		 * @see java.lang.Thread#run()
+		 */
+		public void run() {
+			statusMessage.setText("Processing query ...");
+			progress.setVisible(true);
+			progress.setIndeterminate(true);
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			try {
+				XPathQueryServiceImpl service= (XPathQueryServiceImpl) collection
+				.getService("XPathQueryService", "1.0");
+				service.setProperty(OutputKeys.INDENT, properties.getProperty(OutputKeys.INDENT, "yes"));
+				ResourceSet result= service.query(xpath);
+				
+				statusMessage.setText("Retrieving results ...");
+				XMLResource resource;
+				int howmany= count.getNumber().intValue();
+				progress.setIndeterminate(false);
+				progress.setMinimum(1);
+				progress.setMaximum(howmany);
+				int j= 0;
+				StringBuffer contents = new StringBuffer();
+				for (ResourceIterator i = result.getIterator(); i.hasMoreResources() && j < howmany; j++) {
+					resource= (XMLResource) i.nextResource();
+					progress.setValue(j);
+					try {
+						contents.append((String) resource.getContent());
+						contents.append("\n");
+					} catch (XMLDBException e) {
+						ClientFrame.showErrorMessage(
+								"An error occurred while retrieving results: "
+								+ InteractiveClient.getExceptionMessage(e), e);
+					}
+				}
+				resultDisplay.setText(contents.toString());
+				resultDisplay.setCaretPosition(0);
+				resultDisplay.scrollToCaret();
+				statusMessage.setText("Found " + result.getSize() + " items.");
+			} catch (XMLDBException e) {
+				ClientFrame.showErrorMessage(
+						"An exception occurred during query execution: "
+						+ InteractiveClient.getExceptionMessage(e), e);
+			}
+			if(client.queryHistory.isEmpty() || !((String)client.queryHistory.getLast()).equals(xpath)) {
+				client.addToHistory(xpath);
+				client.writeQueryHistory();
+				if(xpath.length() > 40)
+					xpath = xpath.substring(0, 40);
+				history.addElement(xpath);
+			}
+			setCursor(Cursor.getDefaultCursor());
+			progress.setVisible(false);
 		}
 	}
 }

@@ -15,9 +15,12 @@
     <resources>
     	<res id="Installer.image" src="installer/ilogo.jpg"/>
     	<res id="shortcutSpec.xml" src="installer/shortcutSpec.xml"/>
-    	<res id="XInfoPanel.info" src="installer/finished.txt"/>
+        <res id="XInfoPanel.info" src="installer/finished.txt"/>
     </resources>
     <native type="izpack" name="ShellLink.dll"/>
+    <variables>
+        <variable name="JETTY_HOME" value="$EXIST_HOME/Jetty-4.1.4"/>
+    </variables>
     <panels>
         <panel classname="HelloPanel"/>
         <panel classname="PacksPanel"/>
@@ -31,8 +34,11 @@
         <pack name="core" required="yes">
             <description>Everything needed for the database core, including Jetty + Cocoon</description>
             <fileset targetdir="$INSTALL_PATH" dir=".">
-            	<include name="client.properties"/>
-            	<include name="conf.xml"/>
+                <include name="client.properties"/>
+                <include name="backup.properties"/>
+                <include name="conf.xml"/>
+                <include name="log4j.xml"/>
+                <include name="build.xml"/>
             	<include name="*.css"/>
             	<include name="LICENSE"/>
             	<include name="README"/>
@@ -41,9 +47,10 @@
 				<include name="exist.jar"/>
 				<include name="exist-optional.jar"/>
             	<include name="start.jar"/>
-            	<include name="examples.jar"/>
-				<include name="docs/"/>
-            	<include name="Jetty*/"/>
+                <include name="examples.jar"/>
+                <include name="examples-setup.xml"/>
+                <include name="Jetty*/"/>
+                <include name="Jetty*/logs/"/>
             	<include name="lib/"/>
             	<include name="samples/**"/>
             	<include name="thirdparty/"/>
@@ -52,6 +59,9 @@
 				<exclude name="**/*.log*"/>
 				<exclude name="**/.*"/>
             </fileset>
+			<fileset targetdir="$INSTALL_PATH/tools" dir="tools">
+				<include name="**/*.jar"/>
+			</fileset>
             <fileset targetdir="$INSTALL_PATH/webapp" dir="webapp">
             	<exclude name="**/*.dbx"/>
             	<exclude name="**/*.log*"/>
@@ -60,19 +70,34 @@
 				<exclude name="**/CVS/"/>
 				<exclude name="**/*~"/>
             </fileset>
+            <fileset targetdir="$INSTALL_PATH/webapp/WEB-INF"
+                dir="webapp/WEB-INF">
+                <include name="data/"/>
+                <include name="logs/"/>
+                <exclude name="**/*.dbx"/>
+                <exclude name="**/CVS/"/>
+                <exclude name="**/*.log"/>
+            </fileset>
             <file src="installer/index.html" targetdir="$INSTALL_PATH"/>
+            <file src="installer/icon.bmp" targetdir="$INSTALL_PATH"/>
             <fileset targetdir="$INSTALL_PATH/bin" dir="installer">
             	<include name="*.sh"/>
-            	<include name="*.bat"/>
+                <include name="*.bat"/>
+                <exclude name="build.bat"/>
+                <exclude name="build.sh"/>
             </fileset>
-			<parsable targetfile="$INSTALL_PATH/bin/client.sh"/>
-			<parsable targetfile="$INSTALL_PATH/bin/startup.sh"/>
-			<parsable targetfile="$INSTALL_PATH/bin/server.sh"/>
-			<parsable targetfile="$INSTALL_PATH/bin/shutdown.sh"/>
+            <file src="installer/build.sh" targetdir="$INSTALL_PATH"/>
+            <file src="installer/build.bat" targetdir="$INSTALL_PATH"/>
+			<parsable type="shell" targetfile="$INSTALL_PATH/bin/client.sh"/>
+			<parsable type="shell" targetfile="$INSTALL_PATH/bin/startup.sh"/>
+			<parsable type="shell" targetfile="$INSTALL_PATH/bin/server.sh"/>
+            <parsable type="shell" targetfile="$INSTALL_PATH/bin/shutdown.sh"/>
+            <parsable type="shell" targetfile="$INSTALL_PATH/build.sh"/>
 			<parsable targetfile="$INSTALL_PATH/bin/client.bat"/>
 			<parsable targetfile="$INSTALL_PATH/bin/startup.bat"/>
 			<parsable targetfile="$INSTALL_PATH/bin/server.bat"/>
-			<parsable targetfile="$INSTALL_PATH/bin/shutdown.bat"/>
+            <parsable targetfile="$INSTALL_PATH/bin/shutdown.bat"/>
+            <parsable targetfile="$INSTALL_PATH/build.bat"/>
 			<executable targetfile="$INSTALL_PATH/bin/client.sh"
 				stage="never" os="unix"/>
 			<executable targetfile="$INSTALL_PATH/bin/startup.sh"
@@ -80,7 +105,9 @@
 			<executable targetfile="$INSTALL_PATH/bin/server.sh"
 				stage="never" os="unix"/>
 			<executable targetfile="$INSTALL_PATH/bin/shutdown.sh"
-				stage="never" os="unix"/>
+                stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/build.sh"
+                stage="never" os="unix"/>
         </pack>
         <pack name="sources" required="no">
             <description>Java source files</description>
@@ -91,14 +118,6 @@
 				<exclude name="**/CVS/"/>
 				<exclude name=".*"/>
             </fileset>
-            <fileset targetdir="$INSTALL_PATH"
-            	dir=".">
-            	<include name="build.*"/>
-            	<exclude name="*~"/>
-			</fileset>
-			<fileset targetdir="$INSTALL_PATH/tools" dir="tools">
-				<include name="**/*.jar"/>
-			</fileset>
         </pack>
         <pack name="javadoc" required="no">
         	<description>Generated Javadocs</description>

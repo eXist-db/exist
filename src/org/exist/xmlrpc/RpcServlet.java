@@ -10,12 +10,6 @@ import org.exist.storage.BrokerPool;
 
 import org.exist.util.Configuration;
 
-/**
- *  Description of the Class
- *
- *@author     wolf
- *@created    24. April 2002
- */
 public class RpcServlet extends HttpServlet {
 
     protected XmlRpcServer xmlrpc;

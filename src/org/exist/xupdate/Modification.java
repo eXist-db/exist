@@ -10,17 +10,17 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeIndexListener;
 import org.exist.dom.XMLUtil;
-import org.exist.parser.XPathLexer2;
-import org.exist.parser.XPathParser2;
-import org.exist.parser.XPathTreeParser2;
+import org.exist.xquery.parser.XQueryLexer;
+import org.exist.xquery.parser.XQueryParser;
+import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.store.StorageAddress;
-import org.exist.xpath.PathExpr;
-import org.exist.xpath.XQueryContext;
-import org.exist.xpath.XPathException;
-import org.exist.xpath.value.Sequence;
-import org.exist.xpath.value.Type;
+import org.exist.xquery.PathExpr;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.NodeList;
 
@@ -64,9 +64,9 @@ public abstract class Modification {
 		try {
 			XQueryContext context = new XQueryContext(broker);
 			context.setStaticallyKnownDocuments(docs);
-			XPathLexer2 lexer = new XPathLexer2(new StringReader(selectStmt));
-			XPathParser2 parser = new XPathParser2(lexer);
-			XPathTreeParser2 treeParser = new XPathTreeParser2(context);
+			XQueryLexer lexer = new XQueryLexer(new StringReader(selectStmt));
+			XQueryParser parser = new XQueryParser(lexer);
+			XQueryTreeParser treeParser = new XQueryTreeParser(context);
 			parser.xpath();
 			if (parser.foundErrors()) {
 				throw new RuntimeException(parser.getErrorMessage());

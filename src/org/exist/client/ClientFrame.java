@@ -1,24 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-03 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ * eXist Open Source Native XML Database
+ *   
+ * Copyright (C) 2001-03 Wolfgang M. Meier wolfgang@exist-db.org
+ * 
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ * for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * 
+ * $Id$
  */
 package org.exist.client;
 
@@ -31,34 +30,39 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.HeadlessException;
 import java.awt.Insets;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Properties;
-import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -68,6 +72,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -77,6 +82,7 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.ProgressMonitor;
 import javax.swing.border.BevelBorder;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.AbstractTableModel;
@@ -84,29 +90,36 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.Keymap;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
-import javax.swing.text.TextAction;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamSource;
+import javax.xml.transform.OutputKeys;
 
 import org.exist.backup.Backup;
 import org.exist.backup.CreateBackupDialog;
 import org.exist.backup.Restore;
 import org.exist.security.Permission;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.xmldb.CollectionImpl;
+import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.UserManagementService;
-import org.exist.xmldb.XMLResourceImpl;
+import org.gnu.readline.Readline;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.CollectionManagementService;
 
-public class ClientFrame extends JFrame {
+public class ClientFrame extends JFrame
+		implements
+			WindowFocusListener,
+			KeyListener,
+			ActionListener,
+			MouseListener,
+			DropTargetListener {
+
+	public final static String CUT = "Cut";
+	public final static String COPY = "Copy";
+	public final static String PASTE = "Paste";
 
 	public final static int MAX_DISPLAY_LENGTH = 512000;
 	public final static int MAX_HISTORY = 50;
@@ -120,32 +133,30 @@ public class ClientFrame extends JFrame {
 		StyleConstants.setForeground(defaultAttrs, Color.black);
 	}
 
-	private int lastPosition = 0;
+	private int commandStart = 0;
 	private int currentHistory = 0;
+	private boolean gotUp = false;
 	private DefaultStyledDocument doc;
 	private JLabel statusbar;
 	private JTable fileman;
 	private ResourceTableModel resources = new ResourceTableModel();
 	private JTextPane shell;
-	private JComboBox historyCombo;
+	private JPopupMenu shellPopup;
 	private InteractiveClient client;
 	private String path = null;
 	private ProcessThread process = new ProcessThread();
-	private LinkedList history = new LinkedList();
-	private TreeSet historyItems = new TreeSet();
 	private Properties properties;
-	private TransformerHandler transformer = null;
 
 	/**
 	 * @throws java.awt.HeadlessException
 	 */
-	public ClientFrame(InteractiveClient client, String path, Properties properties)
-		throws HeadlessException {
-		super("eXist Client Shell");
+	public ClientFrame(InteractiveClient client, String path,
+			Properties properties) throws HeadlessException {
+		super("eXist Admin Client");
 		this.path = path;
 		this.properties = properties;
 		this.client = client;
-		//prepare();
+
 		setupComponents();
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent ev) {
@@ -154,6 +165,7 @@ public class ClientFrame extends JFrame {
 		});
 		pack();
 
+		currentHistory = Readline.getHistorySize();
 		process.start();
 		shell.requestFocus();
 	}
@@ -171,6 +183,20 @@ public class ClientFrame extends JFrame {
 			}
 		});
 		toolbar.add(button);
+
+		url = getClass().getResource("icons/Refresh24.gif");
+		button = new JButton(new ImageIcon(url));
+		button.setToolTipText("Refresh collection view");
+		button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					client.getResources();
+				} catch (XMLDBException e1) {
+				}
+			}
+		});
+		toolbar.add(button);
+		toolbar.addSeparator();
 
 		url = getClass().getResource("icons/New24.gif");
 		button = new JButton(new ImageIcon(url));
@@ -260,48 +286,34 @@ public class ClientFrame extends JFrame {
 		// create table for resources and collections
 		fileman = new JTable();
 		fileman.setModel(resources);
-		fileman.addMouseListener(new TableMouseListener(this));
+		fileman.addMouseListener(new TableMouseListener());
 		ResourceTableCellRenderer renderer = new ResourceTableCellRenderer();
 		fileman.setDefaultRenderer(Object.class, renderer);
 		JScrollPane scroll = new JScrollPane(fileman);
 		scroll.setMinimumSize(new Dimension(300, 150));
 		split.setLeftComponent(scroll);
 
-		JPanel panel = new JPanel(false);
-		panel.setLayout(new BorderLayout());
-
-		// command-history selection
-		Box hbox = Box.createHorizontalBox();
-		JLabel histLabel = new JLabel("History:");
-		hbox.add(histLabel);
-		historyCombo = new JComboBox();
-		historyCombo.addItemListener(new HistorySelectedAction());
-		hbox.add(historyCombo);
+		shellPopup = new JPopupMenu("Console Menu");
+		shellPopup.add(new JMenuItem(CUT)).addActionListener(this);
+		shellPopup.add(new JMenuItem(COPY)).addActionListener(this);
+		shellPopup.add(new JMenuItem(PASTE)).addActionListener(this);
 
 		// shell window
 		doc = new DefaultStyledDocument();
 		shell = new JTextPane(doc);
 		shell.setContentType("text/plain; charset=UTF-8");
 		shell.setFont(new Font("Monospaced", Font.PLAIN, 12));
+		shell.setMargin(new Insets(7, 5, 7, 5));
+		shell.addKeyListener(this);
+		shell.addMouseListener(this);
+
 		scroll = new JScrollPane(shell);
-		KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
-		KeyStroke up = KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0);
-		KeyStroke down = KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0);
-		Keymap map = shell.getKeymap();
-		EnterAction enterAction = new EnterAction("enter");
-		BackHistoryAction backAction = new BackHistoryAction("back");
-		ForwardHistoryAction forwardAction = new ForwardHistoryAction("forward");
-		map.addActionForKeyStroke(enter, enterAction);
-		map.addActionForKeyStroke(up, backAction);
-		map.addActionForKeyStroke(down, forwardAction);
 
-		panel.add(hbox, BorderLayout.NORTH);
-		panel.add(scroll, BorderLayout.CENTER);
-
-		split.setRightComponent(panel);
+		split.setRightComponent(scroll);
 
 		statusbar = new JLabel();
-		statusbar.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+		statusbar.setBorder(BorderFactory
+				.createBevelBorder(BevelBorder.LOWERED));
 
 		getContentPane().add(split, BorderLayout.CENTER);
 		getContentPane().add(toolbar, BorderLayout.NORTH);
@@ -342,7 +354,7 @@ public class ClientFrame extends JFrame {
 		});
 		fileMenu.add(item);
 
-		item = new JMenuItem("Edit properties");
+		item = new JMenuItem("Resource properties");
 		item.setAccelerator(KeyStroke.getKeyStroke("control P"));
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -418,7 +430,7 @@ public class ClientFrame extends JFrame {
 		dbMenu.addSeparator();
 
 		ButtonGroup group = new ButtonGroup();
-		
+
 		item = new JRadioButtonMenuItem(properties.getProperty("uri"), true);
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -429,11 +441,12 @@ public class ClientFrame extends JFrame {
 		group.add(item);
 
 		String next;
-		for (Enumeration enum = properties.propertyNames(); enum.hasMoreElements();) {
+		for (Enumeration enum = properties.propertyNames(); enum
+				.hasMoreElements(); ) {
 			next = (String) enum.nextElement();
 			if (next.startsWith("alternate_uri_")) {
 				final String uri = properties.getProperty(next);
-				if(uri.equals(properties.getProperty("uri")))
+				if (uri.equals(properties.getProperty("uri")))
 					continue;
 				item = new JRadioButtonMenuItem(uri, false);
 				item.addActionListener(new ActionListener() {
@@ -455,22 +468,61 @@ public class ClientFrame extends JFrame {
 		});
 		dbMenu.add(item);
 
-		return menubar;
-	}
+		JMenu optionsMenu = new JMenu("Options");
+		optionsMenu.setMnemonic(KeyEvent.VK_O);
+		menubar.add(optionsMenu);
 
-	private void prepare() {
-		try {
-			URL url = getClass().getResource("xml2html.xsl");
-			SAXTransformerFactory factory =
-				(SAXTransformerFactory) SAXTransformerFactory.newInstance();
-			transformer = factory.newTransformerHandler(new StreamSource(url.openStream()));
-		} catch (TransformerConfigurationException e) {
-			e.printStackTrace();
-		} catch (TransformerFactoryConfigurationError e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		JCheckBoxMenuItem check = new JCheckBoxMenuItem("Indent", properties
+				.getProperty(OutputKeys.INDENT).equals("yes"));
+		check.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				properties.setProperty(OutputKeys.INDENT,
+						((JCheckBoxMenuItem) e.getSource()).isSelected()
+								? "yes"
+								: "no");
+				try {
+					client.getResources();
+				} catch (XMLDBException e1) {
+				}
+			}
+		});
+		optionsMenu.add(check);
+
+		check = new JCheckBoxMenuItem("Expand-XIncludes", properties
+				.getProperty(EXistOutputKeys.EXPAND_XINCLUDES).equals("yes"));
+		check.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				properties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES,
+						((JCheckBoxMenuItem) e.getSource()).isSelected()
+								? "yes"
+								: "no");
+				try {
+					client.getResources();
+				} catch (XMLDBException e1) {
+				}
+			}
+		});
+		optionsMenu.add(check);
+
+		optionsMenu.addSeparator();
+		item = new JMenuItem("Change User-Identity", KeyEvent.VK_U);
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String[] loginData = getLoginData(properties
+						.getProperty("user"));
+				if (loginData == null)
+					return;
+				properties.setProperty("user", loginData[0]);
+				properties.setProperty("password", loginData[1]);
+				try {
+					client.getResources();
+				} catch (XMLDBException e1) {
+					showErrorMessage("Login failed!", e1);
+				}
+			}
+		});
+		optionsMenu.add(item);
+		return menubar;
 	}
 
 	public void setPath(String currentPath) {
@@ -479,28 +531,28 @@ public class ClientFrame extends JFrame {
 
 	protected void displayPrompt() {
 		try {
-			int pos = doc.getEndPosition().getOffset() - 1;
-			doc.insertString(pos, "exist:", promptAttrs);
-			pos += 6;
-			doc.insertString(pos, path + '>', promptAttrs);
-			pos += path.length() + 1;
-			doc.insertString(pos++, " ", defaultAttrs);
-			shell.setCaretPosition(pos);
-			lastPosition = doc.getEndPosition().getOffset() - 1;
+			commandStart = doc.getLength();
+			doc.insertString(commandStart, "exist:", promptAttrs);
+			commandStart += 6;
+			doc.insertString(commandStart, path + '>', promptAttrs);
+			commandStart += path.length() + 1;
+			doc.insertString(commandStart++, " ", defaultAttrs);
+			shell.setCaretPosition(commandStart);
 		} catch (BadLocationException e) {
 		}
 	}
 
 	protected void display(String message) {
 		try {
-			int pos = doc.getLength();
-			if (pos > MAX_DISPLAY_LENGTH) {
+			commandStart = doc.getLength();
+			if (commandStart > MAX_DISPLAY_LENGTH) {
 				doc.remove(0, MAX_DISPLAY_LENGTH);
-				pos = doc.getLength();
+				commandStart = doc.getLength();
 			}
-			doc.insertString(pos, message, defaultAttrs);
-			shell.setCaretPosition(doc.getLength());
-			lastPosition = doc.getLength();
+			doc.insertString(commandStart, message, defaultAttrs);
+			commandStart = doc.getLength();
+			shell.setCaretPosition(commandStart);
+
 		} catch (BadLocationException e) {
 		}
 	}
@@ -518,13 +570,100 @@ public class ClientFrame extends JFrame {
 		shell.setVisible(enabled);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent)
+	 */
+	public void keyPressed(KeyEvent e) {
+		type(e);
+		gotUp = false;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent)
+	 */
+	public void keyReleased(KeyEvent e) {
+		gotUp = true;
+		type(e);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent)
+	 */
+	public void keyTyped(KeyEvent e) {
+		type(e);
+	}
+
+	private synchronized void type(KeyEvent e) {
+		switch (e.getKeyCode()) {
+			case KeyEvent.VK_ENTER :
+				if (e.getID() == KeyEvent.KEY_PRESSED && gotUp) {
+					enter();
+				}
+				e.consume();
+				break;
+			case KeyEvent.VK_HOME :
+				shell.setCaretPosition(commandStart);
+				e.consume();
+				break;
+			case KeyEvent.VK_LEFT :
+			case KeyEvent.VK_DELETE :
+			case KeyEvent.VK_BACK_SPACE :
+				if (shell.getCaretPosition() <= commandStart)
+					e.consume();
+				break;
+			case KeyEvent.VK_UP :
+				if (e.getID() == KeyEvent.KEY_PRESSED)
+					historyBack();
+				e.consume();
+				break;
+			case KeyEvent.VK_DOWN :
+				if (e.getID() == KeyEvent.KEY_PRESSED)
+					historyForward();
+				e.consume();
+				break;
+			default :
+				if ((e.getModifiers() & (InputEvent.CTRL_MASK
+						| InputEvent.META_MASK | InputEvent.ALT_MASK)) == 0) {
+					if (shell.getCaretPosition() < commandStart)
+						shell.setCaretPosition(doc.getLength());
+				}
+				if (e.paramString().indexOf("Backspace") > -1) {
+					if (shell.getCaretPosition() <= commandStart)
+						e.consume();
+				}
+				break;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	 */
+	public void actionPerformed(ActionEvent e) {
+		String cmd = e.getActionCommand();
+		if (cmd.equals(CUT))
+			shell.cut();
+		else if (cmd.equals(COPY))
+			shell.copy();
+		else if (cmd.equals(PASTE))
+			shell.paste();
+	}
+
 	private void goUpAction(ActionEvent ev) {
 		display("cd ..\n");
 		process.setAction("cd ..");
 	}
 
 	private void newCollectionAction(ActionEvent ev) {
-		String newCol = JOptionPane.showInputDialog(this, "Please enter name of new collection");
+		String newCol = JOptionPane.showInputDialog(this,
+				"Please enter name of new collection");
 		if (newCol != null) {
 			String command = "mkcol \"" + newCol + '"';
 			display(command + "\n");
@@ -534,10 +673,9 @@ public class ClientFrame extends JFrame {
 
 	private void newServerURIAction(String newURI) {
 		if (newURI == null)
-			newURI =
-				JOptionPane.showInputDialog(
-					this,
-					"Please enter a valid XML:DB base URI (without " + "collection path)");
+			newURI = JOptionPane.showInputDialog(this,
+					"Please enter a valid XML:DB base URI (without "
+							+ "collection path)");
 		if (newURI != null) {
 			properties.setProperty("uri", newURI);
 			try {
@@ -550,38 +688,68 @@ public class ClientFrame extends JFrame {
 	}
 
 	private void removeAction(ActionEvent ev) {
-		int[] rows = fileman.getSelectedRows();
-		List v = new ArrayList(rows.length);
-		String cmd;
-		if (JOptionPane
-			.showConfirmDialog(
-				this,
-				"Are you sure you want to remove the selected " + "resources?",
-				"Confirm deletion",
-				JOptionPane.YES_NO_OPTION)
-			== JOptionPane.YES_OPTION) {
-			for (int i = 0; i < rows.length; i++) {
-				Object resource = (Object) resources.getValueAt(rows[i], 3);
-				if (resource instanceof InteractiveClient.CollectionName)
-					cmd = "rmcol \"" + resource + '"';
-				else
-					cmd = "rm \"" + resource + '"';
-				v.add(cmd);
-			}
+		final int[] rows = fileman.getSelectedRows();
+		final Object[] res = new Object[rows.length];
+		for (int i = 0; i < rows.length; i++) {
+			res[i] = resources.getValueAt(rows[i], 3);
 		}
-		for(int i = 0; i < v.size(); i++) {
-			cmd = (String)v.get(i);
-			display(cmd + "\n");
-			process.setAction(cmd);
+		String cmd;
+		if (JOptionPane.showConfirmDialog(this,
+				"Are you sure you want to remove the selected " + "resources?",
+				"Confirm deletion", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+			final JFrame parent = this;
+			Runnable removeTask = new Runnable() {
+				public void run() {
+					ProgressMonitor monitor = new ProgressMonitor(parent,
+							"Remove Progress", "", 1, rows.length);
+					monitor.setMillisToDecideToPopup(500);
+					monitor.setMillisToPopup(500);
+					for (int i = 0; i < rows.length; i++) {
+						Object resource = res[i];
+						if (resource instanceof InteractiveClient.CollectionName) {
+							try {
+								CollectionManagementService mgtService = (CollectionManagementService) client.current
+										.getService(
+												"CollectionManagementService",
+												"1.0");
+								mgtService
+										.removeCollection(resource.toString());
+							} catch (XMLDBException e) {
+								showErrorMessage(e.getMessage(), e);
+							}
+						} else {
+							try {
+								Resource res = client.current
+										.getResource(resource.toString());
+								client.current.removeResource(res);
+							} catch (XMLDBException e) {
+								showErrorMessage(e.getMessage(), e);
+							}
+						}
+						monitor.setProgress(i + 1);
+						if (monitor.isCanceled())
+							return;
+					}
+					try {
+						client.getResources();
+					} catch (XMLDBException e) {
+						showErrorMessage(e.getMessage(), e);
+					}
+				}
+			};
+			new Thread(removeTask).start();
 		}
 	}
 
 	private void uploadAction(ActionEvent ev) {
-		JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
+		String dir = properties.getProperty("working-dir", System
+				.getProperty("exist.home"));
+		JFileChooser chooser = new JFileChooser(dir);
 		chooser.setMultiSelectionEnabled(true);
 		chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-		if (chooser.showDialog(this, "Select files or directories to store")
-			== JFileChooser.APPROVE_OPTION) {
+		chooser.addChoosableFileFilter(new BinaryFileFilter());
+		chooser.addChoosableFileFilter(new XMLFileFilter());
+		if (chooser.showDialog(this, "Select files or directories to store") == JFileChooser.APPROVE_OPTION) {
 			final File[] files = chooser.getSelectedFiles();
 			if (files.length > 0) {
 				new Thread() {
@@ -591,42 +759,35 @@ public class ClientFrame extends JFrame {
 							client.parse(files, upload);
 							client.getResources();
 						} catch (XMLDBException e) {
-							showErrorMessage("XMLDBException: " + e.getMessage(), e);
+							showErrorMessage("XMLDBException: "
+									+ e.getMessage(), e);
 						}
 						upload.setVisible(false);
 					}
-				}
-				.start();
+				}.start();
 			}
+			File selectedDir = chooser.getCurrentDirectory();
+			properties
+					.setProperty("working-dir", selectedDir.getAbsolutePath());
 		}
 	}
 
 	private void backupAction(ActionEvent ev) {
-		CreateBackupDialog dialog =
-			new CreateBackupDialog(
-				properties.getProperty("uri", "xmldb:exist://"),
-				properties.getProperty("user", "admin"),
-				properties.getProperty("password", null),
-				properties.getProperty("backup-dir", "backup"));
-		if (JOptionPane
-			.showOptionDialog(
-				this,
-				dialog,
-				"Create Backup",
-				JOptionPane.OK_CANCEL_OPTION,
-				JOptionPane.QUESTION_MESSAGE,
-				null,
-				null,
-				null)
-			== JOptionPane.YES_OPTION) {
+		CreateBackupDialog dialog = new CreateBackupDialog(properties
+				.getProperty("uri", "xmldb:exist://"), properties.getProperty(
+				"user", "admin"), properties.getProperty("password", null),
+				properties.getProperty("backup-dir", System
+						.getProperty("user.home")
+						+ File.separatorChar + "backup"));
+		if (JOptionPane.showOptionDialog(this, dialog, "Create Backup",
+				JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
+				null, null, null) == JOptionPane.YES_OPTION) {
 			String collection = dialog.getCollection();
 			String dir = dialog.getBackupDir();
-			Backup backup =
-				new Backup(
-					properties.getProperty("user", "admin"),
-					properties.getProperty("password", null),
-					dir,
-					properties.getProperty("uri", "xmldb:exist://") + '/' + collection);
+			Backup backup = new Backup(properties.getProperty("user", "admin"),
+					properties.getProperty("password", null), dir, properties
+							.getProperty("uri", "xmldb:exist://")
+							+ '/' + collection);
 			try {
 				backup.backup(true, this);
 			} catch (XMLDBException e) {
@@ -657,17 +818,14 @@ public class ClientFrame extends JFrame {
 			}
 		});
 
-		if (chooser.showDialog(null, "Select backup file for restore")
-			== JFileChooser.APPROVE_OPTION) {
+		if (chooser.showDialog(null, "Select backup file for restore") == JFileChooser.APPROVE_OPTION) {
 			File f = chooser.getSelectedFile();
 			String restoreFile = f.getAbsolutePath();
 			try {
-				Restore restore =
-					new Restore(
-						properties.getProperty("user", "admin"),
-						properties.getProperty("password", null),
-						new File(restoreFile),
-						properties.getProperty("uri", "xmldb:exist://"));
+				Restore restore = new Restore(properties.getProperty("user",
+						"admin"), properties.getProperty("password", null),
+						new File(restoreFile), properties.getProperty("uri",
+								"xmldb:exist://"));
 				restore.restore(true, this);
 				client.getResources();
 			} catch (Exception e) {
@@ -679,8 +837,8 @@ public class ClientFrame extends JFrame {
 	private void newUserAction(ActionEvent ev) {
 		try {
 			Collection collection = client.getCollection();
-			UserManagementService service =
-				(UserManagementService) collection.getService("UserManagementService", "1.0");
+			UserManagementService service = (UserManagementService) collection
+					.getService("UserManagementService", "1.0");
 			UserDialog dialog = new UserDialog(service, "Edit Users", client);
 			dialog.show();
 		} catch (XMLDBException e) {
@@ -700,8 +858,8 @@ public class ClientFrame extends JFrame {
 			return;
 		try {
 			Collection collection = client.getCollection();
-			UserManagementService service =
-				(UserManagementService) collection.getService("UserManagementService", "1.0");
+			UserManagementService service = (UserManagementService) collection
+					.getService("UserManagementService", "1.0");
 			Permission perm = null;
 			String name;
 			Date created = new Date();
@@ -717,23 +875,24 @@ public class ClientFrame extends JFrame {
 				} else {
 					name = (String) obj;
 					Resource res = collection.getResource(name);
-					created = ((XMLResourceImpl) res).getCreationTime();
-					modified = ((XMLResourceImpl) res).getLastModificationTime();
+					created = ((EXistResource) res).getCreationTime();
+					modified = ((EXistResource) res).getLastModificationTime();
 					perm = service.getPermissions(res);
 				}
 			} else {
 				name = "...";
 				perm = new Permission("", "");
 			}
-			ResourcePropertyDialog dialog =
-				new ResourcePropertyDialog(this, service, name, perm, created, modified);
+			ResourcePropertyDialog dialog = new ResourcePropertyDialog(this,
+					service, name, perm, created, modified);
 			dialog.show();
 			if (dialog.getResult() == ResourcePropertyDialog.APPLY_OPTION) {
 				int rows[] = fileman.getSelectedRows();
 				for (int i = 0; i < rows.length; i++) {
 					Object obj = (Object) resources.getValueAt(rows[i], 3);
 					if (obj instanceof InteractiveClient.CollectionName) {
-						Collection coll = collection.getChildCollection(obj.toString());
+						Collection coll = collection.getChildCollection(obj
+								.toString());
 						service.setPermissions(coll, dialog.permissions);
 					} else {
 						Resource res = collection.getResource((String) obj);
@@ -748,8 +907,53 @@ public class ClientFrame extends JFrame {
 		}
 	}
 
+	private void enter() {
+		int end = doc.getLength();
+		if (end - commandStart == 0)
+			return;
+		try {
+			String command = doc.getText(commandStart, end - commandStart);
+			commandStart = end;
+			doc.insertString(commandStart++, "\n", defaultAttrs);
+			if (command != null) {
+				process.setAction(command);
+				Readline.addToHistory(command);
+				currentHistory = Readline.getHistorySize();
+			}
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void historyBack() {
+		if (currentHistory == 0)
+			return;
+		String item = Readline.getHistoryLine(--currentHistory);
+		if (item == null)
+			return;
+		try {
+			if (shell.getCaretPosition() > commandStart)
+				doc.remove(commandStart, doc.getLength() - commandStart);
+			doc.insertString(commandStart, item, defaultAttrs);
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void historyForward() {
+		if (currentHistory + 1 == Readline.getHistorySize())
+			return;
+		String item = Readline.getHistoryLine(++currentHistory);
+		try {
+			if (shell.getCaretPosition() > commandStart)
+				doc.remove(commandStart, doc.getLength() - commandStart);
+			doc.insertString(commandStart, item, defaultAttrs);
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
+	}
+
 	private void close() {
-        client.writeQueryHistory();
 		setVisible(false);
 		dispose();
 		process.terminate();
@@ -762,42 +966,7 @@ public class ClientFrame extends JFrame {
 		displayPrompt();
 	}
 
-	class EnterAction extends TextAction {
-
-		public EnterAction(String name) {
-			super(name);
-		}
-
-		public void actionPerformed(ActionEvent ev) {
-			int end = doc.getEndPosition().getOffset();
-			try {
-				String command = doc.getText(lastPosition, end - lastPosition - 1);
-				doc.insertString(doc.getEndPosition().getOffset() - 1, "\n", defaultAttrs);
-				if (command != null) {
-					process.setAction(command);
-					if (!historyItems.contains(command)) {
-						historyCombo.addItem(command);
-						historyItems.add(command);
-					}
-					history.addLast(command);
-					if (history.size() == MAX_HISTORY)
-						history.removeFirst();
-					currentHistory = history.size();
-				}
-			} catch (BadLocationException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
 	class TableMouseListener extends MouseAdapter {
-
-		JFrame parent;
-
-		public TableMouseListener(JFrame parent) {
-			super();
-			this.parent = parent;
-		}
 
 		public void mouseClicked(MouseEvent e) {
 			if (e.getClickCount() == 2) {
@@ -809,14 +978,17 @@ public class ClientFrame extends JFrame {
 					process.setAction(command);
 				} else {
 					try {
-						final Resource res = client.retrieve(resource.toString(), "yes");
-						DocumentView view = new DocumentView(parent, client.getCollection(), res);
-						view.setSize(new Dimension(400, 500));
+						final Resource res = client.retrieve(resource
+								.toString(), properties.getProperty(
+								OutputKeys.INDENT, "yes"));
+						DocumentView view = new DocumentView(client
+								.getCollection(), res, properties);
+						view.setSize(new Dimension(640, 400));
 						view.setVisible(true);
-						if(res.getResourceType().equals("XMLResource"))
+						if (res.getResourceType().equals("XMLResource"))
 							view.setText((String) res.getContent());
 						else
-							view.setText(new String((byte[])res.getContent()));
+							view.setText(new String((byte[]) res.getContent()));
 					} catch (IllegalArgumentException e1) {
 						e1.printStackTrace();
 					} catch (XMLDBException e1) {
@@ -826,63 +998,6 @@ public class ClientFrame extends JFrame {
 			}
 		}
 
-	}
-
-	class BackHistoryAction extends TextAction {
-
-		public BackHistoryAction(String name) {
-			super(name);
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			if (history.size() == 0 || currentHistory == 0)
-				return;
-			String item = (String) history.get(--currentHistory);
-			try {
-				if (doc.getEndPosition().getOffset() > lastPosition)
-					doc.remove(lastPosition, doc.getEndPosition().getOffset() - lastPosition - 1);
-				doc.insertString(lastPosition, item, defaultAttrs);
-			} catch (BadLocationException e1) {
-				e1.printStackTrace();
-			}
-		}
-
-	}
-
-	class ForwardHistoryAction extends TextAction {
-
-		public ForwardHistoryAction(String name) {
-			super(name);
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			if (history.size() == 0 || currentHistory == history.size() - 1)
-				return;
-			String item = (String) history.get(++currentHistory);
-			try {
-				if (doc.getEndPosition().getOffset() > lastPosition)
-					doc.remove(lastPosition, doc.getEndPosition().getOffset() - lastPosition - 1);
-				doc.insertString(lastPosition, item, defaultAttrs);
-			} catch (BadLocationException e1) {
-				e1.printStackTrace();
-			}
-		}
-
-	}
-
-	class HistorySelectedAction implements ItemListener {
-
-		public void itemStateChanged(ItemEvent e) {
-			String item = e.getItem().toString();
-			try {
-				if (doc.getEndPosition().getOffset() > lastPosition)
-					doc.remove(lastPosition, doc.getEndPosition().getOffset() - lastPosition - 1);
-				doc.insertString(lastPosition, item, defaultAttrs);
-			} catch (BadLocationException e1) {
-				e1.printStackTrace();
-			}
-			shell.requestFocus();
-		}
 	}
 
 	class ProcessThread extends Thread {
@@ -919,7 +1034,9 @@ public class ClientFrame extends JFrame {
 			return action == null;
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see java.lang.Runnable#run()
 		 */
 		public void run() {
@@ -944,8 +1061,8 @@ public class ClientFrame extends JFrame {
 
 	class ResourceTableModel extends AbstractTableModel {
 
-		private final String[] columnNames =
-			new String[] { "Resource", "Permissions", "Owner", "Group" };
+		private final String[] columnNames = new String[]{"Permissions",
+				"Owner", "Group", "Resource"};
 
 		private Object[][] rows = null;
 
@@ -954,28 +1071,36 @@ public class ClientFrame extends JFrame {
 			fireTableDataChanged();
 		}
 
-		/* (non-Javadoc)
-		* @see javax.swing.table.TableModel#getColumnCount()
-		*/
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see javax.swing.table.TableModel#getColumnCount()
+		 */
 		public int getColumnCount() {
 			return columnNames.length;
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see javax.swing.table.TableModel#getColumnName(int)
 		 */
 		public String getColumnName(int column) {
 			return columnNames[column];
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see javax.swing.table.TableModel#getRowCount()
 		 */
 		public int getRowCount() {
 			return rows == null ? 0 : rows.length;
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see javax.swing.table.TableModel#getValueAt(int, int)
 		 */
 		public Object getValueAt(int rowIndex, int columnIndex) {
@@ -985,17 +1110,9 @@ public class ClientFrame extends JFrame {
 
 	protected static String[] getLoginData(String defaultUser) {
 		LoginPanel login = new LoginPanel(defaultUser);
-		if (JOptionPane
-			.showOptionDialog(
-				null,
-				login,
-				"eXist Database Login",
-				JOptionPane.OK_CANCEL_OPTION,
-				JOptionPane.QUESTION_MESSAGE,
-				null,
-				null,
-				null)
-			== JOptionPane.OK_OPTION) {
+		if (JOptionPane.showOptionDialog(null, login, "eXist Database Login",
+				JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
+				null, null, null) == JOptionPane.OK_OPTION) {
 			String[] ret = new String[2];
 			ret[0] = login.getUsername();
 			ret[1] = login.getPassword();
@@ -1005,147 +1122,282 @@ public class ClientFrame extends JFrame {
 	}
 
 	public static void showErrorMessage(String message, Throwable t) {
-		ErrorPanel panel = new ErrorPanel(message, t);
-		JOptionPane.showOptionDialog(
-			null,
-			panel,
-			"Exception",
-			JOptionPane.OK_CANCEL_OPTION,
-			JOptionPane.ERROR_MESSAGE,
-			null,
-			null,
-			null);
-		return;
-	}
-}
-
-class LoginPanel extends JPanel {
-
-	JTextField username;
-	JPasswordField password;
-
-	public LoginPanel(String defaultUser) {
-		super(false);
-		setupComponents(defaultUser);
-	}
-
-	private void setupComponents(String defaultUser) {
-		GridBagLayout grid = new GridBagLayout();
-		setLayout(grid);
-		GridBagConstraints c = new GridBagConstraints();
-		c.insets = new Insets(5, 5, 5, 5);
-
-		JLabel label = new JLabel("Username");
-		c.gridx = 0;
-		c.gridy = 0;
-		c.anchor = GridBagConstraints.WEST;
-		c.fill = GridBagConstraints.NONE;
-		grid.setConstraints(label, c);
-		add(label);
-
-		username = new JTextField(defaultUser, 12);
-		c.gridx = 1;
-		c.gridy = 0;
-		c.anchor = GridBagConstraints.EAST;
-		c.fill = GridBagConstraints.HORIZONTAL;
-		grid.setConstraints(username, c);
-		add(username);
-
-		label = new JLabel("Password");
-		c.gridx = 0;
-		c.gridy = 1;
-		c.anchor = GridBagConstraints.WEST;
-		c.fill = GridBagConstraints.NONE;
-		grid.setConstraints(label, c);
-		add(label);
-
-		password = new JPasswordField(12);
-		c.gridx = 1;
-		c.gridy = 1;
-		c.anchor = GridBagConstraints.EAST;
-		c.fill = GridBagConstraints.HORIZONTAL;
-		grid.setConstraints(password, c);
-		add(password);
-	}
-
-	public String getUsername() {
-		return username.getText();
-	}
-
-	public String getPassword() {
-		return new String(password.getPassword());
-	}
-}
-
-class ErrorPanel extends JPanel {
-
-	JLabel text;
-	JTextArea stacktrace;
-
-	public ErrorPanel(String message, Throwable t) {
-		super(false);
-		setLayout(new BorderLayout(5, 10));
-		text = new JLabel(message);
-		add(text, BorderLayout.NORTH);
-
-		if(t != null) {
+		JScrollPane scroll = null;
+		if (t != null) {
 			StringWriter out = new StringWriter();
 			PrintWriter writer = new PrintWriter(out);
 			t.printStackTrace(writer);
-			stacktrace = new JTextArea(out.toString(), 10, 50);
+			JTextArea stacktrace = new JTextArea(out.toString(), 20, 50);
 			stacktrace.setEditable(false);
-			JScrollPane scroll = new JScrollPane(stacktrace);
-			scroll.setPreferredSize(new Dimension(200, 100));
-			add(scroll, BorderLayout.CENTER);
+			scroll = new JScrollPane(stacktrace);
+			scroll.setPreferredSize(new Dimension(250, 300));
+			scroll.setBorder(BorderFactory
+					.createTitledBorder("Exception Stacktrace:"));
+		}
+		JOptionPane optionPane = new JOptionPane();
+		optionPane.setMessage(new Object[]{message, scroll});
+		optionPane.setMessageType(JOptionPane.ERROR_MESSAGE);
+		JDialog dialog = optionPane.createDialog(null, "Error");
+		dialog.pack();
+		dialog.show();
+		return;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.WindowFocusListener#windowGainedFocus(java.awt.event.WindowEvent)
+	 */
+	public void windowGainedFocus(WindowEvent e) {
+		toFront();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.WindowFocusListener#windowLostFocus(java.awt.event.WindowEvent)
+	 */
+	public void windowLostFocus(WindowEvent e) {
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
+	 */
+	public void mouseClicked(MouseEvent e) {
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent)
+	 */
+	public void mouseEntered(MouseEvent e) {
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent)
+	 */
+	public void mouseExited(MouseEvent e) {
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
+	 */
+	public void mousePressed(MouseEvent e) {
+		if (e.isPopupTrigger()) {
+			shellPopup.show((Component) e.getSource(), e.getX(), e.getY());
 		}
 	}
-}
 
-class ResourceTableCellRenderer implements TableCellRenderer {
-
-	public final static Color collectionBackground = new Color(225, 235, 224);
-	public final static Color collectionForeground = Color.black;
-	public final static Color highBackground = new Color(115, 130, 189);
-	public final static Color highForeground = Color.white;
-	public final static Color altBackground = new Color(235, 235, 235);
-
-	public static final DefaultTableCellRenderer DEFAULT_RENDERER = new DefaultTableCellRenderer();
-
-	/* (non-Javadoc)
-	 * @see javax.swing.table.TableCellRenderer#getTableCellRendererComponent(javax.swing.JTable, java.lang.Object, boolean, boolean, int, int)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent)
 	 */
-	public Component getTableCellRendererComponent(
-		JTable table,
-		Object value,
-		boolean isSelected,
-		boolean hasFocus,
-		int row,
-		int column) {
-		Component renderer =
-			DEFAULT_RENDERER.getTableCellRendererComponent(
-				table,
-				value,
-				isSelected,
-				hasFocus,
-				row,
-				column);
-		((JLabel) renderer).setOpaque(true);
-		Color foreground, background;
-		if (isSelected) {
-			foreground = highForeground;
-			background = highBackground;
-		} else if (table.getValueAt(row, 3) instanceof InteractiveClient.CollectionName) {
-			foreground = collectionForeground;
-			background = collectionBackground;
-		} else if (row % 2 == 0) {
-			background = altBackground;
-			foreground = Color.black;
-		} else {
-			foreground = Color.black;
-			background = Color.white;
+	public void mouseReleased(MouseEvent e) {
+		if (e.isPopupTrigger()) {
+			shellPopup.show((Component) e.getSource(), e.getX(), e.getY());
 		}
-		renderer.setForeground(foreground);
-		renderer.setBackground(background);
-		return renderer;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.dnd.DropTargetListener#dragEnter(java.awt.dnd.DropTargetDragEvent)
+	 */
+	public void dragEnter(DropTargetDragEvent dtde) {
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.dnd.DropTargetListener#dragOver(java.awt.dnd.DropTargetDragEvent)
+	 */
+	public void dragOver(DropTargetDragEvent dtde) {
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.dnd.DropTargetListener#dropActionChanged(java.awt.dnd.DropTargetDragEvent)
+	 */
+	public void dropActionChanged(DropTargetDragEvent dtde) {
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.dnd.DropTargetListener#drop(java.awt.dnd.DropTargetDropEvent)
+	 */
+	public void drop(DropTargetDropEvent dtde) {
+		Transferable transferable = dtde.getTransferable();
+		System.out.println("dropped!");
+		dtde.acceptDrop(DnDConstants.ACTION_COPY);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.dnd.DropTargetListener#dragExit(java.awt.dnd.DropTargetEvent)
+	 */
+	public void dragExit(DropTargetEvent dte) {
+		// TODO Auto-generated method stub
+
+	}
+
+	static class LoginPanel extends JPanel {
+
+		JTextField username;
+		JPasswordField password;
+
+		public LoginPanel(String defaultUser) {
+			super(false);
+			setupComponents(defaultUser);
+		}
+
+		private void setupComponents(String defaultUser) {
+			GridBagLayout grid = new GridBagLayout();
+			setLayout(grid);
+			GridBagConstraints c = new GridBagConstraints();
+			c.insets = new Insets(5, 5, 5, 5);
+
+			JLabel label = new JLabel("Username");
+			c.gridx = 0;
+			c.gridy = 0;
+			c.anchor = GridBagConstraints.WEST;
+			c.fill = GridBagConstraints.NONE;
+			grid.setConstraints(label, c);
+			add(label);
+
+			username = new JTextField(defaultUser, 12);
+			c.gridx = 1;
+			c.gridy = 0;
+			c.anchor = GridBagConstraints.EAST;
+			c.fill = GridBagConstraints.HORIZONTAL;
+			grid.setConstraints(username, c);
+			add(username);
+
+			label = new JLabel("Password");
+			c.gridx = 0;
+			c.gridy = 1;
+			c.anchor = GridBagConstraints.WEST;
+			c.fill = GridBagConstraints.NONE;
+			grid.setConstraints(label, c);
+			add(label);
+
+			password = new JPasswordField(12);
+			c.gridx = 1;
+			c.gridy = 1;
+			c.anchor = GridBagConstraints.EAST;
+			c.fill = GridBagConstraints.HORIZONTAL;
+			grid.setConstraints(password, c);
+			add(password);
+		}
+
+		public String getUsername() {
+			return username.getText();
+		}
+
+		public String getPassword() {
+			return new String(password.getPassword());
+		}
+	}
+
+	static class ResourceTableCellRenderer implements TableCellRenderer {
+
+		public final static Color collectionBackground = new Color(225, 235,
+				224);
+		public final static Color collectionForeground = Color.black;
+		public final static Color highBackground = new Color(115, 130, 189);
+		public final static Color highForeground = Color.white;
+		public final static Color altBackground = new Color(235, 235, 235);
+
+		public static final DefaultTableCellRenderer DEFAULT_RENDERER = new DefaultTableCellRenderer();
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see javax.swing.table.TableCellRenderer#getTableCellRendererComponent(javax.swing.JTable,
+		 *           java.lang.Object, boolean, boolean, int, int)
+		 */
+		public Component getTableCellRendererComponent(JTable table,
+				Object value, boolean isSelected, boolean hasFocus, int row,
+				int column) {
+			Component renderer = DEFAULT_RENDERER
+					.getTableCellRendererComponent(table, value, isSelected,
+							hasFocus, row, column);
+			((JLabel) renderer).setOpaque(true);
+			Color foreground, background;
+			if (isSelected) {
+				foreground = highForeground;
+				background = highBackground;
+			} else if (table.getValueAt(row, 3) instanceof InteractiveClient.CollectionName) {
+				foreground = collectionForeground;
+				background = collectionBackground;
+			} else if (row % 2 == 0) {
+				background = altBackground;
+				foreground = Color.black;
+			} else {
+				foreground = Color.black;
+				background = Color.white;
+			}
+			renderer.setForeground(foreground);
+			renderer.setBackground(background);
+			return renderer;
+		}
+	}
+	
+	class BinaryFileFilter extends FileFilter {
+		
+		/* (non-Javadoc)
+		 * @see javax.swing.filechooser.FileFilter#getDescription()
+		 */
+		public String getDescription() {
+			return "Binary resources";
+		}
+		
+		/* (non-Javadoc)
+		 * @see javax.swing.filechooser.FileFilter#accept(java.io.File)
+		 */
+		public boolean accept(File f) {
+			if(f.isDirectory())
+				return true;
+			String name = f.getName();
+			int p = name.lastIndexOf('.');
+			if(p < 0 || p + 1 == name.length())
+				return false;
+			name = name.substring(p + 1);
+			return Arrays.binarySearch(client.binarySuffixes, name) > -1;
+		}
+	}
+	
+	class XMLFileFilter extends FileFilter {
+		
+		/* (non-Javadoc)
+		 * @see javax.swing.filechooser.FileFilter#getDescription()
+		 */
+		public String getDescription() {
+			return "XML files";
+		}
+		
+		/* (non-Javadoc)
+		 * @see javax.swing.filechooser.FileFilter#accept(java.io.File)
+		 */
+		public boolean accept(File f) {
+			if(f.isDirectory())
+				return true;
+			String name = f.getName();
+			int p = name.lastIndexOf('.');
+			if(p < 0 || p + 1 == name.length())
+				return false;
+			name = name.substring(p + 1);
+			return Arrays.binarySearch(client.xmlSuffixes, name) > -1;
+		}
 	}
 }

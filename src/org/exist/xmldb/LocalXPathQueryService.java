@@ -11,16 +11,16 @@ import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.parser.XPathLexer2;
-import org.exist.parser.XPathParser2;
-import org.exist.parser.XPathTreeParser2;
+import org.exist.xquery.parser.XQueryLexer;
+import org.exist.xquery.parser.XQueryParser;
+import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.xpath.PathExpr;
-import org.exist.xpath.XQueryContext;
-import org.exist.xpath.XPathException;
-import org.exist.xpath.value.Sequence;
+import org.exist.xquery.PathExpr;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.Sequence;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.ResourceSet;
@@ -41,7 +41,8 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	protected TreeMap namespaceDecls = new TreeMap();
 	protected TreeMap variableDecls = new TreeMap();
 	protected boolean xpathCompatible = true;
-
+	protected String moduleLoadPath = null;
+	
 	public LocalXPathQueryService(
 		User user,
 		BrokerPool pool,
@@ -130,6 +131,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		expression.reset();
 		XQueryContext context = ((PathExpr)expression).getContext();
 		context.setBackwardsCompatibility(xpathCompatible);
+		context.setStaticallyKnownDocuments(docs);
 		
 		Map.Entry entry;
 		// declare namespace/prefix mappings
@@ -156,7 +158,8 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 			broker = brokerPool.get(user);
 			XQueryContext context = new XQueryContext(broker);
 			context.setBaseURI(collection.properties.getProperty("base-uri", collection.getPath()));
-
+			if(moduleLoadPath != null)
+				context.setModuleLoadPath(moduleLoadPath);
 			Map.Entry entry;
 			// declare namespace/prefix mappings
 			for (Iterator i = namespaceDecls.entrySet().iterator(); i.hasNext();) {
@@ -172,9 +175,9 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 				context.declareVariable((String) entry.getKey(), entry.getValue());
 			}
 			context.setBackwardsCompatibility(xpathCompatible);
-			XPathLexer2 lexer = new XPathLexer2(new StringReader(query));
-			XPathParser2 parser = new XPathParser2(lexer, false);
-			XPathTreeParser2 treeParser = new XPathTreeParser2(context);
+			XQueryLexer lexer = new XQueryLexer(new StringReader(query));
+			XQueryParser parser = new XQueryParser(lexer, false);
+			XQueryTreeParser treeParser = new XQueryTreeParser(context);
 			parser.xpath();
 			if (parser.foundErrors()) {
 				LOG.debug(parser.getErrorMessage());
@@ -291,6 +294,13 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	 */
 	public void setXPathCompatibility(boolean backwardsCompatible) {
 		this.xpathCompatible = backwardsCompatible;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.XQueryService#setModuleLoadPath(java.lang.String)
+	 */
+	public void setModuleLoadPath(String path) {
+		moduleLoadPath = path;		
 	}
 
 }

@@ -31,6 +31,7 @@ public class Retrieve {
         options.put("indent", "yes");
         options.put("encoding", "UTF-8");
         options.put("expand-xincludes", "yes");
+        options.put("process-xsl-pi", "no");
         
         Vector params = new Vector();
         params.addElement( args[0] ); 

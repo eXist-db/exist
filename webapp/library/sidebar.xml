@@ -32,6 +32,9 @@
             <link href="../configuration.xml">Server Configuration</link>
         </item>
         <item>
+            <link href="../ant-tasks.xml">Ant Tasks</link>
+        </item>
+        <item>
             <link href="../index.xml#articles">Articles</link>
         </item>
         <item>

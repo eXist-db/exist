@@ -1600,7 +1600,7 @@ public class InteractiveClient {
 	}
 
 	public static final void printNotice() {
-		System.out.println("eXist version 0.9, Copyright (C) 2003 Wolfgang Meier");
+		System.out.println("eXist version 1.0 beta1, Copyright (C) 2004 Wolfgang Meier");
 		System.out.println("eXist comes with ABSOLUTELY NO WARRANTY.");
 		System.out.println(
 			"This is free software, and you are welcome to "

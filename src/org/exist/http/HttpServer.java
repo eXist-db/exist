@@ -177,8 +177,9 @@ public class HttpServer extends Thread {
         protected HttpServerConnection createConnection() {
             //DBBroker broker = BrokerFactory.getInstance(conf);
             HttpServerConnection con = new HttpServerConnection( conf, this );
+            Thread thread = new Thread(con);
             threads.add( con );
-            con.start();
+            thread.start();
             connections++;
             return con;
         }
@@ -195,7 +196,7 @@ public class HttpServer extends Thread {
                     return createConnection();
                 else
                     while ( pool.isEmpty() ) {
-                        HttpServer.LOG.debug( "waiting for connection to become available" );
+                        LOG.debug( "waiting for connection to become available" );
                         try {
                             this.wait();
                         } catch ( InterruptedException e ) {}

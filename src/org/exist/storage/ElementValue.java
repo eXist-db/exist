@@ -34,6 +34,8 @@ public class ElementValue extends Value {
 	public static final byte ELEMENT = 0;
 	public static final byte ATTRIBUTE = 1;
 	public static final byte ATTRIBUTE_ID = 2;
+	
+	public static final String[] type = { "element", "attribute", "id" };
 
 	ElementValue(short collectionId) {
 		data = new byte[2];

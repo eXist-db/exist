@@ -12,20 +12,18 @@ import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
 
 /**
- * @author wolf
- *
- * To change this generated comment go to 
- * Window>Preferences>Java>Code Generation>Code and Comments
+ * Represents a (virtual) storage address in the paged file, consisting
+ * of page number, offset (tuple id) and flags.
  */
 public class StorageAddress {
 
 	/**
-		 *  Create virtual address from page number and offset (tid)
-		 *
-		 *@param  page    page number
-		 *@param  offset  offset (tid)
-		 *@return         new virtual address in a long
-		 */
+	 *  Create virtual address from page number and offset (tid)
+	 *
+	 *@param  page    page number
+	 *@param  offset  offset (tid)
+	 *@return         new virtual address in a long
+	 */
 	public final static long createPointer(int page, short tid) {
 		return tid | (((long)page) & 0xFFFFFFFFL) << 32;
 	}
@@ -35,7 +33,7 @@ public class StorageAddress {
 	}
 
 	/**
-	 *  Get the tid from a virtual address
+	 *  Get the tid (tuple id) from a virtual address
 	 *
 	 *@param  pointer  
 	 *@return          the tid encoded in this address
@@ -63,9 +61,9 @@ public class StorageAddress {
 	}
 	
 	public final static void write(long pointer, VariableByteOutputStream os) {
-		os.writeInt(StorageAddress.pageFromPointer(pointer));
-		os.writeShort(StorageAddress.tidFromPointer(pointer));
-		os.writeShort(StorageAddress.flagsFromPointer(pointer));
+		os.writeInt(pageFromPointer(pointer));
+		os.writeShort(tidFromPointer(pointer));
+		os.writeShort(flagsFromPointer(pointer));
 	}
 	
 	public final static long read(VariableByteInputStream is) throws IOException, EOFException {

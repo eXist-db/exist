@@ -131,6 +131,13 @@
       <para>If the passed path denotes a directory, the client will try to store all documents in that directory to the database. However, it will not recurse into subdirectories. For this, you have to pass the <option>-d</option>. For example,</para>
       <synopsis format="linespecific">bin/client.sh -d -m /db/movies -p /home/exist/xml/movies</synopsis>
       <para>will recurse into all directories below <filename moreinfo="none">/home/exist/xml/movies</filename>. For each subdirectory, a collection will be created below the <filename moreinfo="none">/db/movies</filename> root collection, i.e. you may use this option to recursively import an entire collection tree.</para>
+      <note>
+        <para>Beginning with version 1.0 beta, eXist can also store binary
+        resources in addition to XML files. The client thus tries to determine
+        if the current file is XML or not. File <filename>client.properties</filename>
+        defines two properties to specify the known file suffixes: <option>suffixes.xml</option>
+        and <option>suffixes.binary</option>.</para>
+    </note>
     </section>
     <section>
       <title>Removing Collections/Documents</title>

@@ -1,0 +1,193 @@
+<?xml version="1.0"?>
+
+<!--    This file contains example queries for the web interface
+        (see webapp/xquery/xquery.xq
+-->
+<example-queries>
+    <query>
+        <description>Simple fulltext query on Shakespeare plays</description>
+        <code><![CDATA[for $speech in //SPEECH[LINE &= 'love']
+return $speech]]></code>
+    </query>
+    <query>
+        <description>Fulltext query using near</description>
+        <code><![CDATA[for $speech in //SPEECH[SPEAKER &= 'witch' and near(., 'fenny snake')]
+return $speech]]></code>
+    </query>
+    <query>
+        <description>Show the context of a match</description>
+        <code><![CDATA[for $speech in //SPEECH[near(LINE, 'to be or not')]
+let $scene := $speech/ancestor::SCENE,
+    $act := $scene/ancestor::ACT,
+    $play := $scene/ancestor::PLAY
+    return
+        <hit>
+            <play title="{$play/TITLE}">
+                <act title="{$act/TITLE}">
+                    <scene title="{$scene/TITLE}">{$speech}</scene>
+                </act>
+            </play>
+        </hit>]]></code>
+    </query>
+    <query>
+        <description>Show table of contents for Macbeth</description>
+        <code><![CDATA[
+<toc>{
+    for $act in doc("/db/shakespeare/plays/macbeth.xml")/PLAY/ACT
+    return
+        <act>
+            {$act/TITLE}
+            {
+                for $scene in $act/SCENE return
+                    <scene>
+                        {$scene/TITLE}
+                        <actors>
+                        {
+                            for $speaker in distinct-values($act//SPEAKER)
+                            order by $speaker return
+                                <actor>{$speaker}</actor>
+                        }
+                        </actors>
+                    </scene>
+            }
+        </act>
+}</toc>]]></code>
+    </query>
+    <query>
+            <description>Find books by author</description>
+            <code><![CDATA[xquery version "1.0";
+declare namespace rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+declare namespace dc="http://purl.org/dc/elements/1.1/";
+
+for $p in distinct-values(doc('/db/library/biblio.rdf')//dc:creator)
+let $books := //rdf:Description[dc:creator&=$p]
+return
+        <result>
+                <creator titles="{count($books)}">{$p}</creator>
+                {for $b in $books return $b/dc:title}
+        </result>]]></code>
+    </query>
+    <query>
+    	<description>Find spanish provinces and their cities</description>
+	<code><![CDATA[xquery version "1.0";
+(:  This script accesses the mondial database, which can be
+    found at http://dbis.informatik.uni-goettingen.de/Mondial/ :)
+
+let $country := /mondial/country[name = 'spain']
+for $province in $country/province
+order by $province/name
+return
+	<province>
+		{$province/name}
+		{
+			for $city in $country//city[@province=$province/@id]
+			order by $city/name
+			return $city
+		}
+	</province>]]></code>
+    </query>
+    <query>
+    	<description>Find a city by name</description>
+	<code><![CDATA[
+(:  This script accesses the mondial database, which can be
+    found at http://dbis.informatik.uni-goettingen.de/Mondial/ :)
+for $city in /mondial//city[name&='tre*']
+return
+	<result>
+		{$city}
+		<country>{$city/ancestor::country/name}</country>
+		<province>{$city/ancestor::province/name}</province>
+	</result>]]></code>
+    </query>
+    <query>
+        <description>Java binding (static)</description>
+        <code><![CDATA[xquery version "1.0";
+
+declare namespace math="java:java.lang.Math";
+
+<random>{ceiling(math:random() * 100)}</random>]]></code>
+    </query>
+    <query>
+        <description>Java binding (instance)</description>
+        <code><![CDATA[xquery version "1.0";
+
+declare namespace rand="java:java.util.Random";
+
+let $r := rand:new()
+return
+<random>{rand:nextInt($r, 100)}</random>]]></code>
+    </query>
+    <query>
+        <description>Java binding (complex)</description>
+        <code><![CDATA[xquery version "1.0";
+
+(:
+	Display all collections and resources in the database.
+	We retrieve the root-collection	object with xmldb:collection, 
+	then use the Java API to scan through the collection.
+:)
+
+(: Namespace points to the Collection class :)
+declare namespace coll="java:org.xmldb.api.base.Collection";
+
+declare function local:display-resources($collection as object)
+as element()?
+{
+	let $resources := coll:list-resources($collection)
+	return
+		if(exists($resources)) then
+			<resources count="{count($resources)}">
+				{
+					for $r in $resources
+					return
+						<resource name="{$r}"/>
+				}
+			</resources>
+		else
+			()
+};
+
+declare function local:display-collection($collection as object)
+as element()
+{
+	let $subcolls := coll:list-child-collections($collection)
+	return
+		<collection name="{coll:get-name($collection)}"
+			child-collections="{count($subcolls)}">
+			{ local:display-resources($collection) }
+			{
+				for $c in $subcolls
+				let $child := coll:get-child-collection($collection, $c)
+				return
+					local:display-collection($child)
+			}
+		</collection>
+};
+
+
+let
+	$rootColl :=
+	    xmldb:collection("xmldb:exist:///db", "admin", "")
+return
+	local:display-collection($rootColl)
+]]></code>
+    </query>
+    <query>
+        <description>Request module</description>
+        <code><![CDATA[xquery version "1.0";
+
+declare namespace request="http://exist-db.org/xquery/request";
+
+<request>
+<request-uri>{request:request-uri()}</request-uri>
+<parameters>
+	{
+		for $name in request:parameter-names() return
+			<parameter name="{$name}">
+				<value>{request:request-parameter($name, ())}</value>
+			</parameter>
+	}
+</parameters>
+</request>]]></code>
+        </query>
+</example-queries>

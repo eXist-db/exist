@@ -75,8 +75,8 @@ public class ClockCache implements Cache {
 			} else
 				removeOne(item);
 		}
-		if(System.currentTimeMillis() - lastSync > syncPeriod)
-			flush();
+		//if(System.currentTimeMillis() - lastSync > syncPeriod)
+		//	flush();
 	}
 
 	protected Cacheable removeOne(Cacheable item) {

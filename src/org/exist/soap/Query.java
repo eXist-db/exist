@@ -50,13 +50,43 @@ public interface Query extends Remote {
     throws RemoteException;
     
     /**
+     * Retrieve a document from the database.
+     * 
+     * This method returns the document data in binary form to avoid possible
+     * conflicts.
+     * 
+     * @param sessionId a valid session id as returned by connect().
+     * @param path the full path to the document.
+     * @param indent should the document be pretty-printed (indented)?
+     * @param xinclude should xinclude tags be expanded?
+     * @param processXSLPI should XSL processing instructions be processed?
+     * @return the resource in base64 binary encoding
+     * @throws RemoteException
+     */
+    public byte[] getResourceData(String sessionId, String path, boolean indent, boolean xinclude,
+    		boolean processXSLPI) 
+	throws RemoteException;
+    
+    /**
+     * Execute a simple XPath query passed as string.
      * 
      * @param sessionId a valid session id as returned by connect().
      * @param xpath XPath query string.
      * @return QueryResponse describing the query results.
      * @throws RemoteException
+     * @deprecated use {@link #xquery(String, byte[])} instead.
      */
     public QueryResponse query(String sessionId, String xpath) throws RemoteException;
+    
+    /**
+     * Execute an XQuery.
+     * 
+     * @param sessionId a valid session id as returned by connect().
+     * @param xquery the XQuery script in binary encoding.
+     * @return
+     * @throws RemoteException
+     */
+    public QueryResponse xquery(String sessionId, byte[] xquery) throws RemoteException;
     
     /**
      * Retrieve a set of query results from the last query executed within
@@ -83,6 +113,32 @@ public interface Query extends Remote {
     public String[] retrieve(String sessionId, int start, int howmany, boolean indent, 
     	boolean xinclude, String highlight) throws RemoteException;
 
+    /**
+     * Retrieve a set of query results from the last query executed within
+     * the current session.
+     * 
+     * This method returns the data as an array of base64 encoded data.
+     * The first result to be retrieved from the result set is defined by the
+     * start-parameter. Results are counted from 1.
+     *  
+     * @param sessionId a valid session id as returned by connect().
+     * @param start the first result to retrieve.
+     * @param howmany number of results to be returned.
+     * @param indent should the XML be pretty-printed?
+     * @param xinclude should xinclude tags be expanded?
+     * @param highlight highlight matching search terms within elements
+     * or attributes. Possible values are: "elements" for elements only,
+     * "attributes" for attributes only, "both" for elements and attributes,
+     * "none" to disable highlighting. For elements, matching terms are
+     * surrounded by &lt;exist:match&gt; tags. For attributes, terms are
+     * marked with the char sequence "||".
+     * 
+     * @return
+     * @throws RemoteException
+     */
+    public byte[][] retrieveData(String sessionId, int start, int howmany, boolean indent, 
+    		boolean xinclude, String highlight) throws RemoteException;
+    
 	/**
 	 * For the specified document, retrieve a set of query results from 
 	 * the last query executed within the current session. Only hits in

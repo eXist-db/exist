@@ -22,8 +22,8 @@
  */
 package org.exist.examples.xquery;
 
-import org.exist.xpath.AbstractInternalModule;
-import org.exist.xpath.FunctionDef;
+import org.exist.xquery.AbstractInternalModule;
+import org.exist.xquery.FunctionDef;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)

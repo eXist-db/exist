@@ -29,7 +29,6 @@ class UploadDialog extends JFrame {
 
 	public UploadDialog() {
 		super("Storing files ...");
-
 		GridBagLayout grid = new GridBagLayout();
 		getContentPane().setLayout(grid);
 		GridBagConstraints c = new GridBagConstraints();
@@ -175,6 +174,7 @@ class UploadDialog extends JFrame {
 
 	public void showMessage(String msg) {
 		messages.append(msg + "\n");
+		messages.setCaretPosition(messages.getDocument().getLength());
 	}
 
 	public void reset() {

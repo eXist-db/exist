@@ -5,13 +5,18 @@ font-family: Arial, Helvetica, sans-serif;
 }
 
 p {
-padding-left: 15px;
-margin-top: 5px;
-margin-bottom: 5px;
+    padding-left: 15px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    line-height: 125%;
 }
 
-ol {
-padding-left: 15px;
+ol,ul {
+margin-left: 15px;
+}
+
+ul.none {
+    list-style-type: none;
 }
 
 .header {

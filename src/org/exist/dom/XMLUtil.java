@@ -316,6 +316,14 @@ public class XMLUtil {
 		return false;
 	}
 
+	public final static boolean isDescendant(DocumentImpl doc, long ancestor, long descendant) {
+		while ((descendant = getParentId(doc, descendant)) > -1) {
+			if (descendant == ancestor)
+				return true;
+		}
+		return false;
+	}
+	
 	public final static NodeProxy parentWithChild(
 		NodeSet contextSet,
 		DocumentImpl doc,

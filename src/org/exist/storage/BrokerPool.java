@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Stack;
 import java.util.TreeMap;
+import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
@@ -139,8 +140,12 @@ public class BrokerPool {
 	}
 
 	public final static void stopAll(boolean killed) {
-		BrokerPool instance;
+		Vector tmpInstances = new Vector();
 		for (Iterator i = instances.values().iterator(); i.hasNext();) {
+			tmpInstances.add(i.next());
+		}
+		BrokerPool instance;
+		for (Iterator i = tmpInstances.iterator(); i.hasNext();) {
 			instance = (BrokerPool) i.next();
 			if (instance.conf != null)
 				instance.shutdown(killed);

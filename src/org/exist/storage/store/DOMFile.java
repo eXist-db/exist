@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import org.apache.log4j.Logger;
 import org.dbxml.core.DBException;
 import org.dbxml.core.data.Value;
 import org.dbxml.core.filer.BTree;
@@ -66,18 +65,14 @@ import org.w3c.dom.Node;
  * However, the tid will always remain the same.
  *
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
- *@created    25. Mai 2002
  */
 public class DOMFile extends BTree implements Lockable {
 
 	// page types
-	public final static byte FREE_LIST = 22;
 	public final static byte LOB = 21;
 	public final static byte RECORD = 20;
 
 	protected final static short OVERFLOW = 0;
-
-	private static Logger LOG = Logger.getLogger(DOMFile.class);
 
 	private final Cache dataCache;
 	private DOMFileHeader fileHeader;
@@ -388,24 +383,12 @@ public class DOMFile extends BTree implements Lockable {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@return                  Description of the Return Value
-	 *@exception  DBException  Description of the Exception
-	 */
 	public boolean close() throws DBException {
 		flush();
 		super.close();
 		return true;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@return                  Description of the Return Value
-	 *@exception  DBException  Description of the Exception
-	 */
 	public boolean create() throws DBException {
 		if (super.create((short) 12))
 			return true;
@@ -413,52 +396,22 @@ public class DOMFile extends BTree implements Lockable {
 			return false;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@return    Description of the Return Value
-	 */
 	public FileHeader createFileHeader() {
 		return new DOMFileHeader(1024, PAGE_SIZE);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  read             Description of the Parameter
-	 *@return                  Description of the Return Value
-	 *@exception  IOException  Description of the Exception
-	 */
 	public FileHeader createFileHeader(boolean read) throws IOException {
 		return new DOMFileHeader(read);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  pageCount  Description of the Parameter
-	 *@return            Description of the Return Value
-	 */
 	public FileHeader createFileHeader(long pageCount) {
 		return new DOMFileHeader(pageCount, PAGE_SIZE);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  pageCount  Description of the Parameter
-	 *@param  pageSize   Description of the Parameter
-	 *@return            Description of the Return Value
-	 */
 	public FileHeader createFileHeader(long pageCount, int pageSize) {
 		return new DOMFileHeader(pageCount, pageSize);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@return    Description of the Return Value
-	 */
 	protected Page createNewPage() {
 		try {
 			Page page = getFreePage();
@@ -482,23 +435,10 @@ public class DOMFile extends BTree implements Lockable {
 		super.unlinkPages(page);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@return    Description of the Return Value
-	 */
 	public PageHeader createPageHeader() {
 		return new DOMFilePageHeader();
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  query               Description of the Parameter
-	 *@return                     Description of the Return Value
-	 *@exception  IOException     Description of the Exception
-	 *@exception  BTreeException  Description of the Exception
-	 */
 	public ArrayList findKeys(IndexQuery query) throws IOException, BTreeException {
 		final FindCallback cb = new FindCallback(FindCallback.KEYS);
 		query(query, cb);
@@ -516,8 +456,6 @@ public class DOMFile extends BTree implements Lockable {
 				return 0;
 			}
 			final long lastChildId = firstChildId + node.getChildCount();
-			//if(firstChildId > 1258600 && firstChildId < 1258700)
-			//System.out.print(firstChildId + "-" + lastChildId + " ");
 			long p;
 			for (long gid = firstChildId; gid < lastChildId; gid++) {
 				NodeImpl child = (NodeImpl) iter.next();
@@ -1098,8 +1036,8 @@ public class DOMFile extends BTree implements Lockable {
 				rec.offset += len + 2;
 				for (int i = 0; i < children; i++) {
 					getNodeValue(os, rec, false);
-					if (children - attributes > 1)
-						os.write((byte) 0x20);
+					//if (children - attributes > 1)
+					//	os.write((byte) 0x20);
 				}
 				return;
 			case Node.TEXT_NODE :
@@ -1159,91 +1097,44 @@ public class DOMFile extends BTree implements Lockable {
 					+ ". Loading "
 					+ pageNr);*/
 		}
+		Thread.dumpStack();
 		LOG.debug("tid " + tid + " not found.");
 		return null;
 	}
 
-	/**
-	 *  Description of the Class
-	 *
-	 *@author     wolf
-	 *@created    3. Juni 2002
-	 */
 	private final class DOMFileHeader extends BTreeFileHeader {
 
 		protected LinkedList reserved = new LinkedList();
 
-		/**  Constructor for the DOMFileHeader object */
 		public DOMFileHeader() {
 		}
 
-		/**
-		 *  Constructor for the DOMFileHeader object
-		 *
-		 *@param  pageCount  Description of the Parameter
-		 */
 		public DOMFileHeader(long pageCount) {
 			super(pageCount);
 		}
 
-		/**
-		 *  Constructor for the DOMFileHeader object
-		 *
-		 *@param  pageCount  Description of the Parameter
-		 *@param  pageSize   Description of the Parameter
-		 */
 		public DOMFileHeader(long pageCount, int pageSize) {
 			super(pageCount, pageSize);
 		}
 
-		/**
-		 *  Constructor for the DOMFileHeader object
-		 *
-		 *@param  pageCount  Description of the Parameter
-		 *@param  pageSize   Description of the Parameter
-		 *@param  blockSize  Description of the Parameter
-		 */
 		public DOMFileHeader(long pageCount, int pageSize, byte blockSize) {
 			super(pageCount, pageSize, blockSize);
 		}
 
-		/**
-		 *  Constructor for the DOMFileHeader object
-		 *
-		 *@param  read             Description of the Parameter
-		 *@exception  IOException  Description of the Exception
-		 */
 		public DOMFileHeader(boolean read) throws IOException {
 			super(read);
 		}
 
-		/**
-		 *  Adds a feature to the ReservedPage attribute of the DOMFileHeader
-		 *  object
-		 *
-		 *@param  page  The feature to be added to the ReservedPage attribute
-		 */
 		public void addReservedPage(long page) {
 			reserved.addFirst(new Long(page));
 		}
 
-		/**
-		 *  Gets the reservedPage attribute of the DOMFileHeader object
-		 *
-		 *@return    The reservedPage value
-		 */
 		public long getReservedPage() {
 			if (reserved.size() == 0)
 				return -1;
 			return ((Long) reserved.removeLast()).longValue();
 		}
 
-		/**
-		 *  Description of the Method
-		 *
-		 *@param  raf              Description of the Parameter
-		 *@exception  IOException  Description of the Exception
-		 */
 		public void read(java.io.RandomAccessFile raf) throws IOException {
 			super.read(raf);
 			//lastDataPage = raf.readLong();
@@ -1255,12 +1146,6 @@ public class DOMFile extends BTree implements Lockable {
 			}
 		}
 
-		/**
-		 *  Description of the Method
-		 *
-		 *@param  raf              Description of the Parameter
-		 *@exception  IOException  Description of the Exception
-		 */
 		public void write(java.io.RandomAccessFile raf) throws IOException {
 			super.write(raf);
 			//raf.writeLong(lastDataPage);
@@ -1273,12 +1158,6 @@ public class DOMFile extends BTree implements Lockable {
 		}
 	}
 
-	/**
-	 *  Description of the Class
-	 *
-	 *@author     wolf
-	 *@created    3. Juni 2002
-	 */
 	protected final class DOMFilePageHeader extends BTreePageHeader {
 		protected int dataLen = 0;
 		protected long nextDataPage = -1;
@@ -1286,7 +1165,6 @@ public class DOMFile extends BTree implements Lockable {
 		protected short tid = -1;
 		protected short records = 0;
 
-		/**  Constructor for the DOMFilePageHeader object */
 		public DOMFilePageHeader() {
 			super();
 		}
@@ -1295,7 +1173,6 @@ public class DOMFile extends BTree implements Lockable {
 			super(data, offset);
 		}
 
-		/**  Description of the Method */
 		public void decRecordCount() {
 			--records;
 		}
@@ -1344,20 +1221,10 @@ public class DOMFile extends BTree implements Lockable {
 			return offset + 2;
 		}
 
-		/**
-		 *  Sets the dataLength attribute of the DOMFilePageHeader object
-		 *
-		 *@param  len  The new dataLength value
-		 */
 		public void setDataLength(int len) {
 			dataLen = len;
 		}
 
-		/**
-		 *  Sets the nextDataPage attribute of the DOMFilePageHeader object
-		 *
-		 *@param  page  The new nextDataPage value
-		 */
 		public void setNextDataPage(long page) {
 			nextDataPage = page;
 		}
@@ -1366,21 +1233,10 @@ public class DOMFile extends BTree implements Lockable {
 			prevDataPage = page;
 		}
 
-		/**
-		 *  Sets the recordCount attribute of the DOMFilePageHeader object
-		 *
-		 *@param  recs  The new recordCount value
-		 */
 		public void setRecordCount(short recs) {
 			records = recs;
 		}
 
-		/**
-		 *  Description of the Method
-		 *
-		 *@param  dos              Description of the Parameter
-		 *@exception  IOException  Description of the Exception
-		 */
 		public int write(byte[] data, int offset) throws IOException {
 			offset = super.write(data, offset);
 			ByteConversion.shortToByte(records, data, offset);
@@ -1495,6 +1351,7 @@ public class DOMFile extends BTree implements Lockable {
 				len = ph.getDataLength();
 				if (data.length == 0) {
 					LOG.debug("page " + page.getPageNum() + " data length == 0");
+					Thread.dumpStack();
 					return;
 				}
 			} catch (IOException ioe) {
@@ -1605,7 +1462,6 @@ public class DOMFile extends BTree implements Lockable {
 		}
 
 		public void delete() throws IOException {
-			LOG.debug("deleting overflow page");
 			Page page = firstPage;
 			long np;
 			while (page != null) {

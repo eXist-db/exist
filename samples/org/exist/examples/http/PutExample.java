@@ -22,7 +22,6 @@
  */
 package org.exist.examples.http;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -50,10 +49,11 @@ public class PutExample {
 		String docName =file.getName();
 		
 		try {
-			URL url = new URL("http://localhost:8088/db/test/" + docName);
+			URL url = new URL("http://admin:@localhost:8080/exist/servlet/db/test/" + docName);
 			HttpURLConnection connect =(HttpURLConnection)url.openConnection();
 			connect.setRequestMethod("PUT");
 			connect.setDoOutput(true);
+			connect.setRequestProperty("ContentType", "text/xml");
 			
 			OutputStream os = connect.getOutputStream();
 			InputStream is =new FileInputStream(file);

@@ -43,7 +43,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
             int handle = -1;
             if(resources != null && resources.size() > 0)
             	handle = ((Integer)result.get("id")).intValue();
-            return new ResourceSetImpl( collection, resources, handle );
+            return new RemoteResourceSet( collection, resources, handle );
         } catch ( XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre );
         } catch ( IOException ioe ) {
@@ -75,7 +75,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 			int handle = -1;
 			if(resources != null && resources.size() > 0)
 				handle = ((Integer)result.get("id")).intValue();
-			return new ResourceSetImpl( collection, resources, handle );
+			return new RemoteResourceSet( collection, resources, handle );
         } catch ( XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre );
         } catch ( IOException ioe ) {
@@ -135,20 +135,21 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 			"method not implemented");
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * The XML-RPC server automatically caches compiled queries.
+	 * Thus calling this method has no effect.
+	 * 
 	 * @see org.exist.xmldb.XQueryService#compile(java.lang.String)
 	 */
 	public CompiledExpression compile(String query) throws XMLDBException {
-		throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED,
-			"compiling an XQuery expression is currently not implemented for a remote connection");
+		return new RemoteCompiledExpression(query);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.XQueryService#execute(org.exist.xmldb.CompiledExpression)
 	 */
 	public ResourceSet execute(CompiledExpression expression) throws XMLDBException {
-		throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED,
-			"compiling an XQuery expression is currently not implemented for a remote connection");
+		return query(((RemoteCompiledExpression)expression).getQuery());
 	}
 
 	/* (non-Javadoc)
@@ -156,6 +157,15 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 	 */
 	public void setXPathCompatibility(boolean backwardsCompatible) {
 		// TODO: not passed
+	}
+
+	/** 
+	 * Calling this method has no effect. The server loads modules
+	 * relative to its own context.
+	 * 
+	 * @see org.exist.xmldb.XQueryService#setModuleLoadPath(java.lang.String)
+	 */
+	public void setModuleLoadPath(String path) {		
 	}
 }
 

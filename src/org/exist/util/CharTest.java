@@ -15,7 +15,7 @@ package org.exist.util;
 public class CharTest {
 
 	public static void main(String[] args) {
-		String s = "&<>{}/\"'";
+		String s = "09&<>{}/\"'";
 		for(int i = 0; i < s.length(); i++) {
 			System.out.println(Integer.toHexString((int)s.charAt(i)));
 		}

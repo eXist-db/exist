@@ -16,7 +16,7 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
     static org.apache.axis.description.OperationDesc [] _operations;
 
     static {
-        _operations = new org.apache.axis.description.OperationDesc[7];
+        _operations = new org.apache.axis.description.OperationDesc[10];
         org.apache.axis.description.OperationDesc oper;
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("getResource");
@@ -77,6 +77,46 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
         _operations[4] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
+        oper.setName("getResourceData");
+        oper.addParameter(new javax.xml.namespace.QName("", "in0"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "in1"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "in2"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "in3"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "in4"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "base64Binary"));
+        oper.setReturnClass(byte[].class);
+        oper.setReturnQName(new javax.xml.namespace.QName("", "getResourceDataReturn"));
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
+        _operations[5] = oper;
+
+        oper = new org.apache.axis.description.OperationDesc();
+        oper.setName("xquery");
+        oper.addParameter(new javax.xml.namespace.QName("", "in0"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "in1"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "base64Binary"), byte[].class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.setReturnType(new javax.xml.namespace.QName("urn:exist", "QueryResponse"));
+        oper.setReturnClass(org.exist.soap.QueryResponse.class);
+        oper.setReturnQName(new javax.xml.namespace.QName("", "xqueryReturn"));
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
+        _operations[6] = oper;
+
+        oper = new org.apache.axis.description.OperationDesc();
+        oper.setName("retrieveData");
+        oper.addParameter(new javax.xml.namespace.QName("", "in0"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "in1"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "in2"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "in3"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "in4"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.addParameter(new javax.xml.namespace.QName("", "in5"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
+        oper.setReturnType(new javax.xml.namespace.QName("urn:exist", "ArrayOf_xsd_base64Binary"));
+        oper.setReturnClass(byte[][].class);
+        oper.setReturnQName(new javax.xml.namespace.QName("", "retrieveDataReturn"));
+        oper.setStyle(org.apache.axis.enum.Style.RPC);
+        oper.setUse(org.apache.axis.enum.Use.ENCODED);
+        _operations[7] = oper;
+
+        oper = new org.apache.axis.description.OperationDesc();
         oper.setName("retrieveByDocument");
         oper.addParameter(new javax.xml.namespace.QName("", "in0"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, org.apache.axis.description.ParameterDesc.IN, false, false);
         oper.addParameter(new javax.xml.namespace.QName("", "in1"), new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, org.apache.axis.description.ParameterDesc.IN, false, false);
@@ -90,7 +130,7 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
         oper.setReturnQName(new javax.xml.namespace.QName("", "retrieveByDocumentReturn"));
         oper.setStyle(org.apache.axis.enum.Style.RPC);
         oper.setUse(org.apache.axis.enum.Use.ENCODED);
-        _operations[5] = oper;
+        _operations[8] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("listCollection");
@@ -101,7 +141,7 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
         oper.setReturnQName(new javax.xml.namespace.QName("", "listCollectionReturn"));
         oper.setStyle(org.apache.axis.enum.Style.RPC);
         oper.setUse(org.apache.axis.enum.Use.ENCODED);
-        _operations[6] = oper;
+        _operations[9] = oper;
 
     }
 
@@ -130,6 +170,13 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
             java.lang.Class arraydf = org.apache.axis.encoding.ser.ArrayDeserializerFactory.class;
             java.lang.Class simplesf = org.apache.axis.encoding.ser.SimpleSerializerFactory.class;
             java.lang.Class simpledf = org.apache.axis.encoding.ser.SimpleDeserializerFactory.class;
+            qName = new javax.xml.namespace.QName("urn:exist", "QueryResponseCollection");
+            cachedSerQNames.add(qName);
+            cls = org.exist.soap.QueryResponseCollection.class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(beansf);
+            cachedDeserFactories.add(beandf);
+
             qName = new javax.xml.namespace.QName("urn:exist", "ArrayOfQueryResponseCollection");
             cachedSerQNames.add(qName);
             cls = org.exist.soap.QueryResponseCollection[].class;
@@ -137,23 +184,16 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
             cachedSerFactories.add(arraysf);
             cachedDeserFactories.add(arraydf);
 
+            qName = new javax.xml.namespace.QName("urn:exist", "Collection");
+            cachedSerQNames.add(qName);
+            cls = org.exist.soap.Collection.class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(beansf);
+            cachedDeserFactories.add(beandf);
+
             qName = new javax.xml.namespace.QName("urn:exist", "QueryResponse");
             cachedSerQNames.add(qName);
             cls = org.exist.soap.QueryResponse.class;
-            cachedSerClasses.add(cls);
-            cachedSerFactories.add(beansf);
-            cachedDeserFactories.add(beandf);
-
-            qName = new javax.xml.namespace.QName("urn:exist", "QueryResponseDocument");
-            cachedSerQNames.add(qName);
-            cls = org.exist.soap.QueryResponseDocument.class;
-            cachedSerClasses.add(cls);
-            cachedSerFactories.add(beansf);
-            cachedDeserFactories.add(beandf);
-
-            qName = new javax.xml.namespace.QName("urn:exist", "QueryResponseCollection");
-            cachedSerQNames.add(qName);
-            cls = org.exist.soap.QueryResponseCollection.class;
             cachedSerClasses.add(cls);
             cachedSerFactories.add(beansf);
             cachedDeserFactories.add(beandf);
@@ -172,9 +212,16 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
             cachedSerFactories.add(arraysf);
             cachedDeserFactories.add(arraydf);
 
-            qName = new javax.xml.namespace.QName("urn:exist", "Collection");
+            qName = new javax.xml.namespace.QName("urn:exist", "ArrayOf_xsd_base64Binary");
             cachedSerQNames.add(qName);
-            cls = org.exist.soap.Collection.class;
+            cls = byte[][].class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(arraysf);
+            cachedDeserFactories.add(arraydf);
+
+            qName = new javax.xml.namespace.QName("urn:exist", "QueryResponseDocument");
+            cachedSerQNames.add(qName);
+            cls = org.exist.soap.QueryResponseDocument.class;
             cachedSerClasses.add(cls);
             cachedSerFactories.add(beansf);
             cachedDeserFactories.add(beandf);
@@ -370,12 +417,96 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
         extractAttachments(_call);
     }
 
-    public java.lang.String[] retrieveByDocument(java.lang.String in0, int in1, int in2, java.lang.String in3, boolean in4, boolean in5, java.lang.String in6) throws java.rmi.RemoteException {
+    public byte[] getResourceData(java.lang.String in0, java.lang.String in1, boolean in2, boolean in3, boolean in4) throws java.rmi.RemoteException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
         org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[5]);
+        _call.setUseSOAPAction(true);
+        _call.setSOAPActionURI("");
+        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
+        _call.setOperationName(new javax.xml.namespace.QName("urn:exist", "getResourceData"));
+
+        setRequestHeaders(_call);
+        setAttachments(_call);
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {in0, in1, new java.lang.Boolean(in2), new java.lang.Boolean(in3), new java.lang.Boolean(in4)});
+
+        if (_resp instanceof java.rmi.RemoteException) {
+            throw (java.rmi.RemoteException)_resp;
+        }
+        else {
+            extractAttachments(_call);
+            try {
+                return (byte[]) _resp;
+            } catch (java.lang.Exception _exception) {
+                return (byte[]) org.apache.axis.utils.JavaUtils.convert(_resp, byte[].class);
+            }
+        }
+    }
+
+    public org.exist.soap.QueryResponse xquery(java.lang.String in0, byte[] in1) throws java.rmi.RemoteException {
+        if (super.cachedEndpoint == null) {
+            throw new org.apache.axis.NoEndPointException();
+        }
+        org.apache.axis.client.Call _call = createCall();
+        _call.setOperation(_operations[6]);
+        _call.setUseSOAPAction(true);
+        _call.setSOAPActionURI("");
+        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
+        _call.setOperationName(new javax.xml.namespace.QName("urn:exist", "xquery"));
+
+        setRequestHeaders(_call);
+        setAttachments(_call);
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {in0, in1});
+
+        if (_resp instanceof java.rmi.RemoteException) {
+            throw (java.rmi.RemoteException)_resp;
+        }
+        else {
+            extractAttachments(_call);
+            try {
+                return (org.exist.soap.QueryResponse) _resp;
+            } catch (java.lang.Exception _exception) {
+                return (org.exist.soap.QueryResponse) org.apache.axis.utils.JavaUtils.convert(_resp, org.exist.soap.QueryResponse.class);
+            }
+        }
+    }
+
+    public byte[][] retrieveData(java.lang.String in0, int in1, int in2, boolean in3, boolean in4, java.lang.String in5) throws java.rmi.RemoteException {
+        if (super.cachedEndpoint == null) {
+            throw new org.apache.axis.NoEndPointException();
+        }
+        org.apache.axis.client.Call _call = createCall();
+        _call.setOperation(_operations[7]);
+        _call.setUseSOAPAction(true);
+        _call.setSOAPActionURI("");
+        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
+        _call.setOperationName(new javax.xml.namespace.QName("urn:exist", "retrieveData"));
+
+        setRequestHeaders(_call);
+        setAttachments(_call);
+        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {in0, new java.lang.Integer(in1), new java.lang.Integer(in2), new java.lang.Boolean(in3), new java.lang.Boolean(in4), in5});
+
+        if (_resp instanceof java.rmi.RemoteException) {
+            throw (java.rmi.RemoteException)_resp;
+        }
+        else {
+            extractAttachments(_call);
+            try {
+                return (byte[][]) _resp;
+            } catch (java.lang.Exception _exception) {
+                return (byte[][]) org.apache.axis.utils.JavaUtils.convert(_resp, byte[][].class);
+            }
+        }
+    }
+
+    public java.lang.String[] retrieveByDocument(java.lang.String in0, int in1, int in2, java.lang.String in3, boolean in4, boolean in5, java.lang.String in6) throws java.rmi.RemoteException {
+        if (super.cachedEndpoint == null) {
+            throw new org.apache.axis.NoEndPointException();
+        }
+        org.apache.axis.client.Call _call = createCall();
+        _call.setOperation(_operations[8]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
@@ -403,7 +534,7 @@ public class QuerySoapBindingStub extends org.apache.axis.client.Stub implements
             throw new org.apache.axis.NoEndPointException();
         }
         org.apache.axis.client.Call _call = createCall();
-        _call.setOperation(_operations[6]);
+        _call.setOperation(_operations[9]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);

@@ -11,7 +11,7 @@ import org.xmldb.api.modules.XMLResource;
 /**
  *  Retrieve a document from the database. To run this example enter:
  * 
- *  bin/run.sh org.exist.examples.xmldb.Retrieve collection document 
+ *  java -jar start.jar org.exist.examples.xmldb.Retrieve collection document 
  * 
  *  in the root directory of the distribution.
  *
@@ -22,7 +22,6 @@ public class Retrieve {
 	protected static String driver = "org.exist.xmldb.DatabaseImpl";
 
 	protected static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
-	//protected static String URI = "xmldb:exist://";
 
 	protected static void usage() {
 		System.out.println("usage: org.exist.examples.xmldb.Retrieve collection docName");
@@ -43,7 +42,7 @@ public class Retrieve {
 
 		// get the collection
 		Collection col = DatabaseManager.getCollection(URI + collection);
-		col.setProperty(OutputKeys.INDENT, "no");
+		col.setProperty(OutputKeys.INDENT, "yes");
 		col.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
 		XMLResource res = (XMLResource)col.getResource(args[1]);
 		if(res == null)

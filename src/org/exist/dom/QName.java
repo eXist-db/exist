@@ -24,8 +24,8 @@ package org.exist.dom;
 
 import org.exist.storage.ElementValue;
 import org.exist.util.XMLChar;
-import org.exist.xpath.XQueryContext;
-import org.exist.xpath.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.XPathException;
 
 /**
  * Represents a QName, consisting of a local name, a namespace URI and a prefix.
@@ -115,6 +115,9 @@ public class QName implements Comparable {
 	 */
 	public int compareTo(Object o) {
 		QName other = (QName) o;
+		if(nameType_ != other.nameType_) {
+			return nameType_ < other.nameType_ ? -1 : 1;
+		}
 		int c;
 		if (namespaceURI_ == null)
 			c = other.namespaceURI_ == null ? 0 : -1;

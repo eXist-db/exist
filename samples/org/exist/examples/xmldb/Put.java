@@ -7,6 +7,10 @@ import java.io.*;
 
 /**
  * Add a document to the database.
+ * 
+ * Call with
+ * 
+ * java -jar start.jar org.exist.examples.xmldb.Put collection docName
  *
  */
 public class Put {
@@ -42,7 +46,7 @@ public class Put {
             Collection root = DatabaseManager.getCollection(URI + "/db");
             CollectionManagementService mgtService = 
                 (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
-            col = mgtService.createCollection(collection.substring("/db".length()));
+            col = mgtService.createCollection(collection.substring("/db/".length()));
         }
         // create new XMLResource; an id will be assigned to the new resource
 		XMLResource document = (XMLResource)col.createResource(null, "XMLResource");

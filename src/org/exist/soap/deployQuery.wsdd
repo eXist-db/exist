@@ -23,8 +23,8 @@
 
       <typeMapping
         xmlns:ns="urn:exist"
-        qname="ns:ArrayOf_xsd_string"
-        type="java:java.lang.String[]"
+        qname="ns:ArrayOf_xsd_base64Binary"
+        type="java:byte[][]"
         serializer="org.apache.axis.encoding.ser.ArraySerializerFactory"
         deserializer="org.apache.axis.encoding.ser.ArrayDeserializerFactory"
         encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
@@ -39,16 +39,32 @@
       />
       <typeMapping
         xmlns:ns="urn:exist"
-        qname="ns:QueryResponse"
-        type="java:org.exist.soap.QueryResponse"
+        qname="ns:Collection"
+        type="java:org.exist.soap.Collection"
         serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
         deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
         encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
       />
       <typeMapping
         xmlns:ns="urn:exist"
-        qname="ns:Collection"
-        type="java:org.exist.soap.Collection"
+        qname="ns:ArrayOfQueryResponseDocument"
+        type="java:org.exist.soap.QueryResponseDocument[]"
+        serializer="org.apache.axis.encoding.ser.ArraySerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.ArrayDeserializerFactory"
+        encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+      />
+      <typeMapping
+        xmlns:ns="urn:exist"
+        qname="ns:ArrayOf_xsd_string"
+        type="java:java.lang.String[]"
+        serializer="org.apache.axis.encoding.ser.ArraySerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.ArrayDeserializerFactory"
+        encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+      />
+      <typeMapping
+        xmlns:ns="urn:exist"
+        qname="ns:QueryResponse"
+        type="java:org.exist.soap.QueryResponse"
         serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
         deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
         encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
@@ -67,14 +83,6 @@
         type="java:org.exist.soap.QueryResponseCollection"
         serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
         deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
-      />
-      <typeMapping
-        xmlns:ns="urn:exist"
-        qname="ns:ArrayOfQueryResponseDocument"
-        type="java:org.exist.soap.QueryResponseDocument[]"
-        serializer="org.apache.axis.encoding.ser.ArraySerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.ArrayDeserializerFactory"
         encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
       />
   </service>

@@ -22,6 +22,7 @@
  */
 package org.exist.dom;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -48,7 +49,10 @@ public class SymbolTable {
 	protected short nsMax = 0;
 	protected boolean changed = false;
 
-	public SymbolTable() {
+	protected File file;
+	
+	public SymbolTable(File file) {
+		this.file = file;
 	}
 
 	public synchronized short getSymbol(Element element) {
@@ -217,5 +221,9 @@ public class SymbolTable {
 			defaultMappings.put(prefix, nsId);
 		}
 		changed = false;
+	}
+	
+	public File getFile() {
+		return file;
 	}
 }

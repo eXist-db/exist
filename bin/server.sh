@@ -29,10 +29,6 @@ fi
 
 OPTIONS="-Dexist.home=$EXIST_HOME"
 
-if [ -n "$JETTY_HOME" ]; then
-	OPTIONS="-Djetty.home=$JETTY_HOME $OPTIONS"
-fi
-
 # save LANG
 if [ -n "$LANG" ]; then
 	OLD_LANG="$LANG"

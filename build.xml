@@ -11,6 +11,7 @@
     <property name="lib.core" value="./lib/core"/>
     <property name="lib.optional" value="./lib/optional"/>
 	<property name="lib.endorsed" value="./lib/endorsed"/>
+    <property name="lib.tools" value="./tools/lib"/>
     <property name="build" value="./build"/>
     <property name="build.src" value="${build}/src"/>
     <property name="build.soap" value="${build}/soap"/>
@@ -19,7 +20,6 @@
     <property name="ant.home" value="."/>
     <property name="dist" value="./dist"/>
 	<property name="webapp.dir" value="${dist}/webapp"/>
-	<property name="docs" value="docs"/>
     <property name="build.compiler" value="modern"/>
     <property name="build.debug" value="on"/>
     <property name="build.optimize" value="on"/>
@@ -40,6 +40,9 @@
 		<fileset dir="${lib.endorsed}">
 			<include name="*.jar"/>
 		</fileset>
+        <fileset dir="${lib.tools}">
+            <include name="*.jar"/>
+        </fileset>
         <pathelement path="exist.jar"/>
 		<pathelement path="exist-optional.jar"/>
         <pathelement path="${java.class.path}"/>
@@ -47,9 +50,6 @@
 
 	<path id="classpath.jetty">
 		<fileset dir="${jetty.dir}/lib">
-			<include name="*.jar"/>
-		</fileset>
-		<fileset dir="${jetty.dir}/ext">
 			<include name="*.jar"/>
 		</fileset>
 	</path>
@@ -108,14 +108,15 @@
     <target depends="prepare" name="antlr">
 		<echo message="Running ANTLR to generate XQuery parser"/>
 		<delete failonerror="false">
-			<fileset dir="${src}/org/exist/parser">
+			<fileset dir="${src}/org/exist/xquery/parser">
 				<include name="*.java"/>
 				<include name="*.txt"/>
 			</fileset>
 		</delete>
-		<antlr target="${src}/org/exist/parser/XPathParser2.g"
-			outputdirectory="${src}/org/exist/parser"
-			traceparser="${antlr.traceParser}">
+		<antlr target="${src}/org/exist/xquery/parser/XQuery.g"
+			outputdirectory="${src}/org/exist/xquery/parser"
+			traceparser="${antlr.traceParser}"
+            tracelexer="${antlr.traceLexer}">
 			<classpath><path refid="classpath.core"/></classpath>
 		</antlr>
     </target>
@@ -231,7 +232,7 @@
 		<mkdir dir="webapp/api"/-->
         <javadoc bottom="Copyright (C) Wolfgang Meier. All rights reserved."
 			destdir="webapp/api" doctitle="eXist Javadocs"
-			noindex="true" notree="true"
+			noindex="true" notree="true" access="public"
 			packagenames="org.exist.*">
 			<fileset dir="${src}" defaultexcludes="yes">
 				<include name="org/exist/**/*.java"/>
@@ -266,7 +267,7 @@
 <!-- ============================================================ -->
     <!-- Axis SOAP                                                    -->
     <!-- ============================================================ -->
-    <target depends="compile" name="wsdl2java">
+    <target name="wsdl2java">
     	<mkdir dir="${build.soap}"/>
         <wsdl2java url="${src}/org/exist/soap/query.wsdl"
             output="${build.soap}"
@@ -422,7 +423,6 @@
         <mkdir dir="${dist.dir}/webapp/WEB-INF/data"/>
         <mkdir dir="${dist.dir}/log"/>
         <mkdir dir="${dist.dir}/samples"/>
-		<mkdir dir="${dist.dir}/docs"/>
 		<mkdir dir="${dist.dir}/thirdparty"/>
 		<touch file="${dist.dir}/webapp/WEB-INF/data/.DO_NOT_DELETE"/>
 		<touch file="${dist.dir}/webapp/WEB-INF/logs/.DO_NOT_DELETE"/>
@@ -433,8 +433,9 @@
                 <include name="README"/>
                 <include name="*.bat"/>
                 <include name="*.sh"/>
-		<include name="conf.xml"/>
-		<include name="build.xml"/>
+                <include name="conf.xml"/>
+                <include name="build.xml"/>
+                <include name="log4j.xml"/>
                 <include name="exist.jar"/>
 				<include name="exist-optional.jar"/>
 				<include name="examples.jar"/>
@@ -501,11 +502,6 @@
 				<exclude name="test.xml"/>
             </fileset>
 		</copy>
-		<copy todir="${dist.dir}/docs">
-			<fileset dir="./docs">
-				<exclude name="**/*~"/>
-			</fileset>
-		</copy>
         <fixcrlf eol="crlf" includes="**/*.bat" srcdir="${dist.dir}/bin"/>
         <fixcrlf eof="remove" eol="lf" includes="**/*.sh" srcdir="${dist.dir}/bin"/>
         <fixcrlf eol="crlf" includes="build.bat" srcdir="${dist.dir}"/>
@@ -549,7 +545,7 @@
 	<!-- ================================================================== -->
 	<!-- Build installer                                                    -->
 	<!-- ================================================================== -->
-	<target depends="all" name="installer">
+	<target depends="all,samples,javadocs" name="installer">
         <taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
 		    classname="com.izforge.izpack.ant.IzPackTask"/>
 		<echo message="Calling IzPack to create installer ..."/>

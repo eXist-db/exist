@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+
+<!--    This build file sets up the example XML files provided in
+        the distribution.
+
+        Call it with 
+        
+        build.sh -f example-setup.xml
+
+        or
+
+        build.bat -f example-setup.xml
+-->
+<project basedir="." default="store" name="exist-ant-tasks">
+
+	<path id="classpath.core">
+		<fileset dir="lib/core">
+			<include name="*.jar"/>
+		</fileset>
+        <pathelement path="exist.jar"/>
+        <pathelement path="exist-optional.jar"/>
+	</path>
+
+	<typedef resource="org/exist/ant/antlib.xml"
+		uri="http://exist-db.org/ant">
+		<classpath refid="classpath.core"/>
+	</typedef>
+	
+	<target name="store" xmlns:xmldb="http://exist-db.org/ant">
+        <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays"
+			createcollection="true">
+            <fileset dir="samples/shakespeare"> 
+                <include name="*.xml"/>
+                <include name="*.xsl"/>
+            </fileset>
+		</xmldb:store>
+
+        <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays"
+			type="binary">
+			<fileset dir="samples/shakespeare">
+				<include name="*.css"/>
+			</fileset>
+		</xmldb:store>
+		
+        <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/library"
+			createcollection="true">
+			<fileset dir="samples" includes="biblio.rdf"/>
+		</xmldb:store>
+
+        <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/xinclude"
+			createcollection="true">
+			<fileset dir="samples/xinclude" includes="**.xml"/>
+        </xmldb:store>
+
+        <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db">
+            <fileset dir="samples" includes="examples.xml"/>
+        </xmldb:store>
+
+	</target>
+</project>

@@ -58,7 +58,7 @@ public class RemoteCollection implements CollectionImpl {
 	// max size of a resource to be send to the server
 	// if the resource exceeds this limit, the data is split into
 	// junks and uploaded to the server via the update() call
-	private static final int MAX_CHUNK_LENGTH = 512000;
+	private static final int MAX_CHUNK_LENGTH = 1000000;
 
 	protected Map childCollections = null;
 	protected String name;
@@ -129,7 +129,13 @@ public class RemoteCollection implements CollectionImpl {
 
 	public Resource createResource(String id, String type) throws XMLDBException {
 		String newId = id == null ? createId() : id;
-		RemoteXMLResource r = new RemoteXMLResource(this, -1, -1, newId, null);
+		Resource r;
+		if(type.equals("XMLResource"))
+			r = new RemoteXMLResource(this, -1, -1, newId, null);
+		else if(type.equals("BinaryResource"))
+			r = new RemoteBinaryResource(this, newId);
+		else
+			throw new XMLDBException(ErrorCodes.UNKNOWN_RESOURCE_TYPE, "unknown resource type: " + type);
 		return r;
 	}
 
@@ -181,13 +187,19 @@ public class RemoteCollection implements CollectionImpl {
 		if (childCollections == null)
 			readCollection();
 		int rlen = resources.size();
+		DocumentProxy dp;
 		for (int i = 0; i < rlen; i++) {
-			DocumentProxy dp = (DocumentProxy) resources.get(i);
-			RemoteXMLResource r;
+			dp = (DocumentProxy) resources.get(i);
 			if (dp.getName().equals(id)) {
-				r = new RemoteXMLResource(this, -1, -1, dp.getName(), null);
-				r.setPermissions(dp.getPermissions());
-				return r;
+				if(dp.getType() == null || dp.getType().equals("XMLResource")) {
+					RemoteXMLResource r = new RemoteXMLResource(this, -1, -1, dp.getName(), null);
+					r.setPermissions(dp.getPermissions());
+					return r;
+				} else {
+					RemoteBinaryResource r = new RemoteBinaryResource(this, dp.getName());
+					r.setPermissions(dp.getPermissions());
+					return r;
+				}
 			}
 		}
 		return null;
@@ -205,11 +217,11 @@ public class RemoteCollection implements CollectionImpl {
         if (name.equals("XQueryService"))
             return new RemoteXPathQueryService(this);
 		if (name.equals("CollectionManagementService") || name.equals("CollectionManager"))
-			return new CollectionManagementServiceImpl(this, rpcClient);
+			return new RemoteCollectionManagementService(this, rpcClient);
 		if (name.equals("UserManagementService"))
-			return new UserManagementServiceImpl(this);
+			return new RemoteUserManagementService(this);
 		if (name.equals("DatabaseInstanceManager"))
-			return new DatabaseInstanceManagerImpl(rpcClient);
+			return new RemoteDatabaseInstanceManager(rpcClient);
 		if (name.equals("IndexQueryService"))
 			return new RemoteIndexQueryService(rpcClient, this);
 		if (name.equals("XUpdateQueryService"))
@@ -220,9 +232,9 @@ public class RemoteCollection implements CollectionImpl {
 	public Service[] getServices() throws XMLDBException {
 		Service[] services = new Service[6];
 		services[0] = new RemoteXPathQueryService(this);
-		services[1] = new CollectionManagementServiceImpl(this, rpcClient);
-		services[2] = new UserManagementServiceImpl(this);
-		services[3] = new DatabaseInstanceManagerImpl(rpcClient);
+		services[1] = new RemoteCollectionManagementService(this, rpcClient);
+		services[2] = new RemoteUserManagementService(this);
+		services[3] = new RemoteDatabaseInstanceManager(rpcClient);
 		services[4] = new RemoteIndexQueryService(rpcClient, this);
 		services[5] = new RemoteXUpdateQueryService(this);
 		return services;
@@ -310,6 +322,7 @@ public class RemoteCollection implements CollectionImpl {
 					(String) hash.get("group"),
 					((Integer) hash.get("permissions")).intValue());
 			proxy.setPermissions(perm);
+			proxy.setType((String)hash.get("type"));
 			resources.add(proxy);
 		}
 		for (int i = 0; i < collections.size(); i++) {
@@ -396,9 +409,11 @@ public class RemoteCollection implements CollectionImpl {
 			} else {
 				uploadAndStore(res);
 			}
-		} else
+		} else if(res.getResourceType().equals("BinaryResource"))
+			store((RemoteBinaryResource)res);
+		else
 			store((RemoteXMLResource)res);
-		resources.add(new DocumentProxy(res.getId()));
+		resources.add(new DocumentProxy(res.getId(), res.getResourceType()));
 	}
 
 	private void store(RemoteXMLResource res) throws XMLDBException {
@@ -419,6 +434,24 @@ public class RemoteCollection implements CollectionImpl {
 		}
 	}
 
+	private void store(RemoteBinaryResource res) throws XMLDBException {
+		byte[] data = (byte[])res.getContent();
+		Vector params = new Vector();
+		params.addElement(data);
+		params.addElement(getPath() + '/' + res.getId());
+		params.addElement(new Boolean(true));
+		try {
+			rpcClient.execute("storeBinary", params);
+		} catch (XmlRpcException xre) {
+			throw new XMLDBException(
+					ErrorCodes.INVALID_RESOURCE,
+					xre == null ? "unknown error" : xre.getMessage(),
+					xre);
+		} catch (IOException ioe) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
+		}
+	}
+	
 	private void uploadAndStore(Resource res) throws XMLDBException {
 		File file = (File) res.getContent();
 		byte[] chunk = new byte[MAX_CHUNK_LENGTH];

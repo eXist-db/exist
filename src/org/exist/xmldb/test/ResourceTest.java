@@ -45,7 +45,7 @@ public class ResourceTest extends TestCase {
 			assertEquals(resources.length, testCollection.getResourceCount());
 
 			System.out.println("reading " + resources[0]);
-			XMLResource doc = (XMLResource) testCollection.getResource("test.xml");
+			XMLResource doc = (XMLResource) testCollection.getResource(resources[0]);
 			assertNotNull(doc);
 
 			System.out.println("testing XMLResource.getContentAsSAX()");
@@ -210,5 +210,10 @@ public class ResourceTest extends TestCase {
 			+ "<para>Paragraph1</para>"
 			+ "<para>Paragraph2</para>"
 			+ "</test>";
+	}
+	
+	public static void main(String[] args) {
+		junit.textui.TestRunner.run(ResourceTest.class);
+		//junit.swingui.TestRunner.run(LexerTest.class);
 	}
 }

@@ -1,155 +1,230 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<book
-  xmlns:ci="http://apache.org/cocoon/include/1.0">
-  <bookinfo>
-    <graphic fileref="logo.jpg"/>
-
-    <title>Open Source XML Database</title>
-    <author>
-      <firstname>Wolfgang M.</firstname>
-      <surname>Meier</surname>
-      <affiliation>
-		  <address format="linespecific"> <email>wolfgang@exist-db.org</email> </address>
-      </affiliation>
-    </author>
-  </bookinfo>
-  <ci:include src="sidebar.xml"/>
-  <chapter>
-    <title>Server Configuration</title>
-    <section>
-      <title>Overview</title>
-      <para>The central configuration file for <application moreinfo="none">eXist</application> is called <filename moreinfo="none">conf.xml</filename>. By default, if you run the standalone database server (see <ulink url="deployment.xml">Deployment Options</ulink>), the file will be loaded from the root directory of the distribution (as specified by the system property <option>exist.home</option>). If eXist is running in a servlet-context, <filename moreinfo="none">conf.xml</filename> is read from the <filename moreinfo="none">WEB-INF</filename> directory of the web application. </para>
-      <para> <filename moreinfo="none">conf.xml</filename> basically contains three sections:</para>
-      <variablelist>
-        <varlistentry>
-          <term>&lt;db-connection&gt;</term>
-          <listitem>
-            <para>Configures the storage backend.</para>
-          </listitem>
-        </varlistentry>
-        <varlistentry>
-          <term>&lt;serializer&gt;</term>
-          <listitem>
-            <para>Default settings for the serializer.</para>
-          </listitem>
-        </varlistentry>
-        <varlistentry>
-          <term>&lt;indexer&gt;</term>
-          <listitem>
-            <para>Controls the indexing process</para>
-          </listitem>
-        </varlistentry>
-        <varlistentry>
-          <term>&lt;log4j:configuration&gt;</term>
-          <listitem>
-            <para>Controls logging output. eXist uses the log4j package to print log and debug messages. The log4j:configuration section is simply forwarded to the log4j initialization process. For a description of the available options read the <ulink url="http://www.log4j.org/">log4j documentation</ulink>.</para>
-          </listitem>
-        </varlistentry>
-      </variablelist>
-      <para>The following sections describe each of these settings:</para>
-    </section>
-    <section>
-      <title> db-connection </title>
-      <para>This sections configures the storage backend used by eXist. Only one <sgmltag>db-connection</sgmltag> should be specified. An example configuration for the native backend is shown below:</para>
-      <example>
-        <title>&lt;db-connection&gt; entry</title>
-        <programlisting format="linespecific"><![CDATA[
+<book xmlns:ci="http://apache.org/cocoon/include/1.0">
+	<bookinfo>
+		<graphic fileref="logo.jpg"/>
+		<title>Open Source XML Database</title>
+		<author>
+			<firstname>Wolfgang M.</firstname>
+			<surname>Meier</surname>
+			<affiliation>
+				<address format="linespecific">
+					<email>wolfgang@exist-db.org</email>
+				</address>
+			</affiliation>
+		</author>
+	</bookinfo>
+	<ci:include src="sidebar.xml"/>
+	<chapter>
+		<title>Server Configuration</title>
+		<section>
+			<title>Overview</title>
+			<para>The central configuration file for <application>eXist</application> 
+            is called <filename>conf.xml</filename>. By default, if you run the 
+			standalone database server (see <ulink url="deployment.xml">Deployment 
+            Options</ulink>), the file will 
+				be loaded from the root directory of the distribution (as 
+				specified by the system property <option>exist.home</option>). 
+				If eXist is running in a servlet-context, <filename 
+				moreinfo="none">conf.xml</filename> is read from the <filename 
+				moreinfo="none">WEB-INF</filename> directory of the web 
+				application. </para>
+                
+            <para>Why two different locations? If eXist is deployed as part of a
+            web application, i.e. packaged in a <filename>.war</filename> file,
+            it usually has no access to files outside of the context it is
+            running in. That's why the configuration is read from
+            <filename>WEB-INF</filename> in this case.</para>
+            
+			<para><filename moreinfo="none">conf.xml</filename> basically 
+				contains three sections:</para>
+			<variablelist>
+				<varlistentry>
+					<term>&lt;db-connection&gt;</term>
+					<listitem>
+						<para>Configures the storage backend.</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>&lt;serializer&gt;</term>
+					<listitem>
+						<para>Default settings for the serializer.</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>&lt;indexer&gt;</term>
+					<listitem>
+						<para>Controls the indexing process</para>
+					</listitem>
+				</varlistentry>
+			</variablelist>
+			<para>The following sections describe each of these settings:</para>
+		</section>
+		<section>
+			<title> db-connection </title>
+			<para>This sections configures the storage backend used by eXist. 
+				Only one <sgmltag>db-connection</sgmltag> should be specified. 
+				An example configuration for the native backend is shown 
+				below:</para>
+			<example>
+				<title>&lt;db-connection&gt; entry</title>
+				<programlisting format="linespecific"><![CDATA[
 <db-connection database="native" files="data" cacheSize="48M" free_mem_min="5" 
   pageSize="4096">
   <pool min="1" max="15" sync-period="240000"/>
 </db-connection>
 ]]></programlisting>
-      </example>
-
-      <section>
-        <title>database</title>
-        <para>The <option>database</option>-attribute determines which database-backend is being used. Since the relational backends are no longer supported, "native" is currently the only backend.</para>
-    </section>
-
-      <section>
-        <title>files</title>
-        <para>The <option>files</option> attribute specifies the directory where the native backend will keep its database files. The directory should exist. If the specified path is relative, it will be relative to the directory defined by the <option>exist.home</option> system property.</para>
-        <para>If the data directory is not writable, eXist will internally switch to <emphasis>read-only mode</emphasis>, which means that any attempt to change the database will throw an exception.</para>
-    </section>
-
-    <section>
-        <title>cacheSize</title>
-
-        <para>This setting controls the maximum amount of main memory
-            consumed by all page buffers, i.e. the amount of memory used if all
-            page buffers were completely full. The database uses this parameter
-            to calculate the maximum size of each of the internal caches.
-            Increase this parameter if you have enough main memory available.</para>
-    </section>
-      <section>
-        <title>pageSize</title>
-        <para>Specifies the number of bytes used for internal data and btree pages. This should be equal to or a multiple of the page size used by the filesystem (usually a multiple of 4096).</para>
-      </section>
-      <section>
-        <title>free_mem_min</title>
-        <para>This option specifies the amount of free memory (in percent) which should be available to the Java virtual machine before eXist starts to flush its internal caches. During indexing, eXist caches index data in memory to avoid frequent disk lookups. If the amount of free memory drops below the defined limit, eXist will write all cached data to disk and trigger the garbage collection.</para>
-        <para>If your files are rather large (&gt; 50MB) or if you experience OutOfMemory- Errors during indexing, you may consider to increase this setting to &gt; 10%.</para>
-      </section>
-      <section>
-        <title>pool</title>
-        <para>These settings control the internal database connection pool. Options <option>min</option> and <option>max</option> specify the minimum and maximum size of the connection pool. The connection pool restricts the number of parallel (basic) operations that can be executed by the database. Settings should be somewhere between 1 and 20.</para>
-        <para>Please note that this has nothing to do with the HTTP and XMLRPC server settings. Those servers have their own connection pools.</para>
-        <para>Option <option>sync-period</option> defines how often the database will flush its internal buffers to disk. The sync thread will interrupt normal database operation after the specified number of milliseconds and write all dirty pages to disk.</para>
-      </section>
-    </section>
-    <section>
-      <title> serializer</title>
-      <para>The serializer is responsible for serializing documents or document fragments back into XML. The configuration file defines default settings for various parameters. Most parameters can also be specified programmatically.</para>
-      <para></para>
-      <variablelist>
-        <varlistentry>
-          <term>enable-xinclude</term>
-          <listitem>
-            <para>Should xinclude tags be expanded during serialization? Setting this to false will leave xinclude tags untouched. Otherwise, the serializer tries to expand them.</para>
-          </listitem>
-        </varlistentry>
-        <varlistentry>
-          <term>enable-xsl</term>
-          <listitem>
-            <para>Should the serializer pass its output to an XSL stylesheet if it finds an XSL processing-instruction at the start of the document?</para>
-          </listitem>
-        </varlistentry>
-        <varlistentry>
-          <term>add-exist-id</term>
-          <listitem>
-            <para>The serializer will write some debug information to each node it writes. This includes the internal id of the node and the source document. Setting the configuration parameter to <option>"all"</option> adds debug information to every node in the output. Value <option>"element"</option> will only add this information to top-level elements. <option>"none"</option> disables this feature.</para>
-          </listitem>
-        </varlistentry>
-        <varlistentry>
-          <term>indent</term>
-          <listitem>
-            <para>The serializer may use the pretty-printing feature of Xerces to indent the resulting XML source code. Set this option to <option>"false"</option> to disable pretty-printing.</para>
-          </listitem>
-        </varlistentry>
-        <varlistentry>
-          <term>match-tagging-elements</term>
-          <listitem>
-            <para>The database can highlight matches in the text content of a node, by tagging the matching text string with <sgmltag>exist:match</sgmltag>. As is obvious, this only works for XPath expressions using the fulltext index.Set the parameter to <option>"false"</option> to disable this feature.</para>
-          </listitem>
-        </varlistentry>
-        <varlistentry>
-          <term>match-tagging-attributes</term>
-          <listitem>
-            <para>Matches in attribute values can also be tagged. However, the character sequence || is used to mark the matching text string. Since this changes the content of the attribute value, the feature is disabled by default.</para>
-          </listitem>
-        </varlistentry>
-      </variablelist>
-    </section>
-    <section>
-      <title> indexer</title>
-      <para>This section controls how xml-files are indexed by eXist. An example configuration is shown below:</para>
-      <example>
-        <title>Specifying indexer options in conf.xml</title>
-        <programlisting format="linespecific"><![CDATA[
-<indexer caseSensitive="false"
+			</example>
+			<section>
+				<title>database</title>
+				<para>The <option>database</option>-attribute selects a database
+                backend. Since the relational 
+					backends are no longer supported, "native" is currently the 
+					only backend available.</para>
+			</section>
+			<section>
+				<title>files</title>
+				<para>The <option>files</option> attribute specifies the 
+					directory where the native backend will keep its database 
+					files. The directory should exist. If the specified path is 
+					relative, it will be relative to the directory defined by 
+					the <option>exist.home</option> system property.</para>
+				<para>If the data directory is not writable, eXist will 
+					internally switch to <emphasis>read-only mode</emphasis>, 
+					which means that any attempt to change the database will 
+					throw an exception.</para>
+			</section>
+			<section>
+				<title>cacheSize</title>
+				<para>This setting controls the maximum amount of main memory 
+					consumed by all page buffers, i.e. the amount of memory 
+					used if all page buffers were completely full. The database 
+					uses this parameter to calculate the maximum size of each 
+					of the internal caches. Increase this parameter if you have 
+					enough main memory available.</para>
+			</section>
+			<section>
+				<title>pageSize</title>
+				<para>Specifies the number of bytes used for internal data and 
+					btree pages. This should be equal to or a multiple of the 
+					page size used by the filesystem (usually a multiple of 
+					4096).</para>
+			</section>
+			<section>
+				<title>free_mem_min</title>
+				<para>This option specifies the amount of free memory (in 
+					percent) which should be available to the Java virtual 
+					machine before eXist starts to flush its internal caches. 
+					During indexing, eXist caches index data in memory to avoid 
+					frequent disk lookups. If the amount of free memory drops 
+					below the defined limit, eXist will write all cached data 
+					to disk and trigger the garbage collection.</para>
+				<para>If your files are rather large (&gt; 50MB) or if you 
+					experience OutOfMemory- Errors during indexing, you may 
+					consider to increase this setting to &gt; 10%.</para>
+			</section>
+			<section>
+				<title>pool</title>
+				<para>These settings control the internal database connection 
+					pool. Options <option>min</option> and <option>max</option> 
+					specify the minimum and maximum size of the connection 
+					pool. The connection pool restricts the number of parallel 
+					(basic) operations that can be executed by the database. 
+					Settings should be somewhere between 1 and 20.</para>
+				<para>Please note that this has nothing to do with the HTTP and 
+					XMLRPC server settings. Those servers have their own 
+					connection pools.</para>
+				<para>Option <option>sync-period</option> defines how often the 
+					database will flush its internal buffers to disk. The sync 
+					thread will interrupt normal database operation after the 
+					specified number of milliseconds and write all dirty pages 
+					to disk.</para>
+			</section>
+		</section>
+		<section>
+			<title>serializer</title>
+			<para>The serializer is responsible for serializing documents or 
+				document fragments back into XML. The configuration file 
+				defines default settings for various parameters. Most 
+				parameters can also be specified programmatically.</para>
+			<para></para>
+			<variablelist>
+				<varlistentry>
+					<term>enable-xinclude</term>
+					<listitem>
+						<para>Should xinclude tags be expanded during 
+							serialization? Setting this to false will leave 
+							xinclude tags untouched. Otherwise, the serializer 
+							tries to expand them.</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>enable-xsl</term>
+					<listitem>
+						<para>Should the serializer pass its output to an XSL 
+							stylesheet if it finds an XSL 
+							processing-instruction at the start of the 
+							document?</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>add-exist-id</term>
+					<listitem>
+						<para>The serializer can add some debug information 
+							to each element, using additional attributes. This 
+                            includes the internal 
+							id of the node and the source document. Setting the 
+							configuration parameter to <option>"all"</option> 
+							adds debug information to every node in the output. 
+							Value <option>"element"</option> will only add this 
+							information to top-level elements. 
+							<option>"none"</option> disables this 
+							feature.</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>indent</term>
+					<listitem>
+						<para>The serializer by default tries to pretty-print
+							the resulting XML source code. Set this option to 
+							<option>"no"</option> to disable 
+							pretty-printing.</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>match-tagging-elements</term>
+					<listitem>
+						<para>The database can highlight matches in the text 
+							content of a node, by tagging the matching text 
+							string with <sgmltag>exist:match</sgmltag>. As is 
+							obvious, this only works for XPath expressions 
+							using the fulltext index. Set the parameter to 
+							<option>"yes"</option> to disable this 
+							feature.</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>match-tagging-attributes</term>
+					<listitem>
+						<para>Matches in attribute values can also be tagged. 
+							However, the character sequence || is used to mark 
+							the matching text string. Since this changes the 
+							content of the attribute value, the feature is 
+							disabled by default.</para>
+					</listitem>
+				</varlistentry>
+			</variablelist>
+		</section>
+		<section>
+			<title>indexer</title>
+			<para>This section controls how XML files are indexed by eXist. An 
+				example configuration is shown below:</para>
+			<example>
+				<title>Specifying Indexer-Options in conf.xml</title>
+				<programlisting format="linespecific"><![CDATA[
+<indexer caseSensitive="no"
 	suppress-whitespace="both" index-depth="1"
 	tokenizer="org.exist.storage.analysis.SimpleTokenizer"
-	validation="false">
+	validation="no">
 	  
     <stopwords file="stopword"/>
     
@@ -172,103 +247,232 @@
     </entity-resolver>
   </indexer>
 ]]></programlisting>
-      </example>
-      <section>
-        <title>Common Options</title>
-        <variablelist>
-          <varlistentry>
-            <term>caseSensitive</term>
-            <listitem>
-              <para>Are string comparisons case sensitive? This option applies to XPath equality tests (=) and functions like contains(), starts-with() or ends-with(). It does not apply to operators or functions based on the fulltext index (e.g. &amp;=, |=, near() ...) - index lookups are <emphasis>always</emphasis> case-insensitive.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>suppress-whitespace</term>
-            <listitem>
-              <para>How should the indexer treat whitespace at the start or end of a character sequence? Possible values are <option>leading</option>, <option>trailing</option>, <option>both</option> and <option>none</option>. <option>leading</option> will suppress leading whitespace; <option>both</option> suppresses leading and trailing whitespace; <option>none</option> preserves all whitespace.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>tokenizer</term>
-            <listitem>
-              <para>The Java class used to tokenize a character sequence into a stream of single words or tokens. The tokens are stored to the fulltext index. Currently only the SimpleTokenizer is available.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>index-depth</term>
-            <listitem>
-              <para>Defines the depth of the DOM index. The DOM index maps unique node identifers to the node's storage location in the DOM file. Generating this index is expensive. It is primarily needed to access nodes by their unique node identifier (for example, when serializing query results or for XUpdate). Those operations are usually not very time-critical. Furthermore, most XPath expressions can do without this index - they use short-cuts to access the node directly.</para>
-              <para>Thus, beginning with version 0.9, only top-level elements are added to the index, attributes and text nodes are always excluded. This results in much smaller index sizes and - consequently - in a smaller <filename moreinfo="none">dom.dbx</filename> file. The <option>index-depth</option> option specifies the tree level up to which elements will be added to the index. For example, a value of 2 means that the document root node and all its child elements will be indexed; a value of 1 only indexes the root node.</para>
-              <para>Usually, <option>index-depth="2"</option> offers a good compromise between index size and performance. However, if your documents are deeply structured, you should consider increasing this setting to 3, 4 or 5. For example, if the longest path from the document root to an element node is greater than 10, a index-depth setting of 4 or 5 might help to increase overall query performance for some types of queries.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>validation</term>
-            <listitem>
-              <para>Defines the default setting for the validation of documents by the XML parser: if set to "false", documents will never be validated against an existing DTD or schema. "auto" will leave it to the SAX parser (Xerces only) if a document is validated.</para>
-            </listitem>
-          </varlistentry>
-        </variablelist>
-      </section>
-      <section>
-        <title> <sgmltag>stopwords</sgmltag> </title>
-        <para>Attribute <option>file</option> points to a file containing a list of stopwords. Stopwords are <emphasis>not</emphasis> added to the fullext index.</para>
-      </section>
-      <section>
-        <title> <sgmltag>index</sgmltag> </title>
-        <para>The fulltext index may easily become a bottleneck for large collections. By default, eXist indexes all character content found in a document. It is thus important to be able to restrict fulltext-indexing to those parts of a document for which fulltext queries are actually used. For example, using a fulltext query to search for URLs or some kind of serial number does probably not make much sense. However, those URLs will blow up the fulltext index, so they should be ignored by the fulltext indexer.</para>
-        <para>The <sgmltag>index</sgmltag> section allows you to exclude or include specified parts of your document into the fulltext index. Please note that even if you exclude some parts you will still be able to search for them using standard exact-match XPath expressions like =, &gt;, &lt;, contains() ...</para>
-        <para>You may specify multiple <sgmltag>index</sgmltag> sections in your configuration. Each <sgmltag>index</sgmltag> section applies to a specified <emphasis>document type</emphasis>. For documents without a doctype declaration, the name of the document root element is used.</para>
-        <para>You have to define a default-behaviour for each of the <sgmltag>index</sgmltag> sections through the <option>default</option> attribute setting. Available values are: <option>all</option> or <option>none</option>. If the default behaviour is <option>all</option>, all content will be indexed by default. You may exclude some sections by defining a list of <sgmltag>exclude</sgmltag> elements.</para>
-        <para>If you set the default behaviour to <option>none</option>, the indexer will ignore everything by default. Use <sgmltag>include</sgmltag> elements to define those parts you want to be included.</para>
-        <para>The <sgmltag>include</sgmltag> and <sgmltag>exclude</sgmltag> elements both expect a path expression in the <option>path</option> attribute. Paths use an XPath-like syntax: elements are specified by their name, attributes as @attribute; / selects child nodes, // selects an item at every position in the tree. For example,</para>
-        <synopsis format="linespecific">&lt;exclude path="//url"/&gt;</synopsis>
-        <para>exludes the content of all <sgmltag>url</sgmltag> tags and their descendants.</para>
-        <synopsis format="linespecific">&lt;exclude path="//article/@id"/&gt;</synopsis>
-        <para>excludes the id-attribute of all <sgmltag>article</sgmltag> elements.</para>
-        <para>The following list explains all options available for the <sgmltag>index</sgmltag> section:</para>
-        <variablelist>
-          <varlistentry>
-            <term>default</term>
-            <listitem>
-              <para>Defines the default behaviour for the indexer. Valid settings are <option>all</option> or <option>none</option>.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>doctype</term>
-            <listitem>
-              <para>The document type to which these settings should be applied. </para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>attributes</term>
-            <listitem>
-              <para>Should attributes be indexed by default? Possible values are <option>true</option> or <option>false</option>.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>alphanum</term>
-            <listitem>
-              <para>Should alpha-numeric sequences be indexed? Setting this to <option>false</option> will exclude numbers, dates, serial numbers and any other kind of alpha-numeric sequence not being a simple word.</para>
-            </listitem>
-          </varlistentry>
-          <varlistentry>
-            <term>index-depth</term>
-            <listitem>
-              <para>Same as the common index-depth attribute (see above), but restricted to one type of document.</para>
-            </listitem>
-          </varlistentry>
-        </variablelist>
-      </section>
-    </section>
-    <section>
-      <title>Cocoon Sitemap Configuration</title>
-      <para>eXist's integration with Cocoon is completely based on the XML:DB database API. You can use any XML:DB enabled database like eXist or Xindice.</para>
-      <para>Cocoon uses an XML file called <filename moreinfo="none">sitemap.xmap</filename> to configure the processing pipelines it uses to process HTTP requests. Beginning with version 2.0 so called pseudo-protocols are supported by Cocoon. Pseudo-protocols allow you to register handlers for special urls via source factories. Basically, you can use a pseudo-protocol to specify resources wherever you would use a known protocol like http:// or file:// in the sitemap.</para>
-      <para>Current Cocoon distributions define a pseudo-protocol to access XML:DB enabled databases. The pseudo-protocol is configured in Cocoon's main configuration file <filename moreinfo="none">WEB-INF/cocoon.xconf</filename>. All you have to do is to specify the correct database driver class:</para>
-      <example>
-        <title>Defining the XML:DB Database Driver</title>
-        <screen format="linespecific"><![CDATA[
+			</example>
+			<section>
+				<title>Common Options</title>
+				<variablelist>
+					<varlistentry>
+						<term>caseSensitive</term>
+						<listitem>
+							<para>Are string comparisons case sensitive? This 
+								option applies to XPath equality tests (=) and 
+								functions like contains(), starts-with() or 
+								ends-with(). It does not apply to operators or 
+								functions based on the fulltext index (e.g. 
+								&amp;=, |=, near() ...) - index lookups are 
+								<emphasis>always</emphasis> 
+								case-insensitive.</para>
+						</listitem>
+					</varlistentry>
+					<varlistentry>
+						<term>suppress-whitespace</term>
+						<listitem>
+							<para>How should the indexer treat whitespace at 
+								the start or end of a character sequence? 
+								Possible values are <option>leading</option>, 
+								<option>trailing</option>, 
+								<option>both</option> and 
+								<option>none</option>. <option>leading</option> 
+								will suppress leading whitespace; 
+								<option>both</option> suppresses leading and 
+								trailing whitespace; <option>none</option> 
+								preserves all whitespace.</para>
+                            <para>The option <emphasis>only</emphasis> applies to
+                            newly stored files. Changing it has no effect on
+                            previously stored documents.</para>
+						</listitem>
+					</varlistentry>
+					<varlistentry>
+						<term>tokenizer</term>
+						<listitem>
+							<para>The Java class used to tokenize a character 
+								sequence into a stream of single words or 
+								tokens. The tokens are stored to the fulltext 
+								index. Currently only the SimpleTokenizer is 
+								available.</para>
+						</listitem>
+					</varlistentry>
+					<varlistentry>
+						<term>index-depth</term>
+						<listitem>
+							<para>Defines the depth of the DOM index. The DOM 
+								index maps unique node identifers to the node's 
+								storage location in the DOM file. Generating 
+								this index is expensive. It is primarily needed 
+								to access nodes by their unique node identifier 
+								(for example, when serializing query results or 
+								for XUpdate). Those operations are usually not 
+								very time-critical. Furthermore, most XPath 
+								expressions can do without this index - they 
+								use short-cuts to access the node 
+								directly.</para>
+							<para>Thus, beginning with version 0.9, only 
+								top-level elements are added to the index, 
+								attributes and text nodes are always excluded. 
+								This results in much smaller index sizes and - 
+								consequently - in a smaller <filename 
+								moreinfo="none">dom.dbx</filename> file. The 
+								<option>index-depth</option> option specifies 
+								the tree level up to which elements will be 
+								added to the index. For example, a value of 2 
+								means that the document root node and all its 
+								child elements will be indexed; a value of 1 
+								only indexes the root node.</para>
+							<para>Usually, <option>index-depth="2"</option> 
+								offers a good compromise between index size and 
+								performance. However, if your documents are 
+								deeply structured, you should consider 
+								increasing this setting to 3, 4 or 5. For 
+								example, if the longest path from the document 
+								root to an element node is greater than 10, a 
+								index-depth setting of 4 or 5 might help to 
+								increase overall query performance for some 
+								types of queries.</para>
+						</listitem>
+					</varlistentry>
+					<varlistentry>
+						<term>validation</term>
+						<listitem>
+							<para>Defines the default setting for the 
+								validation of documents by the XML parser: if 
+								set to "no", documents will never be 
+								validated against an existing DTD or schema. 
+								"auto" will leave it to the SAX parser (Xerces 
+								only) if a document is validated.</para>
+						</listitem>
+					</varlistentry>
+				</variablelist>
+			</section>
+			<section>
+				<title>
+					<sgmltag>stopwords</sgmltag>
+				</title>
+				<para>Attribute <option>file</option> points to a file 
+					containing a list of stopwords. Stopwords are 
+					<emphasis>not</emphasis> added to the fullext index.</para>
+			</section>
+			<section>
+				<title>
+					<sgmltag>index</sgmltag>
+				</title>
+				<para>The fulltext index may easily become a bottleneck for 
+					large collections. By default, eXist indexes all character 
+					content found in a document. It is thus important to be 
+					able to restrict fulltext-indexing to those parts of a 
+					document for which fulltext queries are actually used. For 
+					example, using a fulltext query to search for URLs or some 
+					kind of serial number does probably not make much sense. 
+					However, those URLs will blow up the fulltext index, so 
+					they should be ignored by the fulltext indexer.</para>
+				<para>The <sgmltag>index</sgmltag> section allows you to 
+					exclude or include specified parts of your document into 
+					the fulltext index. Please note that even if you exclude 
+					some parts you will still be able to search for them using 
+					standard exact-match XPath expressions like =, &gt;, &lt;, 
+					contains() ...</para>
+				<para>You may specify multiple <sgmltag>index</sgmltag> 
+					sections in your configuration. Each 
+					<sgmltag>index</sgmltag> section applies to a specified 
+					<emphasis>document type</emphasis>. For documents without a 
+					doctype declaration, the name of the document root element 
+					is used.</para>
+				<para>You have to define a default-behaviour for each of the 
+					<sgmltag>index</sgmltag> sections through the 
+					<option>default</option> attribute setting. Available 
+					values are: <option>all</option> or <option>none</option>. 
+					If the default behaviour is <option>all</option>, all 
+					content will be indexed by default. You may exclude some 
+					sections by defining a list of <sgmltag>exclude</sgmltag> 
+					elements.</para>
+				<para>If you set the default behaviour to 
+					<option>none</option>, the indexer will ignore everything 
+					by default. Use <sgmltag>include</sgmltag> elements to 
+					define those parts you want to be included.</para>
+				<para>The <sgmltag>include</sgmltag> and 
+					<sgmltag>exclude</sgmltag> elements both expect a path 
+					expression in the <option>path</option> attribute. Paths 
+					use an XPath-like syntax: elements are specified by their 
+					name, attributes as @attribute; / selects child nodes, // 
+					selects an item at every position in the tree. For 
+					example,</para>
+				<synopsis format="linespecific">&lt;exclude 
+					path="//url"/&gt;</synopsis>
+				<para>exludes the content of all <sgmltag>url</sgmltag> tags 
+					and their descendants.</para>
+				<synopsis format="linespecific">&lt;exclude 
+					path="//article/@id"/&gt;</synopsis>
+				<para>excludes the id-attribute of all 
+					<sgmltag>article</sgmltag> elements.</para>
+				<para>The following list explains all options available for the 
+					<sgmltag>index</sgmltag> section:</para>
+				<variablelist>
+					<varlistentry>
+						<term>default</term>
+						<listitem>
+							<para>Defines the default behaviour for the 
+								indexer. Valid settings are 
+								<option>all</option> or 
+								<option>none</option>.</para>
+						</listitem>
+					</varlistentry>
+					<varlistentry>
+						<term>doctype</term>
+						<listitem>
+							<para>The document type to which these settings 
+								should be applied. </para>
+						</listitem>
+					</varlistentry>
+					<varlistentry>
+						<term>attributes</term>
+						<listitem>
+							<para>Should attributes be indexed by default? 
+								Possible values are <option>true</option> or 
+								<option>false</option>.</para>
+						</listitem>
+					</varlistentry>
+					<varlistentry>
+						<term>alphanum</term>
+						<listitem>
+							<para>Should alpha-numeric sequences be indexed? 
+								Setting this to <option>false</option> will 
+								exclude numbers, dates, serial numbers and any 
+								other kind of alpha-numeric sequence not being 
+								a simple word.</para>
+						</listitem>
+					</varlistentry>
+					<varlistentry>
+						<term>index-depth</term>
+						<listitem>
+							<para>Same as the common index-depth attribute (see 
+								above), but restricted to one type of 
+								document.</para>
+						</listitem>
+					</varlistentry>
+				</variablelist>
+			</section>
+		</section>
+		<section>
+			<title>Cocoon Sitemap Configuration</title>
+			<para>eXist's integration with Cocoon is completely based on the 
+				XML:DB database API. You can use any XML:DB enabled database 
+				like eXist or Xindice.</para>
+			<para>Cocoon uses an XML file called <filename 
+				moreinfo="none">sitemap.xmap</filename> to configure the 
+				processing pipelines it uses to process HTTP requests. 
+				Beginning with version 2.0 so called pseudo-protocols are 
+				supported by Cocoon. Pseudo-protocols allow you to register 
+				handlers for special urls via source factories. Basically, you 
+				can use a pseudo-protocol to specify resources wherever you 
+				would use a known protocol like http:// or file:// in the 
+				sitemap.</para>
+			<para>Current Cocoon distributions define a pseudo-protocol to 
+				access XML:DB enabled databases. The pseudo-protocol is 
+				configured in Cocoon's main configuration file <filename 
+				moreinfo="none">WEB-INF/cocoon.xconf</filename>. All you have 
+				to do is to specify the correct database driver class:</para>
+			<example>
+				<title>Defining the XML:DB Database Driver</title>
+				<screen format="linespecific"><![CDATA[
 <source-handler logger="core.source-handler">
     <!-- xmldb pseudo protocol -->
     <protocol 
@@ -279,12 +483,18 @@
     </protocol>
 </source-handler>
 ]]></screen>
-      </example>
-      <para>Once the database-driver has been registered with the handler, it is possible to use an XML:DB URI wherever Cocoon expects an URI in its site configuration file <filename moreinfo="none">sitemap.xmap</filename>.</para>
-      <para>For example, to access our collection of Shakespeare plays directly from the web-browser with a stylesheet applied to each play, we might use the following code fragment in the sitemap's processing pipeline:</para>
-      <example>
-        <title>Using XML:DB URIs in the Sitemap</title>
-        <screen format="linespecific"><![CDATA[
+			</example>
+			<para>Once the database-driver has been registered with the 
+				handler, it is possible to use an XML:DB URI wherever Cocoon 
+				expects an URI in its site configuration file <filename 
+				moreinfo="none">sitemap.xmap</filename>.</para>
+			<para>For example, to access our collection of Shakespeare plays 
+				directly from the web-browser with a stylesheet applied to each 
+				play, we might use the following code fragment in the sitemap's 
+				processing pipeline:</para>
+			<example>
+				<title>Using XML:DB URIs in the Sitemap</title>
+				<screen format="linespecific"><![CDATA[
 <!-- apply stylesheet shakes.xsl to all XML documents
 in xmldb-collection /db/shakespeare/plays --> 
 <map:match pattern="xmldb/db/shakespeare/plays/**.xml">
@@ -293,8 +503,9 @@ in xmldb-collection /db/shakespeare/plays -->
     <map:serialize type="html"/>
 </map:match>
 ]]></screen>
-      </example>
-      <para>The <ulink url="../sitemap.xmap">sitemap</ulink> delivered with eXist contains some more complex examples.</para>
-    </section>
-  </chapter>
+			</example>
+			<para>The <ulink url="../sitemap.xmap">sitemap</ulink> delivered 
+				with eXist contains some more complex examples.</para>
+		</section>
+	</chapter>
 </book>

@@ -161,4 +161,6 @@ public interface XQueryService extends Service {
 	 * @param backwardsCompatible
 	 */
 	public void setXPathCompatibility(boolean backwardsCompatible);
+	
+	public void setModuleLoadPath(String path);
 }

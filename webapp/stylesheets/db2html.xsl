@@ -260,9 +260,14 @@
     </xsl:template>
     
     <xsl:template match="itemizedlist">
-        <ul>
-            <xsl:apply-templates/>
-        </ul>
+        <xsl:choose>
+            <xsl:when test="@style='none'">
+                <ul class="none"><xsl:apply-templates/></ul>
+            </xsl:when>
+            <xsl:otherwise>
+                <ul><xsl:apply-templates/></ul>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
     
     <xsl:template match="itemizedlist/listitem">

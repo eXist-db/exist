@@ -316,6 +316,19 @@ public class RpcServer implements RpcAPI {
 			pool.release(con);
 		}
 	}
+
+	public byte[] getBinaryResource(User user, String name)
+		throws EXistException, PermissionDeniedException {
+		RpcConnection con = pool.get();
+		try {
+			return con.getBinaryResource(user, name);
+		} catch(Exception e) {
+			handleException(e);
+			return null;
+		} finally {
+			pool.release(con);
+		}
+	}
 	
 	/**
 	 * Retrieve a document. The document data is returned as a string.
@@ -564,8 +577,10 @@ public class RpcServer implements RpcAPI {
 			throw (EXistException) e;
 		else if (e instanceof PermissionDeniedException)
 			throw (PermissionDeniedException) e;
-		else
-			throw new EXistException(e.getMessage());
+		else {
+			System.out.println(e.getClass().getName());
+			throw new EXistException(e);
+		}
 	}
 
 	/**
@@ -608,23 +623,7 @@ public class RpcServer implements RpcAPI {
 		throws EXistException, PermissionDeniedException {
 		return parse(user, xmlData, docName, 0);
 	}
-
-	/**
-	 *  parse an XML document and store it into the database. The document will
-	 *  later be identified by <code>docName</code>. Some xmlrpc clients seem to
-	 *  have problems with character encodings when sending xml content. To
-	 *  avoid this, parse() accepts the xml document content as byte[].
-	 *
-	 *@param  xmlData                        the document's XML content as UTF-8
-	 *      encoded array of bytes.
-	 *@param  docName                        the document's name
-	 *@param  overwrite                      replace an existing document with
-	 *      the same name? (1=yes, 0=no)
-	 *@param  user                           Description of the Parameter
-	 *@return                                Description of the Return Value
-	 *@exception  EXistException             Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
-	 */
+	
 	public boolean parse(User user, byte[] xmlData, String docName, int overwrite)
 		throws EXistException, PermissionDeniedException {
 		// some clients (Perl) encode strings with a \0 at the end.
@@ -646,17 +645,6 @@ public class RpcServer implements RpcAPI {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  xml                            Description of the Parameter
-	 *@param  docName                        Description of the Parameter
-	 *@param  overwrite                      Description of the Parameter
-	 *@param  user                           Description of the Parameter
-	 *@return                                Description of the Return Value
-	 *@exception  EXistException             Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
-	 */
 	public boolean parse(User user, String xml, String docName, int overwrite)
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = pool.get();
@@ -718,26 +706,30 @@ public class RpcServer implements RpcAPI {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  xml                            Description of the Parameter
-	 *@param  docName                        Description of the Parameter
-	 *@param  user                           Description of the Parameter
-	 *@return                                Description of the Return Value
-	 *@exception  EXistException             Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
-	 */
 	public boolean parse(User user, String xml, String docName)
 		throws EXistException, PermissionDeniedException {
 		return parse(user, xml, docName, 0);
 	}
 
+	public boolean storeBinary(User user, byte[] data, String docName, boolean replace)
+	throws EXistException, PermissionDeniedException {
+		RpcConnection con = pool.get();
+		try {
+			return con.storeBinary(user, data, docName, replace);
+		} catch(Exception e) {
+			handleException(e);
+			return false;
+		} finally {
+			con.synchronize();
+			pool.release(con);
+		}
+	}
+	
 	public Hashtable queryP(User user, byte[] xpath, Hashtable parameters)
 		throws EXistException, PermissionDeniedException {
 		return queryP(user, xpath, null, null, parameters);
 	}
-
+	
 	public Hashtable queryP(
 		User user,
 		byte[] xpath,
@@ -777,85 +769,18 @@ public class RpcServer implements RpcAPI {
 		return true;
 	}
 
-	public Vector query(User user, byte[] xpath)
-		throws EXistException, PermissionDeniedException {
-		try {
-			return query(user, new String(xpath, "UTF-8"));
-		} catch (UnsupportedEncodingException e) {
-			return query(user, new String(xpath));
-		}
-	}
-
-	public Vector query(User user, String xpath)
-		throws EXistException, PermissionDeniedException {
-		return query(user, xpath, null, null);
-	}
-
-	public Vector query(User user, String xpath, String docId, String s_id)
-		throws EXistException, PermissionDeniedException {
-		RpcConnection con = pool.get();
-		try {
-			return con.query(user, xpath, docId, s_id);
-		} catch (Exception e) {
-			handleException(e);
-			return null;
-		} finally {
-			pool.release(con);
-		}
-	}
-
 	/**
 	 *  execute XPath query and return howmany nodes from the result set,
 	 *  starting at position <code>start</code>. If <code>prettyPrint</code> is
 	 *  set to >0 (true), results are pretty printed.
 	 *
-	 *@param  xpath                          the XPath query to execute
-	 *@param  howmany                        maximum number of results to
-	 *      return.
-	 *@param  start                          item in the result set to start
-	 *      with.
-	 *@param  prettyPrint                    turn on pretty printing if >0.
-	 *@param  encoding                       the character encoding to use.
-	 *@param  user                           Description of the Parameter
-	 *@return                                Description of the Return Value
-	 *@exception  EXistException             Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
 	public String query(
 		User user,
 		String xpath,
 		int howmany,
 		int start,
-		int prettyPrint)
-		throws EXistException, PermissionDeniedException {
-		return query(user, xpath, howmany, start, prettyPrint, null);
-	}
-
-	/**
-	 *  execute XPath query and return howmany nodes from the result set,
-	 *  starting at position <code>start</code>. If <code>prettyPrint</code> is
-	 *  set to >0 (true), results are pretty printed.
-	 *
-	 *@param  xpath                          the XPath query to execute
-	 *@param  howmany                        maximum number of results to
-	 *      return.
-	 *@param  start                          item in the result set to start
-	 *      with.
-	 *@param  prettyPrint                    turn on pretty printing if >0.
-	 *@param  encoding                       the character encoding to use.
-	 *@param  sortExpr                       Description of the Parameter
-	 *@param  user                           Description of the Parameter
-	 *@return                                Description of the Return Value
-	 *@exception  EXistException             Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
-	 */
-	public String query(
-		User user,
-		String xpath,
-		int howmany,
-		int start,
-		int prettyPrint,
-		String sortExpr)
+		Hashtable parameters)
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = pool.get();
 		String result = null;
@@ -866,9 +791,7 @@ public class RpcServer implements RpcAPI {
 					xpath,
 					howmany,
 					start,
-					(prettyPrint > 0),
-					false,
-					sortExpr);
+					parameters);
 			return result;
 		} catch (Exception e) {
 			handleException(e);
@@ -878,15 +801,6 @@ public class RpcServer implements RpcAPI {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  resultId                       Description of the Parameter
-	 *@param  user                           Description of the Parameter
-	 *@return                                Description of the Return Value
-	 *@exception  PermissionDeniedException  Description of the Exception
-	 *@exception  EXistException             Description of the Exception
-	 */
 	public Hashtable querySummary(User user, int resultId)
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = pool.get();
@@ -1000,15 +914,6 @@ public class RpcServer implements RpcAPI {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  name                           Description of the Parameter
-	 *@param  user                           Description of the Parameter
-	 *@return                                Description of the Return Value
-	 *@exception  EXistException             Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
-	 */
 	public boolean removeCollection(User user, String name)
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = pool.get();
@@ -1317,12 +1222,6 @@ public class RpcServer implements RpcAPI {
 		return true;
 	}
 
-	/**
-	 *  Description of the Class
-	 *
-	 *@author     wolf
-	 *@created    28. Mai 2002
-	 */
 	class ConnectionPool {
 
 		public final static int CHECK_INTERVAL = 5000;
@@ -1425,18 +1324,6 @@ public class RpcServer implements RpcAPI {
 
 		}
 	}
-
-	/**
-	*  Description of the Method
-	*
-	*@param  name                           Source dir
-	*@param  namedest                       Destination dir
-	*@param  user                           Description of the Parameter
-	*@return                                Description of the Return Value
-	*@exception  EXistException             Description of the Exception
-	*@exception  PermissionDeniedException  Description of the Exception
-	*@author Giulio
-	*/
 
 	public boolean copyCollection(User user, String name, String namedest)
 		throws EXistException, PermissionDeniedException {

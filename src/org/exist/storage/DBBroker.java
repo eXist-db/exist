@@ -30,9 +30,10 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Observable;
 
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.BLOBDocument;
+import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
@@ -71,25 +72,27 @@ public abstract class DBBroker extends Observable {
 	public final static int POSTGRESQL = 2;
 	public final static int DBM = 3;
 
+	protected final static Logger LOG = Logger.getLogger(DBBroker.class);
+	
 	protected boolean caseSensitive = true;
 
 	protected Configuration config;
 	protected BrokerPool pool;
-	protected static File symbolsFile;
-	protected static SymbolTable symbols = null;
+	protected File symbolsFile;
+	protected SymbolTable symbols = null;
 	protected User user = null;
 
-	protected static void saveSymbols() throws EXistException {
+	protected void saveSymbols() throws EXistException {
 		synchronized (symbols) {
 			try {
 				VariableByteOutputStream os = new VariableByteOutputStream(256);
 				symbols.write(os);
-				FileOutputStream fos = new FileOutputStream(symbolsFile, false);
+				FileOutputStream fos = new FileOutputStream(symbols.getFile(), false);
 				fos.write(os.toByteArray());
 				fos.close();
 			} catch (FileNotFoundException e) {
 				throw new EXistException(
-					"file not found: " + symbolsFile.getAbsolutePath());
+					"file not found: " + symbols.getFile().getAbsolutePath());
 			} catch (IOException e) {
 				throw new EXistException(
 					"io error occurred while creating "
@@ -98,9 +101,9 @@ public abstract class DBBroker extends Observable {
 		}
 	}
 
-	protected static void loadSymbols() throws EXistException {
+	protected void loadSymbols() throws EXistException {
 		try {
-			FileInputStream fis = new FileInputStream(symbolsFile);
+			FileInputStream fis = new FileInputStream(symbols.getFile());
 			VariableByteInputStream is = new VariableByteInputStream(fis);
 			symbols.read(is);
 			fis.close();
@@ -114,15 +117,10 @@ public abstract class DBBroker extends Observable {
 		}
 	}
 
-	public static synchronized SymbolTable getSymbols() {
+	public SymbolTable getSymbols() {
 		return symbols;
 	}
 
-	/**
-	 *  Constructor for the DBBroker object
-	 *
-	 *@param  config  Description of the Parameter
-	 */
 	public DBBroker(BrokerPool pool, Configuration config)
 		throws EXistException {
 		this.config = config;
@@ -134,14 +132,16 @@ public abstract class DBBroker extends Observable {
 		if ((dataDir = (String) config.getProperty("db-connection.data-dir"))
 			== null)
 			dataDir = "data";
-		if (symbols == null) {
+		if ((symbols = (SymbolTable) config.getProperty("db-connection.symbol-table")) == null) {
 			symbolsFile =
 				new File(dataDir + File.separatorChar + "symbols.dbx");
-			symbols = new SymbolTable();
+			LOG.debug("Loading symbol table from " + symbolsFile.getAbsolutePath());
+			symbols = new SymbolTable(symbolsFile);
 			if (!symbolsFile.canRead()) {
 				saveSymbols();
 			} else
 				loadSymbols();
+			config.setProperty("db-connection.symbol-table", symbols);
 		}
 		this.pool = pool;
 	}
@@ -482,11 +482,11 @@ public abstract class DBBroker extends Observable {
 	 */
 	public abstract void storeDocument(DocumentImpl doc);
 
-	public abstract void storeBinaryResource(BLOBDocument blob, byte[] data);
+	public abstract void storeBinaryResource(BinaryDocument blob, byte[] data);
 	
-	public abstract byte[] getBinaryResourceData(final BLOBDocument blob);
+	public abstract byte[] getBinaryResourceData(final BinaryDocument blob);
 	
-	public abstract void removeBinaryResource(final BLOBDocument blob) throws PermissionDeniedException;
+	public abstract void removeBinaryResource(final BinaryDocument blob) throws PermissionDeniedException;
 	
 	public void sync() {
 		/*
