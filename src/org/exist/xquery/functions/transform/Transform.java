@@ -35,7 +35,6 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
@@ -52,6 +51,8 @@ import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.serializers.Serializer;
+import org.exist.util.Lock;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -167,12 +168,13 @@ public class Transform extends BasicFunction {
 		}
 	}
 	
-	private Templates getSource(TransformerFactory factory, String stylesheet) 
+	private Templates getSource(SAXTransformerFactory factory, String stylesheet) 
 	throws XPathException, TransformerConfigurationException {
 		String base;
 		if(stylesheet.indexOf(':') < 0) {
 			File f = new File(stylesheet);
-			if(f.canRead()) stylesheet = f.toURI().toASCIIString();
+			if(f.canRead()) 
+				stylesheet = f.toURI().toASCIIString();
 			else {
 				stylesheet = context.getBaseURI() + File.separatorChar + stylesheet;
 				f = new File(stylesheet);
@@ -187,11 +189,12 @@ public class Transform extends BasicFunction {
 		CachedStylesheet cached = (CachedStylesheet)cache.get(stylesheet);
 		try {
 			if(cached == null) {
-				cached = new CachedStylesheet(factory, new URL(stylesheet), base);
+				cached = new CachedStylesheet(factory, stylesheet, base);
 				cache.put(stylesheet, cached);
 			}
 			return cached.getTemplates();
 		} catch (MalformedURLException e) {
+			LOG.debug(e.getMessage(), e);
 			throw new XPathException("Malformed URL for stylesheet: " + stylesheet, e);
 		} catch (IOException e) {
 			throw new XPathException("IO error while loading stylesheet: " + stylesheet, e);
@@ -215,29 +218,64 @@ public class Transform extends BasicFunction {
 		}
 	}
 	
+	private Templates getSource(SAXTransformerFactory factory, DocumentImpl stylesheet)
+	throws XPathException, TransformerConfigurationException {
+		factory.setURIResolver(new DatabaseResolver(stylesheet));
+		TemplatesHandler handler = factory.newTemplatesHandler();
+		try {
+			handler.startDocument();
+			Serializer serializer = context.getBroker().getSerializer();
+			serializer.reset();
+			serializer.setSAXHandlers(handler, null);
+			serializer.toSAX(stylesheet);
+			handler.endDocument();
+			return handler.getTemplates();
+		} catch (SAXException e) {
+			throw new XPathException(getASTNode(),
+				"A SAX exception occurred while compiling the stylesheet: " + e.getMessage(), e);
+		}
+	}
+	
 	private class CachedStylesheet {
 		
-		TransformerFactory factory;
+		SAXTransformerFactory factory;
 		long lastModified = -1;
 		Templates templates = null;
-		URL url;
+		String uri;
 		
-		public CachedStylesheet(TransformerFactory factory, URL url, String baseURI) 
-		throws TransformerConfigurationException, IOException {
+		public CachedStylesheet(SAXTransformerFactory factory, String uri, String baseURI) 
+		throws TransformerConfigurationException, IOException, XPathException {
 			this.factory = factory;
-			this.url = url;
-			factory.setURIResolver(new ExternalResolver(baseURI));
+			this.uri = uri;
+			if (!baseURI.startsWith("xmldb:exist://"))
+				factory.setURIResolver(new ExternalResolver(baseURI));
 			getTemplates();
 		}
 		
-		public Templates getTemplates() throws TransformerConfigurationException, IOException {
-			URLConnection connection = url.openConnection();
-			long modified = connection.getLastModified();
-			if(templates == null || modified > lastModified || modified == 0) {
-				LOG.debug("compiling stylesheet " + url.toString());
-				templates = factory.newTemplates(new StreamSource(connection.getInputStream()));
+		public Templates getTemplates() throws TransformerConfigurationException, IOException, XPathException {
+			if (uri.startsWith("xmldb:exist://")) {
+				String docPath = uri.substring("xmldb:exist://".length());
+				DocumentImpl doc = null;
+				try {
+					doc = context.getBroker().openDocument(docPath, Lock.READ_LOCK);
+					if (doc != null && (templates == null || doc.getLastModified() > lastModified))
+						templates = getSource(factory, doc);
+					lastModified = doc.getLastModified();
+				} catch (PermissionDeniedException e) {
+					throw new XPathException("Permission denied to read stylesheet: " + uri);
+				} finally {
+					doc.getUpdateLock().release(Lock.READ_LOCK);
+				}
+			} else {
+				URL url = new URL(uri);
+				URLConnection connection = url.openConnection();
+				long modified = connection.getLastModified();
+				if(templates == null || modified > lastModified || modified == 0) {
+					LOG.debug("compiling stylesheet " + url.toString());
+					templates = factory.newTemplates(new StreamSource(connection.getInputStream()));
+				}
+				lastModified = modified;
 			}
-			lastModified = modified;
 			return templates;
 		}
 	}
