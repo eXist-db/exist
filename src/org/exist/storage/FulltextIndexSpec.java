@@ -78,12 +78,14 @@ public class FulltextIndexSpec {
         if(def != null && def.length() > 0)
             includeByDefault = def.equals("all");
         String indexAttributes = node.getAttribute(ATTRIBUTES_ATTRIB);
-		if (indexAttributes != null && indexAttributes.length() > 0)
-			setIncludeAttributes(indexAttributes.equals("true"));
+		if (indexAttributes != null && indexAttributes.length() > 0) {
+			LOG.debug("INCLUDE: " + indexAttributes);
+			setIncludeAttributes(indexAttributes.equals("true") || indexAttributes.equals("yes"));
+		}
 
 		String indexAlphaNum = node.getAttribute(ALPHANUM_ATTRIB);
 		if (indexAlphaNum != null && indexAlphaNum.length() > 0)
-			setIncludeAlphaNum(indexAlphaNum.equals("true"));
+			setIncludeAlphaNum(indexAlphaNum.equals("true") || indexAlphaNum.equals("yes"));
 
 		// check paths to include/exclude
 		NodeList children = node.getChildNodes();
