@@ -20,7 +20,6 @@
 
 package org.exist.xquery.functions;
 
-import org.exist.dom.ContextItem;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
@@ -30,8 +29,8 @@ import org.exist.xquery.Dependency;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -86,31 +85,8 @@ public class FunNot extends Function {
 			// evaluate argument expression
 			Sequence argSeq =
 				arg.eval(contextSequence, contextItem);
-			LOG.debug("not argument: " + argSeq.getLength());
-			NodeProxy parent;
-			long pid;
-			ContextItem contextNode;
-			NodeProxy next;
-			Item item;
-			// iterate through nodes and remove hits from result
-			for (SequenceIterator i = argSeq.iterate(); i.hasNext();) {
-				item = (Item) i.nextItem();
-				current = (NodeProxy) item;
-				contextNode = current.getContext();
-				if (contextNode == null) {
-					LOG.warn("context node is missing!");
-					break;
-				}
-
-				while (contextNode != null) {
-					next = contextNode.getNode();
-					//if ((parent = result.get(next)) != null)
-					result.remove(next);
-					contextNode = contextNode.getNextItem();
-				}
-			}
-			LOG.debug("found " + result.getLength());
-			return result;
+			NodeSet argSet = argSeq.toNodeSet().getContextNodes(true);
+			return result.except(argSet);
 		// case 2: simply invert the boolean value
 		} else {
 			Sequence seq =
