@@ -342,8 +342,15 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 							"no namespace defined for prefix " + prefix);
 					}
 				}
-				Element elem = doc.createElementNS(namespace, name);
+				Element elem;
+				if (namespace != null && namespace.length() > 0)
+				{
+					elem = doc.createElementNS(namespace, name);
 				elem.setPrefix(prefix);
+				}
+				else
+					elem = doc.createElement(name);
+			
 				if (stack.isEmpty()) {
 					contents.add(elem);
 				} else {
@@ -369,7 +376,9 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 						throw new SAXException(
 							"no namespace defined for prefix " + prefix);
 				}
-				Attr attrib = doc.createAttributeNS(namespace, name);
+				Attr attrib = namespace != null && namespace.length() > 0 ?
+								doc.createAttributeNS(namespace, name) :
+								doc.createAttribute(name);
 				if (stack.isEmpty()) {
 					for(int i = 0; i < contents.getLength(); i++) {
 						Node n = contents.item(i);
@@ -383,10 +392,14 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					contents.add(attrib);
 				} else {
 					Element last = (Element) stack.peek();
-					if(last.hasAttributeNS(namespace, name))
+					if(namespace != null && last.hasAttributeNS(namespace, name) ||
+					   namespace == null && last.hasAttribute(name))
 						throw new SAXException("The attribute " + attrib.getNodeName() + " cannot be specified " +
 								"twice on the same element");
+					if (namespace != null)
 					last.setAttributeNodeNS(attrib);
+					else
+					  last.setAttributeNode(attrib);
 				}
 				inAttribute = true;
 				currentNode = attrib;
@@ -420,7 +433,9 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				}
 			}
 		} else if (inModification) {
-			Element elem = doc.createElementNS(namespaceURI, qName);
+			Element elem = namespaceURI != null && namespaceURI.length() > 0 ?
+									doc.createElementNS(namespaceURI, qName) :
+									doc.createElement(qName);
 			Attr a;
 			for (int i = 0; i < atts.getLength(); i++) {
                 String name = atts.getQName(i);
@@ -428,9 +443,14 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
                 if (name.startsWith("xmlns")) {
                     // Why are these showing up? They are supposed to be stripped out?
                 } else {
-                    a = doc.createAttributeNS(nsURI, name);
+                    a = nsURI != null ?
+                          doc.createAttributeNS(nsURI, name) :
+                            doc.createAttribute(name);
                     a.setValue(atts.getValue(i));
+                    if (nsURI != null)
                     elem.setAttributeNodeNS(a);
+                    else
+                      elem.setAttributeNode(a);
                 }
 			}
 			if (stack.isEmpty()) {
