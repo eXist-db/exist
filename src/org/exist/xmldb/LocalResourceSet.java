@@ -2,7 +2,6 @@ package org.exist.xmldb;
 
 import java.io.StringWriter;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -16,6 +15,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xpath.XPathException;
+import org.exist.xpath.value.AtomicValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
@@ -70,11 +70,7 @@ public class LocalResourceSet implements ResourceSet {
 		Item item;
 		for(SequenceIterator i = val.iterate(); i.hasNext(); ) {
 			item = i.nextItem();
-			if(Type.subTypeOf(item.getType(), Type.NODE))
-				resources.add(item);
-			else {
-				resources.add(item.getStringValue());
-			}
+			resources.add(item);
 		}
 	}
 
@@ -172,7 +168,7 @@ public class LocalResourceSet implements ResourceSet {
 		} else if (r instanceof Node) {
 			res = new LocalXMLResource(user, brokerPool, collection, "", -1, properties);
 			res.setContentAsDOM((Node)r);
-		} else if (r instanceof String) {
+		} else if (r instanceof AtomicValue) {
 			res = new LocalXMLResource(user, brokerPool, collection, "", -1, properties);
 			res.setContent(r);
 		} else if (r instanceof Resource)

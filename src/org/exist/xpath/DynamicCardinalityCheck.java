@@ -27,7 +27,7 @@ import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 
 /**
- * Runtime-check of the cardinality of a function parameter.
+ * Runtime-check for the cardinality of a function parameter.
  * 
  * @author wolf
  */
@@ -52,19 +52,13 @@ public class DynamicCardinalityCheck extends AbstractExpression {
 		throws XPathException {
 		Sequence seq = expression.eval(docs, contextSequence, contextItem);
 		int items = seq.getLength();
+		if(items > 0 && requiredCardinality == Cardinality.EMPTY)
+			throw new XPathException("Empty sequence expected; got " + items);
 		if(items == 0 && (requiredCardinality & Cardinality.ZERO) == 0)
 			throw new XPathException("Empty sequence is not allowed here");
 		else if(items > 1 && (requiredCardinality & Cardinality.MANY) == 0)
 			throw new XPathException("Sequence with more than one item is not allowed here");
 		return seq;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#preselect(org.exist.dom.DocumentSet, org.exist.xpath.StaticContext)
-	 */
-	public DocumentSet preselect(DocumentSet in_docs)
-		throws XPathException {
-		return expression.preselect(in_docs);
 	}
 
 	/* (non-Javadoc)
@@ -86,6 +80,13 @@ public class DynamicCardinalityCheck extends AbstractExpression {
 	 */
 	public int getDependencies() {
 		return expression.getDependencies();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#resetState()
+	 */
+	public void resetState() {
+		expression.resetState();
 	}
 
 }

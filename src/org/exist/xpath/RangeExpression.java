@@ -24,8 +24,6 @@ package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
-import org.exist.xpath.functions.Function;
-import org.exist.xpath.functions.FunctionSignature;
 import org.exist.xpath.value.IntegerValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
@@ -34,6 +32,8 @@ import org.exist.xpath.value.Type;
 import org.exist.xpath.value.ValueSequence;
 
 /**
+ * An XQuery range expression, like "1 to 10".
+ * 
  * @author wolf
  */
 public class RangeExpression extends Function {
@@ -68,7 +68,6 @@ public class RangeExpression extends Function {
 			convertTo(Type.INTEGER)).getLong();
 		ValueSequence result = new ValueSequence();
 		for(long i = start; i <= end; i++) {
-			System.out.println("adding " + i);
 			result.add(new IntegerValue(i));
 		}
 		return result;

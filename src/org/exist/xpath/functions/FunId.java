@@ -9,6 +9,7 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.ElementValue;
+import org.exist.xpath.*;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Expression;
 import org.exist.xpath.StaticContext;

@@ -3,29 +3,18 @@
  * 
  * @author wolf
  */
-package org.exist.parser;
+package org.exist.xpath;
 
 import java.util.List;
 
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
-import org.exist.security.PermissionDeniedException;
-import org.exist.xpath.Constants;
-import org.exist.xpath.Expression;
-import org.exist.xpath.GeneralComparison;
-import org.exist.xpath.LiteralValue;
-import org.exist.xpath.PathExpr;
-import org.exist.xpath.RootNode;
-import org.exist.xpath.StaticContext;
-import org.exist.xpath.XPathException;
 import org.exist.xpath.functions.ExtNear;
-import org.exist.xpath.functions.Function;
+import org.exist.xpath.functions.UserDefinedFunction;
 import org.exist.xpath.value.AtomicValue;
 import org.exist.xpath.value.StringValue;
 import org.exist.xpath.value.Type;
 
-public class Util {
+public class FunctionFactory {
 
 	/**
 	 * Create a function call. This method handles special functions like 
@@ -52,66 +41,6 @@ public class Util {
 		String uri = qname.getNamespaceURI();
 		Expression step = null;
 		if(uri.equals(Function.BUILTIN_FUNCTION_NS)) {
-			if (local.equals("document")) {
-				DocumentSet docs = null;
-				if (params.size() == 0)
-					docs = context.getBroker().getAllDocuments();
-				else {
-					docs = new DocumentSet();
-					try {
-						String next;
-						DocumentImpl doc;
-						for (int i = 0; i < params.size(); i++) {
-							next = ((PathExpr) params.get(i)).getLiteralValue();
-							doc =
-								(DocumentImpl) context.getBroker().getDocument(
-									next);
-							if (doc != null)
-								docs.add(doc);
-						}
-					} catch (PermissionDeniedException e) {
-						throw new XPathException("permission denied while retrieving input set");
-					}
-				}
-				step = new RootNode(context);
-				parent.add(step);
-				parent.setDocumentSet(docs);
-			}
-			if (local.equals("collection") || local.equals("xcollection")) {
-				DocumentSet docs = new DocumentSet();
-				boolean inclusive = fnName.equals("collection");
-				try {
-					String next;
-					DocumentSet temp;
-					for (int i = 0; i < params.size(); i++) {
-						next = ((PathExpr) params.get(i)).getLiteralValue();
-						temp =
-							context.getBroker().getDocumentsByCollection(
-								next,
-								inclusive);
-						docs.addAll(temp);
-					}
-				} catch (PermissionDeniedException e) {
-					throw new XPathException("permission denied while retrieving input set");
-				}
-				step = new RootNode(context);
-				parent.add(step);
-				parent.setDocumentSet(docs);
-			}
-			if (local.equals("doctype")) {
-				DocumentSet docs = new DocumentSet();
-				String next;
-				DocumentSet temp;
-				for (int i = 0; i < params.size(); i++) {
-					next = ((PathExpr) params.get(i)).getLiteralValue();
-					temp = context.getBroker().getDocumentsByDoctype(next);
-					docs.addAll(temp);
-				}
-				step = new RootNode(context);
-				parent.add(step);
-				parent.setDocumentSet(docs);
-			}
-	
 			// near(node-set, string)
 			if (local.equals("near")) {
 				if (params.size() < 2)
@@ -196,15 +125,27 @@ public class Util {
 				}
 			}
 		}
+		// None of the above matched: function is either a builtin function or
+		// a user-defined function 
 		if (step == null) {
-			Class clazz = context.getClassForFunction(qname);
-			if (clazz == null)
-				throw new XPathException("function " + qname.toString() + " ( namespace-uri = " + 
-					qname.getNamespaceURI() + ") is not defined");
-			Function func = Function.createFunction(context, clazz);
-			func.setArguments(params);
-			parent.addPath(func);
-			step = func;
+			if(uri.equals(Function.BUILTIN_FUNCTION_NS) || uri.equals(Function.UTIL_FUNCTION_NS) |
+				uri.equals(Function.XMLDB_FUNCTION_NS)) {
+				Class clazz = context.getClassForFunction(qname);
+				if (clazz == null)
+					throw new XPathException("function " + qname.toString() + " ( namespace-uri = " + 
+						qname.getNamespaceURI() + ") is not defined");
+				Function func = Function.createFunction(context, clazz);
+				func.setArguments(params);
+				func.setParent(parent);
+				parent.addPath(func);
+				step = func;
+			} else {
+				UserDefinedFunction func = context.resolveFunction(qname);
+				FunctionCall call = new FunctionCall(context, func);
+				call.setArguments(params);
+				parent.addPath(call);
+				step = call;
+			}
 		}
 		return step;
 	}

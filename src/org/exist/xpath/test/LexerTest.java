@@ -12,7 +12,6 @@ import junit.framework.TestCase;
 
 import org.exist.EXistException;
 import org.exist.Parser;
-import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.parser.XPathLexer2;
 import org.exist.parser.XPathParser2;
@@ -114,8 +113,7 @@ public class LexerTest extends TestCase {
 			}
 
 			// execute the query
-			DocumentSet docs = expr.preselect(context);
-			Sequence result = expr.eval(docs, null, null);
+			Sequence result = expr.eval(null, null, null);
 
 			// check results
 			NodeSet resultSet = (NodeSet) result;

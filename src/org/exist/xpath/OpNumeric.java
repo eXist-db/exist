@@ -23,8 +23,8 @@ package org.exist.xpath;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.storage.DBBroker;
-import org.exist.xpath.value.DoubleValue;
 import org.exist.xpath.value.Item;
+import org.exist.xpath.value.NumericValue;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.Type;
 
@@ -34,72 +34,98 @@ import org.exist.xpath.value.Type;
  */
 public class OpNumeric extends BinaryOp {
 
-    protected int operator = Constants.PLUS;
-    protected NodeSet temp = null;
-    protected DBBroker broker;
+	protected int operator = Constants.PLUS;
+	protected int returnType;
+	protected NodeSet temp = null;
+	protected DBBroker broker;
 
-    public OpNumeric(StaticContext context, int operator) {
-        super(context);
-        this.operator = operator;
-    }
-
-    public OpNumeric(StaticContext context, Expression left,
-                    Expression right, int operator) {
+	public OpNumeric(StaticContext context, int operator) {
 		super(context);
-        this.operator = operator;
+		this.operator = operator;
+	}
+
+	public OpNumeric(
+		StaticContext context,
+		Expression left,
+		Expression right,
+		int operator) {
+		super(context);
+		this.operator = operator;
+		returnType = Type.ATOMIC;
+		if (!Type.subTypeOf(left.returnsType(), Type.ATOMIC))
+			left = new Atomize(context, left);
+		if (!Type.subTypeOf(right.returnsType(), Type.ATOMIC))
+			right = new Atomize(context, right);
+		if (left.returnsType() == right.returnsType()) {
+			returnType = left.returnsType();
+		} else if (left.returnsType() == Type.DOUBLE) {
+			right = new UntypedValueCheck(context, Type.DOUBLE, right);
+			returnType = Type.DOUBLE;
+		} else if (right.returnsType() == Type.DOUBLE) {
+			left = new UntypedValueCheck(context, Type.DOUBLE, left);
+			returnType = Type.DOUBLE;
+		} else if (left.returnsType() == Type.FLOAT) {
+			right = new UntypedValueCheck(context, Type.FLOAT, right);
+			returnType = Type.FLOAT;
+		} else if (right.returnsType() == Type.FLOAT) {
+			left = new UntypedValueCheck(context, Type.FLOAT, left);
+			returnType = Type.FLOAT;
+		} else if (Type.subTypeOf(left.returnsType(), Type.DECIMAL)) {
+			right = new UntypedValueCheck(context, left.returnsType(), right);
+			returnType = left.returnsType();
+		} else if (Type.subTypeOf(right.returnsType(), Type.DECIMAL)) {
+			left = new UntypedValueCheck(context, right.returnsType(), left);
+			returnType = right.returnsType();
+		}
 		add(left);
 		add(right);
-    }
-
-    public int returnsType() {
-		return Type.DECIMAL;
 	}
 
-    public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
-		if(getLength() == 0)
-			return in_docs;
-		DocumentSet out_docs = getExpression(0).preselect(in_docs);
-		for(int i = 1; i < getLength(); i++)
-			out_docs = out_docs.union(getExpression(i).preselect(out_docs));
-		return out_docs;
-    }
+	public int returnsType() {
+		return returnType;
+	}
 
-	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) 
-	throws XPathException {
-		if(contextItem != null)
+	public Sequence eval(
+		DocumentSet docs,
+		Sequence contextSequence,
+		Item contextItem)
+		throws XPathException {
+		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-		double lvalue = 
-			((DoubleValue)getLeft().eval(docs, contextSequence).convertTo(Type.DECIMAL)).getDouble();
-		double rvalue = 
-			((DoubleValue)getRight().eval(docs, contextSequence).convertTo(Type.DECIMAL)).getDouble();
-		double result = applyOperator(lvalue, rvalue);
-		return new DoubleValue(result);
+		NumericValue lvalue =
+			(NumericValue) getLeft().eval(docs, contextSequence).convertTo(
+				returnType);
+		NumericValue rvalue =
+			(NumericValue) getRight().eval(docs, contextSequence).convertTo(
+				returnType);
+		return applyOperator(lvalue, rvalue);
 	}
 
-	public double applyOperator(double left, double right) {
-		if(left == Double.NaN || right == Double.NaN)
-			return Double.NaN;
-		switch(operator) {
-		case Constants.MINUS:
-			return left - right;
-		case Constants.PLUS:
-			return left + right;
-		case Constants.MULT:
-			return left * right;
-		case Constants.DIV:
-			return left / right;
-		case Constants.MOD:
-			return left % right;
-		default:
-			return Double.NaN;
+	public NumericValue applyOperator(NumericValue left, NumericValue right)
+		throws XPathException {
+		switch (operator) {
+			case Constants.MINUS :
+				return left.minus(right);
+			case Constants.PLUS :
+				return left.plus(right);
+			case Constants.MULT :
+				return left.mult(right);
+			case Constants.DIV :
+				return left.div(right);
+			case Constants.MOD :
+				return left.mod(right);
+			default :
+				return null;
 		}
 	}
-	 
-    public String pprint() {
-        StringBuffer buf = new StringBuffer();
-        buf.append(getLeft().pprint());
-        buf.append(Constants.OPS[operator]);
-        buf.append(getRight().pprint());
-        return buf.toString();
-    }
+
+	public String pprint() {
+		StringBuffer buf = new StringBuffer();
+		buf.append(getLeft().pprint());
+		buf.append(' ');
+		buf.append(Constants.OPS[operator]);
+		buf.append(' ');
+		buf.append(getRight().pprint());
+		return buf.toString();
+	}
 }

@@ -72,6 +72,8 @@ public class LocationStep extends Step {
 		DocumentSet documents,
 		NodeSet contextSet)
 		throws XPathException {
+		if(contextSet == null)
+			return Sequence.EMPTY_SEQUENCE;
 		Predicate pred;
 		Sequence result = contextSet;
 		for (Iterator i = predicates.iterator(); i.hasNext();) {
@@ -328,12 +330,15 @@ public class LocationStep extends Step {
 		return contextSet.getParents();
 	}
 
-	public DocumentSet preselect(DocumentSet inDocs)
-		throws XPathException {
-		return super.preselect(inDocs);
-	}
-
 	public void setKeepVirtual(boolean virtual) {
 		keepVirtual = virtual;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.Step#resetState()
+	 */
+	public void resetState() {
+		super.resetState();
+		buf = null;
 	}
 }

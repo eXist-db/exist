@@ -66,13 +66,6 @@ public class CastExpression extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#preselect(org.exist.dom.DocumentSet)
-	 */
-	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
-		return expression.preselect(in_docs);
-	}
-
-	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#pprint()
 	 */
 	public String pprint() {
@@ -84,6 +77,13 @@ public class CastExpression extends AbstractExpression {
 	 */
 	public int returnsType() {
 		return requiredType;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#resetState()
+	 */
+	public void resetState() {
+		expression.resetState();
 	}
 
 }

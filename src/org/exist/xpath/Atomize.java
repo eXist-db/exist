@@ -60,14 +60,6 @@ public class Atomize extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#preselect(org.exist.dom.DocumentSet, org.exist.xpath.StaticContext)
-	 */
-	public DocumentSet preselect(DocumentSet in_docs)
-		throws XPathException {
-		return expression.preselect(in_docs);
-	}
-
-	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#pprint()
 	 */
 	public String pprint() {
@@ -86,5 +78,12 @@ public class Atomize extends AbstractExpression {
 	 */
 	public int getDependencies() {
 		return expression.getDependencies();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#resetState()
+	 */
+	public void resetState() {
+		expression.resetState();
 	}
 }

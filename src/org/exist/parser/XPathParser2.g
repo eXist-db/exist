@@ -27,6 +27,7 @@ header {
 	import java.util.ArrayList;
 	import java.util.List;
 	import java.util.Iterator;
+	import java.util.Stack;
 	import org.exist.storage.BrokerPool;
 	import org.exist.storage.DBBroker;
 	import org.exist.storage.analysis.Tokenizer;
@@ -56,6 +57,8 @@ options {
 {
 	protected ArrayList exceptions= new ArrayList(2);
 	protected boolean foundError= false;
+	protected Stack globalStack = new Stack();
+	protected Stack elementStack = new Stack();
 	protected XPathLexer2 lexer;
 
 	public XPathParser2(XPathLexer2 lexer, boolean dummy) {
@@ -88,7 +91,7 @@ imaginaryTokenDefinitions
 	WILDCARD PREFIX_WILDCARD FUNCTION UNARY_MINUS UNARY_PLUS XPOINTER 
 	XPOINTER_ID VARIABLE_REF VARIABLE_BINDING ELEMENT ATTRIBUTE TEXT
 	VERSION_DECL NAMESPACE_DECL DEF_NAMESPACE_DECL DEF_FUNCTION_NS_DECL 
-	GLOBAL_VAR FUNCTION_DECL PROLOG
+	GLOBAL_VAR FUNCTION_DECL PROLOG ATOMIC_TYPE MODULE ORDER_BY
 	;
 
 xpointer
@@ -119,15 +122,16 @@ mainModule
 
 prolog
 :
-		( version SEMICOLON! )?
+		( ( "xquery" "version" ) => v:version SEMICOLON!)?
 		(
 			( 
-				( "declare" "namespace" ) => namespaceDecl 
+				( "declare" "namespace" ) => nd:namespaceDecl
 				| 
-				( "declare" "default" ) => defaultNamespaceDecl 
+				( "declare" "default" ) => dnd:defaultNamespaceDecl
 				|
-				( "declare" "function" ) => functionDecl
-				| varDecl
+				( "declare" "function" ) => fd:functionDecl
+				| 
+				( "declare" "variable" ) => varDecl
 			) SEMICOLON!
 		)*
 	;
@@ -172,40 +176,36 @@ varDecl
 
 functionDecl
 { String name = null; }:
-	"declare"! "function"! name=qName
+	"declare"! "function"! name=qName!
+	LPAREN! ( paramList )? RPAREN!
+	( returnType )?
+	functionBody
 	{
-		#functionDecl = #(#[FUNCTION_DECL, name], #body);
+		#functionDecl = #(#[FUNCTION_DECL, name], #functionDecl);
 	}
-	LPAREN! 
-	( params:paramList 
-		{
-			#functionDecl = #(#functionDecl, #params);
-		}
-	)? 
-	RPAREN!
-	body:functionBody
 	;
 
 functionBody:
-	LCURLY! expr RCURLY!
+	LCURLY^ e:expr RCURLY!
 	;
 
+returnType:
+	"as"^ sequenceType
+	;
+	
 paramList:
-	param (COMMA! param)*
+	param (COMMA! p1:param )*
 	;
 	
 param
 { String varName = null; }:
 	DOLLAR! varName=qName
-	{
-		#param = #(#[VARIABLE_BINDING, varName]);
-	}
 	( 
 		t:typeDeclaration 
-		{
-			#param = #(param, #t);
-		}
 	)?
+	{
+		#param = #(#[VARIABLE_BINDING, varName], #t);
+	}
 	;
 	
 typeDeclaration:
@@ -213,20 +213,27 @@ typeDeclaration:
 	;
 	
 sequenceType:
-	itemType ( occurrenceIndicator )? | "empty" LPAREN! RPAREN!
+	( "empty" LPAREN) => "empty"^ LPAREN! RPAREN!
+	| itemType ( occurrenceIndicator )?
 	;
 
 occurrenceIndicator:
-	"?" | STAR | PLUS
+	QUESTION | STAR | PLUS
 	;
 	
 itemType:
-	( "item" LPAREN ) => "item" LPAREN! RPAREN!
+	( "item" LPAREN ) => "item"^ LPAREN! RPAREN!
+	| ( . LPAREN ) => kindTest
 	| atomicType
 	;
 	
-atomicType:
-	qName
+atomicType
+{ String name = null; }
+:
+	name=qName
+	{
+		#atomicType = #[ATOMIC_TYPE, name];
+	}
 	;
 	
 queryBody
@@ -241,12 +248,16 @@ expr
 
 exprSingle
 :
-	orExpr | flworExpr | ifExpr
+	( ( "for" | "let" ) DOLLAR ) => flworExpr
+	|
+	( "if" LPAREN ) => ifExpr
+	|
+	orExpr 
 	;
 
 flworExpr
 :
-	( forClause | letClause )+ ( "where" expr )? "return"^ exprSingle
+	( forClause | letClause )+ ( "where" expr )? ( orderByClause )? "return"^ exprSingle
 	;
 
 forClause
@@ -273,6 +284,28 @@ letVarBinding
 	{ #letVarBinding= #(#[VARIABLE_BINDING, varName], expr); }
 	;
 
+orderByClause:
+	"order"! "by"! orderSpecList
+	{
+		#orderByClause = #([ORDER_BY, "order by"], #orderByClause);
+	}
+	;
+	
+orderSpecList:
+	orderSpec ( COMMA! orderSpec )*
+	;
+	
+orderSpec:
+	exprSingle orderModifier
+	;
+
+orderModifier:
+	("ascending" | "descending" )? 
+	( "empty"
+		( "greatest" | "least" ) 
+	)?
+	;
+	
 ifExpr:
 	"if"^ LPAREN! expr RPAREN! "then"! exprSingle "else"! exprSingle
 	;
@@ -349,11 +382,11 @@ relativePathExpr
 
 stepExpr
 :
-	( ( "text" | "node" ) LPAREN )
-	=> axisStep
+	( ( "text" | "node" | "element" ) LPAREN ) =>
+	axisStep
 	|
-	( DOLLAR | ( qName LPAREN ) | SELF | LPAREN | literal | LT | XML_COMMENT )
-	=> filterStep
+	( DOLLAR | ( qName LPAREN ) | SELF | LPAREN | literal | XML_COMMENT | LT ) =>
+	filterStep
 	|
 	axisStep
 	;
@@ -406,7 +439,7 @@ reverseAxisSpecifier
 
 nodeTest
 :
-	( ( "text" | "node" ) LPAREN ) => kindTest | nameTest
+	( . LPAREN ) => kindTest | nameTest
 	;
 
 nameTest
@@ -494,12 +527,23 @@ contextItemExpr : SELF^ ;
 
 kindTest
 :
-	textTest | anyKindTest
+	textTest | anyKindTest | elementTest | attributeTest | commentTest |
+	piTest | documentTest
 	;
 
 textTest : "text"^ LPAREN! RPAREN! ;
 
 anyKindTest : "node"^ LPAREN! RPAREN! ;
+
+elementTest : "element"^ LPAREN! RPAREN! ;
+
+attributeTest : "attribute"^ LPAREN! RPAREN! ;
+
+commentTest : "comment"^ LPAREN! RPAREN! ;
+
+piTest : "processing-instruction"^ LPAREN! RPAREN! ;
+
+documentTest : "document-node"^ LPAREN! RPAREN! ;
 
 qName returns [String name]
 {
@@ -521,11 +565,12 @@ constructor
 
 elementConstructor
 {
-	String name= null;
-	lexer.wsExplicit= true;
+	String name = null;
+	lexer.wsExplicit = true;
 }
 :
-	( LT NCNAME ( COLON NCNAME )? WS ) => elementWithAttributes | elementWithoutAttributes
+	( LT qName WS ) => elementWithAttributes 
+	| elementWithoutAttributes
 	;
 
 elementWithoutAttributes
@@ -535,13 +580,35 @@ elementWithoutAttributes
 	(
 		(
 			SLASH! GT!
-			{ #elementWithoutAttributes= #[ELEMENT, name]; }
+			{ 
+				lexer.wsExplicit = false;
+				if(!elementStack.isEmpty())
+					lexer.inElementContent = true;
+				#elementWithoutAttributes= #[ELEMENT, name];
+			}
 		)
 		|
 		(
-			GT! { lexer.inElementContent= true; }
+			GT! 
+			{
+				elementStack.push(name);
+				lexer.inElementContent= true;
+				lexer.wsExplicit = false;
+			}
 			content:mixedElementContent END_TAG_START! name=qName! GT!
-			{ #elementWithoutAttributes= #(#[ELEMENT, name], #content); }
+			{ 
+				if(elementStack.isEmpty())
+					throw new RecognitionException("found wrong closing tag: " + name);
+				String prev = (String)elementStack.pop();
+				if(!prev.equals(name))
+					throw new RecognitionException("found closing tag: " + name +
+						"; expected: " + prev);
+				#elementWithoutAttributes= #(#[ELEMENT, name], #content);
+				if(!elementStack.isEmpty()) {
+					lexer.inElementContent = true;
+					lexer.wsExplicit = false;
+				}
+			}
 		)
 	)
 	;
@@ -553,13 +620,35 @@ elementWithAttributes
 	(
 		(
 			SLASH! GT!
-			{ #elementWithAttributes= #(#[ELEMENT, name], #attrs); }
+			{
+				if(!elementStack.isEmpty())
+					lexer.inElementContent = true;
+				lexer.wsExplicit = false;
+				#elementWithAttributes= #(#[ELEMENT, name], #attrs); 
+			}
 		)
 		|
 		(
-			GT! { lexer.inElementContent= true; }
-			content:mixedElementContent END_TAG_START! name=qName! GT!
-			{ #elementWithAttributes= #(#[ELEMENT, name], #attrs); }
+			GT! { 
+				elementStack.push(name);
+				lexer.inElementContent= true;
+				lexer.wsExplicit = false;
+			}
+			content:mixedElementContent 
+			END_TAG_START! name=qName! GT!
+			{
+				if(elementStack.isEmpty())
+					throw new RecognitionException("found wrong closing tag: " + name);
+				String prev = (String)elementStack.pop();
+				if(!prev.equals(name))
+					throw new RecognitionException("found closing tag: " + name +
+						"; expected: " + prev);
+				#elementWithAttributes= #(#[ELEMENT, name], #attrs);
+				if(!elementStack.isEmpty()) {
+					lexer.inElementContent = true;
+					lexer.wsExplicit = false;
+				}
+			}
 		)
 	)
 	;
@@ -614,11 +703,14 @@ enclosedExpr
 :
 	LCURLY^
 	{
+		globalStack.push(elementStack);
+		elementStack = new Stack();
 		lexer.inElementContent= false;
 		lexer.wsExplicit= false;
 	}
 	expr RCURLY!
 	{
+		elementStack = (Stack)globalStack.pop();
 		lexer.inElementContent= true;
 		lexer.wsExplicit= true;
 	}
@@ -673,6 +765,12 @@ reservedKeywords returns [String name]
 	|
 	"attribute" { name= "attribute"; }
 	|
+	"comment" { name = "comment"; }
+	|
+	"document" { name = "document"; }
+	|
+	"collection" { name = "collection"; }
+	|
 	"ancestor" { name= "ancestor"; }
 	|
 	"descendant" { name= "descendant"; }
@@ -686,6 +784,30 @@ reservedKeywords returns [String name]
 	"following-sibling" { name= "following-sibling"; }
 	|
 	"item" { name = "item"; }
+	|
+	"empty" { name= "empty"; }
+	|
+	"version" { name = "version"; }
+	|
+	"xquery" { name = "xquery"; }
+	|
+	"variable" { name = "variable"; }
+	|
+	"namespace" { name = "namespace"; }
+	|
+	"if" { name = "if"; }
+	|
+	"then" { name = "then"; }
+	|
+	"else" { name = "else"; }
+	|
+	"for" { name = "for"; }
+	|
+	"let" { name = "let"; }
+	|
+	"default" { name = "default"; }
+	|
+	"function" { name = "function"; }
 	;
 
 /* -----------------------------------------------------------------------------------------------------
@@ -723,6 +845,10 @@ options {
 		return buf.toString();
 	}
 
+	public Exception getLastException() {
+		return (Exception)exceptions.get(exceptions.size()-1);
+	}
+	
 	protected void handleException(Exception e) {
 		foundError= true;
 		exceptions.add(e);
@@ -733,6 +859,15 @@ options {
 		Expression inputSequence;
 		Expression action;
 		boolean isForClause= true;
+	}
+	
+	private static class FunctionParameter {
+		String varName;
+		SequenceType type = FunctionSignature.DEFAULT_TYPE;
+		
+		public FunctionParameter(String name) {
+			this.varName = name;
+		}
 	}
 }
 
@@ -813,32 +948,112 @@ throws PermissionDeniedException, EXistException, XPathException:
 				path.add(decl);
 			}
 		)
+		| functionDecl[path]
 	)*
-	| functionDecl[path]
 	;
 
 functionDecl [PathExpr path]
 throws PermissionDeniedException, EXistException, XPathException
 :
 	#( name:FUNCTION_DECL { PathExpr body = new PathExpr(context); }
-		{ 
-			System.out.println("found function declaration " + name.getText()); 
-		}
-		( paramList )?
-		expr[body]
-	)
-	;
-
-paramList:
-	param (param)*
-	;
-
-param:
-	#( var:VARIABLE_BINDING
 		{
-			System.out.println("found variable binding: " + var.getText());
+			QName qn = QName.parse(context, name.getText());
+			FunctionSignature signature = new FunctionSignature(qn);
+			UserDefinedFunction func = new UserDefinedFunction(context, signature);
+			List varList = new ArrayList(3);
 		}
+		( paramList[varList] )?
+		{
+			SequenceType[] types = new SequenceType[varList.size()];
+			int j = 0;
+			for(Iterator i = varList.iterator(); i.hasNext(); j++) {
+				FunctionParameter param = (FunctionParameter)i.next();
+				types[j] = param.type;
+				func.addVariable(param.varName);
+			}
+			signature.setArgumentTypes(types);
+			context.declareFunction(func);
+		}
+		( 
+			#("as"
+				{
+					SequenceType type = new SequenceType();
+				}
+				sequenceType[type]
+				{
+					signature.setReturnType(type);
+				}
+			)
+		)?
+		#( 
+			LCURLY expr[body] 
+			{ func.setFunctionBody(body); }
+		)
 	)
+	;
+
+paramList [List vars]
+throws XPathException:
+	param[vars] (param[vars])*
+	;
+
+param [List vars]
+throws XPathException:
+	#( varname:VARIABLE_BINDING
+		{
+			FunctionParameter var = new FunctionParameter(varname.getText());
+			vars.add(var);
+		}
+		( 
+			#( "as" 
+				{ 
+					SequenceType type = new SequenceType();
+				}
+				sequenceType[type] 
+			)
+			{
+				var.type = type;
+			}
+		)?
+	)
+	;
+
+sequenceType [SequenceType type]
+throws XPathException:
+	(
+		#( t:ATOMIC_TYPE
+			{
+				QName qn = QName.parse(context, t.getText());
+				int code = Type.getType(qn);
+				type.setPrimaryType(code);
+			}
+		)
+		|
+		#( "empty" { type.setPrimaryType(Type.EMPTY); type.setCardinality(Cardinality.EMPTY); } )
+		|
+		#( "item" { type.setPrimaryType(Type.ITEM); } )
+		|
+		#( "node" { type.setPrimaryType(Type.NODE); } )
+		|
+		#( "element" { type.setPrimaryType(Type.ELEMENT); } )
+		|
+		#( "attribute" { type.setPrimaryType(Type.ATTRIBUTE); } )
+		|
+		#( "text" { type.setPrimaryType(Type.ITEM); } )
+		|
+		#( "processing-instruction" { type.setPrimaryType(Type.PROCESSING_INSTRUCTION); } )
+		|
+		#( "comment" { type.setPrimaryType(Type.COMMENT); } )
+		|
+		#( "document-node" { type.setPrimaryType(Type.DOCUMENT); } )
+	)
+	(
+		STAR { type.setCardinality(Cardinality.ZERO_OR_MORE); }
+		|
+		PLUS { type.setCardinality(Cardinality.ONE_OR_MORE); }
+		|
+		QUESTION { type.setCardinality(Cardinality.ZERO_OR_ONE); }
+	)?
 	;
 	
 expr [PathExpr path]
@@ -884,6 +1099,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			List clauses= new ArrayList();
 			Expression action= new PathExpr(context);
 			PathExpr whereExpr= null;
+			List orderBy = null;
 		}
 		(
 			#(
@@ -926,6 +1142,42 @@ throws PermissionDeniedException, EXistException, XPathException
 			)
 		)+
 		(
+			#( ORDER_BY { orderBy = new ArrayList(3); }
+				( 
+					{ 
+						PathExpr orderSpecExpr = new PathExpr(context); 
+					}
+					expr [orderSpecExpr]
+					{
+						OrderSpec orderSpec = new OrderSpec(orderSpecExpr);
+						int modifiers = 0;
+						orderBy.add(orderSpec);
+					}
+					(
+						(
+						"ascending"
+						| "descending"
+							{ 
+								modifiers = OrderSpec.DESCENDING_ORDER;
+								orderSpec.setModifiers(modifiers);
+							}
+						)
+					)?
+					(
+						"empty"
+						(
+							"greatest"
+							| "least"
+								{ 
+									modifiers |= OrderSpec.EMPTY_LEAST; 
+									orderSpec.setModifiers(modifiers);
+								}
+						)
+					)?
+				)+
+			)
+		)?
+		(
 			"where"
 			{ whereExpr= new PathExpr(context); }
 			expr [whereExpr]
@@ -945,6 +1197,15 @@ throws PermissionDeniedException, EXistException, XPathException
 				if (whereExpr != null) {
 					expr.setWhereExpression(whereExpr);
 					whereExpr= null;
+				}
+				if (orderBy != null) {
+					OrderSpec orderSpecs[] = new OrderSpec[orderBy.size()];
+					int k = 0;
+					for (Iterator j = orderBy.iterator(); j.hasNext(); k++) {
+						OrderSpec orderSpec = (OrderSpec) j.next();
+						orderSpecs[k] = orderSpec;
+					}
+					expr.setOrderSpecs(orderSpecs);
 				}
 				action= expr;
 			}
@@ -1004,7 +1265,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	)
 	{
 		Union union= new Union(context, left, right);
-		path.addPath(union);
+		path.add(union);
 	}
 	|
 	#(
@@ -1302,7 +1563,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			{ params.add(pathExpr); }
 		)*
 	)
-	{ step = Util.createFunction(context, path, fn.getText(), params); }
+	{ step = FunctionFactory.createFunction(context, path, fn.getText(), params); }
 	;
 
 forwardAxis returns [int axis]
@@ -1529,6 +1790,7 @@ protected COLON : ':' ;
 protected COMMA : ',' ;
 protected SEMICOLON : ';';
 protected STAR : '*' ;
+protected QUESTION : '?';
 protected PLUS : '+' ;
 protected MINUS : '-' ;
 protected LPPAREN : '[' ;
@@ -2411,9 +2673,9 @@ NEXT_TOKEN
 	|
 	WS
 	{
-		if (wsExplicit)
-			$setType(WS);
-		else
+		if (wsExplicit) {
+			$setType(WS); $setText("WS");
+		} else
 			$setType(Token.SKIP);
 	}
 	| 
@@ -2458,6 +2720,8 @@ NEXT_TOKEN
 	|
 	STAR { $setType(STAR); }
 	|
+	QUESTION { $setType(QUESTION); }
+	|
 	PLUS { $setType(PLUS); }
 	|
 	MINUS { $setType(MINUS); }
@@ -2484,11 +2748,11 @@ NEXT_TOKEN
 	|
 	NEQ { $setType(NEQ); }
 	|
+	XML_COMMENT_END { $setType(XML_COMMENT_END); }
+	|
 	GT { $setType(GT); }
 	|
 	GTEQ { $setType(GTEQ); }
-	|
-	XML_COMMENT_END { $setType(XML_COMMENT_END); }
 	|
 	XML_PI_END { $setType(XML_PI_END); }
 	;

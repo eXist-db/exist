@@ -21,6 +21,10 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.SAXSerializer;
+import org.exist.util.DOMStreamer;
+import org.exist.util.IncludeXMLFilter;
+import org.exist.xpath.XPathException;
+import org.exist.xpath.value.AtomicValue;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -45,10 +49,14 @@ public class LocalXMLResource implements XMLResourceImpl {
 	protected long id = -1;
 	protected Properties properties = null;
 	protected User user;
+	
+	// those are the different types of content this resource
+	// may have to deal with
 	protected String content = null;
 	protected File file = null;
 	protected Node root = null;
-
+	protected AtomicValue value = null;
+	
 	public LocalXMLResource(
 		User user,
 		BrokerPool pool,
@@ -122,6 +130,12 @@ public class LocalXMLResource implements XMLResourceImpl {
 				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
 			}
 			return content;
+		} else if (value != null) {
+			try {
+				return value.getStringValue();
+			} catch (XPathException e) {
+				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
+			}
 		} else if (file != null) {
 			try {
 				content = XMLUtil.readFile(file);
@@ -168,63 +182,93 @@ public class LocalXMLResource implements XMLResourceImpl {
 	}
 
 	public Node getContentAsDOM() throws XMLDBException {
-		DBBroker broker = null;
-		try {
-			broker = brokerPool.get(user);
-			if (document == null)
-				getDocument(broker);
-			if (!document.getPermissions().validate(user, Permission.READ))
-				throw new XMLDBException(
-					ErrorCodes.PERMISSION_DENIED,
-					"permission denied to read resource");
-			if (id < 0)
-				return document.getDocumentElement();
-			else if (proxy != null)
-				return document.getNode(proxy);
-			else
-				return document.getNode(id);
-		} catch (EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		} finally {
-			brokerPool.release(broker);
+		if(root != null)
+			return root;
+		else if(value != null) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
+				"cannot return an atomic value as DOM node");
+		} else {
+			DBBroker broker = null;
+			try {
+				broker = brokerPool.get(user);
+				if (document == null)
+					getDocument(broker);
+				if (!document.getPermissions().validate(user, Permission.READ))
+					throw new XMLDBException(
+						ErrorCodes.PERMISSION_DENIED,
+						"permission denied to read resource");
+				if (id < 0)
+					return document.getDocumentElement();
+				else if (proxy != null)
+					return document.getNode(proxy);
+				else
+					return document.getNode(id);
+			} catch (EXistException e) {
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+			} finally {
+				brokerPool.release(broker);
+			}
 		}
 	}
 
 	public void getContentAsSAX(ContentHandler handler) throws XMLDBException {
 		DBBroker broker = null;
-		try {
-			broker = brokerPool.get(user);
-			if (document == null)
-				getDocument(broker);
-			if (!document.getPermissions().validate(user, Permission.READ))
-				throw new XMLDBException(
-					ErrorCodes.PERMISSION_DENIED,
-					"permission denied to read resource");
-			if (properties.getProperty(Serializer.GENERATE_DOC_EVENTS) == null)
-				properties.put(Serializer.GENERATE_DOC_EVENTS, "true");
-			Serializer serializer = broker.getSerializer();
-			serializer.setContentHandler(handler);
-			serializer.setUser(user);
-			String xml;
+        if (root != null) {
 			try {
-				serializer.setProperties(properties);
-				if (id < 0)
-					serializer.toSAX(document);
-				else {
-					if (proxy == null)
-						proxy = new NodeProxy(document, id);
-
-					serializer.toSAX(proxy);
-				}
-			} catch (SAXException saxe) {
-				saxe.printStackTrace();
-				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
+				String option = properties.getProperty(Serializer.GENERATE_DOC_EVENTS, "false");
+				if(option.equalsIgnoreCase("false"))
+					handler = new IncludeXMLFilter(handler);
+                DOMStreamer streamer = new DOMStreamer(handler, null);
+                streamer.stream(root);
+			} catch (SAXException e) {
+				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
 			}
-		} catch (EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		} finally {
-			brokerPool.release(broker);
-		}
+        } else if(value != null) {
+        	try {
+        		broker = brokerPool.get(user);
+        		value.toSAX(broker, handler);
+        	} catch (EXistException e) {
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+			} catch (SAXException e) {
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+			} finally {
+        		brokerPool.release(broker);
+        	}
+        } else {
+            try {
+                broker = brokerPool.get(user);
+                if (document == null)
+                    getDocument(broker);
+                if (!document.getPermissions().validate(user, Permission.READ))
+                    throw new XMLDBException(
+                        ErrorCodes.PERMISSION_DENIED,
+                        "permission denied to read resource");
+                if (properties.getProperty(Serializer.GENERATE_DOC_EVENTS) == null)
+                    properties.put(Serializer.GENERATE_DOC_EVENTS, "true");
+                Serializer serializer = broker.getSerializer();
+                serializer.setContentHandler(handler);
+                serializer.setUser(user);
+                String xml;
+                try {
+                    serializer.setProperties(properties);
+                    if (id < 0)
+                        serializer.toSAX(document);
+                    else {
+                        if (proxy == null)
+                            proxy = new NodeProxy(document, id);
+    
+                        serializer.toSAX(proxy);
+                    }
+                } catch (SAXException saxe) {
+                    saxe.printStackTrace();
+                    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
+                }
+            } catch (EXistException e) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+            } finally {
+                brokerPool.release(broker);
+            }
+        }
 	}
 
 	protected DocumentImpl getDocument() {
@@ -324,12 +368,14 @@ public class LocalXMLResource implements XMLResourceImpl {
 	 *  <code>ErrorCodes.VENDOR_ERROR</code> for any vendor
 	 *  specific errors that occur.<br /> 
 	 */
-	public void setContent(Object value) throws XMLDBException {
+	public void setContent(Object obj) throws XMLDBException {
 		content = null;
-		if (value instanceof File)
-			file = (File) value;
+		if (obj instanceof File)
+			file = (File) obj;
+		else if (obj instanceof AtomicValue)
+			value = (AtomicValue) obj;
 		else {
-			content = value.toString();
+			content = obj.toString();
 		}
 	}
 

@@ -528,6 +528,8 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 		Map.Entry entry;
 		for(Iterator i = namespaces.entrySet().iterator(); i.hasNext(); ) {
 			entry = (Map.Entry)i.next();
+            if(entry.getKey() == null || entry.getValue() == null)
+                continue;
 			try {
 				service.setNamespace((String)entry.getKey(), (String)entry.getValue());
 			} catch (XMLDBException e) {

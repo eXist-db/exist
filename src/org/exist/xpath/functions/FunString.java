@@ -23,6 +23,7 @@ package org.exist.xpath.functions;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
+import org.exist.xpath.*;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
@@ -40,7 +41,7 @@ public class FunString extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("number", BUILTIN_FUNCTION_NS),
+			new QName("string", BUILTIN_FUNCTION_NS),
 			new SequenceType[] {
 				 new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE)},
 			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),

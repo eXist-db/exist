@@ -47,7 +47,7 @@ public interface Item {
 	 * 
 	 * @return
 	 */
-	public String getStringValue();
+	public String getStringValue() throws XPathException;
 	
 	/**
 	 * Convert this item into a sequence, containing only the item.

@@ -37,7 +37,7 @@ import org.exist.xpath.value.ValueSequence;
 public class PathExpr extends AbstractExpression {
 	
     protected static Logger LOG = Logger.getLogger( PathExpr.class );
-    protected DocumentSet docs = new DocumentSet();
+    protected DocumentSet inputDocumentSet = new DocumentSet();
     protected boolean keepVirtual = false;
     protected LinkedList steps = new LinkedList();
 	protected boolean inPredicate = false;
@@ -59,7 +59,7 @@ public class PathExpr extends AbstractExpression {
     }
 
     public void addDocument( DocumentImpl doc ) {
-        docs.add( doc );
+        inputDocumentSet.add( doc );
     }
 
     public void addPath( PathExpr path ) {
@@ -74,7 +74,9 @@ public class PathExpr extends AbstractExpression {
 
     public Sequence eval( DocumentSet docs, Sequence contextSequence, 
     	Item contextItem) throws XPathException {
-        if ( steps.size() == 0 || docs.getLength() == 0 )
+    	if(docs == null)
+    		docs = inputDocumentSet == null ? new DocumentSet() : inputDocumentSet;
+        if ( steps.size() == 0 )
             return Sequence.EMPTY_SEQUENCE;
         Sequence r;
         if ( contextSequence != null )
@@ -82,14 +84,12 @@ public class PathExpr extends AbstractExpression {
         else {
 			r = Sequence.EMPTY_SEQUENCE;
         }
-        
         NodeSet set;
 		Item current;
         Expression expr;
         Sequence values;
         for ( Iterator iter = steps.iterator(); iter.hasNext();  ) {
             expr = (Expression) iter.next();
-            //if ( expr.returnsType() != Type.NODE ) {
             if ((expr.getDependencies() & Dependency.CONTEXT_ITEM) != 0) {
             	//LOG.debug("single step mode: " + expr.pprint());
 				if(r.getLength() == 0)
@@ -100,7 +100,7 @@ public class PathExpr extends AbstractExpression {
                 		values = new ValueSequence();
                 	int pos = 0;
 					context.setContextPosition(0);
-                	for ( SequenceIterator iterInner = r.iterate(); iterInner.hasNext(); pos++) {
+                	for ( SequenceIterator iterInner = r.iterate(); iterInner.hasNext(); pos++ ) {
                 		context.setContextPosition(pos);
                 		current = iterInner.nextItem();
                 		if(values == null)
@@ -117,7 +117,7 @@ public class PathExpr extends AbstractExpression {
     }
 
     public DocumentSet getDocumentSet() {
-        return docs;
+        return inputDocumentSet;
     }
 
     public Expression getExpression( int pos ) {
@@ -146,17 +146,6 @@ public class PathExpr extends AbstractExpression {
         return buf.toString();
     }
 
-    public DocumentSet preselect(StaticContext context) throws XPathException {
-        return preselect( docs );
-    }
-
-    public DocumentSet preselect( DocumentSet in_docs) throws XPathException {
-        DocumentSet docs = in_docs;
-        for ( Iterator iter = steps.iterator(); iter.hasNext();  )
-            docs = ( (Expression) iter.next() ).preselect( docs );
-        return docs;
-    }
-		
     public int returnsType() {
     	if( steps.size() == 0 )
     		return Type.NODE;
@@ -177,7 +166,7 @@ public class PathExpr extends AbstractExpression {
 	}
 	
     public void setDocumentSet( DocumentSet docs ) {
-        this.docs = docs;
+        this.inputDocumentSet = docs;
     }
 
     public void setFirstExpression( Expression s ) {
@@ -189,7 +178,10 @@ public class PathExpr extends AbstractExpression {
     		return "";
     	Expression next = (Expression)steps.get(0);
     	if(next instanceof LiteralValue)
-    		return ((LiteralValue)next).getValue().getStringValue();
+    		try {
+				return ((LiteralValue)next).getValue().getStringValue();
+			} catch (XPathException e) {
+			}
     	if(next instanceof PathExpr)
     		return ((PathExpr)next).getLiteralValue();
     	return "";
@@ -202,6 +194,15 @@ public class PathExpr extends AbstractExpression {
 		this.inPredicate = inPredicate;
 		if(steps.size() > 0)
 			((Expression)steps.get(0)).setInPredicate(inPredicate);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#resetState()
+	 */
+	public void resetState() {
+		for(Iterator i = steps.iterator(); i.hasNext(); ) {
+			((Expression)i.next()).resetState();
+		}
 	}
 
 }

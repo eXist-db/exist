@@ -74,6 +74,7 @@ public class DOMSerializer {
 				if (nextNode == null) {
 					node = node.getParentNode();
 					if (node == null || (top != null && top.equals(node))) {
+						endNode(node);
 						nextNode = null;
 						break;
 					}
@@ -81,7 +82,6 @@ public class DOMSerializer {
 			}
 			node = nextNode;
 		}
-		endNode(top);
 	}
 
 	protected void startNode(Node node) throws TransformerException {
@@ -168,6 +168,8 @@ public class DOMSerializer {
 	}
 
 	protected void endNode(Node node) throws TransformerException {
+		if(node == null)
+			return;
 		if (node.getNodeType() == Node.ELEMENT_NODE) {
 			nsSupport.popContext();
 			receiver.endElement();

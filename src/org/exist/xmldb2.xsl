@@ -241,7 +241,6 @@
                                 );
                         </xsl:when>
                         <xsl:otherwise>
-                            System.out.println("sort-expr = " + <xsl:value-of select="$sort"/> + "; cache = " + String.valueOf(<xsl:value-of select="$cache"/>));
                             <xsl:value-of select="$helper"/> =
                                 new XSPHelper(
                                     _service.query(

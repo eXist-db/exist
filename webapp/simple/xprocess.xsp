@@ -40,13 +40,13 @@
             boolean summarize = (psummarize == null) ? false : true;
             
             // add document() to query if missing
-            if(!(query.startsWith("document(") || query.startsWith("collection(")) ||
+			/*if(!(query.startsWith("document(") || query.startsWith("collection(")) ||
                  query.startsWith("xcollection(")) {
                 if(cname == null || cname.equals("all documents"))
                     query = "document()" + query;
                 else
                     query = "collection('" + cname + "')" + query;
-            }
+					}*/
             
             <!-- print current query -->
             <p>Query:</p>

@@ -42,7 +42,7 @@ public abstract class AbstractSequence implements Sequence {
 			return new StringValue(first.getStringValue()).convertTo(requiredType);
 	}
 	
-	public String getStringValue() {
+	public String getStringValue() throws XPathException {
 		if(getLength() == 0)
 			return "";
 		Item first = iterate().nextItem();

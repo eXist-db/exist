@@ -201,6 +201,8 @@
                 for(int _i = 0; _i &lt; _hits; _i++) {
                     _resource = (XMLResource)_result.getResource( ( long ) _i );
                     _currentCollection = _resource.getParentCollection();
+                    if(_currentCollection == null)
+                    	break;
                     if((_documents = (TreeMap)_collections.get(_currentCollection.getName())) == null) {
                         _documents = new TreeMap();
                         _collections.put(_currentCollection.getName(), _documents);

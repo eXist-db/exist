@@ -125,4 +125,69 @@ public class StringValue extends AtomicValue {
 	public String toString() {
 		return value;
 	}
+	
+	public final static String expand(CharSequence seq) throws XPathException {
+		StringBuffer buf = new StringBuffer(seq.length());
+		StringBuffer entityRef = null;
+		char ch;
+		for(int i = 0; i < seq.length(); i++) {
+			ch = seq.charAt(i);
+			switch(ch) {
+				case  '&':
+					if(entityRef == null)
+						entityRef = new StringBuffer();
+					else
+						entityRef.setLength(0);
+					boolean found = false;
+					for (int j = i + 1; j < seq.length(); j++) {
+						ch = seq.charAt(j);
+						if(ch != ';')
+							entityRef.append(ch);
+						else {
+							found = true;
+							i = j;
+							break;
+						}
+					}
+					if(found) {
+						buf.append(expandEntity(entityRef.toString()));
+					} else {
+						buf.append('&');
+					}
+					break;
+				default:
+					buf.append(ch);
+			}
+		}
+		return buf.toString();
+	}
+	
+	private final static char expandEntity(String buf) throws XPathException {
+		if(buf.equals("amp"))
+			return '&';
+		else if(buf.equals("lt"))
+			return '<';
+		else if(buf.equals("gt"))
+			return '>';
+		else if(buf.equals("quot"))
+			return '"';
+		else if(buf.equals("apos"))
+			return '\'';
+		else if(buf.length() > 1 && buf.charAt(0) == '#')
+			return expandCharRef(buf.substring(1));
+		else
+			throw new XPathException("Unknown entity reference: " + buf);
+	}
+	
+	private final static char expandCharRef(String buf) throws XPathException {
+		try {
+			if(buf.length() > 1 && buf.charAt(0) == 'x') {
+				// Hex
+				return (char)Integer.parseInt(buf.substring(1), 16);
+			} else
+				return (char)Integer.parseInt(buf);
+		} catch (NumberFormatException e) {
+			throw new XPathException("Unknown character reference: " + buf);
+		}
+	}
 }

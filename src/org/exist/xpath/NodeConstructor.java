@@ -71,4 +71,9 @@ public abstract class NodeConstructor extends AbstractExpression {
 		return Type.NODE;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#resetState()
+	 */
+	public void resetState() {
+	}
 }

@@ -56,6 +56,7 @@ public class DOMStreamer {
 			try {
 				transformer.transform(source, result);
 			} catch(TransformerException e) {
+				e.printStackTrace();
 				throw new SAXException("error while generating SAX from DOM", e);
 			}
 		} catch (TransformerConfigurationException e) {

@@ -44,7 +44,7 @@ public class BooleanValue extends AtomicValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Item#getStringValue()
 	 */
-	public String getStringValue() {
+	public String getStringValue() throws XPathException {
 		return value ? "true" : "false";
 	}
 

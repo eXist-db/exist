@@ -59,7 +59,7 @@ public class UntypedValueCheck extends AbstractExpression {
 		Item item;
 		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
 			item = i.nextItem();
-			System.out.println(item.getStringValue() + " converting to " + Type.getTypeName(requiredType));
+			//System.out.println(item.getStringValue() + " converting to " + Type.getTypeName(requiredType));
 			result.add(item.convertTo(requiredType));
 		}
 		return result;
@@ -92,5 +92,12 @@ public class UntypedValueCheck extends AbstractExpression {
 	 */
 	public int getDependencies() {
 		return expression.getDependencies();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#resetState()
+	 */
+	public void resetState() {
+		expression.resetState();
 	}
 }

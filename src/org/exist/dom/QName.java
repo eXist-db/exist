@@ -23,8 +23,8 @@
 package org.exist.dom;
 
 import org.exist.storage.ElementValue;
-import org.exist.storage.NativeBroker;
 import org.exist.xpath.StaticContext;
+import org.exist.xpath.XPathException;
 
 /**
  * Represents a QName, consisting of a local name, a namespace URI and a prefix.
@@ -167,13 +167,14 @@ public class QName implements Comparable {
 	 * @return
 	 * @exception IllegalArgumentException if no namespace URI is mapped to the prefix
 	 */
-	public static QName parse(StaticContext context, String qname) {
+	public static QName parse(StaticContext context, String qname) 
+	throws XPathException {
 		String prefix = extractPrefix(qname);
 		String namespaceURI;
 		if (prefix != null) {
 			namespaceURI = context.getURIForPrefix(prefix);
 			if (namespaceURI == null)
-				throw new IllegalArgumentException(
+				throw new XPathException(
 					"No namespace defined for prefix " + prefix);
 		} else
 			namespaceURI = context.getURIForPrefix("");
@@ -182,13 +183,14 @@ public class QName implements Comparable {
 		return new QName(extractLocalName(qname), namespaceURI, prefix);
 	}
 
-	public static QName parseAttribute(StaticContext context, String qname) {
+	public static QName parseAttribute(StaticContext context, String qname) 
+	throws XPathException {
 		String prefix = extractPrefix(qname);
 		String namespaceURI = null;
 		if (prefix != null) {
 			namespaceURI = context.getURIForPrefix(prefix);
 			if (namespaceURI == null)
-				throw new IllegalArgumentException(
+				throw new XPathException(
 					"No namespace defined for prefix " + prefix);
 		}
 		if (namespaceURI == null)
@@ -196,13 +198,14 @@ public class QName implements Comparable {
 		return new QName(extractLocalName(qname), namespaceURI, prefix);
 	}
 	
-	public static QName parseFunction(StaticContext context, String qname) {
+	public static QName parseFunction(StaticContext context, String qname) 
+	throws XPathException {
 			String prefix = extractPrefix(qname);
 			String namespaceURI;
 			if (prefix != null) {
 				namespaceURI = context.getURIForPrefix(prefix);
 				if (namespaceURI == null)
-					throw new IllegalArgumentException(
+					throw new XPathException(
 						"No namespace defined for prefix " + prefix);
 			} else
 				namespaceURI = context.getDefaultFunctionNamespace();

@@ -477,9 +477,6 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			if (treeParser.foundErrors()) {
 				throw new SAXException(treeParser.getErrorMessage());
 			}
-			DocumentSet ndocs = expr.preselect(documentSet);
-			if (ndocs.getLength() == 0)
-				return new ArrayList(1);
 
 			Sequence seq = expr.eval(documentSet, null, null);
 			if (!(seq.getItemType() == Type.NODE))

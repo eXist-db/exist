@@ -29,6 +29,7 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.analysis.Tokenizer;
+import org.exist.xpath.*;
 import org.exist.xpath.Cardinality;
 import org.exist.xpath.Constants;
 import org.exist.xpath.Dependency;
@@ -232,5 +233,13 @@ public class ExtFulltext extends Function {
 	public void setInPredicate(boolean inPredicate) {
 		if (path != null)
 			path.setInPredicate(inPredicate);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.PathExpr#resetState()
+	 */
+	public void resetState() {
+		path.resetState();
+		searchTerm.resetState();
 	}
 }

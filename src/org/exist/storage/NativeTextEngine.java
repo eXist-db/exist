@@ -145,7 +145,7 @@ public class NativeTextEngine extends TextSearchEngine {
 					new BFile(
 						new File(dataDir + pathSep + "words.dbx"),
 						buffers,
-						buffers / 2);
+						buffers);
 				if (!dbWords.exists())
 					dbWords.create();
 				else

@@ -132,4 +132,42 @@ public class IntegerValue extends NumericValue {
 	public NumericValue round() {
 		return this;
 	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#minus(org.exist.xpath.value.NumericValue)
+	 */
+	public NumericValue minus(NumericValue other) {
+		return new IntegerValue(value - ((IntegerValue)other).value);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#plus(org.exist.xpath.value.NumericValue)
+	 */
+	public NumericValue plus(NumericValue other) {
+		return new IntegerValue(value + ((IntegerValue)other).value);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#mult(org.exist.xpath.value.NumericValue)
+	 */
+	public NumericValue mult(NumericValue other) {
+		return new IntegerValue(value * ((IntegerValue)other).value);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#div(org.exist.xpath.value.NumericValue)
+	 */
+	public NumericValue div(NumericValue other) throws XPathException {
+		long value = ((IntegerValue)other).value;
+		if(value < 0)
+			throw new XPathException("division by zero");
+		return new DoubleValue(value / ((IntegerValue)other).value);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#mod(org.exist.xpath.value.NumericValue)
+	 */
+	public NumericValue mod(NumericValue other) {
+		return new IntegerValue(value % ((IntegerValue)other).value);
+	}
 }

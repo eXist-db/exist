@@ -170,14 +170,6 @@ public class RpcConnection extends Thread {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  xpath          Description of the Parameter
-	 *@param  user           Description of the Parameter
-	 *@return                Description of the Return Value
-	 *@exception  Exception  Description of the Exception
-	 */
 	protected Sequence doQuery(
 		User user,
 		DBBroker broker,
@@ -187,7 +179,7 @@ public class RpcConnection extends Thread {
 		Hashtable namespaces)
 		throws Exception {
 		if(docs == null)
-			docs = broker.getAllDocuments();
+			docs = broker.getAllDocuments(new DocumentSet());
 		StaticContext context = new StaticContext(broker);
 		if (namespaces != null) {
 			Map.Entry entry;
@@ -218,13 +210,9 @@ public class RpcConnection extends Thread {
 		}
 		LOG.info("query: " + xpath);
 		long start = System.currentTimeMillis();
-		DocumentSet ndocs =
-			(docs == null
-				? expr.preselect(context)
-				: expr.preselect(docs));
 		LOG.info(
 			"pre-select took " + (System.currentTimeMillis() - start) + "ms.");
-		Sequence result = expr.eval(ndocs, contextSet, null);
+		Sequence result = expr.eval(docs, contextSet, null);
 		LOG.info("query took " + (System.currentTimeMillis() - start) + "ms.");
 		return result;
 	}
@@ -447,7 +435,7 @@ if (param.equals(EXistOutputKeys.STYLESHEET_PARAM)){
 			if (collection == null)
 				throw new EXistException(
 					"collection " + collectionName + " not found");
-			DocumentSet docs = collection.allDocs(broker, true);
+			DocumentSet docs = collection.allDocs(broker, new DocumentSet(), true);
 			XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
 			Modification modifications[] =
 				processor.parse(new InputSource(new StringReader(xupdate)));
@@ -521,7 +509,7 @@ if (param.equals(EXistOutputKeys.STYLESHEET_PARAM)){
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			DocumentSet docs = broker.getAllDocuments();
+			DocumentSet docs = broker.getAllDocuments(new DocumentSet());
 			String names[] = docs.getNames();
 			Vector vec = new Vector();
 			for (int i = 0; i < names.length; i++)
@@ -1188,7 +1176,7 @@ if (param.equals(EXistOutputKeys.STYLESHEET_PARAM)){
 					Item next;
 					while (i.hasNext()) {
 						next = i.nextItem();
-						if (Type.isNode(next.getType())) {
+						if (Type.subTypeOf(next.getType(), Type.NODE)) {
 							entry = new Vector();
 							if (next instanceof NodeProxy) {
 								p = (NodeProxy) next;

@@ -33,6 +33,9 @@ import org.exist.xpath.value.Type;
 import org.exist.xpath.value.ValueSequence;
 
 /**
+ * An XQuery sequence constructor ",". For example, ($a, $b) constructs a new
+ * sequence containing items $a and $b.
+ * 
  * @author wolf
  */
 public class SequenceConstructor extends AbstractExpression {
@@ -68,16 +71,6 @@ public class SequenceConstructor extends AbstractExpression {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#preselect(org.exist.dom.DocumentSet)
-	 */
-	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
-		for(Iterator i = expressions.iterator(); i.hasNext(); ) {
-			in_docs = ((Expression)i.next()).preselect(in_docs);
-		}
-		return in_docs;
-	}
-
-	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#pprint()
 	 */
 	public String pprint() {
@@ -102,5 +95,14 @@ public class SequenceConstructor extends AbstractExpression {
 	 */
 	public int getCardinality() {
 		return Cardinality.ZERO_OR_MORE;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#resetState()
+	 */
+	public void resetState() {
+		for (Iterator i = expressions.iterator(); i.hasNext();) {
+			((Expression) i.next()).resetState();
+		}
 	}
 }

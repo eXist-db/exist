@@ -51,7 +51,7 @@ public class DoubleValue extends NumericValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Item#getStringValue()
 	 */
-	public String getStringValue() {
+	public String getStringValue() throws XPathException {
 		return Double.toString(value);
 	}
 
@@ -138,5 +138,40 @@ public class DoubleValue extends NumericValue {
 	 */
 	public NumericValue round() {
 		return new DoubleValue(Math.round(value));
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#minus(org.exist.xpath.value.NumericValue)
+	 */
+	public NumericValue minus(NumericValue other) {
+		return new DoubleValue(value - ((DoubleValue)other).value);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#plus(org.exist.xpath.value.NumericValue)
+	 */
+	public NumericValue plus(NumericValue other) {
+		return new DoubleValue(value + ((DoubleValue)other).value);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#mult(org.exist.xpath.value.NumericValue)
+	 */
+	public NumericValue mult(NumericValue other) {
+		return new DoubleValue(value * ((DoubleValue)other).value);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#div(org.exist.xpath.value.NumericValue)
+	 */
+	public NumericValue div(NumericValue other) throws XPathException {
+		return new DoubleValue(value / ((DoubleValue)other).value);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#mod(org.exist.xpath.value.NumericValue)
+	 */
+	public NumericValue mod(NumericValue other) {
+		return new DoubleValue(value % ((DoubleValue)other).value);
 	}
 }

@@ -65,4 +65,10 @@ public class RootNode extends Step {
 	public int returnsType() {
 		return Type.NODE;
 	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.Step#resetState()
+	 */
+	public void resetState() {
+	}
 }

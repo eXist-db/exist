@@ -25,6 +25,7 @@ package org.exist.xpath;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
 
@@ -33,62 +34,31 @@ import org.exist.dom.SymbolTable;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
-import org.exist.xpath.functions.Function;
-import org.exist.xpath.functions.FunctionSignature;
+import org.exist.xpath.functions.UserDefinedFunction;
 import org.exist.xpath.value.Sequence;
 
 public class StaticContext {
 
-	protected static final String[] internalFunctions =
-		{ 
-			"org.exist.xpath.functions.FunSubstring",
-			"org.exist.xpath.functions.FunSubstringBefore",
-			"org.exist.xpath.functions.FunSubstringAfter",
-			"org.exist.xpath.functions.FunNormalizeSpace",
-			"org.exist.xpath.functions.FunConcat",
-			"org.exist.xpath.functions.FunStartsWith",
-			"org.exist.xpath.functions.FunEndsWith",
-			"org.exist.xpath.functions.FunContains",
-			"org.exist.xpath.functions.FunNot",
-			"org.exist.xpath.functions.FunPosition",
-			"org.exist.xpath.functions.FunLast",
-			"org.exist.xpath.functions.FunCount",
-			"org.exist.xpath.functions.FunStrLength",
-			"org.exist.xpath.functions.FunBoolean",
-			"org.exist.xpath.functions.FunString",
-			"org.exist.xpath.functions.FunNumber",
-			"org.exist.xpath.functions.FunTrue",
-			"org.exist.xpath.functions.FunFalse",
-			"org.exist.xpath.functions.FunSum",
-			"org.exist.xpath.functions.FunFloor",
-			"org.exist.xpath.functions.FunCeiling",
-			"org.exist.xpath.functions.FunRound",
-			"org.exist.xpath.functions.FunName",
-			"org.exist.xpath.functions.FunLocalName",
-			"org.exist.xpath.functions.FunNamespaceURI",
-			"org.exist.xpath.functions.FunId",
-			"org.exist.xpath.functions.FunLang",
-			"org.exist.xpath.functions.FunBaseURI",
-			"org.exist.xpath.functions.FunDocumentURI",
-			"org.exist.xpath.functions.ExtRegexp",
-			"org.exist.xpath.functions.ExtRegexpOr",
-			"org.exist.xpath.functions.FunDistinctValues",
-			"org.exist.xpath.functions.xmldb.XMLDBCollection",
-			"org.exist.xpath.functions.xmldb.XMLDBStore",
-			"org.exist.xpath.functions.xmldb.XMLDBRegisterDatabase",
-			"org.exist.xpath.functions.xmldb.XMLDBCreateCollection",
-			"org.exist.xpath.functions.util.MD5"
-		};
-
+	public final static String XML_NS = "http://www.w3.org/XML/1998/namespace";
+	public final static String SCHEMA_NS = "http://www.w3.org/2001/XMLSchema";
+	public final static String SCHEMA_DATATYPES_NS = "http://www.w3.org/2001/XMLSchema-datatypes";
+	public final static String SCHEMA_INSTANCE_NS = "http://www.w3.org/2001/XMLSchema-instance";
+	public final static String XPATH_DATATYPES_NS = "http://www.w3.org/2003/05/xpath-datatypes";
+	public final static String XQUERY_LOCAL_NS = "http://www.w3.org/2003/08/xquery-local-functions";
+	
 	private HashMap namespaces;
-	private TreeMap functions;
-	private TreeMap variables;
+	private HashMap inScopeNamespaces = new HashMap();
+	private Stack namespaceStack = new Stack();
+	
+	private TreeMap builtinFunctions;
+	private TreeMap declaredFunctions = new TreeMap();
+
+	/** TODO: don't put global variables here */
+	private TreeMap variables = new TreeMap();
+	private Stack variableStack = new Stack();
+	
 	private DBBroker broker;
 	private String baseURI = "";
-
-	private HashMap inScopeNamespaces = null;
-
-	private Stack stack = new Stack();
 
 	private String defaultFunctionNamespace = Function.BUILTIN_FUNCTION_NS;
 	
@@ -114,7 +84,6 @@ public class StaticContext {
 	public StaticContext(DBBroker broker) {
 		this.broker = broker;
 		loadDefaults();
-		variables = new TreeMap();
 	}
 
 	/**
@@ -131,7 +100,6 @@ public class StaticContext {
 	public void declareNamespace(String prefix, String uri) {
 		if (prefix == null || uri == null)
 			throw new IllegalArgumentException("null argument passed to declareNamespace");
-		System.out.println(prefix + " = " + uri);
 		namespaces.put(prefix, uri);
 	}
 
@@ -167,6 +135,22 @@ public class StaticContext {
 				: (String) inScopeNamespaces.get(prefix);
 		else
 			return ns;
+	}
+	
+	public String getPrefixForURI(String uri) {
+		for(Iterator i = namespaces.entrySet().iterator(); i.hasNext(); ) {
+			Map.Entry entry = (Map.Entry)i.next();
+			if(entry.getValue().equals(uri))
+				return (String)entry.getKey();
+		}
+		if(inScopeNamespaces != null) {
+			for(Iterator i = inScopeNamespaces.entrySet().iterator(); i.hasNext(); ) {
+				Map.Entry entry = (Map.Entry)i.next();
+				if(entry.getValue().equals(uri))
+					return (String)entry.getKey();
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -212,9 +196,24 @@ public class StaticContext {
 	 * @return
 	 */
 	public Class getClassForFunction(QName fnName) {
-		return (Class) functions.get(fnName);
+		return (Class) builtinFunctions.get(fnName);
 	}
 
+	public void declareFunction(UserDefinedFunction function)  throws XPathException {
+		declaredFunctions.put(function.getName(), function);
+	}
+	
+	public UserDefinedFunction resolveFunction(QName name) throws XPathException {
+		UserDefinedFunction func = (UserDefinedFunction)declaredFunctions.get(name);
+		if(func == null)
+			throw new XPathException("Function " + name + " is unknown");
+		return func;
+	}
+	
+	public Iterator getBuiltinFunctions() {
+		return builtinFunctions.values().iterator();
+	}
+	
 	/**
 	 * Declare a variable.
 	 * 
@@ -357,6 +356,16 @@ public class StaticContext {
 		return contextPosition;
 	}
 	
+	public void pushNamespaceContext() {
+		HashMap m = (HashMap)inScopeNamespaces.clone();
+		namespaceStack.push(inScopeNamespaces);
+		inScopeNamespaces = m;
+	}
+	
+	public void popNamespaceContext() {
+		inScopeNamespaces = (HashMap)namespaceStack.pop();
+	}
+	
 	/**
 	 * Save the current context on top of a stack. 
 	 * 
@@ -364,20 +373,19 @@ public class StaticContext {
 	 * This method saves the current in-scope namespace
 	 * definitions and variables.
 	 */
-	public void pushContext() {
-		stack.push(inScopeNamespaces);
-		if (inScopeNamespaces != null) {
-			HashMap m = new HashMap(inScopeNamespaces);
-			inScopeNamespaces = m;
-		}
+	public void pushLocalContext(boolean emptyContext) {
+		variableStack.push(variables);
+		if(emptyContext)
+			variables = new TreeMap();
+		else
+			variables = new TreeMap(variables);
 	}
 
 	/**
 	 * Restore previous state.
 	 */
-	public void popContext() {
-		if (!stack.isEmpty())
-			inScopeNamespaces = (HashMap) stack.pop();
+	public void popLocalContext() {
+		variables = (TreeMap) variableStack.pop();
 	}
 
 	/**
@@ -392,16 +400,25 @@ public class StaticContext {
 			namespaces.put(prefixes[i], syms.getDefaultNamespace(prefixes[i]));
 		}
 		
-		functions = new TreeMap();
-		for (int i = 0; i < internalFunctions.length; i++) {
+		// default namespaces
+		declareNamespace("xml", XML_NS);
+		declareNamespace("xs", SCHEMA_NS);
+		declareNamespace("xdt", XPATH_DATATYPES_NS);
+		declareNamespace("local", XQUERY_LOCAL_NS);
+		declareNamespace("fn", Function.BUILTIN_FUNCTION_NS);
+		declareNamespace("util", Function.UTIL_FUNCTION_NS);
+		declareNamespace("xmldb", Function.XMLDB_FUNCTION_NS);
+		
+		builtinFunctions = new TreeMap();
+		for (int i = 0; i < SystemFunctions.internalFunctions.length; i++) {
 			try {
-				Class fclass = lookup(internalFunctions[i]);
+				Class fclass = lookup(SystemFunctions.internalFunctions[i]);
 				Field field = fclass.getDeclaredField("signature");
 				FunctionSignature signature = (FunctionSignature)field.get(null);
 				QName name = signature.getName();
-				functions.put(name, fclass);
+				builtinFunctions.put(name, fclass);
 			} catch (Exception e) {
-				throw new RuntimeException("no instance found for " + internalFunctions[i]);
+				throw new RuntimeException("no instance found for " + SystemFunctions.internalFunctions[i]);
 			}
 		}
 	}

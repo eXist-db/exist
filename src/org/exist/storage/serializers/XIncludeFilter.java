@@ -195,17 +195,16 @@ public class XIncludeFilter implements ContentHandler {
 				// process the xpointer
 				try {
 					// build input document set
-					DocumentSet docs = null;
+					DocumentSet docs = new DocumentSet();
 					if (doc == null) {
 						// try to read documents from the collection
 						// specified by docName
-						docs = serializer.broker.getDocumentsByCollection(docName);
+						docs = serializer.broker.getDocumentsByCollection(docName, docs);
 						// give up
 						if (docs == null)
 							throw new SAXException(
 								"no document or collection " + "called " + docName);
 					} else {
-						docs = new DocumentSet();
 						docs.add(doc);
 					}
 					StaticContext context = new StaticContext(serializer.broker);
@@ -233,9 +232,6 @@ public class XIncludeFilter implements ContentHandler {
 					}
 					LOG.info("xpointer query: " + expr.pprint());
 					long start = System.currentTimeMillis();
-					docs = expr.preselect(docs);
-					if (docs.getLength() == 0)
-						return;
 					Sequence seq = expr.eval(docs, null, null);
 					switch (seq.getItemType()) {
 						case Type.NODE :

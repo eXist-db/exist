@@ -23,6 +23,7 @@
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeProxy;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.Receiver;
 import org.exist.xpath.value.Item;
@@ -72,7 +73,7 @@ public class EnclosedExpr extends PathExpr {
 						if(buf.length() > 0)
 							buf.append(' ');
 						buf.append(next.getStringValue());
-					} else {
+					} else if(next instanceof NodeProxy){
 						if(buf.length() > 0) {
 							receiver.characters(buf);
 							buf.setLength(0);

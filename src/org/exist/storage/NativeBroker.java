@@ -478,10 +478,10 @@ public class NativeBroker extends DBBroker {
 	 *@param  user  Description of the Parameter
 	 *@return       The allDocuments value
 	 */
-	public DocumentSet getAllDocuments() {
+	public DocumentSet getAllDocuments(DocumentSet docs) {
 		long start = System.currentTimeMillis();
 		Collection root = getCollection("/db");
-		DocumentSet docs = root.allDocs(this, true);
+		root.allDocs(this, docs, true);
 		LOG.debug(
 			"loading "
 				+ docs.getLength()
@@ -643,16 +643,16 @@ public class NativeBroker extends DBBroker {
 		return doc;
 	}
 
-	public DocumentSet getDocumentsByCollection(String collection)
+	public DocumentSet getDocumentsByCollection(String collection, DocumentSet docs)
 		throws PermissionDeniedException {
-		return getDocumentsByCollection(collection, true);
+		return getDocumentsByCollection(collection, docs, true);
 	}
 
 	public DocumentSet getDocumentsByCollection(
 		String collection,
+		DocumentSet docs,
 		boolean inclusive)
 		throws PermissionDeniedException {
-		DocumentSet docs = new DocumentSet();
 		long start = System.currentTimeMillis();
 		if (collection == null || collection.length() == 0)
 			return docs;
@@ -665,7 +665,7 @@ public class NativeBroker extends DBBroker {
 			LOG.debug("collection " + collection + " not found");
 			return docs;
 		}
-		docs = root.allDocs(this, inclusive);
+		docs = root.allDocs(this, docs, inclusive);
 		LOG.debug(
 			"loading "
 				+ docs.getLength()
@@ -685,9 +685,8 @@ public class NativeBroker extends DBBroker {
 	 *@param  user         Description of the Parameter
 	 *@return              The documentsByDoctype value
 	 */
-	public DocumentSet getDocumentsByDoctype(String doctypeName) {
-		DocumentSet docs = getAllDocuments();
-		DocumentSet result = new DocumentSet();
+	public DocumentSet getDocumentsByDoctype(String doctypeName, DocumentSet result) {
+		DocumentSet docs = getAllDocuments(new DocumentSet());
 		DocumentImpl doc;
 		DocumentType doctype;
 		for (Iterator i = docs.iterator(); i.hasNext();) {

@@ -216,8 +216,8 @@ public class Collection
 	 */
 	public synchronized DocumentSet allDocs(
 		DBBroker broker,
+		DocumentSet docs,
 		boolean recursive) {
-		DocumentSet docs = new DocumentSet();
 		getDocuments(docs);
 		if (recursive)
 			allDocs(broker, docs);

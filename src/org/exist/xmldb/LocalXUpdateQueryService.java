@@ -54,14 +54,13 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 	public long updateResource(String resource, String xupdate)
 		throws XMLDBException {
 		long start = System.currentTimeMillis();
-		DocumentSet docs = null;
+		DocumentSet docs = new DocumentSet();
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
 			if (resource == null) {
-				docs = parent.collection.allDocs(broker, true);
+				docs = parent.collection.allDocs(broker, docs, true);
 			} else {
-				docs = new DocumentSet();
 				String id = parent.getName() + '/' + resource;
 				DocumentImpl doc = parent.collection.getDocument(id);
 				LOG.debug("updating resource " + doc.getFileName());

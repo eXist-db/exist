@@ -92,7 +92,6 @@ public class MemTreeBuilder {
 	 */
 	public int startElement(QName qn, Attributes attributes) {
 		int nodeNr = doc.addNode(Node.ELEMENT_NODE, level, qn);
-
 		// parse attributes
 		String attrPrefix;
 		String attrLocalName;

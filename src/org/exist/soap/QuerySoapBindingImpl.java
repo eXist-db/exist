@@ -17,7 +17,6 @@ import org.apache.log4j.Category;
 import org.exist.EXistException;
 import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.parser.XPathLexer2;
@@ -256,10 +255,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			}
 			LOG.info("query: " + expr.pprint());
 			long start = System.currentTimeMillis();
-			DocumentSet ndocs = expr.preselect( context );
-			if (ndocs.getLength() == 0)
-				return resp;
-			Sequence seq= expr.eval(ndocs, null, null);
+			Sequence seq= expr.eval(null, null, null);
 
 			QueryResponseCollection[] collections = null;
 			if (seq.getItemType() == Type.NODE)

@@ -75,15 +75,6 @@ public abstract class Step extends AbstractExpression {
         return buf.toString();
     }
 
-    public DocumentSet preselect( DocumentSet in_docs ) throws XPathException {
-        DocumentSet out_docs = in_docs;
-        if ( predicates.size() > 0 )
-            for ( Iterator i = predicates.iterator(); i.hasNext();  )
-                out_docs = ( (Predicate) i.next() ).preselect( out_docs );
-
-        return out_docs;
-    }
-
     public int returnsType() {
         return Type.NODE;
     }
@@ -100,5 +91,14 @@ public abstract class Step extends AbstractExpression {
 		this.inPredicate = inPredicate;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#resetState()
+	 */
+	public void resetState() {
+		for (Iterator i = predicates.iterator(); i.hasNext();) {
+			Predicate pred = (Predicate) i.next();
+			pred.resetState();
+		}
+	}
 }
 

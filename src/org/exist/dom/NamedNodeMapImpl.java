@@ -53,37 +53,37 @@ public class NamedNodeMapImpl extends LinkedList implements NamedNodeMap {
   }
 
   public Node getNamedItem(String name) {
-    NodeImpl comparable = new NodeImpl((short)0, new QName(name, "", null));
-    int i = indexOf(comparable);
+    int i = indexOf(new QName(name, "", null));
     return (i < 0) ? null : (Node)get(i);
   }
 
   public Node getNamedItemNS(String namespaceURI, String name) {
-	NodeImpl comparable = new NodeImpl((short)0, new QName(name, namespaceURI, null));
-		int i = indexOf(comparable);
+		int i = indexOf(new QName(name, namespaceURI, null));
 		return (i < 0) ? null : (Node)get(i);
   }
 
   public Node removeNamedItem(String name) throws DOMException {
-    NodeImpl comparable = new NodeImpl((short)0, new QName(name, "", null));
-    int i = indexOf(comparable);
+    int i = indexOf(new QName(name, "", null));
+    Node node = (Node)get(i);
     remove(i);
-    return comparable;
+    return node;
   }
 
   public Node removeNamedItemNS(String namespaceURI, String name)
   throws DOMException {
-    NodeImpl comparable = new NodeImpl((short)0, new QName(name, namespaceURI, null));
-    int i = indexOf(comparable);
+    int i = indexOf(new QName(name, namespaceURI, null));
+	Node node = (Node)get(i);
     remove(i);
-    return comparable;
+    return node;
   }
 
-  private int indexOf(NodeImpl node) {
+  private int indexOf(QName name) {
 	  ListIterator i=this.listIterator();
 	  while (i.hasNext()) {
-	  	NodeImpl temp=(NodeImpl)i.next();
-		if (temp.getNodeName().compareTo(node.getNodeName())==0) return i.previousIndex();
+	  	Node temp=(Node) i.next();
+	  	if(temp.getLocalName().equals(name.getLocalName()) && 
+	  		temp.getNamespaceURI().equals(name.getNamespaceURI()))
+	  		return i.previousIndex();
 	  }
 	return -1;
   }

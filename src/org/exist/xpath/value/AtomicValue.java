@@ -40,7 +40,7 @@ public abstract class AtomicValue implements Item, Sequence  {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Item#getStringValue()
 	 */
-	public abstract String getStringValue();
+	public abstract String getStringValue() throws XPathException;
 
 	public abstract AtomicValue convertTo(int requiredType) throws XPathException;
 	
@@ -88,8 +88,13 @@ public abstract class AtomicValue implements Item, Sequence  {
 	 */
 	public void toSAX(DBBroker broker, ContentHandler handler)
 		throws SAXException {
-		String s = getStringValue();
-		handler.characters(s.toCharArray(), 0, s.length());
+		String s;
+		try {
+			s = getStringValue();
+			handler.characters(s.toCharArray(), 0, s.length());
+		} catch (XPathException e) {
+			throw new SAXException(e);
+		}
 	}
 		
 	/* (non-Javadoc)
@@ -124,7 +129,11 @@ public abstract class AtomicValue implements Item, Sequence  {
 	}
 
 	public String pprint() {
-		return getStringValue();
+		try {
+			return getStringValue();
+		} catch (XPathException e) {
+			return "";
+		}
 	}
 	
 	private final static class EmptyValue extends AtomicValue {

@@ -25,10 +25,10 @@ package org.exist.xpath.functions.util;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.xpath.Cardinality;
+import org.exist.xpath.Function;
+import org.exist.xpath.FunctionSignature;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.XPathException;
-import org.exist.xpath.functions.Function;
-import org.exist.xpath.functions.FunctionSignature;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceType;
@@ -42,7 +42,7 @@ public class MD5 extends Function {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("md5", UTIL_FUNCTION_NS),
+			new QName("md5", UTIL_FUNCTION_NS, "util"),
 			new SequenceType[] {
 				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 				},
