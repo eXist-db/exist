@@ -30,7 +30,6 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.URI;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
