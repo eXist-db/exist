@@ -1,3 +1,25 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-03 Wolfgang M. Meier
+ *  wolfgang@exist-db.org
+ *  http://exist.sourceforge.net
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
+ *  $Id$
+ */
 package org.exist.xmlrpc;
 
 import java.io.ByteArrayInputStream;
@@ -530,7 +552,7 @@ public class RpcConnection extends Thread {
 			if (collection == null)
 				throw new EXistException("collection " + collectionName
 						+ " not found");
-			DocumentSet docs = collection.allDocs(broker, new DocumentSet(true),
+			DocumentSet docs = collection.allDocs(broker, new DocumentSet(),
 					true);
 			XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
 			Modification modifications[] = processor.parse(new InputSource(
@@ -559,7 +581,7 @@ public class RpcConnection extends Thread {
 			Document doc = broker.getDocument(resource);
 			if (doc == null)
 				throw new EXistException("document " + resource + " not found");
-			DocumentSet docs = new DocumentSet(true);
+			DocumentSet docs = new DocumentSet();
 			docs.add(doc);
 			XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
 			Modification modifications[] = processor.parse(new InputSource(
@@ -1892,6 +1914,63 @@ public class RpcConnection extends Thread {
 		int reada = os.read(buffer);
 		os.close();
 		return buffer;
+	}
+	
+	public boolean moveResource(User user, String docPath, String destinationPath, String newName) 
+	throws EXistException, PermissionDeniedException {
+	    DBBroker broker = null;
+		try {
+			broker = brokerPool.get(user);
+			// get source document
+			int p = docPath.lastIndexOf('/');
+			if (p < 0 || p == docPath.length() - 1)
+				throw new EXistException("Illegal document path");
+			String collectionName = docPath.substring(0, p);
+			Collection collection = broker.getCollection(collectionName);
+			if (collection == null)
+				throw new EXistException("Collection " + collectionName
+						+ " not found");
+			DocumentImpl doc = collection.getDocument(docPath);
+			if(doc == null)
+				throw new EXistException("Document " + docPath + " not found");
+			
+			// get destination collection
+			Collection destination = broker.getCollection(destinationPath);
+			if(destination == null)
+			    throw new EXistException("Destination collection " + destinationPath + " not found");
+			broker.moveResource(doc, destination, newName);
+			documentCache.clear();
+			return true;
+        } catch (LockException e) {
+            throw new PermissionDeniedException("Could not acquire lock on document " + docPath);
+        } finally {
+			brokerPool.release(broker);
+		}
+	}
+	
+	public boolean moveCollection(User user, String collectionPath, String destinationPath, String newName) 
+	throws EXistException, PermissionDeniedException {
+	    DBBroker broker = null;
+		try {
+			broker = brokerPool.get(user);
+			// get source document
+			Collection collection = broker.getCollection(collectionPath);
+			if (collection == null)
+				throw new EXistException("Collection " + collectionPath
+						+ " not found");
+			
+			// get destination collection
+			Collection destination = broker.getCollection(destinationPath);
+			if(destination == null)
+			    throw new EXistException("Destination collection " + destinationPath + " not found");
+			broker.moveCollection(collection, destination, newName);
+			documentCache.clear();
+			return true;
+        } catch (LockException e) {
+            throw new PermissionDeniedException(e.getMessage());
+        } finally {
+			brokerPool.release(broker);
+		}
 	}
 	
 	public void reindexCollection(User user, String name) throws Exception,

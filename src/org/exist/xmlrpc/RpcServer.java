@@ -1,5 +1,6 @@
-
 /*
+<<<<<<< RpcServer.java
+=======
 <<<<<<< RpcServer.java
  * eXist Open Source Native XML Database Copyright (C) 2001-03, Wolfgang M.
  * Meier (meier@ifs.tu-darmstadt.de)
@@ -20,6 +21,7 @@
  * 
  * $Id$
 =======
+>>>>>>> 1.36
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2001-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
@@ -37,8 +39,12 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
+<<<<<<< RpcServer.java
+ *  $Id$
+=======
  *  $Id$
 >>>>>>> 1.33
+>>>>>>> 1.36
  */
 package org.exist.xmlrpc;
 
@@ -937,6 +943,44 @@ public class RpcServer implements RpcAPI {
         }
     }
 
+    
+    /* (non-Javadoc)
+     * @see org.exist.xmlrpc.RpcAPI#moveCollection(org.exist.security.User, java.lang.String, java.lang.String, java.lang.String)
+     */
+    public boolean moveCollection(User user, String collectionPath,
+            String destinationPath, String newName) throws EXistException,
+            PermissionDeniedException {
+        RpcConnection con = pool.get();
+        try {
+            return con.moveCollection(user, collectionPath, destinationPath, newName);
+        } catch (Exception e) {
+            handleException(e);
+            return false;
+        } finally {
+            con.synchronize();
+            pool.release(con);
+        }
+    }
+    
+    
+    /* (non-Javadoc)
+     * @see org.exist.xmlrpc.RpcAPI#moveResource(org.exist.security.User, java.lang.String, java.lang.String, java.lang.String)
+     */
+    public boolean moveResource(User user, String docPath,
+            String destinationPath, String newName) throws EXistException,
+            PermissionDeniedException {
+        RpcConnection con = pool.get();
+        try {
+            return con.moveResource(user, docPath, destinationPath, newName);
+        } catch (Exception e) {
+            handleException(e);
+            return false;
+        } finally {
+            con.synchronize();
+            pool.release(con);
+        }
+    }
+    
     public boolean removeCollection(User user, String name)
             throws EXistException, PermissionDeniedException {
         RpcConnection con = pool.get();
@@ -1567,15 +1611,15 @@ public class RpcServer implements RpcAPI {
 	
 	 public boolean reindexCollection(User user, String name)
      throws EXistException, PermissionDeniedException {
- RpcConnection con = pool.get();
- try {
-     con.reindexCollection(user, name);
-     return true;
- } catch (Exception e) {
-     handleException(e);
-     return false;
- } finally {
-     pool.release(con);
- }
-}
+	     RpcConnection con = pool.get();
+	     try {
+	         con.reindexCollection(user, name);
+	         return true;
+	     } catch (Exception e) {
+	         handleException(e);
+	         return false;
+	     } finally {
+	         pool.release(con);
+	     }
+	 }
 }
