@@ -1,5 +1,7 @@
 package org.exist.xupdate;
 
+import java.util.Map;
+
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
@@ -24,8 +26,9 @@ public class Append extends Modification {
 	 * Constructor for Append.
 	 * @param selectStmt
 	 */
-	public Append(DBBroker broker, DocumentSet docs, String selectStmt, String childAttr) {
-		super(broker, docs, selectStmt);
+	public Append(DBBroker broker, DocumentSet docs, String selectStmt, 
+	        String childAttr, Map namespaces) {
+		super(broker, docs, selectStmt, namespaces);
 		if(childAttr == null || childAttr.equals("last()"))
 		    child = -1;
 		else

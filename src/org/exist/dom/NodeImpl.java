@@ -347,8 +347,6 @@ public class NodeImpl implements Node {
 		    final String prefix = nodeName.getPrefix();
 		    return prefix == null ? "" : prefix;
 		}
-		//		if (nodeName != null && nodeName.indexOf(':') > -1)
-		//			return nodeName.substring(0, nodeName.indexOf(':'));
 		return "";
 	}
 

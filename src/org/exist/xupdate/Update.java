@@ -5,6 +5,8 @@
  */
 package org.exist.xupdate;
 
+import java.util.Map;
+
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
@@ -27,8 +29,8 @@ public class Update extends Modification {
 	 * @param user
 	 * @param selectStmt
 	 */
-	public Update(DBBroker broker, DocumentSet docs, String selectStmt) {
-		super(broker, docs, selectStmt);
+	public Update(DBBroker broker, DocumentSet docs, String selectStmt, Map namespaces) {
+		super(broker, docs, selectStmt, namespaces);
 	}
 
 	/* (non-Javadoc)

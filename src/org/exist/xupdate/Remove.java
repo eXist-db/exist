@@ -1,5 +1,7 @@
 package org.exist.xupdate;
 
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -27,8 +29,8 @@ public class Remove extends Modification {
 	 * @param user
 	 * @param selectStmt
 	 */
-	public Remove(DBBroker broker, DocumentSet docs, String selectStmt) {
-		super(broker, docs, selectStmt);
+	public Remove(DBBroker broker, DocumentSet docs, String selectStmt, Map namespaces) {
+		super(broker, docs, selectStmt, namespaces);
 	}
 
 	/**

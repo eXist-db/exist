@@ -3,6 +3,9 @@ package org.exist.xupdate;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
@@ -41,14 +44,17 @@ public abstract class Modification {
 	protected DocumentFragment content = null;
 	protected DBBroker broker;
 	protected DocumentSet docs;
+	protected Map namespaces;
 
 	/**
 	 * Constructor for Modification.
 	 */
-	public Modification(DBBroker broker, DocumentSet docs, String selectStmt) {
+	public Modification(DBBroker broker, DocumentSet docs, String selectStmt,
+	        Map namespaces) {
 		this.selectStmt = selectStmt;
 		this.broker = broker;
 		this.docs = docs;
+		this.namespaces = new HashMap(namespaces);
 	}
 
 	public abstract long process() throws PermissionDeniedException, EXistException, XPathException;
@@ -64,6 +70,13 @@ public abstract class Modification {
 		try {
 			XQueryContext context = new XQueryContext(broker);
 			context.setStaticallyKnownDocuments(docs);
+			Map.Entry entry;
+			for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {
+				entry = (Map.Entry) i.next();
+				context.declareNamespace(
+					(String) entry.getKey(),
+					(String) entry.getValue());
+			}
 			XQueryLexer lexer = new XQueryLexer(new StringReader(selectStmt));
 			XQueryParser parser = new XQueryParser(lexer);
 			XQueryTreeParser treeParser = new XQueryTreeParser(context);

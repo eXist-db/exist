@@ -316,7 +316,7 @@ public class DOMFile extends BTree implements Lockable {
         if (rec.offset < dataLen) {
             if (dataLen + value.length + 4 < fileHeader.getWorkSize()) {
 //                LOG
-//                        .debug("copying data in page " + rec.page.getPageNum()
+//                        .debug("copying data in page " + rec.page.getPageNum() + "; " + rec.page.page.hashCode()
 //                                + "; offset = " + rec.offset + "; dataLen = "
 //                                + dataLen);
                 // new value fits into the page
@@ -369,6 +369,8 @@ public class DOMFile extends BTree implements Lockable {
             rec.page.getPageHeader().setDataLength(rec.page.len);
         }
         // write the data
+//        LOG.debug("inserting " + new String(value) + " to " + rec.page.page.getPageInfo() + "; " +
+//                rec.page.page.hashCode());
         short tid = rec.page.getPageHeader().getNextTID();
         ByteConversion.shortToByte((short) tid, rec.page.data, rec.offset);
         rec.offset += 2;
@@ -1026,7 +1028,7 @@ public class DOMFile extends BTree implements Lockable {
      */
     public void remove(long p) {
         RecordPos rec = findRecord(p);
-//        LOG.debug("removing value from " + rec.page.getPageNum());
+//        LOG.debug("removing value " + rec.tid + " from " + rec.page.getPageNum() + "; " + rec.page.page.hashCode());
         int startOffset = rec.offset - 2;
         DOMFilePageHeader ph = rec.page.getPageHeader();
         short l = ByteConversion.byteToShort(rec.page.data, rec.offset);
@@ -1125,6 +1127,7 @@ public class DOMFile extends BTree implements Lockable {
         while(-1 < pnum) {
             DOMPage page = getCurrentPage(pnum);
             pnum = page.getPageHeader().getNextDataPage();
+            LOG.debug("REMOVING PAGE " + page.getPageNum() + ": " + page.page.hashCode());
             dataCache.remove(page);
             try {
                 unlinkPages(page.page);

@@ -198,9 +198,11 @@ public final class NodeIterator implements Iterator {
 			offset = rec.offset - 2;
 			p = rec.page;
 			startAddress = -1;
-		} else if (page > -1)
+		} else if (page > -1) {
 			p = db.getCurrentPage(page);
-		else
+			db.addToBuffer(p);
+//			LOG.debug("reading " + p.page.getPageNum() + "; " + p.page.hashCode());
+		} else
 			return false;
 		return true;
 	}
