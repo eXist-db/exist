@@ -191,7 +191,8 @@ public class ExtFulltext extends Function {
 	 * @see org.exist.xquery.functions.Function#getDependencies()
 	 */
 	public int getDependencies() {
-		return Dependency.CONTEXT_SET;
+//		return Dependency.CONTEXT_SET;
+		return path.getDependencies();
 	}
 
 	public DocumentSet preselect(DocumentSet in_docs) {

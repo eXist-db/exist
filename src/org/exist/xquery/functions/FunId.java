@@ -89,6 +89,7 @@ public class FunId extends Function {
 		QName id) {
 		NodeSet attribs =
 			(NodeSet) context.getBroker().getElementIndex().findElementsByTagName(ElementValue.ATTRIBUTE_ID, docs, id, null);
+		LOG.debug("Found " + attribs.getLength() + " for id " + id.toString());
 		NodeProxy n, p;
 		for (Iterator i = attribs.iterator(); i.hasNext();) {
 			n = (NodeProxy) i.next();

@@ -83,57 +83,57 @@ public class XQueryContext {
 	private final static Logger LOG = Logger.getLogger(XQueryContext.class);
 
 	// Static namespace/prefix mappings
-	private HashMap namespaces;
+	protected HashMap namespaces;
 	
 	// Local in-scope namespace/prefix mappings in the current context
-	private HashMap inScopeNamespaces = new HashMap();
+	protected HashMap inScopeNamespaces = new HashMap();
 
 	// Static prefix/namespace mappings
-	private HashMap prefixes;
+	protected HashMap prefixes;
 	
 	// Local prefix/namespace mappings in the current context
-	private HashMap inScopePrefixes = new HashMap();
+	protected HashMap inScopePrefixes = new HashMap();
 
 	// Local namespace stack
-	private Stack namespaceStack = new Stack();
+	protected Stack namespaceStack = new Stack();
 
 	// Known user defined functions in the local module
-	private TreeMap declaredFunctions = new TreeMap();
+	protected TreeMap declaredFunctions = new TreeMap();
 
 	// Globally declared variables
-	private TreeMap globalVariables = new TreeMap();
+	protected TreeMap globalVariables = new TreeMap();
 
 	// The last element in the linked list of local in-scope variables
-	private LocalVariable lastVar = null;
+	protected LocalVariable lastVar = null;
 	
 	// The current size of the variable stack
-	private int variableStackSize = 0;
+	protected int variableStackSize = 0;
 	
 	// Unresolved references to user defined functions
-	private Stack forwardReferences = new Stack();
+	protected Stack forwardReferences = new Stack();
 	
-	private List pragmas = null;
+	protected List pragmas = null;
 	
-	private XQueryWatchDog watchdog;
+	protected XQueryWatchDog watchdog;
 	
 	/**
 	 * Loaded modules.
 	 */
-	private HashMap modules = new HashMap();
+	protected HashMap modules = new HashMap();
 
 	/** 
 	 * The set of statically known documents.
 	 */
-	private String[] staticDocumentPaths = null;
-	private DocumentSet staticDocuments = null;
+	protected String[] staticDocumentPaths = null;
+	protected DocumentSet staticDocuments = null;
 	
 	protected DBBroker broker;
 
-	private String baseURI = "";
+	protected String baseURI = "";
 
-	private String moduleLoadPath = ".";
+	protected String moduleLoadPath = ".";
 	
-	private String defaultFunctionNamespace = Module.BUILTIN_FUNCTION_NS;
+	protected String defaultFunctionNamespace = Module.BUILTIN_FUNCTION_NS;
 
 	/**
 	 * The default collation URI
@@ -178,7 +178,6 @@ public class XQueryContext {
 	private boolean exclusive = false;
 	
 	protected XQueryContext() {
-		this.watchdog = new XQueryWatchDog(this);
 		builder = new MemTreeBuilder(this);
 		builder.startDocument();
 	}
@@ -1055,6 +1054,7 @@ public class XQueryContext {
 	 * internal functions.
 	 */
 	protected void loadDefaults() {
+		this.watchdog = new XQueryWatchDog(this);
 		SymbolTable syms = broker.getSymbols();
 		String[] pfx = syms.defaultPrefixList();
 		namespaces = new HashMap(pfx.length);

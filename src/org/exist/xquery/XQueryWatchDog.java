@@ -23,9 +23,7 @@
 package org.exist.xquery;
 
 import org.apache.log4j.Logger;
-import org.exist.EXistException;
 import org.exist.memtree.MemTreeBuilder;
-import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 
 
@@ -41,8 +39,11 @@ public class XQueryWatchDog {
     private XQueryContext context;
     
     private long timeout = Long.MAX_VALUE;
-    private long startTime;
     private int maxNodesLimit = Integer.MAX_VALUE;
+    
+    private long startTime;
+    
+    private boolean terminate = false;
     
     /**
      * 
@@ -54,19 +55,15 @@ public class XQueryWatchDog {
     }
     
     private void configureDefaults() {
-        try {
-            Configuration conf = BrokerPool.getInstance().getConfiguration();
-            Object option = conf.getProperty("db-connection.watchdog.query-timeout");
-            if(option != null)
-                timeout = ((Long)option).longValue();
-            if(timeout <= 0)
-                timeout = Long.MAX_VALUE;
-            option = conf.getProperty("db-connection.watchdog.output-size-limit");
-            if(option != null)
-                maxNodesLimit = ((Integer)option).intValue();
-        } catch (EXistException e) {
-            LOG.warn("configure() - Watchdog configuration failed");
-        }
+        Configuration conf = context.broker.getBrokerPool().getConfiguration();
+        Object option = conf.getProperty("db-connection.watchdog.query-timeout");
+        if(option != null)
+            timeout = ((Long)option).longValue();
+        if(timeout <= 0)
+            timeout = Long.MAX_VALUE;
+        option = conf.getProperty("db-connection.watchdog.output-size-limit");
+        if(option != null)
+            maxNodesLimit = ((Integer)option).intValue();
     }
     
     public void setTimeoutFromPragma(Pragma pragma) throws XPathException {
@@ -94,6 +91,12 @@ public class XQueryWatchDog {
     }
     
     public void proceed(Expression expr) throws TerminatedException {
+    	if(terminate) {
+    		if(expr == null)
+    			expr = context.getRootExpression();
+    		throw new TerminatedException(expr.getASTNode(),
+    				"The query has been killed by the server.");
+    	}
         final long elapsed = System.currentTimeMillis() - startTime;
         if(elapsed > timeout) {
             if(expr == null)
@@ -117,7 +120,16 @@ public class XQueryWatchDog {
         }
     }
     
+    public void kill(long waitTime) {
+    	terminate = true;
+    }
+    
+    public XQueryContext getContext() {
+    	return context;
+    }
+    
     public void reset() {
         startTime = System.currentTimeMillis();
+        terminate = false;
     }
 }

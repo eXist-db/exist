@@ -259,7 +259,6 @@ public class LocationStep extends Step {
                             ElementValue.ELEMENT,
                             currentDocs,
                             test.getName(), null);
-                LOG.debug("Retrieved elements for " + pprint());
             }
             return currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);
 		} else {

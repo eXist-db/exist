@@ -144,8 +144,9 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                     }
                     r = values;
                 }
-            } else
+            } else {
                 r = expr.eval(r);
+            }
         }
         return r;
     }

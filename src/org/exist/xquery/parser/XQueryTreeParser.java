@@ -162,6 +162,9 @@ public XQueryTreeParser() {
 		_retTree = _t;
 	}
 	
+/**
+ * Process a top-level expression like FLWOR, conditionals, comparisons etc.
+ */
 	public final Expression  expr(AST _t,
 		PathExpr path
 	) throws RecognitionException, PermissionDeniedException,EXistException,XPathException {
@@ -1215,8 +1218,8 @@ public XQueryTreeParser() {
 						case NCNAME:
 						case EQ:
 						case STRING_LITERAL:
-						case LITERAL_element:
 						case LITERAL_collation:
+						case LITERAL_element:
 						case LCURLY:
 						case COMMA:
 						case LITERAL_empty:
@@ -1351,8 +1354,8 @@ public XQueryTreeParser() {
 						case NCNAME:
 						case EQ:
 						case STRING_LITERAL:
-						case LITERAL_element:
 						case LITERAL_collation:
+						case LITERAL_element:
 						case LCURLY:
 						case COMMA:
 						case STAR:
@@ -2302,10 +2305,10 @@ public XQueryTreeParser() {
 		case NCNAME:
 		case EQ:
 		case STRING_LITERAL:
+		case LITERAL_import:
 		case LITERAL_xmlspace:
 		case LITERAL_element:
 		case LCURLY:
-		case LITERAL_import:
 		case COMMA:
 		case STAR:
 		case PLUS:
@@ -2382,6 +2385,9 @@ public XQueryTreeParser() {
 		_retTree = _t;
 	}
 	
+/**
+ * Process the XQuery prolog.
+ */
 	public final void prolog(AST _t,
 		PathExpr path
 	) throws RecognitionException, PermissionDeniedException,EXistException,XPathException {
@@ -2449,10 +2455,10 @@ public XQueryTreeParser() {
 		case NCNAME:
 		case EQ:
 		case STRING_LITERAL:
+		case LITERAL_import:
 		case LITERAL_xmlspace:
 		case LITERAL_element:
 		case LCURLY:
-		case LITERAL_import:
 		case COMMA:
 		case STAR:
 		case PLUS:
@@ -2841,6 +2847,9 @@ public XQueryTreeParser() {
 		_retTree = _t;
 	}
 	
+/**
+ * A sequence type declaration.
+ */
 	public final void sequenceType(AST _t,
 		SequenceType type
 	) throws RecognitionException, XPathException {
@@ -2862,6 +2871,8 @@ public XQueryTreeParser() {
 			
 							QName qn= QName.parse(context, t.getText());
 							int code= Type.getType(qn);
+							if(!Type.subTypeOf(code, Type.ATOMIC))
+								throw new XPathException(t, "Type " + qn.toString() + " is not an atomic type");
 							type.setPrimaryType(code);
 						
 			_t = __t39;
@@ -2946,11 +2957,11 @@ public XQueryTreeParser() {
 			_t = _t.getNextSibling();
 			break;
 		}
-		case LITERAL_attribute:
+		case ATTRIBUTE_TEST:
 		{
 			AST __t45 = _t;
 			org.exist.xquery.parser.XQueryAST tmp43_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-			match(_t,LITERAL_attribute);
+			match(_t,ATTRIBUTE_TEST);
 			_t = _t.getFirstChild();
 			type.setPrimaryType(Type.ATTRIBUTE);
 			{
@@ -3078,6 +3089,9 @@ public XQueryTreeParser() {
 		_retTree = _t;
 	}
 	
+/**
+ * Parse a declared function.
+ */
 	public final void functionDecl(AST _t,
 		PathExpr path
 	) throws RecognitionException, PermissionDeniedException,EXistException,XPathException {
@@ -3095,7 +3109,7 @@ public XQueryTreeParser() {
 					QName qn= QName.parse(context, name.getText());
 					FunctionSignature signature= new FunctionSignature(qn);
 					UserDefinedFunction func= new UserDefinedFunction(context, signature);
-		func.setASTNode(name);
+					func.setASTNode(name);
 					List varList= new ArrayList(3);
 				
 		{
@@ -3172,6 +3186,9 @@ public XQueryTreeParser() {
 		_retTree = _t;
 	}
 	
+/**
+ * Parse params in function declaration.
+ */
 	public final void paramList(AST _t,
 		List vars
 	) throws RecognitionException, XPathException {
@@ -3197,6 +3214,9 @@ public XQueryTreeParser() {
 		_retTree = _t;
 	}
 	
+/**
+ * Single function param.
+ */
 	public final void param(AST _t,
 		List vars
 	) throws RecognitionException, XPathException {
@@ -3811,6 +3831,10 @@ public XQueryTreeParser() {
 		return step;
 	}
 	
+/**
+ * Process a primary expression like function calls,
+ * variable references, value constructors etc.
+ */
 	public final Expression  primaryExpr(AST _t,
 		PathExpr path
 	) throws RecognitionException, PermissionDeniedException,EXistException,XPathException {
@@ -4533,9 +4557,11 @@ public XQueryTreeParser() {
 									if(((LocationStep) rightStep).getAxis() == -1)
 										((LocationStep) rightStep).setAxis(Constants.CHILD_AXIS);
 								} else {
-									//rightStep = new SimpleStep(context, Constants.CHILD_AXIS, rightStep);
 									rightStep.setPrimaryAxis(Constants.CHILD_AXIS);
-									//path.replaceLastExpression(rightStep);
+									if(rightStep instanceof VariableReference) {
+										rightStep = new SimpleStep(context, Constants.CHILD_AXIS, rightStep);
+										path.replaceLastExpression(rightStep);
+									}
 								}
 							
 				break;
@@ -4668,6 +4694,10 @@ public XQueryTreeParser() {
 										rs.setAxis(Constants.DESCENDANT_SELF_AXIS);
 								} else {
 									rightStep.setPrimaryAxis(Constants.DESCENDANT_SELF_AXIS);
+									if(rightStep instanceof VariableReference) {
+										rightStep = new SimpleStep(context, Constants.DESCENDANT_SELF_AXIS, rightStep);
+										path.replaceLastExpression(rightStep);
+									}
 								}
 							
 				break;
@@ -5681,26 +5711,26 @@ public XQueryTreeParser() {
 		"'('",
 		"')'",
 		"NCNAME",
+		"\"xquery\"",
+		"\"version\"",
+		"SEMICOLON",
 		"\"module\"",
 		"\"namespace\"",
 		"EQ",
 		"STRING_LITERAL",
-		"SEMICOLON",
-		"\"xquery\"",
-		"\"version\"",
+		"\"import\"",
 		"\"declare\"",
 		"\"default\"",
+		"\"xmlspace\"",
 		"\"function\"",
 		"\"variable\"",
-		"\"xmlspace\"",
-		"\"element\"",
 		"\"collation\"",
+		"\"element\"",
+		"\"preserve\"",
+		"\"strip\"",
 		"DOLLAR",
 		"LCURLY",
 		"RCURLY",
-		"\"preserve\"",
-		"\"strip\"",
-		"\"import\"",
 		"\"at\"",
 		"\"as\"",
 		"COMMA",
@@ -5818,12 +5848,12 @@ public XQueryTreeParser() {
 	};
 	
 	private static final long[] mk_tokenSet_0() {
-		long[] data = { 2312906186013966224L, -144115207402451839L, 17246976471L, 0L, 0L, 0L};
+		long[] data = { -9169021063967113328L, -144115207402451832L, 17246976471L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
 	private static final long[] mk_tokenSet_1() {
-		long[] data = { 26113403781120L, 1L, 384L, 0L, 0L, 0L};
+		long[] data = { 26113403781120L, 8L, 384L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());

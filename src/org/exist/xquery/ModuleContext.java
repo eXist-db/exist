@@ -1,22 +1,15 @@
-/*
- * Created on Jul 15, 2004
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
 package org.exist.xquery;
 
 import java.util.Iterator;
 
 import org.exist.dom.DocumentSet;
-import org.exist.memtree.MemTreeBuilder;
 
 
 /**
+ * Subclass of {@link org.exist.xquery.XQueryContext} for
+ * imported modules.
+ * 
  * @author wolf
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
 public class ModuleContext extends XQueryContext {
 
@@ -28,7 +21,9 @@ public class ModuleContext extends XQueryContext {
 	public ModuleContext(XQueryContext parentContext) {
 		super();
 		this.parentContext = parentContext;
-		this.broker = parentContext.getBroker();
+		this.broker = parentContext.broker;
+		baseURI = parentContext.baseURI;
+		moduleLoadPath = parentContext.moduleLoadPath;
 		loadDefaults();
 	}
 
@@ -43,7 +38,10 @@ public class ModuleContext extends XQueryContext {
 	 * @see org.exist.xquery.XQueryContext#getModule(java.lang.String)
 	 */
 	public Module getModule(String namespaceURI) {
-		return parentContext.getModule(namespaceURI);
+		Module module = super.getModule(namespaceURI);
+		if(module == null)
+			module = parentContext.getModule(namespaceURI);
+		return module;
 	}
 	
 	/* (non-Javadoc)

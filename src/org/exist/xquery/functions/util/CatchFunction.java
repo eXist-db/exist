@@ -84,7 +84,7 @@ public class CatchFunction extends Function {
                 try {
                     Class exClass = Class.forName(next.getStringValue());
                     if(exClass.getName().equals(e.getClass().getName()) || exClass.isInstance(e)) {
-                        LOG.debug("Calling exception handler to process " + e.getClass().getName());
+                        LOG.debug("Calling exception handler to process " + e.getClass().getName(), e);
                         UtilModule myModule =
                 			(UtilModule) context.getModule(UtilModule.NAMESPACE_URI);
                         QName exQname = new QName("exception", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
@@ -93,9 +93,7 @@ public class CatchFunction extends Function {
                         myModule.declareVariable(msgQname, new StringValue(e.getMessage()));
                         return getArgument(2).eval(contextSequence, contextItem);
                     }
-                } catch (ClassNotFoundException e1) {
-                    LOG.warn(e1.getMessage(), e1);
-                } catch (XPathException e2) {
+                } catch (Exception e2) {
                     LOG.warn(e2);
                 }
             }

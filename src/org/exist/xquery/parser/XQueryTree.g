@@ -171,6 +171,9 @@ throws PermissionDeniedException, EXistException, XPathException
 	prolog [path] step=expr [path]
 	;
 
+/**
+ * Process the XQuery prolog.
+ */
 prolog [PathExpr path]
 throws PermissionDeniedException, EXistException, XPathException
 { Expression step = null; }:
@@ -262,6 +265,9 @@ throws PermissionDeniedException, EXistException, XPathException
 	)*
 	;
 
+/**
+ * Parse a declared function.
+ */
 functionDecl [PathExpr path]
 throws PermissionDeniedException, EXistException, XPathException
 { Expression step = null; }:
@@ -271,7 +277,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			QName qn= QName.parse(context, name.getText());
 			FunctionSignature signature= new FunctionSignature(qn);
 			UserDefinedFunction func= new UserDefinedFunction(context, signature);
-            func.setASTNode(name);
+			func.setASTNode(name);
 			List varList= new ArrayList(3);
 		}
 		( paramList [varList] )?
@@ -296,6 +302,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				{ signature.setReturnType(type); }
 			)
 		)?
+		// the function body:
 		#(
 			LCURLY step=expr [body]
 			{ func.setFunctionBody(body); }
@@ -303,12 +310,18 @@ throws PermissionDeniedException, EXistException, XPathException
 	)
 	;
 
+/**
+ * Parse params in function declaration.
+ */
 paramList [List vars]
 throws XPathException
 :
 	param [vars] ( param [vars] )*
 	;
 
+/**
+ * Single function param.
+ */
 param [List vars]
 throws XPathException
 :
@@ -329,6 +342,9 @@ throws XPathException
 	)
 	;
 
+/**
+ * A sequence type declaration.
+ */
 sequenceType [SequenceType type]
 throws XPathException
 :
@@ -338,6 +354,8 @@ throws XPathException
 			{
 				QName qn= QName.parse(context, t.getText());
 				int code= Type.getType(qn);
+				if(!Type.subTypeOf(code, Type.ATOMIC))
+					throw new XPathException(t, "Type " + qn.toString() + " is not an atomic type");
 				type.setPrimaryType(code);
 			}
 		)
@@ -373,7 +391,7 @@ throws XPathException
 		)
 		|
 		#(
-			"attribute" 
+			ATTRIBUTE_TEST 
 			{ type.setPrimaryType(Type.ATTRIBUTE); }
 			(
 				WILDCARD
@@ -411,6 +429,9 @@ throws XPathException
 	)?
 	;
 
+/**
+ * Process a top-level expression like FLWOR, conditionals, comparisons etc.
+ */
 expr [PathExpr path]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
@@ -420,6 +441,7 @@ throws PermissionDeniedException, EXistException, XPathException
 :
 	step=typeCastExpr [path]
 	|
+	// sequence constructor:
 	#(
 		COMMA
 		{
@@ -437,6 +459,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
 	)
 	|
+	// conditional:
 	#(
 		"if"
 		{
@@ -454,6 +477,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
 	)
 	|
+	// quantified expression: some
 	#(
 		"some"
 		{
@@ -499,6 +523,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
 	)
 	|
+	// quantified expression: every
 	#(
 		"every"
 		{
@@ -544,6 +569,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
 	)
 	|
+	// FLWOR expressions: let and for
 	#(
 		"return"
 		{
@@ -693,6 +719,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
 	)
 	|
+	// instance of:
 	#(
 		"instance"
 		{ 
@@ -707,6 +734,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
 	)
 	|
+	// logical operator: or
 	#(
 		"or"
 		{
@@ -724,6 +752,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		step = or;
 	}
 	|
+	// logical operator: and
 	#(
 		"and"
 		{
@@ -741,6 +770,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		step = and;
 	}
 	|
+	// union expressions: | and union
 	#(
 		UNION
 		{
@@ -756,6 +786,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		step = union;
 	}
 	|
+	// intersections:
 	#( "intersect"
 		{
 			PathExpr left = new PathExpr(context);
@@ -784,6 +815,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		step = intersect;
 	}
 	|
+	// absolute path expression starting with a /
 	#(
 		ABSOLUTE_SLASH
 		{
@@ -793,6 +825,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		( step=expr [path] )?
 	)
 	|
+	// absolute path expression starting with //
 	#(
 		ABSOLUTE_DSLASH
 		{
@@ -815,6 +848,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		)?
 	)
 	|
+	// range expression: to
 	#(
 		"to"
 		{
@@ -849,6 +883,10 @@ throws PermissionDeniedException, EXistException, XPathException
 	step=numericExpr [path]
 	;
 
+/**
+ * Process a primary expression like function calls,
+ * variable references, value constructors etc.
+ */
 primaryExpr [PathExpr path]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
@@ -1014,9 +1052,11 @@ throws PermissionDeniedException, EXistException, XPathException
 					if(((LocationStep) rightStep).getAxis() == -1)
 						((LocationStep) rightStep).setAxis(Constants.CHILD_AXIS);
 				} else {
-					//rightStep = new SimpleStep(context, Constants.CHILD_AXIS, rightStep);
 					rightStep.setPrimaryAxis(Constants.CHILD_AXIS);
-					//path.replaceLastExpression(rightStep);
+					if(rightStep instanceof VariableReference) {
+						rightStep = new SimpleStep(context, Constants.CHILD_AXIS, rightStep);
+						path.replaceLastExpression(rightStep);
+					}
 				}
 			}
 		)?
@@ -1039,6 +1079,10 @@ throws PermissionDeniedException, EXistException, XPathException
 						rs.setAxis(Constants.DESCENDANT_SELF_AXIS);
 				} else {
 					rightStep.setPrimaryAxis(Constants.DESCENDANT_SELF_AXIS);
+					if(rightStep instanceof VariableReference) {
+						rightStep = new SimpleStep(context, Constants.DESCENDANT_SELF_AXIS, rightStep);
+						path.replaceLastExpression(rightStep);
+					}
 				}
 			}
 		)?

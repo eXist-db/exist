@@ -50,8 +50,8 @@ public class XMLDBAuthenticate extends BasicFunction {
 				"It returns true if the attempt succeeds, false otherwise.",
 				new SequenceType[] {
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
+					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
 				new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
 				
 	/**
@@ -67,6 +67,8 @@ public class XMLDBAuthenticate extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
+		if(args[1].getLength() == 0)
+			return BooleanValue.FALSE;
 		String uri = args[0].getStringValue();
 		String user = args[1].getStringValue();
 		String password = args[2].getStringValue();

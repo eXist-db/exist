@@ -105,9 +105,14 @@ public class XQuery {
         context.setBroker(broker);
         expression.reset();
         context.getWatchDog().reset();
-        Sequence result = expression.eval(contextSequence);
-        expression.reset();
-        context.reset();
-        return result;
+        broker.getBrokerPool().getXQueryMonitor().queryStarted(context.getWatchDog());
+        try {
+        	Sequence result = expression.eval(contextSequence);
+        	expression.reset();
+        	context.reset();
+        	return result;
+        } finally {
+        	broker.getBrokerPool().getXQueryMonitor().queryCompleted(context.getWatchDog());
+        }
     }
 }
