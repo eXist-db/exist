@@ -711,56 +711,23 @@ implements Comparable, EntityResolver, Cacheable {
 			throw new PermissionDeniedException("Database is read-only");
 		DocumentImpl document, oldDoc = null;
 		XMLReader reader;
-		InputSource source;
+		InputSource source = new InputSource(new StringReader(data));
+		
 		try {
 			oldDoc = checkPermissions(broker, name);
 			
 			document = new DocumentImpl(broker, name,	this);
 			manageDocumentInformation(broker, name, oldDoc, document );
 			
-			// setup triggers
 			Trigger trigger = setupTriggers(broker, name, oldDoc);
 			Indexer indexer = new Indexer(broker);
 			indexer.setDocument(document);
 
-			// add observers to the indexer
-			Observer observer;
-			broker.deleteObservers();
-			if (observers != null) {
-				for (Iterator i = observers.iterator(); i.hasNext(); ) {
-					observer = (Observer) i.next();
-					indexer.addObserver(observer);
-					broker.addObserver(observer);
-				}
-			}
-			// prepare the SAX parser
-			indexer.setValidating(true);
-			reader = getReader(broker);
-			reader.setEntityResolver(this);
-
-			if (trigger != null && triggersEnabled) {
-				reader.setContentHandler(trigger.getInputHandler());
-				reader.setProperty(
-						"http://xml.org/sax/properties/lexical-handler",
-						trigger.getLexicalInputHandler());
-				trigger.setOutputHandler(indexer);
-				trigger.setValidating(true);
-				// prepare the trigger
-				trigger.prepare(oldDoc == null
-						? Trigger.STORE_DOCUMENT_EVENT
-						: Trigger.UPDATE_DOCUMENT_EVENT, broker, name, oldDoc);
-			} else {
-				reader.setContentHandler(indexer);
-				reader
-						.setProperty(
-								"http://xml.org/sax/properties/lexical-handler",
-								indexer);
-			}
-			reader.setErrorHandler(indexer);
+			addObserversToIndexer(broker, indexer);
+			reader = prepareSAXParser(broker, name, oldDoc, trigger, indexer);
 
 			// first pass: parse the document to determine tree structure
 			LOG.debug("validating document " + name);
-			source = new InputSource(new StringReader(data));
 			try {
 				reader.parse(source);
 			} catch (IOException e) {
@@ -802,6 +769,7 @@ implements Comparable, EntityResolver, Cacheable {
 		} finally {
 			lock.release();
 		}
+
 		// reset the input source
 		source = new InputSource(new StringReader(data));
 
@@ -834,6 +802,64 @@ implements Comparable, EntityResolver, Cacheable {
 		}
 		broker.deleteObservers();
 		return document;
+	}
+
+	/** prepare the SAX parser
+	 * @param broker
+	 * @param name
+	 * @param oldDoc
+	 * @param trigger
+	 * @param indexer
+	 * @return
+	 * @throws EXistException
+	 * @throws SAXException
+	 * @throws SAXNotRecognizedException
+	 * @throws SAXNotSupportedException
+	 * @throws TriggerException
+	 */
+	private XMLReader prepareSAXParser(DBBroker broker, String name, DocumentImpl oldDoc, Trigger trigger, Indexer indexer) throws EXistException, SAXException, SAXNotRecognizedException, SAXNotSupportedException, TriggerException {
+		XMLReader reader;
+		indexer.setValidating(true);
+		reader = getReader(broker);
+		reader.setEntityResolver(this);
+
+		if (trigger != null && triggersEnabled) {
+			reader.setContentHandler(trigger.getInputHandler());
+			reader.setProperty(
+					"http://xml.org/sax/properties/lexical-handler",
+					trigger.getLexicalInputHandler());
+			trigger.setOutputHandler(indexer);
+			trigger.setLexicalOutputHandler(indexer);
+			trigger.setValidating(true);
+			// prepare the trigger
+			trigger.prepare(oldDoc == null
+					? Trigger.STORE_DOCUMENT_EVENT
+					: Trigger.UPDATE_DOCUMENT_EVENT, broker, name, oldDoc);
+		} else {
+			reader.setContentHandler(indexer);
+			reader
+					.setProperty(
+							"http://xml.org/sax/properties/lexical-handler",
+							indexer);
+		}
+		reader.setErrorHandler(indexer);
+		return reader;
+	}
+
+	/** add observers to the indexer
+	 * @param broker
+	 * @param indexer
+	 */
+	private void addObserversToIndexer(DBBroker broker, Indexer indexer) {
+		Observer observer;
+		broker.deleteObservers();
+		if (observers != null) {
+			for (Iterator i = observers.iterator(); i.hasNext(); ) {
+				observer = (Observer) i.next();
+				indexer.addObserver(observer);
+				broker.addObserver(observer);
+			}
+		}
 	}
 
 	/** If an old document exists, keep information  about  the document.
@@ -920,46 +946,13 @@ implements Comparable, EntityResolver, Cacheable {
 			document = new DocumentImpl(broker, name,	this);
 			manageDocumentInformation(broker, name, oldDoc, document );
 
-			// setup triggers
 			Trigger trigger = setupTriggers(broker, name, oldDoc);
-			Indexer parser = new Indexer(broker);
-			parser.setDocument(document);
+			Indexer indexer = new Indexer(broker);
+			indexer.setDocument(document);
 
-			// add observers to the indexer
-			Observer observer;
-			broker.deleteObservers();
-			if (observers != null) {
-				for (Iterator i = observers.iterator(); i.hasNext(); ) {
-					observer = (Observer) i.next();
-					parser.addObserver(observer);
-					broker.addObserver(observer);
-				}
-			}
-			// prepare the SAX parser
-			parser.setValidating(true);
-			reader = getReader(broker);
-			reader.setEntityResolver(this);
+			addObserversToIndexer(broker, indexer);
 
-			if (trigger != null && triggersEnabled) {
-				reader.setContentHandler(trigger.getInputHandler());
-				reader.setProperty(
-						"http://xml.org/sax/properties/lexical-handler",
-						trigger.getLexicalInputHandler());
-				trigger.setOutputHandler(parser);
-				trigger.setLexicalOutputHandler(parser);
-				trigger.setValidating(true);
-				// prepare the trigger
-				trigger.prepare(oldDoc == null
-						? Trigger.STORE_DOCUMENT_EVENT
-						: Trigger.UPDATE_DOCUMENT_EVENT, broker, name, oldDoc);
-			} else {
-				reader.setContentHandler(parser);
-				reader
-						.setProperty(
-								"http://xml.org/sax/properties/lexical-handler",
-								parser);
-			}
-			reader.setErrorHandler(parser);
+			reader = prepareSAXParser(broker, name, oldDoc, trigger, indexer);
 
 			// first pass: parse the document to determine tree structure
 			LOG.debug("validating document " + name);
@@ -978,14 +971,14 @@ implements Comparable, EntityResolver, Cacheable {
 				else
 					broker.removeDocument(getName() + '/' + oldDoc.getFileName(), false);
 				oldDoc.copyOf(document);
-				parser.setDocumentObject(oldDoc);
+				indexer.setDocumentObject(oldDoc);
 				document = oldDoc;
 			} else {
 			    document.getUpdateLock().acquire(Lock.WRITE_LOCK);
 			    document.setDocId(broker.getNextDocId(this));
 			}
 
-			parser.setValidating(false);
+			indexer.setValidating(false);
 			if (trigger != null)
 				trigger.setValidating(false);
 		} catch(EXistException e) {
@@ -1057,7 +1050,7 @@ implements Comparable, EntityResolver, Cacheable {
 	public DocumentImpl addDocument(DBBroker broker, String name, Node node,
 			boolean privileged) throws EXistException, LockException,
 			PermissionDeniedException, TriggerException, SAXException {
-		Indexer parser = new Indexer(broker);
+		Indexer indexer = new Indexer(broker);
 		if (broker.isReadOnly())
 			throw new PermissionDeniedException("Database is read-only");
 		DocumentImpl document, oldDoc = null;
@@ -1070,32 +1063,23 @@ implements Comparable, EntityResolver, Cacheable {
 			manageDocumentInformation(broker, name, oldDoc, document );
 			
 			Trigger trigger = setupTriggers(broker, name, oldDoc);
-			parser.setDocument(document);
+			indexer.setDocument(document);
 
-			// add observers to the indexer
-			Observer observer;
-			broker.deleteObservers();
-			if (observers != null) {
-				for (Iterator i = observers.iterator(); i.hasNext(); ) {
-					observer = (Observer) i.next();
-					parser.addObserver(observer);
-					broker.addObserver(observer);
-				}
-			}
-			parser.setValidating(true);
+			addObserversToIndexer(broker, indexer);
+			indexer.setValidating(true);
 			streamer = new DOMStreamer();
 			if (trigger != null && triggersEnabled) {
 				streamer.setContentHandler(trigger.getInputHandler());
 				streamer.setLexicalHandler(trigger.getLexicalInputHandler());
-				trigger.setOutputHandler(parser);
+				trigger.setOutputHandler(indexer);
 				trigger.setValidating(true);
 				// prepare the trigger
 				trigger.prepare(oldDoc == null
 						? Trigger.STORE_DOCUMENT_EVENT
 						: Trigger.UPDATE_DOCUMENT_EVENT, broker, name, oldDoc);
 			} else {
-				streamer.setContentHandler(parser);
-				streamer.setLexicalHandler(parser);
+				streamer.setContentHandler(indexer);
+				streamer.setLexicalHandler(indexer);
 			}
 
 			// first pass: parse the document to determine tree structure
@@ -1111,14 +1095,14 @@ implements Comparable, EntityResolver, Cacheable {
 				else
 					broker.removeDocument(getName() + '/' + oldDoc.getFileName(), false);
 				oldDoc.copyOf(document);
-				parser.setDocumentObject(oldDoc);
+				indexer.setDocumentObject(oldDoc);
 				document = oldDoc;
 			} else {
 			    document.getUpdateLock().acquire(Lock.WRITE_LOCK);
 			    document.setDocId(broker.getNextDocId(this));
 			}
 
-			parser.setValidating(false);
+			indexer.setValidating(false);
 			if (trigger != null)
 				trigger.setValidating(false);
 		} catch(EXistException e) {
@@ -1170,7 +1154,6 @@ implements Comparable, EntityResolver, Cacheable {
 	 * @return
 	 */
 	private Trigger setupTriggers(DBBroker broker, String name, DocumentImpl oldDoc) {
-		// setup triggers
 		Trigger trigger = null;
 		if (triggersEnabled && !name.equals(COLLECTION_CONFIG_FILE)) {
 			if (triggersEnabled) {
