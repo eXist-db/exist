@@ -42,7 +42,7 @@ import org.xml.sax.ext.LexicalHandler;
  *  
  * @author wolf
  */
-public abstract class FilteringTrigger implements Trigger {
+public abstract class FilteringTrigger implements DocumentTrigger {
 
 	protected Logger LOG = Logger.getLogger(getClass());
 	
@@ -62,14 +62,14 @@ public abstract class FilteringTrigger implements Trigger {
     throws CollectionConfigurationException {
     	this.collection = parent;
     }
-	
-	public abstract void prepare(int event, DBBroker broker, String documentName, Document existingDocument) throws TriggerException;
-	
-	public void finish(int event, DBBroker broker, String documentName, Document existingDocument) {
-		return;
-	}
 
-
+	/* (non-Javadoc)
+     * @see org.exist.collections.triggers.DocumentTrigger#finish(int, org.exist.storage.DBBroker, java.lang.String, org.w3c.dom.Document)
+     */
+    public void finish(int event, DBBroker broker, String documentName,
+            Document document) {
+    }
+    
 	public void setValidating(boolean validating) {
 		this.validating = validating;
 	}

@@ -44,6 +44,7 @@ import org.apache.log4j.Logger;
 import org.apache.xml.resolver.tools.CatalogResolver;
 import org.exist.EXistException;
 import org.exist.Indexer;
+import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
@@ -693,13 +694,13 @@ implements Comparable, EntityResolver, Cacheable {
 			throws PermissionDeniedException, TriggerException, LockException {
 		try {
 			lock.acquire(Lock.READ_LOCK);
-			Trigger trigger = null;
+			DocumentTrigger trigger = null;
 			if (!docname.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX)) {
 				if (triggersEnabled) {
 					CollectionConfiguration config = getConfiguration(broker);
 					if (config != null)
-						trigger = config
-								.getTrigger(Trigger.REMOVE_DOCUMENT_EVENT);
+						trigger = (DocumentTrigger) 
+                            config.getTrigger(Trigger.REMOVE_DOCUMENT_EVENT);
 				}
 			} else {
 				// we remove a collection.xconf configuration file: tell the configuration manager to
@@ -845,6 +846,7 @@ implements Comparable, EntityResolver, Cacheable {
 			releaseReader(broker, info.getReader());
 		}
 		broker.deleteObservers();
+        collectionConfEnabled = true;
 		return;
 	}
 	
@@ -907,6 +909,7 @@ implements Comparable, EntityResolver, Cacheable {
 			document.getUpdateLock().release(Lock.WRITE_LOCK);
 			releaseReader(broker, info.getReader());
 		}
+        collectionConfEnabled = true;
 		broker.deleteObservers();
 		return;
 	}
@@ -926,7 +929,7 @@ implements Comparable, EntityResolver, Cacheable {
 			
 			manageDocumentInformation(broker, name, oldDoc, document );
 			
-			Trigger trigger = setupTriggers(broker, name, oldDoc);
+			DocumentTrigger trigger = setupTriggers(broker, name, oldDoc);
 			
 			Indexer indexer = new Indexer(broker);
 			IndexInfo info = new IndexInfo(indexer);
@@ -1024,6 +1027,7 @@ implements Comparable, EntityResolver, Cacheable {
 			document.getUpdateLock().release(Lock.WRITE_LOCK);
 			releaseReader(broker, info.getReader());
 		}
+        collectionConfEnabled = true;
 		broker.deleteObservers();
 		return;
 	}
@@ -1092,6 +1096,7 @@ implements Comparable, EntityResolver, Cacheable {
 		} finally {
 			document.getUpdateLock().release(Lock.WRITE_LOCK);
 		}
+        collectionConfEnabled = true;
 		broker.deleteObservers();
 		return document;
 	}
@@ -1116,7 +1121,7 @@ implements Comparable, EntityResolver, Cacheable {
 			
 			manageDocumentInformation(broker, name, oldDoc, document );
 			
-			Trigger trigger = setupTriggers(broker, name, oldDoc);
+			DocumentTrigger trigger = setupTriggers(broker, name, oldDoc);
 			Indexer indexer = new Indexer(broker);
 			IndexInfo info = new IndexInfo(indexer);
 			indexer.setDocument(document);
@@ -1184,13 +1189,12 @@ implements Comparable, EntityResolver, Cacheable {
 	 * @throws TriggerException
 	 */
 	private void prepareSAXParser(DBBroker broker, String name, DocumentImpl oldDoc, 
-			Trigger trigger, IndexInfo info, XMLReader reader) throws EXistException, SAXException, SAXNotRecognizedException, SAXNotSupportedException, TriggerException {
+			DocumentTrigger trigger, IndexInfo info, XMLReader reader) throws EXistException, SAXException, SAXNotRecognizedException, SAXNotSupportedException, TriggerException {
 		//XMLReader reader;
 		Indexer indexer = info.getIndexer();
 		indexer.setValidating(true);
 		// reader = getReader(broker);
 		reader.setEntityResolver(this);
-
 		if (trigger != null && triggersEnabled) {
 			reader.setProperty(
 					"http://xml.org/sax/properties/lexical-handler",
@@ -1360,6 +1364,7 @@ implements Comparable, EntityResolver, Cacheable {
 		} finally {
 			document.getUpdateLock().release(Lock.WRITE_LOCK);
 		}
+        collectionConfEnabled = true;
 		broker.deleteObservers();
 		return document;
 	}
@@ -1387,7 +1392,7 @@ implements Comparable, EntityResolver, Cacheable {
 			
 			manageDocumentInformation(broker, name, oldDoc, document );
 			
-			Trigger trigger = setupTriggers(broker, name, oldDoc);
+			DocumentTrigger trigger = setupTriggers(broker, name, oldDoc);
 			indexer.setDocument(document);
 
 			addObserversToIndexer(broker, indexer);
@@ -1473,6 +1478,7 @@ implements Comparable, EntityResolver, Cacheable {
 		} finally {
 			document.getUpdateLock().release(Lock.WRITE_LOCK);
 		}
+        collectionConfEnabled = true;
 		broker.deleteObservers();
 		return document;
 	}
@@ -1483,29 +1489,26 @@ implements Comparable, EntityResolver, Cacheable {
 	 * @param oldDoc
 	 * @return
 	 */
-	private Trigger setupTriggers(DBBroker broker, String name, DocumentImpl oldDoc) {
-		Trigger trigger = null;
+	private DocumentTrigger setupTriggers(DBBroker broker, String name, DocumentImpl oldDoc) {
+		DocumentTrigger trigger = null;
 		if (name.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX)) {
 		    // we are updating collection.xconf. Notify configuration manager
 			CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
 			confMgr.invalidateAll(getName());
 			collectionConfEnabled = false;
 		} else {
-		    collectionConfEnabled = true;
 			if (triggersEnabled) {
-				if (triggersEnabled) {
-					CollectionConfiguration config = getConfiguration(broker);
-					if (config != null) {
-						if (oldDoc == null)
-							trigger = config
-									.getTrigger(Trigger.STORE_DOCUMENT_EVENT);
-						else
-							trigger = config
-									.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
-					}
-					if(trigger != null)
-					    LOG.debug("Using trigger: " + trigger.getClass().getName());
+				CollectionConfiguration config = getConfiguration(broker);
+				if (config != null) {
+					if (oldDoc == null)
+						trigger = (DocumentTrigger) 
+                            config.getTrigger(Trigger.STORE_DOCUMENT_EVENT);
+					else
+						trigger = (DocumentTrigger)
+							config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
 				}
+				if(trigger != null)
+				    LOG.debug("Using trigger: " + trigger.getClass().getName());
 			}
 		}
 		return trigger;
@@ -1626,11 +1629,13 @@ implements Comparable, EntityResolver, Cacheable {
 	    	return configuration;
 		if (!"/db/system".equals(name)) {
 		    CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
+            collectionConfEnabled = false;
 		    try {
                 configuration = manager.getConfiguration(broker, this);
             } catch (CollectionConfigurationException e) {
                 LOG.warn("Failed to load collection configuration for " + getName(), e);
             }
+            collectionConfEnabled = true;
 		}
 		return configuration;
 	}

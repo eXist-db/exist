@@ -1,16 +1,17 @@
 package org.exist.collections.triggers;
 
-import org.exist.collections.*;
-import org.exist.security.*;
-import org.exist.storage.*;
-import org.exist.util.*;
-import org.exist.dom.*;
-import org.exist.*;
-import org.xml.sax.*;
-import org.w3c.dom.*;
-import java.text.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+
+import org.exist.collections.Collection;
+import org.exist.collections.CollectionConfigurationException;
+import org.exist.dom.DocumentImpl;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.DBBroker;
+import org.exist.util.LockException;
+import org.w3c.dom.Document;
 
 /**
  * This collection trigger will save all old versions of documents before
@@ -40,13 +41,12 @@ import java.util.Map;
  * @author Mark Spanbroek
  * @see org.exist.collections.triggers.Trigger
  */
-public class HistoryTrigger extends FilteringTrigger {
+public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger {
 
     protected String root = "/db/history";
 
     public void configure(DBBroker broker, Collection parent, Map parameters) 
       throws CollectionConfigurationException {
-
         super.configure(broker, parent, parameters);
         if (parameters.containsKey("root")) {
             root = parameters.get("root").toString();
@@ -76,6 +76,13 @@ public class HistoryTrigger extends FilteringTrigger {
         catch(LockException exception) {
             throw new TriggerException(exception);
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.exist.collections.triggers.DocumentTrigger#finish(int, org.exist.storage.DBBroker, java.lang.String, org.w3c.dom.Document)
+     */
+    public void finish(int event, DBBroker broker, String documentName,
+            Document document) {
     }
     
 }

@@ -81,9 +81,6 @@ public class ExampleTrigger extends FilteringTrigger {
 	public void configure(DBBroker broker, Collection parent, Map parameters)
 		throws CollectionConfigurationException {
 		super.configure(broker, parent, parameters);
-		// IMPORTANT: temporarily disable triggers on the collection.
-		// We would end up in infinite recursion if we don't do that
-		parent.setTriggersEnabled(false);
 		// the name of the contents file can be set through parameters
 		String contentsFile = (String)parameters.get("contents");
 		if(contentsFile == null)
@@ -94,6 +91,9 @@ public class ExampleTrigger extends FilteringTrigger {
 			// doesn't exist yet: create it
 			try {
 				getLogger().debug("creating new file for collection contents");
+				// IMPORTANT: temporarily disable triggers on the collection.
+                // We would end up in infinite recursion if we don't do that
+                parent.setTriggersEnabled(false);
 				this.doc = parent.addDocument(broker, contentsFile, "<?xml version=\"1.0\"?><contents></contents>",
                         "text/xml");
 			} catch (Exception e) {

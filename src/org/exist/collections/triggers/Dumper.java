@@ -67,4 +67,10 @@ public class Dumper extends FilteringTrigger {
 		for(int i = 0; i < docs.getLength(); i++)
 			System.out.println("\t" + ((DocumentImpl)docs.item(i)).getFileName());
 	}
+
+    /* (non-Javadoc)
+     * @see org.exist.collections.triggers.DocumentTrigger#finish(int, org.exist.storage.DBBroker, java.lang.String, org.w3c.dom.Document)
+     */
+    public void finish(int event, DBBroker broker, String documentName, Document document) {
+    }
 }
