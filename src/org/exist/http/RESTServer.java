@@ -447,7 +447,7 @@ public class RESTServer {
 			long startTime = System.currentTimeMillis();
 			Sequence resultSequence = expr.eval(null, null);
 			long queryTime = System.currentTimeMillis() - startTime;
-			LOG.debug("evaluation took " + queryTime + "ms.");
+			LOG.debug("Found " + resultSequence.getLength() + " in " + queryTime + "ms.");
 			startTime = System.currentTimeMillis();
 			return printResults(broker, resultSequence, howmany, start,
 					queryTime, outputProperties);
@@ -540,14 +540,14 @@ public class RESTServer {
 	protected String printResults(DBBroker broker, Sequence results,
 			int howmany, int start, long queryTime, Properties outputProperties)
 			throws BadRequestException {
-		if (results.getLength() > 0) {
-			if ((howmany > results.getLength()) || (howmany <= 0))
-				howmany = results.getLength();
-			if ((start < 1) || (start > results.getLength()))
+		int rlen = results.getLength();
+		if (rlen > 0) {
+			if ((start < 1) || (start > rlen))
 				throw new BadRequestException("Start parameter out of range");
+			if ((howmany > rlen) || (howmany <= 0))
+				howmany = rlen - start;
 		} else
 			howmany = 0;
-		
 		Serializer serializer = broker.getSerializer();
 		serializer.reset();
 		String stylesheet = outputProperties
@@ -565,7 +565,7 @@ public class RESTServer {
 			serializer.setLexicalHandler(sax);
 			
 			AttributesImpl attrs = new AttributesImpl();
-			attrs.addAttribute("", "hits", "hits", "CDATA", Integer.toString(results.getLength()));
+			attrs.addAttribute("", "hits", "hits", "CDATA", Integer.toString(rlen));
 			attrs.addAttribute("", "start", "start", "CDATA", Integer.toString(start));
 			attrs.addAttribute("", "count", "count", "CDATA", Integer.toString(howmany));
 			
@@ -576,8 +576,10 @@ public class RESTServer {
 			Item item;
 			for (int i = --start; i < start + howmany; i++) {
 				item = results.itemAt(i);
-				if (item == null)
+				if (item == null) {
+					LOG.debug("item " + i + " not found");
 					continue;
+				}
 				if (item.getType() == Type.ELEMENT || item.getType() == Type.COMMENT ||
 					item.getType() == Type.PROCESSING_INSTRUCTION) {
 					NodeValue node = (NodeValue) item;
