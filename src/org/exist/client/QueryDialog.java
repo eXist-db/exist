@@ -52,7 +52,7 @@ public class QueryDialog extends JFrame {
 
 	private Collection collection;
 	private Properties properties;
-	private JTextField query;
+	private JComboBox query;
 	private QueryResultTableModel model;
 	private JTable resultDocs;
 	private JTextArea resultDisplay;
@@ -108,7 +108,9 @@ public class QueryDialog extends JFrame {
 		collections = new JComboBox(data);
 		hbox.add(collections);
 
-		query = new JTextField(30);
+		query = new JComboBox();
+		query.setEditable(true);
+		query.setPreferredSize(new Dimension(350, 20));
 		hbox.add(query);
 
 		URL url = getClass().getResource("icons/Find24.gif");
@@ -130,7 +132,7 @@ public class QueryDialog extends JFrame {
 
 		count = new SpinnerNumberModel(100, 1, 10000, 50);
 		JSpinner spinner = new JSpinner(count);
-		spinner.setPreferredSize(new Dimension(160, 30));
+		spinner.setMaximumSize(new Dimension(160, 25));
 
 		hbox.add(spinner);
 		vbox.add(hbox);
@@ -150,9 +152,10 @@ public class QueryDialog extends JFrame {
 	}
 
 	private void doQuery() {
-		String xpath = query.getText();
+		String xpath = (String)query.getSelectedItem();
 		if (xpath.length() == 0)
 			return;
+		resultDisplay.setText("");
 		try {
 			XPathQueryServiceImpl service =
 				(XPathQueryServiceImpl) collection.getService("XPathQueryService", "1.0");
@@ -173,6 +176,7 @@ public class QueryDialog extends JFrame {
 				"An exception occurred during query execution: " + e.getMessage(),
 				e);
 		}
+		query.addItem(xpath);
 	}
 
 	private void tableSelectAction(MouseEvent ev) {

@@ -131,11 +131,6 @@
        by the ones you specified
        during parsing!</small></p>
 
-       <p>At this time of development there are still a lot of restrictions
-       concerning the xpath parser. On the other hand, eXist supports a number of
-       extensions. For more information read the <link
-       href="xpath.xml">document on XPath extensions</link>.</p>
-
        </section>
 
       </body>

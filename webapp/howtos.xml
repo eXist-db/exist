@@ -39,6 +39,47 @@
     <title>How-Tos</title>
 
 	<section>
+		<title>Entity resolution</title>
+		
+		<para>If a local XML file is uploaded to the database server, the server may have difficulties to resolve 
+		external entities like, for example, document type declarations. This applies in particular to system 
+		identifiers using local paths. We thus need a way to map those local paths into paths accessible to
+		the server.</para>
+		
+		<para>eXist uses the same entity resolution mechanism as Cocoon. This mechanism is based on catalog 
+		files. The catalog file maps public identifiers to their correct physical location, i.e. their system identifier. 
+		It can also map one system identifiers to an alternate system identifier. For example, the minimal catalog
+		shipped with eXist looks as follows:</para>
+		
+		<example>
+			<title>Example Catalog</title>
+			<programlisting><![CDATA[
+OVERRIDE YES
+PUBLIC "-//PLAY//EN"
+       "entities/play.dtd"
+OVERRIDE YES
+SYSTEM "play.dtd" "entities/play.dtd"
+]]></programlisting>
+		</example>
+		
+		<para>The catalog first maps the public identifier "-//PLAY//EN" to the file 
+		<filename>entities/play.dtd</filename>. Filenames are relative to eXist's home
+		directory (which is <filename>webapp/WEB-INF</filename> in this case). </para>
+		
+		<para>Second, the system identifier "play.dtd" is mapped to the same physical location
+		as the public identifier. This second rule applies, if an XML document declares its 
+		doctype as</para>
+		
+		<synopsis>&lt;!DOCTYPE PLAY SYSTEM "play.dtd"&gt;</synopsis>
+		
+		<para>The server will map "play.dtd" into the path "entities/play.dtd" relative to the
+		home directory of eXist.</para>
+		
+		<para>If you would like to add other mappings, you may either edit the default catalog file or
+		specify an alternate file in the indexer/entity-resolver section of <filename>conf.xml</filename>.</para>
+	</section>
+	
+	<section>
 		<title>Integrating eXist into an existing Cocoon installation</title>
 		
 		<para> eXist comes with its own pre-installed Cocoon. However, integrating eXist into an already

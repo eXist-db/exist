@@ -266,12 +266,11 @@
     
     <!--
       Specify maximum allowed size of the upload. Defaults to 10 Mb.
-
+	-->
     <init-param>
       <param-name>upload-max-size</param-name>
-      <param-value>10000000</param-value>
-    </init-param>    
-    -->
+      <param-value>100000000</param-value>
+    </init-param>
 
     <!--
       This parameter allows to specify where Cocoon should create its page

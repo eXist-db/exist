@@ -297,9 +297,7 @@ public class VirtualNodeSet extends NodeSet {
 	private final void realize() {
 		if (realSet != null)
 			return;
-		System.out.println("realizing");
 		realSet = getNodes();
-		System.out.println("realSet: " + realSet.getLength());
 	}
 
 	public void setSelfIsContext() {

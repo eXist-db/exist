@@ -55,7 +55,7 @@
             <map:generator label="data" logger="sitemap.generator.request" name="request" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.generation.RequestGenerator"/>
             <map:generator label="content,data" logger="sitemap.generator.stream" name="stream" pool-grow="2" pool-max="16" pool-min="1" src="org.apache.cocoon.generation.StreamGenerator"/>
             <map:generator label="data" logger="sitemap.generator.status" name="status" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.generation.StatusGenerator"/>
-            <map:generator label="data" logger="sitemap.generator.proxy" name="proxy" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.generation.WebServiceProxyGenerator"/>    
+            <!--map:generator label="data" logger="sitemap.generator.proxy" name="proxy" pool-grow="2" pool-max="16" pool-min="2" src="org.apache.cocoon.generation.WebServiceProxyGenerator"/-->
     <!-- The notifying generator can only be used in a <handle-errors> section : it produces an XML
          representation of the exception that caused the error handler to be executed -->
             <map:generator name="notifying" src="org.apache.cocoon.sitemap.NotifyingGenerator"/>

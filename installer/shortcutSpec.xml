@@ -5,12 +5,16 @@
 	<shortcut name="Launch eXist" target="$INSTALL_PATH/bin/startup.bat"
 		description="Start Jetty and eXist" programGroup="yes"
 		desktop="yes"/>
-	<shortcut name="Local Homepage" target="$INSTALL_PATH/index.html"
+	<shortcut name="eXist Local Homepage" target="$INSTALL_PATH/index.html"
 		description="The local homepage of the server" programGroup="yes"
 		desktop="yes"/>
-	<shortcut name="Launch Client Shell"
-		target="$INSTALL_PATH/bin/launch_client.bat"
-		description="Start the command-line client" programGroup="yes"/>
+	<shortcut name="eXist Client Shell"
+		target="$INSTALL_PATH/bin/client.bat"
+		description="Start the command-line client" programGroup="yes"
+		desktop="yes"/>
+	<shortcut name="Shutdown Database"
+		target="$INSTALL_PATH/bin/shutdown.bat"
+		description="Shutdown a running database" programGroup="yes"/>
 	<shortcut name="QuickStart Guide"
 		target="$INSTALL_PATH/Quickstart.html" programGroup="yes"
 		description="Open the QuickStart Guide"/>

@@ -25,13 +25,13 @@
         <section>
             <title>Managing Documents in Collections</title>
             
-            <para>Documents are managed in hierarchical collections, which is
-            comparable to storing files in a file systems. Collections are not 
+            <para>Documents are managed in hierarchical collections, similar 
+            to storing files in a file system. Collections are not 
             bound to a predefined schema or document type, so
             the number of document types used by documents in one collection is
-            not constrained. Arbitrary documents many be mixed inside the same
+            not constrained. Arbitrary documents may be mixed inside the same
             collection. Also, documents are not required to have an associated
-            schema or DTD, though the indexer will validate a document against
+            schema or DTD, though the XML parser will validate a document against
             a schema or DTD if one has been defined.</para>
         </section>
         
@@ -50,7 +50,7 @@
             
             <para>In a conventional, top-down tree-traversal approach, the
             query processor has to follow every path beginning at "book" elements
-            to check for potential "figure" descendants, because there is no
+            to check for potential "figure" descendants. There is no
             way to determine the possible location of "figure" descendants in
             advance. This implies that a great number of nodes not being 
             "figure" elements have to be accessed to test (i) if the node is an

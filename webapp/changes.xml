@@ -11,8 +11,7 @@
 			<action name="Additions to XPath">
 				The XPath engine has been partially rewritten. It now supports XPath axis specifiers like
 				ancestor-or-self, following-sibling etc.. The processing of predicate expressions has been
-				reworked to be more conformant to the specification. Also, a number of bug-fixes have been
-				applied to the handling of wildcard expressions like *, node(), text(). Some things are still 
+				reworked to be more conformant to the specification. Some things are still 
 				missing from the full XPath spec, but they will be implemented for the 1.0 release.
 			</action>
 		</topic>
@@ -23,13 +22,44 @@
 				several supporting libraries, including the XML-RPC library and GNU Readline. The included 
 				XML-RPC library has been patched to fix a transport encoding bug. All components have been 
 				extensively tested to work with other character encodings than ISO-8859-1. The database is now
-				truely usable for real CJKV applications.
+				truely usable for applications using non-european languages.
 			</action>	
 			<action name="SOAP interface">
 				eXist's SOAP services have been enhanced to support authentication and user sessions. The
 				provided SOAP methods have been reworked.
 			</action>
+			<action name="Database synchronization">
+				Various bug fixes to address synchronization issues have been
+				applied. A new sync thread periodically flushes unwritten
+				database pages to disk. The shutdown procedure has been
+				modified to avoid database corruption errors caused by
+				dirty shutdowns.
+			</action>
+			<action name="Enhanced Client">
+				The included Java client now has an optional, graphical 
+				user interface, offering dialogs for user management,
+				file uploads, restore and backup.
+			</action>
+            <action name="Storing large files through XMLRPC">
+                Instead of sending files as one large chunk to a remote
+                server, the XMLDB implementation now splits big files into
+                smaller pieces and uploads them separately to the server. This
+                way, out-of-memory errors on the server are avoided.
+            </action>
 		</topic>
+        <topic category="Misc Bug fixes">
+            <action name="Large text nodes">
+                The database had problems to store text nodes whose content was
+                larger then the database page size (4K). Such nodes are now stored
+                as overflow nodes.
+            </action>
+            <action name="XPath bugs">
+                Numerous bugs have been fixed in the XPath engine. In particular, 
+                the handling of wildcard expressions like *, node(), text() has been
+                improved. The processing of predicate expressions has been modified
+                to support reverse axis specifiers inside the predicate.
+            </action>
+        </topic>
 	</release>
 	<release version="0.9.1">
 		<topic category="New Features">
