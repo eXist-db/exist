@@ -32,6 +32,9 @@ public class BrokerFactory {
 			throw new RuntimeException("no database defined");
 		if (dbName.equalsIgnoreCase("NATIVE"))
 			return new NativeBroker(pool, conf);
+        else if (dbName.equalsIgnoreCase("NATIVE_CLUSTER"))
+			return new NativeClusterBroker(pool, conf);
+    
 		else
 			throw new EXistException("no database backend found for " + dbName);
 	}
