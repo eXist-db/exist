@@ -57,4 +57,8 @@ public class AnyNodeTest implements NodeTest {
      */
     public void setType(int nodeType) {
     }
+    
+    public int getType() {
+        return Type.NODE;
+    }
 }

@@ -198,7 +198,7 @@ public class LocationStep extends Step {
 	 */
 	protected Sequence getSelf(XQueryContext context, NodeSet contextSet) {
 		if(test.isWildcardTest()) {
-			if(((TypeTest)test).nodeType == Type.NODE) {
+			if(test.getType() == Type.NODE) {
 				if (inPredicate) {
 					if (contextSet instanceof VirtualNodeSet) {
 						((VirtualNodeSet) contextSet).setInPredicate(true);
