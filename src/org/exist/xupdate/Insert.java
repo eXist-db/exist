@@ -55,13 +55,13 @@ public class Insert extends Modification {
      * @param selectStmt
      */
     public Insert(DBBroker broker, DocumentSet docs, String selectStmt,
-            Map namespaces) {
-        super(broker, docs, selectStmt, namespaces);
+            Map namespaces, Map variables) {
+        super(broker, docs, selectStmt, namespaces,  variables);
     }
 
     public Insert(DBBroker broker, DocumentSet docs, String selectStmt,
-            int mode, Map namespaces) {
-        this(broker, docs, selectStmt, namespaces);
+            int mode, Map namespaces, Map variables) {
+        this(broker, docs, selectStmt, namespaces, variables);
         this.mode = mode;
     }
 

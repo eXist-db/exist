@@ -28,6 +28,8 @@ public class AllTests {
         suite.addTest(new XUpdateTestCases("appendChild", test));
         suite.addTest(new XUpdateTestCases("insertafter_big", test));
         suite.addTest(new XUpdateTestCases("conditional", test));
+        suite.addTest(new XUpdateTestCases("variables", test));
+        suite.addTest(new XUpdateTestCases("replace", test));
         
         /*
          * create new TestCase

@@ -20,17 +20,17 @@ public class XUpdateTestCases extends TestCase {
     }
 
     // TestCases Start
-    public void append() throws Exception { test.doTest("append", "address.xml"); };
-    public void insertafter() throws Exception { test.doTest("insertafter", "address.xml"); };
-    public void insertbefore() throws Exception { test.doTest("insertbefore", "address.xml"); };
-    public void remove() throws Exception { test.doTest("remove", "address.xml"); };    
-    public void update() throws Exception { test.doTest("update", "address.xml"); };
-    public void appendAttribute() throws Exception { test.doTest("append_attribute", "address.xml"); };
-    public void appendChild() throws Exception { test.doTest("append_child", "address.xml"); };
-    public void insertafter_big() throws Exception { test.doTest("insertafter_big", "address_big.xml"); };
-    public void conditional() throws Exception { test.doTest("conditional", "address.xml");
-    
-    }
+    public void append() throws Exception { test.doTest("append", "address.xml"); }
+    public void insertafter() throws Exception { test.doTest("insertafter", "address.xml"); }
+    public void insertbefore() throws Exception { test.doTest("insertbefore", "address.xml"); }
+    public void remove() throws Exception { test.doTest("remove", "address.xml"); }
+    public void update() throws Exception { test.doTest("update", "address.xml"); }
+    public void appendAttribute() throws Exception { test.doTest("append_attribute", "address.xml"); }
+    public void appendChild() throws Exception { test.doTest("append_child", "address.xml"); }
+    public void insertafter_big() throws Exception { test.doTest("insertafter_big", "address_big.xml"); }
+    public void conditional() throws Exception { test.doTest("conditional", "address.xml"); }
+    public void variables() throws Exception { test.doTest("variables", "address.xml"); }
+    public void replace() throws Exception { test.doTest("replace", "address.xml"); }
     // <add a new TestCase Method here>     
     
     // TestCases End

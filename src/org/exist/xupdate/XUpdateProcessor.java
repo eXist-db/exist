@@ -60,6 +60,28 @@ import antlr.collections.AST;
  */
 public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 
+	public static final String MODIFICATIONS = "modifications";
+	
+	// Modifications
+	public static final String INSERT_AFTER = "insert-after";
+	public static final String INSERT_BEFORE = "insert-before";
+	public static final String REPLACE = "replace";
+	public static final String RENAME = "rename";
+	public static final String REMOVE = "remove";
+	public static final String APPEND = "append";
+	public static final String UPDATE = "update";
+	
+	// node constructors
+	public static final String COMMENT = "comment";
+	public static final String PROCESSING_INSTRUCTION = "processing-instruction";
+	public static final String TEXT = "text";
+	public static final String ATTRIBUTE = "attribute";
+	public static final String ELEMENT = "element";
+	
+	public static final String VALUE_OF = "value-of";
+	public static final String VARIABLE = "variable";
+	public static final String IF = "if";
+	
 	public final static String XUPDATE_NS = "http://www.xmldb.org/xupdate";
 
 	private final static Logger LOG = Logger.getLogger(XUpdateProcessor.class);
@@ -197,31 +219,32 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			charBuf.setLength(0);
 		}
 		if (namespaceURI.equals(XUPDATE_NS)) {
-			if (localName.equals("modifications")) {
+			String select = null;
+			if (localName.equals(MODIFICATIONS)) {
 				startModifications(atts);
 				return;
-			}
-
-			// variable declaration
-			if (localName.equals("variable")) {
+			} else if (localName.equals(VARIABLE)) {
+				// variable declaration
 				startVariableDecl(atts);
 				return;
-			}
-			
-			String select = null;
-			if ("if".equals(localName)) {
+			} else if (IF.equals(localName)) {
 				if (inModification)
 					throw new SAXException("xupdate:if is not allowed inside a modification");
 				select = atts.getValue("test");
-				Conditional cond = new Conditional(broker, documentSet, select, namespaces);
+				Conditional cond = new Conditional(broker, documentSet, select, namespaces, variables);
 				conditionals.push(cond);
 				return;
-			} else if ("append".equals(localName)
-				|| "insert-before".equals(localName)
-				|| "insert-after".equals(localName)
-				|| "remove".equals(localName)
-				|| "rename".equals(localName)
-				|| "update".equals(localName)) {
+			} else if (VALUE_OF.equals(localName)) {
+				if(!inModification)
+					throw new SAXException("xupdate:value-of is not allowed outside a modification");
+				
+			} else if (APPEND.equals(localName)
+				|| INSERT_BEFORE.equals(localName)
+				|| INSERT_AFTER.equals(localName)
+				|| REMOVE.equals(localName)
+				|| RENAME.equals(localName)
+				|| UPDATE.equals(localName)
+				|| REPLACE.equals(localName)) {
 				if (inModification)
 					throw new SAXException("nested modifications are not allowed");
 				select = atts.getValue("select");
@@ -232,35 +255,39 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				contents = new NodeListImpl();
 				inModification = true;
 			} else if (
-				("element".equals(localName)
-					|| "attribute".equals(localName)
-					|| "text".equals(localName)
-					|| "processing-instruction".equals(localName)
-					|| "comment".equals(localName))
-					&& (!inModification))
-				throw new SAXException(
-					"creation elements are only allowed inside "
-						+ "a modification");
+				(ELEMENT.equals(localName)
+					|| ATTRIBUTE.equals(localName)
+					|| TEXT.equals(localName)
+					|| PROCESSING_INSTRUCTION.equals(localName)
+					|| COMMENT.equals(localName))) {
+				if(!inModification)
+					throw new SAXException(
+							"creation elements are only allowed inside "
+							+ "a modification");
+			} else
+				throw new SAXException("Unknown XUpdate element: " + qName);
 
 			// start a new modification section
-			if ("append".equals(localName)) {
+			if (APPEND.equals(localName)) {
 			    String child = atts.getValue("child");
-				modification = new Append(broker, documentSet, select, child, namespaces);
-			} else if ("update".equals(localName))
-				modification = new Update(broker, documentSet, select, namespaces);
-			else if ("insert-before".equals(localName))
+				modification = new Append(broker, documentSet, select, child, namespaces, variables);
+			} else if (UPDATE.equals(localName))
+				modification = new Update(broker, documentSet, select, namespaces, variables);
+			else if (INSERT_BEFORE.equals(localName))
 				modification =
-					new Insert(broker, documentSet, select, Insert.INSERT_BEFORE, namespaces);
-			else if ("insert-after".equals(localName))
+					new Insert(broker, documentSet, select, Insert.INSERT_BEFORE, namespaces, variables);
+			else if (INSERT_AFTER.equals(localName))
 				modification =
-					new Insert(broker, documentSet, select, Insert.INSERT_AFTER, namespaces);
-			else if ("remove".equals(localName))
-				modification = new Remove(broker, documentSet, select, namespaces);
-			else if ("rename".equals(localName))
-				modification = new Rename(broker, documentSet, select, namespaces);
+					new Insert(broker, documentSet, select, Insert.INSERT_AFTER, namespaces, variables);
+			else if (REMOVE.equals(localName))
+				modification = new Remove(broker, documentSet, select, namespaces, variables);
+			else if (RENAME.equals(localName))
+				modification = new Rename(broker, documentSet, select, namespaces, variables);
+			else if (REPLACE.equals(localName))
+				modification = new Replace(broker, documentSet, select, namespaces, variables);
 
 			// process commands for node creation
-			else if ("element".equals(localName)) {
+			else if (ELEMENT.equals(localName)) {
 				String name = atts.getValue("name");
 				if (name == null)
 					throw new SAXException("element requires a name attribute");
@@ -288,7 +315,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					last.appendChild(elem);
 				}
 				stack.push(elem);
-			} else if ("attribute".equals(localName)) {
+			} else if (ATTRIBUTE.equals(localName)) {
 				String name = atts.getValue("name");
 				if (name == null)
 					throw new SAXException("attribute requires a name attribute");
@@ -328,7 +355,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				currentNode = attrib;
 
 				// process value-of
-			} else if ("value-of".equals(localName)) {
+			} else if (VALUE_OF.equals(localName)) {
 				select = atts.getValue("select");
 				if (select == null)
 					throw new SAXException("value-of requires a select attribute");
@@ -417,19 +444,20 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			charBuf.setLength(0);
 		}
 		if (XUPDATE_NS.equals(namespaceURI)) {
-			if ("if".equals(localName)) {
+			if (IF.equals(localName)) {
 				Conditional cond = (Conditional) conditionals.pop();
 				modifications.add(cond);
-			} else if (localName.equals("element")) {
+			} else if (localName.equals(ELEMENT)) {
 				stack.pop();
-			} else if (localName.equals("attribute")) {
+			} else if (localName.equals(ATTRIBUTE)) {
 				inAttribute = false;
-			} else if (localName.equals("append")
-				|| localName.equals("update")
-				|| localName.equals("remove")
-				|| localName.equals("rename")
-				|| localName.equals("insert-before")
-				|| localName.equals("insert-after")) {
+			} else if (localName.equals(APPEND)
+				|| localName.equals(UPDATE)
+				|| localName.equals(REMOVE)
+				|| localName.equals(RENAME)
+				|| localName.equals(REPLACE)
+				|| localName.equals(INSERT_BEFORE)
+				|| localName.equals(INSERT_AFTER)) {
 				inModification = false;
 				modification.setContent(contents);
 				if(!conditionals.isEmpty()) {
@@ -516,7 +544,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		LOG.debug("found " + result.getLength() + " for variable " + name);
 		variables.put(name, result);
 	}
-
+	
 	private Sequence processQuery(String select) throws SAXException {
 		try {
 			XQueryContext context = new XQueryContext(broker);
