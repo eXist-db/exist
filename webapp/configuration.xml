@@ -85,7 +85,7 @@
 				<title>database</title>
 				<para>The <option>database</option>-attribute selects a database
                 backend. Since the relational 
-					backends are no longer supported, "native" is currently the 
+					backends are no longer supported, "native" and "native_cluster" are currently the 
 					only backend available.</para>
 			</section>
 			<section>
