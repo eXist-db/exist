@@ -1,5 +1,24 @@
 /*
- * Created on Apr 10, 2004
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-04 Wolfgang M. Meier
+ *  wolfgang@exist-db.org
+ *  http://exist.sourceforge.net
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * 
+ * Created on Apr 10, 2004; Sebastian Bossung, TUHH
  *
  */
 package org.exist.schema;
@@ -19,17 +38,13 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.filters.StringInputStream;
 import org.apache.xerces.parsers.DOMParser;
-import org.exist.xmldb.XQueryService;
 import org.exolab.castor.xml.schema.AttributeDecl;
 import org.exolab.castor.xml.schema.ElementDecl;
 import org.exolab.castor.xml.schema.Schema;
 import org.exolab.castor.xml.schema.XMLType;
 import org.exolab.castor.xml.schema.reader.SchemaReader;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -37,10 +52,13 @@ import org.xml.sax.SAXParseException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
+import org.xmldb.api.modules.XPathQueryService;
+import org.xmldb.api.modules.XUpdateQueryService;
 
 /**
  * @author seb
@@ -97,7 +115,8 @@ public abstract class GenericSchemaService implements SchemaService {
 	
 	protected Logger LOG = Logger.getLogger(GenericSchemaService.class);
 
-	private final static String INDEX_RESOURCE_NAME = ".index";
+	protected final static String INDEX_COLLECTION_NAME = "/db/system/schema/"; 
+	protected final static String INDEX_RESOURCE_NAME = ".index";
 
 	private static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
 	private static final String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
@@ -130,7 +149,13 @@ public abstract class GenericSchemaService implements SchemaService {
 	public void setProperty(String arg0, String arg1) throws XMLDBException {
 	}
 
-	private XMLResource getIndexResource() throws XMLDBException {
+	/**
+	 * Test whether the index resource ".index" already exists. If not, creates it and
+	 * fills it with skeleton contents. Returns the (possible newly created) resource.
+	 * @return
+	 * @throws XMLDBException
+	 */
+	protected XMLResource testAndCreateIndexResource() throws XMLDBException {
 		XMLResource index = null;
 		try {
 			index = (XMLResource) getSchemasCollection().getResource(INDEX_RESOURCE_NAME);
@@ -144,32 +169,8 @@ public abstract class GenericSchemaService implements SchemaService {
 		return index;
 	}
 
-	private String getSchemaFilename(String targetNamespace) throws XMLDBException {
-		if (targetNamespace == null)
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "null is not a valid namespace!");
 
-		XMLResource index = getIndexResource();
-		String filename = null;
-
-		Node root = index.getContentAsDOM();
-
-		if ("schema-index".equals(root.getNodeName())) {
-			NodeList schemas = root.getChildNodes();
-			for (int i = 0; i < schemas.getLength(); i++) {
-				Node schema = schemas.item(i);
-				if ("schema".equals(schema.getNodeName())) {
-					Node targetNamespaceAttr = schema.getAttributes().getNamedItem("targetNamespace");
-					if ((targetNamespaceAttr != null) && (targetNamespace.equals(targetNamespaceAttr.getNodeValue())))
-						return schema.getAttributes().getNamedItem("resourceName").getNodeValue();
-				}
-			}
-		} else {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "invalid schema index. Unexpected root element " + root.getNodeName(), null);
-		}
-		return filename;
-	}
-
-	private Collection getSchemasCollection() throws XMLDBException {
+	protected Collection getSchemasCollection() throws XMLDBException {
 		if (schemasCollection == null) {
 			Collection parent = getParentCollection();
 			while (parent.getParentCollection() != null)
@@ -190,7 +191,13 @@ public abstract class GenericSchemaService implements SchemaService {
 		return schemasCollection;
 	}
 
-	private String findTargetNamespace(String schemaContents) throws XMLDBException {
+	/**
+	 * Finds the target namespace in the given schema.
+	 * @param schemaContents
+	 * @return
+	 * @throws XMLDBException
+	 */
+	protected String findTargetNamespace(String schemaContents) throws XMLDBException {
 		String targetNamespace = null;
 		DOMParser parser = new DOMParser();
 		try {
@@ -207,8 +214,11 @@ public abstract class GenericSchemaService implements SchemaService {
 		return targetNamespace;
 	}
 
+	/**
+	 * Add a schema to the schema store. The schema must have a target namespace because it can otherwise not
+	 * be indexed.
+	 */
 	public void putSchema(String schemaContents) throws XMLDBException {
-
 		Collection schemasCollection = getSchemasCollection();
 		String targetNamespace = findTargetNamespace(schemaContents);
 		String filename = getSchemaFilename(targetNamespace);
@@ -223,27 +233,11 @@ public abstract class GenericSchemaService implements SchemaService {
 		schemasCollection.storeResource(schemaResource);
 		schemasCollection.close();
 	}
-
-	private void addToIndex(String targetNamespace, String filename) throws XMLDBException {
-		XMLResource index = getIndexResource();
-		Node rootNode = index.getContentAsDOM();
-		Document doc = rootNode.getOwnerDocument();
-		Element schemaNode = doc.createElement("schema");
-//		Attr targetNamespaceAttr = doc.createAttribute("targetNamespace");
-//		// jmv: targetNamespaceAttr.setNodeValue(targetNamespace);
-//		targetNamespaceAttr.setValue(targetNamespace); // jmv
-//		Attr resourceNameAttr = doc.createAttribute("resourceName");
-//		resourceNameAttr.setValue(filename); // jmv
-//		schemaNode.getAttributes().setNamedItem(targetNamespaceAttr);
-//		schemaNode.getAttributes().setNamedItem(resourceNameAttr);
-		schemaNode.setAttribute("targetNamespace", targetNamespace);
-		schemaNode.setAttribute("resourceName", filename);
-		
-		rootNode.appendChild(schemaNode);
-		index.setContentAsDOM(rootNode);
-		getSchemasCollection().storeResource(index); // jmv: this doesn't update the .index document ???!!!
-	}
-
+	
+	/**
+	 * Retrieves the schema as an XML resources.
+	 * @return the schema with targetNamespace or null if that schema is not known.
+	 */
 	public XMLResource getSchema(String targetNamespace) throws XMLDBException {
 		String filename = getSchemaFilename(targetNamespace);
 		if (filename != null)
@@ -251,6 +245,13 @@ public abstract class GenericSchemaService implements SchemaService {
 		else
 			return null;
 	}
+	
+	/**
+	 * Validates the passed contents. Schemas are automatically obtained from the schema store. You can
+	 * add transient ("temporary") schemas with the <code>registerTransientSchema</code> method.
+	 * @throws XMLDBException if a database error occurs or the contents contains validation errors (these are
+	 * wrapped in XMLDBExceptions).
+	 */
 	public boolean validateContents(String contents) throws XMLDBException {
 		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -302,6 +303,9 @@ public abstract class GenericSchemaService implements SchemaService {
 		}
 	}
 
+	/**
+	 * Validates a resource given its id. Uses <code>validateContents</code>.
+	 */
 	public boolean validateResource(String id) throws XMLDBException {
 		Resource doc = getParentCollection().getResource(id);
 		if (("XMLResource".equals(doc.getResourceType())) || ("XMLView".equals(doc.getResourceType()))) {
@@ -321,6 +325,8 @@ public abstract class GenericSchemaService implements SchemaService {
 	}
 
 	/**
+	 * Searches an instance document for namespaces. All discovered namespaces are added to the 
+	 * <code>namespaces</code> Set. 
 	 * @param root
 	 * @return
 	 */
@@ -347,76 +353,34 @@ public abstract class GenericSchemaService implements SchemaService {
 	 * @return the attribute by name qname or null if no such attribute is known.
 	 */
 	public AttributeDecl getAttribute(QName qname) throws XMLDBException {
-		String xquery =
-			"declare namespace xs=\""
-				+ W3C_XML_SCHEMA
-				+ "\";"
-				+ "/xs:schema[@targetNamespace=\""
-				+ qname.getNamespaceURI()
-				+ "\"]/xs:attribute[@name=\""
-				+ qname.getLocalPart()
-				+ "\"]";
-		XQueryService service = (XQueryService) getSchemasCollection().getService("XQueryService", "1.0");
-		ResourceSet result = service.query(xquery);
-		if (result.getSize() == 0)
-			return null;
-		else if (result.getSize() > 1)
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Found multiple types by name " + qname, null);
-		else {
-			//return result.getResource(0);
-			return null;
-		}
+		return getCastorSchema(qname.getNamespaceURI()).getAttribute(qname.getLocalPart());
 	}
 
 	/**
 	 * @return the element by name qname or null if no such element is known.
 	 */
 	public ElementDecl getElement(QName qname) throws XMLDBException {
-		String xquery =
-			"declare namespace xs=\""
-				+ W3C_XML_SCHEMA
-				+ "\";"
-				+ "/xs:schema[@targetNamespace=\""
-				+ qname.getNamespaceURI()
-				+ "\"]/xs:element[@name=\""
-				+ qname.getLocalPart()
-				+ "\"]";
-		XQueryService service = (XQueryService) getSchemasCollection().getService("XQueryService", "1.0");
-		ResourceSet result = service.query(xquery);
-		if (result.getSize() == 0)
-			return null;
-		else if (result.getSize() > 1)
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Found multiple types by name " + qname, null);
-		else {
-			//return result.getResource(0);
-			return null;
-		}
+		return getCastorSchema(qname.getNamespaceURI()).getElementDecl(qname.getLocalPart());
 	}
 
 	/**
 	 * @return the type-definition by name qname or null if no such type-definition is known.
 	 */
 	public XMLType getType(QName qname) throws XMLDBException {
-		/*String xquery = "declare namespace xs=\"" + W3C_XML_SCHEMA + "\";" + 
-			"/xs:schema[@targetNamespace=\"" + qname.getNamespaceURI() + 
-			"\"]/(xs:complexType|xs:simpleType)[@name=\"" + qname.getLocalPart() + "\"]";
-		XQueryService service = (XQueryService) getSchemasCollection().getService("XQueryService", "1.0");
-		ResourceSet result = service.query(xquery);
-		if (result.getSize() == 0) return null;
-		else if (result.getSize() > 1) throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Found multiple types by name " + qname, null);
-		else {
-			//return result.getResource(0);
-			return new Object();			
-		}*/
-		XMLResource resource = getSchema(qname.getNamespaceURI());
-		try {
-			Schema schema = (new SchemaReader((String) resource.getContent())).read();
-			return schema.getType(qname.getLocalPart());
-		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Error reading schema information for target namespace: " + qname.getNamespaceURI(), e);
-		}
+		return getCastorSchema(qname.getNamespaceURI()).getType(qname.getLocalPart());
 	}
 
+	private Schema getCastorSchema(String namespaceURI) throws XMLDBException {
+		XMLResource resource = getSchema(namespaceURI);
+		try {
+			Schema schema = (new SchemaReader((String) resource.getContent())).read();
+			return schema;
+		} catch (IOException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Error reading schema information for target namespace: " + namespaceURI, e);
+		}
+		
+	}
+	
 	/**
 	 *
 	 */
@@ -438,5 +402,75 @@ public abstract class GenericSchemaService implements SchemaService {
 		}
 		return transientSchemas;
 	}
+
+  XUpdateQueryService updateService = null;
+
+  XPathQueryService queryService = null;
+
+  protected String getDocumentExpression() {
+    return "document('" + INDEX_COLLECTION_NAME + INDEX_RESOURCE_NAME + "')";
+  }
+
+  protected String getRetrieveIndexRecordQuery(String targetNamespace) {
+    return "/schema-index/schema[@targetNamespace=\"" + targetNamespace + "\"]";
+  }
+
+  protected String getAppendSchemaXUpdate(String targetNamespace, String resourceName) {
+    return "<xupdate:modifications version=\"1.0\" xmlns:xupdate=\"http://www.xmldb.org/xupdate\">"
+        + "<xupdate:append select=\"" + getDocumentExpression() + "/schema-index\">"
+        + "<xupdate:element name=\"schema\">" + "<xupdate:attribute name=\"targetNamespace\">" + targetNamespace
+        + "</xupdate:attribute>" + "<xupdate:attribute name=\"resourceName\">" + resourceName + "</xupdate:attribute>"
+        + "</xupdate:element>" + "</xupdate:append>" + "</xupdate:modifications>";
+  }
+  
+	/**
+	 * Retrieve the filename of the resource that stores the schema for <code>targetNamespace</code>
+	 * @param targetNamespace
+	 * @return the resource name or null if the schema is not in the index.
+	 * @throws XMLDBException
+	 */
+  protected String getSchemaFilename(String targetNamespace) throws XMLDBException {
+    if (targetNamespace == null)
+      throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "null is not a valid namespace!");
+    // make sure, the index resource exists:
+    testAndCreateIndexResource();
+    // try to find the name of the resource that stores the respective schema:  
+    String query = getRetrieveIndexRecordQuery(targetNamespace) + "/@resourceName";
+    ResourceSet set = getXQueryService().queryResource(INDEX_RESOURCE_NAME, query);
+    if (set.getSize() == 1) {
+      ResourceIterator iterator = set.getIterator();
+      return iterator.nextResource().getContent().toString();
+    } else if (set.getSize() == 0) {
+      return null;
+    } else
+      throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
+          "Multiple index entries for one targetNamespace in the schema index. The index is corrupt.");
+  }
+
+	/**
+	 * Insert a new element in the schema-index. This method is called only if a new schema with a previously
+	 * unknown target namespace is indexed. Known schemas are indexed by updating the existent resource.  
+	 * @param targetNamespace of the schema
+	 * @param resourceName the name of the resource that stores the schema
+	 * @throws XMLDBException
+	 *
+   */
+  protected void addToIndex(String targetNamespace, String resourceName) throws XMLDBException {
+    getXUpdateService().update(getAppendSchemaXUpdate(targetNamespace, resourceName));
+  }
+
+  protected XUpdateQueryService getXUpdateService() throws XMLDBException {
+    if (updateService == null)
+      updateService = (XUpdateQueryService) getSchemasCollection().getService("XUpdateQueryService", "1.0");
+    ;
+    return updateService;
+  }
+
+  protected XPathQueryService getXQueryService() throws XMLDBException {
+    if (queryService == null)
+      queryService = (XPathQueryService) getSchemasCollection().getService("XPathQueryService", "1.0");
+    ;
+    return queryService;
+  }
 
 }
