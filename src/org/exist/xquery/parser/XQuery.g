@@ -52,7 +52,7 @@ options {
 	defaultErrorHandler= false;
 	k= 1;
 	buildAST= true;
-    ASTLabelType = org.exist.xquery.parser.XQueryAST;
+	ASTLabelType = org.exist.xquery.parser.XQueryAST;
 }
 
 {
@@ -65,7 +65,7 @@ options {
 	public XQueryParser(XQueryLexer lexer) {
 		this((TokenStream)lexer);
 		this.lexer= lexer;
-        setASTNodeClass("org.exist.xquery.parser.XQueryAST");
+		setASTNodeClass("org.exist.xquery.parser.XQueryAST");
 	}
 
 	public boolean foundErrors() {
@@ -112,8 +112,8 @@ xpath
 :
 	( module )? EOF
 	;
-	exception catch [RecognitionException e]
-	{ handleException(e); }
+//	exception catch [RecognitionException e]
+//	{ handleException(e); }
 
 module : ( "module" "namespace" ) => libraryModule | mainModule;
 

@@ -4,7 +4,8 @@ import org.exist.xquery.parser.XQueryAST;
 
 public class XPathException extends Exception {
 
-	private XQueryAST astNode = null;
+	private int line = 0;
+	private int column = 0;
 	
 	/**
 	 * 
@@ -22,7 +23,13 @@ public class XPathException extends Exception {
 
 	public XPathException(XQueryAST ast, String message) {
 		super(message);
-		this.astNode = ast;
+		setASTNode(ast);
+	}
+	
+	public XPathException(String message, int line, int column) {
+		super(message);
+		this.line = line;
+		this.column = column;
 	}
 	
 	/**
@@ -42,30 +49,37 @@ public class XPathException extends Exception {
 
 	public XPathException(XQueryAST ast, String message, Throwable cause) {
 		super(message, cause);
-		this.astNode = ast;
+		setASTNode(ast);
+	}
+	
+	public int getLine() {
+		return line;
+	}
+	
+	public int getColumn() {
+		return column;
 	}
 	
 	public void setASTNode(XQueryAST ast) {
-		this.astNode = ast;
-	}
-	
-	public XQueryAST getASTNode() {
-		return astNode;
+		if(ast != null) {
+			this.line = ast.getLine();
+			this.column = ast.getColumn();
+		}
 	}
 	
 	/* (non-Javadoc)
 	 * @see java.lang.Throwable#getMessage()
 	 */
 	public String getMessage() {
-		if(astNode == null)
+		if(line == 0)
 			return super.getMessage();
 		else {
 			StringBuffer buf = new StringBuffer();
 			buf.append(super.getMessage());
 			buf.append(" [at line ");
-			buf.append(astNode.getLine());
+			buf.append(getLine());
 			buf.append(", column ");
-			buf.append(astNode.getColumn());
+			buf.append(getColumn());
 			buf.append("]");
 			return buf.toString();
 		}

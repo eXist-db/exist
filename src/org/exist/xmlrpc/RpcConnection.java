@@ -84,6 +84,7 @@ import org.exist.xquery.Pragma;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
@@ -254,16 +255,20 @@ public class RpcConnection extends Thread {
 		} else if(baseURI != null) {
 			context.setStaticallyKnownDocuments(new String[] { baseURI });
 		}
-		if(compiled == null)
-		    compiled = xquery.compile(context, source);
-		checkPragmas(context, parameters);
 		try {
+			if(compiled == null)
+			    compiled = xquery.compile(context, source);
+			checkPragmas(context, parameters);
+
 		    long start = System.currentTimeMillis();
 		    Sequence result = xquery.execute(compiled, contextSet);
 		    LOG.info("query took " + (System.currentTimeMillis() - start) + "ms.");
 		    return new QueryResult(context, result);
+		} catch (XPathException e) {
+			return new QueryResult(e);
 		} finally {
-		    pool.returnCompiledXQuery(source, compiled);
+			if(compiled != null)
+				pool.returnCompiledXQuery(source, compiled);
 		}
 	}
 
@@ -295,6 +300,8 @@ public class RpcConnection extends Thread {
 			broker = brokerPool.get(user);
 			QueryResult result = doQuery(user, broker, xpath, null,
 					parameters);
+			if(result.hasErrors())
+				throw result.getException();
 			result.queryTime = System.currentTimeMillis() - startTime;
 			connectionPool.resultSets.put(result.hashCode(), result);
 			return result.hashCode();
@@ -1195,6 +1202,8 @@ public class RpcConnection extends Thread {
 		try {
 			broker = brokerPool.get(user);
 			QueryResult qr = doQuery(user, broker, xpath, null, parameters);
+			if (qr.hasErrors())
+				throw qr.getException();
 			if (qr == null)
 				return "<?xml version=\"1.0\"?>\n"
 						+ "<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" "
@@ -1242,6 +1251,16 @@ public class RpcConnection extends Thread {
 			queryResult = doQuery(user, broker, xpath, nodes, parameters);
 			if (queryResult == null)
 				return ret;
+			if (queryResult.hasErrors()) {
+				// return an error description
+				XPathException e = queryResult.getException();
+				ret.put(RpcAPI.ERROR, e.getMessage());
+				if(e.getLine() != 0) {
+					ret.put(RpcAPI.LINE, new Integer(e.getLine()));
+					ret.put(RpcAPI.COLUMN, new Integer(e.getColumn()));
+				}
+				return ret;
+			}
 			resultSeq = queryResult.result;
 			LOG.debug("found " + resultSeq.getLength());
 			
@@ -1719,6 +1738,8 @@ public class RpcConnection extends Thread {
 			QueryResult qr = doQuery(user, broker, xpath, null, null);
 			if (qr == null)
 				return new Hashtable();
+			if (qr.hasErrors())
+				throw qr.getException();
 			NodeList resultSet = (NodeList) qr.result;
 			HashMap map = new HashMap();
 			HashMap doctypes = new HashMap();

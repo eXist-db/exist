@@ -94,9 +94,9 @@ public class XQuery {
             LOG.debug("Query:\n" + expr.pprint() + "\nCompilation took "  +  (System.currentTimeMillis() - start));
             return expr;
         } catch (RecognitionException e) {
-            throw new XPathException(e.getMessage(), e);
+            throw new XPathException(e.getMessage(), e.getLine(), e.getColumn());
         } catch (TokenStreamException e) {
-            throw new XPathException(e.getMessage(), e);
+            throw new XPathException(e.getMessage());
         }
     }
     

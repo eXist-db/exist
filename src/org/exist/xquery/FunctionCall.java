@@ -111,7 +111,7 @@ public class FunctionCall extends Function {
 			Sequence returnSeq = expression.eval(contextSequence, contextItem);
 			return returnSeq;
 		} catch(XPathException e) {
-			if(e.getASTNode() == null)
+			if(e.getLine() == 0)
 				e.setASTNode(getASTNode());
 			throw e;
 		} finally {
