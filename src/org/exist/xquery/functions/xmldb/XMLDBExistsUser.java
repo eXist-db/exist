@@ -26,7 +26,10 @@
  */
 package org.exist.xquery.functions.xmldb;
 
+import java.util.Iterator;
+
 import org.exist.dom.QName;
+import org.exist.security.User;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xquery.BasicFunction;
@@ -37,7 +40,9 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
@@ -46,20 +51,39 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class XMLDBExistsUser extends BasicFunction {
 
-	public final static FunctionSignature signature = new FunctionSignature(
+	public final static FunctionSignature fnExistsUser = new FunctionSignature(
 			new QName("exists-user", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
-			"Returns true if user exists. Requires username. Does not delete the user's home collection.",
+			"Returns true if user exists. Requires username.",
 			new SequenceType[]{
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
             },
 			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
+	
+	public final static FunctionSignature fnUserGroups = new FunctionSignature(
+			new QName("get-user-groups", XMLDBModule.NAMESPACE_URI,
+					XMLDBModule.PREFIX),
+			"Receives the sequence of groups the specified user is a member of.",
+			new SequenceType[]{
+					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+            },
+			new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE));
+	
+	public final static FunctionSignature fnUserHome = new FunctionSignature(
+			new QName("get-user-home", XMLDBModule.NAMESPACE_URI,
+					XMLDBModule.PREFIX),
+			"Returns the home collection of the specified user or the empty sequence " +
+			"if no home collection is assigned to the user.",
+			new SequenceType[]{
+					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+            },
+			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
 
 	/**
 	 * @param context
 	 * @param signature
 	 */
-	public XMLDBExistsUser(XQueryContext context) {
+	public XMLDBExistsUser(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -72,15 +96,33 @@ public class XMLDBExistsUser extends BasicFunction {
 	public Sequence eval(Sequence args[], Sequence contextSequence)
 			throws XPathException {
 
-        String user = args[0].getStringValue();
+        String userName = args[0].getStringValue();
         
         Collection collection = null;
 		try {
             collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), "/db");
 			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
-			return ((null == ums.getUser(user)) ? BooleanValue.FALSE : BooleanValue.TRUE);
+			User user = ums.getUser(userName);
+			
+			if(isCalledAs("exists-user"))
+				return null == user ? BooleanValue.FALSE : BooleanValue.TRUE;
+			
+			if(user == null)
+				throw new XPathException(getASTNode(), "User not found: " + userName);
+			if(isCalledAs("get-user-groups")) {
+				ValueSequence groups = new ValueSequence();
+				for (Iterator i = user.getGroups(); i.hasNext(); ) {
+					String group = (String) i.next();
+					groups.add(new StringValue(group));
+				}
+				return groups;
+			// get-user-home
+			} else {
+				String home = user.getHome();
+				return null == home ? Sequence.EMPTY_SEQUENCE : new StringValue(home);
+			}
 		} catch (XMLDBException xe) {
-			throw new XPathException(getASTNode(), "Failed to create new user " + user, xe);
+			throw new XPathException(getASTNode(), "Failed to query user " + userName, xe);
         } finally {
             if (null != collection)
                 try { collection.close(); } catch (XMLDBException e) { /* ignore */ }

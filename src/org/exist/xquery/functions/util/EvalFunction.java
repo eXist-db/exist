@@ -125,11 +125,10 @@ public class EvalFunction extends Function {
 			LOG.debug("Query took " + (System.currentTimeMillis() - start));
 			return sequence;
 		} catch (RecognitionException e) {
-			throw new XPathException("error found while executing expression: " +
-				e.getMessage(), e);
+			throw new XPathException("error found while executing eval expression: " + e.getMessage(), 
+					e.getLine(), e.getColumn());
 		} catch (TokenStreamException e) {
-			throw new XPathException("error found while executing expression: " +
-				e.getMessage(), e);
+			throw new XPathException(getASTNode(), e.getMessage(), e);
 		} finally {
 			if(oldDocumentSet != null)
 				context.setStaticallyKnownDocuments(oldDocumentSet);

@@ -299,7 +299,9 @@ public class RemoteCollection implements CollectionImpl {
 				(String) hash.get("group"),
 				((Integer) hash.get("permissions")).intValue());
 		String type = (String)hash.get("type");
-		int contentLen = ((Integer)hash.get("content-length")).intValue();
+		int contentLen = 0;
+		if(hash.containsKey("content-length"))
+			contentLen = ((Integer)hash.get("content-length")).intValue();
 		if(type == null || type.equals("XMLResource")) {
 			RemoteXMLResource r = new RemoteXMLResource(this, -1, -1, docName, null);
 			r.setPermissions(perm);

@@ -32,7 +32,11 @@ import org.exist.xquery.value.Sequence;
 
 /**
  * Abstract base class for an {@link org.exist.xquery.InternalModule}. 
- * The constructor expects an array of {@link org.exist.xquery.FunctionDef}.
+ * Functions are defined in an array of {@link org.exist.xquery.FunctionDef}, which
+ * is passed to the constructor. A single implementation class
+ * can be registered for more than one function signature, given that the signatures differ
+ * in name or the number of expected arguments. It is thus possible to implement
+ * similar XQuery functions in one single class.
  * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */

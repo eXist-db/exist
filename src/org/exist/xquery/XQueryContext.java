@@ -963,7 +963,7 @@ public class XQueryContext {
 				} catch (RecognitionException e) {
 					throw new XPathException(
 						"error found while loading module from " + location + ": " + e.getMessage(),
-						e);
+						e.getLine(), e.getColumn());
 				} catch (TokenStreamException e) {
 					throw new XPathException(
 						"error found while loading module from " + location + ": " + e.getMessage(),

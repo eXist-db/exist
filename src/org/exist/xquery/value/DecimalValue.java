@@ -108,6 +108,13 @@ public class DecimalValue extends NumericValue {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.AtomicValue#effectiveBooleanValue()
+	 */
+	public boolean effectiveBooleanValue() throws XPathException {
+		return value.signum() != 0;
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.NumericValue#negate()
 	 */
 	public NumericValue negate() throws XPathException {

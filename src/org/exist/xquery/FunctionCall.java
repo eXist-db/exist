@@ -116,7 +116,7 @@ public class FunctionCall extends Function {
 			// append location of the function call to the exception message:
 			e.prependMessage("in call to function " + functionDef.toString() +
 					" [" + getASTNode().getLine() + ", " + getASTNode().getColumn() +
-					"]\n");
+					"]");
 			throw e;
 		} finally {
 //			context.popLocalContext();

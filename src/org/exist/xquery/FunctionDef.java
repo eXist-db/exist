@@ -25,7 +25,9 @@ package org.exist.xquery;
 /**
  * A function definition, consisting of a signature and the implementing class.
  * 
- * Used by modules to define the available functions.
+ * Used by modules to define the available functions. A single implementation class
+ * can be mapped to more than one function signature, given that the signatures differ
+ * in name or the number of expected arguments.
  * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */

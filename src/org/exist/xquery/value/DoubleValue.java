@@ -164,7 +164,7 @@ public class DoubleValue extends NumericValue {
 			case Type.POSITIVE_INTEGER :
 				return new IntegerValue((long) value, requiredType);
 			case Type.BOOLEAN :
-				return (value == 0.0 && value == Double.NaN)
+				return (value == 0.0 || value == Double.NaN)
 					? BooleanValue.FALSE
 					: BooleanValue.TRUE;
 			default :
