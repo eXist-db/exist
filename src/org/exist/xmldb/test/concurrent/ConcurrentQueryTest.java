@@ -64,15 +64,15 @@ public class ConcurrentQueryTest extends ConcurrentTestBase {
 		String query2 = "/ROOT-ELEMENT//ELEMENT-1[@attribute-3]";
 		
 		action0 = new XQueryAction(URI + "/C1", "R1.xml", query0);
-		action1 = new XQueryAction(URI + "/C1", "R1.xml", query0);
-//		action2 = new XQueryAction(URI + "/C1", "R1.xml", query0);
+		action1 = new XQueryAction(URI + "/C1", "R1.xml", query1);
+		action2 = new XQueryAction(URI + "/C1", "R1.xml", query2);
 //		action3 = new XQueryAction(URI + "/C1", "R1.xml", query0);
 //		action4 = new XQueryAction(URI + "/C1", "R1.xml", query0);
 //		action5 = new XQueryAction(URI + "/C1", "R1.xml", query0);
 		
 		addAction(action0, 50, 500, 0);
 		addAction(action1, 50, 250, 0);
-//		addAction(action2, 50, 0, 0);
+		addAction(action2, 50, 0, 0);
 //		addAction(action3, 50, 0, 0);
 //		addAction(action4, 50, 0, 0);
 //		addAction(action5, 50, 0, 0);
@@ -85,7 +85,7 @@ public class ConcurrentQueryTest extends ConcurrentTestBase {
         super.tearDown();
         System.out.println("Avg. query time for " + action0.getQuery() + ": " + action0.avgExecTime());
         System.out.println("Avg. query time for " + action1.getQuery() + ": " + action1.avgExecTime());
-//        System.out.println("Avg. query time for " + action2.getQuery() + ": " + action2.avgExecTime());
+        System.out.println("Avg. query time for " + action2.getQuery() + ": " + action2.avgExecTime());
 //        System.out.println("Avg. query time for " + action3.getQuery() + ": " + action3.avgExecTime());
 //        System.out.println("Avg. query time for " + action4.getQuery() + ": " + action4.avgExecTime());
 //        System.out.println("Avg. query time for " + action5.getQuery() + ": " + action5.avgExecTime());

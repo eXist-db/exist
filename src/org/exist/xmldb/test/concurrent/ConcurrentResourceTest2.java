@@ -1,0 +1,60 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-04 The eXist Project
+ *  http://exist-db.org
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
+ *  $Id$
+ */
+package org.exist.xmldb.test.concurrent;
+
+import org.xmldb.api.base.Collection;
+
+/**
+ * @author wolf
+ */
+public class ConcurrentResourceTest2 extends ConcurrentTestBase {
+
+    private final static String URI = "xmldb:exist:///db";
+    
+    private final static String QUERY0 =
+        "declare default element namespace 'http://www.loc.gov/mods/v3';" +
+        "/mods/titleInfo[title &= 'germany']";
+    
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(ConcurrentResourceTest2.class);
+    }
+    
+    /**
+     * @param name
+     * @param uri
+     * @param testCollection
+     */
+    public ConcurrentResourceTest2(String name) {
+        super(name, URI, "C1");
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xmldb.test.concurrent.ConcurrentTestBase#setUp()
+     */
+    protected void setUp() throws Exception {
+        super.setUp();
+        
+        Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
+        addAction(new MultiResourcesAction(URI + "/C1/C1-C2"), 1000, 0, 500);
+        addAction(new XQueryAction(URI + "/C1", "R1.xml", QUERY0), 500, 1000, 500);
+    }
+}
