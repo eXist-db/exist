@@ -69,29 +69,33 @@ public class FunNot extends Function {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
+		if(contextItem != null)
+			contextSequence = contextItem.toSequence();
+		
 		Expression arg = getArgument(0);
+		
 		// case 1: if the argument expression returns a node set,
 		// subtract the set from the context node set and return
 		// the remaining set
-		if (Type.subTypeOf(arg.returnsType(), Type.NODE)) {
+		if (Type.subTypeOf(arg.returnsType(), Type.NODE) &&
+			(arg.getDependencies() & Dependency.CONTEXT_ITEM) == 0 &&
+			contextSequence.getLength() > 0) {
 			NodeSet result = new ExtArrayNodeSet();
 			if(contextSequence.getLength() > 0)
 				result.addAll(contextSequence);
 			NodeProxy current;
-			if (inPredicate)
+			if (inPredicate) {
 				for (SequenceIterator i = result.iterate(); i.hasNext();) {
 					current = (NodeProxy) i.nextItem();
 					current.addContextNode(current);
 				}
+			}
 			// evaluate argument expression
 			Sequence argSeq =
 				arg.eval(contextSequence, contextItem);
 			NodeSet argSet = argSeq.toNodeSet().getContextNodes(true);
-			result = result.except(argSet);
-			if (result.getLength() == 0)
-				return BooleanValue.TRUE;
-			else
-				return result;
+			return result.except(argSet);
+			
 		// case 2: simply invert the boolean value
 		} else {
 			Sequence seq =

@@ -75,7 +75,6 @@ public class Predicate extends PathExpr {
 		if (inner == null)
 			return Sequence.EMPTY_SEQUENCE;
 		int type = inner.returnsType();
-		//LOG.debug("inner expr " + inner.pprint() + " returns " + Type.getTypeName(type));
 		
 		// Case 1: predicate expression returns a node set. Check the returned node set
 		// against the context set and return all nodes from the context, for which the
@@ -125,6 +124,7 @@ public class Predicate extends PathExpr {
 				Item item = i.nextItem();
 				context.setContextPosition(p);
 				Sequence innerSeq = inner.eval(contextSequence, item);
+				LOG.debug("innerSeq = " + innerSeq.effectiveBooleanValue());
 				if(innerSeq.effectiveBooleanValue())
 					result.add(item);
 			}

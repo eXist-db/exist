@@ -1040,10 +1040,12 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		DocumentImpl lastDoc = null;
 		for (Iterator i = iterator(); i.hasNext();) {
 			current = (NodeProxy) i.next();
+			System.out.println(current.gid);
 			contextNode = current.getContext();
 			while (contextNode != null) {
 				context = contextNode.getNode();
 				context.addMatches(current);
+				System.out.println("context: " + context.gid);
 				if (!result.contains(context)) {
 					if (rememberContext)
 						context.addContextNode(context);

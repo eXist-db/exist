@@ -21,13 +21,12 @@
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
-import org.exist.xquery.Cardinality;
 import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -53,7 +52,7 @@ public class FunFalse extends BasicFunction {
 	public int returnsType() {
 		return Type.BOOLEAN;
 	}
-
+	
 	/**
 	 * Always returns false.
 	 */

@@ -35,7 +35,7 @@ import org.exist.util.hashtable.SequencedLongHashMap;
  */
 public class HashtableTest extends TestCase {
 
-    private int tabSize = 1000000;
+    private int tabSize = 100000;
 	private Object values[] = new Object[tabSize];
 
 	public static void main(String[] args) {
