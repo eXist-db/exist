@@ -463,11 +463,33 @@ public class DOMFile extends BTree implements Lockable {
             tid = ItemId.getId(currentId);
             pos += 2;
             if(ItemId.isLink(currentId)) {
-                /* This is already a link, so we just copy it */
+                /* This is already a link, so we just restore it into the old page */
+				if (rec.page.len + 10 > fileHeader.getWorkSize()) {
+					/* no room in the old page, append a new one */
+					DOMPage newPage = new DOMPage();
+					newPage.getPageHeader().setNextTID((short)(rec.page.getPageHeader().getNextTID() - 1));
+                    newPage.getPageHeader().setPrevDataPage(rec.page.getPageNum());
+                    newPage.getPageHeader().setNextDataPage(rec.page.getPageHeader().getNextDataPage());
+                    LOG.debug("appending page after split: " + newPage.getPageNum());
+                    rec.page.getPageHeader().setNextDataPage(newPage.getPageNum());
+                    rec.page.getPageHeader().setDataLength(rec.page.len);
+                    rec.page.getPageHeader().setRecordCount(countRecordsInPage(rec.page));
+                    rec.page.setDirty(true);
+                    dataCache.add(rec.page);
+                    dataCache.add(newPage);
+                    rec.page = newPage;
+                    rec.page.len = 0;
+				}
+				// copy the link into the old page
                 ByteConversion.shortToByte(currentId,
                         rec.page.data, rec.page.len);
                 rec.page.len += 2;
-                System.arraycopy(oldData, pos, rec.page.data, rec.page.len, 8);
+				try {
+					System.arraycopy(oldData, pos, rec.page.data, rec.page.len, 8);
+				} catch(ArrayIndexOutOfBoundsException e) {
+					SanityCheck.TRACE("Failed to copy link record from " + pos + "; " + oldData.length +
+							"; to page " + rec.page.getPageNum() + "; " + rec.page.len + "; " + rec.page.data.length);
+				}
                 rec.page.len += 8;
                 pos += 8;
                 continue;
