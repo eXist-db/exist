@@ -148,6 +148,21 @@ public interface Trigger extends ContentHandler, LexicalHandler {
 		throws TriggerException;
 
 	/**
+	 * This method is called once before the database will actually parse the input data. You may take any action
+	 * here, using the supplied broker instance.
+	 * 
+	 * FIXME: documentation  
+	 **/
+	
+	public void finish(
+		int event,
+		DBBroker broker,
+		String documentName,
+		Document document);
+
+	
+	
+	/**
 	 * Returns true if the SAX parser is currently in validation phase. During validation phase, the trigger
 	 * may safely throw a SAXException. However, if is {@link #isValidating() isValidating} returns false, no exceptions should be
 	 * thrown.
