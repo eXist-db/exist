@@ -50,7 +50,7 @@
             <table border="0" width="100%">
                 <tr>
                     <td width="40%">
-                        <link href="xquery.xsp">xquery.xsp</link>
+                        <link href="simple/xquery.xsp">xquery.xsp</link>
                     </td>
                     <td width="60%">Simple query interface to send XPath queries to the server.</td>
                 </tr>
