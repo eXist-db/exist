@@ -6,8 +6,10 @@
 
 	<map:components>
 		<map:generators default="file">
-			<map:generator name="xquery" logger="sitemap.generator.xquery"
-				src="org.exist.cocoon.XQueryGenerator"/>
+			<map:generator name="xquery" 
+                logger="sitemap.generator.xquery"
+				src="org.exist.cocoon.XQueryGenerator">
+            </map:generator>
 		</map:generators>
 	  	<map:readers default="resource"/>
 	  	<map:serializers default="html"/>
@@ -31,7 +33,8 @@
             </map:match>
 
             <map:match pattern="xquery.xq">
-				<map:generate src="xquery.xq" type="xquery"/>
+				<map:generate src="xquery.xq" type="xquery">
+                </map:generate>
                 <map:transform type="xinclude"/>
                 <map:transform src="context://stylesheets/doc2html-2.xsl"/>
                 <map:transform type="encodeURL"/>
@@ -116,8 +119,6 @@
 			<map:match pattern="*.xq">
                 <map:generate src="{1}.xq" type="xquery">
                     <map:parameter name="file" value="{1}.xq"/>
-					<map:parameter name="sitemap"
-                        value="Hello World"/>
 				</map:generate>
 				<map:serialize encoding="UTF-8" type="html"/>
 	        </map:match>

@@ -55,14 +55,15 @@
 					if(term != null &amp;&amp; term.length() &gt; 0) {
 						String path;
 						if(field.equals("acronym"))
-							path = "Acronym/@id|.//AlternateForm";
+							path = "a:Acronym/@id|.//a:AlternateForm";
 						else if(field.equals("expansion"))
-							path = "Acronym/@expansion";
+							path = "a:Acronym/@expansion";
 						else if(field.equals("definition"))
-							path = "Definition";
+							path = "a:Definition";
 						else
 							path = ".";
-						String query = "//Entry[" + path + " &amp;= " +
+						String query = "declare namespace a='http://www.xml-acronym-demystifier.org';" +
+							"//a:Entry[" + path + " &amp;= " +
 							'"' + term + "\"]";
 						
 						<!-- connect to the server -->
@@ -71,7 +72,6 @@
     					<entries>
 	                        <xdb:collection uri="xmldb:exist:///db" user="guest" password="guest">
 	                        	<xdb:execute>
-	                        		<xdb:namespace prefix="">http://www.xml-acronym-demystifier.org</xdb:namespace>
 	                        		<xdb:xpath>query</xdb:xpath>
 									<xdb:results position="1" count="1000">
 	                        				<xdb:get-xml as="xml"/>

@@ -549,29 +549,4 @@
         <taglib-uri>http://exist-db.org/exist</taglib-uri>
         <taglib-location>/WEB-INF/exist.tld</taglib-location>
 	</taglib>
-
-    <!-- Add a security-constraint for the DatabaseAdminServlet: the servlet allows to
-    shutdown the database. We don't want everybody to be able to access this. -->
-    <security-constraint>
-    <web-resource-collection>
-        <web-resource-name>DatabaseAdmin</web-resource-name>
-	<url-pattern>/admin</url-pattern>
-    </web-resource-collection>
-    <auth-constraint>
-	<role-name>dba</role-name>
-    </auth-constraint>
-  </security-constraint>
-
-  <login-config>
-    <auth-method>FORM</auth-method>
-    <realm-name>eXist Database Admin Realm</realm-name>
-    <form-login-config>
-      <form-login-page>adminLogin.xml</form-login-page>
-	  <form-error-page>adminLogin.xml</form-error-page>
-    </form-login-config>
-  </login-config>
-
-  <security-role>
-	  <role-name>dba</role-name>
-  </security-role>
 </web-app>
