@@ -16,14 +16,13 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
- *  $Id:
+ *  $Id$
  */
 package org.exist.xpath;
 
 import java.util.Iterator;
 
-import org.apache.log4j.Category;
-import org.exist.EXistException;
+import org.apache.log4j.Logger;
 import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -32,34 +31,34 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.SingleNodeSet;
 import org.exist.dom.VirtualNodeSet;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
 import org.exist.util.XMLUtil;
 import org.w3c.dom.Node;
 
 public class LocationStep extends Step {
 
-	protected static Category LOG = Category.getInstance(LocationStep.class.getName());
+	protected static Logger LOG = Logger.getLogger(LocationStep.class);
 	protected NodeSet buf = null;
 	protected boolean keepVirtual = false;
 
-	public LocationStep(BrokerPool pool, int axis) {
-		super(pool, axis);
+	public LocationStep(int axis) {
+		super(axis);
 	}
 
-	public LocationStep(BrokerPool pool, int axis, NodeTest test) {
-		super(pool, axis, test);
+	public LocationStep(int axis, NodeTest test) {
+		super(axis, test);
 	}
 
 	protected NodeSet applyPredicate(
 		StaticContext context,
 		DocumentSet documents,
-		NodeSet contextSet) throws XPathException {
+		NodeSet contextSet)
+		throws XPathException {
 		Predicate pred;
 		NodeSet result = contextSet;
 		for (Iterator i = predicates.iterator(); i.hasNext();) {
 			pred = (Predicate) i.next();
-			result = (NodeSet) pred.eval(context, documents, result).getNodeList();
+			result =
+				(NodeSet) pred.eval(context, documents, result).getNodeList();
 		}
 		return result;
 	}
@@ -68,7 +67,8 @@ public class LocationStep extends Step {
 		StaticContext context,
 		DocumentSet documents,
 		NodeSet contextSet,
-		NodeProxy contextNode) throws XPathException {
+		NodeProxy contextNode)
+		throws XPathException {
 		if (contextNode != null)
 			contextSet = new SingleNodeSet(contextNode);
 
@@ -104,8 +104,8 @@ public class LocationStep extends Step {
 				temp = getParents(context, documents, contextSet);
 				break;
 			case Constants.ATTRIBUTE_AXIS :
-			// combines /descendant-or-self::node()/attribute:*
-			case Constants.DESCENDANT_ATTRIBUTE_AXIS:
+				// combines /descendant-or-self::node()/attribute:*
+			case Constants.DESCENDANT_ATTRIBUTE_AXIS :
 				temp = getAttributes(context, documents, contextSet);
 				break;
 			case Constants.PRECEDING_SIBLING_AXIS :
@@ -115,7 +115,10 @@ public class LocationStep extends Step {
 			default :
 				throw new IllegalArgumentException("Unsupported axis specified");
 		}
-		temp = (predicates.size() == 0) ? temp : applyPredicate(context, documents, temp);
+		temp =
+			(predicates.size() == 0)
+				? temp
+				: applyPredicate(context, documents, temp);
 		return new ValueNodeSet(temp);
 	}
 
@@ -129,21 +132,24 @@ public class LocationStep extends Step {
 			((VirtualNodeSet) result).setInPredicate(inPredicate);
 		} else {
 			if (buf == null) {
-				DBBroker broker = null;
-				try {
-					broker = pool.get();
-					buf = (NodeSet) broker.getAttributesByName(documents, test.getName());
-				} catch (EXistException e) {
-					LOG.debug("exception while retrieving elements", e);
-				} finally {
-					pool.release(broker);
-				}
+				buf =
+					(NodeSet) context.getBroker().getAttributesByName(
+						documents,
+						test.getName());
 			}
-			if(axis ==  Constants.DESCENDANT_ATTRIBUTE_AXIS)
-				result = ((ArraySet) buf).getDescendants(contextSet, ArraySet.DESCENDANT, inPredicate);
+			if (axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)
+				result =
+					((ArraySet) buf).getDescendants(
+						contextSet,
+						ArraySet.DESCENDANT,
+						inPredicate);
 			else
-				result = ((ArraySet) buf).getChildren(contextSet, ArraySet.DESCENDANT, inPredicate);
-			
+				result =
+					((ArraySet) buf).getChildren(
+						contextSet,
+						ArraySet.DESCENDANT,
+						inPredicate);
+
 			LOG.debug("found " + result.getLength() + " attributes");
 			//		} else {
 			//				Node n;
@@ -174,19 +180,16 @@ public class LocationStep extends Step {
 			vset.setInPredicate(inPredicate);
 			return vset;
 		} else {
-			DBBroker broker = null;
-			try {
-				broker = pool.get();
-				if (buf == null) {
-					buf = (NodeSet) broker.findElementsByTagName(documents, test.getName());
-				}
-				return buf.getChildren(contextSet, ArraySet.DESCENDANT, inPredicate);
-			} catch (EXistException e) {
-				e.printStackTrace();
-				return null;
-			} finally {
-				pool.release(broker);
+			if (buf == null) {
+				buf =
+					(NodeSet) context.getBroker().findElementsByTagName(
+						documents,
+						test.getName());
 			}
+			return buf.getChildren(
+				contextSet,
+				ArraySet.DESCENDANT,
+				inPredicate);
 		}
 	}
 
@@ -195,24 +198,17 @@ public class LocationStep extends Step {
 		DocumentSet documents,
 		NodeSet contextSet) {
 		if (!test.isWildcardTest()) {
-			DBBroker broker = null;
-			try {
-				broker = pool.get();
-				if (buf == null) {
-					buf = (NodeSet) broker.findElementsByTagName(documents, test.getName());
-				}
-				return buf.getDescendants(
-					contextSet,
-					ArraySet.DESCENDANT,
-					axis == Constants.DESCENDANT_SELF_AXIS,
-					inPredicate);
-
-			} catch (EXistException e) {
-				e.printStackTrace();
-				return null;
-			} finally {
-				pool.release(broker);
+			if (buf == null) {
+				buf =
+					(NodeSet) context.getBroker().findElementsByTagName(
+						documents,
+						test.getName());
 			}
+			return buf.getDescendants(
+				contextSet,
+				ArraySet.DESCENDANT,
+				axis == Constants.DESCENDANT_SELF_AXIS,
+				inPredicate);
 		} else {
 			VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextSet);
 			vset.setInPredicate(inPredicate);
@@ -225,23 +221,17 @@ public class LocationStep extends Step {
 		DocumentSet documents,
 		NodeSet contextSet) {
 		if (!test.isWildcardTest()) {
-			DBBroker broker = null;
-			try {
-				broker = pool.get();
-				if (buf == null) {
-					buf = (NodeSet) broker.findElementsByTagName(documents, test.getName());
-				}
-				return contextSet.getSiblings(
-					buf,
-					axis == Constants.PRECEDING_SIBLING_AXIS
-						? NodeSet.PRECEDING
-						: NodeSet.FOLLOWING);
-			} catch (EXistException e) {
-				LOG.debug(e.getMessage(), e);
-				return null;
-			} finally {
-				pool.release(broker);
+			if (buf == null) {
+				buf =
+					(NodeSet) context.getBroker().findElementsByTagName(
+						documents,
+						test.getName());
 			}
+			return contextSet.getSiblings(
+				buf,
+				axis == Constants.PRECEDING_SIBLING_AXIS
+					? NodeSet.PRECEDING
+					: NodeSet.FOLLOWING);
 		} else {
 			ArraySet result = new ArraySet(contextSet.getLength());
 			NodeProxy p;
@@ -276,25 +266,19 @@ public class LocationStep extends Step {
 		DocumentSet documents,
 		NodeSet contextSet) {
 		if (!test.isWildcardTest()) {
-			DBBroker broker = null;
-			try {
-				broker = pool.get();
-				if (buf == null) {
-					buf = (NodeSet) broker.findElementsByTagName(documents, test.getName());
-				}
-				NodeSet r =
-					contextSet.getAncestors(
-						(ArraySet) buf,
-						axis == Constants.ANCESTOR_SELF_AXIS,
-						inPredicate);
-				LOG.debug("getAncestors found " + r.getLength());
-				return r;
-			} catch (EXistException e) {
-				LOG.debug(e.getMessage(), e);
-				return null;
-			} finally {
-				pool.release(broker);
+			if (buf == null) {
+				buf =
+					(NodeSet) context.getBroker().findElementsByTagName(
+						documents,
+						test.getName());
 			}
+			NodeSet r =
+				contextSet.getAncestors(
+					(ArraySet) buf,
+					axis == Constants.ANCESTOR_SELF_AXIS,
+					inPredicate);
+			LOG.debug("getAncestors found " + r.getLength());
+			return r;
 		} else {
 			NodeSet result = new ArraySet(contextSet.getLength());
 			NodeProxy p;
@@ -319,8 +303,9 @@ public class LocationStep extends Step {
 		return contextSet.getParents();
 	}
 
-	public DocumentSet preselect(DocumentSet inDocs) throws XPathException {
-		return super.preselect(inDocs);
+	public DocumentSet preselect(DocumentSet inDocs, StaticContext context)
+		throws XPathException {
+		return super.preselect(inDocs, context);
 	}
 
 	public void setKeepVirtual(boolean virtual) {

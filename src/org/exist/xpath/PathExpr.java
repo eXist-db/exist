@@ -1,7 +1,7 @@
 
 /*
  *  eXist Native XML Database
- *  Copyright (C) 2001,  Wolfgang M. Meier (wolfgang@exist-db.org)
+ *  Copyright (C) 2001-03,  Wolfgang M. Meier (wolfgang@exist-db.org)
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -16,6 +16,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * $Id$
  */
 package org.exist.xpath;
 
@@ -28,19 +30,16 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.storage.BrokerPool;
 
 public class PathExpr extends AbstractExpression {
 	
     protected static Logger LOG = Logger.getLogger( PathExpr.class );
     protected DocumentSet docs = new DocumentSet();
     protected boolean keepVirtual = false;
-    protected BrokerPool pool = null;
     protected LinkedList steps = new LinkedList();
 	protected boolean inPredicate = false;
 	
-    public PathExpr(BrokerPool pool) {
-		this.pool = pool;
+    public PathExpr() {
     }
 
     public void add( Expression s ) {
@@ -129,16 +128,16 @@ public class PathExpr extends AbstractExpression {
         return buf.toString();
     }
 
-    public DocumentSet preselect() throws XPathException {
-        return preselect( docs );
+    public DocumentSet preselect(StaticContext context) throws XPathException {
+        return preselect( docs, context );
     }
 
-    public DocumentSet preselect( DocumentSet in_docs ) throws XPathException {
+    public DocumentSet preselect( DocumentSet in_docs, StaticContext context) throws XPathException {
         DocumentSet docs = in_docs;
         if ( docs.getLength() == 0 )
             return docs;
         for ( Iterator iter = steps.iterator(); iter.hasNext();  )
-            docs = ( (Expression) iter.next() ).preselect( docs );
+            docs = ( (Expression) iter.next() ).preselect( docs, context );
         return docs;
     }
 		

@@ -15,8 +15,7 @@ import org.exist.dom.NodeImpl;
 import org.exist.dom.QName;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
-import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.xpath.XPathException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -28,8 +27,8 @@ public class Rename extends Modification {
 	 * @param user
 	 * @param selectStmt
 	 */
-	public Rename(BrokerPool pool, User user, DocumentSet docs, String selectStmt) {
-		super(pool, user, docs, selectStmt);
+	public Rename(DBBroker broker, DocumentSet docs, String selectStmt) {
+		super(broker, docs, selectStmt);
 	}
 
 	/* (non-Javadoc)
@@ -53,10 +52,10 @@ public class Rename extends Modification {
 			collection = doc.getCollection();
 			if (prevCollection != null && collection != prevCollection)
 				doc.getBroker().saveCollection(prevCollection);
-			if (!collection.getPermissions().validate(user, Permission.UPDATE))
+			if (!collection.getPermissions().validate(broker.getUser(), Permission.UPDATE))
 				throw new PermissionDeniedException(
-					"write access to collection denied; user=" + user.getName());
-			if (!doc.getPermissions().validate(user, Permission.UPDATE))
+					"write access to collection denied; user=" + broker.getUser().getName());
+			if (!doc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
 				throw new PermissionDeniedException("permission denied to update document");
 			doc.setIndexListener(listener);
 			parent = (NodeImpl)node.getParentNode();

@@ -48,6 +48,7 @@ import org.apache.log4j.Category;
 import org.apache.xml.resolver.tools.CatalogResolver;
 import org.exist.EXistException;
 import org.exist.Indexer;
+import org.exist.collections.triggers.*;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.security.Group;
@@ -117,6 +118,7 @@ public class Collection
 	private List observers = null;
 
 	private CollectionConfiguration configuration = null;
+	private boolean triggersEnabled = true;
 
 	public Collection(String name) {
 		this.name = name;
@@ -167,13 +169,6 @@ public class Collection
 		documents.put(doc.getFileName(), doc);
 	}
 
-	synchronized public void renameDocument(String oldName, String newName) {
-		DocumentImpl doc = (DocumentImpl) documents.remove(oldName);
-		doc.setFileName(newName);
-		if (doc != null)
-			documents.put(newName, doc);
-	}
-
 	/**
 	 *  Return an iterator over all subcollections.
 	 * 
@@ -220,16 +215,15 @@ public class Collection
 	 */
 	public synchronized DocumentSet allDocs(
 		DBBroker broker,
-		User user,
 		boolean recursive) {
 		DocumentSet docs = new DocumentSet();
 		getDocuments(docs);
 		if (recursive)
-			allDocs(broker, user, docs);
+			allDocs(broker, docs);
 		return docs;
 	}
 
-	private DocumentSet allDocs(DBBroker broker, User user, DocumentSet docs) {
+	private DocumentSet allDocs(DBBroker broker, DocumentSet docs) {
 		Collection child;
 		String childName;
 		long addr;
@@ -240,10 +234,10 @@ public class Collection
 				child = broker.getCollection(name + '/' + childName);
 			else
 				child = broker.getCollection(name + '/' + childName, addr);
-			if (permissions.validate(user, Permission.READ)) {
+			if (permissions.validate(broker.getUser(), Permission.READ)) {
 				child.getDocuments(docs);
 				if (child.getChildCollectionCount() > 0)
-					child.allDocs(broker, user, docs);
+					child.allDocs(broker, docs);
 			}
 		}
 		return docs;
@@ -376,14 +370,6 @@ public class Collection
 		return documents.values().iterator();
 	}
 
-	//	public synchronized CollectionConfiguration getConfiguration() 
-	//	throws CollectionConfigurationException {
-	//		if(configuration == null)
-	//			configuration = 
-	//				new CollectionConfiguration(this, getDocument(COLLECTION_CONFIG_FILE));
-	//		return configuration;
-	//	}
-
 	/**
 	 * Read collection contents from the stream.
 	 * 
@@ -437,27 +423,49 @@ public class Collection
 	 *
 	 *@param  name  Description of the Parameter
 	 */
-	synchronized public void removeDocument(String name) {
+	synchronized public void removeDocument(
+		DBBroker broker,
+		String docname)
+		throws PermissionDeniedException, TriggerException {
 		Trigger trigger = null;
-		if(!name.equals("collections.xconf")) {
-			CollectionConfiguration config = getConfiguration();
-			trigger = config.getTrigger(Trigger.REMOVE_EVENT);
+		if (!docname.equals(COLLECTION_CONFIG_FILE)) {
+			if(triggersEnabled) {
+				CollectionConfiguration config = getConfiguration(broker);
+				if (config != null)
+					trigger = config.getTrigger(Trigger.REMOVE_DOCUMENT_EVENT);
+			}
+		} else
+			configuration = null;
+		String path = getName() + '/' + docname;
+		DocumentImpl doc = getDocument(path);
+		if (doc == null)
+			return;
+		if (trigger != null && triggersEnabled) {
+			trigger.prepare(Trigger.REMOVE_DOCUMENT_EVENT, broker, docname, doc);
 		}
-		documents.remove(name);
+		broker.removeDocument(path);
+		documents.remove(path);
+		broker.saveCollection(this);
+	}
+
+	synchronized public void removeDocument(String path) {
+		documents.remove(path);
 	}
 
 	public DocumentImpl addDocument(
 		DBBroker broker,
-		User user,
 		String name,
 		String data)
-		throws EXistException, PermissionDeniedException, IOException, SAXException {
-		return addDocument(broker, user, name, data);
+		throws
+			EXistException,
+			PermissionDeniedException,
+			TriggerException,
+			SAXException {
+		return addDocument(broker, name, data, false);
 	}
 
 	public DocumentImpl addDocument(
 		DBBroker broker,
-		User user,
 		String name,
 		String data,
 		boolean privileged)
@@ -466,38 +474,6 @@ public class Collection
 			PermissionDeniedException,
 			TriggerException,
 			SAXException {
-		return addDocument(
-			broker,
-			user,
-			name,
-			new InputSource(new StringReader(data)),
-			privileged);
-	}
-
-	public DocumentImpl addDocument(
-		DBBroker broker,
-		User user,
-		String name,
-		InputSource source)
-		throws
-			EXistException,
-			PermissionDeniedException,
-			TriggerException,
-			SAXException {
-		return addDocument(broker, user, name, source, false);
-	}
-
-	public DocumentImpl addDocument(
-		DBBroker broker,
-		User user,
-		String name,
-		InputSource source,
-		boolean privileged)
-		throws
-			EXistException,
-			PermissionDeniedException,
-			SAXException,
-			TriggerException {
 		if (broker.isReadOnly())
 			throw new PermissionDeniedException("Database is read-only");
 		DocumentImpl document, oldDoc = null;
@@ -506,11 +482,11 @@ public class Collection
 		}
 		if (oldDoc != null) {
 			// do we have permissions for update?
-			if (!oldDoc.getPermissions().validate(user, Permission.UPDATE))
+			if (!oldDoc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
 				throw new PermissionDeniedException(
 					"document exists and update " + "is not allowed");
 			// do we have write permissions?
-		} else if (!getPermissions().validate(user, Permission.WRITE))
+		} else if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
 			throw new PermissionDeniedException(
 				"not allowed to write to collection " + getName());
 		// if an old document exists, save the new document with a temporary
@@ -523,20 +499,23 @@ public class Collection
 		} else {
 			document = new DocumentImpl(broker, getName() + '/' + name, this);
 			document.setCreated(System.currentTimeMillis());
-			document.getPermissions().setOwner(user);
-			document.getPermissions().setGroup(user.getPrimaryGroup());
+			document.getPermissions().setOwner(broker.getUser());
+			document.getPermissions().setGroup(broker.getUser().getPrimaryGroup());
 		}
 		// setup triggers
-		CollectionConfiguration config = getConfiguration();
 		Trigger trigger = null;
-		if (config != null) {
-			if (oldDoc == null)
-				trigger = config.getTrigger(Trigger.STORE_EVENT);
-			else
-				trigger = config.getTrigger(Trigger.UPDATE_EVENT);
-		}
-		// set configuration to null if we are updating collection.xconf
-		if (name.equals("collection.xconf"))
+		if(!name.equals(COLLECTION_CONFIG_FILE)) {
+			if(triggersEnabled) {
+				CollectionConfiguration config = getConfiguration(broker);
+				if (config != null) {
+					if (oldDoc == null)
+						trigger = config.getTrigger(Trigger.STORE_DOCUMENT_EVENT);
+					else
+						trigger = config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
+				}
+			}
+		} else
+			// set configuration to null if we are updating collection.xconf
 			configuration = null;
 		Indexer parser = new Indexer(broker);
 		parser.setDocument(document);
@@ -555,7 +534,7 @@ public class Collection
 		XMLReader reader = getReader(broker);
 		reader.setEntityResolver(this);
 
-		if (trigger != null) {
+		if (trigger != null && triggersEnabled) {
 			reader.setContentHandler(trigger.getInputHandler());
 			reader.setProperty(
 				"http://xml.org/sax/properties/lexical-handler",
@@ -563,7 +542,8 @@ public class Collection
 			trigger.setOutputHandler(parser);
 			trigger.setValidating(true);
 			// prepare the trigger
-			trigger.prepare(broker, this, name, oldDoc);
+			trigger.prepare(oldDoc == null ? Trigger.STORE_DOCUMENT_EVENT : Trigger.UPDATE_DOCUMENT_EVENT, 
+				broker, name, oldDoc);
 		} else {
 			reader.setContentHandler(parser);
 			reader.setProperty(
@@ -571,7 +551,157 @@ public class Collection
 				parser);
 		}
 		reader.setErrorHandler(parser);
-		
+
+		// first pass: parse the document to determine tree structure
+		LOG.debug("validating document " + name);
+		InputSource source = new InputSource(new StringReader(data));
+		try {
+			reader.parse(source);
+		} catch (IOException e) {
+			throw new EXistException(e);
+		}
+		document.setMaxDepth(document.getMaxDepth() + 1);
+		document.calculateTreeLevelStartPoints();
+		// new document is valid: remove old document 
+		if (oldDoc != null) {
+			LOG.debug("removing old document " + oldDoc.getFileName());
+			broker.removeDocument(oldDoc.getFileName());
+			document.setFileName(oldDoc.getFileName());
+		}
+		synchronized (this) {
+			addDocument(broker, document);
+		}
+
+		parser.setValidating(false);
+		if (trigger != null)
+			trigger.setValidating(false);
+		// reset the input source
+		source = new InputSource(new StringReader(data));
+
+		// second pass: store the document
+		LOG.debug("storing document ...");
+		try {
+			reader.parse(source);
+		} catch (IOException e) {
+			throw new EXistException(e);
+		}
+
+		synchronized (this) {
+			broker.addDocument(this, document);
+			broker.closeDocument();
+			broker.flush();
+			// if we are running in privileged mode (e.g. backup/restore)
+			// notify the SecurityManager about changes
+			if (document.getFileName().equals("/db/system/users.xml")
+				&& privileged == false) {
+				// inform the security manager that system data has changed
+				LOG.debug("users.xml changed");
+				broker.getBrokerPool().reloadSecurityManager(broker);
+			}
+		}
+		return document;
+	}
+
+	public DocumentImpl addDocument(
+		DBBroker broker,
+		String name,
+		InputSource source)
+		throws
+			EXistException,
+			PermissionDeniedException,
+			TriggerException,
+			SAXException {
+		return addDocument(broker, name, source, false);
+	}
+
+	public DocumentImpl addDocument(
+		DBBroker broker,
+		String name,
+		InputSource source,
+		boolean privileged)
+		throws
+			EXistException,
+			PermissionDeniedException,
+			SAXException,
+			TriggerException {
+		if (broker.isReadOnly())
+			throw new PermissionDeniedException("Database is read-only");
+		DocumentImpl document, oldDoc = null;
+		synchronized (this) {
+			oldDoc = getDocument(getName() + '/' + name);
+		}
+		if (oldDoc != null) {
+			// do we have permissions for update?
+			if (!oldDoc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
+				throw new PermissionDeniedException(
+					"document exists and update " + "is not allowed");
+			// do we have write permissions?
+		} else if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
+			throw new PermissionDeniedException(
+				"not allowed to write to collection " + getName());
+		// if an old document exists, save the new document with a temporary
+		// document name
+		if (oldDoc != null) {
+			document = new DocumentImpl(broker, getName() + "/__" + name, this);
+			document.setCreated(oldDoc.getCreated());
+			document.setLastModified(System.currentTimeMillis());
+			document.setPermissions(oldDoc.getPermissions());
+		} else {
+			document = new DocumentImpl(broker, getName() + '/' + name, this);
+			document.setCreated(System.currentTimeMillis());
+			document.getPermissions().setOwner(broker.getUser());
+			document.getPermissions().setGroup(broker.getUser().getPrimaryGroup());
+		}
+		// setup triggers
+		Trigger trigger = null;
+		if(!name.equals(COLLECTION_CONFIG_FILE)) {
+			if(triggersEnabled) {
+				CollectionConfiguration config = getConfiguration(broker);
+				if (config != null) {
+					if (oldDoc == null)
+						trigger = config.getTrigger(Trigger.STORE_DOCUMENT_EVENT);
+					else
+						trigger = config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
+				}
+			}
+		} else
+			// set configuration to null if we are updating collection.xconf
+			configuration = null;
+		Indexer parser = new Indexer(broker);
+		parser.setDocument(document);
+
+		// add observers to the indexer
+		Observer observer;
+		if (observers != null) {
+			for (Iterator i = observers.iterator(); i.hasNext();) {
+				observer = (Observer) i.next();
+				parser.addObserver(observer);
+				broker.addObserver(observer);
+			}
+		}
+		// prepare the SAX parser
+		parser.setValidating(true);
+		XMLReader reader = getReader(broker);
+		reader.setEntityResolver(this);
+
+		if (trigger != null && triggersEnabled) {
+			reader.setContentHandler(trigger.getInputHandler());
+			reader.setProperty(
+				"http://xml.org/sax/properties/lexical-handler",
+				trigger.getLexicalInputHandler());
+			trigger.setOutputHandler(parser);
+			trigger.setLexicalOutputHandler(parser);
+			trigger.setValidating(true);
+			// prepare the trigger
+			trigger.prepare(oldDoc == null ? Trigger.STORE_DOCUMENT_EVENT : Trigger.UPDATE_DOCUMENT_EVENT, broker, name, oldDoc);
+		} else {
+			reader.setContentHandler(parser);
+			reader.setProperty(
+				"http://xml.org/sax/properties/lexical-handler",
+				parser);
+		}
+		reader.setErrorHandler(parser);
+
 		// first pass: parse the document to determine tree structure
 		LOG.debug("validating document " + name);
 		try {
@@ -634,20 +764,26 @@ public class Collection
 
 	public DocumentImpl addDocument(
 		DBBroker broker,
-		User user,
 		String name,
 		Node node)
-		throws EXistException, PermissionDeniedException, TriggerException, SAXException {
-		return addDocument(broker, user, name, node, false);
+		throws
+			EXistException,
+			PermissionDeniedException,
+			TriggerException,
+			SAXException {
+		return addDocument(broker, name, node, false);
 	}
 
 	public DocumentImpl addDocument(
 		DBBroker broker,
-		User user,
 		String name,
 		Node node,
 		boolean privileged)
-		throws EXistException, PermissionDeniedException, TriggerException, SAXException {
+		throws
+			EXistException,
+			PermissionDeniedException,
+			TriggerException,
+			SAXException {
 		Indexer parser = new Indexer(broker);
 		if (broker.isReadOnly())
 			throw new PermissionDeniedException("Database is read-only");
@@ -657,11 +793,11 @@ public class Collection
 		}
 		if (oldDoc != null) {
 			// do we have permissions for update?
-			if (!oldDoc.getPermissions().validate(user, Permission.UPDATE))
+			if (!oldDoc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
 				throw new PermissionDeniedException(
 					"document exists and update " + "is not allowed");
 			// no: do we have write permissions?
-		} else if (!getPermissions().validate(user, Permission.WRITE))
+		} else if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
 			throw new PermissionDeniedException(
 				"not allowed to write to collection " + getName());
 		// if an old document exists, save the new document with a temporary
@@ -674,20 +810,23 @@ public class Collection
 		} else {
 			document = new DocumentImpl(broker, getName() + '/' + name, this);
 			document.setCreated(System.currentTimeMillis());
-			document.getPermissions().setOwner(user);
-			document.getPermissions().setGroup(user.getPrimaryGroup());
+			document.getPermissions().setOwner(broker.getUser());
+			document.getPermissions().setGroup(broker.getUser().getPrimaryGroup());
 		}
 		// setup triggers
-		CollectionConfiguration config = getConfiguration();
 		Trigger trigger = null;
-		if (config != null) {
-			if (oldDoc == null)
-				trigger = config.getTrigger(Trigger.STORE_EVENT);
-			else
-				trigger = config.getTrigger(Trigger.UPDATE_EVENT);
-		}
-		// set configuration to null if we are updating collection.xconf
-		if (name.equals("collection.xconf"))
+		if(!name.equals(COLLECTION_CONFIG_FILE)) {
+			if(triggersEnabled) {
+				CollectionConfiguration config = getConfiguration(broker);
+				if (config != null) {
+					if (oldDoc == null)
+						trigger = config.getTrigger(Trigger.STORE_DOCUMENT_EVENT);
+					else
+						trigger = config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
+				}
+			}
+		} else
+			// set configuration to null if we are updating collection.xconf
 			configuration = null;
 		parser.setDocument(document);
 
@@ -702,18 +841,19 @@ public class Collection
 		}
 		parser.setValidating(true);
 		DOMStreamer streamer = new DOMStreamer();
-		if (trigger != null) {
+		if (trigger != null && triggersEnabled) {
 			streamer.setContentHandler(trigger.getInputHandler());
 			streamer.setLexicalHandler(trigger.getLexicalInputHandler());
 			trigger.setOutputHandler(parser);
 			trigger.setValidating(true);
 			// prepare the trigger
-			trigger.prepare(broker, this, name, oldDoc);
+			trigger.prepare(oldDoc == null ? Trigger.STORE_DOCUMENT_EVENT : Trigger.UPDATE_DOCUMENT_EVENT, 
+				broker, name, oldDoc);
 		} else {
 			streamer.setContentHandler(parser);
 			streamer.setLexicalHandler(parser);
 		}
-			
+
 		// first pass: parse the document to determine tree structure
 		LOG.debug("validating document " + name);
 		streamer.stream(node);
@@ -812,24 +952,27 @@ public class Collection
 		}
 	}
 
-	public CollectionConfiguration getConfiguration() {
+	public CollectionConfiguration getConfiguration(
+		DBBroker broker) {
 		if (configuration == null)
-			configuration = readCollectionConfiguration();
+			configuration = readCollectionConfiguration(broker);
 		return configuration;
 	}
 
-	private CollectionConfiguration readCollectionConfiguration() {
+	private CollectionConfiguration readCollectionConfiguration(DBBroker broker) {
 		DocumentImpl doc =
 			getDocument(getName() + '/' + COLLECTION_CONFIG_FILE);
 		if (doc != null) {
 			LOG.debug("found collection.xconf");
+			triggersEnabled = false;
 			try {
-				return new CollectionConfiguration(doc);
+				return new CollectionConfiguration(broker, this, doc);
 			} catch (CollectionConfigurationException e) {
 				LOG.warn(e.getMessage(), e);
+			} finally {
+				triggersEnabled = true;
 			}
-		} else
-			LOG.debug("collection.dbx not found");
+		}
 		return null;
 	}
 
@@ -866,6 +1009,10 @@ public class Collection
 		return created;
 	}
 
+	public void setTriggersEnabled(boolean enabled) {
+		this.triggersEnabled = enabled;
+	}
+	
 	private XMLReader getReader(DBBroker broker)
 		throws EXistException, SAXException {
 		Configuration config = broker.getConfiguration();
@@ -911,15 +1058,15 @@ public class Collection
 	}
 
 	/**
-		 * Try to resolve external entities.
-		 * 
-		 * This method forwards the request to the resolver. If that fails,
-		 * the method replaces absolute file names with relative ones 
-		 * and retries to resolve. This makes it possible to use relative
-		 * file names in the catalog.
-		 * 
-		 * @see org.xml.sax.EntityResolver#resolveEntity(java.lang.String, java.lang.String)
-		 */
+	 * Try to resolve external entities.
+	 * 
+	 * This method forwards the request to the resolver. If that fails,
+	 * the method replaces absolute file names with relative ones 
+	 * and retries to resolve. This makes it possible to use relative
+	 * file names in the catalog.
+	 * 
+	 * @see org.xml.sax.EntityResolver#resolveEntity(java.lang.String, java.lang.String)
+	 */
 	public InputSource resolveEntity(String publicId, String systemId)
 		throws SAXException, IOException {
 		InputSource is = resolver.resolveEntity(publicId, systemId);

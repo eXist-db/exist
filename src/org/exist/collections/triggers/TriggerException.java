@@ -21,7 +21,7 @@
  * $Id$
  *
  */
-package org.exist.collections;
+package org.exist.collections.triggers;
 
 /**
  * @author wolf

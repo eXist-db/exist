@@ -43,8 +43,8 @@ public class LocalIndexQueryService implements IndexQueryService {
 		throws XMLDBException {
 		DBBroker broker = null;
 		try {
-			broker = pool.get();
-			return broker.scanIndexedElements(user, parent.collection, inclusive);
+			broker = pool.get(user);
+			return broker.scanIndexedElements(parent.collection, inclusive);
 		} catch (EXistException e) {
 			// TODO: handle exception
 			throw new XMLDBException(

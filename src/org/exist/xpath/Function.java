@@ -43,15 +43,15 @@ public abstract class Function extends PathExpr {
      *
      *@param  name  Description of the Parameter
      */
-    public Function( BrokerPool pool, String name ) {
-        super(pool);
+    public Function( String name ) {
+        super();
         this.name = name;
     }
 
 
     /**  Constructor for the Function object */
-    public Function(BrokerPool pool) {
-        super(pool);
+    public Function() {
+        super();
     }
 
 
@@ -61,19 +61,18 @@ public abstract class Function extends PathExpr {
      *@param  name    Description of the Parameter
      *@return         Description of the Return Value
      */
-    public static Function createFunction(BrokerPool pool, String name) {
+    public static Function createFunction(String name) {
         try {
             if ( name == null )
                 throw new RuntimeException( "insufficient arguments" );
-            Class constructorArgs[] = { BrokerPool.class };
+            Class constructorArgs[] = new Class[0];
             Class fclass = Class.forName( name );
             if ( fclass == null )
                 throw new RuntimeException( "class not found" );
             Constructor construct = fclass.getConstructor( constructorArgs );
             if ( construct == null )
                 throw new RuntimeException( "constructor not found" );
-            Object initArgs[] = new Object[1];
-            initArgs[0] = pool;
+            Object initArgs[] = new Object[0];
             Object obj = construct.newInstance( initArgs );
             if ( obj instanceof Function )
                 return (Function) obj;
@@ -82,7 +81,7 @@ public abstract class Function extends PathExpr {
         } catch ( Exception e ) {
             System.out.println( e );
             e.printStackTrace();
-            throw new RuntimeException( "function not found" );
+            throw new RuntimeException( "function " + name + " not found" );
         }
     }
 

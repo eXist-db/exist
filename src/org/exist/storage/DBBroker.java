@@ -1,7 +1,7 @@
 
 /*
  *  DBBroker.java - eXist Open Source Native XML Database
- *  Copyright (C) 2001 Wolfgang M. Meier
+ *  Copyright (C) 2003 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *
@@ -18,6 +18,8 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * 
+ * $Id$
  */
 package org.exist.storage;
 import java.io.File;
@@ -57,51 +59,27 @@ import org.w3c.dom.NodeList;
  */
 public abstract class DBBroker extends Observable {
 
-    public final static int MATCH_EXACT = 0;
-    public final static int MATCH_REGEXP = 1;
-    public final static int MATCH_WILDCARDS = 2;
+	public final static int MATCH_EXACT = 0;
+	public final static int MATCH_REGEXP = 1;
+	public final static int MATCH_WILDCARDS = 2;
 
-    // constants for database type
-    public final static int MYSQL = 0;
-    public final static int NATIVE = 4;
-    public final static int ORACLE = 1;
-    public final static int POSTGRESQL = 2;
+	// constants for database type
+	public final static int MYSQL = 0;
+	public final static int NATIVE = 4;
+	public final static int ORACLE = 1;
+	public final static int POSTGRESQL = 2;
 	public final static int DBM = 3;
 
-    protected boolean caseSensitive = true;
+	protected boolean caseSensitive = true;
 
-    protected Configuration config;
+	protected Configuration config;
 	protected BrokerPool pool;
 	protected static File symbolsFile;
 	protected static SymbolTable symbols = null;
-
-    /**
-     *  Constructor for the DBBroker object
-     *
-     *@param  config  Description of the Parameter
-     */
-    public DBBroker( BrokerPool pool, Configuration config ) throws EXistException {
-        this.config = config;
-        Boolean temp;
-        if ( ( temp = (Boolean) config.getProperty( "indexer.case-sensitive" ) )
-             != null )
-            caseSensitive = temp.booleanValue();
-        String sym, dataDir;
-		if ((dataDir = (String) config.getProperty("db-connection.data-dir")) == null)
-			dataDir = "data";
-		if(symbols == null) {
-			symbolsFile = new File(dataDir + File.separatorChar + "symbols.dbx");
-			symbols = new SymbolTable();
-			if(!symbolsFile.canRead()) {
-				saveSymbols();
-			} else
-				loadSymbols();
-		}
-		this.pool = pool;
-    }
+	protected User user = null;
 
 	protected static void saveSymbols() throws EXistException {
-		synchronized(symbols) {
+		synchronized (symbols) {
 			try {
 				VariableByteOutputStream os = new VariableByteOutputStream(256);
 				symbols.write(os);
@@ -109,13 +87,16 @@ public abstract class DBBroker extends Observable {
 				fos.write(os.toByteArray());
 				fos.close();
 			} catch (FileNotFoundException e) {
-				throw new EXistException("file not found: " + symbolsFile.getAbsolutePath());
+				throw new EXistException(
+					"file not found: " + symbolsFile.getAbsolutePath());
 			} catch (IOException e) {
-				throw new EXistException("io error occurred while creating " + symbolsFile.getAbsolutePath());
+				throw new EXistException(
+					"io error occurred while creating "
+						+ symbolsFile.getAbsolutePath());
 			}
 		}
 	}
-	
+
 	protected static void loadSymbols() throws EXistException {
 		try {
 			FileInputStream fis = new FileInputStream(symbolsFile);
@@ -123,553 +104,482 @@ public abstract class DBBroker extends Observable {
 			symbols.read(is);
 			fis.close();
 		} catch (FileNotFoundException e) {
-			throw new EXistException("could not read " + symbolsFile.getAbsolutePath());
+			throw new EXistException(
+				"could not read " + symbolsFile.getAbsolutePath());
 		} catch (IOException e) {
-			throw new EXistException("io error occurred while reading " + symbolsFile.getAbsolutePath());
+			throw new EXistException(
+				"io error occurred while reading "
+					+ symbolsFile.getAbsolutePath());
 		}
 	}
-	
+
 	public static synchronized SymbolTable getSymbols() {
 		return symbols;
 	}
+
+	/**
+	 *  Constructor for the DBBroker object
+	 *
+	 *@param  config  Description of the Parameter
+	 */
+	public DBBroker(BrokerPool pool, Configuration config)
+		throws EXistException {
+		this.config = config;
+		Boolean temp;
+		if ((temp = (Boolean) config.getProperty("indexer.case-sensitive"))
+			!= null)
+			caseSensitive = temp.booleanValue();
+		String sym, dataDir;
+		if ((dataDir = (String) config.getProperty("db-connection.data-dir"))
+			== null)
+			dataDir = "data";
+		if (symbols == null) {
+			symbolsFile =
+				new File(dataDir + File.separatorChar + "symbols.dbx");
+			symbols = new SymbolTable();
+			if (!symbolsFile.canRead()) {
+				saveSymbols();
+			} else
+				loadSymbols();
+		}
+		this.pool = pool;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
 	
-    /**
-     *  find elements by their tag name. This method is comparable to the DOM's
-     *  method call getElementsByTagName. All elements matching tagName and
-     *  belonging to one of the documents in the DocumentSet docs are returned.
-     *
-     *@param  docs     Description of the Parameter
-     *@param  tagName  Description of the Parameter
-     *@return          Description of the Return Value
-     */
-    public abstract NodeSet findElementsByTagName( DocumentSet docs, QName qname );
+	public User getUser() {
+		return user;
+	}
+	
+	/**
+	 *  find elements by their tag name. This method is comparable to the DOM's
+	 *  method call getElementsByTagName. All elements matching tagName and
+	 *  belonging to one of the documents in the DocumentSet docs are returned.
+	 *
+	 *@param  docs     Description of the Parameter
+	 *@param  tagName  Description of the Parameter
+	 *@return          Description of the Return Value
+	 */
+	public abstract NodeSet findElementsByTagName(
+		DocumentSet docs,
+		QName qname);
 
+	/**  flush all data that has not been written before. */
+	public void flush() {
+		/*
+		 *  do nothing
+		 */
+	}
 
-    /**  flush all data that has not been written before. */
-    public void flush() {
-        /*
-         *  do nothing
-         */
-    }
+	/**
+	 *  get all the documents in this database repository. The documents are
+	 *  returned as a DocumentSet.
+	 *
+	 *@param  user  Description of the Parameter
+	 *@return       The allDocuments value
+	 */
+	public abstract DocumentSet getAllDocuments();
 
+	/**
+	 *  find elements by their tag name. This method is comparable to the DOM's
+	 *  method call getElementsByTagName. All elements matching tagName and
+	 *  belonging to one of the documents in the DocumentSet docs are returned.
+	 *
+	 *@param  docs  Description of the Parameter
+	 *@param  name  Description of the Parameter
+	 *@return       The attributesByName value
+	 */
+	public abstract NodeSet getAttributesByName(DocumentSet docs, QName qname);
 
-    /**
-     *  Gets the allDocuments attribute of the DBBroker object
-     *
-     *@return    The allDocuments value
-     */
-    public DocumentSet getAllDocuments() {
-        return getAllDocuments( new User( "admin", null, "dba" ) );
-    }
+	/**
+	 *  Gets the collection attribute of the DBBroker object
+	 *
+	 *@param  name  Description of the Parameter
+	 *@return       The collection value
+	 */
+	public abstract Collection getCollection(String name);
 
-
-    /**
-     *  get all the documents in this database repository. The documents are
-     *  returned as a DocumentSet.
-     *
-     *@param  user  Description of the Parameter
-     *@return       The allDocuments value
-     */
-    public abstract DocumentSet getAllDocuments( User user );
-
-
-    /**
-     *  find elements by their tag name. This method is comparable to the DOM's
-     *  method call getElementsByTagName. All elements matching tagName and
-     *  belonging to one of the documents in the DocumentSet docs are returned.
-     *
-     *@param  docs  Description of the Parameter
-     *@param  name  Description of the Parameter
-     *@return       The attributesByName value
-     */
-    public abstract NodeSet getAttributesByName( DocumentSet docs, QName qname );
-
-
-    /**
-     *  Gets the collection attribute of the DBBroker object
-     *
-     *@param  name  Description of the Parameter
-     *@return       The collection value
-     */
-    public abstract Collection getCollection( String name );
-
-	public Collection getCollection( String name, long address ) {
+	public Collection getCollection(String name, long address) {
 		return null;
 	}
-	
-    /**
-     *  get the configuration.
-     *
-     *@return    The configuration value
-     */
-    public Configuration getConfiguration() {
-        return config;
-    }
 
-
-    /**
-     *  Gets the dOMIterator attribute of the DBBroker object
-     *
-     *@param  doc  Description of the Parameter
-     *@param  gid  Description of the Parameter
-     *@return      The dOMIterator value
-     */
-    public Iterator getDOMIterator( Document doc, long gid ) {
-        throw new RuntimeException( "not implemented for this storage backend" );
-    }
-
-
-    /**
-     *  Gets the dOMIterator attribute of the DBBroker object
-     *
-     *@param  proxy  Description of the Parameter
-     *@return        The dOMIterator value
-     */
-    public Iterator getDOMIterator( NodeProxy proxy ) {
-        throw new RuntimeException( "not implemented for this storage backend" );
-    }
-
-	public Iterator getNodeIterator( NodeProxy proxy ) {
-		throw new RuntimeException( "not implemented for this storage backend" );
+	/**
+	 *  get the configuration.
+	 *
+	 *@return    The configuration value
+	 */
+	public Configuration getConfiguration() {
+		return config;
 	}
 
-    /**
-     *  return the type of database this broker is connected to.
-     *
-     *@return    one of the constants defined above.
-     */
-    public abstract int getDatabaseType();
+	/**
+	 *  Gets the dOMIterator attribute of the DBBroker object
+	 *
+	 *@param  doc  Description of the Parameter
+	 *@param  gid  Description of the Parameter
+	 *@return      The dOMIterator value
+	 */
+	public Iterator getDOMIterator(Document doc, long gid) {
+		throw new RuntimeException("not implemented for this storage backend");
+	}
 
+	/**
+	 *  Gets the dOMIterator attribute of the DBBroker object
+	 *
+	 *@param  proxy  Description of the Parameter
+	 *@return        The dOMIterator value
+	 */
+	public Iterator getDOMIterator(NodeProxy proxy) {
+		throw new RuntimeException("not implemented for this storage backend");
+	}
 
-    /**
-     *  Gets the document attribute of the DBBroker object
-     *
-     *@param  fileName                       Description of the Parameter
-     *@return                                The document value
-     *@exception  PermissionDeniedException  Description of the Exception
-     */
-    public Document getDocument( String fileName )
-         throws PermissionDeniedException {
-        return getDocument( new User( "admin", null, "dba" ), fileName );
-    }
+	public Iterator getNodeIterator(NodeProxy proxy) {
+		throw new RuntimeException("not implemented for this storage backend");
+	}
 
+	/**
+	 *  return the type of database this broker is connected to.
+	 *
+	 *@return    one of the constants defined above.
+	 */
+	public abstract int getDatabaseType();
 
-    /**
-     *  get a document by it's file name. The document's file name is used to
-     *  identify a document. File names are stored without the leading path.
-     *
-     *@param  fileName                       Description of the Parameter
-     *@param  user                           Description of the Parameter
-     *@return                                The document value
-     *@exception  PermissionDeniedException  Description of the Exception
-     */
-    public abstract Document getDocument( User user, String fileName )
-         throws PermissionDeniedException;
+	/**
+	 *  get a document by it's file name. The document's file name is used to
+	 *  identify a document. File names are stored without the leading path.
+	 *
+	 *@param  fileName                       Description of the Parameter
+	 *@param  user                           Description of the Parameter
+	 *@return                                The document value
+	 *@exception  PermissionDeniedException  Description of the Exception
+	 */
+	public abstract Document getDocument(String fileName)
+		throws PermissionDeniedException;
 
+	/**
+	 *  Gets the documentsByCollection attribute of the DBBroker object
+	 *
+	 *@param  collection                     Description of the Parameter
+	 *@return                                The documentsByCollection value
+	 *@exception  PermissionDeniedException  Description of the Exception
+	 */
+	public abstract DocumentSet getDocumentsByCollection(String collection)
+		throws PermissionDeniedException;
+		
+	/**
+	 *  Gets the documentsByCollection attribute of the DBBroker object
+	 *
+	 *@param  collection                     Description of the Parameter
+	 *@param  inclusive                      Description of the Parameter
+	 *@param  user                           Description of the Parameter
+	 *@return                                The documentsByCollection value
+	 *@exception  PermissionDeniedException  Description of the Exception
+	 */
+	public abstract DocumentSet getDocumentsByCollection(
+		String collection, boolean inclusive)
+		throws PermissionDeniedException;
 
-    /**
-     *  Gets the documentsByCollection attribute of the DBBroker object
-     *
-     *@param  collection                     Description of the Parameter
-     *@return                                The documentsByCollection value
-     *@exception  PermissionDeniedException  Description of the Exception
-     */
-    public DocumentSet getDocumentsByCollection( String collection )
-         throws PermissionDeniedException {
-        return getDocumentsByCollection( new User( "admin", null, "dba" ), collection );
-    }
+	/**
+	 *  get all the documents in this database matching the given
+	 *  document-type's name.
+	 *
+	 *@param  doctypeName  Description of the Parameter
+	 *@param  user         Description of the Parameter
+	 *@return              The documentsByDoctype value
+	 */
+	public abstract DocumentSet getDocumentsByDoctype(String doctype);
 
+	/**
+	 *  get a common prefix for a namespace URI. It should be guaranteed that
+	 *  only one prefix is associated with one namespace URI throughout the
+	 *  database.
+	 *
+	 *@param  namespace  Description of the Parameter
+	 *@return            The namespacePrefix value
+	 */
+	public String getNamespacePrefix(String namespace) {
+		return "";
+	}
 
-    /**
-     *  Gets the documentsByCollection attribute of the DBBroker object
-     *
-     *@param  collection                     Description of the Parameter
-     *@param  user                           Description of the Parameter
-     *@return                                The documentsByCollection value
-     *@exception  PermissionDeniedException  Description of the Exception
-     */
-    public abstract DocumentSet getDocumentsByCollection( User user, String collection )
-         throws PermissionDeniedException;
+	/**
+	 *  get the namespace associated with the given prefix. Every broker
+	 *  subclass should keep an internal map, where it stores the prefixes used
+	 *  for different namespaces. It should be guaranteed that only one prefix
+	 *  is associated with one namespace URI.
+	 *
+	 *@param  prefix  Description of the Parameter
+	 *@return         The namespaceURI value
+	 */
+	public String getNamespaceURI(String prefix) {
+		return "";
+	}
 
+	/**
+	 *  Gets the nextDocId attribute of the DBBroker object
+	 *
+	 *@param  collection  Description of the Parameter
+	 *@return             The nextDocId value
+	 */
+	public abstract int getNextDocId(Collection collection);
 
-    /**
-     *  Gets the documentsByCollection attribute of the DBBroker object
-     *
-     *@param  collection                     Description of the Parameter
-     *@param  inclusive                      Description of the Parameter
-     *@param  user                           Description of the Parameter
-     *@return                                The documentsByCollection value
-     *@exception  PermissionDeniedException  Description of the Exception
-     */
-    public abstract DocumentSet getDocumentsByCollection( User user,
-                                                          String collection,
-                                                          boolean inclusive )
-         throws PermissionDeniedException;
+	/**
+	 *  Gets the nodeValue attribute of the DBBroker object
+	 *
+	 *@param  proxy  Description of the Parameter
+	 *@return        The nodeValue value
+	 */
+	public String getNodeValue(NodeProxy proxy) {
+		throw new RuntimeException("not implemented for this storage backend");
+	}
 
+	/**
+	 *  get all the nodes containing the search terms given by the array expr
+	 *  using the fulltext-index. Calls to this method are normally delegated to
+	 *  the associated instance of class TextSearchEngine.
+	 *
+	 *@param  doc   the set of documents to search through
+	 *@param  expr  an array of search terms. a query is executed for each of
+	 *      them
+	 *@return       NodeSet[] an array of node sets, one for each search term
+	 */
+	public abstract NodeSet[] getNodesContaining(
+		DocumentSet doc,
+		String[] expr);
 
-    /**
-     *  Gets the documentsByDoctype attribute of the DBBroker object
-     *
-     *@param  doctype  Description of the Parameter
-     *@return          The documentsByDoctype value
-     */
-    public DocumentSet getDocumentsByDoctype( String doctype ) {
-        return getDocumentsByDoctype( new User( "admin", null, "dba" ), doctype );
-    }
+	/**
+	 *  Gets the nodesContaining attribute of the DBBroker object
+	 *
+	 *@param  doc   Description of the Parameter
+	 *@param  expr  Description of the Parameter
+	 *@param  type  Description of the Parameter
+	 *@return       The nodesContaining value
+	 */
+	public NodeSet[] getNodesContaining(
+		DocumentSet doc,
+		String[] expr,
+		int type) {
+		return getNodesContaining(doc, expr, MATCH_EXACT);
+	}
 
+	/**
+	 *  find all Nodes whose string value is equal to expr in the document set.
+	 *
+	 *@param  context   Description of the Parameter
+	 *@param  docs      Description of the Parameter
+	 *@param  relation  Description of the Parameter
+	 *@param  expr      Description of the Parameter
+	 *@return           The nodesEqualTo value
+	 */
+	public abstract NodeSet getNodesEqualTo(
+		NodeSet context,
+		DocumentSet docs,
+		int relation,
+		String expr);
 
-    /**
-     *  get all the documents in this database matching the given
-     *  document-type's name.
-     *
-     *@param  doctypeName  Description of the Parameter
-     *@param  user         Description of the Parameter
-     *@return              The documentsByDoctype value
-     */
-    public abstract DocumentSet getDocumentsByDoctype( User user, String doctypeName );
+	/**
+	 *  Retrieve a collection by name. This method is used by NativeBroker.java.
+	 *
+	 *@param  name                           Description of the Parameter
+	 *@param  user                           Description of the Parameter
+	 *@return                                The orCreateCollection value
+	 *@exception  PermissionDeniedException  Description of the Exception
+	 */
+	public Collection getOrCreateCollection(String name)
+		throws PermissionDeniedException {
+		return null;
+	}
 
+	/**
+	 *  get a range of nodes with given owner document from the database,
+	 *  starting at first and ending at last.
+	 *
+	 *@param  doc    the document the node's belong to
+	 *@param  first  unique id of the first node to retrieve
+	 *@param  last   unique id of the last node to retrieve
+	 *@return        The range value
+	 */
+	public abstract NodeList getRange(Document doc, long first, long last);
 
-    /**
-     *  get a common prefix for a namespace URI. It should be guaranteed that
-     *  only one prefix is associated with one namespace URI throughout the
-     *  database.
-     *
-     *@param  namespace  Description of the Parameter
-     *@return            The namespacePrefix value
-     */
-    public String getNamespacePrefix( String namespace ) {
-        return "";
-    }
+	/**
+	 *  get an instance of the Serializer used for converting nodes back to XML.
+	 *  Subclasses of DBBroker may have specialized subclasses of Serializer to
+	 *  convert a node into an XML-string
+	 *
+	 *@return    The serializer value
+	 */
+	public abstract Serializer getSerializer();
 
+	/**
+	 *  get the TextSearchEngine associated with this broker. Every subclass of
+	 *  DBBroker will have it's own implementation of TextSearchEngine.
+	 *
+	 *@return    The textEngine value
+	 */
+	public abstract TextSearchEngine getTextEngine();
 
-    /**
-     *  get the namespace associated with the given prefix. Every broker
-     *  subclass should keep an internal map, where it stores the prefixes used
-     *  for different namespaces. It should be guaranteed that only one prefix
-     *  is associated with one namespace URI.
-     *
-     *@param  prefix  Description of the Parameter
-     *@return         The namespaceURI value
-     */
-    public String getNamespaceURI( String prefix ) {
-        return "";
-    }
+	/**
+	 *  Gets the caseSensitive attribute of the DBBroker object
+	 *
+	 *@return    The caseSensitive value
+	 */
+	public boolean isCaseSensitive() {
+		return caseSensitive;
+	}
 
+	/**
+	 *  Description of the Method
+	 *
+	 *@return    Description of the Return Value
+	 */
+	public abstract Serializer newSerializer();
 
-    /**
-     *  Gets the nextDocId attribute of the DBBroker object
-     *
-     *@param  collection  Description of the Parameter
-     *@return             The nextDocId value
-     */
-    public abstract int getNextDocId( Collection collection );
+	/**
+	 *  get a node with given owner document and id from the database.
+	 *
+	 *@param  doc  the document the node belongs to
+	 *@param  gid  the node's unique identifier
+	 *@return      Description of the Return Value
+	 */
+	public abstract Node objectWith(Document doc, long gid);
+	public abstract Node objectWith(NodeProxy p);
 
+	/**
+	 *  associate a prefix with a given namespace. Every broker subclass should
+	 *  keep an internal map, where it stores the prefixes used for different
+	 *  namespaces. It should be guaranteed that only one prefix is associated
+	 *  with one namespace URI.
+	 *
+	 *@param  namespace  Description of the Parameter
+	 *@param  prefix     Description of the Parameter
+	 */
+	public void registerNamespace(String namespace, String prefix) {
+		// do nothing
+	}
 
-    /**
-     *  Gets the nodeValue attribute of the DBBroker object
-     *
-     *@param  proxy  Description of the Parameter
-     *@return        The nodeValue value
-     */
-    public String getNodeValue( NodeProxy proxy ) {
-        throw new RuntimeException( "not implemented for this storage backend" );
-    }
+	/**
+	 *  Description of the Method
+	 *
+	 *@param  name                           Description of the Parameter
+	 *@return                                Description of the Return Value
+	 *@exception  PermissionDeniedException  Description of the Exception
+	 */
+	public abstract boolean removeCollection(String name)
+		throws PermissionDeniedException;
 
+	/**
+	 *  remove the document with the given document name.
+	 *
+	 *@param  docName                        Description of the Parameter
+	 *@param  user                           Description of the Parameter
+	 *@exception  PermissionDeniedException  Description of the Exception
+	 */
+	public abstract void removeDocument(String docName)
+		throws PermissionDeniedException;
 
-    /**
-     *  get all the nodes containing the search terms given by the array expr
-     *  using the fulltext-index. Calls to this method are normally delegated to
-     *  the associated instance of class TextSearchEngine.
-     *
-     *@param  doc   the set of documents to search through
-     *@param  expr  an array of search terms. a query is executed for each of
-     *      them
-     *@return       NodeSet[] an array of node sets, one for each search term
-     */
-    public abstract NodeSet[] getNodesContaining( DocumentSet doc, String[] expr );
+	/**
+	 *  Store a collection into the database.
+	 *
+	 *@param  collection  Description of the Parameter
+	 */
+	public abstract void saveCollection(Collection collection)
+		throws PermissionDeniedException;
 
-
-    /**
-     *  Gets the nodesContaining attribute of the DBBroker object
-     *
-     *@param  doc   Description of the Parameter
-     *@param  expr  Description of the Parameter
-     *@param  type  Description of the Parameter
-     *@return       The nodesContaining value
-     */
-    public NodeSet[] getNodesContaining( DocumentSet doc, String[] expr,
-                                         int type ) {
-        return getNodesContaining( doc, expr, MATCH_EXACT );
-    }
-
-
-    /**
-     *  find all Nodes whose string value is equal to expr in the document set.
-     *
-     *@param  context   Description of the Parameter
-     *@param  docs      Description of the Parameter
-     *@param  relation  Description of the Parameter
-     *@param  expr      Description of the Parameter
-     *@return           The nodesEqualTo value
-     */
-    public abstract NodeSet getNodesEqualTo( NodeSet context, DocumentSet docs, int relation, String expr );
-
-
-    /**
-     *  Gets the orCreateCollection attribute of the DBBroker object
-     *
-     *@param  name                           Description of the Parameter
-     *@return                                The orCreateCollection value
-     *@exception  PermissionDeniedException  Description of the Exception
-     */
-    public Collection getOrCreateCollection( String name )
-         throws PermissionDeniedException {
-        User user = new User( "admin", null, "dba" );
-        return getOrCreateCollection( user, name );
-    }
-
-
-    /**
-     *  Retrieve a collection by name. This method is used by NativeBroker.java.
-     *
-     *@param  name                           Description of the Parameter
-     *@param  user                           Description of the Parameter
-     *@return                                The orCreateCollection value
-     *@exception  PermissionDeniedException  Description of the Exception
-     */
-    public Collection getOrCreateCollection( User user, String name )
-         throws PermissionDeniedException {
-        return null;
-    }
-
-
-    /**
-     *  get a range of nodes with given owner document from the database,
-     *  starting at first and ending at last.
-     *
-     *@param  doc    the document the node's belong to
-     *@param  first  unique id of the first node to retrieve
-     *@param  last   unique id of the last node to retrieve
-     *@return        The range value
-     */
-    public abstract NodeList getRange( Document doc, long first, long last );
-
-
-    /**
-     *  get an instance of the Serializer used for converting nodes back to XML.
-     *  Subclasses of DBBroker may have specialized subclasses of Serializer to
-     *  convert a node into an XML-string
-     *
-     *@return    The serializer value
-     */
-    public abstract Serializer getSerializer();
-
-
-    /**
-     *  get the TextSearchEngine associated with this broker. Every subclass of
-     *  DBBroker will have it's own implementation of TextSearchEngine.
-     *
-     *@return    The textEngine value
-     */
-    public abstract TextSearchEngine getTextEngine();
-
-
-    /**
-     *  Gets the caseSensitive attribute of the DBBroker object
-     *
-     *@return    The caseSensitive value
-     */
-    public boolean isCaseSensitive() {
-        return caseSensitive;
-    }
-
-
-    /**
-     *  Description of the Method
-     *
-     *@return    Description of the Return Value
-     */
-    public abstract Serializer newSerializer();
-
-
-    /**
-     *  get a node with given owner document and id from the database.
-     *
-     *@param  doc  the document the node belongs to
-     *@param  gid  the node's unique identifier
-     *@return      Description of the Return Value
-     */
-    public abstract Node objectWith( Document doc, long gid );
-    public abstract Node objectWith( NodeProxy p );
-
-
-    /**
-     *  associate a prefix with a given namespace. Every broker subclass should
-     *  keep an internal map, where it stores the prefixes used for different
-     *  namespaces. It should be guaranteed that only one prefix is associated
-     *  with one namespace URI.
-     *
-     *@param  namespace  Description of the Parameter
-     *@param  prefix     Description of the Parameter
-     */
-    public void registerNamespace( String namespace, String prefix ) {
-        // do nothing
-    }
-
-
-    /**
-     *  Description of the Method
-     *
-     *@param  name                           Description of the Parameter
-     *@return                                Description of the Return Value
-     *@exception  PermissionDeniedException  Description of the Exception
-     */
-    public boolean removeCollection( String name )
-         throws PermissionDeniedException {
-        return removeCollection( new User( "admin", null, "dba" ), name );
-    }
-
-
-    /**
-     *  Description of the Method
-     *
-     *@param  name                           Description of the Parameter
-     *@param  user                           Description of the Parameter
-     *@return                                Description of the Return Value
-     *@exception  PermissionDeniedException  Description of the Exception
-     */
-    public abstract boolean removeCollection( User user, String name )
-         throws PermissionDeniedException;
-
-
-    /**
-     *  Description of the Method
-     *
-     *@param  docName                        Description of the Parameter
-     *@exception  PermissionDeniedException  Description of the Exception
-     */
-    public void removeDocument( String docName )
-         throws PermissionDeniedException {
-        removeDocument( new User( "admin", null, "dba" ), docName );
-    }
-
-
-    /**
-     *  remove the document with the given document name.
-     *
-     *@param  docName                        Description of the Parameter
-     *@param  user                           Description of the Parameter
-     *@exception  PermissionDeniedException  Description of the Exception
-     */
-    public abstract void removeDocument( User user, String docName )
-         throws PermissionDeniedException;
-
-
-    /**
-     *  Store a collection into the database.
-     *
-     *@param  collection  Description of the Parameter
-     */
-    public abstract void saveCollection( Collection collection )
-    throws PermissionDeniedException;
-
-    public void addDocument( Collection collection, DocumentImpl doc ) 
-    throws PermissionDeniedException {
-    }
+	public void addDocument(Collection collection, DocumentImpl doc)
+		throws PermissionDeniedException {
+	}
 
 	public void closeDocument() {
 	}
-    
-    /**
-     *  shutdown the broker. All open files, jdbc connections etc. should be
-     *  closed.
-     */
-    public void shutdown() {
-    }
 
+	/**
+	 *  shutdown the broker. All open files, jdbc connections etc. should be
+	 *  closed.
+	 */
+	public void shutdown() {
+	}
 
-    /**
-     *  Store a node into the database. This method is called by the parser to
-     *  write a node to the storage backend.
-     *
-     *@param  node         the node to be stored
-     *@param  currentPath  path expression which points to this node's
-     *      element-parent or to itself if it is an element (currently used by
-     *      the Broker to determine if a node's content should be
-     *      fulltext-indexed).
-     */
-    public abstract void store( NodeImpl node, CharSequence currentPath );
+	/**
+	 *  Store a node into the database. This method is called by the parser to
+	 *  write a node to the storage backend.
+	 *
+	 *@param  node         the node to be stored
+	 *@param  currentPath  path expression which points to this node's
+	 *      element-parent or to itself if it is an element (currently used by
+	 *      the Broker to determine if a node's content should be
+	 *      fulltext-indexed).
+	 */
+	public abstract void store(NodeImpl node, CharSequence currentPath);
 
+	/**
+	 *  Store a document into the database.
+	 *
+	 *@param  doc  Description of the Parameter
+	 */
+	public abstract void storeDocument(DocumentImpl doc);
 
-    /**
-     *  Store a document into the database.
-     *
-     *@param  doc  Description of the Parameter
-     */
-    public abstract void storeDocument( DocumentImpl doc );
+	/**  Description of the Method */
+	public void sync() {
+		/*
+		 *  do nothing
+		 */
+	}
 
+	/**
+	 *  Update a node's data. This method is only used by the NativeBroker. To
+	 *  keep nodes in a correct sequential order, it sometimes needs to update a
+	 *  previous written node. Warning: don't use it for other purposes.
+	 *  RelationalBroker does not implement this method.
+	 *
+	 *@param  node  Description of the Parameter
+	 */
+	public void update(NodeImpl node) {
+		throw new RuntimeException("not implemented");
+	}
 
-    /**  Description of the Method */
-    public void sync() {
-        /*
-         *  do nothing
-         */
-    }
+	/**
+	 * Is the database running read-only? Returns false by default.
+	 * Storage backends should override this if they support read-only
+	 * mode.
+	 * 
+	 * @return boolean
+	 */
+	public boolean isReadOnly() {
+		return false;
+	}
 
+	public BrokerPool getBrokerPool() {
+		return pool;
+	}
 
-    /**
-     *  Update a node's data. This method is only used by the NativeBroker. To
-     *  keep nodes in a correct sequential order, it sometimes needs to update a
-     *  previous written node. Warning: don't use it for other purposes.
-     *  RelationalBroker does not implement this method.
-     *
-     *@param  node  Description of the Parameter
-     */
-    public void update( NodeImpl node ) {
-        throw new RuntimeException( "not implemented" );
-    }
-    
-    /**
-     * Is the database running read-only? Returns false by default.
-     * Storage backends should override this if they support read-only
-     * mode.
-     * 
-     * @return boolean
-     */
-    public boolean isReadOnly() {
-    	return false;
-    }
-    
-    public BrokerPool getBrokerPool() {
-    	return pool;
-    }
-    
 	public void insertAfter(final NodeImpl previous, final NodeImpl node) {
-		throw new RuntimeException( "not implemented" );
+		throw new RuntimeException("not implemented");
 	}
-	
+
 	public void reindex(DocumentImpl oldDoc, DocumentImpl doc, NodeImpl node) {
-		throw new RuntimeException( "not implemented" );
+		throw new RuntimeException("not implemented");
 	}
-    
-    public void index(NodeImpl node) {
-        throw new RuntimeException( "not implemented" );
-    }
-    
-    public void removeNode(final NodeImpl node, String currentPath) {
-        throw new RuntimeException( "not implemented" );
-    }
-    
-    public void endRemove() {
-		throw new RuntimeException( "not implemented" );
-    }
-    
-	public Occurrences[] scanIndexedElements(User user, Collection collection, 
-		boolean inclusive) throws PermissionDeniedException {
-		throw new RuntimeException( "not implemented" );
+
+	public void index(NodeImpl node) {
+		throw new RuntimeException("not implemented");
 	}
-	
+
+	public void removeNode(final NodeImpl node, String currentPath) {
+		throw new RuntimeException("not implemented");
+	}
+
+	public void endRemove() {
+		throw new RuntimeException("not implemented");
+	}
+
+	public Occurrences[] scanIndexedElements(
+		Collection collection,
+		boolean inclusive)
+		throws PermissionDeniedException {
+		throw new RuntimeException("not implemented");
+	}
+
 	public void readDocumentMetadata(final DocumentImpl doc) {
 	}
 }
-

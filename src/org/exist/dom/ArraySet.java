@@ -16,17 +16,18 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
- *  $Id:
+ *  $Id$
  */
 package org.exist.dom;
 
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.exist.xpath.Value;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.SequenceIterator;
 import org.exist.util.FastQSort;
 import org.exist.util.Range;
 import org.exist.util.XMLUtil;
@@ -744,6 +745,14 @@ public class ArraySet extends NodeSet {
 		sort();
 		return new ArraySetIterator();
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#iterate()
+	 */
+	public SequenceIterator iterate() {
+		sort();
+		return new ArraySequenceIterator();
+	}
 
 	public NodeProxy nodeHasParent(
 		DocumentImpl doc,
@@ -882,9 +891,9 @@ public class ArraySet extends NodeSet {
 		System.out.println("dl = " + dlen + "; copy = " + count);
 	}
 
-	public class ArraySetIterator implements Iterator {
+	private class ArraySetIterator implements Iterator {
 
-		protected int pos = 0;
+		private int pos = 0;
 
 		public boolean hasNext() {
 			return (pos < counter) ? true : false;
@@ -898,6 +907,22 @@ public class ArraySet extends NodeSet {
 		}
 	}
 
+	private class ArraySequenceIterator implements SequenceIterator {
+		
+		private int pos = 0;
+		
+		public boolean hasNext() {
+			return (pos < counter) ? true : false;
+		}
+		
+		/* (non-Javadoc)
+		 * @see org.exist.xpath.value.SequenceIterator#nextItem()
+		 */
+		public Item nextItem() {
+			return (pos < counter) ? nodes[pos++] : null;
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.util.Sortable#compare(int, int)
 	 */

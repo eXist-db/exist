@@ -23,15 +23,12 @@ package org.exist.xpath;
 
 import java.util.Iterator;
 
-import org.exist.EXistException;
 import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.SingleNodeSet;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
 import org.exist.util.XMLUtil;
 
 /**
@@ -40,8 +37,8 @@ import org.exist.util.XMLUtil;
  */
 public class FunLang extends Function {
 	
-	public FunLang(BrokerPool pool) {
-		super(pool, "lang");
+	public FunLang() {
+		super("lang");
 	}
 		
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
@@ -52,10 +49,7 @@ public class FunLang extends Function {
 			contextSet = new SingleNodeSet(contextNode);
 		String lang = getArgument(0).eval(context, docs, contextSet).getStringValue();
 		QName qname = new QName("lang", context.getURIForPrefix("xml"), "xml");
-		DBBroker broker = null;
-		try {
-			broker = pool.get();
-			NodeSet attribs = broker.getAttributesByName(docs, qname);
+			NodeSet attribs = context.getBroker().getAttributesByName(docs, qname);
 			System.out.println("found " + attribs.getLength() + " attributes");
 			NodeSet temp = new ArraySet(attribs.getLength());
 			NodeProxy p;
@@ -89,12 +83,6 @@ public class FunLang extends Function {
 				}
 				return new ValueNodeSet(result);
 			}
-		} catch (EXistException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			pool.release(broker);
-		}
 		return new ValueNodeSet(NodeSet.EMPTY_SET);
 	}
 }

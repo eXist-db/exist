@@ -46,8 +46,8 @@ public class ExtFulltext extends Function {
 	 *
 	 *@param  type    Description of the Parameter
 	 */
-	public ExtFulltext(BrokerPool pool, int type) {
-		super(pool, "contains");
+	public ExtFulltext(int type) {
+		super("contains");
 		this.type = type;
 	}
 
@@ -57,8 +57,8 @@ public class ExtFulltext extends Function {
 	 *@param  path    Description of the Parameter
 	 *@param  arg     Description of the Parameter
 	 */
-	public ExtFulltext(BrokerPool pool, PathExpr path) {
-		super(pool, "contains");
+	public ExtFulltext(PathExpr path) {
+		super("contains");
 		this.path = path;
 	}
 
@@ -67,11 +67,8 @@ public class ExtFulltext extends Function {
 		this.containsExpr.add(arg);
 	}
 
-	public void addTerms(String terms) throws EXistException {
-		DBBroker broker = null;
-		try {
-			broker = pool.get();
-			Tokenizer tokenizer = broker.getTextEngine().getTokenizer();
+	public void addTerms(StaticContext context, String terms) throws EXistException {
+			Tokenizer tokenizer = context.getBroker().getTextEngine().getTokenizer();
 			tokenizer.setText(terms);
 			org.exist.storage.analysis.TextToken token;
 			String word;
@@ -80,9 +77,6 @@ public class ExtFulltext extends Function {
 				System.out.println("adding " + word);
 				containsExpr.add(word);
 			}
-		} finally {
-			pool.release(broker);
-		}
 	}
 	
 	public int countTerms() {
@@ -99,7 +93,7 @@ public class ExtFulltext extends Function {
 				? contextSet
 				: (NodeSet) path.eval(context, docs, contextSet, contextNode).getNodeList();
 		if (hits == null)
-			processQuery(docs);
+			processQuery(context, docs);
 		long pid;
 		NodeProxy current;
 		NodeProxy parent;
@@ -168,9 +162,8 @@ public class ExtFulltext extends Function {
 	 *@param  in_docs  Description of the Parameter
 	 *@return          Description of the Return Value
 	 */
-	public DocumentSet preselect(DocumentSet in_docs) {
-
-		processQuery(in_docs);
+	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) {
+		processQuery(context, in_docs);
 		NodeProxy p;
 		DocumentSet ndocs = new DocumentSet();
 		Iterator i;
@@ -194,29 +187,21 @@ public class ExtFulltext extends Function {
 	 *
 	 *@param  in_docs  Description of the Parameter
 	 */
-	protected void processQuery(DocumentSet in_docs) {
+	protected void processQuery(StaticContext context, DocumentSet in_docs) {
 		terms = new String[containsExpr.size()];
 		boolean skip_preselect = false;
 		int j = 0;
 		for (Iterator i = containsExpr.iterator(); i.hasNext(); j++) {
 			terms[j] = (String) i.next();
 		}
-		DBBroker broker = null;
-		try {
-			broker = pool.get();
 			if (terms == null)
 				throw new RuntimeException("no search terms");
 			hits = new NodeSet[terms.length][];
 
 			for (int k = 0; k < terms.length; k++) {
 				String t[] = { terms[k] };
-				hits[k] = broker.getNodesContaining(in_docs, t);
+				hits[k] = context.getBroker().getNodesContaining(in_docs, t);
 			}
-		} catch (EXistException e) {
-			e.printStackTrace();
-		} finally {
-			pool.release(broker);
-		}
 	}
 
 	/**

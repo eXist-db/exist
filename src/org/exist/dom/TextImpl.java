@@ -1,7 +1,7 @@
 
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2000,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
+ *  Copyright (C) 2001-03,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -17,17 +17,17 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
- *  $Id
+ *  $Id$
  * 
  */
 package org.exist.dom;
 
+import org.exist.storage.Signatures;
+import org.exist.util.ByteArrayPool;
+import org.exist.util.UTF8;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
-import org.w3c.dom.DOMException;
-import java.io.*;
-import org.exist.util.*;
-import org.exist.storage.*;
 
 
 /**

@@ -19,7 +19,6 @@
 package org.exist.xpath;
 
 import org.exist.dom.*;
-import org.exist.storage.BrokerPool;
 
 /**
  * xpath-library function: boolean(object)
@@ -27,8 +26,8 @@ import org.exist.storage.BrokerPool;
  */
 public class FunBoolean extends Function {
 
-	public FunBoolean(BrokerPool pool) {
-		super(pool, "boolean");
+	public FunBoolean() {
+		super("boolean");
 	}
 	
 	public int returnsType() {

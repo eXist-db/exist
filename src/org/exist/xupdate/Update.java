@@ -15,8 +15,7 @@ import org.exist.dom.NodeImpl;
 import org.exist.dom.TextImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
-import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.xpath.XPathException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -28,8 +27,8 @@ public class Update extends Modification {
 	 * @param user
 	 * @param selectStmt
 	 */
-	public Update(BrokerPool pool, User user, DocumentSet docs, String selectStmt) {
-		super(pool, user, docs, selectStmt);
+	public Update(DBBroker broker, DocumentSet docs, String selectStmt) {
+		super(broker, docs, selectStmt);
 	}
 
 	/* (non-Javadoc)
@@ -53,7 +52,7 @@ public class Update extends Modification {
 			doc = (DocumentImpl) node.getOwnerDocument();
 			doc.setIndexListener(listener);
 			collection = doc.getCollection();
-			if (!doc.getPermissions().validate(user, Permission.UPDATE))
+			if (!doc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
 				throw new PermissionDeniedException("permission to update document denied");
 			if(prevCollection != null && collection != prevCollection)
 				doc.getBroker().saveCollection(prevCollection);

@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
- * $Id:
+ * $Id$
  */
 
 package org.exist.xpath;
@@ -24,7 +24,6 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.SingleNodeSet;
-import org.exist.storage.BrokerPool;
 
 /**
  * xpath-library function: number(object)
@@ -32,8 +31,8 @@ import org.exist.storage.BrokerPool;
  */
 public class FunNumber extends Function {
 
-	public FunNumber(BrokerPool pool) {
-		super(pool, "number");
+	public FunNumber() {
+		super("number");
 	}
 	
 	public int returnsType() {

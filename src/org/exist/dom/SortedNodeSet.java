@@ -17,6 +17,8 @@ import org.exist.xpath.StaticContext;
 import org.exist.xpath.Value;
 import org.exist.xpath.ValueSet;
 import org.exist.xpath.XPathException;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.SequenceIterator;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -42,17 +44,19 @@ public class SortedNodeSet extends NodeSet {
 	public void addAll(NodeSet other) {
 		long start = System.currentTimeMillis();
 		NodeProxy p;
-		Item item;
+		IteratorItem item;
 		DocumentSet docs = new DocumentSet();
 		for (Iterator i = other.iterator(); i.hasNext();) {
 			p = (NodeProxy) i.next();
 			docs.add(p.doc);
 		}
-		StaticContext context = new StaticContext(user);
+		DBBroker broker = null;
 		try {
+			broker = pool.get(user);
+			StaticContext context = new StaticContext(broker);
 			XPathLexer2 lexer = new XPathLexer2(new StringReader(sortExpr));
 			XPathParser2 parser = new XPathParser2(lexer);
-			XPathTreeParser2 treeParser = new XPathTreeParser2(pool, context);
+			XPathTreeParser2 treeParser = new XPathTreeParser2(context);
 			parser.xpath();
 			if (parser.foundErrors()) {
 				LOG.debug(parser.getErrorMessage());
@@ -61,27 +65,23 @@ public class SortedNodeSet extends NodeSet {
 			AST ast = parser.getAST();
 			LOG.debug("generated AST: " + ast.toStringTree());
 
-			expr = new PathExpr(pool);
+			expr = new PathExpr();
 			treeParser.xpath(ast, expr);
 			if (treeParser.foundErrors()) {
 				LOG.debug(treeParser.getErrorMessage());
 			}
-			ndocs = expr.preselect(docs);
+			ndocs = expr.preselect(docs, context);
+			for (Iterator i = other.iterator(); i.hasNext();) {
+				p = (NodeProxy) i.next();
+				item = new IteratorItem(broker, p, expr, ndocs, context);
+				list.add(item);
+			}
 		} catch (antlr.RecognitionException re) {
 			LOG.debug(re);
 		} catch (antlr.TokenStreamException tse) {
 			LOG.debug(tse);
 		} catch (XPathException e) {
 			LOG.debug(e.getMessage(), e);
-		}
-		DBBroker broker = null;
-		try {
-			broker = pool.get();
-			for (Iterator i = other.iterator(); i.hasNext();) {
-				p = (NodeProxy) i.next();
-				item = new Item(broker, p, expr, ndocs, context);
-				list.add(item);
-			}
 		} catch (EXistException e) {
 			LOG.debug("exception during sort", e);
 		} finally {
@@ -108,7 +108,7 @@ public class SortedNodeSet extends NodeSet {
 	public boolean contains(NodeProxy proxy) {
 		NodeProxy p;
 		for (Iterator i = list.iterator(); i.hasNext();) {
-			p = ((Item) i.next()).proxy;
+			p = ((IteratorItem) i.next()).proxy;
 			if (p.compareTo(proxy) == 0)
 				return true;
 		}
@@ -116,7 +116,7 @@ public class SortedNodeSet extends NodeSet {
 	}
 
 	public NodeProxy get(int pos) {
-		final Item item = (Item) list.get(pos);
+		final IteratorItem item = (IteratorItem) list.get(pos);
 		return item == null ? null : item.proxy;
 	}
 
@@ -124,7 +124,7 @@ public class SortedNodeSet extends NodeSet {
 		NodeProxy p;
 		NodeProxy proxy = new NodeProxy(doc, nodeId);
 		for (Iterator i = list.iterator(); i.hasNext();) {
-			p = ((Item) i.next()).proxy;
+			p = ((IteratorItem) i.next()).proxy;
 			if (p.compareTo(proxy) == 0)
 				return p;
 		}
@@ -134,7 +134,7 @@ public class SortedNodeSet extends NodeSet {
 	public NodeProxy get(NodeProxy proxy) {
 		NodeProxy p;
 		for (Iterator i = list.iterator(); i.hasNext();) {
-			p = ((Item) i.next()).proxy;
+			p = ((IteratorItem) i.next()).proxy;
 			if (p.compareTo(proxy) == 0)
 				return p;
 		}
@@ -146,7 +146,7 @@ public class SortedNodeSet extends NodeSet {
 	}
 
 	public Node item(int pos) {
-		NodeProxy p = ((Item) list.get(pos)).proxy;
+		NodeProxy p = ((IteratorItem) list.get(pos)).proxy;
 		return p == null ? null : p.doc.getNode(p);
 	}
 
@@ -154,6 +154,13 @@ public class SortedNodeSet extends NodeSet {
 		return new SortedNodeSetIterator(list.iterator());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#iterate()
+	 */
+	public SequenceIterator iterate() {
+		return new SortedNodeSequenceIterator(list.iterator());
+	}
+	
 	private final static class SortedNodeSetIterator implements Iterator {
 
 		Iterator pi;
@@ -169,18 +176,43 @@ public class SortedNodeSet extends NodeSet {
 		public Object next() {
 			if (!pi.hasNext())
 				return null;
-			return ((Item) pi.next()).proxy;
+			return ((IteratorItem) pi.next()).proxy;
 		}
 
 		public void remove() {
 		}
 	}
 
-	private static final class Item implements Comparable {
+	private final static class SortedNodeSequenceIterator implements SequenceIterator {
+		
+		Iterator iter;
+		
+		public SortedNodeSequenceIterator(Iterator iterator) {
+			iter = iterator;
+		}
+		
+		/* (non-Javadoc)
+		 * @see java.util.Iterator#hasNext()
+		 */
+		public boolean hasNext() {
+			return iter.hasNext();
+		}
+		
+		/* (non-Javadoc)
+		 * @see org.exist.xpath.value.SequenceIterator#nextItem()
+		 */
+		public Item nextItem() {
+			if(!iter.hasNext())
+				return null;
+			return ((IteratorItem) iter.next()).proxy;
+		}
+	}
+	
+	private static final class IteratorItem implements Comparable {
 		NodeProxy proxy;
 		String value = null;
 
-		public Item(
+		public IteratorItem(
 			DBBroker broker,
 			NodeProxy proxy,
 			PathExpr expr,
@@ -226,7 +258,7 @@ public class SortedNodeSet extends NodeSet {
 		}
 
 		public int compareTo(Object other) {
-			Item o = (Item) other;
+			IteratorItem o = (IteratorItem) other;
 			if (value == null)
 				return o.value == null ? 0 : 1;
 			if (o.value == null)

@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.exist.collections.triggers.*;
+import org.exist.storage.DBBroker;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -22,7 +24,8 @@ public class CollectionConfiguration {
 	
 	private Trigger[] triggers = new Trigger[3];
 	
-	public CollectionConfiguration(Document doc) throws CollectionConfigurationException {
+	public CollectionConfiguration(DBBroker broker, Collection parent, Document doc) 
+    throws CollectionConfigurationException {
 		Element root = doc.getDocumentElement();
 		if(!(root.getNamespaceURI().equals(NAMESPACE) &&
 			root.getLocalName().equals(ROOT_ELEMENT)))
@@ -37,7 +40,7 @@ public class CollectionConfiguration {
 				for(int j = 0; j < triggers.getLength(); j++) {
 					node = triggers.item(j);
 					if(node.getNodeType() == Node.ELEMENT_NODE)
-						createTrigger((Element)node);
+						createTrigger(broker, parent, (Element)node);
 				}
 			}
 		}
@@ -47,7 +50,8 @@ public class CollectionConfiguration {
 		return triggers[eventType];
 	}
 	
-	private void createTrigger(Element node) throws CollectionConfigurationException {
+	private void createTrigger(DBBroker broker, Collection parent, Element node) 
+    throws CollectionConfigurationException {
 		String eventAttr = node.getAttribute(EVENT_ATTRIBUTE);
 		if(eventAttr == null)
 			throw new CollectionConfigurationException("trigger requires an attribute 'event'");
@@ -60,17 +64,18 @@ public class CollectionConfiguration {
 		while(tok.hasMoreTokens()) {
 			event = tok.nextToken();
 			if(event.equalsIgnoreCase("store")) {
-				triggers[Trigger.STORE_EVENT] = instantiate(node, classAttr);
+				triggers[Trigger.STORE_DOCUMENT_EVENT] = instantiate(broker, parent, node, classAttr);
 			} else if(event.equalsIgnoreCase("update")) {
-				triggers[Trigger.UPDATE_EVENT] = instantiate(node, classAttr);
+				triggers[Trigger.UPDATE_DOCUMENT_EVENT] = instantiate(broker, parent, node, classAttr);
 			} else if(event.equalsIgnoreCase("remove")) {
-				triggers[Trigger.REMOVE_EVENT] = instantiate(node, classAttr);
+				triggers[Trigger.REMOVE_DOCUMENT_EVENT] = instantiate(broker, parent, node, classAttr);
 			} else
 				throw new CollectionConfigurationException("unknown event type '" + event + "'");
 		}
 	}
 	
-	private Trigger instantiate(Element node, String classname) throws CollectionConfigurationException {
+	private Trigger instantiate(DBBroker broker, Collection parent, Element node, String classname) 
+    throws CollectionConfigurationException {
 		try {
 			Class clazz = Class.forName(classname);
 			if(!Trigger.class.isAssignableFrom(clazz))
@@ -95,7 +100,7 @@ public class CollectionConfiguration {
 					parameters.put(name, value);
 				}
 			}
-			trigger.configure(parameters);
+			trigger.configure(broker, parent, parameters);
 			return trigger;
 		} catch (ClassNotFoundException e) {
 			throw new CollectionConfigurationException(e.getMessage(), e);

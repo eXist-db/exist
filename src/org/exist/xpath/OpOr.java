@@ -1,6 +1,6 @@
 
 /* eXist Open Source Native XML Database
- * Copyright (C) 2000,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2000-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -15,29 +15,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * $Id$
  */
 package org.exist.xpath;
 
-import org.apache.log4j.Category;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.storage.BrokerPool;
 
 public class OpOr extends BinaryOp {
 
-	private static Category LOG = Category.getInstance(OpOr.class.getName());
-
-	public OpOr(BrokerPool pool) {
-		super(pool);
+	public OpOr() {
+		super();
 	}
 
-	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
+	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException {
 		if (getLength() == 0)
 			return in_docs;
-		DocumentSet out_docs = getExpression(0).preselect(in_docs);
+		DocumentSet out_docs = getExpression(0).preselect(in_docs, context);
 		for (int i = 1; i < getLength(); i++)
-			out_docs = out_docs.union(getExpression(i).preselect(in_docs));
+			out_docs = out_docs.union(getExpression(i).preselect(in_docs, context));
 		return out_docs;
 	}
 

@@ -70,7 +70,7 @@ public interface Expression {
 	 * a given xpath-expression. It is called before the xpath-expression is
 	 * actually executed.
 	 */
-	public DocumentSet preselect(DocumentSet in_docs) throws XPathException;
+	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException;
 
 	/**
 	 * The type of value, this expression returns.

@@ -17,6 +17,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * 
+ * $Id$
  */
 
 package org.exist.xpath;
@@ -27,7 +29,6 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.SingleNodeSet;
-import org.exist.storage.BrokerPool;
 
 /**
  * xpath-library function: string(object)
@@ -35,8 +36,8 @@ import org.exist.storage.BrokerPool;
  */
 public class FunNormalizeString extends Function {
 	
-	public FunNormalizeString(BrokerPool pool) {
-		super(pool, "normalize-space");
+	public FunNormalizeString() {
+		super("normalize-space");
 	}
 
 	public int returnsType() {

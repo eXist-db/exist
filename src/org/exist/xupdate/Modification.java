@@ -13,8 +13,7 @@ import org.exist.parser.XPathLexer2;
 import org.exist.parser.XPathParser2;
 import org.exist.parser.XPathTreeParser2;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
-import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.util.StorageAddress;
 import org.exist.util.XMLUtil;
 import org.exist.xpath.PathExpr;
@@ -39,17 +38,15 @@ public abstract class Modification {
 
 	protected String selectStmt = null;
 	protected DocumentFragment content = null;
-	protected BrokerPool pool;
-	protected User user;
+	protected DBBroker broker;
 	protected DocumentSet docs;
 
 	/**
 	 * Constructor for Modification.
 	 */
-	public Modification(BrokerPool pool, User user, DocumentSet docs, String selectStmt) {
+	public Modification(DBBroker broker, DocumentSet docs, String selectStmt) {
 		this.selectStmt = selectStmt;
-		this.pool = pool;
-		this.user = user;
+		this.broker = broker;
 		this.docs = docs;
 	}
 
@@ -64,10 +61,10 @@ public abstract class Modification {
 	protected NodeImpl[] select(DocumentSet docs)
 		throws PermissionDeniedException, EXistException, XPathException {
 		try {
-			StaticContext context = new StaticContext(user);
+			StaticContext context = new StaticContext(broker);
 			XPathLexer2 lexer = new XPathLexer2(new StringReader(selectStmt));
 			XPathParser2 parser = new XPathParser2(lexer);
-			XPathTreeParser2 treeParser = new XPathTreeParser2(pool, context);
+			XPathTreeParser2 treeParser = new XPathTreeParser2(context);
 			parser.xpath();
 			if (parser.foundErrors()) {
 				throw new RuntimeException(parser.getErrorMessage());
@@ -76,14 +73,14 @@ public abstract class Modification {
 			AST ast = parser.getAST();
 			LOG.debug("generated AST: " + ast.toStringTree());
 
-			PathExpr expr = new PathExpr(pool);
+			PathExpr expr = new PathExpr();
 			treeParser.xpath(ast, expr);
 			if (treeParser.foundErrors()) {
 				throw new RuntimeException(treeParser.getErrorMessage());
 			}
 			LOG.info("modification select: " + expr.pprint());
 			long start = System.currentTimeMillis();
-			docs = expr.preselect(docs);
+			docs = expr.preselect(docs, context);
 			if (docs.getLength() == 0)
 				return null;
 

@@ -1,5 +1,5 @@
 /* eXist Open Source Native XML Database
- * Copyright (C) 2000,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2000-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -14,16 +14,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * $Id$
  */
 
 package org.exist.xpath;
 
-import org.apache.log4j.Category;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.SingleNodeSet;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 
 /**
@@ -32,20 +32,18 @@ import org.exist.storage.DBBroker;
  */
 public class OpNumeric extends BinaryOp {
 
-    private static Category LOG = Category.getInstance(OpEquals.class.getName());
-
     protected int operator = Constants.PLUS;
     protected NodeSet temp = null;
     protected DBBroker broker;
 
-    public OpNumeric(BrokerPool pool, int operator) {
-        super(pool);
+    public OpNumeric(int operator) {
+        super();
         this.operator = operator;
     }
 
-    public OpNumeric(BrokerPool pool, Expression left,
+    public OpNumeric(Expression left,
                     Expression right, int operator) {
-		super(pool);
+		super();
         this.operator = operator;
 		add(left);
 		add(right);
@@ -55,12 +53,12 @@ public class OpNumeric extends BinaryOp {
 		return Constants.TYPE_NUM;
 	}
 
-    public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
+    public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException {
 		if(getLength() == 0)
 			return in_docs;
-		DocumentSet out_docs = getExpression(0).preselect(in_docs);
+		DocumentSet out_docs = getExpression(0).preselect(in_docs, context);
 		for(int i = 1; i < getLength(); i++)
-			out_docs = out_docs.union(getExpression(i).preselect(out_docs));
+			out_docs = out_docs.union(getExpression(i).preselect(out_docs, context));
 		return out_docs;
     }
 

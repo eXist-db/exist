@@ -129,8 +129,10 @@ public class CreateCollectionsTest extends TestCase {
 				testCollection);
 
 		} catch (XMLDBException e) {
+			e.printStackTrace();
 			fail(e.getMessage());
 		} catch (IOException e) {
+			e.printStackTrace();
 			fail(e.getMessage());
 		}
 	}
@@ -139,6 +141,7 @@ public class CreateCollectionsTest extends TestCase {
 		File file,
 		Collection testCollection)
 		throws XMLDBException, IOException {
+		System.out.println("storing " + file.getAbsolutePath());
 		XMLResource res;
 		String xml;
 		res =
@@ -149,6 +152,7 @@ public class CreateCollectionsTest extends TestCase {
 		xml = XMLUtil.readFile(file, "UTF-8");
 		res.setContent(xml);
 		testCollection.storeResource(res);
+		System.out.println("stored " + file.getAbsolutePath());
 		return res;
 	}
 
@@ -181,7 +185,6 @@ public class CreateCollectionsTest extends TestCase {
 		}
 	}
 
-
     private static void printChildren(Collection c) throws XMLDBException {
         System.out.print("Children of " + c.getName() + ":");
         String[] names = c.listChildCollections();
@@ -189,4 +192,9 @@ public class CreateCollectionsTest extends TestCase {
             System.out.print(" " + names[i]);
         System.out.println();
     }
+    
+	public static void main(String[] args) {
+		junit.textui.TestRunner.run(CreateCollectionsTest.class);
+		//junit.swingui.TestRunner.run(LexerTest.class);
+	}
 }

@@ -49,8 +49,9 @@ public class LocalCollectionManagementService extends CollectionManager {
         DBBroker broker = null;
         try {
             broker = brokerPool.get();
+            broker.setUser(user);
             org.exist.collections.Collection coll =
-                broker.getOrCreateCollection( user, collName );
+                broker.getOrCreateCollection( collName );
             broker.saveCollection( coll );
             broker.flush();
             //broker.sync();
@@ -129,9 +130,9 @@ public class LocalCollectionManagementService extends CollectionManager {
     		parent.getPath() + '/' + collName);
         DBBroker broker = null;
         try {
-            broker = brokerPool.get();
+            broker = brokerPool.get(user);
             LOG.debug( "removing collection " + path );
-            broker.removeCollection( user, path );
+            broker.removeCollection( path );
         } catch ( EXistException e ) {
         	e.printStackTrace();
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,

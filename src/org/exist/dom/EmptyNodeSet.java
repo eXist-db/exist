@@ -1,6 +1,6 @@
 
 /* eXist Open Source Native XML Database
- * Copyright (C) 2000-01,  Wolfgang M. Meier (wolfgang@exist-db.org)
+ * Copyright (C) 2001-03,  Wolfgang M. Meier (wolfgang@exist-db.org)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -15,10 +15,14 @@
  * You should have received a copy of the GNU Library General Public
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * $Id$
  */
 package org.exist.dom;
 
 import java.util.Iterator;
+
+import org.exist.xpath.value.SequenceIterator;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 
@@ -28,6 +32,13 @@ public class EmptyNodeSet extends NodeSet {
 	    return null;
     }
     
+    /* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#iterate()
+	 */
+	public SequenceIterator iterate() {
+		return SequenceIterator.EMPTY_ITERATOR;
+	}
+	
     public boolean contains(DocumentImpl doc, long nodeId) {
 	    return false;
     }

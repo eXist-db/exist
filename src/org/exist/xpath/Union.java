@@ -14,24 +14,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * $Id$
  */
 
 package org.exist.xpath;
 
-import org.apache.log4j.Category;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.storage.BrokerPool;
 
 public class Union extends PathExpr {
 
-    private static Category LOG = Category.getInstance(Union.class.getName());
-
 	protected PathExpr left, right;
 
-    public Union(BrokerPool pool, PathExpr left, PathExpr right) {
-        super(pool);
+    public Union(PathExpr left, PathExpr right) {
+        super();
 		this.left = left;
 		this.right = right;
     }
@@ -45,10 +43,10 @@ public class Union extends PathExpr {
 	 * we check which documents contain it at all. in other cases
 	 * do nothing.
 	 */
-	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
+	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException {
         //return in_docs;
-		DocumentSet left_docs = left.preselect(in_docs);
-		DocumentSet right_docs = right.preselect(in_docs);
+		DocumentSet left_docs = left.preselect(in_docs, context);
+		DocumentSet right_docs = right.preselect(in_docs, context);
 		return left_docs.union(right_docs);
 	}
 

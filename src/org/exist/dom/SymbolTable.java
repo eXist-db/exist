@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
- *  $Id:
+ *  $Id$
  */
 package org.exist.dom;
 
@@ -29,7 +29,6 @@ import it.unimi.dsi.fastutil.Object2ShortOpenHashMap;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.exist.util.VariableByteInputStream;

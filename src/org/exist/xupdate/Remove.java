@@ -8,8 +8,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
-import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.xpath.XPathException;
 import org.w3c.dom.Node;
 
@@ -28,8 +27,8 @@ public class Remove extends Modification {
 	 * @param user
 	 * @param selectStmt
 	 */
-	public Remove(BrokerPool pool, User user, DocumentSet docs, String selectStmt) {
-		super(pool, user, docs, selectStmt);
+	public Remove(DBBroker broker, DocumentSet docs, String selectStmt) {
+		super(broker, docs, selectStmt);
 	}
 
 	/**
@@ -48,7 +47,7 @@ public class Remove extends Modification {
 		for(int i = 0; i < qr.length; i++) {
 			node = qr[i];
 			doc = (DocumentImpl) node.getOwnerDocument();
-			if (!doc.getPermissions().validate(user, Permission.UPDATE))
+			if (!doc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
 				throw new PermissionDeniedException("permission to remove document denied");
 			collection = doc.getCollection();
 			if(prevCollection != null && collection != prevCollection)

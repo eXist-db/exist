@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:
+ *  $Id$
  */
 package org.exist.xpath;
 
@@ -66,10 +66,10 @@ public class StaticContext {
 
 	private HashMap namespaces;
 	private HashMap functions;
-	private User user;
+	private DBBroker broker;
 	
-	public StaticContext(User user) {
-		this.user = user;
+	public StaticContext(DBBroker broker) {
+		this.broker = broker;
 		loadDefaults();
 	}
 
@@ -100,8 +100,16 @@ public class StaticContext {
 		return (String)functions.get(fnName);
 	}
 	
+	public void setBroker(DBBroker broker) {
+		this.broker = broker;
+	}
+	
+	public DBBroker getBroker() {
+		return broker;
+	}
+	
 	public User getUser() {
-		return user;
+		return broker.getUser();
 	}
 	
 	private void loadDefaults() {

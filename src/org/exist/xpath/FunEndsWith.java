@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * $Id$
  */
 
 package org.exist.xpath;
@@ -22,12 +24,11 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.SingleNodeSet;
-import org.exist.storage.BrokerPool;
 
 public class FunEndsWith extends Function {
 
-	public FunEndsWith(BrokerPool pool) {
-		super(pool, "ends-with");
+	public FunEndsWith() {
+		super("ends-with");
 	}
 
 	public int returnsType() {

@@ -20,12 +20,11 @@ package org.exist.xpath;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.storage.BrokerPool;
 
 public abstract class BinaryOp extends PathExpr {
 
-  public BinaryOp(BrokerPool pool) {
-    super(pool);
+  public BinaryOp() {
+    super();
   }
 
   public int returnsType() {
@@ -35,7 +34,7 @@ public abstract class BinaryOp extends PathExpr {
   public Expression getLeft() { return getExpression(0); }
   public Expression getRight() { return getExpression(1); }
 
-  public abstract DocumentSet preselect(DocumentSet in_docs) throws XPathException;
+  public abstract DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException;
   public abstract Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
   	NodeProxy contextNode) throws XPathException;
 

@@ -27,6 +27,7 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.security.User;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.sync.SyncDaemon;
 import org.exist.util.Configuration;
@@ -251,6 +252,19 @@ public class BrokerPool {
 		return broker;
 	}
 
+	/**
+	 * Get a DBBroker instance and set its current user to user.
+	 *  
+	 * @param user
+	 * @return
+	 * @throws EXistException
+	 */
+	public synchronized DBBroker get(User user) throws EXistException {
+		DBBroker broker = get();
+		broker.setUser(user);
+		return broker;
+	}
+	
 	/**
 	 *  Returns the security manager responsible for this pool
 	 *

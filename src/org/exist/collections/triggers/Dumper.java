@@ -21,11 +21,13 @@
  * $Id$
  *
  */
-package org.exist.collections;
+package org.exist.collections.triggers;
 
 import java.util.Iterator;
 import java.util.Map;
 
+import org.exist.collections.Collection;
+import org.exist.collections.CollectionConfigurationException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.storage.DBBroker;
@@ -39,8 +41,9 @@ public class Dumper extends FilteringTrigger {
 	/* (non-Javadoc)
 	 * @see org.exist.collections.FilteringTrigger#configure(java.util.Map)
 	 */
-	public void configure(Map parameters)
+	public void configure(DBBroker broker, Collection parent, Map parameters)
 		throws CollectionConfigurationException {
+		super.configure(broker, parent, parameters);
 		System.out.println("parameters:");
 		for(Iterator i = parameters.entrySet().iterator(); i.hasNext(); ) {
 			Map.Entry next = (Map.Entry)i.next();
@@ -52,10 +55,8 @@ public class Dumper extends FilteringTrigger {
 	 * @see org.exist.collections.Trigger#prepare(org.exist.storage.DBBroker, org.exist.collections.Collection, java.lang.String, org.w3c.dom.Document)
 	 */
 	public void prepare(
-		DBBroker broker,
-		Collection collection,
-		String documentName,
-		Document existingDocument)
+		int event,
+		DBBroker broker, String documentName, Document existingDocument)
 		throws TriggerException {
 		System.out.println("\nstoring document " + documentName + " into collection " + collection.getName());
 		if(existingDocument != null)

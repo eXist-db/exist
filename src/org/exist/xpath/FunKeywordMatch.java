@@ -17,17 +17,17 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * 
+ * $Id$
  */
 package org.exist.xpath;
 
 import java.util.Iterator;
 
-import org.exist.EXistException;
 import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 
 /**
@@ -39,8 +39,8 @@ import org.exist.storage.DBBroker;
 public class FunKeywordMatch extends Function {
 
 	/**  Constructor for the FunKeywordMatch object */
-	public FunKeywordMatch(BrokerPool pool) {
-		super(pool, "match-keywords");
+	public FunKeywordMatch() {
+		super("match-keywords");
 	}
 
 	/**
@@ -60,20 +60,12 @@ public class FunKeywordMatch extends Function {
 		for (int i = 1; i < getArgumentCount(); i++)
 			terms[i - 1] =
 				getArgument(i).eval(context, docs, contextSet, contextNode).getStringValue();
-		DBBroker broker = null;
 		NodeSet[][] hits = new NodeSet[terms.length][];
-		try {
-			broker = pool.get();
 			for (int j = 0; j < terms.length; j++) {
 				String t[] = { terms[j] };
 				hits[j] =
-					broker.getNodesContaining(docs, t, DBBroker.MATCH_REGEXP);
+					context.getBroker().getNodesContaining(docs, t, DBBroker.MATCH_REGEXP);
 			}
-		} catch (EXistException e) {
-			throw new XPathException("An error occurred while evaluating expression", e);
-		} finally {
-			pool.release(broker);
-		}
 		long pid;
 		NodeProxy current;
 		NodeProxy parent;
@@ -140,7 +132,7 @@ public class FunKeywordMatch extends Function {
 	 *@param  in_docs  Description of the Parameter
 	 *@return          Description of the Return Value
 	 */
-	public DocumentSet preselect(DocumentSet in_docs) {
+	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) {
 		return in_docs;
 	}
 

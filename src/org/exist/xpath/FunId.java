@@ -3,15 +3,12 @@ package org.exist.xpath;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
-import org.exist.EXistException;
 import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.SingleNodeSet;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
 import org.exist.util.XMLUtil;
 
 public class FunId extends Function {
@@ -21,8 +18,8 @@ public class FunId extends Function {
 	/**
 	 * Constructor for FunId.
 	 */
-	public FunId(BrokerPool pool) {
-		super(pool, "id");
+	public FunId() {
+		super("id");
 	}
 
 	/**
@@ -32,7 +29,8 @@ public class FunId extends Function {
 		StaticContext context,
 		DocumentSet docs,
 		NodeSet contextSet,
-		NodeProxy contextNode) throws XPathException {
+		NodeProxy contextNode)
+		throws XPathException {
 		if (getArgumentCount() < 1)
 			throw new XPathException("function id requires one argument");
 		if (contextNode != null)
@@ -44,34 +42,31 @@ public class FunId extends Function {
 			NodeSet set = (NodeSet) idval.getNodeList();
 			for (int i = 0; i < idval.getLength(); i++) {
 				QName id = new QName("&" + set.get(i).getNodeValue(), "", null);
-				getId(result, docs, id);
+				getId(context, result, docs, id);
 			}
 		} else {
 			QName id = new QName("&" + idval.getStringValue(), "", null);
-			getId(result, docs, id);
+			getId(context, result, docs, id);
 		}
 		return new ValueNodeSet(result);
 	}
 
-	private void getId(NodeSet result, DocumentSet docs, QName id) {
-		DBBroker broker = null;
-		try {
-			broker = pool.get();
-			NodeSet attribs = (NodeSet) broker.findElementsByTagName(docs, id);
-			LOG.debug("found " + attribs.getLength() + " attributes for id " + id);
-			NodeProxy n, p;
-			for (Iterator i = attribs.iterator(); i.hasNext();) {
-				n = (NodeProxy) i.next();
-				p = new NodeProxy(n.doc, XMLUtil.getParentId(n.doc, n.gid));
-				result.add(p);
-			}
-		} catch (EXistException e) {
-			LOG.warn("error getting ID values", e);
-		} finally {
-			pool.release(broker);
+	private void getId(
+		StaticContext context,
+		NodeSet result,
+		DocumentSet docs,
+		QName id) {
+		NodeSet attribs =
+			(NodeSet) context.getBroker().findElementsByTagName(docs, id);
+		LOG.debug("found " + attribs.getLength() + " attributes for id " + id);
+		NodeProxy n, p;
+		for (Iterator i = attribs.iterator(); i.hasNext();) {
+			n = (NodeProxy) i.next();
+			p = new NodeProxy(n.doc, XMLUtil.getParentId(n.doc, n.gid));
+			result.add(p);
 		}
 	}
-	
+
 	/**
 	 * @see org.exist.xpath.Expression#returnsType()
 	 */

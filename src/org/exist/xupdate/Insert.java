@@ -8,8 +8,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
-import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.xpath.XPathException;
 import org.w3c.dom.NodeList;
 
@@ -33,13 +32,13 @@ public class Insert extends Modification {
 	 * @param user
 	 * @param selectStmt
 	 */
-	public Insert(BrokerPool pool, User user, DocumentSet docs, String selectStmt) {
-		super(pool, user, docs, selectStmt);
+	public Insert(DBBroker broker, DocumentSet docs, String selectStmt) {
+		super(broker, docs, selectStmt);
 	}
 
-	public Insert(BrokerPool pool, User user, DocumentSet docs, 
+	public Insert(DBBroker broker, DocumentSet docs, 
 		String selectStmt, int mode) {
-		this(pool, user, docs, selectStmt);
+		this(broker, docs, selectStmt);
 		this.mode = mode;
 	}
 
@@ -66,7 +65,7 @@ public class Insert extends Modification {
 			collection = doc.getCollection();
 			if(prevCollection != null && collection != prevCollection)
 				doc.getBroker().saveCollection(prevCollection);
-			if (!doc.getPermissions().validate(user, Permission.UPDATE))
+			if (!doc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
 				throw new PermissionDeniedException("permission to remove document denied");
 			parent = (NodeImpl) node.getParentNode();
 			switch (mode) {

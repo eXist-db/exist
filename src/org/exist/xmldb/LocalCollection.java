@@ -36,6 +36,7 @@ import java.util.TreeMap;
 import org.apache.log4j.Category;
 import org.exist.EXistException;
 import org.exist.Parser;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -75,11 +76,27 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	protected ArrayList observers = new ArrayList(1);
 	protected boolean needsSync = false;
 	
+	/**
+	 * Create a collection with no parent (root collection).
+	 * 
+	 * @param user
+	 * @param brokerPool
+	 * @param collection
+	 * @throws XMLDBException
+	 */
     public LocalCollection( User user, BrokerPool brokerPool, String collection )
          throws XMLDBException {
         this( user, brokerPool, null, collection );
     }
 
+	/**
+	 * Create a collection using the supplied internal collection.
+	 * 
+	 * @param user
+	 * @param brokerPool
+	 * @param parent
+	 * @param collection
+	 */
     public LocalCollection( User user, BrokerPool brokerPool,
                             LocalCollection parent, org.exist.collections.Collection collection ) {
         this.user = user;
@@ -88,7 +105,15 @@ public class LocalCollection extends Observable implements CollectionImpl {
         this.collection = collection;
     }
 
-
+	/**
+	 * Create a collection identified by its name. Load the collection from the database.
+	 * 
+	 * @param user
+	 * @param brokerPool
+	 * @param parent
+	 * @param name
+	 * @throws XMLDBException
+	 */
     public LocalCollection( User user, BrokerPool brokerPool,
                             LocalCollection parent,
                             String name ) throws XMLDBException {
@@ -366,16 +391,17 @@ public class LocalCollection extends Observable implements CollectionImpl {
             throw new XMLDBException( ErrorCodes.NOT_IMPLEMENTED );
         if ( res == null )
             return;
-        String name = getPath();
-        name = name + '/' + ((XMLResource)res).getDocumentId();
-        DocumentImpl doc = collection.getDocument( name );
+		String name = ((XMLResource)res).getDocumentId();
+        String path = getPath() + '/' + name;
+        DocumentImpl doc = collection.getDocument( path );
         if ( doc == null )
             throw new XMLDBException( ErrorCodes.INVALID_RESOURCE,
                 "resource " + name + " not found" );
         DBBroker broker = null;
         try {
             broker = brokerPool.get();
-            broker.removeDocument( user, name );
+            broker.setUser(user);
+            collection.removeDocument(broker, name);
         } catch ( EXistException e ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
                 e.getMessage(),
@@ -384,7 +410,10 @@ public class LocalCollection extends Observable implements CollectionImpl {
             throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
                 e.getMessage(),
                 e );
-        } finally {
+        } catch (TriggerException e) {
+			throw new XMLDBException( ErrorCodes.INVALID_RESOURCE,
+                e.getMessage(), e);
+		} finally {
             brokerPool.release( broker );
         }
         needsSync = true;
@@ -406,6 +435,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			DBBroker broker = null;
 			try {
 				broker = brokerPool.get();
+				broker.setUser(user);
 				//broker.flush();
 				Observer observer;
 				for(Iterator i = observers.iterator(); i.hasNext(); ) {
@@ -413,12 +443,12 @@ public class LocalCollection extends Observable implements CollectionImpl {
 					collection.addObserver( observer );
 				}
 				if(res.file != null)
-					collection.addDocument(broker, user, name, 
+					collection.addDocument(broker, name, 
 						new InputSource(res.file.getAbsolutePath()));
 				else if(res.root != null)
-					collection.addDocument(broker, user, name, res.root);
+					collection.addDocument(broker, name, res.root);
 				else
-					collection.addDocument(broker, user, name, res.content);
+					collection.addDocument(broker, name, res.content);
 				//broker.flush();
 			} catch ( Exception e ) {
 				e.printStackTrace();

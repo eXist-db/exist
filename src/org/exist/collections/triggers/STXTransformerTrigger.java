@@ -21,9 +21,8 @@
  * $Id$
  *
  */
-package org.exist.collections;
+package org.exist.collections.triggers;
 
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.xml.transform.Templates;
@@ -31,22 +30,36 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TemplatesHandler;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
+import org.exist.collections.Collection;
+import org.exist.collections.CollectionConfigurationException;
+import org.exist.dom.DocumentImpl;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.storage.serializers.Serializer;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 /**
+ * STXTransformerTrigger applies an STX stylesheet to the input SAX stream,
+ * using <a href="http://joost.sourceforge.net">Joost</a>. The stylesheet location
+ * is identified by parameter "src". If the src parameter is just a path, the stylesheet
+ * will be loaded from the database, otherwise, it is interpreted as an URI.
+ * 
  * @author wolf
  */
 public class STXTransformerTrigger extends FilteringTrigger {
 
 	private Templates template = null;
 	private SAXTransformerFactory factory = null;
+	private TransformerHandler handler = null;
 	
-	public void configure(Map parameters)
+	public void configure(DBBroker broker, Collection parent, Map parameters)
 		throws CollectionConfigurationException {
+		super.configure(broker, parent, parameters);
 		String stylesheet = (String)parameters.get("src");
 		if(stylesheet == null)
 			throw new CollectionConfigurationException("STXTransformerTrigger requires an " +
@@ -58,35 +71,50 @@ public class STXTransformerTrigger extends FilteringTrigger {
 		// reset property to previous setting
 		if(origProperty != null)
 			System.setProperty("javax.xml.transform.TransformerFactory", origProperty);
+
 		getLogger().debug("compiling stylesheet " + stylesheet);
-		try {
-			template = factory.newTemplates(new StreamSource(stylesheet));
-		} catch (TransformerConfigurationException e) {
-			throw new CollectionConfigurationException(e.getMessage(), e);
-		}
+        if(stylesheet.indexOf(':') < 0) {
+            // load stylesheet out of the database
+            int p = stylesheet.indexOf('/');
+            DocumentImpl doc;
+            if(p < 0)
+                stylesheet = parent.getName() + '/' + stylesheet;
+            try {
+				doc = (DocumentImpl)broker.getDocument(stylesheet);
+				if(doc == null)
+					throw new CollectionConfigurationException("stylesheet " + stylesheet + " not found in database");
+				Serializer serializer = broker.getSerializer();
+				TemplatesHandler thandler = factory.newTemplatesHandler();
+				serializer.setContentHandler(thandler);
+				serializer.toSAX(doc);
+				template = thandler.getTemplates();
+				handler = factory.newTransformerHandler(template);
+			} catch (TransformerConfigurationException e) {
+				throw new CollectionConfigurationException(e.getMessage(), e);
+			} catch (PermissionDeniedException e) {
+				throw new CollectionConfigurationException(e.getMessage(), e);
+			} catch (SAXException e) {
+				throw new CollectionConfigurationException(e.getMessage(), e);
+			}
+        } else
+			try {
+				template = factory.newTemplates(new StreamSource(stylesheet));
+				handler = factory.newTransformerHandler(template);
+			} catch (TransformerConfigurationException e) {
+				throw new CollectionConfigurationException(e.getMessage(), e);
+			}
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.collections.Trigger#prepare(org.exist.storage.DBBroker, org.exist.collections.Collection, java.lang.String, org.w3c.dom.Document)
+	 * @see org.exist.collections.Trigger#prepare(java.lang.String, org.w3c.dom.Document)
 	 */
-	public void prepare(
-		DBBroker broker,
-		Collection collection,
-		String documentName,
-		Document existingDocument)
-		throws TriggerException {
-		TransformerHandler handler;
-		try {
-			handler = factory.newTransformerHandler(template);
+	public void prepare(int event, DBBroker broker, String documentName, Document existingDocument) throws TriggerException {
 			SAXResult result = new SAXResult();
 			result.setHandler(getOutputHandler());
 			result.setLexicalHandler(getLexicalOutputHandler());
 			handler.setResult(result);
 			setOutputHandler(handler);
 			setLexicalOutputHandler(handler);
-		} catch (TransformerConfigurationException e) {
-			throw new TriggerException(e.getMessage(), e);
-		}
 	}
 
 }

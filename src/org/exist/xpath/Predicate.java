@@ -17,20 +17,18 @@
  *  License along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
- *  $Id:
+ *  $Id$
  */
 package org.exist.xpath;
 
 import java.util.Iterator;
 
-import org.apache.log4j.Logger;
 import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.SingleNodeSet;
-import org.exist.storage.BrokerPool;
 import org.exist.util.LongLinkedList;
 
 /**
@@ -40,10 +38,8 @@ import org.exist.util.LongLinkedList;
  */
 public class Predicate extends PathExpr {
 
-	protected static Logger LOG = Logger.getLogger(Predicate.class);
-
-	public Predicate(BrokerPool pool) {
-		super(pool);
+	public Predicate() {
+		super();
 	}
 
 	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy contextNode) throws XPathException {
@@ -157,10 +153,10 @@ public class Predicate extends PathExpr {
 		return new ValueNodeSet(result);
 	}
 
-	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
+	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException {
 		DocumentSet docs = in_docs;
 		for (Iterator iter = steps.iterator(); iter.hasNext();)
-			docs = ((Expression) iter.next()).preselect(docs);
+			docs = ((Expression) iter.next()).preselect(docs, context);
 		return docs;
 	}
 

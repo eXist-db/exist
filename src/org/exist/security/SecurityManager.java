@@ -326,6 +326,7 @@ public class SecurityManager {
 	throws EXistException, PermissionDeniedException {
 		if(user.getHome() == null)
 			return;
+		broker.setUser(user);
 		Collection home = broker.getOrCreateCollection(user.getHome());
 		home.getPermissions().setOwner(user.getName());
 		home.getPermissions().setGroup(user.getPrimaryGroup());
