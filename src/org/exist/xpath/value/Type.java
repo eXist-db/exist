@@ -62,6 +62,8 @@ public class Type {
 	public final static int DOUBLE = 203;
 	public final static int INTEGER = 300;
 	
+	public final static int JAVA_OBJECT = 400;
+	
 	private final static Int2IntRBTreeMap typeHierarchy = new Int2IntRBTreeMap();
 	
 	static {
@@ -78,6 +80,7 @@ public class Type {
 		defineSubType(ATOMIC, BOOLEAN);
 		defineSubType(ATOMIC, NUMBER);
 		defineSubType(ATOMIC, UNTYPED_ATOMIC);
+		defineSubType(ATOMIC, JAVA_OBJECT);
 		
 		defineSubType(NUMBER, DECIMAL);
 		defineSubType(NUMBER, FLOAT);
@@ -98,6 +101,7 @@ public class Type {
 		defineTypeName(NAMESPACE, "namespace");
 		defineTypeName(NODE, "node");
 		defineTypeName(ITEM, "item");
+		defineTypeName(JAVA_OBJECT, "object");
 		defineTypeName(ANY_SIMPLE_TYPE, "xs:anySimpleType");
 		defineTypeName(ANY_TYPE, "xs:anyType");
 		defineTypeName(ATOMIC, "xs:anyAtomicType");

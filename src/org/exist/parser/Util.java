@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.xpath.Constants;
 import org.exist.xpath.Expression;
@@ -46,154 +47,160 @@ public class Util {
 		String fnName,
 		List params)
 		throws XPathException {
+		QName qname = QName.parseFunction(context, fnName);
+		String local = qname.getLocalName();
+		String uri = qname.getNamespaceURI();
 		Expression step = null;
-		if (fnName.equals("document")) {
-			DocumentSet docs = null;
-			if (params.size() == 0)
-				docs = context.getBroker().getAllDocuments();
-			else {
-				docs = new DocumentSet();
+		if(uri.equals(Function.BUILTIN_FUNCTION_NS)) {
+			if (local.equals("document")) {
+				DocumentSet docs = null;
+				if (params.size() == 0)
+					docs = context.getBroker().getAllDocuments();
+				else {
+					docs = new DocumentSet();
+					try {
+						String next;
+						DocumentImpl doc;
+						for (int i = 0; i < params.size(); i++) {
+							next = ((PathExpr) params.get(i)).getLiteralValue();
+							doc =
+								(DocumentImpl) context.getBroker().getDocument(
+									next);
+							if (doc != null)
+								docs.add(doc);
+						}
+					} catch (PermissionDeniedException e) {
+						throw new XPathException("permission denied while retrieving input set");
+					}
+				}
+				step = new RootNode(context);
+				parent.add(step);
+				parent.setDocumentSet(docs);
+			}
+			if (local.equals("collection") || local.equals("xcollection")) {
+				DocumentSet docs = new DocumentSet();
+				boolean inclusive = fnName.equals("collection");
 				try {
 					String next;
-					DocumentImpl doc;
+					DocumentSet temp;
 					for (int i = 0; i < params.size(); i++) {
 						next = ((PathExpr) params.get(i)).getLiteralValue();
-						doc =
-							(DocumentImpl) context.getBroker().getDocument(
-								next);
-						if (doc != null)
-							docs.add(doc);
+						temp =
+							context.getBroker().getDocumentsByCollection(
+								next,
+								inclusive);
+						docs.addAll(temp);
 					}
 				} catch (PermissionDeniedException e) {
 					throw new XPathException("permission denied while retrieving input set");
 				}
+				step = new RootNode(context);
+				parent.add(step);
+				parent.setDocumentSet(docs);
 			}
-			step = new RootNode(context);
-			parent.add(step);
-			parent.setDocumentSet(docs);
-		}
-		if (fnName.equals("collection") || fnName.equals("xcollection")) {
-			DocumentSet docs = new DocumentSet();
-			boolean inclusive = fnName.equals("collection");
-			try {
+			if (local.equals("doctype")) {
+				DocumentSet docs = new DocumentSet();
 				String next;
 				DocumentSet temp;
 				for (int i = 0; i < params.size(); i++) {
 					next = ((PathExpr) params.get(i)).getLiteralValue();
-					temp =
-						context.getBroker().getDocumentsByCollection(
-							next,
-							inclusive);
+					temp = context.getBroker().getDocumentsByDoctype(next);
 					docs.addAll(temp);
 				}
-			} catch (PermissionDeniedException e) {
-				throw new XPathException("permission denied while retrieving input set");
+				step = new RootNode(context);
+				parent.add(step);
+				parent.setDocumentSet(docs);
 			}
-			step = new RootNode(context);
-			parent.add(step);
-			parent.setDocumentSet(docs);
-		}
-		if (fnName.equals("doctype")) {
-			DocumentSet docs = new DocumentSet();
-			String next;
-			DocumentSet temp;
-			for (int i = 0; i < params.size(); i++) {
-				next = ((PathExpr) params.get(i)).getLiteralValue();
-				temp = context.getBroker().getDocumentsByDoctype(next);
-				docs.addAll(temp);
-			}
-			step = new RootNode(context);
-			parent.add(step);
-			parent.setDocumentSet(docs);
-		}
-
-		// near(node-set, string)
-		if (fnName.equals("near")) {
-			if (params.size() < 2)
-				throw new IllegalArgumentException("Function near requires two arguments");
-			PathExpr p1 = (PathExpr) params.get(1);
-			if (p1.getLength() == 0)
-				throw new IllegalArgumentException("Second argument to near is empty");
-			Expression e1 = p1.getExpression(0);
-			ExtNear near = new ExtNear(context);
-			near.addTerm(e1);
-			near.setPath((PathExpr) params.get(0));
-			if (params.size() > 2) {
-				p1 = (PathExpr) params.get(2);
+	
+			// near(node-set, string)
+			if (local.equals("near")) {
+				if (params.size() < 2)
+					throw new IllegalArgumentException("Function near requires two arguments");
+				PathExpr p1 = (PathExpr) params.get(1);
 				if (p1.getLength() == 0)
-					throw new IllegalArgumentException("Distance argument to near is empty");
-				near.setDistance(p1);
+					throw new IllegalArgumentException("Second argument to near is empty");
+				Expression e1 = p1.getExpression(0);
+				ExtNear near = new ExtNear(context);
+				near.addTerm(e1);
+				near.setPath((PathExpr) params.get(0));
+				if (params.size() > 2) {
+					p1 = (PathExpr) params.get(2);
+					if (p1.getLength() == 0)
+						throw new IllegalArgumentException("Distance argument to near is empty");
+					near.setDistance(p1);
+				}
+				step = near;
+				parent.addPath(near);
 			}
-			step = near;
-			parent.addPath(near);
-		}
-
-		// ends-with(node-set, string)
-		if (fnName.equals("starts-with")) {
-			if (params.size() < 2)
-				throw new IllegalArgumentException("Function starts-with requires two arguments");
-			PathExpr p0 = (PathExpr) params.get(0);
-			PathExpr p1 = (PathExpr) params.get(1);
-			if (p1.getLength() == 0)
-				throw new IllegalArgumentException("Second argument to starts-with is empty");
-			Expression e1 = p1.getExpression(0);
-			if (e1 instanceof LiteralValue && p0.returnsType() == Type.NODE) {
-				LiteralValue l = (LiteralValue) e1;
-				AtomicValue v =
-					new StringValue(l.getValue().getStringValue() + '%');
-				l.setValue(v);
-				GeneralComparison op =
-					new GeneralComparison(context, p0, e1, Constants.EQ);
-				parent.addPath(op);
-				step = op;
+	
+			// ends-with(node-set, string)
+			if (local.equals("starts-with")) {
+				if (params.size() < 2)
+					throw new IllegalArgumentException("Function starts-with requires two arguments");
+				PathExpr p0 = (PathExpr) params.get(0);
+				PathExpr p1 = (PathExpr) params.get(1);
+				if (p1.getLength() == 0)
+					throw new IllegalArgumentException("Second argument to starts-with is empty");
+				Expression e1 = p1.getExpression(0);
+				if (e1 instanceof LiteralValue && p0.returnsType() == Type.NODE) {
+					LiteralValue l = (LiteralValue) e1;
+					AtomicValue v =
+						new StringValue(l.getValue().getStringValue() + '%');
+					l.setValue(v);
+					GeneralComparison op =
+						new GeneralComparison(context, p0, e1, Constants.EQ);
+					parent.addPath(op);
+					step = op;
+				}
 			}
-		}
-
-		// ends-with(node-set, string)
-		if (fnName.equals("ends-with")) {
-			if (params.size() < 2)
-				throw new IllegalArgumentException("Function ends-with requires two arguments");
-			PathExpr p0 = (PathExpr) params.get(0);
-			PathExpr p1 = (PathExpr) params.get(1);
-			if (p1.getLength() == 0)
-				throw new IllegalArgumentException("Second argument to ends-with is empty");
-			Expression e1 = p1.getExpression(0);
-			if (e1 instanceof LiteralValue && p0.returnsType() == Type.NODE) {
-				LiteralValue l = (LiteralValue) e1;
-				AtomicValue v =
-					new StringValue('%' + l.getValue().getStringValue());
-				l.setValue(v);
-				GeneralComparison op =
-					new GeneralComparison(context, p0, e1, Constants.EQ);
-				parent.addPath(op);
-				step = op;
+	
+			// ends-with(node-set, string)
+			if (local.equals("ends-with")) {
+				if (params.size() < 2)
+					throw new IllegalArgumentException("Function ends-with requires two arguments");
+				PathExpr p0 = (PathExpr) params.get(0);
+				PathExpr p1 = (PathExpr) params.get(1);
+				if (p1.getLength() == 0)
+					throw new IllegalArgumentException("Second argument to ends-with is empty");
+				Expression e1 = p1.getExpression(0);
+				if (e1 instanceof LiteralValue && p0.returnsType() == Type.NODE) {
+					LiteralValue l = (LiteralValue) e1;
+					AtomicValue v =
+						new StringValue('%' + l.getValue().getStringValue());
+					l.setValue(v);
+					GeneralComparison op =
+						new GeneralComparison(context, p0, e1, Constants.EQ);
+					parent.addPath(op);
+					step = op;
+				}
 			}
-		}
-
-		// contains(node-set, string)
-		if (fnName.equals("contains")) {
-			if (params.size() < 2)
-				throw new IllegalArgumentException("Function contains requires two arguments");
-			PathExpr p0 = (PathExpr) params.get(0);
-			PathExpr p1 = (PathExpr) params.get(1);
-			if (p1.getLength() == 0)
-				throw new IllegalArgumentException("Second argument to contains is empty");
-			Expression e1 = p1.getExpression(0);
-			if (e1 instanceof LiteralValue && p0.returnsType() == Type.NODE) {
-				LiteralValue l = (LiteralValue) e1;
-				AtomicValue v =
-					new StringValue('%' + l.getValue().getStringValue() + '%');
-				l.setValue(v);
-				GeneralComparison op =
-					new GeneralComparison(context, p0, e1, Constants.EQ);
-				parent.addPath(op);
-				step = op;
+	
+			// contains(node-set, string)
+			if (local.equals("contains")) {
+				if (params.size() < 2)
+					throw new IllegalArgumentException("Function contains requires two arguments");
+				PathExpr p0 = (PathExpr) params.get(0);
+				PathExpr p1 = (PathExpr) params.get(1);
+				if (p1.getLength() == 0)
+					throw new IllegalArgumentException("Second argument to contains is empty");
+				Expression e1 = p1.getExpression(0);
+				if (e1 instanceof LiteralValue && p0.returnsType() == Type.NODE) {
+					LiteralValue l = (LiteralValue) e1;
+					AtomicValue v =
+						new StringValue('%' + l.getValue().getStringValue() + '%');
+					l.setValue(v);
+					GeneralComparison op =
+						new GeneralComparison(context, p0, e1, Constants.EQ);
+					parent.addPath(op);
+					step = op;
+				}
 			}
 		}
 		if (step == null) {
-			String clazz = context.getClassForFunction(fnName);
+			Class clazz = context.getClassForFunction(qname);
 			if (clazz == null)
-				throw new XPathException("function " + fnName + " not defined");
+				throw new XPathException("function " + qname.toString() + " ( namespace-uri = " + 
+					qname.getNamespaceURI() + ") is not defined");
 			Function func = Function.createFunction(context, clazz);
 			func.setArguments(params);
 			parent.addPath(func);

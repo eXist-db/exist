@@ -87,7 +87,8 @@ imaginaryTokenDefinitions
 	QNAME PREDICATE FLWOR PARENTHESIZED ABSOLUTE_SLASH ABSOLUTE_DSLASH 
 	WILDCARD PREFIX_WILDCARD FUNCTION UNARY_MINUS UNARY_PLUS XPOINTER 
 	XPOINTER_ID VARIABLE_REF VARIABLE_BINDING ELEMENT ATTRIBUTE TEXT
-	VERSION_DECL NAMESPACE_DECL DEF_NAMESPACE_DECL GLOBAL_VAR
+	VERSION_DECL NAMESPACE_DECL DEF_NAMESPACE_DECL DEF_FUNCTION_NS_DECL 
+	GLOBAL_VAR FUNCTION_DECL PROLOG
 	;
 
 xpointer
@@ -118,21 +119,23 @@ mainModule
 
 prolog
 :
-	(version SEMICOLON!)? 
-	(
-		( 
-			( "declare" "namespace" ) => namespaceDecl 
-			| 
-			( "declare" "default" ) => defaultNamespaceDecl 
-			| varDecl
-			) SEMICOLON! 
-	)*
+		( version SEMICOLON! )?
+		(
+			( 
+				( "declare" "namespace" ) => namespaceDecl 
+				| 
+				( "declare" "default" ) => defaultNamespaceDecl 
+				|
+				( "declare" "function" ) => functionDecl
+				| varDecl
+			) SEMICOLON!
+		)*
 	;
 
 version
 :
 	"xquery" "version" v:STRING_LITERAL {
-		#version = #[VERSION_DECL, v.getText()];
+		#version = #(#[VERSION_DECL, v.getText()]);
 	}
 	;
 
@@ -146,10 +149,16 @@ namespaceDecl
 
 defaultNamespaceDecl
 :
-	"declare" "default" "element" "namespace" defu:STRING_LITERAL
-	{
-		#defaultNamespaceDecl = #(#[DEF_NAMESPACE_DECL, "defaultNamespaceDecl"], defu);
-	}
+	"declare" "default" 
+	( "element" "namespace" defu:STRING_LITERAL
+		{
+			#defaultNamespaceDecl = #(#[DEF_NAMESPACE_DECL, "defaultNamespaceDecl"], defu);
+		}
+	| "function" "namespace" deff:STRING_LITERAL
+		{
+			#defaultNamespaceDecl = #(#[DEF_FUNCTION_NS_DECL, "defaultFunctionNSDecl"], deff);
+		}
+	)
 	;
 
 varDecl
@@ -159,6 +168,65 @@ varDecl
 	{
 		#varDecl = #(#[GLOBAL_VAR, varName], #ex);
 	}
+	;
+
+functionDecl
+{ String name = null; }:
+	"declare"! "function"! name=qName
+	{
+		#functionDecl = #(#[FUNCTION_DECL, name], #body);
+	}
+	LPAREN! 
+	( params:paramList 
+		{
+			#functionDecl = #(#functionDecl, #params);
+		}
+	)? 
+	RPAREN!
+	body:functionBody
+	;
+
+functionBody:
+	LCURLY! expr RCURLY!
+	;
+
+paramList:
+	param (COMMA! param)*
+	;
+	
+param
+{ String varName = null; }:
+	DOLLAR! varName=qName
+	{
+		#param = #(#[VARIABLE_BINDING, varName]);
+	}
+	( 
+		t:typeDeclaration 
+		{
+			#param = #(param, #t);
+		}
+	)?
+	;
+	
+typeDeclaration:
+	"as"^ sequenceType
+	;
+	
+sequenceType:
+	itemType ( occurrenceIndicator )? | "empty" LPAREN! RPAREN!
+	;
+
+occurrenceIndicator:
+	"?" | STAR | PLUS
+	;
+	
+itemType:
+	( "item" LPAREN ) => "item" LPAREN! RPAREN!
+	| atomicType
+	;
+	
+atomicType:
+	qName
 	;
 	
 queryBody
@@ -173,7 +241,7 @@ expr
 
 exprSingle
 :
-	orExpr | flworExpr
+	orExpr | flworExpr | ifExpr
 	;
 
 flworExpr
@@ -205,6 +273,10 @@ letVarBinding
 	{ #letVarBinding= #(#[VARIABLE_BINDING, varName], expr); }
 	;
 
+ifExpr:
+	"if"^ LPAREN! expr RPAREN! "then"! exprSingle "else"! exprSingle
+	;
+	
 orExpr
 :
 	andExpr ( "or"^ andExpr )*
@@ -397,7 +469,7 @@ numericLiteral
 
 parenthesizedExpr
 :
-	LPAREN! e:expr RPAREN!
+	LPAREN! ( e:expr  )? RPAREN!
 	{ #parenthesizedExpr= #(#[PARENTHESIZED, "Parenthesized"], #e); }
 	;
 
@@ -612,6 +684,8 @@ reservedKeywords returns [String name]
 	"preceding-sibling" { name= "preceding-sibling"; }
 	|
 	"following-sibling" { name= "following-sibling"; }
+	|
+	"item" { name = "item"; }
 	;
 
 /* -----------------------------------------------------------------------------------------------------
@@ -726,6 +800,12 @@ throws PermissionDeniedException, EXistException, XPathException:
 			}
 		)
 		|
+		#(DEF_FUNCTION_NS_DECL deff:STRING_LITERAL
+			{
+				context.setDefaultFunctionNamespace(deff.getText());
+			}
+		)
+		|
 		#(qname:GLOBAL_VAR { PathExpr enclosed = new PathExpr(context); }
 			expr[enclosed]
 			{
@@ -734,6 +814,31 @@ throws PermissionDeniedException, EXistException, XPathException:
 			}
 		)
 	)*
+	| functionDecl[path]
+	;
+
+functionDecl [PathExpr path]
+throws PermissionDeniedException, EXistException, XPathException
+:
+	#( name:FUNCTION_DECL { PathExpr body = new PathExpr(context); }
+		{ 
+			System.out.println("found function declaration " + name.getText()); 
+		}
+		( paramList )?
+		expr[body]
+	)
+	;
+
+paramList:
+	param (param)*
+	;
+
+param:
+	#( var:VARIABLE_BINDING
+		{
+			System.out.println("found variable binding: " + var.getText());
+		}
+	)
 	;
 	
 expr [PathExpr path]
@@ -753,6 +858,23 @@ throws PermissionDeniedException, EXistException, XPathException
 			sc.addExpression(left);
 			sc.addExpression(right);
 			path.add(sc);
+		}
+	)
+	|
+	#(
+		"if"
+		{
+			PathExpr testExpr = new PathExpr(context);
+			PathExpr thenExpr = new PathExpr(context);
+			PathExpr elseExpr = new PathExpr(context);
+		}
+		expr[testExpr]
+		expr[thenExpr]
+		expr[elseExpr]
+		{
+			ConditionalExpression cond = 
+				new ConditionalExpression(context, testExpr, thenExpr, elseExpr);
+			path.add(cond);
 		}
 	)
 	|
@@ -865,10 +987,10 @@ throws PermissionDeniedException, EXistException, XPathException
 	#(
 		PARENTHESIZED
 		{
-			PathExpr expr= new PathExpr(context);
-			path.addPath(expr);
+			PathExpr pathExpr= new PathExpr(context);
+			path.addPath(pathExpr);
 		}
-		expr [expr]
+		( expr [pathExpr] )?
 	)
 	|
 	#(
@@ -1180,7 +1302,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			{ params.add(pathExpr); }
 		)*
 	)
-	{ step= Util.createFunction(context, path, fn.getText(), params); }
+	{ step = Util.createFunction(context, path, fn.getText(), params); }
 	;
 
 forwardAxis returns [int axis]
@@ -2143,7 +2265,7 @@ protected NMCHAR
 
 protected NCNAME
 options {
-	testLiterals=true;
+	testLiterals=false;
 }
 :
 	NMSTART ( NMCHAR )*
@@ -2370,4 +2492,3 @@ NEXT_TOKEN
 	|
 	XML_PI_END { $setType(XML_PI_END); }
 	;
-

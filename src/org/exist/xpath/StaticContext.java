@@ -22,6 +22,7 @@
  */
 package org.exist.xpath;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Stack;
@@ -32,55 +33,55 @@ import org.exist.dom.SymbolTable;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
+import org.exist.xpath.functions.Function;
+import org.exist.xpath.functions.FunctionSignature;
 import org.exist.xpath.value.Sequence;
 
 public class StaticContext {
 
-	protected static final String[][] internalFunctions =
-		{ { "substring", "org.exist.xpath.functions.FunSubstring" }, {
-			"substring-before",
-				"org.exist.xpath.functions.FunSubstringBefore" },
-				{
-			"substring-after",
-				"org.exist.xpath.functions.FunSubstringAfter" },
-				{
-			"normalize-space",
-				"org.exist.xpath.functions.FunNormalizeSpace" },
-				{
-			"concat", "org.exist.xpath.functions.FunConcat" }, {
-			"starts-with", "org.exist.xpath.functions.FunStartsWith" }, {
-			"ends-with", "org.exist.xpath.functions.FunEndsWith" }, {
-			"contains", "org.exist.xpath.functions.FunContains" }, {
-			"not", "org.exist.xpath.functions.FunNot" }, {
-			"position", "org.exist.xpath.functions.FunPosition" }, {
-			"last", "org.exist.xpath.functions.FunLast" }, {
-			"count", "org.exist.xpath.functions.FunCount" }, {
-			"string-length", "org.exist.xpath.functions.FunStrLength" }, {
-			"boolean", "org.exist.xpath.functions.FunBoolean" }, {
-			"string", "org.exist.xpath.functions.FunString" }, {
-			"number", "org.exist.xpath.functions.FunNumber" }, {
-			"true", "org.exist.xpath.functions.FunTrue" }, {
-			"false", "org.exist.xpath.functions.FunFalse" }, {
-			"sum", "org.exist.xpath.functions.FunSum" }, {
-			"floor", "org.exist.xpath.functions.FunFloor" }, {
-			"ceiling", "org.exist.xpath.functions.FunCeiling" }, {
-			"round", "org.exist.xpath.functions.FunRound" }, {
-			"name", "org.exist.xpath.functions.FunName" }, {
-			"local-name", "org.exist.xpath.functions.FunLocalName" }, {
-			"namespace-uri", "org.exist.xpath.functions.FunNamespaceURI" }, {
-			"match-any", "org.exist.xpath.functions.FunKeywordMatchAny" }, {
-			"match-all", "org.exist.xpath.functions.FunKeywordMatchAll" }, {
-			"id", "org.exist.xpath.functions.FunId" }, {
-			"lang", "org.exist.xpath.functions.FunLang" }, {
-			"base-uri", "org.exist.xpath.functions.FunBaseURI" }, {
-			"document-uri", "org.exist.xpath.functions.FunDocumentURI" },
-			{ "match-all", "org.exist.xpath.functions.ExtRegexp" },
-			{ "match-any", "org.exist.xpath.functions.ExtRegexpOr" },
-			{ "distinct-values", "org.exist.xpath.functions.FunDistinctValues" }
-	};
+	protected static final String[] internalFunctions =
+		{ 
+			"org.exist.xpath.functions.FunSubstring",
+			"org.exist.xpath.functions.FunSubstringBefore",
+			"org.exist.xpath.functions.FunSubstringAfter",
+			"org.exist.xpath.functions.FunNormalizeSpace",
+			"org.exist.xpath.functions.FunConcat",
+			"org.exist.xpath.functions.FunStartsWith",
+			"org.exist.xpath.functions.FunEndsWith",
+			"org.exist.xpath.functions.FunContains",
+			"org.exist.xpath.functions.FunNot",
+			"org.exist.xpath.functions.FunPosition",
+			"org.exist.xpath.functions.FunLast",
+			"org.exist.xpath.functions.FunCount",
+			"org.exist.xpath.functions.FunStrLength",
+			"org.exist.xpath.functions.FunBoolean",
+			"org.exist.xpath.functions.FunString",
+			"org.exist.xpath.functions.FunNumber",
+			"org.exist.xpath.functions.FunTrue",
+			"org.exist.xpath.functions.FunFalse",
+			"org.exist.xpath.functions.FunSum",
+			"org.exist.xpath.functions.FunFloor",
+			"org.exist.xpath.functions.FunCeiling",
+			"org.exist.xpath.functions.FunRound",
+			"org.exist.xpath.functions.FunName",
+			"org.exist.xpath.functions.FunLocalName",
+			"org.exist.xpath.functions.FunNamespaceURI",
+			"org.exist.xpath.functions.FunId",
+			"org.exist.xpath.functions.FunLang",
+			"org.exist.xpath.functions.FunBaseURI",
+			"org.exist.xpath.functions.FunDocumentURI",
+			"org.exist.xpath.functions.ExtRegexp",
+			"org.exist.xpath.functions.ExtRegexpOr",
+			"org.exist.xpath.functions.FunDistinctValues",
+			"org.exist.xpath.functions.xmldb.XMLDBCollection",
+			"org.exist.xpath.functions.xmldb.XMLDBStore",
+			"org.exist.xpath.functions.xmldb.XMLDBRegisterDatabase",
+			"org.exist.xpath.functions.xmldb.XMLDBCreateCollection",
+			"org.exist.xpath.functions.util.MD5"
+		};
 
 	private HashMap namespaces;
-	private HashMap functions;
+	private TreeMap functions;
 	private TreeMap variables;
 	private DBBroker broker;
 	private String baseURI = "";
@@ -89,6 +90,8 @@ public class StaticContext {
 
 	private Stack stack = new Stack();
 
+	private String defaultFunctionNamespace = Function.BUILTIN_FUNCTION_NS;
+	
 	/**
 	 * Set to true to enable XPath 1.0
 	 * backwards compatibility.
@@ -128,6 +131,7 @@ public class StaticContext {
 	public void declareNamespace(String prefix, String uri) {
 		if (prefix == null || uri == null)
 			throw new IllegalArgumentException("null argument passed to declareNamespace");
+		System.out.println(prefix + " = " + uri);
 		namespaces.put(prefix, uri);
 	}
 
@@ -139,6 +143,14 @@ public class StaticContext {
 		inScopeNamespaces.put(prefix, uri);
 	}
 
+	public String getDefaultFunctionNamespace() {
+		return defaultFunctionNamespace;
+	}
+	
+	public void setDefaultFunctionNamespace(String uri) {
+		defaultFunctionNamespace = uri;
+	}
+	
 	/**
 	 * Returns a namespace URI for the prefix or
 	 * null if no such prefix exists.
@@ -199,8 +211,8 @@ public class StaticContext {
 	 * @param fnName
 	 * @return
 	 */
-	public String getClassForFunction(String fnName) {
-		return (String) functions.get(fnName);
+	public Class getClassForFunction(QName fnName) {
+		return (Class) functions.get(fnName);
 	}
 
 	/**
@@ -379,9 +391,22 @@ public class StaticContext {
 		for (int i = 0; i < prefixes.length; i++) {
 			namespaces.put(prefixes[i], syms.getDefaultNamespace(prefixes[i]));
 		}
-
-		functions = new HashMap(internalFunctions.length);
-		for (int i = 0; i < internalFunctions.length; i++)
-			functions.put(internalFunctions[i][0], internalFunctions[i][1]);
+		
+		functions = new TreeMap();
+		for (int i = 0; i < internalFunctions.length; i++) {
+			try {
+				Class fclass = lookup(internalFunctions[i]);
+				Field field = fclass.getDeclaredField("signature");
+				FunctionSignature signature = (FunctionSignature)field.get(null);
+				QName name = signature.getName();
+				functions.put(name, fclass);
+			} catch (Exception e) {
+				throw new RuntimeException("no instance found for " + internalFunctions[i]);
+			}
+		}
+	}
+	
+	private Class lookup(String clazzName) throws ClassNotFoundException {
+		return Class.forName(clazzName);
 	}
 }

@@ -195,4 +195,19 @@ public class QName implements Comparable {
 			namespaceURI = "";
 		return new QName(extractLocalName(qname), namespaceURI, prefix);
 	}
+	
+	public static QName parseFunction(StaticContext context, String qname) {
+			String prefix = extractPrefix(qname);
+			String namespaceURI;
+			if (prefix != null) {
+				namespaceURI = context.getURIForPrefix(prefix);
+				if (namespaceURI == null)
+					throw new IllegalArgumentException(
+						"No namespace defined for prefix " + prefix);
+			} else
+				namespaceURI = context.getDefaultFunctionNamespace();
+			if (namespaceURI == null)
+				namespaceURI = "";
+			return new QName(extractLocalName(qname), namespaceURI, prefix);
+		}
 }

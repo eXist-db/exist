@@ -45,7 +45,7 @@ import org.exist.xpath.value.ValueSequence;
  */
 public class FunDistinctValues extends Function {
 
-	private final static FunctionSignature signature =
+	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("distinct-values", BUILTIN_FUNCTION_NS),
 			new SequenceType[] { new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE) },
