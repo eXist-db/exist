@@ -139,7 +139,7 @@ public class Long2ObjectHashMap extends AbstractHashtable {
 		return new Long2ObjectIterator(Long2ObjectIterator.VALUES);
 	}
 	
-	protected void insert(long key, Object value) throws HashtableOverflowException {
+	protected Object insert(long key, Object value) throws HashtableOverflowException {
 		if (value == null)
 			throw new IllegalArgumentException("Illegal value: null");
 		int idx = hash(key) % tabSize;
@@ -151,15 +151,16 @@ public class Long2ObjectHashMap extends AbstractHashtable {
 			keys[idx] = key;
 			values[idx] = value;
 			++items;
-			return;
+			return null;
 		} else if (values[idx] == REMOVED) {
             // remember the bucket, but continue to check
             // for duplicate keys
             bucket = idx;
         } else if (keys[idx] == key) {
 			// duplicate value
+        	Object dup = values[idx];
 			values[idx] = value;
-			return;
+			return dup;
 		}
 		int rehashVal = rehash(idx);
 		int rehashCnt = 1;
@@ -175,11 +176,12 @@ public class Long2ObjectHashMap extends AbstractHashtable {
 				keys[idx] = key;
 				values[idx] = value;
 				++items;
-				return;
+				return null;
 			} else if(keys[idx] == key) {
 				// duplicate value
+				Object dup = values[idx];
 				values[idx] = value;
-				return;
+				return dup;
 			}
 			++rehashCnt;
 		}
@@ -189,7 +191,7 @@ public class Long2ObjectHashMap extends AbstractHashtable {
             keys[bucket] = key;
             values[bucket] = value;
             ++items;
-            return;
+            return null;
         }
 		throw new HashtableOverflowException();
 	}

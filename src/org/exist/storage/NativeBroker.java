@@ -2527,6 +2527,9 @@ public class NativeBroker extends DBBroker {
 	}
 
 	public void sync() {
+		Runtime runtime = Runtime.getRuntime();
+		LOG.debug("Memory: " + (runtime.totalMemory() / 1024) + "K total; " +
+				(runtime.freeMemory() / 1024) + "K free");
 		// uncomment this to get statistics on page buffer usage
 		elementsDb.printStatistics();
 		collectionsDb.printStatistics();

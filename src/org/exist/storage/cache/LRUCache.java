@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.exist.util.hashtable.Long2ObjectHashMap;
+import org.exist.util.hashtable.SequencedLongHashMap;
 
 /**
  * @author wolf
@@ -33,15 +34,14 @@ import org.exist.util.hashtable.Long2ObjectHashMap;
 public class LRUCache implements Cache {
 
 	private int max;
-	private LinkedList stack = new LinkedList();
-	private Long2ObjectHashMap map;
+	private SequencedLongHashMap map;
 	
 	private int hits = 0;
 	private int misses = 0;
 	
 	public LRUCache(int size) {
 		this.max = size;
-		this.map = new Long2ObjectHashMap(size);
+		this.map = new SequencedLongHashMap(size);
 	}
 	
 	/* (non-Javadoc)
@@ -55,11 +55,10 @@ public class LRUCache implements Cache {
 	 * @see org.exist.storage.cache.Cache#add(org.exist.storage.cache.Cacheable)
 	 */
 	public void add(Cacheable item) {
-		if(stack.size() == max) {
-			removeOne();
+		if(map.size() == max) {
+			removeOne(item);
 		}
 		map.put(item.getKey(), item);
-		stack.addLast(item);
 	}
 
 	/* (non-Javadoc)
@@ -85,7 +84,6 @@ public class LRUCache implements Cache {
 	 * @see org.exist.storage.cache.Cache#remove(org.exist.storage.cache.Cacheable)
 	 */
 	public void remove(Cacheable item) {
-		stack.remove(item);
 		map.remove(item.getKey());
 	}
 
@@ -94,7 +92,7 @@ public class LRUCache implements Cache {
 	 */
 	public void flush() {
 		Cacheable next;
-		for(Iterator i = stack.iterator(); i.hasNext(); ) {
+		for(Iterator i = map.valueIterator(); i.hasNext(); ) {
 			next = (Cacheable)i.next();
 			next.sync();
 		}
@@ -106,7 +104,7 @@ public class LRUCache implements Cache {
      */
     public boolean hasDirtyItems() {
         Cacheable next;
-		for(Iterator i = stack.iterator(); i.hasNext(); ) {
+		for(Iterator i = map.valueIterator(); i.hasNext(); ) {
 			next = (Cacheable)i.next();
 			if(next.isDirty())
 			    return true;
@@ -125,7 +123,7 @@ public class LRUCache implements Cache {
 	 * @see org.exist.storage.cache.Cache#getUsedBuffers()
 	 */
 	public int getUsedBuffers() {
-		return stack.size();
+		return map.size();
 	}
 
 	/* (non-Javadoc)
@@ -148,11 +146,16 @@ public class LRUCache implements Cache {
 	public void setFileName(String fileName) {
 	}
 	
-	private final void removeOne() {
-		Cacheable first = (Cacheable)stack.removeFirst();
-		if(!stack.contains(first)) {
-			map.remove(first.getKey());
-			first.sync();
-		}
+	private final void removeOne(Cacheable item) {
+		boolean removed = false;
+		do {
+			Cacheable cached = (Cacheable)map.removeFirst();
+			if(cached.allowUnload() && cached.getKey() != item.getKey()) {
+				cached.sync();
+				removed = true;
+			} else {
+				map.put(cached.getKey(), cached);
+			}
+		} while(!removed);
 	}
 }
