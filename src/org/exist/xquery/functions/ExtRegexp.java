@@ -22,6 +22,9 @@
  */
 package org.exist.xquery.functions;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
@@ -54,7 +57,7 @@ public class ExtRegexp extends Function {
 			"node containing all of the keywords is copied to the result sequence.",
 			new SequenceType[] { 
 				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE) 
+				new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE) 
 			},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
 			true
@@ -104,7 +107,7 @@ public class ExtRegexp extends Function {
 				path == null
 					? contextSequence.toNodeSet()
 					: path.eval(contextSequence).toNodeSet();
-			String[] terms = getSearchTerms(context, contextSequence);
+			List terms = getSearchTerms(context, contextSequence);
 			return evalQuery(context, nodes, terms);
 		} else {
 			Item current;
@@ -116,7 +119,7 @@ public class ExtRegexp extends Function {
 				i.hasNext();
 				) {
 				current = i.nextItem();
-				String[] terms = getSearchTerms(context, current.toSequence());
+				List terms = getSearchTerms(context, current.toSequence());
 				long start = System.currentTimeMillis();
 				nodes =
 					path == null
@@ -142,17 +145,17 @@ public class ExtRegexp extends Function {
 	public Sequence evalQuery(
 		XQueryContext context,
 		NodeSet nodes,
-		String[] terms)
+		List terms)
 		throws XPathException {
-		if(terms == null || terms.length == 0)
+		if(terms == null || terms.size() == 0)
 			return Sequence.EMPTY_SEQUENCE;	// no search terms
-		NodeSet hits[] = new NodeSet[terms.length];
-		for (int k = 0; k < terms.length; k++) {
+		NodeSet hits[] = new NodeSet[terms.size()];
+		for (int k = 0; k < terms.size(); k++) {
 			hits[k] =
 				context.getBroker().getTextEngine().getNodesContaining(
 					nodes.getDocumentSet(),
 					nodes,
-					terms[k], DBBroker.MATCH_REGEXP);
+					(String)terms.get(k), DBBroker.MATCH_REGEXP);
 		}
 		NodeSet result = hits[0];
 		if(result != null) {
@@ -166,14 +169,22 @@ public class ExtRegexp extends Function {
 			return NodeSet.EMPTY_SET;
 	}
 	
-	protected String[] getSearchTerms(XQueryContext context, Sequence contextSequence) throws XPathException {
+	protected List getSearchTerms(XQueryContext context, Sequence contextSequence) throws XPathException {
 		if(getArgumentCount() < 2)
 			throw new XPathException(getASTNode(), "function requires at least 2 arguments");
-		String[] terms = new String[getArgumentCount() - 1];
+		List terms = new ArrayList();
 		Expression next;
+		Sequence seq;
 		for(int i = 1; i < getLength(); i++) {
 			next = getArgument(i);
-			terms[i - 1] = next.eval(contextSequence).getStringValue();
+			seq = next.eval(contextSequence);
+			if(seq.getLength() == 1)
+			    terms.add(seq.itemAt(0).getStringValue());
+			else {
+				for(SequenceIterator it = seq.iterate(); it.hasNext(); ) {
+				    terms.add(it.nextItem().getStringValue());
+				}
+			}
 		}
 		return terms;
 	}
