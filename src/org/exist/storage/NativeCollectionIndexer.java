@@ -1,8 +1,21 @@
 /*
- * Created on Oct 1, 2004
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * eXist Open Source Native XML Database 
+ * 
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Library General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option) any
+ * later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Library General Public License
+ * along with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * 
+ * $Id$
  */
 package org.exist.storage;
 
@@ -14,10 +27,8 @@ import java.util.StringTokenizer;
 import org.apache.log4j.Logger;
 import org.dbxml.core.DBException;
 import org.dbxml.core.data.Value;
-import org.dbxml.core.filer.BTreeException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
-import org.exist.dom.DocumentImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -31,31 +42,59 @@ import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
 
 /**
- * @author tjaeger
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Class which encapsulates the CollectionStore functionallity
+ * with some goodies.
  */
-public class NativeCollectionIndexer {
+final class NativeCollectionIndexer {
     /**
-     * TODO section follows (all must be initialized)
+     * TODO section follows (must be initialized)
      */
-    protected CollectionStore collectionsDb = null;
-    protected BrokerPool pool = null;
-    protected boolean readOnly = false;
     protected User user = null;
     
     /**
-     * Log4J logger
+     * Is any of the databases read-only?
+     */
+    private boolean readOnly = false;
+    
+    /**
+     * The broker pool.
+     */
+    private BrokerPool pool = null;
+    
+    /**
+     * The underlying native db.
+     */
+    private CollectionStore collectionsDb = null;
+    
+    /**
+     * The Log4J logger.
      */
     private static final Logger LOG = Logger.getLogger(NativeCollectionIndexer.class);
 
-    // TODO
-    boolean removeCollection(Collection collection) throws PermissionDeniedException {return false;}
-    
-    NativeCollectionIndexer(CollectionStore collectionsDb) {
+    /**
+     * Create a new NativeCollectionIndexer. The CollectionStore
+     * must be initialized when calling this constructor.
+     * 
+     * @param pool broker pool to use
+     * @param collectionsDb initialized collectionsDb
+     */
+    public NativeCollectionIndexer(BrokerPool pool, CollectionStore collectionsDb) {
+        this.pool = pool;
         this.collectionsDb = collectionsDb;
     }
+
+    /**
+     * Set read-only if any of the backend datastores
+     * are set read-only.
+     * 
+     * @param readOnly true, if one backend db is read-only
+     */
+    public void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
+    }
+    
+    //  TODO
+    boolean removeCollection(Collection collection) throws PermissionDeniedException {return false;}
     
     public void reloadCollection(Collection collection) {
         Value key = null;
@@ -102,7 +141,7 @@ public class NativeCollectionIndexer {
      * @param id
      * @throws PermissionDeniedException
      */
-    void freeCollection(short id) throws PermissionDeniedException {
+    public void freeCollection(short id) throws PermissionDeniedException {
 //      LOG.debug("freeing collection " + id);
         Value key = new Value("__free_collection_id");
         Lock lock = collectionsDb.getLock();
@@ -130,7 +169,7 @@ public class NativeCollectionIndexer {
     }
     
     ///////////////////// exported DB METHODS
-    void sync(int syncEvent) throws DBException {
+    public void sync(int syncEvent) throws DBException {
         Lock lock = collectionsDb.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
@@ -142,29 +181,29 @@ public class NativeCollectionIndexer {
         }
     }
     
-    void printStatistics() {
+    public void printStatistics() {
         collectionsDb.printStatistics();
     }
     
-    boolean close() throws DBException {
+    public boolean close() throws DBException {
         return collectionsDb.close();
     }
     
-    void remove(Value key) throws ReadOnlyException {
+    public void remove(Value key) throws ReadOnlyException {
         collectionsDb.remove(key);
     }
     
-    long append(Value key, ByteArray value) throws ReadOnlyException,
+    public long append(Value key, ByteArray value) throws ReadOnlyException,
         IOException {
         return collectionsDb.append(key, value);
     }
     
-    Lock getLock() {
+    public Lock getLock() {
         return collectionsDb.getLock();
     }
     ///////////////////// DB METHODS
     
-    int getNextDocId(Collection collection) {
+    public int getNextDocId(Collection collection) {
         int nextDocId;
         try {
             nextDocId = getFreeDocId();
@@ -202,7 +241,7 @@ public class NativeCollectionIndexer {
         return nextDocId;
     }
     
-    void saveCollection(Collection collection) throws PermissionDeniedException {
+    public void saveCollection(Collection collection) throws PermissionDeniedException {
         if (readOnly)
             throw new PermissionDeniedException(NewNativeBroker.DATABASE_IS_READ_ONLY);
         pool.getCollectionsCache().add(collection);
@@ -254,7 +293,7 @@ public class NativeCollectionIndexer {
      *@exception  PermissionDeniedException  Description of the Exception
      *@author=@author
      */
-    Collection getOrCreateCollection(String name)
+    public Collection getOrCreateCollection(String name)
         throws PermissionDeniedException {
         //      final long start = System.currentTimeMillis();
         name = normalizeCollectionName(name);
@@ -321,7 +360,7 @@ public class NativeCollectionIndexer {
      *@param  name  Description of the Parameter
      *@return       The collection value
      */
-    Collection openCollection(String name, long addr, int lockMode) {
+    public Collection openCollection(String name, long addr, int lockMode) {
         //  final long start = System.currentTimeMillis();
         name = normalizeCollectionName(name);
         if (name.length() > 0 && name.charAt(0) != '/')
@@ -391,7 +430,7 @@ public class NativeCollectionIndexer {
         }
     }
     
-    void moveCollection(Collection collection, Collection destination, String newName) 
+    public void moveCollection(Collection collection, Collection destination, String newName) 
     throws PermissionDeniedException, LockException {
         if (readOnly)
             throw new PermissionDeniedException(NewNativeBroker.DATABASE_IS_READ_ONLY);
@@ -596,7 +635,7 @@ public class NativeCollectionIndexer {
      * @param id
      * @throws PermissionDeniedException
      */
-    void freeDocument(int id) throws PermissionDeniedException {
+    public void freeDocument(int id) throws PermissionDeniedException {
 //      LOG.debug("freeing document " + id);
         Value key = new Value("__free_doc_id");
         Lock lock = collectionsDb.getLock();
