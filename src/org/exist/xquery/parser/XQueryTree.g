@@ -203,6 +203,11 @@ throws PermissionDeniedException, EXistException, XPathException
 		)
 		|
 		#(
+			"base-uri" base:STRING_LITERAL
+			{ context.setBaseURI(base.getText(), true); }
+		)
+		|
+		#(
 			"ordering" ( "ordered" | "unordered" )	// ignored
 		)
 		|
@@ -306,9 +311,6 @@ throws PermissionDeniedException, EXistException, XPathException
 				func.addVariable(param.varName);
 			}
 			signature.setArgumentTypes(types);
-			context.declareFunction(func);
-			if(myModule != null)
-				myModule.declareFunction(func);
 		}
 		(
 			#(
@@ -318,10 +320,19 @@ throws PermissionDeniedException, EXistException, XPathException
 				{ signature.setReturnType(type); }
 			)
 		)?
-		// the function body:
-		#(
-			LCURLY step=expr [body]
-			{ func.setFunctionBody(body); }
+		(
+			// the function body:
+			#(
+				LCURLY step=expr [body]
+				{ 
+					func.setFunctionBody(body);
+					context.declareFunction(func);
+					if(myModule != null)
+						myModule.declareFunction(func);
+				}
+			)
+			|
+			"external"
 		)
 	)
 	;
