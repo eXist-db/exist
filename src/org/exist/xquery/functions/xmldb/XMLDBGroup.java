@@ -21,59 +21,60 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
+import org.exist.security.Permission;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-
-
-import org.exist.security.Permission;
-import org.exist.security.User;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  *
  */
-public class XMLDBGroup extends BasicFunction {
+public class XMLDBGroup extends XMLDBPermissions {
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("get-resource-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns document group",
-			new SequenceType[] {
-					new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
-			},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+	public final static FunctionSignature signatures[] = {
+			new FunctionSignature(
+				new QName("get-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+				"Returns document owner",
+				new SequenceType[] {
+						new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
+				},
+				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+			),
+			new FunctionSignature(
+				new QName("get-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+				"Returns document owner",
+				new SequenceType[] {
+						new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+						new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				},
+				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+			)
+		};
 	
-	public XMLDBGroup(XQueryContext context) {
+	public XMLDBGroup(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
+	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		Permission perm = null;	
-		NodeValue node = (NodeValue)args[0].itemAt(0);
-		if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-			NodeProxy proxy = (NodeProxy)node;
-			perm = proxy.getDocument().getPermissions();
-			if(perm == null)
-				return Sequence.EMPTY_SEQUENCE;
-			else
-				return new StringValue(perm.getOwnerGroup());
-				
-		}
-		return Sequence.EMPTY_SEQUENCE;
+		try {
+			Permission perm = getPermissions(collection, args);
+			return new StringValue(perm.getOwnerGroup());
+        } catch (XMLDBException xe) {
+            throw new XPathException(getASTNode(), "Unable to retrieve resource permissions", xe);
+        }
 	}
 
 }

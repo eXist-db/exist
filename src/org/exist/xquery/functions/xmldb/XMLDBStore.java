@@ -22,6 +22,10 @@
  */
 package org.exist.xquery.functions.xmldb;
 
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -42,7 +46,7 @@ import org.xmldb.api.modules.XMLResource;
 /**
  * @author wolf
  */
-public class XMLDBStore extends BasicFunction {
+public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -53,7 +57,7 @@ public class XMLDBStore extends BasicFunction {
 			"document. The third argument is either a node or a string. A node will be " +
 			"serialized to SAX. It becomes the root node of the new document.",
 			new SequenceType[] {
-				new SequenceType(Type.JAVA_OBJECT, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
 				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY));
@@ -69,34 +73,40 @@ public class XMLDBStore extends BasicFunction {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(Sequence args[],
+	public Sequence evalWithCollection(Collection collection, Sequence args[],
 		Sequence contextSequence)
 		throws XPathException {
-		JavaObjectValue obj =
-			(JavaObjectValue) args[0].itemAt(0);
 		String docName = args[1].getLength() == 0 ? null : args[1].getStringValue();
 		if(docName != null && docName.length() == 0)
 			docName = null;
 		Item item =
 			args[2].itemAt(0);
 
-		if (!(obj.getObject() instanceof Collection))
-			throw new XPathException("Argument 1 should be an instance of org.xmldb.api.base.Collection");
-		Collection collection = (Collection) obj.getObject();
 		try {
-			XMLResource resource =
-				(XMLResource) collection.createResource(docName, "XMLResource");
-			if(Type.subTypeOf(item.getType(), Type.STRING)) {
-				resource.setContent(item.getStringValue());
-			} else if(Type.subTypeOf(item.getType(), Type.NODE)) {
-				ContentHandler handler = resource.setContentAsSAX();
-				handler.startDocument();
-				item.toSAX(context.getBroker(), handler);
-				handler.endDocument();
-			} else
-				throw new XPathException("Data should be either a node or a string");
-			collection.storeResource(resource);
-			context.getRootExpression().resetState();
+			if(Type.subTypeOf(item.getType(), Type.ANY_URI)) {
+				try {
+					URI uri = new URI(item.getStringValue());
+					if("file".equals(uri.getScheme())) {
+						loadFromFile(collection, uri, docName);
+					}
+				} catch (URISyntaxException e) {
+					throw new XPathException(getASTNode(), "Invalid URI: " + item.getStringValue(), e);
+				}
+			} else {
+				XMLResource resource =
+					(XMLResource) collection.createResource(docName, "XMLResource");
+				if(Type.subTypeOf(item.getType(), Type.STRING)) {
+					resource.setContent(item.getStringValue());
+				} else if(Type.subTypeOf(item.getType(), Type.NODE)) {
+					ContentHandler handler = resource.setContentAsSAX();
+					handler.startDocument();
+					item.toSAX(context.getBroker(), handler);
+					handler.endDocument();
+				} else
+					throw new XPathException("Data should be either a node or a string");
+				collection.storeResource(resource);
+				context.getRootExpression().resetState();
+			}
 		} catch (XMLDBException e) {
 			throw new XPathException(
 				"XMLDB reported an exception while storing document",
@@ -107,5 +117,22 @@ public class XMLDBStore extends BasicFunction {
 				e);
 		}
 		return Sequence.EMPTY_SEQUENCE;
+	}
+	
+	private void loadFromFile(Collection collection, URI uri, String docName) throws XPathException {
+		String path = uri.getPath();
+		File file = new File(path);
+		if(!file.canRead())
+			throw new XPathException(getASTNode(), "Cannot read path: " + path);
+		if(file.isFile()) {
+			try {
+				XMLResource resource =
+					(XMLResource) collection.createResource(docName, "XMLResource");
+				resource.setContent(file);
+				collection.storeResource(resource);
+			} catch (XMLDBException e) {
+				throw new XPathException(getASTNode(), "Could not store file " + path + ": " + e.getMessage(), e);
+			}
+		}
 	}
 }

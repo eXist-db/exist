@@ -29,11 +29,15 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -46,7 +50,7 @@ public class CollectionName extends BasicFunction {
 			new QName("collection-name", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns the name of the collection to which the passed node belongs.",
 			new SequenceType[] {
-					new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
 			},
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
 	
@@ -59,11 +63,27 @@ public class CollectionName extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		NodeValue node = (NodeValue)args[0].itemAt(0);
-		if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-			NodeProxy proxy = (NodeProxy)node;
-			return new StringValue(proxy.getDocument().getCollection().getName());
-		}
+		Item item = args[0].itemAt(0);
+		if(item.getType() == Type.JAVA_OBJECT) {
+			Object o = ((JavaObjectValue) item).getObject();
+            if (!(o instanceof Collection))
+                throw new XPathException(getASTNode(), "Passed Java object should be of type org.xmldb.api.base.Collection");
+            Collection collection = (Collection)o;
+            try {
+				return new StringValue(collection.getName());
+			} catch (XMLDBException e) {
+				throw new XPathException(getASTNode(), "Failed to retrieve collection name", e);
+			}
+		} else if(Type.subTypeOf(item.getType(), Type.NODE)) {
+			NodeValue node = (NodeValue) item;
+			if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+				NodeProxy p = (NodeProxy) node;
+				return new StringValue(p.getDocument().getCollection().getName());	
+			}
+		} else
+			throw new XPathException(getASTNode(), "First argument to util:collection-name should be either " +
+				"a Java object of type org.xmldb.api.base.Collection or a node; got: " + 
+				Type.getTypeName(item.getType()));
 		return Sequence.EMPTY_SEQUENCE;
 	}
 

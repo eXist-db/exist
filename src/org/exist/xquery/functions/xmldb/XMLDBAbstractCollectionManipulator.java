@@ -28,13 +28,16 @@ package org.exist.xquery.functions.xmldb;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
+import org.exist.dom.NodeProxy;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -48,11 +51,6 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 		super(context, signature);
 	}
 	
-/* (non-Javadoc)
- * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
- *
- */
-	
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
         
@@ -63,12 +61,26 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         
         // If the incoming is a collection object, use it:
         Collection collection = null;
-        Object o = args[0].itemAt(0);
-        if (o instanceof JavaObjectValue) {
-            o = ((JavaObjectValue) o).getObject();
+        Item item = args[0].itemAt(0);
+        if (item.getType() == Type.JAVA_OBJECT) {
+            Object o = ((JavaObjectValue) item).getObject();
             if (o instanceof Collection)
                 collection = (Collection) o;
-        } 
+        } else if (Type.subTypeOf(item.getType(), Type.NODE)) {
+        	NodeValue node = (NodeValue)item;
+        	LOG.debug("Found node");
+        	if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+        		org.exist.collections.Collection internalCol = ((NodeProxy)node).getDocument().getCollection();
+        		LOG.debug("Found node");
+        		try {
+					collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), internalCol.getName());
+					LOG.debug("Loaded collection " + collection.getName());
+				} catch (XMLDBException e) {
+					throw new XPathException(getASTNode(), "Failed to access collection: " + internalCol.getName(), e);
+				}
+        	} else
+        		return Sequence.EMPTY_SEQUENCE;
+        }
         
         if (null == collection) {
             // Otherwise, just extract the name as a string:
@@ -79,7 +91,6 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
                     if (null == uri.getScheme()) {
                         // Must be a LOCAL collection
                         collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), collectionURI);
-                        collection.getName();
                     } else {
                         // Right now, the collection is retrieved as GUEST. Need to figure out how to
                         // get user information into the URL?

@@ -22,7 +22,12 @@
  */
 package org.exist.xquery.functions.xmldb;
 
+import java.net.URISyntaxException;
+
 import org.exist.dom.QName;
+import org.exist.security.SecurityManager;
+import org.exist.security.User;
+import org.exist.xmldb.LocalCollection;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -73,14 +78,33 @@ public class XMLDBCollection extends BasicFunction {
 		String collectionURI = args[0].getStringValue();
 		String user = args[1].getStringValue();
 		String passwd = args[2].getStringValue();
+		
 		Collection collection = null;
 		try {
-			collection = DatabaseManager.getCollection(collectionURI, user, passwd);
+			java.net.URI uri = new java.net.URI(collectionURI);
+			if(null == uri.getScheme()) {
+				User localUser = context.getUser();
+				// Must be a LOCAL collection
+				if(!localUser.getName().equals(user))
+					localUser = getUser(user, passwd);
+		        collection = new LocalCollection(localUser, context.getBroker().getBrokerPool(), collectionURI);
+			} else
+				collection = DatabaseManager.getCollection(collectionURI, user, passwd);
 		} catch (XMLDBException e) {
 		    LOG.debug(e.getMessage(), e);
 			throw new XPathException(getASTNode(), 
 				"exception while retrieving collection: " + e.getMessage(), e);
+		} catch (URISyntaxException e) {
+			throw new XPathException(getASTNode(), "Could not parse URI: "+collectionURI, e);
 		}
 		return collection == null ? Sequence.EMPTY_SEQUENCE : new JavaObjectValue(collection);
+	}
+	
+	private User getUser(String user, String passwd) throws XPathException {
+		SecurityManager secman = context.getBroker().getBrokerPool().getSecurityManager();
+		User u = secman.getUser(user);
+		if(!u.validate(passwd))
+			throw new XPathException(getASTNode(), "Wrong password specified for user " + user);
+		return u;
 	}
 }

@@ -17,75 +17,53 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * 
+ * $Id$
  *  
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.util.Lock;
-import org.exist.storage.DBBroker;
-
-import java.util.Iterator;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.XMLDBException;
 
 
 
-public class XMLDBGetResourceCollections extends BasicFunction {
+public class XMLDBGetChildResources extends XMLDBAbstractCollectionManipulator {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-child-resources", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns the resource of collection",
 			new SequenceType[] {
-					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
 			},
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
 	
-	public XMLDBGetResourceCollections(XQueryContext context) {
+	public XMLDBGetChildResources(XQueryContext context) {
 		super(context, signature);
 	}
 	
-/* (non-Javadoc)
- * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
- *
- */
-	
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
+	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		DBBroker broker = null;
-        broker =context.getBroker();
-        
-		String collectionURI = args[0].getStringValue();
-		Collection collection = null;
-		collection = broker.openCollection(collectionURI, Lock.READ_LOCK);
-	
-		ValueSequence r = new ValueSequence();	
-		
-		if (collection == null) {
-			throw new XPathException(getASTNode(), "Collection " + collectionURI + " does not exist");
+		ValueSequence result = new ValueSequence();
+		try {
+			String[] collections = collection.listResources();
+			for(int i = 0; i < collections.length; i++) {
+				result.add(new StringValue(collections[i]));
+			}
+			return result;
+		} catch (XMLDBException e) {
+			throw new XPathException(getASTNode(), "Failed to retrieve child resources", e);
 		}
-		
-		
-		String resource;
-		int p;
-		for (Iterator i = collection.iterator(broker); i.hasNext(); ) {
-			resource = ((DocumentImpl) i.next()).getFileName();
-			p = resource.lastIndexOf('/');
-			r.add(new StringValue(p < 0 ? resource : resource.substring(p + 1)));
-		}
-        collection.release();
-		return r;
 	}
-
 }
