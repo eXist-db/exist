@@ -24,6 +24,7 @@ package org.exist.storage.serializers;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.URI;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -696,48 +697,49 @@ public abstract class Serializer implements XMLReader {
 			} else {
 				// if stylesheet is relative, add path to the
 				// current collection
-				if (stylesheet.indexOf('/') < 0 && doc != null)
-					stylesheet = doc.getCollection().getName() + '/' + stylesheet;
+				URI base = URI.create(doc.getCollection().getName() + "/");
+				URI uri = URI.create(stylesheet);
+				stylesheet = base.resolve(uri).toString();
 
-			// load stylesheet from eXist
-			DocumentImpl xsl = null;
-			try {
-				xsl = (DocumentImpl) broker.getDocument(stylesheet);
-			} catch (PermissionDeniedException e) {
-				LOG.debug("permission denied to read stylesheet");
-			}
-			if (xsl == null) {
-				LOG.debug("stylesheet not found");
-				return;
-			}
-			if(!xsl.getPermissions().validate(broker.getUser(), Permission.READ)) {
-			    LOG.debug("Permission denied to read stylesheet doc.");
-			    return;
-			}
+				// load stylesheet from eXist
+				DocumentImpl xsl = null;
+				try {
+					xsl = (DocumentImpl) broker.getDocument(stylesheet);
+				} catch (PermissionDeniedException e) {
+					LOG.debug("permission denied to read stylesheet");
+				}
+				if (xsl == null) {
+					LOG.debug("stylesheet not found");
+					return;
+				}
+				if(!xsl.getPermissions().validate(broker.getUser(), Permission.READ)) {
+					LOG.debug("Permission denied to read stylesheet doc.");
+					return;
+				}
 				
-			if (xsl.getCollection() != null) {
-				factory.setURIResolver(
-					new InternalURIResolver(xsl.getCollection().getName()));
-			}
-
-			// save handlers
-			ContentHandler oldHandler = contentHandler;
-			LexicalHandler oldLexical = lexicalHandler;
-
-			// compile stylesheet
-			TemplatesHandler handler = factory.newTemplatesHandler();
-			contentHandler = handler;
-			try {
-				this.toSAX(xsl);
-			} catch (SAXException e) {
-				LOG.warn("SAXException while creating template", e);
-			}
-			templates = handler.getTemplates();
-
-			// restore handlers
-			contentHandler = oldHandler;
-			lexicalHandler = oldLexical;
-			factory.setURIResolver(null);
+				if (xsl.getCollection() != null) {
+					factory.setURIResolver(
+							new InternalURIResolver(xsl.getCollection().getName()));
+				}
+				
+				// save handlers
+				ContentHandler oldHandler = contentHandler;
+				LexicalHandler oldLexical = lexicalHandler;
+				
+				// compile stylesheet
+				TemplatesHandler handler = factory.newTemplatesHandler();
+				contentHandler = handler;
+				try {
+					this.toSAX(xsl);
+				} catch (SAXException e) {
+					LOG.warn("SAXException while creating template", e);
+				}
+				templates = handler.getTemplates();
+				
+				// restore handlers
+				contentHandler = oldHandler;
+				lexicalHandler = oldLexical;
+				factory.setURIResolver(null);
             }
 			LOG.debug(
 				"compiling stylesheet took " + (System.currentTimeMillis() - start));
@@ -861,37 +863,23 @@ public abstract class Serializer implements XMLReader {
 	 *  <xsl:import> ...
 	 *
 	 *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
-	 *@created    20. April 2002
 	 */
 	private class InternalURIResolver implements URIResolver {
 
 		private String collectionId = null;
 
-		/**
-		 *  Constructor for the InternalURIResolver object
-		 *
-		 *@param  collection  Description of the Parameter
-		 */
 		public InternalURIResolver(String collection) {
 			collectionId = collection;
 		}
 
-		/**
-		 *  Description of the Method
-		 *
-		 *@param  href                      Description of the Parameter
-		 *@param  base                      Description of the Parameter
-		 *@return                           Description of the Return Value
-		 *@exception  TransformerException  Description of the Exception
-		 */
 		public Source resolve(String href, String base) throws TransformerException {
 			LOG.debug("resolving stylesheet ref " + href);
 			if (href.indexOf(':') > -1)
 				// href is an URL pointing to an external resource
 				return null;
-			if ((!href.startsWith("/")) && collectionId != null)
-				href =
-					(collectionId.equals("/") ? '/' + href : collectionId + '/' + href);
+			URI baseURI = URI.create(collectionId + '/');
+			URI uri = URI.create(href);
+			href = baseURI.resolve(uri).toString();
 			Serializer serializer = broker.newSerializer();
 			return new SAXSource(serializer, new InputSource(href));
 		}
