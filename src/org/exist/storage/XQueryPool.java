@@ -82,7 +82,14 @@ public class XQueryPool extends Object2ObjectHashMap {
         }
         Stack stack = (Stack)values[idx];
         if(stack != null && !stack.isEmpty()) {
-            return (CompiledXQuery)stack.pop();
+            CompiledXQuery query = (CompiledXQuery)stack.pop();
+            if(!query.isValid()) {
+            	// the compiled query is no longer valid: one of the imported
+            	// modules may have changed
+            	remove(key);
+            	return null;
+            } else
+            	return query;
         }
         return null;
     }

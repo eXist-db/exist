@@ -40,4 +40,6 @@ public interface CompiledXQuery extends CompiledExpression {
     public XQueryContext getContext();
     
     public Sequence eval(Sequence contextSequence) throws XPathException;
+    
+    public boolean isValid();
 }

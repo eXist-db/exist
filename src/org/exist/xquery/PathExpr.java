@@ -300,4 +300,11 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     public long getCreationTime() {
         return creationTime;
     }
+    
+    /* (non-Javadoc)
+	 * @see org.exist.xquery.CompiledXQuery#isValid()
+	 */
+	public boolean isValid() {
+		return context.checkModulesValid();
+	}
 }

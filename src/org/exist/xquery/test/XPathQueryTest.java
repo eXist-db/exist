@@ -241,6 +241,10 @@ public class XPathQueryTest extends TestCase {
 			result = queryResource(service, "numbers.xml", "boolean(//item[@id = '1']/price)", 1);
 			assertEquals("boolean value of 5.6 should be true", "true", 
 					result.getResource(0).getContent());
+			
+			result = queryResource(service, "numbers.xml", "boolean(current-time())", 1);
+			assertEquals("boolean value of current-time() should be true", "true", 
+					result.getResource(0).getContent());
 		} catch (XMLDBException e) {
 			System.out.println("testBoolean(): XMLDBException: "+e);
 			fail(e.getMessage());
