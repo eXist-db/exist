@@ -62,10 +62,9 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.border.BevelBorder;
 import javax.xml.transform.OutputKeys;
 
-import org.exist.xmldb.CompiledExpression;
-import org.exist.xmldb.XPathQueryServiceImpl;
 import org.exist.xmldb.XQueryService;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.CompiledExpression;
 import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;

@@ -22,6 +22,7 @@
  */
 package org.exist.xmldb;
 
+import org.xmldb.api.base.CompiledExpression;
 /**
  * This is just a placeholder for an expression that has been compiled
  * on the server. It only stores the xquery string.
