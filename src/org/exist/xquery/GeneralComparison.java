@@ -377,6 +377,7 @@ public class GeneralComparison extends BinaryOp {
 		// of potential nodes to scan through
 		SimpleTokenizer tokenizer = new SimpleTokenizer();
 		tokenizer.setText(cmp);
+
 		TextToken token;
 		String term;
 		boolean foundNumeric = false;
@@ -388,7 +389,7 @@ public class GeneralComparison extends BinaryOp {
 		context.getBroker().getTextEngine().setTrackMatches(Serializer.TAG_NONE);
 		
 		int i = 0;
-		for (; i < 5 && (token = tokenizer.nextToken(true)) != null; i++) {
+		for (; i < 5 && (token = tokenizer.nextToken(false)) != null; i++) {
 			// remember if we find an alphanumeric token
 			if (token.getType() == TextToken.ALPHANUM)
 				foundNumeric = true;
@@ -399,6 +400,7 @@ public class GeneralComparison extends BinaryOp {
 			foundNumeric = checkArgumentTypes(context, docs);
 		if ((!foundNumeric) && i > 0) {
 			// all elements are indexed: use the fulltext index
+			cmp = handleTruncation(cmp);
 			containsExpr.addTerm(new LiteralValue(context, new StringValue(cmp)));
 			nodes = (NodeSet) containsExpr.eval(nodes, null);
 		}
@@ -407,6 +409,18 @@ public class GeneralComparison extends BinaryOp {
 		return nodes;
 	}
 	
+	private String handleTruncation(String cmp) {
+		switch (truncation) {
+			case Constants.TRUNC_RIGHT:
+				return cmp + '*';
+			case Constants.TRUNC_LEFT:
+				return '*' + cmp;
+			case Constants.TRUNC_BOTH:
+				return '*' + cmp + '*';
+			default:
+				return cmp;
+		}
+	}
 	/**
 	 * Cast the atomic operands into a comparable type
 	 * and compare them.
