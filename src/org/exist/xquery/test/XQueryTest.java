@@ -4,6 +4,7 @@ import java.io.File;
 
 import junit.framework.TestCase;
 
+import org.exist.xmldb.DatabaseInstanceManager;
 import org.w3c.dom.Element;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -32,6 +33,10 @@ public class XQueryTest extends TestCase {
 	private Collection testCollection;
 	private static String attributeXML;
 	private static int stringSize;
+	private static int nbElem;
+	private String file_name = "detail_xml.xml";
+	private String xml;
+	private Database database;
 
 	public XQueryTest(String arg0) {
 		super(arg0);
@@ -41,7 +46,7 @@ public class XQueryTest extends TestCase {
 		try {
 			// initialize driver
 			Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-			Database database = (Database) cl.newInstance();
+			database = (Database) cl.newInstance();
 			database.setProperty("create-database", "true");
 			DatabaseManager.registerDatabase(database);
 			
@@ -65,6 +70,20 @@ public class XQueryTest extends TestCase {
 		}
 	}
 
+	/*
+	 * @see TestCase#tearDown()
+	 */
+	protected void tearDown() throws Exception {
+		// testCollection.removeResource( testCollection .getResource(file_name));
+		
+		DatabaseManager.deregisterDatabase(database);
+		DatabaseInstanceManager dim =
+			(DatabaseInstanceManager) testCollection.getService(
+				"DatabaseInstanceManager", "1.0");
+		dim.shutdown();
+		System.out.println("tearDown PASSED");
+	}
+	
 	public void testFor() {
 		ResourceSet result;
 		String query;
@@ -120,26 +139,82 @@ public class XQueryTest extends TestCase {
 		XMLResource resu;
 		try {
 			System.out.println("testLargeAttributeSimple 1: ========" );
-			String large = makeString(stringSize);
-			String head = "<details format='xml'>";
-			String elem = "<metadata docid='" + large + "'></metadata>";
-			String tail = "</details>";
-			String xml = head + elem + elem + tail;
-			final String FILE_NAME = "detail_xml.xml";
-		XPathQueryService service = 
-			storeXMLStringAndGetQueryService(FILE_NAME, xml);
-
-		query = "doc('"+ FILE_NAME+"') / details/metadata[@docid= '" + large + "' ]";
-		result = service.queryResource(FILE_NAME, query );
-		printResult(result);
-		assertEquals( "XQuery: " + query, 2, result.getSize() );
-	} catch (XMLDBException e) {
-		System.out.println("testLargeAttributeSimple(): XMLDBException: "+e);
-		fail(e.getMessage());
+			String large = createXMLContentWithLargeString();
+			XPathQueryService service = 
+				storeXMLStringAndGetQueryService(file_name, xml);
+			
+			query = "doc('"+ file_name+"') / details/metadata[@docid= '" + large + "' ]";
+			result = service.queryResource(file_name, query );
+			printResult(result);
+			assertEquals( "XQuery: " + query, nbElem, result.getSize() );
+		} catch (XMLDBException e) {
+			System.out.println("testLargeAttributeSimple(): XMLDBException: "+e);
+			fail(e.getMessage());
+		}
 	}
-}
 
-	public void testLargeAttributeRealFile() {
+	public void testLargeAttributeContains() {
+		ResourceSet result;
+		String query;
+		XMLResource resu;
+		try {
+			System.out.println("testLargeAttributeSimple 1: ========" );
+			String large = createXMLContentWithLargeString();
+			XPathQueryService service = 
+				storeXMLStringAndGetQueryService(file_name, xml);
+
+			query = "doc('"+ file_name+"') / details/metadata[ contains(@docid, 'aa') ]";
+			result = service.queryResource(file_name, query );
+			assertEquals( "XQuery: " + query, nbElem, result.getSize() );
+		} catch (XMLDBException e) {
+			System.out.println("testLargeAttributeSimple(): XMLDBException: "+e);
+			fail(e.getMessage());
+		}
+	}
+
+	public void testLargeAttributeKeywordOperator() {
+		ResourceSet result;
+		String query;
+		XMLResource resu;
+		try {
+			System.out.println("testLargeAttributeSimple 1: ========" );
+			String large = createXMLContentWithLargeString();
+			XPathQueryService service = 
+				storeXMLStringAndGetQueryService(file_name, xml);
+
+			query = "doc('"+ file_name+"') / details/metadata[ @docid &= '" + large + "' ]";
+			result = service.queryResource(file_name, query );
+			assertEquals( "XQuery: " + query, nbElem, result.getSize() );
+		} catch (XMLDBException e) {
+			System.out.println("testLargeAttributeSimple(): XMLDBException: "+e);
+			fail(e.getMessage());
+		}
+	}
+	
+	/** CAUTION side effect on field xml
+	 * @return the large string contained in the atrbute(s)
+	 */
+	private String createXMLContentWithLargeString() {
+		String large = makeString(stringSize);
+		String head = "<details format='xml'>";
+		String elem = "<metadata docid='" + large + "'></metadata>";
+		String tail = "</details>";
+		xml = head;
+		for ( int i=0; i< nbElem; i++ )
+			xml += elem;
+		xml += tail;
+		return large;
+	}
+
+	public void testRetrieveLargeAttribute() throws XMLDBException{
+		System.out.println("testRetrieveLargeAttribute 1: ========" );
+		XMLResource res = (XMLResource) testCollection.getResource(file_name);
+		System.out.println("res.getContent(): " + res.getContent() );
+	}
+	
+	/** This test is obsolete because testLargeAttributeSimple() reproduces the problem without a file,
+	 * but I keep it to show how one can test with an XML file. */
+	public void obsoleteTestLargeAttributeRealFile() {
 		ResourceSet result;
 		String query;
 		XMLResource resu;
@@ -147,7 +222,6 @@ public class XQueryTest extends TestCase {
 			System.out.println("testLargeAttributeRealFile 1: ========" );
 			String large;
 			large = "challengesininformationretrievalandlanguagemodelingreportofaworkshopheldatthecenterforintelligentinformationretrievaluniversityofmassachusettsamherstseptember2002-extdocid-howardturtlemarksandersonnorbertfuhralansmeatonjayaslamdragomirradevwesselkraaijellenvoorheesamitsinghaldonnaharmanjaypontejamiecallannicholasbelkinjohnlaffertylizliddyronirosenfeldvictorlavrenkodavidjharperrichschwartzjohnpragerchengxiangzhaijinxixusalimroukosstephenrobertsonandrewmccallumbrucecroftrmanmathasuedumaisdjoerdhiemstraeduardhovyralphweischedelthomashofmannjamesallanchrisbuckleyphilipresnikdavidlewis2003";
-			large = "challenges";
 			if (attributeXML != null)
 				large = attributeXML;
 			String xml = "<details format='xml'><metadata docid='" + large +
@@ -216,14 +290,18 @@ public class XQueryTest extends TestCase {
 	}
 
 	public static void main(String[] args) {
-		if ( args.length > 0) {
+		if ( args.length > 0 ) {
 			attributeXML = args[0];
 		}
 		stringSize = 513;
-		if ( args.length > 1) {
+		if ( args.length > 1 ) {
 			stringSize = Integer.parseInt( args[1] );
 		}
-		
+		nbElem = 2;
+		if ( args.length > 2 ) {
+			nbElem = Integer.parseInt( args[2] );
+		}
+
 		junit.textui.TestRunner.run(XQueryTest.class);
 	}
 }
