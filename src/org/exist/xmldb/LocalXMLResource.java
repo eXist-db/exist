@@ -228,7 +228,6 @@ public class LocalXMLResource implements XMLResource, EXistResource {
 			
 		// case 3: content is an internal node or a document
 		} else {
-		    DocumentImpl document = null;
 			try {
 				broker = brokerPool.get(user);
 				Serializer serializer = broker.getSerializer();
@@ -239,19 +238,24 @@ public class LocalXMLResource implements XMLResource, EXistResource {
 				if (root != null)
 					serializer.toSAX((NodeValue) root);
 				else {
-					document = getDocument(broker, true);
-					if (!document.getPermissions().validate(user,
-							Permission.READ))
-						throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
-								"permission denied to read resource");
-					String xml;
-					if (id < 0)
-						serializer.toSAX(document);
-					else {
-						if (proxy == null)
-							proxy = new NodeProxy(document, id);
-
-						serializer.toSAX(proxy);
+					DocumentImpl document = getDocument(broker, true);
+					try {
+						if (!document.getPermissions().validate(user,
+								Permission.READ))
+							throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
+							"permission denied to read resource");
+						String xml;
+						if (id < 0)
+							serializer.toSAX(document);
+						else {
+							if (proxy == null)
+								proxy = new NodeProxy(document, id);
+							
+							serializer.toSAX(proxy);
+						}
+					} finally {
+					    parent.getCollection().releaseDocument(document);
+						brokerPool.release(broker);
 					}
 				}
 			} catch (EXistException e) {
@@ -260,9 +264,6 @@ public class LocalXMLResource implements XMLResource, EXistResource {
 			} catch (SAXException e) {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e
 						.getMessage(), e);
-			} finally {
-			    parent.getCollection().releaseDocument(document);
-				brokerPool.release(broker);
 			}
 		}
 	}
@@ -406,17 +407,19 @@ public class LocalXMLResource implements XMLResource, EXistResource {
 
 	protected DocumentImpl getDocument(DBBroker broker, boolean lock) throws XMLDBException {
 	    DocumentImpl document = null;
-	    if(lock)
+	    if(lock) {
             try {
                 document = parent.getCollection().getDocumentWithLock(broker, docId);
             } catch (LockException e) {
                 throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
                         "Failed to acquire lock on document " + docId);
             }
-        else
+	    } else {
 	        document = parent.getCollection().getDocument(broker, docId);
-	    if (document == null)
+	    }
+	    if (document == null) {
 	        throw new XMLDBException(ErrorCodes.INVALID_RESOURCE);
+	    }
 	    return document;
 	}
 

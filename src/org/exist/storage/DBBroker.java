@@ -457,12 +457,15 @@ public abstract class DBBroker extends Observable {
 	
 	/**
 	 *  Store a document into the database. This method will save the document
-	 * metadata and add the document to the collection.
+	 * metadata.
 	 *
 	 *@param  doc
 	 */
 	public abstract void storeDocument(DocumentImpl doc);
 
+	public abstract void updateDocument(DocumentImpl doc) 
+	throws LockException, PermissionDeniedException;
+	
 	public abstract void storeBinaryResource(BinaryDocument blob, byte[] data);
 	
 	public abstract byte[] getBinaryResourceData(final BinaryDocument blob);

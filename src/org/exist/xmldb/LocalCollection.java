@@ -35,6 +35,7 @@ import java.util.Random;
 import javax.xml.transform.OutputKeys;
 
 import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -67,7 +68,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class LocalCollection extends Observable implements CollectionImpl {
 
-	private static Category LOG = Category.getInstance(LocalCollection.class.getName());
+	private static Logger LOG = Logger.getLogger(LocalCollection.class.getName());
 
 	protected final static Properties defaultProperties = new Properties();
 	static {

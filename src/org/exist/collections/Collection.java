@@ -129,7 +129,7 @@ implements Comparable, EntityResolver, Cacheable {
 	// fields required by the collections cache
 	private int refCount = 0;
 	private int timestamp = 0;
-
+	
 	// the collection store where this collections is stored.
 	private CollectionStore db;
 	
@@ -341,8 +341,22 @@ implements Comparable, EntityResolver, Cacheable {
 				return false;
 		}
 		return true;
+//		try {
+//			lock.acquire(Lock.WRITE_LOCK);
+//			for (Iterator i = documents.values().iterator(); i.hasNext(); ) {
+//				DocumentImpl doc = (DocumentImpl) i.next();
+//				if (doc.isLockedForWrite())
+//					return false;
+//			}
+//			return true;
+//		} catch (LockException e) {
+//			LOG.warn("Failed to acquire lock on collection: " + getName(), e);
+//		} finally {
+//			lock.release();
+//		}
+//		return false;
 	}
-
+	
 	public int compareTo(Object obj) {
 		Collection other = (Collection) obj;
 		if (collectionId == other.collectionId)
@@ -715,15 +729,20 @@ implements Comparable, EntityResolver, Cacheable {
 
 		DocumentImpl document, oldDoc = null;
 		XMLReader reader;
-
-		InputSource source = new InputSource(new StringReader(data));
-		oldDoc = getDocument(broker, name);
-		document = new DocumentImpl(broker, name,	this);
-		reader = getReader(broker);
+		InputSource source;
+		try {
+			lock.acquire(Lock.WRITE_LOCK);
+			source = new InputSource(new StringReader(data));
+			document = new DocumentImpl(broker, name,	this);
+			reader = getReader(broker);
+			oldDoc = (DocumentImpl) documents.get(name);
+			
+			// first pass: parse the document to determine tree structure
+			document = determineTreeStructure(broker, name, document, oldDoc, reader, source);
+		} finally {
+			lock.release();
+		}
 		
-		// first pass: parse the document to determine tree structure
-		document = determineTreeStructure(broker, name, document, oldDoc, reader, source);
-
 		// reset the input source
 		source = new InputSource(new StringReader(data));
 
@@ -735,13 +754,16 @@ implements Comparable, EntityResolver, Cacheable {
 			} catch (IOException e) {
 				throw new EXistException(e);
 			}
-	
-			if(oldDoc == null)
-			    addDocument(broker, document);
-//			broker.checkTree(document);
-			broker.addDocument(this, document);
+
+			if(oldDoc == null) {
+				addDocument(broker, document);
+				broker.addDocument(this, document);
+			} else {
+				broker.updateDocument(document);
+			}
 			broker.closeDocument();
 			broker.flush();
+//			broker.checkTree(document);
 			LOG.debug("document stored.");
 			// if we are running in privileged mode (e.g. backup/restore)
 			// notify the SecurityManager about changes
@@ -794,14 +816,16 @@ implements Comparable, EntityResolver, Cacheable {
 			}
 			document.setMaxDepth(document.getMaxDepth() + 1);
 			document.calculateTreeLevelStartPoints();
-			// new document is valid: remove old document
 			
+			// new document is valid: remove old document
 			if (oldDoc != null) {
 				LOG.debug("removing old document " + oldDoc.getFileName());
 				if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
 					broker.removeBinaryResource((BinaryDocument) oldDoc);
-				else
+				else {
+//					broker.checkTree(oldDoc);
 					broker.removeDocument(getName() + '/' + oldDoc.getFileName(), false);
+				}
 				// we continue to use the old document object and just replace its contents
 				oldDoc.copyOf(document);
 				indexer.setDocumentObject(oldDoc);
@@ -825,8 +849,6 @@ implements Comparable, EntityResolver, Cacheable {
 		} catch(TriggerException e) {
 		    if(oldDoc != null) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
 		    throw e;
-		} finally {
-			lock.release();
 		}
 		return document;
 	}
@@ -918,9 +940,9 @@ implements Comparable, EntityResolver, Cacheable {
 	 * @throws PermissionDeniedException
 	 */
 	private void checkPermissions(DBBroker broker, String name, DocumentImpl oldDoc) throws LockException, PermissionDeniedException {
-		lock.acquire(Lock.WRITE_LOCK);
-		if (hasDocument(name) && (oldDoc ) != null) {
+		if (oldDoc != null) {
 
+			LOG.debug("Found old doc " + oldDoc.getDocId() + "; identity = " + oldDoc.hashCode());
 			// check if the document is locked by another user
 			User lockUser = oldDoc.getUserLock();
 			if(lockUser != null && !lockUser.equals(broker.getUser()))
@@ -928,8 +950,7 @@ implements Comparable, EntityResolver, Cacheable {
 						lockUser.getName());
 			
 			// check if the document is currently being changed by someone else
-			Lock oldLock = oldDoc.getUpdateLock();
-			oldLock.acquire(Lock.WRITE_LOCK);
+			oldDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
 			
 			// do we have permissions for update?
 			if (!oldDoc.getPermissions().validate(broker.getUser(),
@@ -961,13 +982,18 @@ implements Comparable, EntityResolver, Cacheable {
 			throw new PermissionDeniedException("Database is read-only");
 		DocumentImpl document = null, oldDoc = null;
 		XMLReader reader;
-		oldDoc = getDocument(broker, name);
-		document = new DocumentImpl(broker, name,	this);
-		reader = getReader(broker);
-
-		// first pass: parse the document to determine tree structure
-		document = determineTreeStructure(broker, name, document, oldDoc, reader, source);
-
+		try {
+			lock.acquire(Lock.WRITE_LOCK);
+			oldDoc = getDocument(broker, name);
+			document = new DocumentImpl(broker, name,	this);
+			reader = getReader(broker);
+	
+			// first pass: parse the document to determine tree structure
+			document = determineTreeStructure(broker, name, document, oldDoc, reader, source);
+		} finally {
+			lock.release();
+		}
+		
 		// reset the input source
 		try {
 			final InputStream is = source.getByteStream();
@@ -990,10 +1016,13 @@ implements Comparable, EntityResolver, Cacheable {
 			} catch (IOException e) {
 				throw new EXistException(e);
 			}
-	
-			if(oldDoc == null)
-			    addDocument(broker, document);
-			broker.addDocument(this, document);
+
+			if(oldDoc == null) {
+				addDocument(broker, document);
+				broker.addDocument(this, document);
+			} else {
+				broker.updateDocument(document);
+			}
 			broker.closeDocument();
 			broker.flush();
 			
@@ -1026,10 +1055,11 @@ implements Comparable, EntityResolver, Cacheable {
 			throw new PermissionDeniedException("Database is read-only");
 		DocumentImpl document, oldDoc = null;
 		DOMStreamer streamer;
-		oldDoc = getDocument(broker, name);
-		document = new DocumentImpl(broker, name,	this);
-		
 		try {
+			lock.acquire(Lock.WRITE_LOCK);
+			oldDoc = getDocument(broker, name);
+			document = new DocumentImpl(broker, name,	this);
+		
 			checkPermissions(broker, name, oldDoc);
 			
 			manageDocumentInformation(broker, name, oldDoc, document );
@@ -1092,15 +1122,19 @@ implements Comparable, EntityResolver, Cacheable {
 		} finally {
 			lock.release();
 		}//ffffffffffffffffffffffffffffffffffffffffffffffff
+		
 		try {
 			// second pass: store the document
 		    if(LOG.isDebugEnabled())
 		        LOG.debug("storing document " + document.getFileName());
 			streamer.serialize(node, true);
 	
-			if(oldDoc == null)
-			    addDocument(broker, document);
-			broker.addDocument(this, document);
+			if(oldDoc == null) {
+				addDocument(broker, document);
+				broker.addDocument(this, document);
+			} else {
+				broker.updateDocument(document);
+			}
 			broker.closeDocument();
 			broker.flush();
 			// if we are running in privileged mode (e.g. backup/restore)

@@ -1339,44 +1339,46 @@ public class NativeBroker extends DBBroker {
 		if(xupdateConsistencyChecks) {
 			LOG.debug("Checking document " + doc.getFileName());
 			checkTree(doc);
-			elementIndex.consistencyCheck(doc);
+//			elementIndex.consistencyCheck(doc);
 		}
 	}
 	
 	public void checkTree(final DocumentImpl doc) {
 		LOG.debug("Checking DOM tree for document " + doc.getFileName());
-		new DOMTransaction(this, domDb, Lock.READ_LOCK) {
-			public Object start() throws ReadOnlyException {
-				LOG.debug("Pages used: " + domDb.debugPages(doc));
-				return null;
-			}
-		}.run();
-		
-		NodeList nodes = doc.getChildNodes();
-		NodeImpl n;
-		for (int i = 0; i < nodes.getLength(); i++) {
-		    n = (NodeImpl) nodes.item(i);
-		    Iterator iterator =
-		        getNodeIterator(
-		                new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
-		    iterator.next();
-		    checkTree(iterator, n);
-		}
-		NodeRef ref = new NodeRef(doc.getDocId());
-		final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-		new DOMTransaction(this, domDb) {
-			public Object start() {
-				try {
-					domDb.findKeys(idx);
-				} catch (BTreeException e) {
-		            LOG.warn("start() - " + "error while removing doc", e);
-				} catch (IOException e) {
-		            LOG.warn("start() - " + "error while removing doc", e);
+		if(xupdateConsistencyChecks) {
+			new DOMTransaction(this, domDb, Lock.READ_LOCK) {
+				public Object start() throws ReadOnlyException {
+					LOG.debug("Pages used: " + domDb.debugPages(doc));
+					return null;
 				}
-				return null;
+			}.run();
+			
+			NodeList nodes = doc.getChildNodes();
+			NodeImpl n;
+			for (int i = 0; i < nodes.getLength(); i++) {
+			    n = (NodeImpl) nodes.item(i);
+			    Iterator iterator =
+			        getNodeIterator(
+			                new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
+			    iterator.next();
+			    checkTree(iterator, n);
 			}
+			NodeRef ref = new NodeRef(doc.getDocId());
+			final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+			new DOMTransaction(this, domDb) {
+				public Object start() {
+					try {
+						domDb.findKeys(idx);
+					} catch (BTreeException e) {
+			            LOG.warn("start() - " + "error while removing doc", e);
+					} catch (IOException e) {
+			            LOG.warn("start() - " + "error while removing doc", e);
+					}
+					return null;
+				}
+			}
+			.run();
 		}
-		.run();
 	}
 	
 	private void checkTree(Iterator iterator, NodeImpl node) {
@@ -2382,12 +2384,24 @@ public class NativeBroker extends DBBroker {
 					domDb.remove(doc.getAddress());
 				}
 				doc.setAddress(domDb.add(data));
+//				LOG.debug("Document metadata stored to " + StorageAddress.toString(doc.getAddress()));
 				return null;
 			}
 		}
 		.run();
 	}
 
+	public void updateDocument(DocumentImpl doc) throws LockException, PermissionDeniedException {
+		Lock lock = collectionsDb.getLock();
+		try {
+			lock.acquire(Lock.WRITE_LOCK);
+			storeDocument(doc);
+			saveCollection(doc.getCollection());
+		} finally {
+			lock.release();
+		}
+	}
+	
 	public void storeBinaryResource(final BinaryDocument blob, final byte[] data) {
 		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
 			public Object start() throws ReadOnlyException {
@@ -2401,7 +2415,7 @@ public class NativeBroker extends DBBroker {
 		}
 		.run();
 	}
-
+	
 	public byte[] getBinaryResourceData(final BinaryDocument blob) {
 		byte[] data = (byte[]) new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
 			public Object start() throws ReadOnlyException {
