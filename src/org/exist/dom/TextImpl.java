@@ -51,17 +51,6 @@ public class TextImpl extends CharacterDataImpl implements Text {
         super( Node.TEXT_NODE, gid );
     }
 
-
-    /**
-     *  Constructor for the TextImpl object
-     *
-     *@param  data  Description of the Parameter
-     */
-    public TextImpl( StringBuffer data ) {
-        super( Node.TEXT_NODE, data );
-    }
-
-
     /**
      *  Constructor for the TextImpl object
      *
@@ -70,7 +59,6 @@ public class TextImpl extends CharacterDataImpl implements Text {
     public TextImpl( String data ) {
         super( Node.TEXT_NODE, data );
     }
-
 
     /**
      *  Constructor for the TextImpl object
@@ -96,11 +84,12 @@ public class TextImpl extends CharacterDataImpl implements Text {
 
     public static NodeImpl deserialize( byte[] data, int start, int len ) {
         final TextImpl text = new TextImpl( 0 );
-        try {
+        text.cdata = UTF8.decode(data, start + 1, len - 1);
+        /*try { 
             text.appendData(new String( data, start + 1, len - 1, "UTF-8" ));
         } catch ( UnsupportedEncodingException uee ) {
             text.appendData(new String( data, start + 1, len - 1 ));
-        }
+        }*/
         return text;
     }
 
@@ -191,9 +180,9 @@ public class TextImpl extends CharacterDataImpl implements Text {
      *@return    Description of the Return Value
      */
     public byte[] serialize() {
-        final byte[] data = new byte[StringUtil.utflen(cdata) + 1];
+        byte[] data = ByteArrayPool.getByteArray(cdata.UTF8Size() + 1);
         data[0] = (byte) ( Signatures.Char << 0x5 );
-        StringUtil.utfwrite(data, 1, cdata);
+        cdata.UTF8Encode(data, 1);
         return data;
     }
 

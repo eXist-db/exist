@@ -55,6 +55,7 @@ import org.exist.util.Configuration;
 import org.exist.util.DOMStreamer;
 import org.exist.util.FastStringBuffer;
 import org.exist.util.ProgressIndicator;
+import org.exist.util.XMLString;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
@@ -93,7 +94,7 @@ public class Parser
 
 	public Collection collection = null;
 	protected DBBroker broker = null;
-	protected FastStringBuffer charBuf = new FastStringBuffer(6, 15, 5);
+	protected XMLString charBuf = new XMLString();
 	protected int currentLine = 0, maxLine;
 	protected StringBuffer currentPath = new StringBuffer();
 	protected DocumentImpl document = null;
@@ -221,27 +222,9 @@ public class Parser
 		if (charBuf != null) {
 			charBuf.append(ch, start, length);
 			return;
+		} else {
+			charBuf = new XMLString(ch, start, length);
 		}
-
-		final ElementImpl last = (ElementImpl) stack.peek();
-		if (charBuf != null && charBuf.length() > 0) {
-			final String normalized = charBuf.getNormalizedString(normalize);
-
-			if (normalized.length() > 0) {
-				//TextImpl text =
-				//    new TextImpl( normalized );
-				text.setData(normalized);
-				text.setOwnerDocument(document);
-				charBuf.setLength(0);
-				//charBuf = new FastStringBuffer( 6, 6, 3 );
-				last.appendChildInternal(text);
-				if (!validate)
-					broker.store(text, currentPath.toString());
-			}
-		}
-		charBuf.setLength(0);
-		//charBuf = new FastStringBuffer( 6, 6, 3 );
-		charBuf.append(ch, start, length);
 	}
 
 	public void comment(char[] ch, int start, int length) {
@@ -254,18 +237,16 @@ public class Parser
 		else {
 			ElementImpl last = (ElementImpl) stack.peek();
 			if (charBuf != null && charBuf.length() > 0) {
-				String normalized = charBuf.getNormalizedString(normalize);
-				//String normalized = charBuf.getString().toString();
+				final XMLString normalized = charBuf.normalize(normalize);
 				if (normalized.length() > 0) {
 					//TextImpl text =
 					//    new TextImpl( normalized );
 					text.setData(normalized);
 					text.setOwnerDocument(document);
 					last.appendChildInternal(text);
-					charBuf.setLength(0);
-					//charBuf = new FastStringBuffer();
 					if (!validate)
 						broker.store(text, currentPath.toString());
+					charBuf.reset();
 				}
 			}
 			last.appendChildInternal(comment);
@@ -292,19 +273,16 @@ public class Parser
 		final ElementImpl last = (ElementImpl) stack.peek();
 		if (last.getNodeName().equals(qname)) {
 			if (charBuf != null && charBuf.length() > 0) {
-				final String normalized = charBuf.getNormalizedString(normalize);
+				final XMLString normalized = charBuf.normalize(normalize);
 				if (normalized.length() > 0) {
-					//TextImpl text =
-					//    new TextImpl( normalized );
 					text.setData(normalized);
 					text.setOwnerDocument(document);
-					charBuf.setLength(0);
-					//charBuf = new FastStringBuffer( 6, 6, 3 );
 					last.appendChildInternal(text);
 					if (!validate)
-						broker.store(text, currentPath.toString());
+						broker.store(text, currentPath);
 					text.clear();
 				}
+				charBuf.reset();
 			}
 			stack.pop();
 			currentPath.delete(currentPath.lastIndexOf("/"), currentPath.length());
@@ -510,25 +488,23 @@ public class Parser
 		else {
 			ElementImpl last = (ElementImpl) stack.peek();
 			if (charBuf != null && charBuf.length() > 0) {
-				String normalized = charBuf.getNormalizedString(normalize);
-				//String normalized = charBuf.getString().toString();
+				XMLString normalized = charBuf.normalize(normalize);
 				if (normalized.length() > 0) {
 					//TextImpl text =
 					//    new TextImpl( normalized );
 					text.setData(normalized);
 					text.setOwnerDocument(document);
-					charBuf = new FastStringBuffer();
-					//charBuf.setLength( 0 );
 					last.appendChildInternal(text);
 					if (!validate)
-						broker.store(text, currentPath.toString());
+						broker.store(text, currentPath);
 					text.clear();
 				}
+				charBuf.reset();
 			}
 			last.appendChildInternal(pi);
 		}
 		if (!validate)
-			broker.store(pi, currentPath.toString());
+			broker.store(pi, currentPath);
 
 	}
 
@@ -808,15 +784,16 @@ public class Parser
 		if (!stack.empty()) {
 			last = (ElementImpl) stack.peek();
 			if (charBuf != null && charBuf.length() > 0) {
-				final String normalized = charBuf.getNormalizedString(normalize);
+				final XMLString normalized = charBuf.normalize(normalize);
 				if (normalized.length() > 0) {
 					text.setData(normalized);
 					text.setOwnerDocument(document);
 					last.appendChildInternal(text);
 					if (!validate)
-						broker.store(text, currentPath.toString());
+						broker.store(text, currentPath);
 					text.clear();
 				}
+				charBuf.reset();
 			}
 			if (!usedElements.isEmpty()) {
 				node = (ElementImpl) usedElements.pop();
@@ -843,7 +820,7 @@ public class Parser
 		if (!validate
 			&& (broker.getDatabaseType() == DBBroker.DBM
 				|| broker.getDatabaseType() == DBBroker.NATIVE)) {
-			broker.store(node, currentPath.toString());
+			broker.store(node, currentPath);
 		}
 
 		level++;
@@ -866,20 +843,21 @@ public class Parser
 					attr.setType(AttrImpl.ID);
 				node.appendChildInternal(attr);
 				if (!validate)
-					broker.store(attr, currentPath.toString());
+					broker.store(attr, currentPath);
 
 			}
 		}
 		if (attrLength > 0)
 			node.setAttributes((short) attrLength);
+		// notify observers about progress every 100 lines
 		currentLine = locator.getLineNumber();
 		if (!validate) {
 			progress.setValue(currentLine);
-			setChanged();
-			notifyObservers(progress);
+			if(progress.changed()) {
+				setChanged();
+				notifyObservers(progress);
+			}
 		}
-		charBuf.setLength(0);
-		//		previousPath = currentPath;
 	}
 
 	public void startEntity(String name) {
@@ -925,7 +903,7 @@ public class Parser
 			LOG.debug("could not reset input source", e);
 		}
 		try {
-			progress = new ProgressIndicator(currentLine);
+			progress = new ProgressIndicator(currentLine, 100);
 			//document.setMaxDepth(document.getMaxDepth() + 1);
 			//document.calculateTreeLevelStartPoints();
 			validate = false;
@@ -943,6 +921,9 @@ public class Parser
 				broker.addDocument(collection, document);
 			document.setChildCount(0);
 			parser.parse(src);
+			progress.finish();
+			setChanged();
+			notifyObservers(progress);
 			//if(broker.getDatabaseType() == DBBroker.NATIVE)
 			//	broker.addDocument(collection, document);
 			broker.closeDocument();
@@ -991,6 +972,9 @@ public class Parser
 			document.setChildCount(0);
 			DOMStreamer streamer = new DOMStreamer(this, this);
 			streamer.stream(node);
+			progress.finish();
+			setChanged();
+			notifyObservers(progress);
 			broker.flush();
 			if (document.getFileName().equals("/db/system/users.xml") && privileged == false) {
 				// inform the security manager that system data has changed

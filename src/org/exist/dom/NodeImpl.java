@@ -352,11 +352,11 @@ public class NodeImpl implements Node {
 		return pid < 0 ? ownerDocument : ownerDocument.getNode(pid);
 	}
 
-	public String getPath() {
-		String path = "";
+	public StringBuffer getPath() {
+		StringBuffer path = new StringBuffer();
 		Node parent = getParentNode();
 		while (parent.getNodeType() != Node.DOCUMENT_NODE) {
-			path = path + '/' + parent.getNodeName();
+			path.append('/').append(parent.getNodeName());
 			parent = parent.getParentNode();
 		}
 		return path;

@@ -177,7 +177,7 @@
 	<index doctype="PLAY" default="all">
 	</index>
 
-	<index attributes="true" alphanum="true" doctype="movie" default="all">
+	<index attributes="true" alphanum="false" doctype="movie" default="all">
 		<exclude path="//@id"/>
 	</index>
 

@@ -24,7 +24,9 @@ import it.unimi.dsi.fastutil.Object2ObjectOpenHashMap;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+
 import org.exist.util.FastStringBuffer;
+import org.exist.util.MutableStringTokenizer;
 
 
 /**
@@ -48,6 +50,7 @@ public class IndexPaths {
     protected boolean includeAttributes = true;
     protected boolean includeAlphaNum = true;
 	protected int depth = 1;
+	protected MutableStringTokenizer tokenizer = new MutableStringTokenizer();
 	private FastStringBuffer token = new FastStringBuffer();
 	
     /**
@@ -137,61 +140,46 @@ public class IndexPaths {
      *
      * @return Description of the Return Value
      */
-    public boolean match( String path ) {
-		ArrayList temp = tokenize(path);
+    public boolean match( CharSequence path ) {
         if ( includeByDefault ) {
             // check exclusions
-            for ( Iterator i = excludePath.iterator(  ); i.hasNext(  ); )
-                if ( IndexPaths.match( (String[]) i.next(  ), temp ) )
+            for ( Iterator i = excludePath.iterator(); i.hasNext(  ); )
+                if ( match( (String[]) i.next(  ), path ) )
                     return false;
 
             return true;
         }
 
-        for ( Iterator i = includePath.iterator(  ); i.hasNext(  ); )
-            if ( IndexPaths.match( (String[]) i.next(  ), temp ) )
+        for ( Iterator i = includePath.iterator(); i.hasNext(); )
+            if ( match( (String[]) i.next(), path ) )
                 return true;
 
         return false;
     }
 
-    /**
-     * Description of the Method
-     *
-     * @param path Description of the Parameter
-     * @param other Description of the Parameter
-     *
-     * @return Description of the Return Value
-     */
-    private final static boolean match( String[] path, ArrayList other) {
-        int x = 0;
-        int y = 0;
-        boolean skip = false;
-		final int otherLen = other.size();
-		final int pathLen = path.length;
-        while ( x < otherLen ) {
-            if ( y == pathLen )
-                return true;
-
-            if ( path[y].equals( "*" ) ) {
-                y++;
-                skip = true;
-            }
-
-            if ( other.get(x).equals( path[y] ) ) {
-                y++;
-                x++;
-                skip = false;
-            } else if ( skip )
-                x++;
-            else
-
-                return false;
-        }
-
-        return ( y == pathLen );
-    }
-
+	private final boolean match( String[] path, CharSequence other) {
+		int i = 0;
+		boolean skip = false;
+		tokenizer.set(other, "/");
+		CharSequence next;
+		while((next = tokenizer.nextToken()) != null) {
+			if(i == path.length)
+				return true;
+			if(path[i].equals("*")) {
+				++i;
+				skip = true;
+			}
+			if(next.equals(path[i])) {
+				++i;
+				skip = false;
+			} else if(skip) {
+				continue;
+			} else
+				return false;
+		}
+		return i == path.length;
+	}
+	
     /**
      * Description of the Method
      *
@@ -200,13 +188,7 @@ public class IndexPaths {
      * @return Description of the Return Value
      */
     private final ArrayList tokenize( String path ) {
-    	ArrayList temp;
-    	synchronized(cache) {
-    		temp = (ArrayList)cache.get(path);
-    		if(temp != null)
-    			return temp;
-    	}
-    	temp = new ArrayList();
+    	ArrayList temp = new ArrayList();
         String next;
        	token.reset();
         int pos = 0;
@@ -231,11 +213,6 @@ public class IndexPaths {
         }
         if ( token.length() > 0 )
             temp.add( token.toString() );
-        synchronized(cache) {
-        	if(cache.size() == MAX_CACHE_SIZE)
-        		cache.clear();
-        	cache.put(path, temp);
-        }
         return temp;
     }
 }

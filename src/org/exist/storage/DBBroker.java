@@ -479,6 +479,7 @@ public abstract class DBBroker extends Observable {
      *@return      Description of the Return Value
      */
     public abstract Node objectWith( Document doc, long gid );
+    public abstract Node objectWith( NodeProxy p );
 
 
     /**
@@ -606,7 +607,7 @@ public abstract class DBBroker extends Observable {
      *      the Broker to determine if a node's content should be
      *      fulltext-indexed).
      */
-    public abstract void store( NodeImpl node, String currentPath );
+    public abstract void store( NodeImpl node, CharSequence currentPath );
 
 
     /**

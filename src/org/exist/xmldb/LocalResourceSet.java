@@ -62,9 +62,13 @@ public class LocalResourceSet implements ResourceSet {
 		this.saxDocumentEvents = saxDocumentEvents;
 		this.createContainerElements = createContainerElements;
 		this.highlightMatches = highlightMatches;
+		if(val.getLength() == 0)
+			return;
 		switch (val.getType()) {
 			case Value.isNodeList :
 				NodeSet resultSet = (NodeSet) val.getNodeList();
+				if(resultSet == null)
+					return;
 				if (sortExpr != null) {
 					SortedNodeSet sorted = new SortedNodeSet(brokerPool, user, sortExpr);
 					sorted.addAll(resultSet);

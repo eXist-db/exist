@@ -42,6 +42,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeIndexListener;
 import org.exist.dom.NodeProxy;
+import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.Lock;
 import org.exist.util.Lockable;
@@ -156,10 +157,10 @@ public class DOMFile extends BTree implements Lockable {
 	 *@return        the virtual storage address of the value
 	 */
 	public long add(byte[] value) throws ReadOnlyException {
-		if (value == null)
+		if (value == null || value.length == 0)
 			return -1;
 		// overflow value?
-		if (value.length > fileHeader.getWorkSize()) {
+		if (value.length + 4 > fileHeader.getWorkSize()) {
 			LOG.debug("creating overflow page");
 			OverflowDOMPage overflow = new OverflowDOMPage();
 			overflow.write(value);
@@ -489,7 +490,7 @@ public class DOMFile extends BTree implements Lockable {
 	 *@exception  BTreeException  Description of the Exception
 	 */
 	public ArrayList findRange(Value first, Value last) throws IOException, BTreeException {
-		final IndexQuery query = new IndexQuery(null, IndexQuery.BW, first, last);
+		final IndexQuery query = new IndexQuery(IndexQuery.BW, first, last);
 		final RangeCallback cb = new RangeCallback();
 		query(query, cb);
 		return cb.getValues();

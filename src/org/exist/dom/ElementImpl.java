@@ -38,6 +38,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.RelationalBroker;
 import org.exist.storage.Signatures;
+import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.XMLUtil;
 import org.w3c.dom.Attr;
@@ -708,11 +709,11 @@ public class ElementImpl extends NodeImpl implements Element {
 			final byte idSizeType = Signatures.getSizeType(id);
 			final byte signature =
 				(byte) ((Signatures.Elem << 0x5) | (attrSizeType << 0x2) | idSizeType);
-			final byte[] data =
-				new byte[5
+			byte[] data =
+				ByteArrayPool.getByteArray(5
 					+ Signatures.getLength(attrSizeType)
 					+ Signatures.getLength(idSizeType)
-					+ (prefixData != null ? prefixData.length : 0)];
+					+ (prefixData != null ? prefixData.length : 0));
 			data[0] = signature;
 			ByteConversion.intToByte(children, data, 1);
 			Signatures.write(attrSizeType, attributes, data, 5);
@@ -1101,7 +1102,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	 * @throws DOMException
 	 */
 	public void update(NodeList newContent) throws DOMException {
-		final String path = getPath();
+		final String path = getPath().toString();
 		final DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
 		// remove old child nodes
 		NodeList nodes = getChildNodes();
@@ -1148,7 +1149,7 @@ public class ElementImpl extends NodeImpl implements Element {
 			previous = this;
 		else
 			previous = getLastNode(previous);
-		final String path = getPath();
+		final String path = getPath().toString();
 		ownerDocument.broker.removeNode(old, path);
 		ownerDocument.broker.endRemove();
 		newNode.gid = old.gid;
@@ -1170,7 +1171,7 @@ public class ElementImpl extends NodeImpl implements Element {
 				"node is not a child of this element");
 		final int level = ownerDocument.getTreeLevel(gid);
 		final DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
-		removeAll(old, old.getPath());
+		removeAll(old, old.getPath().toString());
 		--children;
 		ownerDocument.broker.endRemove();
 		ownerDocument.broker.update(this);
@@ -1216,7 +1217,7 @@ public class ElementImpl extends NodeImpl implements Element {
 			previous = this;
 		else
 			previous = getLastNode(previous);
-		final String path = getPath();
+		final String path = getPath().toString();
 		ownerDocument.broker.removeNode(old, path);
 		ownerDocument.broker.endRemove();
 		appendChild(old.gid, previous, newChild, true);

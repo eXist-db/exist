@@ -31,7 +31,7 @@ public class TextToken {
         "p", "float"};
     private int end = 0;
     private int start = 0;
-    private String tokenText;
+    private CharSequence tokenText;
     private int tokenType = EOF;
 
 
@@ -44,7 +44,7 @@ public class TextToken {
      *@param  type  Description of the Parameter
      *@param  text  Description of the Parameter
      */
-    public TextToken( int type, String text ) {
+    public TextToken( int type, CharSequence text ) {
         this( type, text, 0, text.length() );
     }
 
@@ -56,7 +56,7 @@ public class TextToken {
      *@param  text   Description of the Parameter
      *@param  start  Description of the Parameter
      */
-    public TextToken( int type, String text, int start ) {
+    public TextToken( int type, CharSequence text, int start ) {
         this( type, text, start, start );
     }
 
@@ -69,7 +69,7 @@ public class TextToken {
      *@param  start  Description of the Parameter
      *@param  end    Description of the Parameter
      */
-    public TextToken( int type, String text, int start, int end ) {
+    public TextToken( int type, CharSequence text, int start, int end ) {
         tokenType = type;
         tokenText = text;
         this.start = start;
@@ -86,7 +86,7 @@ public class TextToken {
         tokenType = type;
     }
 
-	public void set(int type, String text, int start) {
+	public void set(int type, CharSequence text, int start) {
 		tokenType = type;
 		tokenText = text;
 		this.start = start;
@@ -122,7 +122,7 @@ public class TextToken {
         if(start >= tokenText.length() || end > tokenText.length())
             throw new StringIndexOutOfBoundsException("start: " + start +
                 "; end=" + end + "; text=" + tokenText);
-        return tokenText.substring( start, end );
+        return tokenText.subSequence( start, end ).toString();
     }
 
 

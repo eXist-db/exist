@@ -23,8 +23,7 @@ package org.exist.dom;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import java.util.Iterator;
-import org.apache.log4j.Category;
-import java.util.Arrays;
+import org.apache.log4j.Logger;
 import org.exist.xpath.Value;
 import org.exist.util.FastQSort;
 
@@ -33,7 +32,7 @@ public class ArraySet extends NodeSet {
 	public final static int ANCESTOR = 0;
 	public final static int DESCENDANT = 1;
 
-	protected static Category LOG = Category.getInstance(ArraySet.class.getName());
+	protected static Logger LOG = Logger.getLogger(ArraySet.class);
 	protected int counter = 0;
 	protected int length;
 
@@ -642,7 +641,7 @@ public class ArraySet extends NodeSet {
 			return null;
 		sort();
 		NodeProxy p = nodes[pos];
-		return p.doc.getNode(p.gid);
+		return p.doc.getNode(p);
 	}
 
 	/**
