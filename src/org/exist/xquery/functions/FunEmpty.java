@@ -70,7 +70,6 @@ public class FunEmpty extends Function {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
 		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-		LOG.debug("empty: " + seq.getLength());
 		return seq.getLength() == 0 ? BooleanValue.TRUE : BooleanValue.FALSE;
 	}
 }

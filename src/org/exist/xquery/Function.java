@@ -94,6 +94,9 @@ public abstract class Function extends PathExpr {
 	 * @see org.exist.xpath.PathExpr#returnsType()
 	 */
 	public int returnsType() {
+		if(mySignature.getReturnType() == null)
+			throw new IllegalArgumentException("Return type for function " + mySignature.getName() +
+					" is not defined");
 		return mySignature.getReturnType().getPrimaryType();
 	}
 
@@ -101,6 +104,9 @@ public abstract class Function extends PathExpr {
 	 * @see org.exist.xpath.AbstractExpression#getCardinality()
 	 */
 	public int getCardinality() {
+		if(mySignature.getReturnType() == null)
+			throw new IllegalArgumentException("Return type for function " + mySignature.getName() +
+					" is not defined");
 		return mySignature.getReturnType().getCardinality();
 	}
 	

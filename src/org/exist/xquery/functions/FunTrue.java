@@ -22,7 +22,7 @@ package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.Function;
+import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
@@ -31,11 +31,12 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-public class FunTrue extends Function {
+public class FunTrue extends BasicFunction {
 
 	public final static FunctionSignature signature =
 			new FunctionSignature(
-				new QName("true", BUILTIN_FUNCTION_NS),
+				new QName("true", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
+                "Always returns the boolean value true",
 				null,
 				new SequenceType(Type.BOOLEAN, Cardinality.ONE));
 				
@@ -47,8 +48,8 @@ public class FunTrue extends Function {
 		return Type.BOOLEAN;
 	}
 	
-	public Sequence eval(Sequence contextSequence, Item contextItem) {
-		return BooleanValue.FALSE;
+	public Sequence eval(Sequence args[], Sequence contextSequence) {
+		return BooleanValue.TRUE;
 	}
 
 	public String pprint() {
