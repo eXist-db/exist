@@ -627,7 +627,7 @@ implements Comparable, EntityResolver, Cacheable {
 				.getSecurityManager();
 		final int uid = istream.readInt();
 		final int gid = istream.readInt();
-		final int perm = (istream.readByte() & 0777);
+		final int perm = (istream.readInt() & 0777);
 		if (secman == null) {
 			permissions.setOwner(SecurityManager.DBA_USER);
 			permissions.setGroup(SecurityManager.DBA_GROUP);
@@ -1579,7 +1579,7 @@ implements Comparable, EntityResolver, Cacheable {
 			ostream.writeInt(user.getUID());
 			ostream.writeInt(group.getId());
 		}
-		ostream.writeByte((byte) permissions.getPermissions());
+		ostream.writeInt(permissions.getPermissions());
 		ostream.writeLong(created);
 		if(reloadRequired) {
 		    broker.reloadCollection(this);
