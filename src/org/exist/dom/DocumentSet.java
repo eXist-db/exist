@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import org.apache.log4j.Category;
+import org.exist.collections.*;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 

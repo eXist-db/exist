@@ -22,6 +22,8 @@
 package org.exist.util;
 
 import org.w3c.dom.*;
+
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.PrintWriter;
 import java.io.FileInputStream;
@@ -331,7 +333,10 @@ public class XMLUtil {
 	 */
 	public static String readFile(File file, String defaultEncoding) throws IOException {
 		// read the file into a string
-		FileInputStream in = new FileInputStream(file);
+		return readFile(new FileInputStream(file), defaultEncoding);
+	}
+	
+	public static String readFile(InputStream in, String defaultEncoding) throws IOException {
 		byte[] chunk = new byte[512];
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		int l;

@@ -375,6 +375,8 @@ public class NodeImpl implements Node {
 	 * @see org.w3c.dom.Node#getPreviousSibling()
 	 */
 	public Node getPreviousSibling() {
+		if(gid < 2)
+			return ownerDocument.getPreviousSibling(this);
 		int level = ownerDocument.getTreeLevel(gid);
 		long pid =
 			(gid - ownerDocument.getLevelStartPoint(level))

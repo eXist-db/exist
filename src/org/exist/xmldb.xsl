@@ -9,16 +9,16 @@
     xmlns:xsp="http://apache.org/xsp"
     xmlns:xmldb="http://exist-db.org/xmldb/1.0"
     xmlns:xsp-session="http://apache.org/xsp/session/2.0"
+    xsp-session:create-session="true"
     version="1.0"
-    create-session="true"
 >
     <xsl:variable name="namespace-uri">http://exist-db.org/xmldb/1.0</xsl:variable>
     <xsl:variable name="prefix">xmldb</xsl:variable>
     <xsl:variable name="xsp-uri" select="'http://apache.org/xsp'"/>
-
+	
     <xsl:template match="xsp:page">
-        <xsp:page>
-            <xsl:apply-templates select="@*"/>
+        <xsp:page xmlns:xmldb="http://exist-db.org/xmldb/1.0">
+          	<xsl:apply-templates select="@*"/>
             <xsp:structure>
                 <xsp:include>java.net.*</xsp:include>
                 <xsp:include>java.io.UnsupportedEncodingException</xsp:include>

@@ -43,4 +43,8 @@ if [ -z "$JAVA_OPTIONS" ]; then
     export JAVA_OPTIONS="-Xms64000k -Xmx256000k -Djavax.xml.parsers.SAXParserFactory=$SAXFACTORY -Dfile.encoding=ISO8859-1"
 fi
 
-$JAVA_HOME/bin/java $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" jetty $*
+JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
+
+$JAVA_HOME/bin/java $JAVA_OPTIONS -Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS \
+	$OPTIONS -jar "$EXIST_HOME/start.jar" \
+	jetty $*

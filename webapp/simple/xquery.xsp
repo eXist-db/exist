@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!-- Author: Wolfgang Meier "meier@ifs.tu-darmstadt.de" -->
 
 <xsp:page
-    xmlns:xsp="http://apache.org/xsp"
     xmlns:xmldb="http://exist-db.org/xmldb/1.0"
+    xmlns:xsp="http://apache.org/xsp"
     xmlns:ci="http://apache.org/cocoon/include/1.0">
  
     <xsp:logic>

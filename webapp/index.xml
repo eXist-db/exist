@@ -37,14 +37,12 @@
         </section>
         <section id="overview" title="Overview">
             <p>eXist is an Open Source native XML database featuring efficient, 
-            	index-based XPath query processing, extensions for keyword search 
-            	and tight integration with existing XML development tools. The database is lightweight,
-                completely written in Java and may be easily deployed in a
+            	index-based XPath query processing, extensions for keyword search,
+            	XUpdate support and tight integration with existing XML development tools. 
+            	The database is lightweight, completely written in Java and may be easily deployed in a
                 number of ways, running either as a stand-alone server process,
                 inside a servlet-engine or directly embedded into an application.</p>
-            <p>The database is currently best suited for applications dealing
-                with small to large collections of XML documents, which are
-                occasionally updated. Depending on how the database engine has
+            <p>Depending on how the database engine has
                 been deployed, eXist offers several interfaces to application
                 developers, including HTTP, XML-RPC, SOAP and WebDAV. Java
                 developers should have a look at the <link
@@ -251,40 +249,47 @@
                     </th>
                 </tr>
                 <tr>
-                    <td valign="top">Max. number of documents:</td>
-                    <td>2<sup>31</sup> documents.</td>
-                </tr>
-                <tr>
                     <td valign="top">Max. number of documents per collection:</td>
                     <td>2<sup>31</sup> documents.</td>
                 </tr>
                 <tr>
                     <td valign="top">Max. size per document:</td>
-                    <td>eXist uses unique object identifiers of type long for
+                    <td>Depends on the structure of the document:
+                    	eXist uses unique object identifiers of type long for
                         every XML node. A document may thus have 2<sup>63</sup>
                         - x single XML-nodes per document, where x = 0 for an
                         ideally well-balanced document tree. To keep x small,
                         eXist does <b>not</b> balance the tree as a whole, but
                         recomputes the ideal tree structure for every single
-                        level of the tree's node hierarchy. Thus, the 64bit
+                        level of the tree's node hierarchy. Thus, the long
                         identifiers are normally more than sufficient to index
                         large documents, because only a few identifiers are
-                        wasted for the balancing. The largest document I tried
-                        had about 250MB of XML data.</td>
+                        wasted for the balancing. However, there are some documents
+                        with a very irregular structure,
+                        which cannot be mapped into the internal identifer scheme. Such
+                        documents have to be split into smaller, logical parts.</td>
                 </tr>
             </table>
         </section>
         <section id="missing" title="Future plans">
             <variablelist>
+            	<varlistentry>
+            		<term>Value-based indexes for dates, numbers ...</term>
+            		<listitem>
+            			<p>Apart from the fulltext index, it should be possible to define 
+            			additional indexes based on type.</p>
+            		</listitem>
+            	</varlistentry>
+            	<varlistentry>
+            		<term>XML schemas</term>
+            		<listitem>
+            			<p>An existing XML schema could be used to control the
+            			indexing process. Currently, it is only possible to exclude or
+            			include selected nodes from the fulltext index.</p>
+            		</listitem>
+            	</varlistentry>
                 <varlistentry>
-                    <term>XUpdate</term>
-                    <listitem>
-                        <p>We are currently working on XUpdate. It will 
-                        definitely be part of the 1.0 release.</p>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>XPath Support</term>
+                    <term>XPath support</term>
                     <listitem>
                         <p>The XPath implementation still needs some work to be
                             done. A new implementation is on its way.</p>

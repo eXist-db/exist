@@ -1,39 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+	This is the central configuration file for eXist.
+-->
 <exist>
-	
-  <!-- db-connection describes settings for the different 
-          storage backends. For the relational backend, these
-          are mostly JDBC settings. Adjust them according to 
-          your drivers documentation.
 
-          The native backends only need some information
-          about the directory to use for db-files and memory buffer
-          sizes.
-          
-          Which backend is chosen depends on the value of
-          the database-attribute. Currently the following
-          values are recognized:
-          
-          mysql                     selects the relational backend
-          postgresql             
-          native                     pure Java native backend
-  
-          Please note that you have to specify the correct setting
-          here. MySQL for example will not work with database=
-          postgresql or oracle.
-          
-          The relational backend accepts the following options:
-          
-          - driver:      name of the jdbc-driver
-          - url:         jdbc-url
-          - database:    database backend being used
-          - encoding:    character encoding used to write character
-              data to temporary files. This depends on the character
-              handling capabilities of your rdbms and the settings of
-              your database.
-  -->
-
-  <!-- sample db-connection for native Java backend
+  <!-- sample db-connection for the native Java backend
 
        - files:   the name of the directory where database files are
                   stored.
@@ -64,28 +36,6 @@
 		   -->
 		   <pool min="1" max="15" sync-period="240000"/>
 	   </db-connection>
-	
-  <!-- sample db-connection for MySQL --> 
-  <!--
-  <db-connection driver="org.gjt.mm.mysql.Driver"
-    	         url="jdbc:mysql://localhost/test?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=iso-8859-1"
-		 user="exist"
-		 password="exist"
-                 encoding="ISO-8859-1"
-		 database="mysql"
-  />
-  -->
-
-  <!-- sample db-connection for PostgreSQL -->
-  <!--
-  <db-connection driver="org.postgresql.Driver"
-    	 url="jdbc:postgresql://localhost/exist"
-         user="exist"
-	 password="exist"
-         database="postgresql"
-	     encoding="ISO-8859-1"
-  />
-  -->
   
   <!-- settings for the serializer
 
@@ -100,19 +50,6 @@
   
   <!-- settings for the indexer
        Attributes:
-	- batchLoad	
-	        setting this to true will cause the relational backend
-			to temporarily write most table-data to a file 
-			instead of directly storing it into the database.
-			These files will be read in using the mysql LOAD DATA
-			INFILE or the respective Oracle or PostgreSQL commands. 
-			This is about twice as fast as storing data directly.
-	- tmpDir	
-	        the temporary directory to write temporary files
-			during the parsing.
-	- controls
-	        the directory containing the .ctl-files needed by Oracle's
-			sqlldr.
 	- suppress-whitespace
 		should leading or trailing whitespace be removed from a text
 		node? Set to "leading", "trailing", "both" or "none".
@@ -127,8 +64,7 @@
     		retrieving query results or for some types of XPath subexpressions, like
     		equality comparisons.
   -->
-  <indexer batchLoad="true" tmpDir="tmp"
-	  stemming="false" controls="ctl" caseSensitive="false"
+  <indexer stemming="false" caseSensitive="false"
 	  suppress-whitespace="both" index-depth="3"
 	  tokenizer="org.exist.storage.analysis.SimpleTokenizer"
 	  validation="false">

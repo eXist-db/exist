@@ -196,7 +196,7 @@ public class ArraySet extends NodeSet {
 		if (counter < length)
 			nodes[counter++] = proxy;
 		else {
-			final int grow = (length < 10) ? 50 : length >> 1;
+			int grow = (length < 10) ? 50 : length >> 1;
 			NodeProxy temp[] = new NodeProxy[length + grow];
 			System.arraycopy(nodes, 0, temp, 0, length);
 			length = length + grow;

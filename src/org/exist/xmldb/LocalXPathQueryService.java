@@ -1,8 +1,10 @@
 package org.exist.xmldb;
 
 import java.io.StringReader;
+import java.util.Map;
+import java.util.TreeMap;
 
-import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
@@ -13,7 +15,6 @@ import org.exist.parser.XPathParser;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.serializers.Serializer;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.Value;
 import org.exist.xpath.ValueNodeSet;
@@ -25,15 +26,12 @@ import org.xmldb.api.modules.XMLResource;
 
 public class LocalXPathQueryService implements XPathQueryServiceImpl {
 
-	private static Category LOG = Category.getInstance(LocalXPathQueryService.class.getName());
+	private final static Logger LOG = 
+		Logger.getLogger(LocalXPathQueryService.class);
+	
+	protected Map properties = new TreeMap();
 	protected BrokerPool brokerPool;
 	protected LocalCollection collection;
-	protected String encoding = "UTF-8";
-
-	protected boolean indentXML = false;
-	protected boolean saxDocumentEvents = true;
-	protected boolean createContainerElements = true;
-	protected int highlightMatches = 0;
 	protected User user;
 
 	public LocalXPathQueryService(User user, BrokerPool pool, LocalCollection collection) {
@@ -54,17 +52,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	}
 
 	public String getProperty(String property) throws XMLDBException {
-		if (property.equals("pretty"))
-			return Boolean.toString(indentXML);
-		if (property.equals("encoding"))
-			return encoding;
-		if (property.equals("create-container-elements"))
-			return Boolean.toString(createContainerElements);
-		if (property.equals("match-tagging-elements"))
-			return Boolean.toString((highlightMatches & Serializer.TAG_ELEMENT_MATCHES) > 0);
-		if(property.equals("match-tagging-attributes"))
-			return Boolean.toString((highlightMatches & Serializer.TAG_ATTRIBUTE_MATCHES) > 0);
-		return null;
+		return (String)properties.get(property);
 	}
 
 	public String getVersion() throws XMLDBException {
@@ -136,11 +124,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 					brokerPool,
 					collection,
 					resultValue,
-					indentXML,
-					encoding,
-					saxDocumentEvents,
-					createContainerElements,
-					highlightMatches,
+					properties,
 					sortExpr);
 			return result;
 		} catch (antlr.RecognitionException re) {
@@ -205,25 +189,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 	 *@exception  XMLDBException  Description of the Exception
 	 */
 	public void setProperty(String property, String value) throws XMLDBException {
-		if (property.equals("pretty")) {
-			indentXML = value.equals("true");
-			LOG.debug("pretty-printing = " + value);
-		}
-
-		if (property.equals("encoding")) {
-			encoding = value;
-			LOG.debug("encoding = " + encoding);
-		}
-		if (property.equals("sax-document-events"))
-			saxDocumentEvents = value.equals("true");
-		if (property.equals("create-container-elements"))
-			createContainerElements = value.equals("true");
-		if (property.equals("match-tagging-elements"))
-			highlightMatches = value.equals("true") ? highlightMatches | Serializer.TAG_ELEMENT_MATCHES :
-				highlightMatches & (~ Serializer.TAG_ELEMENT_MATCHES);
-		if (property.equals("match-tagging-attributes"))
-			highlightMatches = value.equals("true") ? highlightMatches | Serializer.TAG_ATTRIBUTE_MATCHES :
-				highlightMatches & (~ Serializer.TAG_ATTRIBUTE_MATCHES);
+		properties.put(property, value);
 	}
 
 }

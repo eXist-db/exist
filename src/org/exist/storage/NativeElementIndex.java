@@ -34,6 +34,7 @@ import org.dbxml.core.data.Value;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
+import org.exist.storage.store.*;
 import org.exist.util.Configuration;
 import org.exist.util.FastQSort;
 import org.exist.util.Lock;

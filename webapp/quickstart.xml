@@ -43,7 +43,8 @@
             <para>Servlets running in the same web application context will have
                 direct access to the db. A Cocoon-driven application would be
                 one example. External client applications may still use the
-                supplied network interfaces. Some features of eXist require a
+                supplied network interfaces.</para> 
+            <para>Some features of eXist require a
                 servlet engine: for example, the SOAP and WebDAV interfaces are
                 implemented as servlets. These interfaces will thus not be
                 available in standalone mode.</para>
@@ -53,14 +54,13 @@
 			
             <para>For a quick start it is recommended to use the server through
                 a servlet engine, i.e. using the third option described above.
-                The stand-alone and embedded deployment options are covered by
-                <ulink href="deployment.xml">deployment.xml</ulink>. </para>
+                The stand-alone and embedded deployment options are covered by the
+                <ulink href="deployment.xml">deployment.xml</ulink> document. </para>
             <para>The source distribution includes a servlet engine (<ulink
                 href="http://www.jetty.org">Jetty</ulink>), so no additional
                 software is required. If you already have a running
                 servlet-engine at your hands, you may alternatively download
-                eXist as a bundled web application archive (.war-file). However,
-				I recommend downloading the source distribution for testing.
+                eXist as a bundled web application archive (.war-file).
 			</para>
 			<section>
 				<title>Installer</title>
@@ -70,7 +70,7 @@
 					by double-clicking the downloaded jar-file (Windows/MAC) or
 					by calling java with the <option>-jar</option> option:
 				</para>
-				<synopsis>java -jar eXist-0.9.1-installer.jar</synopsis>
+				<synopsis>java -jar eXist-{version}-installer.jar</synopsis>
 				<para>After the installation has completed, you should be ready
 					to launch eXist. If the installer has created shortcuts,
 					you may simply click on the "Launch eXist" icon on the

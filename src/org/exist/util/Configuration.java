@@ -232,7 +232,7 @@ public class Configuration implements ErrorHandler {
 					}
 				}
 
-				CatalogResolver resolver = new CatalogResolver();
+				CatalogResolver resolver = new CatalogResolver(true);
 				config.put("resolver", resolver);
 
 				NodeList entityResolver =

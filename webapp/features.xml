@@ -23,37 +23,6 @@
         <title>Feature Overview</title>
         
         <section>
-            <title>Architecture</title>
-            
-            <para>Though eXist provides an optional relational storage backend,
-            it has been designed from the start to be a pure native XML database.
-            Backend implementation details are completely hidden from eXist's
-            core (see figure below). All calls to the storage backends are 
-            handled by database broker classes implementing the abstract class
-            DBBroker. These classes provide a rather limited set of basic operations
-            like adding, removing or retrieving a document fragment. Additionally,
-            there are methods to access available index-structures, for example,
-            to retrieve the set of element nodes corresponding to a given
-            qualified name.</para>
-            
-            <figure>
-                <title>Architecture Overview</title>
-                <graphic fileref="architecture.jpg"/>
-            </figure>
-            
-            <para>As a proof of concept for the indexing and storage architecture,
-            the first public releases were entirely based on the relational backend.
-            These versions served as a testing platform to explore if the basic
-            design would meet our expectations. However, eXist is not meant to be 
-            another XML middleware and it has not been designed to achieve its best
-            performance with a relational storage backend. Thus, for many applications,
-            the native XML data store will yield much better performance than the
-            relational storage. Nevertheless there are good reasons to keep the relational
-            backend code, e.g. reliability.</para>
-            
-        </section>
-        
-        <section>
             <title>Managing Documents in Collections</title>
             
             <para>Documents are managed in hierarchical collections, which is
@@ -129,6 +98,15 @@
             or in connection with a servlet-container (see 
             <ulink href="deployment.xml">documentation</ulink>). It is also possible
             to run eXist from a read-only filesystem like a CD.</para>
+        </section>
+        
+        <section>
+        	<title>XUpdate</title>
+        	
+        	<para>Beginning with version 0.9.2, eXist comes with support for XUpdate.
+        	XUpdate is a standard proposed by the XML:DB initiative for updates of
+        	selected parts of a document.</para>
+        	
         </section>
         
         <section>

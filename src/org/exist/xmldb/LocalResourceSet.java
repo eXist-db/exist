@@ -2,6 +2,7 @@ package org.exist.xmldb;
 
 import java.io.StringWriter;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Vector;
 
 import org.apache.xml.serialize.OutputFormat;
@@ -28,12 +29,8 @@ public class LocalResourceSet implements ResourceSet {
 
 	protected BrokerPool brokerPool;
 	protected LocalCollection collection;
-	protected String encoding = "UTF-8";
-	protected boolean indentXML = false;
 	protected Vector resources = new Vector();
-	protected boolean saxDocumentEvents = true;
-	protected boolean createContainerElements = false;
-	protected int highlightMatches = 0;
+	protected Map properties;
 	private User user;
 
 	public LocalResourceSet(User user, BrokerPool pool, LocalCollection col) {
@@ -47,21 +44,13 @@ public class LocalResourceSet implements ResourceSet {
 		BrokerPool pool,
 		LocalCollection col,
 		Value val,
-		boolean indentXML,
-		String encoding,
-		boolean saxDocumentEvents,
-		boolean createContainerElements,
-		int highlightMatches,
+		Map properties,
 		String sortExpr)
 		throws XMLDBException {
 		this.user = user;
 		this.brokerPool = pool;
-		this.encoding = encoding;
+		this.properties = properties;
 		this.collection = col;
-		this.indentXML = indentXML;
-		this.saxDocumentEvents = saxDocumentEvents;
-		this.createContainerElements = createContainerElements;
-		this.highlightMatches = highlightMatches;
 		if(val.getLength() == 0)
 			return;
 		switch (val.getType()) {
@@ -110,6 +99,9 @@ public class LocalResourceSet implements ResourceSet {
 	}
 
 	public Resource getMembersAsResource() throws XMLDBException {
+		String encoding = "UTF-8";
+		if(properties != null && properties.containsKey("encoding"))
+			encoding = (String)properties.get("encoding");
 		OutputFormat format = new OutputFormat("xml", encoding, false);
 		StringWriter writer = new StringWriter();
 		XMLSerializer handler = new XMLSerializer(writer, format);
@@ -119,12 +111,9 @@ public class LocalResourceSet implements ResourceSet {
 			// configure the serializer
 			Serializer serializer = broker.getSerializer();
 			serializer.setContentHandler(handler);
-			serializer.setEncoding(encoding);
+			properties.put(Serializer.GENERATE_DOC_EVENTS, "false");
+			serializer.setProperties(properties);
 			serializer.setUser(user);
-			serializer.setContentHandler(handler);
-			serializer.setCreateContainerElements(createContainerElements);
-			if (highlightMatches > 0)
-				serializer.setHighlightMatches(highlightMatches);
 
 			//	serialize results
 			handler.startDocument();
@@ -146,7 +135,7 @@ public class LocalResourceSet implements ResourceSet {
 			for(Iterator i = resources.iterator(); i.hasNext(); ) {
 				current = (Object)i.next();
 				if(current instanceof NodeProxy)
-					serializer.toSAX((NodeProxy)current, false);
+					serializer.toSAX((NodeProxy)current);
 				else {
 					value = current.toString().toCharArray();
 					handler.characters(value, 0, value.length);
@@ -183,11 +172,7 @@ public class LocalResourceSet implements ResourceSet {
 				|| coll.collection.getId() != p.doc.getCollection().getId()) {
 				coll = new LocalCollection(user, brokerPool, null, p.doc.getCollection());
 			}
-			res = new LocalXMLResource(user, brokerPool, coll, p, indentXML);
-			res.setSAXDocEvents(saxDocumentEvents);
-			res.setEncoding(encoding);
-			res.setCreateContainerElements(createContainerElements);
-			res.setMatchTagging(highlightMatches);
+			res = new LocalXMLResource(user, brokerPool, coll, p, properties);
 		} else if (r instanceof String) {
 			res = new LocalXMLResource(user, brokerPool, collection, null, -1);
 			res.setContent(r);

@@ -3,6 +3,7 @@ package org.exist.xmldb;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.apache.xml.serialize.OutputFormat;
@@ -37,17 +38,10 @@ public class LocalXMLResource implements XMLResource {
 	protected BrokerPool brokerPool;
 	protected String docId = null;
 	protected DocumentImpl document = null;
-	protected String encoding = "ISO-8859-1";
-	protected long id = -1;
 	protected LocalCollection parent;
 	protected NodeProxy proxy = null;
-
-	protected boolean saxDocEvents = true;
-	protected boolean indent = true;
-	protected boolean createContainerElements = true;
-	protected boolean processXInclude = true;
-	protected int highlightMatches = 0;
-
+	protected long id = -1;
+	protected Map properties = null;
 	protected User user;
 	protected String content = null;
 	protected File file = null;
@@ -60,7 +54,7 @@ public class LocalXMLResource implements XMLResource {
 		String docId,
 		long id)
 		throws XMLDBException {
-		this(user, pool, parent, docId, id, true);
+		this(user, pool, parent, docId, id, null);
 	}
 
 	public LocalXMLResource(
@@ -69,17 +63,17 @@ public class LocalXMLResource implements XMLResource {
 		LocalCollection parent,
 		String did,
 		long id,
-		boolean indent)
+		Map properties)
 		throws XMLDBException {
 		this.user = user;
 		this.brokerPool = pool;
 		this.parent = parent;
 		this.id = id;
+		this.properties = properties;
 		if (did != null && did.indexOf('/') > -1)
 			did = did.substring(did.lastIndexOf('/') + 1);
 
 		this.docId = did;
-		this.indent = indent;
 	}
 
 	public LocalXMLResource(
@@ -88,19 +82,18 @@ public class LocalXMLResource implements XMLResource {
 		LocalCollection parent,
 		DocumentImpl doc,
 		long id,
-		boolean indent)
+		Map properties)
 		throws XMLDBException {
 		this.user = user;
 		this.brokerPool = pool;
 		this.parent = parent;
 		this.id = id;
 		this.document = doc;
-		this.document.setDocumentElement(id);
 		this.docId = doc.getFileName();
 		if (docId.indexOf('/') > -1)
 			docId = docId.substring(docId.lastIndexOf('/') + 1);
 
-		this.indent = indent;
+		this.properties = properties;
 	}
 
 	public LocalXMLResource(
@@ -108,9 +101,9 @@ public class LocalXMLResource implements XMLResource {
 		BrokerPool pool,
 		LocalCollection parent,
 		NodeProxy p,
-		boolean indent)
+		Map properties)
 		throws XMLDBException {
-		this(user, pool, parent, p.doc, p.gid, indent);
+		this(user, pool, parent, p.doc, p.gid, properties);
 		this.proxy = p;
 	}
 
@@ -139,11 +132,7 @@ public class LocalXMLResource implements XMLResource {
 						"permission denied to read resource");
 				Serializer serializer = broker.getSerializer();
 				serializer.setUser(user);
-				serializer.setIndent(indent);
-				serializer.setEncoding(encoding);
-				serializer.setProcessXInclude(processXInclude);
-				serializer.setCreateContainerElements(createContainerElements);
-				serializer.setHighlightMatches(highlightMatches);
+				serializer.setProperties(properties);
 				if (id < 0)
 					content = serializer.serialize(document);
 				else {
@@ -197,23 +186,20 @@ public class LocalXMLResource implements XMLResource {
 				throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
 					"permission denied to read resource");
+			
 			Serializer serializer = broker.getSerializer();
-			serializer.setEncoding(encoding);
-			serializer.setUser(user);
-			serializer.setProcessXInclude(processXInclude);
 			serializer.setContentHandler(handler);
-			serializer.setCreateContainerElements(createContainerElements);
-			if (highlightMatches > 0)
-				serializer.setHighlightMatches(highlightMatches);
+			serializer.setUser(user);
+			serializer.setProperties(properties);
 			String xml;
 			try {
 				if (id < 0)
-					serializer.toSAX(document, saxDocEvents);
+					serializer.toSAX(document);
 				else {
 					if (proxy == null)
 						proxy = new NodeProxy(document, id);
 
-					serializer.toSAX(proxy, saxDocEvents);
+					serializer.toSAX(proxy);
 				}
 			} catch (SAXException saxe) {
 				saxe.printStackTrace();
@@ -299,28 +285,11 @@ public class LocalXMLResource implements XMLResource {
 	}
 
 	public ContentHandler setContentAsSAX() throws XMLDBException {
+		String encoding = "UTF-8";
+		if (properties != null && properties.containsKey("encoding"))
+			encoding = (String) properties.get("encoding");
 		OutputFormat format = new OutputFormat("xml", encoding, false);
 		return new InternalXMLSerializer(format);
-	}
-
-	protected void setEncoding(String encoding) {
-		this.encoding = encoding;
-	}
-
-	protected void setSAXDocEvents(boolean generate) {
-		this.saxDocEvents = generate;
-	}
-
-	public void setCreateContainerElements(boolean createContainerElements) {
-		this.createContainerElements = createContainerElements;
-	}
-
-	public void setProcessXInclude(boolean process) {
-		processXInclude = process;
-	}
-
-	public void setMatchTagging(int mode) {
-		highlightMatches = mode;
 	}
 
 	private class InternalXMLSerializer extends XMLSerializer {

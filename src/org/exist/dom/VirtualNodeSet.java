@@ -221,7 +221,7 @@ public class VirtualNodeSet extends NodeSet {
 				proxy.gid = proxy.doc.getDocumentElementId();
 */
 				// -- inserted by Timo Boehme --
-				NodeProxy docElemProxy = new NodeProxy(proxy.getDoc(), proxy.doc.getDocumentElementId());
+				NodeProxy docElemProxy = new NodeProxy(proxy.getDoc(), 1);
 				result.add(docElemProxy);
 				if (recursive)
 					addChildren(result, docElemProxy.getNode(), recursive);
@@ -289,6 +289,7 @@ public class VirtualNodeSet extends NodeSet {
 	}
 
 	private final void realize() {
+		System.out.println("realizing node set ...");
 		if (realSet != null)
 			return;
 		switch (axis) {

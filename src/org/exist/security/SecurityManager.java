@@ -31,7 +31,7 @@ import java.util.Iterator;
 import org.apache.log4j.Category;
 import org.exist.EXistException;
 import org.exist.Parser;
-import org.exist.dom.Collection;
+import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;

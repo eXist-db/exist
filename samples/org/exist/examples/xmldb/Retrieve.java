@@ -19,6 +19,7 @@ public class Retrieve {
 	protected static String driver = "org.exist.xmldb.DatabaseImpl";
 
 	protected static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
+	//protected static String URI = "xmldb:exist://";
 
 	protected static void usage() {
 		System.out.println("usage: org.exist.examples.xmldb.Retrieve collection docName");
@@ -41,6 +42,7 @@ public class Retrieve {
 		// get the collection
 		Collection col = DatabaseManager.getCollection(URI + collection);
 		col.setProperty("encoding", "ISO-8859-1");
+		col.setProperty("pretty", "false");
 		XMLResource res = (XMLResource)col.getResource(args[1]);
 		if(res == null)
 			System.out.println("document not found!");

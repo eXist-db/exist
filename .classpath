@@ -13,36 +13,24 @@
     <classpathentry kind="lib" path="lib/core/junit.jar"/>
     <classpathentry kind="lib" path="lib/core/libreadline-java.jar"/>
     <classpathentry kind="lib" path="lib/core/log4j.jar"/>
-    <classpathentry kind="lib" path="lib/core/mysql.jar"/>
-    <classpathentry kind="lib" path="lib/core/xalan-2.3.1.jar"/>
-    <classpathentry kind="lib" path="lib/core/xercesImpl.jar"/>
-    <classpathentry kind="lib" path="lib/core/xml-apis.jar"/>
     <classpathentry kind="lib" path="lib/core/xmldb.jar" sourcepath="/home/wolf/Java/xmldb/"/>
-    <classpathentry kind="lib" path="lib/optional/cocoon-2.0.3.jar" sourcepath="/home/wolf/Devel/Sandbox/xml-cocoon2/src/java/"/>
     <classpathentry kind="lib" path="lib/core/excalibur-cli-1.0.jar"/>
     <classpathentry kind="lib" path="lib/optional/ant-optional.jar"/>
-    <classpathentry kind="lib" path="lib/optional/avalon-excalibur-vm12-20020705.jar"/>
-    <classpathentry kind="lib"
-        path="lib/optional/avalon-framework-20020627.jar" sourcepath="/home/wolf/Java/Avalon-4.1.3/src/java"/>
     <classpathentry kind="lib" path="lib/optional/axis.jar"/>
     <classpathentry kind="lib" path="lib/optional/axis-ant.jar"/>
-    <classpathentry kind="lib" path="lib/optional/bsf-2.2.jar"/>
     <classpathentry kind="lib" path="lib/optional/clutil.jar"/>
-    <classpathentry kind="lib" path="lib/optional/commons-collections-1.0.jar"/>
-    <classpathentry kind="lib" path="lib/optional/commons-discovery.jar"/>
-    <classpathentry kind="lib" path="lib/optional/commons-httpclient-20020423.jar"/>
-    <classpathentry kind="lib" path="lib/optional/commons-JXPath-20020320.jar"/>
-    <classpathentry kind="lib" path="lib/optional/commons-logging.jar"/>
     <classpathentry kind="lib" path="lib/optional/jakarta-regexp-1.2.jar"/>
     <classpathentry kind="lib" path="lib/optional/jaxrpc.jar"/>
-    <classpathentry kind="lib" path="lib/optional/jstyle.jar"/>
-    <classpathentry kind="lib" path="lib/optional/logkit-20020529.jar"/>
-    <classpathentry kind="lib" path="lib/optional/maybeupload_1-0-5pre3.jar"/>
     <classpathentry kind="lib" path="lib/optional/saaj.jar"/>
     <classpathentry kind="lib" path="lib/optional/tt-bytecode.jar"/>
     <classpathentry kind="lib" path="lib/optional/wsdl4j.jar"/>
     <classpathentry kind="lib" path="lib/core/xmlrpc-1.1.jar"/>
-    <classpathentry kind="lib" path="lib/core/resolver-20020130.jar"/>
     <classpathentry kind="lib" path="lib/core/fastutil-2.52.jar"/>
+    <classpathentry kind="lib" path="lib/core/resolver-20021114.jar"/>
+    <classpathentry kind="lib" path="lib/optional/avalon-framework-4.1.4.jar"/>
+    <classpathentry kind="lib" path="lib/optional/cocoon-2.1m2.jar"/>
+    <classpathentry kind="lib" path="lib/endorsed/xalan-2.3.1.jar"/>
+    <classpathentry kind="lib" path="lib/endorsed/xercesImpl.jar"/>
+    <classpathentry kind="lib" path="lib/endorsed/xml-apis.jar"/>
     <classpathentry kind="output" path="classes"/>
 </classpath>

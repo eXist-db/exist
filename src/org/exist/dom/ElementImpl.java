@@ -36,7 +36,6 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.storage.RelationalBroker;
 import org.exist.storage.Signatures;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
@@ -511,9 +510,7 @@ public class ElementImpl extends NodeImpl implements Element {
 			childList.add(ownerDocument.getNode(first));
 			return childList;
 		}
-		ownerDocument.broker.setRetrvMode(RelationalBroker.PRELOAD);
 		NodeList result = ownerDocument.getRange(first, first + children - 1);
-		ownerDocument.broker.setRetrvMode(RelationalBroker.SINGLE);
 		return result;
 	}
 

@@ -9,6 +9,7 @@ import org.xml.sax.SAXException;
  */
 public class XMLString implements CharSequence, Comparable {
 
+	public final static int SUPPRESS_NONE = 0;
 	public final static int SUPPRESS_LEADING_WS = 0x01;
 	public final static int SUPPRESS_TRAILING_WS = 0x02;
 	public final static int SUPPRESS_BOTH = SUPPRESS_LEADING_WS | SUPPRESS_TRAILING_WS;
@@ -69,10 +70,12 @@ public class XMLString implements CharSequence, Comparable {
 	public XMLString normalize(int mode) {
 		int end = start_ + length_ - 1;
 		if ((mode & SUPPRESS_LEADING_WS) != 0) {
+			System.out.println("skipping ws");
 			while (start_ <= end && isWhiteSpace(value_[start_]))
 				++start_;
 		}
 		if ((mode & SUPPRESS_TRAILING_WS) != 0) {
+			System.out.println("skipping ws");
 			while (end > start_ && isWhiteSpace(value_[end]))
 				--end;
 		}

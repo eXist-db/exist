@@ -1,16 +1,14 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!--<?xml-logicsheet href="exist.xsl"?>-->
+<?xml version="1.0" encoding="UTF-8"?>
 
-<!-- XSP page for processing a query through XML-RPC calls.
+<!-- XSP page for processing a query
 
-	 This xsp page takes the parameters received from query.xml and
+	 This xsp page takes the parameters received from xquery.xsp and
      sends a query request to the eXist server. If parameter
 	 "summarize" is set, a short summary of the query execution
 	 is shown first.
 -->
 <xsp:page language="java"
   xmlns:xsp="http://apache.org/xsp"
-  xmlns:xsp-request="http://apache.org/xsp/request/2.0"
   xmlns:ci="http://apache.org/cocoon/include/1.0"
   xmlns:xmldb="http://exist-db.org/xmldb/1.0"
 >
@@ -26,18 +24,18 @@
       
             <xsp:logic>
             // get start and count parameters
-            String pstart = <xsp-request:get-parameter name="start" as="string"/>;
-            String pcount = <xsp-request:get-parameter name="count" as="string"/>;
-            String resultId = <xsp-request:get-parameter name="id" as="string"/>;
+            String pstart = request.getParameter("start");
+            String pcount = request.getParameter("count");
+            String resultId = request.getParameter("id");
             if(pstart == null) pstart = "1";
             if(pcount == null) pcount = "10";
             int start = Integer.parseInt(pstart);
             int count = Integer.parseInt(pcount);
             int hits = 0;
             
-            String query = <xsp-request:get-parameter name="query" as="string"/>;
-            String cname = <xsp-request:get-parameter name="collection" as="string"/>;
-            String psummarize = <xsp-request:get-parameter name="summarize" as="string"/>;
+            String query = request.getParameter("query");
+            String cname = request.getParameter("collection");
+            String psummarize = request.getParameter("summarize");
             boolean summarize = (psummarize == null) ? false : true;
             
             // add document(*) to query if missing

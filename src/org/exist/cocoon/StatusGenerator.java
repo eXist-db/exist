@@ -10,10 +10,10 @@ import java.util.Iterator;
 
 import org.apache.cocoon.ProcessingException;
 import org.apache.cocoon.generation.AbstractGenerator;
-import org.exist.storage.BFile;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
-import org.exist.storage.DOMFile;
+import org.exist.storage.store.BFile;
+import org.exist.storage.store.DOMFile;
 import org.exist.util.Configuration;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;

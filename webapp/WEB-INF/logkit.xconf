@@ -1,13 +1,19 @@
-<?xml version="1.0"?>
-
+<?xml version="1.0" encoding="UTF-8"?>
 <logkit>
   <factories>
-    <factory type="priority-filter" class="org.apache.avalon.excalibur.logger.factory.PriorityFilterTargetFactory"/>
-    <factory type="servlet" class="org.apache.avalon.excalibur.logger.factory.ServletTargetFactory"/>
-    <factory type="cocoon" class="org.apache.cocoon.util.log.CocoonTargetFactory"/>
+    <factory class="org.apache.avalon.excalibur.logger.factory.PriorityFilterTargetFactory" type="priority-filter"/>
+    <factory class="org.apache.avalon.excalibur.logger.factory.ServletTargetFactory" type="servlet"/>
+    <factory class="org.apache.cocoon.util.log.CocoonTargetFactory" type="cocoon"/>
+    <factory class="org.apache.avalon.excalibur.logger.factory.LF5TargetFactory" type="lf5"/>
   </factories>
 
   <targets>
+
+    <!-- To enable the LogFactor5 graphical logkit browser, replace the cocoon factory 
+         below with the following.
+    <lf5 id="core"/>
+    -->
+
     <cocoon id="core">
       <filename>${context-root}/WEB-INF/logs/core.log</filename>
       <format type="cocoon">
@@ -34,7 +40,7 @@
 
     <cocoon id="sitemap">
       <filename>${context-root}/WEB-INF/logs/sitemap.log</filename>
-     
+
       <format type="cocoon">
         %7.7{priority} %{time}   [%{category}] (%{uri}) %{thread}/%{class:short}: %{message}\n%{throwable}
       </format>
@@ -48,7 +54,16 @@
       </format>
       <append>false</append>
     </cocoon>
-   
+
+    <!-- The logger for the flow layer -->
+    <cocoon id="flow">
+      <filename>${context-root}/WEB-INF/logs/flow.log</filename>
+      <format type="cocoon">
+        %7.7{priority} %{time}   [%{category}] (%{uri}) %{thread}/%{class:short}: %{message}\n%{throwable}
+      </format>
+      <append>false</append>
+    </cocoon>
+
     <!--
       This log file gets only messages with log level ERROR and below.
     -->
@@ -61,27 +76,94 @@
         <append>false</append>
       </cocoon>
     </priority-filter>
-  </targets>
+  
+    <!-- The logger for the xmlform components -->
+    <cocoon id="xmlform">
+      <filename>${context-root}/WEB-INF/logs/xmlform.log</filename>
+      <format type="cocoon">
+        %7.7{priority} %{time}   [%{category}] (%{uri}) %{thread}/%{class:short}: %{message}\n%{throwable}
+      </format>
+      <append>false</append>
+    </cocoon>
+</targets>
 
   <categories>
     <!--
-      log-level: One of DEBUG, INFO, WARN, ERROR, FATAL-ERROR.
+      log-level: One of DEBUG, INFO, WARN, ERROR, FATAL_ERROR.
+      Log level could be different for every category and subcategory.
+
+      Not all subcategories are defined in this file. Not defined
+      subcategories will be created automatically inheriting settings
+      of the parent subcategory.
+      When defining subcategory manually, it is required to specify log
+      targets, because they are not inherited in this case.
     -->
-    <category name="core" log-level="INFO">
-      <category name="startup" log-level="INFO"/>
-      <category name="roles" log-level="INFO"/>
-      <category name="manager" log-level="INFO"/>
-      <category name="store" log-level="INFO"/>
+    <category log-level="ERROR" name="core">
+      <!-- Startup component manager logger -->
+      <category log-level="ERROR" name="startup">
+        <log-target id-ref="core"/>
+        <log-target id-ref="error"/>
+      </category>
+
+      <category log-level="ERROR" name="roles">
+        <log-target id-ref="core"/>
+        <log-target id-ref="error"/>
+      </category>
+
+      <category log-level="ERROR" name="instrument">
+        <category log-level="ERROR" name="values">
+          <log-target id-ref="core"/>
+          <log-target id-ref="error"/>
+        </category>
+        <log-target id-ref="core"/>
+        <log-target id-ref="error"/>
+      </category>
+
+      <!-- Cocoon component manager logger -->
+      <category log-level="ERROR" name="manager">
+        <log-target id-ref="core"/>
+        <log-target id-ref="error"/>
+      </category>
+
+      <!-- Cocoon cache and stores logger -->
+      <category log-level="ERROR" name="store">
+        <log-target id-ref="core"/>
+        <log-target id-ref="error"/>
+      </category>
+
+      <!-- Cocoon store logger -->
+      <category log-level="ERROR" name="store">
+        <category log-level="ERROR" name="janitor">
+          <log-target id-ref="core"/>
+          <log-target id-ref="error"/>
+        </category>
+        <log-target id-ref="core"/>
+        <log-target id-ref="error"/>
+      </category>
+
       <log-target id-ref="core"/>
       <log-target id-ref="error"/>
     </category>
-    <category name="sitemap" log-level="INFO">
+
+    <category log-level="ERROR" name="sitemap">
       <log-target id-ref="sitemap"/>
       <log-target id-ref="error"/>
     </category>
-    <category name="access" log-level="INFO">
+
+    <category log-level="ERROR" name="access">
       <log-target id-ref="access"/>
       <log-target id-ref="error"/>
-    </category> 
-  </categories>
+    </category>
+
+    <category log-level="ERROR" name="flow">
+      <log-target id-ref="flow"/>
+      <log-target id-ref="error"/>
+    </category>
+
+  
+    <category log-level="ERROR" name="xmlform">
+      <log-target id-ref="xmlform"/>
+      <log-target id-ref="error"/>
+    </category>
+</categories>
 </logkit>

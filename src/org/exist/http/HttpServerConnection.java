@@ -29,12 +29,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.net.Socket;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -42,12 +43,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
 import org.apache.xmlrpc.Base64;
 import org.exist.EXistException;
 import org.exist.Parser;
-import org.exist.dom.Collection;
+import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
@@ -58,7 +57,6 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.RelationalBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
 import org.exist.xpath.PathExpr;
@@ -242,8 +240,10 @@ public class HttpServerConnection extends Thread {
                     else {
                         Serializer serializer = broker.getSerializer(  );
                         serializer.reset(  );
-                        serializer.setEncoding( encoding );
-                        serializer.setIndent( indent );
+                        Map properties = new TreeMap();
+                        properties.put(Serializer.ENCODING, encoding);
+                        properties.put(Serializer.PRETTY_PRINT, Boolean.toString(indent));
+                        serializer.setProperties(properties);
 
                         if ( stylesheet != null ) {
                             serializer.setStylesheet( d, stylesheet );
@@ -379,41 +379,17 @@ public class HttpServerConnection extends Thread {
                                                );
 
                     Serializer serializer = broker.getSerializer(  );
-
-                    if ( indent ) {
-                        StringWriter sout = new StringWriter(  );
-                        OutputFormat format =
-                            new OutputFormat( "xml", "UTF-8", true );
-                        format.setOmitXMLDeclaration( true );
-                        format.setOmitComments( false );
-                        format.setLineWidth( 60 );
-
-                        XMLSerializer xmlout =
-                            new XMLSerializer( sout, format );
-                        serializer.setContentHandler( xmlout );
-                        serializer.setLexicalHandler( xmlout );
-
-                        try {
-                            serializer.toSAX( d );
-                        } catch ( SAXException saxe ) {
-                            HttpServer.LOG.warn( saxe );
-
-                            return formatErrorMsg( "error while pretty printing xml: "
-                                                   + saxe.toString(  ),
-                                                   OUTPUT_ERROR
-                                                   );
-                        }
-
-                        return sout.toString(  );
-                    } else
-                        return serializer.serialize( d );
+					Map properties = new TreeMap();
+					properties.put(Serializer.ENCODING, "UTF-8");
+					properties.put(Serializer.PRETTY_PRINT, Boolean.toString(indent));
+					serializer.setProperties(properties);
+                    return serializer.serialize( d );
                 }
 
                 // process <query>xpathQuery</query>
                 tmpList = root.getElementsByTagNameNS( NS, "query" );
 
                 if ( tmpList.getLength(  ) > 0 ) {
-		    System.out.println("found: query");
                     temp = (Element) tmpList.item( 0 );
 
                     Text text = (Text) temp.getFirstChild(  );
@@ -636,7 +612,10 @@ public class HttpServerConnection extends Thread {
 
         Serializer serializer = broker.getSerializer(  );
         serializer.reset(  );
-        serializer.setIndent( indent );
+        Map properties = new TreeMap();
+        properties.put(Serializer.PRETTY_PRINT, Boolean.toString(indent));
+        serializer.setProperties(properties);
+
         if(stylesheet != null)
         	serializer.setStylesheet( stylesheet );
 
@@ -1183,7 +1162,6 @@ public class HttpServerConnection extends Thread {
                 long queryTime = System.currentTimeMillis(  ) - startTime;
                 HttpServer.LOG.debug( "evaluation took " + queryTime + "ms." );
                 startTime = System.currentTimeMillis(  );
-                broker.setRetrvMode( RelationalBroker.PRELOAD );
 
                 switch ( resultValue.getType(  ) ) {
                 case Value.isNodeList:
@@ -1208,7 +1186,6 @@ public class HttpServerConnection extends Thread {
                     break;
                 }
 
-                broker.setRetrvMode( RelationalBroker.SINGLE );
             }
         } catch ( Exception e ) {
             HttpServer.LOG.debug( e.toString(  ), e );
