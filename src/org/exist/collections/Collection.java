@@ -135,6 +135,9 @@ implements Comparable, EntityResolver, Cacheable {
 	
 	private Lock lock = null;
 	
+	/** user-defined Reader */
+	private XMLReader userReader = null;
+	
 	public Collection(CollectionStore db, String name) {
 		this.name = name;
 		this.db = db;
@@ -1307,8 +1310,19 @@ implements Comparable, EntityResolver, Cacheable {
 		}
 	}
 
+	/** set user-defined Reader */
+	public void setReader(XMLReader reader){
+			userReader = reader;
+	}
+	
+	/** If user-defined Reader is set, return it; otherwise return JAXP default XMLReader 
+	 * configured by eXist. */
 	private XMLReader getReader(DBBroker broker) throws EXistException,
 			SAXException {
+		
+		if ( userReader != null )
+			return userReader;
+		
 		Configuration config = broker.getConfiguration();
 		// get validation settings
 		String option = (String) config.getProperty("indexer.validation");
