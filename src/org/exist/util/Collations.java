@@ -16,6 +16,7 @@ import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 
 /**
  * Utility methods dealing with collations.
@@ -53,7 +54,7 @@ public class Collations {
 	 * @return
 	 * @throws XPathException
 	 */
-	public final static Collator getCollationFromURI(String uri) throws XPathException {
+	public final static Collator getCollationFromURI(XQueryContext context, String uri) throws XPathException {
 		if(uri.startsWith(EXIST_COLLATION_URI) || uri.startsWith("?")) {
 			URI u = null;
 			try {
@@ -62,28 +63,37 @@ public class Collations {
 				return null;
 			}
 			String query = u.getQuery();
-			if(query == null)
-				return getCollationFromParams(null, null, null);
-			String lang = null;
 			String strength = null;
-			String decomposition = null;
-			StringTokenizer queryTokenizer = new StringTokenizer(query, ";&");
-			while (queryTokenizer.hasMoreElements()) {
-				String param = queryTokenizer.nextToken();
-				int eq = param.indexOf('=');
-				if (eq > 0 && eq < param.length()-1) {
-					String kw = param.substring(0, eq);
-					String val = param.substring(eq + 1);
-					if (kw.equals("lang")) {
-						lang = val;
-					} else if (kw.equals("strength")) {
-						strength = val;
-					} else if (kw.equals("decomposition")) {
-						decomposition = val;
+			/*
+			 * Check if the db broker is configured to be case insensitive.
+			 * If yes, we assume "primary" strength unless the user specified
+			 * something different.
+			 */
+			if(!context.getBroker().isCaseSensitive())
+				strength = "primary";
+			if(query == null) {
+				return getCollationFromParams(null, strength, null);
+			} else {
+				String lang = null;
+				String decomposition = null;
+				StringTokenizer queryTokenizer = new StringTokenizer(query, ";&");
+				while (queryTokenizer.hasMoreElements()) {
+					String param = queryTokenizer.nextToken();
+					int eq = param.indexOf('=');
+					if (eq > 0) {
+						String kw = param.substring(0, eq);
+						String val = param.substring(eq + 1);
+						if (kw.equals("lang")) {
+							lang = val;
+						} else if (kw.equals("strength")) {
+							strength = val;
+						} else if (kw.equals("decomposition")) {
+							decomposition = val;
+						}
 					}
-				}
-            }
-			return getCollationFromParams(lang, strength, decomposition);
+	            }
+				return getCollationFromParams(lang, strength, decomposition);
+			}
 		} else
 			// unknown collation
 			return null;
@@ -239,7 +249,8 @@ public class Collations {
 				collator.setStrength(Collator.SECONDARY);
 			else if("tertiary".equals(strength))
 				collator.setStrength(Collator.TERTIARY);
-			else if("identical".equals(strength))
+			else if(strength.length() == 0 || "identical".equals(strength))
+				// the default setting
 				collator.setStrength(Collator.IDENTICAL);
 			else
 				throw new XPathException("Collation strength should be either 'primary', 'secondary', 'tertiary' or 'identical");
@@ -250,7 +261,8 @@ public class Collations {
 				collator.setDecomposition(Collator.NO_DECOMPOSITION);
 			else if("full".equals(decomposition))
 				collator.setDecomposition(Collator.FULL_DECOMPOSITION);
-			else if("standard".equals(decomposition))
+			else if(decomposition.length() == 0 || "standard".equals(decomposition))
+				// the default setting
 				collator.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
 			else
 				throw new XPathException("Collation decomposition should be either 'none', 'full' or 'standard");

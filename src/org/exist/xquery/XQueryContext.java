@@ -129,7 +129,14 @@ public class XQueryContext {
 	
 	private String defaultFunctionNamespace = Module.BUILTIN_FUNCTION_NS;
 
+	/**
+	 * The default collation URI
+	 */
 	private String defaultCollation = Collations.CODEPOINT;
+	
+	/**
+	 * Default Collator. Will be null for the default unicode codepoint collation.
+	 */
 	private Collator defaultCollator = null;
 	
 	/**
@@ -270,12 +277,19 @@ public class XQueryContext {
 		defaultFunctionNamespace = uri;
 	}
 
+	/**
+	 * Set the default collation to be used by all operators and functions on strings.
+	 * Throws an exception if the collation is unknown or cannot be instantiated.
+	 * 
+	 * @param uri
+	 * @throws XPathException
+	 */
 	public void setDefaultCollation(String uri) throws XPathException {
 		if(uri.equals(Collations.CODEPOINT) || uri.equals(Collations.CODEPOINT_SHORT)) {
 			defaultCollation = Collations.CODEPOINT;
 			defaultCollator = null;
 		}
-		defaultCollator = Collations.getCollationFromURI(uri);
+		defaultCollator = Collations.getCollationFromURI(this, uri);
 		defaultCollation = uri;
 	}
 	
@@ -286,7 +300,7 @@ public class XQueryContext {
 	public Collator getCollator(String uri) throws XPathException {
 		if(uri == null)
 			return defaultCollator;
-		return Collations.getCollationFromURI(uri);
+		return Collations.getCollationFromURI(this, uri);
 	}
 	
 	public Collator getDefaultCollator() {
