@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Header$ -->
 <sidebar title="Navigation" xmlns="http://exist-db.org/NS/sidebar">
-    <group href="http://wwbota.free.fr/" name="WWBKB Home"/>
+    <group name="WWBKB" >
+        <item id="WWBKB">
+            <link href="http://wwbota.free.fr/" >
+              Worldwide Botanical Knowledge Base Home Page</link>
+            <link href="http://sf.net/projects/wwbota/" >
+              WWBKB project at sourceforge</link>
+        </item>
+    </group>
 
     <group name=" Flora of China ">
         <item id="FOC">
@@ -16,8 +23,7 @@
     <banner>
         <item>
             <link href="http://exist-db.org">
-                <!--img alt="powered by eXist" border="0" src="resources/powered.gif"/-->
-powered by eXist
+                <img alt="powered by eXist" border="0" src="../resources/powered.gif" />
             </link>
         </item>
     </banner>
