@@ -1044,11 +1044,11 @@ public class InteractiveClient {
 			}
 			path = newPath;
 			return true;
-		} catch (XMLDBException xde) {
+		} catch (Throwable e) {
 			if (startGUI)
-				ClientFrame.showErrorMessage(getExceptionMessage(xde), xde);
+				ClientFrame.showErrorMessage(getExceptionMessage(e), e);
 			else
-				System.err.println(getExceptionMessage(xde));
+				System.err.println(getExceptionMessage(e));
 			return true;
 		}
 	}
