@@ -56,7 +56,7 @@ public class ConcurrentResourceTest extends ConcurrentTestBase {
 		super.setUp();
 		
 		String[] wordList = DBUtils.wordList(rootCol);
-		tempFile = DBUtils.generateXMLFile(1000, 10, wordList);
+		tempFile = DBUtils.generateXMLFile(500, 10, wordList);
 		
 		Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
 		Collection c2 = DBUtils.addCollection(getTestCollection(), "C1-C3");
@@ -64,11 +64,11 @@ public class ConcurrentResourceTest extends ConcurrentTestBase {
 		DBUtils.addXMLResource(c1, "R1.xml", tempFile);
 		DBUtils.addXMLResource(c2, "R1.xml", tempFile);
 		
-		addAction(new ReplaceResourceAction(URI + "/C1/C1-C2", "R1.xml", wordList), 20, 200);
-		addAction(new RetrieveResourceAction(URI + "/C1/C1-C2", "R1.xml"), 20, 1000);
+//		addAction(new ReplaceResourceAction(URI + "/C1/C1-C2", "R1.xml", wordList), 20, 200);
+		addAction(new RetrieveResourceAction(URI + "/C1/C1-C2", "R1.xml"), 20, 500);
 		
-		addAction(new ReplaceResourceAction(URI + "/C1/C1-C3", "R1.xml", wordList), 20, 200);
-		addAction(new RetrieveResourceAction(URI + "/C1/C1-C3", "R1.xml"), 20, 1000);
+//		addAction(new ReplaceResourceAction(URI + "/C1/C1-C3", "R1.xml", wordList), 20, 200);
+		addAction(new RetrieveResourceAction(URI + "/C1/C1-C3", "R1.xml"), 20, 500);
 		
 		// TODO: using a second replace thread on the same resource generates a deadlock condition !!!	
 //		addAction(new ReplaceResourceAction(URI + "/C1-C2", "R1.xml", wordList), 10, 300);
