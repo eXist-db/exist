@@ -348,7 +348,7 @@ public class ClientFrame extends JFrame
 		});
 		fileMenu.add(item);
 
-		item = new JMenuItem("Create blank document", KeyEvent.VK_N);
+		item = new JMenuItem("Create blank document", KeyEvent.VK_B);
 		item.setAccelerator(KeyStroke.getKeyStroke("control B"));
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
