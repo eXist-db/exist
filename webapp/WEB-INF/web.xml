@@ -104,27 +104,6 @@
     </servlet-class>
         <load-on-startup>100</load-on-startup>
 	</servlet>
-  
-  <!-- xincon: Provides Webdav for eXist -->
-    <!--servlet>
-        <servlet-name>xincon</servlet-name>
-        <servlet-class>xincon.WebdavServlet</servlet-class>
-        <init-param>
-            <param-name>dbroot</param-name>
-            <param-value>xmldb:exist:///db</param-value>
-        </init-param>
-
-        <init-param>
-            <param-name>log4j-priority</param-name>
-            <param-value>WARN</param-value>
-        </init-param>
-        <init-param>
-            <param-name>log4j-layout</param-name>
-            <param-value>%-5p [%M] %m%n</param-value>
-        </init-param>
-
-		<load-on-startup>1</load-on-startup>
-    </servlet-->
 	
   <!-- Cocoon2 Configuration starts here ================================ -->
 

@@ -41,9 +41,6 @@
             <link href="index.xml#articles">Articles</link>
         </item>
         <item>
-            <link href="api/index.html">Javadocs</link>
-        </item>
-        <item>
             <link href="changes.xml">Changes</link>
         </item>
         <item>
@@ -55,6 +52,19 @@
         <!--item>
             <link href="design.xml">Design</link>
         </item-->
+    </group>
+    <group name="Development">
+        <item>
+            <link href="http://wiki.exist-db.org/space/Roadmap">Roadmap</link>
+        </item>
+        <item>
+            <link href="api/index.html">Javadocs</link>
+        </item>
+        <item>
+            <link href="http://sourceforge.net/tracker/?group_id=17691&amp;atid=117691">
+                Bug Tracker
+            </link>
+        </item>
     </group>
     <group name="Examples">
         <item>

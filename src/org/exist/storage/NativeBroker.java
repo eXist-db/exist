@@ -95,6 +95,7 @@ import org.w3c.dom.NodeList;
  *@author     Wolfgang Meier
  */
 public class NativeBroker extends DBBroker {
+	
     /**
      * Log4J Logger for this class
      */
@@ -1596,10 +1597,10 @@ public class NativeBroker extends DBBroker {
 				if (val == null) {
 					LOG.debug("Node " + p.gid + " not found in document " + p.doc.getName() +
 							"; docId = " + p.doc.getDocId());
-					LOG.debug(domDb.debugPages(p.doc));
+//					LOG.debug(domDb.debugPages(p.doc));
 					Thread.dumpStack();
-					return null;
-//					return objectWith(p.doc, p.gid); // retry?
+//					return null;
+					return objectWith(p.doc, p.gid); // retry?
 				}
 				NodeImpl node =
 					NodeImpl.deserialize(

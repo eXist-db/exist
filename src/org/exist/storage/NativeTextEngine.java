@@ -311,12 +311,8 @@ public class NativeTextEngine extends TextSearchEngine {
 		short collectionId;
 		VariableByteInput is = null;
 		NodeProxy parent, current = new NodeProxy();
-		NodeSet result;
 		Match match;
-		if (contextSet == null)
-			result = new TextSearchResult(trackMatches != Serializer.TAG_NONE);
-		else
-			result = new ExtArrayNodeSet(docs.getLength(), 250);
+		NodeSet result = new ExtArrayNodeSet(docs.getLength(), 250);
 		String term = (stem) ? stemmer.stem(expr.toLowerCase()) : expr
 				.toLowerCase();
 		int count = 0;
@@ -349,10 +345,13 @@ public class NativeTextEngine extends TextSearchEngine {
 							freq = is.readInt();
 						last = gid;
 						count++;
+						current = (section == TEXT_SECTION ? new NodeProxy(
+								doc, gid, Node.TEXT_NODE) : new NodeProxy(
+								doc, gid, Node.ATTRIBUTE_NODE));
+						// if a context set is specified, we can directly check if the
+						// matching text node is a descendant of one of the nodes
+						// in the context set.
 						if (contextSet != null) {
-							current = (section == TEXT_SECTION ? new NodeProxy(
-									doc, gid, Node.TEXT_NODE) : new NodeProxy(
-									doc, gid, Node.ATTRIBUTE_NODE));
 							parent = contextSet.parentWithChild(current, false,
 									true, -1);
 							if (parent != null) {
@@ -362,8 +361,10 @@ public class NativeTextEngine extends TextSearchEngine {
 								if (trackMatches != Serializer.TAG_NONE)
 									parent.addMatch(match);
 							}
-						} else
-							((TextSearchResult) result).add(doc, gid, term);
+						// otherwise, we add all text nodes without check
+						} else {
+							result.add(current, sizeHint);
+						}
 						context.proceed();
 					}
 				}

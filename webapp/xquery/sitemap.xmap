@@ -32,11 +32,14 @@
                 <map:serialize encoding="UTF-8" type="html"/>
             </map:match>
 			<map:match pattern="test.xq">
-				<map:generate src="test.xq" type="xquery"/>
+				<map:generate src="test.xq" type="xquery">
+					<map:parameter name="create-session" value="true"/>
+				</map:generate>
 				<map:serialize type="xml"/>
 			</map:match>
 			<map:match pattern="xquery.xq">
 				<map:generate src="xquery.xq" type="xquery">
+					<map:parameter name="create-session" value="true"/>
                 </map:generate>
                 <map:transform type="xinclude"/>
                 <map:transform src="context://stylesheets/doc2html-2.xsl"/>
@@ -46,6 +49,7 @@
 
             <map:match pattern="process.xq">
 				<map:generate src="process.xq" type="xquery">
+					<map:parameter name="create-session" value="true"/>
 				</map:generate>
                 <map:transform type="xinclude"/>
                 <map:transform src="context://stylesheets/doc2html-2.xsl"/>
@@ -54,7 +58,9 @@
             </map:match>
 
             <map:match pattern="functions.xq">
-                <map:generate src="functions.xq" type="xquery"/>
+                <map:generate src="functions.xq" type="xquery">
+                	<map:parameter name="create-session" value="true"/>
+                </map:generate>
                 <map:transform type="xinclude"/>
                 <map:transform src="stylesheets/functions.xsl"/>
                 <map:transform src="context://stylesheets/doc2html-2.xsl"/>
@@ -65,6 +71,7 @@
 				<map:generate src="acronyms.xq" type="xquery">
 					<map:parameter name="use-request-parameters"
 						value="true"/>
+					<map:parameter name="create-session" value="true"/>
 				</map:generate>
 				<map:transform type="xinclude"/>
 				<map:transform src="stylesheets/acronyms.xsl"/>
@@ -73,7 +80,9 @@
 			</map:match>
 
             <map:match pattern="biblio.xq">
-                <map:generate src="biblio.xq" type="xquery"/>
+                <map:generate src="biblio.xq" type="xquery">
+                	<map:parameter name="create-session" value="true"/>
+                </map:generate>
                 <map:transform type="xinclude"/>
                 <map:select type="request-parameter">
                     <map:parameter name="parameter-name" value="display"/>
@@ -104,24 +113,9 @@
 				<map:serialize type="html"/>
 			</map:match-->
 
-            <map:match pattern="mods.xq">
-                <map:generate src="mods.xq" type="xquery"/>
-                <map:transform type="xinclude"/>
-                <map:select type="request-parameter">
-                    <map:parameter name="parameter-name" value="display"/>
-                    <map:when test="details">
-                        <map:transform src="stylesheets/mods-detailed.xsl"/>
-                    </map:when>
-                    <map:otherwise>
-                        <map:transform src="stylesheets/mods-overview.xsl"/>
-                    </map:otherwise>
-                </map:select>
-                <map:transform type="encodeURL"/>
-                <map:serialize encoding="UTF-8" type="html"/>
-            </map:match>
-
 			<map:match pattern="*.xq">
                 <map:generate src="{1}.xq" type="xquery">
+                	<map:parameter name="create-session" value="true"/>
                     <map:parameter name="file" value="{1}.xq"/>
 				</map:generate>
 				<map:serialize encoding="UTF-8" type="html"/>

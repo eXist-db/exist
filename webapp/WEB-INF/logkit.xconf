@@ -1,10 +1,26 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
+<!--
+  Copyright 1999-2004 The Apache Software Foundation
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
 <logkit>
   <factories>
-    <factory class="org.apache.avalon.excalibur.logger.factory.PriorityFilterTargetFactory" type="priority-filter"/>
-    <factory class="org.apache.avalon.excalibur.logger.factory.ServletTargetFactory" type="servlet"/>
-    <factory class="org.apache.cocoon.util.log.CocoonTargetFactory" type="cocoon"/>
-    <factory class="org.apache.avalon.excalibur.logger.factory.LF5TargetFactory" type="lf5"/>
+    <factory type="priority-filter" class="org.apache.avalon.excalibur.logger.factory.PriorityFilterTargetFactory"/>
+    <factory type="servlet" class="org.apache.avalon.excalibur.logger.factory.ServletTargetFactory"/>
+    <factory type="cocoon" class="org.apache.cocoon.util.log.CocoonTargetFactory"/>
+    <factory type="lf5" class="org.apache.avalon.excalibur.logger.factory.LF5TargetFactory"/>
   </factories>
 
   <targets>
@@ -40,7 +56,14 @@
 
     <cocoon id="sitemap">
       <filename>${context-root}/WEB-INF/logs/sitemap.log</filename>
+      <format type="cocoon">
+        %7.7{priority} %{time}   [%{category}] (%{uri}) %{thread}/%{class:short}: %{message}\n%{throwable}
+      </format>
+      <append>false</append>
+    </cocoon>
 
+    <cocoon id="handled-errors">
+      <filename>${context-root}/WEB-INF/logs/handled-errors.log</filename>
       <format type="cocoon">
         %7.7{priority} %{time}   [%{category}] (%{uri}) %{thread}/%{class:short}: %{message}\n%{throwable}
       </format>
@@ -76,16 +99,7 @@
         <append>false</append>
       </cocoon>
     </priority-filter>
-  
-    <!-- The logger for the xmlform components -->
-    <cocoon id="xmlform">
-      <filename>${context-root}/WEB-INF/logs/xmlform.log</filename>
-      <format type="cocoon">
-        %7.7{priority} %{time}   [%{category}] (%{uri}) %{thread}/%{class:short}: %{message}\n%{throwable}
-      </format>
-      <append>false</append>
-    </cocoon>
-</targets>
+  </targets>
 
   <categories>
     <!--
@@ -98,20 +112,20 @@
       When defining subcategory manually, it is required to specify log
       targets, because they are not inherited in this case.
     -->
-    <category log-level="ERROR" name="core">
+    <category name="core" log-level="INFO">
       <!-- Startup component manager logger -->
-      <category log-level="ERROR" name="startup">
+      <category name="startup" log-level="INFO">
         <log-target id-ref="core"/>
         <log-target id-ref="error"/>
       </category>
 
-      <category log-level="ERROR" name="roles">
+      <category name="roles" log-level="INFO">
         <log-target id-ref="core"/>
         <log-target id-ref="error"/>
       </category>
 
-      <category log-level="ERROR" name="instrument">
-        <category log-level="ERROR" name="values">
+      <category name="instrument" log-level="INFO">
+        <category name="values" log-level="INFO">
           <log-target id-ref="core"/>
           <log-target id-ref="error"/>
         </category>
@@ -120,20 +134,14 @@
       </category>
 
       <!-- Cocoon component manager logger -->
-      <category log-level="ERROR" name="manager">
+      <category name="manager" log-level="INFO">
         <log-target id-ref="core"/>
         <log-target id-ref="error"/>
       </category>
 
       <!-- Cocoon cache and stores logger -->
-      <category log-level="ERROR" name="store">
-        <log-target id-ref="core"/>
-        <log-target id-ref="error"/>
-      </category>
-
-      <!-- Cocoon store logger -->
-      <category log-level="ERROR" name="store">
-        <category log-level="ERROR" name="janitor">
+      <category name="store" log-level="INFO">
+        <category name="janitor" log-level="INFO">
           <log-target id-ref="core"/>
           <log-target id-ref="error"/>
         </category>
@@ -145,25 +153,30 @@
       <log-target id-ref="error"/>
     </category>
 
-    <category log-level="ERROR" name="sitemap">
+    <category name="sitemap" log-level="INFO">
       <log-target id-ref="sitemap"/>
       <log-target id-ref="error"/>
+
+      <category name="handled-errors" log-level="INFO">
+        <!-- Exceptions that will be handled by a sitemap errorhandler are
+             logged to this target. -->
+        <log-target id-ref="handled-errors"/>
+      </category>
     </category>
 
-    <category log-level="ERROR" name="access">
+    <category name="access" log-level="INFO">
       <log-target id-ref="access"/>
       <log-target id-ref="error"/>
     </category>
 
-    <category log-level="ERROR" name="flow">
+    <category name="flow" log-level="INFO">
       <log-target id-ref="flow"/>
       <log-target id-ref="error"/>
     </category>
 
-  
-    <category log-level="ERROR" name="xmlform">
-      <log-target id-ref="xmlform"/>
+    <category name="" log-level="INFO">
+      <log-target id-ref="core"/>
       <log-target id-ref="error"/>
     </category>
-</categories>
+  </categories>
 </logkit>

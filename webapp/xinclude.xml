@@ -2,7 +2,6 @@
 <book xmlns:ci="http://apache.org/cocoon/include/1.0">
     <bookinfo>
         <graphic fileref="/exist/logo.jpg"/>
-        <style href="/exist/default.css"/>
         <title>Open Source XML Database</title>
         <author>
             <firstname>Wolfgang M.</firstname>
