@@ -54,7 +54,7 @@
   
   <!-- configure the Axis servlet. Axis provides eXist's
   web-services via SOAP -->
-    <!--servlet>
+  <servlet>
         <servlet-name>AxisServlet</servlet-name>
         <display-name>Apache-Axis Servlet</display-name>
         <servlet-class>org.apache.axis.transport.http.AxisServlet</servlet-class>
@@ -67,7 +67,7 @@
         org.apache.axis.transport.http.AdminServlet
     </servlet-class>
         <load-on-startup>100</load-on-startup>
-    </servlet-->
+	</servlet>
   
   <!-- xincon: Provides Webdav for eXist -->
     <servlet>
@@ -418,7 +418,7 @@
 	</servlet-mapping>
     
   <!-- The following servlet-mappings are for Axis (SOAP) -->
-  <!--servlet-mapping>
+  <servlet-mapping>
     <servlet-name>AxisServlet</servlet-name>
 	<url-pattern>/servlet/AxisServlet</url-pattern>
   </servlet-mapping>
@@ -436,7 +436,7 @@
   <servlet-mapping>
     <servlet-name>AdminServlet</servlet-name>
 	<url-pattern>/servlet/AdminServlet</url-pattern>
-  </servlet-mapping-->
+  </servlet-mapping>
   
   <!-- Finally, we establish the main mapping for Cocoon  -->
   
