@@ -172,7 +172,9 @@ public class Restore extends DefaultHandler {
 				else
 					System.err.println(f.getAbsolutePath() + " does not exist or is not readable.");
 			} else if (localName.equals("resource")) {
-				final String type = atts.getValue("type");
+				String type = atts.getValue("type");
+				if(type == null)
+					type ="XMLResource";
 				final String name = atts.getValue("name");
 				final String owner = atts.getValue("owner");
 				final String group = atts.getValue("group");
