@@ -1006,9 +1006,26 @@ attributeDef throws XPathException
 
 attributeValue throws XPathException
 :
-	( ATTRIBUTE_CONTENT | attributeEnclosedExpr )+
+	( attributeValueContent )+
 	;
 
+attributeValueContent throws XPathException
+:
+	( LCURLY LCURLY )=> LCURLY LCURLY
+	{ 	
+		lexer.inAttributeContent= true;
+		lexer.parseStringLiterals = false;
+		#attributeValueContent= #[ATTRIBUTE_CONTENT, "{"]; 
+	}
+	|
+	RCURLY RCURLY
+	{ #attributeValueContent= #[ATTRIBUTE_CONTENT, "}"]; }
+	|
+	attributeEnclosedExpr
+	|
+	ATTRIBUTE_CONTENT
+	;
+	
 mixedElementContent throws XPathException
 :
 	( elementContent )*
@@ -1017,6 +1034,15 @@ mixedElementContent throws XPathException
 elementContent throws XPathException
 :
 	elementConstructor
+	|
+	( LCURLY LCURLY )=> LCURLY LCURLY
+	{ 	
+		lexer.inElementContent= true;
+		#elementContent= #[TEXT, "{"]; 
+	}
+	|
+	RCURLY RCURLY
+	{ #elementContent= #[TEXT, "}"]; }
 	|
 	content:ELEMENT_CONTENT
 	{ #elementContent= #[TEXT, content.getText()]; }
@@ -1041,13 +1067,11 @@ enclosedExpr throws XPathException
 		globalStack.push(elementStack);
 		elementStack= new Stack();
 		lexer.inElementContent= false;
-		//lexer.wsExplicit= false;
 	}
 	expr RCURLY!
 	{
 		elementStack= (Stack) globalStack.pop();
 		lexer.inElementContent= true;
-		//lexer.wsExplicit= true;
 	}
 	;
 
@@ -1057,13 +1081,11 @@ attributeEnclosedExpr throws XPathException
 	{
 		lexer.inAttributeContent= false;
 		lexer.parseStringLiterals = true;
-		//lexer.wsExplicit= false;
 	}
 	expr RCURLY!
 	{
 		lexer.inAttributeContent= true;
 		lexer.parseStringLiterals = false;
-		//lexer.wsExplicit= true;
 	}
 	;
 
@@ -1250,10 +1272,10 @@ protected STAR : '*' ;
 protected QUESTION : '?' ;
 protected PLUS : '+' ;
 protected MINUS : '-' ;
-protected LPPAREN : '[' ;
-protected RPPAREN : ']' ;
-protected LPAREN options { paraphrase="'('"; } : '(' ;
-protected RPAREN options { paraphrase="')'"; } : ')' ;
+protected LPPAREN options { paraphrase="opening brace '['"; }: '[' ;
+protected RPPAREN options { paraphrase="closing brace ']'"; }: ']' ;
+protected LPAREN options { paraphrase="opening parenthesis '('"; } : '(' ;
+protected RPAREN options { paraphrase="closing parenthesis ')'"; } : ')' ;
 protected SELF : '.' ;
 protected PARENT : ".." ;
 protected UNION : '|' ;
@@ -1270,16 +1292,17 @@ protected APOS : "'";
 protected LTEQ : "<=" ;
 
 protected LT : '<' ;
-protected END_TAG_START : "</" ;
+protected END_TAG_START 
+options { paraphrase="XML end tag"; }: "</" ;
 
-protected LCURLY : '{' ;
-protected RCURLY : '}' ;
+protected LCURLY options { paraphrase="opening curly brace '{'"; }: '{' ;
+protected RCURLY options { paraphrase="closing curly brace '{'"; }: '}' ;
 
-protected XML_COMMENT_END : "-->" ;
+protected XML_COMMENT_END options { paraphrase="end of XML comment"; }: "-->" ;
 protected XML_PI_START : "<?" ;
-protected XML_PI_END : "?>" ;
+protected XML_PI_END options { paraphrase="end of processing instruction"; }: "?>" ;
 protected XML_CDATA_START : "<![CDATA[";
-protected XML_CDATA_END : "]]>";
+protected XML_CDATA_END options { paraphrase="end of CDATA section"; }: "]]>";
 
 protected LETTER
 :
@@ -1429,13 +1452,10 @@ options {
 	;
 
 protected ELEMENT_CONTENT
-options {
-	testLiterals=false;
-}
 :
 	( '\t' | '\r' | '\n' { newline(); } | '\u0020'..'\u003b' | '\u003d'..'\u007a' | '\u007c' | '\u007e'..'\uFFFD' )+
 	;
-
+	
 protected XML_COMMENT
 options {
 	testLiterals=false;
@@ -1497,6 +1517,7 @@ options {
 	LCURLY
 	{
 		inElementContent= false;
+		inAttributeContent= false;
 		$setType(LCURLY);
 	}
 	|
@@ -1504,7 +1525,9 @@ options {
 	|
 	{ inAttributeContent }?
 	ATTRIBUTE_CONTENT
-	{ $setType(ATTRIBUTE_CONTENT); }
+	{ 
+		System.out.println("ATTRIB");
+		$setType(ATTRIBUTE_CONTENT); }
 	|
 	{ !(parseStringLiterals || inElementContent) }?
 	QUOT

@@ -1673,7 +1673,9 @@ throws PermissionDeniedException, EXistException, XPathException
 				}
 				(
 					attrVal:ATTRIBUTE_CONTENT
-					{ attrib.addValue(attrVal.getText()); }
+					{
+						attrib.addValue(attrVal.getText()); 
+					}
 					|
 					#(
 						LCURLY { PathExpr enclosed= new PathExpr(context); }
