@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.xmldb.CompiledExpression;
@@ -45,7 +44,7 @@ import org.exist.xquery.value.ValueSequence;
 public class PathExpr extends AbstractExpression implements CompiledExpression {
 	
     protected static Logger LOG = Logger.getLogger( PathExpr.class );
-    protected DocumentSet inputDocumentSet = new DocumentSet();
+
     protected boolean keepVirtual = false;
     protected LinkedList steps = new LinkedList();
 	protected boolean inPredicate = false;
@@ -78,10 +77,6 @@ public class PathExpr extends AbstractExpression implements CompiledExpression {
         }
     }
 
-    public void addDocument( DocumentImpl doc ) {
-        inputDocumentSet.add( doc );
-    }
-
     /**
      * Add another PathExpr to this object's expression list.
      * @param path
@@ -112,17 +107,25 @@ public class PathExpr extends AbstractExpression implements CompiledExpression {
         else {
 			r = Sequence.EMPTY_SEQUENCE;
         }
+        DocumentSet contextDocs = null;
+        Expression expr = (Expression)steps.getFirst();
+        if(expr instanceof VariableReference) {
+            Variable var = ((VariableReference)expr).getVariable();
+            if(var != null)
+                contextDocs = var.getContextDocs();
+        }
         NodeSet set;
 		Item current;
-        Expression expr;
         Sequence values;
         for ( Iterator iter = steps.iterator(); iter.hasNext();  ) {
             expr = (Expression) iter.next();
+            if(contextDocs != null)
+		        expr.setContextDocSet(contextDocs);
             if ((expr.getDependencies() & Dependency.CONTEXT_ITEM) != 0) {
             	//LOG.debug("single step mode: " + expr.pprint());
-				if(r.getLength() == 0)
+				if(r.getLength() == 0) {
                     r = expr.eval( null, null );
-                else {
+            	} else {
                 	values = null;
                 	if(r.getLength() > 1)
                 		values = new ValueSequence();
@@ -149,7 +152,7 @@ public class PathExpr extends AbstractExpression implements CompiledExpression {
 	}
 	
     public DocumentSet getDocumentSet() {
-        return inputDocumentSet;
+        return null;
     }
 
     public Expression getExpression( int pos ) {
@@ -199,10 +202,6 @@ public class PathExpr extends AbstractExpression implements CompiledExpression {
 		}
 		return deps;
 	}
-	
-    public void setDocumentSet( DocumentSet docs ) {
-        this.inputDocumentSet = docs;
-    }
 
     public void setFirstExpression( Expression s ) {
         steps.addFirst( s );

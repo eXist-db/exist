@@ -21,6 +21,7 @@
 
 package org.exist.xquery;
 
+import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.Item;
@@ -32,6 +33,8 @@ public abstract class AbstractExpression implements Expression {
 	protected XQueryContext context;
 
 	protected XQueryAST astNode = null;
+	
+	protected DocumentSet contextDocSet = null;
 	
 	public AbstractExpression(XQueryContext context) {
 		this.context = context;
@@ -87,6 +90,18 @@ public abstract class AbstractExpression implements Expression {
 		}
 	}
 	
+	
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#setContextDocSet(org.exist.dom.DocumentSet)
+     */
+    public void setContextDocSet(DocumentSet contextSet) {
+        this.contextDocSet = contextSet;
+    }
+    
+    public DocumentSet getContextDocSet() {
+        return contextDocSet;
+    }
+    
 	public void setASTNode(XQueryAST ast) {
 		this.astNode = ast;
 	}

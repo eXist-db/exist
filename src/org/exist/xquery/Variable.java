@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
 
@@ -36,7 +37,7 @@ public class Variable {
 	private Sequence value = null;
 	private int positionInStack = 0;
 	private int cardinality = Cardinality.ZERO_OR_MORE;
-	
+	private DocumentSet contextDocs = null;
 	/**
 	 * 
 	 */
@@ -77,5 +78,13 @@ public class Variable {
 	
 	public void setStackPosition(int position) {
 		positionInStack = position;
+	}
+	
+	public DocumentSet getContextDocs() {
+	    return contextDocs;
+	}
+	
+	public void setContextDocs(DocumentSet docs) {
+	    this.contextDocs = docs;
 	}
 }

@@ -195,7 +195,8 @@ public class LocationStep extends Step {
 			result = new VirtualNodeSet(axis, test, contextSet);
 			((VirtualNodeSet) result).setInPredicate(inPredicate);
 		} else {
-		    DocumentSet docs = contextSet.getDocumentSet();
+//		    DocumentSet docs = contextSet.getDocumentSet();
+		    DocumentSet docs = getDocumentSet(contextSet);
 			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
 				currentDocs = docs;
 				currentSet =
@@ -208,7 +209,6 @@ public class LocationStep extends Step {
 						contextSet,
 						NodeSet.DESCENDANT,
 						inPredicate);
-				
 			} else {
 				result =
 					currentSet.selectParentChild(
@@ -229,7 +229,8 @@ public class LocationStep extends Step {
 			vset.setInPredicate(inPredicate);
 			return vset;
 		} else {
-		    DocumentSet docs = contextSet.getDocumentSet();
+//		    DocumentSet docs = contextSet.getDocumentSet();
+		    DocumentSet docs = getDocumentSet(contextSet);
 			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
 				currentDocs = docs;
 				currentSet =
@@ -258,7 +259,8 @@ public class LocationStep extends Step {
 			vset.setInPredicate(inPredicate);
 			return vset;
 		} else {
-		    DocumentSet docs = contextSet.getDocumentSet();
+		    DocumentSet docs = getDocumentSet(contextSet);
+//		    DocumentSet docs = contextSet.getDocumentSet();
 			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
 				currentDocs = docs;
 				currentSet =
@@ -287,7 +289,8 @@ public class LocationStep extends Step {
 		NodeSet contextSet) {
 		NodeSet result;
 		if (!test.isWildcardTest()) {
-			DocumentSet docs = contextSet.getDocumentSet();
+		    DocumentSet docs = getDocumentSet(contextSet);
+//			DocumentSet docs = contextSet.getDocumentSet();
 			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
 				currentDocs = docs;
 				currentSet =
@@ -333,7 +336,8 @@ public class LocationStep extends Step {
 	throws XPathException {
 		NodeSet result = NodeSet.EMPTY_SET;
 		if(!test.isWildcardTest()) {
-			DocumentSet docs = contextSet.getDocumentSet();
+		    DocumentSet docs = getDocumentSet(contextSet);
+//			DocumentSet docs = contextSet.getDocumentSet();
 			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
 				currentDocs = docs;
 				currentSet =
@@ -351,7 +355,8 @@ public class LocationStep extends Step {
 		NodeSet contextSet) {
 		NodeSet result;
 		if (!test.isWildcardTest()) {
-			DocumentSet docs = contextSet.getDocumentSet();
+//			DocumentSet docs = contextSet.getDocumentSet();
+			DocumentSet docs = getDocumentSet(contextSet);
 			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
 				currentDocs = docs;
 				currentSet =
@@ -389,6 +394,13 @@ public class LocationStep extends Step {
 		return contextSet.getParents();
 	}
 
+	protected DocumentSet getDocumentSet(NodeSet contextSet) {
+	    DocumentSet ds = getContextDocSet();
+	    if(ds == null)
+	        ds = contextSet.getDocumentSet();
+	    return ds;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Step#resetState()
 	 */
