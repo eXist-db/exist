@@ -257,6 +257,7 @@ public class Predicate extends PathExpr {
 	 */
 	public void resetState() {
 		LOG.debug("Clearing cached result");
+		super.resetState();
 		cached = null;
 	}
 }
