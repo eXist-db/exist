@@ -316,6 +316,19 @@ public class LocalUserManagementService implements UserManagementService {
 			}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.UserManagementService#hasUserLock(org.xmldb.api.base.Resource)
+	 */
+	public String hasUserLock(Resource res) throws XMLDBException {
+		DocumentImpl doc;
+		if(res.getResourceType().equals("XMLResource"))
+			doc = ((LocalXMLResource) res).getDocument();
+		else
+			doc = ((LocalBinaryResource) res).getBlob();
+		User lockOwner = doc.getUserLock();
+		return lockOwner == null ? null : lockOwner.getName();
+	}
+	
 	public void lockResource(Resource res, User u) throws XMLDBException {
 		DocumentImpl doc;
 		if(res.getResourceType().equals("XMLResource"))

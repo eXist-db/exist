@@ -991,12 +991,25 @@ public class ClientFrame extends JFrame
 						UserManagementService service = (UserManagementService)
 							client.current.getService("UserManagementService", "1.0");
 						User user = service.getUser(properties.getProperty("user"));
+						String lockOwner = service.hasUserLock(res);
+						if(lockOwner != null) {
+							if(JOptionPane.showConfirmDialog(ClientFrame.this,
+									"Resource is already locked by user " + lockOwner +
+									". Should I try to relock it?",
+									"Resource locked",
+									JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
+								view.dispose();
+								ClientFrame.this.setCursor(Cursor.getDefaultCursor());
+								return;
+							}
+						}
+						
 						try {
 							service.lockResource(res, user);
 						} catch(XMLDBException ex) {
 							System.out.println(ex.getMessage());
 							JOptionPane.showMessageDialog(ClientFrame.this,
-								"Resource is either locked by other user or cannot be locked. Opening read-only.");
+								"Resource cannot be locked. Opening read-only.");
 							view.setReadOnly();
 						}
 						view.setVisible(true);

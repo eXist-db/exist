@@ -171,6 +171,23 @@ public class RemoteUserManagementService implements UserManagementService {
 	}
 	
 	/* (non-Javadoc)
+	 * @see org.exist.xmldb.UserManagementService#hasUserLock(org.xmldb.api.base.Resource)
+	 */
+	public String hasUserLock(Resource res) throws XMLDBException {
+		String path = ((RemoteCollection) res.getParentCollection()).getPath() + '/' + res.getId();
+		try {
+			Vector params = new Vector();
+			params.addElement(path);
+			String userName = (String)parent.getClient().execute("hasUserLock", params);
+			return userName != null && userName.length() > 0 ? userName : null;
+		} catch (XmlRpcException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		} catch (IOException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		}
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.exist.xmldb.UserManagementService#unlockResource(org.xmldb.api.base.Resource)
 	 */
 	public void unlockResource(Resource res) throws XMLDBException {

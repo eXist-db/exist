@@ -1313,6 +1313,21 @@ public class RpcServer implements RpcAPI {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.exist.xmlrpc.RpcAPI#hasUserLock(org.exist.security.User, java.lang.String)
+	 */
+	public String hasUserLock(User user, String path) throws EXistException, PermissionDeniedException {
+		RpcConnection con = pool.get();
+		try {
+			return con.hasUserLock(user, path);
+		} catch (Exception e) {
+			handleException(e);
+			return "";
+		} finally {
+			pool.release(con);
+		}
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.exist.xmlrpc.RpcAPI#unlockResource(org.exist.security.User, java.lang.String)
 	 */
 	public boolean unlockResource(User user, String path) throws EXistException, PermissionDeniedException {

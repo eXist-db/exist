@@ -124,6 +124,18 @@ public interface UserManagementService extends Service {
     public void lockResource(Resource res, User u) throws XMLDBException;
     
     /**
+     * Check if the resource has a user lock.
+     * 
+     * Returns the name of the owner of the lock or null
+     * if no lock has been set on the resource.
+     * 
+     * @param res
+     * @return
+     * @throws XMLDBException
+     */
+    public String hasUserLock(Resource res) throws XMLDBException;
+    
+    /**
      * Unlock the specified resource.
      * 
      * The current user has to be same who locked the resource.
