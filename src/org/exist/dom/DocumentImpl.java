@@ -963,6 +963,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	    return pageCount;
 	}
 	
+	/**
+	 * Set the number of pages currently occupied by this document.
+	 * @param count
+	 */
 	public void setPageCount(int count) {
 	    pageCount = count;
 	}
@@ -974,6 +978,12 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	    childList = newChildList;
 	}
 	
+	/**
+	 * Increase the page split count of this document. The number
+	 * of pages that have been split during inserts serves as an
+	 * indicator for the 
+	 *
+	 */
 	public void incSplitCount() {
 		splitCount++;
 	}
@@ -984,5 +994,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	
 	public void setSplitCount(int count) {
 		splitCount = count;
+	}
+	
+	public void triggerDefrag() {
+		splitCount = broker.getFragmentationLimit();
 	}
 }

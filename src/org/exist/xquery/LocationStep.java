@@ -102,7 +102,7 @@ public class LocationStep extends Step {
 			cachedContext == contextSequence &&
 			Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {
 			if(!((NodeSet)contextSequence).hasChanged(timestamp)) {
-				LOG.debug("returning cached result");
+//				LOG.debug("returning cached result");
 				cachedResult.setIsCached(true);
 				return 
 					(predicates.size() == 0)

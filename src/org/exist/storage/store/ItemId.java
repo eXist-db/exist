@@ -40,6 +40,7 @@ class ItemId {
 	public static final byte RELOCATED_FLAG = (byte) 0x2;
 	
 	public static final short MAX_ID = (short)0x3FFE;
+	public static final short DEFRAG_LIMIT = (short)0x2FFE;
 	
 	public final static byte getFlags(short id) {
 		return (byte)((id & LINK_OR_RELOCATED_MASK) >>> 14);

@@ -100,7 +100,7 @@ public class ElementConstructor extends NodeConstructor {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		context.pushNamespaceContext();
+		context.pushInScopeNamespaces();
 		MemTreeBuilder builder = context.getDocumentBuilder();
 		// declare namespaces
 		if(namespaceDecls != null) {
@@ -157,7 +157,7 @@ public class ElementConstructor extends NodeConstructor {
 		}
 		builder.endElement();
 		NodeImpl node = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
-		context.popNamespaceContext();
+		context.popInScopeNamespaces();
 		return node;
 	}
 	
