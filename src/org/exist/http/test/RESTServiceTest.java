@@ -32,6 +32,7 @@ import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 
 import junit.framework.TestCase;
 
@@ -43,6 +44,7 @@ public class RESTServiceTest extends TestCase {
 	private final static String SERVER_URI = "http://localhost:8088";
 	
 	private final static String RESOURCE_URI =SERVER_URI + "/db/test/test.xml";
+	private final static String COLLECTION_URI = SERVER_URI + "/db/test";
 	
 	private final static String XML_DATA =
 		"<test>" +
@@ -104,6 +106,18 @@ public class RESTServiceTest extends TestCase {
 	public void testQueryPost() throws IOException {
 		HttpURLConnection connect = preparePost(QUERY_REQUEST);
 		connect.connect();
+		int r = connect.getResponseCode();
+		assertEquals("Server returned response code " + r, 200, r);
+		
+		System.out.println(readResponse(connect.getInputStream()));
+	}
+	
+	public void testQueryGet() throws IOException {
+		String uri = COLLECTION_URI + "?_query=" + URLEncoder.encode("//para[. = 'ääüüööÄÄÖÖÜÜ']/text()");
+		HttpURLConnection connect = getConnection(uri);
+		connect.setRequestMethod("GET");
+		connect.connect();
+		
 		int r = connect.getResponseCode();
 		assertEquals("Server returned response code " + r, 200, r);
 		
