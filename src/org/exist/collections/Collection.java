@@ -1,7 +1,7 @@
 
 /*
  *  Collection.java - eXist Open Source Native XML Database
- *  Copyright (C) 2001 Wolfgang M. Meier
+ *  Copyright (C) 2001-03 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *
@@ -19,7 +19,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
- * $Id:
+ * $Id$
  */
 package org.exist.collections;
 
@@ -27,23 +27,47 @@ import it.unimi.dsi.fastutil.Object2LongRBTreeMap;
 import it.unimi.dsi.fastutil.Object2ObjectRBTreeMap;
 
 import java.io.EOFException;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.TreeSet;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 import org.apache.log4j.Category;
+import org.apache.xml.resolver.tools.CatalogResolver;
+import org.exist.EXistException;
+import org.exist.Indexer;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.security.Group;
 import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
+import org.exist.util.Configuration;
+import org.exist.util.DOMStreamer;
 import org.exist.util.SyntaxException;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
+import org.w3c.dom.Node;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.XMLReader;
 
 /**
  * This class represents a collection in the database.
@@ -52,49 +76,52 @@ import org.exist.util.VariableByteOutputStream;
  *  
  * @author wolf
  */
-public class Collection implements Comparable {
+public class Collection
+	extends Observable
+	implements Comparable, EntityResolver {
 
 	private final static Category LOG =
 		Category.getInstance(Collection.class.getName());
-		
+
 	private final static String COLLECTION_CONFIG_FILE = "collection.xconf";
-	
-	// the broker instance that created this collection	
-	private DBBroker broker;
-	
+
+	private final static int VALIDATION_ENABLED = 0;
+	private final static int VALIDATION_AUTO = 1;
+	private final static int VALIDATION_DISABLED = 2;
+
+	private int validation = VALIDATION_AUTO;
+
 	private int refCount = 0;
 	private short collectionId = -1;
-	
+
 	// the documents contained in this collection
 	private Object2ObjectRBTreeMap documents = new Object2ObjectRBTreeMap();
-	
+
 	// the name of this collection
 	private String name;
-	
+
 	// the permissions assigned to this collection
 	private Permission permissions = new Permission(0755);
-	
+
 	// stores child-collections with their storage address
-	private Object2LongRBTreeMap subcollections = 
-		new Object2LongRBTreeMap();
-	
+	private Object2LongRBTreeMap subcollections = new Object2LongRBTreeMap();
+
 	// temporary field for the storage address
 	private long address = -1;
 
 	// creation time
 	private long created = 0;
-	
-	//private CollectionConfiguration configuration = null;
-	
-	public Collection(DBBroker broker) {
-		this.broker = broker;
-	}
 
-	public Collection(DBBroker broker, String name) {
-		this(broker);
+	private CatalogResolver resolver;
+
+	private List observers = null;
+
+	private CollectionConfiguration configuration = null;
+
+	public Collection(String name) {
 		this.name = name;
 	}
-	
+
 	/**
 	 *  Add a new sub-collection to the collection.
 	 *
@@ -113,10 +140,10 @@ public class Collection implements Comparable {
 	 * @param name
 	 */
 	synchronized public void addCollection(String name) {
-		if(!subcollections.containsKey(name))
+		if (!subcollections.containsKey(name))
 			subcollections.put(name, -1);
 	}
-	
+
 	/**
 	 * Update the specified child-collection.
 	 * 
@@ -128,32 +155,22 @@ public class Collection implements Comparable {
 		subcollections.remove(childName);
 		subcollections.put(childName, child.address);
 	}
-	
+
 	/**
 	 *  Add a document to the collection.
 	 *
 	 *@param  doc 
 	 */
-	synchronized public void addDocument(DocumentImpl doc) {
+	synchronized public void addDocument(DBBroker broker, DocumentImpl doc) {
 		if (doc.getDocId() < 0)
 			doc.setDocId(broker.getNextDocId(this));
 		documents.put(doc.getFileName(), doc);
 	}
 
-	/**
-	 *  Add a document to the collection.
-	 *
-	 *@param  user
-	 *@param  doc
-	 */
-	synchronized public void addDocument(User user, DocumentImpl doc) {
-		addDocument(doc);
-	}
-
 	synchronized public void renameDocument(String oldName, String newName) {
-		DocumentImpl doc = (DocumentImpl)documents.remove(oldName);
+		DocumentImpl doc = (DocumentImpl) documents.remove(oldName);
 		doc.setFileName(newName);
-		if(doc != null)
+		if (doc != null)
 			documents.put(newName, doc);
 	}
 
@@ -175,7 +192,7 @@ public class Collection implements Comparable {
 	 * 
 	 * @return List
 	 */
-	public synchronized List getDescendants(User user) {
+	public synchronized List getDescendants(DBBroker broker, User user) {
 		final ArrayList cl = new ArrayList(subcollections.size());
 		Collection child;
 		String childName;
@@ -185,7 +202,7 @@ public class Collection implements Comparable {
 			if (permissions.validate(user, Permission.READ)) {
 				cl.add(child);
 				if (child.getChildCollectionCount() > 0)
-					cl.addAll(child.getDescendants(user));
+					cl.addAll(child.getDescendants(broker, user));
 			}
 		}
 		return cl;
@@ -201,29 +218,32 @@ public class Collection implements Comparable {
 	 * @param recursive
 	 * @return
 	 */
-	public synchronized DocumentSet allDocs(User user, boolean recursive) {
+	public synchronized DocumentSet allDocs(
+		DBBroker broker,
+		User user,
+		boolean recursive) {
 		DocumentSet docs = new DocumentSet();
 		getDocuments(docs);
-		if(recursive)
-			allDocs(user, docs);
+		if (recursive)
+			allDocs(broker, user, docs);
 		return docs;
 	}
 
-	private DocumentSet allDocs(User user, DocumentSet docs) {
+	private DocumentSet allDocs(DBBroker broker, User user, DocumentSet docs) {
 		Collection child;
 		String childName;
 		long addr;
 		for (Iterator i = subcollections.keySet().iterator(); i.hasNext();) {
 			childName = (String) i.next();
 			addr = subcollections.getLong(childName);
-			if(addr < 0)
+			if (addr < 0)
 				child = broker.getCollection(name + '/' + childName);
 			else
 				child = broker.getCollection(name + '/' + childName, addr);
 			if (permissions.validate(user, Permission.READ)) {
 				child.getDocuments(docs);
 				if (child.getChildCollectionCount() > 0)
-					child.allDocs(user, docs);
+					child.allDocs(broker, user, docs);
 			}
 		}
 		return docs;
@@ -308,7 +328,7 @@ public class Collection implements Comparable {
 	 *@return    The parent-collection or null if this
 	 *is the root collection.
 	 */
-	public synchronized Collection getParent() {
+	public synchronized Collection getParent(DBBroker broker) {
 		if (name.equals("/db"))
 			return null;
 		String parent =
@@ -318,19 +338,6 @@ public class Collection implements Comparable {
 		return broker.getCollection(parent);
 	}
 
-	/**
-	 * Returns the broker instance that created this collection.
-	 * 
-	 * @return
-	 */
-	protected synchronized DBBroker getBroker() {
-		return broker;
-	}
-	
-	public synchronized void setBroker(DBBroker newBroker) {
-		broker = newBroker;
-	}
-	
 	/**
 	 *  Gets the permissions attribute of the Collection object
 	 *
@@ -369,27 +376,28 @@ public class Collection implements Comparable {
 		return documents.values().iterator();
 	}
 
-//	public synchronized CollectionConfiguration getConfiguration() 
-//	throws CollectionConfigurationException {
-//		if(configuration == null)
-//			configuration = 
-//				new CollectionConfiguration(this, getDocument(COLLECTION_CONFIG_FILE));
-//		return configuration;
-//	}
-	
+	//	public synchronized CollectionConfiguration getConfiguration() 
+	//	throws CollectionConfigurationException {
+	//		if(configuration == null)
+	//			configuration = 
+	//				new CollectionConfiguration(this, getDocument(COLLECTION_CONFIG_FILE));
+	//		return configuration;
+	//	}
+
 	/**
 	 * Read collection contents from the stream.
 	 * 
 	 * @param istream
 	 * @throws IOException
 	 */
-	public void read(VariableByteInputStream istream) throws IOException {
+	public void read(DBBroker broker, VariableByteInputStream istream)
+		throws IOException {
 		collectionId = istream.readShort();
 		final int collLen = istream.readInt();
 		String sub;
 		for (int i = 0; i < collLen; i++)
 			subcollections.put(istream.readUTF(), istream.readLong());
-		
+
 		final SecurityManager secman =
 			broker.getBrokerPool().getSecurityManager();
 		final int uid = istream.readInt();
@@ -409,7 +417,7 @@ public class Collection implements Comparable {
 			while (istream.available() > 0) {
 				doc = new DocumentImpl(broker, this);
 				doc.read(istream);
-				addDocument(doc);
+				addDocument(broker, doc);
 			}
 		} catch (EOFException e) {
 		}
@@ -430,43 +438,331 @@ public class Collection implements Comparable {
 	 *@param  name  Description of the Parameter
 	 */
 	synchronized public void removeDocument(String name) {
+		Trigger trigger = null;
+		if(!name.equals("collections.xconf")) {
+			CollectionConfiguration config = getConfiguration();
+			trigger = config.getTrigger(Trigger.REMOVE_EVENT);
+		}
 		documents.remove(name);
 	}
 
-	/**
-	 *  Set the id of this collection.
-	 *
-	 *@param  id  The new id value
-	 */
-	public void setId(short id) {
+	public DocumentImpl addDocument(
+		DBBroker broker,
+		User user,
+		String name,
+		String data)
+		throws EXistException, PermissionDeniedException, IOException, SAXException {
+		return addDocument(broker, user, name, data);
+	}
+
+	public DocumentImpl addDocument(
+		DBBroker broker,
+		User user,
+		String name,
+		String data,
+		boolean privileged)
+		throws
+			EXistException,
+			PermissionDeniedException,
+			TriggerException,
+			SAXException {
+		return addDocument(
+			broker,
+			user,
+			name,
+			new InputSource(new StringReader(data)),
+			privileged);
+	}
+
+	public DocumentImpl addDocument(
+		DBBroker broker,
+		User user,
+		String name,
+		InputSource source)
+		throws
+			EXistException,
+			PermissionDeniedException,
+			TriggerException,
+			SAXException {
+		return addDocument(broker, user, name, source, false);
+	}
+
+	public DocumentImpl addDocument(
+		DBBroker broker,
+		User user,
+		String name,
+		InputSource source,
+		boolean privileged)
+		throws
+			EXistException,
+			PermissionDeniedException,
+			SAXException,
+			TriggerException {
+		if (broker.isReadOnly())
+			throw new PermissionDeniedException("Database is read-only");
+		DocumentImpl document, oldDoc = null;
+		synchronized (this) {
+			oldDoc = getDocument(getName() + '/' + name);
+		}
+		if (oldDoc != null) {
+			// do we have permissions for update?
+			if (!oldDoc.getPermissions().validate(user, Permission.UPDATE))
+				throw new PermissionDeniedException(
+					"document exists and update " + "is not allowed");
+			// do we have write permissions?
+		} else if (!getPermissions().validate(user, Permission.WRITE))
+			throw new PermissionDeniedException(
+				"not allowed to write to collection " + getName());
+		// if an old document exists, save the new document with a temporary
+		// document name
+		if (oldDoc != null) {
+			document = new DocumentImpl(broker, getName() + "/__" + name, this);
+			document.setCreated(oldDoc.getCreated());
+			document.setLastModified(System.currentTimeMillis());
+			document.setPermissions(oldDoc.getPermissions());
+		} else {
+			document = new DocumentImpl(broker, getName() + '/' + name, this);
+			document.setCreated(System.currentTimeMillis());
+			document.getPermissions().setOwner(user);
+			document.getPermissions().setGroup(user.getPrimaryGroup());
+		}
+		// setup triggers
+		CollectionConfiguration config = getConfiguration();
+		Trigger trigger = null;
+		if (config != null) {
+			if (oldDoc == null)
+				trigger = config.getTrigger(Trigger.STORE_EVENT);
+			else
+				trigger = config.getTrigger(Trigger.UPDATE_EVENT);
+		}
+		// set configuration to null if we are updating collection.xconf
+		if (name.equals("collection.xconf"))
+			configuration = null;
+		Indexer parser = new Indexer(broker);
+		parser.setDocument(document);
+
+		// add observers to the indexer
+		Observer observer;
+		if (observers != null) {
+			for (Iterator i = observers.iterator(); i.hasNext();) {
+				observer = (Observer) i.next();
+				parser.addObserver(observer);
+				broker.addObserver(observer);
+			}
+		}
+		// prepare the SAX parser
+		parser.setValidating(true);
+		XMLReader reader = getReader(broker);
+		reader.setEntityResolver(this);
+
+		if (trigger != null) {
+			reader.setContentHandler(trigger.getInputHandler());
+			reader.setProperty(
+				"http://xml.org/sax/properties/lexical-handler",
+				trigger.getLexicalInputHandler());
+			trigger.setOutputHandler(parser);
+			trigger.setValidating(true);
+			// prepare the trigger
+			trigger.prepare(broker, this, name, oldDoc);
+		} else {
+			reader.setContentHandler(parser);
+			reader.setProperty(
+				"http://xml.org/sax/properties/lexical-handler",
+				parser);
+		}
+		reader.setErrorHandler(parser);
+		
+		// first pass: parse the document to determine tree structure
+		LOG.debug("validating document " + name);
+		try {
+			reader.parse(source);
+		} catch (IOException e) {
+			throw new EXistException(e);
+		}
+		document.setMaxDepth(document.getMaxDepth() + 1);
+		document.calculateTreeLevelStartPoints();
+		// new document is valid: remove old document 
+		if (oldDoc != null) {
+			LOG.debug("removing old document " + oldDoc.getFileName());
+			broker.removeDocument(oldDoc.getFileName());
+			document.setFileName(oldDoc.getFileName());
+		}
+		synchronized (this) {
+			addDocument(broker, document);
+		}
+
+		parser.setValidating(false);
+		if (trigger != null)
+			trigger.setValidating(false);
+		// reset the input source
+		try {
+			final InputStream is = source.getByteStream();
+			if (is != null)
+				is.reset();
+			else {
+				final Reader cs = source.getCharacterStream();
+				if (cs != null)
+					cs.reset();
+			}
+		} catch (IOException e) {
+			LOG.debug("could not reset input source", e);
+		}
+
+		// second pass: store the document
+		LOG.debug("storing document ...");
+		try {
+			reader.parse(source);
+		} catch (IOException e) {
+			throw new EXistException(e);
+		}
+
+		synchronized (this) {
+			broker.addDocument(this, document);
+			broker.closeDocument();
+			broker.flush();
+			// if we are running in privileged mode (e.g. backup/restore)
+			// notify the SecurityManager about changes
+			if (document.getFileName().equals("/db/system/users.xml")
+				&& privileged == false) {
+				// inform the security manager that system data has changed
+				LOG.debug("users.xml changed");
+				broker.getBrokerPool().reloadSecurityManager(broker);
+			}
+		}
+		return document;
+	}
+
+	public DocumentImpl addDocument(
+		DBBroker broker,
+		User user,
+		String name,
+		Node node)
+		throws EXistException, PermissionDeniedException, TriggerException, SAXException {
+		return addDocument(broker, user, name, node, false);
+	}
+
+	public DocumentImpl addDocument(
+		DBBroker broker,
+		User user,
+		String name,
+		Node node,
+		boolean privileged)
+		throws EXistException, PermissionDeniedException, TriggerException, SAXException {
+		Indexer parser = new Indexer(broker);
+		if (broker.isReadOnly())
+			throw new PermissionDeniedException("Database is read-only");
+		DocumentImpl document, oldDoc = null;
+		synchronized (this) {
+			oldDoc = getDocument(getName() + '/' + name);
+		}
+		if (oldDoc != null) {
+			// do we have permissions for update?
+			if (!oldDoc.getPermissions().validate(user, Permission.UPDATE))
+				throw new PermissionDeniedException(
+					"document exists and update " + "is not allowed");
+			// no: do we have write permissions?
+		} else if (!getPermissions().validate(user, Permission.WRITE))
+			throw new PermissionDeniedException(
+				"not allowed to write to collection " + getName());
+		// if an old document exists, save the new document with a temporary
+		// document name
+		if (oldDoc != null) {
+			document = new DocumentImpl(broker, getName() + "/__" + name, this);
+			document.setCreated(oldDoc.getCreated());
+			document.setLastModified(System.currentTimeMillis());
+			document.setPermissions(oldDoc.getPermissions());
+		} else {
+			document = new DocumentImpl(broker, getName() + '/' + name, this);
+			document.setCreated(System.currentTimeMillis());
+			document.getPermissions().setOwner(user);
+			document.getPermissions().setGroup(user.getPrimaryGroup());
+		}
+		// setup triggers
+		CollectionConfiguration config = getConfiguration();
+		Trigger trigger = null;
+		if (config != null) {
+			if (oldDoc == null)
+				trigger = config.getTrigger(Trigger.STORE_EVENT);
+			else
+				trigger = config.getTrigger(Trigger.UPDATE_EVENT);
+		}
+		// set configuration to null if we are updating collection.xconf
+		if (name.equals("collection.xconf"))
+			configuration = null;
+		parser.setDocument(document);
+
+		// add observers to the indexer
+		Observer observer;
+		if (observers != null) {
+			for (Iterator i = observers.iterator(); i.hasNext();) {
+				observer = (Observer) i.next();
+				parser.addObserver(observer);
+				broker.addObserver(observer);
+			}
+		}
+		parser.setValidating(true);
+		DOMStreamer streamer = new DOMStreamer();
+		if (trigger != null) {
+			streamer.setContentHandler(trigger.getInputHandler());
+			streamer.setLexicalHandler(trigger.getLexicalInputHandler());
+			trigger.setOutputHandler(parser);
+			trigger.setValidating(true);
+			// prepare the trigger
+			trigger.prepare(broker, this, name, oldDoc);
+		} else {
+			streamer.setContentHandler(parser);
+			streamer.setLexicalHandler(parser);
+		}
+			
+		// first pass: parse the document to determine tree structure
+		LOG.debug("validating document " + name);
+		streamer.stream(node);
+		document.setMaxDepth(document.getMaxDepth() + 1);
+		document.calculateTreeLevelStartPoints();
+		// new document is valid: remove old document 
+		if (oldDoc != null) {
+			LOG.debug("removing old document " + oldDoc.getFileName());
+			broker.removeDocument(oldDoc.getFileName());
+			document.setFileName(oldDoc.getFileName());
+		}
+		synchronized (this) {
+			addDocument(broker, document);
+		}
+
+		parser.setValidating(false);
+		if (trigger != null)
+			trigger.setValidating(false);
+
+		// second pass: store the document
+		LOG.debug("storing document ...");
+		streamer.stream(node);
+
+		synchronized (this) {
+			broker.addDocument(this, document);
+			broker.closeDocument();
+			broker.flush();
+			// if we are running in privileged mode (e.g. backup/restore)
+			// notify the SecurityManager about changes
+			if (document.getFileName().equals("/db/system/users.xml")
+				&& privileged == false) {
+				// inform the security manager that system data has changed
+				LOG.debug("users.xml changed");
+				broker.getBrokerPool().reloadSecurityManager(broker);
+			}
+		}
+		return document;
+	}
+
+	public synchronized void setId(short id) {
 		this.collectionId = id;
 	}
 
-	/**
-	 *  Set the name of this collection.
-	 *
-	 *@param  name  The new name value
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	/**
-	 *  Set permissions for the collection.
-	 *
-	 *@param  mode  The new permissions value
-	 */
 	public synchronized void setPermissions(int mode) {
 		permissions.setPermissions(mode);
 	}
 
-	/**
-	 *  Set permissions for the collection.
-	 *
-	 *@param  mode                 The new permissions value
-	 *@exception  SyntaxException  Description of the Exception
-	 */
-	public synchronized void setPermissions(String mode) throws SyntaxException {
+	public synchronized void setPermissions(String mode)
+		throws SyntaxException {
 		permissions.setPermissions(mode);
 	}
 
@@ -478,22 +774,23 @@ public class Collection implements Comparable {
 	public synchronized void setPermissions(Permission permissions) {
 		this.permissions = permissions;
 	}
-	
+
 	/**
 	 * Write collection contents to stream.
 	 * 
 	 * @param ostream
 	 * @throws IOException
 	 */
-	public void write(VariableByteOutputStream ostream) throws IOException {
+	public void write(DBBroker broker, VariableByteOutputStream ostream)
+		throws IOException {
 		ostream.writeShort(collectionId);
 		ostream.writeInt(subcollections.size());
 		String childColl;
 		for (Iterator i = subcollections.keySet().iterator(); i.hasNext();) {
-			childColl = (String)i.next();
+			childColl = (String) i.next();
 			ostream.writeUTF(childColl);
 			ostream.writeLong(subcollections.getLong(childColl));
-			
+
 		}
 		org.exist.security.SecurityManager secman =
 			broker.getBrokerPool().getSecurityManager();
@@ -515,6 +812,27 @@ public class Collection implements Comparable {
 		}
 	}
 
+	public CollectionConfiguration getConfiguration() {
+		if (configuration == null)
+			configuration = readCollectionConfiguration();
+		return configuration;
+	}
+
+	private CollectionConfiguration readCollectionConfiguration() {
+		DocumentImpl doc =
+			getDocument(getName() + '/' + COLLECTION_CONFIG_FILE);
+		if (doc != null) {
+			LOG.debug("found collection.xconf");
+			try {
+				return new CollectionConfiguration(doc);
+			} catch (CollectionConfigurationException e) {
+				LOG.warn(e.getMessage(), e);
+			}
+		} else
+			LOG.debug("collection.dbx not found");
+		return null;
+	}
+
 	/**
 	 * Set the internal storage address of the collection data.
 	 * 
@@ -523,7 +841,7 @@ public class Collection implements Comparable {
 	public void setAddress(long addr) {
 		this.address = addr;
 	}
-	
+
 	public void incRefCount() {
 		--refCount;
 	}
@@ -539,12 +857,112 @@ public class Collection implements Comparable {
 	public int getRefCount() {
 		return refCount;
 	}
-	
+
 	public void setCreationTime(long ms) {
 		created = ms;
 	}
-	
+
 	public long getCreationTime() {
 		return created;
+	}
+
+	private XMLReader getReader(DBBroker broker)
+		throws EXistException, SAXException {
+		Configuration config = broker.getConfiguration();
+		// get validation settings
+		String option = (String) config.getProperty("indexer.validation");
+		if (option != null) {
+			if (option.equals("true"))
+				validation = VALIDATION_ENABLED;
+			else if (option.equals("auto"))
+				validation = VALIDATION_AUTO;
+			else
+				validation = VALIDATION_DISABLED;
+		}
+		resolver = (CatalogResolver) config.getProperty("resolver");
+		// create a SAX parser
+		SAXParserFactory saxFactory = SAXParserFactory.newInstance();
+		if (validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED)
+			saxFactory.setValidating(true);
+		else
+			saxFactory.setValidating(false);
+		saxFactory.setNamespaceAware(true);
+		try {
+			setFeature(
+				saxFactory,
+				"http://xml.org/sax/features/namespace-prefixes",
+				true);
+			setFeature(
+				saxFactory,
+				"http://apache.org/xml/features/validation/dynamic",
+				validation == VALIDATION_AUTO);
+			setFeature(
+				saxFactory,
+				"http://apache.org/xml/features/validation/schema",
+				validation == VALIDATION_AUTO
+					|| validation == VALIDATION_ENABLED);
+			SAXParser sax = saxFactory.newSAXParser();
+			XMLReader parser = sax.getXMLReader();
+			return parser;
+		} catch (ParserConfigurationException e) {
+			LOG.warn(e);
+			throw new EXistException(e);
+		}
+	}
+
+	/**
+		 * Try to resolve external entities.
+		 * 
+		 * This method forwards the request to the resolver. If that fails,
+		 * the method replaces absolute file names with relative ones 
+		 * and retries to resolve. This makes it possible to use relative
+		 * file names in the catalog.
+		 * 
+		 * @see org.xml.sax.EntityResolver#resolveEntity(java.lang.String, java.lang.String)
+		 */
+	public InputSource resolveEntity(String publicId, String systemId)
+		throws SAXException, IOException {
+		InputSource is = resolver.resolveEntity(publicId, systemId);
+		// if resolution failed and publicId == null,
+		// try to make absolute file names relative and retry
+		if (is == null) {
+			if (publicId != null)
+				return null;
+			URL url = new URL(systemId);
+			if (url.getProtocol().equals("file")) {
+				String path = url.getPath();
+				File f = new File(path);
+				if (!f.canRead())
+					return resolver.resolveEntity(null, f.getName());
+				else
+					return new InputSource(f.getAbsolutePath());
+			} else
+				return new InputSource(url.openStream());
+		}
+		return is;
+	}
+
+	private void setFeature(
+		SAXParserFactory factory,
+		String feature,
+		boolean value) {
+		try {
+			factory.setFeature(feature, value);
+		} catch (SAXNotRecognizedException e) {
+			LOG.warn(e);
+		} catch (SAXNotSupportedException snse) {
+			LOG.warn(snse);
+		} catch (ParserConfigurationException pce) {
+			LOG.warn(pce);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see java.util.Observable#addObserver(java.util.Observer)
+	 */
+	public synchronized void addObserver(Observer o) {
+		if (observers == null)
+			observers = new ArrayList(1);
+		observers.add(o);
 	}
 }

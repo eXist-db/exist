@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
+import org.exist.EXistException;
 import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
@@ -14,6 +15,7 @@ import org.exist.parser.XPathParser2;
 import org.exist.parser.XPathTreeParser2;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.StaticContext;
 import org.exist.xpath.Value;
@@ -78,7 +80,16 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 		DocumentSet docs = null;
 		if (!(query.startsWith("document(") || query.startsWith("collection(") ||
 			query.startsWith("xcollection("))) {
-			docs = collection.collection.allDocs(user, true);
+			DBBroker broker = null;
+			try {
+				broker = brokerPool.get();
+				docs = collection.collection.allDocs(broker, user, true);
+			} catch (EXistException e) {
+				throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR,
+					"error while loading documents: " + e.getMessage(), e);
+			} finally {
+				brokerPool.release(broker);
+			}
 		}
 		return doQuery(query, docs, null, sortBy);
 	}

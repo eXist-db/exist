@@ -267,7 +267,7 @@ public class NativeBroker extends DBBroker {
 		if (!collection.getPermissions().validate(user, Permission.READ))
 			throw new PermissionDeniedException(
 				"you don't have the permission" + " to read collection " + collection.getName());
-		List collections = inclusive ? collection.getDescendants(user) : new ArrayList();
+		List collections = inclusive ? collection.getDescendants(this, user) : new ArrayList();
 		collections.add(collection);
 		short collectionId, elementId;
 		ElementValue ref;
@@ -431,7 +431,7 @@ public class NativeBroker extends DBBroker {
 	public DocumentSet getAllDocuments(User user) {
 		long start = System.currentTimeMillis();
 		Collection root = getCollection("/db");
-		DocumentSet docs = root.allDocs(user, true);
+		DocumentSet docs = root.allDocs(this, user, true);
 		LOG.debug(
 			"loading "
 				+ docs.getLength()
@@ -495,10 +495,9 @@ public class NativeBroker extends DBBroker {
 			lock.acquire(Lock.READ_LOCK);
 			collection = collectionsDb.getCollectionCache().get(name);
 			if (collection != null) {
-				collection.setBroker(this);
 				return collection;
 			}
-			collection = new Collection(this, name);
+			collection = new Collection(name);
 			try {
 				if (addr < 0) {
 					dis = collectionsDb.getAsStream(key);
@@ -512,7 +511,7 @@ public class NativeBroker extends DBBroker {
 				return null;
 			VariableByteInputStream istream = new VariableByteInputStream(dis);
 			try {
-				collection.read(istream);
+				collection.read(this, istream);
 			} catch (IOException ioe) {
 				LOG.warn(ioe);
 				return null;
@@ -612,7 +611,7 @@ public class NativeBroker extends DBBroker {
 			LOG.debug("collection " + collection + " not found");
 			return docs;
 		}
-		docs = root.allDocs(user, inclusive);
+		docs = root.allDocs(this, user, inclusive);
 		LOG.debug(
 			"loading "
 				+ docs.getLength()
@@ -1036,7 +1035,7 @@ public class NativeBroker extends DBBroker {
 			current = getCollection("/db");
 			if (current == null) {
 				LOG.debug("creating root collection /db");
-				current = new Collection(this, "/db");
+				current = new Collection("/db");
 				current.getPermissions().setPermissions(0777);
 				current.getPermissions().setOwner(user);
 				current.getPermissions().setGroup(user.getPrimaryGroup());
@@ -1053,7 +1052,7 @@ public class NativeBroker extends DBBroker {
 					if (!current.getPermissions().validate(user, Permission.WRITE))
 						throw new PermissionDeniedException("not allowed to write to collection");
 					LOG.debug("creating collection " + path);
-					sub = new Collection(this, path);
+					sub = new Collection(path);
 					sub.getPermissions().setOwner(user);
 					sub.getPermissions().setGroup(user.getPrimaryGroup());
 					sub.setId(getNextCollectionId());
@@ -1194,7 +1193,7 @@ public class NativeBroker extends DBBroker {
 				lock.acquire();
 				if (!name.equals("/db"))
 					collectionsDb.getCollectionCache().remove(name);
-				Collection parent = collection.getParent();
+				Collection parent = collection.getParent(this);
 				if (parent != null) {
 					parent.removeCollection(name.substring(name.lastIndexOf("/") + 1));
 					saveCollection(parent);
@@ -1512,7 +1511,7 @@ public class NativeBroker extends DBBroker {
 				}
 				collection.setAddress(address);
 				if (!name.equals("/db")) {
-					Collection parent = collection.getParent();
+					Collection parent = collection.getParent(this);
 					parent.update(collection);
 					saveCollection(parent);
 				}
@@ -1546,7 +1545,7 @@ public class NativeBroker extends DBBroker {
 			}
 			try {
 				final VariableByteOutputStream ostream = new VariableByteOutputStream(8);
-				collection.write(ostream);
+				collection.write(this, ostream);
 				Lock lock = collectionsDb.getLock();
 				try {
 					lock.acquire(Lock.WRITE_LOCK);
@@ -1557,7 +1556,7 @@ public class NativeBroker extends DBBroker {
 					}
 					collection.setAddress(addr);
 					if (!name.equals("/db")) {
-						Collection parent = collection.getParent();
+						Collection parent = collection.getParent(this);
 						parent.update(collection);
 						saveCollection(parent);
 					}

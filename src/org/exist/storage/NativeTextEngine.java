@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
- *  $Id:
+ *  $Id$
  */
 package org.exist.storage;
 
@@ -469,7 +469,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		throws PermissionDeniedException {
 		if (!collection.getPermissions().validate(user, Permission.READ))
 			throw new PermissionDeniedException("permission denied");
-		List collections = inclusive ? collection.getDescendants(user) : new ArrayList();
+		List collections = inclusive ? collection.getDescendants(broker, user) : new ArrayList();
 		collections.add(collection);
 		final Lock lock = dbWords.getLock();
 		short collectionId;
