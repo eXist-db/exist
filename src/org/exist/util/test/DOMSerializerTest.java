@@ -31,6 +31,10 @@ public class DOMSerializerTest extends TestCase {
 		junit.textui.TestRunner.run(DOMSerializerTest.class);
 	}
 
+	public DOMSerializerTest(String name) {
+		super(name);
+	}
+	
 	public void testSerialize() throws Exception {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder = factory.newDocumentBuilder();

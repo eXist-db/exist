@@ -838,7 +838,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 			p = (NodeProxy) i.next();
 			if (other.contains(p)) {
 				c = other.get(p);
-				c.addMatches(p.match);
+				if(c != null)
+					c.addMatches(p.match);
 			} else
 				result.add(p);
 		}

@@ -18,7 +18,7 @@
   </bookinfo>
   <ci:include src="sidebar.xml"/>
   <chapter id="ch01">
-    <title>Command-Line Client</title>
+    <title>Java Client</title>
     <para>eXist offers an integrated command-line and gui client in class <classname>org.exist.client.InteractiveClient</classname>. The client is entirely based on the XML:DB API and provides commands for most database related tasks, like creating and removing collections, user management, batch-loading XML data or querying.</para>
     <para>The following sections provide a short description of the most common comand-line parameters and their use:</para>
     <section>
@@ -38,10 +38,67 @@
           <para>If option <option>-l</option> or <option>--nogui</option> is specified without an action, the client switches to shell-mode and prompts for user input. No graphical interface is displayed.</para>
         </listitem>
       </orderedlist>
-      <para>We will not describe the two interactive modes in this document. Most commands work like their counterparts specified on the command line. On the shell, just type <command moreinfo="none">help</command> to get a list of supported commands.</para>
-      <para>Please note that the shell-mode may support full command line history and command completition, depending on your type of operating system. On Unix systems, the client will try to load the GNU readline library, which is part of most Unix installations. This gives you access to all the nice things you probably know from Linux shells. For example, pressing the tab-key will try to complete collection and document names. However, for this to work, the native library <filename moreinfo="none">lib/core/libJavaReadline.so</filename> has to be found by the system's loader. On Linux, just add <filename moreinfo="none">lib/core</filename> to your <option>LD_LIBRARY_PATH</option> (the client.sh script does this automatically).</para>
-      <para>On Windows OS, you should at least be able to use the cursor-up/cursor-down keys to browse through the command history. </para>
     </section>
+    
+    <section>
+        <title>Using the shell</title>
+        <para>We will not describe the interactive shell mode in detail here. Most commands work like their 
+        counterparts specified on the command line. On the shell, just type <command moreinfo="none">help</command> 
+        to get a list of supported commands.</para>
+        <para>The shell-mode may support full command line history and command completition, depending on your type of 
+        operating system. On Unix systems, the client will try to load the GNU readline library, which is part of 
+        most Unix installations. This gives you access to all the nice things you probably know from Linux shells. 
+        For example, pressing the tab-key will try to complete collection and document names. However, for this to 
+        work, the native library <filename moreinfo="none">lib/core/libJavaReadline.so</filename> has to be found 
+        by the system's loader. On Linux, just add <filename moreinfo="none">lib/core</filename> to your 
+        <option>LD_LIBRARY_PATH</option> (the client.sh script does this automatically).</para>
+        <para>On Windows OS, you should at least be able to use the cursor-up/cursor-down keys to browse 
+        through the command history.</para>
+        <para>To explain the shell-mode, we just provide a short example, showing how to store the sample files into
+        the database. Typing <command moreinfo="none">mkcol 
+        shakespeare</command> and pressing enter will create a 
+        shakespeare-collection into which we will put some of the sample documents provided with eXist. To check 
+        if the new collection is present, enter <command moreinfo="none">ls</command> to get a listing of the 
+        current collection contents. The listing below shows an example session of how to add the sample 
+        documents:</para>
+        <example>
+            <title>Adding the sample documents</title>
+                <screen format="linespecific"><![CDATA[
+        exist:/db>mkcol shakespeare
+        created collection.
+        exist:/db>cd shakespeare
+        exist:/db/shakespeare>mkcol plays
+        created collection.
+        exist:/db/shakespeare>cd plays
+        exist:/db/shakespeare/plays>put samples/shakespeare/
+        storing document hamlet.xml (1 of 4) ...done.
+        storing document much_ado.xml (2 of 4) ...done.
+        storing document r_and_j.xml (3 of 4) ...done.
+        storing document shakes.xsl (4 of 4) ...done.
+        exist:/db/shakespeare/plays> cd
+        exist:/db>mkcol library
+        created collection.
+        exist:/db>cd library
+        exist:/db/library>put samples/biblio.rdf
+        storing document biblio.rdf (1 of 1) ...done.
+        exist:/db/library>cd
+        exist:/db>mkcol xinclude
+        created collection.
+        exist:/db>cd xinclude
+        exist:/db/xinclude>put samples/xinclude
+        ]]></screen>
+            </example>
+            <para>Adding files to the database is done using put. Put expects either a single file, a file-pattern or a directory name as argument. If a directory is specified, all XML and XSL files in that directory will be put into the database. To add the files in directory samples/shakespeare simply enter put samples/shakespeare. To see if the files have actually been stored, you may view the contents of the current collection with ls. To view a document, use the get command, e.g.:</para>
+            <synopsis format="linespecific">get hamlet.xml</synopsis>
+            <note>
+                <para>
+                    <command moreinfo="none">put</command> also accepts file-patterns, i.e. a path with wildcards ? or *. ** means: any sub-directory. So the command <command moreinfo="none">put samples/**/*.xml</command> will parse any XML files found in the <filename moreinfo="none">samples</filename> directory and any of its sub-directories. </para>
+            </note>
+            <note>
+                <para>If you ever run into problems while experimenting with eXist and your database files get corrupt: just remove the data files created by eXist and everything should work again. The data files all end with <filename moreinfo="none">.dbx</filename>. You will either find them in directory <filename moreinfo="none">webapp/WEB-INF/data</filename> or <filename moreinfo="none">WEB-INF/data</filename>, depending on your installation. It is also ok to backup those data-files to be able to restore them in case of a database corruption.</para>
+            </note>
+        </section>
+        
     <section>
       <title>Specifying Parameters</title>
       <para>The client uses the CLI library from Apache's Excalibur project to parse command-line parameters. This means that the same conventions apply as for most GNU tools. Most parameters have a short and a long form: for example, the user can be specified in short form with <command>-u user</command> or in long form <command>--user=user</command>. You can also combine argument-less parameters: for example, <command>-ls</command> is short for <command>-l -s</command>.</para>
@@ -83,10 +140,18 @@
       <synopsis format="linespecific">bin/client.sh -c /db/shakespeare -R plays</synopsis>
     </section>
     <section>
-      <title>Executing XPath Queries</title>
-      <para>To execute XPath queries, use the <option>-x</option> parameter. This parameter accepts an optional argument, which specifies the query to execute. However, passing XPath queries on the command-line is a problem on many operating systems, because the command shell may interprete whitespace characters as command separators. Thus, if no argument is passed to <option>-x</option>, the client will try to read the query from standard input. For example, on Unix you may do</para>
+      <title>Executing Queries</title>
+      <para>To execute queries, use the <option>-x</option> parameter. This parameter accepts an optional argument, 
+      which specifies the query to execute. However, passing XQuery on the command-line is a problem on many operating 
+      systems, because the command shell may interprete whitespace characters as command separators. Thus, if no 
+      argument is passed to <option>-x</option>, the client will try to read the query from standard input. For example, 
+      on Unix you may do</para>
       <synopsis format="linespecific">echo "//SPEECH[LINE &amp;= 'love']" | bin/client.sh -x</synopsis>
-      <para>There's an additional parameter to be used in conjunction with <option>-x</option>: <option>-n</option> specifies the number of hits that should be printed to the standard output.</para>
+      <para>Queries can also be read from a file. For example,</para>
+      <synopsis>bin/client.sh -F samples/xquery/fibo.xq</synopsis>
+      <para>executes the XQuery contained in <filename>fibo.xq</filename>.</para>
+      <para>There's an additional parameter to be used in conjunction with <option>-x</option>: <option>-n</option> 
+      specifies the number of hits that should be printed to the standard output.</para>
     </section>
     <section>
       <title>XUpdate</title>

@@ -30,6 +30,10 @@ import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 
 /**
+ * FilteredExpression represents a primary expression with a predicate. Examples:
+ * for $i in (1 to 10)[$i mod 2 = 0], $a[1], (doc("test.xml")//section)[2]. Other predicate
+ * expressions are handled by class {@link org.exist.xpath.LocationStep}.
+ * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class FilteredExpression extends AbstractExpression {
@@ -58,13 +62,13 @@ public class FilteredExpression extends AbstractExpression {
 			contextSequence = contextItem.toSequence();
 		Sequence seq = expression.eval(contextSequence, contextItem);
 		if (seq.getLength() == 0)
-			return seq;
+			return Sequence.EMPTY_SEQUENCE;
 		setContext(seq);
 		Predicate pred;
 		Sequence result = seq;
 		for (Iterator i = predicates.iterator(); i.hasNext();) {
 			pred = (Predicate) i.next();
-			result = pred.eval(result);
+			result = pred.evalPredicate(contextSequence, result);
 		}
 		return result;
 	}

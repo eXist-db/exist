@@ -221,7 +221,6 @@ public class DocumentImpl extends NodeImpl implements Document {
 	 * @see org.w3c.dom.Document#getDoctype()
 	 */
 	public DocumentType getDoctype() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -229,7 +228,6 @@ public class DocumentImpl extends NodeImpl implements Document {
 	 * @see org.w3c.dom.Document#getImplementation()
 	 */
 	public DOMImplementation getImplementation() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

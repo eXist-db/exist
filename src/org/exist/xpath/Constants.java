@@ -81,9 +81,14 @@ public interface Constants {
 	public final static int MOD = 12;
 	public final static int IDIV = 13;
 
+	public final static int IS = 14;
+	public final static int ISNOT = 15;
+	public final static int BEFORE = 16;
+	public final static int AFTER = 17;
+	
 	public final static String[] OPS = 
 	{ "<", ">", ">=", "<=", "=", "!=", "IN" , "=~", "+", 
-	  "-", "*", "div", "mod" };
+	  "-", "*", "div", "mod", "idiv", "is", "isnot", "<<", ">>" };
 
     public final static int KEEP_UNION = 0;
     public final static int KEEP_INTER = 1;
@@ -96,12 +101,6 @@ public interface Constants {
     public final static int TYPE_STRING   = 3;
     public final static int TYPE_NUM      = 4;
     public final static int TYPE_BOOL     = 5;
-
-
-    public final static int SAME = 0;
-    public final static int BEFORE = -1;
-    public final static int AFTER = 1;
-    public final static int NOT_COMPARABLE = Integer.MIN_VALUE;
 
     public final static int FULLTEXT_OR = 0;
     public final static int FULLTEXT_AND = 1;

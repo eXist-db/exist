@@ -48,7 +48,7 @@ public class LetExpr extends BindingExpression {
 		Variable var = new Variable(QName.parse(context, varName));
 		context.declareVariable(var);
 		Sequence val = inputSequence.eval(null, null);
-		if(sequenceType != null) {
+		if (sequenceType != null) {
 			sequenceType.checkType(val.getItemType());
 			sequenceType.checkCardinality(val);
 		}
@@ -57,8 +57,8 @@ public class LetExpr extends BindingExpression {
 		Sequence filtered = null;
 		if (whereExpr != null) {
 			filtered = applyWhereExpression(null);
-			if(whereExpr.returnsType() == Type.BOOLEAN) {
-				if(!filtered.effectiveBooleanValue())
+			if (whereExpr.returnsType() == Type.BOOLEAN) {
+				if (!filtered.effectiveBooleanValue())
 					return Sequence.EMPTY_SEQUENCE;
 			} else if (filtered.getLength() == 0)
 				return Sequence.EMPTY_SEQUENCE;
@@ -93,6 +93,12 @@ public class LetExpr extends BindingExpression {
 		buf.append(inputSequence.pprint());
 		if (whereExpr != null)
 			buf.append(" where ").append(whereExpr.pprint());
+		if (orderSpecs != null) {
+			buf.append(" order by ");
+			for (int i = 0; i < orderSpecs.length; i++) {
+				buf.append(orderSpecs[i].toString());
+			}
+		}
 		buf.append(" return ");
 		buf.append(returnExpr.pprint());
 		return buf.toString();

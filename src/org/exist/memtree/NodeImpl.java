@@ -29,6 +29,7 @@ import org.exist.util.serializer.DOMStreamerPool;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.AtomicValue;
 import org.exist.xpath.value.Item;
+import org.exist.xpath.value.NodeValue;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.StringValue;
@@ -41,11 +42,11 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-public class NodeImpl implements Node, Item, Sequence {
+public class NodeImpl implements Node, NodeValue, Sequence {
 
 	protected int nodeNumber;
 	protected DocumentImpl document;
-	
+
 	public NodeImpl(DocumentImpl doc, int nodeNumber) {
 		this.document = doc;
 		this.nodeNumber = nodeNumber;
@@ -54,21 +55,28 @@ public class NodeImpl implements Node, Item, Sequence {
 	public int getNodeNumber() {
 		return nodeNumber;
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NodeValue#getImplementation()
+	 */
+	public int getImplementationType() {
+		return NodeValue.IN_MEMORY_NODE;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getNodeName()
 	 */
 	public String getNodeName() {
-		switch(getNodeType()) {
-			case Node.DOCUMENT_NODE:
+		switch (getNodeType()) {
+			case Node.DOCUMENT_NODE :
 				return "#document";
-			case Node.ATTRIBUTE_NODE:
-			case Node.ELEMENT_NODE:
-			case Node.PROCESSING_INSTRUCTION_NODE:
+			case Node.ATTRIBUTE_NODE :
+			case Node.ELEMENT_NODE :
+			case Node.PROCESSING_INSTRUCTION_NODE :
 				return document.nodeName[nodeNumber].toString();
-			case Node.TEXT_NODE:
+			case Node.TEXT_NODE :
 				return "#text";
-			default:
+			default :
 				return "#unknown";
 		}
 	}
@@ -99,11 +107,11 @@ public class NodeImpl implements Node, Item, Sequence {
 	 */
 	public Node getParentNode() {
 		int next = document.next[nodeNumber];
-		while(next > nodeNumber) {
+		while (next > nodeNumber) {
 			next = document.next[next];
 			System.out.println(next);
 		}
-		if(next < 0)
+		if (next < 0)
 			return document;
 		return document.getNode(next);
 	}
@@ -112,9 +120,36 @@ public class NodeImpl implements Node, Item, Sequence {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	public boolean equals(Object obj) {
-		return nodeNumber == ((NodeImpl)obj).nodeNumber;
+		return nodeNumber == ((NodeImpl) obj).nodeNumber;
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NodeValue#equals(org.exist.xpath.value.NodeValue)
+	 */
+	public boolean equals(NodeValue other) throws XPathException {
+		if (other.getImplementationType() != NodeValue.IN_MEMORY_NODE)
+			throw new XPathException("annot compare persistent node with in-memory node");
+		return nodeNumber == ((NodeImpl) other).nodeNumber;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NodeValue#after(org.exist.xpath.value.NodeValue)
+	 */
+	public boolean after(NodeValue other) throws XPathException {
+		if (other.getImplementationType() != NodeValue.IN_MEMORY_NODE)
+			throw new XPathException("annot compare persistent node with in-memory node");
+		return nodeNumber < ((NodeImpl) other).nodeNumber;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NodeValue#before(org.exist.xpath.value.NodeValue)
+	 */
+	public boolean before(NodeValue other) throws XPathException {
+		if (other.getImplementationType() != NodeValue.IN_MEMORY_NODE)
+			throw new XPathException("annot compare persistent node with in-memory node");
+		return nodeNumber > ((NodeImpl) other).nodeNumber;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getChildNodes()
 	 */
@@ -157,7 +192,6 @@ public class NodeImpl implements Node, Item, Sequence {
 	 * @see org.w3c.dom.Node#getAttributes()
 	 */
 	public NamedNodeMap getAttributes() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -265,30 +299,30 @@ public class NodeImpl implements Node, Item, Sequence {
 	public boolean hasAttributes() {
 		return false;
 	}
-	
+
 	/*
 	 * Methods of interface Item
 	 */
-	 
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Item#getType()
 	 */
 	public int getType() {
 		int type = getNodeType();
-		switch(type) {
-			case Node.DOCUMENT_NODE:
+		switch (type) {
+			case Node.DOCUMENT_NODE :
 				return Type.DOCUMENT;
-			case Node.COMMENT_NODE:
+			case Node.COMMENT_NODE :
 				return Type.COMMENT;
-			case Node.PROCESSING_INSTRUCTION_NODE:
+			case Node.PROCESSING_INSTRUCTION_NODE :
 				return Type.PROCESSING_INSTRUCTION;
-			case Node.ELEMENT_NODE:
+			case Node.ELEMENT_NODE :
 				return Type.ELEMENT;
-			case Node.ATTRIBUTE_NODE:
+			case Node.ATTRIBUTE_NODE :
 				return Type.ATTRIBUTE;
-			case Node.TEXT_NODE:
+			case Node.TEXT_NODE :
 				return Type.TEXT;
-			default:
+			default :
 				return Type.NODE;
 		}
 	}
@@ -300,11 +334,14 @@ public class NodeImpl implements Node, Item, Sequence {
 		int level = document.treeLevel[nodeNumber];
 		StringBuffer buf = null;
 		int next = nodeNumber + 1;
-		while(next < document.size && document.treeLevel[next] > level) {
-			if(document.nodeKind[next] == Node.TEXT_NODE) {
-				if(buf == null)
+		while (next < document.size && document.treeLevel[next] > level) {
+			if (document.nodeKind[next] == Node.TEXT_NODE) {
+				if (buf == null)
 					buf = new StringBuffer();
-				buf.append(document.characters, document.alpha[next], document.alphaLen[next]);
+				buf.append(
+					document.characters,
+					document.alpha[next],
+					document.alphaLen[next]);
 			}
 			++next;
 		}
@@ -335,7 +372,7 @@ public class NodeImpl implements Node, Item, Sequence {
 	/*
 	 * Methods of interface Sequence
 	 */
-	 
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Sequence#add(org.exist.xpath.value.Item)
 	 */
@@ -389,15 +426,15 @@ public class NodeImpl implements Node, Item, Sequence {
 	public NodeSet toNodeSet() throws XPathException {
 		return null;
 	}
-	
+
 	private final static class SingleNodeIterator implements SequenceIterator {
 
 		NodeImpl node;
-		
+
 		public SingleNodeIterator(NodeImpl node) {
 			this.node = node;
 		}
-		
+
 		/* (non-Javadoc)
 		 * @see org.exist.xpath.value.SequenceIterator#hasNext()
 		 */
@@ -413,7 +450,7 @@ public class NodeImpl implements Node, Item, Sequence {
 			node = null;
 			return next;
 		}
-		
+
 	}
 
 	/* (non-Javadoc)

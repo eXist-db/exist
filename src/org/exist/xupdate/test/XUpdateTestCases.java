@@ -15,9 +15,8 @@ public class XUpdateTestCases extends TestCase {
     private XUpdateTest test=null;
     
     public XUpdateTestCases(String name, XUpdateTest test) {
-        super();
+        super(name);
         this.test = test;
-        super.setName(name);
     }
 
     // TestCases Start

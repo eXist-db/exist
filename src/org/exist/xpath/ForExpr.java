@@ -101,7 +101,6 @@ public class ForExpr extends BindingExpression {
 		// loop through each variable binding
 		for (SequenceIterator i = in.iterate(); i.hasNext(); p++) {
 			contextItem = i.nextItem();
-			System.out.println("context: " + Type.getTypeName(contextItem.getType()));
 			context.setContextPosition(p);
 			atVal.setValue(p);
 
@@ -163,6 +162,12 @@ public class ForExpr extends BindingExpression {
 		buf.append(inputSequence.pprint());
 		if (whereExpr != null)
 			buf.append(" where ").append(whereExpr.pprint());
+		if (orderSpecs != null) {
+			buf.append(" order by ");
+			for(int i = 0; i < orderSpecs.length; i++) {
+				buf.append(orderSpecs[i].toString());
+			}
+		}
 		buf.append(" return ");
 		buf.append(returnExpr.pprint());
 		return buf.toString();

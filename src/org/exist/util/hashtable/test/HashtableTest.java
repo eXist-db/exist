@@ -43,6 +43,10 @@ public class HashtableTest extends TestCase {
 		junit.textui.TestRunner.run(HashtableTest.class);
 	}
 
+	public HashtableTest(String testname) {
+		super(testname);
+	}
+	
 	public void testPut() {
 		Random rand = new Random(System.currentTimeMillis());
 		for(int i = 0; i < tabSize; i++) {

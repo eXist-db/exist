@@ -13,7 +13,10 @@
             <link href="quickstart.xml">Quick Start</link>
         </item>
         <item>
-        	<link href="client.xml">Command-Line Client</link>
+            <link href="xpath.xml">XQuery</link>
+        </item>
+        <item>
+			<link href="client.xml">Java Admin Client</link>
         </item>
         <item>
             <link href="deployment.xml">Deployment</link>
@@ -38,9 +41,6 @@
         </item>
     </group>
     <group name="HowTo">
-        <item>
-            <link href="xpath.xml">XPath HowTo</link>
-        </item>
         <item>
             <link href="performance.xml">Performance HowTo</link>
         </item>

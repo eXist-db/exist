@@ -30,6 +30,9 @@ import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.Type;
 
 /**
+ * Represents a quantified expression: "some ... in ... satisfies", 
+ * "every ... in ... satisfies".
+ * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class QuantifiedExpression extends BindingExpression {
@@ -52,7 +55,6 @@ public class QuantifiedExpression extends BindingExpression {
 		Variable var = new Variable(QName.parse(context, varName));
 		context.declareVariable(var);
 		Sequence inSeq = inputSequence.eval(null);
-		System.out.println(inputSequence.pprint() + " = " + inSeq.getLength());
 		Sequence satisfiesSeq;
 		boolean found = false;
 		for(SequenceIterator i = inSeq.iterate(); i.hasNext(); ) {
@@ -61,7 +63,6 @@ public class QuantifiedExpression extends BindingExpression {
 				// check sequence type
 				sequenceType.checkType(contextItem.getType());
 			var.setValue(contextItem.toSequence());
-			System.out.println(contextItem.getStringValue());
 			satisfiesSeq = returnExpr.eval(null);
 			if(returnExpr.returnsType() == Type.BOOLEAN)
 				found = satisfiesSeq.effectiveBooleanValue();

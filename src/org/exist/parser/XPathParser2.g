@@ -87,7 +87,11 @@ options {
 
 imaginaryTokenDefinitions
 :
-	QNAME PREDICATE FLWOR PARENTHESIZED ABSOLUTE_SLASH ABSOLUTE_DSLASH WILDCARD PREFIX_WILDCARD FUNCTION UNARY_MINUS UNARY_PLUS XPOINTER XPOINTER_ID VARIABLE_REF VARIABLE_BINDING ELEMENT ATTRIBUTE TEXT VERSION_DECL NAMESPACE_DECL DEF_NAMESPACE_DECL DEF_FUNCTION_NS_DECL GLOBAL_VAR FUNCTION_DECL PROLOG ATOMIC_TYPE MODULE ORDER_BY POSITIONAL_VAR
+	QNAME PREDICATE FLWOR PARENTHESIZED ABSOLUTE_SLASH ABSOLUTE_DSLASH WILDCARD 
+	PREFIX_WILDCARD FUNCTION UNARY_MINUS UNARY_PLUS XPOINTER XPOINTER_ID VARIABLE_REF 
+	VARIABLE_BINDING ELEMENT ATTRIBUTE TEXT VERSION_DECL NAMESPACE_DECL DEF_NAMESPACE_DECL 
+	DEF_FUNCTION_NS_DECL GLOBAL_VAR FUNCTION_DECL PROLOG ATOMIC_TYPE MODULE ORDER_BY 
+	POSITIONAL_VAR BEFORE AFTER
 	;
 
 xpointer
@@ -319,9 +323,19 @@ castExpr
 comparisonExpr
 :
 	rangeExpr (
-		( ( "eq"^ | "ne"^ | "lt"^ | "le"^ | "gt"^ | "ge"^ ) rangeExpr )
-		| ( ( EQ^ | NEQ^ | GT^ | GTEQ^ | LT^ | LTEQ^ ) rangeExpr ) 
-		| ( ( ANDEQ^ | OREQ^ ) rangeExpr ) 
+		( LT LT ) => LT! LT! rangeExpr 
+			{
+				#comparisonExpr = #(#[BEFORE, "<<"], #comparisonExpr);
+			}
+		|
+		( GT GT ) => GT! GT! rangeExpr
+			{
+				#comparisonExpr = #(#[AFTER, ">>"], #comparisonExpr);
+			}
+		| ( ( "eq"^ | "ne"^ | "lt"^ | "le"^ | "gt"^ | "ge"^ ) rangeExpr )
+		| ( ( EQ^ | NEQ^ | GT^ | GTEQ^ | LT^ | LTEQ^ ) rangeExpr )
+		| ( ( "is"^ | "isnot"^ ) rangeExpr )
+		| ( ( ANDEQ^ | OREQ^ ) rangeExpr )
 	)?
 	;
 
@@ -834,6 +848,10 @@ reservedKeywords returns [String name]
 	"some" { name = "some"; }
 	|
 	"every" { name = "every"; }
+	|
+	"is" { name = "is"; }
+	|
+	"isnot" { name = "isnot"; }
 	;
 
 /* -----------------------------------------------------------------------------------------------------
@@ -1406,6 +1424,7 @@ throws PermissionDeniedException, EXistException, XPathException
 						orderSpecs[k]= orderSpec;
 					}
 					expr.setOrderSpecs(orderSpecs);
+					orderBy = null;
 				}
 				action= expr;
 			}
@@ -1544,6 +1563,8 @@ throws PermissionDeniedException, EXistException, XPathException
 	step=generalComp [path]
 	|
 	step=valueComp [path]
+	|
+	step=nodeComp [path]
 	|
 	step=fulltextComp [path]
 	|
@@ -2042,6 +2063,48 @@ throws PermissionDeniedException, EXistException, XPathException
 	)
 	;
 
+nodeComp [PathExpr path]
+returns [Expression step]
+throws PermissionDeniedException, EXistException, XPathException
+{
+	step= null;
+	PathExpr left= new PathExpr(context);
+	PathExpr right= new PathExpr(context);
+}
+:
+	#(
+		"is" step=expr [left] step=expr [right]
+		{
+			step = new NodeComparison(context, left, right, Constants.IS);
+			path.add(step);
+		}
+	)
+	|
+	#(
+		"isnot" step=expr[left] step=expr[right]
+		{
+			step = new NodeComparison(context, left, right, Constants.ISNOT);
+			path.add(step);
+		}
+	)
+	|
+	#(
+		BEFORE step=expr[left] step=expr[right]
+		{
+			step = new NodeComparison(context, left, right, Constants.BEFORE);
+			path.add(step);
+		}
+	)
+	|
+	#(
+		AFTER step=expr[left] step=expr[right]
+		{
+			step = new NodeComparison(context, left, right, Constants.AFTER);
+			path.add(step);
+		}
+	)
+	;
+	
 constructor [PathExpr path]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
