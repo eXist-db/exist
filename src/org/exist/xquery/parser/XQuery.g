@@ -184,7 +184,7 @@ prolog throws XPathException
 		(
 			( "import" "module" ) => moduleImport
 			|
-			( "declare" ( "default" | "xmlspace" ) ) =>
+			( "declare" ( "default" | "xmlspace" | "ordering" | "construction" ) ) =>
 			setter
 			{
 				if(!inSetters)
@@ -226,6 +226,12 @@ setter:
 		|
 		( "declare" "xmlspace" ) =>
 		"declare"! "xmlspace"^ ( "preserve" | "strip" )
+		|
+		( "declare" "ordering" ) =>
+		"declare"! "ordering"^ ( "ordered" | "unordered" )
+		|
+		( "declare" "construction" ) =>
+		"declare"! "construction"^ ( "preserve" | "strip" )
 	)
 	;
 	
@@ -1157,6 +1163,14 @@ reservedKeywords returns [String name]
 	"preserve" { name = "preserve"; }
 	|
 	"strip" { name = "strip"; }
+	|
+	"ordering" { name = "ordering"; }
+	|
+	"construction" { name = "construction"; }
+	|
+	"ordered" { name = "ordered"; }
+	|
+	"unordered" { name = "unordered"; }
 	;
 
 /**

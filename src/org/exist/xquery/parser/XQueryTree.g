@@ -203,6 +203,14 @@ throws PermissionDeniedException, EXistException, XPathException
 		)
 		|
 		#(
+			"ordering" ( "ordered" | "unordered" )	// ignored
+		)
+		|
+		#(
+			"construction" ( "preserve" | "strip" )	// ignored
+		)
+		|
+		#(
 			DEF_NAMESPACE_DECL defu:STRING_LITERAL
 			{ context.declareNamespace("", defu.getText()); }
 		)
