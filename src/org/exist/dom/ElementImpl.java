@@ -124,7 +124,11 @@ public class ElementImpl extends NodeImpl implements Element {
 	 *@param  doc   Description of the Parameter
 	 *@return       Description of the Return Value
 	 */
-	public static NodeImpl deserialize(byte[] data, int start, int len, DocumentImpl doc) {
+	public static NodeImpl deserialize(
+		byte[] data,
+		int start,
+		int len,
+		DocumentImpl doc) {
 		byte attrSizeType = (byte) ((data[start] & 0x0C) >> 0x2);
 		byte idSizeType = (byte) (data[start] & 0x03);
 		boolean hasNamespace = (data[start] & 0x10) == 0x10;
@@ -142,7 +146,7 @@ public class ElementImpl extends NodeImpl implements Element {
 			next += 2;
 			int prefixLen = ByteConversion.byteToShort(data, next);
 			next += 2;
-			if(prefixLen > 0)
+			if (prefixLen > 0)
 				prefix = UTF8.decode(data, next, prefixLen).toString();
 			next += prefixLen;
 		}
@@ -232,7 +236,12 @@ public class ElementImpl extends NodeImpl implements Element {
 			node = appendChild(firstChildID(), this, child, true);
 		else {
 			long last = lastChildID();
-			node = appendChild(last + 1, (NodeImpl) ownerDocument.getNode(last), child, true);
+			node =
+				appendChild(
+					last + 1,
+					(NodeImpl) ownerDocument.getNode(last),
+					child,
+					true);
 		}
 		ownerDocument.broker.update(this);
 		ownerDocument.broker.reindex(prevDoc, ownerDocument, null);
@@ -270,7 +279,9 @@ public class ElementImpl extends NodeImpl implements Element {
 			long last = lastChildID();
 			NodeImpl lastNode = getLastNode((NodeImpl) ownerDocument.getNode(last));
 			if (lastNode == null)
-				throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "invalid node: null");
+				throw new DOMException(
+					DOMException.HIERARCHY_REQUEST_ERR,
+					"invalid node: null");
 			node = appendChildren(last + 1, lastNode, nodes, true);
 		}
 		ownerDocument.broker.update(this);
@@ -302,7 +313,9 @@ public class ElementImpl extends NodeImpl implements Element {
 		for (int i = 0; i < nodes.getLength(); i++) {
 			child = nodes.item(i);
 			if (last == null)
-				throw new DOMException(DOMException.INVALID_MODIFICATION_ERR, "invalid node: null");
+				throw new DOMException(
+					DOMException.INVALID_MODIFICATION_ERR,
+					"invalid node: null");
 			last = (NodeImpl) appendChild(gid + i, last, child, index);
 		}
 		return last;
@@ -372,7 +385,8 @@ public class ElementImpl extends NodeImpl implements Element {
 						"max. document size exceeded");
 				}
 				// process child nodes
-				last = (NodeImpl) elem.appendChildren(elem.firstChildID(), elem, ch, index);
+				last =
+					(NodeImpl) elem.appendChildren(elem.firstChildID(), elem, ch, index);
 				return last;
 			case Node.TEXT_NODE :
 				final TextImpl text = new TextImpl(((Text) child).getData());
@@ -388,7 +402,10 @@ public class ElementImpl extends NodeImpl implements Element {
 			case Node.ATTRIBUTE_NODE :
 				attr = (Attr) child;
 				QName attrName =
-					new QName(attr.getLocalName(), attr.getNamespaceURI(), attr.getPrefix());
+					new QName(
+						attr.getLocalName(),
+						attr.getNamespaceURI(),
+						attr.getPrefix());
 				final AttrImpl attrib = new AttrImpl(attrName, attr.getValue());
 				attrib.setGID(gid);
 				attrib.setOwnerDocument(ownerDocument);
@@ -434,7 +451,10 @@ public class ElementImpl extends NodeImpl implements Element {
 			default :
 				throw new DOMException(
 					DOMException.INVALID_MODIFICATION_ERR,
-					"unknown node type: " + child.getNodeType() + " " + child.getNodeName());
+					"unknown node type: "
+						+ child.getNodeType()
+						+ " "
+						+ child.getNodeName());
 		}
 	}
 
@@ -501,7 +521,18 @@ public class ElementImpl extends NodeImpl implements Element {
 	 * @see org.w3c.dom.Element#getAttributeNS(java.lang.String, java.lang.String)
 	 */
 	public String getAttributeNS(String namespaceURI, String localName) {
-		return getAttribute(localName);
+		// altheim: 2003-12-02
+		long start = firstChildID();
+		for (long i = start; i < start + children; i++) {
+			Node child = ownerDocument.getNode(i);
+			if (child != null
+				&& child.getNodeType() == Node.ATTRIBUTE_NODE
+				&& (child.getNamespaceURI() == null
+					|| child.getNamespaceURI().equals(namespaceURI))
+				&& child.getLocalName().equals(localName))
+				return ((AttrImpl) child).getValue();
+		}
+		return "";
 	}
 
 	/**
@@ -523,7 +554,19 @@ public class ElementImpl extends NodeImpl implements Element {
 	 * @see org.w3c.dom.Element#getAttributeNodeNS(java.lang.String, java.lang.String)
 	 */
 	public Attr getAttributeNodeNS(String namespaceURI, String localName) {
-		return getAttributeNode(localName);
+		// altheim: 2003-12-02
+		long start = firstChildID();
+		for (long i = start; i < start + children; i++) {
+			Node child = ownerDocument.getNode(i);
+			if (child != null
+				&& child.getNodeType() == Node.ATTRIBUTE_NODE
+				&& (child.getNamespaceURI() == null
+					|| child.getNamespaceURI().equals(namespaceURI))
+				&& child.getLocalName().equals(localName)) {
+				return (Attr) child;
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -665,7 +708,17 @@ public class ElementImpl extends NodeImpl implements Element {
 	 * @see org.w3c.dom.Element#hasAttributeNS(java.lang.String, java.lang.String)
 	 */
 	public boolean hasAttributeNS(String namespaceURI, String localName) {
-		return hasAttribute(localName);
+		// altheim: 2003-12-02
+		long first = firstChildID();
+		for (int i = 0; i < children; i++) {
+			Node n = ownerDocument.getNode(first + i);
+			if (n.getNodeType() == Node.ATTRIBUTE_NODE
+				&& (n.getNamespaceURI() == null || n.getNamespaceURI().equals(namespaceURI))
+				&& n.getLocalName().equals(localName)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -733,10 +786,13 @@ public class ElementImpl extends NodeImpl implements Element {
 				out.writeShort(namespaceMappings.size());
 				Map.Entry entry;
 				short nsId;
-				for (Iterator i = namespaceMappings.entrySet().iterator(); i.hasNext();) {
+				for (Iterator i = namespaceMappings.entrySet().iterator();
+					i.hasNext();
+					) {
 					entry = (Map.Entry) i.next();
 					out.writeUTF((String) entry.getKey());
-					nsId = ownerDocument.getSymbols().getNSSymbol((String) entry.getValue());
+					nsId =
+						ownerDocument.getSymbols().getNSSymbol((String) entry.getValue());
 					out.writeShort(nsId);
 				}
 				prefixData = bout.toByteArray();
@@ -750,11 +806,15 @@ public class ElementImpl extends NodeImpl implements Element {
 
 			final byte attrSizeType = Signatures.getSizeType(attributes);
 			final byte idSizeType = Signatures.getSizeType(id);
-			byte signature = (byte) ((Signatures.Elem << 0x5) | (attrSizeType << 0x2) | idSizeType);
+			byte signature =
+				(byte) ((Signatures.Elem << 0x5) | (attrSizeType << 0x2) | idSizeType);
 			int prefixLen = 0;
 			if (hasNamespace) {
-				prefixLen = nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0 ?
-					UTF8.encoded(nodeName.getPrefix()) : 0;
+				prefixLen =
+					nodeName.getPrefix() != null
+						&& nodeName.getPrefix().length() > 0
+							? UTF8.encoded(nodeName.getPrefix())
+							: 0;
 				signature |= 0x10;
 			}
 			byte[] data =
@@ -777,7 +837,7 @@ public class ElementImpl extends NodeImpl implements Element {
 				next += 2;
 				ByteConversion.shortToByte((short) prefixLen, data, next);
 				next += 2;
-				if(nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0)
+				if (nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0)
 					UTF8.encode(nodeName.getPrefix(), data, next);
 				next += prefixLen;
 			}
@@ -864,15 +924,15 @@ public class ElementImpl extends NodeImpl implements Element {
 			ownerDocument.getSymbols().getNSSymbol(ns);
 		}
 	}
-	
+
 	public Iterator getPrefixes() {
 		return namespaceMappings.keySet().iterator();
 	}
 
 	public String getNamespaceForPrefix(String prefix) {
-		return (String)namespaceMappings.get(prefix);
+		return (String) namespaceMappings.get(prefix);
 	}
-	
+
 	/**
 	 *  Description of the Method
 	 *
@@ -904,9 +964,11 @@ public class ElementImpl extends NodeImpl implements Element {
 					(String) entry.getValue());
 			}
 		}
-		if(nodeName.needsNamespaceDecl() && 
-			(!namespaces.contains(nodeName.getNamespaceURI())))
-			contentHandler.startPrefixMapping(nodeName.getPrefix(), nodeName.getNamespaceURI());
+		if (nodeName.needsNamespaceDecl()
+			&& (!namespaces.contains(nodeName.getNamespaceURI())))
+			contentHandler.startPrefixMapping(
+				nodeName.getPrefix(),
+				nodeName.getNamespaceURI());
 		if (first) {
 			attributes.addAttribute(
 				"http://exist.sourceforge.net/NS/exist",
@@ -953,8 +1015,8 @@ public class ElementImpl extends NodeImpl implements Element {
 				contentHandler.endPrefixMapping(prefix);
 			}
 		}
-		if(nodeName.needsNamespaceDecl() && 
-			(!namespaces.contains(nodeName.getNamespaceURI())))
+		if (nodeName.needsNamespaceDecl()
+			&& (!namespaces.contains(nodeName.getNamespaceURI())))
 			contentHandler.endPrefixMapping(nodeName.getPrefix());
 	}
 
@@ -1015,12 +1077,12 @@ public class ElementImpl extends NodeImpl implements Element {
 				namespaces.add(namespace);
 			}
 		}
-		if(nodeName.getNamespaceURI().length() > 0 && 
-			(!namespaces.contains(nodeName.getNamespaceURI()))) {
+		if (nodeName.getNamespaceURI().length() > 0
+			&& (!namespaces.contains(nodeName.getNamespaceURI()))) {
 			buf.append("\" xmlns:").append(nodeName.getPrefix()).append("=\"");
 			buf.append(nodeName.getNamespaceURI());
 			buf.append("\" ");
-			}
+		}
 		NodeList childNodes = getChildNodes();
 		Node child;
 		for (int i = 0; i < childNodes.getLength(); i++) {
@@ -1168,7 +1230,9 @@ public class ElementImpl extends NodeImpl implements Element {
 			child = (NodeImpl) nodes.item(i);
 			removeAll(
 				child,
-				child.getNodeType() == Node.ELEMENT_NODE ? path + '/' + child.getNodeName() : path);
+				child.getNodeType() == Node.ELEMENT_NODE
+					? path + '/' + child.getNodeName()
+					: path);
 		}
 		ownerDocument.broker.endRemove();
 		children = 0;

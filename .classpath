@@ -2,14 +2,9 @@
 <classpath>
     <classpathentry kind="src" path="src"/>
     <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-    <classpathentry kind="lib" path="lib/core/ant.jar"/>
-    <classpathentry kind="lib" path="lib/core/ant-junit.jar"/>
-    <classpathentry kind="lib" path="lib/core/ant-launcher.jar"/>
     <classpathentry kind="lib" path="lib/core/antlr.jar"/>
     <classpathentry kind="lib" path="lib/core/excalibur-cli-1.0.jar"/>
     <classpathentry kind="lib" path="lib/core/jakarta-oro-2.0.6.jar"/>
-    <classpathentry kind="lib" path="lib/core/javax.servlet.jar"/>
-    <classpathentry kind="lib" path="lib/core/junit.jar"/>
     <classpathentry kind="lib" path="lib/core/libreadline-java.jar"/>
     <classpathentry kind="lib" path="lib/core/log4j.jar"/>
     <classpathentry kind="lib" path="lib/core/resolver-20030708.jar"/>
@@ -62,5 +57,8 @@
     <classpathentry kind="lib" path="Jetty-4.1.4/lib/org.mortbay.jetty.jar"/>
     <classpathentry kind="lib" path="lib/endorsed/xalan-2.5.2.jar"/>
     <classpathentry kind="lib" path="lib/endorsed/xercesImpl-2.5.0.jar"/>
+    <classpathentry kind="lib" path="tools/lib/ant.jar"/>
+    <classpathentry kind="lib" path="tools/lib/junit.jar"/>
+    <classpathentry kind="lib" path="Jetty-4.1.4/lib/javax.servlet.jar"/>
     <classpathentry kind="output" path="build/classes"/>
 </classpath>

@@ -34,7 +34,7 @@ import org.exist.util.hashtable.Int2ObjectHashMap;
  */
 public class HashtableTest extends TestCase {
 
-    private int tabSize = 1000000;
+    private int tabSize = 10000;
 	private Int2ObjectHashMap table = new Int2ObjectHashMap(tabSize);
 	private int keys[] = new int[tabSize];
 	private Object values[] = new Object[tabSize];

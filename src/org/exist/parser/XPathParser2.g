@@ -226,7 +226,7 @@ expr
 exprSingle
 :
 	( ( "for" | "let" ) DOLLAR ) => flworExpr
-	| ( "some" DOLLAR ) => quantifiedExpr
+	| ( ( "some" | "every" ) DOLLAR ) => quantifiedExpr
 	| ( "if" LPAREN ) => ifExpr 
 	| orExpr
 	;
@@ -289,7 +289,7 @@ orderModifier
 	;
 
 quantifiedExpr:
-	"some"^ quantifiedInVarBinding ( COMMA! quantifiedInVarBinding )*
+	( "some"^ | "every"^ ) quantifiedInVarBinding ( COMMA! quantifiedInVarBinding )*
 	"satisfies"! exprSingle
 	;
 
@@ -830,6 +830,10 @@ reservedKeywords returns [String name]
 	"order" { name = "order"; }
 	|
 	"by" { name = "by"; }
+	|
+	"some" { name = "some"; }
+	|
+	"every" { name = "every"; }
 	;
 
 /* -----------------------------------------------------------------------------------------------------
@@ -1118,7 +1122,9 @@ throws XPathException
 expr [PathExpr path]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
-{ step= null; }
+{ 
+	step= null;
+}
 :
 	#(
 		"cast"
@@ -1207,7 +1213,52 @@ throws PermissionDeniedException, EXistException, XPathException
 			Expression action = satisfiesExpr;
 			for (int i= clauses.size() - 1; i >= 0; i--) {
 				ForLetClause clause= (ForLetClause) clauses.get(i);
-				BindingExpression expr = new QuantifiedExpression(context);
+				BindingExpression expr = new QuantifiedExpression(context, QuantifiedExpression.SOME);
+				expr.setVariable(clause.varName);
+				expr.setSequenceType(clause.sequenceType);
+				expr.setInputSequence(clause.inputSequence);
+				expr.setReturnExpression(action);
+				satisfiesExpr= null;
+				action= expr;
+			}
+			path.add(action);
+			step = action;
+		}
+	)
+	|
+	#(
+		"every"
+		{
+			List clauses= new ArrayList();
+			PathExpr satisfiesExpr = new PathExpr(context);
+		}
+		(
+			#(
+				everyVarName:VARIABLE_BINDING
+				{
+					ForLetClause clause= new ForLetClause();
+					PathExpr inputSequence = new PathExpr(context);
+				}
+				(
+					#(
+						"as"
+						sequenceType[clause.sequenceType]
+					)
+				)?
+				step=expr[inputSequence]
+				{
+					clause.varName= everyVarName.getText();
+					clause.inputSequence= inputSequence;
+					clauses.add(clause);
+				}
+			)
+		)*
+		step=expr[satisfiesExpr]
+		{
+			Expression action = satisfiesExpr;
+			for (int i= clauses.size() - 1; i >= 0; i--) {
+				ForLetClause clause= (ForLetClause) clauses.get(i);
+				BindingExpression expr = new QuantifiedExpression(context, QuantifiedExpression.EVERY);
 				expr.setVariable(clause.varName);
 				expr.setSequenceType(clause.sequenceType);
 				expr.setInputSequence(clause.inputSequence);

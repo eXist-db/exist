@@ -190,14 +190,14 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	public abstract NodeProxy get(DocumentImpl doc, long nodeId);
 
 	public DocumentSet getDocumentSet() {
-		long start = System.currentTimeMillis();
+		//long start = System.currentTimeMillis();
 		DocumentSet ds = new DocumentSet();
 		NodeProxy p;
 		for(Iterator i = iterator(); i.hasNext(); ) {
 			p = (NodeProxy)i.next();
 			ds.add(p.doc);
 		}
-		LOG.debug("getDocumentSet took " + (System.currentTimeMillis() - start));
+		//LOG.debug("getDocumentSet took " + (System.currentTimeMillis() - start));
 		return ds;
 	}
 	

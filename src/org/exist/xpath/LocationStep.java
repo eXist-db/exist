@@ -24,6 +24,7 @@ import java.util.Iterator;
 
 import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
@@ -43,7 +44,9 @@ import org.w3c.dom.Node;
  */
 public class LocationStep extends Step {
 
-	protected NodeSet buf = null;
+	protected NodeSet currentSet = null;
+	protected DocumentSet currentDocs = null;
+	
 	protected boolean keepVirtual = false;
 
 	public LocationStep(StaticContext context, int axis) {
@@ -153,21 +156,22 @@ public class LocationStep extends Step {
 			result = new VirtualNodeSet(axis, test, contextSet);
 			((VirtualNodeSet) result).setInPredicate(inPredicate);
 		} else {
-			if (buf == null) {
-				buf =
+			DocumentSet docs = contextSet.getDocumentSet();
+			if (currentSet == null || !(docs.equals(currentDocs))) {
+				currentDocs = docs;
+				currentSet =
 					(NodeSet) context.getBroker().getAttributesByName(
-						contextSet.getDocumentSet(),
-						test.getName());
+						currentDocs, test.getName());
 			}
 			if (axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)
 				result =
-					buf.selectAncestorDescendant(
+					currentSet.selectAncestorDescendant(
 						contextSet,
 						NodeSet.DESCENDANT,
 						inPredicate);
 			else
 				result =
-					buf.selectParentChild(
+					currentSet.selectParentChild(
 						contextSet,
 						NodeSet.DESCENDANT,
 						inPredicate);
@@ -184,14 +188,16 @@ public class LocationStep extends Step {
 			vset.setInPredicate(inPredicate);
 			return vset;
 		} else {
-			if (buf == null) {
-				buf =
+			DocumentSet docs = contextSet.getDocumentSet();
+			if (currentDocs == null || !(docs.equals(currentDocs))) {
+				currentDocs = docs;
+				currentSet =
 					(NodeSet) context.getBroker().findElementsByTagName(
 						ElementValue.ELEMENT,
-						contextSet.getDocumentSet(),
+						currentDocs,
 						test.getName());
 			}
-			return buf.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);
+			return currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);
 		}
 	}
 
@@ -204,13 +210,15 @@ public class LocationStep extends Step {
 			vset.setInPredicate(inPredicate);
 			return vset;
 		} else {
-			if (buf == null) {
-				buf =
+			DocumentSet docs = contextSet.getDocumentSet();
+			if (currentDocs == null || !(docs.equals(currentDocs))) {
+				currentDocs = docs;
+				currentSet =
 					(NodeSet) context.getBroker().findElementsByTagName(
-						ElementValue.ELEMENT, contextSet.getDocumentSet(),
+						ElementValue.ELEMENT, currentDocs,
 						test.getName());
 			}
-			return buf.selectAncestorDescendant(
+			return currentSet.selectAncestorDescendant(
 				contextSet,
 				NodeSet.DESCENDANT,
 				axis == Constants.DESCENDANT_SELF_AXIS,
@@ -222,14 +230,16 @@ public class LocationStep extends Step {
 		StaticContext context,
 		NodeSet contextSet) {
 		if (!test.isWildcardTest()) {
-			if (buf == null) {
-				buf =
+			DocumentSet docs = contextSet.getDocumentSet();
+			if (currentDocs == null || !(docs.equals(currentDocs))) {
+				currentDocs = docs;
+				currentSet =
 					(NodeSet) context.getBroker().findElementsByTagName(
-						ElementValue.ELEMENT, contextSet.getDocumentSet(),
+						ElementValue.ELEMENT, currentDocs,
 						test.getName());
 			}
 			return contextSet.selectSiblings(
-				buf,
+				currentSet,
 				axis == Constants.PRECEDING_SIBLING_AXIS
 					? NodeSet.PRECEDING
 					: NodeSet.FOLLOWING);
@@ -266,15 +276,17 @@ public class LocationStep extends Step {
 		StaticContext context,
 		NodeSet contextSet) {
 		if (!test.isWildcardTest()) {
-			if (buf == null) {
-				buf =
+			DocumentSet docs = contextSet.getDocumentSet();
+			if (currentDocs == null || !(docs.equals(currentDocs))) {
+				currentDocs = docs;
+				currentSet =
 					(NodeSet) context.getBroker().findElementsByTagName(
-						ElementValue.ELEMENT, contextSet.getDocumentSet(),
+						ElementValue.ELEMENT, currentDocs,
 						test.getName());
 			}
 			NodeSet r =
 				contextSet.selectAncestors(
-					buf,
+					currentSet,
 					axis == Constants.ANCESTOR_SELF_AXIS,
 					inPredicate);
 			//LOG.debug("getAncestors found " + r.getLength());
@@ -312,6 +324,6 @@ public class LocationStep extends Step {
 	 */
 	public void resetState() {
 		super.resetState();
-		buf = null;
+		currentSet = null;
 	}
 }

@@ -34,11 +34,17 @@ import org.exist.xpath.value.Type;
  */
 public class QuantifiedExpression extends BindingExpression {
 	
+	public final static int SOME = 0;
+	public final static int EVERY = 1;
+	
+	private int mode = SOME;
+	
 	/**
 	 * @param context
 	 */
-	public QuantifiedExpression(StaticContext context) {
+	public QuantifiedExpression(StaticContext context, int mode) {
 		super(context);
+		this.mode = mode;
 	}
 
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
@@ -47,19 +53,21 @@ public class QuantifiedExpression extends BindingExpression {
 		context.declareVariable(var);
 		Sequence inSeq = inputSequence.eval(null);
 		System.out.println(inputSequence.pprint() + " = " + inSeq.getLength());
-		Item next;
 		Sequence satisfiesSeq;
 		boolean found = false;
 		for(SequenceIterator i = inSeq.iterate(); i.hasNext(); ) {
-			next = i.nextItem();
-			var.setValue(next.toSequence());
-			System.out.println(next.getStringValue());
+			contextItem = i.nextItem();
+			if(sequenceType != null)
+				// check sequence type
+				sequenceType.checkType(contextItem.getType());
+			var.setValue(contextItem.toSequence());
+			System.out.println(contextItem.getStringValue());
 			satisfiesSeq = returnExpr.eval(null);
 			if(returnExpr.returnsType() == Type.BOOLEAN)
 				found = satisfiesSeq.effectiveBooleanValue();
 			else
 				found = satisfiesSeq.getLength() != 0;
-			if(found)
+			if((mode == SOME && found) || (mode == EVERY && !found))
 				break;
 		}
 		context.popLocalContext();

@@ -47,7 +47,7 @@ public class Except extends CombiningExpression {
 		Sequence lval = left.eval(contextSequence, contextItem);
 		Sequence rval = right.eval(contextSequence, contextItem);
 		if(lval.getItemType() != Type.NODE || rval.getItemType() != Type.NODE)
-			throw new XPathException("intersect operand is not a node sequence");
+			throw new XPathException("except operand is not a node sequence");
 		NodeSet result = ((NodeSet)lval).intersection((NodeSet)rval);
 		return result;
 	}
