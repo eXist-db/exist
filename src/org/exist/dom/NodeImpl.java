@@ -29,7 +29,6 @@ import org.apache.log4j.Logger;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.Signatures;
-import org.exist.storage.store.StorageAddress;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -50,7 +49,6 @@ public class NodeImpl implements Node {
 
 	protected long gid;
 	protected long internalAddress = -1;
-	protected StorageAddress absoluteAddress = null;
 	protected short nodeType = 0;
 	protected DocumentImpl ownerDocument = null;
 
@@ -214,10 +212,6 @@ public class NodeImpl implements Node {
 	 */
 	public long getInternalAddress() {
 		return internalAddress;
-	}
-
-	public StorageAddress getAbsoluteAddress() {
-		return absoluteAddress;
 	}
 	
 	/**
@@ -480,11 +474,6 @@ public class NodeImpl implements Node {
 	 */
 	public void setInternalAddress(long address) {
 		internalAddress = address;
-	}
-
-	public void setAbsoluteAddress(StorageAddress absoluteAddress) {
-		this.internalAddress = absoluteAddress.getPointer();
-		this.absoluteAddress = absoluteAddress;
 	}
 	
 	/**
