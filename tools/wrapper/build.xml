@@ -11,6 +11,7 @@
 	<property name="conf" value="./conf"/>
 	<property name="bin" value="./bin"/>
 	<property name="logs" value="./logs"/>
+	<property name="work" value="./work"/>
 	<property name="server.dir" value="../.."/>
 	
     <property name="build.compiler" value="modern"/>
@@ -32,6 +33,8 @@
         <mkdir dir="${classes}"/>
 	    <delete dir="${logs}"/>
 		<mkdir dir="${logs}"/>
+    	<delete dir="${work}"/>
+    	<mkdir dir="${work}"/>
         <tstamp/>
     	
     	<filter token="app.name" value="eXist"/>

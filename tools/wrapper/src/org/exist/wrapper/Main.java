@@ -50,7 +50,7 @@ public class Main implements WrapperListener {
 	 */
 	public Integer start(String[] args) {
 		System.setProperty("exist.register-shutdown-hook", "false");
-		System.setProperty("exist.start.debug", "true");
+		System.err.println("jetty.home = " + System.getProperty("jetty.home"));
 		try {
 			org.exist.start.Main loader = new org.exist.start.Main("jetty");
 			File homeDir = loader.detectHome();
@@ -71,7 +71,8 @@ public class Main implements WrapperListener {
 			return null;
 		} catch (Exception e) {
 			e.printStackTrace();
-			WrapperManager.log(WrapperManager.WRAPPER_LOG_LEVEL_FATAL, e.getMessage());
+			WrapperManager.log(WrapperManager.WRAPPER_LOG_LEVEL_FATAL, 
+					"An error occurred: " + e.getMessage());
 		}
 		return new Integer(1);
 	}
