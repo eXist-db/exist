@@ -32,6 +32,7 @@ public class AllTests {
         suite.addTest(new XUpdateTestCases("variables", test));
         suite.addTest(new XUpdateTestCases("replace", test));
         suite.addTest(new XUpdateTestCases("whitespace", test));
+        suite.addTest(new XUpdateTestCases("namespaces", test));
         
         /*
          * create new TestCase
