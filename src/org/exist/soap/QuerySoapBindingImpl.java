@@ -1,8 +1,3 @@
-/**
- *  QueryServiceSoapBindingImpl.java This file was auto-generated from WSDL by
- *  the Apache Axis Wsdl2java emitter.
- */
-
 package org.exist.soap;
 
 import java.io.StringReader;
@@ -41,10 +36,10 @@ import org.xml.sax.SAXException;
 import antlr.collections.AST;
 
 /**
- *  Description of the Class
+ *  Provides the actual implementations for the methods defined in
+ * {@link org.exist.soap.Query}.
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    30. April 2002
+ *@author     Wolfgang Meier <wolfgang@exist-db.org>
  */
 public class QuerySoapBindingImpl implements org.exist.soap.Query {
 
@@ -52,7 +47,6 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 
 	private BrokerPool pool;
 
-	/**  Constructor for the QuerySoapBindingImpl object */
 	public QuerySoapBindingImpl() {
 		try {
 			if (!BrokerPool.isConfigured())
@@ -128,15 +122,6 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		}
 	}
 
-	/**
-	 *  Gets the resource attribute of the QuerySoapBindingImpl object
-	 *
-	 *@param  name                          Description of the Parameter
-	 *@param  prettyPrint                   Description of the Parameter
-	 *@param  encoding                      Description of the Parameter
-	 *@return                               The resource value
-	 *@exception  java.rmi.RemoteException  Description of the Exception
-	 */
 	public String getResource(String sessionId, String name, boolean indent, boolean xinclude)
 		throws java.rmi.RemoteException {
 		Session session = getSession(sessionId);
@@ -171,13 +156,6 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  path                 Description of the Parameter
-	 *@return                      Description of the Return Value
-	 *@exception  RemoteException  Description of the Exception
-	 */
 	public Collection listCollection(String sessionId, String path) throws RemoteException {
 		Session session = getSession(sessionId);
 		DBBroker broker = null;
@@ -218,18 +196,9 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  query                         Description of the Parameter
-	 *@return                               Description of the Return Value
-	 *@exception  java.rmi.RemoteException  Description of the Exception
-	 */
 	public org.exist.soap.QueryResponse query(String sessionId, java.lang.String query)
 		throws java.rmi.RemoteException {
 		Session session = SessionManager.getInstance().getSession(sessionId);
-		if (!(query.startsWith("document(") || query.startsWith("collection(")))
-			query = "document()" + query;
 
 		QueryResponse resp = new QueryResponse();
 		resp.setHits(0);
@@ -272,16 +241,6 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		return resp;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  resultId                      Description of the Parameter
-	 *@param  num                           Description of the Parameter
-	 *@param  encoding                      Description of the Parameter
-	 *@param  prettyPrint                   Description of the Parameter
-	 *@return                               Description of the Return Value
-	 *@exception  java.rmi.RemoteException  Description of the Exception
-	 */
 	public String[] retrieve(
 		String sessionId,
 		int start,
@@ -412,7 +371,6 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			if ((documents = (TreeMap) collections.get(p.doc.getCollection().getName())) == null) {
 				documents = new TreeMap();
 				collections.put(p.doc.getCollection().getName(), documents);
-				System.out.println("added " + p.doc.getCollection().getName());
 			}
 			if ((hits = (Integer) documents.get(p.doc.getFileName())) == null)
 				documents.put(p.doc.getFileName(), new Integer(1));
