@@ -253,7 +253,6 @@ public class GeneralComparison extends BinaryOp {
 			if ((!foundNumeric) && i > 0) {
 				// all elements are indexed: use the fulltext index
 				containsExpr.addTerm(new LiteralValue(context, new StringValue(cmp)));
-				//LOG.debug("using shortcut: " + cmp);
 				nodes = (NodeSet) containsExpr.eval(nodes, null);
 			}
 			cmp = cmpCopy;
@@ -300,8 +299,8 @@ public class GeneralComparison extends BinaryOp {
 				rv = rv.convertTo(Type.DOUBLE);
 			}
 		}
-				System.out.println(
-					lv.getStringValue() + Constants.OPS[relation] + rv.getStringValue());
+//				System.out.println(
+//					lv.getStringValue() + Constants.OPS[relation] + rv.getStringValue());
 		return lv.compareTo(relation, rv);
 	}
 
@@ -355,7 +354,6 @@ public class GeneralComparison extends BinaryOp {
 	}
 
 	protected void switchOperands() {
-		LOG.debug("switching operands");
 		switch (relation) {
 			case Constants.GT :
 				relation = Constants.LT;

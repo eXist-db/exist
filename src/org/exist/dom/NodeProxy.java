@@ -449,7 +449,7 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 
 	public void printContext() {
 		ContextItem next = context;
-		System.out.println(gid + ": ");
+		System.out.print(hashCode() + " " + gid + ": ");
 		while (next != null) {
 			System.out.print(next.getNode().gid);
 			System.out.print(' ');

@@ -150,6 +150,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	}
 
 	public CompiledExpression compile(String query) throws XMLDBException {
+		//LOG.debug("compiling " + query);
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);

@@ -1043,12 +1043,12 @@ public class NativeBroker extends DBBroker {
 		if (!isCaseSensitive())
 			expr = expr.toLowerCase();
 		NodeSet result = scanSequential(context, docs, relation, truncation, expr);
-		//		LOG.debug(
-		//			"searching "
-		//				+ context.getLength()
-		//				+ " nodes took "
-		//				+ (System.currentTimeMillis() - start)
-		//				+ "ms.");
+//				LOG.debug(
+//					"searching "
+//						+ result.getLength()
+//						+ " nodes took "
+//						+ (System.currentTimeMillis() - start)
+//						+ "ms.");
 		return result;
 	}
 
