@@ -230,9 +230,10 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 						+ "a modification");
 
 			// start a new modification section
-			if (localName.equals("append"))
-				modification = new Append(broker, documentSet, select);
-			else if (localName.equals("update"))
+			if (localName.equals("append")) {
+			    String child = atts.getValue("child");
+				modification = new Append(broker, documentSet, select, child);
+			} else if (localName.equals("update"))
 				modification = new Update(broker, documentSet, select);
 			else if (localName.equals("insert-before"))
 				modification =

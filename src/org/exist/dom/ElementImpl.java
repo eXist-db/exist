@@ -264,19 +264,27 @@ public class ElementImpl extends NodeImpl implements Element {
 		}
 	}
 
-	public Node appendChildren(NodeList nodes) throws DOMException {
+	public Node appendChildren(NodeList nodes, int child) throws DOMException {
 		DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
 		Node node = null;
 		if (children == 0)
 			node = appendChildren(firstChildID(), this, nodes, true);
 		else {
-			long last = lastChildID();
-			NodeImpl lastNode = getLastNode((NodeImpl) ownerDocument.getNode(last));
-			if (lastNode == null)
-				throw new DOMException(
-					DOMException.HIERARCHY_REQUEST_ERR,
-					"invalid node: null");
-			node = appendChildren(last + 1, lastNode, nodes, true);
+		    if(child == 1) {
+		        Node firstChild = getFirstChild();
+		        insertBefore(nodes, firstChild);
+		    } else {
+			    NodeImpl prevNode;
+			    long pos = firstChildID();
+			    if(0 < child && child <= children) {
+			        pos = firstChildID() + child - 2;
+			        prevNode = getLastNode((NodeImpl) ownerDocument.getNode(pos));
+			        node = insertAfter(nodes, prevNode);
+			    } else {
+			        prevNode = getLastNode((NodeImpl) ownerDocument.getNode(lastChildID()));
+			        node = appendChildren(lastChildID() + 1, prevNode, nodes, true);
+			    }
+		    }
 		}
 		ownerDocument.broker.update(this);
 		ownerDocument.broker.reindex(prevDoc, ownerDocument, null);
@@ -993,7 +1001,7 @@ public class ElementImpl extends NodeImpl implements Element {
 			throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
 		DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
 		if (refChild == null)
-			return appendChildren(nodes);
+			return appendChildren(nodes, -1);
 		NodeImpl ref = (NodeImpl) refChild;
 		final long first = firstChildID();
 		if (ref.gid < first || ref.gid > ref.gid + children - 1)
@@ -1028,7 +1036,7 @@ public class ElementImpl extends NodeImpl implements Element {
 			throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
 		final DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
 		if (refChild == null)
-			return appendChildren(nodes);
+			return appendChildren(nodes, -1);
 		final NodeImpl ref = (NodeImpl) refChild;
 		final long first = firstChildID();
 		if (ref.gid < first || ref.gid > ref.gid + children - 1)
