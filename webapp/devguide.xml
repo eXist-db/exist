@@ -748,7 +748,7 @@ import org.xmldb.api.*;
 
 public class QueryExample {
     public static void main(String args[]) throws Exception {
-        String driver = "exist.xmldb.DatabaseImpl";
+        String driver = "org.exist.xmldb.DatabaseImpl";
         Class cl = Class.forName(driver);			
         Database database = (Database)cl.newInstance();
         DatabaseManager.registerDatabase(database);
@@ -797,7 +797,7 @@ import org.exist.xmldb.XQueryService;
 
 public class QueryExample {
     public static void main(String args[]) throws Exception {
-        String driver = "exist.xmldb.DatabaseImpl";
+        String driver = "org.exist.xmldb.DatabaseImpl";
         Class cl = Class.forName(driver);			
         Database database = (Database)cl.newInstance();
         database.setProperty("create-database", "true");
