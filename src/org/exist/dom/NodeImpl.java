@@ -358,6 +358,16 @@ public class NodeImpl implements Node {
 		return ownerDocument.getNode(pid);
 	}
 
+	public String getPath() {
+		String path = "";
+		Node parent = getParentNode();
+		while(parent.getNodeType() != Node.DOCUMENT_NODE) {
+			path = path + '/' + parent.getNodeName();
+			parent = parent.getParentNode();
+		}
+		return path;
+	}
+	
 	/**
 	 * @see org.w3c.dom.Node#getPrefix()
 	 */

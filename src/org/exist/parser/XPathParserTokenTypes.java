@@ -59,14 +59,15 @@ public interface XPathParserTokenTypes {
 	int LITERAL_node = 40;
 	int PARENT = 41;
 	int SELF = 42;
-	int RPPAREN = 43;
-	int WS = 44;
-	int BASECHAR = 45;
-	int IDEOGRAPHIC = 46;
-	int DIGIT = 47;
-	int NMSTART = 48;
-	int NMCHAR = 49;
-	int NCNAME = 50;
-	int ID_OR_FUNC = 51;
-	int VARIABLE = 52;
+	int NCNAME = 43;
+	int COLON = 44;
+	int LITERAL_ancestor = 45;
+	int RPPAREN = 46;
+	int WS = 47;
+	int BASECHAR = 48;
+	int IDEOGRAPHIC = 49;
+	int DIGIT = 50;
+	int NMSTART = 51;
+	int NMCHAR = 52;
+	int VARIABLE = 53;
 }

@@ -59,9 +59,10 @@
                 <command>collection('/db/test')</command> will include all
                 resources found in <filename>/db/test</filename>,
                 <filename>/db/test/abc</filename> and
-                <filename>/db/test/def</filename>. You may specify a second,
-                boolean argument to change this behaviour, e.g.</para>
-            <synopsis>collection('/db/test', false)//title</synopsis>
+				<filename>/db/test/def</filename>. You may use the
+				<command>xcollection()</command> function to change this
+				behaviour, e.g.</para>
+            <synopsis>xcollection('/db/test')//title</synopsis>
             <para>will only include resources found in
                 <filename>/db/test</filename>, but not in
                 <filename>/db/test/abc</filename> or <filename>/db/test/def</filename>.</para>

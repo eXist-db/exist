@@ -1,49 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <s:sidebar title="Navigation" xmlns:s="http://exist-db.org/NS/sidebar">
-    <s:group href="index.xml" name="Home"/>
+    <s:group href="http://exist-db.org/index.html" name="Home"/>
     <s:group name="Documentation">
         <s:item id="features">
-            <s:link href="features.xml">Features</s:link>
+            <s:link href="http://exist-db.org/features.html">Features</s:link>
         </s:item>
         <s:item>
-            <s:link href="quickstart.xml">Quick Start</s:link>
+            <s:link href="http://exist-db.org/quickstart.html">Quick Start</s:link>
         </s:item>
         <s:item>
-            <s:link href="xpath.xml">XPath HowTo</s:link>
+            <s:link href="http://exist-db.org/xpath.html">XPath HowTo</s:link>
         </s:item>
         <s:item>
-            <s:link href="deployment.xml">Deployment</s:link>
+            <s:link href="http://exist-db.org/deployment.html">Deployment</s:link>
         </s:item>
         <s:item>
-            <s:link href="security.xml">Security</s:link>
+            <s:link href="http://exist-db.org/security.html">Security</s:link>
         </s:item>
         <s:item>
-            <s:link href="configuration.xml">Server Configuration</s:link>
+            <s:link href="http://exist-db.org/configuration.html">Server Configuration</s:link>
         </s:item>
         <s:item>
-            <s:link href="devguide.xml">Developer's Guide</s:link>
+            <s:link href="http://exist-db.org/devguide.html">Developer's Guide</s:link>
         </s:item>
         <s:item>
-            <s:link href="howtos.xml">How-Tos</s:link>
+            <s:link href="http://exist-db.org/howtos.html">How-Tos</s:link>
         </s:item>
         <s:item>
-            <s:link href="changes.xml">Changes</s:link>
+            <s:link href="http://exist-db.org/changes.html">Changes</s:link>
         </s:item>
     </s:group>
     <s:group name="Examples">
         <s:item>
-            <s:link href="xquery.xsp">Query interface</s:link>
+            <s:link href="/exist/simple/xquery.xsp">Query interface</s:link>
         </s:item>
         <s:item>
-            <s:link href="biblio.xml">Library</s:link>
+            <s:link href="/exist/library/biblio.xml">Library</s:link>
         </s:item>
         <s:item>
-            <s:link href="xmldb/db/">Cocoon + XML:DB</s:link>
+            <s:link href="/exist/xmldb/db/">Cocoon + XML:DB</s:link>
         </s:item>
     </s:group>
     <s:group name="Administration">
         <s:item>
-            <s:link href="xadmin.xsp">Admin Interface</s:link>
+            <s:link href="/exist/xadmin.xsp">Admin Interface</s:link>
         </s:item>
         <s:item>
             <s:link href="/exist/admin">Server Status</s:link>

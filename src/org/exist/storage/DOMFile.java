@@ -223,6 +223,8 @@ public class DOMFile extends BTree implements Lockable {
 	public long insertAfter(Value key, byte[] value) {
 		try {
 			final long p = findValue(key);
+			if(p == KEY_NOT_FOUND)
+				return -1;
 			return insertAfter(p, value);
 		} catch (BTreeException e) {
 			LOG.warn("key not found", e);
@@ -488,10 +490,9 @@ public class DOMFile extends BTree implements Lockable {
 		final DocumentImpl doc = (DocumentImpl) node.getDoc();
 		final NativeBroker.NodeRef nodeRef =
 			new NativeBroker.NodeRef(doc.getDocId(), node.getGID());
-		try {
-			// first try to find the node in the index
-			return findValue(nodeRef);
-		} catch (BTreeException e) {
+		// first try to find the node in the index
+		final long p = findValue(nodeRef);
+		if(p == KEY_NOT_FOUND) {
 			//LOG.debug("node " + node.gid + " not found, trying parent.");
 			// node not found in index: try to find the nearest available
 			// ancestor and traverse it
@@ -517,7 +518,8 @@ public class DOMFile extends BTree implements Lockable {
 			n.setGID(id);
 			final long address = findNode(n, node.gid, iter);
 			return address == 0 ? -1 : address;
-		}
+		} else
+			return p;
 	}
 
 	/**
@@ -585,7 +587,7 @@ public class DOMFile extends BTree implements Lockable {
 	public Value get(Value key) {
 		try {
 			long p = findValue(key);
-			if (p < 0)
+			if (p == KEY_NOT_FOUND)
 				return null;
 			return get(p);
 		} catch (BTreeException bte) {
@@ -606,7 +608,7 @@ public class DOMFile extends BTree implements Lockable {
 	public Value get(NodeProxy node) {
 		try {
 			long p = findValue(owner, node);
-			if (p < 0)
+			if (p == KEY_NOT_FOUND)
 				return null;
 			return get(p);
 		} catch (BTreeException bte) {
@@ -661,13 +663,13 @@ public class DOMFile extends BTree implements Lockable {
 				pos = pos + ByteConversion.byteToShort(page.data, pos + 2) + 4;
 			}
 			pageNr = page.getPageHeader().getNextDataPage();
-			throw new RuntimeException(owner.toString() + 
-				": tid "
-					+ tid
-					+ " not found on "
-					+ page.page.getPageInfo()
-					+ ". Loading "
-					+ pageNr);
+//			LOG.debug(owner.toString() + 
+//				": tid "
+//					+ tid
+//					+ " not found on "
+//					+ page.page.getPageInfo()
+//					+ ". Loading "
+//					+ pageNr);
 		}
 		LOG.debug("tid " + tid + " not found.");
 		return null;
@@ -821,6 +823,8 @@ public class DOMFile extends BTree implements Lockable {
 	public void remove(Value key) {
 		try {
 			long p = findValue(key);
+			if(p == KEY_NOT_FOUND)
+				return;
 			remove(key, p);
 		} catch (BTreeException bte) {
 			LOG.debug(bte);
@@ -958,7 +962,7 @@ public class DOMFile extends BTree implements Lockable {
 	public boolean update(Value key, byte[] value) throws ReadOnlyException {
 		try {
 			long p = findValue(key);
-			if (p < 0)
+			if (p == KEY_NOT_FOUND)
 				return false;
 			// key not found
 			update(key, p, value);
@@ -1102,6 +1106,8 @@ public class DOMFile extends BTree implements Lockable {
 				if (node != null) {
 					db.setOwnerObject(lockKey);
 					long addr = db.findValue(lockKey, node);
+					if(addr == KEY_NOT_FOUND)
+						return false;
 					RecordPos rec = findValuePosition(addr);
 					page = rec.page.getPageNum();
 					p = rec.page;
@@ -1153,6 +1159,8 @@ public class DOMFile extends BTree implements Lockable {
 				if (node != null) {
 					db.setOwnerObject(lockKey);
 					long addr = db.findValue(lockKey, node);
+					if(addr == KEY_NOT_FOUND)
+						return null;
 					RecordPos rec = findValuePosition(addr);
 					page = rec.page.getPageNum();
 					p = rec.page;
@@ -1395,8 +1403,8 @@ public class DOMFile extends BTree implements Lockable {
 		 *@param  dis              Description of the Parameter
 		 *@exception  IOException  Description of the Exception
 		 */
-		public DOMFilePageHeader(DataInputStream dis) throws IOException {
-			super(dis);
+		public DOMFilePageHeader(DataInputStream is) throws IOException {
+			super(is);
 		}
 
 		/**  Description of the Method */

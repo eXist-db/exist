@@ -3,70 +3,70 @@
     <group href="index.xml" name="Home"/>
     <group name="Documentation">
         <item id="features">
-            <link href="/exist/features.xml">Features</link>
+			<link href="../features.xml">Features</link>
         </item>
         <item>
-            <link href="/exist/changes.xml">Changes</link>
+            <link href="../changes.xml">Changes</link>
         </item>
         <item>
-            <link href="/exist/quickstart.xml">Quick Start</link>
+            <link href="../quickstart.xml">Quick Start</link>
         </item>
         <item>
-            <link href="/exist/deployment.xml">Deployment</link>
+            <link href="../deployment.xml">Deployment</link>
         </item>
         <item>
-            <link href="/exist/security.xml">Security</link>
+            <link href="../security.xml">Security</link>
         </item>
         <item>
-            <link href="/exist/xinclude.xml">XInclude</link>
+            <link href="../xinclude.xml">XInclude</link>
         </item>
         <item>
-            <link href="/exist/configuration.xml">Server Configuration</link>
+            <link href="../configuration.xml">Server Configuration</link>
         </item>
         <item>
-            <link href="/exist/devguide.xml">Developer's Guide</link>
+            <link href="../devguide.xml">Developer's Guide</link>
         </item>
         <item>
-            <link href="/exist/index.xml#articles">Articles</link>
+            <link href="../index.xml#articles">Articles</link>
         </item>
         <item>
-            <link href="/exist/api/index.html">Javadocs</link>
+            <link href="../api/index.html">Javadocs</link>
         </item>
     </group>
     <group name="HowTo">
         <item>
-            <link href="/exist/xpath.xml">XPath HowTo</link>
+            <link href="../xpath.xml">XPath HowTo</link>
         </item>
         <item>
-            <link href="/exist/performance.xml">Performance HowTo</link>
+            <link href="../performance.xml">Performance HowTo</link>
         </item>
         <item>
-            <link href="/exist/howtos.xml">Misc HowTos</link>
+            <link href="../howtos.xml">Misc HowTos</link>
         </item>
     </group>
     <group name="Examples">
         <item>
-            <link href="squery.xsp?cname=%2Fdb%2Fshakespeare%2Fplays">XML search engine (Shakespeare)</link>
+			<link href="squery.xsp?cname=%2Fdb%2Fshakespeare%2Fplays">XML search engine (Shakespeare)</link>
         </item>
         <item>
             <link href="squery-foc.xsp?cname=%2Fdb%2Ffoc">XML search engine (Flora of China)</link>
         </item>
         <item>
-            <link href="/exist/xquery.xsp">Query interface</link>
+			<link href="../simple/xquery.xsp">Query interface</link>
         </item>
         <item>
-            <link href="/exist/biblio.xml">Library</link>
+			<link href="../library/biblio.xml">Library</link>
         </item>
         <item>
-            <link href="/exist/xmldb/db/">Cocoon + XML:DB</link>
+			<link href="../xmldb/db/">Cocoon + XML:DB</link>
         </item>
         <item>
-            <link href="/exist/xmldb/db/xinclude/xinclude.xml">XInclude</link>
+			<link href="../xmldb/db/xinclude/xinclude.xml">XInclude</link>
         </item>
     </group>
     <group name="Administration">
         <item>
-            <link href="xadmin.xsp">Admin Interface</link>
+			<link href="../xadmin.xsp">Admin Interface</link>
         </item>
         <item>
             <link href="/exist/admin">Server Status</link>

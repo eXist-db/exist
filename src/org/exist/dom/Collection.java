@@ -102,7 +102,9 @@ public class Collection implements Comparable {
 	 *@param  doc  The feature to be added to the Document attribute
 	 */
 	synchronized public void addDocument(DocumentImpl doc) {
-		addDocument(new User("admin", null, "dba"), doc);
+		if (doc.getDocId() < 0)
+			doc.setDocId(broker.getNextDocId(this));
+		documents.put(doc.getFileName(), doc);
 	}
 
 	/**
@@ -112,10 +114,7 @@ public class Collection implements Comparable {
 	 *@param  doc   The feature to be added to the Document attribute
 	 */
 	synchronized public void addDocument(User user, DocumentImpl doc) {
-		if (doc.getDocId() < 0)
-			doc.setDocId(broker.getNextDocId(this));
-		documents.put(doc.getFileName(), doc);
-		//documents.add(doc);
+		addDocument(doc);
 	}
 
 	synchronized public void renameDocument(String oldName, String newName) {
@@ -277,7 +276,7 @@ public class Collection implements Comparable {
 			return null;
 		String parent =
 			(name.lastIndexOf("/") < 1
-				? "/"
+				? "/db"
 				: name.substring(0, name.lastIndexOf("/")));
 		return broker.getCollection(parent);
 	}
@@ -329,36 +328,6 @@ public class Collection implements Comparable {
 		return documents.values().iterator();
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  istream          Description of the Parameter
-	 *@exception  IOException  Description of the Exception
-	 */
-	public void read(DataInput istream) throws IOException {
-		collectionId = istream.readShort();
-		name = istream.readUTF();
-		int collLen = istream.readInt();
-		String collName;
-		long collAddr;
-		for (int i = 0; i < collLen; i++) {
-			collName = istream.readUTF();
-			collAddr = istream.readLong();
-			System.out.println(collName + " = " + collAddr);
-			subcollections.put(collName, collAddr);
-		}
-		permissions.read(istream);
-		DocumentImpl doc;
-		try {
-			while (true) {
-				doc = new DocumentImpl(broker, this);
-				doc.read(istream);
-				addDocument(doc);
-			}
-		} catch (EOFException e) {
-		}
-	}
-
 	public void read(VariableByteInputStream istream) throws IOException {
 		collectionId = istream.readShort();
 		final int collLen = istream.readInt();
@@ -379,9 +348,10 @@ public class Collection implements Comparable {
 			permissions.setGroup(secman.getGroup(gid).getName());
 		}
 		permissions.setPermissions(perm);
+		DocumentImpl doc;
 		try {
-			while (true) {
-				final DocumentImpl doc = new DocumentImpl(broker, this);
+			while (istream.available() > 0) {
+				doc = new DocumentImpl(broker, this);
 				doc.read(istream);
 				addDocument(doc);
 			}

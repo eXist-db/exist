@@ -9,7 +9,7 @@
   <description>eXist Server Setup</description>
 
 	<servlet>
-		<servlet-name>Status</servlet-name>
+		<servlet-name>eXist Database Statistics</servlet-name>
 		<jsp-file>/status/status.jsp</jsp-file>
 	</servlet>
 	
@@ -232,12 +232,11 @@
       working files. The path specified is always relative to the
       context path of the Cocoon servlet.
       Usually it is obtained from the servlet engine.
-
     <init-param>
       <param-name>work-directory</param-name>
       <param-value>/WEB-INF/work</param-value>
     </init-param>
-    -->
+	-->
 
     <!--
       This parameter allows to specify additional directories or jars
@@ -301,7 +300,7 @@
 
   <!-- Servlet mappings -->
   <servlet-mapping>
-  	<servlet-name>Status</servlet-name>
+    <servlet-name>eXist Database Statistics</servlet-name>
   	<url-pattern>/status</url-pattern>
   </servlet-mapping>
   
@@ -355,10 +354,10 @@
     Some servlet engines (Tomcat) have defaults which are not overriden
     by '/' mapping, but must be overriden explicitly.
   -->
-  <!--servlet-mapping>
+  <servlet-mapping>
     <servlet-name>Cocoon2</servlet-name>
     <url-pattern>*.jsp</url-pattern>
-  </servlet-mapping-->
+  </servlet-mapping>
   
   <!--
     Some servlet engines (WebLogic) have defaults which are not overriden

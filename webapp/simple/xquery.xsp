@@ -37,9 +37,9 @@
        (taglib), which is based on the XML:DB API. The logicsheet makes it easy to access 
        eXist from a Cocoon2 XSP page.</p>
        
-       <p>Please enter a valid XPath query below. You may select a collection name from the left.
+   <p>Please enter a valid XPath query below. Simple wildcards *, ?, [a-z] are allowed. You may select a collection name from the left.
        The collection-expression will be automatically added if your query does not start
-       with the document() or collection() function.</p>
+	   with the document() or collection() function.</p>
 
        <form action="xprocess.xsp" method="GET">
          

@@ -309,10 +309,12 @@ public class LocalUserManagementService implements UserManagementService {
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				" you are not allowed to change this user");
-		if (!manager.hasUser(u.getName()))
+		User old = manager.getUser(u.getName());
+		if (old == null)
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				"user " + u.getName() + " does not exist");
+		u.setUID(old.getUID());
 		manager.setUser(u);
 	}
 }

@@ -23,7 +23,6 @@
 package org.exist.storage;
 
 import it.unimi.dsi.fastutil.Object2ObjectAVLTreeMap;
-import it.unimi.dsi.fastutil.Object2ObjectRBTreeMap;
 
 import java.io.EOFException;
 import java.io.File;
@@ -75,6 +74,7 @@ import org.exist.util.ProgressIndicator;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
+import org.exist.util.XMLUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -92,8 +92,7 @@ import org.w3c.dom.NodeList;
  */
 public class NativeTextEngine extends TextSearchEngine {
 
-	private static Category LOG =
-		Category.getInstance(NativeTextEngine.class.getName());
+	private static Category LOG = Category.getInstance(NativeTextEngine.class.getName());
 	protected BFile dbWords;
 	protected InvertedIndex invIdx;
 	protected boolean useCompression = false;
@@ -107,26 +106,20 @@ public class NativeTextEngine extends TextSearchEngine {
 		String temp;
 		int buffers;
 		boolean compress = false;
-		if ((dataDir = (String) config.getProperty("db-connection.data-dir"))
-			== null)
+		if ((dataDir = (String) config.getProperty("db-connection.data-dir")) == null)
 			dataDir = "data";
 
 		if ((buffers = config.getInteger("db-connection.words.buffers")) < 0)
 			buffers = 1024;
 
-		if ((temp = (String) config.getProperty("db-connection.compress"))
-			!= null)
+		if ((temp = (String) config.getProperty("db-connection.compress")) != null)
 			compress = temp.equals("true");
 
 		String pathSep = System.getProperty("file.separator", "/");
 		try {
-			if ((dbWords = (BFile) config.getProperty("db-connection.words"))
-				== null) {
+			if ((dbWords = (BFile) config.getProperty("db-connection.words")) == null) {
 				dbWords =
-					new BFile(
-						new File(dataDir + pathSep + "words.dbx"),
-						buffers / 2,
-						buffers);
+					new BFile(new File(dataDir + pathSep + "words.dbx"), buffers / 2, buffers);
 				LOG.debug("words index buffer size: " + buffers);
 				if (!dbWords.exists())
 					dbWords.create();
@@ -251,10 +244,14 @@ public class NativeTextEngine extends TextSearchEngine {
 		invIdx.flush();
 	}
 
-	public void reindex(DocumentImpl oldDoc) {
-		invIdx.reindex(oldDoc);
+	public void reindex(DocumentImpl oldDoc, NodeImpl node) {
+		invIdx.reindex(oldDoc, node);
 	}
 
+	public void remove() {
+		invIdx.remove();
+	}
+	
 	/**
 	 *  Find    all the nodes containing the search terms given by the array
 	 * expr from the fulltext-index.
@@ -277,10 +274,7 @@ public class NativeTextEngine extends TextSearchEngine {
 	 * @param type either MATCH_EXACT or MATCH_REGEX
 	 * @return array containing a NodeSet for each of the search terms
 	 */
-	public NodeSet[] getNodesContaining(
-		DocumentSet docs,
-		String[] expr,
-		int type) {
+	public NodeSet[] getNodesContaining(DocumentSet docs, String[] expr, int type) {
 		if (type == DBBroker.MATCH_EXACT) {
 			for (int i = 0; i < expr.length; i++)
 				if (containsWildcards(expr[i])) {
@@ -327,14 +321,9 @@ public class NativeTextEngine extends TextSearchEngine {
 				continue;
 			if (stoplist.contains(expr[i]))
 				continue;
-			term =
-				(stem)
-					? stemmer.stem(expr[i].toLowerCase())
-					: expr[i].toLowerCase();
+			term = (stem) ? stemmer.stem(expr[i].toLowerCase()) : expr[i].toLowerCase();
 			result[i] = new ArraySet(1000);
-			for (Iterator iter = docs.getCollectionIterator();
-				iter.hasNext();
-				) {
+			for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
 				collection = (Collection) iter.next();
 				collectionId = collection.getId();
 
@@ -377,12 +366,14 @@ public class NativeTextEngine extends TextSearchEngine {
 				}
 			}
 			//( (ArraySet) result[i] ).setIsSorted( true );
-						LOG.debug(
-							"found: "
-								+ result[i].getLength()
-								+ " in "
-								+ (System.currentTimeMillis() - start)
-								+ "ms.");
+			LOG.debug(
+				"found "
+					+ expr[i]
+					+ ": "
+					+ result[i].getLength()
+					+ " in "
+					+ (System.currentTimeMillis() - start)
+					+ "ms.");
 		}
 		return result;
 	}
@@ -396,10 +387,7 @@ public class NativeTextEngine extends TextSearchEngine {
 	 * @param array of regular expression search terms
 	 * @return array containing a NodeSet for each of the search terms
 	 */
-	private NodeSet[] getNodesRegexp(
-		DocumentSet docs,
-		String[] expr,
-		int type) {
+	private NodeSet[] getNodesRegexp(DocumentSet docs, String[] expr, int type) {
 		long start = System.currentTimeMillis();
 		ArraySet[] result = new ArraySet[expr.length];
 		Value ref;
@@ -419,14 +407,11 @@ public class NativeTextEngine extends TextSearchEngine {
 			try {
 				regexp =
 					(type == DBBroker.MATCH_REGEXP
-						? regexCompiler.compile(
-							expr[i],
-							Perl5Compiler.CASE_INSENSITIVE_MASK)
+						? regexCompiler.compile(expr[i], Perl5Compiler.CASE_INSENSITIVE_MASK)
 						: globCompiler.compile(
 							expr[i],
 							GlobCompiler.CASE_INSENSITIVE_MASK
-								| GlobCompiler
-									.QUESTION_MATCHES_ZERO_OR_ONE_MASK));
+								| GlobCompiler.QUESTION_MATCHES_ZERO_OR_ONE_MASK));
 			} catch (MalformedPatternException e) {
 				LOG.debug(e);
 				continue;
@@ -438,9 +423,7 @@ public class NativeTextEngine extends TextSearchEngine {
 				else
 					break;
 			cb = new WordsCallback(regexp, result[i], docs);
-			for (Iterator iter = docs.getCollectionIterator();
-				iter.hasNext();
-				) {
+			for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
 				collection = (Collection) iter.next();
 				collectionId = collection.getId();
 
@@ -449,8 +432,7 @@ public class NativeTextEngine extends TextSearchEngine {
 				else
 					ref = new WordRef(collectionId);
 
-				IndexQuery query =
-					new IndexQuery(null, IndexQuery.TRUNC_RIGHT, ref);
+				IndexQuery query = new IndexQuery(null, IndexQuery.TRUNC_RIGHT, ref);
 				try {
 					lock.acquire(this);
 					lock.enter(this);
@@ -482,12 +464,11 @@ public class NativeTextEngine extends TextSearchEngine {
 		Collection collection,
 		String start,
 		String end,
-		boolean inclusive) 
+		boolean inclusive)
 		throws PermissionDeniedException {
-		if(!collection.getPermissions().validate(user, Permission.READ))
+		if (!collection.getPermissions().validate(user, Permission.READ))
 			throw new PermissionDeniedException("permission denied");
-		List collections =
-			inclusive ? collection.getDescendants(user) : new ArrayList();
+		List collections = inclusive ? collection.getDescendants(user) : new ArrayList();
 		collections.add(collection);
 		final Lock lock = dbWords.getLock();
 		short collectionId;
@@ -516,12 +497,7 @@ public class NativeTextEngine extends TextSearchEngine {
 				values = dbWords.findEntries(query);
 				for (Iterator j = values.iterator(); j.hasNext();) {
 					val = (Value[]) j.next();
-					term =
-						new String(
-							val[0].getData(),
-							2,
-							val[0].getLength() - 2,
-							"UTF-8");
+					term = new String(val[0].getData(), 2, val[0].getLength() - 2, "UTF-8");
 					oc = (Occurrences) map.get(term);
 					if (oc == null) {
 						oc = new Occurrences(term);
@@ -549,7 +525,7 @@ public class NativeTextEngine extends TextSearchEngine {
 			}
 		}
 		Occurrences[] result = new Occurrences[map.size()];
-		return (Occurrences[])map.values().toArray(result);
+		return (Occurrences[]) map.values().toArray(result);
 	}
 
 	/**
@@ -572,8 +548,7 @@ public class NativeTextEngine extends TextSearchEngine {
 			}
 			LOG.debug("removing words ...");
 			WordRef ref = new WordRef(collection.getId());
-			IndexQuery query =
-				new IndexQuery(null, IndexQuery.TRUNC_RIGHT, ref);
+			IndexQuery query = new IndexQuery(null, IndexQuery.TRUNC_RIGHT, ref);
 
 			ArrayList entries = null;
 			try {
@@ -651,7 +626,7 @@ public class NativeTextEngine extends TextSearchEngine {
 				word = (String) iter.next();
 				ref = new WordRef(collectionId, word);
 				try {
-					lock.acquire(this, Lock.WRITE_LOCK);
+					lock.acquire(this, Lock.READ_LOCK);
 					lock.enter(this);
 					val = dbWords.get(ref);
 				} catch (LockException e) {
@@ -748,9 +723,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		String word;
 		final long gid = text.getGID();
 		while (null != (token = tokenizer.nextToken())) {
-			if (idx != null
-				&& idx.getIncludeAlphaNum() == false
-				&& token.isAlpha() == false)
+			if (idx != null && idx.getIncludeAlphaNum() == false && token.isAlpha() == false)
 				continue;
 			word = token.getText().toLowerCase();
 			//System.out.println( "'" + word + "'");
@@ -841,35 +814,10 @@ public class NativeTextEngine extends TextSearchEngine {
 		 * @see java.lang.Object#toString()
 		 */
 		public String toString() {
-			return ByteConversion.byteToShort(data, pos)
-				+ new String(data, pos, len);
+			return ByteConversion.byteToShort(data, pos) + new String(data, pos, len);
 		}
 
 	}
-
-	//	final static class WordRef extends Value {
-	//
-	//		WordRef(short collectionId) {
-	//			data = new byte[2];
-	//			ByteConversion.shortToByte(collectionId, data, 0);
-	//			len = 2;
-	//			pos = 0;
-	//		}
-	//
-	//		WordRef(short collectionId, String word) {
-	//			byte[] ndata;
-	//			try {
-	//				ndata = word.getBytes("UTF-8");
-	//			} catch (UnsupportedEncodingException uee) {
-	//				ndata = word.getBytes();
-	//			}
-	//			data = new byte[2 + ndata.length];
-	//			ByteConversion.shortToByte(collectionId, data, 0);
-	//			System.arraycopy(ndata, 0, data, 2, ndata.length);
-	//			len = data.length;
-	//			pos = 0;
-	//		}
-	//	}
 
 	/**
 	 *  This inner class is responsible for actually storing the list of
@@ -894,70 +842,214 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 
 		public void addRow(String word, long gid) {
-			LongLinkedList buf = (OrderedLongLinkedList)words.get(word);
-			if(buf == null) {
+			LongLinkedList buf = (OrderedLongLinkedList) words.get(word);
+			if (buf == null) {
 				buf = new OrderedLongLinkedList();
 				words.put(word, buf);
 			}
 			buf.add(gid);
 		}
 
-		public void reindex(DocumentImpl oldDoc) {
+		public void remove() {
 			final short collectionId = doc.getCollection().getId();
-			int count = 1, len;
+			int len, docId;
 			Map.Entry entry;
 			String word;
 			LongLinkedList idList;
 			long[] ids;
 			byte[] data;
-			long prevId;
+			long last, gid;
 			long delta;
-			NodeSet oldList;
-			DocumentSet docs;
 			NodeProxy p;
 			WordRef ref;
-			Lock lock;
-			String[] terms = new String[1];
-			for (Iterator i = words.entrySet().iterator();
-				i.hasNext();
-				count++) {
+			LongLinkedList newList;
+			Value val = null;
+			VariableByteInputStream is;
+			VariableByteOutputStream os = new VariableByteOutputStream();
+			Lock lock = dbWords.getLock();
+			for (Iterator i = words.entrySet().iterator(); i.hasNext();) {
 				entry = (Map.Entry) i.next();
 				word = (String) entry.getKey();
-				terms[0] = word;
 				idList = (LongLinkedList) entry.getValue();
-				docs = new DocumentSet();
-				docs.add(oldDoc);
-				oldList = getNodesExact(docs, terms)[0];
-				for (Iterator j = oldList.iterator(); j.hasNext();) {
-					p = (NodeProxy) j.next();
-					if (oldDoc.getTreeLevel(p.gid) < oldDoc.reindexRequired())
-						idList.add(p.gid);
+				ref = new WordRef(collectionId, word);
+				try {
+					lock.acquire(this, Lock.READ_LOCK);
+					lock.enter(this);
+					val = dbWords.get(ref);
+				} catch (LockException e) {
+					LOG.error("could not acquire lock on index for '" + word + "'");
+				} finally {
+					lock.release(this);
 				}
-				ids = idList.getData();
+				os.clear();
+				newList = new LongLinkedList();
+				if (val != null) {
+					// add old entries to the new list 
+					data = val.getData();
+					is = new VariableByteInputStream(data);
+					try {
+						while (is.available() > 0) {
+							docId = is.readInt();
+							len = is.readInt();
+							if (docId == doc.getDocId()) {
+								// copy data to new buffer; skip
+								// removed nodes
+								last = 0;
+								for (int j = 0; j < len; j++) {
+									delta = is.readLong();
+									last = last + delta;
+									if (!idList.contains(last))
+										newList.add(last);
+								}
+							} else {
+								// section belongs to another document:
+								// copy data to new buffer
+								os.writeInt(docId);
+								os.writeInt(len);
+								for (int j = 0; j < len; j++) {
+									//delta = is.readLong();
+									//os.writeLong(delta);
+									is.copyTo(os);
+								}
+							}
+						}
+					} catch (EOFException e) {
+						LOG.error("end-of-file while reading index entry for " + word);
+					}
+				}
+				ids = newList.getData();
 				i.remove();
 				Arrays.sort(ids);
 				len = ids.length;
 				os.writeInt(doc.getDocId());
 				os.writeInt(len);
-				prevId = 0;
+				last = 0;
 				for (int j = 0; j < len; j++) {
-					delta = ids[j] - prevId;
+					delta = ids[j] - last;
 					if (delta < 0) {
 						LOG.debug("neg. delta: " + delta + " for " + word);
-						LOG.debug("id = " + ids[j] + "; prev = " + prevId);
+						LOG.debug("id = " + ids[j] + "; prev = " + last);
 					}
 					os.writeLong(delta);
-					prevId = ids[j];
+					last = ids[j];
 				}
 				data = os.toByteArray();
-				os.clear();
-				ref = new WordRef(collectionId, word);
-				lock = dbWords.getLock();
 				try {
 					lock.acquire(this, Lock.WRITE_LOCK);
 					lock.enter(this);
 					try {
-						dbWords.put(ref, data);
+						if (val == null)
+							dbWords.put(ref, data);
+						else
+							dbWords.update(val.getAddress(), ref, data);
+					} catch (ReadOnlyException e) {
+					}
+				} catch (LockException e) {
+					LOG.warn("could not acquire lock", e);
+				} finally {
+					lock.release(this);
+				}
+			}
+			words.clear();
+		}
+
+		public void reindex(DocumentImpl oldDoc, NodeImpl node) {
+			final short collectionId = doc.getCollection().getId();
+			int len, docId;
+			Map.Entry entry;
+			String word;
+			LongLinkedList idList;
+			long[] ids;
+			byte[] data;
+			long last, gid;
+			long delta;
+			NodeProxy p;
+			WordRef ref;
+			Value val = null;
+			VariableByteInputStream is;
+			VariableByteOutputStream os = new VariableByteOutputStream();
+			Lock lock = dbWords.getLock();
+			for (Iterator i = words.entrySet().iterator(); i.hasNext();) {
+				entry = (Map.Entry) i.next();
+				word = (String) entry.getKey();
+				idList = (LongLinkedList) entry.getValue();
+				ref = new WordRef(collectionId, word);
+				try {
+					lock.acquire(this, Lock.READ_LOCK);
+					lock.enter(this);
+					val = dbWords.get(ref);
+				} catch (LockException e) {
+					LOG.error("could not acquire lock on index for '" + word + "'");
+				} finally {
+					lock.release(this);
+				}
+				os.clear();
+				if (val != null) {
+					// add old entries to the new list 
+					data = val.getData();
+					is = new VariableByteInputStream(data);
+					try {
+						while (is.available() > 0) {
+							docId = is.readInt();
+							len = is.readInt();
+							if (docId != oldDoc.getDocId()) {
+								// section belongs to another document:
+								// copy data to new buffer
+								os.writeInt(docId);
+								os.writeInt(len);
+								for (int j = 0; j < len; j++) {
+									//delta = is.readLong();
+									//os.writeLong(delta);
+									is.copyTo(os);
+								}
+							} else {
+								// copy nodes to new list
+								last = 0;
+								for (int j = 0; j < len; j++) {
+									delta = is.readLong();
+									gid = last + delta;
+									last = gid;
+									if (node == null
+										&& oldDoc.getTreeLevel(gid) < oldDoc.reindexRequired()) {
+										idList.add(gid);
+									} else if (
+										node != null
+											&& (!XMLUtil
+												.isDescendantOrSelf(oldDoc, node.getGID(), gid))) {
+										idList.add(gid);
+									}
+								}
+							}
+						}
+					} catch (EOFException e) {
+						LOG.error("end-of-file while reading index entry for " + word);
+					}
+				}
+				ids = idList.getData();
+				i.remove();
+				Arrays.sort(ids);
+				len = ids.length;
+				os.writeInt(oldDoc.getDocId());
+				os.writeInt(len);
+				last = 0;
+				for (int j = 0; j < len; j++) {
+					delta = ids[j] - last;
+					if (delta < 0) {
+						LOG.debug("neg. delta: " + delta + " for " + word);
+						LOG.debug("id = " + ids[j] + "; prev = " + last);
+					}
+					os.writeLong(delta);
+					last = ids[j];
+				}
+				data = os.toByteArray();
+				try {
+					lock.acquire(this, Lock.WRITE_LOCK);
+					lock.enter(this);
+					try {
+						if (val == null)
+							dbWords.put(ref, data);
+						else
+							dbWords.update(val.getAddress(), ref, data);
 					} catch (ReadOnlyException e) {
 					}
 				} catch (LockException e) {
@@ -971,8 +1063,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 
 		public void flush() {
-			final ProgressIndicator progress =
-				new ProgressIndicator(words.size());
+			final ProgressIndicator progress = new ProgressIndicator(words.size());
 			if (doc == null)
 				return;
 			final short collectionId = doc.getCollection().getId();
@@ -984,9 +1075,7 @@ public class NativeTextEngine extends TextSearchEngine {
 			byte[] data;
 			long prevId, id;
 			long delta;
-			for (Iterator i = words.entrySet().iterator();
-				i.hasNext();
-				count++) {
+			for (Iterator i = words.entrySet().iterator(); i.hasNext(); count++) {
 				entry = (Map.Entry) i.next();
 				word = (String) entry.getKey();
 				idList = (LongLinkedList) entry.getValue();
@@ -1052,10 +1141,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		Pattern regexp;
 		ArraySet result;
 
-		public WordsCallback(
-			Pattern regexp,
-			ArraySet result,
-			DocumentSet docs) {
+		public WordsCallback(Pattern regexp, ArraySet result, DocumentSet docs) {
 			this.regexp = regexp;
 			this.result = result;
 			this.docs = docs;
@@ -1064,8 +1150,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		public boolean indexInfo(Value key, long pointer) {
 			String word;
 			try {
-				word =
-					new String(key.getData(), 2, key.getLength() - 2, "UTF-8");
+				word = new String(key.getData(), 2, key.getLength() - 2, "UTF-8");
 			} catch (UnsupportedEncodingException uee) {
 				word = new String(key.getData(), 2, key.getLength() - 2);
 			}

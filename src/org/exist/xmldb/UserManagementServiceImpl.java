@@ -341,7 +341,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 			u.setHome(home);
 			return u;
 		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+			return null;
 		} catch (IOException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}

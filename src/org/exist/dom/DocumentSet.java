@@ -20,7 +20,8 @@
 
 package org.exist.dom;
 
-import it.unimi.dsi.fastutil.Int2ObjectAVLTreeMap;
+//import it.unimi.dsi.fastutil.Int2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ObjectAVLTreeSet;
 
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ import org.w3c.dom.NodeList;
  * 
  * @author wolf
  */
-public class DocumentSet extends Int2ObjectAVLTreeMap implements NodeList {
+public class DocumentSet extends Int2ObjectOpenHashMap implements NodeList {
 
 	private final static Category LOG =
 		Category.getInstance(DocumentSet.class.getName());
@@ -116,6 +117,10 @@ public class DocumentSet extends Int2ObjectAVLTreeMap implements NodeList {
 		return size();
 	}
 
+	public int getCollectionCount() {
+		return collections.size();
+	}
+	
 	public Node item(int pos) {
 		if (list == null)
 			list = new ArrayList(values());

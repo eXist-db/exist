@@ -120,6 +120,7 @@ public class PathExpr implements Expression {
         for ( Iterator iter = steps.iterator(); iter.hasNext();  ) {
             set = (NodeSet) r.getNodeList();
             expr = (Expression) iter.next();
+            LOG.debug("processing " + expr.pprint());
             if ( expr.returnsType() != Constants.TYPE_NODELIST ) {
                 if ( expr instanceof Literal || expr instanceof IntNumber )
                     return expr.eval( docs, set, null );

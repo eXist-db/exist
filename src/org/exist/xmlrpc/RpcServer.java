@@ -38,6 +38,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
+import org.xml.sax.SAXException;
 
 /**
  *  Handler class for XMLRPC calls. <p>
@@ -633,22 +634,20 @@ public class RpcServer implements RpcAPI {
 
 	public Hashtable queryP(User user, byte[] xpath)
 		throws EXistException, PermissionDeniedException {
-		return queryP(user, xpath, null);	
+		return queryP(user, xpath, null);
 	}
-	
+
 	public Hashtable queryP(User user, byte[] xpath, byte[] sortExpr)
 		throws EXistException, PermissionDeniedException {
 		return queryP(user, xpath, null, null, sortExpr);
 	}
-	
-	public Hashtable queryP(User user, byte[] xpath, String docName, 
-		String s_id)
+
+	public Hashtable queryP(User user, byte[] xpath, String docName, String s_id)
 		throws EXistException, PermissionDeniedException {
-		return queryP(user, xpath, docName, s_id, null); 
+		return queryP(user, xpath, docName, s_id, null);
 	}
-	
-	public Hashtable queryP(User user, byte[] xpath, String docName, 
-		String s_id, byte[] sortExpr)
+
+	public Hashtable queryP(User user, byte[] xpath, String docName, String s_id, byte[] sortExpr)
 		throws EXistException, PermissionDeniedException {
 		String xpathString = null;
 		String sortString = null;
@@ -657,13 +656,13 @@ public class RpcServer implements RpcAPI {
 		} catch (UnsupportedEncodingException e) {
 			throw new EXistException("failed to decode xpath expression");
 		}
-		if(sortExpr != null)
+		if (sortExpr != null)
 			try {
 				sortString = new String(sortExpr, "UTF-8");
 			} catch (UnsupportedEncodingException e) {
 				throw new EXistException("failed to decode xpath expression");
 			}
-		
+
 		// some clients (Perl) encode strings with a \0 at the end.
 		// remove it ...
 		if (xpathString.charAt(xpathString.length() - 1) == 0x0)
@@ -1145,25 +1144,59 @@ public class RpcServer implements RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	public boolean setUser(User user, String name, String password, 
-		Vector groups, String home)
+	public boolean setUser(User user, String name, String password, Vector groups, String home)
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = null;
 		try {
 			con = pool.get();
 			return con.setUser(user, name, password, groups, home);
-		} catch(Exception e) {
+		} catch (Exception e) {
 			handleException(e);
 			return false;
 		} finally {
 			pool.release(con);
 		}
 	}
-	
-	public boolean setUser(User user, String name, String password, 
-		Vector groups)
+
+	public boolean setUser(User user, String name, String password, Vector groups)
 		throws EXistException, PermissionDeniedException {
 		return setUser(user, name, password, groups, null);
+	}
+
+	/* (non-Javadoc)
+		 * @see org.exist.xmlrpc.RpcAPI#xupdate(org.exist.security.User, java.lang.String, byte[])
+		 */
+	public int xupdate(User user, String collectionName, byte[] xupdate)
+		throws PermissionDeniedException, EXistException, SAXException {
+		RpcConnection con = null;
+		try {
+			con = pool.get();
+			String xupdateStr = new String(xupdate, "UTF-8");
+			return con.xupdate(user, collectionName, xupdateStr);
+		} catch (Exception e) {
+			handleException(e);
+			return 0;
+		} finally {
+			pool.release(con);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xmlrpc.RpcAPI#xupdateResource(org.exist.security.User, java.lang.String, byte[])
+	 */
+	public int xupdateResource(User user, String resource, byte[] xupdate)
+		throws PermissionDeniedException, EXistException, SAXException {
+		RpcConnection con = null;
+		try {
+			con = pool.get();
+			String xupdateStr = new String(xupdate, "UTF-8");
+			return con.xupdate(user, resource, xupdateStr);
+		} catch (Exception e) {
+			handleException(e);
+			return 0;
+		} finally {
+			pool.release(con);
+		}
 	}
 
 	public boolean shutdown(User user) throws PermissionDeniedException {
@@ -1286,4 +1319,5 @@ public class RpcServer implements RpcAPI {
 
 		}
 	}
+
 }

@@ -3,7 +3,6 @@ package org.exist.xupdate;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -12,7 +11,6 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
-import org.exist.util.XMLUtil;
 import org.w3c.dom.NodeList;
 
 /**
@@ -22,29 +20,26 @@ import org.w3c.dom.NodeList;
  */
 public class Append extends Modification {
 
-	private final static Logger LOG = Logger.getLogger(Append.class);
-
 	/**
 	 * Constructor for Append.
 	 * @param selectStmt
 	 */
-	public Append(BrokerPool pool, User user, String selectStmt) {
-		super(pool, user, selectStmt);
+	public Append(BrokerPool pool, User user, DocumentSet docs, String selectStmt) {
+		super(pool, user, docs, selectStmt);
 	}
 	/**
 	 * @see org.exist.xupdate.Modification#process()
 	 */
-	public long process(DocumentSet docs)
+	public long process()
 		throws PermissionDeniedException, EXistException {
-		System.out.println(XMLUtil.dump(content));
 		ArrayList qr = select(docs);
-		LOG.debug("select found " + qr.size() + " nodes for append");
+		NodeList children = content.getChildNodes();
+		if (qr == null || children.getLength() == 0)
+			return 0;
 		IndexListener listener = new IndexListener(qr);
 		NodeImpl node;
 		DocumentImpl doc, prevDoc = null;
-		NodeList children = content.getChildNodes();
 		int len = children.getLength();
-		LOG.debug("found " + len + " nodes to append");
 		for (Iterator i = qr.iterator(); i.hasNext();) {
 			node = (NodeImpl) i.next();
 			doc = (DocumentImpl)node.getOwnerDocument();

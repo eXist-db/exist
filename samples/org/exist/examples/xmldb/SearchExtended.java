@@ -16,9 +16,9 @@ import org.xmldb.api.modules.*;
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
  *@created    20. September 2002
  */
-public class SearchExample {
+public class SearchExtended {
 
-    protected static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
+    protected static String URI = "xmldb:exist://";
 
     protected static String driver = "org.exist.xmldb.DatabaseImpl";
 
@@ -58,12 +58,12 @@ public class SearchExample {
             long qtime = System.currentTimeMillis() - start;
             start = System.currentTimeMillis();
 
+			Element elem;
             for ( int i = 0; i < (int) result.getSize(); i++ ) {
                 XMLResource resource = (XMLResource) result.getResource( (long) i );
-                //String xml = resource.getContent().toString();
-                //System.out.println( xml );
-                Element elem = (Element)resource.getContentAsDOM();
-                System.out.println(elem.getTagName());
+                elem = (Element)resource.getContentAsDOM();
+                elem = (Element)elem.getParentNode();
+                System.out.println(elem.getNodeName());
             }
             long rtime = System.currentTimeMillis() - start;
 			System.out.println("query:         " + query);

@@ -9,7 +9,7 @@
     xmlns:xsp="http://apache.org/xsp"
     xmlns:xmldb="http://exist-db.org/xmldb/1.0"
     xmlns:xsp-session="http://apache.org/xsp/session/2.0"
-    create-session="true"
+    xsp-session:create-session="true"
     version="1.0"
 >
     <xsl:variable name="namespace-uri">http://exist-db.org/xmldb/1.0</xsl:variable>

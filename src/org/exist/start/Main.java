@@ -381,6 +381,9 @@ public class Main {
 			// set up classpath:
 
 			// prefill existing paths in classpath_dirs...
+			if(_debug)
+				System.out.println("existing classpath = " +
+					System.getProperty("java.class.path"));
 			_classpath.addClasspath(System.getProperty("java.class.path"));
 
 			// add JARs from ext and lib
@@ -468,7 +471,7 @@ public class Main {
 			}
 		} else {
 			// if not, warn user
-			System.err.println("ERROR: jetty.home cound not be autodetected, bailing out.");
+			System.err.println("ERROR: exist.home cound not be autodetected, bailing out.");
 			System.err.flush();
 		}
 	}

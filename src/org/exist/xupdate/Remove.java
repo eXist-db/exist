@@ -12,7 +12,6 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
-import org.exist.util.XMLUtil;
 import org.w3c.dom.Node;
 
 /**
@@ -30,18 +29,19 @@ public class Remove extends Modification {
 	 * @param user
 	 * @param selectStmt
 	 */
-	public Remove(BrokerPool pool, User user, String selectStmt) {
-		super(pool, user, selectStmt);
+	public Remove(BrokerPool pool, User user, DocumentSet docs, String selectStmt) {
+		super(pool, user, docs, selectStmt);
 	}
 
 	/**
 	 * @see org.exist.xupdate.Modification#process(org.exist.dom.DocumentSet)
 	 */
-	public long process(DocumentSet docs)
+	public long process()
 		throws PermissionDeniedException, EXistException {
-		System.out.println(XMLUtil.dump(content));
 		ArrayList qr = select(docs);
-		LOG.debug("select found " + qr.size() + " nodes for remove");
+		if(qr == null)
+			return 0;
+		IndexListener listener = new IndexListener(qr);
 		NodeImpl node;
 		Node parent;
 		DocumentImpl doc;
@@ -57,11 +57,13 @@ public class Remove extends Modification {
 						+ user.getName());
 			if (!doc.getPermissions().validate(user, Permission.UPDATE))
 				throw new PermissionDeniedException("permission to remove document denied");
+			doc.setIndexListener(listener);
 			parent = node.getParentNode();
 			if (parent.getNodeType() != Node.ELEMENT_NODE) {
 				LOG.warn("cannot remove the root node");
 			} else
 				parent.removeChild(node);
+			doc.clearIndexListener();
 		}
 		return qr.size();
 	}

@@ -48,13 +48,13 @@ public class XMLUtil {
 		format.setOmitXMLDeclaration(true);
 		StringWriter writer = new StringWriter();
 		XMLSerializer serializer = new XMLSerializer(writer, format);
-        try {
-		  serializer.serialize(fragment);
-        } catch(IOException ioe) {
-        }
-        return writer.toString();
+		try {
+			serializer.serialize(fragment);
+		} catch (IOException ioe) {
+		}
+		return writer.toString();
 	}
-    
+
 	/**
 	 *  Description of the Method
 	 *
@@ -62,10 +62,7 @@ public class XMLUtil {
 	 *@param  node      Description of the Parameter
 	 *@param  new_node  Description of the Parameter
 	 */
-	protected final static void copyChildren(
-		Document new_doc,
-		Node node,
-		Node new_node) {
+	public final static void copyChildren(Document new_doc, Node node, Node new_node) {
 		NodeList children = node.getChildNodes();
 		Node child;
 		Node new_child;
@@ -103,7 +100,7 @@ public class XMLUtil {
 	 *@param  node     Description of the Parameter
 	 *@return          Description of the Return Value
 	 */
-	protected final static Node copyNode(Document new_doc, Node node) {
+	public final static Node copyNode(Document new_doc, Node node) {
 		Node new_node;
 		switch (node.getNodeType()) {
 			case Node.ELEMENT_NODE :
@@ -219,8 +216,7 @@ public class XMLUtil {
 		if (p0 < 0)
 			return null;
 		for (int i = p0 + 8; i < xmlDecl.length(); i++)
-			if (Character.isWhitespace(xmlDecl.charAt(i))
-				|| xmlDecl.charAt(i) == '=')
+			if (Character.isWhitespace(xmlDecl.charAt(i)) || xmlDecl.charAt(i) == '=')
 				continue;
 			else if (xmlDecl.charAt(i) == '"') {
 				while (xmlDecl.charAt(++i) != '"' && i < xmlDecl.length())
@@ -243,15 +239,18 @@ public class XMLUtil {
 		if (level < 0)
 			throw new RuntimeException("child index out of bounds");
 		final int order = doc.getTreeLevelOrder(level + 1);
-		if(order < 0) {
-			System.err.println("level " + (level + 1) + " out of bounds: " +
-				gid + "; start = " + doc.getLevelStartPoint(level));
+		if (order < 0) {
+			System.err.println(
+				"level "
+					+ (level + 1)
+					+ " out of bounds: "
+					+ gid
+					+ "; start = "
+					+ doc.getLevelStartPoint(level));
 			Thread.dumpStack();
 		}
-			
-		return (gid - doc.getLevelStartPoint(level))
-			* order
-			+ doc.getLevelStartPoint(level + 1);
+
+		return (gid - doc.getLevelStartPoint(level)) * order + doc.getLevelStartPoint(level + 1);
 	}
 
 	/**
@@ -262,12 +261,27 @@ public class XMLUtil {
 	 *@return      The parentId value
 	 */
 	public final static long getParentId(DocumentImpl doc, long gid) {
-		int level = doc.getTreeLevel(gid);
-		if(level < 0)
+		final int level = doc.getTreeLevel(gid);
+		if (level < 0) {
+			System.out.println("unable to determine level");
 			return -1;
-		return (gid - doc.getLevelStartPoint(level))
-			/ doc.getTreeLevelOrder(level)
+		}
+		return (gid - doc.getLevelStartPoint(level)) / doc.getTreeLevelOrder(level)
 			+ doc.getLevelStartPoint(level - 1);
+	}
+
+	public final static boolean isDescendantOrSelf(
+		DocumentImpl doc,
+		long ancestor,
+		long descendant) {
+		boolean found = false;
+		if (ancestor == descendant)
+			found = true;
+		while ( (!found) && (descendant = getParentId(doc, descendant)) > -1) {
+			if (descendant == ancestor)
+				found = true;
+		}
+		return found;
 	}
 
 	/**
@@ -323,8 +337,7 @@ public class XMLUtil {
 	 *@return                  Description of the Return Value
 	 *@exception  IOException  Description of the Exception
 	 */
-	public static String readFile(File file, String defaultEncoding)
-		throws IOException {
+	public static String readFile(File file, String defaultEncoding) throws IOException {
 		// read the file into a string
 		FileInputStream in = new FileInputStream(file);
 		byte[] chunk = new byte[512];

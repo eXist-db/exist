@@ -59,6 +59,16 @@ public class LongLinkedList {
         return count;
     }
     
+    public boolean contains(long l) {
+    	ListItem next = first;
+    	while( next != null ) {
+    		if(next.l == l)
+    			return true;
+    		next = next.next;
+    	}
+    	return false;
+    }
+    
 	public long[] getData() {
 		long[] data = new long[count];
 		ListItem next = first;

@@ -37,17 +37,19 @@ public abstract class Modification {
 	protected DocumentFragment content = null;
 	protected BrokerPool pool;
     protected User user;
+    protected DocumentSet docs;
     
 	/**
 	 * Constructor for Modification.
 	 */
-	public Modification(BrokerPool pool, User user, String selectStmt) {
+	public Modification(BrokerPool pool, User user, DocumentSet docs, String selectStmt) {
 		this.selectStmt = selectStmt;
         this.pool = pool;
         this.user = user;
+        this.docs = docs;
 	}
 
-	public abstract long process(DocumentSet docs) throws PermissionDeniedException, EXistException;
+	public abstract long process() throws PermissionDeniedException, EXistException;
 
 	public abstract String getName();
 
@@ -63,7 +65,7 @@ public abstract class Modification {
             RootNode root = new RootNode(pool);
             expr.add(root);
 			parser.expr(expr);
-			LOG.info("query: " + expr.pprint());
+			LOG.info("modification select: " + expr.pprint());
 			long start = System.currentTimeMillis();
 			if (parser.foundErrors())
 				throw new RuntimeException(parser.getErrorMsg());
@@ -75,13 +77,12 @@ public abstract class Modification {
             if(!(resultValue.getType() == Value.isNodeList))
                 throw new EXistException("select expression should evaluate to a" +
                     "node-set");
-            LOG.info("retrieving nodes ...");
             NodeList set = resultValue.getNodeList();
             ArrayList out = new ArrayList(set.getLength());
             for(int i = 0; i < set.getLength(); i++) {
             	out.add(set.item(i));
             }
-            LOG.info("finished");
+            LOG.info("found " + out.size() + " for select");
             return out;
 		} catch (RecognitionException e) {
             LOG.warn("error while parsing select expression", e);
@@ -123,8 +124,8 @@ public abstract class Modification {
 			for(Iterator i = nodes.iterator(); i.hasNext(); ) {
 				NodeImpl current = (NodeImpl)i.next();
 				if(current.getInternalAddress() == address) {
-					System.out.println("setting " + current.getGID() +
-						" -> " + node.getGID());
+//					System.out.println("setting " + current.getGID() +
+//						" -> " + node.getGID());
 					current.setGID(node.getGID());
 				}
 			}

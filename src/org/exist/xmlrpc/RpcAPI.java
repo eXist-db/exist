@@ -26,6 +26,7 @@ import java.util.Vector;
 import org.exist.*;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.xml.sax.SAXException;
 
 /**
  *  Description of the Interface
@@ -716,6 +717,12 @@ public interface RpcAPI {
 		throws PermissionDeniedException, EXistException;
 		
 	public void releaseQueryResult(int handle);
+	
+	public int xupdate(User user, String collectionName, byte[] xupdate)
+		throws PermissionDeniedException, EXistException, SAXException;
+		
+	public int xupdateResource(User user, String resource, byte[] xupdate)
+		throws PermissionDeniedException, EXistException, SAXException;
 }
 
 

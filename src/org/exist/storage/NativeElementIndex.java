@@ -20,24 +20,27 @@
  */
 package org.exist.storage;
 
+import java.io.EOFException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+
 import org.apache.log4j.Category;
 import org.dbxml.core.DBException;
 import org.dbxml.core.data.Value;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
 import org.exist.util.Configuration;
+import org.exist.util.FastQSort;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.ReadOnlyException;
+import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
+import org.exist.util.XMLUtil;
 
 /**
  *  ElementIndex collects all element occurrences. It uses the name of the
@@ -51,17 +54,13 @@ import org.exist.util.VariableByteOutputStream;
  */
 public class NativeElementIndex extends ElementIndex {
 
-	private static Category LOG =
-		Category.getInstance(NativeElementIndex.class.getName());
+	private static Category LOG = Category.getInstance(NativeElementIndex.class.getName());
 
 	public final static int PARTITION_SIZE = 102400;
 
 	protected BFile dbElement;
 
-	public NativeElementIndex(
-		DBBroker broker,
-		Configuration config,
-		BFile dbElement) {
+	public NativeElementIndex(DBBroker broker, Configuration config, BFile dbElement) {
 		super(broker, config);
 		this.dbElement = dbElement;
 	}
@@ -77,82 +76,260 @@ public class NativeElementIndex extends ElementIndex {
 		buf.add(proxy);
 	}
 
-	public void reindex(DocumentImpl oldDoc) {
+	public void reindex(DocumentImpl oldDoc, NodeImpl node) {
 		if (elementIds.size() == 0)
 			return;
 		Lock lock = dbElement.getLock();
 		Map.Entry entry;
 		String elementName;
-		NodeSet oldList;
-		ArrayList newList, idList;
+		List oldList = new ArrayList(), idList;
 		NodeProxy p;
-        NodeProxy nodeList[];
-        VariableByteOutputStream os = new VariableByteOutputStream();
-        int count = 1, len;
-        byte[] data;
-        Value ref;
-        Value val;
-        long prevId, cid, addr;
-        short collectionId = oldDoc.getCollection().getId();
+		VariableByteOutputStream os;
+		VariableByteInputStream is;
+		int len, docId;
+		byte[] data;
+		Value ref;
+		Value val;
+		short sym;
+		short collectionId = oldDoc.getCollection().getId();
+		long delta, last, gid, address;
+		int page, tid;
 		try {
+			// iterate through elements
 			for (Iterator i = elementIds.entrySet().iterator(); i.hasNext();) {
 				entry = (Map.Entry) i.next();
 				idList = (ArrayList) entry.getValue();
 				elementName = (String) entry.getKey();
-				DocumentSet docs = new DocumentSet();
-				docs.add(oldDoc);
-				oldList = broker.findElementsByTagName(docs, elementName);
-				newList = new ArrayList(oldList.getLength());
-				for (Iterator j = oldList.iterator(); j.hasNext();) {
-					p = (NodeProxy) j.next();
-					if (oldDoc.getTreeLevel(p.gid) < oldDoc.reindexRequired())
-						newList.add(p);
+				sym = NativeBroker.getSymbols().getSymbol(elementName);
+				ref = new NativeBroker.ElementValue(collectionId, sym);
+				// try to retrieve old index entry for the element
+				try {
+					lock.acquire(this, Lock.READ_LOCK);
+					lock.enter(this);
+					val = dbElement.get(ref);
+				} catch (LockException e) {
+					LOG.error("could not acquire lock for index on " + elementName);
+					return;
+				} finally {
+					lock.release(this);
 				}
-				newList.addAll(idList);
-				nodeList = new NodeProxy[newList.size()];
-				nodeList = (NodeProxy[]) newList.toArray(nodeList);
-				len = nodeList.length;
-				Arrays.sort(nodeList);
+				os = new VariableByteOutputStream();
+				oldList.clear();
+				if (val != null) {
+					// add old entries to the new list 
+					data = val.getData();
+					is = new VariableByteInputStream(data);
+					try {
+						while (is.available() > 0) {
+							docId = is.readInt();
+							len = is.readInt();
+							if (docId != oldDoc.getDocId()) {
+								// section belongs to another document:
+								// copy data to new buffer
+								os.writeInt(docId);
+								os.writeInt(len);
+								for (int j = 0; j < len * 3; j++) {
+									is.copyTo(os);
+//									delta = is.readLong();
+//									page = is.readInt();
+//									tid = is.readInt();
+//									os.writeLong(delta);
+//									os.writeInt(page);
+//									os.writeInt(tid);
+								}
+							} else {
+								// copy nodes to new list
+								last = 0;
+								for (int j = 0; j < len; j++) {
+									delta = is.readLong();
+									gid = last + delta;
+									last = gid;
+									page = is.readInt();
+									tid = is.readInt();
+									if (node == null
+										&& oldDoc.getTreeLevel(gid) < oldDoc.reindexRequired()) {
+										address = DOMFile.createPointer(page, tid);
+										idList.add(new NodeProxy(oldDoc, gid, address));
+									} else if (
+										node != null
+											&& (!XMLUtil
+												.isDescendantOrSelf(oldDoc, node.getGID(), gid))) {
+										if (!containsNode(idList, gid)) {
+											address = DOMFile.createPointer(page, tid);
+											oldList.add(new NodeProxy(oldDoc, gid, address));
+										}
+									}
+								}
+							}
+						}
+					} catch (EOFException e) {
+						LOG.error("end-of-file while updating index for element " + elementName);
+					}
+				}
+				if (node != null)
+					idList.addAll(oldList);
+				// write out the updated list
+				FastQSort.sort(idList, 0, idList.size() - 1);
+				len = idList.size();
 				os.writeInt(doc.getDocId());
 				os.writeInt(len);
-				prevId = 0;
+				last = 0;
 				for (int j = 0; j < len; j++) {
-					cid = nodeList[j].gid - prevId;
-					prevId = nodeList[j].gid;
-					os.writeLong(cid);
-					addr = nodeList[j].internalAddress;
-					os.writeInt(DOMFile.pageFromPointer(addr));
-					os.writeInt(DOMFile.tidFromPointer(addr));
+					p = (NodeProxy) idList.get(j);
+					delta = p.gid - last;
+					last = p.gid;
+					os.writeLong(delta);
+					address = p.internalAddress;
+					os.writeInt(DOMFile.pageFromPointer(address));
+					os.writeInt(DOMFile.tidFromPointer(address));
 				}
 				data = os.toByteArray();
-				os.clear();
-				short sym = NativeBroker.getSymbols().getSymbol(elementName);
-				ref = new NativeBroker.ElementValue(collectionId, sym);
 				try {
 					lock.acquire(this, Lock.WRITE_LOCK);
 					lock.enter(this);
-					if (dbElement.put(ref, data) < 0)
-						LOG.warn(
-							"could not save index for element " + elementName);
-						continue;
+					if (val == null)
+						dbElement.put(ref, data);
+					else
+						dbElement.update(val.getAddress(), ref, data);
 				} catch (LockException e) {
 					LOG.error("could not acquire lock on elements", e);
 				} finally {
 					lock.release(this);
 				}
-				count++;
 			}
 		} catch (ReadOnlyException e) {
 			LOG.warn("database is read only");
 		}
-        elementIds = new TreeMap();
+		elementIds.clear();
 	}
-    
+
+	public void remove() {
+		if (elementIds.size() == 0)
+			return;
+		Lock lock = dbElement.getLock();
+		Map.Entry entry;
+		String elementName;
+		List newList = new ArrayList(), idList;
+		NodeProxy p;
+		VariableByteOutputStream os;
+		VariableByteInputStream is;
+		int len, docId;
+		byte[] data;
+		Value ref;
+		Value val;
+		short sym;
+		short collectionId = doc.getCollection().getId();
+		long delta, last, gid, address;
+		int page, tid;
+		try {
+			// iterate through elements
+			for (Iterator i = elementIds.entrySet().iterator(); i.hasNext();) {
+				entry = (Map.Entry) i.next();
+				idList = (ArrayList) entry.getValue();
+				elementName = (String) entry.getKey();
+				sym = NativeBroker.getSymbols().getSymbol(elementName);
+				ref = new NativeBroker.ElementValue(collectionId, sym);
+				// try to retrieve old index entry for the element
+				try {
+					lock.acquire(this, Lock.READ_LOCK);
+					lock.enter(this);
+					val = dbElement.get(ref);
+				} catch (LockException e) {
+					LOG.error("could not acquire lock for index on " + elementName);
+					return;
+				} finally {
+					lock.release(this);
+				}
+				os = new VariableByteOutputStream();
+				newList.clear();
+				if (val != null) {
+					// add old entries to the new list 
+					data = val.getData();
+					is = new VariableByteInputStream(data);
+					try {
+						while (is.available() > 0) {
+							docId = is.readInt();
+							len = is.readInt();
+							if (docId != doc.getDocId()) {
+								// section belongs to another document:
+								// copy data to new buffer
+								os.writeInt(docId);
+								os.writeInt(len);
+								for (int j = 0; j < len * 3; j++) {
+									is.copyTo(os);
+//									delta = is.readLong();
+//									page = is.readInt();
+//									tid = is.readInt();
+//									os.writeLong(delta);
+//									os.writeInt(page);
+//									os.writeInt(tid);
+								}
+							} else {
+								// copy nodes to new list
+								last = 0;
+								for (int j = 0; j < len; j++) {
+									delta = is.readLong();
+									gid = last + delta;
+									last = gid;
+									page = is.readInt();
+									tid = is.readInt();
+									if(!containsNode(idList, gid)) {
+										address = DOMFile.createPointer(page, tid);
+										newList.add(new NodeProxy(doc, gid, address));
+									}
+								}
+							}
+						}
+					} catch (EOFException e) {
+						LOG.error("end-of-file while updating index for element " + elementName);
+					}
+				}
+				// write out the updated list
+				FastQSort.sort(newList, 0, newList.size() - 1);
+				len = newList.size();
+				os.writeInt(doc.getDocId());
+				os.writeInt(len);
+				last = 0;
+				for (int j = 0; j < len; j++) {
+					p = (NodeProxy) newList.get(j);
+					delta = p.gid - last;
+					last = p.gid;
+					os.writeLong(delta);
+					address = p.internalAddress;
+					os.writeInt(DOMFile.pageFromPointer(address));
+					os.writeInt(DOMFile.tidFromPointer(address));
+				}
+				data = os.toByteArray();
+				try {
+					lock.acquire(this, Lock.WRITE_LOCK);
+					lock.enter(this);
+					if (val == null)
+						dbElement.put(ref, data);
+					else
+						dbElement.update(val.getAddress(), ref, data);
+				} catch (LockException e) {
+					LOG.error("could not acquire lock on elements", e);
+				} finally {
+					lock.release(this);
+				}
+			}
+		} catch (ReadOnlyException e) {
+			LOG.warn("database is read only");
+		}
+		elementIds.clear();
+	}
+
+	private final static boolean containsNode(List list, long gid) {
+		for (int i = 0; i < list.size(); i++)
+			if (((NodeProxy) list.get(i)).gid == gid)
+				return true;
+		return false;
+	}
+
 	public void flush() {
 		if (elementIds.size() == 0)
 			return;
-		final ProgressIndicator progress =
-			new ProgressIndicator(elementIds.size());
+		final ProgressIndicator progress = new ProgressIndicator(elementIds.size());
 
 		NodeProxy proxy;
 		String elementName;
@@ -163,7 +340,6 @@ public class NativeElementIndex extends ElementIndex {
 		Value ref;
 		Value val;
 		Map.Entry entry;
-		NodeProxy nodeList[];
 		VariableByteOutputStream os = new VariableByteOutputStream();
 		// get collection id for this collection
 		final String docName = doc.getFileName();
@@ -178,18 +354,17 @@ public class NativeElementIndex extends ElementIndex {
 				elementName = (String) entry.getKey();
 				idList = (ArrayList) entry.getValue();
 				i.remove();
-				nodeList = new NodeProxy[idList.size()];
-				nodeList = (NodeProxy[]) idList.toArray(nodeList);
-				len = nodeList.length;
-				Arrays.sort(nodeList);
+				FastQSort.sort(idList, 0, idList.size() - 1);
+				len = idList.size();
 				os.writeInt(doc.getDocId());
 				os.writeInt(len);
 				prevId = 0;
 				for (int j = 0; j < len; j++) {
-					cid = nodeList[j].gid - prevId;
-					prevId = nodeList[j].gid;
+					proxy = (NodeProxy) idList.get(j);
+					cid = proxy.gid - prevId;
+					prevId = proxy.gid;
 					os.writeLong(cid);
-					addr = nodeList[j].internalAddress;
+					addr = proxy.internalAddress;
 					os.writeInt(DOMFile.pageFromPointer(addr));
 					os.writeInt(DOMFile.tidFromPointer(addr));
 				}
@@ -201,8 +376,7 @@ public class NativeElementIndex extends ElementIndex {
 					lock.acquire(this, Lock.WRITE_LOCK);
 					lock.enter(this);
 					if (dbElement.append(ref, data) < 0) {
-						LOG.warn(
-							"could not save index for element " + elementName);
+						LOG.warn("could not save index for element " + elementName);
 						continue;
 					}
 				} catch (LockException e) {

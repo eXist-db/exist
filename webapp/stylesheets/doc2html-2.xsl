@@ -190,7 +190,7 @@
 </xsl:template>
 
 <xsl:template match="section/section">
-  <p><img src="resources/void.gif" height="5" width="50" /></p>
+	<p></p>
   <xsl:if test="@id">
     <a name="{@id}"></a>
   </xsl:if>

@@ -26,6 +26,7 @@ import java.util.Iterator;
 import org.apache.log4j.Category;
 import java.util.Arrays;
 import org.exist.xpath.Value;
+import org.exist.util.FastQSort;
 
 public class ArraySet extends NodeSet {
 
@@ -512,7 +513,7 @@ public class ArraySet extends NodeSet {
 					dx++;
 					continue;
 				}
-				//				System.out.println(dl[dx].gid + " = " + al.nodes[ax].gid);
+				//System.out.println(dl[dx].gid + " = " + al.nodes[ax].gid);
 				cmp = dl[dx].compareTo(al.nodes[ax]);
 				if (cmp > 0) {
 					if (ax < al.counter - 1)
@@ -738,7 +739,8 @@ public class ArraySet extends NodeSet {
 		if (this.sorted || counter < 2)
 			return;
 		//quickSort(nodes, 0, counter - 1);
-		Arrays.sort(nodes, 0, counter - 1);
+		//Arrays.sort(nodes, 0, counter - 1);
+		FastQSort.sort(nodes, 0, counter - 1);
 		sorted = true;
 	}
 
