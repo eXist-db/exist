@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Observer;
-import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
@@ -64,7 +63,6 @@ import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
-import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.serializers.NativeSerializer;
 import org.exist.storage.serializers.Serializer;
@@ -253,7 +251,7 @@ public class NewNativeBroker extends DBBroker {
 					readOnly = collectionsDb.isReadOnly();
 			}
 			// finally initialize NativeCollectionIndexer
-            collectionIndexer = new NativeCollectionIndexer(pool, collectionsDb);
+            collectionIndexer = new NativeCollectionIndexer(pool, this, collectionsDb);
             collectionIndexer.setReadOnly(readOnly);
             
 			if (readOnly)
