@@ -51,7 +51,7 @@ public class DBUtils {
         Database database = (Database)cl.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
-        return DatabaseManager.getCollection(uri);
+        return DatabaseManager.getCollection(uri, "admin", null);
 	}
 	
 	public static void shutdownDB(String uri) throws XMLDBException
