@@ -22,11 +22,17 @@ import java.util.Observable;
 import java.util.TreeMap;
 
 import org.apache.log4j.Category;
+import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
+import org.exist.security.PermissionDeniedException;
 import org.exist.util.Configuration;
+import org.exist.util.Occurrences;
+import org.exist.xquery.NodeSelector;
 
 public abstract class ElementIndex extends Observable {
 
@@ -44,7 +50,23 @@ public abstract class ElementIndex extends Observable {
     public void setDocument(DocumentImpl doc) {
         this.doc = doc;
     }
-        
+    
+    /**
+	 *  Returns a node set containing all the attributes matching the given QName and
+	 * belonging to one of the documents in the DocumentSet.
+	 *
+	 */
+	public abstract NodeSet findElementsByTagName(
+		byte type,
+		DocumentSet docs,
+		QName qname,
+		NodeSelector selector);
+	
+	public abstract NodeSet getAttributesByName(DocumentSet docs, QName qname);
+	
+	public abstract Occurrences[] scanIndexedElements(Collection collection,
+			boolean inclusive) throws PermissionDeniedException;
+	
     public abstract void addRow(QName qname, NodeProxy proxy);
 
     public abstract void flush();

@@ -201,7 +201,7 @@ public class Propfind implements WebDAVMethod {
 			
 			if(type == FIND_ALL_PROPERTIES || type == FIND_BY_PROPERTY) {
 				if(resource != null)
-					writeResourceProperties(user, searchedProperties, type, resource, serializer, servletPath);
+					writeResourceProperties(user, searchedProperties, type, collection, resource, serializer, servletPath);
 				else
 					writeCollectionProperties(user, searchedProperties, type, collection, serializer, servletPath, depth, 0);
 			} else if(type == FIND_PROPERTY_NAMES)
@@ -291,7 +291,7 @@ public class Propfind implements WebDAVMethod {
 					broker = pool.get(user);
 					for(Iterator i = collection.iterator(broker); i.hasNext(); ) {
 						DocumentImpl doc = (DocumentImpl)i.next();
-						writeResourceProperties(user, searchedProperties, type, doc, serializer, servletPath);
+						writeResourceProperties(user, searchedProperties, type, collection, doc, serializer, servletPath);
 					}
 				} catch (EXistException e) {
 				} finally {
@@ -318,7 +318,7 @@ public class Propfind implements WebDAVMethod {
 	}
 	
 	private void writeResourceProperties(User user, DAVProperties searchedProperties, 
-			int type, DocumentImpl resource, SAXSerializer serializer, String servletPath) throws SAXException {
+			int type, Collection collection, DocumentImpl resource, SAXSerializer serializer, String servletPath) throws SAXException {
 		if(!resource.getPermissions().validate(user, Permission.READ))
 			return;
 		AttributesImpl attrs = new AttributesImpl();
@@ -326,7 +326,7 @@ public class Propfind implements WebDAVMethod {
 		serializer.startElement(WebDAV.DAV_NS, "response", "D:response", attrs);
 		// write D:href
 		serializer.startElement(WebDAV.DAV_NS, "href", "D:href", attrs);
-		serializer.characters(servletPath + resource.getFileName());
+		serializer.characters(servletPath + collection.getName() + '/' + resource.getFileName());
 		serializer.endElement(WebDAV.DAV_NS, "href", "D:href");
 		
 		serializer.startElement(WebDAV.DAV_NS, "propstat", "D:propstat", attrs);
@@ -334,11 +334,7 @@ public class Propfind implements WebDAVMethod {
 		
 		if(shouldIncludeProperty(type, searchedProperties, DISPLAY_NAME_PROP)) {
 			// write D:displayname
-			String displayName = resource.getFileName();
-			int p = displayName.lastIndexOf('/');
-			if(p > -1)
-				displayName = displayName.substring(p + 1);
-			writeSimpleElement(DISPLAY_NAME_PROP, displayName, serializer);
+			writeSimpleElement(DISPLAY_NAME_PROP, resource.getFileName(), serializer);
 		}
 		
 		if(shouldIncludeProperty(type, searchedProperties, RESOURCE_TYPE_PROP)) {
@@ -408,7 +404,8 @@ public class Propfind implements WebDAVMethod {
 	    serializer.startElement(WebDAV.DAV_NS, "response", "D:response", attrs);
 		// write D:href
 		serializer.startElement(WebDAV.DAV_NS, "href", "D:href", attrs);
-		String href = servletPath + (resource != null ? resource.getFileName() : collection.getName());
+		String href = servletPath + (resource != null ? collection.getName() + '/' + resource.getFileName() : 
+		    collection.getName());
 		serializer.characters(href);
 		serializer.endElement(WebDAV.DAV_NS, "href", "D:href");
 		

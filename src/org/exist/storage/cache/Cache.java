@@ -72,6 +72,8 @@ public interface Cache {
 	 */
 	public void remove(Cacheable item);
 	
+	public boolean hasDirtyItems();
+	
 	/**
 	 * Call release on all items, but without
 	 * actually removing them from the cache.

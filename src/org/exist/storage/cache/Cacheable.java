@@ -106,4 +106,6 @@ public interface Cacheable {
 	 * @return
 	 */
 	public boolean allowUnload();
+	
+	public boolean isDirty();
 }

@@ -37,7 +37,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
 
-public class AttrImpl extends NodeImpl implements Attr {
+public class AttrImpl extends NamedNode implements Attr {
 	
 	public final static int CDATA = 0;
 	public final static int ID = 1;
@@ -51,7 +51,7 @@ public class AttrImpl extends NodeImpl implements Attr {
     }
     
     public AttrImpl( long gid ) {
-        super( Node.ATTRIBUTE_NODE, gid );
+        super( Node.ATTRIBUTE_NODE, gid, null );
     }
 
     public AttrImpl( QName name, String value ) {

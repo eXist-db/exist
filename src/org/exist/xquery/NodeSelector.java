@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 
 
@@ -30,6 +31,6 @@ import org.exist.dom.NodeProxy;
  */
 public interface NodeSelector {
 	
-	public boolean match(NodeProxy node);
+	public NodeProxy match(DocumentImpl doc, long gid);
 	
 }

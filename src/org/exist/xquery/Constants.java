@@ -27,16 +27,16 @@ public interface Constants {
     public final static String[] AXISSPECIFIERS = {
 						"ancestor",
 					    "ancestor-or-self",
-					    "attribute",
+					    "parent",
+					    "preceding",
+					    "preceding-sibling",
 					    "child",
+					    "attribute",
 					    "descendant",
 					    "descendant-or-self",
 					    "following",
 					    "following-sibling",
 					    "namespace",
-					    "parent",
-					    "preceding",
-					    "preceding-sibling",
 					    "self",
 					    "attribute-descendant"
 	};
@@ -49,15 +49,15 @@ public interface Constants {
     public final static int PRECEDING_SIBLING_AXIS = 4;
     
     // Forward axes
-    public final static int CHILD_AXIS = 10;
-    public final static int ATTRIBUTE_AXIS = 11;
-    public final static int DESCENDANT_AXIS = 12;
-    public final static int DESCENDANT_SELF_AXIS = 13;
-    public final static int FOLLOWING_AXIS = 14;
-    public final static int FOLLOWING_SIBLING_AXIS = 15;
-    public final static int NAMESPACE_AXIS = 16;
-    public final static int SELF_AXIS = 17;
-	public final static int DESCENDANT_ATTRIBUTE_AXIS = 18;
+    public final static int CHILD_AXIS = 5;
+    public final static int ATTRIBUTE_AXIS = 6;
+    public final static int DESCENDANT_AXIS = 7;
+    public final static int DESCENDANT_SELF_AXIS = 8;
+    public final static int FOLLOWING_AXIS = 9;
+    public final static int FOLLOWING_SIBLING_AXIS = 10;
+    public final static int NAMESPACE_AXIS = 11;
+    public final static int SELF_AXIS = 12;
+	public final static int DESCENDANT_ATTRIBUTE_AXIS = 13;
 	
     /**
      * These constants represent the

@@ -196,12 +196,11 @@ public class LocationStep extends Step {
 			result = new VirtualNodeSet(axis, test, contextSet);
 			((VirtualNodeSet) result).setInPredicate(inPredicate);
 		} else {
-//		    DocumentSet docs = contextSet.getDocumentSet();
 		    DocumentSet docs = getDocumentSet(contextSet);
 			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
 				currentDocs = docs;
 				currentSet =
-					(NodeSet) context.getBroker().getAttributesByName(
+					(NodeSet) context.getBroker().getElementIndex().getAttributesByName(
 						currentDocs, test.getName());
 			}
 			if (axis == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
@@ -230,23 +229,25 @@ public class LocationStep extends Step {
 			vset.setInPredicate(inPredicate);
 			return vset;
 		} else {
-//		    DocumentSet docs = contextSet.getDocumentSet();
+		    NodeSet result = null;
 		    DocumentSet docs = getDocumentSet(contextSet);
-			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
-				currentDocs = docs;
-				currentSet =
-					(NodeSet) context.getBroker().findElementsByTagName(
-						ElementValue.ELEMENT,
-						currentDocs,
-						test.getName(), null);
+		    if(cacheResults()) {
+				if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
+					currentDocs = docs;
+						currentSet =
+							(NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
+								ElementValue.ELEMENT,
+								currentDocs,
+								test.getName(), null);
+				}
+				result =
+					currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);
+			} else {
+			    NodeSelector selector = new ChildSelector(contextSet, inPredicate);
+			    result = context.getBroker().getElementIndex().findElementsByTagName(
+			            ElementValue.ELEMENT, docs, test.getName(), selector
+			    );
 			}
-			NodeSet result =
-				currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT, inPredicate);
-//			DocumentSet docs = contextSet.getDocumentSet();
-//			NodeSelector selector = new ChildSelector(contextSet, inPredicate);
-//			NodeSet result = context.getBroker().findElementsByTagName(
-//					ElementValue.ELEMENT, docs, test.getName(), selector
-//			);
 			return result;
 		}
 	}
@@ -265,7 +266,7 @@ public class LocationStep extends Step {
 			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
 				currentDocs = docs;
 				currentSet =
-					(NodeSet) context.getBroker().findElementsByTagName(
+					(NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
 						ElementValue.ELEMENT, currentDocs,
 						test.getName(), null);
 			}
@@ -295,7 +296,7 @@ public class LocationStep extends Step {
 			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
 				currentDocs = docs;
 				currentSet =
-					(NodeSet) context.getBroker().findElementsByTagName(
+					(NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
 						ElementValue.ELEMENT, currentDocs,
 						test.getName(), null);
 			}
@@ -342,7 +343,7 @@ public class LocationStep extends Step {
 			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
 				currentDocs = docs;
 				currentSet =
-					(NodeSet) context.getBroker().findElementsByTagName(
+					(NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
 						ElementValue.ELEMENT, currentDocs,
 						test.getName(), null);
 			}
@@ -361,7 +362,7 @@ public class LocationStep extends Step {
 			if (currentSet == null || currentDocs == null || !(docs.equals(currentDocs))) {
 				currentDocs = docs;
 				currentSet =
-					(NodeSet) context.getBroker().findElementsByTagName(
+					(NodeSet) context.getBroker().getElementIndex().findElementsByTagName(
 						ElementValue.ELEMENT, currentDocs,
 						test.getName(), null);
 			}
@@ -403,6 +404,11 @@ public class LocationStep extends Step {
 	    if(ds == null)
 	        ds = contextSet.getDocumentSet();
 	    return ds;
+	}
+	
+	protected boolean cacheResults() {
+	    //return getContextDocSet() != null;
+	    return true;
 	}
 	
 	/* (non-Javadoc)

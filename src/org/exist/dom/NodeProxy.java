@@ -335,9 +335,9 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 	}
 
 	/**
-		 * Returns the storage address of this node in dom.dbx.
-		 * @return long
-		 */
+	 * Returns the storage address of this node in dom.dbx.
+	 * @return long
+	 */
 	public long getInternalAddress() {
 		return internalAddress;
 	}

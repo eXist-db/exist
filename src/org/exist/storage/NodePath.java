@@ -82,9 +82,18 @@ public class NodePath {
     }
     
     public void reset() {
-        for(int i = 0;  i < components.length; i++)
+        for(int i = 0;  i < pos; i++)
             components[i] = null;
         pos = 0;
+    }
+    
+    public String toString() {
+        StringBuffer buf = new StringBuffer();
+        for(int i = 0; i < pos; i++) {
+            buf.append('/');
+            buf.append(components[i]);
+        }
+        return buf.toString();
     }
     
     private void init( String path ) {

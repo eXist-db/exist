@@ -62,8 +62,7 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 			if (resource == null) {
 				docs = c.allDocs(broker, docs, true);
 			} else {
-				String id = parent.getName() + '/' + resource;
-				DocumentImpl doc = c.getDocument(id);
+				DocumentImpl doc = c.getDocument(broker, resource);
 				LOG.debug("updating resource " + doc.getFileName());
 				docs.add(doc);
 			}

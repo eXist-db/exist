@@ -275,7 +275,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 						lastDoc = n.doc;
 						sizeHint = getSizeHint(lastDoc);
 					}
-					if ((p = al.parentWithChild(n.doc, n.gid, true, false, -1))
+					if ((p = al.parentWithChild(n, true, false, -1))
 						!= null) {
 						if (rememberContext)
 							n.addContextNode(p);
@@ -292,7 +292,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 						lastDoc = n.doc;
 						sizeHint = al.getSizeHint(lastDoc);
 					}
-					if ((p = al.parentWithChild(n.doc, n.gid, true, false, -1))
+					if ((p = al.parentWithChild(n, true, false, -1))
 						!= null) {
 						if (rememberContext)
 							p.addContextNode(n);

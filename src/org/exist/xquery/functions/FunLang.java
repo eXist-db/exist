@@ -72,7 +72,7 @@ public class FunLang extends Function {
 				.eval(contextSequence)
 				.getStringValue();
 		QName qname = new QName("lang", context.getURIForPrefix("xml"), "xml");
-		NodeSet attribs = context.getBroker().getAttributesByName(contextSequence.toNodeSet().getDocumentSet(), qname);
+		NodeSet attribs = context.getBroker().getElementIndex().getAttributesByName(contextSequence.toNodeSet().getDocumentSet(), qname);
 		NodeSet temp = new ExtArrayNodeSet();
 		NodeProxy p;
 		String langValue;

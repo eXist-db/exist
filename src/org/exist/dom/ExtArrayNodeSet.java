@@ -67,6 +67,8 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 
 	private DocumentSet cachedDocuments = null;
 	
+	private DocumentOrderComparator docOrderComparator = new DocumentOrderComparator();
+	
 	public ExtArrayNodeSet() {
 		this.map = new TreeMap();
 	}
@@ -393,7 +395,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 										boolean includeSelf, int level) {
 	    sort();
 		Part part = getPart(doc, false, -1);
-		return part == null ? null : part.parentWithChild(gid, directParent, includeSelf, level);
+		return part == null ? null : part.parentWithChild(doc, gid, directParent, includeSelf, level);
 	}
 
 	public DocumentSet getDocumentSet() {
@@ -404,7 +406,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 		Part part;
 		for (Iterator i = map.values().iterator(); i.hasNext();) {
 			part = (Part) i.next();
-			cachedDocuments.add(part.doc, false);
+			cachedDocuments.add(part.getDocument(), false);
 		}
 		isSorted = true;
 		return cachedDocuments;
@@ -427,15 +429,14 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	public int getState() {
 		return state;
 	}
-	private static class Part {
+	
+	private class Part {
 
-		NodeProxy array[];
-		DocumentImpl doc;
-		int length = 0;
+		private NodeProxy array[];
+		private int length = 0;
 
 		Part(int initialSize, DocumentImpl myDoc) {
 			array = new NodeProxy[initialSize];
-			doc = myDoc;
 		}
 
 		void add(NodeProxy p) {
@@ -482,12 +483,18 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 			return null;
 		}
 
+		DocumentImpl getDocument() {
+		    if(length == 0)
+		        return null;
+		    return array[0].doc;
+		}
+		
 		void sort() {
 			FastQSort.sortByNodeId(array, 0, length - 1);
 		}
 
 		void sortInDocumentOrder() {
-			FastQSort.sort(array, new DocumentOrderComparator(), 0, length - 1);
+			FastQSort.sort(array, docOrderComparator, 0, length - 1);
 		}
 
 		/**
@@ -501,7 +508,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 		 * If includeSelf is true, the method returns also true if the node
 		 * itself is contained in the node set.
 		 */
-		public NodeProxy parentWithChild(long gid, boolean directParent,
+		NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent,
 											boolean includeSelf, int level) {
 			NodeProxy temp;
 			if (includeSelf && (temp = get(gid)) != null)
@@ -646,7 +653,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 			return length;
 		}
 
-		final void setSelfAsContext() {
+		void setSelfAsContext() {
 			for (int i = 0; i < length; i++) {
 				array[i].addContextNode(array[i]);
 			}

@@ -62,8 +62,7 @@ public class DocumentName extends BasicFunction {
 		NodeValue node = (NodeValue)args[0].itemAt(0);
 		if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			NodeProxy proxy = (NodeProxy)node;
-			String path = proxy.doc.getFileName();
-			return new StringValue(path.substring(proxy.doc.getCollection().getName().length() + 1));
+			return new StringValue(proxy.doc.getFileName());
 		}
 		return Sequence.EMPTY_SEQUENCE;
 	}

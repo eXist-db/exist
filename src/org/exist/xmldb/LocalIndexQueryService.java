@@ -94,7 +94,7 @@ public class LocalIndexQueryService implements IndexQueryService {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			return broker.scanIndexedElements(parent.getCollection(), inclusive);
+			return broker.getElementIndex().scanIndexedElements(parent.getCollection(), inclusive);
 		} catch (EXistException e) {
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,

@@ -35,6 +35,8 @@ public class ArraySet extends AbstractNodeSet {
 	protected NodeProxy nodes[];
 	protected boolean sorted = false;
 
+	private DocumentOrderComparator docOrderComparator = new DocumentOrderComparator();
+	
 	/**
 	 *  Constructor for the ArraySet object
 	 *
@@ -603,6 +605,22 @@ public class ArraySet extends AbstractNodeSet {
 			"removal of node took " + (System.currentTimeMillis() - start));
 	}
 
+	
+    /* (non-Javadoc)
+     * @see org.exist.dom.AbstractNodeSet#getDocumentSet()
+     */
+    public DocumentSet getDocumentSet() {
+        DocumentSet docs = new DocumentSet();
+        DocumentImpl lastDoc = null;
+        for (int i = 0; i < counter; i++) {
+            if(lastDoc == null || lastDoc.getDocId() != nodes[i].doc.getDocId()) {
+                docs.add(nodes[i].doc, false);
+            }
+            lastDoc = nodes[i].doc;
+        }
+        return docs;
+    }
+    
 	public void setIsSorted(boolean sorted) {
 		//this.sorted = sorted;
 	}
@@ -618,7 +636,7 @@ public class ArraySet extends AbstractNodeSet {
 	public void sortInDocumentOrder() {
 		if (counter < 2)
 			return;
-		FastQSort.sort(nodes, new DocumentOrderComparator(), 0, counter - 1);
+		FastQSort.sort(nodes, docOrderComparator, 0, counter - 1);
 		removeDuplicates();
 		this.sorted = false;
 	}

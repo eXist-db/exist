@@ -151,6 +151,14 @@ public class ClockCache implements Cache {
 //		LOG.debug(written + " pages written to disk");
 	}
 
+	public boolean hasDirtyItems() {
+	    for(int i = 0; i < count; i++) {
+			if(items[i] != null && items[i].isDirty())
+				return true;
+		}
+	    return false;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.storage.cache.Cache#getBuffers()
 	 */

@@ -40,6 +40,7 @@ import java.util.Vector;
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;
+import org.exist.xmlrpc.RpcServer;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
@@ -57,8 +58,9 @@ public class RemoteCollection implements CollectionImpl {
 	// max size of a resource to be send to the server
 	// if the resource exceeds this limit, the data is split into
 	// junks and uploaded to the server via the update() call
-	private static final int MAX_CHUNK_LENGTH = 1000000;
-
+	private static final int MAX_CHUNK_LENGTH = 512 * 1024;
+	private static final int MAX_UPLOAD_CHUNK = 1 * 1024 * 1024;
+	
 	protected Map childCollections = null;
 	protected String name;
 	protected Permission permissions = null;
@@ -263,12 +265,6 @@ public class RemoteCollection implements CollectionImpl {
 		} catch (IOException ioe) {
 			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "an io error occurred", ioe);
 		}
-//		List resources = readResources();
-//		int lsize = resources.size();
-//		String[] list = new String[lsize];
-//		for (int i = 0; i < lsize; i++)
-//			list[i] = ((DocumentProxy) resources.get(i)).getName();
-//		return list;
 	}
 
 	/* (non-Javadoc)
@@ -480,19 +476,21 @@ public class RemoteCollection implements CollectionImpl {
 	
 	private void uploadAndStore(Resource res) throws XMLDBException {
 		File file = (File) res.getContent();
-		byte[] chunk = new byte[MAX_CHUNK_LENGTH];
+		byte[] chunk = new byte[MAX_UPLOAD_CHUNK];
 		try {
 			FileInputStream is = new FileInputStream(file);
 			int len;
 			String fileName = null;
 			Vector params;
+			byte[] compressed;
 			while ((len = is.read(chunk)) > -1) {
+			    compressed = RpcServer.compress(chunk, len);
 				params = new Vector();
 				if (fileName != null)
 					params.addElement(fileName);
-				params.addElement(chunk);
+				params.addElement(compressed);
 				params.addElement(new Integer(len));
-				fileName = (String) rpcClient.execute("upload", params);
+				fileName = (String) rpcClient.execute("uploadCompressed", params);
 			}
 			params = new Vector();
 			params.addElement(fileName);

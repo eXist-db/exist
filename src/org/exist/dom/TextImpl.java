@@ -65,7 +65,6 @@ public class TextImpl extends CharacterDataImpl implements Text {
         else
             text = new TextImpl();
         text.cdata = UTF8.decode(data, start + 1, len - 1);
-        text.nodeName = QName.TEXT_QNAME;
         /*try { 
             text.appendData(new String( data, start + 1, len - 1, "UTF-8" ));
         } catch ( UnsupportedEncodingException uee ) {

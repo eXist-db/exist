@@ -513,6 +513,7 @@ public class InteractiveClient {
 		try {
 			if (args[0].equalsIgnoreCase("ls")) {
 				// list collection contents
+			    getResources();
 				if (properties.getProperty("permissions").equals("true")) {
 					for (int i = 0; i < resources.length; i++)
 						messageln(resources[i]);

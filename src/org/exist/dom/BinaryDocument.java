@@ -80,8 +80,8 @@ public class BinaryDocument extends DocumentImpl {
 	public void write(VariableByteOutputStream ostream) throws IOException {
 		ostream.writeByte(getResourceType());
 		ostream.writeInt(docId);
-		ostream.writeUTF(fileName.substring(collection.getName().length() + 1));
-		ostream.writeLong(address);
+		ostream.writeUTF(fileName);
+		ostream.writeLong(internalAddress);
 		ostream.writeLong(pageNr);
 		SecurityManager secman = broker.getBrokerPool().getSecurityManager();
 		if (secman == null) {
@@ -99,8 +99,8 @@ public class BinaryDocument extends DocumentImpl {
 	public void read(VariableByteInput istream)
 		throws IOException, EOFException {
 		docId = istream.readInt();
-		fileName = collection.getName() + '/' + istream.readUTF();
-		address = istream.readLong();
+		fileName = istream.readUTF();
+		internalAddress = istream.readLong();
 		pageNr = istream.readLong();
 		final SecurityManager secman =
 			broker.getBrokerPool().getSecurityManager();

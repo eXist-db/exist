@@ -161,7 +161,7 @@ public class Move implements WebDAVMethod {
                         "Destination collection not found");
                 return;
             }
-            DocumentImpl oldDoc = destCollection.getDocument(newResourceName);
+            DocumentImpl oldDoc = destCollection.getDocument(broker, newResourceName);
             if(oldDoc != null) {
                 boolean overwrite = overwrite(request);
                 if(!overwrite) {

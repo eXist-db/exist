@@ -173,16 +173,7 @@ public abstract class DBBroker extends Observable {
 	    return xqueryService;
 	}
 	
-	/**
-	 *  Returns a node set containing all the attributes matching the given QName and
-	 * belonging to one of the documents in the DocumentSet.
-	 *
-	 */
-	public abstract NodeSet findElementsByTagName(
-		byte type,
-		DocumentSet docs,
-		QName qname,
-		NodeSelector selector);
+	public abstract ElementIndex getElementIndex();
 
 	/**  Flush all data that has not been written before. */
 	public void flush() {
@@ -197,12 +188,6 @@ public abstract class DBBroker extends Observable {
 	 *
 	 */
 	public abstract DocumentSet getAllDocuments(DocumentSet docs);
-
-	/**
-	 *  Returns a node set containing all the attributes matching the given QName and
-	 * belonging to one of the documents in the DocumentSet.
-	 */
-	public abstract NodeSet getAttributesByName(DocumentSet docs, QName qname);
 
 	/**
 	 *  Returns the database collection identified by the specified path.
@@ -231,10 +216,10 @@ public abstract class DBBroker extends Observable {
 	 * 
 	 * @return
 	 */
-	public Collection getCollection(String name, long address) {
-		return null;
-	}
+	public abstract Collection getCollection(String name, long address);
 
+	public abstract void reloadCollection(Collection collection);
+	
 	/**
 	 *  Returns the configuration object used to initialize the 
 	 * current database instance.
@@ -381,7 +366,12 @@ public abstract class DBBroker extends Observable {
 	 *  Remove a document from the database.
 	 *
 	 */
-	public abstract void removeDocument(String docName)
+	public void removeDocument(String docName)
+	throws PermissionDeniedException {
+	    removeDocument(docName, true);
+	}
+	
+	public abstract void removeDocument(String docName, boolean freeDocId)
 		throws PermissionDeniedException;
 
 	public abstract void reindex(String collectionName) 
@@ -501,13 +491,6 @@ public abstract class DBBroker extends Observable {
 	}
 
 	public void endRemove() {
-		throw new RuntimeException("not implemented");
-	}
-
-	public Occurrences[] scanIndexedElements(
-		Collection collection,
-		boolean inclusive)
-		throws PermissionDeniedException {
 		throw new RuntimeException("not implemented");
 	}
 

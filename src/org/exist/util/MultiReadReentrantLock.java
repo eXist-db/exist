@@ -73,7 +73,7 @@ public class MultiReadReentrantLock implements Lock {
      * Threads waiting to get a write lock are tracked in this ArrayList to
      * ensure that write locks are issued in the same order they are requested.
      */
-    private List waitingForWriteLock = new ArrayList(5);
+    private List waitingForWriteLock = null;
 
     /** Default constructor. */
     public MultiReadReentrantLock() {
@@ -140,6 +140,8 @@ public class MultiReadReentrantLock implements Lock {
             //            {
             //                log.debug("nested write lock: " + outstandingWriteLocks);
             //            }
+            if(waitingForWriteLock == null)
+                waitingForWriteLock = new ArrayList(3);
             waitingForWriteLock.add(thisThread);
         }
         synchronized (thisThread) {
@@ -197,7 +199,7 @@ public class MultiReadReentrantLock implements Lock {
             }
 
             // could pull out of sub if block to get nested tracking working.
-            if (outstandingReadLocks == 0 && waitingForWriteLock.size() > 0) {
+            if (outstandingReadLocks == 0 && waitingForWriteLock != null && waitingForWriteLock.size() > 0) {
                 writeLockedThread = (Thread) waitingForWriteLock.get(0);
                 //                if ( log.isDebugEnabled() )
                 //                {
@@ -245,7 +247,7 @@ public class MultiReadReentrantLock implements Lock {
         if (outstandingReadLocks > 0) {
             outstandingReadLocks--;
             if (outstandingReadLocks == 0 && writeLockedThread == null &&
-                    waitingForWriteLock.size() > 0) {
+                    waitingForWriteLock != null && waitingForWriteLock.size() > 0) {
                 writeLockedThread = (Thread) waitingForWriteLock.get(0);
                 //                if ( log.isDebugEnabled() )
                 //                {
@@ -269,7 +271,7 @@ public class MultiReadReentrantLock implements Lock {
     }
 
     public synchronized boolean isLockedForWrite() {
-        return writeLockedThread != null || waitingForWriteLock.size() > 0;
+        return writeLockedThread != null || (waitingForWriteLock != null && waitingForWriteLock.size() > 0);
     }
 }
 

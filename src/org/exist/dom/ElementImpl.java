@@ -35,10 +35,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.storage.NodePath;
 import org.exist.storage.Signatures;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
@@ -62,10 +62,9 @@ import org.xml.sax.helpers.AttributesImpl;
  * 
  * @author Wolfgang Meier
  */
-public class ElementImpl extends NodeImpl implements Element {
+public class ElementImpl extends NamedNode implements Element {
 
-	private static final Logger LOG = Logger.getLogger(ElementImpl.class);
-
+	protected short attributes = 0;
 	protected int children = 0;
 	protected long firstChild = -1;
 	protected Map namespaceMappings = null;
@@ -80,7 +79,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	 *@param  gid  Description of the Parameter
 	 */
 	public ElementImpl(long gid) {
-		super(Node.ELEMENT_NODE, gid);
+		super(Node.ELEMENT_NODE, gid, null);
 	}
 
 	/**
@@ -90,6 +89,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	 */
 	public ElementImpl(QName nodeName) {
 		super(Node.ELEMENT_NODE, nodeName);
+		this.nodeName = nodeName;
 	}
 
 	/**
@@ -99,7 +99,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	 *@param  nodeName  Description of the Parameter
 	 */
 	public ElementImpl(long gid, QName nodeName) {
-		super(Node.ELEMENT_NODE, nodeName, gid);
+		super(Node.ELEMENT_NODE, gid, nodeName);
 	}
 
 	/**
@@ -112,6 +112,7 @@ public class ElementImpl extends NodeImpl implements Element {
 		firstChild = -1;
 		gid = 0;
 		children = 0;
+		attributes = 0;
 		if (namespaceMappings != null)
 			namespaceMappings = null;
 	}
@@ -242,7 +243,7 @@ public class ElementImpl extends NodeImpl implements Element {
 					"max. document size exceeded");
 		}
 		children++;
-		Node node = appendChild(childGid, lastNode, child, true);
+		Node node = appendChild(childGid, lastNode, getPath(), child, true);
 		ownerDocument.broker.update(this);
 		ownerDocument.broker.reindex(prevDoc, ownerDocument, null);
 		try {
@@ -275,7 +276,7 @@ public class ElementImpl extends NodeImpl implements Element {
 		DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
 		Node node = null;
 		if (children == 0)
-			node = appendChildren(firstChildID(), this, nodes, true);
+			node = appendChildren(firstChildID(), this, getPath(), nodes, true);
 		else {
 		    if(child == 1) {
 		        Node firstChild = getFirstChild();
@@ -289,7 +290,7 @@ public class ElementImpl extends NodeImpl implements Element {
 			        node = insertAfter(nodes, prevNode);
 			    } else {
 			        prevNode = getLastNode((NodeImpl) ownerDocument.getNode(lastChildID()));
-			        node = appendChildren(lastChildID() + 1, prevNode, nodes, true);
+			        node = appendChildren(lastChildID() + 1, prevNode, getPath(), nodes, true);
 			    }
 		    }
 		}
@@ -306,7 +307,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	 * @return Node
 	 * @throws DOMException
 	 */
-	protected Node appendChildren(long gid, NodeImpl last, NodeList nodes, boolean index)
+	protected Node appendChildren(long gid, NodeImpl last, NodePath lastPath, NodeList nodes, boolean index)
 		throws DOMException {
 		if (last == null || last.ownerDocument == null)
 			throw new DOMException(DOMException.INVALID_MODIFICATION_ERR, "invalid node");
@@ -325,12 +326,12 @@ public class ElementImpl extends NodeImpl implements Element {
 				throw new DOMException(
 					DOMException.INVALID_MODIFICATION_ERR,
 					"invalid node: null");
-			last = (NodeImpl) appendChild(gid + i, last, child, index);
+			last = (NodeImpl) appendChild(gid + i, last, lastPath, child, index);
 		}
 		return last;
 	}
 
-	private Node appendChild(long gid, NodeImpl last, Node child, boolean index)
+	private Node appendChild(long gid, NodeImpl last, NodePath lastPath, Node child, boolean index)
 		throws DOMException {
 		if (last == null)
 			throw new DOMException(DOMException.INVALID_MODIFICATION_ERR, "invalid node");
@@ -357,13 +358,14 @@ public class ElementImpl extends NodeImpl implements Element {
 				ch.addAll(child.getChildNodes());
 				elem.setChildCount(ch.getLength());
 				elem.setAttributes((short)(elem.getAttributesCount() + attribs.getLength()));
+				lastPath.addComponent(elem.getNodeName());
 				// insert the node
 				ownerDocument.broker.insertAfter(last, elem);
 				// index now?
 				if ((ownerDocument.reindex < 0
 					|| ownerDocument.reindex > ownerDocument.getTreeLevel(gid))
 					&& index)
-					ownerDocument.broker.index(elem);
+					ownerDocument.broker.index(elem, lastPath);
 				elem.setChildCount(0);
 				try {
 					elem.checkTree(ch.getLength());
@@ -374,7 +376,8 @@ public class ElementImpl extends NodeImpl implements Element {
 				}
 				// process child nodes
 				last =
-					(NodeImpl) elem.appendChildren(elem.firstChildID(), elem, ch, index);
+					(NodeImpl) elem.appendChildren(elem.firstChildID(), elem, lastPath, ch, index);
+				lastPath.removeLastComponent();
 				return last;
 			case Node.TEXT_NODE :
 				final TextImpl text = new TextImpl(((Text) child).getData());
@@ -385,7 +388,7 @@ public class ElementImpl extends NodeImpl implements Element {
 				if ((ownerDocument.reindex < 0
 					|| ownerDocument.reindex > ownerDocument.getTreeLevel(gid))
 					&& index)
-					ownerDocument.broker.index(text);
+					ownerDocument.broker.index(text, lastPath);
 				return text;
 			case Node.ATTRIBUTE_NODE :
 				attr = (Attr) child;
@@ -403,7 +406,7 @@ public class ElementImpl extends NodeImpl implements Element {
 				if ((ownerDocument.reindex < 0
 					|| ownerDocument.reindex > ownerDocument.getTreeLevel(gid))
 					&& index)
-					ownerDocument.broker.index(attrib);
+				    ownerDocument.broker.index(attrib, lastPath);
 				return attrib;
 			case Node.COMMENT_NODE :
 				final CommentImpl comment = new CommentImpl(((Comment) child).getData());
@@ -414,7 +417,7 @@ public class ElementImpl extends NodeImpl implements Element {
 				if ((ownerDocument.reindex < 0
 					|| ownerDocument.reindex > ownerDocument.getTreeLevel(gid))
 					&& index)
-					ownerDocument.broker.index(comment);
+					ownerDocument.broker.index(comment, lastPath);
 				return comment;
 			case Node.PROCESSING_INSTRUCTION_NODE :
 				final ProcessingInstructionImpl pi =
@@ -428,7 +431,7 @@ public class ElementImpl extends NodeImpl implements Element {
 				if ((ownerDocument.reindex < 0
 					|| ownerDocument.reindex > ownerDocument.getTreeLevel(gid))
 					&& index)
-					ownerDocument.broker.index(pi);
+					ownerDocument.broker.index(pi, lastPath);
 				return pi;
 			default :
 				throw new DOMException(
@@ -456,6 +459,19 @@ public class ElementImpl extends NodeImpl implements Element {
 		return firstChild;
 	}
 
+	public short getAttributesCount() {
+		return attributes;
+	}
+	
+	/**
+	 *  Set the attributes that belong to this node.
+	 *
+	 *@param  attribNum  The new attributes value
+	 */
+	public void setAttributes(short attribNum) {
+		attributes = attribNum;
+	}
+	
 	/**
 	 * @see org.w3c.dom.Element#getAttribute(java.lang.String)
 	 */
@@ -771,10 +787,6 @@ public class ElementImpl extends NodeImpl implements Element {
 		children = count;
 	}
 
-	public void setNodeName(QName name) {
-		nodeName = name;
-	}
-
 	public void setNamespaceMappings(Map map) {
 		namespaceMappings = new HashMap(map);
 		String ns;
@@ -988,10 +1000,10 @@ public class ElementImpl extends NodeImpl implements Element {
 				"reference node is not a child of the selected node");
 		Node result;
 		if (ref.gid == first)
-			result = appendChild(first, this, newChild, false);
+			result = appendChild(first, this, getPath(), newChild, false);
 		else {
 			NodeImpl prev = (NodeImpl) ref.getPreviousSibling();
-			result = appendChild(ref.gid, getLastNode(prev), newChild, false);
+			result = appendChild(ref.gid, getLastNode(prev), getPath(), newChild, false);
 		}
 		ownerDocument.broker.update(this);
 		ownerDocument.broker.reindex(prevDoc, ownerDocument, null);
@@ -1022,10 +1034,10 @@ public class ElementImpl extends NodeImpl implements Element {
 		final int level = ownerDocument.getTreeLevel(gid);
 		Node result;
 		if (ref.gid == first)
-			result = appendChildren(first, this, nodes, false);
+			result = appendChildren(first, this, getPath(), nodes, false);
 		else {
 			NodeImpl prev = (NodeImpl) ref.getPreviousSibling();
-			result = appendChildren(ref.gid, getLastNode(prev), nodes, false);
+			result = appendChildren(ref.gid, getLastNode(prev), getPath(), nodes, false);
 		}
 		ownerDocument.broker.update(this);
 		if (ownerDocument.reindex > -1) {
@@ -1055,7 +1067,7 @@ public class ElementImpl extends NodeImpl implements Element {
 				DOMException.HIERARCHY_REQUEST_ERR,
 				"reference node is not a child of the selected node");
 		final int level = ownerDocument.getTreeLevel(gid);
-		Node result = appendChildren(ref.gid + 1, getLastNode(ref), nodes, false);
+		Node result = appendChildren(ref.gid + 1, getLastNode(ref), getPath(), nodes, false);
 		ownerDocument.broker.update(this);
 		if (ownerDocument.reindex > -1) {
 			ownerDocument.reindex = level + 1;
@@ -1098,7 +1110,7 @@ public class ElementImpl extends NodeImpl implements Element {
 		ownerDocument.broker.endRemove();
 		children = i;
 		// append new content
-		appendChildren(firstChildId, last, newContent, true);
+		appendChildren(firstChildId, last, getPath(), newContent, true);
 		ownerDocument.broker.update(this);
 		// reindex if required
 		ownerDocument.broker.reindex(prevDoc, ownerDocument, null);
@@ -1170,7 +1182,7 @@ public class ElementImpl extends NodeImpl implements Element {
 				for (int i = children.getLength() - 1; i > -1; i--) {
 					child = (NodeImpl) children.item(i);
 					if (child.nodeType == Node.ELEMENT_NODE)
-						removeAll(child, currentPath + '/' + child.nodeName);
+						removeAll(child, currentPath + '/' + ((ElementImpl)child).nodeName);
 					else
 						removeAll(child, currentPath);
 				}
@@ -1202,7 +1214,7 @@ public class ElementImpl extends NodeImpl implements Element {
 		final String path = getPath().toString();
 		ownerDocument.broker.removeNode(old, path);
 		ownerDocument.broker.endRemove();
-		appendChild(old.gid, previous, newChild, true);
+		appendChild(old.gid, previous, getPath(), newChild, true);
 		// reindex if required
 		ownerDocument.broker.reindex(prevDoc, ownerDocument, null);
 		try {

@@ -107,6 +107,14 @@ public class GClockCache implements Cache {
 //		LOG.debug(written + " pages written to disk");
 	}
 
+	public boolean hasDirtyItems() {
+	    for(int i = 0; i < count; i++) {
+			if(items[i] != null && items[i].isDirty())
+				return true;
+		}
+	    return false;
+	}
+	
 	protected Cacheable removeOne(Cacheable item) {
 		Cacheable old = null;
 		boolean removed = false;

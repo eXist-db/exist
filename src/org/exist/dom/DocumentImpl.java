@@ -23,11 +23,7 @@
 package org.exist.dom;
 import java.io.EOFException;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.ListIterator;
 
-import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.security.Group;
@@ -71,14 +67,12 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	
 	private transient NodeIndexListener listener = NullNodeIndexListener.INSTANCE;
 
-	protected final static Logger LOG = Logger.getLogger(DocumentImpl.class.getName());
-
 	protected transient DBBroker broker = null;
 
 	// number of child nodes
-	protected transient int children = 0;
+	protected int children = 0;
 
-	protected transient LinkedList childList = new LinkedList();
+	protected long[] childList = null;
 
 	// the collection this document belongs to
 	protected transient Collection collection = null;
@@ -88,9 +82,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	// document's document type
 	protected transient DocumentType docType = null;
-
-	// id of the document element
-	//protected long documentRootId = -1;
 
 	// the document's file name
 	protected String fileName = null;
@@ -114,7 +105,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	protected Permission permissions = new Permission(0754);
 
 	// storage address for the document metadata
-	protected long address = -1;
+//	protected long address = -1;
 
 	// arity of the tree at every level
 	protected int treeLevelOrder[] = new int[15];
@@ -126,7 +117,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	
 	private transient User lockOwner = null;
 	
-	private transient Lock updateLock = new MultiReadReentrantLock();
+	private transient Lock updateLock = null;
 	
 	public DocumentImpl(DBBroker broker, Collection collection) {
 		super(Node.DOCUMENT_NODE, 0);
@@ -177,6 +168,22 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	/**
+	 * Copy the relevant internal fields from the specified document object.
+	 * This is called by {@link Collection} when replacing a document.
+	 * 
+	 * @param other
+	 */
+	public void copyOf(DocumentImpl other) {
+	    maxDepth = other.maxDepth;
+	    childList = null;
+	    children = 0;
+	    docType = other.docType;
+	    treeLevelOrder = other.treeLevelOrder;
+	    treeLevelStartPoints = other.treeLevelStartPoints;
+	    internalAddress = -1;
+	}
+	
+	/**
 	 * Returns the type of this resource, either  {@link #XML_FILE} or 
 	 * {@link #BINARY_FILE}.
 	 * 
@@ -193,7 +200,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 * @return
 	 */
 	public boolean isLockedForWrite() {
-		return updateLock.isLockedForWrite();
+		return getUpdateLock().isLockedForWrite();
 	}
 	
 	public void setCollection(Collection parent) {
@@ -225,7 +232,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	public void appendChild(NodeImpl child) throws DOMException {
 		++children;
-		childList.add(new Long(child.internalAddress));
+		resizeChildList();
+		childList[children - 1] = child.internalAddress;
 	}
 	
 	public void calculateTreeLevelStartPoints() throws EXistException {
@@ -320,7 +328,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		DocumentSet docs = new DocumentSet();
 		docs.add(this);
 		NodeSelector selector = new DescendantSelector(new NodeProxy(root), false);
-		return (NodeSet) broker.findElementsByTagName(ElementValue.ELEMENT, docs, qname, selector);
+		return (NodeSet) broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, selector);
 	}
 
 	public int getChildCount() {
@@ -332,18 +340,18 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 */
 	public Node getFirstChild() {
 		checkAvail();
-		long address = ((Long)childList.getFirst()).longValue();
+		if(children == 0)
+		    return null;
+		long address = childList[0];
 		return broker.objectWith(new NodeProxy(this, 1, address));
 	}
 	
 	public NodeList getChildNodes() {
 		checkAvail();
 		NodeListImpl list = new NodeListImpl();
-		long address;
 		Node child;
-		for (Iterator i = childList.iterator(); i.hasNext();) {
-			address = ((Long) i.next()).longValue();
-			child = broker.objectWith(new NodeProxy(this, 1, address));
+		for (int i = 0; i < children; i++) {
+			child = broker.objectWith(new NodeProxy(this, 1, childList[i]));
 			list.add(child);
 		}
 		return list;
@@ -409,7 +417,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		DocumentSet docs = new DocumentSet();
 		docs.add(this);
 		QName qname = new QName(localName, namespaceURI, null);
-		return broker.findElementsByTagName(ElementValue.ELEMENT, docs, qname, null);
+		return broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, null);
 	}
 
 	public String getEncoding() {
@@ -512,9 +520,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	public void read(VariableByteInput istream) throws IOException, EOFException {
 		docId = istream.readInt();
-		fileName = collection.getName() + '/' + istream.readUTF();
+		fileName = istream.readUTF();
 		children = istream.readInt();
-		address = StorageAddress.createPointer(istream.readInt(), istream.readShort());
+		internalAddress = StorageAddress.createPointer(istream.readInt(), istream.readShort());
 		maxDepth = istream.readInt();
 		treeLevelOrder = new int[maxDepth + 1];
 		for (int i = 0; i < maxDepth; i++) {
@@ -549,7 +557,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public void setChildCount(int count) {
 		children = count;
 		if (children == 0)
-			childList.clear();
+			childList = null;
 	}
 
 	public void setDocId(int docId) {
@@ -624,10 +632,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public void write(VariableByteOutputStream ostream) throws IOException {
 		ostream.writeByte(getResourceType());
 		ostream.writeInt(docId);
-		ostream.writeUTF(fileName.substring(collection.getName().length() + 1));
+		ostream.writeUTF(fileName);
 		ostream.writeInt(children);
-		ostream.writeInt(StorageAddress.pageFromPointer(address));
-		ostream.writeShort(StorageAddress.tidFromPointer(address));
+		ostream.writeInt(StorageAddress.pageFromPointer(internalAddress));
+		ostream.writeShort(StorageAddress.tidFromPointer(internalAddress));
 		ostream.writeInt(maxDepth);
 		for (int i = 0; i < maxDepth; i++) {
 			//System.out.println("k[" + i + "] = " + treeLevelOrder[i]);
@@ -657,11 +665,11 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public byte[] serialize() {
 		final VariableByteOutputStream ostream = new VariableByteOutputStream(7);
 		try {
-			long address;
-			for (Iterator i = childList.iterator(); i.hasNext();) {
-				address = ((Long) i.next()).longValue();
-				ostream.writeInt(StorageAddress.pageFromPointer(address));
-				ostream.writeShort(StorageAddress.tidFromPointer(address));
+			if(children > 0) {
+			    for(int i = 0; i < children; i++) {
+					ostream.writeInt(StorageAddress.pageFromPointer(childList[i]));
+					ostream.writeShort(StorageAddress.tidFromPointer(childList[i]));
+			    }
 			}
 			((DocumentTypeImpl) docType).write(ostream);
 			ostream.writeLong(created);
@@ -679,10 +687,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public void deserialize(byte[] data) {
 		VariableByteArrayInput istream = new VariableByteArrayInput(data);
 		try {
-			long address;
-			for (int i = 0; i < children; i++) {
-				address = StorageAddress.createPointer(istream.readInt(), istream.readShort());
-				childList.add(new Long(address));
+			childList = new long[children];
+			for (int i = 0; i < children; i++) { 
+				childList[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
 			}
 			docType = new DocumentTypeImpl();
 			((DocumentTypeImpl) docType).read(istream);
@@ -712,16 +719,18 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public void setAddress(long address) {
-		this.address = address;
+		this.internalAddress = address;
 	}
 
 	public long getAddress() {
-		return address;
+		return internalAddress;
 	}
 
-	public long getInternalAddress() {
-		return address;
-	}
+    /* (non-Javadoc)
+     * @see org.exist.dom.NodeImpl#setInternalAddress(long)
+     */
+    public void setInternalAddress(long address) {
+    }
 
 	/* (non-Javadoc)
 	 * @see org.exist.dom.NodeImpl#updateChild(org.w3c.dom.Node, org.w3c.dom.Node)
@@ -765,21 +774,22 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		NodeImpl ref = (NodeImpl) refChild;
 		long next, last = -1;
 		int idx = -1;
-		for (ListIterator i = childList.listIterator(childList.size()); i.hasPrevious();) {
-			next = ((Long) i.previous()).longValue();
+		for(int i = children - 1; i > -1; i--) {
+		    next = childList[i];
 			if (StorageAddress.equals(ref.internalAddress, next)) {
-				idx = i.previousIndex();
+				idx = i - 1;
 				break;
 			}
 		}
 		if (idx < 0)
 			throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "reference node not found");
-		last = ((Long) childList.get(idx)).longValue();
+		last = childList[idx];
 		NodeImpl prev = (NodeImpl) broker.objectWith(new NodeProxy(this, 0, last));
 		for (int i = 0; i < nodes.getLength(); i++) {
 			prev = (NodeImpl) appendChild(prev, nodes.item(i));
-			childList.add(++idx, new Long(prev.internalAddress));
 			++children;
+			resizeChildList();
+			childList[++idx] = prev.internalAddress;
 		}
 		broker.storeDocument(this);
 		return prev;
@@ -791,11 +801,11 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		NodeImpl ref = (NodeImpl) refChild;
 		long next, last = -1;
 		int idx = -1;
-		for (ListIterator i = childList.listIterator(); i.hasNext();) {
-			next = ((Long) i.next()).longValue();
+		for(int i = 0; i < children; i++) {
+			next = childList[i];
 			if (StorageAddress.equals(ref.internalAddress, next)) {
 				last = next;
-				idx = i.nextIndex();
+				idx = i + 1;
 				break;
 			}
 		}
@@ -804,8 +814,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		NodeImpl prev = getLastNode((NodeImpl) broker.objectWith(new NodeProxy(this, 0, last)));
 		for (int i = 0; i < nodes.getLength(); i++) {
 			prev = (NodeImpl) appendChild(prev, nodes.item(i));
-			childList.add(idx, new Long(prev.internalAddress));
 			++children;
+			resizeChildList();
+			childList[idx] = prev.internalAddress;
 		}
 		broker.storeDocument(this);
 		return prev;
@@ -873,7 +884,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 * 
 	 * @return
 	 */
-	public synchronized Lock getUpdateLock() {
+	public final synchronized Lock getUpdateLock() {
+	    if(updateLock == null)
+	        updateLock = new MultiReadReentrantLock();
 	    return updateLock;
 	}
 	
@@ -886,6 +899,14 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 	
 	public int getContentLength() {
+	    checkAvail();
 	    return pageCount * broker.getPageSize();
+	}
+	
+	private void resizeChildList() {
+	    long[] newChildList = new long[children];
+	    if(childList != null)
+	        System.arraycopy(childList, 0, newChildList, 0, childList.length);
+	    childList = newChildList;
 	}
 }

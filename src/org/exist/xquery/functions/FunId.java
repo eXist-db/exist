@@ -88,7 +88,7 @@ public class FunId extends Function {
 		DocumentSet docs,
 		QName id) {
 		NodeSet attribs =
-			(NodeSet) context.getBroker().findElementsByTagName(ElementValue.ATTRIBUTE_ID, docs, id, null);
+			(NodeSet) context.getBroker().getElementIndex().findElementsByTagName(ElementValue.ATTRIBUTE_ID, docs, id, null);
 		NodeProxy n, p;
 		for (Iterator i = attribs.iterator(); i.hasNext();) {
 			n = (NodeProxy) i.next();

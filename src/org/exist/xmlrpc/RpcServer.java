@@ -1,7 +1,4 @@
 /*
-<<<<<<< RpcServer.java
-=======
-<<<<<<< RpcServer.java
  * eXist Open Source Native XML Database Copyright (C) 2001-03, Wolfgang M.
  * Meier (meier@ifs.tu-darmstadt.de)
  * 
@@ -20,31 +17,6 @@
  * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  * 
  * $Id$
-=======
->>>>>>> 1.36
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
- *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
- *
- *  You should have received a copy of the GNU Library General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- *
-<<<<<<< RpcServer.java
- *  $Id$
-=======
- *  $Id$
->>>>>>> 1.33
->>>>>>> 1.36
  */
 package org.exist.xmlrpc;
 
@@ -60,6 +32,8 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Stack;
 import java.util.Vector;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -718,6 +692,27 @@ public class RpcServer implements RpcAPI {
         }
     }
 
+    public String uploadCompressed(User user, byte[] data, int length)
+    	throws EXistException, PermissionDeniedException {
+        return uploadCompressed(user, null, data, length);
+    }
+    
+    public String uploadCompressed(User user, String file, byte[] data, int length)
+    throws EXistException, PermissionDeniedException {
+        LOG.debug("Compressed upload: " + data.length);
+        RpcConnection con = pool.get();
+        try {
+            data = uncompress(data);
+            return con.upload(user, data, data.length, file);
+        } catch (Exception e) {
+            handleException(e);
+            return null;
+        } finally {
+            con.synchronize();
+            pool.release(con);
+        }
+    }
+    
     public String upload(User user, byte[] data, int length)
             throws EXistException, PermissionDeniedException {
         return upload(user, null, data, length);
@@ -1552,30 +1547,34 @@ public class RpcServer implements RpcAPI {
         }
     }
 
-    private static byte[] compress(byte[] whatToCompress) throws IOException {
+    public static byte[] compress(byte[] whatToCompress) throws IOException {
+        return compress(whatToCompress, whatToCompress.length);
+    }
+    
+    public static byte[] compress(byte[] whatToCompress, int length) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ZipOutputStream gzos = new ZipOutputStream(baos);
-        gzos.setMethod(gzos.DEFLATED);
-        gzos.putNextEntry(new ZipEntry(whatToCompress.length + ""));
-        gzos.write(whatToCompress);
-        gzos.closeEntry();
+        GZIPOutputStream gzos = new GZIPOutputStream(baos);
+//        gzos.setMethod(gzos.DEFLATED);
+//        gzos.putNextEntry(new ZipEntry(length + ""));
+        gzos.write(whatToCompress, 0, length);
+//        gzos.closeEntry();
         gzos.finish();
         gzos.close();
         return baos.toByteArray();
     }
 
-    private static byte[] uncompress(byte[] whatToUncompress)
+    public static byte[] uncompress(byte[] whatToUncompress)
             throws IOException {
         ByteArrayInputStream bais = new ByteArrayInputStream(whatToUncompress);
-        ZipInputStream gzis = new ZipInputStream(bais);
-        ZipEntry zipentry = gzis.getNextEntry();
-        int len = Integer.parseInt(zipentry.getName());
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(len);
+        GZIPInputStream gzis = new GZIPInputStream(bais);
+//        ZipEntry zipentry = gzis.getNextEntry();
+//        int len = Integer.parseInt(zipentry.getName());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] buf = new byte[512];
         int bread;
         while ((bread = gzis.read(buf)) != -1)
             baos.write(buf, 0, bread);
-        gzis.closeEntry();
+//        gzis.closeEntry();
         gzis.close();
         return baos.toByteArray();
     }

@@ -100,6 +100,20 @@ public class LRUCache implements Cache {
 		}
 	}
 
+	
+    /* (non-Javadoc)
+     * @see org.exist.storage.cache.Cache#hasDirtyItems()
+     */
+    public boolean hasDirtyItems() {
+        Cacheable next;
+		for(Iterator i = stack.iterator(); i.hasNext(); ) {
+			next = (Cacheable)i.next();
+			if(next.isDirty())
+			    return true;
+		}
+		return false;
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.storage.cache.Cache#getBuffers()
 	 */

@@ -66,7 +66,8 @@ public class FunDocumentURI extends Function {
 		Expression arg = getArgument(0);
 		Sequence s = arg.eval(contextSequence, contextItem);
 		NodeProxy node = (NodeProxy) s.itemAt(0);
-		return new StringValue(node.doc.getFileName());
+		String path = node.doc.getCollection().getName() + '/' +node.doc.getFileName(); 
+		return new StringValue(path);
 	}
 
 }

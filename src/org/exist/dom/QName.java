@@ -37,8 +37,9 @@ public class QName implements Comparable {
     public final static QName DOCUMENT_QNAME = new QName("#document", "", null);
 	public final static QName TEXT_QNAME = new QName("#text", "", null);
 	public final static QName COMMENT_QNAME = new QName("#comment", "", null);
-	public final static QName DOCTYPE_QNAME = new QName("#doctype", "", null);
-
+	public final static QName DOCTYPE_QNAME = new QName("#doctype", "", null); 
+	public final static QName EMPTY_QNAME = new QName("", "", null);
+	
 	private String localName_ = null;
 	private String namespaceURI_ = null;
 	private String prefix_ = null;

@@ -32,6 +32,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.CommentImpl;
 import org.exist.dom.DocumentImpl;
@@ -69,8 +70,8 @@ public class Indexer
 	extends Observable
 	implements ContentHandler, LexicalHandler, ErrorHandler {
 
-	private final static Category LOG =
-		Category.getInstance(Indexer.class.getName());
+	private final static Logger LOG =
+		Logger.getLogger(Indexer.class);
 
 	protected DBBroker broker = null;
 	protected XMLString charBuf = new XMLString();
@@ -145,6 +146,12 @@ public class Indexer
 		this.validate = validate;
 	}
 
+	/**
+	 * Prepare the indexer for parsing a new document. This will
+	 * reset the internal state of the Indexer object.
+	 * 
+	 * @param doc
+	 */
 	public void setDocument(DocumentImpl doc) {
 		document = doc;
 		// reset internal fields
@@ -153,6 +160,16 @@ public class Indexer
 		stack = new Stack();
 		nsMappings.clear();
 		rootNode = null;
+	}
+	
+	/**
+	 * Set the document object to be used by this Indexer. This
+	 * method doesn't reset the internal state.
+	 * 
+	 * @param doc
+	 */
+	public void setDocumentObject(DocumentImpl doc) {
+	    document = doc;
 	}
 
 	public void characters(char[] ch, int start, int length) {

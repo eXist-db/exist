@@ -78,7 +78,6 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
         else
             comment = new CommentImpl();
         comment.appendData( cdata );
-        comment.nodeName = QName.COMMENT_QNAME;
         return comment;
     }
 }

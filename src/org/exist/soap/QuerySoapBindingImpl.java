@@ -388,9 +388,11 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 					NodeList resultSet = (NodeSet)qr;
 					ArraySet hitsByDoc = new ArraySet(50);
 					NodeProxy p;
+					String path;
 					for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext();) {
 						p = (NodeProxy) i.next();
-						if (p.doc.getFileName().equals(docPath))
+						path = p.doc.getCollection().getName() + '/' + p.doc.getFileName();
+						if (path.equals(docPath))
 							hitsByDoc.add(p);
 					}
 					--start;
