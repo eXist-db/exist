@@ -181,6 +181,44 @@ public class XQueryServlet extends HttpServlet {
 			sendError(output, "Cannot read source file", path);
 			return;
 		}
+		
+        //-------------------------------
+        // Added by Igor Abade (igoravl@cosespseguros.com.br)
+        // Date: Aug/06/2004
+        //-------------------------------
+
+        String contentType = this.contentType;
+        try {
+            contentType = getServletContext().getMimeType(path);
+            if (contentType == null)
+                contentType = this.contentType;
+        }
+        catch (Throwable e) {
+            contentType = this.contentType;
+        }
+        finally {
+            if (contentType.startsWith("text/") || (contentType.endsWith("+xml")))
+                contentType += ";charset=" + formEncoding;
+            response.setContentType(contentType );
+        }
+
+        //-------------------------------
+        
+		String contentType = this.contentType;
+        try {
+            contentType = getServletContext().getMimeType(path);
+            if (contentType == null)
+                contentType = this.contentType;
+        }
+        catch (Throwable e) {
+            contentType = this.contentType;
+        }
+        finally {
+            if (contentType.startsWith("text/") || (contentType.endsWith("+xml")))
+                contentType += ";charset=" + formEncoding;
+            response.setContentType(contentType );
+        }
+        
 		String baseURI = request.getRequestURI();
 		int p = baseURI.lastIndexOf('/');
 		if(p > -1)
