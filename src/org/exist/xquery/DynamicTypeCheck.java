@@ -113,4 +113,3 @@ public class DynamicTypeCheck extends AbstractExpression {
 		return expression.getASTNode();
 	}
 }
-;

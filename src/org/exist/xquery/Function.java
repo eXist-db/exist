@@ -234,9 +234,13 @@ public abstract class Function extends PathExpr {
 		boolean typeMatches = type.getPrimaryType() == Type.ITEM;
 		typeMatches = Type.subTypeOf(returnType, type.getPrimaryType());
 
-		if (typeMatches && cardinalityMatches)
+		if (typeMatches && cardinalityMatches) {
+			if(type.getNodeName() != null)
+				expr = new DynamicNameCheck(context, 
+						new NameTest(type.getPrimaryType(), type.getNodeName()), expr);
 			return expr;
-
+		}
+		
 		if (context.isBackwardsCompatible()) {
 			if (Type.subTypeOf(type.getPrimaryType(), Type.STRING)) {
 				if (!Type.subTypeOf(returnType, Type.ATOMIC)) {
@@ -279,8 +283,13 @@ public abstract class Function extends PathExpr {
 						+ Type.getTypeName(returnType)
 						+ Cardinality.display(expr.getCardinality()));
 		}
-		if (!typeMatches)
-			expr = new DynamicTypeCheck(context, type.getPrimaryType(), expr);
+		if (!typeMatches) {
+			if(type.getNodeName() != null)
+				expr = new DynamicNameCheck(context, 
+						new NameTest(type.getPrimaryType(), type.getNodeName()), expr);
+			else
+				expr = new DynamicTypeCheck(context, type.getPrimaryType(), expr);
+		}
 		return expr;
 	}
 

@@ -73,7 +73,7 @@ public class InstanceOfExpression extends AbstractExpression {
 		
 		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
 			Item next = i.nextItem();
-			if(!Type.subTypeOf(next.getType(), type.getPrimaryType()))
+			if(!type.checkType(next))
 				return BooleanValue.FALSE;
 		}
 		return BooleanValue.TRUE;

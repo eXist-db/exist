@@ -22,6 +22,10 @@ public class TypeTest implements NodeTest {
 	    this.nodeType = nodeType;
 	}
 	
+	public int getType() {
+		return nodeType;
+	}
+	
 	public QName getName() {
 		return null;
 	}

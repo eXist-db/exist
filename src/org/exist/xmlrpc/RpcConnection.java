@@ -71,10 +71,10 @@ import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.DataBackup;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
-import org.exist.storage.DataBackup;
 import org.exist.util.Configuration;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
@@ -103,8 +103,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
-import org.xmldb.api.base.ErrorCodes;
-import org.xmldb.api.base.XMLDBException;
 
 import antlr.collections.AST;
 

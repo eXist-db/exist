@@ -400,9 +400,14 @@ throws XPathException
 				|
 				qn1:QNAME
 				{ 
-					throwException(qn1, 
-						"Tests of the form element(QName) are not yet supported within a sequence type");
+					QName qname= QName.parse(context, qn1.getText());
+					type.setNodeName(qname);
 				}
+				( QNAME
+					{
+						throwException(qn1, "Tests of the form element(QName, TypeName) are not supported!");
+					}
+				)?
 			)?
 		)
 		|
@@ -413,10 +418,15 @@ throws XPathException
 				WILDCARD
 				|
 				qn2:QNAME
-				{ 
-					throwException(qn2, 
-						"Tests of the form attribute(QName) are not yet supported within a sequence type");
+				{
+					QName qname= QName.parse(context, qn2.getText());
+					type.setNodeName(qname);
 				}
+				( QNAME
+					{
+						throwException(qn1, "Tests of the form attribute(QName, TypeName) are not supported!");
+					}
+				)?
 			)?
 		)
 		|
@@ -759,6 +769,29 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
 	)
 	|
+	// typeswitch
+/*	#(
+		"typeswitch"
+		{
+			PathExpr operand = new PathExpr(context);
+		}
+		step=expr [operand]
+		(
+			{ 
+				SequenceType type = new SequenceType();
+				PathExpr returnExpr = new PathExpr(context);
+			}
+			#(
+				"case"
+				sequenceType [type]
+				step=expr [returnExpr]
+				{
+					System.out.println("case:" + type);
+				}
+			)
+		)+
+	)
+	|*/
 	// logical operator: or
 	#(
 		"or"
