@@ -668,11 +668,13 @@
             <replacefilter token='"xinclude.xml' value='"xinclude.html'/>
             
             <replacefilter token="examples.xml" value="${demo.host}/examples.xml"/>
-            <replacefilter token="xquery/acronyms.xml" value="${demo.host}/xquery/acronyms.xml"/>
+            <replacefilter token="xquery/acronyms.xq" value="${demo.host}/xquery/acronyms.xq"/>
             <replacefilter token="xquery/biblio.xml" value="${demo.host}/xquery/biblio.xml"/>
             <replacefilter token="xquery/xquery.xq" value="${demo.host}/xquery/xquery.xq"/>
             <replacefilter token='url="xmldb/db/' value='url="${demo.host}/xmldb/db/'/>
+            <replacefilter token='href="xmldb/db/' value='href="${demo.host}/xmldb/db/'/>
             <replacefilter token="xadmin.xsp" value="${demo.host}/xadmin.xsp"/>
+            <replacefilter token='href="status"' value='href="${demo.host}/status"'/>
             <replacefilter token="xquery/functions.xq" value="${demo.host}/xquery/functions.xq"/>
             <replacefilter token='url="xquery/guess.xql' value='url="${demo.host}/xquery/guess.xql'/>
             <replacefilter token="xquery/login.xql" value="${demo.host}/xquery/login.xql"/>
