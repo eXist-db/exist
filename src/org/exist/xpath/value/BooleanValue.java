@@ -27,20 +27,20 @@ public class BooleanValue extends AtomicValue {
 
 	public final static BooleanValue TRUE = new BooleanValue(true);
 	public final static BooleanValue FALSE = new BooleanValue(false);
-	
+
 	private boolean value;
-	
+
 	public BooleanValue(boolean bool) {
 		value = bool;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.AtomicValue#getType()
 	 */
 	public int getType() {
 		return Type.BOOLEAN;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Item#getStringValue()
 	 */
@@ -52,58 +52,81 @@ public class BooleanValue extends AtomicValue {
 	 * @see org.exist.xpath.value.AtomicValue#convertTo(int)
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
-		switch(requiredType) {
-			case Type.BOOLEAN:
-			case Type.ATOMIC:
-			case Type.ITEM:
+		switch (requiredType) {
+			case Type.BOOLEAN :
+			case Type.ATOMIC :
+			case Type.ITEM :
 				return this;
-			case Type.NUMBER:
-			case Type.INTEGER:
+			case Type.NUMBER :
+			case Type.INTEGER :
 				return new IntegerValue(value ? 1 : 0);
-			case Type.STRING:
+			case Type.STRING :
 				return new StringValue(getStringValue());
-			default:
-				throw new XPathException("cannot convert boolean '" + value + "' to " + requiredType);
+			default :
+				throw new XPathException(
+					"cannot convert boolean '" + value + "' to " + requiredType);
 		}
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.AtomicValue#compareTo(int, org.exist.xpath.value.AtomicValue)
 	 */
-	public boolean compareTo(int operator, AtomicValue other)
-		throws XPathException {
-		if(Type.subTypeOf(other.getType(), Type.BOOLEAN)) {
-			boolean otherVal = ((BooleanValue)other).getValue();
-			switch(operator) {
-				case Constants.EQ:
+	public boolean compareTo(int operator, AtomicValue other) throws XPathException {
+		if (Type.subTypeOf(other.getType(), Type.BOOLEAN)) {
+			boolean otherVal = ((BooleanValue) other).getValue();
+			switch (operator) {
+				case Constants.EQ :
 					return value == otherVal;
-				case Constants.NEQ:
+				case Constants.NEQ :
 					return value != otherVal;
-				default:
+				default :
 					throw new XPathException("Type error: cannot apply this operator to a boolean value");
 			}
 		}
 		throw new XPathException("Type error: cannot convert operand to boolean");
 	}
-	
+
 	public int compareTo(AtomicValue other) throws XPathException {
 		boolean otherVal = other.effectiveBooleanValue();
-		if(otherVal == value)
+		if (otherVal == value)
 			return 0;
-		else if(value)
+		else if (value)
 			return 1;
 		else
 			return -1;
 	}
-		
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.AtomicValue#effectiveBooleanValue()
 	 */
 	public boolean effectiveBooleanValue() throws XPathException {
 		return value;
 	}
-	
+
 	public boolean getValue() {
 		return value;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.AtomicValue#max(org.exist.xpath.value.AtomicValue)
+	 */
+	public AtomicValue max(AtomicValue other) throws XPathException {
+		if (other.getType() == Type.BOOLEAN) {
+			boolean otherValue = ((BooleanValue) other).value;
+			return value && (!otherValue) ? this : other;
+		} else
+			throw new XPathException(
+				"Invalid argument to aggregate function: expected boolean, got: "
+					+ Type.getTypeName(other.getType()));
+	}
+
+	public AtomicValue min(AtomicValue other) throws XPathException {
+		if (other.getType() == Type.BOOLEAN) {
+			boolean otherValue = ((BooleanValue) other).value;
+			return (!value) && otherValue ? this : other;
+		} else
+			throw new XPathException(
+				"Invalid argument to aggregate function: expected boolean, got: "
+					+ Type.getTypeName(other.getType()));
 	}
 }

@@ -3,7 +3,7 @@ package org.exist.xpath.value;
 import org.exist.xpath.Constants;
 import org.exist.xpath.XPathException;
 
-public abstract class NumericValue extends AtomicValue {
+public abstract class NumericValue extends ComputableValue {
 
 	public abstract String getStringValue() throws XPathException;
 
@@ -19,6 +19,10 @@ public abstract class NumericValue extends AtomicValue {
 	
 	public int getInt() throws XPathException {
 		return (int)((IntegerValue)convertTo(Type.INTEGER)).getValue();
+	}
+	
+	public boolean isNaN() {
+		return false;
 	}
 	
 	/* (non-Javadoc)
@@ -69,13 +73,12 @@ public abstract class NumericValue extends AtomicValue {
 		}
 	}
 	
-	public abstract NumericValue negate();
-	public abstract NumericValue ceiling();
-	public abstract NumericValue floor();
-	public abstract NumericValue round();
-	public abstract NumericValue minus(NumericValue other) throws XPathException;
-	public abstract NumericValue plus(NumericValue other) throws XPathException;
-	public abstract NumericValue mult(NumericValue other) throws XPathException;
-	public abstract NumericValue div(NumericValue other) throws XPathException;
+	public abstract NumericValue negate() throws XPathException;
+	public abstract NumericValue ceiling() throws XPathException;
+	public abstract NumericValue floor() throws XPathException;
+	public abstract NumericValue round() throws XPathException;
 	public abstract NumericValue mod(NumericValue other) throws XPathException;
+	public abstract NumericValue abs() throws XPathException;
+	public abstract AtomicValue max(AtomicValue other) throws XPathException;
+	public abstract AtomicValue min(AtomicValue other) throws XPathException;
 }

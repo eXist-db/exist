@@ -61,10 +61,10 @@ public class Variable {
 	}
 	
 	public int getDependencies(StaticContext context) {
-		/*if(context.getCurrentStackSize() > positionInStack)
-			return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
-		else*/
-		return Dependency.CONTEXT_SET;
+		if(context.getCurrentStackSize() > positionInStack)
+			return Dependency.CONTEXT_SET + Dependency.GLOBAL_VARS;
+		else
+			return Dependency.CONTEXT_SET + Dependency.LOCAL_VARS;
 	}
 	
 	public int getCardinality() {

@@ -453,6 +453,7 @@
         <copy todir="${dist.dir}/src">
             <fileset dir="./src">
                 <exclude name="**/*~"/>
+				<exclude name=".*"/>
             </fileset>
         </copy>
         <copy todir="${dist.dir}/bin">

@@ -23,6 +23,7 @@ package org.exist.xpath;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.storage.DBBroker;
+import org.exist.xpath.value.ComputableValue;
 import org.exist.xpath.value.IntegerValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.NumericValue;
@@ -53,19 +54,59 @@ public class OpNumeric extends BinaryOp {
 		super(context);
 		this.operator = operator;
 		returnType = Type.ATOMIC;
-		if (!Type.subTypeOf(left.returnsType(), Type.ATOMIC))
+		int ltype = left.returnsType();
+		int rtype = right.returnsType();
+		if (!Type.subTypeOf(ltype, Type.ATOMIC)) {
 			left = new Atomize(context, left);
-		if (!Type.subTypeOf(right.returnsType(), Type.ATOMIC))
-			right = new Atomize(context, right);
-		
-		if (operator == Constants.IDIV) {
-			left = new UntypedValueCheck(context, Type.INTEGER, left);
-			right = new UntypedValueCheck(context, Type.INTEGER, right);
-		} else if(!Type.subTypeOf(left.returnsType(), Type.NUMBER)) {
-			returnType = Type.DOUBLE;
-		} else {
-			returnType = left.returnsType();
+			ltype = Type.ATOMIC;
 		}
+		if (!Type.subTypeOf(rtype, Type.ATOMIC)) {
+			right = new Atomize(context, right);
+			rtype = Type.ATOMIC;
+		}
+		
+		// check for date and time operands
+		if(Type.subTypeOf(ltype, Type.DATE) || Type.subTypeOf(ltype, Type.TIME)) {	
+			returnType = ltype;
+		// select best return type for numeric operands
+		} else {
+			if (ltype == Type.ATOMIC) {
+				left = (operator == Constants.IDIV ? new UntypedValueCheck(context, Type.INTEGER, left) :
+					new UntypedValueCheck(context, Type.DOUBLE, left));
+				ltype = left.returnsType();
+			}
+			if (rtype == Type.ATOMIC) {
+				right = (operator == Constants.IDIV ? new UntypedValueCheck(context, Type.INTEGER, right) :
+					new UntypedValueCheck(context, Type.DOUBLE, right));
+				rtype = right.returnsType();
+			}
+			
+			if(Type.subTypeOf(ltype, Type.NUMBER)) {
+				if(!Type.subTypeOf(rtype, Type.NUMBER)) {
+					right = new UntypedValueCheck(context, ltype, right);
+					returnType = ltype;
+				} else {
+					if(ltype > rtype)
+						right = new UntypedValueCheck(context, ltype, right);
+					else if(rtype > ltype)
+						left = new UntypedValueCheck(context, rtype, left);
+				}
+			} else if(Type.subTypeOf(rtype, Type.NUMBER)) {
+				if(!Type.subTypeOf(ltype, Type.NUMBER)) {
+					left = new UntypedValueCheck(context, rtype, left);
+					returnType = rtype;
+				} else {
+					if(rtype > ltype)
+						left = new UntypedValueCheck(context, rtype, left);
+					else if(rtype > ltype)
+						right = new UntypedValueCheck(context, ltype, right);
+				}
+			}
+		}
+		
+		// if we still have no return type, use the return type of the left expression
+		if(returnType == Type.ATOMIC)
+			returnType = left.returnsType();
 		add(left);
 		add(right);
 	}
@@ -81,19 +122,25 @@ public class OpNumeric extends BinaryOp {
 		throws XPathException {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-		NumericValue lvalue =
-			(NumericValue) getLeft().eval(docs, contextSequence).convertTo(
-				returnType);
-		NumericValue rvalue =
-			(NumericValue) getRight().eval(docs, contextSequence).convertTo(
-				returnType);
+		Sequence lseq =
+			getLeft().eval(docs, contextSequence);
+		if(lseq.getLength() == 0)
+			return Sequence.EMPTY_SEQUENCE;
+		Sequence rseq =
+			getRight().eval(docs, contextSequence);
+		if(rseq.getLength() == 0)
+			return Sequence.EMPTY_SEQUENCE;
+		
+		ComputableValue lvalue = (ComputableValue)lseq.itemAt(0);
+		ComputableValue rvalue = (ComputableValue)rseq.itemAt(0);
+		
 		if(operator == Constants.IDIV)
-			return ((IntegerValue)lvalue).idiv(rvalue);
+			return ((IntegerValue)lvalue).idiv((NumericValue)rvalue);
 		else
-			return applyOperator(lvalue, rvalue);
+			return applyOperator((ComputableValue)lvalue, (ComputableValue)rvalue);
 	}
 
-	public NumericValue applyOperator(NumericValue left, NumericValue right)
+	public ComputableValue applyOperator(ComputableValue left, ComputableValue right)
 		throws XPathException {
 		switch (operator) {
 			case Constants.MINUS :
@@ -105,7 +152,7 @@ public class OpNumeric extends BinaryOp {
 			case Constants.DIV :
 				return left.div(right);
 			case Constants.MOD :
-				return left.mod(right);
+				return ((NumericValue)left).mod((NumericValue)right);
 			default :
 				return null;
 		}

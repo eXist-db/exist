@@ -7,9 +7,9 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -22,10 +22,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
 import org.exist.EXistException;
 import org.exist.Parser;
 import org.exist.collections.Collection;
@@ -45,6 +44,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
 import org.exist.util.Occurrences;
@@ -59,7 +59,6 @@ import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.Type;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
-import org.exist.storage.serializers.EXistOutputKeys;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
@@ -176,11 +175,13 @@ public class RpcConnection extends Thread {
 		String xpath,
 		DocumentSet docs,
 		NodeSet contextSet,
-		Hashtable namespaces)
+		Hashtable namespaces,
+		String baseURI)
 		throws Exception {
 		if(docs == null)
 			docs = broker.getAllDocuments(new DocumentSet());
 		StaticContext context = new StaticContext(broker);
+		context.setBaseURI(baseURI);
 		if (namespaces != null) {
 			Map.Entry entry;
 			for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {
@@ -208,10 +209,8 @@ public class RpcConnection extends Thread {
 		if (treeParser.foundErrors()) {
 			throw new EXistException(treeParser.getErrorMessage());
 		}
-		LOG.info("query: " + xpath);
+		LOG.info("compiled: " + expr.pprint());
 		long start = System.currentTimeMillis();
-		LOG.info(
-			"pre-select took " + (System.currentTimeMillis() - start) + "ms.");
 		Sequence result = expr.eval(docs, contextSet, null);
 		LOG.info("query took " + (System.currentTimeMillis() - start) + "ms.");
 		return result;
@@ -225,7 +224,7 @@ public class RpcConnection extends Thread {
 		try {
 			broker = brokerPool.get(user);
 			Sequence resultValue =
-				doQuery(user, broker, xpath, null, null, namespaces);
+				doQuery(user, broker, xpath, null, null, namespaces, null);
 			QueryResult qr =
 				new QueryResult(
 					resultValue,
@@ -985,14 +984,13 @@ public class RpcConnection extends Thread {
 			root.appendChild(temp);
 		}
 		StringWriter sout = new StringWriter();
-		OutputFormat format = new OutputFormat("xml", "UTF-8", prettyPrint);
-		format.setOmitXMLDeclaration(false);
-		format.setOmitComments(false);
-		format.setLineWidth(60);
-		XMLSerializer xmlout = new XMLSerializer(sout, format);
+		Properties props = new Properties();
+		props.setProperty(OutputKeys.INDENT, prettyPrint ? "yes" : "no");
+		props.setProperty(OutputKeys.ENCODING, "UTF-8");
+		DOMSerializer serializer = new DOMSerializer(sout, props);
 		try {
-			xmlout.serialize(dest);
-		} catch (IOException ioe) {
+			serializer.serialize(dest);
+		} catch (TransformerException ioe) {
 			LOG.warn(ioe);
 			throw ioe;
 		}
@@ -1035,7 +1033,7 @@ public class RpcConnection extends Thread {
 		try {
 			broker = brokerPool.get(user);
 			Sequence resultSeq =
-				doQuery(user, broker, xpath, null, null, namespaces);
+				doQuery(user, broker, xpath, null, null, namespaces, null);
 			if (resultSeq == null)
 				return "<?xml version=\"1.0\"?>\n"
 					+ "<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" "
@@ -1098,7 +1096,7 @@ public class RpcConnection extends Thread {
 				docs.add(node.doc);
 			}
 			Sequence resultSeq =
-				doQuery(user, broker, xpath, docs, nodes, null);
+				doQuery(user, broker, xpath, docs, nodes, null, null);
 			if (resultSeq == null)
 				return result;
 			switch (resultSeq.getItemType()) {
@@ -1134,10 +1132,13 @@ public class RpcConnection extends Thread {
 		String xpath,
 		String docName,
 		String s_id,
-		String sortBy,
-		Hashtable namespaces)
+		Hashtable parameters)
 		throws Exception {
 		long startTime = System.currentTimeMillis();
+		String sortBy = (String)parameters.get(RpcAPI.SORT_EXPR);
+		String baseURI = (String)parameters.get(RpcAPI.BASE_URI);
+		Hashtable namespaces = (Hashtable)parameters.get(RpcAPI.NAMESPACES);
+		
 		Hashtable ret = new Hashtable();
 		Vector result = new Vector();
 		NodeSet nodes = null;
@@ -1160,7 +1161,7 @@ public class RpcConnection extends Thread {
 				docs = new DocumentSet();
 				docs.add(node.doc);
 			}
-			resultSeq = doQuery(user, broker, xpath, docs, nodes, namespaces);
+			resultSeq = doQuery(user, broker, xpath, docs, nodes, namespaces, baseURI);
 			if (resultSeq == null)
 				return ret;
 			LOG.debug("found " + resultSeq.getLength());
@@ -1525,7 +1526,7 @@ public class RpcConnection extends Thread {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			Sequence resultSeq = doQuery(user, broker, xpath, null, null, null);
+			Sequence resultSeq = doQuery(user, broker, xpath, null, null, null, null);
 			if (resultSeq == null)
 				return new Hashtable();
 			NodeList resultSet = (NodeList) resultSeq;

@@ -66,10 +66,11 @@ public class Type {
 	public final static int QNAME = 24;
 
 	public final static int NUMBER = 30;
-	public final static int DECIMAL = 31;
-	public final static int FLOAT = 32;
-	public final static int DOUBLE = 33;
-	public final static int INTEGER = 34;
+	public final static int INTEGER = 31;
+	public final static int DECIMAL = 32;
+	public final static int FLOAT = 33;
+	public final static int DOUBLE = 34;
+	
 	public final static int NON_POSITIVE_INTEGER = 35;
 	public final static int NEGATIVE_INTEGER = 36;
 	public final static int LONG = 37;
@@ -82,6 +83,13 @@ public class Type {
 	public final static int UNSIGNED_SHORT = 44;
 	public final static int UNSIGNED_BYTE = 45;
 	public final static int POSITIVE_INTEGER = 46;
+	
+	public final static int DATE_TIME = 50;
+	public final static int DATE = 51;
+	public final static int TIME = 52;
+	public final static int DURATION = 53;
+	public final static int YEAR_MONTH_DURATION = 54;
+	public final static int DAY_TIME_DURATION = 55;
 	
 	public final static int JAVA_OBJECT = 100;
 
@@ -104,7 +112,14 @@ public class Type {
 		defineSubType(ATOMIC, NUMBER);
 		defineSubType(ATOMIC, UNTYPED_ATOMIC);
 		defineSubType(ATOMIC, JAVA_OBJECT);
-
+		defineSubType(ATOMIC, DATE_TIME);
+		defineSubType(ATOMIC, DATE);
+		defineSubType(ATOMIC, TIME);
+		defineSubType(ATOMIC, DURATION);
+		
+		defineSubType(DURATION, YEAR_MONTH_DURATION);
+		defineSubType(DURATION, DAY_TIME_DURATION);
+		
 		defineSubType(NUMBER, DECIMAL);
 		defineSubType(NUMBER, FLOAT);
 		defineSubType(NUMBER, DOUBLE);
@@ -172,6 +187,13 @@ public class Type {
 		
 		defineBuiltInType(STRING, "xs:string");
 		defineBuiltInType(QNAME, "xs:QName");
+		
+		defineBuiltInType(DATE_TIME, "xs:dateTime");
+		defineBuiltInType(DATE, "xs:date");
+		defineBuiltInType(TIME, "xs:time");
+		defineBuiltInType(DURATION, "xs:duration");
+		defineBuiltInType(YEAR_MONTH_DURATION, "xdt:yearMonthDuration");
+		defineBuiltInType(DAY_TIME_DURATION, "xdt:dayTimeDuration");
 	}
 
 	public final static void defineBuiltInType(int type, String name) {
@@ -217,7 +239,7 @@ public class Type {
 		if (uri.equals(StaticContext.SCHEMA_NS))
 			return getType("xs:" + qname.getLocalName());
 		else if (uri.equals(StaticContext.XPATH_DATATYPES_NS))
-			return getType("xs:" + qname.getLocalName());
+			return getType("xdt:" + qname.getLocalName());
 		else
 			return getType(qname.getLocalName());
 	}

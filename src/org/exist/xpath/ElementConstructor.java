@@ -136,11 +136,20 @@ public class ElementConstructor extends NodeConstructor {
 		}
 		return buf.toString();
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#setPrimaryAxis(int)
+	 */
+	public void setPrimaryAxis(int axis) {
+		if(content != null)
+			content.setPrimaryAxis(axis);
+	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.AbstractExpression#resetState()
 	 */
 	public void resetState() {
-		content.resetState();
+		if(content != null)
+			content.resetState();
 	}
 }

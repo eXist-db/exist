@@ -30,11 +30,13 @@ public class Dependency {
 	 */
 	public final static int LOCAL_VARS = 4;
 	
+	public final static int GLOBAL_VARS = 8;
+	
 	/**
 	 * Expression evaluates the context position and thus requires
 	 * that the corresponding field in the context is set.
 	 */
-	public final static int CONTEXT_POSITION = 8;
+	public final static int CONTEXT_POSITION = 16;
 	
 	/**
 	 * The default dependencies: just CONTEXT_SET is set.

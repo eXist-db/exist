@@ -51,12 +51,25 @@
 				<map:serialize encoding="UTF-8" type="html"/>
 			</map:match>
 
-            <map:match pattern="dblp.xq">
-				<map:generate src="dblp.xq" type="xquery">
-					<map:parameter name="create-session" value="true"/>
-				</map:generate>
+            <map:match pattern="biblio.xq">
+                <map:generate src="biblio.xq" type="xquery"/>
                 <map:transform type="xinclude"/>
-                <map:transform src="stylesheets/dblp.xsl"/>
+                <map:select type="request-parameter">
+                    <map:parameter name="parameter-name" value="display"/>
+                    <map:when test="details">
+                        <map:transform src="stylesheets/detailed.xsl"/>
+                    </map:when>
+                    <map:otherwise>
+                        <map:transform src="stylesheets/overview.xsl"/>
+                    </map:otherwise>
+                </map:select>
+                <map:transform type="encodeURL"/>
+				<map:serialize encoding="UTF-8" type="html"/>
+            </map:match>
+            
+            <map:match pattern="biblio.xml">
+                <map:generate src="biblio.xml"/>
+                <map:transform type="xinclude"/>
                 <map:transform src="context://stylesheets/doc2html-2.xsl"/>
                 <map:transform type="encodeURL"/>
 				<map:serialize encoding="UTF-8" type="html"/>

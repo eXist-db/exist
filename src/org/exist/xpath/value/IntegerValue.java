@@ -20,6 +20,8 @@
  */
 package org.exist.xpath.value;
 
+import java.math.BigDecimal;
+
 import org.exist.xpath.XPathException;
 
 public class IntegerValue extends NumericValue {
@@ -45,8 +47,12 @@ public class IntegerValue extends NumericValue {
 		try {
 			value = Long.parseLong(stringValue);
 		} catch (NumberFormatException e) {
-			throw new XPathException(
-				"failed to convert '" + stringValue + "' to an integer");
+			try {
+				value = (long) Double.parseDouble(stringValue);
+			} catch (NumberFormatException e1) {
+				throw new XPathException(
+					"failed to convert '" + stringValue + "' to an integer");
+			}
 		}
 	}
 
@@ -55,8 +61,12 @@ public class IntegerValue extends NumericValue {
 		try {
 			value = Long.parseLong(stringValue);
 		} catch (NumberFormatException e) {
-			throw new XPathException(
-				"failed to convert '" + stringValue + "' to an integer");
+			try {
+				value = (long) Double.parseDouble(stringValue);
+			} catch (NumberFormatException e1) {
+				throw new XPathException(
+					"failed to convert '" + stringValue + "' to an integer");
+			}
 		}
 		checkType(value, type);
 	}
@@ -124,13 +134,14 @@ public class IntegerValue extends NumericValue {
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		switch (requiredType) {
-			case Type.DECIMAL :
 			case Type.NUMBER :
 			case Type.INTEGER :
 			case Type.LONG :
 			case Type.ATOMIC :
 			case Type.ITEM :
 				return this;
+			case Type.DECIMAL :
+				return new DecimalValue(new BigDecimal(value));
 			case Type.NON_POSITIVE_INTEGER :
 			case Type.NEGATIVE_INTEGER :
 			case Type.INT :
@@ -186,69 +197,69 @@ public class IntegerValue extends NumericValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.NumericValue#ceiling()
 	 */
-	public NumericValue ceiling() {
+	public NumericValue ceiling() throws XPathException {
 		return this;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.NumericValue#floor()
 	 */
-	public NumericValue floor() {
+	public NumericValue floor() throws XPathException {
 		return this;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.NumericValue#round()
 	 */
-	public NumericValue round() {
+	public NumericValue round() throws XPathException {
 		return this;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.NumericValue#minus(org.exist.xpath.value.NumericValue)
 	 */
-	public NumericValue minus(NumericValue other) throws XPathException {
-		if (other instanceof IntegerValue)
+	public ComputableValue minus(ComputableValue other) throws XPathException {
+		if (Type.subTypeOf(other.getType(), Type.INTEGER))
 			return new IntegerValue(value - ((IntegerValue) other).value);
 		else
-			return ((NumericValue) convertTo(other.getType())).minus(other);
+			return ((ComputableValue) convertTo(other.getType())).minus(other);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.NumericValue#plus(org.exist.xpath.value.NumericValue)
 	 */
-	public NumericValue plus(NumericValue other) throws XPathException {
-		if (other instanceof IntegerValue)
+	public ComputableValue plus(ComputableValue other) throws XPathException {
+		if (Type.subTypeOf(other.getType(), Type.INTEGER))
 			return new IntegerValue(value + ((IntegerValue) other).value);
 		else
-			return ((NumericValue) convertTo(other.getType())).plus(other);
+			return ((ComputableValue) convertTo(other.getType())).plus(other);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.NumericValue#mult(org.exist.xpath.value.NumericValue)
 	 */
-	public NumericValue mult(NumericValue other) throws XPathException {
-		if (other instanceof IntegerValue)
+	public ComputableValue mult(ComputableValue other) throws XPathException {
+		if (Type.subTypeOf(other.getType(), Type.INTEGER))
 			return new IntegerValue(value * ((IntegerValue) other).value);
 		else
-			return ((NumericValue) convertTo(other.getType())).mult(other);
+			return ((ComputableValue) convertTo(other.getType())).mult(other);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.NumericValue#div(org.exist.xpath.value.NumericValue)
 	 */
-	public NumericValue div(NumericValue other) throws XPathException {
+	public ComputableValue div(ComputableValue other) throws XPathException {
 		if (other instanceof IntegerValue) {
 			long ov = ((IntegerValue) other).value;
 			if (ov == 0)
 				throw new XPathException("division by zero");
 			return new DoubleValue(value / ov);
 		} else
-			return ((NumericValue) convertTo(other.getType())).div(other);
+			return ((ComputableValue) convertTo(other.getType())).div(other);
 	}
 
 	public NumericValue idiv(NumericValue other) throws XPathException {
-		if (other instanceof IntegerValue) {
+		if (Type.subTypeOf(other.getType(), Type.INTEGER)) {
 			long ov = ((IntegerValue) other).value;
 			if (ov == 0)
 				throw new XPathException("division by zero");
@@ -261,7 +272,7 @@ public class IntegerValue extends NumericValue {
 	 * @see org.exist.xpath.value.NumericValue#mod(org.exist.xpath.value.NumericValue)
 	 */
 	public NumericValue mod(NumericValue other) throws XPathException {
-		if (other instanceof IntegerValue) {
+		if (Type.subTypeOf(other.getType(), Type.INTEGER)) {
 			long ov = ((IntegerValue) other).value;
 			if (ov == 0)
 				throw new XPathException("division by zero");
@@ -273,7 +284,33 @@ public class IntegerValue extends NumericValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.NumericValue#unaryMinus()
 	 */
-	public NumericValue negate() {
+	public NumericValue negate() throws XPathException {
 		return new IntegerValue(-value);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#abs()
+	 */
+	public NumericValue abs() throws XPathException {
+		return new IntegerValue(Math.abs(value));
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.value.NumericValue#max(org.exist.xpath.value.AtomicValue)
+	 */
+	public AtomicValue max(AtomicValue other) throws XPathException {
+		if (Type.subTypeOf(other.getType(), Type.INTEGER))
+			return new IntegerValue(Math.max(value, ((IntegerValue) other).value));
+		else
+			return new IntegerValue(
+				Math.max(value, ((IntegerValue) other.convertTo(type)).value));
+	}
+
+	public AtomicValue min(AtomicValue other) throws XPathException {
+		if (Type.subTypeOf(other.getType(), Type.INTEGER))
+			return new IntegerValue(Math.min(value, ((IntegerValue) other).value));
+		else
+			return new IntegerValue(
+				Math.min(value, ((IntegerValue) other.convertTo(type)).value));
 	}
 }

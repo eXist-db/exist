@@ -48,6 +48,10 @@ public abstract class AtomicValue implements Item, Sequence  {
 	
 	public abstract int compareTo(AtomicValue other) throws XPathException;
 	
+	public abstract AtomicValue max(AtomicValue other) throws XPathException;
+	
+	public abstract AtomicValue min(AtomicValue other) throws XPathException;
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.value.Sequence#getLength()
 	 */
@@ -177,6 +181,13 @@ public abstract class AtomicValue implements Item, Sequence  {
 		}
 
 		/* (non-Javadoc)
+		 * @see org.exist.xpath.value.AtomicValue#max(org.exist.xpath.value.AtomicValue)
+		 */
+		public AtomicValue max(AtomicValue other) throws XPathException {
+			return this;
+		}
+		
+		/* (non-Javadoc)
 		 * @see org.exist.xpath.value.Sequence#add(org.exist.xpath.value.Item)
 		 */
 		public void add(Item item) throws XPathException {
@@ -188,6 +199,13 @@ public abstract class AtomicValue implements Item, Sequence  {
 		public boolean compareTo(int operator, AtomicValue other)
 			throws XPathException {
 			throw new XPathException("Cannot compare operand to empty value");
+		}
+
+		/* (non-Javadoc)
+		 * @see org.exist.xpath.value.AtomicValue#min(org.exist.xpath.value.AtomicValue)
+		 */
+		public AtomicValue min(AtomicValue other) throws XPathException {
+			return this;
 		}
 	}
 }

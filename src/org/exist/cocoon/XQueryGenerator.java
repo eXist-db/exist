@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.avalon.framework.parameters.Parameters;
@@ -36,8 +37,10 @@ import org.apache.cocoon.environment.Session;
 import org.apache.cocoon.environment.SourceResolver;
 import org.apache.cocoon.generation.ServiceableGenerator;
 import org.apache.excalibur.source.Source;
+import org.apache.excalibur.source.SourceValidity;
 import org.exist.storage.serializers.Serializer;
-import org.exist.xmldb.XPathQueryServiceImpl;
+import org.exist.xmldb.CompiledExpression;
+import org.exist.xmldb.XQueryService;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -54,10 +57,12 @@ public class XQueryGenerator extends ServiceableGenerator {
 	private Map objectModel = null;
 	private boolean mapRequestParams = false;
 	private boolean createSession = false;
-		
+	
 	private String collectionURI = null;
 	private String user = null;
 	private String password = null;
+	
+	private Map cache = new HashMap();
 	
 	/* (non-Javadoc)
 	 * @see org.apache.cocoon.generation.AbstractGenerator#setup(org.apache.cocoon.environment.SourceResolver, java.util.Map, java.lang.String, org.apache.avalon.framework.parameters.Parameters)
@@ -70,13 +75,21 @@ public class XQueryGenerator extends ServiceableGenerator {
 		throws ProcessingException, SAXException, IOException {
 		super.setup(resolver, objectModel, source, parameters);
 		this.objectModel = objectModel;
-		
 		this.inputSource = resolver.resolveURI(source);
 		this.collectionURI = parameters.getParameter("collection", "xmldb:exist:///db");
 		this.user = parameters.getParameter("user", "guest");
 		this.password = parameters.getParameter("password", "guest");
 		this.mapRequestParams = parameters.getParameterAsBoolean("use-request-parameters", false);
 		this.createSession = parameters.getParameterAsBoolean("create-session", true);
+		
+		String uri = inputSource.getURI();
+		synchronized(cache) {
+			if(cache.containsKey(uri)) {
+				SourceValidity validity = inputSource.getValidity();
+				if(validity.isValid() == SourceValidity.INVALID || validity.isValid() == SourceValidity.UNKNOWN)
+					cache.remove(uri);
+			}
+		}
 	}
 
 	/* (non-Javadoc)
@@ -88,6 +101,7 @@ public class XQueryGenerator extends ServiceableGenerator {
 			throw new ProcessingException("No input source");
 		Request request = ObjectModelHelper.getRequest(objectModel);
 		Session session = request.getSession(createSession);
+		
 		try {
 			Collection collection = DatabaseManager.getCollection(collectionURI, user, password);
 			if(collection == null) {
@@ -95,17 +109,27 @@ public class XQueryGenerator extends ServiceableGenerator {
 					getLogger().error("Collection " + collectionURI + " not found");
 				throw new ProcessingException("Collection " + collectionURI + " not found");
 			}
-			XPathQueryServiceImpl service = (XPathQueryServiceImpl)
-				collection.getService("XPathQueryService", "1.0");
+			XQueryService service = (XQueryService)
+				collection.getService("XQueryService", "1.0");
 			service.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
 			
 			service.declareVariable("request", request);
 			service.declareVariable("session", session);
 			
-			String xquery = readQuery();
+			CompiledExpression expr;
+			String uri = inputSource.getURI();
+			synchronized(cache) {
+				expr = (CompiledExpression)cache.get(uri);
+				if(expr == null) {
+					String xquery = readQuery();
+					expr = service.compile(xquery);
+					cache.put(uri, expr);
+				}
+			}
 			if(mapRequestParams)
 				mapRequestParams(request, service);
-			ResourceSet result = service.query(xquery);
+			ResourceSet result = service.execute(expr);
+			
             XMLResource resource;
 			this.contentHandler.startDocument();
 			for(long i = 0; i < result.getSize(); i++) {
@@ -118,7 +142,7 @@ public class XQueryGenerator extends ServiceableGenerator {
 		}
 	}
 
-	private void mapRequestParams(Request request, XPathQueryServiceImpl service) throws XMLDBException {
+	private void mapRequestParams(Request request, XQueryService service) throws XMLDBException {
 		String param;
 		String values[];
 		for(Enumeration enum = request.getParameterNames(); enum.hasMoreElements(); ) {

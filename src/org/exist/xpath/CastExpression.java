@@ -26,9 +26,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.xpath.value.AtomicValue;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
-import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.Type;
-import org.exist.xpath.value.ValueSequence;
 
 /**
  * @author wolf

@@ -26,19 +26,11 @@ import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.Type;
 
-public class Union extends AbstractExpression {
-
-	protected PathExpr left, right;
+public class Union extends CombiningExpression {
 
     public Union(StaticContext context, PathExpr left, PathExpr right) {
-        super(context);
-		this.left = left;
-		this.right = right;
+        super(context, left, right);
     }
-
-    public int returnsType() {
-		return Type.NODE;
-	}
 	
 	public Sequence eval(DocumentSet docs, Sequence contextSequence, Item contextItem) throws XPathException {
 		Sequence lval = left.eval(docs, contextSequence, contextItem);
@@ -52,26 +44,8 @@ public class Union extends AbstractExpression {
 	public String pprint() {
 		StringBuffer buf = new StringBuffer();
 		buf.append(left.pprint());
-		buf.append("|");
+		buf.append(" union ");
 		buf.append(right.pprint());
 		return buf.toString();
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xpath.Expression#setInPredicate(boolean)
-	 */
-	public void setInPredicate(boolean inPredicate) {
-		super.setInPredicate(inPredicate);
-		left.setInPredicate(inPredicate);
-		right.setInPredicate(inPredicate);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xpath.AbstractExpression#resetState()
-	 */
-	public void resetState() {
-		left.resetState();
-		right.resetState();
-	}
-
 }

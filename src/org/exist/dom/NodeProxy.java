@@ -355,6 +355,7 @@ public final class NodeProxy extends AbstractNodeSet implements Item, Comparable
 	public void addContextNode(NodeProxy node) {
 		if (context == null) {
 			context = new ContextItem(node);
+//			Thread.dumpStack();
 			return;
 		}
 		ContextItem next = context;
@@ -367,8 +368,13 @@ public final class NodeProxy extends AbstractNodeSet implements Item, Comparable
 			}
 			next = next.getNextItem();
 		}
+//		Thread.dumpStack();
 	}
 
+	public void clearContext() {
+		context = null;
+	}
+	
 	public void printContext() {
 		ContextItem next = context;
 		System.out.println(gid + ": ");

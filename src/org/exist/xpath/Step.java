@@ -24,6 +24,7 @@ package org.exist.xpath;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
 import org.exist.xpath.value.Item;
 import org.exist.xpath.value.Sequence;
@@ -31,6 +32,8 @@ import org.exist.xpath.value.Type;
 
 public abstract class Step extends AbstractExpression {
 
+	protected final static Logger LOG = Logger.getLogger(Step.class);
+	
     protected int axis = -1;
     protected ArrayList predicates = new ArrayList();
     protected NodeTest test;
@@ -56,6 +59,13 @@ public abstract class Step extends AbstractExpression {
         return axis;
     }
 
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.AbstractExpression#setPrimaryAxis(int)
+	 */
+	public void setPrimaryAxis(int axis) {
+		this.axis = axis;
+	}
+	
     public String pprint() {
         StringBuffer buf = new StringBuffer();
         if ( axis > -1 )

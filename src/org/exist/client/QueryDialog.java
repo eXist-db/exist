@@ -156,7 +156,7 @@ public class QueryDialog extends JFrame {
         
         JPanel queryPanel = new JPanel();
         queryPanel.setLayout(new BorderLayout());
-        label = new JLabel("Query:");
+        label = new JLabel("XQuery:");
         queryPanel.add(label, BorderLayout.NORTH);
         
         query = new ClientTextArea(true, "XQUERY");
@@ -314,7 +314,7 @@ public class QueryDialog extends JFrame {
 					"An exception occurred during query execution: "
 							+ e.getMessage()					, e);
 		}
-		if(!((String)client.queryHistory.getLast()).equals(xpath)) {
+		if(client.queryHistory.isEmpty() || !((String)client.queryHistory.getLast()).equals(xpath)) {
 			client.addToHistory(xpath);
 			if(xpath.length() > 40)
 				xpath = xpath.substring(0, 40);

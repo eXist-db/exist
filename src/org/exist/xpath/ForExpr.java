@@ -73,10 +73,11 @@ public class ForExpr extends BindingExpression {
 		
 		// evaluate the "in" expression
 		Sequence in = inputSequence.eval(docs, null, null);
-		setContext(in);
 		var.setValue(in);
-		if(whereExpr != null)
+		if(whereExpr != null) {
 			whereExpr.setInPredicate(true);
+			setContext(in);
+		}
 		boolean fastExec = whereExpr != null &&
 			( whereExpr.getDependencies() & Dependency.CONTEXT_ITEM ) == 0 &&
 			at == null;
@@ -101,9 +102,7 @@ public class ForExpr extends BindingExpression {
 			contextItem = i.nextItem();
 			context.setContextPosition(p);
 			atVal.setValue(p);
-			
-			if(contextItem instanceof NodeProxy)
-				((NodeProxy)contextItem).addContextNode((NodeProxy)contextItem);
+
 			contextSequence = contextItem.toSequence();
 			if(sequenceType != null)
 				// check sequence type
@@ -112,6 +111,8 @@ public class ForExpr extends BindingExpression {
 			var.setValue(contextSequence);
 			// check optional where clause
 			if (whereExpr != null && (!fastExec)) {
+				if(contextItem instanceof NodeProxy)
+					((NodeProxy)contextItem).addContextNode((NodeProxy)contextItem);
 				val = applyWhereExpression(context, docs, contextSequence);
 				if(!val.effectiveBooleanValue())
 					continue;
@@ -169,14 +170,5 @@ public class ForExpr extends BindingExpression {
 	 */
 	public int returnsType() {
 		return Type.ITEM;
-	}
-
-	private final static void setContext(Sequence seq) {
-		Item next;
-		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-			next = i.nextItem();
-			if(next instanceof NodeProxy)
-				((NodeProxy)next).addContextNode((NodeProxy)next);
-		}
 	}
 }
