@@ -272,7 +272,7 @@ public class DOMIndexer {
         if (doc.nodeKind[nodeNr] == Node.ELEMENT_NODE) {
             ElementImpl last =
                 (ElementImpl) stack.pop();
-            broker.endElement(last, null);
+            broker.endElement(last, currentPath);
             currentPath.removeLastComponent();
         }
     }
