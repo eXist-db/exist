@@ -211,8 +211,6 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 		if (p > -1)  baseURIBuffer.delete(p,baseURIBuffer.length());            
 		final String baseURI = context.getRealPath(baseURIBuffer.toString());
 		
-		String user = null;
-		String password = null;
 		// check if user and password can be read from the session
 		if (session != null && request.isRequestedSessionIdValid()) {
             String actualUser = getSessionAttribute(session, "user");
