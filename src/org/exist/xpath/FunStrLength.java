@@ -31,30 +31,25 @@ import org.w3c.dom.NodeList;
  */
 public class FunStrLength extends Function {
 
-    public FunStrLength(BrokerPool pool) {
-        super(pool, "string-length");
-    }
+	public FunStrLength(BrokerPool pool) {
+		super(pool, "string-length");
+	}
 
-    public int returnsType() {
+	public int returnsType() {
 		return Constants.TYPE_NUM;
 	}
-	
+
 	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
-		ArraySet set = new ArraySet(1);
-		set.add(node);
-		DocumentSet dset = new DocumentSet();
-		dset.add(node.doc);
-		Value v = getArgument(0).eval(dset, set, node);
-		if(v.getType() == Value.isNodeList) {
-			NodeList list = v.getNodeList();
-			ValueSet result = new ValueSet();
-			for(int i = 0; i < list.getLength(); i++)
-				result.add(new ValueNumber(list.item(i).getNodeValue().length()));
-			return result;
+		if (node != null) {
+			context = new ArraySet(1);
+			context.add(node);
 		}
-		return new ValueNumber(v.getStringValue().length());
+		Value v = getArgument(0).eval(docs, context, node);
+		String strval = v.getStringValue();
+		System.out.println(strval);
+		return new ValueNumber(strval.length());
 	}
-	
+
 	public String pprint() {
 		StringBuffer buf = new StringBuffer();
 		buf.append("string-length(");

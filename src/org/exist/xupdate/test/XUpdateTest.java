@@ -127,13 +127,14 @@ public class XUpdateTest {
 			(XUpdateQueryService) col.getService("XUpdateQueryService", "1.0");
 
 		// Read XUpdate-Modifcations
-		System.out.println(updateFile);
+		System.out.println("update file: " + updateFile);
 		File file = new File(updateFile);
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		char[] characters = new char[new Long(file.length()).intValue()];
 		br.read(characters, 0, new Long(file.length()).intValue());
 		br.close();
 		String xUpdateModifications = new String(characters);
+		System.out.println("modifications: " + xUpdateModifications);
 		//
 
 		service.update(xUpdateModifications);

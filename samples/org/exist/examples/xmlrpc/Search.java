@@ -17,28 +17,14 @@ public class Search {
         
         // execute query and retrieve an id for the generated result set
         Vector params = new Vector();
-        params.addElement("document(*)//SPEECH[SPEAKER='HAMLET']");
-        Integer resultId = (Integer) xmlrpc.execute("executeQuery", params);
-
-        // get the number of hits
-        params.clear();
-        params.addElement(resultId);
-        Integer hits = (Integer) xmlrpc.execute("getHits", params);
-        
-        System.out.println("found " + hits + " hits.");
-        System.out.println("retrieving hits 1 to 5 ...");
-
-        // retrieve some results
-        params.clear();
-        params.addElement(resultId);
-        params.addElement(null);
-        params.addElement(new Integer(1));
-        params.addElement(encoding);
-        for (int i = 0; i < 5 && i < hits.intValue(); i++) {
-            params.setElementAt(new Integer(i), 1);
-            byte[] data = (byte[]) xmlrpc.execute("retrieve", params);
-            System.out.println(new String(data, encoding));
-        }
+        params.addElement("document(*)//SPEECH[LINE &= 'king']");
+		params.addElement("UTF-8");
+		params.addElement(new Integer(10));
+		params.addElement(new Integer(1));
+		params.addElement(new Integer(1));
+		params.addElement("/SPEAKER[1]");
+        byte[] result = (byte[]) xmlrpc.execute("query", params);
+		System.out.println(new String(result, "UTF-8"));
     }
 }
 

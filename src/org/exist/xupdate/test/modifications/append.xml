@@ -5,10 +5,8 @@
     
     <xu:append select="/addressbook">
         
-        <!-- element -->        
         <xu:element name="address">
         
-            <!-- attribute -->        
             <xu:attribute name="rating">99</xu:attribute>
             
             <fname>Boris</fname>

@@ -67,6 +67,7 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 				LOG.debug("updating resource " + doc.getFileName());
 				docs.add(doc);
 			}
+			LOG.debug(xupdate);
 			XUpdateProcessor processor = new XUpdateProcessor(pool, user, docs);
 			Modification modifications[] =
 				processor.parse(new InputSource(new StringReader(xupdate)));
@@ -90,6 +91,9 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 				ErrorCodes.PERMISSION_DENIED,
 				e.getMessage());
 		} catch (EXistException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
+		} catch(Exception e) {
+			e.printStackTrace();
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} finally {
 			pool.release(broker);

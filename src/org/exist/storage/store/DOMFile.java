@@ -243,6 +243,15 @@ public class DOMFile extends BTree implements Lockable {
 	 * @return
 	 */
 	public long insertAfter(DocumentImpl doc, long address, byte[] value) {
+		//check if we need an overflow page
+		boolean isOverflow = false;
+		if (value.length + 4 > fileHeader.getWorkSize()) {
+			LOG.debug("creating overflow page");
+			OverflowDOMPage overflow = new OverflowDOMPage();
+			overflow.write(value);
+			value = ByteConversion.longToByte(overflow.getPageNum());
+			isOverflow = true;
+		}
 		RecordPos rec = findValuePosition(address);
 		if (rec == null) {
 			LOG.warn("page not found");
@@ -306,10 +315,13 @@ public class DOMFile extends BTree implements Lockable {
 		}
 
 		// write the data
+		if(dataLen + 4 > fileHeader.getWorkSize()) {
+			
+		}
 		short tid = rec.page.getPageHeader().getNextTID();
 		ByteConversion.shortToByte((short) tid, rec.page.data, rec.offset);
 		rec.offset += 2;
-		ByteConversion.shortToByte((short) value.length, rec.page.data, rec.offset);
+		ByteConversion.shortToByte(isOverflow ? 0 : (short) value.length, rec.page.data, rec.offset);
 		rec.offset += 2;
 		System.arraycopy(value, 0, rec.page.data, rec.offset, value.length);
 		rec.offset += value.length;

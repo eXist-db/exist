@@ -57,7 +57,7 @@ public class ResourceTest extends TestCase {
 			System.out.println("----------------------------------------");
 			System.out.println(sout.toString());
 			System.out.println("----------------------------------------");
-		} catch (XMLDBException e) {
+		} catch (Exception e) {
 			fail(e.getMessage());
 		}
 	}

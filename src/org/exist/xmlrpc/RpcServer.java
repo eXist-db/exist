@@ -1244,7 +1244,7 @@ public class RpcServer implements RpcAPI {
 		try {
 			con = pool.get();
 			String xupdateStr = new String(xupdate, "UTF-8");
-			return con.xupdate(user, resource, xupdateStr);
+			return con.xupdateResource(user, resource, xupdateStr);
 		} catch (Exception e) {
 			handleException(e);
 			return 0;

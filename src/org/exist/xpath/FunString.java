@@ -39,11 +39,13 @@ public class FunString extends Function {
 	}
 	
 	public Value eval(DocumentSet docs, NodeSet context, NodeProxy node) {
-		ArraySet set = new ArraySet(1);
-		set.add(node);
-		DocumentSet dset = new DocumentSet();
-		dset.add(node.doc);
-		String result = getArgument(0).eval(dset, set, node).getStringValue();
+		if(node != null) {
+			context = new ArraySet(1);
+			context.add(node);
+			docs = new DocumentSet();
+			docs.add(node.doc);
+		}
+		String result = getArgument(0).eval(docs, context, node).getStringValue();
 		return new ValueString(result);
 	}
 

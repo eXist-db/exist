@@ -5,19 +5,18 @@
      the API, however it has only been tested with eXist.
 -->
 <xsl:stylesheet
+	version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:xsp="http://apache.org/xsp"
-    xmlns:xmldb="http://exist-db.org/xmldb/1.0"
+	xmlns:xmldb="http://exist-db.org/xmldb/1.0"
     xmlns:xsp-session="http://apache.org/xsp/session/2.0"
     xsp-session:create-session="true"
-    version="1.0"
 >
     <xsl:variable name="namespace-uri">http://exist-db.org/xmldb/1.0</xsl:variable>
-    <xsl:variable name="prefix">xmldb</xsl:variable>
-    <xsl:variable name="xsp-uri" select="'http://apache.org/xsp'"/>
+    <xsl:variable name="namespace-prefix">xmldb</xsl:variable>
 	
     <xsl:template match="xsp:page">
-        <xsp:page xmlns:xmldb="http://exist-db.org/xmldb/1.0">
+        <xsp:page>
           	<xsl:apply-templates select="@*"/>
             <xsp:structure>
                 <xsp:include>java.net.*</xsp:include>
@@ -723,12 +722,12 @@
     <xsl:template match="xmldb:results//xmldb:collection|xmldb:results//xmldb:document"/>
     <xsl:template match="xmldb:user|xmldb:password"/>
     
-    <xsl:template match="@*|node()" priority="-1">
-      <xsl:copy>
-        <xsl:apply-templates select="@*|node()"/>
-      </xsl:copy>
-    </xsl:template>
-
+    <xsl:template match="*|@*|text()|processing-instruction()" priority="-1">
+    	<xsl:copy>
+      		<xsl:apply-templates select="@*|*|text()|processing-instruction()"/>
+    	</xsl:copy>
+  	</xsl:template>
+  	
   <!-- This is a utility template to retrieve parameters passed to 
     other templates. -->
   <xsl:template name="get-parameter">
@@ -740,9 +739,9 @@
     <xsl:when test="@*[local-name(.) = $name or name(.) = $name]"><xsl:text>"</xsl:text><xsl:value-of select="@*[local-name(.) = $name or name(.) = $name]"/><xsl:text>"</xsl:text></xsl:when>
     <xsl:when test="*[local-name(.) = $name]">
         String.valueOf(
-            <xsl:copy>
-                <xsl:apply-templates select="*[local-name(.) = $name]/node()"/>
-            </xsl:copy>
+			<xsl:copy>
+        		<xsl:apply-templates select="*[local-name() = $name]/node()"/>
+        	</xsl:copy>
         )
       </xsl:when>
       <xsl:otherwise>
@@ -765,23 +764,14 @@ Parameter '<xsl:value-of select="$name"/>' missing in dynamic tag &lt;<xsl:value
     </xsl:choose>
   </xsl:template>
 
-  <xsl:template name="get-parameter-content">
-    <xsl:param name="content"/>
-    <xsl:choose>
-      <xsl:when test="$content/*[local-name(.) != 'text']">
-        <xsl:apply-templates select="$content/*[local-name(.) != 'text']"/>
-      </xsl:when>
-      <xsl:otherwise>"<xsl:value-of select="$content"/>"</xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
-
   <xsl:template name="get-nested-content">
     <xsl:param name="content"/>
     <xsl:choose>
+      <xsl:when test="$content/xsp:text">"<xsl:value-of select="$content"/>"</xsl:when>
       <xsl:when test="$content/*">
         <xsl:apply-templates select="$content/*"/>
       </xsl:when>
-      <xsl:otherwise>"<xsl:value-of select="$content"/>"</xsl:otherwise>
+      <xsl:otherwise><xsl:value-of select="$content"/></xsl:otherwise>
     </xsl:choose>
   </xsl:template>
 

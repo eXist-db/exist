@@ -647,6 +647,7 @@ public class NodeImpl implements Node {
 		} else
 			return node;
 	}
+	
 	//	protected NodeImpl getLastNode(NodeImpl node) {
 	//		if (node.getNodeType() == Node.ELEMENT_NODE)
 	//			return node.getChildCount() == 0 ? node : getLastNode((NodeImpl) node.getLastChild());

@@ -188,7 +188,8 @@ public class LocalXMLResource implements XMLResource {
 				throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
 					"permission denied to read resource");
-			
+			if(!properties.containsKey(Serializer.GENERATE_DOC_EVENTS))
+				properties.put(Serializer.GENERATE_DOC_EVENTS, "true");
 			Serializer serializer = broker.getSerializer();
 			serializer.setContentHandler(handler);
 			serializer.setUser(user);

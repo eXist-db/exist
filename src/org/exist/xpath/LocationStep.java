@@ -78,6 +78,18 @@ public class LocationStep extends Step {
 				break;
 			case Constants.SELF_AXIS :
 				temp = context;
+				if(inPredicate) {
+					if(context instanceof VirtualNodeSet) {
+						((VirtualNodeSet)context).setInPredicate(true);
+						((VirtualNodeSet)context).setSelfIsContext();
+					} else {
+						NodeProxy p;
+						for(Iterator i = temp.iterator(); i.hasNext(); ) {
+							p = (NodeProxy)i.next();
+							p.addContextNode(p);
+						}
+					}
+				}
 				break;
 			case Constants.PARENT_AXIS :
 				temp = getParents(documents, context);
@@ -97,10 +109,12 @@ public class LocationStep extends Step {
 	}
 
 	protected NodeSet getAttributes(DocumentSet documents, NodeSet context) {
-		ArraySet result = new ArraySet(5);
+		NodeSet result;
 		switch (test.getType()) {
 			case NodeTest.TYPE_TEST :
-				return new VirtualNodeSet(axis, (TypeTest) test, context);
+				result = new VirtualNodeSet(axis, (TypeTest) test, context);
+				((VirtualNodeSet)result).setInPredicate(inPredicate);
+				break;
 			case NodeTest.NAME_TEST :
 				if (buf == null) {
 					DBBroker broker = null;
@@ -113,12 +127,13 @@ public class LocationStep extends Step {
 						pool.release(broker);
 					}
 				}
-				result = ((ArraySet) buf).getChildren(context, ArraySet.DESCENDANT);
-				return result;
+				result = ((ArraySet) buf).getChildren(context, ArraySet.DESCENDANT, inPredicate);
+				break;
 			default :
 				Node n;
 				Node attr;
 				NamedNodeMap map;
+				result = new ArraySet(context.getLength());
 				for (int i = 0; i < context.getLength(); i++) {
 					n = context.item(i);
 					if (n.getNodeType() == Node.ELEMENT_NODE) {
@@ -134,16 +149,18 @@ public class LocationStep extends Step {
 	}
 
 	protected NodeSet getChildren(DocumentSet documents, NodeSet context) {
-		if (test.getType() == NodeTest.TYPE_TEST)
+		if (test.getType() == NodeTest.TYPE_TEST) {
 			// test is one out of *, text(), node()
-			return new VirtualNodeSet(axis, (TypeTest) test, context);
-		else {
+			VirtualNodeSet vset = new VirtualNodeSet(axis, (TypeTest) test, context);
+			vset.setInPredicate(true);
+			return vset;
+		} else {
 			DBBroker broker = null;
 			try {
 				broker = pool.get();
 				if (buf == null)
 					buf = (NodeSet) broker.findElementsByTagName(documents, test.getName());
-				return buf.getChildren(context, NodeSet.DESCENDANT);
+				return buf.getChildren(context, ArraySet.DESCENDANT, inPredicate);
 
 			} catch (EXistException e) {
 				e.printStackTrace();
@@ -164,7 +181,7 @@ public class LocationStep extends Step {
 				return buf.getDescendants(
 					context,
 					ArraySet.DESCENDANT,
-					axis == Constants.DESCENDANT_SELF_AXIS);
+					axis == Constants.DESCENDANT_SELF_AXIS, inPredicate);
 
 			} catch (EXistException e) {
 				e.printStackTrace();
@@ -172,8 +189,11 @@ public class LocationStep extends Step {
 			} finally {
 				pool.release(broker);
 			}
-		} else
-			return new VirtualNodeSet(axis, (TypeTest) test, context);
+		} else {
+			VirtualNodeSet vset = new VirtualNodeSet(axis, (TypeTest) test, context);
+			vset.setInPredicate(inPredicate);
+			return vset;
+		}
 	}
 
 	protected NodeSet getSiblings(DocumentSet documents, NodeSet context) {
@@ -228,10 +248,10 @@ public class LocationStep extends Step {
 				if (buf == null)
 					buf = (NodeSet) broker.findElementsByTagName(documents, test.getName());
 				NodeSet r =
-					context.getDescendants(
+					context.getAncestors(
 						(ArraySet) buf,
-						ArraySet.ANCESTOR,
-						axis == Constants.ANCESTOR_SELF_AXIS);
+						axis == Constants.ANCESTOR_SELF_AXIS,
+						inPredicate);
 				LOG.debug("getAncestors found " + r.getLength());
 				return r;
 			} catch (EXistException e) {

@@ -1027,11 +1027,11 @@ public class NativeBroker extends DBBroker {
 		long start = System.currentTimeMillis();
 		NodeSet temp;
 		int truncation = Constants.TRUNC_NONE;
-		if (expr.charAt(0) == '%') {
+		if (expr.length() > 0 && expr.charAt(0) == '%') {
 			expr = expr.substring(1);
 			truncation = Constants.TRUNC_LEFT;
 		}
-		if (expr.charAt(expr.length() - 1) == '%') {
+		if (expr.length() > 1 && expr.charAt(expr.length() - 1) == '%') {
 			expr = expr.substring(0, expr.length() - 1);
 			truncation =
 				(truncation == Constants.TRUNC_LEFT) ? Constants.TRUNC_BOTH : Constants.TRUNC_RIGHT;
@@ -1044,15 +1044,6 @@ public class NativeBroker extends DBBroker {
 				+ (System.currentTimeMillis() - start)
 				+ "ms.");
 		return result;
-	}
-
-	public NodeSet getNodesEqualTo(
-		NodeSet context,
-		DocumentSet docs,
-		int relation,
-		String expr[]) {
-		NodeSet tempSet[] = getNodesContaining(docs, expr);
-		return tempSet[0];
 	}
 
 	/**
@@ -1600,7 +1591,7 @@ public class NativeBroker extends DBBroker {
 		if (readOnly)
 			throw new PermissionDeniedException("database is read-only");
 		try {
-			
+
 			if (collection.getId() < 0)
 				collection.setId(getNextCollectionId());
 
@@ -1742,9 +1733,10 @@ public class NativeBroker extends DBBroker {
 
 					break;
 				case Constants.REGEXP :
-					if (regexp != null && matcher.contains(cmp, regexp))
+					if (regexp != null && matcher.contains(cmp, regexp)) {
 						resultNodeSet.add(p);
-
+					}
+					break;
 			}
 		}
 		return resultNodeSet;

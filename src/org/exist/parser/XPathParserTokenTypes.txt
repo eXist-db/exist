@@ -1,4 +1,4 @@
-// $ANTLR 2.7.2rc2 (20030105): XPathParser.g -> XPathParserTokenTypes.txt$
+// $ANTLR : XPathParser.g -> XPathParserTokenTypes.txt$
 XPathParser    // output token vocab name
 LITERAL_xpointer="xpointer"=4
 LPAREN=5

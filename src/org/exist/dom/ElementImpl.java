@@ -41,11 +41,13 @@ import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.XMLUtil;
 import org.w3c.dom.Attr;
+import org.w3c.dom.Comment;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -219,9 +221,7 @@ public class ElementImpl extends NodeImpl implements Element {
 			node = appendChild(firstChildID(), this, child, true);
 		else {
 			long last = lastChildID();
-			node = 
-				appendChild(last + 1, (NodeImpl) ownerDocument.getNode(last), 
-					child, true);
+			node = appendChild(last + 1, (NodeImpl) ownerDocument.getNode(last), child, true);
 		}
 		ownerDocument.broker.update(this);
 		ownerDocument.broker.reindex(prevDoc, ownerDocument, null);
@@ -257,12 +257,10 @@ public class ElementImpl extends NodeImpl implements Element {
 			node = appendChildren(firstChildID(), this, nodes, true);
 		else {
 			long last = lastChildID();
-			node =
-				appendChildren(
-					last + 1,
-					getLastNode((NodeImpl) ownerDocument.getNode(last)),
-					nodes,
-					true);
+			NodeImpl lastNode = getLastNode((NodeImpl) ownerDocument.getNode(last));
+			if (lastNode == null)
+				throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "invalid node: null");
+			node = appendChildren(last + 1, lastNode, nodes, true);
 		}
 		ownerDocument.broker.update(this);
 		ownerDocument.broker.reindex(prevDoc, ownerDocument, null);
@@ -279,24 +277,30 @@ public class ElementImpl extends NodeImpl implements Element {
 	 */
 	protected Node appendChildren(long gid, NodeImpl last, NodeList nodes, boolean index)
 		throws DOMException {
+		if (last == null || last.ownerDocument == null)
+			throw new DOMException(DOMException.INVALID_MODIFICATION_ERR, "invalid node");
 		try {
 			checkTree(nodes.getLength());
-		} catch(EXistException e) {
-			throw new DOMException(DOMException.INVALID_MODIFICATION_ERR,
+		} catch (EXistException e) {
+			throw new DOMException(
+				DOMException.INVALID_MODIFICATION_ERR,
 				"max. document size exceeded");
 		}
 		children += nodes.getLength();
 		Node child;
 		for (int i = 0; i < nodes.getLength(); i++) {
 			child = nodes.item(i);
+			if (last == null)
+				throw new DOMException(DOMException.INVALID_MODIFICATION_ERR, "invalid node: null");
 			last = (NodeImpl) appendChild(gid + i, last, child, index);
 		}
 		return last;
 	}
 
-	private Node appendChild(long gid, NodeImpl last, 
-		Node child, boolean index)
+	private Node appendChild(long gid, NodeImpl last, Node child, boolean index)
 		throws DOMException {
+		if (last == null)
+			throw new DOMException(DOMException.INVALID_MODIFICATION_ERR, "invalid node");
 		String ns, prefix;
 		Attr attr;
 		switch (child.getNodeType()) {
@@ -320,10 +324,10 @@ public class ElementImpl extends NodeImpl implements Element {
 				final NodeListImpl ch = new NodeListImpl();
 				final NamedNodeMap attribs = child.getAttributes();
 				for (int i = 0; i < attribs.getLength(); i++) {
-					attr = (Attr)attribs.item(i);
+					attr = (Attr) attribs.item(i);
 					// register namespace prefixes
 					ns = attr.getNamespaceURI();
-					if(ns != null && ns.length() > 0) {
+					if (ns != null && ns.length() > 0) {
 						prefix = ownerDocument.broker.getNamespacePrefix(ns);
 						if (prefix == null) {
 							prefix = attr.getPrefix() != null ? attr.getPrefix() : '#' + ns;
@@ -345,8 +349,9 @@ public class ElementImpl extends NodeImpl implements Element {
 				elem.setChildCount(0);
 				try {
 					elem.checkTree(ch.getLength());
-				} catch(EXistException e) {
-					throw new DOMException(DOMException.INVALID_MODIFICATION_ERR,
+				} catch (EXistException e) {
+					throw new DOMException(
+						DOMException.INVALID_MODIFICATION_ERR,
 						"max. document size exceeded");
 				}
 				// process child nodes
@@ -382,8 +387,35 @@ public class ElementImpl extends NodeImpl implements Element {
 					&& index)
 					ownerDocument.broker.index(attrib);
 				return attrib;
+			case Node.COMMENT_NODE :
+				final CommentImpl comment = new CommentImpl(((Comment) child).getData());
+				comment.setGID(gid);
+				comment.setOwnerDocument(ownerDocument);
+				// insert the node
+				ownerDocument.broker.insertAfter(last, comment);
+				if ((ownerDocument.reindex < 0
+					|| ownerDocument.reindex > ownerDocument.getTreeLevel(gid))
+					&& index)
+					ownerDocument.broker.index(comment);
+				return comment;
+			case Node.PROCESSING_INSTRUCTION_NODE :
+				final ProcessingInstructionImpl pi =
+					new ProcessingInstructionImpl(
+						gid,
+						((ProcessingInstruction) child).getTarget(),
+						((ProcessingInstruction) child).getData());
+				pi.setOwnerDocument(ownerDocument);
+				//			insert the node
+				ownerDocument.broker.insertAfter(last, pi);
+				if ((ownerDocument.reindex < 0
+					|| ownerDocument.reindex > ownerDocument.getTreeLevel(gid))
+					&& index)
+					ownerDocument.broker.index(pi);
+				return pi;
 			default :
-				return null;
+				throw new DOMException(
+					DOMException.INVALID_MODIFICATION_ERR,
+					"unknown node type: " + child.getNodeType() + " " + child.getNodeName());
 		}
 	}
 
@@ -707,10 +739,11 @@ public class ElementImpl extends NodeImpl implements Element {
 			final byte signature =
 				(byte) ((Signatures.Elem << 0x5) | (attrSizeType << 0x2) | idSizeType);
 			byte[] data =
-				ByteArrayPool.getByteArray(5
-					+ Signatures.getLength(attrSizeType)
-					+ Signatures.getLength(idSizeType)
-					+ (prefixData != null ? prefixData.length : 0));
+				ByteArrayPool.getByteArray(
+					5
+						+ Signatures.getLength(attrSizeType)
+						+ Signatures.getLength(idSizeType)
+						+ (prefixData != null ? prefixData.length : 0));
 			data[0] = signature;
 			ByteConversion.intToByte(children, data, 1);
 			Signatures.write(attrSizeType, attributes, data, 5);
@@ -1117,11 +1150,11 @@ public class ElementImpl extends NodeImpl implements Element {
 		ownerDocument.broker.update(this);
 		// reindex if required
 		ownerDocument.broker.reindex(prevDoc, ownerDocument, null);
-//		try {
-//			ownerDocument.broker.saveCollection(ownerDocument.getCollection());
-//		} catch (PermissionDeniedException e) {
-//			throw new DOMException(DOMException.INVALID_ACCESS_ERR, e.getMessage());
-//		}
+		//		try {
+		//			ownerDocument.broker.saveCollection(ownerDocument.getCollection());
+		//		} catch (PermissionDeniedException e) {
+		//			throw new DOMException(DOMException.INVALID_ACCESS_ERR, e.getMessage());
+		//		}
 	}
 
 	/**

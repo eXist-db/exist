@@ -60,22 +60,22 @@ public class FunSubstring extends Function {
 		arg1 = getArgument(0);
 		start = getArgument(1);
 
-		ArraySet set = new ArraySet(1);
-		set.add(node);
-		DocumentSet dset = new DocumentSet();
-		dset.add(node.doc);
-		int s = (int)start.eval(dset, set, node).getNumericValue();
+		if(node != null) {
+			context = new ArraySet(1);
+			context.add(node);
+		}
+		int s = (int)start.eval(docs, context, node).getNumericValue();
 		int l = 0;
 		if(length != null)
-			l = (int)length.eval(dset, set, node).getNumericValue();
-		Value nodes = arg1.eval(dset, set, node);
+			l = (int)length.eval(docs, context, node).getNumericValue();
+		Value nodes = arg1.eval(docs, context, node);
 		if(nodes.getType()==Value.isNodeList) {
-			NodeList nset = nodes.getNodeList();
-			Node n;
+			NodeSet nset = (NodeSet)nodes.getNodeList();
+			NodeProxy n;
 			String temp;
 			ValueSet result = new ValueSet();
 			for(int i = 0; i < nset.getLength(); i++) {
-				n = nset.item(i);
+				n = nset.get(i);
 				temp = n.getNodeValue();
 				if(s >= 0 && temp.length() > s + l)
 					result.add(new ValueString((l > 0) ? temp.substring(s, l) : temp.substring(s)));

@@ -318,8 +318,8 @@
                 		<xsl:value-of select="$helper"/>.getHits() - 
                 		<xsl:value-of select="$p"/>;
                 XMLResource <xsl:value-of select="$resource"/>;
-            	for(int <xsl:value-of select="$i"/> = 0; <xsl:value-of select="$i"/> 
-            		&lt; <xsl:value-of select="$p"/> + 
+            	for(int <xsl:value-of select="$i"/> = <xsl:value-of select="$p"/>;
+                    <xsl:value-of select="$i"/> &lt; <xsl:value-of select="$p"/> + 
             		<xsl:value-of select="$c"/>; 
             		<xsl:value-of select="$i"/>++) {
                 	<xsl:value-of select="$resource"/> = (XMLResource)

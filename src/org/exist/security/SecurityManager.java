@@ -155,6 +155,7 @@ public class SecurityManager {
 	public synchronized void deleteUser(String name) throws PermissionDeniedException {
 		deleteUser(getUser(name));
 	}
+	
 	public synchronized void deleteUser(User user) throws PermissionDeniedException {
 		if(user == null)
 			return;

@@ -90,4 +90,10 @@ public class FLWR implements Expression {
     }
     return buf.toString();
   }
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.Expression#setInPredicate(boolean)
+	 */
+	public void setInPredicate(boolean inPredicate) {
+	}
+
 }

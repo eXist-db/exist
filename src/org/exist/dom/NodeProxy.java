@@ -22,6 +22,8 @@
 package org.exist.dom;
 
 import java.util.Comparator;
+
+import org.exist.util.LongLinkedList;
 import org.w3c.dom.Node;
 
 /**
@@ -40,6 +42,7 @@ public final class NodeProxy implements Comparable, Cloneable {
     public DocumentImpl doc = null;
     public long gid = 0;
     public long internalAddress = -1;
+    public LongLinkedList contextNodes = null;
     public short nodeType = -1;
 	public Match[] matches = null;
 	
@@ -345,6 +348,20 @@ public final class NodeProxy implements Comparable, Cloneable {
 		for(int i = 0; i < matches.length; i++)
 			buf.append(matches[i].getMatchingTerm()).append(' ');
 		return buf.toString();
+	}
+	
+	public void addContextNode(NodeProxy node) {
+		if(contextNodes == null)
+			contextNodes = new LongLinkedList();
+		contextNodes.add(node.gid);
+	}
+	
+	public void copyContext(NodeProxy node) {
+		contextNodes = node.contextNodes;
+	}
+	
+	public LongLinkedList getContext() {
+		return contextNodes;
 	}
 }
 

@@ -457,7 +457,10 @@
                 </map:match>
                 <map:match pattern="**.dtd">
                     <map:read mime-type="text/text" src="{1}.dtd"/>
-                </map:match>
+				</map:match>
+				<map:match pattern="**.js">
+					<map:read mime-type="text/javascript" src="{1}.js"/>
+				</map:match>
                 <map:match pattern="**.html">
                     <map:read src="{1}.html" mime-type="text/html"/>
                 </map:match>
@@ -603,7 +606,11 @@
                 <map:match pattern="examples/**">
                     <map:mount check-reload="yes" src="examples/sitemap.xmap" uri-prefix="examples"/>
                 </map:match>
-			
+
+				<map:match pattern="dictionary/**">
+					<map:mount check-reload="yes" src="dictionary/sitemap.xmap" uri-prefix="dictionary"/>
+				</map:match>
+				
                 <map:match pattern="status">
                     <map:generate type="exist-status"/>
                     <map:transform src="stylesheets/status.xsl">

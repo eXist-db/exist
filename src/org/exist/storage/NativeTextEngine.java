@@ -63,7 +63,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.analysis.TextToken;
-import org.exist.storage.store.*;
+import org.exist.storage.store.BFile;
 import org.exist.util.ByteArray;
 import org.exist.util.ByteConversion;
 import org.exist.util.Configuration;
@@ -839,7 +839,7 @@ public class NativeTextEngine extends TextSearchEngine {
 					}
 				}
 				ids = newList.getData();
-				i.remove();
+				//i.remove();
 				Arrays.sort(ids);
 				len = ids.length;
 				os.writeInt(doc.getDocId());
@@ -972,9 +972,10 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 
 		public void flush() {
-			if (doc == null || words.size() == 0)
+			final int wordsCount = words.size();
+			if (doc == null || wordsCount == 0)
 				return;
-			final ProgressIndicator progress = new ProgressIndicator(words.size(), 100);
+			final ProgressIndicator progress = new ProgressIndicator(wordsCount, 100);
 			final short collectionId = doc.getCollection().getId();
 			int count = 1, len;
 			Map.Entry entry;
@@ -1010,7 +1011,7 @@ public class NativeTextEngine extends TextSearchEngine {
 					notifyObservers(progress);
 				}
 			}
-			if(words.size() > 100) {
+			if(wordsCount > 100) {
 				progress.finish();
 				setChanged();
 				notifyObservers(progress);

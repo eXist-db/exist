@@ -178,7 +178,6 @@ public class Parser
 			saxFactory.setValidating(true);
 		else
 			saxFactory.setValidating(false);
-		LOG.debug("validating = " + saxFactory.isValidating());
 		saxFactory.setNamespaceAware(true);
 		try {
 			setFeature(saxFactory, "http://xml.org/sax/features/namespace-prefixes", true);

@@ -304,9 +304,10 @@
       |     DocumentBuilderFactory implementation to be used (similar to
       |     sax-parser-factory for DOM).
       +-->
-  <xml-parser class="org.apache.excalibur.xml.impl.JaxpParser" logger="core.xml-parser" pool-grow="4" pool-max="32" pool-min="8">
+  <xml-parser class="org.apache.excalibur.xml.impl.JaxpParser" logger="core.xml-parser" 
+  	pool-grow="4" pool-max="32" pool-min="8">
     <parameter name="validate" value="false"/>
-    <parameter name="namespace-prefixes" value="false"/>
+    <parameter name="namespace-prefixes" value="true"/>
     <parameter name="stop-on-warning" value="true"/>
     <parameter name="stop-on-recoverable-error" value="false"/>
     <parameter name="reuse-parsers" value="false"/>

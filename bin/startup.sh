@@ -44,7 +44,7 @@ if [ -z "$JAVA_OPTIONS" ]; then
 fi
 
 JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
-
+DEBUG_START="-Dexist.start.debug=true"
 $JAVA_HOME/bin/java $JAVA_OPTIONS -Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS \
-	$OPTIONS -jar "$EXIST_HOME/start.jar" \
+	$DEBUG_START $OPTIONS -jar "$EXIST_HOME/start.jar" \
 	jetty $*
