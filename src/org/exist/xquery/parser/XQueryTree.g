@@ -431,7 +431,7 @@ throws XPathException
 		)
 		|
 		#(
-			"text" { type.setPrimaryType(Type.ITEM); }
+			"text" { type.setPrimaryType(Type.TEXT); }
 		)
 		|
 		#(
