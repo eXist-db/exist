@@ -24,6 +24,7 @@ package org.exist.xquery.functions;
 
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.NodeImpl;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
@@ -82,9 +83,9 @@ public class FunRoot extends Function {
 		if (!Type.subTypeOf(item.getType(), Type.NODE))
 			throw new XPathException("Context item is not a node; got " + Type.getTypeName(item.getType()));
 		if (item instanceof NodeProxy) {
-		    return new NodeProxy(((NodeProxy) item).getDocument(), 1, Node.ELEMENT_NODE);
+		    return new NodeProxy(((NodeProxy) item).getDocument(), -1, Node.DOCUMENT_NODE);
 		} else
-			return (NodeImpl) ((NodeImpl) item).getOwnerDocument().getDocumentElement();
+			return (DocumentImpl) ((NodeImpl) item).getOwnerDocument();
 	}
 
 }
