@@ -53,6 +53,18 @@ public class ReceiverToSAX implements Receiver {
 		this.lexicalHandler = handler;
 	}
 	
+	public void setContentHandler(ContentHandler handler) {
+		this.contentHandler = handler;
+	}
+	
+	public ContentHandler getContentHandler() {
+		return contentHandler;
+	}
+	
+	public LexicalHandler getLexicalHandler() {
+		return lexicalHandler;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.util.serializer.Receiver#startDocument()
 	 */

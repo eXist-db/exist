@@ -435,7 +435,9 @@ public class NativeBroker extends DBBroker {
 					LOG.warn("Could not acquire lock on collection " + name);
 				}
 			}
-			collectionsCache.add(collection);
+			if(!pool.isInitializing())
+				// don't cache the collection during initialization: SecurityManager is not yet online
+				collectionsCache.add(collection);
 			//			LOG.debug(
 			//				"loading collection "
 			//					+ name
@@ -2019,7 +2021,9 @@ public class NativeBroker extends DBBroker {
 	public void saveCollection(Collection collection) throws PermissionDeniedException {
 		if (readOnly)
 			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-		pool.getCollectionsCache().add(collection);
+		if (!pool.isInitializing())
+			// don't cache the collection during initialization: SecurityManager is not yet online
+			pool.getCollectionsCache().add(collection);
 		Lock lock = null;
 		try {
 			lock = collectionsDb.getLock();

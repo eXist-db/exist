@@ -89,7 +89,7 @@ public class NativeSerializer extends Serializer {
 
     protected void serializeToReceiver(NodeProxy p, boolean generateDocEvent)
     throws SAXException {
-    	if(Type.subTypeOf(p.getType(), Type.DOCUMENT)) {
+    	if(Type.subTypeOf(p.getType(), Type.DOCUMENT) || p.gid < 0) {
     			serializeToReceiver(p.getDocument(), generateDocEvent);
     			return;
     	}
