@@ -24,5 +24,5 @@ set JAVA_ENDORSED_DIRS="%EXIST_HOME%"\lib\endorsed
 set JAVA_OPTS="-Xms16000k -Xmx256000k -Dfile.encoding=UTF-8 -Djava.endorsed.dirs=%JAVA_ENDORSED_DIRS%"
 
 :gotJavaOpts
-%JAVA_HOME%\bin\java "%JAVA_OPTS%"  -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" %1 %2 %3 %4 %5 %6 %7 %8 %9
+"%JAVA_HOME%\bin\java" "%JAVA_OPTS%"  -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" %1 %2 %3 %4 %5 %6 %7 %8 %9
 :eof

@@ -23,6 +23,6 @@ goto :eof
 set JAVA_ENDORSED_DIRS="%EXIST_HOME%"\lib\endorsed
 set JAVA_OPTS="-Xms16000k -Xmx128000k -Dfile.encoding=UTF-8 -Djava.endorsed.dirs=%JAVA_ENDORSED_DIRS%"
 
-%JAVA_HOME%\bin\java "%JAVA_OPTS%"  -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" cluster %1
+"%JAVA_HOME%\bin\java" "%JAVA_OPTS%"  -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" cluster %1
 :eof
 
