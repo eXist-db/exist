@@ -69,7 +69,7 @@ public class XMLDBCreateCollection extends BasicFunction {
 	public Sequence eval(Sequence args[], Sequence contextSequence)
 			throws XPathException {
 		JavaObjectValue obj = (JavaObjectValue) args[0].itemAt(0);
-		String collectionName = args[0].getStringValue();
+		String collectionName = args[1].getStringValue();
 		if (!(obj.getObject() instanceof Collection))
 			throw new XPathException(getASTNode(),
 					"Argument 1 should be an instance of org.xmldb.api.base.Collection");

@@ -54,7 +54,6 @@ public class NamedNodeMapImpl extends LinkedList implements NamedNodeMap {
 
 	public Node getNamedItem(String name) {
 		int i = indexOf(new QName(name, "", null));
-		System.out.println(i);
 		return (i < 0) ? null : (Node) get(i);
 	}
 
