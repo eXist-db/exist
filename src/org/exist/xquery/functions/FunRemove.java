@@ -42,8 +42,7 @@ public class FunRemove extends Function {
 		if (seq instanceof NodeSet) {
 			ExtArrayNodeSet result = new ExtArrayNodeSet();
 			result.addAll((NodeSet) seq);
-			result.remove((NodeProxy) seq.itemAt(pos));
-			return result;
+			return result.except((NodeSet) seq.itemAt(pos));
 		} else {
 			Sequence result = new ValueSequence();
 			for (int i = 0; i < seq.getLength(); i++) {

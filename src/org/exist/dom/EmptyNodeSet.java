@@ -28,7 +28,7 @@ import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 
-public class EmptyNodeSet extends AbstractNodeSetBase {
+public class EmptyNodeSet extends AbstractNodeSet {
 
 	private final static EmptyNodeSetIterator EMPTY_ITERATOR = new EmptyNodeSetIterator();
 	

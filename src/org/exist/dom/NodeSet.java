@@ -44,7 +44,7 @@ public interface NodeSet extends Sequence, NodeList {
 	/**
 	 * Constant representing an empty node set.
 	 */
-	public static NodeSet EMPTY_SET = new EmptyNodeSet();
+	public final static NodeSet EMPTY_SET = new EmptyNodeSet();
 		
 	/**
 	 * Return an iterator on the nodes in this list. The iterator returns nodes
@@ -54,16 +54,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 * @return
 	 */
 	public Iterator iterator();
-	
-	/**
-	 * Check if this node set contains a node matching the given
-	 * document and node-id.
-	 * 
-	 * @param doc
-	 * @param nodeId
-	 * @return
-	 */
-	public boolean contains(DocumentImpl doc, long nodeId);
 	
 	/**
 	 * Check if this node set contains a node matching the document and
@@ -110,14 +100,6 @@ public interface NodeSet extends Sequence, NodeList {
 	public void addAll(NodeSet other);
 	
 	/**
-	 * Remove a node. By default, this method throws a
-	 * RuntimeException.
-	 * 
-	 * @param node
-	 */
-	public void remove(NodeProxy node);
-	
-	/**
 	 * Return the number of nodes contained in this node set.
 	 */
 	public int getLength();
@@ -146,22 +128,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 * @return
 	 */
 	public NodeProxy get(DocumentImpl doc, long nodeId);
-	
-	/**
-	 * Get all children of the given parent node contained in this node set.
-	 * If mode is {@link #DESCENDANT}, the returned node set will contain
-	 * all children found in this node set. If mode is {@link #ANCESTOR},
-	 * the parent itself will be returned if it has child nodes in this set.
-	 * 
-	 * @param parent
-	 * @param mode
-	 * @param rememberContext
-	 * @return
-	 */
-	public NodeSet hasChildrenInSet(
-		NodeProxy parent,
-		int mode,
-		boolean rememberContext);
 		
 	/**
 	 * Check if any child nodes are found within this node set for a given
@@ -198,43 +164,6 @@ public interface NodeSet extends Sequence, NodeList {
 		NodeSet al,
 		int mode,
 		boolean rememberContext);
-		
-	/**
-	 * Check if any descendant nodes are found within this node set for a given
-	 * set of potential ancestor nodes.
-	 * 
-	 * If mode is {@link #DESCENDANT}, the returned node set will contain
-	 * all descendant nodes found in this node set for each ancestor. If mode is
-	 * {@link #ANCESTOR}, the returned set will contain those ancestor nodes,
-	 * for which descendants have been found.
-	 *  
-	 * @param al a node set containing potential parent nodes
-	 * @param mode selection mode
-	 * @return
-	 */
-	public NodeSet selectAncestorDescendant(
-		NodeSet al,
-		int mode);
-		
-	/**
-	 * Check if any descendant nodes are found within this node set for a given
-	 * set of potential ancestor nodes.
-	 * 
-	 * If mode is {@link #DESCENDANT}, the returned node set will contain
-	 * all descendant nodes found in this node set for each ancestor. If mode is
-	 * {@link #ANCESTOR}, the returned set will contain those ancestor nodes,
-	 * for which descendants have been found.
-	 *  
-	 * @param al a node set containing potential parent nodes
-	 * @param mode selection mode
-	 * @param includeSelf if true, check if the ancestor node itself is contained in
-	 * the set of descendant nodes (descendant-or-self axis)
-	 * @return
-	 */
-	public NodeSet selectAncestorDescendant(
-		NodeSet al,
-		int mode,
-		boolean includeSelf);
 		
 	/**
 	 * Check if any descendant nodes are found within this node set for a given
@@ -289,29 +218,6 @@ public interface NodeSet extends Sequence, NodeList {
 	public NodeSet selectSiblings(NodeSet siblings, int mode);
 	
 	public NodeSet selectFollowing(NodeSet following) throws XPathException;
-	
-	/**
-	 * Get all the sibling nodes of the specified node in the current set.
-	 * 
-	 * @param doc the node's owner document
-	 * @param gid the node's internal id
-	 * @return
-	 */
-	public NodeSet getSiblings(DocumentImpl doc, long gid);
-	
-	/**
-	 * Check if the node identified by its node id has an ancestor contained in this node set
-	 * and return the ancestor found.
-	 *
-	 * If directParent is true, only immediate ancestors (parents) are considered.
-	 * Otherwise the method will call itself recursively for all the node's
-	 * parents.
-	 *
-	 */
-	public NodeProxy parentWithChild(
-		DocumentImpl doc,
-		long gid,
-		boolean directParent);
 		
 	/**
 	 * Check if the node identified by its node id has an ancestor contained in this node set
@@ -364,18 +270,6 @@ public interface NodeSet extends Sequence, NodeList {
 		boolean directParent,
 		boolean includeSelf,
 		int level);
-	
-	/**
-	 * Return all nodes contained in this node set that are ancestors of the node
-	 * identified by doc and gid.
-	 *  
-	 */
-	public NodeSet ancestorsForChild(
-			DocumentImpl doc,
-			long gid,
-			boolean directParent,
-			boolean includeSelf,
-			int level);
 	
 	/**
 	 * Return a new node set containing the parent nodes of all nodes in the 
@@ -449,18 +343,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 * @return
 	 */
 	public NodeSet except(NodeSet other);
-	
-	/**
-	 * Return a new node set containing all the context nodes associated
-	 * with the nodes in this set.
-	 * 
-	 * @param contextNodes
-	 * @param rememberContext
-	 * @return
-	 */
-	public NodeSet getContextNodes(
-		NodeSet contextNodes,
-		boolean rememberContext);
 	
 	public NodeSet getContextNodes(boolean rememberContext);
 	

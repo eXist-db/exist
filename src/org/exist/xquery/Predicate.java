@@ -221,7 +221,7 @@ public class Predicate extends PathExpr {
 				    	    temp = p;
 				    		break;
 				    	default:
-				    	    temp = contextSet.selectAncestorDescendant(p, NodeSet.DESCENDANT);
+				    	    temp = contextSet.selectAncestorDescendant(p, NodeSet.DESCENDANT, false, false);
 				    		break;
 				    }
 				    Sequence innerSeq = inner.eval(contextSequence);

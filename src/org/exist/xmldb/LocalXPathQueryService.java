@@ -118,7 +118,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		} else {
 			NodeSet set = new ArraySet(1);
 			set.add(node);
-			String[] docs = new String[] { node.getDoc().getName() };
+			String[] docs = new String[] { node.getDocument().getName() };
 			return doQuery(query, docs, set, sortBy);
 		}
 	}
@@ -137,7 +137,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		} else {
 			NodeSet set = new ArraySet(1);
 			set.add(node);
-			String[] docs = new String[] { node.getDoc().getName() };
+			String[] docs = new String[] { node.getDocument().getName() };
 			return execute(docs, set, expression, null);
 		}
 	}

@@ -6,7 +6,7 @@ import java.util.Stack;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 
-public class AVLTreeNodeSet extends AbstractNodeSetBase {
+public class AVLTreeNodeSet extends AbstractNodeSet {
 
 	private Node root;
 	private int size = 0;
