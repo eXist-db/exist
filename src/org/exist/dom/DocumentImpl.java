@@ -51,25 +51,25 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public final static byte XML_FILE = 0;
 	public final static byte BINARY_FILE = 1;
 	
-	private NodeIndexListener listener = null;
+	private transient NodeIndexListener listener = NullNodeIndexListener.INSTANCE;
 
 	protected final static Category LOG = Category.getInstance(DocumentImpl.class.getName());
 
-	protected DBBroker broker = null;
+	protected transient DBBroker broker = null;
 
 	// number of child nodes
-	protected int children = 0;
+	protected transient int children = 0;
 
-	protected LinkedList childList = new LinkedList();
+	protected transient LinkedList childList = new LinkedList();
 
 	// the collection this document belongs to
-	protected Collection collection = null;
+	protected transient Collection collection = null;
 
 	// the document's id
 	protected int docId = -1;
 
 	// document's document type
-	protected DocumentType docType = null;
+	protected transient DocumentType docType = null;
 
 	// id of the document element
 	//protected long documentRootId = -1;
@@ -88,7 +88,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	// if set to > -1, the document needs to be partially reindexed
 	// - beginning at the tree-level defined by reindex
-	protected int reindex = -1;
+	protected transient int reindex = -1;
 
 	protected Permission permissions = new Permission(0754);
 
@@ -98,15 +98,15 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	// arity of the tree at every level
 	protected int treeLevelOrder[] = new int[15];
 
-	protected long treeLevelStartPoints[] = new long[15];
+	protected transient long treeLevelStartPoints[] = new long[15];
 
 	// has document-metadata been loaded?
-	private boolean complete = true;
+	private transient boolean complete = true;
 
 	// true while a write operation is in progress
-	private boolean writeLocked = false;
+	private transient boolean writeLocked = false;
 	
-	private User lockOwner = null;
+	private transient User lockOwner = null;
 	
 	public DocumentImpl(DBBroker broker, Collection collection) {
 		super(Node.DOCUMENT_NODE, 0);
@@ -215,10 +215,11 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		}
 	}
 
-	private void checkRange(int level) throws EXistException {
-		if (treeLevelStartPoints[level] < 0 || treeLevelStartPoints[level + 1] < 0)
-			throw new EXistException("index out of range");
-	}
+	// jmv - PMD - Avoid unused private methods
+//	private void checkRange(int level) throws EXistException {
+//		if (treeLevelStartPoints[level] < 0 || treeLevelStartPoints[level + 1] < 0)
+//			throw new EXistException("index out of range");
+//	}
 
 	public int compareTo(Object other) {
 		final long otherId = ((DocumentImpl)other).docId;
@@ -532,6 +533,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public void setEncoding(String enc) {
+		// allways  "UTF-8"  !?
 	}
 
 	public void setFileName(String fileName) {
@@ -675,7 +677,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public void clearIndexListener() {
-		listener = null;
+		listener = NullNodeIndexListener.INSTANCE;
 	}
 
 	public void setAddress(long address) {
@@ -779,8 +781,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	private Node appendChild(NodeImpl last, Node child) throws DOMException {
-		String ns, prefix;
-		Attr attr;
+		// String ns, prefix;
+		// Attr attr;
 		switch (child.getNodeType()) {
 			case Node.PROCESSING_INSTRUCTION_NODE :
 				final ProcessingInstructionImpl pi = new ProcessingInstructionImpl(0);
@@ -802,15 +804,16 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		}
 	}
 
-	private void checkTree(int size) throws EXistException {
-		// check if the tree structure needs to be changed
-		System.out.println(treeLevelOrder[0]);
-		if (treeLevelOrder[0] < children + size) {
-			// recompute the order of the tree
-			treeLevelOrder[0] = children + size;
-			calculateTreeLevelStartPoints();
-		}
-	}
+	// jmv - PMD - Avoid unused private methods
+//	private void checkTree(int size) throws EXistException {
+//		// check if the tree structure needs to be changed
+//		System.out.println(treeLevelOrder[0]);
+//		if (treeLevelOrder[0] < children + size) {
+//			// recompute the order of the tree
+//			treeLevelOrder[0] = children + size;
+//			calculateTreeLevelStartPoints();
+//		}
+//	}
 	/**
 	 * @return
 	 */
