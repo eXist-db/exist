@@ -95,10 +95,10 @@ public class NativeElementIndex extends ElementIndex {
         buf.add(proxy);
     }
 
-    public NodeSet getAttributesByName(DocumentSet docs, QName qname) {
+    public NodeSet getAttributesByName(DocumentSet docs, QName qname, NodeSelector selector) {
         qname.setLocalName(qname.getLocalName());
         NodeSet result = findElementsByTagName(ElementValue.ATTRIBUTE, docs,
-                qname, null);
+                qname, selector);
         return result;
     }
 

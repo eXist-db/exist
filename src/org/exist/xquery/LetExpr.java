@@ -59,7 +59,6 @@ public class LetExpr extends BindingExpression {
 			sequenceType.checkCardinality(in);
 		}
 		var.setValue(in);
-		
 		Sequence filtered = null;
 		if (whereExpr != null) {
 			filtered = applyWhereExpression(null);

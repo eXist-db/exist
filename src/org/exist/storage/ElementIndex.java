@@ -62,7 +62,7 @@ public abstract class ElementIndex extends Observable {
 		QName qname,
 		NodeSelector selector);
 	
-	public abstract NodeSet getAttributesByName(DocumentSet docs, QName qname);
+	public abstract NodeSet getAttributesByName(DocumentSet docs, QName qname, NodeSelector selector);
 	
 	public abstract Occurrences[] scanIndexedElements(Collection collection,
 			boolean inclusive) throws PermissionDeniedException;
