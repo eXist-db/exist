@@ -537,6 +537,10 @@ public class NativeBroker extends DBBroker {
 		return result;
 	}
 
+	public Collection getCollection(String name) {
+		return getCollection(name, -1);
+	}
+
 	/**
 	 *  get collection object. If the collection does not exist, null is
 	 *  returned.
@@ -544,8 +548,8 @@ public class NativeBroker extends DBBroker {
 	 *@param  name  Description of the Parameter
 	 *@return       The collection value
 	 */
-	public Collection getCollection(String name) {
-//		final long start = System.currentTimeMillis();
+	public Collection getCollection(String name, long addr) {
+		//		final long start = System.currentTimeMillis();
 		name = normalizeCollectionName(name);
 		if (name.length() > 0 && name.charAt(0) != '/')
 			name = "/" + name;
@@ -555,12 +559,13 @@ public class NativeBroker extends DBBroker {
 
 		if (name.endsWith("/") && name.length() > 1)
 			name = name.substring(0, name.length() - 1);
-		Value key;
-		try {
-			key = new Value(name.getBytes("UTF-8"));
-		} catch (UnsupportedEncodingException uee) {
-			key = new Value(name.getBytes());
-		}
+		Value key = null;
+		if(addr == -1)
+			try {
+				key = new Value(name.getBytes("UTF-8"));
+			} catch (UnsupportedEncodingException uee) {
+				key = new Value(name.getBytes());
+			}
 		synchronized (collections) {
 			Collection collection = collections.get(name);
 			if (collection != null)
@@ -568,7 +573,11 @@ public class NativeBroker extends DBBroker {
 			collection = new Collection(this, name);
 			Value val = null;
 			synchronized (collectionsDb) {
-				val = collectionsDb.get(key);
+				if (addr < 0) {
+					LOG.debug("loading collection " + name);
+					val = collectionsDb.get(key);
+				} else
+					val = collectionsDb.get(addr);
 			}
 			if (val == null)
 				return null;
@@ -581,12 +590,12 @@ public class NativeBroker extends DBBroker {
 				return null;
 			}
 			collections.add(collection);
-//			LOG.debug(
-//				"loading collection "
-//					+ name
-//					+ " took "
-//					+ (System.currentTimeMillis() - start)
-//					+ "ms.");
+			//			LOG.debug(
+			//				"loading collection "
+			//					+ name
+			//					+ " took "
+			//					+ (System.currentTimeMillis() - start)
+			//					+ "ms.");
 			return collection;
 		}
 	}
@@ -726,7 +735,7 @@ public class NativeBroker extends DBBroker {
 		if (!collection.startsWith("/db"))
 			collection = "/db" + collection;
 		Collection root = getCollection(collection);
-		if(root == null) {
+		if (root == null) {
 			LOG.debug("collection " + collection + " not found");
 			return docs;
 		}
@@ -1275,7 +1284,7 @@ public class NativeBroker extends DBBroker {
 	 */
 	public Collection getOrCreateCollection(User user, String name)
 		throws PermissionDeniedException {
-//		final long start = System.currentTimeMillis();
+		//		final long start = System.currentTimeMillis();
 		name = normalizeCollectionName(name);
 		if (name.length() > 0 && name.charAt(0) != '/')
 			name = "/" + name;
@@ -1316,7 +1325,7 @@ public class NativeBroker extends DBBroker {
 						sub.getPermissions().setOwner(user);
 						sub.getPermissions().setGroup(user.getPrimaryGroup());
 						sub.setId(getNextCollectionId());
-						current.addCollection(temp);
+						current.addCollection(sub);
 						saveCollection(current);
 						current = sub;
 					}
@@ -1325,8 +1334,8 @@ public class NativeBroker extends DBBroker {
 				LOG.debug("database read-only");
 				return null;
 			}
-//			LOG.debug("getOrCreateCollection took " + 
-//				(System.currentTimeMillis() - start) + "ms.");
+			//			LOG.debug("getOrCreateCollection took " + 
+			//				(System.currentTimeMillis() - start) + "ms.");
 			return current;
 		}
 	}
@@ -1483,7 +1492,7 @@ public class NativeBroker extends DBBroker {
 				throw new PermissionDeniedException("not allowed to remove collection");
 
 			synchronized (collections) {
-				if(!name.equals("/db"))
+				if (!name.equals("/db"))
 					collections.clear();
 				Collection parent = collection.getParent();
 				if (parent != null) {
@@ -1555,13 +1564,13 @@ public class NativeBroker extends DBBroker {
 						}
 						return null;
 					}
-				}.run();
+				}
+				.run();
 				new DOMTransaction(this, domDb) {
 					public Object start() {
 						try {
 							Value ref = new NodeRef(doc.getDocId());
-							IndexQuery query = 
-								new IndexQuery(null, IndexQuery.TRUNC_RIGHT, ref);
+							IndexQuery query = new IndexQuery(null, IndexQuery.TRUNC_RIGHT, ref);
 							ArrayList nodes = domDb.findKeys(query);
 							for (Iterator j = nodes.iterator(); j.hasNext();) {
 								ref = (Value) j.next();
@@ -1577,7 +1586,8 @@ public class NativeBroker extends DBBroker {
 						}
 						return null;
 					}
-				}.run();
+				}
+				.run();
 			}
 			return true;
 		} catch (IOException ioe) {
@@ -1589,7 +1599,7 @@ public class NativeBroker extends DBBroker {
 		}
 		return false;
 	}
-	
+
 	/**
 	 *  Description of the Method
 	 *
@@ -1686,7 +1696,7 @@ public class NativeBroker extends DBBroker {
 					}
 					if (changed) {
 						ndata = os.toByteArray();
-						if (!elementsDb.put(key, ndata))
+						if (elementsDb.put(key, ndata) < 0)
 							LOG.debug("could not save element");
 					}
 				}
@@ -1805,9 +1815,16 @@ public class NativeBroker extends DBBroker {
 			doc.write(ostream);
 			byte[] data = ostream.toByteArray();
 			synchronized (collectionsDb) {
-				if (!collectionsDb.append(name, data)) {
+				long address = collectionsDb.append(name, data);
+				if (address < 0) {
 					LOG.debug("could not store collection data for " + collection.getName());
 					return;
+				}
+				collection.setAddress(address);
+				if (!name.equals("/db")) {
+					Collection parent = collection.getParent();
+					parent.update(collection);
+					saveCollection(parent);
 				}
 			}
 		} catch (IOException ioe) {
@@ -1840,9 +1857,16 @@ public class NativeBroker extends DBBroker {
 				final VariableByteOutputStream ostream = new VariableByteOutputStream();
 				collection.write(ostream);
 				synchronized (collectionsDb) {
-					if (!collectionsDb.put(name, ostream.toByteArray())) {
+					final long addr = collectionsDb.put(name, ostream.toByteArray());
+					if (addr < 0) {
 						LOG.debug("could not store collection data for " + collection.getName());
 						return;
+					}
+					collection.setAddress(addr);
+					if (!name.equals("/db")) {
+						Collection parent = collection.getParent();
+						parent.update(collection);
+						saveCollection(parent);
 					}
 				}
 			} catch (IOException ioe) {
@@ -1866,7 +1890,7 @@ public class NativeBroker extends DBBroker {
 			symbols.write(ostream);
 			byte[] data = ostream.toByteArray();
 			synchronized (namespacesDb) {
-				if (!namespacesDb.put(name, data)) {
+				if (namespacesDb.put(name, data) < 0) {
 					LOG.debug("could not store symbol table");
 					return;
 				}
@@ -2088,7 +2112,7 @@ public class NativeBroker extends DBBroker {
 		.run();
 
 	}
-	
+
 	public void sync() {
 		LOG.debug("syncing broker");
 		// uncomment this to get statistics on page buffer usage
@@ -2128,9 +2152,10 @@ public class NativeBroker extends DBBroker {
 				domDb.closeDocument();
 				return null;
 			}
-		}.run();
+		}
+		.run();
 	}
-	
+
 	public void update(final NodeImpl node) {
 		try {
 			final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
@@ -2151,9 +2176,14 @@ public class NativeBroker extends DBBroker {
 			}
 			.run();
 		} catch (Exception e) {
-			LOG.debug("Exception while storing " + node.getNodeName() +
-				"; gid = " + node.getGID() + "; address = " +
-				DOMFile.printAddress(node.getInternalAddress()), e);
+			LOG.debug(
+				"Exception while storing "
+					+ node.getNodeName()
+					+ "; gid = "
+					+ node.getGID()
+					+ "; address = "
+					+ DOMFile.printAddress(node.getInternalAddress()),
+				e);
 		}
 	}
 

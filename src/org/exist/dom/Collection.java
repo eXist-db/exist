@@ -23,6 +23,7 @@
  */
 package org.exist.dom;
 
+import it.unimi.dsi.fastutil.Object2LongRBTreeMap;
 import it.unimi.dsi.fastutil.Object2ObjectRBTreeMap;
 
 import java.io.DataInput;
@@ -30,9 +31,9 @@ import java.io.DataOutput;
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.apache.log4j.Category;
 import org.exist.security.Group;
@@ -46,16 +47,21 @@ import org.exist.util.VariableByteOutputStream;
 
 public class Collection implements Comparable {
 
-	protected static Category LOG =
-		Category.getInstance(Collection.class.getName());
+	private final static Category LOG =
+		Category.getInstance(Collection.class.getName());	
 	private DBBroker broker;
 	private int refCount = 0;
 	private short collectionId = -1;
 	private Object2ObjectRBTreeMap documents = new Object2ObjectRBTreeMap();
 	private String name;
 	private Permission permissions = new Permission(0755);
-	private List subcollections = 
-		Collections.synchronizedList(new ArrayList());
+	
+	// stores child-collections with their storage address
+	private Object2LongRBTreeMap subcollections = 
+		new Object2LongRBTreeMap();
+	
+	// temporary field for the storage address
+	private long address = -1;
 
 	public Collection(DBBroker broker) {
 		this.broker = broker;
@@ -71,12 +77,25 @@ public class Collection implements Comparable {
 	 *
 	 *@param  name  The feature to be added to the Collection attribute
 	 */
-	synchronized public void addCollection(String name) {
-		if (!subcollections.contains(name))
-			subcollections.add(name);
-
+	synchronized public void addCollection(Collection child) {
+		final int p = child.name.lastIndexOf('/') + 1;
+		final String childName = child.name.substring(p);
+		if (!subcollections.containsKey(childName))
+			subcollections.put(childName, child.address);
 	}
 
+	synchronized public void addCollection(String name) {
+		if(!subcollections.containsKey(name))
+			subcollections.put(name, -1);
+	}
+	
+	synchronized public void update(Collection child) {
+		final int p = child.name.lastIndexOf('/') + 1;
+		final String childName = child.name.substring(p);
+		subcollections.remove(childName);
+		subcollections.put(childName, child.address);
+	}
+	
 	/**
 	 *  Adds a feature to the Document attribute of the Collection object
 	 *
@@ -115,7 +134,7 @@ public class Collection implements Comparable {
 	 *@return    Description of the Return Value
 	 */
 	synchronized public Iterator collectionIterator() {
-		return new ArrayList(subcollections).iterator();
+		return new TreeSet(subcollections.keySet()).iterator();
 	}
 
 	/**
@@ -128,7 +147,7 @@ public class Collection implements Comparable {
 		final ArrayList cl = new ArrayList(subcollections.size());
 		Collection child;
 		String childName;
-		for (Iterator i = subcollections.iterator(); i.hasNext();) {
+		for (Iterator i = subcollections.keySet().iterator(); i.hasNext();) {
 			childName = (String) i.next();
 			child = broker.getCollection(name + '/' + childName);
 			if (permissions.validate(user, Permission.READ)) {
@@ -151,9 +170,14 @@ public class Collection implements Comparable {
 	private DocumentSet allDocs(User user, DocumentSet docs) {
 		Collection child;
 		String childName;
-		for (Iterator i = subcollections.iterator(); i.hasNext();) {
+		long addr;
+		for (Iterator i = subcollections.keySet().iterator(); i.hasNext();) {
 			childName = (String) i.next();
-			child = broker.getCollection(name + '/' + childName);
+			addr = subcollections.getLong(childName);
+			if(addr < 0)
+				child = broker.getCollection(name + '/' + childName);
+			else
+				child = broker.getCollection(name + '/' + childName, addr);
 			if (permissions.validate(user, Permission.READ)) {
 				child.getDocuments(docs);
 				if (child.getChildCollectionCount() > 0)
@@ -163,9 +187,9 @@ public class Collection implements Comparable {
 		return docs;
 	}
 
-	public void getDocuments(DocumentSet set) {
-		for (Iterator i = documents.values().iterator(); i.hasNext();)
-			set.add((DocumentImpl) i.next());
+	public void getDocuments(DocumentSet docs) {
+		docs.addCollection(this);
+		docs.addAll(documents.values());
 	}
 
 	/**
@@ -293,7 +317,7 @@ public class Collection implements Comparable {
 	 *@return       Description of the Return Value
 	 */
 	public boolean hasSubcollection(String name) {
-		return subcollections.contains(name);
+		return subcollections.containsKey(name);
 	}
 
 	/**
@@ -315,8 +339,14 @@ public class Collection implements Comparable {
 		collectionId = istream.readShort();
 		name = istream.readUTF();
 		int collLen = istream.readInt();
-		for (int i = 0; i < collLen; i++)
-			subcollections.add(istream.readUTF());
+		String collName;
+		long collAddr;
+		for (int i = 0; i < collLen; i++) {
+			collName = istream.readUTF();
+			collAddr = istream.readLong();
+			System.out.println(collName + " = " + collAddr);
+			subcollections.put(collName, collAddr);
+		}
 		permissions.read(istream);
 		DocumentImpl doc;
 		try {
@@ -332,10 +362,10 @@ public class Collection implements Comparable {
 	public void read(VariableByteInputStream istream) throws IOException {
 		collectionId = istream.readShort();
 		final int collLen = istream.readInt();
-		for (int i = 0; i < collLen; i++) {
-			final String sub = istream.readUTF();
-			subcollections.add(sub);
-		}
+		String sub;
+		for (int i = 0; i < collLen; i++)
+			subcollections.put(istream.readUTF(), istream.readLong());
+		
 		final SecurityManager secman =
 			broker.getBrokerPool().getSecurityManager();
 		final int uid = istream.readInt();
@@ -365,7 +395,7 @@ public class Collection implements Comparable {
 	 *@param  name  Description of the Parameter
 	 */
 	public void removeCollection(String name) {
-		subcollections.remove(subcollections.indexOf(name));
+		subcollections.remove(name);
 	}
 
 	/**
@@ -452,8 +482,13 @@ public class Collection implements Comparable {
 	public void write(VariableByteOutputStream ostream) throws IOException {
 		ostream.writeShort(collectionId);
 		ostream.writeInt(subcollections.size());
-		for (Iterator i = collectionIterator(); i.hasNext();)
-			ostream.writeUTF((String) i.next());
+		String childColl;
+		for (Iterator i = subcollections.keySet().iterator(); i.hasNext();) {
+			childColl = (String)i.next();
+			ostream.writeUTF(childColl);
+			ostream.writeLong(subcollections.getLong(childColl));
+			
+		}
 		org.exist.security.SecurityManager secman =
 			broker.getBrokerPool().getSecurityManager();
 		if (secman == null) {
@@ -473,6 +508,10 @@ public class Collection implements Comparable {
 		}
 	}
 
+	public void setAddress(long addr) {
+		this.address = addr;
+	}
+	
 	public void incRefCount() {
 		--refCount;
 	}

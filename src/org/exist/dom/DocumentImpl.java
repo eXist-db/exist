@@ -22,7 +22,6 @@
  */
 package org.exist.dom;
 import java.io.*;
-import java.util.Iterator;
 
 import org.apache.log4j.Category;
 import org.exist.security.Group;
