@@ -9,6 +9,7 @@ import org.w3c.dom.Document;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
+import java.util.Date; 
 
 
 public class RemoteCollectionManagementService implements CollectionManagementServiceImpl {
@@ -22,12 +23,21 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     }
 
     public Collection createCollection( String collName ) throws XMLDBException {
+           return createCollection(collName, (Date)null);
+    }
+
+    public Collection createCollection( String collName, Date created) throws XMLDBException {
         String name = collName;
         if ( ( !collName.startsWith( "/db" ) ) && parent != null )
             name = parent.getPath() + "/" + collName;
 
         Vector params = new Vector();
         params.addElement( name );
+        
+        if (created != null) {
+    		params.addElement( created );			
+    		}
+        
         try {
             client.execute( "createCollection", params );
         } catch ( XmlRpcException xre ) {
@@ -44,7 +54,9 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
         parent.addChildCollection( collection );
         return collection;
     }
-
+    
+    
+    
 
     /**
      *  Implements createCollection from interface CollectionManager. Gets

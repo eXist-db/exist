@@ -28,6 +28,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
+import org.exist.xmldb.CollectionManagementServiceImpl;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.text.ParseException;
@@ -147,12 +148,30 @@ public class Restore extends DefaultHandler {
 				final String owner = atts.getValue("owner");
 				final String group = atts.getValue("group");
 				final String mode = atts.getValue("mode");
+				final String created = atts.getValue("created");
+
+				
 				if (name == null)
 					throw new SAXException("collection requires a name " + "attribute");
 				try {
 					if(dialog != null)
 						dialog.displayMessage("creating collection " + name);
-					current = mkcol(name);
+					
+					
+					SimpleDateFormat formatter
+				     = new SimpleDateFormat ("EEE MMM dd HH:mm:ss 'CET' yyyy", Locale.US);
+					
+					Date date_created = null;
+					
+					if (created != null) {
+						try {
+						date_created = formatter.parse( created);
+						} catch (ParseException e) {							
+						}
+					}
+					 
+					
+					current = mkcol(name, date_created);
 					UserManagementService service =
 						(UserManagementService) current.getService("UserManagementService", "1.0");
 					User u = new User(owner, null, group);
@@ -260,10 +279,10 @@ public class Restore extends DefaultHandler {
 		}
 	}
 
-	private final CollectionImpl mkcol(String collPath) throws XMLDBException {
+	private final CollectionImpl mkcol(String collPath, Date created) throws XMLDBException {
 		if (collPath.startsWith("/db"))
 			collPath = collPath.substring("/db".length());
-		CollectionManagementService mgtService;
+		CollectionManagementServiceImpl mgtService;
 		Collection c;
 		Collection current = DatabaseManager.getCollection(uri + "/db", username, pass);
 		String p = "/db", token;
@@ -274,10 +293,11 @@ public class Restore extends DefaultHandler {
 			c = DatabaseManager.getCollection(uri + p, username, pass);
 			if (c == null) {
 				mgtService =
-					(CollectionManagementService) current.getService(
+					(CollectionManagementServiceImpl) current.getService(
 						"CollectionManagementService",
 						"1.0");
-				current = mgtService.createCollection(token);
+				//current = mgtService.createCollection(token);
+				current = mgtService.createCollection(token, created);
 			} else
 				current = c;
 		}

@@ -99,18 +99,22 @@ public class RpcServer implements RpcAPI {
 
     public boolean createCollection(User user, String name)
             throws EXistException, PermissionDeniedException {
-        RpcConnection con = pool.get();
-        try {
-            con.createCollection(user, name);
-            return true;
-        } catch (Exception e) {
-            handleException(e);
-            return false;
-        } finally {
-            pool.release(con);
-        }
+        return createCollection(user, name, null);
     }
 
+    public boolean createCollection(User user, String name, Date created)
+    throws EXistException, PermissionDeniedException {
+RpcConnection con = pool.get();
+try {
+    con.createCollection(user, name, created);
+    return true;
+} catch (Exception e) {
+    handleException(e);
+    return false;
+} finally {
+    pool.release(con);
+}
+}
     public String createId(User user, String collection) throws EXistException,
             PermissionDeniedException {
         RpcConnection con = pool.get();

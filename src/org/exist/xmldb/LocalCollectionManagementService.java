@@ -21,7 +21,12 @@
  */
 package org.exist.xmldb;
 
+import java.io.IOException;
+import java.util.Date;
+import java.util.Vector;
+
 import org.apache.log4j.Logger;
+import org.apache.xmlrpc.XmlRpcException;
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
@@ -55,6 +60,11 @@ public class LocalCollectionManagementService implements CollectionManagementSer
     }
 
     public Collection createCollection( String collName ) throws XMLDBException {
+        return createCollection (collName, (Date)null);
+    }
+
+    
+    public Collection createCollection( String collName, Date created) throws XMLDBException {
         collName = parent.getPath() + '/' + collName;
         DBBroker broker = null;
         try {
@@ -73,7 +83,6 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         }
         return new LocalCollection( user, brokerPool, parent, collName );
     }
-
 
     /**
      *  Creates a new collection in the database identified by name and using
