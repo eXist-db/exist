@@ -37,7 +37,12 @@ as element()+
                         <tr class="{$style}">
                             <td align="left" class="position">{$p}</td>
                             <td colspan="2">
-                                <xml-source>{$current}</xml-source>
+                                {
+                                    if ($current instance of element()) then
+                                        <xml-source>{$current}</xml-source>
+                                    else
+                                        string($current)
+                                }
                             </td>
                         </tr>
                 }
