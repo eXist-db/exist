@@ -38,6 +38,7 @@
                 <include name="backup.properties"/>
                 <include name="conf.xml"/>
                 <include name="build.xml"/>
+				<include name="log4j.xml"/>
             	<include name="LICENSE"/>
             	<include name="README"/>
 				<include name="exist.jar"/>

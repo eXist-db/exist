@@ -5,8 +5,6 @@ if not "%EXIST_HOME%" == "" goto gotExistHome
 set EXIST_HOME=$INSTALL_PATH
 
 :gotExistHome
-cd %EXIST_HOME%
-
 if not "%JAVA_HOME%" == "" goto gotJavaHome
 set JAVA_HOME=$JAVA_HOME
 
