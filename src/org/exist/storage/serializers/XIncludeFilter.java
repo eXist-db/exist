@@ -177,7 +177,7 @@ public class XIncludeFilter implements ContentHandler {
 			DocumentImpl doc = null;
 			try {
 				doc = (DocumentImpl) serializer.broker.getDocument(docName);
-				if(!doc.getPermissions().validate(serializer.broker.getUser(), Permission.READ))
+				if(doc != null && !doc.getPermissions().validate(serializer.broker.getUser(), Permission.READ))
 					throw new PermissionDeniedException("Permission denied to read xincluded resource");
 			} catch (PermissionDeniedException e) {
 				LOG.warn("permission denied", e);

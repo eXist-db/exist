@@ -5,7 +5,9 @@
     <xi:include href="header.xml"/>
     <xi:include href="sidebar.xml"/>
     
-    <xi:include href="http://wiki.exist-db.org/exec/rss?snip=start"/>
+    <xi:include href="http://wiki.exist-db.org/exec/rss?snip=start">
+        <xi:fallback></xi:fallback>
+    </xi:include>
     
     <body>
         <section id="overview" title="Overview">
@@ -144,45 +146,6 @@
 			ISBN: 0-201-84452-4. Published by Addison Wesley Professional,
 			March, 2003.</p>
 
-        </section>
-        <section id="links" title="Links">
-            <p>Some links to other software packages which build upon or provide access to eXist:</p>
-            <variablelist>
-                <varlistentry>
-                    <term>
-                        <link href="http://titanium.dstc.edu.au/xml/xmldbgui/">XMLdbGUI</link>
-                    </term>
-                    <listitem>
-                        <p>A Swing-based graphical user-interface to access databases conforming to
-							the XML:DB API.</p>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
-                        <link href="http://techweb.rfa.org/staff/bill">Python interface</link>
-                    </term>
-                    <listitem>
-                        <p>A thin Python interface to eXist.</p>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
-                        <link href="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/exist/exist_php">
-					PHP API</link>
-                    </term>
-                    <listitem>
-                        <p>PHP class to access eXist using the XMLRPC API.</p>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
-                        <link href="http://sourceforge.net/projects/xml-simpledb">XML-SimpleDB</link>
-                    </term>
-                    <listitem>
-                        <p>A perl implementation of the XML:DB API.</p>
-                    </listitem>
-                </varlistentry>
-            </variablelist>
         </section>
     </body>
 </document>

@@ -198,7 +198,8 @@ public class XQueryGenerator extends ServiceableGenerator {
 						new CocoonRequestWrapper(request, httpRequest));
 				service.declareVariable(RequestModule.PREFIX + ":response",
 						new CocoonResponseWrapper(response));
-				service.declareVariable(RequestModule.PREFIX + ":session",
+				if(session != null)
+					service.declareVariable(RequestModule.PREFIX + ":session",
 						new CocoonSessionWrapper(session));
 			}
 			declareParameters(service);
