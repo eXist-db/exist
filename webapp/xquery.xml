@@ -53,9 +53,6 @@
                 <listitem>Since schema support is missing, the value of a node
                     is always treated as xs:untypedAtomic.</listitem>
 
-                <listitem>Computed node constructors are not supported. Normal
-                    node constructors are fully supported.</listitem>
-
                 <listitem>Collations: specifying another collation than the default is not
                     possible.</listitem>
 

@@ -215,10 +215,10 @@
 
                 <topic name="WebDAV">
 
-                    <p>Limited support by <link
-                            href="http://metzner.org/projects/xincon/">XinCon</link>.
-                        No longer maintained. Should be replaced by a better
-                        implementation in the near future.</p>
+                    <p>Limited support in version 1.0b1 through Xincon. Has been
+                    completely reimplemented for 1.0b2. The new WebDAV module is now
+                    based on the internal database API to get full access to eXist's
+                    security management.</p>
                 </topic>
 
             </category> 

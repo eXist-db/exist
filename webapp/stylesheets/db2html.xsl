@@ -100,6 +100,9 @@
         <a>
             <xsl:attribute name="name"><xsl:value-of select="generate-id()"/></xsl:attribute>
         </a>
+        <xsl:if test="@id">
+            <a name="{@id}"></a>
+        </xsl:if>
         <xsl:apply-templates/>
     </xsl:template>
     

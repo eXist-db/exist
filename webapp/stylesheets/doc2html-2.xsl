@@ -55,6 +55,7 @@
                             <xsl:apply-templates select="sidebar:sidebar/sidebar:toolbar"/>
                         </tr>
                     </table>
+                    <div id="version-info">Site based on <xsl:value-of select="header/version"/></div>
                 </div>
                 <xsl:apply-templates select="sidebar:sidebar"/>
                 <xsl:apply-templates select="body"/>
@@ -97,6 +98,7 @@
     <xsl:template match="sidebar:sidebar">
         <div id="sidebar">
             <xsl:apply-templates select="sidebar:group"/>
+            
             <xsl:apply-templates select="sidebar:banner"/>
         </div>
     </xsl:template>

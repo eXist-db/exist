@@ -17,7 +17,7 @@
                 <a href="http://www.w3.org/TR/xquery/">XQuery</a>
                 processing, automatic indexing,
                 extensions for full-text search, 
-                <a href="http://www.xmldb.org/xupdate/">XUpdate</a> support 
+                <a href="http://www.smb-tec.com/xmldb/xupdate/index.html">XUpdate</a> support 
                 and tight integration with existing XML development 
                 tools. The database implements the current 
             XQuery 1.0 working draft as
@@ -31,9 +31,9 @@
             (see <a href="devguide.xml">Developer's Guide</a>).</p> 
             
             <p>Implemented features include: user-defined functions and modules, 
-            static type checking, type casts, constructors, order by, ...</p>
+            type checking, type casts, constructors, order by, ...</p>
             
-            <p>Additional features: Java binding, fultext-search functions, 
+            <p>Additional features: Java binding, fulltext-search functions, 
             extension modules for HTTP support, database manipulation and 
             XSL transformations.</p>
             
@@ -50,11 +50,6 @@
             <p>For a summary of eXist's features please have a look at
                 the <link href="facts.xml">feature sheet</link>.</p>
 
-        </section>
-
-        <section title="Online demos">
-            <p>Several <b>online demos</b> are available. Please have a look at
-                the list of <link href="examples.xml">available examples</link>.</p>
         </section>
 
         <section id="download" title="Download">
@@ -126,26 +121,6 @@
             
             <p>The channel is open for general discussion on eXist and related subjects.</p>
             
-        </section>
-        <section id="articles" title="Articles">
-            <p>If you would like to know more about the internal workings of eXist, you may
-                read the following article:</p>
-
-            <p>
-                <i>Wolfgang Meier</i>. <link href="http://exist-db.org/webdb.pdf">eXist: An 
-            Open Source Native XML Database</link>. 
-            In: Akmal B. Chaudri, Mario Jeckle, Erhard Rahm, Rainer Unland (Eds.): 
-            Web, Web-Services, and Database Systems. NODe 2002 Web- and Database-Related 
-            Workshops, Erfurt, Germany, October 2002. Springer LNCS Series, 2593.</p>
-			
-            <p>A chapter about eXist is also contained in the book:</p>
-			
-            <p>Akmal B. Chaudri, Awais Rashid, Roberto Zicari (Eds.): 
-			<link href="http://www.aw.com/catalog/academic/product/1,4096,0201844524,00.html">XML 
-			Data Management: Native XML and XML-Enabled Database Systems</link>. 
-			ISBN: 0-201-84452-4. Published by Addison Wesley Professional,
-			March, 2003.</p>
-
         </section>
     </body>
 </document>
