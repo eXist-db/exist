@@ -114,7 +114,7 @@ import org.xmldb.api.modules.XUpdateQueryService;
 /**
  * Command-line client based on the XML:DB API.
  * 
- * @author wolf @created April 2, 2002
+ * @author wolf
  */
 public class InteractiveClient {
 
@@ -1615,6 +1615,7 @@ public class InteractiveClient {
 					else {
 						document = collection.createResource(temp[i]
 								.getName(), mimeType.getXMLDBType());
+                        ((EXistResource) document).setMimeType(mimeType.getName());
 						document.setContent(temp[i]);
 						collection.storeResource(document);
 					}

@@ -452,6 +452,7 @@ public class RpcConnection extends Thread {
 							? "BinaryResource"
 							: "XMLResource");
 			hash.put("content-length", new Integer(doc.getContentLength()));
+            hash.put("mime-type", doc.getMimeType());
 			return hash;
 		} finally {
 			if(doc != null)
