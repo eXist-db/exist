@@ -7,7 +7,7 @@ import java.util.Iterator;
  * 
  * @author Wolfgang Meier
  */
-public final class OrderedLongLinkedList extends LongLinkedList {
+public class OrderedLongLinkedList extends LongLinkedList {
 
     
 	/**
@@ -22,11 +22,11 @@ public final class OrderedLongLinkedList extends LongLinkedList {
 	 */
 	public void add(long l) {
 		if (first == null) {
-			first = new ListItem(l);
+			first = createListItem(l);
 			last = first;
             count = 1;
 		} else {
-			ListItem newItem = new ListItem(l);
+			ListItem newItem = createListItem(l);
 			ListItem prev = last;
 			while (prev != null) {
                 final int cmp = newItem.compareTo(prev);

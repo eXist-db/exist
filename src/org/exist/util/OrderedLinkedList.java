@@ -22,8 +22,12 @@ package org.exist.util;
 
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
+
 public class OrderedLinkedList {
 
+	private final static Logger LOG = Logger.getLogger(OrderedLinkedList.class);
+	
 	public abstract static class Node {
 		Node next = null;
 		Node prev = null;
