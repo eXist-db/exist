@@ -13,6 +13,9 @@ import javax.xml.transform.sax.*;
 import org.xml.sax.*;
 import org.w3c.dom.*;
 
+/**
+ * @author jmv
+ */
 public class DOMTest {
 
 	private static String driver = "org.exist.xmldb.DatabaseImpl";
@@ -32,6 +35,12 @@ public class DOMTest {
 		tester.runTest4(true);
 	}
 	
+	/** 
+	 * - Storing XML resource from XML string
+	 * - simple XQuery
+	 * - removing resource
+	 * - shutdown with the DatabaseInstanceManager
+	 */
 	public void runTest1() {
 		try {
 			System.out.println("Running test1 ...");
@@ -87,7 +96,11 @@ public class DOMTest {
 			e.printStackTrace();
 		}
 	}
-
+	/** 
+	 * - create and fill a simple document via DOM and JAXP
+	 * - store it with setContentAsDOM()
+	 * - simple access via getContentAsDOM()
+	 * */
 	public void runTest2() {
 		try {
 			System.out.println("Running test 2 ...");
@@ -160,7 +173,8 @@ public class DOMTest {
 			e.printStackTrace();
 		}
 	}
-
+	
+	/** like test 2 but add attribute and text as well */
 	public void runTest3() {
 		try {
 			System.out.println("Running test 3 ...");
@@ -214,6 +228,7 @@ public class DOMTest {
 		}
 	}
 
+	/** like test 3 but uses the DOM as input to an (identity) XSLT transform */
 	public void runTest4(boolean getContentAsDOM) {
 		Database database = null;
 		try {
