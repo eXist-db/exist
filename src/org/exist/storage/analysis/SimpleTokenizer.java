@@ -6,8 +6,7 @@ package org.exist.storage.analysis;
  * tokenizing a string into words. Known token types are defined
  * by class Token.
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    July 30, 2002
+ *@author     Wolfgang Meier
  */
 public class SimpleTokenizer implements Tokenizer {
 	private int pos = 0;
@@ -72,7 +71,7 @@ public class SimpleTokenizer implements Tokenizer {
 	}
 
 	private final static boolean isWildcard(char ch) {
-		if (ch == '?' || ch == '*' || ch == '[' || ch == ']')
+		if (ch == '?' || ch == '*')
 			return true;
 		return false;
 	}
