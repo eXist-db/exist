@@ -526,7 +526,7 @@ public class ClientFrame extends JFrame {
 	private void newCollectionAction(ActionEvent ev) {
 		String newCol = JOptionPane.showInputDialog(this, "Please enter name of new collection");
 		if (newCol != null) {
-			String command = "mkcol " + newCol;
+			String command = "mkcol \"" + newCol + '"';
 			display(command + "\n");
 			process.setAction(command);
 		}
@@ -563,9 +563,9 @@ public class ClientFrame extends JFrame {
 			for (int i = 0; i < rows.length; i++) {
 				Object resource = (Object) resources.getValueAt(rows[i], 3);
 				if (resource instanceof InteractiveClient.CollectionName)
-					cmd = "rmcol " + resource;
+					cmd = "rmcol \"" + resource + '"';
 				else
-					cmd = "rm " + resource;
+					cmd = "rm \"" + resource + '"';
 				v.add(cmd);
 			}
 		}
@@ -804,7 +804,7 @@ public class ClientFrame extends JFrame {
 				int row = fileman.getSelectedRow();
 				final Object resource = (Object) resources.getValueAt(row, 3);
 				if (resource instanceof InteractiveClient.CollectionName) {
-					String command = "cd " + resource;
+					String command = "cd \"" + resource + '"';
 					display(command + "\n");
 					process.setAction(command);
 				} else {

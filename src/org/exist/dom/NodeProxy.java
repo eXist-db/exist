@@ -33,6 +33,7 @@ import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.StringValue;
 import org.exist.xpath.value.Type;
+import org.exist.xpath.value.UntypedAtomicValue;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -511,7 +512,7 @@ public final class NodeProxy extends AbstractNodeSet implements NodeValue, Compa
 	 * @see org.exist.xpath.value.Item#atomize()
 	 */
 	public AtomicValue atomize() throws XPathException {
-		return new StringValue(getNodeValue());
+		return new UntypedAtomicValue(getNodeValue());
 	}
 
 	/* -----------------------------------------------*

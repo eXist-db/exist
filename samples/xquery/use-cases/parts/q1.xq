@@ -2,9 +2,9 @@ declare namespace f="my-functions.uri";
 declare function f:one_level ($p as element()) as element()
 {
     <part partid="{ $p/@partid }"
-          name="{ $p/@name }">
+          name="{ $p/@name }" >
         {
-            for $s in doc("partlist.xml")//part
+            for $s in doc("parts.xml")//part
             where $s/@partof = $p/@partid
             return f:one_level($s)
         }
@@ -13,7 +13,7 @@ declare function f:one_level ($p as element()) as element()
 
 <parttree>
   {
-    for $p in doc("partlist.xml")//part[empty(@partof)]
+    for $p in doc("parts.xml")//part[empty(@partof)]
     return f:one_level($p)
   }
 </parttree>

@@ -274,18 +274,18 @@ public class GeneralComparison extends BinaryOp {
 		throws XPathException {
 		int ltype = lv.getType();
 		int rtype = rv.getType();
-		if (ltype == Type.ITEM) {
-			if (Type.subTypeOf(rtype, Type.NUMBER))
+		if (ltype == Type.ITEM || ltype == Type.ATOMIC) {
+			if (Type.subTypeOf(rtype, Type.NUMBER)) {
 				lv = lv.convertTo(Type.DOUBLE);
-			else if (rtype == Type.ITEM) {
+			} else if (rtype == Type.ITEM || rtype == Type.ATOMIC) {
 				lv = lv.convertTo(Type.STRING);
 				rv = rv.convertTo(Type.STRING);
 			} else
 				lv = lv.convertTo(rv.getType());
-		} else if (rtype == Type.ITEM) {
-			if (Type.subTypeOf(ltype, Type.NUMBER))
+		} else if (rtype == Type.ITEM || rtype == Type.ATOMIC) {
+			if (Type.subTypeOf(ltype, Type.NUMBER)) {
 				rv = rv.convertTo(Type.DOUBLE);
-			else if (rtype == Type.ITEM) {
+			} else if (rtype == Type.ITEM || rtype == Type.ATOMIC) {
 				lv = lv.convertTo(Type.STRING);
 				rv = rv.convertTo(Type.STRING);
 			} else
@@ -300,8 +300,8 @@ public class GeneralComparison extends BinaryOp {
 				rv = rv.convertTo(Type.DOUBLE);
 			}
 		}
-		//		System.out.println(
-		//			lv.getStringValue() + Constants.OPS[relation] + rv.getStringValue());
+				System.out.println(
+					lv.getStringValue() + Constants.OPS[relation] + rv.getStringValue());
 		return lv.compareTo(relation, rv);
 	}
 

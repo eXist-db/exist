@@ -374,7 +374,7 @@ public class NativeBroker extends DBBroker {
 	 *@return          Description of the Return Value
 	 */
 	public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname) {
-		final long start = System.currentTimeMillis();
+		//final long start = System.currentTimeMillis();
 		//final ArraySet result = new ArraySet(10000);
 		final ExtArrayNodeSet result = new ExtArrayNodeSet(256);
 		DocumentImpl doc;
@@ -436,14 +436,14 @@ public class NativeBroker extends DBBroker {
 			}
 		}
 		result.sort();
-		LOG.debug(
-			"found "
-				+ qname
-				+ ": "
-				+ result.getLength()
-				+ " in "
-				+ (System.currentTimeMillis() - start)
-				+ "ms.");
+//		LOG.debug(
+//			"found "
+//				+ qname
+//				+ ": "
+//				+ result.getLength()
+//				+ " in "
+//				+ (System.currentTimeMillis() - start)
+//				+ "ms.");
 		return result;
 	}
 

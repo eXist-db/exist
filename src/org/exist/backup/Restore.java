@@ -177,7 +177,7 @@ public class Restore extends DefaultHandler {
 				final String group = atts.getValue("group");
 				final String perms = atts.getValue("mode");
 				if (name == null)
-					throw new SAXException("collection requires a name " + "attribute");
+					throw new SAXException("collection requires a name attribute");
 				final File f =
 					new File(
 						contents.getParentFile().getAbsolutePath() + File.separatorChar + name);

@@ -602,7 +602,7 @@ elementConstructor
 elementWithoutAttributes
 { String name= null; }
 :
-	LT name=qName
+	LT name=qName ( WS! )?
 	(
 		(
 			SLASH! GT!
@@ -621,7 +621,7 @@ elementWithoutAttributes
 				lexer.inElementContent= true;
 				lexer.wsExplicit= false;
 			}
-			content:mixedElementContent END_TAG_START! name=qName! GT!
+			content:mixedElementContent END_TAG_START! name=qName! ( WS! )? GT!
 			{
 				if (elementStack.isEmpty())
 					throw new RecognitionException("found wrong closing tag: " + name);
