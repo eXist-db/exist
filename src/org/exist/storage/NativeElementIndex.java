@@ -69,6 +69,13 @@ import org.w3c.dom.Node;
  */
 public class NativeElementIndex extends ElementIndex {
 
+    public static long accTime = 0;
+    public static int count = 0;
+    
+    public static long getTime() {
+        return accTime / count;
+    }
+    
     private static Logger LOG = Logger.getLogger(NativeElementIndex.class
             .getName());
 
@@ -117,7 +124,7 @@ public class NativeElementIndex extends ElementIndex {
      */
     public NodeSet findElementsByTagName(byte type, DocumentSet docs,
             QName qname, NodeSelector selector) {
-//    	final long start = System.currentTimeMillis();
+    	final long start = System.currentTimeMillis();
         final ExtArrayNodeSet result = new ExtArrayNodeSet(docs.getLength(),
                 256);
         final SymbolTable symbols = broker.getSymbols();
@@ -198,14 +205,16 @@ public class NativeElementIndex extends ElementIndex {
         }
 //        LOG.debug(debug.toString());
         //		result.sort();
-//        LOG.debug(
-//        		"found "
-//        		+ qname
-//				+ ": "
-//				+ result.getLength()
-//				+ " in "
-//				+ (System.currentTimeMillis() - start)
-//				+ "ms.");
+        count++;
+        accTime += (System.currentTimeMillis() - start);
+        LOG.debug(
+        		"found "
+        		+ qname
+				+ ": "
+				+ result.getLength()
+				+ " in "
+				+ (System.currentTimeMillis() - start)
+				+ "ms.");
         return result;
     }
 
