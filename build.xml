@@ -306,16 +306,19 @@ Running tests on a local database instance
     </target>
 
 	<target name="test-concurrent">
+        <delete failonerror="false">
+			<fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
+        </delete>
 		<echo>
 -----------------
 Concurrency tests
 -----------------
 		</echo>
-        <junit haltonfailure="yes" printsummary="yes" 
-        	showoutput="${junit.output}">
+        <junit haltonfailure="yes" printsummary="on" 
+        	showoutput="${junit.output}" fork="no">
         	<classpath refid="classpath.core"/>
             <formatter type="plain"/>
-			<test fork="yes" name="org.exist.xmldb.test.concurrent.AllTests"
+			<test name="org.exist.xmldb.test.concurrent.AllTests"
 				todir="${junit.reports}"/>
 		</junit>
 	</target>
