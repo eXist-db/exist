@@ -33,7 +33,6 @@ import javax.xml.transform.TransformerException;
 
 import org.exist.util.Range;
 import org.exist.util.serializer.DOMSerializer;
-import org.exist.util.serializer.DOMSerializerPool;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -49,15 +48,12 @@ import org.w3c.dom.Text;
 public class XMLUtil {
 
 	public final static String dump(DocumentFragment fragment) {
-		DOMSerializer serializer = DOMSerializerPool.getInstance().borrowDOMSerializer();
-		serializer.reset();
-		StringWriter writer = new StringWriter();
-		serializer.setWriter(writer);
+        StringWriter writer = new StringWriter();
+		DOMSerializer serializer = new DOMSerializer();
+        serializer.setWriter(writer);
 		try {
 			serializer.serialize(fragment);
 		} catch (TransformerException e) {
-		} finally {
-			DOMSerializerPool.getInstance().returnDOMSerializer(serializer);
 		}
 		return writer.toString();
 	}

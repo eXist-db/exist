@@ -23,7 +23,6 @@ import javax.xml.transform.TransformerException;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;
 import org.exist.util.serializer.DOMSerializer;
-import org.exist.util.serializer.DOMSerializerPool;
 import org.exist.util.serializer.SAXSerializer;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -264,10 +263,7 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 
 	public void setContentAsDOM(Node root) throws XMLDBException {
 		StringWriter sout = new StringWriter();
-		DOMSerializer xmlout = DOMSerializerPool.getInstance().borrowDOMSerializer();
-		xmlout.reset();
-		xmlout.setOutputProperties(getProperties());
-		xmlout.setWriter(sout);
+		DOMSerializer xmlout = new DOMSerializer(sout, getProperties());
 		try {
 			switch (root.getNodeType()) {
 				case Node.ELEMENT_NODE :
@@ -285,8 +281,6 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 			content = sout.toString();
 		} catch (TransformerException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		} finally {
-			DOMSerializerPool.getInstance().returnDOMSerializer(xmlout);
 		}
 	}
 
