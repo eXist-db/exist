@@ -81,6 +81,12 @@
             <p>The distribution includes source code and all required third
                 party libraries. The current version is 1.0beta1. For instructions on starting eXist,
                 read the <link href="quickstart.xml">Quick Start Guide</link>.</p>
+
+            <p><emphasis>If you are updating from a previous release, please do
+                    a backup of your old data first, then restore it into the
+                    new release. The binary format of the data files
+                    changed!</emphasis></p>
+
             <table cellpadding="5" cellspacing="5">
                 <tr>
                     <th align="left">Stable version</th>

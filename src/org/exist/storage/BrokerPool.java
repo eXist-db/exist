@@ -215,12 +215,6 @@ public class BrokerPool {
 		return conf;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@return                     Description of the Return Value
-	 *@exception  EXistException  Description of the Exception
-	 */
 	protected DBBroker createBroker() throws EXistException {
 		DBBroker broker = BrokerFactory.getInstance(this, conf);
 		LOG.debug(
