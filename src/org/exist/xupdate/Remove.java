@@ -1,8 +1,27 @@
+/*
+ * eXist Open Source Native XML Database Copyright (C) 2001-04 Wolfgang M. Meier
+ * wolfgang@exist-db.org http://exist.sourceforge.net
+ * 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation, Inc.,
+ * 675 Mass Ave, Cambridge, MA 02139, USA.
+ * 
+ * $Id$
+ */
 package org.exist.xupdate;
 
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
@@ -11,70 +30,75 @@ import org.exist.dom.NodeImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.util.LockException;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Node;
 
 /**
- * Remove.java
+ * Implements an XUpdate remove operation.
  * 
  * @author Wolfgang Meier
  */
 public class Remove extends Modification {
 
-	private final static Logger LOG = Logger.getLogger(Remove.class);
+    /**
+     * Constructor for Remove.
+     * 
+     * @param pool
+     * @param user
+     * @param selectStmt
+     */
+    public Remove(DBBroker broker, DocumentSet docs, String selectStmt,
+            Map namespaces) {
+        super(broker, docs, selectStmt, namespaces);
+    }
 
-	/**
-	 * Constructor for Remove.
-	 * @param pool
-	 * @param user
-	 * @param selectStmt
-	 */
-	public Remove(DBBroker broker, DocumentSet docs, String selectStmt, Map namespaces) {
-		super(broker, docs, selectStmt, namespaces);
-	}
+    /**
+     * @see org.exist.xupdate.Modification#process(org.exist.dom.DocumentSet)
+     */
+    public long process() throws PermissionDeniedException, LockException,
+            EXistException, XPathException {
+        try {
+            NodeImpl[] ql = selectAndLock();
+            IndexListener listener = new IndexListener(ql);
+            NodeImpl node;
+            Node parent;
+            DocumentImpl doc = null;
+            Collection collection = null, prevCollection = null;
+            for (int i = 0; i < ql.length; i++) {
+                node = ql[i];
+                doc = (DocumentImpl) node.getOwnerDocument();
+                if (!doc.getPermissions().validate(broker.getUser(),
+                        Permission.UPDATE))
+                        throw new PermissionDeniedException(
+                                "permission to remove document denied");
+                collection = doc.getCollection();
+                if (prevCollection != null && collection != prevCollection)
+                        doc.getBroker().saveCollection(prevCollection);
+                doc.setIndexListener(listener);
+                parent = node.getParentNode();
+                if (parent.getNodeType() != Node.ELEMENT_NODE) {
+                    throw new EXistException(
+                            "you cannot remove the document element. Use update "
+                                    + "instead");
+                } else
+                    parent.removeChild(node);
+                doc.clearIndexListener();
+                doc.setLastModified(System.currentTimeMillis());
+                prevCollection = collection;
+            }
+            if (doc != null) doc.getBroker().saveCollection(collection);
+            return ql.length;
+        } finally {
+            unlockDocuments();
+        }
+    }
 
-	/**
-	 * @see org.exist.xupdate.Modification#process(org.exist.dom.DocumentSet)
-	 */
-	public long process()
-		throws PermissionDeniedException, EXistException, XPathException {
-		NodeImpl[] qr = select(docs);
-		if(qr == null)
-			return 0;
-		IndexListener listener = new IndexListener(qr);
-		NodeImpl node;
-		Node parent;
-		DocumentImpl doc = null;
-		Collection collection = null, prevCollection = null;
-		for(int i = 0; i < qr.length; i++) {
-			node = qr[i];
-			doc = (DocumentImpl) node.getOwnerDocument();
-			if (!doc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
-				throw new PermissionDeniedException("permission to remove document denied");
-			collection = doc.getCollection();
-			if(prevCollection != null && collection != prevCollection)
-				doc.getBroker().saveCollection(prevCollection);
-			doc.setIndexListener(listener);
-			parent = node.getParentNode();
-			if (parent.getNodeType() != Node.ELEMENT_NODE) {
-				throw new EXistException("you cannot remove the document element. Use update " +
-					"instead");
-			} else
-				parent.removeChild(node);
-			doc.clearIndexListener();
-			doc.setLastModified(System.currentTimeMillis());
-			prevCollection = collection;
-		}
-		if(doc != null)
-			doc.getBroker().saveCollection(collection);
-		return qr.length;
-	}
-
-	/**
-	 * @see org.exist.xupdate.Modification#getName()
-	 */
-	public String getName() {
-		return "remove";
-	}
+    /**
+     * @see org.exist.xupdate.Modification#getName()
+     */
+    public String getName() {
+        return "remove";
+    }
 
 }

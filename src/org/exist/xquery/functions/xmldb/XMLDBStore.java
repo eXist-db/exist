@@ -96,6 +96,7 @@ public class XMLDBStore extends BasicFunction {
 			} else
 				throw new XPathException("Data should be either a node or a string");
 			collection.storeResource(resource);
+			context.getRootExpression().resetState();
 		} catch (XMLDBException e) {
 			throw new XPathException(
 				"XMLDB reported an exception while storing document",

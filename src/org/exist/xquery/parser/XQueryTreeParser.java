@@ -1,4 +1,4 @@
-// $ANTLR 2.7.2: "XQuery.g" -> "XQueryTreeParser.java"$
+// $ANTLR 2.7.4: "XQuery.g" -> "XQueryTreeParser.java"$
 
 	package org.exist.xquery.parser;
 
@@ -104,7 +104,7 @@ public XQueryTreeParser() {
 		PathExpr path
 	) throws RecognitionException {
 		
-		org.exist.xquery.parser.XQueryAST xpointer_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST xpointer_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		org.exist.xquery.parser.XQueryAST nc = null;
 		Expression step = null;
 		
@@ -169,7 +169,7 @@ public XQueryTreeParser() {
 	) throws RecognitionException, PermissionDeniedException,EXistException,XPathException {
 		Expression step;
 		
-		org.exist.xquery.parser.XQueryAST expr_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST expr_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		org.exist.xquery.parser.XQueryAST castAST = null;
 		org.exist.xquery.parser.XQueryAST t = null;
 		org.exist.xquery.parser.XQueryAST someVarName = null;
@@ -1984,7 +1984,7 @@ public XQueryTreeParser() {
 		PathExpr path
 	) throws RecognitionException {
 		
-		org.exist.xquery.parser.XQueryAST xpath_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST xpath_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		context.setRootExpression(path);
 		
 		try {      // for error handling
@@ -2013,7 +2013,7 @@ public XQueryTreeParser() {
 		PathExpr path
 	) throws RecognitionException, PermissionDeniedException,EXistException,XPathException {
 		
-		org.exist.xquery.parser.XQueryAST module_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST module_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		org.exist.xquery.parser.XQueryAST m = null;
 		org.exist.xquery.parser.XQueryAST uri = null;
 		Expression step = null;
@@ -2140,7 +2140,7 @@ public XQueryTreeParser() {
 		PathExpr path
 	) throws RecognitionException, PermissionDeniedException,EXistException,XPathException {
 		
-		org.exist.xquery.parser.XQueryAST prolog_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST prolog_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		org.exist.xquery.parser.XQueryAST v = null;
 		org.exist.xquery.parser.XQueryAST prefix = null;
 		org.exist.xquery.parser.XQueryAST uri = null;
@@ -2523,7 +2523,7 @@ public XQueryTreeParser() {
 		SequenceType type
 	) throws RecognitionException, XPathException {
 		
-		org.exist.xquery.parser.XQueryAST sequenceType_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST sequenceType_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		org.exist.xquery.parser.XQueryAST t = null;
 		
 		{
@@ -2696,7 +2696,7 @@ public XQueryTreeParser() {
 		PathExpr path
 	) throws RecognitionException, PermissionDeniedException,EXistException,XPathException {
 		
-		org.exist.xquery.parser.XQueryAST functionDecl_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST functionDecl_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		org.exist.xquery.parser.XQueryAST name = null;
 		Expression step = null;
 		
@@ -2790,7 +2790,7 @@ public XQueryTreeParser() {
 		List vars
 	) throws RecognitionException, XPathException {
 		
-		org.exist.xquery.parser.XQueryAST paramList_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST paramList_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		
 		param(_t,vars);
 		_t = _retTree;
@@ -2815,7 +2815,7 @@ public XQueryTreeParser() {
 		List vars
 	) throws RecognitionException, XPathException {
 		
-		org.exist.xquery.parser.XQueryAST param_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST param_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		org.exist.xquery.parser.XQueryAST varname = null;
 		
 		AST __t269 = _t;
@@ -2863,7 +2863,7 @@ public XQueryTreeParser() {
 	) throws RecognitionException, PermissionDeniedException,EXistException,XPathException {
 		Expression step;
 		
-		org.exist.xquery.parser.XQueryAST generalComp_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST generalComp_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		org.exist.xquery.parser.XQueryAST eq = null;
 		org.exist.xquery.parser.XQueryAST neq = null;
 		org.exist.xquery.parser.XQueryAST lt = null;
@@ -3006,7 +3006,7 @@ public XQueryTreeParser() {
 	) throws RecognitionException, PermissionDeniedException,EXistException,XPathException {
 		Expression step;
 		
-		org.exist.xquery.parser.XQueryAST valueComp_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST valueComp_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		org.exist.xquery.parser.XQueryAST eq = null;
 		org.exist.xquery.parser.XQueryAST ne = null;
 		org.exist.xquery.parser.XQueryAST lt = null;
@@ -3149,7 +3149,7 @@ public XQueryTreeParser() {
 	) throws RecognitionException, PermissionDeniedException,EXistException,XPathException {
 		Expression step;
 		
-		org.exist.xquery.parser.XQueryAST nodeComp_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST nodeComp_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		org.exist.xquery.parser.XQueryAST is = null;
 		org.exist.xquery.parser.XQueryAST isnot = null;
 		org.exist.xquery.parser.XQueryAST before = null;
@@ -3252,7 +3252,7 @@ public XQueryTreeParser() {
 	) throws RecognitionException, PermissionDeniedException,EXistException,XPathException {
 		Expression step;
 		
-		org.exist.xquery.parser.XQueryAST fulltextComp_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST fulltextComp_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		
 			step= null;
 			PathExpr nodes= new PathExpr(context);
@@ -3315,7 +3315,7 @@ public XQueryTreeParser() {
 	) throws RecognitionException, PermissionDeniedException,EXistException,XPathException {
 		Expression step;
 		
-		org.exist.xquery.parser.XQueryAST primaryExpr_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST primaryExpr_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		org.exist.xquery.parser.XQueryAST v = null;
 		
 			step = null;
@@ -3494,7 +3494,7 @@ public XQueryTreeParser() {
 	) throws RecognitionException, PermissionDeniedException,EXistException,XPathException {
 		Expression step;
 		
-		org.exist.xquery.parser.XQueryAST pathExpr_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST pathExpr_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		org.exist.xquery.parser.XQueryAST qn = null;
 		org.exist.xquery.parser.XQueryAST nc1 = null;
 		org.exist.xquery.parser.XQueryAST nc = null;
@@ -4050,7 +4050,7 @@ public XQueryTreeParser() {
 	) throws RecognitionException, PermissionDeniedException,EXistException,XPathException {
 		Expression step;
 		
-		org.exist.xquery.parser.XQueryAST numericExpr_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST numericExpr_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		org.exist.xquery.parser.XQueryAST plus = null;
 		org.exist.xquery.parser.XQueryAST minus = null;
 		org.exist.xquery.parser.XQueryAST uminus = null;
@@ -4239,7 +4239,7 @@ public XQueryTreeParser() {
 	) throws RecognitionException, PermissionDeniedException,EXistException,XPathException {
 		Expression step;
 		
-		org.exist.xquery.parser.XQueryAST constructor_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST constructor_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		org.exist.xquery.parser.XQueryAST e = null;
 		org.exist.xquery.parser.XQueryAST attrName = null;
 		org.exist.xquery.parser.XQueryAST attrVal = null;
@@ -4426,7 +4426,7 @@ public XQueryTreeParser() {
 	) throws RecognitionException, PermissionDeniedException,EXistException,XPathException {
 		Expression step;
 		
-		org.exist.xquery.parser.XQueryAST predicates_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST predicates_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		
 			FilteredExpression filter= null;
 			step= expression;
@@ -4471,7 +4471,7 @@ public XQueryTreeParser() {
 	) throws RecognitionException, XPathException {
 		Expression step;
 		
-		org.exist.xquery.parser.XQueryAST literalExpr_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST literalExpr_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		org.exist.xquery.parser.XQueryAST c = null;
 		org.exist.xquery.parser.XQueryAST i = null;
 		org.exist.xquery.parser.XQueryAST dec = null;
@@ -4553,7 +4553,7 @@ public XQueryTreeParser() {
 	) throws RecognitionException, PermissionDeniedException,EXistException,XPathException {
 		Expression step;
 		
-		org.exist.xquery.parser.XQueryAST functionCall_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST functionCall_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		org.exist.xquery.parser.XQueryAST fn = null;
 		
 			PathExpr pathExpr;
@@ -4591,7 +4591,7 @@ public XQueryTreeParser() {
 	public final int  forwardAxis(AST _t) throws RecognitionException, PermissionDeniedException,EXistException {
 		int axis;
 		
-		org.exist.xquery.parser.XQueryAST forwardAxis_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST forwardAxis_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		axis= -1;
 		
 		if (_t==null) _t=ASTNULL;
@@ -4705,7 +4705,7 @@ public XQueryTreeParser() {
 		LocationStep step
 	) throws RecognitionException, PermissionDeniedException,EXistException,XPathException {
 		
-		org.exist.xquery.parser.XQueryAST predicate_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
+		org.exist.xquery.parser.XQueryAST predicate_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		
 		AST __t376 = _t;
 		org.exist.xquery.parser.XQueryAST tmp78_AST_in = (org.exist.xquery.parser.XQueryAST)_t;

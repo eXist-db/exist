@@ -54,12 +54,17 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	private Int2ObjectHashMap map;
 	private int initalSize = 128;
 	private int size = 0;
+	
 	private boolean isSorted = false;
 	private boolean isInDocumentOrder = false;
+	
 	private int lastDoc = -1;
 	private Part lastPart = null;
+	
 	private int state = 0;
 
+	private DocumentSet cachedDocuments = null;
+	
 	public ExtArrayNodeSet() {
 		this.map = new Int2ObjectHashMap(17);
 	}
@@ -111,6 +116,7 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 
 	private void setHasChanged() {
 		state = (state == Integer.MAX_VALUE ? state = 0 : state + 1);
+		cachedDocuments = null;
 	}
 
 	public int getSizeHint(DocumentImpl doc) {
@@ -389,26 +395,17 @@ public final class ExtArrayNodeSet extends AbstractNodeSet {
 	}
 
 	public DocumentSet getDocumentSet() {
-	    DocumentSet ds = new DocumentSet();
-		if (!isSorted)
-			size = 0;
+	    if(cachedDocuments != null)
+	        return cachedDocuments;
+	    cachedDocuments = new DocumentSet(map.size());
+	    sort();
 		Part part;
-		DocumentImpl doc, last = null;
 		for (Iterator i = map.valueIterator(); i.hasNext();) {
 			part = (Part) i.next();
-			if (!isSorted) {
-				part.sort();
-				size += part.removeDuplicates();
-			}
-			for (int j = 0; j < part.length; j++) {
-				doc = part.array[j].doc;
-				if (last == null || last.docId != doc.docId)
-					ds.add(part.array[j].doc);
-				last = doc;
-			}
+			cachedDocuments.add(part.doc, false);
 		}
 		isSorted = true;
-		return ds;
+		return cachedDocuments;
 	}
 
 	/*

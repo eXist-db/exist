@@ -5,20 +5,6 @@
     <xi:include href="header.xml"/>
     <xi:include href="sidebar.xml"/>
     <body>
-        <section title="News">
-            <definitionlist>
-                <definition>
-                    <term>
-                        <b>February 2, 2004</b>
-                    </term>
-                    <def>
-                        After a month of testing and many bug-fixes, the first beta
-                        of eXist 1.0 is finally available. Have a look at the
-                        <link href="examples.xml">examples page</link> to get
-                        an impression of eXist's new features.</def>
-                </definition>
-            </definitionlist>
-        </section>
         <section id="overview" title="Overview">
             
             <p>eXist is an Open Source native XML database featuring
@@ -128,6 +114,13 @@
 			contributing to eXist, you are encouraged to join the list.</p>
 			
             <p>The list is archived at <a href="http://news.gmane.org/thread.php?group=gmane.text.xml.exist">Gmane</a>.</p>
+            
+            <p>The project also has an IRC channel at</p>
+            
+            <p><b>#existdb@irc.freenode.net</b></p>
+            
+            <p>The channel is open for general discussion on eXist and related subjects.</p>
+            
         </section>
         <section id="articles" title="Articles">
             <p>If you would like to know more about the internal workings of eXist, you may

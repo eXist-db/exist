@@ -521,7 +521,7 @@ public class RpcConnection extends Thread {
 	}
 
 	public int xupdate(User user, String collectionName, String xupdate)
-			throws SAXException, PermissionDeniedException, EXistException,
+			throws SAXException, LockException, PermissionDeniedException, EXistException,
 			XPathException {
 		DBBroker broker = null;
 		try {
@@ -530,7 +530,7 @@ public class RpcConnection extends Thread {
 			if (collection == null)
 				throw new EXistException("collection " + collectionName
 						+ " not found");
-			DocumentSet docs = collection.allDocs(broker, new DocumentSet(),
+			DocumentSet docs = collection.allDocs(broker, new DocumentSet(true),
 					true);
 			XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
 			Modification modifications[] = processor.parse(new InputSource(
@@ -551,7 +551,7 @@ public class RpcConnection extends Thread {
 	}
 
 	public int xupdateResource(User user, String resource, String xupdate)
-			throws SAXException, PermissionDeniedException, EXistException,
+			throws SAXException, LockException, PermissionDeniedException, EXistException,
 			XPathException {
 		DBBroker broker = null;
 		try {
@@ -559,7 +559,7 @@ public class RpcConnection extends Thread {
 			Document doc = broker.getDocument(resource);
 			if (doc == null)
 				throw new EXistException("document " + resource + " not found");
-			DocumentSet docs = new DocumentSet();
+			DocumentSet docs = new DocumentSet(true);
 			docs.add(doc);
 			XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
 			Modification modifications[] = processor.parse(new InputSource(

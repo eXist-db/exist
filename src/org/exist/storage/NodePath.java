@@ -25,7 +25,6 @@ package org.exist.storage;
 import java.util.StringTokenizer;
 
 import org.exist.util.FastStringBuffer;
-import org.exist.util.MutableStringTokenizer;
 
 
 /**
@@ -81,29 +80,6 @@ public class NodePath {
         }
         return i == pos;
     }
-    
-    public final boolean match( CharSequence other) {
-		int i = 0;
-		boolean skip = false;
-		MutableStringTokenizer tokenizer = new MutableStringTokenizer(other, "/");
-		CharSequence next;
-		while((next = tokenizer.nextToken()) != null) {
-			if(i == pos)
-				return true;
-			if(components[i].equals(WILDCARD)) {
-				++i;
-				skip = true;
-			}
-			if(next.equals(components[i])) {
-				++i;
-				skip = false;
-			} else if(skip) {
-				continue;
-			} else
-				return false;
-		}
-		return i == pos;
-	}
     
     public void reset() {
         for(int i = 0;  i < components.length; i++)

@@ -34,6 +34,8 @@ import org.exist.security.User;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.sync.SyncDaemon;
 import org.exist.util.Configuration;
+import org.exist.util.Lock;
+import org.exist.util.ReentrantReadWriteLock;
 import org.exist.xmldb.ShutdownListener;
 
 /**
@@ -46,14 +48,13 @@ import org.exist.xmldb.ShutdownListener;
  * 
  *
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    9. Mai 2002
  */
 public class BrokerPool {
 
-	private static Logger LOG = Logger.getLogger(BrokerPool.class);
-	private static TreeMap instances = new TreeMap();
+	private final static Logger LOG = Logger.getLogger(BrokerPool.class);
+	private final static TreeMap instances = new TreeMap();
 	private static long timeOut = 30000L;
-	private static ShutdownThread shutdownThread = new ShutdownThread();
+	private final static ShutdownThread shutdownThread = new ShutdownThread();
 	
 	public final static String DEFAULT_INSTANCE = "exist";
 
@@ -168,6 +169,7 @@ public class BrokerPool {
 	private SyncDaemon syncDaemon;
 	private ShutdownListener shutdownListener = null;
 	private XQueryPool xqueryCache;
+	private Lock globalXUpdateLock = new ReentrantReadWriteLock("xupdate");
 
 	/**
 	 *  Constructor for the BrokerPool object
@@ -208,14 +210,16 @@ public class BrokerPool {
 	}
 
 	/**
-	 *  Number of available Brokers in this pool.
-	 *
-	 *@return    Description of the Return Value
+	 *  Number of available Brokers for the current database instance.
 	 */
 	public int available() {
 		return pool.size();
 	}
 
+	/**
+	 * Returns the configuration object for this database
+	 * instance.
+	 */
 	public Configuration getConfiguration() {
 		return conf;
 	}
@@ -233,9 +237,6 @@ public class BrokerPool {
 
 	/**
 	 *  Get a DBBroker instance from the pool.
-	 *
-	 *@return                     Description of the Return Value
-	 *@exception  EXistException  Description of the Exception
 	 */
 	public DBBroker get() throws EXistException {
 		if (!isInstanceConfigured())
@@ -417,8 +418,25 @@ public class BrokerPool {
 		shutdownListener = listener;
 	}
 
+	/**
+	 * Returns the global XQuery pool for this database instance.
+	 * 
+	 * @return
+	 */
 	public XQueryPool getXQueryPool() {
 	    return xqueryCache;
+	}
+	
+	/**
+	 * Returns the global update lock for this database instance.
+	 * This lock is used by XUpdate operations to avoid that
+	 * concurrent XUpdate requests modify the database until all
+	 * document locks have been correctly set.
+	 *  
+	 * @return
+	 */
+	public Lock getGlobalUpdateLock() {
+	    return globalXUpdateLock;
 	}
 	
 	protected static class ShutdownThread extends Thread {

@@ -48,7 +48,11 @@ public class WebDAVServlet extends HttpServlet {
 	 */
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-		webdav = new WebDAV();
+		int authMethod = WebDAV.DIGEST_AUTH;
+		String param = config.getInitParameter("authentication");
+		if(param != null && "basic".equalsIgnoreCase(param))
+		    authMethod = WebDAV.BASIC_AUTH;
+		webdav = new WebDAV(authMethod);
 	}
 	
 	/* (non-Javadoc)

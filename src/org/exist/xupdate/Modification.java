@@ -5,23 +5,27 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeIndexListener;
 import org.exist.dom.XMLUtil;
-import org.exist.xquery.parser.XQueryLexer;
-import org.exist.xquery.parser.XQueryParser;
-import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.store.StorageAddress;
+import org.exist.util.Lock;
+import org.exist.util.LockException;
 import org.exist.xquery.PathExpr;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.parser.XQueryLexer;
+import org.exist.xquery.parser.XQueryParser;
+import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.DocumentFragment;
@@ -45,6 +49,7 @@ public abstract class Modification {
 	protected DBBroker broker;
 	protected DocumentSet docs;
 	protected Map namespaces;
+	protected List activeLocks;
 
 	/**
 	 * Constructor for Modification.
@@ -55,9 +60,21 @@ public abstract class Modification {
 		this.broker = broker;
 		this.docs = docs;
 		this.namespaces = new HashMap(namespaces);
+		this.activeLocks = new ArrayList(docs.getLength());
 	}
 
-	public abstract long process() throws PermissionDeniedException, EXistException, XPathException;
+	/**
+	 * Process the modification. This is the main method that has to be implemented 
+	 * by all subclasses.
+	 * 
+	 * @return
+	 * @throws PermissionDeniedException
+	 * @throws LockException
+	 * @throws EXistException
+	 * @throws XPathException
+	 */
+	public abstract long process() throws PermissionDeniedException, LockException, 
+		EXistException, XPathException;
 
 	public abstract String getName();
 
@@ -65,7 +82,16 @@ public abstract class Modification {
 		content = node;
 	}
 
-	protected NodeImpl[] select(DocumentSet docs)
+	/**
+	 * Evaluate the select expression.
+	 * 
+	 * @param docs
+	 * @return
+	 * @throws PermissionDeniedException
+	 * @throws EXistException
+	 * @throws XPathException
+	 */
+	protected NodeList select(DocumentSet docs)
 		throws PermissionDeniedException, EXistException, XPathException {
 		try {
 			XQueryContext context = new XQueryContext(broker);
@@ -97,15 +123,8 @@ public abstract class Modification {
 			Sequence resultSeq = expr.eval(null, null);
 			if (resultSeq.getItemType() != Type.NODE)
 				throw new EXistException("select expression should evaluate to a" + "node-set");
-			NodeList set = (NodeList)resultSeq;
-			LOG.info("found " + set.getLength() + " for select: " + selectStmt + "; retrieving nodes...");
-			ArrayList out = new ArrayList(set.getLength());
-			for (int i = 0; i < set.getLength(); i++) {
-				out.add(set.item(i));
-			}
-			NodeImpl result[] = new NodeImpl[out.size()];
-			out.toArray(result);
-			return result;
+			LOG.debug("found " + resultSeq.getLength() + " for select: " + selectStmt);
+			return (NodeList)resultSeq;
 		} catch (RecognitionException e) {
 			LOG.warn("error while parsing select expression", e);
 			throw new EXistException(e);
@@ -115,6 +134,56 @@ public abstract class Modification {
 		}
 	}
 
+	/**
+	 * Acquire a lock on all documents processed by this modification.
+	 * We have to avoid that node positions change during the
+	 * operation.
+	 * 
+	 * @param nl
+	 * @return
+	 * @throws LockException
+	 */
+	protected NodeImpl[] selectAndLock() throws LockException, PermissionDeniedException, 
+		EXistException, XPathException {
+	    Lock globalLock = broker.getBrokerPool().getGlobalUpdateLock();
+	    try {
+	        globalLock.acquire(Lock.WRITE_LOCK);
+	        NodeList nl = select(docs);
+	        
+		    // acquire a lock on all documents
+	        // we have to avoid that node positions change
+	        // during the modification
+		    NodeImpl ql[] = new NodeImpl[nl.getLength()];
+		    DocumentImpl doc, prevDoc = null;
+		    Lock lock;
+			for (int i = 0; i < ql.length; i++) {
+				ql[i] = (NodeImpl)nl.item(i);
+				doc = (DocumentImpl)ql[i].getOwnerDocument();
+				if(prevDoc == null || doc != prevDoc) {
+				    lock = doc.getUpdateLock();
+				    lock.acquire(Lock.WRITE_LOCK);
+				    activeLocks.add(lock);
+				    doc.setBroker(broker);
+				}
+				prevDoc = doc;
+			}
+			return ql;
+	    } finally {
+	        globalLock.release();
+	    }
+	}
+	
+	/**
+	 * Release all acquired document locks.
+	 */
+	protected void unlockDocuments() {
+	    Lock lock;
+        for(int i = 0; i < activeLocks.size(); i++) {
+            lock = (Lock)activeLocks.get(i);
+            lock.release();
+        }
+	}
+	
 	public String toString() {
 		StringBuffer buf = new StringBuffer();
 		buf.append("<xu:");

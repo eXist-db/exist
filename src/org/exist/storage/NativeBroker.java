@@ -138,13 +138,15 @@ public class NativeBroker extends DBBroker {
 	
 	// used to count the nodes inserted after the last memory check
 	protected int nodesCount = 0;
+
+	protected int pageSize;
 	
 	private final Runtime run = Runtime.getRuntime();
 
 	public NativeBroker(BrokerPool pool, Configuration config) throws EXistException {
 		super(pool, config);
 		String dataDir;
-		int buffers, pageSize, cacheSize;
+		int buffers, cacheSize;
 		String temp;
 		boolean compress = false;
 		if ((dataDir = (String) config.getProperty("db-connection.data-dir")) == null)
@@ -1388,6 +1390,70 @@ public class NativeBroker extends DBBroker {
 		.run();
 	}
 
+	public void dropIndex(String collectionName) throws PermissionDeniedException {
+	    if (readOnly)
+			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+		try {
+			if (!collectionName.startsWith(ROOT_COLLECTION))
+				collectionName = ROOT_COLLECTION + collectionName;
+
+			Collection collection = getCollection(collectionName);
+			if (collection == null) {
+				LOG.debug("collection " + collectionName + " not found!");
+				return;
+			}
+			if (!collection.getPermissions().validate(user, Permission.WRITE))
+				throw new PermissionDeniedException("not allowed to remove collection");
+			((NativeTextEngine) textEngine).dropIndex(collection);
+
+			LOG.debug("removing elements ...");
+			short collectionId = collection.getId();
+
+			// remove elements index
+			Value ref = new ElementValue(collectionId);
+			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+			Lock lock = elementsDb.getLock();
+			try {
+				lock.acquire(Lock.WRITE_LOCK);
+				elementsDb.removeAll(query);
+			} catch (LockException e) {
+				LOG.error("could not acquire lock on elements index", e);
+			} finally {
+				lock.release();
+			}
+			
+			for (Iterator i = collection.iterator(); i.hasNext();) {
+				final DocumentImpl doc = (DocumentImpl) i.next();
+				LOG.debug("dropping index for document " + doc.getFileName());
+				new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+					public Object start() {
+						try {
+							Value ref = new NodeRef(doc.getDocId());
+							IndexQuery query =
+								new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+							domDb.remove(query, null);
+							domDb.flush();
+						} catch (BTreeException e) {
+							LOG.warn("btree error while removing document", e);
+						} catch (DBException e) {
+							LOG.warn("db error while removing document", e);
+						} catch (IOException e) {
+							LOG.warn("io error while removing document", e);
+						} catch (TerminatedException e) {
+                            LOG.warn("method terminated", e);
+                        }
+						return null;
+					}
+				}
+				.run();
+			}
+		} catch (IOException ioe) {
+			LOG.warn(ioe);
+		} catch (BTreeException bte) {
+			LOG.warn(bte);
+		}
+	}
+		
 	public boolean removeCollection(String name) throws PermissionDeniedException {
 		if (readOnly)
 			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
@@ -1442,7 +1508,7 @@ public class NativeBroker extends DBBroker {
 			}
 			freeCollection(collection.getId());
 			
-			((NativeTextEngine) textEngine).removeCollection(collection);
+			textEngine.dropIndex(collection);
 
 			LOG.debug("removing elements ...");
 			short collectionId = collection.getId();
@@ -1471,16 +1537,6 @@ public class NativeBroker extends DBBroker {
 						} else {
 							NodeImpl node = (NodeImpl)doc.getFirstChild();
 							domDb.removeAll(node.getInternalAddress());
-//							Iterator k =
-//								getDOMIterator(
-//									new NodeProxy(
-//										doc,
-//										node.getGID(),
-//										node.getInternalAddress()));
-//							while(k.hasNext()) {
-//								k.next();
-//								k.remove();
-//							}
 						}
 						return null;
 					}
@@ -1704,7 +1760,7 @@ public class NativeBroker extends DBBroker {
 		final long gid = node.getGID();
 		final short nodeType = node.getNodeType();
 		final String nodeName = node.getNodeName();
-		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+		new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
 			public Object start() {
 				final long address = node.getInternalAddress();
 				if (address > -1)
@@ -1974,7 +2030,7 @@ public class NativeBroker extends DBBroker {
 		final String nodeName = node.getNodeName();
 		// final String localName = node.getLocalName();
 		final int depth = idx == null ? defaultIndexDepth : idx.getIndexDepth();
-		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+		new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
 			public Object start() throws ReadOnlyException {
 				long address = -1;
 				final byte data[] = node.serialize();
@@ -2147,6 +2203,10 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
+	public int getPageSize() {
+	    return pageSize;
+	}
+	
 	public void closeDocument() {
 		new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
 			public Object start() {
@@ -2195,7 +2255,7 @@ public class NativeBroker extends DBBroker {
 	public void insertAfter(final NodeImpl previous, final NodeImpl node) {
 		final byte data[] = node.serialize();
 		final DocumentImpl doc = (DocumentImpl) previous.getOwnerDocument();
-		new DOMTransaction(this, domDb) {
+		new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
 			public Object start() {
 				long address = previous.getInternalAddress();
 				if (address > -1) {

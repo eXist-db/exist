@@ -375,7 +375,7 @@ implements Comparable, EntityResolver, Cacheable {
 			lock.release();
 		}
 	}
-
+	
 	/**
 	 *  Get the internal id.
 	 *
@@ -563,6 +563,9 @@ implements Comparable, EntityResolver, Cacheable {
 			DocumentImpl doc = getDocument(path);
 			if (doc == null)
 				return;
+			if(doc.isLockedForWrite())
+				throw new PermissionDeniedException("Document " + doc.getFileName() + 
+					" is locked for write");
 			if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
 				throw new PermissionDeniedException(
 						"Write access to collection denied; user=" + broker.getUser().getName());
@@ -580,13 +583,16 @@ implements Comparable, EntityResolver, Cacheable {
 		}
 	}
 
-	synchronized public void removeBinaryResource(DBBroker broker,
+	public void removeBinaryResource(DBBroker broker,
 			String docname) throws PermissionDeniedException, LockException {
 		Lock lock = db.getLock();
 		try {
 			lock.acquire(Lock.WRITE_LOCK);
 			String path = getName() + '/' + docname;
 			DocumentImpl doc = getDocument(path);
+			if(doc.isLockedForWrite())
+				throw new PermissionDeniedException("Document " + doc.getFileName() + 
+						" is locked for write");
 			if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
 				throw new PermissionDeniedException(
 						"write access to collection denied; user=" + broker.getUser().getName());
@@ -598,13 +604,16 @@ implements Comparable, EntityResolver, Cacheable {
 		}
 	}
 
-	synchronized public void removeBinaryResource(DBBroker broker,
+	public void removeBinaryResource(DBBroker broker,
 			DocumentImpl doc) throws PermissionDeniedException, LockException {
 		if (doc == null)
 			return;
 		if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
 			throw new PermissionDeniedException("document " + doc.getFileName()
 					+ " is not a binary object");
+		if(doc.isLockedForWrite())
+			throw new PermissionDeniedException("Document " + doc.getFileName() + 
+					" is locked for write");
 		Lock lock = db.getLock();
 		try {
 			lock.acquire(Lock.WRITE_LOCK);

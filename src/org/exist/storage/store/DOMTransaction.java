@@ -1,5 +1,6 @@
 package org.exist.storage.store;
 
+import org.exist.dom.DocumentImpl;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
@@ -19,6 +20,7 @@ public abstract class DOMTransaction {
 
     private Object ownerObject;
     private DOMFile file;
+    private DocumentImpl document = null;
     private int mode = Lock.READ_LOCK;
 
     public DOMTransaction(Object owner, DOMFile f) {
@@ -29,6 +31,11 @@ public abstract class DOMTransaction {
 	public DOMTransaction(Object owner, DOMFile f, int mode) {
 		this(owner, f);
 		this.mode = mode;
+	}
+	
+	public DOMTransaction(Object owner, DOMFile f, int mode, DocumentImpl doc) {
+		this(owner, f, mode);
+		this.document = doc;		
 	}
 	
     public abstract Object start() throws ReadOnlyException;
@@ -45,6 +52,7 @@ public abstract class DOMTransaction {
                 return null;
             }
     	    file.setOwnerObject(ownerObject);
+    	    file.setCurrentDocument(document);
             return start();
     	} catch( ReadOnlyException e ) {
         } finally {
