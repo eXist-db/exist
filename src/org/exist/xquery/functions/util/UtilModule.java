@@ -26,7 +26,6 @@ import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.StringValue;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -54,7 +53,9 @@ public class UtilModule extends AbstractInternalModule {
 		new FunctionDef(SharedLockFunction.signature, SharedLockFunction.class),
 		new FunctionDef(ExistVersion.signature, ExistVersion.class),
 		new FunctionDef(Collations.signature, Collations.class),
-		new FunctionDef(SystemProperty.signature, SystemProperty.class)
+		new FunctionDef(SystemProperty.signature, SystemProperty.class),
+        new FunctionDef(FunctionFunction.signature, FunctionFunction.class),
+        new FunctionDef(CallFunction.signature, CallFunction.class)
 	};
 	
 	public final static QName EXCEPTION_QNAME = 

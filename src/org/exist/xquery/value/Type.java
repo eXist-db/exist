@@ -103,6 +103,7 @@ public class Type {
 	public final static int ENTITY = 68;
 	
 	public final static int JAVA_OBJECT = 100;
+    public final static int FUNCTION_REFERENCE = 101;
 	
 	/**
 	 * Special type constant to indicate that an item has been
@@ -130,6 +131,7 @@ public class Type {
 		defineSubType(ATOMIC, NUMBER);
 		defineSubType(ATOMIC, UNTYPED_ATOMIC);
 		defineSubType(ATOMIC, JAVA_OBJECT);
+        defineSubType(ATOMIC, FUNCTION_REFERENCE);
 		defineSubType(ATOMIC, DATE_TIME);
 		defineSubType(ATOMIC, DATE);
 		defineSubType(ATOMIC, TIME);
@@ -189,7 +191,8 @@ public class Type {
 		defineBuiltInType(NAMESPACE, "namespace");
 
 		defineBuiltInType(JAVA_OBJECT, "object");
-
+		defineBuiltInType(FUNCTION_REFERENCE, "function");
+        
 		defineBuiltInType(ANY_TYPE, "xs:anyType");
 		defineBuiltInType(ATOMIC, "xdt:anyAtomicType");
 		defineBuiltInType(UNTYPED_ATOMIC, "xdt:untypedAtomic");

@@ -158,6 +158,7 @@ public class FunctionFactory {
 		if (step == null) {
 			Module module = context.getModule(uri);
 			if(module != null) {
+                // Function belongs to a module
 				if(module.isInternalModule()) {
 					// for internal modules: create a new function instance from the class
 					FunctionDef def = ((InternalModule)module).getFunctionDef(qname, params.size());
@@ -168,6 +169,7 @@ public class FunctionFactory {
 					func.setArguments(params);
 					step = func;
 				} else {
+                    // function is from an imported XQuery module
 					UserDefinedFunction func = ((ExternalModule)module).getFunction(qname);
 					if(func == null)
 						throw new XPathException(ast, "function " + qname.toString() + " ( namespace-uri = " + 
