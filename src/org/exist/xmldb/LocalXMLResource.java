@@ -1,12 +1,12 @@
 package org.exist.xmldb;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.File;
-import javax.xml.parsers.*;
+import java.io.IOException;
+import java.io.StringWriter;
+
 import org.apache.log4j.Logger;
-import org.apache.xml.serialize.*;
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
@@ -17,10 +17,16 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.XMLUtil;
-import org.w3c.dom.*;
-import org.xml.sax.*;
-import org.xmldb.api.base.*;
-import org.xmldb.api.modules.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.ErrorCodes;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.XMLResource;
 
 /**
  * Local implementation of XMLResource.

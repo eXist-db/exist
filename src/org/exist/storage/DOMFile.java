@@ -20,25 +20,44 @@ package org.exist.storage;
  *
  *  $Id$
  */
-import org.dbxml.core.*;
-import org.dbxml.core.filer.*;
-import org.dbxml.core.indexer.*;
-import org.dbxml.core.data.*;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Iterator;
-import java.io.IOException;
-import java.io.File;
+import it.unimi.dsi.fastUtil.Long2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastUtil.Object2LongOpenHashMap;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+
 import org.apache.log4j.Logger;
-import gnu.trove.TLongObjectHashMap;
-import gnu.trove.TObjectLongHashMap;
-import org.exist.util.*;
-import org.exist.dom.*;
+import org.dbxml.core.DBException;
+import org.dbxml.core.data.Value;
+import org.dbxml.core.filer.BTree;
+import org.dbxml.core.filer.BTreeCallback;
+import org.dbxml.core.filer.BTreeException;
+import org.dbxml.core.indexer.IndexQuery;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.NodeImpl;
+import org.exist.dom.NodeProxy;
+import org.exist.util.ByteConversion;
+import org.exist.util.Lock;
+import org.exist.util.LockException;
+import org.exist.util.Lockable;
+import org.exist.util.ReadOnlyException;
+import org.exist.util.SimpleTimeOutLock;
+import org.exist.util.XMLUtil;
 
 /**
- *  Description of the Class
+ *  DOMFile represents the central storage file for DOM nodes.
+ * 
+ * Nodes are stored in sequential order to allow fast access when
+ * serializing a document or fragment. Pages have previous-page/next-page
+ * links. Each node has a virtual address,
+ * which consists of a page-number/tid pair. The tid is a virtual offset
+ * into the page. A node may be moved to a new page on node insertions.
+ * However, the tid will always remain the same.
  *
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
  *@created    25. Mai 2002
@@ -60,13 +79,14 @@ public class DOMFile extends BTree implements Lockable {
 
 	private Lock lock = new SimpleTimeOutLock();
 
-	private final TObjectLongHashMap pages = new TObjectLongHashMap();
+    private final Object2LongOpenHashMap pages = 
+        new Object2LongOpenHashMap();
 
 	/**
 	 *  Constructor for the DOMFile object
 	 *
-	 *@param  buffers      Description of the Parameter
-	 *@param  dataBuffers  Description of the Parameter
+	 *@param  buffers      the number of btree buffers to use
+	 *@param  dataBuffers  the number of data page buffers
 	 */
 	public DOMFile(int buffers, int dataBuffers) {
 		super(buffers);
@@ -79,7 +99,7 @@ public class DOMFile extends BTree implements Lockable {
 	/**
 	 *  Constructor for the DOMFile object
 	 *
-	 *@param  file  Description of the Parameter
+	 *@param  file  the file to use
 	 */
 	public DOMFile(File file) {
 		this(256, 256);
@@ -89,8 +109,8 @@ public class DOMFile extends BTree implements Lockable {
 	/**
 	 *  Constructor for the DOMFile object
 	 *
-	 *@param  file     Description of the Parameter
-	 *@param  buffers  Description of the Parameter
+	 *@param  file     the file to use
+	 *@param  buffers  size of the data page buffer
 	 */
 	public DOMFile(File file, int buffers) {
 		this(buffers, 256);
@@ -100,9 +120,9 @@ public class DOMFile extends BTree implements Lockable {
 	/**
 	 *  Constructor for the DOMFile object
 	 *
-	 *@param  file         Description of the Parameter
-	 *@param  buffers      Description of the Parameter
-	 *@param  dataBuffers  Description of the Parameter
+	 *@param  file         the file to use 
+	 *@param  buffers      size of the buffer for btree pages
+	 *@param  dataBuffers  size of the buffer for data pages
 	 */
 	public DOMFile(File file, int buffers, int dataBuffers) {
 		this(buffers, dataBuffers);
@@ -110,11 +130,13 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	/**
-	 *  Constructor for the DOMFile object
+	 *  Constructor for the DOMFile object.
+     * 
+     * Use this constructor if all keys have the same length.
 	 *
-	 *@param  file     Description of the Parameter
-	 *@param  buffers  Description of the Parameter
-	 *@param  keyLen   Description of the Parameter
+	 *@param  file     the file to use
+	 *@param  buffers  size of the data page buffer
+	 *@param  keyLen   key size if all keys have the same length
 	 */
 	public DOMFile(File file, int buffers, short keyLen) {
 		this(file, buffers);
@@ -122,11 +144,11 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Create virtual address from page number and offset (tid)
 	 *
-	 *@param  page    Description of the Parameter
-	 *@param  offset  Description of the Parameter
-	 *@return         Description of the Return Value
+	 *@param  page    page number
+	 *@param  offset  offset (tid)
+	 *@return         new virtual address in a long
 	 */
 	public final static long createPointer(int page, int offset) {
 		long p = (page & 0xffff);
@@ -135,30 +157,30 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Get the tid from a virtual address
 	 *
-	 *@param  pointer  Description of the Parameter
-	 *@return          Description of the Return Value
+	 *@param  pointer  
+	 *@return          the tid encoded in this address
 	 */
 	public final static int tidFromPointer(long pointer) {
 		return (int) ((pointer >>> 32) & 0xffff);
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Get the page from a virtual address
 	 *
-	 *@param  pointer  Description of the Parameter
-	 *@return          Description of the Return Value
+	 *@param  pointer  
+	 *@return          the page encoded in this address
 	 */
 	public final static int pageFromPointer(long pointer) {
 		return (int) pointer;
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Append a value to the current page 
 	 *
-	 *@param  value  Description of the Parameter
-	 *@return        Description of the Return Value
+	 *@param  value  the value to append
+	 *@return        the virtual storage address of the value
 	 */
 	public long add(byte[] value) throws ReadOnlyException {
 		if (value == null)
@@ -174,14 +196,14 @@ public class DOMFile extends BTree implements Lockable {
 				ph.setNextDataPage(newPage.getPageNum());
 				newPage.getPageHeader().setPrevDataPage(page.getPageNum());
 				page.setDirty(true);
-				//page.write();
+				buffer.add(page);
 			}
 			page = newPage;
 			setCurrentPage(page);
 		}
 		// save tuple identifier
-		DOMFilePageHeader ph = page.getPageHeader();
-		short tid = ph.getNextTID();
+		final DOMFilePageHeader ph = page.getPageHeader();
+		final short tid = ph.getNextTID();
 		ByteConversion.shortToByte(tid, page.data, page.len);
 		page.len += 2;
 		// save data length
@@ -201,7 +223,7 @@ public class DOMFile extends BTree implements Lockable {
 
 	public long insertAfter(Value key, byte[] value) {
 		try {
-			long p = findValue(key);
+			final long p = findValue(key);
 			return insertAfter(p, value);
 		} catch (BTreeException e) {
 			LOG.warn("key not found", e);
@@ -426,20 +448,20 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	public ArrayList findKeys(IndexQuery query)
 		throws IOException, BTreeException {
-		FindCallback cb = new FindCallback(FindCallback.KEYS);
+		final FindCallback cb = new FindCallback(FindCallback.KEYS);
 		query(query, cb);
 		return cb.getValues();
 	}
 
 	private long findNode(NodeImpl node, long target, Iterator iter) {
 		if (node.hasChildNodes()) {
-			long firstChildId =
+			final long firstChildId =
 				XMLUtil.getFirstChildId(
 					(DocumentImpl) node.getOwnerDocument(),
 					node.getGID());
 			if (firstChildId < 0)
 				return 0;
-			long lastChildId = firstChildId + node.getChildCount();
+			final long lastChildId = firstChildId + node.getChildCount();
 			//LOG.debug("scanning " + firstChildId + " to " + lastChildId);
 			long p;
 			for (long gid = firstChildId; gid < lastChildId; gid++) {
@@ -460,26 +482,26 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Retrieve a range of nodes, starting at first and including last.
 	 *
-	 *@param  first               Description of the Parameter
-	 *@param  last                Description of the Parameter
-	 *@return                     Description of the Return Value
+	 *@param  first               the first node to retrieve
+	 *@param  last                the last node to retrieve
+	 *@return                     list of nodes
 	 *@exception  IOException     Description of the Exception
 	 *@exception  BTreeException  Description of the Exception
 	 */
 	public ArrayList findRange(Value first, Value last)
 		throws IOException, BTreeException {
-		IndexQuery query = new IndexQuery(null, IndexQuery.BW, first, last);
-		RangeCallback cb = new RangeCallback();
+		final IndexQuery query = new IndexQuery(null, IndexQuery.BW, first, last);
+		final RangeCallback cb = new RangeCallback();
 		query(query, cb);
 		return cb.getValues();
 	}
 
 	private long findValue(Object lock, NodeProxy node)
 		throws IOException, BTreeException {
-		DocumentImpl doc = (DocumentImpl) node.getDoc();
-		NativeBroker.NodeRef nodeRef =
+		final DocumentImpl doc = (DocumentImpl) node.getDoc();
+		final NativeBroker.NodeRef nodeRef =
 			new NativeBroker.NodeRef(doc.getDocId(), node.getGID());
 		try {
 			// first try to find the node in the index
@@ -501,18 +523,18 @@ public class DOMFile extends BTree implements Lockable {
 				} catch (BTreeException bte) {
 				}
 			}
-			long firstChildId = XMLUtil.getFirstChildId(doc, id);
-			Iterator iter = new DOMFileIterator(lock, doc, this, parentPointer);
-			Value value = (Value) iter.next();
-			NodeImpl n = NodeImpl.deserialize(value.getData(), doc);
+			final long firstChildId = XMLUtil.getFirstChildId(doc, id);
+			final Iterator iter = new DOMFileIterator(lock, doc, this, parentPointer);
+			final Value value = (Value) iter.next();
+			final NodeImpl n = NodeImpl.deserialize(value.getData(), doc);
 			n.setGID(id);
-			long address = findNode(n, node.gid, iter);
+			final long address = findNode(n, node.gid, iter);
 			return address == 0 ? -1 : address;
 		}
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Find matching nodes for the given query. 
 	 *
 	 *@param  query               Description of the Parameter
 	 *@return                     Description of the Return Value
@@ -527,15 +549,15 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Flush all buffers to disk.
 	 *
 	 *@return                  Description of the Return Value
 	 *@exception  DBException  Description of the Exception
 	 */
 	public boolean flush() throws DBException {
+        //super.flush();
 		buffer.flush();
 		pages.remove(owner);
-		super.flush();
 		try {
 			if (fileHeader.isDirty())
 				fileHeader.write();
@@ -546,9 +568,9 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	public void sync() throws DBException {
+        super.flush();
 		buffer.clear();
 		pages.remove(owner);
-		super.flush();
 		try {
 			if (fileHeader.isDirty())
 				fileHeader.write();
@@ -563,9 +585,9 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Retrieve a node by key
 	 *
-	 *@param  key  Description of the Parameter
+	 *@param  key  
 	 *@return      Description of the Return Value
 	 */
 	public Value get(Value key) {
@@ -584,7 +606,7 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Retrieve a node described by the given NodeProxy.
 	 *
 	 *@param  node  Description of the Parameter
 	 *@return       Description of the Return Value
@@ -604,7 +626,7 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Retrieve node at virtual address p.
 	 *
 	 *@param  p  Description of the Parameter
 	 *@return    Description of the Return Value
@@ -637,9 +659,11 @@ public class DOMFile extends BTree implements Lockable {
 			buffer.add(page);
 			pos = 0;
 			final int dlen = page.getPageHeader().getDataLength();
+            //System.out.println(pos + " < " + dlen);
 			while (pos < dlen) {
 				final short current =
 					ByteConversion.byteToShort(page.data, pos);
+                //System.out.println(current + " = " + tid);
 				if (current == tid)
 					return new RecordPos(pos + 2, page);
 				pos = pos + ByteConversion.byteToShort(page.data, pos + 2) + 4;
@@ -649,7 +673,7 @@ public class DOMFile extends BTree implements Lockable {
 				"tid "
 					+ tid
 					+ " not found on page "
-					+ page.getPageNum()
+					+ page.page.getPageInfo()
 					+ ". Loading "
 					+ pageNr);
 		}
@@ -669,7 +693,7 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	/**
-	 *  Gets the currentPage attribute of the DOMFile object
+	 *  Retrieve the last page in the current sequence.
 	 *
 	 *@return    The currentPage value
 	 */
@@ -679,12 +703,12 @@ public class DOMFile extends BTree implements Lockable {
 			pages.put(owner, page.page.getPageNum());
 			return page;
 		} else {
-			return getCurrentPage(pages.get(owner));
+			return getCurrentPage(pages.getLong(owner));
 		}
 	}
 
 	/**
-	 *  Gets the currentPage attribute of the DOMFile object
+	 *  Retrieve the page with page number p
 	 *
 	 *@param  p  Description of the Parameter
 	 *@return    The currentPage value
@@ -722,7 +746,8 @@ public class DOMFile extends BTree implements Lockable {
 	//    }
 
 	/**
-	 *  Description of the Method
+	 *  Get a node iterator starting at the address of the given
+     * NodeProxy.
 	 *
 	 *@param  doc   Description of the Parameter
 	 *@param  node  Description of the Parameter
@@ -740,7 +765,7 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Get a node iterator starting at the given address.
 	 *
 	 *@param  doc      Description of the Parameter
 	 *@param  address  Description of the Parameter
@@ -758,7 +783,7 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Open the file.
 	 *
 	 *@return                  Description of the Return Value
 	 *@exception  DBException  Description of the Exception
@@ -771,7 +796,7 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Put a new key/value pair.
 	 *
 	 *@param  key    Description of the Parameter
 	 *@param  value  Description of the Parameter
@@ -792,7 +817,7 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Remove a key/value pair.
 	 *
 	 *@param  key  Description of the Parameter
 	 */
@@ -809,7 +834,7 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Remove the value at address p.
 	 *
 	 *@param  p  Description of the Parameter
 	 */
@@ -834,6 +859,7 @@ public class DOMFile extends BTree implements Lockable {
 		ph.setDirty(true);
 		len = len - l - 4;
 		ph.setDataLength(len);
+        rec.page.len = len;
 		rec.page.setDirty(true);
 		ph.decRecordCount();
 		if (ph.getRecordCount() == 0) {
@@ -860,24 +886,31 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	/**
-	 *  Sets the currentPage attribute of the DOMFile object
+	 *  Set the last page in the sequence to which nodes are
+     * currently appended.
 	 *
 	 *@param  page  The new currentPage value
 	 */
 	private final void setCurrentPage(DOMPage page) {
-		final long pnum = pages.get(owner);
+		final long pnum = pages.getLong(owner);
 		if (pnum == page.page.getPageNum())
 			return;
 		pages.remove(owner);
 		pages.put(owner, page.page.getPageNum());
 	}
 
+    
+	/**
+     * Get the active Lock object for this file.
+     * 
+	 * @see org.exist.util.Lockable#getLock()
+	 */
 	public final Lock getLock() {
 		return lock;
 	}
 
 	/**
-	 *  Sets the location attribute of the DOMFile object
+	 *  Set the file location for this DOMFile.
 	 *
 	 *@param  location  The new location value
 	 */
@@ -886,7 +919,8 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	/**
-	 *  Sets the ownerObject attribute of the DOMFile object
+	 *  The current object owning this file.
+     * 
 	 *
 	 *@param  obj  The new ownerObject value
 	 */
@@ -911,7 +945,7 @@ public class DOMFile extends BTree implements Lockable {
 	//    }
 
 	/**
-	 *  Description of the Method
+	 *  Update the key/value pair.
 	 *
 	 *@param  key    Description of the Parameter
 	 *@param  value  Description of the Parameter
@@ -936,7 +970,8 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Update the key/value pair where the value is found at
+     * address p.
 	 *
 	 *@param  key    Description of the Parameter
 	 *@param  p      Description of the Parameter
@@ -948,6 +983,7 @@ public class DOMFile extends BTree implements Lockable {
 		short l = ByteConversion.byteToShort(rec.page.data, rec.offset);
 		if (value.length < l) {
 			// value is smaller than before
+            LOG.debug("shrinking value");
 			int next = rec.offset + 2 + l;
 			ByteConversion.shortToByte(
 				(short) value.length,
@@ -962,6 +998,7 @@ public class DOMFile extends BTree implements Lockable {
 				rec.page.data,
 				rec.offset,
 				rec.page.getPageHeader().getDataLength() - next);
+            rec.page.len = rec.page.len - (l - value.length);
 		} else if (value.length > l) {
 			throw new IllegalStateException("value too long");
 		} else {
@@ -972,8 +1009,8 @@ public class DOMFile extends BTree implements Lockable {
 				rec.page.data,
 				rec.offset + 2,
 				value.length);
-			rec.page.setDirty(true);
 		}
+        rec.page.setDirty(true);
 	}
 
 	private final class DOMFileIterator implements Iterator {
@@ -1372,7 +1409,7 @@ public class DOMFile extends BTree implements Lockable {
 		}
 
 		public short getNextTID() {
-			return tid++;
+			return ++tid;
 		}
 
 		public void setNextTID(short tid) {
@@ -1474,6 +1511,10 @@ public class DOMFile extends BTree implements Lockable {
 			dos.writeLong(nextDataPage);
 			dos.writeLong(prevDataPage);
 			dos.writeShort(tid);
+//            if(dataLen == 0) {
+//                LOG.debug("dataLen == 0");
+//                Thread.dumpStack();
+//            }
 		}
 	}
 
@@ -1599,7 +1640,7 @@ public class DOMFile extends BTree implements Lockable {
 				DOMFilePageHeader ph = (DOMFilePageHeader) page.getPageHeader();
 				if (!ph.isDirty())
 					return;
-				ph.setDataLength(len);
+				//ph.setDataLength(len);
 				ph.setRecordLen(len);
 				Value value = new Value(data);
 				writeValue(page, value);
@@ -1623,10 +1664,11 @@ public class DOMFile extends BTree implements Lockable {
 	protected class ClockPageBuffer {
 		protected int blockBuffers;
 		protected int hits = 0;
-		protected TLongObjectHashMap map;
+		//protected TLongObjectHashMap map;
+        protected Long2ObjectLinkedOpenHashMap map;
 		protected int misses = 0;
 
-		protected LinkedList queue = new LinkedList();
+		//protected LinkedList queue = new LinkedList();
 
 		/**
 		 *  Constructor for the PageBuffer object
@@ -1635,7 +1677,8 @@ public class DOMFile extends BTree implements Lockable {
 		 */
 		public ClockPageBuffer(int blockBuffers) {
 			this.blockBuffers = blockBuffers;
-			map = new TLongObjectHashMap(blockBuffers);
+			//map = new TLongObjectHashMap(blockBuffers);
+            map = new Long2ObjectLinkedOpenHashMap(blockBuffers);
 		}
 
 		/**  Constructor for the PageBuffer object */
@@ -1653,16 +1696,16 @@ public class DOMFile extends BTree implements Lockable {
 				page.incRefCount();
 				return;
 			}
-			while (queue.size() > blockBuffers) {
+			while (map.size() > blockBuffers) {
 				boolean removed = false;
 				while (!removed) {
-					for (Iterator i = queue.iterator(); i.hasNext();) {
+					for (Iterator i = map.values().iterator(); i.hasNext();) {
 						DOMPage old = (DOMPage) i.next();
 						old.decRefCount();
 						if (old.getRefCount() < 1
 							&& old.getPageNum() != page.getPageNum()) {
 							i.remove();
-							map.remove(old.page.getPageNum());
+							//map.remove(old.page.getPageNum());
 							if (old.isDirty())
 								old.write();
 							removed = true;
@@ -1671,14 +1714,14 @@ public class DOMFile extends BTree implements Lockable {
 					}
 				}
 			}
-			queue.add(page);
+			//queue.add(page);
 			map.put(page.page.getPageNum(), page);
 		}
 
 		/**  Description of the Method */
 		public void flush() {
 			DOMPage page;
-			for (Iterator i = queue.iterator(); i.hasNext();) {
+			for (Iterator i = map.values().iterator(); i.hasNext();) {
 				page = (DOMPage) i.next();
 				if (page.isDirty())
 					page.write();
@@ -1687,7 +1730,7 @@ public class DOMFile extends BTree implements Lockable {
 
 		public void clear() {
 			flush();
-			queue.clear();
+			//queue.clear();
 			map.clear();
 		}
 
@@ -1722,9 +1765,9 @@ public class DOMFile extends BTree implements Lockable {
 		 *@param  page  Description of the Parameter
 		 */
 		public void remove(DOMPage page) {
-			int idx;
-			while ((idx = queue.indexOf(page)) > -1)
-				queue.remove(idx);
+//			int idx;
+//			while ((idx = queue.indexOf(page)) > -1)
+//				queue.remove(idx);
 			map.remove(page.page.getPageNum());
 		}
 

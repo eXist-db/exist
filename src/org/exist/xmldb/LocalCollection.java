@@ -393,13 +393,13 @@ public class LocalCollection extends Observable implements Collection {
     public void storeResource( Resource resource ) throws XMLDBException {
         if( !(resource instanceof LocalXMLResource) )
             throw new XMLDBException( ErrorCodes.NOT_IMPLEMENTED );
-		LocalXMLResource res = (LocalXMLResource)resource;
-        String name = getPath() + '/' + res.getDocumentId();
+		final LocalXMLResource res = (LocalXMLResource)resource;
+        final String name = getPath() + '/' + res.getDocumentId();
         DBBroker broker = null;
         try {
             broker = brokerPool.get();
             broker.flush();
-            Parser parser = new Parser( broker, user, true );
+            final Parser parser = new Parser( broker, user, true );
 			Observer observer;
 			for(Iterator i = observers.iterator(); i.hasNext(); ) {
 				observer = (Observer)i.next();
@@ -407,11 +407,10 @@ public class LocalCollection extends Observable implements Collection {
 				broker.addObserver( observer );
 			}
             LOG.debug( "storing document " + res.getDocumentId() );
-			DocumentImpl doc;
 			if(res.file != null)
-                doc = parser.parse( collection, (File)res.file, name );
+                res.document = parser.parse( collection, (File)res.file, name );
 			else
-				doc = parser.parse( collection, res.content, name);
+				res.document = parser.parse( collection, res.content, name);
             broker.flush();
         } catch ( Exception e ) {
             e.printStackTrace();

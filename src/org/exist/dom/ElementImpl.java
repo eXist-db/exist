@@ -171,8 +171,8 @@ public class ElementImpl extends NodeImpl implements Element {
 
 	/**
 	 * Append a child to this node. This method does not rearrange the
-     * node tree and is only used internally by the parser.
-     * 
+	 * node tree and is only used internally by the parser.
+	 * 
 	 * @param child
 	 * @throws DOMException
 	 */
@@ -214,7 +214,7 @@ public class ElementImpl extends NodeImpl implements Element {
 
 	/**
 	 * Internal append.
-     * 
+	 * 
 	 * @param last
 	 * @param child
 	 * @return Node
@@ -385,7 +385,6 @@ public class ElementImpl extends NodeImpl implements Element {
 		}
 		return map;
 	}
-
 
 	/**
 	 * @see org.exist.dom.NodeImpl#getChildCount()
@@ -922,7 +921,7 @@ public class ElementImpl extends NodeImpl implements Element {
 		DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
 		if (refChild == null)
 			return appendChild(newChild);
-        NodeImpl ref = (NodeImpl) refChild;
+		NodeImpl ref = (NodeImpl) refChild;
 		long first = firstChildID();
 		if (ref.gid < first || ref.gid > ref.gid + children - 1)
 			throw new DOMException(
@@ -974,30 +973,32 @@ public class ElementImpl extends NodeImpl implements Element {
 	 * @see org.w3c.dom.Node#removeChild(org.w3c.dom.Node)
 	 */
 	public Node removeChild(Node oldChild) throws DOMException {
-		if(!(oldChild instanceof NodeImpl))
-            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,
-                "wrong node type");
-        NodeImpl old = (NodeImpl)oldChild;
-        if(old.getParentGID() != gid)
-            throw new DOMException(DOMException.NOT_FOUND_ERR,
-                "node is not a child of this element");
-        removeAll(old);
-        --children;
-        ownerDocument.broker.update(this);
-        return old;
+		if (!(oldChild instanceof NodeImpl))
+			throw new DOMException(
+				DOMException.WRONG_DOCUMENT_ERR,
+				"wrong node type");
+		NodeImpl old = (NodeImpl) oldChild;
+		if (old.getParentGID() != gid)
+			throw new DOMException(
+				DOMException.NOT_FOUND_ERR,
+				"node is not a child of this element");
+		removeAll(old);
+		--children;
+		ownerDocument.broker.update(this);
+		return old;
 	}
 
-    private void removeAll(NodeImpl node) {
-        switch(node.getNodeType()) {
-            case Node.ELEMENT_NODE :
-                NodeList children = node.getChildNodes();
-                for(int i = children.getLength() - 1; i > -1; i--)
-                    removeAll((NodeImpl)children.item(i));
-                ownerDocument.broker.removeNode(node);
-                break;
-            default:
-                ownerDocument.broker.removeNode(node);
-                break;
-        }
-    }
+	private void removeAll(NodeImpl node) {
+		switch (node.getNodeType()) {
+			case Node.ELEMENT_NODE :
+				NodeList children = node.getChildNodes();
+				for (int i = children.getLength() - 1; i > -1; i--)
+					removeAll((NodeImpl) children.item(i));
+				ownerDocument.broker.removeNode(node);
+				break;
+			default :
+				ownerDocument.broker.removeNode(node);
+				break;
+		}
+	}
 }

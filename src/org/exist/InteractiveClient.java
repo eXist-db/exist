@@ -751,12 +751,16 @@ public class InteractiveClient {
 						properties.getProperty("password"));
 				getResources();
 			} else if (args[0].equalsIgnoreCase("chown")) {
-				if (args.length < 4) {
-					System.out.println("Usage: chown username group resource");
+				if (args.length < 3) {
+					System.out.println("Usage: chown username group [resource]");
 					return true;
 				}
 
-				Collection temp = current.getChildCollection(args[3]);
+				Collection temp;
+                if(args.length == 4) 
+                    temp = current.getChildCollection(args[3]);
+                else
+                    temp = current;
 				if (temp != null) {
 					UserManagementService mgtService =
 						(UserManagementService) temp.getService(
@@ -1000,7 +1004,8 @@ public class InteractiveClient {
 			next = base + '/' + temp[i].getName();
 			try {
 				if (temp[i].isDirectory()) {
-					System.out.println("creating " + next);
+					System.out.println("entering directory " + 
+                        temp[i].getAbsolutePath());
 					c = collection.getChildCollection(temp[i].getName());
 					if (c == null) {
 						mgtService =
@@ -1015,9 +1020,10 @@ public class InteractiveClient {
 					findRecursive(c, temp[i], next);
 				} else {
 					long start1 = System.currentTimeMillis();
-					messageln(
+					message(
 						"storing document "
-							+ temp[i].getName()
+							+ temp[i].getName() + " ("
+                            + i + " of " + temp.length + ") "
 							+ " to "
 							+ next
 							+ "...");
@@ -1030,9 +1036,9 @@ public class InteractiveClient {
 					bytesCount += temp[i].length();
 					++filesCount;
 					messageln(
-						"storing "
+						"stored "
 							+ temp[i].length()
-							+ " bytes took "
+							+ " bytes in "
 							+ (System.currentTimeMillis() - start1)
 							+ "ms.");
 

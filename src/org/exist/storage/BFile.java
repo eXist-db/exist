@@ -22,21 +22,30 @@
  */
 package org.exist.storage;
 
-import org.dbxml.core.*;
-import org.dbxml.core.filer.*;
-import org.dbxml.core.indexer.*;
-import org.dbxml.core.data.*;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Iterator;
-import java.io.IOException;
-import java.io.File;
+import it.unimi.dsi.fastUtil.Long2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastUtil.Long2ObjectOpenHashMap;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+
 import org.apache.log4j.Category;
-import org.exist.util.*;
-import gnu.trove.TLongObjectHashMap;
+import org.dbxml.core.DBException;
+import org.dbxml.core.data.Value;
+import org.dbxml.core.filer.BTree;
+import org.dbxml.core.filer.BTreeCallback;
+import org.dbxml.core.filer.BTreeException;
+import org.dbxml.core.indexer.IndexQuery;
+import org.exist.util.ByteConversion;
+import org.exist.util.Lock;
+import org.exist.util.OrderedLinkedList;
+import org.exist.util.ReadOnlyException;
+import org.exist.util.SimpleTimeOutLock;
 
 /**
  *  Data store for variable size values.
@@ -1127,7 +1136,6 @@ public class BFile extends BTree {
 		public void write(java.io.RandomAccessFile raf) throws IOException {
             // does the free-space list fit into the file header?
             if(freeList.size() > MAX_FREE_LIST_LEN) {
-                LOG.debug("removing free pages...");
                 // no: remove some smaller entries to make it fit
                 for(int i = 0; i < freeList.size() - MAX_FREE_LIST_LEN; i++)
                     freeList.removeFirst();
@@ -1862,9 +1870,10 @@ public class BFile extends BTree {
 
 		protected int fails = 0;
 		protected int hits = 0;
-		protected TLongObjectHashMap map;
+		//protected TLongObjectHashMap map;
+        protected Long2ObjectLinkedOpenHashMap map;
 
-		protected LinkedList queue = new LinkedList();
+		//protected LinkedList queue = new LinkedList();
 
 		/**
 		 *  Constructor for the PageBuffer object
@@ -1873,7 +1882,8 @@ public class BFile extends BTree {
 		 */
 		public ClockPageBuffer(int blockBuffers) {
 			this.blockBuffers = blockBuffers;
-			map = new TLongObjectHashMap(blockBuffers);
+			//map = new TLongObjectHashMap(blockBuffers);
+            map = new Long2ObjectLinkedOpenHashMap(blockBuffers);
 		}
 
 		/**  Constructor for the PageBuffer object */
@@ -1898,21 +1908,21 @@ public class BFile extends BTree {
 				page.incRefCount();
 				return;
 			}
-			while (queue.size() >= blockBuffers)
+			while (map.size() >= blockBuffers)
 				removeOne(page);
 			page.setRefCount(initialRefCount);
-			queue.addLast(page);
+			//queue.addLast(page);
 			map.put(page.getPageNum(), page);
 		}
 
 		public void flush() {
 			DataPage page;
-			for (Iterator i = queue.iterator(); i.hasNext();) {
+			for (Iterator i = map.values().iterator(); i.hasNext();) {
 				page = (DataPage) i.next();
 				if (page.isDirty())
 					try {
 						page.write();
-						fileHeader.write();
+						//fileHeader.write();
 					} catch (IOException ioe) {
 						ioe.printStackTrace();
 					}
@@ -1933,14 +1943,14 @@ public class BFile extends BTree {
 		}
 
 		public void remove(DataPage page) {
-			final int idx = queue.indexOf(page);
-			if (idx > -1)
-				queue.remove(idx);
+//			final int idx = queue.indexOf(page);
+//			if (idx > -1)
+//				queue.remove(idx);
 			map.remove(page.getPageNum());
 			if (page.isDirty())
 				try {
 					page.write();
-					fileHeader.write();
+					//fileHeader.write();
 				} catch (IOException ioe) {
 					ioe.printStackTrace();
 				}
@@ -1951,7 +1961,7 @@ public class BFile extends BTree {
 			boolean removed = false;
 			long oldNum, pNum;
 			while (!removed) {
-				for (Iterator i = queue.iterator(); i.hasNext();) {
+				for (Iterator i = map.values().iterator(); i.hasNext();) {
 					old = (DataPage) i.next();
 					oldNum = old.getPageNum();
 					pNum = page.getPageNum();
@@ -1963,7 +1973,7 @@ public class BFile extends BTree {
 					// replace old page if it has reference count < 1,
 					if (old.getRefCount() < 1) {
 						i.remove();
-						map.remove(oldNum);
+						//map.remove(oldNum);
 						removed = true;
 						if (old.isDirty())
 							try {
@@ -1986,7 +1996,7 @@ public class BFile extends BTree {
 			return blockBuffers;
 		}
 		public int getUsedBuffers() {
-			return queue.size();
+			return map.size();
 		}
 		public int getSize() {
 			return map.size();
@@ -1996,139 +2006,6 @@ public class BFile extends BTree {
 		}
 		public int getHits() {
 			return hits;
-		}
-	}
-
-	/**
-	 *  LRU cache for data pages This is a buffer for pages. It keeps pages in a
-	 *  stack. Every page added will be put on the top of the stack. If the
-	 *  stack size exceeds blockBuffers, the last page in the stack will be
-	 *  removed and saved to disk. When a page is removed, it's dirty flag is
-	 *  check to determine if the page needs to be saved. If the page is dirty,
-	 *  the page is saved.
-	 *
-	 *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
-	 *@created    25. Mai 2002
-	 */
-	protected class LRUPageBuffer {
-
-		/**  Description of the Field */
-		public final static int PAGE_BUFFER_SIZE = 32;
-		protected int blockBuffers;
-
-		protected int fails = 0;
-		protected int hits = 0;
-		protected TLongObjectHashMap map;
-
-		protected LinkedList queue = new LinkedList();
-
-		public LRUPageBuffer(int blockBuffers) {
-			this.blockBuffers = blockBuffers;
-			map = new TLongObjectHashMap(blockBuffers);
-		}
-
-		public LRUPageBuffer() {
-			this(PAGE_BUFFER_SIZE);
-		}
-
-		public void add(DataPage page) {
-			if (page instanceof OverflowPage)
-				page = ((OverflowPage) page).getFirstPage();
-			queue.addFirst(page);
-			page.incRefCount();
-			if (queue.size() > blockBuffers)
-				removeSome();
-			if (!map.containsKey(page.getPageNum()))
-				map.put(page.getPageNum(), page);
-		}
-
-		public void flush() {
-			DataPage page;
-			for (Iterator i = queue.iterator(); i.hasNext();) {
-				page = (DataPage) i.next();
-				if (page.isDirty())
-					try {
-						page.write();
-					} catch (IOException ioe) {
-						ioe.printStackTrace();
-					}
-			}
-			//queue.clear();
-			//map.clear();
-		}
-
-		public DataPage get(Page page) {
-			return get(page.getPageNum());
-		}
-
-		public DataPage get(long pnum) {
-			final DataPage page = (DataPage) map.get(pnum);
-			if (page == null)
-				fails++;
-			else
-				hits++;
-			return page;
-		}
-
-		public void remove(DataPage page) {
-			int idx;
-			while ((idx = queue.indexOf(page)) > -1)
-				queue.remove(idx);
-			map.remove(page.getPageNum());
-			if (page.isDirty())
-				try {
-					page.write();
-					fileHeader.write();
-				} catch (IOException ioe) {
-					ioe.printStackTrace();
-				}
-		}
-
-		private final void removeOne() {
-			DataPage old = (DataPage) queue.removeLast();
-			old.decRefCount();
-			if (old.getRefCount() == 0) {
-				if (map.remove(old.getPageNum()) == null)
-					LOG.debug(
-						"page "
-							+ old.getPageNum()
-							+ " not found in buffer: "
-							+ getFile().getName());
-				if (old.isDirty())
-					try {
-						old.write();
-					} catch (IOException e) {
-						LOG.warn(
-							"error while writing page: "
-								+ old.getPageInfo()
-								+ ": "
-								+ e.getMessage());
-					}
-			}
-			old = null;
-		}
-
-		private final void removeSome() {
-			OrderedLinkedList list = new OrderedLinkedList();
-			DataPage old;
-			for (int i = 0; list.size() < 50 && i < queue.size() - 1; i++) {
-				old = (DataPage) queue.removeLast();
-				old.decRefCount();
-				if (old.getRefCount() == 0) {
-					map.remove(old.getPageNum());
-					if (old.isDirty())
-						list.add(old);
-				}
-			}
-			for (Iterator i = list.iterator(); i.hasNext();) {
-				old = (DataPage) i.next();
-				//System.out.println(getFile().getName() + 
-				//		   " removing data page " + old.getPageNum());
-				try {
-					old.write();
-				} catch (IOException e) {
-				}
-			}
 		}
 	}
 

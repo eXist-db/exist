@@ -20,8 +20,8 @@
  *  $Id$
  */
 package org.exist.xmlrpc;
-import gnu.trove.TIntObjectHashMap;
-import gnu.trove.TIntObjectProcedure;
+
+import it.unimi.dsi.fastUtil.Int2ObjectOpenHashMap;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -106,7 +106,7 @@ public class RpcServer implements RpcAPI {
 
 	protected ConnectionPool pool;
 
-	protected TIntObjectHashMap resultSets = new TIntObjectHashMap();
+	protected Int2ObjectOpenHashMap resultSets = new Int2ObjectOpenHashMap();
 
 	/**
 	 *  Constructor for the RpcServer object
@@ -462,6 +462,17 @@ public class RpcServer implements RpcAPI {
 		try {
 			con = pool.get();
 			return con.getUser(user, name);
+		} finally {
+			pool.release(con);
+		}
+	}
+
+	public Vector getUsers(User user)
+		throws EXistException, PermissionDeniedException {
+		RpcConnection con = null;
+		try {
+			con = pool.get();
+			return con.getUsers(user);
 		} finally {
 			pool.release(con);
 		}
@@ -1106,6 +1117,50 @@ public class RpcServer implements RpcAPI {
 	}
 
 	/**
+	     * @see org.exist.xmlrpc.RpcAPI#setPermissions(org.exist.security.User, java.lang.String, int)
+	     */
+	public boolean setPermissions(User user, String resource, int permissions)
+		throws EXistException, PermissionDeniedException {
+		RpcConnection con = null;
+		try {
+			con = pool.get();
+			return con.setPermissions(user, resource, null, null, permissions);
+		} catch (Exception e) {
+			handleException(e);
+			return false;
+		} finally {
+			pool.release(con);
+		}
+	}
+
+	/**
+	 * @see org.exist.xmlrpc.RpcAPI#setPermissions(org.exist.security.User, java.lang.String, java.lang.String, java.lang.String, int)
+	 */
+	public boolean setPermissions(
+		User user,
+		String resource,
+		String owner,
+		String ownerGroup,
+		int permissions)
+		throws EXistException, PermissionDeniedException {
+		RpcConnection con = null;
+		try {
+			con = pool.get();
+			return con.setPermissions(
+				user,
+				resource,
+				owner,
+				ownerGroup,
+				permissions);
+		} catch (Exception e) {
+			handleException(e);
+			return false;
+		} finally {
+			pool.release(con);
+		}
+	}
+
+	/**
 	 *  Sets the password attribute of the RpcServer object
 	 *
 	 *@param  user                           The new password value
@@ -1132,9 +1187,9 @@ public class RpcServer implements RpcAPI {
 	}
 
 	public boolean shutdown(User user) throws PermissionDeniedException {
-		if(!user.hasGroup("dba"))
-			throw new PermissionDeniedException("not allowed to shut down" +
-				"the database");
+		if (!user.hasGroup("dba"))
+			throw new PermissionDeniedException(
+				"not allowed to shut down" + "the database");
 		try {
 			BrokerPool.stop();
 			return true;
@@ -1181,7 +1236,13 @@ public class RpcServer implements RpcAPI {
 		}
 
 		private void checkResultSets() {
-			resultSets.forEachEntry(new CheckProcedure());
+			for (Iterator i = resultSets.values().iterator(); i.hasNext();) {
+				final QueryResult qr = (QueryResult) i.next();
+				long ts = ((QueryResult) qr).timestamp;
+				if (System.currentTimeMillis() - ts > TIMEOUT) {
+					i.remove();
+				}
+			}
 		}
 
 		/**
@@ -1269,31 +1330,6 @@ public class RpcServer implements RpcAPI {
 			for (Iterator i = threads.iterator(); i.hasNext();)
 				 ((RpcConnection) i.next()).synchronize();
 
-		}
-
-		/**
-		 *  Description of the Class
-		 *
-		 *@author     wolf
-		 *@created    28. Mai 2002
-		 */
-		private class CheckProcedure implements TIntObjectProcedure {
-
-			/**
-			 *  Description of the Method
-			 *
-			 *@param  hashCode  Description of the Parameter
-			 *@param  qr        Description of the Parameter
-			 *@return           Description of the Return Value
-			 */
-			public boolean execute(int hashCode, Object qr) {
-				long ts = ((QueryResult) qr).timestamp;
-				if (System.currentTimeMillis() - ts > TIMEOUT) {
-					resultSets.remove(hashCode);
-					LOG.debug("removing result set " + hashCode);
-				}
-				return true;
-			}
 		}
 	}
 
@@ -1822,6 +1858,22 @@ public class RpcServer implements RpcAPI {
 				groups.addElement(i.next());
 			tab.put("groups", groups);
 			return tab;
+		}
+
+		public Vector getUsers(User user)
+			throws EXistException, PermissionDeniedException {
+			User users[] = brokerPool.getSecurityManager().getUsers();
+			Vector r = new Vector();
+			for (int i = 0; i < users.length; i++) {
+				final Hashtable tab = new Hashtable();
+				tab.put("name", users[i].getName());
+				Vector groups = new Vector();
+				for (Iterator j = users[i].getGroups(); j.hasNext();)
+					groups.addElement(j.next());
+				tab.put("groups", groups);
+				r.addElement(tab);
+			}
+			return r;
 		}
 
 		/**
@@ -2405,7 +2457,7 @@ public class RpcServer implements RpcAPI {
 							perm.setOwner(owner);
 							perm.setGroup(ownerGroup);
 						}
-						if (permissions != null)
+						if (permissions != null && permissions.length() > 0)
 							perm.setPermissions(permissions);
 						broker.saveCollection(doc.getCollection());
 						broker.flush();
@@ -2433,6 +2485,66 @@ public class RpcServer implements RpcAPI {
 				}
 			} catch (SyntaxException e) {
 				throw new EXistException(e.getMessage());
+			} catch (PermissionDeniedException e) {
+				throw new EXistException(e.getMessage());
+			} finally {
+				brokerPool.release(broker);
+			}
+		}
+
+		public boolean setPermissions(
+			User user,
+			String resource,
+			String owner,
+			String ownerGroup,
+			int permissions)
+			throws EXistException, PermissionDeniedException {
+			DBBroker broker = null;
+			try {
+				broker = brokerPool.get();
+				org.exist.security.SecurityManager manager =
+					brokerPool.getSecurityManager();
+				Collection collection = broker.getCollection(resource);
+				if (collection == null) {
+					DocumentImpl doc =
+						(DocumentImpl) broker.getDocument(user, resource);
+					if (doc == null)
+						throw new EXistException(
+							"document or collection "
+								+ resource
+								+ " not found");
+					LOG.debug("changing permissions on document " + resource);
+					Permission perm = doc.getPermissions();
+					if (perm.getOwner().equals(user.getName())
+						|| manager.hasAdminPrivileges(user)) {
+						if (owner != null) {
+							perm.setOwner(owner);
+							perm.setGroup(ownerGroup);
+						}
+						perm.setPermissions(permissions);
+						broker.saveCollection(doc.getCollection());
+						broker.flush();
+						broker.sync();
+						return true;
+					} else
+						throw new PermissionDeniedException("not allowed to change permissions");
+				} else {
+					LOG.debug("changing permissions on collection " + resource);
+					Permission perm = collection.getPermissions();
+					if (perm.getOwner().equals(user.getName())
+						|| manager.hasAdminPrivileges(user)) {
+						perm.setPermissions(permissions);
+						if (owner != null) {
+							perm.setOwner(owner);
+							perm.setGroup(ownerGroup);
+						}
+						broker.saveCollection(collection);
+						broker.flush();
+						broker.sync();
+						return true;
+					} else
+						throw new PermissionDeniedException("not allowed to change permissions");
+				}
 			} catch (PermissionDeniedException e) {
 				throw new EXistException(e.getMessage());
 			} finally {
@@ -2698,4 +2810,5 @@ public class RpcServer implements RpcAPI {
 			}
 		}
 	}
+
 }
