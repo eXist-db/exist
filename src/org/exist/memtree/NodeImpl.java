@@ -184,7 +184,7 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 */
 	public boolean equals(NodeValue other) throws XPathException {
 		if (other.getImplementationType() != NodeValue.IN_MEMORY_NODE)
-			throw new XPathException("annot compare persistent node with in-memory node");
+			return false;
 		return nodeNumber == ((NodeImpl) other).nodeNumber;
 	}
 

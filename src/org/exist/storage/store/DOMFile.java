@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 
 import org.dbxml.core.DBException;
 import org.dbxml.core.data.Value;
@@ -108,7 +107,7 @@ public class DOMFile extends BTree implements Lockable {
     
     private final Cache dataCache;
     
-    private DOMFileHeader fileHeader;
+    private BTreeFileHeader fileHeader;
 
     private Object owner = null;
 
@@ -122,7 +121,7 @@ public class DOMFile extends BTree implements Lockable {
     protected DOMFile(int buffers, int dataBuffers) {
         super(buffers);
         lock = new ReentrantReadWriteLock("dom.dbx");
-        fileHeader = (DOMFileHeader) getFileHeader();
+        fileHeader = (BTreeFileHeader) getFileHeader();
         fileHeader.setPageCount(0);
         fileHeader.setTotalCount(0);
         dataCache = new LRUCache(dataBuffers);
@@ -690,19 +689,7 @@ public class DOMFile extends BTree implements Lockable {
     }
 
     public FileHeader createFileHeader() {
-        return new DOMFileHeader(1024, PAGE_SIZE);
-    }
-
-    public FileHeader createFileHeader(boolean read) throws IOException {
-        return new DOMFileHeader(read);
-    }
-
-    public FileHeader createFileHeader(long pageCount) {
-        return new DOMFileHeader(pageCount, PAGE_SIZE);
-    }
-
-    public FileHeader createFileHeader(long pageCount, int pageSize) {
-        return new DOMFileHeader(pageCount, pageSize);
+        return new BTreeFileHeader(1024, PAGE_SIZE);
     }
 
     protected Page createNewPage() {
@@ -859,11 +846,6 @@ public class DOMFile extends BTree implements Lockable {
         super.flush();
         dataCache.flush();
 //        closeDocument();
-        try {
-            if (fileHeader.isDirty()) fileHeader.write();
-        } catch (IOException ioe) {
-            LOG.debug("sync failed", ioe);
-        }
         return true;
     }
 
@@ -1485,61 +1467,6 @@ public class DOMFile extends BTree implements Lockable {
             }
             return null;
         }
-
-    private final class DOMFileHeader extends BTreeFileHeader {
-
-        protected LinkedList reserved = new LinkedList();
-
-        public DOMFileHeader() {
-        }
-
-        public DOMFileHeader(long pageCount) {
-            super(pageCount);
-        }
-
-        public DOMFileHeader(long pageCount, int pageSize) {
-            super(pageCount, pageSize);
-        }
-
-        public DOMFileHeader(long pageCount, int pageSize, byte blockSize) {
-            super(pageCount, pageSize, blockSize);
-        }
-
-        public DOMFileHeader(boolean read) throws IOException {
-            super(read);
-        }
-
-        public void addReservedPage(long page) {
-            reserved.addFirst(new Long(page));
-        }
-
-        public long getReservedPage() {
-            if (reserved.size() == 0) return -1;
-            return ((Long) reserved.removeLast()).longValue();
-        }
-
-        public void read(java.io.RandomAccessFile raf) throws IOException {
-            super.read(raf);
-            //lastDataPage = raf.readLong();
-            int rp = raf.readInt();
-            long l;
-            for (int i = 0; i < rp; i++) {
-                l = raf.readLong();
-                reserved.addFirst(new Long(l));
-            }
-        }
-
-        public void write(java.io.RandomAccessFile raf) throws IOException {
-            super.write(raf);
-            //raf.writeLong(lastDataPage);
-            raf.writeInt(reserved.size());
-            Long l;
-            for (Iterator i = reserved.iterator(); i.hasNext();) {
-                l = (Long) i.next();
-                raf.writeLong(l.longValue());
-            }
-        }
-    }
 
     protected final static class DOMFilePageHeader extends BTreePageHeader {
 

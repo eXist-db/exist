@@ -178,6 +178,8 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 	throws XPathException {
 		if("file".equals(uri.getScheme())) {
 			String path = uri.getPath();
+            if(path == null)
+                throw new XPathException(getASTNode(), "Cannot read from URI: " + uri.toASCIIString());
 			File file = new File(path);
 			if(!file.canRead())
 				throw new XPathException(getASTNode(), "Cannot read path: " + path);

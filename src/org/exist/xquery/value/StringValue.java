@@ -239,33 +239,6 @@ public class StringValue extends AtomicValue implements Indexable {
 	 */
 	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.STRING)) {
-			boolean substringCompare = false;
-			if (operator == Constants.EQ) {
-				String otherVal = other.getStringValue();
-				int truncation = Constants.TRUNC_NONE;
-				if (otherVal.length() > 0 && otherVal.charAt(0) == '%') {
-					otherVal = otherVal.substring(1);
-					truncation = Constants.TRUNC_LEFT;
-				}
-				if (otherVal.length() > 1
-					&& otherVal.charAt(otherVal.length() - 1) == '%') {
-					otherVal = otherVal.substring(0, otherVal.length() - 1);
-					truncation =
-						(truncation == Constants.TRUNC_LEFT)
-							? Constants.TRUNC_BOTH
-							: Constants.TRUNC_RIGHT;
-				}
-				switch (truncation) {
-					case Constants.TRUNC_BOTH :
-						return Collations.indexOf(collator, value, otherVal) > -1;
-					case Constants.TRUNC_LEFT :
-						return Collations.startsWith(collator, value, otherVal);
-					case Constants.TRUNC_RIGHT :
-						return Collations.endsWith(collator, value, otherVal);
-					case Constants.TRUNC_NONE :
-						return Collations.equals(collator, value, otherVal);
-				}
-			}
 			int cmp = Collations.compare(collator, value, other.getStringValue());
 			switch (operator) {
 				case Constants.EQ :

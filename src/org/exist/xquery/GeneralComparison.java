@@ -276,7 +276,7 @@ public class GeneralComparison extends BinaryOp {
 	protected Sequence quickNodeSetCompare(Sequence contextSequence)
 		throws XPathException {
 		// if the context sequence hasn't changed we can return a cached result
-		if(cached != null && cached.isValid(contextSequence)) {
+		if (cached != null && cached.isValid(contextSequence)) {
 //			LOG.debug("Returning cached result for " + ExpressionDumper.dump(this));
 			return cached.getResult();
 		}
@@ -323,7 +323,7 @@ public class GeneralComparison extends BinaryOp {
 	        if(key instanceof Indexable && Type.subTypeOf(key.getType(), indexType)) {
 	        	if(truncation != Constants.TRUNC_NONE) {
 					try {
-						result = context.getBroker().getValueIndex().match(docs, nodes, getComparisonString(rightSeq).replace('%', '*'), 
+						result = context.getBroker().getValueIndex().match(docs, nodes, rightSeq.getStringValue().replace('%', '*'), 
 								DBBroker.MATCH_WILDCARDS);
 					} catch (EXistException e) {
 						throw new XPathException(getASTNode(), e.getMessage(), e);
@@ -339,19 +339,19 @@ public class GeneralComparison extends BinaryOp {
 	            && nodes.hasTextIndex()) {
 	        
 		        // we can use the fulltext index
-		        String cmp = getComparisonString(rightSeq);
+		        String cmp = rightSeq.getStringValue();
 		        if(cmp.length() < NativeTextEngine.MAX_WORD_LENGTH)
 		            nodes = useFulltextIndex(cmp, nodes, docs);
 		        
 		        // now compare the input node set to the search expression
 				result =
-					context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp, getCollator(contextSequence));
+					context.getBroker().getNodesEqualTo(nodes, docs, relation, truncation, cmp, getCollator(contextSequence));
 	
 			} else {
 			    
 			    // no usable index found. Fall back to a sequential scan of the nodes
 			    result =
-					context.getBroker().getNodesEqualTo(nodes, docs, relation, getComparisonString(rightSeq), 
+					context.getBroker().getNodesEqualTo(nodes, docs, relation, truncation, rightSeq.getStringValue(), 
 					        getCollator(contextSequence));
 			}
 		} else {
@@ -370,30 +370,9 @@ public class GeneralComparison extends BinaryOp {
 		return result;
 	}
 
-	/**
-     * @param rightSeq
-     * @return
-     * @throws XPathException
-     */
-    private String getComparisonString(Sequence rightSeq) throws XPathException {
-        String cmp = rightSeq.getStringValue();
-        switch(truncation) {
-			case Constants.TRUNC_RIGHT:
-				cmp = cmp + '%';
-				break;
-			case Constants.TRUNC_LEFT:
-				cmp = '%' + cmp;
-				break;
-			case Constants.TRUNC_BOTH:
-				cmp = '%' + cmp + '%';
-		}
-        return cmp;
-    }
-
     protected NodeSet useFulltextIndex(String cmp, NodeSet nodes, DocumentSet docs) throws XPathException {
 //	    LOG.debug("Using fulltext index for expression " + ExpressionDumper.dump(this));
 	    String cmpCopy = cmp;
-		cmp = maskWildcards(cmp);
 		// try to use a fulltext search expression to reduce the number
 		// of potential nodes to scan through
 		SimpleTokenizer tokenizer = new SimpleTokenizer();
@@ -526,25 +505,6 @@ public class GeneralComparison extends BinaryOp {
 			}
 		}
 		return false;
-	}
-
-	private String maskWildcards(String expr) {
-		StringBuffer buf = new StringBuffer();
-		char ch;
-		for (int i = 0; i < expr.length(); i++) {
-			ch = expr.charAt(i);
-			switch (ch) {
-				case '*' :
-					buf.append("\\*");
-					break;
-				case '%' :
-					buf.append('*');
-					break;
-				default :
-					buf.append(ch);
-			}
-		}
-		return buf.toString();
 	}
 
 	/* (non-Javadoc)
