@@ -1207,7 +1207,7 @@ public class RpcConnection extends Thread {
 		File file;
 		if (fileName == null || fileName.length() == 0) {
 			// create temporary file
-			file = File.createTempFile("rpc", "xml");
+			file = File.createTempFile("rpc", ".xml");
 			fileName = file.getAbsolutePath();
 			LOG.debug("created temporary file " + file.getAbsolutePath());
 		} else {
