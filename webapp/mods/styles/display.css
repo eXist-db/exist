@@ -1,26 +1,72 @@
 @import url(default-style.css);
 
+@media screen {
+    body {
+        font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+        font-size: 13px;
+        line-height: 1.4;
+        padding: 0 5% 0 5%;
+        overflow: scroll;
+    }
+    
+    p, ul, ol {
+        font-size: 13px;
+        margin-left: 15px;
+        margin-right: 15px;
+    }
+    
+    #sidebar {
+        width: 18%;
+        left: 6%;
+        min-height: 600px;
+    }
+    
+    #content2col {
+        left: 25%;
+        width: 68%;
+        min-height: 600px;
+    }
+}
+
 #navigation {
-    margin: 10px;
-    background-color: #DEDEDE;
+    background: #fff;
+    border: 1px solid #999;
 }
 
-#navigation table {
-    width: 100%;
+#navigation h3 {
+    padding: 0;
+    margin: 0;
+    color: #000;
+    font-size: 1em;
+    background-color: #ddd;
+    border-bottom: 1px solid #999;
+}
+
+#navigation ul {
+    padding: 5px;
+    margin: 0;
+}
+
+#navigation li {
     font-size: 8pt;
-    color: #661100;
-    padding: 5px;
+    display: inline;
+    list-style: none;
+    padding: 0 15px 0 15px;
+    border-right: 1px solid #999;
 }
 
-#navigation td.rec-count {
-    text-align: left;
-    padding: 5px;
-    vertical-align: top;
+#navigation #link-next {
+    float: right;
+    font-size: 8pt;
 }
 
-#navigation td.navbar {
-    padding: 5px;
-    background-color: #ff9900;
+#navigation #link-prev {
+    float: left;
+    font-size: 8pt;
+}
+    
+#navigation select {
+    font-size: 8pt;
 }
 
 .userinfo {
@@ -55,51 +101,176 @@
     color: #FFFFFF;
 }
 
-.record {
-    margin-bottom: 10px;
-    margin-left: 10px;
-    margin-right: 10px;
-    padding: 10px;
-    border-top: solid 2px #AEAEAE;
+.more {
+    padding: 0;
+    margin: 8px 0 0 0;
+    text-align: left;
+    border-left: 1px solid rgb(65%, 75%, 65%);
 }
 
-.actionhead {
+.more li {
+    list-style: none;
+    display: inline;
+    border-right: 1px solid rgb(65%, 75%, 65%);
+    padding: 0 0.5em;
+}
+
+.more a, .more a:visited {
+    color: #8B8B8B;
+    font-size: smaller;
+    font-weight: bold;
+}
+    
+.more a:hover {
+    color: #FFF;
+    background-color: #8B8B8B;
+    font-size: smaller;
+    font-weight: bold;
+}
+
+.mods-name {
+}
+
+.mods-title {
+    font-weight: bold;
+    color: #5A5A5A;
+}
+
+#results {
+    margin-left: 10px;
+    margin-right: 10px;
+    width: 95%;
+}
+
+#results a:hover {
+    border: 0;
+}
+
+#results th {
     text-align: left;
 }
 
-.actionhead a {
-    font-size: small;
-    color: #AA0000;
+#results td {
+    vertical-align: top;
+    padding: 4px;
 }
 
-.xmllink {
+#results .names {
+    width: 160px;
+}
+
+#results .year {
+    width: 60px;
+}
+
+.record-short {
+    font-family: Georgia, Times New Roman, serif;
+}
+
+.record-short a:hover {
+    background-color: #FFF;
+}
+
+.record-full {
+    font-family: Georgia, Times New Roman, serif;
+    margin: 8px 8px 0 8px;
+    padding: 5px;
+    border: 1px dotted #50497A;
+}
+
+.record-full .titles {
+    border-bottom: 1px solid black;
+    padding-bottom: 0.5em;
+}
+
+.record-full h1 {
+    font-size: 1.1em;
+    font-family: Verdana, Arial, sans;
+    font-stretch: semi-expanded;
+    background-color: #FFF;
+    color: #5A5A5A;
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.record-full h2 {
+    font-size: 1em;
+    font-family: Verdana, Arial, sans;
+    font-style: italic;
+    color: black;
+    background-color: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+
+.record-full .abstract {
+    margin: 1em 1em 0 1em;
+}
+
+.record-full .url {
     text-align: right;
+    margin-top: 0;
+    padding-top: 0;
 }
 
-.citation {
-    
-}
-			
-.heading {
-    font-weight: bold;
-    margin-right: 5px;
-}
-			
-.title {
-    font-family: Times New Roman, serif;
-    font-weight: bold;
-    font-size: 16pt;
-}
-			
-.citekey {
-    color: #50497A;
-    margin-left: 20px;
+.record-full table {
+    padding: 8px 0 0.5em 1em;
 }
 
-.details {
-    margin-left: 10px;
+.record-full tr {
+    margin: 0;
+    padding: 0;
 }
 
-.details_heading {
-    font-weight: bold;
+.record-full td {
+    vertical-align: top;
+}
+
+.record-full th {
+    font-weight: normal;
+    font-style: italic;
+    text-align: left;
+    white-space: nowrap;
+    vertical-align: top;
+}
+
+.hidden {
+    display: none;
+}
+
+// Styles for the livesearch box:
+#livesearch {
+    display: block;
+}
+
+#LSResult {    
+    position: absolute;
+    background-color: #aaa; 
+    min-width: 160px; 
+    margin: 1px 0px 2px 0px;
+    padding: 0px;
+}
+      
+#LSShadow {
+    position: relative;
+    right: 1px;
+    margin: 0px;
+    padding: 0px;
+    background-color: #666; /*shadow color*/
+    color: inherit;
+}
+      
+.LSRes {
+    position: relative;
+    bottom: 1px;
+    right: 1px;
+    background-color: white;
+    border:  1px solid #AAA;
+}
+
+#LSHighlight {      
+    color: #564b47;  
+    background-color: #ccc;
 }

@@ -1,7 +1,9 @@
 xquery version "1.0";
 
+(::pragma exist:output-size-limit -1::)
+
 declare namespace m="http://www.loc.gov/mods/v3";
-declare namespace b="http://exist-db.org/bibliography";
+declare namespace bib="http://exist-db.org/bibliography";
 
 (: Load library modules :)
 declare namespace request="http://exist-db.org/xquery/request";
@@ -9,11 +11,19 @@ declare namespace xsl="http://exist-db.org/xquery/transform";
 declare namespace util="http://exist-db.org/xquery/util";
 declare namespace xdb="http://exist-db.org/xquery/xmldb";
 
-import module namespace c="http://exist-db.org/modules/mods-config"
-at "config.xqm";
+import module namespace conf="http://exist-db.org/modules/mods-config" at "config.xqm";
+
+import module namespace sort="http://exist-db.org/biblio/sort" at "sort.xq";
+
+import module namespace display="http://exist-db.org/biblio/display" at "display.xq";
+
+declare variable $bib:sort-import {
+    'import module namespace sort="http://exist-db.org/biblio/sort"
+    at "sort.xq";'
+};
 
 (: Removes a document :)
-declare function b:remove($user, $pass) as element()
+declare function bib:remove($user, $pass) as element()
 {
 	let $doc := request:request-parameter("doc", ()),
 		$path := request:request-parameter("collection", ())
@@ -31,7 +41,7 @@ declare function b:remove($user, $pass) as element()
 };
 
 (: Get the XPath expression for the specified field :)
-declare function b:queryField($field as xs:string) as xs:string
+declare function bib:queryField($field as xs:string) as xs:string
 {
 	if($field eq "au") then
 		"m:name"
@@ -47,7 +57,7 @@ declare function b:queryField($field as xs:string) as xs:string
 		"."
 };
 
-declare function b:operand($field, $terms) as xs:string
+declare function bib:operand($field, $terms) as xs:string
 {
     let $mode := request:request-parameter("mode", "all")
     return
@@ -60,13 +70,13 @@ declare function b:operand($field, $terms) as xs:string
 };
 
 (: Create an XPath expression for the current field and search terms :)
-declare function b:createXPath($collection as xs:string, $term1 as xs:string?) 
+declare function bib:createXPath($collection as xs:string, $term1 as xs:string?) 
 as xs:string
 {
     let $field1 := request:request-parameter("field1", "any"),
         $queryPart :=
             if($term1) then
-                concat("collection('", $collection, "')//m:mods[", b:operand(b:queryField($field1), $term1))
+                concat("collection('", $collection, "')//m:mods[", bib:operand(bib:queryField($field1), $term1))
             else
                 concat("collection('", $collection, "')//m:mods"),
         $l := util:log("debug", ("Part: ", $term1)),
@@ -76,34 +86,47 @@ as xs:string
             let $field2 := request:request-parameter("field2", "any"),
                 $op := request:request-parameter("op", "and")
             return
-                concat($queryPart, " ", $op, " ", b:operand(b:queryField($field2), $term2), "]")
+                concat($queryPart, " ", $op, " ", bib:operand(bib:queryField($field2), $term2), "]")
         else if($term1) then
             concat($queryPart, "]")
         else
             $queryPart
 };
 
-declare function b:displayOverview($recs as item()*, $collection) as element()
+declare function bib:displayOverview($recs as item()*, $collection) as element()+
 {
     let $count := count($recs),
         $max := request:request-parameter("howmany", "10") cast as xs:int,
         $start := request:request-parameter("start", "1") cast as xs:int,
-        $end := if ($start + $max - 1 < $count) then $start + $max - 1 else $count
+        $end := if ($start + $max - 1 < $count) then $start + $max - 1 else $count,
+        $expandAll := exists(request:request-parameter("expand", ())),
+        $preload := if ($expandAll) then true() else $conf:preload
     return
-        <items start="{$start}" hits="{$count}" next="{$end + 1}" max="{$max}"
-            collection="{$collection}" view="overview">
-            {
-                for $p in $start to $end
-                let $m := item-at($recs, $p)
-                return
-                <item pos="{$p}" doc="{util:document-name($m)}">
-                    { c:displayItem($m) }
-                </item>
-            }
-        </items>
+        <form name="mainForm" action="biblio.xq" method="GET">
+            {display:navigation($count, $start, $end + 1, $max, $preload)}
+            <table id="results">
+                <tr id="headings">
+                    <th/>
+                    <th><a href="?order=creator">Author</a></th>
+                    <th><a href="?order=Date">Year</a></th>
+                    <th><a href="?order=title">Title</a></th>
+                </tr>
+                {
+                    for $p in $start to $end
+                    let $m := $recs[$p]
+                    return (
+                        display:record-short($p, $m, $expandAll),
+                        if ($preload) then
+                            display:record-full-preload($p, $m, $expandAll)
+                        else
+                            ()
+                    )
+                }
+            </table>
+        </form>
 };
 
-declare function b:displayDetails($recs as item()*, $collection) as element()
+declare function bib:displayDetails($recs as item()*, $collection) as element()
 {
     let $count := count($recs),
         $max := xs:int(request:request-parameter("howmany", "10")),
@@ -119,36 +142,34 @@ declare function b:displayDetails($recs as item()*, $collection) as element()
         </items>
 };
 
-declare function b:display($recs as item()*, $collection) as element()
+declare function bib:display($recs as item()*, $collection) as element()+
 {
     let $display := request:request-parameter("view", "overview")
     return
         if($display eq "details") then
-            b:displayDetails($recs, $collection)
+            bib:displayDetails($recs, $collection)
         else
-            b:displayOverview($recs, $collection)
+            bib:displayOverview($recs, $collection)
 };
 
-declare function b:buildQuery($xpath as xs:string, $order as xs:string) as xs:string
+declare function bib:buildQuery($xpath as xs:string, $order as xs:string) as xs:string
 {
-    let $orderExpr := c:orderExpr($order)
+    let $orderExpr := sort:orderExpr($order)
     return
-        concat(
-            "import module namespace c='http://exist-db.org/modules/mods-config'
-            at 'config.xqm';
-            for $m in ", $xpath, " order by ", $orderExpr, " return $m")
+        concat($bib:sort-import,
+            "for $m in ", $xpath, " order by ", $orderExpr, " return $m")
 };
 
-declare function b:reorder($order as xs:string, $collection as xs:string) as element()+
+declare function bib:reorder($order as xs:string, $collection as xs:string) as element()+
 {
     let $xpath := request:get-session-attribute("query"),
-        $recs := util:eval(b:buildQuery($xpath, $order)),
+        $recs := util:eval(bib:buildQuery($xpath, $order)),
         $x := request:set-session-attribute("cache", $recs)
     return
-        b:display($recs, $collection)
+        bib:display($recs, $collection)
 };
 
-declare function b:query($collection as xs:string) as element()+
+declare function bib:query($collection as xs:string) as element()+
 {
     let $simpleQuery := boolean(request:request-parameter("query", ())),
         $start := request:request-parameter("start", ()),
@@ -162,37 +183,37 @@ declare function b:query($collection as xs:string) as element()+
     return
         (: if parameter "start" is not set, execute a new query :)
         if(empty($start) or empty($cached)) then
-	        let $xpath := b:createXPath($collection, $term1),
+	        let $xpath := bib:createXPath($collection, $term1),
                 $l := util:log("debug", ("Query: ", $xpath)),
-		        $recs := util:eval(b:buildQuery($xpath, $orderby)),
+		        $recs := util:eval(bib:buildQuery($xpath, $orderby)),
                 $x := request:set-session-attribute("query", $xpath),
                 $r := request:set-session-attribute("cache", $recs)
 	        return
-		        b:display($recs, $collection)
+		        bib:display($recs, $collection)
         (: redisplay previous query results :)
         else if($orderby != "") then
-            b:reorder($orderby, $collection)
+            bib:reorder($orderby, $collection)
         else (
             util:log("debug", ("Reading from cache: start = ", $start)),
-            b:display($cached, $collection)
+            bib:display($cached, $collection)
         )
 };
 
-declare function b:main($user as xs:string, $collection as xs:string)
+declare function bib:main($user as xs:string, $collection as xs:string)
 as element()+
 {
     let $action := request:request-parameter("action", "")
     return (
         util:log("debug", "checking action"),
         if($action eq "remove") then
-            b:remove($user, $pass)
+            bib:remove($user, $pass)
         else
             util:log("debug", "no action"),
-        b:query($collection)
+        bib:query($collection)
     )
 };
 
-declare function b:get-collection($user as xs:string?) as xs:string {
+declare function bib:get-collection($user as xs:string?) as xs:string {
     let $colParam := request:request-parameter("collection", ())
     return
         if($colParam) then
@@ -214,41 +235,44 @@ declare function b:get-collection($user as xs:string?) as xs:string {
 let $user := request:get-session-attribute("user"),
     $pass := request:get-session-attribute("password"),
     $url := request:encode-url(request:request-uri()),
-    $collection := b:get-collection($user)
+    $collection := bib:get-collection($user)
 return
 <html>
     <head>
         <title>MODS Example</title>
-        <link href="{$c:css}" type="text/css" rel="stylesheet"/>
+        <link href="{$conf:css}" type="text/css" rel="stylesheet"/>
+        <script language="Javascript" type="text/javascript" src="load.js"/>
+        <script type="text/javascript" src="livesearch.js"/>
+        <script type="text/javascript">
+            var collection = &quot;{$collection}&quot;;
+        </script>
     </head>
-    <body>
-        <div id="top">
+    <body onload="liveSearchInit();">
+        <div id="page-head">
             <img src="logo.jpg" title="eXist"/>
-            <table id="menubar">
-                <tr>
-                    <td id="header">MODS Example</td>
-                    <td>
-                        <a href="../index.xml">Home</a>
-                        <a href="../index.xml#download">Download</a>
-                        <a href="http://wiki.exist-db.org">Wiki</a>
-                        <a href="../examples.xml">Demo</a>
-                    </td>
-                </tr>
-            </table>
+            <div id="navbar">
+                <h1>MODS Example</h1>
+                <ul id="menu">
+                    <li><a href="../index.xml">Home</a></li>
+                    <li><a href="../index.xml#download">Download</a></li>
+                    <li><a href="http://wiki.exist-db.org">Wiki</a></li>
+                    <li><a href="../examples.xml">Demo</a></li>
+                </ul>
+            </div>
         </div>
 
         <!-- include the sidebar -->
-        { c:sidebar($url, $user, $collection) }
+        { conf:sidebar($url, $user, $collection) }
         
-        <div id="content">
+        <div id="content2col">
             <!-- call the main function to process the query -->
             { 
                 let $displayForm := request:request-parameter("show-form", ())
                 return
                     if($displayForm) then
-                        c:query-form($url, $collection)
+                        conf:query-form($url, $collection)
                     else
-                        b:main($user, $collection) 
+                        bib:main($user, $collection) 
             }
         </div>
     </body>

@@ -1,14 +1,15 @@
-body {
-    font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
-    font-size: 13px;
-    line-height: 1.4;
-}
-
-
-p, ul, ol {
-    font-size: 13px;
-    margin-left: 15px;
-    margin-right: 15px;
+@media screen {
+    body {
+        font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+    
+    p, ul, ol {
+        font-size: 13px;
+        margin-left: 15px;
+        margin-right: 15px;
+    }
 }
 
 table {
@@ -19,38 +20,64 @@ table p {
     margin: 0px;
 }
 
+a:hover {
+    border-bottom: solid 1px gray;
+}
+
+a, a:visited {
+    color: #0000AA;
+    font-weight: bold;
+    text-decoration: none;
+}
+
 #notes {
     border-top: solid 1px #DEDEDE;
 }
 
-#top {
+#page-head {
     margin-bottom: 5px;
-    display: block;
-    overflow: visible;
-    height: 180px;
 }
 
-#top #menubar {
-    width: 100%;
-    padding-top: 4px;
-    padding-bottom: 4px;
-    margin-top: 5px;
-    border-top: solid 1px #DEDEDE;
-    border-bottom: solid 1px #DEDEDE;
+#page-head #navbar {
+    margin: 1em 0 0 0;
+    height: 2.2em;
+    border-top: 1px solid #DEDEDE;
+    border-bottom: 1px solid #DEDEDE;
 }
 
-#menubar #header {
+#page-head h1 {
+    float: left;
     color: #0A0AA0;
-    text-align: left;
-    font-size: 14pt;
+    background-color: #FFF;
+    border: 0;
+    font-size: 1.5em;
     font-weight: normal;
-    margin: 0;
+    margin: 0 0 0 0;
     padding: 0;
 }
 
-#menubar a {
-    margin-left: 10px;
+#page-head #menu {
+    margin: 0.3em 0 1em 0;
+    padding: 0;
+    float: right;
+}
+
+#menu li {
+    list-style: none; 
+    float: left;
+    margin: 0;
+    white-space: nowrap;
+    padding: 0px 20px 0px 20px;
+}
+
+#menu li a {
     color: #666666;
+}
+
+@media print {
+    #page-head {
+        display: none;
+    }
 }
 
 #footer {
@@ -59,30 +86,32 @@ table p {
 
 #sidebar {
     position: absolute;
-    margin-top: 15px;
+    margin-top: 20px;
     width: 16%;
     display: block;
     overflow: hidden;
 }
 
-#content2col {
-    position: absolute;
-    left: 18%;
-    width: 81%;
-    margin-top: 15px;
-    display: block;
-    background-color: white;
-    overflow: hidden;
-}
-
-#content {
-    position: absolute;
-    left: 18%;
-    width: 62%;
-    margin-top: 15px;
-    display: block;
-    background-color: white;
-    overflow: hidden;
+@media screen {
+    #content2col {
+        position: absolute;
+        left: 18%;
+        width: 80%;
+        margin-top: 20px;
+        display: block;
+        background-color: white;
+        overflow: hidden;
+    }
+    
+    #content {
+        position: absolute;
+        left: 18%;
+        width: 62%;
+        margin-top: 15px;
+        display: block;
+        background-color: white;
+        overflow: hidden;
+    }
 }
 
 #news {
@@ -94,14 +123,23 @@ table p {
     overflow: hidden;
 }
 
+@media print {
+    #news {
+        display: none;
+    }
+    #sidebar {
+        display: none;
+    }
+}
+   
 #version-info {
     color: #666666;
     text-align: right;
-    margin-top: 3px;
+    margin: 3px 0 0 0;
+    padding: 0;
     font-size: 8pt;
-    margin-bottom: 5px;
-}
-
+  }
+  
 .toc {
 	margin-top: 10px;
 	margin-bottom: 5px;
@@ -154,43 +192,8 @@ h4 {
     font-weight: bold;
     padding-left: 15px;
 }
-
-.record {
-    margin: 10px;
-    padding: 10px;
-    width: 457px;
-    border: solid 1px #DEDEDE;
-}
-			
-.citation {
-    
-}
-			
-.heading {
-    font-weight: bold;
-}
-			
-.title {
-    font-weight: bold;
-    font-size: 12px;
-}
-			
-.citekey {
-    color: #50497A;
-    margin-left: 20px;
-}
 			
 .note {
-}
-			
-a {
-    color: #0A0AA0;
-    font-weight: bold;
-    text-decoration: none;
-}
-
-a:hover {
-    border-bottom: solid 1px gray;
 }
 
 input.mark {
@@ -406,15 +409,6 @@ div.example_title {
 }
 
 .variablelist {
-    margin-left: 15px;
-    margin-right: 15px;
-}
-
-#login {
-    padding: 10px;
-    display: block;
-    border: 1px solid #999;
-    background: #fafafa;
     margin-left: 15px;
     margin-right: 15px;
 }
