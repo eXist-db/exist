@@ -341,6 +341,8 @@ public class RpcConnection extends Thread {
 			serializer.setProperty(OutputKeys.ENCODING, encoding);
 			serializer.setProperty(OutputKeys.INDENT, prettyPrint);
 			if (stylesheet != null) {
+				
+			if (stylesheet.indexOf(":") < 0) {
 				if (!stylesheet.startsWith("/")) {
 					// make path relative to current collection
 					String collection;
@@ -355,6 +357,8 @@ public class RpcConnection extends Thread {
 							? '/' + stylesheet
 							: collection + '/' + stylesheet);
 				}
+				
+			}
 				serializer.setStylesheet(stylesheet);
 
 				// set stylesheet param if presents
