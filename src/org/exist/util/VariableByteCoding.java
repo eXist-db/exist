@@ -65,7 +65,7 @@ public class VariableByteCoding {
 		}
 	}
 	
-	public final static void copyTo(InputStream in, FastByteBuffer out) throws IOException {
+	public final static void copyTo(InputStream in, ByteArray out) throws IOException {
 		int more;
 		do {
 			more = in.read();
@@ -74,7 +74,7 @@ public class VariableByteCoding {
 		} while (more > 0);
 	}
 
-	public final static void copyTo(InputStream in, FastByteBuffer out, int count) 
+	public final static void copyTo(InputStream in, ByteArray out, int count) 
 	throws IOException {
 		int more;
 		for(int i = 0; i < count; i++) {
@@ -129,7 +129,7 @@ public class VariableByteCoding {
 	 *@param  buf  Description of the Parameter
 	 *@param  l    Description of the Parameter
 	 */
-	public final static void encode(FastByteBuffer buf, long l) {
+	public final static void encode(ByteArray buf, long l) {
 		while (l > 0177) {
 			buf.append((byte) ((l & 0177) | 0200));
 			l >>= 7;
@@ -137,7 +137,7 @@ public class VariableByteCoding {
 		buf.append((byte) (l & 0177));
 	}
 
-	public final static void encodeFixed(FastByteBuffer buf, long l) {
+	public final static void encodeFixed(ByteArray buf, long l) {
 		buf.append((byte) ( ( l >>> 56 ) & 0xff ));
 		buf.append((byte) ( ( l >>> 48 ) & 0xff ));
 		buf.append((byte) ( ( l >>> 40 ) & 0xff ));

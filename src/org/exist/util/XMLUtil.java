@@ -253,7 +253,7 @@ public class XMLUtil {
 		return (gid - doc.getLevelStartPoint(level)) * order + doc.getLevelStartPoint(level + 1);
 	}
 
-	public final static long getParentId(DocumentImpl doc, long gid) {
+	public final static long getParentId(final DocumentImpl doc, final long gid) {
 		final int level = doc.getTreeLevel(gid);
 		if (level < 0) {
 			System.out.println("unable to determine level for " + gid);
@@ -267,14 +267,13 @@ public class XMLUtil {
 		DocumentImpl doc,
 		long ancestor,
 		long descendant) {
-		boolean found = false;
 		if (ancestor == descendant)
-			found = true;
-		while ( (!found) && (descendant = getParentId(doc, descendant)) > -1) {
+			return true;
+		while ((descendant = getParentId(doc, descendant)) > -1) {
 			if (descendant == ancestor)
-				found = true;
+				return true;
 		}
-		return found;
+		return false;
 	}
 
 	/**

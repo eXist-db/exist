@@ -153,7 +153,7 @@ public class RelationalTextEngine extends TextSearchEngine {
                  )
                 continue;
 
-            word = token.getText(  );
+            word = token.getText(  ).toString();
 
             if ( stoplist.contains( word ) )
                 continue;

@@ -85,12 +85,8 @@ package org.exist.util;
  *  safe (if possible) or remove that code and clean up for
  *  performance/maintainability reasons. <p>
  *
- *
- *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    27. Juni 2002
  */
-public class FastByteBuffer {
+public class FastByteBuffer implements ByteArray {
 
     // %BUG% %REVIEW% *****PROBLEM SUSPECTED: If data from an FSB is being copied
     // back into the same FSB (variable set from previous variable, for example)
@@ -238,6 +234,7 @@ public class FastByteBuffer {
         m_chunkSize = 1 << ( initChunkBits );
         m_chunkMask = m_chunkSize - 1;
         m_array[0] = new byte[m_chunkSize];
+        //m_array[0] = ByteArrayPool.getByteArray(m_chunkSize);
     }
 
 
@@ -369,6 +366,7 @@ public class FastByteBuffer {
 
                 // Add a chunk.
                 chunk = m_array[m_lastChunk] = new byte[m_chunkSize];
+				//chunk = m_array[m_lastChunk] = ByteArrayPool.getByteArray(m_chunkSize);
             }
 
             m_firstFree = 0;
@@ -454,6 +452,7 @@ public class FastByteBuffer {
 
                     // Add a chunk.
                     chunk = m_array[m_lastChunk] = new byte[m_chunkSize];
+					//chunk = m_array[m_lastChunk] = ByteArrayPool.getByteArray(m_chunkSize);
                 }
 
                 available = m_chunkSize;
@@ -547,6 +546,7 @@ public class FastByteBuffer {
 
                     // Add a chunk.
                     chunk = m_array[m_lastChunk] = new byte[m_chunkSize];
+					//chunk = m_array[m_lastChunk] = ByteArrayPool.getByteArray(m_chunkSize);
                 }
 
                 available = m_chunkSize;
@@ -559,15 +559,14 @@ public class FastByteBuffer {
     }
 
 
-    /**
-     *  Description of the Method
-     *
-     *@param  newBuf  Description of the Parameter
-     *@param  offset  Description of the Parameter
-     */
-    public void copyTo( byte[] newBuf, int offset ) {
+	public void copyTo(byte[] newBuf, int offset) {
+		copyTo(newBuf, offset, size());
+	}
+	
+    public void copyTo( byte[] newBuf, int offset, int len ) {
         int pos = offset;
-        for ( int i = 0; i < m_lastChunk; i++ ) {
+        int remaining = len;
+        for ( int i = 0; i < m_lastChunk && remaining > 0; i++, remaining-- ) {
             if ( i == 0 && m_innerFSB != null )
                 m_innerFSB.copyTo( newBuf, pos );
             else
@@ -575,9 +574,34 @@ public class FastByteBuffer {
                     pos, m_chunkSize );
             pos += m_chunkSize;
         }
-        System.arraycopy( m_array[m_lastChunk], 0, newBuf, pos, m_firstFree );
+        if(remaining > 0) {
+        	if(remaining > m_firstFree)
+        		remaining = m_firstFree;
+        	System.arraycopy( m_array[m_lastChunk], 0, newBuf, pos, m_firstFree );
+        }
     }
 
+	public void copyTo( int start, byte[] newBuf, int offset, int len ) {
+		int stop = start + len;
+		int startChunk = start >>> m_chunkBits;
+		int startColumn = start & m_chunkMask;
+		int stopChunk = stop >>> m_chunkBits;
+		int stopColumn = stop & m_chunkMask;
+		int pos = offset;
+		for(int i = startChunk; i < stopChunk; ++i) {
+			if( i == 0 && m_innerFSB != null)
+				m_innerFSB.copyTo(startColumn, newBuf, offset, m_chunkSize - startColumn);
+			else
+				System.arraycopy(m_array[i], startColumn, newBuf, pos, m_chunkSize - startColumn);
+			pos += m_chunkSize - startColumn;
+			startColumn = 0;
+		}
+		
+		if(stopChunk == 0 && m_innerFSB != null)
+			m_innerFSB.copyTo(startColumn, newBuf, pos, stopColumn - startColumn);
+		else if(stopColumn > startColumn)
+			System.arraycopy(m_array[stopChunk], startColumn, newBuf, pos, stopColumn - startColumn);
+	}
 
     /**
      *  Get the length of the list. Synonym for size().
@@ -595,7 +619,6 @@ public class FastByteBuffer {
      *  eventually be different from setLength(0), which see.
      */
     public final void reset() {
-
         m_lastChunk = 0;
         m_firstFree = 0;
 
@@ -690,30 +713,6 @@ public class FastByteBuffer {
      */
     public final int size() {
         return ( m_lastChunk << m_chunkBits ) + m_firstFree;
-    }
-
-
-    /**
-     *  Description of the Method
-     *
-     *@param  i  Description of the Parameter
-     */
-    public void writeInt( int i ) {
-        byte[] buf = new byte[4];
-        ByteConversion.intToByte( i, buf, 0 );
-        append( buf, 0, 4 );
-    }
-
-
-    /**
-     *  Description of the Method
-     *
-     *@param  l  Description of the Parameter
-     */
-    public void writeLong( long l ) {
-        byte[] buf = new byte[8];
-        ByteConversion.longToByte( l, buf, 0 );
-        append( buf, 0, 8 );
     }
 }
 

@@ -10,7 +10,7 @@ public class StringUtil {
 	public final static void utfwrite(
 		byte[] data,
 		int len,
-		FastStringBuffer s) {
+		XMLString s) {
 		final int slen = s.length();
 		for (int i = 0; i < slen; i++) {
 			final int code = (int) s.charAt(i);
@@ -44,7 +44,7 @@ public class StringUtil {
 		}
 	}
 
-	public final static int utflen(FastStringBuffer s) {
+	public final static int utflen(XMLString s) {
 		final int slen = s.length();
 		int len = 0;
 		for (int i = 0; i < slen; i++) {
