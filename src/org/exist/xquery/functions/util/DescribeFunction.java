@@ -77,6 +77,8 @@ public class DescribeFunction extends Function {
 			UserDefinedFunction func = context.resolveFunction(qname);
 			signature = func.getSignature();
 		}
+		if(signature == null || signature.getName() == null)
+			throw new XPathException("Invalid function signature for " + qname.getLocalName());
 		MemTreeBuilder builder = context.getDocumentBuilder();
 		AttributesImpl attribs = new AttributesImpl();
 		attribs.addAttribute("", "name", "name", "CDATA", signature.getName().toString());

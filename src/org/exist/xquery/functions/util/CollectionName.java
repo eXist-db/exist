@@ -43,7 +43,7 @@ public class CollectionName extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("collection-name", ModuleImpl.NAMESPACE_URI),
+			new QName("collection-name", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
 			"Returns the name of the collection to which the passed node belongs.",
 			new SequenceType[] {
 					new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)

@@ -43,7 +43,7 @@ public class DocumentName extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("document-name", ModuleImpl.NAMESPACE_URI),
+			new QName("document-name", ModuleImpl.NAMESPACE_URI, ModuleImpl.PREFIX),
 			"Returns the name of the document to which the passed node belongs.",
 			new SequenceType[] {
 					new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
