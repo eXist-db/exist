@@ -14,11 +14,16 @@
  * You should have received a copy of the GNU Library General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * $Id$
  */
 
 package org.exist.xpath;
 
 import org.exist.dom.*;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 
 /**
  * xpath-library function: boolean(object)
@@ -31,15 +36,15 @@ public class FunBoolean extends Function {
 	}
 	
 	public int returnsType() {
-		return Constants.TYPE_BOOL;
+		return Type.BOOLEAN;
 	}
 	
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
-		NodeProxy contextNode) throws XPathException {
-		if(contextNode != null)
-			contextSet = new SingleNodeSet(contextNode);
-		boolean result = getArgument(0).eval(context, docs, contextSet, contextNode).getBooleanValue();
-		return new ValueBoolean(result);
+	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
+		Item contextItem) throws XPathException {
+		if(contextItem != null)
+			contextSequence = contextItem.toSequence();
+		return 
+			getArgument(0).eval(context, docs, contextSequence, null).convertTo(Type.BOOLEAN);
 	}
 
 	public String pprint() {

@@ -16,6 +16,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * $Id$
  */
 package org.exist.xpath;
 
@@ -23,44 +25,23 @@ import java.lang.reflect.Constructor;
 import java.util.Iterator;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
 import org.exist.storage.BrokerPool;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
 
-/**
- *  Description of the Class
- *
- *@author     Wolfgang Meier <wolfgang@exist-db.org>
- *@created    7. Oktober 2002
- */
 public abstract class Function extends PathExpr {
 
     protected String name;
 
-
-    /**
-     *  Constructor for the Function object
-     *
-     *@param  name  Description of the Parameter
-     */
     public Function( String name ) {
         super();
         this.name = name;
     }
 
-
-    /**  Constructor for the Function object */
     public Function() {
         super();
     }
-
-
-    /**
-     *  Description of the Method
-     *
-     *@param  name    Description of the Parameter
-     *@return         Description of the Return Value
-     */
+    
     public static Function createFunction(String name) {
         try {
             if ( name == null )
@@ -85,67 +66,27 @@ public abstract class Function extends PathExpr {
         }
     }
 
-
-    /**
-     *  Adds a feature to the Argument attribute of the Function object
-     *
-     *@param  expr  The feature to be added to the Argument attribute
-     */
     public void addArgument( Expression expr ) {
         if ( expr == null )
             return;
         steps.add( expr );
     }
 
+    public abstract Sequence eval( StaticContext context, DocumentSet docs, Sequence contextSequence,
+    	Item contextItem) throws XPathException;
 
-    /**
-     *  Description of the Method
-     *
-     *@param  docs     Description of the Parameter
-     *@param  context  Description of the Parameter
-     *@param  node     Description of the Parameter
-     *@return          Description of the Return Value
-     */
-    public abstract Value eval( StaticContext context, DocumentSet docs, NodeSet contextSet,
-    	NodeProxy contextNode) throws XPathException;
-
-
-    /**
-     *  Gets the argument attribute of the Function object
-     *
-     *@param  pos  Description of the Parameter
-     *@return      The argument value
-     */
     public Expression getArgument( int pos ) {
         return getExpression( pos );
     }
 
-
-    /**
-     *  Gets the argumentCount attribute of the Function object
-     *
-     *@return    The argumentCount value
-     */
     public int getArgumentCount() {
         return steps.size();
     }
 
-
-    /**
-     *  Gets the name attribute of the Function object
-     *
-     *@return    The name value
-     */
     public String getName() {
         return name;
     }
 
-
-    /**
-     *  Description of the Method
-     *
-     *@return    Description of the Return Value
-     */
     public String pprint() {
         StringBuffer buf = new StringBuffer();
         buf.append( getName() );

@@ -26,6 +26,10 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.xpath.value.IntegerValue;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 
@@ -36,15 +40,18 @@ public class FunLast extends Function {
   }
 
   public int returnsType() {
-    return Constants.TYPE_NUM;
+    return Type.INTEGER;
   }
 
   public DocumentSet preselect(DocumentSet in_docs, StaticContext context) {
     return in_docs;
   }
 
-   public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
-   	NodeProxy contextNode) {
+   public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
+   	Item contextItem) throws XPathException {
+   		if(!Type.subTypeOf(contextItem.getType(), Type.NODE))
+   			throw new XPathException("last() can only be applied to nodes");
+   		NodeProxy contextNode = (NodeProxy)contextItem;
       DocumentImpl doc = contextNode.getDoc();
       int level = doc.getTreeLevel(contextNode.getGID());
       long pid = (contextNode.getGID() - doc.getLevelStartPoint(level)) /
@@ -54,9 +61,9 @@ public class FunLast extends Function {
         doc.getTreeLevelOrder(level) +
         doc.getLevelStartPoint(level);
       long e_gid = f_gid + doc.getTreeLevelOrder(level);
-      NodeSet set = contextSet.getRange(doc, f_gid, e_gid);
+      NodeSet set = ((NodeSet)contextSequence).getRange(doc, f_gid, e_gid);
       int len = set.getLength();
-      return new ValueNumber((double)len);
+      return new IntegerValue(len);
    }
 
   public static boolean nodesEqual(NodeImpl n1, NodeImpl n2) {

@@ -9,6 +9,8 @@ public class Match implements Comparable {
 	
 	private String matchTerm;
 	private long nodeId;
+	protected Match nextMatch = null;
+	protected Match prevMatch = null;
 	
 	public Match(String matchTerm, long nodeId) {
 		this.matchTerm = matchTerm;
@@ -23,13 +25,16 @@ public class Match implements Comparable {
 		return nodeId;
 	}
 	
+	public Match getNextMatch() {
+		return nextMatch;
+	}
+	
 	public boolean equals(Object other) {
 		if(!(other instanceof Match))
 			return false;
 		return ((Match)other).matchTerm.equals(matchTerm) &&
 			((Match)other).nodeId == nodeId;
 	}
-	
 	
 	/**
 	 * Used to sort matches. Terms are compared by their string 
@@ -39,14 +44,7 @@ public class Match implements Comparable {
 	 */
 	public int compareTo(Object o) {
 		Match other = (Match)o;
-		final int l = matchTerm.length();
-		final int ol = other.matchTerm.length();
-		if(l > ol)
-			return -1;
-		else if(l < ol)
-			return 1;
-		else
-			return 0;
+		return other.matchTerm.compareTo(matchTerm);
 	}
 
 }

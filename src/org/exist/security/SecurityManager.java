@@ -110,7 +110,8 @@ public class SecurityManager {
 				LOG.debug("loading acl");
 				Element root = acl.getDocumentElement();
 				NodeList nl = root.getChildNodes();
-				Element next, node;
+				Node node;
+				Element next;
 				User user;
 				NodeList ul;
 				String lastId;
@@ -125,11 +126,14 @@ public class SecurityManager {
 							nextUserId = Integer.parseInt(lastId);
 						} catch (NumberFormatException e) {
 						}
-						ul = next.getElementsByTagName("user");
+						ul = next.getChildNodes();
 						for (int j = 0; j < ul.getLength(); j++) {
-							node = (Element) ul.item(j);
-							user = new User(node);
-							users.put(user.getUID(), user);
+							node = ul.item(j);
+							if(node.getNodeType() == Node.ELEMENT_NODE &&
+								node.getLocalName().equals("user")) {
+								user = new User((Element)node);
+								users.put(user.getUID(), user);
+							}
 						}
 					} else if (next.getTagName().equals("groups")) {
 						lastId = next.getAttribute("last-id");
@@ -137,11 +141,14 @@ public class SecurityManager {
 							nextGroupId = Integer.parseInt(lastId);
 						} catch (NumberFormatException e) {
 						}
-						ul = next.getElementsByTagName("group");
+						ul = next.getChildNodes();
 						for (int j = 0; j < ul.getLength(); j++) {
-							node = (Element) ul.item(j);
-							group = new Group(node);
-							groups.put(group.getId(), group);
+							node = ul.item(j);
+							if(node.getNodeType() == Node.ELEMENT_NODE &&
+								node.getLocalName().equals("group")) {
+								group = new Group((Element)node);
+								groups.put(group.getId(), group);
+							}
 						}
 					}
 				}

@@ -2,6 +2,7 @@ package org.exist.xpath;
 
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.xpath.value.Type;
 import org.w3c.dom.Node;
 
 public class TypeTest implements NodeTest {
@@ -19,16 +20,16 @@ public class TypeTest implements NodeTest {
 	protected boolean isOfType(short type) {
 		int domType;
 		switch (nodeType) {
-			case Constants.ELEMENT_NODE :
+			case Type.ELEMENT :
 				domType = Node.ELEMENT_NODE;
 				break;
-			case Constants.TEXT_NODE :
+			case Type.TEXT :
 				domType = Node.TEXT_NODE;
 				break;
-			case Constants.ATTRIBUTE_NODE :
+			case Type.ATTRIBUTE :
 				domType = Node.ATTRIBUTE_NODE;
 				break;
-			case Constants.NODE_TYPE :
+			case Type.NODE :
 			default :
 				return true;
 		}
@@ -36,14 +37,14 @@ public class TypeTest implements NodeTest {
 	}
 
 	public String toString() {
-		return Constants.NODETYPES[nodeType] + "()";
+		return nodeType == -1 ? "node()" : Type.NODETYPES[nodeType] + "()";
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.NodeTest#matches(org.exist.dom.NodeProxy)
 	 */
 	public boolean matches(NodeProxy proxy) {
-		if(proxy.nodeType == Constants.TYPE_UNKNOWN) {
+		if(proxy.nodeType == Type.ITEM) {
 			Node node = proxy.getNode();
 			return matches(node);
 		} else

@@ -40,8 +40,8 @@ public final class NodeIterator implements Iterator {
 		throws BTreeException, IOException {
 		this.db = db;
 		this.doc = node.doc;
-		if (-1 < node.internalAddress)
-			startAddress = node.internalAddress;
+		if (-1 < node.getInternalAddress())
+			startAddress = node.getInternalAddress();
 		else
 			this.node = node;
 		lockKey = (lock == null ? this : lock);
@@ -195,8 +195,8 @@ public final class NodeIterator implements Iterator {
 	 *@param  node  The new to value
 	 */
 	public void setTo(NodeProxy node) {
-		if (-1 < node.internalAddress) {
-			startAddress = node.internalAddress;
+		if (-1 < node.getInternalAddress()) {
+			startAddress = node.getInternalAddress();
 		} else {
 			this.node = node;
 		}

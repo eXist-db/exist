@@ -27,6 +27,11 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.xpath.value.IntegerValue;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceIterator;
+import org.exist.xpath.value.Type;
 
 /**
  * xpath-library function: position()
@@ -39,26 +44,38 @@ public class FunPosition extends Function {
     }
 
     public int returnsType() {
-        return Constants.TYPE_NUM;
+        return Type.INTEGER;
     }
 
     public DocumentSet preselect(DocumentSet in_docs, StaticContext context) {
         return in_docs;
     }
 
-    public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-    	NodeProxy contextNode) {
-        DocumentImpl doc = contextNode.getDoc();
-        NodeSet set = ((ArraySet)contextSet).getSiblings(doc, contextNode.getGID());
-        // determine position of current node in the set
-        NodeProxy p;
-        double count = 1.0;
-        for(Iterator i = set.iterator(); i.hasNext(); count++) {
-            p = (NodeProxy)i.next();
-            if(p.gid == contextNode.gid && contextNode.doc.getDocId() == contextNode.doc.getDocId())
-                return new ValueNumber(count);
-        }
-        return new ValueNumber(-1);
+    public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, 
+    	Item contextItem) throws XPathException {
+    	int  count = 1;
+    	switch(contextSequence.getItemType()) {
+    		case Type.NODE:
+    			NodeProxy contextNode = (NodeProxy)contextItem;
+    			NodeSet contextSet = (NodeSet)contextSequence;	
+	        	DocumentImpl doc = contextNode.getDoc();
+		        NodeSet set = ((ArraySet)contextSet).getSiblings(doc, contextNode.getGID());
+		        // determine position of current node in the set
+		        NodeProxy p;
+		        for(Iterator i = set.iterator(); i.hasNext(); count++) {
+		            p = (NodeProxy)i.next();
+		            if(p.gid == contextNode.gid && contextNode.doc.getDocId() == contextNode.doc.getDocId())
+		                return new IntegerValue(count);
+		        }
+		        break;
+		     default:
+		     	for(SequenceIterator i = contextSequence.iterate(); i.hasNext(); count++) {
+		     		if(i.nextItem() == contextItem)
+		     			return new IntegerValue(count);
+		     	}
+		     	break;
+    	}
+        return new IntegerValue(-1);
     }
 
     public String pprint() {

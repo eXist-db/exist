@@ -34,6 +34,13 @@ import org.exist.storage.IndexPaths;
 import org.exist.storage.analysis.SimpleTokenizer;
 import org.exist.storage.analysis.TextToken;
 import org.exist.util.Configuration;
+import org.exist.xpath.value.BooleanValue;
+import org.exist.xpath.value.DecimalValue;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceIterator;
+import org.exist.xpath.value.Type;
+import org.exist.xpath.value.ValueSequence;
 
 /**
  *  compare two operands by =, <, > etc..
@@ -49,23 +56,11 @@ public class OpEquals extends BinaryOp {
 	// in some cases, we use a fulltext expression to preselect nodes
 	protected ExtFulltext containsExpr = null;
 
-	/**
-	 *  Constructor for the OpEquals object
-	 *
-	 *@param  relation  Description of the Parameter
-	 */
 	public OpEquals(int relation) {
 		super();
 		this.relation = relation;
 	}
 
-	/**
-	 *  Constructor for the OpEquals object
-	 *
-	 *@param  left      Description of the Parameter
-	 *@param  right     Description of the Parameter
-	 *@param  relation  Description of the Parameter
-	 */
 	public OpEquals(Expression left, Expression right, int relation) {
 		super();
 		this.relation = relation;
@@ -89,38 +84,43 @@ public class OpEquals extends BinaryOp {
 	 *@param  node     Description of the Parameter
 	 *@return          Description of the Return Value
 	 */
-	protected Value booleanCompare(
+	protected Sequence booleanCompare(
 		Expression left,
 		Expression right,
 		StaticContext context,
 		DocumentSet docs,
-		NodeSet contextSet) throws XPathException {
-		ArraySet result = new ArraySet(100);
-		NodeProxy n;
+		Sequence contextSequence) throws XPathException {
 		boolean lvalue;
 		boolean rvalue;
-		DocumentSet dset;
-		SingleNodeSet set = new SingleNodeSet();
-		for (Iterator i = contextSet.iterator(); i.hasNext();) {
-			n = (NodeProxy) i.next();
-			set.add(n);
-			rvalue = left.eval(context, docs, set).getBooleanValue();
-			lvalue = right.eval(context, docs, set).getBooleanValue();
-			if (lvalue == rvalue) {
-				result.add(n);
-				n.addContextNode(n);
+		if(contextSequence.getItemType() == Type.NODE) {
+			ArraySet result = new ArraySet(100);
+			NodeProxy n;
+			SingleNodeSet set = new SingleNodeSet();
+			for(SequenceIterator i = contextSequence.iterate(); i.hasNext(); ) {
+				n = (NodeProxy)i.nextItem();
+				set.add(n);
+				lvalue = ((BooleanValue)left.eval(context, docs, set).convertTo(Type.BOOLEAN)).getValue();
+				rvalue = ((BooleanValue)right.eval(context, docs, set).convertTo(Type.BOOLEAN)).getValue();
+				if(cmpBooleans(lvalue, rvalue)) {
+					result.add(n);
+					n.addContextNode(n);
+				}
 			}
+			return result;
+		} else {
+			ValueSequence result = new ValueSequence();
+			Item item;
+			for(SequenceIterator i = contextSequence.iterate(); i.hasNext(); ) {
+				item = i.nextItem();
+				lvalue = ((BooleanValue)left.eval(context, docs, contextSequence, item).convertTo(Type.BOOLEAN)).getValue();
+				rvalue = ((BooleanValue)right.eval(context, docs, contextSequence, item).convertTo(Type.BOOLEAN)).getValue();
+				if(cmpBooleans(lvalue, rvalue))
+					result.add(item);
+			}
+			return result;
 		}
-		return new ValueNodeSet(result);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  left   Description of the Parameter
-	 *@param  right  Description of the Parameter
-	 *@return        Description of the Return Value
-	 */
 	protected boolean cmpBooleans(boolean left, boolean right) {
 		switch (relation) {
 			case Constants.EQ :
@@ -131,13 +131,6 @@ public class OpEquals extends BinaryOp {
 		return false;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  left   Description of the Parameter
-	 *@param  right  Description of the Parameter
-	 *@return        Description of the Return Value
-	 */
 	protected boolean cmpNumbers(double left, double right) {
 		switch (relation) {
 			case Constants.EQ :
@@ -156,13 +149,6 @@ public class OpEquals extends BinaryOp {
 		return false;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  left   Description of the Parameter
-	 *@param  right  Description of the Parameter
-	 *@return        Description of the Return Value
-	 */
 	protected boolean compareStrings(String left, String right) {
 		int cmp = left.compareTo(right);
 		switch (relation) {
@@ -194,23 +180,23 @@ public class OpEquals extends BinaryOp {
 	 *@param  node     Description of the Parameter
 	 *@return          Description of the Return Value
 	 */
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
-		NodeProxy contextNode) throws XPathException {
-		if (getLeft().returnsType() == Constants.TYPE_NODELIST)
-			return nodeSetCompare(getLeft(), getRight(), context, docs, contextSet);
-		else if (getRight().returnsType() == Constants.TYPE_NODELIST) {
+	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
+		Item contextItem) throws XPathException {
+		if (Type.subTypeOf(getLeft().returnsType(), Type.NODE))
+			return nodeSetCompare(getLeft(), getRight(), context, docs, contextSequence);
+		else if (Type.subTypeOf(getRight().returnsType(), Type.NODE)) {
 			switchOperands();
-			return nodeSetCompare(getRight(), getLeft(), context, docs, contextSet);
-		} else if (getLeft().returnsType() == Constants.TYPE_NUM)
-			return numberCompare(getLeft(), getRight(), context, docs, contextSet);
-		else if (getRight().returnsType() == Constants.TYPE_NUM)
-			return numberCompare(getRight(), getLeft(), context, docs, contextSet);
-		else if (getLeft().returnsType() == Constants.TYPE_STRING)
-			return stringCompare(getLeft(), getRight(), context, docs, contextSet);
-		else if (getLeft().returnsType() == Constants.TYPE_BOOL)
-			return booleanCompare(getLeft(), getRight(), context, docs, contextSet);
-		else if (getRight().returnsType() == Constants.TYPE_BOOL)
-			return booleanCompare(getRight(), getLeft(), context, docs, contextSet);
+			return nodeSetCompare(getRight(), getLeft(), context, docs, contextSequence);
+		} else if (Type.subTypeOf(getLeft().returnsType(), Type.NUMBER))
+			return numberCompare(getLeft(), getRight(), context, docs, contextSequence);
+		else if (Type.subTypeOf(getRight().returnsType(), Type.NUMBER))
+			return numberCompare(getRight(), getLeft(), context, docs, contextSequence);
+		else if (Type.subTypeOf(getLeft().returnsType(), Type.STRING))
+			return stringCompare(getLeft(), getRight(), context, docs, contextSequence);
+		else if (Type.subTypeOf(getLeft().returnsType(), Type.BOOLEAN))
+			return booleanCompare(getLeft(), getRight(), context, docs, contextSequence);
+		else if (Type.subTypeOf(getRight().returnsType(), Type.BOOLEAN))
+			return booleanCompare(getRight(), getLeft(), context, docs, contextSequence);
 		throw new RuntimeException("syntax error");
 	}
 
@@ -228,20 +214,22 @@ public class OpEquals extends BinaryOp {
 	 *@param  node     Description of the Parameter
 	 *@return          Description of the Return Value
 	 */
-	protected Value nodeSetCompare(
+	protected Sequence nodeSetCompare(
 		Expression left,
 		Expression right,
 		StaticContext context,
 		DocumentSet docs,
-		NodeSet contextSet) throws XPathException {
+		Sequence contextSequence) throws XPathException {
 		NodeSet result = new ArraySet(100);
+		if(!(contextSequence.getItemType() == Type.NODE))
+			throw new XPathException("context is not a node sequence");
+		NodeSet contextSet = (NodeSet)contextSequence;
 		// TODO: not correct: should test if right is a string literal
-		if (right.returnsType() == Constants.TYPE_STRING ||
-			right.returnsType() == Constants.TYPE_NODELIST) {
+		if (right.returnsType() == Type.STRING) {
 			// evaluate left expression
-			NodeSet nodes = (NodeSet) left.eval(context, docs, contextSet).getNodeList();
-			String cmp = right.eval(context, docs, contextSet).getStringValue();
-			if (getLeft().returnsType() == Constants.TYPE_NODELIST && relation == Constants.EQ &&
+			NodeSet nodes = (NodeSet) left.eval(context, docs, contextSequence);
+			String cmp = right.eval(context, docs, contextSequence).getStringValue();
+			if (getLeft().returnsType() == Type.NODE && relation == Constants.EQ &&
 				nodes.hasIndex() && cmp.length() > 0) {
 				String cmpCopy = cmp;
 				cmp = maskWildcards(cmp);
@@ -266,45 +254,38 @@ public class OpEquals extends BinaryOp {
 					foundNumeric = checkArgumentTypes(context, docs);
 				if((!foundNumeric) && containsExpr.countTerms() > 0) {
 					// all elements are indexed: use the fulltext index
-					Value temp = containsExpr.eval(context, docs, nodes, null);
-					nodes = (NodeSet) temp.getNodeList();
+					nodes = (NodeSet)containsExpr.eval(context, docs, nodes, null);
 				}
 				cmp = cmpCopy;
 			}
 			// now compare the input node set to the search expression
 				result = context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp);
-		} else if (right.returnsType() == Constants.TYPE_NUM) {
-			double rvalue;
-			double lvalue;
+		} else if (Type.subTypeOf(right.returnsType(), Type.NUMBER)) {
+			DecimalValue rvalue;
+			DecimalValue lvalue;
 			NodeProxy ln;
 			NodeSet temp = new SingleNodeSet();
-			NodeSet lset = (NodeSet) left.eval(context, docs, contextSet).getNodeList();
+			NodeSet lset = (NodeSet) left.eval(context, docs, contextSequence);
 			for (Iterator i = lset.iterator(); i.hasNext();) {
 				ln = (NodeProxy) i.next();
-				try {
-					lvalue = Double.parseDouble(ln.getNodeValue());
-				} catch (NumberFormatException nfe) {
-					continue;
-				}
+				lvalue = (DecimalValue)ln.convertTo(Type.DECIMAL);
 				temp.add(ln);
-				rvalue = right.eval(context, docs, temp).getNumericValue();
-				if (cmpNumbers(lvalue, rvalue))
+				rvalue = (DecimalValue)right.eval(context, docs, temp).convertTo(Type.DECIMAL);
+				if (cmpNumbers(lvalue.getDouble(), rvalue.getDouble()))
 					result.add(ln);
 			}
-		} else if (right.returnsType() == Constants.TYPE_BOOL) {
+		} else if (Type.subTypeOf(right.returnsType(), Type.BOOLEAN)) {
 			NodeProxy n;
 			NodeProxy parent;
 			boolean rvalue;
 			boolean lvalue;
 			long pid;
-			ArraySet leftNodeSet;
-			ArraySet temp;
+			NodeSet lset = (NodeSet) left.eval(context, docs, contextSequence);
 			// get left arguments node set
-			leftNodeSet = (ArraySet) left.eval(context, docs, contextSet).getNodeList();
-			temp = new ArraySet(10);
+			NodeSet temp = new SingleNodeSet();
 			// get that part of context for which left argument's node set would
 			// be > 0
-			for (Iterator i = leftNodeSet.iterator(); i.hasNext();) {
+			for (Iterator i = lset.iterator(); i.hasNext();) {
 				n = (NodeProxy) i.next();
 				parent = contextSet.parentWithChild(n, false, true);
 				if (parent != null)
@@ -316,12 +297,12 @@ public class OpEquals extends BinaryOp {
 				n = (NodeProxy) i.next();
 				ltemp.add(n);
 				lvalue = temp.contains(n);
-				rvalue = right.eval(context, docs, ltemp).getBooleanValue();
+				rvalue = ((BooleanValue)right.eval(context, docs, ltemp).convertTo(Type.BOOLEAN)).getValue();
 				if (cmpBooleans(lvalue, rvalue))
 					result.add(n);
 			}
 		}
-		return new ValueNodeSet(result);
+		return result;
 	}
 
 	private String maskWildcards(String expr) {
@@ -342,6 +323,7 @@ public class OpEquals extends BinaryOp {
 		}
 		return buf.toString();
 	}
+	
 	private boolean checkArgumentTypes(StaticContext context, DocumentSet docs) throws XPathException {
 			Configuration config = context.getBroker().getConfiguration();
 			Map idxPathMap = (Map) config.getProperty("indexer.map");
@@ -369,34 +351,36 @@ public class OpEquals extends BinaryOp {
 	 *@param  node     Description of the Parameter
 	 *@return          Description of the Return Value
 	 */
-	protected Value numberCompare(
+	protected Sequence numberCompare(
 		Expression left,
 		Expression right,
 		StaticContext context,
 		DocumentSet docs,
-		NodeSet contextSet) throws XPathException {
-		ArraySet result = new ArraySet(100);
-		NodeProxy current;
+		Sequence contextSequence) throws XPathException {
+		System.out.println("comparing numbers");
+		Sequence result;
+		if(contextSequence.getItemType() == Type.NODE) 
+			result = new ArraySet(10);
+		else
+			result = new ValueSequence();
+		Item current;
 		double rvalue;
 		double lvalue;
-		for (Iterator i = contextSet.iterator(); i.hasNext();) {
-			current = (NodeProxy) i.next();
-			rvalue = right.eval(context, docs, contextSet, current).getNumericValue();
-			lvalue = left.eval(context, docs, contextSet, current).getNumericValue();
+		for(SequenceIterator i = contextSequence.iterate(); i.hasNext(); ) {
+			current = i.nextItem();
+			rvalue = ((DecimalValue)right.eval(context, docs, contextSequence, current).convertTo(Type.DECIMAL)).getDouble();
+			lvalue = ((DecimalValue)left.eval(context, docs, contextSequence, current).convertTo(Type.DECIMAL)).getDouble();
+			System.out.println(rvalue + " = " + lvalue);
 			if (cmpNumbers(lvalue, rvalue)) {
 				result.add(current);
-				current.addContextNode(current);
+				if(Type.subTypeOf(current.getType(), Type.NODE))
+					((NodeProxy)current).addContextNode((NodeProxy)current);
 			}
 			
 		}
-		return new ValueNodeSet(result);
+		return result;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@return    Description of the Return Value
-	 */
 	public String pprint() {
 		StringBuffer buf = new StringBuffer();
 		buf.append(getLeft().pprint());
@@ -415,39 +399,33 @@ public class OpEquals extends BinaryOp {
 		return in_docs;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@return    Description of the Return Value
-	 */
 	public int returnsType() {
-		return Constants.TYPE_NODELIST;
+		return Type.NODE;
 	}
 
-	protected Value stringCompare(
+	protected Sequence stringCompare(
 		Expression left,
 		Expression right,
 		StaticContext context,
 		DocumentSet docs,
-		NodeSet contextSet) throws XPathException {
+		Sequence contextSequence) throws XPathException {
 		LOG.debug("comparing " + docs.getLength());
-		ArraySet result = new ArraySet(100);
-		NodeProxy n;
+		ValueSequence result = new ValueSequence();
+		Item current;
 		String lvalue;
 		String rvalue;
 		int cmp;
-		SingleNodeSet temp = new SingleNodeSet();
-		for (Iterator i = contextSet.iterator(); i.hasNext();) {
-			n = (NodeProxy) i.next();
-			temp.add(n);
-			rvalue = left.eval(context, docs, temp).getStringValue();
-			lvalue = right.eval(context, docs, temp).getStringValue();
+		for(SequenceIterator i = contextSequence.iterate(); i.hasNext(); ) {
+			current = i.nextItem();
+			rvalue = left.eval(context, docs, contextSequence, current).getStringValue();
+			lvalue = right.eval(context, docs, contextSequence, current).getStringValue();
 			if (compareStrings(rvalue, lvalue)) {
-				result.add(n);
-				n.addContextNode(n);
+				result.add(current);
+				if(current.getType() == Type.NODE)
+					((NodeProxy)current).addContextNode((NodeProxy)current);
 			}
 		}
-		return new ValueNodeSet(result);
+		return result;
 	}
 
 	protected void switchOperands() {

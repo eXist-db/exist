@@ -57,6 +57,13 @@ public class LongLinkedList {
         return count;
     }
     
+    public long getLast() {
+    	if(last != null)
+    		return last.l;
+    	else
+    		return -1;
+    }
+    
     public boolean contains(long l) {
     	ListItem next = first;
     	while( next != null ) {

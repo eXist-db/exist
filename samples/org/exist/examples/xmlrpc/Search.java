@@ -22,12 +22,17 @@ public class Search {
         // execute query and retrieve an id for the generated result set
         Vector params = new Vector();
         params.addElement(query);
-		params.addElement(new Integer(10));
-		params.addElement(new Integer(1));
-		params.addElement(new Integer(1));
-		params.addElement(new Hashtable());
-		System.out.println("Executing query " + params.elementAt(0));
-        String result = (String) xmlrpc.execute("query", params);
-		System.out.println(result);
+		System.out.println("Executing " + params.elementAt(0));
+        Vector result = (Vector) xmlrpc.execute("query", params);
+        System.out.println("found: " + result.size());
+		for(int i = 0; i < result.size(); i++) {
+			System.out.println(result.elementAt(i));
+			Vector current = (Vector)result.elementAt(i);
+			params = new Vector();
+			params.addElement(current.elementAt(0));
+			params.addElement(current.elementAt(1));
+			byte[] data = (byte[])xmlrpc.execute("retrieve", params);
+			System.out.println(new String(data, "UTF-8"));
+		}
     }
 }

@@ -42,6 +42,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeIndexListener;
 import org.exist.dom.NodeProxy;
+import org.exist.dom.XMLUtil;
 import org.exist.storage.BufferStats;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.Signatures;
@@ -51,7 +52,6 @@ import org.exist.util.Lockable;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.ReentrantReadWriteLock;
 import org.exist.util.StorageAddress;
-import org.exist.util.XMLUtil;
 import org.w3c.dom.Node;
 
 /**
@@ -1139,8 +1139,11 @@ public class DOMFile extends BTree implements Lockable {
 			case Node.ELEMENT_NODE :
 				final int children = ByteConversion.byteToInt(data, offset + 1);
 				rec.offset += len + 2;
-				for (int i = 0; i < children; i++)
+				for (int i = 0; i < children; i++) {
 					getNodeValue(os, rec, false);
+					if(children > 1)
+						os.write((byte)0x20);
+				}
 				return;
 			case Node.TEXT_NODE :
 				os.write(data, offset + 1, len - 1);

@@ -2,6 +2,7 @@ package org.exist.xpath;
 
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.xpath.value.Type;
 import org.w3c.dom.Node;
 
 public class NameTest extends TypeTest {
@@ -23,7 +24,7 @@ public class NameTest extends TypeTest {
 	public boolean matches(NodeProxy proxy) {
 		Node node = null;
 		short type = proxy.nodeType;
-		if(type == Constants.TYPE_UNKNOWN) {
+		if(type == Type.ITEM) {
 			node = proxy.getNode();
 			type = node.getNodeType();
 		}

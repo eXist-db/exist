@@ -30,8 +30,9 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.StaticContext;
-import org.exist.xpath.Value;
-import org.exist.xpath.ValueSet;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -259,14 +260,14 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			DocumentSet ndocs = expr.preselect( context );
 			if (ndocs.getLength() == 0)
 				return resp;
-			Value value = expr.eval(context, ndocs, null, null);
+			Sequence seq= expr.eval(context, ndocs, null, null);
 
 			QueryResponseCollection[] collections = null;
-			if (value.getType() == Value.isNodeList)
-				collections = collectQueryInfo(scanResults(value.getNodeList()));
-			session.addQueryResult(value);
+			if (seq.getItemType() == Type.NODE)
+				collections = collectQueryInfo(scanResults((NodeSet)seq));
+			session.addQueryResult(seq);
 			resp.setCollections(collections);
-			resp.setHits(value.getNodeList().getLength());
+			resp.setHits(seq.getLength());
 			resp.setQueryTime(System.currentTimeMillis() - start);
 		} catch (Exception e) {
 			throw new RemoteException("query execution failed: " + e.getMessage());
@@ -298,13 +299,13 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(session.getUser());
-			Value qr = (Value) session.getQueryResult().result;
+			Sequence qr = (Sequence) session.getQueryResult().result;
 			if (qr == null)
 				throw new RemoteException("result set unknown or timed out");
 			String xml[] = null;
-			switch (qr.getType()) {
-				case Value.isNodeList :
-					NodeList resultSet = qr.getNodeList();
+			switch (qr.getItemType()) {
+				case Type.NODE :
+					NodeSet resultSet = (NodeSet)qr;
 					--start;
 					if (start < 0 || start >= resultSet.getLength())
 						throw new RuntimeException(
@@ -329,16 +330,15 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 					}
 					break;
 				default :
-					ValueSet valueSet = qr.getValueSet();
 					--start;
-					if (start < 0 || start >= valueSet.getLength())
+					if (start < 0 || start >= qr.getLength())
 						throw new RemoteException("index " + start + " out of bounds");
-					if (start + howmany >= valueSet.getLength())
-						howmany = valueSet.getLength() - start;
+					if (start + howmany >= qr.getLength())
+						howmany = qr.getLength() - start;
 					xml = new String[howmany];
 					for (int i = 0; i < howmany; i++) {
-						Value val = valueSet.get(start);
-						xml[i] = val.getStringValue();
+						Item item = qr.itemAt(start);
+						xml[i] = item.getStringValue();
 					}
 			}
 			return xml;
@@ -351,17 +351,6 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  resultId             Description of the Parameter
-	 *@param  pos                  Description of the Parameter
-	 *@param  docPath              Description of the Parameter
-	 *@param  encoding             Description of the Parameter
-	 *@param  prettyPrint          Description of the Parameter
-	 *@return                      Description of the Return Value
-	 *@exception  RemoteException  Description of the Exception
-	 */
 	public String[] retrieveByDocument(
 		String sessionId,
 		int start,
@@ -375,13 +364,13 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(session.getUser());
-			Value qr = (Value) session.getQueryResult().result;
+			Sequence qr = (Sequence) session.getQueryResult().result;
 			if (qr == null)
 				throw new RemoteException("result set unknown or timed out");
 			String xml[] = null;
-			switch (qr.getType()) {
-				case Value.isNodeList :
-					NodeList resultSet = qr.getNodeList();
+			switch (qr.getItemType()) {
+				case Type.NODE :
+					NodeList resultSet = (NodeSet)qr;
 					ArraySet hitsByDoc = new ArraySet(50);
 					NodeProxy p;
 					for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext();) {

@@ -14,12 +14,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * $Id$
  */
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 
 public abstract class BinaryOp extends PathExpr {
 
@@ -28,15 +31,15 @@ public abstract class BinaryOp extends PathExpr {
   }
 
   public int returnsType() {
-    return Constants.TYPE_NODELIST;
+    return Type.NODE;
   }
 
   public Expression getLeft() { return getExpression(0); }
   public Expression getRight() { return getExpression(1); }
 
   public abstract DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException;
-  public abstract Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
-  	NodeProxy contextNode) throws XPathException;
+  public abstract Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
+  	Item contextItem) throws XPathException;
 
   public abstract String pprint();
 }

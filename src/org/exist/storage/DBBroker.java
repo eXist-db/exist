@@ -335,35 +335,6 @@ public abstract class DBBroker extends Observable {
 	}
 
 	/**
-	 *  get all the nodes containing the search terms given by the array expr
-	 *  using the fulltext-index. Calls to this method are normally delegated to
-	 *  the associated instance of class TextSearchEngine.
-	 *
-	 *@param  doc   the set of documents to search through
-	 *@param  expr  an array of search terms. a query is executed for each of
-	 *      them
-	 *@return       NodeSet[] an array of node sets, one for each search term
-	 */
-	public abstract NodeSet[] getNodesContaining(
-		DocumentSet doc,
-		String[] expr);
-
-	/**
-	 *  Gets the nodesContaining attribute of the DBBroker object
-	 *
-	 *@param  doc   Description of the Parameter
-	 *@param  expr  Description of the Parameter
-	 *@param  type  Description of the Parameter
-	 *@return       The nodesContaining value
-	 */
-	public NodeSet[] getNodesContaining(
-		DocumentSet doc,
-		String[] expr,
-		int type) {
-		return getNodesContaining(doc, expr, MATCH_EXACT);
-	}
-
-	/**
 	 *  find all Nodes whose string value is equal to expr in the document set.
 	 *
 	 *@param  context   Description of the Parameter

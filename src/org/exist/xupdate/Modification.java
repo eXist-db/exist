@@ -9,17 +9,18 @@ import org.exist.EXistException;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeIndexListener;
+import org.exist.dom.XMLUtil;
 import org.exist.parser.XPathLexer2;
 import org.exist.parser.XPathParser2;
 import org.exist.parser.XPathTreeParser2;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.util.StorageAddress;
-import org.exist.util.XMLUtil;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.StaticContext;
-import org.exist.xpath.Value;
 import org.exist.xpath.XPathException;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.NodeList;
 
@@ -84,10 +85,10 @@ public abstract class Modification {
 			if (docs.getLength() == 0)
 				return null;
 
-			Value resultValue = expr.eval(context, docs, null, null);
-			if (!(resultValue.getType() == Value.isNodeList))
+			Sequence resultSeq = expr.eval(context, docs, null, null);
+			if (resultSeq.getItemType() != Type.NODE)
 				throw new EXistException("select expression should evaluate to a" + "node-set");
-			NodeList set = resultValue.getNodeList();
+			NodeList set = (NodeList)resultSeq;
 			LOG.info("found " + set.getLength() + " for select; retrieving nodes...");
 			ArrayList out = new ArrayList(set.getLength());
 			for (int i = 0; i < set.getLength(); i++) {

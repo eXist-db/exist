@@ -15,15 +15,16 @@
  * You should have received a copy of the GNU Library General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- * 
+ *
  * $Id$
  */
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.SingleNodeSet;
+import org.exist.xpath.value.IntegerValue;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 
 public class FunCount extends Function {
 
@@ -32,20 +33,18 @@ public class FunCount extends Function {
     }
 
     public int returnsType() {
-		return Constants.TYPE_NUM;
+		return Type.INTEGER;
     }
 
     public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException {
 		return getArgument(0).preselect(in_docs, context);
     }
 
-    public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
-    	NodeProxy contextNode) throws XPathException {
-    	if(contextNode != null) {
-    		contextSet = new SingleNodeSet(contextNode);
-    	}
-		NodeSet temp = (NodeSet)getArgument(0).eval(context, docs, contextSet).getNodeList();
-		return new ValueNumber(temp.getLength());
+    public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
+    	Item contextItem) throws XPathException {
+		if(contextItem != null)
+			contextSequence = contextItem.toSequence();
+		return new IntegerValue(getArgument(0).eval(context, docs, contextSequence).getLength());
 	}
 }
 			  

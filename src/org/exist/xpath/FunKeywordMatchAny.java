@@ -22,15 +22,8 @@
  */
 package org.exist.xpath;
 
-/**
- *  Description of the Class
- *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    7. Oktober 2002
- */
 public class FunKeywordMatchAny extends FunKeywordMatchAll {
 
-    /**  Constructor for the FunKeywordMatchAny object */
     public FunKeywordMatchAny() {
         super( "match-any" );
     }

@@ -22,8 +22,8 @@
        -->
        
 	   <db-connection database="native" files="webapp/WEB-INF/data" 
-		   buffers="1024" words_buffers="4096" collection_buffers="2048" 
-		   elements_buffers="4096" free_mem_min="10" 
+		   buffers="512" words_buffers="1024" collection_buffers="256" 
+		   elements_buffers="512" free_mem_min="10" 
 		   pageSize="4096">
 
 		   <!-- Settings for the database connection pool
@@ -54,7 +54,7 @@
 	   - indent: should the serializer pretty-print (indent) xml?
   -->
   <serializer enable-xinclude="true" enable-xsl="false"
-	  indent="false" add-exist-id="element" match-tagging-elements="true"
+	  indent="false" add-exist-id="element" match-tagging-elements="false"
 	  match-tagging-attributes="false"/>
   
   <!-- settings for the indexer
@@ -74,7 +74,7 @@
     		equality comparisons.
   -->
   <indexer stemming="false" caseSensitive="false"
-	  suppress-whitespace="none" index-depth="3"
+	  suppress-whitespace="none" index-depth="1"
 	  tokenizer="org.exist.storage.analysis.SimpleTokenizer"
 	  validation="false">
 
@@ -112,13 +112,6 @@
 	<index doctype="users" default="none" attributes="false">
 	</index>
 
-	<index attributes="true" doctype="dblp" default="all">
-		<exclude path="//ee"/>
-		<exclude path="//cdrom"/>
-		<exclude path="//url"/>
-		<exclude path="//volume"/>
-	</index>
-	
 	<index doctype="PLAY" default="all">
 	</index>
 
@@ -191,7 +184,7 @@
 
     <category name="org.exist.xmldb" additivity="false">
 		<appender-ref ref="console"/>
-		<priority value="info"/>
+		<priority value="debug"/>
     </category>
     
     <!--

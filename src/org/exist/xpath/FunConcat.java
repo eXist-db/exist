@@ -24,9 +24,10 @@
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.SingleNodeSet;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.StringValue;
+import org.exist.xpath.value.Type;
 
 /**
  * xpath-library function: string(object)
@@ -39,21 +40,19 @@ public class FunConcat extends Function {
 	}
 
 	public int returnsType() {
-		return Constants.TYPE_STRING;
+		return Type.STRING;
 	}
 		
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-		NodeProxy contextNode) throws XPathException {
+	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, 
+		Item contextItem) throws XPathException {
 		if(getArgumentCount() < 2)
 			throw new XPathException ("concat requires at least two arguments");
-		if(contextNode != null)
-			contextSet = new SingleNodeSet(contextNode);
+		if(contextItem != null)
+			contextSequence = contextItem.toSequence();
 		StringBuffer result = new StringBuffer();
-		Expression arg;
 		for(int i = 0; i < getArgumentCount(); i++) {
-			arg = getArgument(i);
-			result.append(arg.eval(context, docs, contextSet).getStringValue());
+			result.append(getArgument(i).eval(context, docs, contextSequence).getStringValue());
 		}
-		return new ValueString(result.toString());
+		return new StringValue(result.toString());
 	}
 }

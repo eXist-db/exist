@@ -180,6 +180,11 @@
                         ( XPathQueryService ) collection.getService( "XPathQueryService", "1.0" );
                     _service.setProperty(Serializer.HIGHLIGHT_MATCHES, "elements");
                     _service.setProperty(Serializer.PRETTY_PRINT, "false");
+                    <xsl:for-each select="./xmldb:namespace">
+                    	<xsp:logic>
+                    		_service.setNamespace("<xsl:value-of select="@prefix"/>", "<xsl:value-of select="."/>");
+                    	</xsp:logic>
+                    </xsl:for-each>
                     _result = _service.query(_query);
                     if(_result != null)
                         session.setAttribute(_query, _result);

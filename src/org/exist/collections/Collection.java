@@ -1110,6 +1110,7 @@ public class Collection
 	public synchronized void addObserver(Observer o) {
 		if (observers == null)
 			observers = new ArrayList(1);
-		observers.add(o);
+		if(!observers.contains(o))
+			observers.add(o);
 	}
 }

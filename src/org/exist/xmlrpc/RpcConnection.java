@@ -47,10 +47,10 @@ import org.exist.util.Occurrences;
 import org.exist.util.SyntaxException;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.StaticContext;
-import org.exist.xpath.Value;
-import org.exist.xpath.ValueNodeSet;
-import org.exist.xpath.ValueSet;
 import org.exist.xpath.XPathException;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.w3c.dom.Document;
@@ -171,7 +171,7 @@ public class RpcConnection extends Thread {
 	 *@return                Description of the Return Value
 	 *@exception  Exception  Description of the Exception
 	 */
-	protected Value doQuery(
+	protected Sequence doQuery(
 		User user,
 		DBBroker broker,
 		String xpath,
@@ -180,12 +180,14 @@ public class RpcConnection extends Thread {
 		Hashtable namespaces)
 		throws Exception {
 		StaticContext context = new StaticContext(broker);
-		Map.Entry entry;
-		for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {
-			entry = (Map.Entry) i.next();
-			context.declareNamespace(
-				(String) entry.getKey(),
-				(String) entry.getValue());
+		if(namespaces != null) {
+			Map.Entry entry;
+			for (Iterator i = namespaces.entrySet().iterator(); i.hasNext();) {
+				entry = (Map.Entry) i.next();
+				context.declareNamespace(
+					(String) entry.getKey(),
+					(String) entry.getValue());
+			}
 		}
 		XPathLexer2 lexer = new XPathLexer2(new StringReader(xpath));
 		XPathParser2 parser = new XPathParser2(lexer);
@@ -213,7 +215,7 @@ public class RpcConnection extends Thread {
 			return null;
 		LOG.info(
 			"pre-select took " + (System.currentTimeMillis() - start) + "ms.");
-		Value result = expr.eval(context, ndocs, contextSet, null);
+		Sequence result = expr.eval(context, ndocs, contextSet, null);
 		LOG.info("query took " + (System.currentTimeMillis() - start) + "ms.");
 		return result;
 	}
@@ -225,7 +227,7 @@ public class RpcConnection extends Thread {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			Value resultValue =
+			Sequence resultValue =
 				doQuery(user, broker, xpath, null, null, namespaces);
 			QueryResult qr =
 				new QueryResult(
@@ -323,7 +325,6 @@ public class RpcConnection extends Thread {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			broker.setUser(user);
 			DocumentImpl doc = (DocumentImpl) broker.getDocument(name);
 			if (doc == null) {
 				LOG.debug("document " + name + " not found!");
@@ -592,12 +593,7 @@ public class RpcConnection extends Thread {
 			throw new EXistException("result set unknown or timed out");
 		if (qr.result == null)
 			return 0;
-		switch (qr.result.getType()) {
-			case Value.isNodeList :
-				return qr.result.getNodeList().getLength();
-			default :
-				return qr.result.getValueSet().getLength();
-		}
+		return qr.result.getLength();
 	}
 
 	/**
@@ -881,21 +877,20 @@ public class RpcConnection extends Thread {
 	}
 
 	protected String printValues(
-		ValueSet resultSet,
+		Sequence result,
 		int howmany,
 		int start,
 		boolean prettyPrint)
 		throws Exception {
-		if (resultSet.getLength() == 0)
+		if (result.getLength() == 0)
 			return "<?xml version=\"1.0\"?>\n"
 				+ "<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" "
 				+ "hitCount=\"0\"/>";
-		if (howmany > resultSet.getLength() || howmany == 0)
-			howmany = resultSet.getLength();
+		if (howmany > result.getLength() || howmany == 0)
+			howmany = result.getLength();
 
-		if (start < 1 || start > resultSet.getLength())
+		if (start < 1 || start > result.getLength())
 			throw new EXistException("start parameter out of range");
-		Value value;
 		Document dest = docBuilder.newDocument();
 		Element root =
 			dest.createElementNS(
@@ -904,36 +899,37 @@ public class RpcConnection extends Thread {
 		root.setAttribute(
 			"xmlns:exist",
 			"http://exist.sourceforge.net/NS/exist");
-		root.setAttribute("hitCount", Integer.toString(resultSet.getLength()));
+		root.setAttribute("hitCount", Integer.toString(result.getLength()));
 		dest.appendChild(root);
 
 		Element temp;
+		Item item;
 		for (int i = start - 1; i < start + howmany - 1; i++) {
-			value = resultSet.get(i);
-			switch (value.getType()) {
-				case Value.isNumber :
+			item = result.itemAt(i);
+			switch (item.getType()) {
+				case Type.NUMBER :
 					temp =
 						dest.createElementNS(
 							"http://exist.sourceforge.net/NS/exist",
 							"exist:number");
 					break;
-				case Value.isString :
+				case Type.STRING :
 					temp =
 						dest.createElementNS(
 							"http://exist.sourceforge.net/NS/exist",
 							"exist:string");
 					break;
-				case Value.isBoolean :
+				case Type.BOOLEAN :
 					temp =
 						dest.createElementNS(
 							"http://exist.sourceforge.net/NS/exist",
 							"exist:boolean");
 					break;
 				default :
-					LOG.debug("unknown type: " + value.getType());
+					LOG.debug("unknown type: " + item.getType());
 					continue;
 			}
-			temp.appendChild(dest.createTextNode(value.getStringValue()));
+			temp.appendChild(dest.createTextNode(item.getStringValue()));
 			root.appendChild(temp);
 		}
 		StringWriter sout = new StringWriter();
@@ -986,16 +982,16 @@ public class RpcConnection extends Thread {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			Value resultValue =
+			Sequence resultSeq =
 				doQuery(user, broker, xpath, null, null, namespaces);
-			if (resultValue == null)
+			if (resultSeq == null)
 				return "<?xml version=\"1.0\"?>\n"
 					+ "<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" "
 					+ "hitCount=\"0\"/>";
 
-			switch (resultValue.getType()) {
-				case Value.isNodeList :
-					NodeList resultSet = resultValue.getNodeList();
+			switch (resultSeq.getItemType()) {
+				case Type.NODE:
+					NodeSet resultSet = (NodeSet)resultSeq;
 					if (sortExpr != null) {
 						SortedNodeSet sorted =
 							new SortedNodeSet(brokerPool, user, sortExpr);
@@ -1012,8 +1008,7 @@ public class RpcConnection extends Thread {
 							(System.currentTimeMillis() - startTime));
 					break;
 				default :
-					ValueSet valueSet = resultValue.getValueSet();
-					result = printValues(valueSet, howmany, start, prettyPrint);
+					result = printValues(resultSeq, howmany, start, prettyPrint);
 					break;
 			}
 		} finally {
@@ -1049,12 +1044,12 @@ public class RpcConnection extends Thread {
 				docs = new DocumentSet();
 				docs.add(node.doc);
 			}
-			Value resultValue = doQuery(user, broker, xpath, docs, nodes, null);
-			if (resultValue == null)
+			Sequence resultSeq = doQuery(user, broker, xpath, docs, nodes, null);
+			if (resultSeq == null)
 				return result;
-			switch (resultValue.getType()) {
-				case Value.isNodeList :
-					NodeList resultSet = resultValue.getNodeList();
+			switch (resultSeq.getItemType()) {
+				case Type.NODE :
+					NodeList resultSet = (NodeList)resultSeq;
 					NodeProxy p;
 					Vector entry;
 					for (Iterator i = ((NodeSet) resultSet).iterator();
@@ -1068,11 +1063,10 @@ public class RpcConnection extends Thread {
 					}
 					break;
 				default :
-					ValueSet valueSet = resultValue.getValueSet();
-					Value val;
-					for (int i = 0; i < valueSet.getLength(); i++) {
-						val = valueSet.get(i);
-						result.addElement(val.getStringValue());
+					Item item;
+					for (int i = 0; i < resultSeq.getLength(); i++) {
+						item = resultSeq.itemAt(i);
+						result.addElement(item.getStringValue());
 					}
 			}
 		} finally {
@@ -1094,7 +1088,7 @@ public class RpcConnection extends Thread {
 		Vector result = new Vector();
 		NodeSet nodes = null;
 		DocumentSet docs = null;
-		Value resultValue = null;
+		Sequence resultSeq = null;
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
@@ -1112,23 +1106,22 @@ public class RpcConnection extends Thread {
 				docs = new DocumentSet();
 				docs.add(node.doc);
 			}
-			resultValue = doQuery(user, broker, xpath, docs, nodes, namespaces);
-			if (resultValue == null)
+			resultSeq = doQuery(user, broker, xpath, docs, nodes, namespaces);
+			if (resultSeq == null)
 				return ret;
-			switch (resultValue.getType()) {
-				case Value.isNodeList :
-					NodeSet resultSet = (NodeSet) resultValue.getNodeList();
+			switch (resultSeq.getItemType()) {
+				case Type.NODE :
+					NodeSet resultSet = (NodeSet) resultSeq;
 					if (sortBy != null) {
 						SortedNodeSet sorted =
 							new SortedNodeSet(brokerPool, user, sortBy);
 						sorted.addAll(resultSet);
-						resultSet = sorted;
-						resultValue = new ValueNodeSet(sorted);
+						resultSeq = sorted;
 					}
 					NodeProxy p;
 					Vector entry;
 					if (resultSet != null) {
-						Iterator i = ((NodeSet) resultSet).iterator();
+						Iterator i = ((NodeSet) resultSeq).iterator();
 						if(i != null) {
 							while (i.hasNext()) {
 								p = (NodeProxy) i.next();
@@ -1143,11 +1136,10 @@ public class RpcConnection extends Thread {
 						LOG.debug("result set was null. Should not!");
 					break;
 				default :
-					ValueSet valueSet = resultValue.getValueSet();
-					Value val;
-					for (int i = 0; i < valueSet.getLength(); i++) {
-						val = valueSet.get(i);
-						result.addElement(val.getStringValue());
+					Item item;
+					for (int i = 0; i < resultSeq.getLength(); i++) {
+						item = resultSeq.itemAt(i);
+						result.addElement(item.getStringValue());
 					}
 			}
 		} finally {
@@ -1155,7 +1147,7 @@ public class RpcConnection extends Thread {
 		}
 		QueryResult qr =
 			new QueryResult(
-				resultValue,
+				resultSeq,
 				(System.currentTimeMillis() - startTime));
 		connectionPool.resultSets.put(qr.hashCode(), qr);
 		ret.put("id", new Integer(qr.hashCode()));
@@ -1267,10 +1259,10 @@ public class RpcConnection extends Thread {
 				(QueryResult) connectionPool.resultSets.get(resultId);
 			if (qr == null)
 				throw new EXistException("result set unknown or timed out");
-			switch (qr.result.getType()) {
-				case Value.isNodeList :
-					NodeList resultSet = qr.result.getNodeList();
-					NodeProxy proxy = ((NodeSet) resultSet).get(num);
+			switch (qr.result.getItemType()) {
+				case Type.NODE :
+					NodeList resultSet = (NodeList)qr.result;
+					NodeProxy proxy = (NodeProxy)qr.result.itemAt(num);
 					if (proxy == null)
 						throw new EXistException("index out of range");
 					Serializer serializer = broker.getSerializer();
@@ -1282,9 +1274,8 @@ public class RpcConnection extends Thread {
 					serializer.setProperties(properties);
 					return serializer.serialize(proxy);
 				default :
-					ValueSet valueSet = qr.result.getValueSet();
-					Value val = valueSet.get(num);
-					return val.getStringValue();
+					Item item = qr.result.itemAt(num);
+					return item.getStringValue();
 			}
 		} finally {
 			brokerPool.release(broker);
@@ -1487,10 +1478,10 @@ public class RpcConnection extends Thread {
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
-			Value resultValue = doQuery(user, broker, xpath, null, null, null);
-			if (resultValue == null)
+			Sequence resultSeq = doQuery(user, broker, xpath, null, null, null);
+			if (resultSeq == null)
 				return new Hashtable();
-			NodeList resultSet = resultValue.getNodeList();
+			NodeList resultSet = (NodeList)resultSeq;
 			HashMap map = new HashMap();
 			HashMap doctypes = new HashMap();
 			NodeProxy p;
@@ -1574,7 +1565,7 @@ public class RpcConnection extends Thread {
 		}
 		DBBroker broker = brokerPool.get(user);
 		try {
-			NodeList resultSet = qr.result.getNodeList();
+			NodeList resultSet = (NodeList)qr.result;
 			HashMap map = new HashMap();
 			HashMap doctypes = new HashMap();
 			NodeProxy p;

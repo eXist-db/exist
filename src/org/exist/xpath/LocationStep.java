@@ -29,9 +29,10 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.SingleNodeSet;
 import org.exist.dom.VirtualNodeSet;
-import org.exist.util.XMLUtil;
+import org.exist.dom.XMLUtil;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
 import org.w3c.dom.Node;
 
 public class LocationStep extends Step {
@@ -58,39 +59,38 @@ public class LocationStep extends Step {
 		for (Iterator i = predicates.iterator(); i.hasNext();) {
 			pred = (Predicate) i.next();
 			result =
-				(NodeSet) pred.eval(context, documents, result).getNodeList();
+				(NodeSet) pred.eval(context, documents, (Sequence)result);
 		}
 		return result;
 	}
 
-	public Value eval(
+	public Sequence eval(
 		StaticContext context,
 		DocumentSet documents,
-		NodeSet contextSet,
-		NodeProxy contextNode)
+		Sequence contextSequence,
+		Item contextItem)
 		throws XPathException {
-		if (contextNode != null)
-			contextSet = new SingleNodeSet(contextNode);
-
+		if(contextItem != null)
+			contextSequence = contextItem.toSequence();
 		NodeSet temp;
 		switch (axis) {
 			case Constants.DESCENDANT_AXIS :
 			case Constants.DESCENDANT_SELF_AXIS :
-				temp = getDescendants(context, documents, contextSet);
+				temp = getDescendants(context, documents, (NodeSet)contextSequence);
 				break;
 			case Constants.CHILD_AXIS :
-				temp = getChildren(context, documents, contextSet);
+				temp = getChildren(context, documents, (NodeSet)contextSequence);
 				break;
 			case Constants.ANCESTOR_AXIS :
 			case Constants.ANCESTOR_SELF_AXIS :
-				temp = getAncestors(context, documents, contextSet);
+				temp = getAncestors(context, documents, (NodeSet)contextSequence);
 				break;
 			case Constants.SELF_AXIS :
-				temp = contextSet;
+				temp = (NodeSet)contextSequence;
 				if (inPredicate) {
-					if (contextSet instanceof VirtualNodeSet) {
-						((VirtualNodeSet) contextSet).setInPredicate(true);
-						((VirtualNodeSet) contextSet).setSelfIsContext();
+					if (temp instanceof VirtualNodeSet) {
+						((VirtualNodeSet) temp).setInPredicate(true);
+						((VirtualNodeSet) temp).setSelfIsContext();
 					} else {
 						NodeProxy p;
 						for (Iterator i = temp.iterator(); i.hasNext();) {
@@ -101,16 +101,16 @@ public class LocationStep extends Step {
 				}
 				break;
 			case Constants.PARENT_AXIS :
-				temp = getParents(context, documents, contextSet);
+				temp = getParents(context, documents, (NodeSet)contextSequence);
 				break;
 			case Constants.ATTRIBUTE_AXIS :
 				// combines /descendant-or-self::node()/attribute:*
 			case Constants.DESCENDANT_ATTRIBUTE_AXIS :
-				temp = getAttributes(context, documents, contextSet);
+				temp = getAttributes(context, documents, (NodeSet)contextSequence);
 				break;
 			case Constants.PRECEDING_SIBLING_AXIS :
 			case Constants.FOLLOWING_SIBLING_AXIS :
-				temp = getSiblings(context, documents, contextSet);
+				temp = getSiblings(context, documents, (NodeSet)contextSequence);
 				break;
 			default :
 				throw new IllegalArgumentException("Unsupported axis specified");
@@ -119,7 +119,7 @@ public class LocationStep extends Step {
 			(predicates.size() == 0)
 				? temp
 				: applyPredicate(context, documents, temp);
-		return new ValueNodeSet(temp);
+		return temp;
 	}
 
 	protected NodeSet getAttributes(
@@ -139,13 +139,13 @@ public class LocationStep extends Step {
 			}
 			if (axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)
 				result =
-					((ArraySet) buf).getDescendants(
+					buf.getDescendants(
 						contextSet,
 						ArraySet.DESCENDANT,
 						inPredicate);
 			else
 				result =
-					((ArraySet) buf).getChildren(
+					buf.getChildren(
 						contextSet,
 						ArraySet.DESCENDANT,
 						inPredicate);
@@ -274,7 +274,7 @@ public class LocationStep extends Step {
 			}
 			NodeSet r =
 				contextSet.getAncestors(
-					(ArraySet) buf,
+					buf,
 					axis == Constants.ANCESTOR_SELF_AXIS,
 					inPredicate);
 			LOG.debug("getAncestors found " + r.getLength());
@@ -285,7 +285,7 @@ public class LocationStep extends Step {
 			for (Iterator i = contextSet.iterator(); i.hasNext();) {
 				p = (NodeProxy) i.next();
 				if (axis == Constants.ANCESTOR_SELF_AXIS && test.matches(p))
-					result.add(new NodeProxy(p.doc, p.gid, p.internalAddress));
+					result.add(new NodeProxy(p.doc, p.gid, p.getInternalAddress()));
 				while ((p.gid = XMLUtil.getParentId(p.doc, p.gid)) > 0) {
 					p.nodeType = Node.ELEMENT_NODE;
 					if (test.matches(p))

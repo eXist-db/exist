@@ -24,9 +24,9 @@ package org.exist.dom;
 import java.util.Iterator;
 
 import org.dbxml.core.data.Value;
-import org.exist.util.XMLUtil;
 import org.exist.xpath.Constants;
 import org.exist.xpath.NodeTest;
+import org.exist.xpath.value.Item;
 import org.exist.xpath.value.SequenceIterator;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -162,7 +162,8 @@ public class VirtualNodeSet extends NodeSet {
 		DocumentImpl doc,
 		long gid,
 		boolean directParent,
-		boolean includeSelf) {
+		boolean includeSelf,
+		int level) {
 		final NodeProxy p =
 			getFirstParent(new NodeProxy(doc, gid), null, includeSelf, directParent, 0);
 		if (p != null)
@@ -170,7 +171,7 @@ public class VirtualNodeSet extends NodeSet {
 		return p;
 	}
 
-	public NodeProxy nodeHasParent(NodeProxy node, boolean directParent, boolean includeSelf) {
+	public NodeProxy nodeHasParent(NodeProxy node, boolean directParent, boolean includeSelf, int level) {
 		final NodeProxy p = getFirstParent(node, null, includeSelf, directParent, 0);
 		if (p != null)
 			addInternal(p);
@@ -233,7 +234,7 @@ public class VirtualNodeSet extends NodeSet {
 					NodeImpl node = (NodeImpl) domIter.next();
 					node.setOwnerDocument(docElemProxy.doc);
 					node.setGID(docElemProxy.gid);
-					docElemProxy.matches = proxy.matches;
+					docElemProxy.match = proxy.match;
 					addChildren(docElemProxy, result, node, domIter, 0);
 				}
 				continue;
@@ -267,9 +268,9 @@ public class VirtualNodeSet extends NodeSet {
 					new NodeProxy(
 						child.ownerDocument,
 						child.gid,
-						child.getNodeType(),
-						child.internalAddress);
-				p.matches = contextNode.matches;
+						child.getNodeType());
+				p.setInternalAddress(child.internalAddress);
+				p.match = contextNode.match;
 				if (test.matches(child)) {
 					if ((axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS)
 						&& recursions == 0) {
@@ -349,6 +350,11 @@ public class VirtualNodeSet extends NodeSet {
 		return realSet.get(pos);
 	}
 
+	public Item itemAt(int pos) {
+		realize();
+		return realSet.itemAt(pos);
+	}
+	
 	public NodeProxy get(DocumentImpl doc, long gid) {
 		realize();
 		return realSet.get(doc, gid);

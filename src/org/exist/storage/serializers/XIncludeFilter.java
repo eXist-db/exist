@@ -11,16 +11,16 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.XMLUtil;
 import org.exist.parser.XPathLexer2;
 import org.exist.parser.XPathParser2;
 import org.exist.parser.XPathTreeParser2;
 import org.exist.security.PermissionDeniedException;
-import org.exist.util.XMLUtil;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.StaticContext;
-import org.exist.xpath.Value;
-import org.exist.xpath.ValueSet;
 import org.exist.xpath.XPathException;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
@@ -236,10 +236,10 @@ public class XIncludeFilter implements ContentHandler {
 					docs = expr.preselect(docs, context);
 					if (docs.getLength() == 0)
 						return;
-					Value resultValue = expr.eval(context, docs, null, null);
-					switch (resultValue.getType()) {
-						case Value.isNodeList :
-							NodeSet set = (NodeSet) resultValue.getNodeList();
+					Sequence seq = expr.eval(context, docs, null, null);
+					switch (seq.getItemType()) {
+						case Type.NODE :
+							NodeSet set = (NodeSet) seq;
 							LOG.info("xpointer found: " + set.getLength());
 
 							NodeProxy proxy;
@@ -249,10 +249,9 @@ public class XIncludeFilter implements ContentHandler {
 							}
 							break;
 						default :
-							ValueSet values = resultValue.getValueSet();
 							String val;
-							for (int i = 0; i < values.getLength(); i++) {
-								val = values.get(i).getStringValue();
+							for (int i = 0; i < seq.getLength(); i++) {
+								val = seq.itemAt(i).getStringValue();
 								characters(val.toCharArray(), 0, val.length());
 							}
 							break;

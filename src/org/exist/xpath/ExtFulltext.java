@@ -15,48 +15,38 @@
  *  You should have received a copy of the GNU Library General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * $Id$
  */
 package org.exist.xpath;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.ArrayList;
 import org.exist.*;
-import org.exist.storage.*;
 import org.exist.storage.analysis.Tokenizer;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 import org.exist.dom.*;
 import org.apache.log4j.Category;
 
-/**
- *  Description of the Class
- *
- *@author     Wolfgang Meier <wolfgang@exist-db.org>
- *@created    July 31, 2002
- */
 public class ExtFulltext extends Function {
 
-	private static Category LOG = Category.getInstance(ExtFulltext.class.getName());
+	private static Category LOG =
+		Category.getInstance(ExtFulltext.class.getName());
 	protected ArrayList containsExpr = new ArrayList(2);
-	protected NodeSet[][] hits = null;
+	protected NodeSet[] hits = null;
 	protected PathExpr path;
 	protected String terms[] = null;
 	protected int type = Constants.FULLTEXT_AND;
+	protected boolean delayExecution = true;
 
-	/**
-	 *  Constructor for the FunContains object
-	 *
-	 *@param  type    Description of the Parameter
-	 */
 	public ExtFulltext(int type) {
 		super("contains");
 		this.type = type;
 	}
 
-	/**
-	 *  Constructor for the FunContains object
-	 *
-	 *@param  path    Description of the Parameter
-	 *@param  arg     Description of the Parameter
-	 */
 	public ExtFulltext(PathExpr path) {
 		super("contains");
 		this.path = path;
@@ -67,79 +57,74 @@ public class ExtFulltext extends Function {
 		this.containsExpr.add(arg);
 	}
 
-	public void addTerms(StaticContext context, String terms) throws EXistException {
-			Tokenizer tokenizer = context.getBroker().getTextEngine().getTokenizer();
-			tokenizer.setText(terms);
-			org.exist.storage.analysis.TextToken token;
-			String word;
-			while (null != (token = tokenizer.nextToken(true))) {
-				word = token.getText();
-				System.out.println("adding " + word);
-				containsExpr.add(word);
-			}
+	public void addTerms(StaticContext context, String terms)
+		throws EXistException {
+		Tokenizer tokenizer =
+			context.getBroker().getTextEngine().getTokenizer();
+		tokenizer.setText(terms);
+		org.exist.storage.analysis.TextToken token;
+		String word;
+		while (null != (token = tokenizer.nextToken(true))) {
+			word = token.getText();
+			System.out.println("adding " + word);
+			containsExpr.add(word);
+		}
 	}
-	
+
 	public int countTerms() {
 		return containsExpr.size();
 	}
-	
-	public Value eval(
+
+	public Sequence eval(
 		StaticContext context,
 		DocumentSet docs,
-		NodeSet contextSet,
-		NodeProxy contextNode) throws XPathException {
+		Sequence contextSequence,
+		Item contextItem)
+		throws XPathException {
+		if (contextItem != null)
+			contextSequence = contextItem.toSequence();
 		NodeSet nodes =
 			path == null
-				? contextSet
-				: (NodeSet) path.eval(context, docs, contextSet, contextNode).getNodeList();
-		if (hits == null)
-			processQuery(context, docs);
-		long pid;
-		NodeProxy current;
-		NodeProxy parent;
-		NodeSet temp = null;
+				? (NodeSet) contextSequence
+				: (NodeSet) path.eval(context, docs, contextSequence);
 		long start = System.currentTimeMillis();
-		for (int j = 0; j < hits.length; j++) {
-			temp = new ArraySet(200);
-			for (int k = 0; k < hits[j].length; k++) {
-				if (hits[j][k] == null)
-					continue;
-				((ArraySet) hits[j][k]).sort();
-				for (Iterator i = hits[j][k].iterator(); i.hasNext();) {
-					current = (NodeProxy) i.next();
-					parent = nodes.parentWithChild(current, false, true);
-					if (parent != null) {
-						if (temp.contains(parent)) {
-							parent.addMatches(current.matches);
-						} else {
-							parent.addMatches(current.matches);
-							temp.add(parent);
-						}
-					}
-				}
-			}
-			hits[j][0] = (temp == null) ? new ArraySet(1) : temp;
-		}
-		NodeSet t0 = null;
-		NodeSet t1;
-		for (int j = 0; j < hits.length; j++) {
-			t1 = hits[j][0];
-			if (t0 == null)
-				t0 = t1;
-			else
-				t0 = (type == Constants.FULLTEXT_AND) ? t0.intersection(t1) : t0.union(t1);
+		if (hits == null)
+			processQuery(context, docs, nodes);
 
-		}
-		if (t0 == null)
-			t0 = NodeSet.EMPTY_SET;
-		return new ValueNodeSet(t0);
+		NodeSet result = null;
+		if (!delayExecution) {
+			for (int j = 0; j < hits.length; j++) {
+				if (hits[j] == null)
+					continue;
+				hits[j] = ((TextSearchResult) hits[j]).process(nodes);
+			}
+
+			NodeSet t1;
+			for (int j = 0; j < hits.length; j++) {
+				t1 = hits[j];
+				if (t1 == null)
+					break;
+				if (result == null)
+					result = t1;
+				else
+					result =
+						(type == Constants.FULLTEXT_AND)
+							? result.intersection(t1)
+							: result.union(t1);
+			}
+		} else
+			result = hits[0];
+		if (result == null)
+			return Sequence.EMPTY_SEQUENCE;
+			
+		LOG.debug(
+			"found "
+				+ result.getLength()
+				+ " in "
+				+ (System.currentTimeMillis() - start));
+		return result;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@return    Description of the Return Value
-	 */
 	public String pprint() {
 		StringBuffer buf = new StringBuffer();
 		buf.append(path.pprint());
@@ -156,71 +141,61 @@ public class ExtFulltext extends Function {
 		return buf.toString();
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  in_docs  Description of the Parameter
-	 *@return          Description of the Return Value
-	 */
 	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) {
-		processQuery(context, in_docs);
-		NodeProxy p;
-		DocumentSet ndocs = new DocumentSet();
-		Iterator i;
-		for (int j = 0; j < hits.length; j++)
-			for (int k = 0; k < hits[j].length; k++) {
-				if (hits[j][k] == null)
-					break;
-				for (i = hits[j][k].iterator(); i.hasNext();) {
-					p = (NodeProxy) i.next();
-					if (!ndocs.contains(p.doc.getDocId()))
-						ndocs.add(p.doc);
-
-				}
+		if (!delayExecution) {
+			processQuery(context, in_docs, null);
+			DocumentSet ndocs = new DocumentSet();
+			for (int i = 0; i < hits.length; i++) {
+				((TextSearchResult) hits[i]).getDocuments(ndocs);
 			}
-
-		return ndocs;
+			return ndocs;
+		} else {
+			return in_docs;
+		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  in_docs  Description of the Parameter
-	 */
-	protected void processQuery(StaticContext context, DocumentSet in_docs) {
+	protected void processQuery(
+		StaticContext context,
+		DocumentSet in_docs,
+		NodeSet contextSet) {
 		terms = new String[containsExpr.size()];
-		boolean skip_preselect = false;
 		int j = 0;
+		String term;
 		for (Iterator i = containsExpr.iterator(); i.hasNext(); j++) {
 			terms[j] = (String) i.next();
 		}
-			if (terms == null)
-				throw new RuntimeException("no search terms");
-			hits = new NodeSet[terms.length][];
-
+		if (terms == null)
+			throw new RuntimeException("no search terms");
+		hits = new NodeSet[terms.length];
+		if (contextSet != null) {
 			for (int k = 0; k < terms.length; k++) {
-				String t[] = { terms[k] };
-				hits[k] = context.getBroker().getNodesContaining(in_docs, t);
+				hits[0] =
+					context.getBroker().getTextEngine().getNodesContaining(
+						in_docs,
+						contextSet,
+						terms[k]);
+				if (type == Constants.FULLTEXT_AND)
+					contextSet = hits[0];
 			}
+		} else {
+			for (int k = 0; k < terms.length; k++) {
+				hits[k] =
+					context.getBroker().getTextEngine().getNodesContaining(
+						in_docs,
+						null,
+						terms[k]);
+			}
+		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@return    Description of the Return Value
-	 */
 	public int returnsType() {
-		return Constants.TYPE_NODELIST;
+		return Type.NODE;
 	}
 
-	/**
-	 *  Sets the path attribute of the FunContains object
-	 *
-	 *@param  path  The new path value
-	 */
 	public void setPath(PathExpr path) {
 		this.path = path;
 	}
+
 	/* (non-Javadoc)
 	 * @see org.exist.xpath.Expression#setInPredicate(boolean)
 	 */
@@ -229,4 +204,21 @@ public class ExtFulltext extends Function {
 			path.setInPredicate(inPredicate);
 	}
 
+	private static final class TermFreq implements Comparable {
+		String term;
+		int freq;
+		
+		/* (non-Javadoc)
+		 * @see java.lang.Comparable#compareTo(java.lang.Object)
+		 */
+		public int compareTo(Object o) {
+			TermFreq other = (TermFreq)o;
+			if(freq == other.freq)
+				return 0;
+			else if(freq < other.freq)
+				return -1;
+			else
+				return 1;
+		}
+	}
 }

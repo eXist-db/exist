@@ -57,4 +57,8 @@ public class VariableByteStreamTest extends TestCase {
 			fail("Exception: " + e);
 		}
 	}
+	
+	public static void main(String args[]) {
+		junit.textui.TestRunner.run(VariableByteStreamTest.class);
+	}
 }

@@ -21,9 +21,15 @@
 
 package org.exist.xpath;
 
+import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.xpath.value.BooleanValue;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceIterator;
+import org.exist.xpath.value.Type;
+import org.exist.xpath.value.ValueSequence;
 
 public class OpAnd extends BinaryOp {
 
@@ -40,19 +46,47 @@ public class OpAnd extends BinaryOp {
 		return out_docs;
 	}
 
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-		NodeProxy contextNode) throws XPathException {
+	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, 
+		Item contextItem) throws XPathException {
 		if (getLength() == 0)
-			return new ValueNodeSet(contextSet);
-		LOG.debug("processing " + getExpression(0).pprint());
-		NodeSet rr, rl = (NodeSet) getExpression(0).eval(context, docs, contextSet, contextNode).getNodeList();
-		rl = rl.getContextNodes(contextSet, inPredicate);
-		for (int i = 1; i < getLength(); i++) {
-			LOG.debug("processing " + getExpression(i).pprint());
-			rr = (NodeSet) getExpression(i).eval(context, docs, contextSet, contextNode).getNodeList();
-			rl = rl.intersection(rr.getContextNodes(contextSet, inPredicate));
+			return Sequence.EMPTY_SEQUENCE;
+		
+		boolean nodeSetCompare = true;
+		for(int i = 0; i < getLength(); i++) {
+			if(!Type.subTypeOf(getExpression(i).returnsType(), Type.NODE))
+				nodeSetCompare = false;
 		}
-		return new ValueNodeSet(rl);
+		
+		if(nodeSetCompare) {
+			NodeSet rr, rl = (NodeSet) getExpression(0).eval(context, docs, contextSequence, contextItem);
+			rl = rl.getContextNodes((NodeSet)contextSequence, inPredicate);
+			for (int i = 1; i < getLength(); i++) {
+				LOG.debug("processing " + getExpression(i).pprint());
+				rr = (NodeSet) getExpression(i).eval(context, docs, contextSequence, contextItem);
+				rl = rl.intersection(rr.getContextNodes((NodeSet)contextSequence, inPredicate));
+			}
+			return rl;
+		} else {
+			Sequence result;
+			if(Type.subTypeOf(contextSequence.getItemType(), Type.NODE))
+				result = new ArraySet(contextSequence.getLength());
+			else
+				result = new ValueSequence();
+			Item item;
+			boolean r;
+			for(SequenceIterator i = contextSequence.iterate(); i.hasNext(); ) {
+				item = i.nextItem();
+				r = true;
+				for(int j = 0; j < getLength(); j++) {
+					r = ((BooleanValue)getExpression(j).eval(context, docs, contextSequence, item).convertTo(Type.BOOLEAN)).getValue();
+					if(!r)
+						break;
+				}
+				if(r)
+					result.add(item);
+			}
+			return result;
+		}
 	}
 
 	public String pprint() {

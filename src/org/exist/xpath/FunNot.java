@@ -14,71 +14,85 @@
  * You should have received a copy of the GNU Library General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * $Id$
  */
 
 package org.exist.xpath;
 
-import java.util.Iterator;
-
+import org.exist.dom.ContextItem;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.TreeNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.util.LongLinkedList;
+import org.exist.dom.TreeNodeSet;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceIterator;
+import org.exist.xpath.value.Type;
 
 public class FunNot extends Function {
 
-    public FunNot() {
-        super("not");
-    }
+	public FunNot() {
+		super("not");
+	}
 
-    public int returnsType() {
-        return Constants.TYPE_NODELIST;
-    }
+	public int returnsType() {
+		return Type.NODE;
+	}
 
-    public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException {
-        return getArgument(0).preselect(in_docs, context);
-    }
+	public DocumentSet preselect(DocumentSet in_docs, StaticContext context)
+		throws XPathException {
+		return getArgument(0).preselect(in_docs, context);
+	}
 
-    public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-    	NodeProxy contextNode) throws XPathException {
-        NodeSet result = new TreeNodeSet();
-        Expression path = getArgument(0);
-        result.addAll(contextSet);
-        NodeProxy current;
-        if(inPredicate)
-        	for(Iterator i = result.iterator(); i.hasNext(); ) {
-        		current = (NodeProxy)i.next();
-        		current.addContextNode(current);
-        	}
-        // evaluate argument expression
-        NodeSet nodes = (NodeSet)path.eval(context, docs, contextSet, contextNode).getNodeList();
-        NodeProxy parent;
-        long pid;
-        LongLinkedList contextNodes;
-        LongLinkedList.ListItem next;
-        // iterate through nodes and remove hits from result
-        for(Iterator i = nodes.iterator(); i.hasNext(); ) {
-            current = (NodeProxy)i.next();
-			contextNodes = current.getContext();
-			if(contextNodes == null) {
+	public Sequence eval(
+		StaticContext context,
+		DocumentSet docs,
+		Sequence contextSequence,
+		Item contextItem)
+		throws XPathException {
+		NodeSet result = new TreeNodeSet();
+		Expression path = getArgument(0);
+		result.addAll(contextSequence);
+		NodeProxy current;
+		if (inPredicate)
+			for (SequenceIterator i = result.iterate(); i.hasNext();) {
+				current = (NodeProxy) i.nextItem();
+				current.addContextNode(current);
+			}
+		// evaluate argument expression
+		Sequence argSeq =
+			path.eval(context, docs, contextSequence, contextItem);
+		NodeProxy parent;
+		long pid;
+		ContextItem contextNode;
+		NodeProxy next;
+		Item item;
+		// iterate through nodes and remove hits from result
+		for (SequenceIterator i = argSeq.iterate(); i.hasNext();) {
+			item = (Item) i.nextItem();
+			current = (NodeProxy) item;
+			contextNode = current.getContext();
+			if (contextNode == null) {
 				LOG.warn("context node is missing!");
 				break;
 			}
-			for(Iterator j = contextNodes.iterator(); j.hasNext(); ) {
-				next = (LongLinkedList.ListItem)j.next();
-				if((parent = result.get(current.doc, next.l)) != null)
-                result.remove(parent);
-        	}
-        }
-        return new ValueNodeSet(result);
-    }
 
-    public String pprint() {
-        StringBuffer buf = new StringBuffer();
-        buf.append("not(");
-        buf.append(getArgument(0).pprint());
-        buf.append(')');
-        return buf.toString();
-    }
+			while (contextNode != null) {
+				next = contextNode.getNode();
+				if ((parent = result.get(next)) != null)
+					result.remove(parent);
+				contextNode = contextNode.getNextItem();
+			}
+		}
+		return result;
+	}
+
+	public String pprint() {
+		StringBuffer buf = new StringBuffer();
+		buf.append("not(");
+		buf.append(getArgument(0).pprint());
+		buf.append(')');
+		return buf.toString();
+	}
 }

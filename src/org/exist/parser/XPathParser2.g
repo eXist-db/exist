@@ -37,6 +37,7 @@ header {
     import org.exist.security.PermissionDeniedException;
     import org.exist.security.User;
 	import org.exist.xpath.*;
+	import org.exist.xpath.value.Type;
 }
 
 /* -----------------------------------------------------------------------------------------------------
@@ -579,22 +580,22 @@ throws PermissionDeniedException, EXistException
 		( qn:QNAME 
 			{
 				QName qname = QName.parse(context, qn.getText());
-				test = new NameTest(Constants.ELEMENT_NODE, qname);
+				test = new NameTest(Type.ELEMENT, qname);
 			}
 		| #( PREFIX_WILDCARD nc1:NCNAME )
 			{
 				QName qname = new QName(nc1.getText(), null, null);
-				test = new NameTest(Constants.ELEMENT_NODE, qname);
+				test = new NameTest(Type.ELEMENT, qname);
 			}
 		| #( nc:NCNAME WILDCARD )
 			{
 				String namespaceURI = context.getURIForPrefix(nc.getText());
 				QName qname = new QName(null, namespaceURI, null);
-				test = new NameTest(Constants.ELEMENT_NODE, qname);
+				test = new NameTest(Type.ELEMENT, qname);
 			}
 		| WILDCARD
 			{
-				test = new TypeTest(Constants.ELEMENT_NODE);
+				test = new TypeTest(Type.ELEMENT);
 			}
 		| "node"
 			{
@@ -602,7 +603,7 @@ throws PermissionDeniedException, EXistException
 			}
 		| "text"
 			{
-				test = new TypeTest(Constants.TEXT_NODE);
+				test = new TypeTest(Type.TEXT);
 			}
 		)
 			{
@@ -634,7 +635,7 @@ throws PermissionDeniedException, EXistException
 		{	
 			step = 
 				new LocationStep(Constants.ATTRIBUTE_AXIS, 
-					new NameTest(Constants.ATTRIBUTE_NODE, qname));
+					new NameTest(Type.ATTRIBUTE, qname));
 			path.add(step);
 		}
 		( predicate[(LocationStep)step] )*
@@ -642,7 +643,7 @@ throws PermissionDeniedException, EXistException
 	| SELF
 		{
 			step = 
-				new LocationStep(Constants.SELF_AXIS, new TypeTest(Constants.NODE_TYPE));
+				new LocationStep(Constants.SELF_AXIS, new TypeTest(Type.NODE));
 			path.add(step);
 		}
 		( predicate[(LocationStep)step] )*
@@ -650,7 +651,7 @@ throws PermissionDeniedException, EXistException
 	| PARENT
 		{
 			step =
-				new LocationStep(Constants.PARENT_AXIS, new TypeTest(Constants.NODE_TYPE));
+				new LocationStep(Constants.PARENT_AXIS, new TypeTest(Type.NODE));
 			path.add(step);
 		}
 		( predicate[(LocationStep)step] )*

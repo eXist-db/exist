@@ -10,7 +10,7 @@ package org.exist.util;
  */
 public class ByteArrayPool {
 
-	public static final int POOL_SIZE = 128;
+	public static final int POOL_SIZE = 32;
 	public static final int MAX = 128;
 	public static final ThreadLocal pools_ = new PoolThreadLocal();
 	private static int slot_ = 0;

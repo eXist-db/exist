@@ -18,16 +18,17 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.XMLUtil;
 import org.exist.parser.XPathLexer2;
 import org.exist.parser.XPathParser2;
 import org.exist.parser.XPathTreeParser2;
 import org.exist.storage.DBBroker;
 import org.exist.util.FastStringBuffer;
-import org.exist.util.XMLUtil;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.StaticContext;
-import org.exist.xpath.Value;
 import org.exist.xpath.XPathException;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
@@ -253,8 +254,9 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					throw new SAXException("element requires a name attribute");
 				int p = name.indexOf(':');
 				String namespace = "";
+				String prefix = "";
 				if (p > -1) {
-					String prefix = name.substring(0, p);
+					prefix = name.substring(0, p);
 					if (name.length() == p + 1)
 						throw new SAXException(
 							"illegal prefix in qname: " + name);
@@ -265,6 +267,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 							"no namespace defined for prefix " + prefix);
 				}
 				Element elem = doc.createElementNS(namespace, name);
+				elem.setPrefix(prefix);
 				if (stack.isEmpty()) {
 					fragment.appendChild(elem);
 				} else {
@@ -478,11 +481,11 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			if (ndocs.getLength() == 0)
 				return new ArrayList(1);
 
-			Value resultValue = expr.eval(context, documentSet, null, null);
-			if (!(resultValue.getType() == Value.isNodeList))
+			Sequence seq = expr.eval(context, documentSet, null, null);
+			if (!(seq.getItemType() == Type.NODE))
 				throw new SAXException(
 					"select expression should evaluate to a" + "node-set");
-			NodeList set = resultValue.getNodeList();
+			NodeList set = (NodeList)seq;
 			ArrayList out = new ArrayList(set.getLength());
 			for (int i = 0; i < set.getLength(); i++) {
 				out.add(set.item(i));

@@ -16,12 +16,14 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
+ * 
  * $Id$
  */
 package org.exist.dom;
 
 import java.util.Iterator;
 
+import org.exist.xpath.value.Item;
 import org.exist.xpath.value.SequenceIterator;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
@@ -75,6 +77,10 @@ public class EmptyNodeSet extends NodeSet {
     
     public Node item(int pos) {
 	    return null;
+    }
+    
+    public Item itemAt(int pos) {
+    	return null;
     }
     
     public NodeProxy get(int pos) {

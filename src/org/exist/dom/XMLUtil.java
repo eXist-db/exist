@@ -19,7 +19,7 @@
  *
  *  $Id:
  */
-package org.exist.util;
+package org.exist.dom;
 
 import org.w3c.dom.*;
 
@@ -34,7 +34,7 @@ import java.io.File;
 
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
-import org.exist.dom.DocumentImpl;
+import org.exist.util.Range;
 
 /**
  *  Description of the Class
@@ -64,7 +64,10 @@ public class XMLUtil {
 	 *@param  node      Description of the Parameter
 	 *@param  new_node  Description of the Parameter
 	 */
-	public final static void copyChildren(Document new_doc, Node node, Node new_node) {
+	public final static void copyChildren(
+		Document new_doc,
+		Node node,
+		Node new_node) {
 		NodeList children = node.getChildNodes();
 		Node child;
 		Node new_child;
@@ -106,14 +109,20 @@ public class XMLUtil {
 		Node new_node;
 		switch (node.getNodeType()) {
 			case Node.ELEMENT_NODE :
-				new_node = new_doc.createElementNS(node.getNamespaceURI(), node.getNodeName());
+				new_node =
+					new_doc.createElementNS(
+						node.getNamespaceURI(),
+						node.getNodeName());
 				copyChildren(new_doc, node, new_node);
 				return new_node;
 			case Node.TEXT_NODE :
 				new_node = new_doc.createTextNode(((Text) node).getData());
 				return new_node;
 			case Node.ATTRIBUTE_NODE :
-				new_node = new_doc.createAttributeNS(node.getNamespaceURI(), node.getNodeName());
+				new_node =
+					new_doc.createAttributeNS(
+						node.getNamespaceURI(),
+						node.getNodeName());
 				((Attr) new_node).setValue(((Attr) node).getValue());
 				return new_node;
 			default :
@@ -218,7 +227,8 @@ public class XMLUtil {
 		if (p0 < 0)
 			return null;
 		for (int i = p0 + 8; i < xmlDecl.length(); i++)
-			if (Character.isWhitespace(xmlDecl.charAt(i)) || xmlDecl.charAt(i) == '=')
+			if (Character.isWhitespace(xmlDecl.charAt(i))
+				|| xmlDecl.charAt(i) == '=')
 				continue;
 			else if (xmlDecl.charAt(i) == '"') {
 				while (xmlDecl.charAt(++i) != '"' && i < xmlDecl.length())
@@ -243,7 +253,10 @@ public class XMLUtil {
 	 *@param  gid  Description of the Parameter
 	 *@return      The firstChildId value
 	 */
-	public final static long getFirstChildId(DocumentImpl doc, long gid, int level) {
+	public final static long getFirstChildId(
+		DocumentImpl doc,
+		long gid,
+		int level) {
 		final int order = doc.getTreeLevelOrder(level + 1);
 		if (order < 0) {
 			System.err.println(
@@ -255,17 +268,22 @@ public class XMLUtil {
 					+ doc.getLevelStartPoint(level));
 			Thread.dumpStack();
 		}
-		return (gid - doc.getLevelStartPoint(level)) * order + doc.getLevelStartPoint(level + 1);
+		return (gid - doc.getLevelStartPoint(level)) * order
+			+ doc.getLevelStartPoint(level + 1);
 	}
 
 	public final static Range getChildRange(DocumentImpl doc, long gid) {
 		final int level = doc.getTreeLevel(gid);
 		final int order = doc.getTreeLevelOrder(level + 1);
-		final long start = (gid - doc.getLevelStartPoint(level)) * order + doc.getLevelStartPoint(level + 1);
+		final long start =
+			(gid - doc.getLevelStartPoint(level)) * order
+				+ doc.getLevelStartPoint(level + 1);
 		return new Range(start, start + order - 1);
 	}
-	
-	public final static long getParentId(final DocumentImpl doc, final long gid) {
+
+	public final static long getParentId(
+		final DocumentImpl doc,
+		final long gid) {
 		final int level = doc.getTreeLevel(gid);
 		if (level < 0) {
 			System.out.println("unable to determine level for " + gid);
@@ -274,9 +292,15 @@ public class XMLUtil {
 		return getParentId(doc, gid, level);
 	}
 
-	public final static long getParentId(final DocumentImpl doc, final long gid, final int level) {
-		return (gid - doc.getLevelStartPoint(level)) / doc.getTreeLevelOrder(level)
-			+ doc.getLevelStartPoint(level - 1);
+	public final static long getParentId(
+		final DocumentImpl doc,
+		final long gid,
+		final int level) {
+		if(level < 1)
+			return -1;
+		return (gid - doc.treeLevelStartPoints[level])
+			/ doc.treeLevelOrder[level]
+			+ doc.treeLevelStartPoints[level - 1];
 	}
 
 	public final static boolean isDescendantOrSelf(
@@ -292,6 +316,54 @@ public class XMLUtil {
 		return false;
 	}
 
+	public final static NodeProxy parentWithChild(
+		NodeSet contextSet,
+		DocumentImpl doc,
+		long gid,
+		int level) {
+		NodeProxy temp = contextSet.get(doc, gid);
+		if(temp != null)
+			return temp;
+		if(level < 0)
+			level = doc.getTreeLevel(gid);
+		while (gid > 0) {
+			if(level == 0)
+				gid = -1;
+			else
+				// calculate parent's gid
+				gid = (gid - doc.treeLevelStartPoints[level])
+					/ doc.treeLevelOrder[level]
+					+ doc.treeLevelStartPoints[level - 1];
+			if ((temp = contextSet.get(doc, gid)) != null)
+				return temp;
+			else
+				--level;
+		}
+		return null;
+	}
+
+	public final static NodeProxy parentWithChild(
+			NodeSet contextSet,
+			NodeProxy child,
+			int level) {
+			NodeProxy temp = contextSet.get(child);
+			if(temp != null)
+				return temp;
+			if(level < 0)
+				level = child.doc.getTreeLevel(child.gid);
+			while (child.gid > 0) {
+				// calculate parent's gid
+				child.gid = (child.gid - child.doc.getLevelStartPoint(level))
+					/ child.doc.getTreeLevelOrder(level)
+					+ child.doc.getLevelStartPoint(level - 1);
+				if ((temp = contextSet.get(child.doc, child.gid)) != null)
+					return temp;
+				else
+					--level;
+			}
+			return null;
+		}
+		
 	/**
 	 *  Gets the encoding attribute of the XMLUtil class
 	 *
@@ -345,12 +417,14 @@ public class XMLUtil {
 	 *@return                  Description of the Return Value
 	 *@exception  IOException  Description of the Exception
 	 */
-	public static String readFile(File file, String defaultEncoding) throws IOException {
+	public static String readFile(File file, String defaultEncoding)
+		throws IOException {
 		// read the file into a string
 		return readFile(new FileInputStream(file), defaultEncoding);
 	}
 
-	public static String readFile(InputStream in, String defaultEncoding) throws IOException {
+	public static String readFile(InputStream in, String defaultEncoding)
+		throws IOException {
 		byte[] chunk = new byte[512];
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		int l;

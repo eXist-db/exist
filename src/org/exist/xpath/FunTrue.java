@@ -21,8 +21,10 @@
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.xpath.value.BooleanValue;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 
 public class FunTrue extends Function {
 
@@ -31,12 +33,12 @@ public class FunTrue extends Function {
 	}
 	
 	public int returnsType() {
-		return Constants.TYPE_BOOL;
+		return Type.BOOLEAN;
 	}
 	
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-		NodeProxy contextNode) {
-		return new ValueBoolean(true);
+	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, 
+		Item contextItem) {
+		return new BooleanValue(true);
 	}
 
 	public String pprint() {

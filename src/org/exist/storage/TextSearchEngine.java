@@ -15,6 +15,8 @@
  * You should have received a copy of the GNU Library General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * $Id$
  */
 package org.exist.storage;
 
@@ -150,9 +152,9 @@ public abstract class TextSearchEngine extends Observable {
 	 * @param expr
 	 * @return
 	 */
-	public abstract NodeSet[] getNodesContaining(
-		DocumentSet doc,
-		String expr[]);
+	public NodeSet getNodesContaining(DocumentSet doc, NodeSet context, String expr) {
+		return getNodesContaining(doc, context, expr, DBBroker.MATCH_EXACT);
+	}
 
 	/**
 	 * For each of the given search terms and each of the documents in the
@@ -166,7 +168,7 @@ public abstract class TextSearchEngine extends Observable {
 	 * @param expr
 	 * @return
 	 */
-	public abstract NodeSet[] getNodesContaining(DocumentSet docs, String[] expr, int type);
+	public abstract NodeSet getNodesContaining(DocumentSet docs, NodeSet context, String expr, int type);
 	
 	/**
 	 * Scan the fulltext index and return an Occurrences object for each

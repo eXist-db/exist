@@ -21,8 +21,10 @@
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.xpath.value.DecimalValue;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 
 public class IntNumber extends AbstractExpression {
 
@@ -33,19 +35,16 @@ public class IntNumber extends AbstractExpression {
 	}
 
 	public int returnsType() {
-		return Constants.TYPE_NUM;
+		return Type.DOUBLE;
 	}
 
 	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) {
 		return in_docs;
 	}
 
-	public Value eval(
-		StaticContext context,
-		DocumentSet docs,
-		NodeSet contextSet,
-		NodeProxy contextNode) {
-		return new ValueNumber(dValue);
+	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
+		Item contextItem) throws XPathException {
+		return new DecimalValue(dValue);
 	}
 
 	public String pprint() {

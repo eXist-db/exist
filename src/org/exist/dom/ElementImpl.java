@@ -43,7 +43,6 @@ import org.exist.storage.Signatures;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
-import org.exist.util.XMLUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Comment;
 import org.w3c.dom.DOMException;
@@ -754,7 +753,7 @@ public class ElementImpl extends NodeImpl implements Element {
 			byte signature = (byte) ((Signatures.Elem << 0x5) | (attrSizeType << 0x2) | idSizeType);
 			int prefixLen = 0;
 			if (hasNamespace) {
-				prefixLen = nodeName.getPrefix().length() > 0 ?
+				prefixLen = nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0 ?
 					UTF8.encoded(nodeName.getPrefix()) : 0;
 				signature |= 0x10;
 			}
@@ -778,7 +777,7 @@ public class ElementImpl extends NodeImpl implements Element {
 				next += 2;
 				ByteConversion.shortToByte((short) prefixLen, data, next);
 				next += 2;
-				if(nodeName.getPrefix().length() > 0)
+				if(nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0)
 					UTF8.encode(nodeName.getPrefix(), data, next);
 				next += prefixLen;
 			}
