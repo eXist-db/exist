@@ -70,15 +70,4 @@ public abstract class LogicalOp extends BinaryOp {
 		else
 			return Dependency.CONTEXT_SET;
 	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#setInPredicate(boolean)
-	 */
-	public void setInPredicate(boolean inPredicate) {
-		super.setInPredicate(inPredicate);
-		for (int i = 0; i < getLength(); i++) {
-			getExpression(i).setInPredicate(inPredicate);
-		}
-	}
-
 }

@@ -55,6 +55,7 @@ public abstract class BinaryOp extends PathExpr {
      * @see org.exist.xquery.PathExpr#analyze(org.exist.xquery.Expression)
      */
     public void analyze(Expression parent, int flags) throws XPathException {
+    	inPredicate = (flags & IN_PREDICATE) > 0;
         getLeft().analyze(this, flags);
         getRight().analyze(this, flags);
     }

@@ -106,6 +106,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
     public void analyze(Expression parent, int flags) throws XPathException {
+    	inPredicate = (flags & IN_PREDICATE) > 0;
         for (Iterator iter = steps.iterator(); iter.hasNext();) {
             Expression expr = (Expression) iter.next();
             expr.analyze(this, flags);
@@ -263,17 +264,6 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         if (ast == null && steps.size() == 1) { return ((Expression) steps
                 .get(0)).getASTNode(); }
         return ast;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.exist.xquery.Expression#setInPredicate(boolean)
-     */
-    public void setInPredicate(boolean inPredicate) {
-        this.inPredicate = inPredicate;
-        if (steps.size() > 0)
-                ((Expression) steps.get(0)).setInPredicate(inPredicate);
     }
 
     /*

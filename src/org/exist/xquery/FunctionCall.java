@@ -75,6 +75,14 @@ public class FunctionCall extends Function {
 			expression = new DynamicTypeCheck(context, returnType.getPrimaryType(), expression);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.Function#analyze(org.exist.xquery.Expression, int)
+	 */
+	public void analyze(Expression parent, int flags) throws XPathException {
+		super.analyze(parent, flags);
+		expression.analyze(this, flags);
+	}
+	
 	public void resolveForwardReference(UserDefinedFunction functionDef) throws XPathException {
 		setFunction(functionDef);
 		setArguments(arguments);

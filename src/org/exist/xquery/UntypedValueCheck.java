@@ -117,7 +117,6 @@ public class UntypedValueCheck extends AbstractExpression {
 		expression.resetState();
 	}
 	
-	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#getASTNode()
 	 */

@@ -69,12 +69,6 @@ public abstract class AbstractExpression implements Expression {
 	}
 
 	/**
-	 * Ignored. Has no effect by default.
-	 */
-	public void setInPredicate(boolean inPredicate) {
-	}
-
-	/**
 	 * Returns {@link Dependency#DEFAULT_DEPENDENCIES}.
 	 * 
 	 * @see org.exist.xquery.Expression#getDependencies()

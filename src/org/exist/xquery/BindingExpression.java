@@ -56,7 +56,7 @@ public abstract class BindingExpression extends AbstractExpression {
 	protected Expression returnExpr;
 	protected Expression whereExpr;
 	protected OrderSpec orderSpecs[] = null;
-
+	
 	public BindingExpression(XQueryContext context) {
 		super(context);
 	}
@@ -120,10 +120,9 @@ public abstract class BindingExpression extends AbstractExpression {
 		Sequence contextSequence)
 		throws XPathException {
 //		long start = System.currentTimeMillis();
-		whereExpr.setInPredicate(true);
-		if (Type.subTypeOf(whereExpr.returnsType(), Type.NODE) &&
-			(contextSequence == null || 
-			Type.subTypeOf(contextSequence.getItemType(), Type.NODE))) {
+		if (contextSequence != null &&
+			Type.subTypeOf(whereExpr.returnsType(), Type.NODE) &&
+			Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {
 			// if the where expression returns a node set, check the context
 			// node of each node in the set
 			NodeSet contextSet = contextSequence.toNodeSet();

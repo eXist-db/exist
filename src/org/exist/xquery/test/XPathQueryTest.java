@@ -291,6 +291,7 @@ public class XPathQueryTest extends TestCase {
 			queryResource(service, "strings.xml", "//*[blah][not(@blah)]", 0);
 		} catch (XMLDBException e) {
 			System.out.println("testStrings(): XMLDBException: "+e);
+			e.printStackTrace();
 			fail(e.getMessage());
 		}
 	}

@@ -82,13 +82,4 @@ public abstract class CombiningExpression extends AbstractExpression {
 		left.setPrimaryAxis(axis);
 		right.setPrimaryAxis(axis);
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#setInPredicate(boolean)
-	 */
-	public void setInPredicate(boolean inPredicate) {
-		super.setInPredicate(inPredicate);
-		left.setInPredicate(inPredicate);
-		right.setInPredicate(inPredicate);
-	}
 }

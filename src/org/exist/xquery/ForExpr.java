@@ -74,8 +74,9 @@ public class ForExpr extends BindingExpression {
 			context.declareVariable(new LocalVariable(QName.parse(context, positionalVariable, null)));
 		
 		inputSequence.analyze(this, flags);
-		if(whereExpr != null)
-		    whereExpr.analyze(this, flags);
+		if(whereExpr != null) {
+		    whereExpr.analyze(this, flags | IN_PREDICATE);
+		}
 		// the order by specs should be analyzed by the last binding expression
 		// in the chain to have access to all variables. So if the return expression
 		// is another binding expression, we just forward the order specs.
@@ -139,10 +140,6 @@ public class ForExpr extends BindingExpression {
 		// Check if we can speed up the processing of the "order by" clause.
 		boolean fastOrderBy = false; // checkOrderSpecs(in);
 		
-		if(whereExpr != null) {
-			whereExpr.setInPredicate(true);
-		}
-		
 		// See if we can process the "where" clause in a single step (instead of
 		// calling the where expression for each item in the input sequence)
 		// This is possible if the input sequence is a node set and has no
@@ -154,7 +151,6 @@ public class ForExpr extends BindingExpression {
 		
 		// If possible, apply the where expression ahead of the iteration
 		if(fastExec) {
-			LOG.debug("single-step where-clause evaluation selected");
 			if(!in.isCached())
 				setContext(in);
 			in = applyWhereExpression(in);

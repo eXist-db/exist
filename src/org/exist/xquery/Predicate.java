@@ -61,8 +61,7 @@ public class Predicate extends PathExpr {
 	 */
 	public int getDependencies() {
 		if(getLength() == 1) {
-            getExpression(0).setInPredicate(true);
-				return getExpression(0).getDependencies();
+			return getExpression(0).getDependencies();
 		} else {
 			return super.getDependencies();
         }
@@ -72,7 +71,7 @@ public class Predicate extends PathExpr {
      * @see org.exist.xquery.PathExpr#analyze(org.exist.xquery.Expression)
      */
     public void analyze(Expression parent, int flags) throws XPathException {
-        setInPredicate(true);
+        flags |= IN_PREDICATE; // set flag to signal subexpression that we are in a predicate
         Expression inner = getExpression(0);
         if(inner == null)
             return;

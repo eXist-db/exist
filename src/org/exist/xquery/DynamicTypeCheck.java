@@ -106,7 +106,6 @@ public class DynamicTypeCheck extends AbstractExpression {
 		expression.resetState();
 	}
 	
-	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#getASTNode()
 	 */
@@ -114,3 +113,4 @@ public class DynamicTypeCheck extends AbstractExpression {
 		return expression.getASTNode();
 	}
 }
+;

@@ -88,14 +88,6 @@ public class SimpleStep extends Step {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Step#setInPredicate(boolean)
-	 */
-	public void setInPredicate(boolean inPredicate) {
-		super.setInPredicate(inPredicate);
-		expression.setInPredicate(inPredicate);
-	}
-	
-	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#setPrimaryAxis(int)
 	 */
 	public void setPrimaryAxis(int axis) {
