@@ -105,10 +105,10 @@ public interface RpcAPI {
     Vector getDocumentListing( User user, String collection )
          throws EXistException, PermissionDeniedException;
 
-    Vector listDocumentPermissions(User user, String name)
+    Hashtable listDocumentPermissions(User user, String name)
         throws EXistException, PermissionDeniedException;
     
-    Vector listCollectionPermissions(User user, String name)
+    Hashtable listCollectionPermissions(User user, String name)
         throws EXistException, PermissionDeniedException;
         
     /**
@@ -677,7 +677,7 @@ public interface RpcAPI {
 
 
     boolean setUser( User user, String name, String passwd,
-                     Vector groups )
+                     Vector groups, String home )
          throws EXistException, PermissionDeniedException;
 
 

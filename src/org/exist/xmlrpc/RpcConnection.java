@@ -336,7 +336,7 @@ public class RpcConnection extends Thread {
 		}
 	}
 
-	public Vector listDocumentPermissions(User user, String name)
+	public Hashtable listDocumentPermissions(User user, String name)
 		throws EXistException, PermissionDeniedException {
 		DBBroker broker = null;
 		try {
@@ -348,12 +348,13 @@ public class RpcConnection extends Thread {
 			Collection collection = broker.getCollection(name);
 			if (!collection.getPermissions().validate(user, Permission.READ))
 				throw new PermissionDeniedException("not allowed to read collection " + name);
-			Vector vec = new Vector(collection.getDocumentCount());
+			Hashtable result = new Hashtable(collection.getDocumentCount());
 			if (collection == null)
-				return vec;
+				return result;
 			DocumentImpl doc;
 			Permission perm;
 			Vector tmp;
+			String docName;
 			for (Iterator i = collection.iterator(); i.hasNext();) {
 				doc = (DocumentImpl) i.next();
 				perm = doc.getPermissions();
@@ -361,15 +362,17 @@ public class RpcConnection extends Thread {
 				tmp.addElement(perm.getOwner());
 				tmp.addElement(perm.getOwnerGroup());
 				tmp.addElement(new Integer(perm.getPermissions()));
-				vec.addElement(tmp);
+				docName = 
+					doc.getFileName().substring(doc.getFileName().lastIndexOf('/') + 1);
+				result.put(docName, tmp);
 			}
-			return vec;
+			return result;
 		} finally {
 			brokerPool.release(broker);
 		}
 	}
 
-	public Vector listCollectionPermissions(User user, String name)
+	public Hashtable listCollectionPermissions(User user, String name)
 		throws EXistException, PermissionDeniedException {
 		DBBroker broker = null;
 		try {
@@ -381,24 +384,25 @@ public class RpcConnection extends Thread {
 			Collection collection = broker.getCollection(name);
 			if (!collection.getPermissions().validate(user, Permission.READ))
 				throw new PermissionDeniedException("not allowed to read collection " + name);
-			Vector vec = new Vector(collection.getChildCollectionCount());
+			Hashtable result = new Hashtable(collection.getChildCollectionCount());
 			if (collection == null)
-				return vec;
-			String child;
+				return result;
+			String child, path;
 			Collection childColl;
 			Permission perm;
 			Vector tmp;
 			for (Iterator i = collection.collectionIterator(); i.hasNext();) {
 				child = (String) i.next();
-				childColl = broker.getCollection(collection.getName() + '/' + (child));
+				path = name + '/' + child;
+				childColl = broker.getCollection(path);
 				perm = childColl.getPermissions();
 				tmp = new Vector(3);
 				tmp.addElement(perm.getOwner());
 				tmp.addElement(perm.getOwnerGroup());
 				tmp.addElement(new Integer(perm.getPermissions()));
-				vec.addElement(tmp);
+				result.put(child, tmp);
 			}
-			return vec;
+			return result;
 		} finally {
 			brokerPool.release(broker);
 		}
@@ -486,6 +490,7 @@ public class RpcConnection extends Thread {
 		for (Iterator i = u.getGroups(); i.hasNext();)
 			groups.addElement(i.next());
 		tab.put("groups", groups);
+		tab.put("home", u.getHome());
 		return tab;
 	}
 
@@ -499,6 +504,7 @@ public class RpcConnection extends Thread {
 			for (Iterator j = users[i].getGroups(); j.hasNext();)
 				groups.addElement(j.next());
 			tab.put("groups", groups);
+			tab.put("home", users[i].getHome());
 			r.addElement(tab);
 		}
 		return r;
@@ -1080,7 +1086,8 @@ public class RpcConnection extends Thread {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	public boolean setUser(User user, String name, String passwd, Vector groups)
+	public boolean setUser(User user, String name, String passwd,
+		Vector groups, String home)
 		throws EXistException, PermissionDeniedException {
 		org.exist.security.SecurityManager manager = brokerPool.getSecurityManager();
 		User u;
@@ -1101,6 +1108,8 @@ public class RpcConnection extends Thread {
 			if (!u.hasGroup(g))
 				u.addGroup(g);
 		}
+		if(home != null)
+			u.setHome(home);
 		manager.setUser(u);
 		return true;
 	}

@@ -11,25 +11,12 @@ import org.exist.storage.DBBroker;
 import org.exist.util.SyntaxException;
 import org.xmldb.api.base.*;
 
-/**
- *  Description of the Class
- *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    20. August 2002
- */
 public class LocalUserManagementService implements UserManagementService {
 	private LocalCollection collection;
 
 	private BrokerPool pool;
 	private User user;
 
-	/**
-	 *  Constructor for the UserAdminService object
-	 *
-	 *@param  pool        Description of the Parameter
-	 *@param  collection  Description of the Parameter
-	 *@param  user        Description of the Parameter
-	 */
 	public LocalUserManagementService(
 		User user,
 		BrokerPool pool,
@@ -39,13 +26,6 @@ public class LocalUserManagementService implements UserManagementService {
 		this.user = user;
 	}
 
-	/**
-	 *  Adds a feature to the User attribute of the LocalUserManagementService
-	 *  object
-	 *
-	 *@param  u                   The feature to be added to the User attribute
-	 *@exception  XMLDBException  Description of the Exception
-	 */
 	public void addUser(User u) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		if (!manager.hasAdminPrivileges(user))
@@ -59,12 +39,6 @@ public class LocalUserManagementService implements UserManagementService {
 		manager.setUser(u);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  modeStr             Description of the Parameter
-	 *@exception  XMLDBException  Description of the Exception
-	 */
 	public void chmod(String modeStr) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		if (!collection.checkOwner(user) && !manager.hasAdminPrivileges(user))
@@ -141,13 +115,6 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  resource            Description of the Parameter
-	 *@param  modeStr             Description of the Parameter
-	 *@exception  XMLDBException  Description of the Exception
-	 */
 	public void chmod(Resource resource, String modeStr)
 		throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
@@ -174,13 +141,6 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  u                   Description of the Parameter
-	 *@param  group               Description of the Parameter
-	 *@exception  XMLDBException  Description of the Exception
-	 */
 	public void chown(User u, String group) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		if (!manager.hasAdminPrivileges(user))
@@ -208,14 +168,6 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  res                 Description of the Parameter
-	 *@param  u                   Description of the Parameter
-	 *@param  group               Description of the Parameter
-	 *@exception  XMLDBException  Description of the Exception
-	 */
 	public void chown(Resource res, User u, String group)
 		throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
@@ -252,35 +204,16 @@ public class LocalUserManagementService implements UserManagementService {
 				"resource not found");
 	}
 
-	/**
-	 *  Gets the name attribute of the UserAdminService object
-	 *
-	 *@return    The name value
-	 */
 	public String getName() {
 		return "UserManagementService";
 	}
 
-	/**
-	 *  Gets the permissions attribute of the LocalUserManagementService object
-	 *
-	 *@param  coll                Description of the Parameter
-	 *@return                     The permissions value
-	 *@exception  XMLDBException  Description of the Exception
-	 */
 	public Permission getPermissions(Collection coll) throws XMLDBException {
 		if (coll instanceof LocalCollection)
 			return ((LocalCollection) coll).getCollection().getPermissions();
 		return null;
 	}
 
-	/**
-	 *  Gets the permissions attribute of the LocalUserManagementService object
-	 *
-	 *@param  resource            Description of the Parameter
-	 *@return                     The permissions value
-	 *@exception  XMLDBException  Description of the Exception
-	 */
 	public Permission getPermissions(Resource resource) throws XMLDBException {
 		if (resource instanceof LocalXMLResource)
 			return ((LocalXMLResource) resource).getDocument().getPermissions();
@@ -334,55 +267,24 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
-	/**
-	 *  Gets the property attribute of the LocalUserManagementService object
-	 *
-	 *@param  property            Description of the Parameter
-	 *@return                     The property value
-	 *@exception  XMLDBException  Description of the Exception
-	 */
 	public String getProperty(String property) throws XMLDBException {
 		return null;
 	}
 
-	/**
-	 *  Gets the user attribute of the LocalUserManagementService object
-	 *
-	 *@param  name                Description of the Parameter
-	 *@return                     The user value
-	 *@exception  XMLDBException  Description of the Exception
-	 */
 	public User getUser(String name) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		return manager.getUser(name);
 	}
 
-	/**
-	 *  Gets the users attribute of the LocalUserManagementService object
-	 *
-	 *@return                     The users value
-	 *@exception  XMLDBException  Description of the Exception
-	 */
 	public User[] getUsers() throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		return manager.getUsers();
 	}
 
-	/**
-	 *  Gets the version attribute of the UserAdminService object
-	 *
-	 *@return    The version value
-	 */
 	public String getVersion() {
 		return "1.0";
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  name                Description of the Parameter
-	 *@exception  XMLDBException  Description of the Exception
-	 */
 	public void removeUser(String name) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		if (!manager.hasAdminPrivileges(user))
@@ -392,33 +294,14 @@ public class LocalUserManagementService implements UserManagementService {
 		manager.deleteUser(name);
 	}
 
-	/**
-	 *  Sets the collection attribute of the LocalUserManagementService object
-	 *
-	 *@param  collection          The new collection value
-	 *@exception  XMLDBException  Description of the Exception
-	 */
 	public void setCollection(Collection collection) throws XMLDBException {
 		this.collection = (LocalCollection) collection;
 	}
 
-	/**
-	 *  Sets the property attribute of the LocalUserManagementService object
-	 *
-	 *@param  property            The new property value
-	 *@param  value               The new property value
-	 *@exception  XMLDBException  Description of the Exception
-	 */
 	public void setProperty(String property, String value)
 		throws XMLDBException {
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  u                   Description of the Parameter
-	 *@exception  XMLDBException  Description of the Exception
-	 */
 	public void updateUser(User u) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		if (!(u.getName().equals(user.getName())

@@ -571,6 +571,9 @@ public abstract class DBBroker extends Observable {
     throws PermissionDeniedException {
     }
 
+	public void closeDocument() {
+	}
+	
     public static SymbolTable getSymbols() {
 	    return null;
     }

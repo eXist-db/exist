@@ -220,7 +220,7 @@
              Javac. Requires javac.jar (included with JDK as lib/toools.jar).
              Pizza. Requires pizza.jar (included with Cocoon distribution).
              Jikes. Requires IBM jikes compiler to be present in the PATH  -->
-      <parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.Javac"/>
+      <parameter name="compiler" value="org.apache.cocoon.components.language.programming.java.Pizza"/>
 </java-language>
   
     <!-- Interpreted JavaScript language -->

@@ -41,14 +41,12 @@ import org.dbxml.core.indexer.IndexQuery;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
-import org.exist.util.Arrays;
 import org.exist.util.ByteConversion;
 import org.exist.util.Lock;
 import org.exist.util.LockException;
 import org.exist.util.Lockable;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.SimpleTimeOutLock;
-import org.exist.util.StringUtil;
 import org.exist.util.XMLUtil;
 
 /**
@@ -197,7 +195,7 @@ public class DOMFile extends BTree implements Lockable {
 				ph.setNextDataPage(newPage.getPageNum());
 				newPage.getPageHeader().setPrevDataPage(page.getPageNum());
 				page.setDirty(true);
-				buffer.add(page, 10);
+				buffer.add(page);
 			}
 			page = newPage;
 			setCurrentPage(newPage);
@@ -216,7 +214,7 @@ public class DOMFile extends BTree implements Lockable {
 		ph.incRecordCount();
 		ph.setDataLength(page.len);
 		page.setDirty(true);
-		buffer.add(page);
+		buffer.add(page, 2);
 		// create pointer from pageNum and offset into page
 		final long p = createPointer((int) page.getPageNum(), tid);
 		return p;
@@ -404,6 +402,7 @@ public class DOMFile extends BTree implements Lockable {
 			ph.setDirty(true);
 			ph.setNextDataPage(-1);
 			ph.setPrevDataPage(-1);
+			ph.setNextTID((short)-1);
 			ph.setDataLength(0);
 			ph.setRecordCount((short) 0);
 			//page.write();
@@ -691,9 +690,8 @@ public class DOMFile extends BTree implements Lockable {
 			pages.put(owner, page.page.getPageNum());
 			buffer.add(page);
 			return page;
-		} else {
+		} else
 			return getCurrentPage(pages.getLong(owner));
-		}
 	}
 
 	/**
@@ -710,6 +708,10 @@ public class DOMFile extends BTree implements Lockable {
 		return page;
 	}
 
+	public void closeDocument() {
+		pages.remove(owner);
+	}
+	
 	/**
 	 *@return    The rootNode value
 	 */
@@ -844,10 +846,12 @@ public class DOMFile extends BTree implements Lockable {
 		if (ph.getRecordCount() == 0) {
 			buffer.remove(rec.page);
 			long np = ph.getNextDataPage();
-			DOMPage prev = getCurrentPage(ph.getPrevDataPage());
-			prev.getPageHeader().setNextDataPage(np);
-			prev.setDirty(true);
-			buffer.add(prev);
+			if(ph.getPrevDataPage() > -1) {
+				DOMPage prev = getCurrentPage(ph.getPrevDataPage());
+				prev.getPageHeader().setNextDataPage(np);
+				prev.setDirty(true);
+				buffer.add(prev);
+			}
 			try {
 				ph.setNextDataPage(-1);
 				ph.setDataLength(0);
@@ -855,7 +859,6 @@ public class DOMFile extends BTree implements Lockable {
 				//ph.setNextTID((short)0);
 				ph.setRecordCount((short) 0);
 				unlinkPages(rec.page.page);
-				//fileHeader.write();
 			} catch (IOException ioe) {
 				LOG.warn(ioe);
 			}
@@ -981,7 +984,9 @@ public class DOMFile extends BTree implements Lockable {
 			// value is smaller than before
 			System.out.println(value.length + " < " + l);
 			System.out.println(rec.page.page.getPageInfo() + "; offset = " +
-				rec.offset);
+				rec.offset + "; data-len = " + 
+				rec.page.getPageHeader().getDataLength() +
+				"; previous-page = " + rec.page.getPageHeader().getPrevDataPage());
 			throw new RuntimeException("shrinked");
 //			int next = rec.offset + 2 + l;
 //			ByteConversion.shortToByte(
@@ -1206,6 +1211,11 @@ public class DOMFile extends BTree implements Lockable {
 				if (ph.getRecordCount() == 0) {
 					long np = ph.getNextDataPage();
 					try {
+						if(np > -1) {
+							DOMPage next = getCurrentPage(np);
+							next.getPageHeader().prevDataPage = -1;
+							db.buffer.add(next);
+						}
 						ph.setNextDataPage(-1);
 						ph.setPrevDataPage(-1);
 						ph.setDataLength(0);
@@ -1214,7 +1224,6 @@ public class DOMFile extends BTree implements Lockable {
 						p.setDirty(true);
 						db.buffer.remove(p);
 						db.unlinkPages(p.page);
-						//db.fileHeader.write();
 					} catch (IOException ioe) {
 						LOG.warn(ioe);
 					}
@@ -1753,9 +1762,6 @@ public class DOMFile extends BTree implements Lockable {
 		 *@param  page  Description of the Parameter
 		 */
 		public void remove(DOMPage page) {
-			//			int idx;
-			//			while ((idx = queue.indexOf(page)) > -1)
-			//				queue.remove(idx);
 			map.remove(page.page.getPageNum());
 		}
 

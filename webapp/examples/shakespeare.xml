@@ -32,8 +32,10 @@
 		     		<tr>
 		     			<td align="left">
 		     				<select name="context" size="1">
-		     					<option>SCENE</option>
-		     					<option>SPEECH</option>
+								<option>SPEECH</option>
+								<option>LINE</option>
+								<option>SPEAKER</option>
+								<option>STAGEDIR</option>
 		     				</select>
 		     			</td>
 		     			<td align="left">

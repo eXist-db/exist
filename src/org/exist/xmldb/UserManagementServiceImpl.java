@@ -18,11 +18,6 @@ public class UserManagementServiceImpl implements UserManagementService {
 
 	private CollectionImpl parent;
 
-	/**
-	 *  Constructor for the UserManagementServiceImpl object
-	 *
-	 *@param  collection  Description of the Parameter
-	 */
 	public UserManagementServiceImpl(CollectionImpl collection) {
 		parent = collection;
 	}
@@ -42,6 +37,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 			for (Iterator i = user.getGroups(); i.hasNext();)
 				groups.addElement((String) i.next());
 			params.addElement(groups);
+			params.addElement(user.getHome());
 			parent.getClient().execute("setUser", params);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
@@ -264,14 +260,15 @@ public class UserManagementServiceImpl implements UserManagementService {
 		try {
 			Vector params = new Vector();
 			params.addElement(parent.getPath());
-			Vector result =
-				(Vector) parent.getClient().execute(
+			Hashtable result =
+				(Hashtable) parent.getClient().execute(
 					"listDocumentPermissions",
 					params);
 			Permission perm[] = new Permission[result.size()];
+			String[] resources = parent.listResources();
 			Vector t;
-			for (int i = 0; i < result.size(); i++) {
-				t = (Vector) result.elementAt(i);
+			for(int i = 0; i < resources.length; i++) {
+				t = (Vector) result.get(resources[i]);
 				perm[i] = new Permission();
 				perm[i].setOwner((String) t.elementAt(0));
 				perm[i].setGroup((String) t.elementAt(1));
@@ -289,14 +286,15 @@ public class UserManagementServiceImpl implements UserManagementService {
 		try {
 			Vector params = new Vector();
 			params.addElement(parent.getPath());
-			Vector result =
-				(Vector) parent.getClient().execute(
+			Hashtable result =
+				(Hashtable) parent.getClient().execute(
 					"listCollectionPermissions",
 					params);
 			Permission perm[] = new Permission[result.size()];
+			String collections[] = parent.listChildCollections();
 			Vector t;
-			for (int i = 0; i < result.size(); i++) {
-				t = (Vector) result.elementAt(i);
+			for(int i = 0; i < collections.length; i++) {
+				t = (Vector) result.get(collections[i]);
 				perm[i] = new Permission();
 				perm[i].setOwner((String) t.elementAt(0));
 				perm[i].setGroup((String) t.elementAt(1));
@@ -338,6 +336,8 @@ public class UserManagementServiceImpl implements UserManagementService {
 			Vector groups = (Vector) tab.get("groups");
 			for (Iterator i = groups.iterator(); i.hasNext();)
 				u.addGroup((String) i.next());
+			String home = (String)tab.get("home");
+			u.setHome(home);
 			return u;
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
@@ -363,6 +363,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 				Vector groups = (Vector) tab.get("groups");
 				for (Iterator j = groups.iterator(); j.hasNext();)
 					u[i].addGroup((String) j.next());
+				u[i].setHome((String)tab.get("home"));
 			}
 			return u;
 		} catch (XmlRpcException e) {
@@ -435,6 +436,7 @@ public class UserManagementServiceImpl implements UserManagementService {
 			for (Iterator i = user.getGroups(); i.hasNext();)
 				groups.addElement((String) i.next());
 			params.addElement(groups);
+			params.addElement(user.getHome());
 			parent.getClient().execute("setUser", params);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);

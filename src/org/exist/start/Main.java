@@ -245,7 +245,8 @@ public class Main {
 	public void run(String[] args) {
 		if (args.length > 0) {
 			if (args[0].equals("client")) {
-				_classname = "org.exist.InteractiveClient";
+				//_classname = "org.exist.client.InteractiveClient";
+				_classname= "org.exist.InteractiveClient";
 				_mode = "client";
 			} else if (args[0].equals("standalone")) {
 				_classname = "org.exist.Server";
@@ -433,12 +434,6 @@ public class Main {
 						_classpath.addComponent(tools_jar_file);
 						if (_debug)
 							System.err.println("JAVAC=" + tools_jar_file);
-					} else {
-						System.err.println(
-							"tools.jar could not"
-								+ " be found! Some Cocoon pages will not compile! tools.jar"
-								+ " is part of the Java Development Kit. Please check if your"
-								+ " JAVA_HOME environment variable points to the correct location");
 					}
 				}
 			}

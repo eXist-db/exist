@@ -324,7 +324,7 @@ public class RpcServer implements RpcAPI {
 		}
 	}
 
-	public Vector listDocumentPermissions(User user, String name)
+	public Hashtable listDocumentPermissions(User user, String name)
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = pool.get();
 		try {
@@ -334,7 +334,7 @@ public class RpcServer implements RpcAPI {
 		}
 	}
 
-	public Vector listCollectionPermissions(User user, String name)
+	public Hashtable listCollectionPermissions(User user, String name)
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = pool.get();
 		try {
@@ -1145,12 +1145,13 @@ public class RpcServer implements RpcAPI {
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
 	 */
-	public boolean setUser(User user, String name, String password, Vector groups)
+	public boolean setUser(User user, String name, String password, 
+		Vector groups, String home)
 		throws EXistException, PermissionDeniedException {
 		RpcConnection con = null;
 		try {
 			con = pool.get();
-			return con.setUser(user, name, password, groups);
+			return con.setUser(user, name, password, groups, home);
 		} finally {
 			pool.release(con);
 		}

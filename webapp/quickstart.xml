@@ -47,6 +47,10 @@
                 servlet engine: for example, the SOAP and WebDAV interfaces are
                 implemented as servlets. These interfaces will thus not be
                 available in standalone mode.</para>
+        </section>
+		<section>
+			<title>Installation</title>
+			
             <para>For a quick start it is recommended to use the server through
                 a servlet engine, i.e. using the third option described above.
                 The stand-alone and embedded deployment options are covered by
@@ -56,14 +60,32 @@
                 software is required. If you already have a running
                 servlet-engine at your hands, you may alternatively download
                 eXist as a bundled web application archive (.war-file). However,
-                I recommend downloading the source distribution for testing.</para>
-            <para>The following section applies to the source distribution. If
-                you have downloaded the war-file and have a running servlet-
-                engine available, please <ulink href="#sect2">skip the next
-                    section and continue to read below</ulink>.</para>
-        </section>
+				I recommend downloading the source distribution for testing.
+			</para>
+			<section>
+				<title>Installer</title>
+				<para>The installer will try to determine correct paths and
+					environment variables to launch eXist. On Windows, it 
+					can also create shortcuts. The installer is started either
+					by double-clicking the downloaded jar-file (Windows/MAC) or
+					by calling java with the <option>-jar</option> option:
+				</para>
+				<synopsis>java -jar eXist-0.9.1-installer.jar</synopsis>
+				<para>After the installation has completed, you should be ready
+					to launch eXist. If the installer has created shortcuts,
+					you may simply click on the "Launch eXist" icon on the
+					desktop or select the corresponding item in the Windows 
+					start menu. On other OS, you have to start eXist manually:
+					Open a shell or DOS command prompt, change into the 
+					location where you installed eXist and enter:</para>
+				<synopsis>bin/startup.sh</synopsis>
+				<para>(Unix) or</para>
+				<synopsis>bin\startup.bat</synopsis>
+				<para>This will launch the included Jetty webserver and eXist.
+				</para>
+			</section>
         <section>
-            <title>Installing the source distribution</title>
+			<title>Installing the Source Distribution</title>
             <para>Simply unzip or untar the distribution file to some suitable
 				location. Your JAVA_HOME environment variable should point to the
 				Java installation directory.</para>
@@ -89,7 +111,6 @@
                 <filename>startup.bat</filename> from the root directory of the
                 distribution: </para>
             <synopsis>bin\startup.bat</synopsis>
-            <para>You may now <ulink href="#sect3">skip the next section</ulink>.</para>
         </section>
         <section id="sect2">
             <title>Installing eXist as a Web Application</title>
@@ -121,7 +142,8 @@ jar xfv ../exist.war]]></screen>
                 where the main configuration file <filename>conf.xml</filename>
                 and the database files reside. Log files will be written to
                 <filename>WEB-INF/logs</filename>. </para>
-        </section>
+		</section>
+	</section>
         <section id="sect3">
             <title>Check if the server is running</title>
             <para>eXist's home page should now be available at <ulink
@@ -133,6 +155,9 @@ jar xfv ../exist.war]]></screen>
                 http://localhost:8080/exist/admin</ulink>. The server will
                 present you some information on the configuration, the data
                 directory used by the engine and available database instances.</para>
+			<para>By the way: to stop the database, simply kill it, i.e. press
+				Ctrl-C in the shell or DOS window. eXist will automatically 
+				flush all data files when it gets killed.</para>
         </section>
         <section>
             <title>Index some XML files</title>
@@ -386,7 +411,7 @@ exist:/db>]]></screen>
                 </varlistentry>
                 <varlistentry>
                     <term>
-                        <ulink href="xquery.xsp">xquery.xsp</ulink>
+						<ulink href="simple/xquery.xsp">xquery.xsp</ulink>
                     </term>
                     <listitem>
                         <para>Generic query interface to send XPath queries to
@@ -408,14 +433,25 @@ exist:/db>]]></screen>
                 </varlistentry>
                 <varlistentry>
                     <term>
-                        <ulink href="biblio.xml">Bibliography</ulink>
+						<ulink href="library/biblio.xml">Bibliography</ulink>
                     </term>
                     <listitem>
                         <para>This example demonstrates using a customized query
                             interface to query the bibliography file
                             <filename>biblio.rdf</filename> found in the <filename>samples</filename>-directory.</para>
                     </listitem>
-                </varlistentry>
+				</varlistentry>
+				<varlistentry>
+					<term>
+						<ulink href="xse/squery.xsp?cname=/db/foc">Flora of China and Extended Shakespeare</ulink>
+					</term>
+					<listitem>
+						<para>Another, extended search engine interface. It uses a simplified query language
+							which is transformed to XPath, has a query history, and applies different 
+							formatting stylesheets for every collection.
+						</para>
+					</listitem>
+				</varlistentry>
             </variablelist>
         </section>
         <section id="webdav">
