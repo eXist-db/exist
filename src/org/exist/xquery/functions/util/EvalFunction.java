@@ -36,6 +36,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.value.EmptySequence;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -62,7 +63,8 @@ public class EvalFunction extends Function {
 			"The argument expression will inherit the current execution context, i.e. all " +
 			"namespace declarations and variable declarations are visible from within the " +
 			"inner expression. The function accepts a second string argument to specify " +
-			"the static context collection to which the expression applies.",
+			"the static context collection to which the expression applies. It will return" +
+			"an empty sequence if you pass a whitespace string.",
 			new SequenceType[] {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 			},
@@ -86,6 +88,8 @@ public class EvalFunction extends Function {
 		throws XPathException {
         // get the query expression
 		String expr = getArgument(0).eval(contextSequence, contextItem).getStringValue();
+		if ("".equals(expr.trim()))
+		  return new EmptySequence();
         // check optional collection argument
         DocumentSet oldDocumentSet = null;
         if(getArgumentCount() > 1) {
