@@ -276,16 +276,16 @@ public class BrokerPool {
 	}
 
 	/**
-	 *  Number of active Brokers in this pool.
+	 *  Number of database instances currently active, i.e. busy.
 	 *
-	 *@return    Description of the Return Value
+	 *@return
 	 */
 	public int active() {
-		return max - pool.size();
+		return threads.size();
 	}
 
 	/**
-	 *  Number of available Brokers for the current database instance.
+	 *  Number of database instances currently available to serve requests.
 	 */
 	public int available() {
 		return pool.size();

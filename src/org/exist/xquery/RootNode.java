@@ -61,7 +61,8 @@ public class RootNode extends Step {
 	        DocumentImpl d;
 	        for (Iterator i = ds.iterator(); i.hasNext();) {
 	            d = (DocumentImpl) i.next();
-	            result.add(new NodeProxy(d, -1));
+	            if(d.getResourceType() == DocumentImpl.XML_FILE) // skip binary resources
+	            	result.add(new NodeProxy(d, -1));
 	        }
 	        cached = result;
 	        cachedDocs = ds;

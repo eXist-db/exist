@@ -373,6 +373,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public long getFirstChildAddress() {
 		if(children == 0)
 			return -1;
+		checkAvail();
 		return childList[0];
 	}
 	

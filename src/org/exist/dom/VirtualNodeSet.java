@@ -244,9 +244,13 @@ public class VirtualNodeSet extends AbstractNodeSetBase {
 				/* // commented out by Timo Boehme (document element is already part of virtual node set (not parent!))
 								proxy.gid = proxy.doc.getDocumentElementId();
 				*/
+				if(proxy.getDocument().getResourceType() == DocumentImpl.BINARY_FILE)
+					// skip binary resources
+					continue;
 				// -- inserted by Timo Boehme --
 				NodeProxy docElemProxy =
 					new NodeProxy(proxy.getDoc(), 1, Node.ELEMENT_NODE);
+				docElemProxy.setInternalAddress(proxy.getDocument().getFirstChildAddress());
 				if (test.matches(docElemProxy))
 					result.add(docElemProxy);
 				if (axis == Constants.DESCENDANT_AXIS
@@ -290,6 +294,11 @@ public class VirtualNodeSet extends AbstractNodeSetBase {
 			NodeProxy p;
 			for (int i = 0; i < node.getChildCount(); i++) {
 				child = (NodeImpl) iter.next();
+				if(child == null)
+					LOG.debug("CHILD == NULL; doc = " + 
+							((DocumentImpl)node.getOwnerDocument()).getName());
+				if(node.getOwnerDocument() == null)
+					LOG.debug("DOC == NULL");
 				child.setOwnerDocument(node.getOwnerDocument());
 				child.setGID(node.firstChildID() + i);
 				p = new NodeProxy(child.ownerDocument, child.gid, child.getNodeType());
