@@ -8,8 +8,10 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
-import org.exist.dom.SingleNodeSet;
-import org.exist.util.XMLUtil;
+import org.exist.dom.XMLUtil;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 
 public class FunId extends Function {
 
@@ -25,21 +27,21 @@ public class FunId extends Function {
 	/**
 	 * @see org.exist.xpath.Expression#eval(org.exist.dom.DocumentSet, org.exist.dom.NodeSet, org.exist.dom.NodeProxy)
 	 */
-	public Value eval(
+	public Sequence eval(
 		StaticContext context,
 		DocumentSet docs,
-		NodeSet contextSet,
-		NodeProxy contextNode)
+		Sequence contextSequence,
+		Item contextItem)
 		throws XPathException {
 		if (getArgumentCount() < 1)
 			throw new XPathException("function id requires one argument");
-		if (contextNode != null)
-			contextSet = new SingleNodeSet(contextNode);
+		if(contextItem != null)
+			contextSequence = contextItem.toSequence();
 		Expression arg = getArgument(0);
-		Value idval = arg.eval(context, docs, contextSet);
+		Sequence idval = arg.eval(context, docs, contextSequence);
 		ArraySet result = new ArraySet(5);
-		if (idval.getType() == Value.isNodeList) {
-			NodeSet set = (NodeSet) idval.getNodeList();
+		if (idval.getItemType() == Type.NODE) {
+			NodeSet set = (NodeSet) idval;
 			for (int i = 0; i < idval.getLength(); i++) {
 				QName id = new QName("&" + set.get(i).getNodeValue(), "", null);
 				getId(context, result, docs, id);
@@ -48,7 +50,7 @@ public class FunId extends Function {
 			QName id = new QName("&" + idval.getStringValue(), "", null);
 			getId(context, result, docs, id);
 		}
-		return new ValueNodeSet(result);
+		return result;
 	}
 
 	private void getId(
@@ -71,7 +73,7 @@ public class FunId extends Function {
 	 * @see org.exist.xpath.Expression#returnsType()
 	 */
 	public int returnsType() {
-		return Constants.TYPE_NODELIST;
+		return Type.NODE;
 	}
 
 }

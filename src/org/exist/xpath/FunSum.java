@@ -15,14 +15,18 @@
  * You should have received a copy of the GNU Library General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- * 
+ *
  * $Id$
  */
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.xpath.value.DecimalValue;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.NumericValue;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceIterator;
+import org.exist.xpath.value.Type;
 
 public class FunSum extends Function {
 
@@ -31,42 +35,23 @@ public class FunSum extends Function {
     }
 
     public int returnsType() {
-		return Constants.TYPE_NUM;
+		return Type.DECIMAL;
     }
 
     public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException {
 		return getArgument(0).preselect(in_docs, context);
     }
 
-    public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
-    	NodeProxy contextNode) throws XPathException {
-		double sum = 0.0, val;
-		// does argument return a node list?
-		if(getArgument(0).returnsType() == Constants.TYPE_NODELIST) {
-			NodeSet args = (NodeSet) getArgument(0).eval(context, docs, contextSet, contextNode).getNodeList();
-			String nval;
-			for(int i = 0; i < args.getLength(); i++) {
-				try {
-					nval = args.get(i).getNodeValue();
-					val = Double.parseDouble(nval);
-					if(val != Double.NaN)
-						sum += val;
-				} catch (NumberFormatException nfe) {
-				}
-			}
-		} else {
-			// does argument return a value set?
-			Value v = getArgument(0).eval(context, docs, contextSet, contextNode);
-			if(v.getType() == Value.isValueSet) {
-				for(int i = 0; i < v.getLength(); i++) {
-					val = v.get(i).getNumericValue();
-					if(val != Double.NaN)
-						sum += val;
-				}
-			} else // single value
-				return v;
+    public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
+    	Item contextItem) throws XPathException {
+		double sum = 0.0;
+		Sequence inner = getArgument(0).eval(context, docs, contextSequence, contextItem);
+		Item next;
+		for(SequenceIterator i = inner.iterate(); i.hasNext(); ) {
+			next = i.nextItem();
+			sum += ((NumericValue)next.convertTo(Type.NUMBER)).getDouble();
 		}
-		return new ValueNumber(sum);
+		return new DecimalValue(sum);
 	}
 }
 			  

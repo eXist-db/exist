@@ -21,9 +21,11 @@
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.SingleNodeSet;
+import org.exist.xpath.value.DecimalValue;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.NumericValue;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 
 public class FunRound extends Function {
 
@@ -32,35 +34,22 @@ public class FunRound extends Function {
 	}
 
 	public int returnsType() {
-		return Constants.TYPE_NUM;
+		return Type.DOUBLE;
 	}
 
 	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException {
 		return getArgument(0).preselect(in_docs, context);
 	}
 
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy contextNode) throws XPathException {
-		double val;
-		if(contextNode != null)
-			contextSet = new SingleNodeSet(contextNode);
-		// Argument is a node list
-		if (getArgument(0).returnsType() == Constants.TYPE_NODELIST) {
-			ValueSet values = new ValueSet();
-			NodeSet args = (NodeSet) getArgument(0).eval(context, docs, contextSet, contextNode).getNodeList();
-			if (args.getLength() > 0) {
-				try {
-					val = Double.parseDouble(args.get(0).getNodeValue());
-					values.add(new ValueNumber(Math.round(val)));
-				} catch (NumberFormatException nfe) {
-					throw new XPathException("Argument is not a number");
-				}
-			}
-			return values;
-		} else {
-			// does argument return a value set?
-			Value v = getArgument(0).eval(context, docs, contextSet, contextNode);
-			return new ValueNumber(Math.ceil(v.getNumericValue()));
-		}
+	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
+		Item contextItem) throws XPathException {
+		if (contextItem != null)
+			contextSequence = contextItem.toSequence();
+		NumericValue value =
+			(NumericValue) getArgument(0)
+				.eval(context, docs, contextSequence, contextItem)
+				.convertTo(Type.NUMBER);
+		return new DecimalValue(Math.round(value.getDouble()));
 	}
 
 	public String pprint() {

@@ -21,10 +21,12 @@
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.SingleNodeSet;
 import org.exist.storage.DBBroker;
+import org.exist.xpath.value.DecimalValue;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 
 /**
  * numeric operation on two operands by +, -, *, div, mod etc..
@@ -50,7 +52,7 @@ public class OpNumeric extends BinaryOp {
     }
 
     public int returnsType() {
-		return Constants.TYPE_NUM;
+		return Type.DECIMAL;
 	}
 
     public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException {
@@ -62,13 +64,16 @@ public class OpNumeric extends BinaryOp {
 		return out_docs;
     }
 
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy node) throws XPathException {
-		if(node != null)
-			contextSet = new SingleNodeSet(node);
-		double lvalue = getLeft().eval(context, docs, contextSet).getNumericValue();
-		double rvalue = getRight().eval(context, docs, contextSet).getNumericValue();
+	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, Item contextItem) 
+	throws XPathException {
+		if(contextItem != null)
+			contextSequence = contextItem.toSequence();
+		double lvalue = 
+			((DecimalValue)getLeft().eval(context, docs, contextSequence).convertTo(Type.DECIMAL)).getDouble();
+		double rvalue = 
+			((DecimalValue)getRight().eval(context, docs, contextSequence).convertTo(Type.DECIMAL)).getDouble();
 		double result = applyOperator(lvalue, rvalue);
-		return new ValueNumber(result);
+		return new DecimalValue(result);
 	}
 
 	public double applyOperator(double left, double right) {

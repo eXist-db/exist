@@ -1,9 +1,9 @@
 package org.exist.xmldb;
 
 import java.io.StringReader;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
@@ -19,9 +19,8 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.StaticContext;
-import org.exist.xpath.Value;
-import org.exist.xpath.ValueNodeSet;
 import org.exist.xpath.XPathException;
+import org.exist.xpath.value.Sequence;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.ResourceSet;
@@ -144,28 +143,28 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 			long start = System.currentTimeMillis();
 			//if (parser.foundErrors())
 			//	throw new XMLDBException(ErrorCodes.VENDOR_ERROR, parser.getErrorMsg());
-			Value resultValue = null;
+			Sequence result = null;
 			docs = (docs == null ? expr.preselect(context) : expr.preselect(docs, context));
 			if (docs.getLength() == 0)
-				resultValue = new ValueNodeSet(NodeSet.EMPTY_SET);
+				result = Sequence.EMPTY_SEQUENCE;
 			else 
-				resultValue = expr.eval(context, docs, contextSet, null);
+				result = expr.eval(context, docs, contextSet, null);
 			LOG.info(
 				expr.pprint()
 					+ " found: "
-					+ resultValue.getLength()
+					+ result.getLength()
 					+ " in "
 					+ (System.currentTimeMillis() - start)
 					+ "ms.");
-			LocalResourceSet result =
+			LocalResourceSet resultSet =
 				new LocalResourceSet(
 					user,
 					brokerPool,
 					collection,
-					resultValue,
+					result,
 					properties,
 					sortExpr);
-			return result;
+			return resultSet;
 		} catch (antlr.RecognitionException re) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, re.getMessage(), re);
 		} catch (antlr.TokenStreamException te) {
@@ -181,25 +180,15 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 		}
 	}
  
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  resource            Description of the Parameter
-	 *@param  query               Description of the Parameter
-	 *@return                     Description of the Return Value
-	 *@exception  XMLDBException  Description of the Exception
-	 */
 	public ResourceSet queryResource(String resource, String query) throws XMLDBException {
-		query = "document('" + collection.getPath() + '/' + resource + "')" + query;
-		return query(query);
+		DocumentSet docs = new DocumentSet();
+		LocalXMLResource res = (LocalXMLResource)collection.getResource(resource);
+		if(res == null)
+			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "resource " + resource + " not found");
+		docs.add(res.getDocument());
+		return doQuery(query, docs, null, null);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  ns                  Description of the Parameter
-	 *@exception  XMLDBException  Description of the Exception
-	 */
 	public void removeNamespace(String ns) throws XMLDBException {
 		for (Iterator i = namespaceDecls.values().iterator(); i.hasNext();) {
 			if (((String) i.next()).equals(ns)) {
@@ -208,33 +197,13 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl {
 		}
 	}
 
-	/**
-	 *  Sets the collection attribute of the LocalXPathQueryService object
-	 *
-	 *@param  col                 The new collection value
-	 *@exception  XMLDBException  Description of the Exception
-	 */
 	public void setCollection(Collection col) throws XMLDBException {
 	}
 
-	/**
-	 *  Sets the namespace attribute of the LocalXPathQueryService object
-	 *
-	 *@param  prefix              The new namespace value
-	 *@param  namespace           The new namespace value
-	 *@exception  XMLDBException  Description of the Exception
-	 */
 	public void setNamespace(String prefix, String namespace) throws XMLDBException {
 		namespaceDecls.put(prefix, namespace);
 	}
 
-	/**
-	 *  Sets the property attribute of the LocalXPathQueryService object
-	 *
-	 *@param  property            The new property value
-	 *@param  value               The new property value
-	 *@exception  XMLDBException  Description of the Exception
-	 */
 	public void setProperty(String property, String value) throws XMLDBException {
 		properties.put(property, value);
 	}

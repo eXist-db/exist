@@ -1,5 +1,6 @@
 package org.exist.util;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -24,7 +25,7 @@ public class VariableByteCoding {
 	 *@param  offset  the offset at which decoding should start
 	 *@return         the decoded value
 	 */
-	public final static long decode(byte[] d, int offset) {
+	public final static long decode(byte[] d, int offset) throws EOFException {
 		long r = 0;
 		int shift = 0;
 		long more;
@@ -32,13 +33,13 @@ public class VariableByteCoding {
 		do {
 			r |= ((more = d[offset + i++]) & 0177) << shift;
 			if(more < 0)
-				throw new ArrayIndexOutOfBoundsException();
+				throw new EOFException();
 			more &= 0200;
 			shift += 7;
 		} while (more > 0);
 		return r;
 	}
-
+	
 	/**
 	 *  Decode a variable-byte encoded sequence
 	 *
@@ -46,14 +47,14 @@ public class VariableByteCoding {
 	 *	encoded data from
 	 *@return     the decoded value
 	 */
-	public final static long decode(InputStream is) throws IOException {
+	public final static long decode(InputStream is) throws IOException, EOFException {
 		long r = 0;
 		int shift = 0;
 		long more;
 		do {
 			r |= ((more = is.read()) & 0177) << shift;
 			if(more < 0)
-				throw new ArrayIndexOutOfBoundsException();
+				throw new EOFException();
 			shift += 7;
 			more &= 0200;
 		} while (more > 0);

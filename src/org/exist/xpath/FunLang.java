@@ -17,6 +17,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * 
+ * $Id$
  */
 
 package org.exist.xpath;
@@ -28,61 +30,77 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
-import org.exist.dom.SingleNodeSet;
-import org.exist.util.XMLUtil;
+import org.exist.dom.XMLUtil;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 
 /**
  * xpath-library function: string(object)
  *
  */
 public class FunLang extends Function {
-	
+
 	public FunLang() {
 		super("lang");
 	}
-		
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-		NodeProxy contextNode) throws XPathException {
-		if(getArgumentCount() < 1)
+
+	public Sequence eval(
+		StaticContext context,
+		DocumentSet docs,
+		Sequence contextSequence,
+		Item contextItem)
+		throws XPathException {
+		if (getArgumentCount() < 1)
 			throw new IllegalArgumentException("lang requires an argument");
-		if(contextNode != null)
-			contextSet = new SingleNodeSet(contextNode);
-		String lang = getArgument(0).eval(context, docs, contextSet).getStringValue();
+		if (contextItem != null)
+			contextSequence = contextItem.toSequence();
+		if (contextSequence.getItemType() != Type.NODE)
+			return Sequence.EMPTY_SEQUENCE;
+		String lang =
+			getArgument(0)
+				.eval(context, docs, contextSequence)
+				.getStringValue();
 		QName qname = new QName("lang", context.getURIForPrefix("xml"), "xml");
-			NodeSet attribs = context.getBroker().getAttributesByName(docs, qname);
-			System.out.println("found " + attribs.getLength() + " attributes");
-			NodeSet temp = new ArraySet(attribs.getLength());
-			NodeProxy p;
-			String langValue;
-			int hyphen;
-			boolean include;
-			for(Iterator i = attribs.iterator(); i.hasNext(); ) {
-				include = false;
-				p = (NodeProxy)i.next();
-				langValue = p.getNodeValue();
-				include = lang.equalsIgnoreCase(langValue);
-				if(!include) {
-					hyphen = langValue.indexOf('-');
-					if(hyphen != -1) {
-						langValue = langValue.substring(0, hyphen);
-						include = lang.equalsIgnoreCase(langValue);
-					}
-				}
-				System.out.println(langValue + " == " + lang);
-				if(include) {
-					p.gid = XMLUtil.getParentId(p.doc, p.gid);
-					if(p.gid > -1)
-						temp.add(p);
+		NodeSet attribs = context.getBroker().getAttributesByName(docs, qname);
+		System.out.println("found " + attribs.getLength() + " attributes");
+		NodeSet temp = new ArraySet(attribs.getLength());
+		NodeProxy p;
+		String langValue;
+		int hyphen;
+		boolean include;
+		for (Iterator i = attribs.iterator(); i.hasNext();) {
+			include = false;
+			p = (NodeProxy) i.next();
+			langValue = p.getNodeValue();
+			include = lang.equalsIgnoreCase(langValue);
+			if (!include) {
+				hyphen = langValue.indexOf('-');
+				if (hyphen != -1) {
+					langValue = langValue.substring(0, hyphen);
+					include = lang.equalsIgnoreCase(langValue);
 				}
 			}
-			if(temp.getLength() > 0) {
-				NodeSet result = contextSet.getDescendants(temp, NodeSet.DESCENDANT, true, false);
-				for(Iterator i = result.iterator(); i.hasNext(); ) {
-					p = (NodeProxy)i.next();
-					p.addContextNode(p);
-				}
-				return new ValueNodeSet(result);
+			System.out.println(langValue + " == " + lang);
+			if (include) {
+				p.gid = XMLUtil.getParentId(p.doc, p.gid);
+				if (p.gid > -1)
+					temp.add(p);
 			}
-		return new ValueNodeSet(NodeSet.EMPTY_SET);
+		}
+		if (temp.getLength() > 0) {
+			NodeSet result =
+				((NodeSet) contextSequence).getDescendants(
+					temp,
+					NodeSet.DESCENDANT,
+					true,
+					false);
+			for (Iterator i = result.iterator(); i.hasNext();) {
+				p = (NodeProxy) i.next();
+				p.addContextNode(p);
+			}
+			return result;
+		}
+		return Sequence.EMPTY_SEQUENCE;
 	}
 }

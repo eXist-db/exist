@@ -16,17 +16,20 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
- *  $Id:
+ *  $Id$
  */
 package org.exist.xpath;
 
 import java.util.Iterator;
 
-import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 
 /**
  *  Description of the Class
@@ -41,37 +44,30 @@ public class RootNode extends Step {
 		super(Constants.SELF_AXIS);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  docs     Description of the Parameter
-	 *@param  context  Description of the Parameter
-	 *@param  node     Description of the Parameter
-	 *@return          Description of the Return Value
-	 */
-	public Value eval(
+	public Sequence eval(
 		StaticContext context,
 		DocumentSet docs,
-		NodeSet contextSet,
-		NodeProxy contextNode) {
-		ArraySet result = new ArraySet(docs.getLength());
+		Sequence contextSequence,
+		Item contextItem) {
+		NodeSet result = new ExtArrayNodeSet(docs.getLength());
 		DocumentImpl doc;
 		NodeProxy n;
 		for (Iterator i = docs.iterator(); i.hasNext();) {
 			doc = (DocumentImpl) i.next();
 			n = new NodeProxy(doc, -1);
-			//n = new NodeProxy( doc, doc.getDocumentElementId() );
 			result.add(n);
 		}
-		return new ValueNodeSet(result);
+		return result;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@return    Description of the Return Value
-	 */
 	public String pprint() {
 		return "ROOT";
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xpath.Step#returnsType()
+	 */
+	public int returnsType() {
+		return Type.NODE;
 	}
 }

@@ -19,6 +19,7 @@
     import org.exist.security.PermissionDeniedException;
     import org.exist.security.User;
 	import org.exist.xpath.*;
+	import org.exist.xpath.value.Type;
 
 import antlr.TreeParser;
 import antlr.Token;
@@ -623,7 +624,7 @@ public XPathTreeParser2() {
 				_t = _t.getNextSibling();
 				
 								QName qname = QName.parse(context, qn.getText());
-								test = new NameTest(Constants.ELEMENT_NODE, qname);
+								test = new NameTest(Type.ELEMENT, qname);
 							
 				break;
 			}
@@ -640,7 +641,7 @@ public XPathTreeParser2() {
 				_t = _t.getNextSibling();
 				
 								QName qname = new QName(nc1.getText(), null, null);
-								test = new NameTest(Constants.ELEMENT_NODE, qname);
+								test = new NameTest(Type.ELEMENT, qname);
 							
 				break;
 			}
@@ -658,7 +659,7 @@ public XPathTreeParser2() {
 				
 								String namespaceURI = context.getURIForPrefix(nc.getText());
 								QName qname = new QName(null, namespaceURI, null);
-								test = new NameTest(Constants.ELEMENT_NODE, qname);
+								test = new NameTest(Type.ELEMENT, qname);
 							
 				break;
 			}
@@ -668,7 +669,7 @@ public XPathTreeParser2() {
 				match(_t,WILDCARD);
 				_t = _t.getNextSibling();
 				
-								test = new TypeTest(Constants.ELEMENT_NODE);
+								test = new TypeTest(Type.ELEMENT);
 							
 				break;
 			}
@@ -688,7 +689,7 @@ public XPathTreeParser2() {
 				match(_t,LITERAL_text);
 				_t = _t.getNextSibling();
 				
-								test = new TypeTest(Constants.TEXT_NODE);
+								test = new TypeTest(Type.TEXT);
 							
 				break;
 			}
@@ -783,7 +784,7 @@ public XPathTreeParser2() {
 				
 						step = 
 							new LocationStep(Constants.ATTRIBUTE_AXIS, 
-								new NameTest(Constants.ATTRIBUTE_NODE, qname));
+								new NameTest(Type.ATTRIBUTE, qname));
 						path.add(step);
 					
 			{
@@ -809,7 +810,7 @@ public XPathTreeParser2() {
 			_t = _t.getNextSibling();
 			
 						step = 
-							new LocationStep(Constants.SELF_AXIS, new TypeTest(Constants.NODE_TYPE));
+							new LocationStep(Constants.SELF_AXIS, new TypeTest(Type.NODE));
 						path.add(step);
 					
 			{
@@ -835,7 +836,7 @@ public XPathTreeParser2() {
 			_t = _t.getNextSibling();
 			
 						step =
-							new LocationStep(Constants.PARENT_AXIS, new TypeTest(Constants.NODE_TYPE));
+							new LocationStep(Constants.PARENT_AXIS, new TypeTest(Type.NODE));
 						path.add(step);
 					
 			{

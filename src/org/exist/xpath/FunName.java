@@ -21,9 +21,11 @@
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.SingleNodeSet;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.StringValue;
+import org.exist.xpath.value.Type;
 import org.w3c.dom.Node;
 
 /**
@@ -37,31 +39,32 @@ public class FunName extends Function {
     }
 	
     public int returnsType() {
-        return Constants.TYPE_STRING;
+        return Type.STRING;
     }
 	
-    public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-    	NodeProxy contextNode) throws XPathException {
-        Node n = null;
-		if(contextNode != null)
-			contextSet = new SingleNodeSet(contextNode);
-        if(getArgumentCount() > 0) {
-            NodeSet result = (NodeSet)getArgument(0).eval(context, docs, contextSet).getNodeList();
-            if(result.getLength() > 0)
-            	n = result.item(0);
-        } else if(contextSet.getLength() > 0)
-            n = contextSet.item(0);
-        else
-        	return new ValueString("");
-        if(n != null) {
-	        switch(n.getNodeType()) {
-	        	case Node.ELEMENT_NODE:
-	            	return new ValueString(n.getNodeName());
-	        	case Node.ATTRIBUTE_NODE:
-	            	return new ValueString(n.getNodeName());
-	        	default:
-	            	return new ValueString("");
-	        }
-        } return new ValueString("");
-    }
+	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, 
+			Item contextItem) throws XPathException {
+			Node n = null;
+			if(contextItem != null)
+				contextSequence = contextItem.toSequence();
+			if(getArgumentCount() > 0) {
+				NodeSet result = (NodeSet)getArgument(0).eval(context, docs, contextSequence);
+				if(result.getLength() > 0)
+					n = result.item(0);
+			} else {
+				if(contextSequence.getLength() > 0 && contextSequence.getItemType() == Type.NODE)
+					n = ((NodeSet)contextSequence).item(0);
+			}
+			if(n != null) {
+				switch(n.getNodeType()) {
+					case Node.ELEMENT_NODE:
+						return new StringValue(n.getNodeName());
+					case Node.ATTRIBUTE_NODE:
+						return new StringValue(n.getNodeName());
+					default:
+						return new StringValue("");
+				}
+			} 
+			return new StringValue("");
+			}
 }

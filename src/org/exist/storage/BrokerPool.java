@@ -354,7 +354,7 @@ public class BrokerPool {
 		LOG.debug("shutdown!");
 		conf = null;
 		instances.remove(instanceId);
-		if(instances.size() == 0 && (!killed)) {
+		if(instances.size() == 0 && !killed) {
 			LOG.debug("removing shutdown hook");
 			Runtime.getRuntime().removeShutdownHook(shutdownThread);
 		}

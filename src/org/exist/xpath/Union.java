@@ -21,8 +21,10 @@
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 
 public class Union extends PathExpr {
 
@@ -35,7 +37,7 @@ public class Union extends PathExpr {
     }
 
     public int returnsType() {
-		return Constants.TYPE_NODELIST;
+		return Type.NODE;
 	}
 	
 	/**
@@ -50,16 +52,19 @@ public class Union extends PathExpr {
 		return left_docs.union(right_docs);
 	}
 
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-		NodeProxy contextNode) throws XPathException {
-		NodeSet lval = (NodeSet)left.eval(context, docs, contextSet, contextNode).getNodeList();
+	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, 
+		Item contextItem) throws XPathException {
+		
+		Sequence lval = left.eval(context, docs, contextSequence, contextItem);
 		LOG.debug("left " + left.pprint() + " returned: " + lval.getLength());
-		NodeSet rval = (NodeSet)right.eval(context, docs, contextSet, contextNode).getNodeList();
+		Sequence rval = right.eval(context, docs, contextSequence, contextItem);
 		LOG.debug("right " + right.pprint() + " returned: " + rval.getLength());
+		if(lval.getItemType() != Type.NODE || rval.getItemType() != Type.NODE)
+			throw new XPathException("union operand is not a node sequence");
 		long start = System.currentTimeMillis();
-        NodeSet result = lval.union(rval);
+        NodeSet result = ((NodeSet)lval).union((NodeSet)rval);
 		LOG.debug("union found " + result.getLength() + " in "+ (System.currentTimeMillis() - start));
-		return new ValueNodeSet(result);
+		return result;
 	}
 
 	public String pprint() {

@@ -22,9 +22,11 @@ package org.exist.dom;
 
 import java.util.Iterator;
 
-import org.exist.util.LongLinkedList;
-import org.exist.util.XMLUtil;
+import org.apache.log4j.Logger;
+import org.exist.xpath.XPathException;
 import org.exist.xpath.value.AbstractSequence;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
 import org.exist.xpath.value.Type;
 import org.w3c.dom.Node;
@@ -44,6 +46,8 @@ import org.w3c.dom.NodeList;
  */
 public abstract class NodeSet extends AbstractSequence implements NodeList {
 
+	private final static Logger LOG = Logger.getLogger(NodeSet.class);
+	
 	public final static int ANCESTOR = 0;
 	public final static int DESCENDANT = 1;
 	public final static int PRECEDING = 2;
@@ -68,27 +72,42 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 	public abstract boolean contains(DocumentImpl doc, long nodeId);
 	public abstract boolean contains(NodeProxy proxy);
 
-	public boolean contains(DocumentImpl doc) {
-		for (Iterator i = iterator(); i.hasNext();)
-			if (((NodeProxy) i.next()).doc == doc)
-				return true;
-		return false;
+	public boolean containsDoc(DocumentImpl doc) {
+		return true;
 	}
 
-	public void add(DocumentImpl doc, long nodeId) {
-		throw new RuntimeException("not implemented");
+	/**
+	 * Add a new proxy object to the node set. Please note: node set
+	 * implementations may allow duplicates.
+	 * 
+	 * @param proxy
+	 */
+	public abstract void add(NodeProxy proxy);
+
+	/**
+	 * Add a proxy object to the node set. The sizeHint parameter
+	 * gives a hint about the number of items to be expected for the
+	 * current document.
+	 * 
+	 * @param proxy
+	 * @param sizeHint
+	 */
+	public void add(NodeProxy proxy, int sizeHint) {
+		add(proxy);
+	}
+	
+	public void add(Item item) throws XPathException {
+		if (!Type.subTypeOf(item.getType(), Type.NODE))
+			throw new XPathException("item has wrong type");
+		add((NodeProxy) item);
 	}
 
-	public void add(Node node) {
-		throw new RuntimeException("not implemented");
-	}
-
-	public void add(NodeProxy proxy) {
-		throw new RuntimeException("not implemented");
-	}
-
-	public void addAll(NodeList other) {
-		throw new RuntimeException("not implemented");
+	public void addAll(Sequence other) throws XPathException {
+		if (other.getItemType() != Type.NODE)
+			throw new XPathException("sequence argument is not a node sequence");
+		for (SequenceIterator i = other.iterate(); i.hasNext();) {
+			add((NodeProxy) i.nextItem());
+		}
 	}
 
 	public abstract void addAll(NodeSet other);
@@ -138,67 +157,76 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 		boolean directParent,
 		boolean includeSelf,
 		int level) {
-		if (gid < 1)
-			return null;
 		NodeProxy parent;
-		if (includeSelf && (parent = get(doc, gid)) != null)
+		if(includeSelf && (parent = get(doc, gid)) != null)
 			return parent;
 		if (level < 0)
 			level = doc.getTreeLevel(gid);
-		// calculate parent's gid
-		long pid = XMLUtil.getParentId(doc, gid);
-		includeSelf = false;
-		if ((parent = get(doc, pid)) != null)
-			return parent;
-		else if (directParent)
-			return null;
-		else
-			return nodeHasParent(
-				doc,
-				pid,
-				directParent,
-				includeSelf,
-				level - 1);
+		while(gid > 0) {
+			// calculate parent's gid
+			gid = XMLUtil.getParentId(doc, gid, level);
+			if ((parent = get(doc, gid)) != null)
+				return parent;
+			else if (directParent)
+				return null;
+			else {
+				--level;
+			}
+		}
+		return null;
 	}
 
-	public ArraySet getChildren(NodeSet al, int mode) {
+	public NodeSet getChildren(NodeSet al, int mode) {
 		return getChildren(al, mode, false);
 	}
 
-	public ArraySet getChildren(
+	public NodeSet getChildren(
 		NodeSet al,
 		int mode,
 		boolean rememberContext) {
 		NodeProxy n, p;
 		long start = System.currentTimeMillis();
-		ArraySet result = new ArraySet(getLength());
+		ExtArrayNodeSet result = new ExtArrayNodeSet();
+		DocumentImpl lastDoc = null;
+		int sizeHint = -1;
 		switch (mode) {
 			case DESCENDANT :
 				for (Iterator i = iterator(); i.hasNext();) {
 					n = (NodeProxy) i.next();
-					if ((p = al.nodeHasParent(n, true, false)) != null) {
+					if(lastDoc == null || n.doc != lastDoc) {
+						lastDoc = n.doc;
+						sizeHint = getSizeHint(lastDoc);
+					}
+					if ((p = al.nodeHasParent(n.doc, n.gid, true, false, -1)) != null) {
 						if (rememberContext)
 							n.addContextNode(p);
 						else
 							n.copyContext(p);
-						result.add(n);
+						result.add(n, sizeHint);
 					}
 				}
 				break;
 			case ANCESTOR :
 				for (Iterator i = iterator(); i.hasNext();) {
 					n = (NodeProxy) i.next();
-					p = al.parentWithChild(n, true, false);
+					if(lastDoc == null || n.doc != lastDoc) {
+						lastDoc = n.doc;
+						sizeHint = al.getSizeHint(lastDoc);
+					}
+					p = al.parentWithChild(n.doc, n.gid, true, false, -1);
 					if (p != null) {
 						if (rememberContext)
 							p.addContextNode(n);
 						else
 							p.copyContext(n);
-						result.add(p);
+						result.add(p, sizeHint);
 					}
 				}
 				break;
 		}
+		LOG.debug("getChildren found " + result.getLength() + " in " +
+			(System.currentTimeMillis() - start));
+		result.sort();
 		return result;
 	}
 
@@ -225,34 +253,48 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 		boolean includeSelf,
 		boolean rememberContext) {
 		NodeProxy n, p;
-		ArraySet result = new ArraySet(getLength());
+		long start = System.currentTimeMillis();
+		DocumentImpl lastDoc = null;
+		int sizeHint = -1;
+		ExtArrayNodeSet result = new ExtArrayNodeSet();
 		switch (mode) {
 			case DESCENDANT :
 				for (Iterator i = iterator(); i.hasNext();) {
 					n = (NodeProxy) i.next();
-					if ((p = al.nodeHasParent(n, false, false)) != null) {
+					if(lastDoc == null || n.doc != lastDoc) {
+						lastDoc = n.doc;
+						sizeHint = getSizeHint(lastDoc);
+					}
+					if ((p = al.nodeHasParent(n.doc, n.gid, false, false, -1)) != null) {
 						if (rememberContext)
 							n.addContextNode(p);
 						else
 							n.copyContext(p);
-						result.add(n);
+						result.add(n, sizeHint);
 					}
 				}
 				break;
 			case ANCESTOR :
 				for (Iterator i = iterator(); i.hasNext();) {
 					n = (NodeProxy) i.next();
+					if(lastDoc == null || n.doc != lastDoc) {
+						lastDoc = n.doc;
+						sizeHint = al.getSizeHint(lastDoc);
+					}
 					p = al.parentWithChild(n.doc, n.gid, false);
 					if (p != null) {
 						if (rememberContext)
 							p.addContextNode(n);
 						else
 							p.copyContext(n);
-						result.add(p);
+						result.add(p, sizeHint);
 					}
 				}
 				break;
 		}
+		//result.sort();
+		LOG.debug("getDescendants found " + result.getLength() + " in " +
+			(System.currentTimeMillis() - start));
 		return result;
 	}
 
@@ -394,26 +436,23 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 		boolean directParent,
 		boolean includeSelf,
 		int level) {
-		if (gid < 1)
-			return null;
 		NodeProxy temp;
-		if (includeSelf && (temp = get(doc, gid)) != null)
-			return temp;
 		if (level < 0)
 			level = doc.getTreeLevel(gid);
-		// calculate parent's gid
-		long pid = XMLUtil.getParentId(doc, gid);
-		if ((temp = get(doc, pid)) != null)
-			return temp;
-		else if (directParent)
-			return null;
-		else
-			return parentWithChild(
-				doc,
-				pid,
-				directParent,
-				includeSelf,
-				level - 1);
+		while(gid > 0) {
+			if (includeSelf && (temp = get(doc, gid)) != null)
+				return temp;
+			includeSelf = false;
+			// calculate parent's gid
+			gid = XMLUtil.getParentId(doc, gid, level);
+			if (gid > 0 && (temp = get(doc, gid)) != null)
+				return temp;
+			else if (directParent)
+				return null;
+			else
+				--level;
+		}
+		return null;
 	}
 
 	public NodeProxy parentWithChild(
@@ -461,6 +500,10 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 		return result;
 	}
 
+	public int getSizeHint(DocumentImpl doc) {
+		return -1;
+	}
+	
 	public NodeSet intersection(NodeSet other) {
 		long start = System.currentTimeMillis();
 		TreeNodeSet r = new TreeNodeSet();
@@ -475,7 +518,7 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 			l = (NodeProxy) i.next();
 			if (contains(l)) {
 				if ((p = r.get(l)) != null) {
-					p.addMatches(l.matches);
+					p.addMatches(l.match);
 				} else
 					r.add(l);
 			}
@@ -492,7 +535,7 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 			p = (NodeProxy) i.next();
 			if (other.contains(p)) {
 				c = other.get(p);
-				c.addMatches(p.matches);
+				c.addMatches(p.match);
 			} else
 				result.add(p);
 		}
@@ -503,15 +546,14 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 		NodeSet contextNodes,
 		boolean rememberContext) {
 		NodeSet result = new ArraySet(getLength());
-		NodeProxy current, context;
-		LongLinkedList contextList;
-		LongLinkedList.ListItem item;
+		NodeProxy current, context, item;
+		ContextItem contextNode;
 		for (Iterator i = iterator(); i.hasNext();) {
 			current = (NodeProxy) i.next();
-			contextList = current.getContext();
-			for (Iterator j = contextList.iterator(); j.hasNext();) {
-				item = (LongLinkedList.ListItem) j.next();
-				context = contextNodes.get(current.doc, item.l);
+			contextNode = current.getContext();
+			while(contextNode != null) {
+				item = contextNode.getNode();
+				context = contextNodes.get(item);
 				if (context != null) {
 					if (!result.contains(context)) {
 						if (rememberContext) {
@@ -519,8 +561,9 @@ public abstract class NodeSet extends AbstractSequence implements NodeList {
 						}
 						result.add(context);
 					}
-					context.addMatches(current.matches);
+					context.addMatches(current.match);
 				}
+				contextNode = contextNode.getNextItem();
 			}
 		}
 		return result;

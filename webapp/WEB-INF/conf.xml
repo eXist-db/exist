@@ -21,9 +21,9 @@
 				  file system page size.
        -->
        
-	   <db-connection database="native" files="data" 
-		   buffers="1024" words_buffers="32768" collection_buffers="2048" 
-		   elements_buffers="8192" free_mem_min="10" 
+	   <db-connection database="native" files="/var/xml/data" 
+		   buffers="512" words_buffers="2048" collection_buffers="512" 
+		   elements_buffers="512" free_mem_min="10" 
 		   pageSize="4096">
 
 		   <!-- Settings for the database connection pool
@@ -36,9 +36,16 @@
 				- min: minimum number of connections to keep alive.
 				- max: maximum number of connections allowed.
 		   -->
-		   <pool min="1" max="15" sync-period="300000"/>
-	   </db-connection>
+		   <pool min="1" max="30" sync-period="300000"/>
+   		</db-connection>
   
+		<!--db-connection database="native" files="/var/xml/data" 
+			buffers="1024" words_buffers="32768" collection_buffers="2048" 
+			elements_buffers="8192" free_mem_min="10" 
+		   pageSize="4096">
+		   <pool min="1" max="15" sync-period="300000"/>
+	   </db-connection-->
+	   
   <!-- settings for the serializer
 
        - enable-xinclude: should the database expand xinclude tags?
@@ -47,7 +54,7 @@
 	   - indent: should the serializer pretty-print (indent) xml?
   -->
   <serializer enable-xinclude="true" enable-xsl="false"
-	  indent="false" add-exist-id="element" match-tagging-elements="true"
+	  indent="false" add-exist-id="element" match-tagging-elements="false"
 	  match-tagging-attributes="false"/>
   
   <!-- settings for the indexer
@@ -67,7 +74,7 @@
     		equality comparisons.
   -->
   <indexer stemming="false" caseSensitive="false"
-	  suppress-whitespace="both" index-depth="3"
+	  suppress-whitespace="none" index-depth="6"
 	  tokenizer="org.exist.storage.analysis.SimpleTokenizer"
 	  validation="false">
 
@@ -99,7 +106,7 @@
 	    		defines the maximum nesting depth of nodes which will be indexed
 	    		in the DOM index. Nodes below the specified nesting depth will
 	    		not be indexed in the DOM file. This has only an effect when 
-	    		retrieving query results or for some types of XPath subexpressions, like
+	    		retrieving queryb results or for some types of XPath subexpressions, like
 	    		equality comparisons.
 	-->
 	<index doctype="users" default="none" attributes="false">
@@ -156,8 +163,8 @@
 
     <!-- file appenders -->
     <appender name="exist.core" class="org.apache.log4j.RollingFileAppender">
-	    <param name="File" value="logs/exist.log"/>
-		<param name="MaximumFileSize" value="500000"/>
+		<param name="File" value="logs/exist.log"/>
+		<param name="MaximumFileSize" value="5000000"/>
 		<param name="Encoding" value="UTF-8"/>
       <layout class="org.apache.log4j.PatternLayout">
         <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m\n"/>
@@ -165,15 +172,7 @@
     </appender>
 
     <appender name="exist.xmldb" class="org.apache.log4j.RollingFileAppender">
-		<param name="File" value="logs/xmldb.log"/>
-	  <param name="MaximumFileSize" value="500000"/>
-      <layout class="org.apache.log4j.PatternLayout">
-        <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m\n"/>
-      </layout>
-    </appender>
-
-	<appender name="axis" class="org.apache.log4j.RollingFileAppender">
-		<param name="File" value="logs/axis.log"/>
+	    <param name="File" value="logs/xmldb.log"/>
 	  <param name="MaximumFileSize" value="500000"/>
       <layout class="org.apache.log4j.PatternLayout">
         <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m\n"/>
@@ -194,13 +193,7 @@
 		<appender-ref ref="console"/>
 		<priority value="debug"/>
     </category>
-
-	<!-- Axis generates large amounts of debugging output -->
-	<category name="org.apache.axis" additivity="false">
-		<appender-ref ref="axis"/>
-		<priority value="warn"/>
-	</category>
-
+    
     <!--
     <category name="exist.http">
       <appender-ref ref="A1"/>

@@ -21,6 +21,7 @@ import org.exist.xpath.OpEquals;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.RootNode;
 import org.exist.xpath.StaticContext;
+import org.exist.xpath.value.Type;
 
 public class Util {
 
@@ -47,7 +48,6 @@ public class Util {
 		Expression step = null;
 		if (fnName.equals("document")) {
 			DocumentSet docs = null;
-			DBBroker broker = null;
 			if (params.size() == 0)
 				docs = context.getBroker().getAllDocuments();
 			else {
@@ -56,7 +56,7 @@ public class Util {
 				DocumentImpl doc;
 				for (int i = 0; i < params.size(); i++) {
 					next = ((PathExpr) params.elementAt(i)).getLiteralValue();
-					doc = (DocumentImpl) broker.getDocument(next);
+					doc = (DocumentImpl) context.getBroker().getDocument(next);
 					if (doc != null)
 						docs.add(doc);
 				}
@@ -123,7 +123,7 @@ public class Util {
 				throw new IllegalArgumentException("Second argument to starts-with is empty");
 			Expression e1 = p1.getExpression(0);
 			if (e1 instanceof Literal
-				&& p0.returnsType() == Constants.TYPE_NODELIST) {
+				&& p0.returnsType() == Type.NODE) {
 				Literal l = (Literal) e1;
 				l.setLiteral(l.getLiteral() + '%');
 				OpEquals op = new OpEquals(p0, e1, Constants.EQ);
@@ -142,7 +142,7 @@ public class Util {
 				throw new IllegalArgumentException("Second argument to ends-with is empty");
 			Expression e1 = p1.getExpression(0);
 			if (e1 instanceof Literal
-				&& p0.returnsType() == Constants.TYPE_NODELIST) {
+				&& p0.returnsType() == Type.NODE) {
 				Literal l = (Literal) e1;
 				l.setLiteral('%' + l.getLiteral());
 				OpEquals op = new OpEquals(p0, e1, Constants.EQ);
@@ -161,7 +161,7 @@ public class Util {
 				throw new IllegalArgumentException("Second argument to contains is empty");
 			Expression e1 = p1.getExpression(0);
 			if (e1 instanceof Literal
-				&& p0.returnsType() == Constants.TYPE_NODELIST) {
+				&& p0.returnsType() == Type.NODE) {
 				Literal l = (Literal) e1;
 				l.setLiteral('%' + l.getLiteral() + '%');
 				OpEquals op = new OpEquals(p0, e1, Constants.EQ);

@@ -15,8 +15,10 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
-import org.exist.xpath.Value;
-import org.exist.xpath.ValueSet;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceIterator;
+import org.exist.xpath.value.Type;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xmldb.api.base.ErrorCodes;
@@ -43,7 +45,7 @@ public class LocalResourceSet implements ResourceSet {
 		User user,
 		BrokerPool pool,
 		LocalCollection col,
-		Value val,
+		Sequence val,
 		Map properties,
 		String sortExpr)
 		throws XMLDBException {
@@ -53,9 +55,9 @@ public class LocalResourceSet implements ResourceSet {
 		this.collection = col;
 		if(val.getLength() == 0)
 			return;
-		switch (val.getType()) {
-			case Value.isNodeList :
-				NodeSet resultSet = (NodeSet) val.getNodeList();
+		switch (val.getItemType()) {
+			case Type.NODE :
+				NodeSet resultSet = (NodeSet) val;
 				if(resultSet == null)
 					return;
 				if (sortExpr != null) {
@@ -72,11 +74,10 @@ public class LocalResourceSet implements ResourceSet {
 				}
 				break;
 			default :
-				ValueSet valueSet = val.getValueSet();
-				Value v;
-				for (int i = 0; i < valueSet.getLength(); i++) {
-					v = valueSet.get(i);
-					resources.add(v.getStringValue());
+				Item item;
+				for(SequenceIterator i = val.iterate(); i.hasNext(); ) {
+					item = i.nextItem();
+					resources.add(item.getStringValue());
 				}
 				break;
 		}

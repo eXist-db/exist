@@ -22,7 +22,6 @@
  */
 package org.exist.storage.serializers;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -38,9 +37,9 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.ProcessingInstructionImpl;
 import org.exist.dom.TextImpl;
+import org.exist.dom.XMLUtil;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
-import org.exist.util.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -122,7 +121,7 @@ public class NativeSerializer extends Serializer {
 			domIter = broker.getNodeIterator(p);
 			if (domIter == null)
 				continue;
-			serializeToSAX(null, domIter, p.doc, p.gid, true, p.matches);
+			serializeToSAX(null, domIter, p.doc, p.gid, true, p.match);
 		}
 		contentHandler.endElement(EXIST_NS, "result", "exist:result");
 		contentHandler.endDocument();
@@ -207,7 +206,7 @@ public class NativeSerializer extends Serializer {
 
 		contentHandler.startPrefixMapping("exist", EXIST_NS);
 		Iterator domIter = broker.getNodeIterator(p);
-		serializeToSAX(null, domIter, p.doc, p.gid, true, p.matches);
+		serializeToSAX(null, domIter, p.doc, p.gid, true, p.match);
 		contentHandler.endPrefixMapping("exist");
 		if (generateDocEvents)
 			contentHandler.endDocument();
@@ -242,9 +241,9 @@ public class NativeSerializer extends Serializer {
 		DocumentImpl doc,
 		long gid,
 		boolean first,
-		Match matches[])
+		Match match)
 		throws SAXException {
-		serializeToSAX(node, iter, doc, gid, first, new TreeSet(), matches);
+		serializeToSAX(node, iter, doc, gid, first, new TreeSet(), match);
 	}
 
 	/**
@@ -265,7 +264,7 @@ public class NativeSerializer extends Serializer {
 		long gid,
 		boolean first,
 		Set namespaces,
-		Match matches[])
+		Match match)
 		throws SAXException {
 		setDocument(doc);
 		if (node == null)
@@ -303,7 +302,7 @@ public class NativeSerializer extends Serializer {
 					child = (NodeImpl) iter.next();
 					if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
 						if ((highlightMatches & TAG_ATTRIBUTE_MATCHES) > 0)
-							cdata = processAttribute(((AttrImpl) child).getValue(), gid, matches);
+							cdata = processAttribute(((AttrImpl) child).getValue(), gid, match);
 						else
 							cdata = ((AttrImpl) child).getValue();
 						attributes.addAttribute(
@@ -345,7 +344,7 @@ public class NativeSerializer extends Serializer {
 					node.getNodeName(),
 					attributes);
 				while (count < children) {
-					serializeToSAX(child, iter, doc, gid++, false, namespaces, matches);
+					serializeToSAX(child, iter, doc, gid++, false, namespaces, match);
 					if (++count < children) {
 						child = (NodeImpl) iter.next();
 					} else
@@ -382,7 +381,7 @@ public class NativeSerializer extends Serializer {
 					contentHandler.startElement(EXIST_NS, "text", "exist:text", attribs);
 				}
 				if ((highlightMatches & TAG_ELEMENT_MATCHES) == TAG_ELEMENT_MATCHES
-					&& (cdata = processText((TextImpl) node, gid, matches)) != null)
+					&& (cdata = processText((TextImpl) node, gid, match)) != null)
 					scanText(cdata);
 				else {
 					((TextImpl) node).getXMLString().toSAX(contentHandler);
@@ -409,7 +408,7 @@ public class NativeSerializer extends Serializer {
 							doc.getFileName());
 					}
 					if ((highlightMatches & TAG_ATTRIBUTE_MATCHES) > 0)
-						cdata = processAttribute(((AttrImpl) node).getValue(), gid, matches);
+						cdata = processAttribute(((AttrImpl) node).getValue(), gid, match);
 					else
 						cdata = ((AttrImpl) node).getValue();
 					attribs.addAttribute(
@@ -422,7 +421,7 @@ public class NativeSerializer extends Serializer {
 					contentHandler.endElement(EXIST_NS, "attribute", "exist:attribute");
 				} else {
 					if ((highlightMatches & TAG_ATTRIBUTE_MATCHES) == TAG_ATTRIBUTE_MATCHES)
-						cdata = processAttribute(((AttrImpl) node).getValue(), gid, matches);
+						cdata = processAttribute(((AttrImpl) node).getValue(), gid, match);
 					else
 						cdata = ((AttrImpl) node).getValue();
 					ch = new char[cdata.length()];
@@ -446,23 +445,24 @@ public class NativeSerializer extends Serializer {
 		}
 	}
 
-	private final String processAttribute(String data, long gid, Match matches[]) {
-		if (matches == null)
+	private final String processAttribute(String data, long gid, Match match) {
+		if (match == null)
 			return data;
-		// sort to get longest string first
-		Arrays.sort(matches);
 		// prepare a regular expression to mark match-terms
 		StringBuffer expr = null;
-		for (int i = 0; i < matches.length; i++)
-			if (matches[i].getNodeId() == gid) {
+		Match next = match;
+		while(next != null) {
+			if (next.getNodeId() == gid) {
 				if (expr == null) {
 					expr = new StringBuffer();
 					expr.append("s/\\b(");
 				}
 				if (expr.length() > 5)
 					expr.append('|');
-				expr.append(matches[i].getMatchingTerm());
+				expr.append(next.getMatchingTerm());
 			}
+			next = next.getNextMatch();
+		}
 		if (expr != null) {
 			expr.append(")\\b/||$1||/gi");
 			data = reutil.substitute(expr.toString(), data);
@@ -470,23 +470,24 @@ public class NativeSerializer extends Serializer {
 		return data;
 	}
 
-	private final String processText(TextImpl text, long gid, Match matches[]) {
-		if (matches == null)
+	private final String processText(TextImpl text, long gid, Match match) {
+		if (match == null)
 			return null;
-		// sort to get longest string first
-		Arrays.sort(matches);
 		// prepare a regular expression to mark match-terms
 		StringBuffer expr = null;
-		for (int i = 0; i < matches.length; i++)
-			if (matches[i].getNodeId() == gid) {
+		Match next = match;
+		while(next != null) {
+			if (next.getNodeId() == gid) {
 				if (expr == null) {
 					expr = new StringBuffer();
 					expr.append("s/\\b(");
 				}
 				if (expr.length() > 5)
 					expr.append('|');
-				expr.append(matches[i].getMatchingTerm());
+				expr.append(next.getMatchingTerm());
 			}
+			next = next.getNextMatch();
+		}
 		if (expr != null) {
 			expr.append(")\\b/||$1||/gi");
 			return reutil.substitute(expr.toString(), text.getData());

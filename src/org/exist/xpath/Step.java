@@ -25,8 +25,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 
 public abstract class Step extends AbstractExpression {
 
@@ -49,8 +50,8 @@ public abstract class Step extends AbstractExpression {
         predicates.add( expr );
     }
 
-    public abstract Value eval( StaticContext context, DocumentSet docs, NodeSet contextSet,
-    	NodeProxy contextNode ) throws XPathException;
+    public abstract Sequence eval( StaticContext context, DocumentSet docs, Sequence contextSequence,
+    	Item contextItem ) throws XPathException;
 
     public int getAxis() {
         return axis;
@@ -85,7 +86,7 @@ public abstract class Step extends AbstractExpression {
     }
 
     public int returnsType() {
-        return Constants.TYPE_NODELIST;
+        return Type.NODE;
     }
 
     public void setAxis( int axis ) {

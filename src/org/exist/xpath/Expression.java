@@ -15,11 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * $Id$
  */
 
 package org.exist.xpath;
 
 import org.exist.dom.*;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
 
 /**
  * This is the base interface implemented by all classes which are part
@@ -42,8 +46,8 @@ public interface Expression {
 	 * @param node a single node, taken from context. This defines the node,
 	 * the expression should work on.
 	 */
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
-		NodeProxy contextNode) throws XPathException;
+	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
+		Item contextItem) throws XPathException;
 
 	/**
 	 * Evaluate the expression represented by this object.
@@ -58,7 +62,7 @@ public interface Expression {
 	 * @param docs the set of documents all nodes belong to.
 	 * @param contextSet the node-set which defines the current context node-set.
 	 */
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet)
+	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence)
 		throws XPathException;
 	
 	/**

@@ -35,6 +35,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.dom.XMLUtil;
 import org.exist.storage.store.*;
 import org.exist.util.Configuration;
 import org.exist.util.FastQSort;
@@ -45,7 +46,6 @@ import org.exist.util.ReadOnlyException;
 import org.exist.util.StorageAddress;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
-import org.exist.util.XMLUtil;
 
 /**
  *  ElementIndex collects all element occurrences. It uses the name of the
@@ -176,7 +176,7 @@ public class NativeElementIndex extends ElementIndex {
 					delta = p.gid - last;
 					last = p.gid;
 					os.writeLong(delta);
-					StorageAddress.write(p.internalAddress, os);
+					StorageAddress.write(p.getInternalAddress(), os);
 				}
 				//data = os.toByteArray();
 				try {
@@ -285,7 +285,7 @@ public class NativeElementIndex extends ElementIndex {
 					delta = p.gid - last;
 					last = p.gid;
 					os.writeLong(delta);
-					StorageAddress.write(p.internalAddress, os);
+					StorageAddress.write(p.getInternalAddress(), os);
 				}
 				try {
 					lock.acquire(Lock.WRITE_LOCK);
@@ -348,7 +348,7 @@ public class NativeElementIndex extends ElementIndex {
 					cid = proxy.gid - prevId;
 					prevId = proxy.gid;
 					os.writeLong(cid);
-					StorageAddress.write(proxy.internalAddress, os);
+					StorageAddress.write(proxy.getInternalAddress(), os);
 				}
 				short sym = NativeBroker.getSymbols().getSymbol(qname.getLocalName());
 				short nsSym = NativeBroker.getSymbols().getNSSymbol(qname.getNamespaceURI());

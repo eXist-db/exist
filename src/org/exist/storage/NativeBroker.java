@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
- *  $Id:
+ *  $Id$
  */
 package org.exist.storage;
 
@@ -54,6 +54,7 @@ import org.exist.dom.ArraySet;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeIndexListener;
 import org.exist.dom.NodeListImpl;
@@ -61,6 +62,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.TextImpl;
+import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -82,7 +84,6 @@ import org.exist.util.ReadOnlyException;
 import org.exist.util.StorageAddress;
 import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
-import org.exist.util.XMLUtil;
 import org.exist.xpath.Constants;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
@@ -340,7 +341,8 @@ public class NativeBroker extends DBBroker {
 	 */
 	public NodeSet findElementsByTagName(DocumentSet docs, QName qname) {
 		final long start = System.currentTimeMillis();
-		final NodeSet result = new ArraySet(10000);
+		//final ArraySet result = new ArraySet(10000);
+		final ExtArrayNodeSet result = new ExtArrayNodeSet(250);
 		DocumentImpl doc;
 		int docId;
 		int len;
@@ -386,7 +388,9 @@ public class NativeBroker extends DBBroker {
 					for (int k = 0; k < len; k++) {
 						gid = gid + is.readLong();
 						result.add(
-							new NodeProxy(doc, gid, Node.ELEMENT_NODE, StorageAddress.read(is)));
+							new NodeProxy(doc, gid, Node.ELEMENT_NODE, StorageAddress.read(is)),
+							len
+						);
 					}
 				}
 			} catch (EOFException e) {
@@ -394,6 +398,7 @@ public class NativeBroker extends DBBroker {
 				LOG.warn("unexpected io error", e);
 			}
 		}
+		result.sort();
 		LOG.debug(
 			"found "
 				+ qname
@@ -948,25 +953,6 @@ public class NativeBroker extends DBBroker {
 	}
 
 	/**
-	 *  get all the nodes containing the search terms given by the array expr
-	 *  using the fulltext-index. Calls to this method are normally delegated to
-	 *  the associated instance of class TextSearchEngine.
-	 *
-	 *@param  docs      Description of the Parameter
-	 *@param  termList  Description of the Parameter
-	 *@param  type      Description of the Parameter
-	 *@return           NodeSet[] an array of node sets, one for each search
-	 *      term
-	 */
-	public NodeSet[] getNodesContaining(DocumentSet docs, String[] termList, int type) {
-		return textEngine.getNodesContaining(docs, termList, type);
-	}
-
-	public NodeSet[] getNodesContaining(DocumentSet docs, String[] termList) {
-		return getNodesContaining(docs, termList, MATCH_EXACT);
-	}
-
-	/**
 	 *  This method handles left or left-and-right truncated search terms. In
 	 *  these cases it is not possible to use the cdata-index, since it contains
 	 *  just the first 8 bytes of every cdata-string.
@@ -1126,11 +1112,11 @@ public class NativeBroker extends DBBroker {
 	}
 
 	public Node objectWith(final NodeProxy p) {
-		if (p.internalAddress < 0)
+		if (p.getInternalAddress() < 0)
 			return objectWith(p.doc, p.gid);
 		return (Node) new DOMTransaction(this, domDb) {
 			public Object start() {
-				Value val = domDb.get(p.internalAddress);
+				Value val = domDb.get(p.getInternalAddress());
 				if (val == null) {
 					LOG.debug("node " + p.gid + " not found!");
 					Thread.dumpStack();
@@ -1140,7 +1126,7 @@ public class NativeBroker extends DBBroker {
 					NodeImpl.deserialize(val.getData(), 0, val.getLength(), (DocumentImpl) p.doc);
 				node.setGID(p.gid);
 				node.setOwnerDocument(p.doc);
-				node.setInternalAddress(p.internalAddress);
+				node.setInternalAddress(p.getInternalAddress());
 				return node;
 			}
 		}

@@ -30,6 +30,11 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceIterator;
+import org.exist.xpath.value.Type;
+import org.exist.xpath.value.ValueSequence;
 
 public class PathExpr extends AbstractExpression {
 	
@@ -68,38 +73,37 @@ public class PathExpr extends AbstractExpression {
             ( (Step) e ).addPredicate( pred );
     }
 
-    public Value eval( StaticContext context, DocumentSet docs, 
-    	NodeSet contextSet, NodeProxy contextNode) throws XPathException {
+    public Sequence eval( StaticContext context, DocumentSet docs, 
+    	Sequence contextSequence, Item contextItem) throws XPathException {
         if ( docs.getLength() == 0 )
-            return new ValueNodeSet( new ArraySet( 1 ) );
-        Value r;
-        if ( contextSet != null )
-            r = new ValueNodeSet( contextSet );
-        else
-            r = new ValueNodeSet( new ArraySet( 1 ) );
+            return Sequence.EMPTY_SEQUENCE;
+        Sequence r;
+        if ( contextSequence != null )
+            r = contextSequence;
+        else {
+			r = Sequence.EMPTY_SEQUENCE;
+        }
+            
         
         NodeSet set;
-		NodeProxy current;
+		Item current;
         Expression expr;
-        ValueSet values;
+        ValueSequence values;
         for ( Iterator iter = steps.iterator(); iter.hasNext();  ) {
-            set = (NodeSet) r.getNodeList();
             expr = (Expression) iter.next();
-            if ( expr.returnsType() != Constants.TYPE_NODELIST ) {
-				if(set.getLength() == 0)
+            if ( expr.returnsType() != Type.NODE ) {
+				if(r.getLength() == 0)
                     r = expr.eval( context, docs, null, null );
                 else {
-                	values = new ValueSet();
-	                for ( Iterator iter2 = set.iterator(); iter2.hasNext();  ) {
-	                	current = (NodeProxy)iter2.next();
-	                    values.add( expr.eval( context, docs, set, current ) );
-	                }
+                	values = new ValueSequence();
+                	for ( SequenceIterator iterInner = r.iterate(); iterInner.hasNext(); ) {
+                		current = iterInner.nextItem();
+                		values.addAll( expr.eval(context, docs, r));
+                	}
 	                r = values;
             	}
-            	if(!(r instanceof ValueSet))
-            		r = new ValueSet(r);
             } else
-            	r = expr.eval( context, docs, set );
+            	r = expr.eval( context, docs, r );
         }
         return r;
     }
@@ -144,7 +148,7 @@ public class PathExpr extends AbstractExpression {
     public int returnsType() {
         if ( steps.get( 0 ) != null )
             return ( (Expression) steps.get( 0 ) ).returnsType();
-        return Constants.TYPE_NODELIST;
+        return Type.NODE;
     }
 
     public void setDocumentSet( DocumentSet docs ) {

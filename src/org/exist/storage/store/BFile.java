@@ -87,7 +87,7 @@ public class BFile extends BTree {
 
 	protected BFileHeader fileHeader;
 	protected int minFree;
-	protected ClockPageBuffer pages;
+	protected ClockPageBuffer pages = null;
 	protected Lock lock = null;
 	public int fixedKeyLen = -1;
 
@@ -121,7 +121,6 @@ public class BFile extends BTree {
 	public BFile(File file, int buffers) {
 		super(file, buffers);
 		fileHeader = (BFileHeader) getFileHeader();
-		//		pages = new LRUPageBuffer(buffers / 2);
 		pages = new ClockPageBuffer(buffers);
 		minFree = PAGE_MIN_FREE;
 		lock = new ReentrantReadWriteLock(file.getName());
@@ -138,7 +137,8 @@ public class BFile extends BTree {
 		super(file, btreeBuffers);
 		fileHeader = (BFileHeader) getFileHeader();
 		//		pages = new LRUPageBuffer(dataBuffers);
-		pages = new ClockPageBuffer(dataBuffers);
+		if(dataBuffers > 0)
+			pages = new ClockPageBuffer(dataBuffers);
 		minFree = PAGE_MIN_FREE;
 		lock = new ReentrantReadWriteLock(file.getName());
 	}
@@ -284,7 +284,8 @@ public class BFile extends BTree {
 	private SinglePage createDataPage() {
 		try {
 			SinglePage page = new SinglePage(compressPages);
-			pages.add(page);
+			if(pages != null)
+				pages.add(page);
 			return page;
 		} catch (IOException ioe) {
 			LOG.warn(ioe);
@@ -429,28 +430,33 @@ public class BFile extends BTree {
 	}
 
 	public boolean flush() throws DBException {
-		pages.flush();
+		if(pages != null)
+			pages.flush();
 		super.flush();
 		return true;
 	}
 
 	public BufferStats getDataBufferStats() {
-		return new BufferStats(
-			pages.getBuffers(),
-			pages.getUsedBuffers(),
-			pages.getHits(),
-			pages.getFails());
+		if(pages != null)
+			return new BufferStats(
+				pages.getBuffers(),
+				pages.getUsedBuffers(),
+				pages.getHits(),
+				pages.getFails());
+		return null;
 	}
 
 	public void printStatistics() {
 		super.printStatistics();
-		StringBuffer buf = new StringBuffer();
-		buf.append(getFile().getName()).append(" DATA ");
-		buf.append(pages.getBuffers()).append(" / ");
-		buf.append(pages.getUsedBuffers()).append(" / ");
-		buf.append(pages.getHits()).append(" / ");
-		buf.append(pages.getFails());
-		LOG.info(buf.toString());
+		if(pages != null) {
+			StringBuffer buf = new StringBuffer();
+			buf.append(getFile().getName()).append(" DATA ");
+			buf.append(pages.getBuffers()).append(" / ");
+			buf.append(pages.getUsedBuffers()).append(" / ");
+			buf.append(pages.getHits()).append(" / ");
+			buf.append(pages.getFails());
+			LOG.info(buf.toString());
+		}
 	}
 
 	public Value get(Value key) {
@@ -499,7 +505,8 @@ public class BFile extends BTree {
 	}
 
 	private InputStream getAsStream(DataPage page, long pointer) throws IOException {
-		pages.add(page);
+		if(pages != null)
+			pages.add(page);
 		final short tid = (short) StorageAddress.tidFromPointer(pointer);
 		final int offset = findValuePosition(page, tid);
 		final byte[] data = page.getData();
@@ -581,15 +588,18 @@ public class BFile extends BTree {
 					+ data.length);
 			return null;
 		}
-		pages.add(page);
+		if(pages != null)
+			pages.add(page);
 		final Value v = new Value(data, offset + 4, l);
 		v.setAddress(p);
 		return v;
 	}
 
 	private DataPage getDataPage(long pos) throws IOException {
-			DataPage wp;
-			if ((wp = pages.get(pos)) == null) {
+			DataPage wp = null;
+			if(pages != null)
+				wp = pages.get(pos);
+			if (wp == null) {
 				final Page page = getPage(pos);
 				final byte[] data = page.read();
 				if (page == null) {
@@ -770,7 +780,8 @@ public class BFile extends BTree {
 		if (page.getPageHeader().getStatus() == MULTI_PAGE) {
 			// overflow page: simply delete the whole page
 			page.delete();
-			pages.remove(page);
+			if(pages != null)
+				pages.remove(page);
 			return;
 		}
 		short tid = StorageAddress.tidFromPointer(p);
@@ -794,7 +805,8 @@ public class BFile extends BTree {
 		if (len == 0) {
 			final FreeSpace free = fileHeader.getFreeSpace(page.getPageNum());
 			fileHeader.removeFreeSpace(free);
-			pages.remove(page);
+			if(pages != null)
+				pages.remove(page);
 			page.delete();
 		} else {
 			// adjust free space data
@@ -809,7 +821,8 @@ public class BFile extends BTree {
 				}
 				fileHeader.addFreeSpace(free);
 			}
-			pages.add(page);
+			if(pages != null)
+				pages.add(page);
 		}
 	}
 
@@ -913,7 +926,8 @@ public class BFile extends BTree {
 		page.getPageHeader().incRecordCount();
 		saveFreeSpace(free, page);
 		page.setDirty(true);
-		pages.add(page, 2);
+		if(pages != null)
+			pages.add(page, 2);
 		// return pointer from pageNum and offset into page
 		return StorageAddress.createPointer((int) page.getPageNum(), (short) tid);
 	}
@@ -1636,7 +1650,8 @@ public class BFile extends BTree {
 						pos = StorageAddress.pageFromPointer(pointer);
 						tid = StorageAddress.tidFromPointer(pointer);
 						page = getDataPage(pos);
-						pages.add(page);
+						if(pages != null)
+							pages.add(page);
 						offset = findValuePosition(page, tid);
 						data = page.getData();
 						l = ByteConversion.byteToInt(data, offset);
@@ -1660,7 +1675,8 @@ public class BFile extends BTree {
 						pos = StorageAddress.pageFromPointer(pointer);
 						tid = StorageAddress.tidFromPointer(pointer);
 						page = getDataPage(pos);
-						pages.add(page);
+						if(pages != null)
+							pages.add(page);
 						offset = findValuePosition(page, tid);
 						data = page.getData();
 						l = ByteConversion.byteToInt(data, offset);
@@ -1697,7 +1713,8 @@ public class BFile extends BTree {
 			ph.setLastInChain(0L);
 			ph.setDataLength(0);
 			firstPage.setData(new byte[fileHeader.getWorkSize()]);
-			pages.add(firstPage, 3);
+			if(pages != null)
+				pages.add(firstPage, 3);
 		}
 
 		/**
@@ -1758,8 +1775,9 @@ public class BFile extends BTree {
 					nextPage.setData(new byte[fileHeader.getWorkSize()]);
 					page.getPageHeader().setNextInChain(nextPage.getPageNum());
 					page.setDirty(true);
-
-					pages.add(page);
+					
+					if(pages != null)
+						pages.add(page);
 					page = nextPage;
 					if (remaining < chunkSize)
 						chunkSize = remaining;
@@ -1776,7 +1794,8 @@ public class BFile extends BTree {
 			ph = firstPage.getPageHeader();
 			if (page != firstPage) {
 				// add link to last page
-				pages.add(page, 2);
+				if(pages != null)
+					pages.add(page, 2);
 				ph.setLastInChain(page.getPageNum());
 				ph.setDataLength(ph.getDataLength() + chunkLen);
 			} else
@@ -1787,7 +1806,9 @@ public class BFile extends BTree {
 				firstPage.getData(),
 				2);
 			firstPage.setDirty(true);
-			pages.add(firstPage, 3);
+			if(pages != null)
+				// keep the first page in cache
+				pages.add(firstPage, 7);
 		}
 
 		/**
@@ -1802,7 +1823,8 @@ public class BFile extends BTree {
 				next = page.getPageHeader().getNextInChain();
 				page.getPageHeader().setNextInChain(-1L);
 				page.setDirty(true);
-				pages.remove(page);
+				if(pages != null)
+					pages.remove(page);
 				page.delete();
 				if (next > 0)
 					page = (SinglePage) getDataPage(next);
@@ -1837,7 +1859,8 @@ public class BFile extends BTree {
 
 				if (next > 0) {
 					page = (SinglePage) getDataPage(next);
-					pages.add(page);
+					if(pages != null)
+						pages.add(page);
 				}
 			} while (next > 0);
 			data = os.toByteArray();
@@ -1934,7 +1957,8 @@ public class BFile extends BTree {
 					if (next > 0) {
 						// load next page in chain
 						nextPage = (SinglePage) getDataPage(next);
-						pages.add(page);
+						if(pages != null)
+							pages.add(page);
 						page = nextPage;
 					} else {
 						// add a new page to the chain
@@ -1942,19 +1966,22 @@ public class BFile extends BTree {
 						nextPage.setData(new byte[fileHeader.getWorkSize()]);
 						nextPage.getPageHeader().setNextInChain(0L);
 						page.getPageHeader().setNextInChain(nextPage.getPageNum());
-						pages.add(page);
+						if(pages != null)
+							pages.add(page);
 						page = nextPage;
 					}
 				} else {
 					page.getPageHeader().setNextInChain(0L);
 					if (page != firstPage) {
 						page.setDirty(true);
-						pages.add(page);
+						if(pages != null)
+							pages.add(page);
 						firstPage.getPageHeader().setLastInChain(page.getPageNum());
 					} else
 						firstPage.getPageHeader().setLastInChain(0L);
 					firstPage.setDirty(true);
-					pages.add(firstPage, 3);
+					if(pages != null)
+						pages.add(firstPage, 3);
 				}
 			}
 			if (next > 0) {
@@ -1965,7 +1992,8 @@ public class BFile extends BTree {
 					next = nextPage.getPageHeader().getNextInChain();
 					nextPage.setDirty(true);
 					nextPage.delete();
-					pages.remove(nextPage);
+					if(pages != null)
+						pages.remove(nextPage);
 				}
 			}
 		}
@@ -2010,7 +2038,8 @@ public class BFile extends BTree {
 			len_ = first.ph.getDataLength() - 6;
 			offset_ = 6;
 			pageLen_ = fileHeader.getWorkSize();
-			pages.add(first);
+			if(pages != null)
+				pages.add(first);
 			address_ = address;
 		}
 
@@ -2036,7 +2065,8 @@ public class BFile extends BTree {
 					nextPage_ = (SinglePage) getDataPage(next);
 					pageLen_ = nextPage_.ph.getDataLength();
 					offset_ = 0;
-					pages.add(nextPage_);
+					if(pages != null)
+						pages.add(nextPage_);
 				} catch (LockException e) {
 					throw new IOException(
 						"failed to acquire a read lock on " + getFile().getName());
@@ -2071,7 +2101,8 @@ public class BFile extends BTree {
 					nextPage_ = (SinglePage) getDataPage(next);
 					pageLen_ = nextPage_.ph.getDataLength();
 					offset_ = 0;
-					pages.add(nextPage_);
+					if(pages != null)
+						pages.add(nextPage_);
 				}
 				b[off + i] = nextPage_.data[offset_++];
 			}
@@ -2126,7 +2157,8 @@ public class BFile extends BTree {
 		}
 
 		public void add(DataPage page, int initialRefCount) {
-			page = page.getFirstPage();
+			if(page instanceof OverflowPage)
+				page = page.getFirstPage();
 			if (map.containsKey(page.getPageNum())) {
 				page.incRefCount();
 				return;

@@ -5,8 +5,9 @@ import java.io.IOException;
 import java.util.HashSet;
 
 import junit.framework.TestCase;
+
+import org.exist.dom.XMLUtil;
 import org.exist.util.XMLFilenameFilter;
-import org.exist.util.XMLUtil;
 import org.xmldb.api.*;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.*;

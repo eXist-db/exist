@@ -22,8 +22,10 @@
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.StringValue;
+import org.exist.xpath.value.Type;
 
 public class Literal extends AbstractExpression {
 
@@ -34,16 +36,16 @@ public class Literal extends AbstractExpression {
     }
 
     public int returnsType() {
-		return Constants.TYPE_STRING;
+		return Type.STRING;
 	}
 	
 	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) {
 		return in_docs;
 	}
 	
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-		NodeProxy contextNode) {
-		return new ValueString(literalValue);
+	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, 
+		Item contextItem) {
+		return new StringValue(literalValue);
 	}
 	
 	public String getLiteral() {

@@ -14,10 +14,9 @@ import org.exist.storage.DBBroker;
 import org.exist.util.OrderedLinkedList;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.StaticContext;
-import org.exist.xpath.Value;
-import org.exist.xpath.ValueSet;
 import org.exist.xpath.XPathException;
 import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
 import org.exist.xpath.value.SequenceIterator;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -150,6 +149,11 @@ public class SortedNodeSet extends NodeSet {
 		return p == null ? null : p.doc.getNode(p);
 	}
 
+	public Item itemAt(int pos) {
+		NodeProxy p = ((IteratorItem) list.get(pos)).proxy;
+		return p == null ? null : p;
+	}
+	
 	public Iterator iterator() {
 		return new SortedNodeSetIterator(list.iterator());
 	}
@@ -221,37 +225,17 @@ public class SortedNodeSet extends NodeSet {
 			this.proxy = proxy;
 			NodeSet contextSet = new SingleNodeSet(proxy);
 			try {
-				Value v = expr.eval(context, ndocs, contextSet, null);
+				Sequence seq = expr.eval(context, ndocs, contextSet, null);
 				StringBuffer buf = new StringBuffer();
 				OrderedLinkedList strings = new OrderedLinkedList();
-				switch (v.getType()) {
-					case Value.isNodeList :
-						NodeSet resultSet = (NodeSet) v.getNodeList();
-						if (resultSet.getLength() == 0)
-							return;
-						NodeProxy p;
-						for (Iterator i = resultSet.iterator(); i.hasNext();) {
-							p = (NodeProxy) i.next();
-							strings.add(broker.getNodeValue(p).toUpperCase());
-						}
-
-						for (Iterator j = strings.iterator(); j.hasNext();)
-							buf.append((String) j.next());
-						value = buf.toString();
-						break;
-					default :
-						ValueSet valueSet = v.getValueSet();
-						if (valueSet.getLength() == 0)
-							return;
-						for (int k = 0; k < valueSet.getLength(); k++) {
-							v = valueSet.get(k);
-							strings.add(v.getStringValueConcat().toUpperCase());
-						}
-						for (Iterator j = strings.iterator(); j.hasNext();)
-							buf.append((String) j.next());
-						value = buf.toString();
-						break;
+				Item item;
+				for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+					item = i.nextItem();
+					strings.add(item.getStringValue().toUpperCase());
 				}
+				for (Iterator j = strings.iterator(); j.hasNext();) 
+					buf.append((String) j.next());
+				value = buf.toString();
 			} catch (XPathException e) {
 				LOG.warn(e.getMessage(), e);
 			}
@@ -265,5 +249,11 @@ public class SortedNodeSet extends NodeSet {
 				return value == null ? 0 : -1;
 			return value.compareTo(o.value);
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.dom.NodeSet#add(org.exist.dom.NodeProxy)
+	 */
+	public void add(NodeProxy proxy) {
 	}
 }

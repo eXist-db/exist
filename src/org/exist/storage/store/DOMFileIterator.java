@@ -50,8 +50,8 @@ public final class DOMFileIterator implements Iterator {
 		public DOMFileIterator(Object lock, DOMFile db, NodeProxy node)
 			throws BTreeException, IOException {
 			this.db = db;
-			if (-1 < node.internalAddress)
-				startAddress = node.internalAddress;
+			if (-1 < node.getInternalAddress())
+				startAddress = node.getInternalAddress();
 			else
 				this.node = node;
 			lockKey = (lock == null ? this : lock);
@@ -269,8 +269,8 @@ public final class DOMFileIterator implements Iterator {
 		 *@param  node  The new to value
 		 */
 		public void setTo(NodeProxy node) {
-			if (-1 < node.internalAddress) {
-				startAddress = node.internalAddress;
+			if (-1 < node.getInternalAddress()) {
+				startAddress = node.getInternalAddress();
 			} else {
 				this.node = node;
 			}

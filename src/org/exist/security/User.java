@@ -7,6 +7,7 @@ import java.util.Iterator;
 import org.exist.util.DatabaseConfigurationException;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -90,11 +91,13 @@ public class User {
 				userId + " for user " + user);
 		}
 		this.home = node.getAttribute( HOME );
-        NodeList gl = node.getElementsByTagName( GROUP );
-        Element group;
+		NodeList gl = node.getChildNodes();
+        Node group;
         for ( int i = 0; i < gl.getLength(); i++ ) {
-            group = (Element) gl.item( i );
-            groups.add( group.getFirstChild().getNodeValue() );
+            group = gl.item( i );
+            if(group.getNodeType() == Node.ELEMENT_NODE &&
+            	group.getLocalName().equals(GROUP))
+            	groups.add( group.getFirstChild().getNodeValue() );
         }
     }
 

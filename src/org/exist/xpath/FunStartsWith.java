@@ -21,9 +21,10 @@
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.SingleNodeSet;
+import org.exist.xpath.value.BooleanValue;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 
 public class FunStartsWith extends Function {
 
@@ -32,21 +33,21 @@ public class FunStartsWith extends Function {
 	}
 	
 	public int returnsType() {
-		return Constants.TYPE_BOOL;
+		return Type.BOOLEAN;
 	}
 	
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-		NodeProxy contextNode) throws XPathException {
+	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, 
+		Item contextItem) throws XPathException {
 		if (getArgumentCount() != 2)
 			throw new XPathException("starts-with expects two arguments");
-		if(contextNode != null)
-			contextSet = new SingleNodeSet(contextNode);
+		if(contextItem != null)
+			contextSequence = contextItem.toSequence();
 
-		String s1 = getArgument(0).eval(context, docs, contextSet).getStringValue();
-		String s2 = getArgument(1).eval(context, docs, contextSet).getStringValue();
+		String s1 = getArgument(0).eval(context, docs, contextSequence).getStringValue();
+		String s2 = getArgument(1).eval(context, docs, contextSequence).getStringValue();
 		if(s1.startsWith(s2))
-			return new ValueBoolean(true);
+			return new BooleanValue(true);
 		else
-			return new ValueBoolean(false);
+			return new BooleanValue(false);
 	}
 }

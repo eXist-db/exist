@@ -19,6 +19,7 @@
     import org.exist.security.PermissionDeniedException;
     import org.exist.security.User;
 	import org.exist.xpath.*;
+	import org.exist.xpath.value.Type;
 
 public interface XPathParser2TokenTypes {
 	int EOF = 1;

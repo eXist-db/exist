@@ -19,6 +19,7 @@
     import org.exist.security.PermissionDeniedException;
     import org.exist.security.User;
 	import org.exist.xpath.*;
+	import org.exist.xpath.value.Type;
 
 import java.io.InputStream;
 import antlr.TokenStreamException;

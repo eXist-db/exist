@@ -216,7 +216,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			treeLevelStartPoints[i + 1] =
 				(treeLevelStartPoints[i] - treeLevelStartPoints[i - 1]) * treeLevelOrder[i]
 					+ treeLevelStartPoints[i];
-//			System.out.println(treeLevelStartPoints[i + 1] + "; k = " + treeLevelOrder[i]);
+			if(treeLevelStartPoints[i + 1] > 0x6fffffffffffffffL ||
+				treeLevelStartPoints[i + 1] < 0)
+				throw new EXistException("the document is too complex/irregularily structured " +
+					"to be mapped into eXist's numbering scheme");
 		}
 	}
 
@@ -226,11 +229,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 
 	public int compareTo(Object other) {
-		if (!(other instanceof DocumentImpl))
-			throw new RuntimeException("cannot compare nodes from different implementations");
-		if (((DocumentImpl) other).docId == docId)
+		final long otherId = ((DocumentImpl)other).docId;
+		if (otherId == docId)
 			return 0;
-		else if (docId < ((DocumentImpl) other).docId)
+		else if (docId < otherId)
 			return -1;
 		else
 			return 1;
@@ -298,7 +300,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		docs.add(this);
 		NodeSet context = new ArraySet(1);
 		NodeSet result = new ArraySet(100);
-		context.add(root);
+		context.add(new NodeProxy(root));
 		NodeSet temp = (NodeSet) broker.findElementsByTagName(docs, qname);
 		return temp.getDescendants(context, NodeSet.DESCENDANT);
 	}

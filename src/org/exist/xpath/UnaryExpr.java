@@ -23,9 +23,10 @@
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.SingleNodeSet;
+import org.exist.xpath.value.DecimalValue;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 
 public class UnaryExpr extends PathExpr {
 
@@ -37,22 +38,24 @@ public class UnaryExpr extends PathExpr {
 	}
 
 	public int returnsType() {
-		return Constants.TYPE_NUM;
+		return Type.DECIMAL;
 	}
 	
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy node) throws XPathException {
-		if(node != null)
-			contextSet = new SingleNodeSet(node);
+	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, Item contextItem) 
+	throws XPathException {
+		if(contextItem != null)
+			contextSequence = contextItem.toSequence();
 		if(getLength() == 0)
 			throw new XPathException("unary expression requires an operand");
-		double value = getExpression(0).eval(context, docs, contextSet).getNumericValue();
+		DecimalValue value = (DecimalValue)
+			getExpression(0).eval(context, docs, contextSequence).convertTo(Type.DECIMAL);
 		switch(mode) {
 			case Constants.MINUS :
-				value = -value;
+				value.setValue(-value.getDouble());
 				break;
 			case Constants.PLUS :
-				value = +value;
+				value.setValue(+value.getDouble());
 		}
-		return new ValueNumber(value);
+		return value;
 	}
 }

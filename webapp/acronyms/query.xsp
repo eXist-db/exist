@@ -71,6 +71,7 @@
     					<entries>
 	                        <xmldb:collection uri="xmldb:exist:///db" user="guest" password="guest">
 	                        	<xmldb:execute>
+	                        		<xmldb:namespace prefix="">http://www.xml-acronym-demystifier.org</xmldb:namespace>
 	                        		<xmldb:xpath>query</xmldb:xpath>
 									<xmldb:results position="1" count="1000">
 	                        				<xmldb:get-xml as="xml"/>

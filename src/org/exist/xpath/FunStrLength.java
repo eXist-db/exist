@@ -21,9 +21,10 @@
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.SingleNodeSet;
+import org.exist.xpath.value.IntegerValue;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 
 /**
  * xpath-library function: string-length(string?)
@@ -36,23 +37,14 @@ public class FunStrLength extends Function {
 	}
 
 	public int returnsType() {
-		return Constants.TYPE_NUM;
+		return Type.INTEGER;
 	}
 
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
-		NodeProxy contextNode) throws XPathException {
-		if(contextNode != null)
-			contextSet = new SingleNodeSet(contextNode);
-		Value v = getArgument(0).eval(context, docs, contextSet);
-		String strval;
-		if(getArgument(0).returnsType() == Constants.TYPE_NODELIST) {
-			NodeSet nodes = (NodeSet)v.getNodeList();
-			if(nodes.getLength() == 0)
-				strval = "";
-			else
-				strval = nodes.get(0).getNodeValue();
-		} else
-			strval = v.getStringValue();
-		return new ValueNumber(strval.length());
+	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
+		Item contextItem) throws XPathException {
+		if(contextItem != null)
+			contextSequence = contextItem.toSequence();
+		String strval = getArgument(0).eval(context, docs, contextSequence).getStringValue();
+		return new IntegerValue(strval.length());
 	}
 }

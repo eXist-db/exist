@@ -26,9 +26,10 @@ package org.exist.xpath;
 import java.util.StringTokenizer;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.SingleNodeSet;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.StringValue;
+import org.exist.xpath.value.Type;
 
 /**
  * xpath-library function: string(object)
@@ -41,18 +42,18 @@ public class FunNormalizeString extends Function {
 	}
 
 	public int returnsType() {
-		return Constants.TYPE_STRING;
+		return Type.STRING;
 	}
 		
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-		NodeProxy contextNode) throws XPathException {
-		if(contextNode != null)
-			contextSet = new SingleNodeSet(contextNode);
+	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, 
+		Item contextItem) throws XPathException {
+		if(contextItem != null)
+			contextSequence = contextItem.toSequence();
 		String value;
 		if(getArgumentCount() == 0)
-			value = contextSet.getLength() > 0 ? contextSet.get(0).getNodeValue() : "";
+			value = contextSequence.getLength() > 0 ? contextSequence.getStringValue() : "";
 		else
-			value = getArgument(0).eval(context, docs, contextSet).getStringValue();
+			value = getArgument(0).eval(context, docs, contextSequence).getStringValue();
 		StringBuffer result = new StringBuffer();
 		if(value.length() > 0) {
 			StringTokenizer tok = new StringTokenizer(value);
@@ -61,6 +62,6 @@ public class FunNormalizeString extends Function {
 				if(tok.hasMoreTokens()) result.append(' ');
 			}
 		}
-		return new ValueString(result.toString());
+		return new StringValue(result.toString());
 	}
 }

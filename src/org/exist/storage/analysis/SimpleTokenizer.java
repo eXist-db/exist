@@ -357,7 +357,7 @@ public class SimpleTokenizer implements Tokenizer {
 			);
 		}
 		SimpleTokenizer tokenizer = new SimpleTokenizer();
-		tokenizer.setText(t2);
+		tokenizer.setText(t3);
 		TextToken token = tokenizer.nextToken(true);
 		while(token != null && token.getType() != TextToken.EOF) {
 			System.out.println(token.getText());

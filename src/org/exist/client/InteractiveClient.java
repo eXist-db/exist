@@ -57,6 +57,7 @@ import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
 import org.apache.avalon.excalibur.cli.CLUtil;
 import org.apache.oro.io.GlobFilenameFilter;
+import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
 import org.exist.security.User;
 import org.exist.util.CollectionScanner;
@@ -65,7 +66,6 @@ import org.exist.util.Occurrences;
 import org.exist.util.ProgressBar;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.XMLFilenameFilter;
-import org.exist.util.XMLUtil;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.UserManagementService;
@@ -1290,18 +1290,22 @@ public class InteractiveClient {
 		for (int i = 0; i < files.length; i++) {
 			if (files[i].canRead()) {
 				if (files[i].isDirectory()) {
-					findRecursive(current, files[i], path, upload, totalSize);
-					return true;
+					totalSize = findRecursive(current, files[i], path, upload, totalSize);
+				} else {
+					upload.reset();
+					upload.setCurrentDir(files[i].getParentFile().getAbsolutePath());
+					upload.setCurrent(files[i].getName());
+					upload.setCurrentSize(files[i].length());
+					try {
+						document = (XMLResource) current.createResource(files[i].getName(), "XMLResource");
+						document.setContent(files[i]);
+						current.storeResource(document);
+						totalSize += files[i].length();
+						upload.setStoredSize(totalSize);
+					} catch(XMLDBException e) {
+						upload.showMessage("could not parse file " + files[i].getAbsolutePath() + ": " + e.getMessage());
+					}
 				}
-				upload.reset();
-				upload.setCurrentDir(files[i].getParentFile().getAbsolutePath());
-				upload.setCurrent(files[i].getName());
-				upload.setCurrentSize(files[i].length());
-				document = (XMLResource) current.createResource(files[i].getName(), "XMLResource");
-				document.setContent(files[i]);
-				current.storeResource(document);
-				totalSize += files[i].length();
-				upload.setStoredSize(totalSize);
 			}
 		}
 		upload.setVisible(false);
@@ -1364,7 +1368,7 @@ public class InteractiveClient {
 					upload.setStoredSize(totalSize);
 				}
 			} catch (XMLDBException e) {
-				upload.showMessage("could not parse file " + temp[i].getAbsolutePath());
+				upload.showMessage("could not parse file " + temp[i].getAbsolutePath() + ": " + e.getMessage());
 			}
 		}
 		return totalSize;

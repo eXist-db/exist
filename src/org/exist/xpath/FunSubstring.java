@@ -24,9 +24,11 @@
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.SingleNodeSet;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.NumericValue;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.StringValue;
+import org.exist.xpath.value.Type;
 
 /**
  * xpath-library function: string(object)
@@ -39,11 +41,11 @@ public class FunSubstring extends Function {
 	}
 
 	public int returnsType() {
-		return Constants.TYPE_STRING;
+		return Type.STRING;
 	}
 		
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-		NodeProxy contextNode) throws XPathException {
+	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, 
+		Item contextItem) throws XPathException {
 		if(getArgumentCount() < 2)
 			throw new XPathException("substring requires at least two arguments");
 		Expression arg0 = getArgument(0);
@@ -52,19 +54,18 @@ public class FunSubstring extends Function {
 		if(getArgumentCount() > 2)
 			arg2 = getArgument(2);
 
-		if(contextNode != null) {
-			contextSet = new SingleNodeSet(contextNode);
-		}
-		int start = (int)arg1.eval(context, docs, contextSet).getNumericValue();
+		if(contextItem != null)
+			contextSequence = contextItem.toSequence();
+		int start = ((NumericValue)arg1.eval(context, docs, contextSequence).convertTo(Type.INTEGER)).getInt();
 		int length = 1;
 		if(arg2 != null)
-			length = (int)arg2.eval(context, docs, contextSet, contextNode).getNumericValue();
+			length = ((NumericValue)arg2.eval(context, docs, contextSequence).convertTo(Type.INTEGER)).getInt();
 		if(start <= 0 || length < 0)
 			throw new IllegalArgumentException("Illegal start or length argument");
-		Value nodes = arg0.eval(context, docs, contextSet);
+		Sequence nodes = arg0.eval(context, docs, contextSequence);
 		String result = nodes.getStringValue();
 		if(start < 0 || --start + length >= result.length())
-			return new ValueString("");
-		return new ValueString((length > 0) ? result.substring(start, start + length) : result.substring(start));
+			return new StringValue("");
+		return new StringValue((length > 0) ? result.substring(start, start + length) : result.substring(start));
 	}
 }

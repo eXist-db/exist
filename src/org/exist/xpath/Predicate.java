@@ -24,12 +24,18 @@ package org.exist.xpath;
 import java.util.Iterator;
 
 import org.exist.dom.ArraySet;
+import org.exist.dom.ContextItem;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.SingleNodeSet;
-import org.exist.util.LongLinkedList;
+import org.exist.xpath.value.BooleanValue;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.NumericValue;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.SequenceIterator;
+import org.exist.xpath.value.Type;
 
 /**
  *  Handles predicate expressions.
@@ -42,125 +48,136 @@ public class Predicate extends PathExpr {
 		super();
 	}
 
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy contextNode) throws XPathException {
+	public Sequence eval(
+		StaticContext context,
+		DocumentSet docs,
+		Sequence contextSequence,
+		Item contextItem)
+		throws XPathException {
 		//long start = System.currentTimeMillis();
-		ArraySet result = new ArraySet(100);
-		Expression first = getExpression(0);
-		if (first == null)
-			return new ValueNodeSet(contextSet);
-		if(contextNode != null) 
-			contextSet = new SingleNodeSet(contextNode);
-		switch (first.returnsType()) {
-			case Constants.TYPE_NODELIST :
-				{
-					setInPredicate(true);
-					NodeSet nodes = (NodeSet) super.eval(context, docs, contextSet, null).getNodeList();
-					NodeProxy current, parent;
-					LongLinkedList contextNodes;
-					LongLinkedList.ListItem next;
-					for(Iterator i = nodes.iterator(); i.hasNext(); ) {
-						current = (NodeProxy)i.next();
-						contextNodes = current.getContext();
-						if(contextNodes == null) {
-							throw new XPathException("Internal evaluation error: context node is missing!");
-						}
-						for(Iterator j = contextNodes.iterator(); j.hasNext(); ) {
-							next = (LongLinkedList.ListItem)j.next();
-							if((parent = contextSet.get(current.doc, next.l)) != null) {
-								parent.addMatches(current.matches);
-								if(!result.contains(parent))
-									result.add(parent);
-							}
-						}
-					}
-					break;
+		Expression inner = getExpression(0);
+		if (inner == null)
+			return Sequence.EMPTY_SEQUENCE;
+		if (contextItem != null)
+			contextSequence = contextItem.toSequence();
+		int type = inner.returnsType();
+		if (Type.subTypeOf(type, Type.NODE)) {
+			setInPredicate(true);
+			ExtArrayNodeSet result = new ExtArrayNodeSet();
+			NodeSet nodes =
+				(NodeSet) super.eval(context, docs, contextSequence, null);
+			NodeProxy current, parent;
+			NodeSet contextSet = (NodeSet) contextSequence;
+			ContextItem contextNode;
+			NodeProxy next;
+			DocumentImpl lastDoc = null;
+			int count = 0, sizeHint = -1;
+			for (Iterator i = nodes.iterator(); i.hasNext(); count++) {
+				current = (NodeProxy) i.next();
+				if(lastDoc == null || current.doc != lastDoc) {
+					lastDoc = current.doc;
+					sizeHint = nodes.getSizeHint(lastDoc);
 				}
-			case Constants.TYPE_BOOL :
-			case Constants.TYPE_STRING :
-				{
-					//string has no special meaning
+				contextNode = current.getContext();
+				if (contextNode == null) {
+					throw new XPathException("Internal evaluation error: context node is missing!");
+				}
+				while (contextNode != null) {
+					next = contextNode.getNode();
+					next.addMatches(current.match);
+					if (!result.contains(next))
+						result.add(next, sizeHint);
+					contextNode = contextNode.getNextItem();
+				}
+			}
+			return result;
+		} else if (
+			Type.subTypeOf(type, Type.BOOLEAN)
+				|| Type.subTypeOf(type, Type.STRING)) {
+			//string has no special meaning
+			ArraySet result = new ArraySet(contextSequence.getLength());
+			Item item;
+			Sequence v;
+			for (SequenceIterator i = contextSequence.iterate();
+				i.hasNext();
+				) {
+				item = i.nextItem();
+				v = inner.eval(context, docs, contextSequence, item);
+				if (((BooleanValue) v.convertTo(Type.BOOLEAN)).getValue())
+					result.add(item);
+			}
+			return result;
+		} else if (Type.subTypeOf(type, Type.NUMBER)) {
+			NodeProxy p;
+			NodeProxy n;
+			NodeSet set;
+			int level;
+			int count;
+			int pos;
+			long pid;
+			long last_pid = 0;
+			long f_gid;
+			long e_gid;
+			DocumentImpl doc;
+			DocumentImpl last_doc = null;
+			NodeSet contextSet = (NodeSet) contextSequence;
+			NodeSet result = new ArraySet(contextSequence.getLength());
+			// evaluate predicate expression for each context node
+			for (Iterator i = contextSet.iterator(); i.hasNext();) {
+				p = (NodeProxy) i.next();
+				pos =
+					((NumericValue) inner
+						.eval(context, docs, contextSet, p)
+						.convertTo(Type.NUMBER))
+						.getInt();
+				doc = (DocumentImpl) p.getDoc();
+				level = doc.getTreeLevel(p.getGID());
+				pid =
+					(p.getGID() - doc.getLevelStartPoint(level))
+						/ doc.getTreeLevelOrder(level)
+						+ doc.getLevelStartPoint(level - 1);
+				if (pid == last_pid
+					&& last_doc != null
+					&& doc.getDocId() == last_doc.getDocId())
+					continue;
+				last_pid = pid;
+				last_doc = doc;
+				f_gid =
+					(pid - doc.getLevelStartPoint(level - 1))
+						* doc.getTreeLevelOrder(level)
+						+ doc.getLevelStartPoint(level);
+				e_gid = f_gid + doc.getTreeLevelOrder(level);
 
-					NodeProxy p;
-					NodeSet set;
-					DocumentSet dset;
-					Value v;
-					for (Iterator i = contextSet.iterator(); i.hasNext();) {
-						p = (NodeProxy) i.next();
-						set = new ArraySet(1);
-						set.add(p);
-						dset = new DocumentSet();
-						dset.add(p.doc);
-						v = first.eval(context, dset, set, p);
-						if (v.getBooleanValue())
-							result.add(p);
-					}
-					break;
-				}
-			case Constants.TYPE_NUM :
-				{
-					NodeProxy p;
-					NodeProxy n;
-					NodeSet set;
-					int level;
-					int count;
-					double pos;
-					long pid;
-					long last_pid = 0;
-					long f_gid;
-					long e_gid;
-					DocumentImpl doc;
-					DocumentImpl last_doc = null;
-					// evaluate predicate expression for each context node
-					for (Iterator i = contextSet.iterator(); i.hasNext();) {
-						p = (NodeProxy) i.next();
-						pos = first.eval(context, docs, contextSet, p).getNumericValue();
-						doc = (DocumentImpl) p.getDoc();
-						level = doc.getTreeLevel(p.getGID());
-						pid =
-							(p.getGID() - doc.getLevelStartPoint(level))
-								/ doc.getTreeLevelOrder(level)
-								+ doc.getLevelStartPoint(level - 1);
-						if (pid == last_pid
-							&& last_doc != null
-							&& doc.getDocId() == last_doc.getDocId())
-							continue;
-						last_pid = pid;
-						last_doc = doc;
-						f_gid =
-							(pid - doc.getLevelStartPoint(level - 1))
-								* doc.getTreeLevelOrder(level)
-								+ doc.getLevelStartPoint(level);
-						e_gid = f_gid + doc.getTreeLevelOrder(level);
-
-						count = 1;
-						set = contextSet.getRange(doc, f_gid, e_gid);
-						for (Iterator j = set.iterator(); j.hasNext(); count++) {
-							n = (NodeProxy) j.next();
-							if (count == pos) {
-								result.add(n);
-								break;
-							}
-						}
+				count = 1;
+				set = contextSet.getRange(doc, f_gid, e_gid);
+				for (Iterator j = set.iterator(); j.hasNext(); count++) {
+					n = (NodeProxy) j.next();
+					if (count == pos) {
+						result.add(n);
+						break;
 					}
 				}
+			}
+			return result;
 		}
-//		LOG.debug(
-//			"predicate expression found "
-//				+ result.getLength()
-//				+ " in "
-//				+ (System.currentTimeMillis() - start)
-//				+ "ms.");
-		return new ValueNodeSet(result);
+		return Sequence.EMPTY_SEQUENCE;
+		//		LOG.debug(
+		//			"predicate expression found "
+		//				+ result.getLength()
+		//				+ " in "
+		//				+ (System.currentTimeMillis() - start)
+		//				+ "ms.");
 	}
 
-	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException {
+	public DocumentSet preselect(DocumentSet in_docs, StaticContext context)
+		throws XPathException {
 		DocumentSet docs = in_docs;
 		for (Iterator iter = steps.iterator(); iter.hasNext();)
 			docs = ((Expression) iter.next()).preselect(docs, context);
 		return docs;
 	}
 
-	public Value evalBody(StaticContext context, DocumentSet docs, NodeSet contextSet, 
+	/*public Value evalBody(StaticContext context, DocumentSet docs, NodeSet contextSet, 
 		NodeProxy contextNode) throws XPathException {
 		if (docs.getLength() == 0)
 			return new ValueNodeSet(NodeSet.EMPTY_SET);
@@ -186,5 +203,5 @@ public class Predicate extends PathExpr {
 			r = expr.eval(context, docs, set, contextNode);
 		}
 		return r;
-	}
+	}*/
 }

@@ -15,14 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- * 
+ *
  * $Id$
  */
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
 
 public class OpOr extends BinaryOp {
 
@@ -39,18 +40,19 @@ public class OpOr extends BinaryOp {
 		return out_docs;
 	}
 
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, NodeProxy contextNode) throws XPathException {
+	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence, 
+		Item contextItem) throws XPathException {
 		if (getLength() == 0)
-			return new ValueNodeSet(contextSet);
+			return Sequence.EMPTY_SEQUENCE;
 		LOG.debug("processing " + getExpression(0).pprint());
-		NodeSet rr, rl = (NodeSet) getExpression(0).eval(context, docs, contextSet, null).getNodeList();
-		rl = rl.getContextNodes(contextSet, inPredicate);
+		NodeSet rr, rl = (NodeSet) getExpression(0).eval(context, docs, contextSequence, null);
+		rl = rl.getContextNodes((NodeSet)contextSequence, inPredicate);
 		for (int i = 1; i < getLength(); i++) {
 			LOG.debug("processing " + getExpression(i).pprint());
-			rr = (NodeSet) getExpression(i).eval(context, docs, contextSet, null).getNodeList();
-			rl = rl.union(rr.getContextNodes(contextSet, inPredicate));
+			rr = (NodeSet) getExpression(i).eval(context, docs, contextSequence, null);
+			rl = rl.union(rr.getContextNodes((NodeSet)contextSequence, inPredicate));
 		}
-		return new ValueNodeSet(rl);
+		return rl;
 	}
 
 	public String pprint() {

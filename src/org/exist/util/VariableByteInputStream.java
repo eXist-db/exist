@@ -35,10 +35,10 @@ import java.io.UnsupportedEncodingException;
 public class VariableByteInputStream {
 
 	private InputStream is_ = null;
-	
+
 	public VariableByteInputStream() {
 	}
-	
+
 	/**
 	 *  Constructor for the VariableByteInputStream object
 	 *
@@ -51,7 +51,7 @@ public class VariableByteInputStream {
 	public VariableByteInputStream(byte[] data, int offset, int length) {
 		is_ = new ByteArrayInputStream(data, offset, length);
 	}
-	
+
 	public VariableByteInputStream(InputStream stream) {
 		this.is_ = stream;
 	}
@@ -59,34 +59,41 @@ public class VariableByteInputStream {
 	public void setInputStream(InputStream stream) {
 		is_ = stream;
 	}
-	
+
 	public void read(byte[] data, int offset, int len) throws IOException {
 		is_.read(data, offset, len);
 	}
-	
+
 	public byte readByte() throws IOException {
 		return (byte) is_.read();
 	}
 
 	public short readShort() throws IOException, EOFException {
-		try {
-			return (short) VariableByteCoding.decode(is_);
-		} catch (ArrayIndexOutOfBoundsException e) {
-			throw new EOFException();
+		byte b = (byte) is_.read();
+		short i = (short) (b & 0177);
+		int next;
+		for (int shift = 7;(b & 0200) != 0; shift += 7) {
+			next = is_.read();
+			if (next < 0)
+				throw new EOFException();
+			b = (byte) next;
+			i |= (b & 0177L) << shift;
 		}
+		return i;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@return    Description of the Return Value
-	 */
 	public int readInt() throws EOFException, IOException {
-		try {
-			return (int) VariableByteCoding.decode(is_);
-		} catch (ArrayIndexOutOfBoundsException e) {
-			throw new EOFException();
+		byte b = (byte) is_.read();
+		int i = b & 0177;
+		int next;
+		for (int shift = 7;(b & 0200) != 0; shift += 7) {
+			next = is_.read();
+			if (next < 0)
+				throw new EOFException();
+			b = (byte) next;
+			i |= (b & 0177L) << shift;
 		}
+		return i;
 	}
 
 	/**
@@ -95,17 +102,30 @@ public class VariableByteInputStream {
 	 *@return    Description of the Return Value
 	 */
 	public long readLong() throws EOFException, IOException {
-		try {
-			return VariableByteCoding.decode(is_);
-		} catch (ArrayIndexOutOfBoundsException e) {
-			throw new EOFException();
+		byte b = (byte) is_.read();
+		long i = b & 0177;
+		int next;
+		for (int shift = 7;(b & 0200) != 0; shift += 7) {
+			next = is_.read();
+			if (next < 0)
+				throw new EOFException();
+			b = (byte) next;
+			i |= (b & 0177L) << shift;
 		}
+		return i;
 	}
 
 	public long readFixedLong() throws IOException {
-		return VariableByteCoding.decodeFixed(is_);
+		return ((((long) is_.read()) & 0xffL) << 56)
+			| ((((long) is_.read()) & 0xffL) << 48)
+			| ((((long) is_.read()) & 0xffL) << 40)
+			| ((((long) is_.read()) & 0xffL) << 32)
+			| ((((long) is_.read()) & 0xffL) << 24)
+			| ((((long) is_.read()) & 0xffL) << 16)
+			| ((((long) is_.read()) & 0xffL) << 8)
+			| (((long) is_.read()) & 0xffL);
 	}
-	
+
 	public String readUTF() throws IOException, EOFException {
 		int len = readInt();
 		byte data[] = new byte[len];
@@ -119,26 +139,34 @@ public class VariableByteInputStream {
 		return s;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  count  Description of the Parameter
-	 */
 	public void skip(int count) throws IOException {
-		for (int i = 0; i < count && is_.available() > 0; i++)
-			//VariableByteCoding.decode(is);
-			VariableByteCoding.skipNext(is_);
+		for (int i = 0; i < count && is_.available() > 0; i++) {
+			while ((is_.read() & 0200) > 0);
+		}
 	}
 
 	public int available() throws IOException {
 		return is_.available();
 	}
-	
+
 	public void copyTo(VariableByteOutputStream os) throws IOException {
-		VariableByteCoding.copyTo(is_, os.buf);
+		int more;
+		do {
+			more = is_.read();
+			os.buf.append((byte) more);
+			more &= 0200;
+		} while (more > 0);
 	}
-	
-	public void copyTo(VariableByteOutputStream os, int count) throws IOException {
-		VariableByteCoding.copyTo(is_, os.buf, count);
+
+	public void copyTo(VariableByteOutputStream os, int count)
+		throws IOException {
+		int more;
+		for (int i = 0; i < count; i++) {
+			do {
+				more = is_.read();
+				os.buf.append((byte) more);
+				more &= 0200;
+			} while (more > 0);
+		}
 	}
 }

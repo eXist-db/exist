@@ -62,8 +62,9 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.StaticContext;
-import org.exist.xpath.Value;
-import org.exist.xpath.ValueSet;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
@@ -596,7 +597,7 @@ public class HttpServerConnection extends Thread {
      *
      * @return Description of the Return Value
      */
-    protected String printAll( NodeList resultSet, int howmany, int start,
+    protected String printAll( NodeSet resultSet, int howmany, int start,
                                long queryTime, boolean indent, String stylesheet
                                ) {
         if ( resultSet.getLength(  ) == 0 )
@@ -753,7 +754,7 @@ public class HttpServerConnection extends Thread {
      *
      * @return Description of the Return Value
      */
-    protected String printValues( ValueSet resultSet, int howmany, int start ) {
+    protected String printValues( Sequence resultSet, int howmany, int start ) {
         if ( resultSet.getLength(  ) == 0 )
             return formatErrorMsg( "nothing found", OK );
 
@@ -763,7 +764,7 @@ public class HttpServerConnection extends Thread {
         if ( ( start < 1 ) || ( start > resultSet.getLength(  ) ) )
             return formatErrorMsg( "start parameter out of range", WRONG_REQUEST );
 
-        Value value;
+        Item item;
         StringBuffer buf = new StringBuffer(  );
         buf.append( "<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" " );
         buf.append( "hitCount=\"" );
@@ -773,26 +774,26 @@ public class HttpServerConnection extends Thread {
         String elem;
 
         for ( int i = start - 1; i < ( ( start + howmany ) - 1 ); i++ ) {
-            value = resultSet.get( i );
+            item = resultSet.itemAt( i );
 
-            switch ( value.getType(  ) ) {
-            case Value.isNumber:
+            switch ( item.getType() ) {
+            case Type.NUMBER:
                 elem = "exist:number";
 
                 break;
 
-            case Value.isString:
+            case Type.STRING:
                 elem = "exist:string";
 
                 break;
 
-            case Value.isBoolean:
+            case Type.BOOLEAN:
                 elem = "exist:boolean";
 
                 break;
 
             default:
-                HttpServer.LOG.debug( "unknown type: " + value.getType(  ) );
+                HttpServer.LOG.debug( "unknown type: " + item.getType(  ) );
 
                 continue;
             }
@@ -800,7 +801,7 @@ public class HttpServerConnection extends Thread {
             buf.append( "<" );
             buf.append( elem );
             buf.append( " value=\"" );
-            buf.append( value.getStringValue(  ) );
+            buf.append( item.getStringValue(  ) );
             buf.append( "\"/>" );
         }
 
@@ -1173,30 +1174,26 @@ public class HttpServerConnection extends Thread {
             if ( ndocs.getLength(  ) == 0 )
                 result = formatErrorMsg( "nothing found", OK );
             else {
-                Value resultValue = expr.eval( context, ndocs, null, null );
+                Sequence resultSequence = expr.eval( context, ndocs, null, null );
                 long queryTime = System.currentTimeMillis(  ) - startTime;
                 HttpServer.LOG.debug( "evaluation took " + queryTime + "ms." );
                 startTime = System.currentTimeMillis(  );
 
-                switch ( resultValue.getType(  ) ) {
-                case Value.isNodeList:
-
-                    NodeList resultSet = resultValue.getNodeList(  );
+                switch ( resultSequence.getItemType(  ) ) {
+                case Type.NODE:
 
                     if ( printSummary )
-                        result = printSummary( resultSet, queryTime );
+                        result = printSummary( (NodeSet)resultSequence, queryTime );
                     else
                         result =
-                            printAll( resultSet, howmany, start, queryTime,
+                            printAll( (NodeSet)resultSequence, howmany, start, queryTime,
                                       indent, stylesheet
                                       );
 
                     break;
 
                 default:
-
-                    ValueSet valueSet = resultValue.getValueSet(  );
-                    result = printValues( valueSet, howmany, start );
+                    result = printValues( resultSequence, howmany, start );
 
                     break;
                 }

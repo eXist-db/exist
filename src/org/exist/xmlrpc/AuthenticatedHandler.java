@@ -9,10 +9,10 @@ import org.apache.xmlrpc.AuthenticatedXmlRpcHandler;
 import org.apache.xmlrpc.XmlRpc;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.EXistException;
+import org.exist.dom.XMLUtil;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
-import org.exist.util.XMLUtil;
 
 /**
  *  Description of the Class

@@ -21,9 +21,9 @@
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.SingleNodeSet;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 
 /**
  * xpath-library function: number(object)
@@ -36,15 +36,15 @@ public class FunNumber extends Function {
 	}
 	
 	public int returnsType() {
-		return Constants.TYPE_NUM;
+		return Type.DECIMAL;
 	}
 	
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
-		NodeProxy contextNode) throws XPathException {
-		if(contextNode != null)
-			contextSet = new SingleNodeSet(contextNode);
-		double result = getArgument(0).eval(context, docs, contextSet).getNumericValue();
-		return new ValueNumber(result);
+	public Sequence eval(StaticContext context, DocumentSet docs, Sequence contextSequence,
+		Item contextItem) throws XPathException {
+		if(contextItem != null)
+			contextSequence = contextItem.toSequence();
+		Sequence arg = getArgument(0).eval(context, docs, contextSequence);
+		return arg.convertTo(Type.DECIMAL);
 	}
 
 	public String pprint() {

@@ -22,13 +22,13 @@
  */
 package org.exist.xpath;
 
-import java.util.Iterator;
-
-import org.exist.dom.ArraySet;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.TextSearchResult;
 import org.exist.storage.DBBroker;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.Type;
 
 /**
  *  xpath-library function: match-keywords(XPATH, arg1, arg2 ...)
@@ -39,95 +39,62 @@ import org.exist.storage.DBBroker;
 public class FunKeywordMatchAll extends Function {
 
 	protected String terms[] = null;
-	protected NodeSet[][] hits = null;
+	protected NodeSet[] hits = null;
+	protected boolean delayExecution = true;
 
-	/**  Constructor for the FunKeywordMatchAll object */
 	public FunKeywordMatchAll() {
 		super("match-all");
 	}
 
-	/**
-	 *  Constructor for the FunKeywordMatchAll object
-	 *
-	 *@param  name  Description of the Parameter
-	 */
 	public FunKeywordMatchAll(String name) {
 		super(name);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  docs     Description of the Parameter
-	 *@param  context  Description of the Parameter
-	 *@param  node     Description of the Parameter
-	 *@return          Description of the Return Value
-	 */
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet,
-		NodeProxy contextNode) throws XPathException {
+	public Sequence eval(
+		StaticContext context,
+		DocumentSet docs,
+		Sequence contextSequence,
+		Item contextItem)
+		throws XPathException {
 		Expression path = getArgument(0);
-		NodeSet nodes = (NodeSet) path.eval(context, docs, contextSet, contextNode).getNodeList();
+		NodeSet nodes =
+			(NodeSet) path.eval(context, docs, contextSequence, contextItem);
 
 		if (hits == null)
-			processQuery(context, docs);
-		long pid;
-		NodeProxy current;
-		NodeProxy parent;
-		NodeSet temp = null;
-		long start = System.currentTimeMillis();
-		for (int j = 0; j < hits.length; j++) {
-			temp = new ArraySet(100);
-			for (int k = 0; k < hits[j].length; k++) {
-				if (hits[j][k] == null)
+			processQuery(context, docs, nodes);
+		NodeSet result = null;
+		if (!delayExecution) {
+			for (int j = 0; j < hits.length; j++) {
+				if (hits[j] == null)
 					continue;
-				((ArraySet) hits[j][k]).sort();
-				for (Iterator i = hits[j][k].iterator(); i.hasNext();) {
-					current = (NodeProxy) i.next();
-					parent = nodes.parentWithChild(current, false, true);
-					if (parent != null) {
-						if (temp.contains(parent)) {
-							parent = temp.get(parent);
-							parent.addMatches(current.matches);
-						} else {
-							parent.addMatches(current.matches);
-							temp.add(parent);
-						}
-					}
-				}
+				hits[j] = ((TextSearchResult) hits[j]).process(nodes);
 			}
-			hits[j][0] = (temp == null) ? new ArraySet(1) : temp;
-		}
-		NodeSet t0 = null;
-		NodeSet t1;
-		for (int j = 0; j < hits.length; j++) {
-			t1 = hits[j][0];
-			if (t0 == null)
-				t0 = t1;
-			else
-				t0 =
-					(getOperatorType() == Constants.FULLTEXT_AND)
-						? t0.intersection(t1)
-						: t0.union(t1);
-		}
-		if (t0 == null)
-			t0 = new ArraySet(1);
-		return new ValueNodeSet(t0);
+
+			NodeSet t1;
+			for (int j = 0; j < hits.length; j++) {
+				t1 = hits[j];
+				if (t1 == null)
+					break;
+				if (result == null)
+					result = t1;
+				else
+					result =
+						(getOperatorType() == Constants.FULLTEXT_AND)
+							? result.intersection(t1)
+							: result.union(t1);
+			}
+		} else
+			result = hits[0];
+		if (result == null)
+			return Sequence.EMPTY_SEQUENCE;
+
+		return result;
 	}
 
-	/**
-	 *  Gets the operatorType attribute of the FunKeywordMatchAll object
-	 *
-	 *@return    The operatorType value
-	 */
 	protected int getOperatorType() {
 		return Constants.FULLTEXT_AND;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@return    Description of the Return Value
-	 */
 	public String pprint() {
 		StringBuffer buf = new StringBuffer();
 		buf.append(name);
@@ -140,30 +107,18 @@ public class FunKeywordMatchAll extends Function {
 		return buf.toString();
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  in_docs  Description of the Parameter
-	 *@return          Description of the Return Value
-	 */
-	public DocumentSet preselect(DocumentSet in_docs, StaticContext context) throws XPathException {
-		int j = 0;
-		processQuery(context, in_docs);
-		NodeProxy p;
-		DocumentSet ndocs = new DocumentSet();
-		Iterator i;
-		for (j = 0; j < hits.length; j++)
-			for (int k = 0; k < hits[j].length; k++) {
-				if (hits[j][k] == null)
-					break;
-				for (i = hits[j][k].iterator(); i.hasNext();) {
-					p = (NodeProxy) i.next();
-					if (!ndocs.contains(p.doc.getDocId()))
-						ndocs.add(p.doc);
-				}
+	public DocumentSet preselect(DocumentSet in_docs, StaticContext context)
+		throws XPathException {
+		if (!delayExecution) {
+			processQuery(context, in_docs, null);
+			DocumentSet ndocs = new DocumentSet();
+			for (int i = 0; i < hits.length; i++) {
+				((TextSearchResult) hits[i]).getDocuments(ndocs);
 			}
-
-		return ndocs;
+			return ndocs;
+		} else {
+			return in_docs;
+		}
 	}
 
 	private Literal getLiteral(Expression expr) {
@@ -174,23 +129,38 @@ public class FunKeywordMatchAll extends Function {
 		return null;
 	}
 
-	protected void processQuery(StaticContext context, DocumentSet in_docs) throws XPathException {
+	protected void processQuery(
+		StaticContext context,
+		DocumentSet in_docs,
+		NodeSet contextSet)
+		throws XPathException {
 		terms = new String[getArgumentCount() - 1];
 		for (int i = 1; i < getArgumentCount(); i++)
 			terms[i - 1] = getLiteral(getArgument(i)).literalValue;
-			if (terms == null)
-				throw new XPathException("no search terms");
-			//in_docs = path.preselect(in_docs);
-			hits = new NodeSet[terms.length][];
-
-			for (int j = 0; j < terms.length; j++) {
-				String t[] = { terms[j] };
-				hits[j] =
-					context.getBroker().getNodesContaining(
+		if (terms == null)
+			throw new XPathException("no search terms");
+		hits = new NodeSet[terms.length];
+		if (context != null) {
+			for (int k = 0; k < terms.length; k++) {
+				hits[0] =
+					context.getBroker().getTextEngine().getNodesContaining(
 						in_docs,
-						t,
+						contextSet,
+						terms[k],
+						DBBroker.MATCH_REGEXP);
+				if (getOperatorType() == Constants.FULLTEXT_AND)
+					contextSet = hits[0];
+			}
+		} else {
+			for (int k = 0; k < terms.length; k++) {
+				hits[k] =
+					context.getBroker().getTextEngine().getNodesContaining(
+						in_docs,
+						null,
+						terms[k],
 						DBBroker.MATCH_REGEXP);
 			}
+		}
 	}
 
 	/**
@@ -199,6 +169,6 @@ public class FunKeywordMatchAll extends Function {
 	 *@return    Description of the Return Value
 	 */
 	public int returnsType() {
-		return Constants.TYPE_NODELIST;
+		return Type.NODE;
 	}
 }

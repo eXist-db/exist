@@ -131,7 +131,6 @@ public class LocalCollection extends Observable implements CollectionImpl {
             broker = brokerPool.get(user);
             if ( name == null )
                 name = "/db";
-            LOG.debug("loading collection " + name);
             collection =
                 broker.getCollection( name );
             if ( collection == null )
@@ -400,7 +399,6 @@ public class LocalCollection extends Observable implements CollectionImpl {
         DBBroker broker = null;
         try {
             broker = brokerPool.get(user);
-            broker.setUser(user);
             collection.removeDocument(broker, name);
         } catch ( EXistException e ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
@@ -460,7 +458,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			needsSync = true;
 		}
 		
-    public void storeResourceO( Resource resource ) throws XMLDBException {
+    public void storeResourceX( Resource resource ) throws XMLDBException {
         if( !(resource instanceof LocalXMLResource) )
             throw new XMLDBException( ErrorCodes.NOT_IMPLEMENTED );
 		final LocalXMLResource res = (LocalXMLResource)resource;
@@ -504,7 +502,8 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	 * on to the indexer to be notified about the indexing progress.
 	 */
 	public void addObserver(Observer o) {
-		observers.add(o);
+		if(!observers.contains(o))
+			observers.add(o);
 	}
 }
 

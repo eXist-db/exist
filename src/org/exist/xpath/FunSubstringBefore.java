@@ -24,9 +24,10 @@
 package org.exist.xpath;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.SingleNodeSet;
+import org.exist.xpath.value.Item;
+import org.exist.xpath.value.Sequence;
+import org.exist.xpath.value.StringValue;
+import org.exist.xpath.value.Type;
 
 /**
  * xpath-library function: string(object)
@@ -39,23 +40,32 @@ public class FunSubstringBefore extends Function {
 	}
 
 	public int returnsType() {
-		return Constants.TYPE_STRING;
+		return Type.STRING;
 	}
-		
-	public Value eval(StaticContext context, DocumentSet docs, NodeSet contextSet, 
-		NodeProxy contextNode) throws XPathException {
-		if(getArgumentCount() < 2)
-			throw new XPathException("substring-before requires two arguments");
-		if(contextNode != null)
-			contextSet = new SingleNodeSet(contextNode);
+
+	public Sequence eval(
+		StaticContext context,
+		DocumentSet docs,
+		Sequence contextSequence,
+		Item contextItem)
+		throws XPathException {
+		if (getArgumentCount() < 2)
+			throw new XPathException("substring-after requires two arguments");
 		Expression arg0 = getArgument(0);
 		Expression arg1 = getArgument(1);
-		String value = arg0.eval(context, docs, contextSet).getStringValue();
-		String cmp = arg1.eval(context, docs, contextSet).getStringValue();
+
+		if (contextItem != null)
+			contextSequence = contextItem.toSequence();
+		String value =
+			arg0.eval(context, docs, contextSequence).getStringValue();
+		String cmp = arg1.eval(context, docs, contextSequence).getStringValue();
+
+		Sequence nodes = arg0.eval(context, docs, contextSequence);
+		String result = nodes.getStringValue();
 		int p = value.indexOf(cmp);
-		if(p > -1)
-			return new ValueString(value.substring(0, p));
+		if (p > -1)
+			return new StringValue(value.substring(0, p));
 		else
-			return new ValueString("");
+			return new StringValue("");
 	}
 }

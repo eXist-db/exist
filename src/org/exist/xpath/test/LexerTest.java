@@ -24,8 +24,8 @@ import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.xpath.PathExpr;
 import org.exist.xpath.StaticContext;
-import org.exist.xpath.Value;
 import org.exist.xpath.XPathException;
+import org.exist.xpath.value.Sequence;
 import org.xml.sax.SAXException;
 
 import antlr.RecognitionException;
@@ -115,10 +115,10 @@ public class LexerTest extends TestCase {
 
 			// execute the query
 			DocumentSet docs = expr.preselect(context);
-			Value resultValue = expr.eval(context, docs, null, null);
+			Sequence result = expr.eval(context, docs, null, null);
 
 			// check results
-			NodeSet resultSet = (NodeSet) resultValue.getNodeList();
+			NodeSet resultSet = (NodeSet) result;
 			System.out.println("----------------------------------");
 			System.out.println("found: " + resultSet.getLength());
 		} catch (RecognitionException e) {

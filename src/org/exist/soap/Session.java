@@ -8,14 +8,14 @@ package org.exist.soap;
 import java.io.Serializable;
 
 import org.exist.security.User;
-import org.exist.xpath.Value;
+import org.exist.xpath.value.Sequence;
 
 public class Session implements Serializable {
 
 	public static class QueryResult {
-		Value result;
+		Sequence result;
 
-		public QueryResult(Value value) {
+		public QueryResult(Sequence value) {
 			this.result = value;
 		}
 	}
@@ -35,7 +35,7 @@ public class Session implements Serializable {
 		return user_;
 	}
 	
-	public void addQueryResult(Value value) {
+	public void addQueryResult(Sequence value) {
 		lastQuery_ = new QueryResult(value);
 	}
 	
