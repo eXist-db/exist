@@ -26,7 +26,6 @@ import org.exist.dom.NamedNodeMapImpl;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.QName;
 import org.exist.dom.QNameable;
-import org.exist.storage.DBBroker;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
@@ -34,8 +33,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.TypeInfo;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
 
 public class ElementImpl extends NodeImpl implements Element, QNameable {
 
@@ -173,7 +170,6 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 		while (ns < document.nextNamespace
 				&& document.namespaceParent[ns] == nodeNumber) {
 			NamespaceNode node = new NamespaceNode(document, ns);
-			System.out.println("Adding namespace: " + getNodeName() + ": " + node.getNodeName());
 			map.add(node);
 			++ns;
 		}
