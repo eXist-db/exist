@@ -28,7 +28,7 @@ print "connecting ...\n";
 my $session = $service->connect("guest", "guest");
 
 print "executing query ...\n";
-my $result = $service->xquery($session, $query);
+my $result = $service->query($session, $query);
 
 my $hits = $result->{'hits'};
 my $queryTime = $result->{'queryTime'};
