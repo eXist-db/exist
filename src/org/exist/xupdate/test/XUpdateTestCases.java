@@ -25,8 +25,11 @@ public class XUpdateTestCases extends TestCase {
     public void insertbefore() throws Exception { test.doTest("insertbefore", "address.xml"); };
     public void remove() throws Exception { test.doTest("remove", "address.xml"); };    
     public void update() throws Exception { test.doTest("update", "address.xml"); };
+    public void appendAttribute() throws Exception { test.doTest("append_attribute", "address.xml"); };
+    public void appendChild() throws Exception { test.doTest("append_child", "address.xml"); };
     
     public void insertafter_big() throws Exception { test.doTest("insertafter_big", "address_big.xml"); };
+    
     // <add a new TestCase Method here>     
     
     // TestCases End

@@ -36,7 +36,6 @@ import javax.xml.transform.OutputKeys;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.Indexer;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
