@@ -16,7 +16,7 @@
         <xsp:include>java.io.File</xsp:include>
         <xsp:include>java.util.StringTokenizer</xsp:include>
         <xsp:include>org.apache.cocoon.servlet.multipart.Part</xsp:include>
-        <xsp:include>org.exist.util.XMLUtil</xsp:include>
+		<xsp:include>org.exist.dom.XMLUtil</xsp:include>
     </xsp:structure>
 
     <xsp:logic>
