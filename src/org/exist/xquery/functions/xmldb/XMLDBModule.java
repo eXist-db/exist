@@ -57,6 +57,7 @@ public class XMLDBModule extends AbstractInternalModule {
         new FunctionDef(XMLDBCreated.createdSignatures[1], XMLDBCreated.class),
 		new FunctionDef(XMLDBPermissions.signatures[0], XMLDBPermissions.class),
 		new FunctionDef(XMLDBPermissions.signatures[1], XMLDBPermissions.class),
+		new FunctionDef(XMLDBSize.signature, XMLDBSize.class),
 		new FunctionDef(XMLDBGetUserOrGroup.getGroupSignatures[0], XMLDBGetUserOrGroup.class),
 		new FunctionDef(XMLDBGetUserOrGroup.getGroupSignatures[1], XMLDBGetUserOrGroup.class),
 		new FunctionDef(XMLDBGetUserOrGroup.getOwnerSignatures[0], XMLDBGetUserOrGroup.class),

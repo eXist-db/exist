@@ -95,7 +95,7 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
                 date = ((CollectionImpl)collection).getCreationTime();
 			} else {
                 Resource resource = collection.getResource(args[1].getStringValue());
-                if("last-modified".equals(getSignature().getName().getLocalName()))
+                if(isCalledAs("last-modified"))
                 	date = ((EXistResource)resource).getLastModificationTime();
                 else
                 	date = ((EXistResource)resource).getCreationTime();
