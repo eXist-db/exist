@@ -1059,6 +1059,17 @@ public class RpcConnection extends Thread {
 		}
 	}
 
+	public boolean hasCollection(User user, String name) throws Exception {
+		DBBroker broker = null;
+		try {
+			broker = brokerPool.get(user);
+			return (broker.getCollection(name) != null);
+		} finally {
+			brokerPool.release(broker);
+		}
+	}
+	
+	
 	public boolean parse(User user, byte[] xml, String path, 
 			boolean replace) throws Exception {
 		DBBroker broker = null;

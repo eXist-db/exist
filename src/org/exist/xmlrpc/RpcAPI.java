@@ -157,6 +157,18 @@ public interface RpcAPI {
 	boolean hasDocument(User user, String name) throws EXistException, PermissionDeniedException;
 
 	/**
+	 *  Does the Collection identified by <code>name</code> exist in the
+	 *  repository?
+	 *
+	 *@param  name                           Description of the Parameter
+	 *@param  user                           Description of the Parameter
+	 *@return                                Description of the Return Value
+	 *@exception  EXistException             Description of the Exception
+	 *@exception  PermissionDeniedException  Description of the Exception
+	 */
+	boolean hasCollection(User user, String name) throws EXistException, PermissionDeniedException;
+
+	/**
 	 *  Get a list of all documents contained in the database.
 	 *
 	 *@param  user
