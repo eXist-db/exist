@@ -94,7 +94,10 @@ public class DocumentImpl extends NodeImpl implements Document {
 
 	public void addChars(int nodeNr, char[] ch, int start, int len) {
 		if (nextChar + len >= characters.length) {
-			char[] nc = new char[(characters.length * 3) / 2];
+			int newLen = (characters.length * 3) / 2;
+			if(newLen < nextChar + len)
+				newLen = nextChar + len;
+			char[] nc = new char[newLen];
 			System.arraycopy(characters, 0, nc, 0, characters.length);
 			characters = nc;
 		}

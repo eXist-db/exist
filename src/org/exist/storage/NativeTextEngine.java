@@ -770,10 +770,10 @@ public class NativeTextEngine extends TextSearchEngine {
 		}
 
 		public WordRef(short collectionId, String word) {
-			data = new byte[UTF8.encoded(word) + 2];
+			len = UTF8.encoded(word) + 2;
+			data = new byte[len];
 			ByteConversion.shortToByte(collectionId, data, 0);
 			UTF8.encode(word, data, 2);
-			len = data.length;
 		}
 		
 		/**

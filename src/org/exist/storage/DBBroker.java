@@ -163,6 +163,7 @@ public abstract class DBBroker extends Observable {
 	 *@return          Description of the Return Value
 	 */
 	public abstract NodeSet findElementsByTagName(
+		byte type,
 		DocumentSet docs,
 		QName qname);
 

@@ -42,7 +42,7 @@ import org.exist.util.VariableByteInputStream;
 import org.exist.util.VariableByteOutputStream;
 
 /**
- *  Description of the Class
+ *  Represents a persistent document object in the database.
  *
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
  *@created    21. Mai 2002
@@ -298,7 +298,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	protected NodeList findElementsByTagName(NodeImpl root, QName qname) {
 		DocumentSet docs = new DocumentSet();
 		docs.add(this);
-		NodeSet temp = (NodeSet) broker.findElementsByTagName(docs, qname);
+		NodeSet temp = (NodeSet) broker.findElementsByTagName(ElementValue.ELEMENT, docs, qname);
 		return temp.selectAncestorDescendant(new NodeProxy(root), NodeSet.DESCENDANT);
 	}
 
@@ -375,7 +375,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		DocumentSet docs = new DocumentSet();
 		docs.add(this);
 		QName qname = new QName(tagname, "", null);
-		return broker.findElementsByTagName(docs, qname);
+		return broker.findElementsByTagName(ElementValue.ELEMENT, docs, qname);
 	}
 
 	public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {

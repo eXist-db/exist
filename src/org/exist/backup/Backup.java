@@ -33,6 +33,7 @@ import javax.swing.JFrame;
 import javax.xml.transform.OutputKeys;
 
 import org.exist.security.Permission;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.UserManagementService;
 import org.xml.sax.SAXException;
@@ -91,6 +92,7 @@ public class Backup {
 		if (current == null)
 			return;
 		current.setProperty(OutputKeys.ENCODING, "UTF-8");
+		current.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
 
 		// get resources and permissions
 		String[] resources = current.listResources();

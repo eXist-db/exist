@@ -161,7 +161,7 @@ public class NativeBroker extends DBBroker {
 						new File(dataDir + pathSep + "elements.dbx"),
 						elementsBuffers >> 1,
 						elementsBuffers);
-				elementsDb.fixedKeyLen = 6;
+				//elementsDb.fixedKeyLen = 6;
 				if (!elementsDb.exists()) {
 					LOG.info("creating elements.dbx");
 					elementsDb.create();
@@ -287,7 +287,7 @@ public class NativeBroker extends DBBroker {
 		for (Iterator i = collections.iterator(); i.hasNext();) {
 			current = (Collection) i.next();
 			collectionId = current.getId();
-			ref = new ElementValue(collectionId);
+			ref = new ElementValue(ElementValue.ELEMENT, collectionId);
 			query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
 			try {
 				lock.acquire();
@@ -339,7 +339,7 @@ public class NativeBroker extends DBBroker {
 	 *@param  tagName  Description of the Parameter
 	 *@return          Description of the Return Value
 	 */
-	public NodeSet findElementsByTagName(DocumentSet docs, QName qname) {
+	public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname) {
 		final long start = System.currentTimeMillis();
 		//final ArraySet result = new ArraySet(10000);
 		final ExtArrayNodeSet result = new ExtArrayNodeSet(250);
@@ -358,9 +358,12 @@ public class NativeBroker extends DBBroker {
 		for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
 			collection = (Collection) i.next();
 			collectionId = collection.getId();
-			sym = NativeBroker.getSymbols().getSymbol(qname.getLocalName());
-			nsSym = NativeBroker.getSymbols().getNSSymbol(qname.getNamespaceURI());
-			ref = new ElementValue(collectionId, sym, nsSym);
+			if(type != ElementValue.ATTRIBUTE_ID) {
+				sym = NativeBroker.getSymbols().getSymbol(qname.getLocalName());
+				nsSym = NativeBroker.getSymbols().getNSSymbol(qname.getNamespaceURI());
+				ref = new ElementValue((byte)type, collectionId, sym, nsSym);
+			} else
+				ref = new ElementValue((byte)type, collectionId, qname.getLocalName());
 			try {
 				lock.acquire(Lock.READ_LOCK);
 				dis = elementsDb.getAsStream(ref);
@@ -458,9 +461,9 @@ public class NativeBroker extends DBBroker {
 	 *@return       The attributesByName value
 	 */
 	public NodeSet getAttributesByName(DocumentSet docs, QName qname) {
-		qname.setLocalName("@" + qname.getLocalName());
+		qname.setLocalName(qname.getLocalName());
 		LOG.debug("searching attrib " + qname.getLocalName());
-		NodeSet result = findElementsByTagName(docs, qname);
+		NodeSet result = findElementsByTagName(ElementValue.ATTRIBUTE, docs, qname);
 		LOG.debug("found " + result.getLength() + " matching attributes");
 		return result;
 	}
@@ -732,13 +735,16 @@ public class NativeBroker extends DBBroker {
 		switch (nodeType) {
 			case Node.ELEMENT_NODE :
 				// save element by calling ElementIndex
+				qname = node.getQName();
+				qname.setNameType(ElementValue.ELEMENT);
 				elementIndex.setDocument(doc);
-				elementIndex.addRow(node.getQName(), tempProxy);
+				elementIndex.addRow(qname, tempProxy);
 				break;
 			case Node.ATTRIBUTE_NODE :
 				elementIndex.setDocument(doc);
 				qname =
-					new QName("@" + node.getLocalName(), node.getNamespaceURI(), node.getPrefix());
+					new QName(node.getLocalName(), node.getNamespaceURI(), node.getPrefix());
+				qname.setNameType(ElementValue.ATTRIBUTE);
 				elementIndex.addRow(qname, tempProxy);
 				// check if attribute value should be fulltext-indexed
 				// by calling IndexPaths.match(path) 
@@ -747,7 +753,8 @@ public class NativeBroker extends DBBroker {
 				// if the attribute has type ID, store the ID-value
 				// to the element index as well
 				if (((AttrImpl) node).getType() == AttrImpl.ID) {
-					qname = new QName("&" + ((AttrImpl) node).getValue(), "", null);
+					qname = new QName(((AttrImpl) node).getValue(), "", null);
+					qname.setNameType(ElementValue.ATTRIBUTE_ID);
 					elementIndex.addRow(qname, tempProxy);
 				}
 				break;
@@ -879,18 +886,21 @@ public class NativeBroker extends DBBroker {
 			switch (nodeType) {
 				case Node.ELEMENT_NODE :
 					// save element by calling ElementIndex
+					qname = node.getQName();
+					qname.setNameType(ElementValue.ELEMENT);
 					tempProxy.setHasIndex(idx == null || idx.match(currentPath.toString()));
 					elementIndex.setDocument(doc);
-					elementIndex.addRow(node.getQName(), tempProxy);
+					elementIndex.addRow(qname, tempProxy);
 					break;
 				case Node.ATTRIBUTE_NODE :
 					tempProxy.setHasIndex(idx == null || idx.match(currentPath.toString()));
 					elementIndex.setDocument(doc);
 					qname =
 						new QName(
-							"@" + node.getLocalName(),
+							node.getLocalName(),
 							node.getNamespaceURI(),
 							node.getPrefix());
+					qname.setNameType(ElementValue.ATTRIBUTE);
 					elementIndex.addRow(qname, tempProxy);
 					// check if attribute value should be fulltext-indexed
 					// by calling IndexPaths.match(path) 
@@ -901,6 +911,7 @@ public class NativeBroker extends DBBroker {
 					// to the element index as well
 					if (((AttrImpl) node).getType() == AttrImpl.ID) {
 						qname = new QName("&" + ((AttrImpl) node).getValue(), "", null);
+						qname.setNameType(ElementValue.ATTRIBUTE_ID);
 						elementIndex.addRow(qname, tempProxy);
 					}
 					break;
@@ -1431,13 +1442,16 @@ public class NativeBroker extends DBBroker {
 		switch (nodeType) {
 			case Node.ELEMENT_NODE :
 				// save element by calling ElementIndex
+				qname = node.getQName();
+				qname.setNameType(ElementValue.ELEMENT);
 				elementIndex.setDocument(doc);
 				elementIndex.addRow(node.getQName(), tempProxy);
 				break;
 			case Node.ATTRIBUTE_NODE :
 				elementIndex.setDocument(doc);
 				qname =
-					new QName("@" + node.getLocalName(), node.getNamespaceURI(), node.getPrefix());
+					new QName(node.getLocalName(), node.getNamespaceURI(), node.getPrefix());
+				qname.setNameType(ElementValue.ATTRIBUTE);
 				elementIndex.addRow(qname, tempProxy);
 				// check if attribute value should be fulltext-indexed
 				// by calling IndexPaths.match(path) 
@@ -1447,7 +1461,8 @@ public class NativeBroker extends DBBroker {
 				// if the attribute has type ID, store the ID-value
 				// to the element index as well
 				if (((AttrImpl) node).getType() == AttrImpl.ID) {
-					qname = new QName("&" + ((AttrImpl) node).getValue(), "", null);
+					qname = new QName(((AttrImpl) node).getValue(), "", null);
+					qname.setNameType(ElementValue.ATTRIBUTE_ID);
 					elementIndex.addRow(qname, tempProxy);
 				}
 				break;
@@ -1709,7 +1724,8 @@ public class NativeBroker extends DBBroker {
 				tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
 				tempProxy.setHasIndex(idx == null || idx.match(currentPath));
 				qname =
-					new QName("@" + node.getLocalName(), node.getNamespaceURI(), node.getPrefix());
+					new QName(node.getLocalName(), node.getNamespaceURI(), node.getPrefix());
+				qname.setNameType(ElementValue.ATTRIBUTE);
 				elementIndex.setDocument(doc);
 				elementIndex.addRow(qname, tempProxy);
 				// check if attribute value should be fulltext-indexed
@@ -1720,8 +1736,9 @@ public class NativeBroker extends DBBroker {
 				// if the attribute has type ID, store the ID-value
 				// to the element index as well
 				if (((AttrImpl) node).getType() == AttrImpl.ID) {
-					qname = new QName("&" + ((AttrImpl) node).getValue(), "", null);
-					LOG.debug("found ID: " + qname.getLocalName());
+					qname = new QName(((AttrImpl) node).getValue(), "", null);
+					//LOG.debug("found ID: " + qname.getLocalName());
+					qname.setNameType(ElementValue.ATTRIBUTE_ID);
 					elementIndex.addRow(qname, tempProxy);
 				}
 				break;
@@ -1854,41 +1871,6 @@ public class NativeBroker extends DBBroker {
 
 	public boolean isReadOnly() {
 		return readOnly;
-	}
-
-	final static class ElementValue extends Value {
-
-		ElementValue(short collectionId) {
-			data = new byte[2];
-			ByteConversion.shortToByte(collectionId, data, 0);
-			len = 2;
-			pos = 0;
-		}
-
-		ElementValue(short collectionId, short symbol) {
-			len = 4;
-			data = new byte[len];
-			ByteConversion.shortToByte(collectionId, data, 0);
-			ByteConversion.shortToByte(symbol, data, 2);
-			pos = 0;
-		}
-
-		ElementValue(short collectionId, short symbol, short nsSymbol) {
-			len = 6;
-			data = new byte[len];
-			ByteConversion.shortToByte(collectionId, data, 0);
-			ByteConversion.shortToByte(symbol, data, 2);
-			ByteConversion.shortToByte(nsSymbol, data, 4);
-			pos = 0;
-		}
-
-		short getCollectionId() {
-			return ByteConversion.byteToShort(data, 0);
-		}
-
-		String getElementName() {
-			return new String(data, 2, len - 2);
-		}
 	}
 
 	public final static class NodeRef extends Value {

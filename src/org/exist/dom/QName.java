@@ -22,6 +22,8 @@
  */
 package org.exist.dom;
 
+import org.exist.storage.ElementValue;
+import org.exist.storage.NativeBroker;
 import org.exist.xpath.StaticContext;
 
 /**
@@ -38,7 +40,8 @@ public class QName implements Comparable {
 	private String localName_ = null;
 	private String namespaceURI_ = null;
 	private String prefix_ = null;
-
+	private byte nameType_ = ElementValue.ELEMENT;
+	
 	/**
 	 * Construct a QName. The prefix might be null for the default namespace or if no prefix 
 	 * has been defined for the QName. The namespace URI should be set to the empty 
@@ -87,6 +90,14 @@ public class QName implements Comparable {
 		prefix_ = prefix;
 	}
 
+	public void setNameType(byte type) {
+		nameType_ = type;
+	}
+	
+	public byte getNameType() {
+		return nameType_;
+	}
+	
 	public String toString() {
 		if (prefix_ != null && prefix_.length() > 0)
 			return prefix_ + ':' + localName_;

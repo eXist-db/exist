@@ -38,12 +38,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 
 /**
- * NodeImpl.java
- * 
- * @author Wolfgang Meier
- */
-/**
- *  The base class for all DOM objects.
+ *  The base class for all persistent DOM nodes in the database.
  *
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
  *@created    8. Juli 2002
