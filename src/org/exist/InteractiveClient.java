@@ -334,7 +334,6 @@ public class InteractiveClient {
 				properties.getProperty("uri") + path,
 				properties.getProperty("user"),
 				properties.getProperty("password"));
-		getResources();
 	}
 
 	/**
@@ -547,13 +546,14 @@ public class InteractiveClient {
 					if (args.length > 2)
 						count = Integer.parseInt(args[2]);
 
-					if (start < 1 || start > result.getSize()) {
+					final int s = (int)result.getSize();
+					if (start < 1 || start > s) {
 						System.err.println("start offset out of range");
 						return true;
 					}
 					--start;
-					if (start + count > result.getSize())
-						count = (int) result.getSize() - start;
+					if (start + count > s)
+						count = s - start;
 
 					nextInSet = start + count + 1;
 					for (int i = start; i < start + count; i++) {
@@ -1587,6 +1587,13 @@ public class InteractiveClient {
 		//	return;
 
 		// enter interactive mode
+		try {
+			getResources();
+		} catch (XMLDBException e1) {
+			System.out.println("XMLDBException while retrieving collection " +
+				"contents: " + e1.getMessage());
+			e1.getCause().printStackTrace();			
+		}
 		messageln("\ntype help or ? for help.");
 		String line;
 		boolean cont = true;
