@@ -24,24 +24,22 @@ package org.exist.xquery.functions.request;
 
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
+import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XPathUtil;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 /**
  * @author wolf
  */
-public class RequestParameter extends Function {
+public class RequestParameter extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -51,18 +49,19 @@ public class RequestParameter extends Function {
 				RequestModule.PREFIX),
 			new SequenceType[] {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
-			new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE));
+				new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)},
+			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
 
 	public RequestParameter(XQueryContext context) {
 		super(context, signature);
 	}
 
+	
 	/* (non-Javadoc)
-	 * @see org.exist.xpath.Function#eval(org.exist.dom.DocumentSet, org.exist.xpath.value.Sequence, org.exist.xpath.value.Item)
+	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem)
-		throws XPathException {
+	public Sequence eval(Sequence[] args, Sequence contextSequence)
+			throws XPathException {
 		RequestModule myModule =
 			(RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 
@@ -72,15 +71,13 @@ public class RequestParameter extends Function {
 			throw new XPathException("Variable $request is not bound to an Java object.");
 
 		// get parameters
-		String param = getArgument(0).eval(contextSequence, contextItem).getStringValue();
-		String defValue =
-			getArgument(1).eval(contextSequence, contextItem).getStringValue();
+		String param = args[0].getStringValue();
 
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof RequestWrapper) {
 			String[] values = ((RequestWrapper)value.getObject()).getParameterValues(param);
 			if (values == null || values.length == 0)
-				return new StringValue(defValue);
+				return args[1];
 			if (values.length == 1)
 				return XPathUtil.javaObjectToXPath(values[0]);
 			else

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-03 Wolfgang M. Meier
+ *  Copyright (C) 2001-04 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *
@@ -332,36 +332,15 @@ public class ElementImpl extends NodeImpl implements Element {
 							child.getPrefix()));
 				elem.setGID(gid);
 				elem.setOwnerDocument(ownerDocument);
-				// handle namespaces
-				//				ns = child.getNamespaceURI();
-				//				if (ns != null && ns.length() > 0) {
-				//					prefix = ownerDocument.broker.getNamespacePrefix(ns);
-				//					if (prefix == null) {
-				//						prefix = child.getPrefix() != null ? child.getPrefix() : '#' + ns;
-				//						ownerDocument.broker.registerNamespace(ns, prefix);
-				//					}
-				//					elem.setNodeName(prefix + ':' + child.getLocalName());
-				//					elem.addPrefix(prefix);
-				//				}
-				// add attributes to list of child nodes
 				final NodeListImpl ch = new NodeListImpl();
 				final NamedNodeMap attribs = child.getAttributes();
 				for (int i = 0; i < attribs.getLength(); i++) {
 					attr = (Attr) attribs.item(i);
-					// register namespace prefixes
-					//					ns = attr.getNamespaceURI();
-					//					if (ns != null && ns.length() > 0) {
-					//						prefix = ownerDocument.broker.getNamespacePrefix(ns);
-					//						if (prefix == null) {
-					//							prefix = attr.getPrefix() != null ? attr.getPrefix() : '#' + ns;
-					//							ownerDocument.broker.registerNamespace(ns, prefix);
-					//						}
-					//						elem.addPrefix(prefix);
-					//					}
 					ch.add(attr);
 				}
 				ch.addAll(child.getChildNodes());
 				elem.setChildCount(ch.getLength());
+				elem.setAttributes((short)(elem.getAttributesCount() + attribs.getLength()));
 				// insert the node
 				ownerDocument.broker.insertAfter(last, elem);
 				// index now?
@@ -403,13 +382,6 @@ public class ElementImpl extends NodeImpl implements Element {
 				final AttrImpl attrib = new AttrImpl(attrName, attr.getValue());
 				attrib.setGID(gid);
 				attrib.setOwnerDocument(ownerDocument);
-				// handle namespaces
-				//				ns = child.getNamespaceURI();
-				//				if (ns != null && ns.length() > 0) {
-				//					prefix = ownerDocument.broker.getNamespacePrefix(ns);
-				//					attrib.setNodeName(prefix + ':' + child.getLocalName());
-				//				}
-				// insert the node
 				ownerDocument.broker.insertAfter(last, attrib);
 				// index now?
 				if ((ownerDocument.reindex < 0

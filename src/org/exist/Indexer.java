@@ -401,14 +401,14 @@ public class Indexer
 			last = (ElementImpl) stack.peek();
 			if (charBuf != null) {
 				if(charBuf.isWhitespaceOnly()) {
-					if(charBuf.length() > 0 && last.getChildCount() > 0) {
-						text.setData(charBuf);
-						text.setOwnerDocument(document);
-						last.appendChildInternal(text);
-						if (!validate)
-							broker.store(text, currentPath);
-						text.clear();
-					}
+//					if(charBuf.length() > 0 && last.getChildCount() > 0) {
+//						text.setData(charBuf);
+//						text.setOwnerDocument(document);
+//						last.appendChildInternal(text);
+//						if (!validate)
+//							broker.store(text, currentPath);
+//						text.clear();
+//					}
 				} else if(charBuf.length() > 0) {
 					// mixed element content: don't normalize the text node, just check
 					// if there is any text at all
