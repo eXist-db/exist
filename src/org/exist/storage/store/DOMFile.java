@@ -1465,11 +1465,11 @@ public class DOMFile extends BTree implements Lockable {
                             // load the link page
                             pageNr = StorageAddress.pageFromPointer(forwardLink);
                             targetId = StorageAddress.tidFromPointer(forwardLink);
-                            LOG.debug("following link on " + StorageAddress.pageFromPointer(forwardLink) +
-                            		" to page "
-                                    + pageNr
-                                    + "; tid="
-                                    + targetId);
+//                            LOG.debug("following link on " + StorageAddress.pageFromPointer(forwardLink) +
+//                            		" to page "
+//                                    + pageNr
+//                                    + "; tid="
+//                                    + targetId);
                             continue outerLoop;
                         } else {
                             pos += 10;
@@ -1489,14 +1489,14 @@ public class DOMFile extends BTree implements Lockable {
                     LOG.debug("circular link to next page on " + pageNr);
                     return null;
                 }
-                LOG.debug(
-                		owner.toString()
-						+ ": tid "
-						+ targetId
-						+ " not found on "
-						+ page.page.getPageInfo()
-						+ ". Loading "
-						+ pageNr + "; contents: " + debugPageContents(page));
+//                LOG.debug(
+//                		owner.toString()
+//						+ ": tid "
+//						+ targetId
+//						+ " not found on "
+//						+ page.page.getPageInfo()
+//						+ ". Loading "
+//						+ pageNr + "; contents: " + debugPageContents(page));
             }
             return null;
         }
