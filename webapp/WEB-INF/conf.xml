@@ -127,7 +127,7 @@
 	</index>
 	
     <entity-resolver>
-		<catalog file="webapp/WEB-INF/catalog"/>
+		<catalog file="catalog"/>
     </entity-resolver>
   </indexer>
   
