@@ -40,6 +40,7 @@ import java.io.StreamTokenizer;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -2170,15 +2171,16 @@ public class InteractiveClient {
 		}
 	}
 
-	private static void writeOutputFile(String fileName, Object data)
+	private void writeOutputFile(String fileName, Object data)
 			throws Exception {
 		File file = new File(fileName);
+		FileOutputStream os = new FileOutputStream(file);
 		if (data instanceof byte[]) {
-			FileOutputStream os = new FileOutputStream(file);
 			os.write((byte[]) data);
 			os.close();
-		} else {
-			FileWriter writer = new FileWriter(file);
+} else {
+			OutputStreamWriter writer = new OutputStreamWriter(os, Charset
+					.forName(properties.getProperty("encoding")));
 			writer.write(data.toString());
 			writer.close();
 		}
