@@ -107,7 +107,7 @@ public class LocalResourceSet implements ResourceSet {
 		XMLSerializer handler = new XMLSerializer(writer, format);
 		DBBroker broker = null;
 		try {
-			broker = brokerPool.get();
+			broker = brokerPool.get(user);
 			// configure the serializer
 			Serializer serializer = broker.getSerializer();
 			serializer.setContentHandler(handler);

@@ -36,7 +36,7 @@
 				- min: minimum number of connections to keep alive.
 				- max: maximum number of connections allowed.
 		   -->
-		   <pool min="1" max="15" sync-period="300000"/>
+		   <pool min="1" max="30" sync-period="300000"/>
    		</db-connection>
   
 		<!--db-connection database="native" files="/var/xml/data" 

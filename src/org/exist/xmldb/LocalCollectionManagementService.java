@@ -48,8 +48,7 @@ public class LocalCollectionManagementService extends CollectionManager {
         collName = parent.getPath() + '/' + collName;
         DBBroker broker = null;
         try {
-            broker = brokerPool.get();
-            broker.setUser(user);
+            broker = brokerPool.get(user);
             org.exist.collections.Collection coll =
                 broker.getOrCreateCollection( collName );
             broker.saveCollection( coll );

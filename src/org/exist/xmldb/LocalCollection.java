@@ -128,12 +128,13 @@ public class LocalCollection extends Observable implements CollectionImpl {
     private void load(String name) throws XMLDBException {
 		DBBroker broker = null;
         try {
-            broker = brokerPool.get();
+            broker = brokerPool.get(user);
             if ( name == null )
                 name = "/db";
-
+            LOG.debug("loading collection " + name);
             collection =
                 broker.getCollection( name );
+            LOG.debug("resources = " + collection.getDocumentCount());
             if ( collection == null )
                 throw new XMLDBException( ErrorCodes.NO_SUCH_RESOURCE,
                     "collection not found" );
@@ -164,7 +165,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
     	if(needsSync) {
 			DBBroker broker = null;
 			try {
-				broker = brokerPool.get();
+				broker = brokerPool.get(user);
 				broker.sync();
 			} catch (EXistException e) {
 				throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
@@ -250,7 +251,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
         if( parent == null && collection != null ) {
         	DBBroker broker = null;
         	try {
-        		broker = brokerPool.get();
+        		broker = brokerPool.get(user);
         		org.exist.collections.Collection c = collection.getParent(broker);
 				parent = new LocalCollection( user, brokerPool, null, c );
         	} catch (EXistException e) {
@@ -399,7 +400,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
                 "resource " + name + " not found" );
         DBBroker broker = null;
         try {
-            broker = brokerPool.get();
+            broker = brokerPool.get(user);
             broker.setUser(user);
             collection.removeDocument(broker, name);
         } catch ( EXistException e ) {
@@ -434,8 +435,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			LOG.debug( "storing document " + name );
 			DBBroker broker = null;
 			try {
-				broker = brokerPool.get();
-				broker.setUser(user);
+				broker = brokerPool.get(user);
 				//broker.flush();
 				Observer observer;
 				for(Iterator i = observers.iterator(); i.hasNext(); ) {

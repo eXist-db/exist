@@ -123,7 +123,7 @@ public class LocalXMLResource implements XMLResourceImpl {
 		} else {
 			DBBroker broker = null;
 			try {
-				broker = brokerPool.get();
+				broker = brokerPool.get(user);
 				if (document == null)
 					getDocument(broker);
 				if (!document.getPermissions().validate(user, Permission.READ))
@@ -158,7 +158,7 @@ public class LocalXMLResource implements XMLResourceImpl {
 	public Node getContentAsDOM() throws XMLDBException {
 		DBBroker broker = null;
 		try {
-			broker = brokerPool.get();
+			broker = brokerPool.get(user);
 			if (document == null)
 				getDocument(broker);
 			if (!document.getPermissions().validate(user, Permission.READ))
@@ -181,7 +181,7 @@ public class LocalXMLResource implements XMLResourceImpl {
 	public void getContentAsSAX(ContentHandler handler) throws XMLDBException {
 		DBBroker broker = null;
 		try {
-			broker = brokerPool.get();
+			broker = brokerPool.get(user);
 			if (document == null)
 				getDocument(broker);
 			if (!document.getPermissions().validate(user, Permission.READ))
@@ -262,7 +262,7 @@ public class LocalXMLResource implements XMLResourceImpl {
 	public Date getCreationTime() throws XMLDBException {
 		DBBroker broker = null;
 		try {
-			broker = brokerPool.get();
+			broker = brokerPool.get(user);
 			if (document == null)
 				getDocument(broker);
 			if (!document.getPermissions().validate(user, Permission.READ))
@@ -280,7 +280,7 @@ public class LocalXMLResource implements XMLResourceImpl {
 	public Date getLastModificationTime() throws XMLDBException {
 		DBBroker broker = null;
 		try {
-			broker = brokerPool.get();
+			broker = brokerPool.get(user);
 			if (document == null)
 				getDocument(broker);
 			if (!document.getPermissions().validate(user, Permission.READ))
