@@ -44,7 +44,7 @@ public class APISearch {
             }
             else
                 query = args[0];
-
+			System.out.println("Query: " + query);
             // get root-collection
             Collection col =
                 DatabaseManager.getCollection( URI + collection );

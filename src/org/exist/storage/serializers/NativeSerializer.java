@@ -297,7 +297,8 @@ public class NativeSerializer extends Serializer {
 						"CDATA",
 						doc.getFileName());
 				}
-                gid = XMLUtil.getFirstChildId(doc, gid);
+				if(children > 0)
+                	gid = XMLUtil.getFirstChildId(doc, gid);
 				while (count < children) {
 					Value value = (Value) iter.next();
 					child = NodeImpl.deserialize(value.getData(), doc);

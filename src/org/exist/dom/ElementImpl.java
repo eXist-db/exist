@@ -51,10 +51,9 @@ import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
- *  Description of the Class
- *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@created    30. Juni 2002
+ * ElementImpl.java
+ * 
+ * @author Wolfgang Meier
  */
 public class ElementImpl extends NodeImpl implements Element {
 
@@ -156,12 +155,6 @@ public class ElementImpl extends NodeImpl implements Element {
 		return ownerDocument.getSymbols().getSymbol(this);
 	}
 
-	/**
-	 *  Adds a feature to the NamespacePrefix attribute of the DocumentImpl
-	 *  object
-	 *
-	 *@param  prefix  The feature to be added to the NamespacePrefix attribute
-	 */
 	public void addNamespacePrefix(String prefix) {
 		if (prefix == null)
 			return;
@@ -177,10 +170,11 @@ public class ElementImpl extends NodeImpl implements Element {
 	}
 
 	/**
-	 *  Description of the Method
-	 *
-	 *@param  child             Description of the Parameter
-	 *@exception  DOMException  Description of the Exception
+	 * Append a child to this node. This method does not rearrange the
+     * node tree and is only used internally by the parser.
+     * 
+	 * @param child
+	 * @throws DOMException
 	 */
 	public void appendChildInternal(NodeImpl child) throws DOMException {
 		if (gid > 0)
@@ -197,6 +191,9 @@ public class ElementImpl extends NodeImpl implements Element {
 			return node;
 	}
 
+	/**
+	 * @see org.w3c.dom.Node#appendChild(org.w3c.dom.Node)
+	 */
 	public Node appendChild(Node child) throws DOMException {
 		NodeImpl previous;
 		if (children == 0)
@@ -211,9 +208,18 @@ public class ElementImpl extends NodeImpl implements Element {
 			ownerDocument.broker.saveCollection(ownerDocument.getCollection());
 		} catch (PermissionDeniedException e) {
 		}
+		ownerDocument.broker.flush();
 		return child;
 	}
 
+	/**
+	 * Internal append.
+     * 
+	 * @param last
+	 * @param child
+	 * @return Node
+	 * @throws DOMException
+	 */
 	public Node appendChild(NodeImpl last, Node child) throws DOMException {
 		// check if the tree structure needs to be changed
 		int level = ownerDocument.getTreeLevel(gid);
@@ -235,24 +241,22 @@ public class ElementImpl extends NodeImpl implements Element {
 					new ElementImpl(((Element) child).getTagName());
 				elem.setGID(lastChildID());
 				elem.setOwnerDocument(ownerDocument);
-				if (ownerDocument.reindexRequired() < 0)
-					ownerDocument.broker.index(elem);
 				NodeList ch = child.getChildNodes();
 				NamedNodeMap attribs = child.getAttributes();
 				elem.setChildCount(ch.getLength() + attribs.getLength());
 				ownerDocument.broker.insertAfter(last, elem);
+				if (ownerDocument.reindex < 0)
+					ownerDocument.broker.index(elem);
 				elem.setChildCount(0);
 				last = elem;
 				Node temp;
 				for (int i = 0; i < attribs.getLength(); i++) {
 					temp = attribs.item(i);
 					last = (NodeImpl) elem.appendChild(last, temp);
-					ownerDocument.broker.index(last);
 				}
 				for (int i = 0; i < ch.getLength(); i++) {
 					temp = ch.item(i);
 					last = (NodeImpl) elem.appendChild(last, temp);
-					ownerDocument.broker.index(last);
 				}
 				return last;
 			case Node.TEXT_NODE :
@@ -260,7 +264,8 @@ public class ElementImpl extends NodeImpl implements Element {
 				text.setGID(lastChildID());
 				text.setOwnerDocument(ownerDocument);
 				ownerDocument.broker.insertAfter(last, text);
-				ownerDocument.broker.index(text);
+				if (ownerDocument.reindex < 0)
+					ownerDocument.broker.index(text);
 				return text;
 			case Node.ATTRIBUTE_NODE :
 				Attr attr = (Attr) child;
@@ -268,12 +273,16 @@ public class ElementImpl extends NodeImpl implements Element {
 				attrib.setGID(lastChildID());
 				attrib.setOwnerDocument(ownerDocument);
 				ownerDocument.broker.insertAfter(last, attrib);
-				ownerDocument.broker.index(attrib);
+				if (ownerDocument.reindex < 0)
+					ownerDocument.broker.index(attrib);
 				return attrib;
 		}
 		return null;
 	}
 
+	/**
+	 * @see org.w3c.dom.Node#getNamespaceURI()
+	 */
 	public String getNamespaceURI() {
 		if (nodeName != null
 			&& nodeName.indexOf(':') < 0
@@ -305,9 +314,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	}
 
 	/**
-	 *  Description of the Method
-	 *
-	 *@return    Description of the Return Value
+	 * @see org.exist.dom.NodeImpl#firstChildID()
 	 */
 	public long firstChildID() {
 		if (gid == 0)
@@ -319,10 +326,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	}
 
 	/**
-	 *  Gets the attribute attribute of the ElementImpl object
-	 *
-	 *@param  name  Description of the Parameter
-	 *@return       The attribute value
+	 * @see org.w3c.dom.Element#getAttribute(java.lang.String)
 	 */
 	public String getAttribute(String name) {
 		long start = firstChildID();
@@ -337,21 +341,14 @@ public class ElementImpl extends NodeImpl implements Element {
 	}
 
 	/**
-	 *  Gets the attributeNS attribute of the ElementImpl object
-	 *
-	 *@param  namespaceURI  Description of the Parameter
-	 *@param  localName     Description of the Parameter
-	 *@return               The attributeNS value
+	 * @see org.w3c.dom.Element#getAttributeNS(java.lang.String, java.lang.String)
 	 */
 	public String getAttributeNS(String namespaceURI, String localName) {
 		return getAttribute(localName);
 	}
 
 	/**
-	 *  Gets the attributeNode attribute of the ElementImpl object
-	 *
-	 *@param  name  Description of the Parameter
-	 *@return       The attributeNode value
+	 * @see org.w3c.dom.Element#getAttributeNode(java.lang.String)
 	 */
 	public Attr getAttributeNode(String name) {
 		long start = firstChildID();
@@ -366,20 +363,14 @@ public class ElementImpl extends NodeImpl implements Element {
 	}
 
 	/**
-	 *  Gets the attributeNodeNS attribute of the ElementImpl object
-	 *
-	 *@param  namespaceURI  Description of the Parameter
-	 *@param  localName     Description of the Parameter
-	 *@return               The attributeNodeNS value
+	 * @see org.w3c.dom.Element#getAttributeNodeNS(java.lang.String, java.lang.String)
 	 */
 	public Attr getAttributeNodeNS(String namespaceURI, String localName) {
 		return getAttributeNode(localName);
 	}
 
 	/**
-	 *  Gets the attributes attribute of the ElementImpl object
-	 *
-	 *@return    The attributes value
+	 * @see org.w3c.dom.Node#getAttributes()
 	 */
 	public NamedNodeMap getAttributes() {
 		NamedNodeMapImpl map = new NamedNodeMapImpl();
@@ -395,19 +386,16 @@ public class ElementImpl extends NodeImpl implements Element {
 		return map;
 	}
 
+
 	/**
-	 *  Gets the childCount attribute of the ElementImpl object
-	 *
-	 *@return    The childCount value
+	 * @see org.exist.dom.NodeImpl#getChildCount()
 	 */
 	public int getChildCount() {
 		return children;
 	}
 
 	/**
-	 *  Gets the childNodes attribute of the ElementImpl object
-	 *
-	 *@return    The childNodes value
+	 * @see org.w3c.dom.Node#getChildNodes()
 	 */
 	public NodeList getChildNodes() {
 		if (children == 0)
@@ -419,28 +407,20 @@ public class ElementImpl extends NodeImpl implements Element {
 			return childList;
 		}
 		ownerDocument.broker.setRetrvMode(RelationalBroker.PRELOAD);
-		System.out.println("first child: " + first);
 		NodeList result = ownerDocument.getRange(first, first + children - 1);
 		ownerDocument.broker.setRetrvMode(RelationalBroker.SINGLE);
 		return result;
 	}
 
 	/**
-	 *  Gets the elementsByTagName attribute of the ElementImpl object
-	 *
-	 *@param  tagName  Description of the Parameter
-	 *@return          The elementsByTagName value
+	 * @see org.w3c.dom.Element#getElementsByTagName(java.lang.String)
 	 */
 	public NodeList getElementsByTagName(String tagName) {
 		return (NodeSet) ownerDocument.findElementsByTagName(this, tagName);
 	}
 
 	/**
-	 *  Gets the elementsByTagNameNS attribute of the ElementImpl object
-	 *
-	 *@param  namespaceURI  Description of the Parameter
-	 *@param  localName     Description of the Parameter
-	 *@return               The elementsByTagNameNS value
+	 * @see org.w3c.dom.Element#getElementsByTagNameNS(java.lang.String, java.lang.String)
 	 */
 	public NodeList getElementsByTagNameNS(
 		String namespaceURI,
@@ -451,9 +431,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	}
 
 	/**
-	 *  Gets the firstChild attribute of the ElementImpl object
-	 *
-	 *@return    The firstChild value
+	 * @see org.w3c.dom.Node#getFirstChild()
 	 */
 	public Node getFirstChild() {
 		if (!hasChildNodes())
@@ -471,9 +449,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	}
 
 	/**
-	 *  Gets the lastChild attribute of the ElementImpl object
-	 *
-	 *@return    The lastChild value
+	 * @see org.w3c.dom.Node#getLastChild()
 	 */
 	public Node getLastChild() {
 		if (!hasChildNodes())
@@ -491,9 +467,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	}
 
 	/**
-	 *  Gets the nodeName attribute of the ElementImpl object
-	 *
-	 *@return    The nodeName value
+	 * @see org.w3c.dom.Node#getNodeName()
 	 */
 	public String getNodeName() {
 		if (!loaded)
@@ -503,10 +477,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	}
 
 	/**
-	 *  Gets the nodeValue attribute of the ElementImpl object
-	 *
-	 *@return                   The nodeValue value
-	 *@exception  DOMException  Description of the Exception
+	 * @see org.w3c.dom.Node#getNodeValue()
 	 */
 	public String getNodeValue() throws DOMException {
 		return null;
@@ -531,9 +502,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	}
 
 	/**
-	 *  Gets the tagName attribute of the ElementImpl object
-	 *
-	 *@return    The tagName value
+	 * @see org.w3c.dom.Element#getTagName()
 	 */
 	public String getTagName() {
 		if (!loaded)
@@ -543,10 +512,7 @@ public class ElementImpl extends NodeImpl implements Element {
 	}
 
 	/**
-	 *  Description of the Method
-	 *
-	 *@param  name  Description of the Parameter
-	 *@return       Description of the Return Value
+	 * @see org.w3c.dom.Element#hasAttribute(java.lang.String)
 	 */
 	public boolean hasAttribute(String name) {
 		long first = firstChildID();
@@ -560,29 +526,21 @@ public class ElementImpl extends NodeImpl implements Element {
 	}
 
 	/**
-	 *  Description of the Method
-	 *
-	 *@param  namespaceURI  Description of the Parameter
-	 *@param  localName     Description of the Parameter
-	 *@return               Description of the Return Value
+	 * @see org.w3c.dom.Element#hasAttributeNS(java.lang.String, java.lang.String)
 	 */
 	public boolean hasAttributeNS(String namespaceURI, String localName) {
 		return hasAttribute(localName);
 	}
 
 	/**
-	 *  Description of the Method
-	 *
-	 *@return    Description of the Return Value
+	 * @see org.w3c.dom.Node#hasAttributes()
 	 */
 	public boolean hasAttributes() {
 		return (getAttributesCount() > 0);
 	}
 
 	/**
-	 *  Description of the Method
-	 *
-	 *@return    Description of the Return Value
+	 * @see org.w3c.dom.Node#hasChildNodes()
 	 */
 	public boolean hasChildNodes() {
 		if (children > 0)
@@ -602,20 +560,13 @@ public class ElementImpl extends NodeImpl implements Element {
 	}
 
 	/**
-	 *  Description of the Method
-	 *
-	 *@param  name              Description of the Parameter
-	 *@exception  DOMException  Description of the Exception
+	 * @see org.w3c.dom.Element#removeAttribute(java.lang.String)
 	 */
 	public void removeAttribute(String name) throws DOMException {
 	}
 
 	/**
-	 *  Description of the Method
-	 *
-	 *@param  namespaceURI      Description of the Parameter
-	 *@param  name              Description of the Parameter
-	 *@exception  DOMException  Description of the Exception
+	 * @see org.w3c.dom.Element#removeAttributeNS(java.lang.String, java.lang.String)
 	 */
 	public void removeAttributeNS(String namespaceURI, String name)
 		throws DOMException {
@@ -863,30 +814,24 @@ public class ElementImpl extends NodeImpl implements Element {
 	}
 
 	/**
-	 *  Description of the Method
-	 *
-	 *@return    Description of the Return Value
+	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
 		return toString(true);
 	}
 
 	/**
-	 *  Description of the Method
-	 *
-	 *@param  top  Description of the Parameter
-	 *@return      Description of the Return Value
+	 * @see org.exist.dom.NodeImpl#toString(boolean)
 	 */
 	public String toString(boolean top) {
 		return toString(top, new ArrayList(5));
 	}
 
 	/**
-	 *  Description of the Method
-	 *
-	 *@param  top       Description of the Parameter
-	 *@param  prefixes  Description of the Parameter
-	 *@return           Description of the Return Value
+	 * Method toString.
+	 * @param top
+	 * @param prefixes
+	 * @return String
 	 */
 	public String toString(boolean top, ArrayList prefixes) {
 		if (!loaded)
@@ -975,21 +920,20 @@ public class ElementImpl extends NodeImpl implements Element {
 				DOMException.WRONG_DOCUMENT_ERR,
 				"wrong node type");
 		DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
-		NodeImpl next = (NodeImpl) refChild;
+		if (refChild == null)
+			return appendChild(newChild);
+        NodeImpl ref = (NodeImpl) refChild;
 		long first = firstChildID();
-		if (next.gid < first || next.gid > next.gid + children - 1)
+		if (ref.gid < first || ref.gid > ref.gid + children - 1)
 			throw new DOMException(
 				DOMException.HIERARCHY_REQUEST_ERR,
-				"node to insert is not a child of the selected node");
+				"reference node is not a child of the selected node");
 		Node result;
-		if (refChild == null)
-			result = appendChild(newChild);
+		if (ref.gid == first)
+			result = appendChild(this, newChild);
 		else {
-			if (next.gid == first)
-				result = appendChild(this, newChild);
-			else
-				result =
-					appendChild((NodeImpl) next.getPreviousSibling(), newChild);
+			NodeImpl prev = (NodeImpl) ref.getPreviousSibling();
+			result = appendChild(getLastNode(prev), newChild);
 		}
 		ownerDocument.broker.update(this);
 		ownerDocument.broker.reindex(prevDoc, ownerDocument);
@@ -997,7 +941,63 @@ public class ElementImpl extends NodeImpl implements Element {
 			ownerDocument.broker.saveCollection(ownerDocument.getCollection());
 		} catch (PermissionDeniedException e) {
 		}
+		ownerDocument.broker.flush();
 		return result;
 	}
 
+	public Node insertAfter(Node newChild, Node refChild) throws DOMException {
+		if (!(refChild instanceof NodeImpl))
+			throw new DOMException(
+				DOMException.WRONG_DOCUMENT_ERR,
+				"wrong node type");
+		DocumentImpl prevDoc = new DocumentImpl(ownerDocument);
+		if (refChild == null)
+			return appendChild(newChild);
+		NodeImpl ref = (NodeImpl) refChild;
+		long first = firstChildID();
+		if (ref.gid < first || ref.gid > ref.gid + children - 1)
+			throw new DOMException(
+				DOMException.HIERARCHY_REQUEST_ERR,
+				"reference node is not a child of the selected node");
+		Node result = appendChild(getLastNode(ref), newChild);
+		ownerDocument.broker.update(this);
+		ownerDocument.broker.reindex(prevDoc, ownerDocument);
+		try {
+			ownerDocument.broker.saveCollection(ownerDocument.getCollection());
+		} catch (PermissionDeniedException e) {
+		}
+		ownerDocument.broker.flush();
+		return result;
+	}
+
+	/**
+	 * @see org.w3c.dom.Node#removeChild(org.w3c.dom.Node)
+	 */
+	public Node removeChild(Node oldChild) throws DOMException {
+		if(!(oldChild instanceof NodeImpl))
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,
+                "wrong node type");
+        NodeImpl old = (NodeImpl)oldChild;
+        if(old.getParentGID() != gid)
+            throw new DOMException(DOMException.NOT_FOUND_ERR,
+                "node is not a child of this element");
+        removeAll(old);
+        --children;
+        ownerDocument.broker.update(this);
+        return old;
+	}
+
+    private void removeAll(NodeImpl node) {
+        switch(node.getNodeType()) {
+            case Node.ELEMENT_NODE :
+                NodeList children = node.getChildNodes();
+                for(int i = children.getLength() - 1; i > -1; i--)
+                    removeAll((NodeImpl)children.item(i));
+                ownerDocument.broker.removeNode(node);
+                break;
+            default:
+                ownerDocument.broker.removeNode(node);
+                break;
+        }
+    }
 }

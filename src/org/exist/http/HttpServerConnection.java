@@ -219,7 +219,6 @@ public class HttpServerConnection extends Thread {
                         query =
                             "collection('" + parent.getName(  ) + "')" + query;
                 }
-
                 data =
                     search( query, howmany, start, summary, indent, stylesheet );
             } else {
@@ -640,8 +639,8 @@ public class HttpServerConnection extends Thread {
         Serializer serializer = broker.getSerializer(  );
         serializer.reset(  );
         serializer.setIndent( indent );
-        if(xslStyle != null)
-        	serializer.setStylesheet( xslStyle );
+        if(stylesheet != null)
+        	serializer.setStylesheet( stylesheet );
 
         HttpServer.LOG.debug( "start = " + start );
 

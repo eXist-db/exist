@@ -62,8 +62,12 @@ public interface XPathParserTokenTypes {
 	int SELF = 43;
 	int RPPAREN = 44;
 	int WS = 45;
-	int CHAR = 46;
-	int DIGIT = 47;
-	int ID_OR_FUNC = 48;
-	int VARIABLE = 49;
+	int BASECHAR = 46;
+	int IDEOGRAPHIC = 47;
+	int DIGIT = 48;
+	int NMSTART = 49;
+	int NMCHAR = 50;
+	int NCNAME = 51;
+	int ID_OR_FUNC = 52;
+	int VARIABLE = 53;
 }

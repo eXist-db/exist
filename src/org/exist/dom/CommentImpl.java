@@ -5,18 +5,15 @@
  */
 package org.exist.dom;
 
-import org.w3c.dom.*;
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+
+import org.exist.storage.Signatures;
+import org.w3c.dom.Comment;
+import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
-import org.xml.sax.helpers.AttributesImpl;
-import org.exist.util.*;
-import org.exist.storage.*;
 
 /**
  *@author     klaus
@@ -96,8 +93,7 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
             ArrayList prefixes )
              throws SAXException {
         if ( lexicalHandler != null ) {
-            char data[] = new char[cdata.length()];
-            cdata.getChars( 0, data.length, data, 0 );
+            char data[] = cdata.toString().toCharArray();
             lexicalHandler.comment( data, 0, data.length );
         }
     }

@@ -57,8 +57,6 @@ public class NativeElementIndex extends ElementIndex {
 	public final static int PARTITION_SIZE = 102400;
 
 	protected BFile dbElement;
-	protected int memMinFree;
-	private final Runtime run = Runtime.getRuntime();
 
 	public NativeElementIndex(
 		DBBroker broker,
@@ -66,9 +64,6 @@ public class NativeElementIndex extends ElementIndex {
 		BFile dbElement) {
 		super(broker, config);
 		this.dbElement = dbElement;
-		if ((memMinFree = config.getInteger("db-connection.min_free_memory"))
-			< 0)
-			memMinFree = 5000000;
 	}
 
 	public void addRow(String elementName, NodeProxy proxy) {
@@ -80,21 +75,6 @@ public class NativeElementIndex extends ElementIndex {
 			elementIds.put(elementName, buf);
 		}
 		buf.add(proxy);
-		int percent = (int) (run.freeMemory() / (run.totalMemory() / 100));
-		if (percent < memMinFree) {
-			LOG.info(
-				"total memory: "
-					+ run.totalMemory()
-					+ "; free: "
-					+ run.freeMemory());
-			flush();
-			System.gc();
-			LOG.info(
-				"total memory: "
-					+ run.totalMemory()
-					+ "; free: "
-					+ run.freeMemory());
-		}
 	}
 
 	public void reindex(DocumentImpl oldDoc) {
@@ -151,7 +131,7 @@ public class NativeElementIndex extends ElementIndex {
 				try {
 					lock.acquire(this, Lock.WRITE_LOCK);
 					lock.enter(this);
-					if (!dbElement.put(ref, new Value(data)))
+					if (!dbElement.put(ref, data))
 						LOG.warn(
 							"could not save index for element " + elementName);
 						continue;
@@ -220,7 +200,7 @@ public class NativeElementIndex extends ElementIndex {
 				try {
 					lock.acquire(this, Lock.WRITE_LOCK);
 					lock.enter(this);
-					if (!dbElement.append(ref, new Value(data))) {
+					if (!dbElement.append(ref, data)) {
 						LOG.warn(
 							"could not save index for element " + elementName);
 						continue;

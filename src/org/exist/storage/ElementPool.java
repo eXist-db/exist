@@ -20,7 +20,6 @@ package org.exist.storage;
 
 import java.util.TreeMap;
 import java.util.Iterator;
-import java.lang.ref.*;
 import org.apache.log4j.Category;
 import org.exist.dom.*;
 

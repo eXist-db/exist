@@ -53,7 +53,7 @@ public class LocalCollectionManagementService extends CollectionManager {
                 broker.getOrCreateCollection( user, collName );
             broker.saveCollection( coll );
             broker.flush();
-            broker.sync();
+            //broker.sync();
         } catch ( EXistException e ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
                 "failed to create collection " + collName );

@@ -25,7 +25,7 @@ public class SymbolTable {
         short id = ++max;
         symbols.put(element.getTagName(), id);
         names.put(id, element.getTagName());
-	changed = true;
+	    changed = true;
         return id;
     }
 
@@ -35,7 +35,7 @@ public class SymbolTable {
         short id = ++max;
         symbols.put("@" + attr.getName(), id);
         names.put(id, attr.getName());
-	changed = true;
+	    changed = true;
         return id;
     }
 
@@ -84,12 +84,14 @@ public class SymbolTable {
                 return true;
             }
         });
+        changed = false;
     }
 
     public synchronized void write(final VariableByteOutputStream ostream) throws IOException {
         ostream.writeShort(max);
         ostream.writeShort(nextPartition);
         ostream.writeInt(symbols.size());
+        System.out.println("symbols = " + symbols.size());
         symbols.forEachEntry(new TObjectIntProcedure() {
             public boolean execute(Object key, int val) {
                 try {
@@ -101,6 +103,7 @@ public class SymbolTable {
                 return true;
             }
         });
+        changed = false;
     }
 
     protected void read(DataInput istream) throws IOException {
@@ -118,6 +121,7 @@ public class SymbolTable {
             else
                 names.put(id, name);
         }
+        changed = false;
     }
 
     public synchronized void read(VariableByteInputStream istream) throws IOException {
@@ -135,5 +139,6 @@ public class SymbolTable {
             else
                 names.put(id, name);
         }
+        changed = false;
     }
 }
