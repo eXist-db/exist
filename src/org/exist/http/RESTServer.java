@@ -252,12 +252,12 @@ public class RESTServer {
                     	String result = executeXQuery(broker, resource, request, response, outputProperties);
                     	encoding = outputProperties.getProperty(OutputKeys.ENCODING, encoding);
                     	String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
-                        writeResponse(response, result, encoding);
                         response.setContentType(mimeType);
+                        writeResponse(response, result, encoding);
                     } catch (XPathException e) {
-                        writeResponse(response, formatXPathException(query, path, e), encoding);
                         response.setContentType("text/html");
                         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        writeResponse(response, formatXPathException(query, path, e), encoding);
                     }
                     return;
                 }
@@ -268,12 +268,12 @@ public class RESTServer {
                 	String result = search(broker, query, path, howmany, start, outputProperties, wrap, request, response);
                 	encoding = outputProperties.getProperty(OutputKeys.ENCODING, encoding);
                 	String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
-                    writeResponse(response, result, encoding);
                     response.setContentType(mimeType);
+                    writeResponse(response, result, encoding);
                 } catch (XPathException e) {
-                    writeResponse(response, formatXPathException(query, path, e), encoding);
                     response.setContentType("text/html");
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    writeResponse(response, formatXPathException(query, path, e), encoding);
                 }
             } else {
                 // no query parameter: try to load a document from the specified
@@ -313,9 +313,9 @@ public class RESTServer {
                         }
                         try {
                             serializer.setProperties(outputProperties);
-                            writeResponse(response, serializer.serialize(resource), encoding);
                             if (serializer.isStylesheetApplied())
                                 response.setContentType("text/html");
+                            writeResponse(response, serializer.serialize(resource), encoding);
                         } catch (SAXException saxe) {
                             LOG.warn(saxe);
                             throw new BadRequestException(
@@ -362,12 +362,12 @@ public class RESTServer {
                     	String result = executeXQuery(broker, resource, request, response, outputProperties);
                     	String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
                     	String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
-                        writeResponse(response, result, encoding);
                         response.setContentType(mimeType);
+                        writeResponse(response, result, encoding);
                     } catch (XPathException e) {
-                        writeResponse(response, formatXPathException(null, path, e), "UTF-8");
                         response.setContentType("text/html");
                         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        writeResponse(response, formatXPathException(null, path, e), "UTF-8");
                     }
                     return;
                 }
