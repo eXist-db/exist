@@ -514,9 +514,9 @@ jar xfv ../exist.war]]></screen>
 		<section>
 			<title>Log Files</title>
 			<para>eXist uses the log4j-package to write logging output. By
-            default logging 
-				output is written to <filename 
-				moreinfo="none">webapp/WEB-INF/logs</filename>.
+            default logging output is written to <filename 
+            moreinfo="none">webapp/WEB-INF/logs</filename> or <filename>tools/wrapper/logs</filename>
+            if you are running eXist as a Windows or Unix service.
             </para>
 			<para>If you experience any problems with eXist, please have a look 
 				at the corresponding log-files (exist.log). This is also recommended if 

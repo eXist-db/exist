@@ -122,19 +122,6 @@
 				<tr>
 					<td>
 						<a
-							href="http://prdownloads.sourceforge.net/exist/eXist-1.0b2.zip">
-							eXist-1.0b2.zip
-						</a>
-					</td>
-					<td>
-						Source distribution including source code and
-						required third-party libraries. Packed with tar
-						and zip.
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<a
 							href="http://prdownloads.sourceforge.net/exist/eXist-1.0b2.war">
 							eXist-1.0b2.war
 						</a>
