@@ -63,7 +63,7 @@ public class DynamicCardinalityCheck extends AbstractExpression {
 	 * @see org.exist.xquery.Expression#pprint()
 	 */
 	public String pprint() {
-		return "#cardinality(" + expression.pprint() + ')';
+		return expression.pprint();
 	}
 
 	/* (non-Javadoc)

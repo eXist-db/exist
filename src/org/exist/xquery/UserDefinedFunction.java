@@ -91,6 +91,13 @@ public class UserDefinedFunction extends Function {
 		FunctionSignature signature = getSignature();
 		StringBuffer buf = new StringBuffer();
 		buf.append("declare function ");
+		buf.append(toString());
+		return buf.toString();
+	}
+	
+	public String toString() {
+		FunctionSignature signature = getSignature();
+		StringBuffer buf = new StringBuffer();
 		buf.append(signature.getName());
 		buf.append('(');
 		for(int i = 0; i < signature.getArgumentTypes().length; i++) {
