@@ -139,6 +139,8 @@ public class DatabaseImpl implements Database {
                 " does not start with '" + selector + "'" );
         String address = DEFAULT_HOST;
         String c = collection.substring( selector.length() );
+        if(c.endsWith("/") && c.length() > 1)
+            c = c.substring(0, c.length() - 1);
         Collection current = null;
         if ( c.startsWith( "///" ) ) {
         	mode = LOCAL;
