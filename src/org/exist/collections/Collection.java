@@ -869,10 +869,11 @@ implements Comparable, EntityResolver, Cacheable {
 	
 			if(oldDoc == null)
 			    addDocument(broker, document);
+//			broker.checkTree(document);
 			broker.addDocument(this, document);
 			broker.closeDocument();
 			broker.flush();
-			
+			LOG.debug("document stored.");
 			// if we are running in privileged mode (e.g. backup/restore)
 			// notify the SecurityManager about changes
 			if (getName().equals(SecurityManager.SYSTEM) && document.getFileName().equals(SecurityManager.ACL_FILE)

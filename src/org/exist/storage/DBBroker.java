@@ -93,6 +93,8 @@ public abstract class DBBroker extends Observable {
 	
 	protected int docFragmentationLimit = 25;
 	
+	protected String id;
+	
 	/**
 	 * Save the global symbol table. The global symbol table stores
 	 * QNames and namespace/prefix mappings.
@@ -174,7 +176,7 @@ public abstract class DBBroker extends Observable {
 		this.pool = pool;
 		xqueryService = new XQuery(this);
 	}
-
+	
 	/**
 	 * Set the user that is currently using this DBBroker object.
 	 * 
@@ -485,6 +487,16 @@ public abstract class DBBroker extends Observable {
 	throws PermissionDeniedException, LockException;
 	
 	/**
+	 * Copy a collection to the destination collection and rename it.
+	 * 
+	 * @param doc the resource to move
+	 * @param destination the destination collection
+	 * @param new Name the new name the resource should have in the destination collection
+	 */
+	public abstract void copyCollection(Collection collection, Collection destination, String newName)
+	throws PermissionDeniedException, LockException;
+	
+	/**
 	 * Copy a resource to the destination collection and rename it.
 	 * 
 	 * @param doc the resource to copy
@@ -497,6 +509,15 @@ public abstract class DBBroker extends Observable {
 	throws PermissionDeniedException, LockException;
 	
 	public abstract void defrag(DocumentImpl doc);
+	
+	/**
+	 * Perform a consistency check on the specified document.
+	 * 
+	 * This checks if the DOM tree is consistent.
+	 * 
+	 * @param doc
+	 */
+	public abstract void checkTree(DocumentImpl doc);
 	
 	public void sync() {
 		/*
@@ -584,4 +605,16 @@ public abstract class DBBroker extends Observable {
 	}
 	
 	public abstract int getPageSize();
+	
+	public void setId(String id) {
+		this.id = id;
+	}
+	
+	public String getId() {
+		return id;
+	}
+	
+	public String toString() {
+		return id;
+	}
 }

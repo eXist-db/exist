@@ -66,7 +66,6 @@ public class ElementImpl extends NamedNode implements Element {
 
 	protected short attributes = 0;
 	protected int children = 0;
-	protected long firstChild = -1;
 	protected Map namespaceMappings = null;
 	
 	public ElementImpl() {
@@ -109,7 +108,6 @@ public class ElementImpl extends NamedNode implements Element {
 	 */
 	public void clear() {
 		super.clear();
-		firstChild = -1;
 		gid = 0;
 		children = 0;
 		attributes = 0;
@@ -497,10 +495,7 @@ public class ElementImpl extends NamedNode implements Element {
 	public long firstChildID() {
 		if (gid == 0)
 			return 0;
-		if (firstChild > -1)
-			return firstChild;
-		firstChild = XMLUtil.getFirstChildId(ownerDocument, gid);
-		return firstChild;
+		return XMLUtil.getFirstChildId(ownerDocument, gid);
 	}
 
 	public short getAttributesCount() {

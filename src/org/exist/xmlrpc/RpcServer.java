@@ -818,13 +818,20 @@ public class RpcServer implements RpcAPI {
      * is set to >0 (true), results are pretty printed.
      *  
      */
-    public String query(User user, String xpath, int howmany, int start,
+    public String query(User user, byte[] xquery, int howmany, int start,
             Hashtable parameters) throws EXistException,
             PermissionDeniedException {
         RpcConnection con = pool.get();
+        String xqueryStr;
+        try {
+        	xqueryStr = new String(xquery, "UTF-8");
+        } catch(UnsupportedEncodingException e) {
+        	xqueryStr = new String(xquery);
+        }
+        
         String result = null;
         try {
-            result = con.query(user, xpath, howmany, start, parameters);
+            result = con.query(user, xqueryStr, howmany, start, parameters);
             return result;
         } catch (Exception e) {
             handleException(e);

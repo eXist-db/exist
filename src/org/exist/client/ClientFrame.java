@@ -840,8 +840,7 @@ public class ClientFrame extends JFrame
 		            for(int i = 0; i < res.length; i++) {
 		                setStatus("Copying " + res[i].toString() + " to " + destinationPath + "...");
 		                if(res[i] instanceof InteractiveClient.CollectionName)
-		                    //service.move(res[i].toString(), destinationPath, null);
-		                	showErrorMessage("Copy is not yet implemented for collections", null);
+		                    service.copy(res[i].toString(), destinationPath, null);
 		                else
 		                    service.copyResource(res[i].toString(), destinationPath, null);
 		            }

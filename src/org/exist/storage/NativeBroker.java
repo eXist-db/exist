@@ -72,6 +72,7 @@ import org.exist.storage.store.DOMFile;
 import org.exist.storage.store.DOMFileIterator;
 import org.exist.storage.store.DOMTransaction;
 import org.exist.storage.store.NodeIterator;
+import org.exist.storage.store.StorageAddress;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.Configuration;
@@ -471,7 +472,7 @@ public class NativeBroker extends DBBroker {
 	}
 
 	public Iterator getNodeIterator(NodeProxy proxy) {
-		domDb.setOwnerObject(this);
+//		domDb.setOwnerObject(this);
 		try {
 			return new NodeIterator(this, domDb, proxy, false);
 		} catch (BTreeException e) {
@@ -937,25 +938,30 @@ public class NativeBroker extends DBBroker {
 		} finally {
 			lock.release();
 		}
-		// now reindex the nodes
-		Iterator iterator;
-		if (node == null) {
-			NodeList nodes = doc.getChildNodes();
-			NodeImpl n;
-			for (int i = 0; i < nodes.getLength(); i++) {
-				n = (NodeImpl) nodes.item(i);
+		try {
+			// now reindex the nodes
+			Iterator iterator;
+			if (node == null) {
+				NodeList nodes = doc.getChildNodes();
+				NodeImpl n;
+				for (int i = 0; i < nodes.getLength(); i++) {
+					n = (NodeImpl) nodes.item(i);
+					iterator =
+						getNodeIterator(
+							new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
+					iterator.next();
+					scanNodes(iterator, n, new NodePath(), false);
+				}
+			} else {
 				iterator =
 					getNodeIterator(
-						new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
+						new NodeProxy(doc, node.getGID(), node.getInternalAddress()));
 				iterator.next();
-				scanNodes(iterator, n, new NodePath(), false);
+				scanNodes(iterator, node, node.getPath(), false);
 			}
-		} else {
-			iterator =
-				getNodeIterator(
-					new NodeProxy(doc, node.getGID(), node.getInternalAddress()));
-			iterator.next();
-			scanNodes(iterator, node, node.getPath(), false);
+		} catch(Exception e) {
+			LOG.error("Error occured while reindexing document: " + e.getMessage(), e);
+			LOG.debug(domDb.debugPages(doc));
 		}
 		elementIndex.reindex(oldDoc, node);
 		textEngine.reindex(oldDoc, node);
@@ -1140,6 +1146,7 @@ public class NativeBroker extends DBBroker {
             int p = doc.getFileName().lastIndexOf('/');
             newName = doc.getFileName().substring(p + 1);
         }
+
 	    Lock lock = null;
 	    try {
 	        lock = collectionsDb.getLock();
@@ -1149,6 +1156,8 @@ public class NativeBroker extends DBBroker {
 	            throw new PermissionDeniedException("A resource can not replace an existing collection");
 	        DocumentImpl oldDoc = destination.getDocument(this, newName);
 	        if(oldDoc != null) {
+	        	if(doc.getDocId() == oldDoc.getDocId())
+	            	throw new PermissionDeniedException("Cannot copy resource to itself");
 	            if(!destination.getPermissions().validate(user, Permission.UPDATE))
 	                throw new PermissionDeniedException("Resource with same name exists in target " +
 	                		"collection and update is denied");
@@ -1156,11 +1165,11 @@ public class NativeBroker extends DBBroker {
 	                throw new PermissionDeniedException("Resource with same name exists in target " +
 	                		"collection and update is denied");
 	            collection.removeDocument(this, oldDoc.getFileName());
-	        } else
-	            if(!destination.getPermissions().validate(user, Permission.WRITE))
+	        } else {
+	        	if(!destination.getPermissions().validate(user, Permission.WRITE))
 	    	        throw new PermissionDeniedException("Insufficient privileges on target collection " +
 	    	                destination.getName());
-	        
+	        }
 	        DocumentImpl newDoc = new DocumentImpl(this, newName, destination);
 	        newDoc.copyOf(doc);
 	        copyResource(doc, newDoc);
@@ -1198,8 +1207,10 @@ public class NativeBroker extends DBBroker {
 		        doc.getCollection().getName() + '/' + doc.getFileName());
 		final long start = System.currentTimeMillis();
 		try {
+//			checkTree(doc);
 		    final NodeImpl firstChild = (NodeImpl)doc.getFirstChild();
-		    
+//		    LOG.debug(domDb.debugPages(doc));
+		    	
 			// dropping old structure index
 			elementIndex.dropIndex(doc);
 			
@@ -1210,10 +1221,7 @@ public class NativeBroker extends DBBroker {
 				public Object start() {
 					try {
 						domDb.remove(idx, null);
-						domDb.flush();
 					} catch (BTreeException e) {
-			            LOG.warn("start() - " + "error while removing doc", e);
-					} catch (DBException e) {
 			            LOG.warn("start() - " + "error while removing doc", e);
 					} catch (IOException e) {
 			            LOG.warn("start() - " + "error while removing doc", e);
@@ -1247,18 +1255,21 @@ public class NativeBroker extends DBBroker {
 			// remove the old nodes
 			new DOMTransaction(this, domDb) {
 				public Object start() {
-				    domDb.remove(doc.getAddress());
 					domDb.removeAll(firstChild.getInternalAddress());
 					return null;
 				}
 			}
 			.run();
 			
+//			LOG.debug(domDb.debugPages(tempDoc));
+			
 			doc.copyChildren(tempDoc);
 			doc.setSplitCount(0);
 			doc.setAddress(-1);
 			doc.setPageCount(tempDoc.getPageCount());
+//			checkTree(doc);
 			storeDocument(doc);
+			LOG.debug("new doc address = " + StorageAddress.toString(doc.getAddress()));
 			closeDocument();
 			
 			saveCollection(doc.getCollection());
@@ -1307,6 +1318,47 @@ public class NativeBroker extends DBBroker {
 		}
 		if(node.getNodeType() == Node.ELEMENT_NODE)
 		    currentPath.removeLastComponent();
+	}
+	
+	public void checkTree(DocumentImpl doc) {
+		LOG.debug("Checking DOM tree for document " + doc.getFileName());
+		NodeList nodes = doc.getChildNodes();
+		NodeImpl n;
+		for (int i = 0; i < nodes.getLength(); i++) {
+		    n = (NodeImpl) nodes.item(i);
+		    Iterator iterator =
+		        getNodeIterator(
+		                new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
+		    iterator.next();
+		    checkTree(iterator, n);
+		}
+	}
+	
+	private void checkTree(Iterator iterator, NodeImpl node) {
+		if (node.hasChildNodes()) {
+			final long firstChildId = XMLUtil.getFirstChildId((DocumentImpl)node.getOwnerDocument(), 
+					node.getGID());
+			if (firstChildId < 0) {
+				LOG.fatal(
+					"no child found: expected = "
+						+ node.getChildCount()
+						+ "; node = "
+						+ node.getNodeName()
+						+ "; gid = "
+						+ node.getGID());
+				throw new IllegalStateException("wrong node id");
+			}
+			final long lastChildId = firstChildId + node.getChildCount();
+			NodeImpl child;
+			for (long gid = firstChildId; gid < lastChildId; gid++) {
+				child = (NodeImpl) iterator.next();
+				if(child == null)
+					LOG.debug("child " + gid + " not found for node: " + node.getNodeName() +
+							"; last = " + lastChildId + "; children = " + node.getChildCount());
+				child.setGID(gid);
+				checkTree(iterator, child);
+			}
+		}
 	}
 	
 	public String getNodeValue(final NodeProxy proxy) {
@@ -1920,6 +1972,8 @@ public class NativeBroker extends DBBroker {
 	            throw new PermissionDeniedException("A resource can not replace an existing collection");
 	        DocumentImpl oldDoc = destination.getDocument(this, newName);
 	        if(oldDoc != null) {
+	        	if(doc.getDocId() == oldDoc.getDocId())
+	            	throw new PermissionDeniedException("Cannot move resource to itself");
 	            if(!destination.getPermissions().validate(user, Permission.UPDATE))
 	                throw new PermissionDeniedException("Resource with same name exists in target " +
 	                		"collection and update is denied");
@@ -1931,17 +1985,22 @@ public class NativeBroker extends DBBroker {
 	            if(!destination.getPermissions().validate(user, Permission.WRITE))
 	    	        throw new PermissionDeniedException("Insufficient privileges on target collection " +
 	    	                destination.getName());
+	            
+	        boolean renameOnly = collection.getId() == destination.getId();
 	        collection.unlinkDocument(doc);
-	        elementIndex.dropIndex(doc);
-			textEngine.dropIndex(doc);
-			saveCollection(collection);
-			
+	        if(!renameOnly) {
+		        elementIndex.dropIndex(doc);
+				textEngine.dropIndex(doc);
+				saveCollection(collection);
+	        }
 			doc.setFileName(newName);
 			destination.addDocument(this, doc);
 	        doc.setCollection(destination);
 
-	        // reindexing
-			reindex(doc);
+	        if(!renameOnly) {
+		        // reindexing
+				reindex(doc);
+	        }
 			saveCollection(destination);
         } catch (TriggerException e) {
             throw new PermissionDeniedException(e.getMessage());
@@ -1952,10 +2011,56 @@ public class NativeBroker extends DBBroker {
 	    }
 	}
 	
+	public void copyCollection(Collection collection, Collection destination, String newName)
+	throws PermissionDeniedException, LockException {
+		if (readOnly)
+			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+		if(!collection.getPermissions().validate(user, Permission.READ))
+			throw new PermissionDeniedException("Read permission denied on collection " +
+					collection.getName());
+		if(collection.getId() == destination.getId())
+	    	throw new PermissionDeniedException("Cannot move collection to itself");
+		if(!destination.getPermissions().validate(user, Permission.WRITE))
+	        throw new PermissionDeniedException("Insufficient privileges on target collection " +
+	                destination.getName());
+		if(newName == null) {
+            int p = collection.getName().lastIndexOf('/');
+            newName = collection.getName().substring(p + 1);
+        }
+	    if(newName.indexOf('/') > -1)
+	        throw new PermissionDeniedException("New collection name is illegal (may not contain a '/')");
+	    Lock lock = null;
+	    try {
+	        lock = collectionsDb.getLock();
+	        lock.acquire(Lock.WRITE_LOCK);
+	        newName = destination.getName() + '/' + newName;
+	        // check if another collection with the same name exists at the destination
+		    Collection old = getCollection(newName);
+		    if(old != null)
+		        removeCollection(old.getName());
+		    Collection destCollection = getOrCreateCollection(newName);
+		    for(Iterator i = collection.iterator(this); i.hasNext(); ) {
+		    	DocumentImpl child = (DocumentImpl) i.next();
+		    	
+		    	DocumentImpl newDoc = new DocumentImpl(this, child.getFileName(), destCollection);
+		        newDoc.copyOf(child);
+		        copyResource(child, newDoc);
+		        flush();
+		        destCollection.addDocument(this, child);
+		    }
+		    saveCollection(destCollection);
+		    saveCollection(destination);
+        } finally {
+	        lock.release();
+	    }
+	}
+	
 	public void moveCollection(Collection collection, Collection destination, String newName) 
 	throws PermissionDeniedException, LockException {
 	    if (readOnly)
 			throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+	    if(collection.getId() == destination.getId())
+	    	throw new PermissionDeniedException("Cannot move collection to itself");
 	    if(collection.getName().equals(ROOT_COLLECTION))
 	        throw new PermissionDeniedException("Cannot move the db root collection");
 	    if(!collection.getPermissions().validate(user, Permission.WRITE))
