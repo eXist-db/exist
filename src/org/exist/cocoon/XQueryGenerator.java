@@ -189,17 +189,16 @@ public class XQueryGenerator extends ServiceableGenerator {
 			service.setProperty(EXistOutputKeys.EXPAND_XINCLUDES,
 					expandXIncludes ? "yes" : "no");
 			service.setProperty("base-uri", baseURI);
-			String prefix = RequestModule.PREFIX;
-			service.setNamespace(prefix, RequestModule.NAMESPACE_URI);
+			service.setNamespace(RequestModule.PREFIX, RequestModule.NAMESPACE_URI);
 			service.setModuleLoadPath(baseURI);
 			if(!((CollectionImpl)collection).isRemoteCollection()) {
 				HttpServletRequest httpRequest = (HttpServletRequest) objectModel
 						.get(HttpEnvironment.HTTP_REQUEST_OBJECT);
-				service.declareVariable(prefix + ":request",
+				service.declareVariable(RequestModule.PREFIX + ":request",
 						new CocoonRequestWrapper(request, httpRequest));
-				service.declareVariable(prefix + ":response",
+				service.declareVariable(RequestModule.PREFIX + ":response",
 						new CocoonResponseWrapper(response));
-				service.declareVariable(prefix + ":session",
+				service.declareVariable(RequestModule.PREFIX + ":session",
 						new CocoonSessionWrapper(session));
 			}
 			declareParameters(service);

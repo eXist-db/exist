@@ -24,6 +24,7 @@ package org.exist.xquery;
 
 import java.util.TreeMap;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
 
@@ -35,6 +36,8 @@ import org.exist.xquery.value.Sequence;
  */
 public abstract class AbstractInternalModule implements InternalModule {
 
+	private final static Logger LOG = Logger.getLogger(AbstractInternalModule.class);
+	
 	protected TreeMap mFunctionMap = new TreeMap();
 	protected FunctionDef[] mFunctions;
 	

@@ -135,7 +135,7 @@ public class CreateCollectionsTest extends TestCase {
 					directory + File.separatorChar + fileToRemove),
 				testCollection);
 
-			byte[] data = storeBinaryResourceFromFile( new File( "../webapp/logo.jpg"), testCollection);
+			byte[] data = storeBinaryResourceFromFile( new File( "webapp/logo.jpg"), testCollection);
 			Object content = testCollection.getResource("logo.jpg").getContent();
 			byte[] dataStored = (byte[])content;
 			assertTrue("After storing binary resource, data out==data in", 

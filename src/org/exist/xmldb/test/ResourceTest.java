@@ -21,7 +21,9 @@ import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
 public class ResourceTest extends TestCase {
@@ -36,7 +38,7 @@ public class ResourceTest extends TestCase {
 	public ResourceTest(String arg0) {
 		super(arg0);
 	}
-
+	
 	public void testReadResource() {
 		try {
 			Collection testCollection = DatabaseManager.getCollection(URI + "/test");
