@@ -35,13 +35,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.apache.oro.text.GlobCompiler;
-import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.Pattern;
-import org.apache.oro.text.regex.PatternCompiler;
-import org.apache.oro.text.regex.PatternMatcher;
-import org.apache.oro.text.regex.Perl5Compiler;
-import org.apache.oro.text.regex.Perl5Matcher;
 import org.dbxml.core.DBException;
 import org.dbxml.core.data.Value;
 import org.dbxml.core.filer.BTreeCallback;
@@ -109,9 +102,6 @@ public class NativeTextEngine extends TextSearchEngine {
 	protected BFile dbWords;
 	protected InvertedIndex invIdx;
 	protected boolean useCompression = false;
-	protected PatternCompiler regexCompiler = new Perl5Compiler();
-	protected PatternCompiler globCompiler = new GlobCompiler();
-	protected PatternMatcher matcher = new Perl5Matcher();
 
 	public NativeTextEngine(DBBroker broker, Configuration config, int buffers) {
 		super(broker, config);
@@ -1270,35 +1260,7 @@ public class NativeTextEngine extends TextSearchEngine {
 			return true;
 		}
 	}
-	private class RegexMatcher implements TermMatcher {
-
-		private Pattern regexp;
-
-		public RegexMatcher(String expr, int type) throws EXistException {
-			try {
-				regexp = (type == DBBroker.MATCH_REGEXP
-						? regexCompiler.compile(expr,
-								Perl5Compiler.CASE_INSENSITIVE_MASK)
-						: globCompiler
-								.compile(
-										expr,
-										GlobCompiler.CASE_INSENSITIVE_MASK
-												| GlobCompiler.QUESTION_MATCHES_ZERO_OR_ONE_MASK));
-			} catch (MalformedPatternException e) {
-				throw new EXistException(e);
-			}
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see java.util.Comparator#equals(java.lang.Object)
-		 */
-		public boolean matches(String term) {
-			return matcher.matches(term, regexp);
-		}
-	}
-
+	
 	private static class TermFrequencyList {
 		
 		protected static class TermFreq implements Comparable {

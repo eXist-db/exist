@@ -49,6 +49,7 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.QName;
 import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -1882,12 +1883,12 @@ implements Comparable, EntityResolver, Cacheable {
 		return result;		
 	}
 
-	public IndexSpec getIdxConf(DBBroker broker, String doctype) {
+	public IndexSpec getIdxConf(DBBroker broker) {
 	    CollectionConfiguration conf = getConfiguration(broker);
 	    if(conf == null)
-	        return broker.getIndexConfiguration().getByDoctype(doctype);
+	        return broker.getIndexConfiguration();
 	    else {
-	        return conf.getByDoctype(doctype);
+	        return conf.getIndexConfiguration();
 	    }
 	}
 }

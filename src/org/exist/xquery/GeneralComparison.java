@@ -24,21 +24,21 @@ package org.exist.xquery;
 import java.text.Collator;
 import java.util.Iterator;
 
+import org.exist.EXistException;
 import org.exist.dom.ContextItem;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.storage.DBBroker;
 import org.exist.storage.FulltextIndexSpec;
-import org.exist.storage.IndexConfiguration;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.Indexable;
 import org.exist.storage.NativeTextEngine;
 import org.exist.storage.analysis.SimpleTokenizer;
 import org.exist.storage.analysis.TextToken;
 import org.exist.storage.serializers.Serializer;
-import org.exist.util.Configuration;
 import org.exist.xquery.functions.ExtFulltext;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
@@ -281,7 +281,10 @@ public class GeneralComparison extends BinaryOp {
 	    if(indexType != Type.ITEM) {
 	        // we have a range index defined on the nodes in this sequence
 	        Item key = rightSeq.itemAt(0);
-	        if(key.getType() != indexType) {
+	        if(truncation != Constants.TRUNC_NONE) {
+	        	// truncation is only possible on strings
+	        	key = key.convertTo(Type.STRING);
+	        } else if(key.getType() != indexType) {
 	            // index type doesn't match. If index and argument have a numeric type,
 	            // we convert to the type of the index
 	            if(Type.subTypeOf(indexType, Type.NUMBER) &&
@@ -290,8 +293,17 @@ public class GeneralComparison extends BinaryOp {
 	        }
 	        // if key does not implement Indexable, we can't use the index
 	        if(key instanceof Indexable && Type.subTypeOf(key.getType(), indexType)) {
-	            LOG.debug("Using value index for key: " + key.getStringValue());
-	            result = context.getBroker().getValueIndex().find(relation, docs, nodes, (Indexable)key);
+	        	if(truncation != Constants.TRUNC_NONE) {
+					try {
+						result = context.getBroker().getValueIndex().match(docs, nodes, getComparisonString(rightSeq).replace('%', '*'), 
+								DBBroker.MATCH_WILDCARDS);
+					} catch (EXistException e) {
+						throw new XPathException(getASTNode(), e.getMessage(), e);
+					}
+	        	} else {
+		            LOG.debug("Using value index for key: " + key.getStringValue());
+		            result = context.getBroker().getValueIndex().find(relation, docs, nodes, (Indexable)key);
+				}
 	        } else
 	            return nodeSetCompare(nodes, contextSequence);
 	        
@@ -468,15 +480,13 @@ public class GeneralComparison extends BinaryOp {
     }
 
     private boolean checkArgumentTypes(XQueryContext context, DocumentSet docs)
-		throws XPathException {
-		Configuration config = context.getBroker().getConfiguration();
-		IndexConfiguration idxConf = (IndexConfiguration) config.getProperty("indexer.map");
+		throws XPathException { 
 		DocumentImpl doc;
 		IndexSpec idxSpec;
 		FulltextIndexSpec idx;
 		for (Iterator i = docs.iterator(); i.hasNext();) {
 			doc = (DocumentImpl) i.next();
-			idxSpec = idxConf.getByDoctype(doc.getDoctype().getName());
+			idxSpec = doc.getCollection().getIdxConf(context.getBroker());
 			if(idxSpec != null) {
 			    idx = idxSpec.getFulltextIndexSpec();
 			    if(idx.isSelective())

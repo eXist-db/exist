@@ -35,6 +35,7 @@ import org.dbxml.core.data.Value;
 import org.dbxml.core.filer.BTreeCallback;
 import org.dbxml.core.filer.BTreeException;
 import org.dbxml.core.indexer.IndexQuery;
+import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -56,7 +57,6 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Attr;
@@ -529,6 +529,55 @@ public class NativeValueIndex {
         return result;
     }
     
+    public NodeSet match(DocumentSet docs, NodeSet contextSet, String expr, int type)
+    throws TerminatedException, EXistException {
+    	// if the regexp starts with a char sequence, we restrict the index scan to entries starting with
+    	// the same sequence. Otherwise, we have to scan the whole index.
+    	StringBuffer term = new StringBuffer();
+		for (int j = 0; j < expr.length(); j++)
+			if (Character.isLetterOrDigit(expr.charAt(j)))
+				term.append(expr.charAt(j));
+			else
+				break;
+		StringValue startTerm = null;
+		if(term.length() > 0) {
+			startTerm = new StringValue(term.toString());
+		}
+		
+		TermMatcher comparator = new RegexMatcher(expr, type);
+        NodeSet result = new ExtArrayNodeSet();
+        RegexCallback callback = new RegexCallback(docs, contextSet, result, comparator);
+        Lock lock = db.getLock();
+        for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
+			Collection collection = (Collection) iter.next();
+			short collectionId = collection.getId();
+			byte[] key;
+			if(startTerm != null)
+				key = startTerm.serialize(collectionId);
+			else {
+				key = new byte[3];
+				ByteConversion.shortToByte(collectionId, key, 0);
+				key[2] = (byte) Type.STRING;
+			}
+			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, new Value(key));
+			try {
+				lock.acquire();
+				try {
+					db.query(query, callback);
+				} catch (IOException ioe) {
+					LOG.debug(ioe);
+				} catch (BTreeException bte) {
+					LOG.debug(bte);
+				}
+			} catch (LockException e) {
+				LOG.debug(e);
+			} finally {
+				lock.release();
+			}
+        }
+        return result;
+    }
+    
     private int checkRelationOp(int relation) {
         int indexOp;
         switch(relation) {
@@ -642,29 +691,26 @@ public class NativeValueIndex {
         }
     }
     
-    public static void main(String args[]) {
-        byte[] d = ByteConversion.longToByte(56473);
-        System.out.print(56473 + " = ");
-        for(int i = 0; i < d.length; i++)
-            System.out.print(Integer.toHexString(d[i] & 0xFF) + " ");
-        System.out.println();
-        d = ByteConversion.longToByte(774663);
-        System.out.print(774663 + " = ");
-        for(int i = 0; i < d.length; i++)
-            System.out.print(Integer.toHexString(d[i] & 0xFF) + " ");
-        System.out.println();
-        Value v1 = new Value(new IntegerValue(56473).serialize((short)2));
-        Value v2 = new Value(new IntegerValue(774663).serialize((short)2));
-        d = v1.getData();
-        System.out.print("v1 = ");
-        for(int i = 0; i < d.length; i++)
-            System.out.print(Integer.toHexString(d[i] & 0xFF) + " ");
-        System.out.println();
-        d = v2.getData();
-        System.out.print("v2 = ");
-        for(int i = 0; i < d.length; i++)
-            System.out.print(Integer.toHexString(d[i] & 0xFF) + " ");
-        System.out.println();
-        System.out.println(v1.compareTo(v2));
+    private class RegexCallback extends SearchCallback {
+    	
+    	private TermMatcher matcher;
+    	
+    	public RegexCallback(DocumentSet docs, NodeSet contextSet, NodeSet result, TermMatcher matcher) {
+    		super(docs, contextSet, result);
+    		this.matcher = matcher;
+    	}
+    	
+    	/* (non-Javadoc)
+		 * @see org.exist.storage.NativeValueIndex.SearchCallback#indexInfo(org.dbxml.core.data.Value, long)
+		 */
+		public boolean indexInfo(Value value, long pointer)
+				throws TerminatedException {
+			StringValue val = new StringValue(null);
+			val.deserialize(value.getData());
+			if(matcher.matches(val.getStringValue())) {
+				super.indexInfo(value, pointer);
+			}
+			return true;
+		}
     }
 }

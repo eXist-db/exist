@@ -32,7 +32,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Logger;
 import org.apache.xml.resolver.tools.CatalogResolver;
-import org.exist.storage.IndexConfiguration;
+import org.exist.storage.IndexSpec;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -156,8 +156,12 @@ public class Configuration implements ErrorHandler {
 						Boolean.valueOf(suppressWSmixed.equals("yes")));
 				
 				// index settings
-				IndexConfiguration idxConf = new IndexConfiguration(p);
-				config.put("indexer.map", idxConf);
+				NodeList cl = doc.getElementsByTagName("index");
+		        if(cl.getLength() > 0) {
+		            Element elem = (Element) cl.item(0);
+		            IndexSpec spec = new IndexSpec(elem);
+		            config.put("indexer.config", spec);
+		        }
 
 				// stopwords
 				NodeList stopwords = p.getElementsByTagName("stopwords");
