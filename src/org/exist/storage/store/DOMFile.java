@@ -396,7 +396,7 @@ public class DOMFile extends BTree implements Lockable {
         rec.offset += value.length;
         rec.page.getPageHeader().incRecordCount();
         rec.page.setDirty(true);
-        if(rec.page.getPageHeader().getCurrentTID() == ItemId.DEFRAG_LIMIT &&
+        if(rec.page.getPageHeader().getCurrentTID() >= ItemId.DEFRAG_LIMIT &&
         		doc != null)
         	doc.triggerDefrag();
 //        LOG.debug(debugPageContents(rec.page));
@@ -431,7 +431,6 @@ public class DOMFile extends BTree implements Lockable {
         }
         if(!requireSplit) {
             LOG.debug("page " + rec.page.getPageNum() + ": no split required");
-            LOG.debug(debugPageContents(rec.page) + "; tid = " + rec.page.getPageHeader().getCurrentTID());
             rec.offset = rec.page.len;
             return rec;
         }
@@ -1588,6 +1587,8 @@ public class DOMFile extends BTree implements Lockable {
         }
         
         public void setNextTID(short tid) {
+        	if(tid > ItemId.MAX_ID)
+        		throw new RuntimeException("TID overflow! TID = " + tid);
             this.tid = tid;
         }
 
@@ -1883,17 +1884,22 @@ public class DOMFile extends BTree implements Lockable {
         
         /**
          * Walk through the page after records have been removed.
-         * Remember the next spare id that can be used for following
+         * Set the tid counter to the next spare id that can be used for following
          * insertions. 
          */
         public void cleanUp() {
         	final int dlen = ph.getDataLength();
-        	short currentId, vlen;
+        	short currentId, vlen, tid;
         	short maxTID = 0;
         	for (int pos = 0; pos < dlen; ) {
         		currentId = ByteConversion.byteToShort(data, pos);
-        		if(currentId > maxTID)
-        			maxTID = currentId;
+        		tid = ItemId.getId(currentId);
+        		if(tid > ItemId.MAX_ID) {
+        			LOG.debug(debugPageContents(this));
+        			throw new RuntimeException("TID overflow in page " + getPageNum());
+        		}
+        		if(tid > maxTID)
+        			maxTID = tid;
         		if (ItemId.isLink(currentId)) {
         			pos += 10;
         		} else {
