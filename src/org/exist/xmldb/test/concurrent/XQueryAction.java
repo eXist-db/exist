@@ -35,6 +35,8 @@ import org.xmldb.api.modules.XMLResource;
 public class XQueryAction extends Action {
 	
 	private String xquery;
+	private long runningTime = 0;
+	private int called = 0;
 	
 	/**
 	 * @param name
@@ -52,22 +54,38 @@ public class XQueryAction extends Action {
 	public boolean execute() throws Exception {
 	    Thread.currentThread().setName("XQuery Thread");
 	    
+	    long start = System.currentTimeMillis();
+	    
 		Collection col = DatabaseManager.getCollection(collectionPath);
+		
 		System.out.println(Thread.currentThread().getName() + ": executing query: " + xquery);
+		
 		XPathQueryServiceImpl service = (XPathQueryServiceImpl)
 			col.getService("XPathQueryService", "1.0");
 		
-		service.beginProtected();
+//		service.beginProtected();
 		ResourceSet result = service.query(xquery);
+
 		System.out.println(Thread.currentThread().getName() + ": found " + result.getSize());
 		
-		DefaultHandler handler = new DefaultHandler();
-		for (ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
-			XMLResource next = (XMLResource) i.nextResource();
-			next.getContentAsSAX(handler);
-		}
-		service.endProtected();
+//		DefaultHandler handler = new DefaultHandler();
+//		for (int i = 0; i < 1; i++) {
+//			XMLResource next = (XMLResource) result.getResource((long)i);
+//			next.getContentAsSAX(handler);
+//		}
+//		service.endProtected();
+		
+		runningTime += (System.currentTimeMillis() - start);
+		called++;
 		
 		return false;
+	}
+	
+	public String getQuery() {
+	    return xquery;
+	}
+	
+	public long avgExecTime() {
+	    return runningTime / called;
 	}
 }

@@ -32,6 +32,7 @@ import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
+import org.exist.storage.NodePath;
 import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
@@ -808,7 +809,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			broker.endRemove();
 			newNode.gid = old.gid;
 			broker.insertAfter(previous, newNode);
-			broker.index(newNode, newNode.getPath());
+			NodePath path = newNode.getPath();
+			broker.index(newNode, path);
+			broker.endElement(newNode, path);
 			broker.flush();
 		} else {
 			broker.removeNode(old, old.getPath());

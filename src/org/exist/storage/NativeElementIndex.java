@@ -69,12 +69,12 @@ import org.w3c.dom.Node;
  */
 public class NativeElementIndex extends ElementIndex {
 
-    public static long accTime = 0;
-    public static int count = 0;
-    
-    public static long getTime() {
-        return accTime / count;
-    }
+//    public static long accTime = 0;
+//    public static int count = 0;
+//    
+//    public static long getTime() {
+//        return accTime / count;
+//    }
     
     private static Logger LOG = Logger.getLogger(NativeElementIndex.class
             .getName());
@@ -205,16 +205,16 @@ public class NativeElementIndex extends ElementIndex {
         }
 //        LOG.debug(debug.toString());
         //		result.sort();
-        count++;
-        accTime += (System.currentTimeMillis() - start);
-        LOG.debug(
-        		"found "
-        		+ qname
-				+ ": "
-				+ result.getLength()
-				+ " in "
-				+ (System.currentTimeMillis() - start)
-				+ "ms.");
+//        count++;
+//        accTime += (System.currentTimeMillis() - start);
+//        LOG.debug(
+//        		"found "
+//        		+ qname
+//				+ ": "
+//				+ result.getLength()
+//				+ " in "
+//				+ (System.currentTimeMillis() - start)
+//				+ "ms.");
         return result;
     }
 

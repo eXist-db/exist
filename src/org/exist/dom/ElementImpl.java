@@ -432,6 +432,10 @@ public class ElementImpl
                 // process child nodes
                 last =
                         (NodeImpl) elem.appendChildren(elem.firstChildID(), elem, lastPath, ch, index);
+                if ((ownerDocument.reindex < 0
+                        || ownerDocument.reindex > ownerDocument.getTreeLevel(gid))
+                        && index)
+                    ownerDocument.broker.endElement(elem, lastPath);
                 lastPath.removeLastComponent();
                 return last;
             case Node.TEXT_NODE:
@@ -1275,7 +1279,9 @@ public class ElementImpl
         ownerDocument.broker.endRemove();
         newNode.gid = old.gid;
         ownerDocument.broker.insertAfter(previous, newNode);
-        ownerDocument.broker.index(newNode, newNode.getPath());
+        NodePath path = newNode.getPath();
+        ownerDocument.broker.index(newNode, path);
+        ownerDocument.broker.endElement(newNode, path);
         ownerDocument.broker.flush();
     }
 

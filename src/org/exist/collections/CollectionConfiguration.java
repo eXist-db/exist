@@ -50,6 +50,8 @@ public class CollectionConfiguration {
 	private Trigger[] triggers = new Trigger[3];
 	
 	private IndexSpec indexSpec = null;
+
+    public final static String COLLECTION_CONFIG_FILE = "collection.xconf";
 	
 	public CollectionConfiguration(DBBroker broker, Collection parent, Document doc) 
     throws CollectionConfigurationException {
@@ -105,6 +107,7 @@ public class CollectionConfiguration {
 		Trigger trigger;
 		while(tok.hasMoreTokens()) {
 			event = tok.nextToken();
+			System.out.println("Registering trigger " + classAttr + " for event " + event);
 			if(event.equalsIgnoreCase("store")) {
 				triggers[Trigger.STORE_DOCUMENT_EVENT] = instantiate(broker, parent, node, classAttr);
 			} else if(event.equalsIgnoreCase("update")) {

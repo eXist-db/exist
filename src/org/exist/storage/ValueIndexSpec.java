@@ -55,6 +55,12 @@ public class ValueIndexSpec {
     
     public final static int BOOLEAN = 5;
     
+    // special flag to indicate that the node has mixed
+    // content
+    public final static int MIXED_CONTENT = 0x40;
+    
+    // special flag which is set if the node has
+    // been fulltext indexed
     public final static int TEXT = 0x80;
     
     // Maps the type constants above to the corresponding
@@ -86,7 +92,7 @@ public class ValueIndexSpec {
      * @return
      */
     public final static int indexTypeToXPath(int type) {
-        return xpathTypes[type & 0x7F];
+        return xpathTypes[type & 0x3F];
     }
     
     /**
@@ -98,6 +104,17 @@ public class ValueIndexSpec {
      */
     public final static boolean hasFulltextIndex(int type) {
         return (type & TEXT) != 0;
+    }
+    
+    /**
+     * Returns true if the index type specifier has the mixed content
+     * flag set.
+     * 
+     * @param type
+     * @return
+     */
+    public final static boolean hasMixedContent(int type) {
+        return (type & MIXED_CONTENT) != 0;
     }
     
     /**

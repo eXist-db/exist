@@ -44,5 +44,6 @@
 		<name>Wizard's Robe</name>
 		<price>-100.10</price>
 		<stock>-1</stock>
+		<mixed><span>un</span><span>even</span></mixed>
 	</item>
 </items>

@@ -275,10 +275,13 @@ public class GeneralComparison extends BinaryOp {
 		// get the type of a possible index
 		int indexType = nodes.getIndexType();
 		
+		// we can't use the index if the node has mixed content
+		boolean hasMixedContent = nodes.hasMixedContent();
+		
 		DocumentSet docs = nodes.getDocumentSet();
 		NodeSet result = null;
 		
-	    if(indexType != Type.ITEM) {
+	    if(!hasMixedContent && indexType != Type.ITEM) {
 	        // we have a range index defined on the nodes in this sequence
 	        Item key = rightSeq.itemAt(0);
 	        if(truncation != Constants.TRUNC_NONE) {
@@ -307,8 +310,7 @@ public class GeneralComparison extends BinaryOp {
 	        } else
 	            return nodeSetCompare(nodes, contextSequence);
 	        
-	    } else if (relation == Constants.EQ
-				&& nodes.hasTextIndex()) {
+	    } else if (!hasMixedContent && relation == Constants.EQ && nodes.hasTextIndex()) {
 	        
 	        // we can use the fulltext index
 	        String cmp = getComparisonString(rightSeq);
@@ -317,6 +319,7 @@ public class GeneralComparison extends BinaryOp {
 	        // now compare the input node set to the search expression
 			result =
 				context.getBroker().getNodesEqualTo(nodes, docs, relation, cmp, getCollator(contextSequence));
+			
 		} else if(Type.subTypeOf(rightSeq.getItemType(), Type.STRING) ||
 		        rightSeq.getItemType() == Type.ATOMIC) {
 		    
