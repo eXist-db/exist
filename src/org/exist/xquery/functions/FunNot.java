@@ -87,7 +87,11 @@ public class FunNot extends Function {
 			Sequence argSeq =
 				arg.eval(contextSequence, contextItem);
 			NodeSet argSet = argSeq.toNodeSet().getContextNodes(true);
-			return result.except(argSet);
+			result = result.except(argSet);
+			if (result.getLength() == 0)
+				return BooleanValue.FALSE;
+			else
+				return result;
 		// case 2: simply invert the boolean value
 		} else {
 			Sequence seq =
