@@ -54,8 +54,8 @@ public class FunError extends Function {
 		throws XPathException {
 		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
 		if (arg.getLength() == 0)
-			throw new XPathException();
+			throw new XPathException(getASTNode(), "The query generated an error");
 		else
-			throw new XPathException(arg.getStringValue());
+			throw new XPathException(getASTNode(), arg.getStringValue());
 	}
 }

@@ -20,15 +20,15 @@
 
 package org.exist.xquery.functions;
 
-import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -48,14 +48,14 @@ public class FunName extends Function {
 			"Returns the name of a node, as an xs:string that is " +
 			"either the zero-length string, or has the lexical form of an xs:QName",
 			new SequenceType[0],
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
 		),
 		new FunctionSignature(
 			new QName("name", Module.BUILTIN_FUNCTION_NS),
 			"Returns the name of a node, as an xs:string that is " +
 			"either the zero-length string, or has the lexical form of an xs:QName",
 			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
 		)
 	};
 
@@ -64,28 +64,34 @@ public class FunName extends Function {
 	}
 	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-			Node n = null;
 			if(contextItem != null)
 				contextSequence = contextItem.toSequence();
+            Item item = null;
+            // check if the node is passed as an argument or should be taken from
+            // the context sequence
 			if(getArgumentCount() > 0) {
-				NodeSet result = getArgument(0).eval(contextSequence).toNodeSet();
-				if(result.getLength() > 0)
-					n = result.item(0);
+				Sequence seq = getArgument(0).eval(contextSequence);
+				if(seq.getLength() > 0)
+					item = seq.itemAt(0);
 			} else {
-				if(contextSequence.getLength() > 0 && contextSequence.getItemType() == Type.NODE)
-					n = ((NodeSet)contextSequence).item(0);
+				if(contextSequence.getLength() > 0)
+					item = contextSequence.itemAt(0);
 			}
-			if(n != null) {
-				switch(n.getNodeType()) {
-					case Node.ELEMENT_NODE:
-					case Node.ATTRIBUTE_NODE:
-						return new StringValue(n.getNodeName());
-					case Node.PROCESSING_INSTRUCTION_NODE:
-						return new StringValue(((ProcessingInstruction)n).getTarget());
-					default:
-						return new StringValue("");
-				}
-			} 
-			return new StringValue("");
+            if(item == null)
+                return Sequence.EMPTY_SEQUENCE;
+            if(!Type.subTypeOf(item.getType(), Type.NODE))
+                throw new XPathException(getASTNode(), getName() + " expects an argument of type node(); got: " +
+                        Type.getTypeName(item.getType()));
+            
+            Node n = ((NodeValue)item).getNode();
+			switch(n.getNodeType()) {
+				case Node.ELEMENT_NODE:
+				case Node.ATTRIBUTE_NODE:
+					return new StringValue(n.getNodeName());
+				case Node.PROCESSING_INSTRUCTION_NODE:
+					return new StringValue(((ProcessingInstruction)n).getTarget());
+				default:
+					return new StringValue("");
+			}
 		}
 }
