@@ -1257,7 +1257,11 @@ public class BFile extends BTree {
                         pos = StorageAddress.pageFromPointer(pointer);
                         tid = StorageAddress.tidFromPointer(pointer);
                         page = getDataPage(pos);
-                        dataCache.add(page);
+                        if (page.getPageHeader().getStatus() == MULTI_PAGE) {
+                            data = page.getData();
+                            
+                        }
+                        dataCache.add(page.getFirstPage());
                         offset = page.findValuePosition(tid);
                         data = page.getData();
                         l = ByteConversion.byteToInt(data, offset);
