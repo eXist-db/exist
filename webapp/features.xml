@@ -11,7 +11,7 @@
           <surname>Meier</surname>
           <affiliation>
             <address format="linespecific">
-              <email>meier@ifs.tu-darmstadt.de</email>
+              <email>wolfgang@exist-db.org</email>
             </address>
           </affiliation>
         </author>
@@ -122,7 +122,7 @@
             an external server process. This way you will also have direct 
             access to the persistent DOM. For a description of the different
             interface, read the 
-            <ulink href="development.xml">Developer's Guide</ulink>.</para>
+            <ulink href="devguide.xml">Developer's Guide</ulink>.</para>
             
             <para>Integration with Cocoon is also completely based on the
             XML:DB API. Using the xmldb pseudo-protocol, resources stored

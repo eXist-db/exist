@@ -2,7 +2,7 @@
 <shortcuts>
 	<programGroup defaultName="eXist XML Database" location="applications"/>
 	
-	<shortcut name="Launch eXist" target="$INSTALL_PATH/bin/startup.bat"
+	<shortcut name="eXist Database Startup" target="$INSTALL_PATH/bin/startup.bat"
 		description="Start Jetty and eXist" programGroup="yes"
 		desktop="yes"/>
 	<shortcut name="eXist Local Homepage" target="$INSTALL_PATH/index.html"

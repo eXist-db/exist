@@ -283,6 +283,7 @@
                     <include name="**/test/*.java"/>
                     <exclude name="**/xmldb/test/*.java"/>
 					<exclude name="**/xupdate/test/*.java"/>
+					<exclude name="**/xpath/test/*.java"/>
                 </fileset>
             </batchtest>
         </junit>
@@ -370,11 +371,11 @@
                 <include name="antlr.jar"/>
 				<include name="excalibur-cli-1.0.jar"/>
 				<include name="jakarta-oro-2.0.6.jar"/>
-				<include name="resolver-20021114.jar"/>
+				<include name="resolver-20030708.jar"/>
                 <include name="log4j.jar"/>
 				<include name="fastutil-2.52.jar"/>
                 <include name="xmldb.jar"/>
-                <include name="xmlrpc-1.1.jar"/>
+                <include name="xmlrpc-1.2.jar"/>
                 <include name="libreadline-java.jar"/>
                 <include name="libJavaReadline.so"/>
 	    	</fileset>
@@ -416,13 +417,11 @@
         <mkdir dir="${dist.dir}/webapp"/>
         <mkdir dir="${dist.dir}/webapp/WEB-INF/logs"/>
         <mkdir dir="${dist.dir}/webapp/WEB-INF/data"/>
-        <mkdir dir="${dist.dir}/ctl"/>
-        <mkdir dir="${dist.dir}/sql"/>
         <mkdir dir="${dist.dir}/log"/>
         <mkdir dir="${dist.dir}/samples"/>
         <mkdir dir="${dist.dir}/sql"/>
 		<mkdir dir="${dist.dir}/tmp"/>
-		<!--mkdir dir="${dist.dir}/docs"/-->
+		<mkdir dir="${dist.dir}/docs"/>
 		<mkdir dir="${dist.dir}/thirdparty"/>
         <touch file="${dist.dir}/tmp/.DO_NOT_DELETE"/>
 		<touch file="${dist.dir}/webapp/WEB-INF/data/.DO_NOT_DELETE"/>
@@ -434,7 +433,8 @@
                 <include name="README"/>
                 <include name="*.bat"/>
                 <include name="*.sh"/>
-				<include name="*.xml"/>
+		<include name="conf.xml"/>
+		<include name="build.xml"/>
                 <include name="exist.jar"/>
 				<include name="examples.jar"/>
 				<include name="start.jar"/>
@@ -442,7 +442,6 @@
 				<include name="client.properties"/>
 				<include name="build.properties"/>
 				<include name="backup.properties"/>
-				<include name="QuickStart.html"/>
                 <include name="*.jpg"/>
 				<include name="*.css"/>
             </fileset>
@@ -489,16 +488,6 @@
 				<exclude name="**/lib/*.jar"/>
 			</fileset>
 		</copy>
-        <copy todir="${dist.dir}/ctl">
-            <fileset dir="./ctl">
-                <exclude name="**/*~"/>
-            </fileset>
-        </copy>
-        <copy todir="${dist.dir}/sql">
-            <fileset dir="./sql">
-                <exclude name="**/*~"/>
-            </fileset>
-        </copy>
         <copy todir="${dist.dir}/samples">
             <fileset dir="./samples">
 				<exclude name="**/*~"/>
@@ -507,11 +496,11 @@
 				<exclude name="test.xml"/>
             </fileset>
 		</copy>
-		<!--copy todir="${dist.dir}/docs">
+		<copy todir="${dist.dir}/docs">
 			<fileset dir="./docs">
 				<exclude name="**/*~"/>
 			</fileset>
-		</copy-->
+		</copy>
         <fixcrlf eol="crlf" includes="**/*.bat" srcdir="${dist.dir}/bin"/>
         <fixcrlf eof="remove" eol="lf" includes="**/*.sh" srcdir="${dist.dir}/bin"/>
         <fixcrlf eol="crlf" includes="build.bat" srcdir="${dist.dir}"/>
@@ -549,7 +538,7 @@
     <!-- Create HTML files for docs on http://exist-db.org                  -->
     <!-- ================================================================== -->
 	<target depends="jar" name="prepare-docs">
-        <delete dir="${build.docs}"/>
+        <delete dir="${build.docs}" failonerror="false"/>
         <mkdir dir="${build.docs}"/>
         <echo message="Copying docs to temporary location ${build.docs}"/>
         <copy todir="${build.docs}">
@@ -588,30 +577,36 @@
     </target>
     
 	<target name="docs" depends="javadocs">
-	    <mkdir dir="${docs}"/>
+	    <mkdir dir="${build.docs}"/>
 	    <delete dir="${build}/work"/>
 	    <echo message="Calling Cocoon ..."/>
 	    <java classname="org.apache.cocoon.Main" dir="${build.docs}"
             failonerror="true" fork="true" output="${build}/cocoon.output">
             <arg value="-c."/>
             <arg value="-CWEB-INF/cocoon.xconf"/>
-            <arg value="-d../../docs"/>
+            <arg value="-d."/>
             <arg value="-w../work"/>
             <arg value="-l../work/cocoon.log"/>
+			<arg value="-V"/>
             <arg value="index.xml"/>
 			<classpath>
 				<path refid="classpath.core"/>
             </classpath>
         </java>
+	</target>
+
+	<target name="rename-files">
         <echo message="Renaming files ..."/>    
-        <move todir="${docs}">
-            <fileset dir="${docs}">
+        <move todir="${build.docs}">
+            <fileset dir="${build.docs}">
                 <include name="**.xml.html"/>
             </fileset>
             <mapper type="glob" from="*.xml.html" to="*.html"/>
         </move>
-        <replace dir="${docs}" summary="true"
-            token=".xml.html" value=".html"/>    
+        <replace dir="${build.docs}" summary="true"
+            token=".xml.html" value=".html"/>
+		<replace dir="${build.docs}" summary="true"
+			token=".jpg.jpeg" value=".jpg"/>
 	</target>
 
 	<!-- ============================================================================ -->

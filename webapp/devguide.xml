@@ -212,7 +212,7 @@ public class QueryExample {
         <para>eXist provides several services in addition to those defined by the specification: <ulink url="api/org/exist/xmldb/UserManagementService.html">UserManagementService</ulink> contains methods to manage users and to deal with permissions. The methods resemble common Unix commands like <methodname>chown</methodname> or <methodname>chmod</methodname>. Like all services, <classname>UserManagementService</classname> can be retrieved from a collection object:</para>
         <synopsis format="linespecific">UserManagementService service = (UserManagementService)collection.getService("UserManagementService", "1.0");</synopsis>
         <para>Another service, <ulink url="api/org/exist/xmldb/DatabaseInstanceManager.html">DatabaseInstanceManager</ulink>, provides a single method to shut down the database instance accessed by the driver. You have to be a member of the <option>dba</option> user group to use this method or an exception will be thrown. See the <ulink url="deployment.xml#embedded">Deployment Guide</ulink> for an example.</para>
-        <para>Finally, interface <ulink url="">IndexQueryService</ulink> supports access to the terms and elements contained in eXist's internal index. Method getIndexedElements() returns a list of element occurrences for the current collection. For each occurring element, the element's name and a frequency count is returned.</para>
+		<para>Finally, interface <ulink url="api/org/exist/xmldb/IndexQueryService.html">IndexQueryService</ulink> supports access to the terms and elements contained in eXist's internal index. Method getIndexedElements() returns a list of element occurrences for the current collection. For each occurring element, the element's name and a frequency count is returned.</para>
         <para>Method scanIndexTerms() allows to retrieve a list of occuring words for the current collection. This might be useful, for example, to provide users a list of searchable terms together with their frequency.</para>
       </section>
       <section id="multidb">
@@ -1133,52 +1133,6 @@ public class GetDocument {
       <para>To retrieve a resource we simply call <methodname>Query.getResource()</methodname>. Finally,
       we call Query.disconnect() to release the current session. Otherwise the session will remain
       valid for at least 60 minutes.</para>
-      <para>The listing below presents a simple query example which has been written in C# using .NET:</para>
-      <example>
-        <title>.NET Client in C#</title>
-        <programlisting format="linespecific"><![CDATA[using System;
-
-public class SoapQuery {
-    
-    static void Main(string[] args) {
-        string query;
-        if(args.Length < 1) {
-            Console.Write("Enter a query: ");
-            query = Console.ReadLine();
-        } else
-            query = args[0];
-        QueryService qs = new QueryService();
-        
-        // execute the query
-        QueryResponse resp = qs.query(query);
-        Console.WriteLine("found: {0} hits in {1} ms.", resp.hits, 
-        resp.queryTime);
-        
-        // print a table of hits by document for every collection
-        foreach (QueryResponseCollection collection in resp.collections) {
-            Console.WriteLine(collection.collectionName);
-            QueryResponseDocument[] docs = collection.documents;
-            foreach (QueryResponseDocument doc in docs)
-                Console.WriteLine('\t' + doc.documentName.PadRight(40, '.') + 
-                    doc.hitCount.ToString().PadLeft(10, '.'));
-        }
-        
-        // print some results
-        Console.WriteLine("\n\nRetrieving results 1..5");
-        for(int i = 1; i <= 5 && i <= resp.hits; i++) {
-            byte[] record = qs.retrieve(resp.resultSetId, i, "UTF-8", true);
-            string str = System.Text.Encoding.UTF8.GetString(record);
-            Console.WriteLine(str);
-        }
-    }
-}]]></programlisting>
-      </example>
-      <para>Similar to the Java example, the client simply instantiates an object of class QueryService, which had been automatically created from the WSDL description. The .NET framework contains a WSDL compiler tool (called wsdl.exe) which will automatically generate a client stub class if you run the WSDL file through it. For example:</para>
-      <synopsis format="linespecific">wsdl.exe /out:QueryService.cs src\org\exist\soap\query.wsdl</synopsis>
-      <para>The tool produces a single file (<filename moreinfo="none">QueryService.cs</filename>) which has to be linked with your own code. For example, to compile the above example:</para>
-      <synopsis format="linespecific">csc /out:query.exe QueryService.cs SoapQuery.cs</synopsis>
-      <para>Using the automatically generated classes, all the SOAP-related code is hidden from the developer. You do not even have to know that a remote web-service is being accessed.</para>
-      <para>In the listing above, the XPath query is passed to method query, which returns an object of type QueryResponse. QueryResponse contains some summary information about the executed query. The most important field is the result-set id, which is used by the server to identify the generated result-set in subsequent calls. To actually get the query results, the retrieve method is called with the result-set id. The XML is returned as a byte-array to avoid possible character-encoding conflicts with the SOAP transport layer.</para>
     </section>
   </chapter>
 </book>

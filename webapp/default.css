@@ -171,11 +171,11 @@ padding-bottom: 1px;
 }
 
 div.toc {
-	margin-top: 15px;
-	margin-bottom: 15px;
+	margin-top: 10px;
+	margin-bottom: 5px;
 	font-size: 80%;
 	padding-left: 35px;
-	padding-bottom: 15px;
+	padding-bottom: 5px;
 }
 
 div.tocitem2 {

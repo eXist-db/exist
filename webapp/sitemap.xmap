@@ -587,7 +587,7 @@
                 </map:match>
 			
                 <map:match pattern="">
-                    <map:redirect-to uri="index.xml"/>
+					<map:redirect-to uri="/exist/index.xml"/>
                 </map:match>
 
                 <map:match pattern="index.xml">
