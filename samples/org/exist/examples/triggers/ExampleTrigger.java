@@ -88,7 +88,7 @@ public class ExampleTrigger extends FilteringTrigger {
 		if(contentsFile == null)
 			contentsFile = "contents.xml";
 		// try to retrieve the contents file
-		this.doc = parent.getDocument(parent.getName() + '/' + contentsFile);
+		this.doc = parent.getDocument(broker, parent.getName() + '/' + contentsFile);
 		if(this.doc == null)
 			// doesn't exist yet: create it
 			try {
