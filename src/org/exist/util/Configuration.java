@@ -36,6 +36,8 @@ import java.util.HashMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 /**
  * Description of the Class
@@ -73,6 +75,7 @@ public class Configuration implements ErrorHandler {
 	 */
 	public Configuration(String file, String dbHome)
 		throws DatabaseConfigurationException {
+		BasicConfigurator.configure();
 		try {
 			String pathSep = System.getProperty("file.separator", "/");
 	
@@ -82,7 +85,7 @@ public class Configuration implements ErrorHandler {
 				f = new File(file);
 			}
 			if (!f.canRead()) {
-				System.err.println("unable to read configuration. Trying to guess location ...");
+				LOG.info("unable to read configuration. Trying to guess location ...");
 				
 				// fall back and try to read from home directory
 				if (dbHome == null) {
@@ -314,7 +317,7 @@ public class Configuration implements ErrorHandler {
 								+ df.getAbsolutePath());
 
 					config.put("db-connection.data-dir", df.getAbsolutePath());
-					LOG.debug("data directory = " + df.getAbsolutePath());
+					LOG.info("data directory = " + df.getAbsolutePath());
 				}
 
 				if (cacheSize != null)

@@ -245,15 +245,6 @@ public class DatabaseImpl implements Database {
 		if ( property.equals( "configuration" ) )
 			configuration = value;
     }
-    
-	/* (non-Javadoc)
-	 * @see java.lang.Object#finalize()
-	 */
-	protected void finalize() throws Throwable {
-		if(mode == LOCAL && autoCreate)
-			// cleanly shut down the database
-			BrokerPool.stop(dbName);
-	}
 
 }
 

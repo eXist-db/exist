@@ -1928,6 +1928,11 @@ public class BFile extends BTree {
 		}
 	}
 
+	/**
+	 * An input stream for overflow pages.
+	 * 
+	 * @author wolf
+	 */
 	private final class MultiPageInputStream extends InputStream {
 
 		private SinglePage nextPage;
@@ -1968,7 +1973,7 @@ public class BFile extends BTree {
 		 * @see java.io.InputStream#available()
 		 */
 		public int available() throws IOException {
-			return pageLen > 0 ? pageLen - offset : 0;
+			return pageLen < 0 ? 0 : pageLen;
 		}
 
 		/* (non-Javadoc)

@@ -245,7 +245,7 @@
             <formatter type="plain"/>
             <test fork="yes" name="org.exist.xmldb.test.AllTests" todir="${junit.reports}"/>
             <batchtest fork="yes" todir="${junit.reports}">
-                <fileset dir="${build.src}">
+                <fileset dir="${src}">
                     <include name="**/test/*.java"/>
                     <exclude name="**/xmldb/test/*.java"/>
                 </fileset>

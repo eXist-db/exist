@@ -313,7 +313,7 @@ public class NativeTextEngine extends TextSearchEngine {
 		Collection collection;
 		short collectionId;
 		VariableByteInputStream is;
-		//InputStream dis = null;
+		InputStream dis = null;
 		NodeProxy p;
 		Lock lock = dbWords.getLock();
 		for (int i = 0; i < expr.length; i++) {
@@ -331,21 +331,21 @@ public class NativeTextEngine extends TextSearchEngine {
 				try {
 					lock.acquire(this);
 					lock.enter(this);
-					value = dbWords.get(ref);
-					//dis = dbWords.getAsStream(ref);
+					//value = dbWords.get(ref);
+					dis = dbWords.getAsStream(ref);
 				} catch (LockException e) {
 					LOG.warn("could not acquire lock on words db", e);
-					value = null;
-					//dis = null;
+					//value = null;
+					dis = null;
 				} finally {
 					lock.release(this);
 				}
-				if (value == null) {
+				if (dis == null) {
 					continue;
 				}
 
-				data = value.getData();
-				is = new VariableByteInputStream(data);
+				//data = value.getData();
+				is = new VariableByteInputStream(dis);
 				try {
 					while (is.available() > 0) {
 						docId = is.readInt();
@@ -1164,10 +1164,11 @@ public class NativeTextEngine extends TextSearchEngine {
 				word = new String(key.getData(), 2, key.getLength() - 2);
 			}
 			if (matcher.matches(word, regexp)) {
-				Value value = dbWords.get(pointer);
-				if (value == null)
+				//Value value = dbWords.get(pointer);
+				InputStream dis = dbWords.getAsStream(pointer);
+				if (dis == null)
 					return true;
-				byte[] data = value.getData();
+				//byte[] data = value.getData();
 				int k = 0;
 				int docId;
 				int len;
@@ -1176,7 +1177,7 @@ public class NativeTextEngine extends TextSearchEngine {
 				long delta;
 				DocumentImpl doc;
 				NodeProxy proxy;
-				VariableByteInputStream is = new VariableByteInputStream(data);
+				VariableByteInputStream is = new VariableByteInputStream(dis);
 				try {
 					while (is.available() > 0) {
 						docId = is.readInt();
@@ -1196,7 +1197,7 @@ public class NativeTextEngine extends TextSearchEngine {
 						}
 					}
 				} catch (EOFException e) {
-					LOG.warn("eof while reading index", e);
+					// EOFExceptions are normal
 				} catch (IOException e) {
 					LOG.warn("io error while reading index", e);
 				}

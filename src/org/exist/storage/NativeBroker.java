@@ -395,7 +395,7 @@ public class NativeBroker extends DBBroker {
 		ElementValue ref;
 		Value val;
 		byte[] data;
-		//InputStream dis;
+		InputStream dis;
 		short sym;
 		Collection collection;
 		final Lock lock = elementsDb.getLock();
@@ -407,20 +407,20 @@ public class NativeBroker extends DBBroker {
 			try {
 				lock.acquire(this);
 				lock.enter(this);
-				//dis = elementsDb.getAsStream(ref);
-				val = elementsDb.get(ref);
+				dis = elementsDb.getAsStream(ref);
+				//val = elementsDb.get(ref);
 			} catch (LockException e) {
 				LOG.warn("failed to acquire lock", e);
-				//dis = null;
-				val = null;
+				dis = null;
+				//val = null;
 			} finally {
 				lock.release(this);
 			}
-			if (val == null)
+			if (dis == null)
 				continue;
-			data = val.getData();
-			is = new VariableByteInputStream(val.data(), val.start(), val.length());
-			//is = new VariableByteInputStream(dis);
+			//data = val.getData();
+			//is = new VariableByteInputStream(val.data(), val.start(), val.length());
+			is = new VariableByteInputStream(dis);
 			try {
 				while (is.available() > 0) {
 					docId = is.readInt();
@@ -437,12 +437,10 @@ public class NativeBroker extends DBBroker {
 						page = is.readInt();
 						tid = is.readInt();
 						address = DOMFile.createPointer(page, tid);
-						//LOG.debug("loaded " + docId + ':' + gid);
 						result.add(new NodeProxy(doc, gid, Node.ELEMENT_NODE, address));
 					}
 				}
 			} catch (EOFException e) {
-				LOG.warn("unexpected io error", e);
 			} catch (IOException e) {
 				LOG.warn("unexpected io error", e);
 			}

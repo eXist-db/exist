@@ -338,7 +338,6 @@ public class LocalXMLResource implements XMLResource {
 		public void endDocument() throws SAXException {
 			super.endDocument();
 			content = writer.toString();
-			System.out.println(content);
 		}
 	}
 
