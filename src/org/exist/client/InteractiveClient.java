@@ -141,6 +141,7 @@ public class InteractiveClient {
 	private final static int TRACE_QUERIES_OPT = 'T';
 	private final static int OUTPUT_FILE_OPT = 'O';
 	private final static int REINDEX_OPT = 'i';
+	private final static int QUERY_GUI_OPT = 'Q';
 
 	private final static CLOptionDescriptor OPTIONS[] = new CLOptionDescriptor[]{
 			new CLOptionDescriptor("help",
@@ -227,7 +228,9 @@ public class InteractiveClient {
 					"log queries to the file specified by the argument (for debugging)."),
 			new CLOptionDescriptor("reindex",
 					CLOptionDescriptor.ARGUMENT_DISALLOWED, REINDEX_OPT,
-					"reindex the collection specified in the collection argument -c")
+					"reindex the collection specified in the collection argument -c"),
+			new CLOptionDescriptor("query", CLOptionDescriptor.ARGUMENT_DISALLOWED, QUERY_GUI_OPT,
+					"directly open the query gui")
 			};
 
 	// ANSI colors for ls display
@@ -1766,6 +1769,7 @@ public class InteractiveClient {
 		boolean passwdSpecified = false;
 		boolean interactive = true;
 		boolean foundCollection = false;
+		boolean openQueryGui = false;
 		boolean doParse = false;
 		boolean doReindex = false;
 		String optionRemove = null;
@@ -1897,6 +1901,9 @@ public class InteractiveClient {
 				    doReindex = true;
 				    interactive = false;
 				    break;
+				case QUERY_GUI_OPT :
+					openQueryGui = true;
+					break;
 				case CLOption.TEXT_ARGUMENT :
 					optionalArgs.add(option.getArgument());
 					break;
@@ -2142,7 +2149,7 @@ public class InteractiveClient {
 						+ getExceptionMessage(e));
 			}
 		}
-
+		
 		if (interactive) {
 			if (startGUI) {
 				frame = new ClientFrame(this, path, properties);
@@ -2168,7 +2175,12 @@ public class InteractiveClient {
 				System.exit(1);
 			}
 			messageln("\ntype help or ? for help.");
-			if (!startGUI)
+			
+			if (openQueryGui) {
+				QueryDialog qd = new QueryDialog(this, current, properties);
+				qd.setLocation(100, 100);
+				qd.setVisible(true);
+			} else if (!startGUI)
 				readlineInputLoop(home);
 			else
 				frame.displayPrompt();
